@@ -1,63 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758641AbYFFPl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759072AbYFFPrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758641AbYFFPl2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 11:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYFFPlU
+	id S1759072AbYFFPrq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 11:47:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbYFFPrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 11:41:20 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:41674 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751818AbYFFPlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 11:41:19 -0400
-Date: Fri, 6 Jun 2008 11:41:17 -0400
-To: Jeff Layton <jlayton@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
-Subject: Re: [PATCH 2/3] sunrpc: have pooled services make NUMA-friendly
-	allocations
-Message-ID: <20080606154117.GF30863@fieldses.org>
-References: <20080603111757.8769.69366.stgit@dantu.usersys.redhat.com> <20080603111802.8769.22921.stgit@dantu.usersys.redhat.com> <20080606112145.6a23afca@tleilax.poochiereds.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080606112145.6a23afca@tleilax.poochiereds.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	Fri, 6 Jun 2008 11:47:36 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:38097 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751951AbYFFPre (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 11:47:34 -0400
+Message-Id: <20080606154654.356185262@theryb.frec.bull.fr>
+User-Agent: quilt/0.46-1
+Date: Fri, 06 Jun 2008 17:46:54 +0200
+From: Benjamin Thery <benjamin.thery@bull.net>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Eric Biederman <ebiederm@xmission.com>, Serge Hallyn <serue@us.ibm.com>,
+       linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>,
+       Benjamin Thery <benjamin.thery@bull.net>
+Subject: [PATCH 00/11] sysfs tagged directories V5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 06, 2008 at 11:21:45AM -0400, Jeff Layton wrote:
-> On Tue, 03 Jun 2008 07:18:02 -0400
-> Jeff Layton <jlayton@redhat.com> wrote:
-> 
-> > Currently, svc_prepare_thread allocates memory using plain kmalloc()
-> > and alloc_page() calls, even for threads that are destined to run on
-> > different CPUs or NUMA nodes than the current one. Add a function to
-> > translate a poolid into a NUMA node, and have svc_prepare_thread and
-> > svc_init_buffer allocate memory on those nodes instead.
-> > 
-> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> > ---
-> 
-> 
-> --------[snip]--------
-> >  
-> > -	rqstp = kzalloc(sizeof(*rqstp), GFP_KERNEL);
-> > +	rqstp = kzalloc_node(sizeof(*rqstp), GFP_KERNEL, node);
-> 
-> Bruce,
->   It looks like AKPM has taken the kzalloc_node patch into -mm. I'd
-> like to have you take this set into your tree at some point, but don't
-> want you to have to carry that VM patch too. Would you be amenable to me
-> changing the above to something like:
-> 
-> 	/* FIXME: change to kzalloc_node when/if it makes it to mainline */
-> 	rqstp = kmalloc_node(sizeof(*rqstp), GFP_KERNEL | __GFP_ZERO, node);
-> 
-> ...and then we can make the FIXME change when mainline has the new inline?
+Greg,
 
-I'd rather just take a copy of the patch.  Perhaps you see a problem I
-don't--but if it's really identical to the patch that'll go into
-upstream, then they'll merge trivially and there shouldn't be a problem.
+Here is an updated version of the sysfs tagged directories that improves
+a bit the situation over the previous one. 
 
---b.
+I've modified the patch 09 ("Enable tagging for net_class directories in 
+sysfs") to be a bit less intrusive in sysfs core. I removed the #ifdef'd
+parts you didn't like in fs/sysfs/mount.c, and replaced it by a generic 
+routine sysfs_ns_exit() that is called, if needed, by the namespace when
+it exits. This routine goes through every sysfs super blocks and calls 
+the callback passed by the namespace to clean its tag.
+
+The patch is now splitted in two: 
+* 09/11: the generic routine,
+* 10/11: the remaining network parts.
+
+The generic part can be merge with patch 05 ("sysfs: Implement sysfs 
+tagged directory support.") but I left it separate for now to ease 
+reviews.
+
+Serge's patch for user namespace is modified to use this new service too.
+No more #ifdef CONFIG_NET or #ifdef CONFIG_USER_NS in fs/sysfs/mount.c 
+now.
+
+
+But, currently, a new namespace that wants to add its tag to sysfs dirs
+still need to modify fs/sysfs/mount.c in a few routines to manage the
+new tag member added in struct sysfs_tag_info: sysfs_fill_super(), 
+sysfs_test_super(), sysfs_kill_sb() (see the last two patches).
+These changes are only the initialization and a bunch of comparisons.
+
+If we really want to go further, to get rid of these, I've thought 
+about:
+
+* Extending sysfs_tagged_dir_operations with super blocks operations: 
+  - fill_sb_tag, test_sb_tag, kill_sb_tag
+
+* Add routines in sysfs to allow registration/unregistration of these 
+  operations structs in a list:
+  - sysfs_register_tagged_dir_ops()...
+
+* Each subsystem concerned implements and registers its operations at 
+  boot.
+
+* In sysfs_fill_super(), sysfs_test_super() and sysfs_kill_sb(), add 
+  loops to go through all registered operations structs and calls the 
+  corresponding operations if it's present.
+
+But... I thought it was a bit overkill for the few namespaces that will 
+actually need sysfs tagged directories.
+
+
+(Below you'll find the traditional introduction for sysfs tagged dirs 
+and the updated changelog)
+
+Thanks,
+Benjamin
+
+--
+Here is an updated version of Eric Biederman's patchset to implement
+tagged directories in sysfs ported on top of 2.6.26-rc2-mm1.
+
+With the introduction of network namespaces, there can be duplicate 
+network interface names on the same machine. Indeed, two network 
+interfaces can have the same name if they reside in different network
+namespaces. 
+
+* Network interfaces names show up in sysfs.
+* Today there is nothing in sysfs that is currently per namespace.
+* Therefore we need to support multiple mounts of sysfs each showing a 
+  different network namespace.
+
+We introduce tagged directories in sysfs for this purpose.
+
+Of course the usefulness of this feature is not limited to network stuff:
+Serge Hallyn wrote a patch to fix a similar issue with user namespaces based 
+on this patchset. His patch is included at the end of the patchset.
+
+Tested with and without SYSFS_DEPRECATED. No regression found so far.
+
+Changelog
+---------
+* V5:
+  - Make namespace tags a bit less intrusive in sysfs core:
+    - New patch 09: Added a generic sysfs_ns_exit routine called by 
+      exiting namespaces. A callback is passed to this routine to 
+      execute the subsystem specific code.
+    - Modified patches 09 and 10 (now 10 and 11) ("netns tagging" and 
+      "userns tagging") to use this new routine instead of adding 
+      #ifdef'd code in fs/sysfs/mount.c.
+  - Added missing -ENOMEM in fs/sysfs/dir.c:prep_rename() (Roel Kluin)
+* V4:
+  - Ported to 2.6.26-rc2-mm1
+  - Updated patch for user namespace by Serge Hallyn (patch 10).
+* V3:
+  - Removed patch 10 ("avoid kobject name conflict with different 
+    namespaces"), a better one was provided by Eric.
+  - Removed patch 11 ("sysfs: user namespaces: add ns to user_struct"),
+    Serge needs to rework some parts of it.
+  - Change Acked-by: to Signed-off-by:, someone told me it is more 
+    appropriate (as I'm in the delivery path).
+
+
+Here is the announcement Eric wrote back in December to introduce his 
+patchset:
+
+"
+Now that we have network namespace support merged it is time to
+revisit the sysfs support so we can remove the dependency on !SYSFS.
+[...]
+The bulk of the patches are the changes to allow multiple sysfs
+superblocks.
+
+Then comes the tagged directory sysfs support which uses information
+captured at mount time to decide which object with which tag will
+appear in a directory.
+
+Then the support for renaming and deleting objects where the source
+may be ambiguous because of tagging.
+
+Then finally the network namespace support so it is clear how all
+of this tied together.
+"
+
+Regards,
+Benjamin
+
+-- 
