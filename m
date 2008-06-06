@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756737AbYFFMyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756528AbYFFM4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756737AbYFFMyY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 08:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYFFMxv
+	id S1756528AbYFFM4R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 08:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYFFM4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 08:53:51 -0400
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:32187 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752016AbYFFMxt (ORCPT
+	Fri, 6 Jun 2008 08:56:04 -0400
+Received: from hpsmtp-eml13.kpnxchange.com ([213.75.38.113]:9591 "EHLO
+	hpsmtp-eml13.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753226AbYFFM4C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 08:53:49 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=o63d8HunSFSFfNhuxcorpFw65tkzT9fZd4p0+LLPRD7aJDDAwomdFwafhnjdyHfYMOscAzwyRFiNU0fu8v5PrKAfpMKfuLiQ3X9cXqzEidbRj9I8fh0UTU6wYotvRDfMOvgrrxnEu0X/u4VG3pp4SlPuZA58laIskRo6aHlF3sA=  ;
-X-YMail-OSG: Pex4baMVM1lNSXhkxFXTZKmC_x0bIELT5SGPOLv0iX3uycCYApeXh5RRy3cj9kfSL9TpHmOe3Ea_MsP.HxssAANgBRIsY1xpOxTZGhP832gtd5WDxi3izOnHqljGlj7nmWY-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-Subject: Re: Locking in the (now generic) GPIO infrastructure?
-Date: Fri, 6 Jun 2008 05:53:47 -0700
+	Fri, 6 Jun 2008 08:56:02 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Greg KH <greg@kroah.com>
+Subject: Re: 2.6.25.1, stray noise in dmesg
+Date: Fri, 6 Jun 2008 14:55:55 +0200
 User-Agent: KMail/1.9.9
-Cc: LAK <linux-arm-kernel@lists.arm.linux.org.uk>,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>
-References: <c384c5ea0806040400j35236d5fo3854ce2ed30cd755@mail.gmail.com>
-In-Reply-To: <c384c5ea0806040400j35236d5fo3854ce2ed30cd755@mail.gmail.com>
+Cc: linux-kernel@vger.kernel.org, Gene Heskett <gene.heskett@gmail.com>,
+       Alan Stern <stern@rowland.harvard.edu>
+References: <200805021126.15225.gene.heskett@gmail.com> <200806052050.34537.elendil@planet.nl> <20080605193815.GA32072@kroah.com>
+In-Reply-To: <20080605193815.GA32072@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806060553.48057.david-b@pacbell.net>
+Message-Id: <200806061455.57361.elendil@planet.nl>
+X-OriginalArrivalTime: 06 Jun 2008 12:56:00.0417 (UTC) FILETIME=[AB7D5110:01C8C7D4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 June 2008, Leon Woestenberg wrote:
-> include/asm-arm/arch-ixp4xx/platform.h:
-> static inline void gpio_line_set(u8 line, int value)
-> {
->         if (value == IXP4XX_GPIO_HIGH)
->             *IXP4XX_GPIO_GPOUTR |= (1 << line);
->         else if (value == IXP4XX_GPIO_LOW)
->             *IXP4XX_GPIO_GPOUTR &= ~(1 << line);
-> }
-> 
-> Under a Linux kernel where multiple drivers are accessing GPIO, the
-> latter does not seem safe against preemption (assuming the memory
-> read-modify-write is not atomic).
-> 
-> Shouldn't GPIO access be protected against concurrent access here?
+On Thursday 05 June 2008, Greg KH wrote:
+> On Thu, Jun 05, 2008 at 08:50:33PM +0200, Frans Pop wrote:
+> > On Friday 02 May 2008, Frans Pop wrote:
+> > > I'm seeing these too (hub 5-0):
+> > > hub 5-0:1.0: USB hub found
+> > > hub 5-0:1.0: unable to enumerate USB device on port 5
+> > > hub 5-0:1.0: unable to enumerate USB device on port 7
+> >
+> > Note that in my case this is not with an external hub or anything,
+> > but just the internal USB ports of the system.
+> >
+> > One thing with this message is that because of its "error" status, it
+> > also shows when the system is booted with the "quiet" option. Could
+> > it be an option to apply the following patch so that at least that is
+> > avoided?
+>
+> I agree, I'll change the message to be this, thanks for the patch.
 
-Well, against an IRQ in the middle of those read/modify/write
-sequences hidden by the "|=" and "&=" syntax.  Last I knew,
-no XScale CPUs support on-chip SMP.
+I'm not sure that it is needed anymore. Looks like for me the messages 
+have disappeared with -rc5, probably due to 3a31155cfff0935e (Alan Stern,
+"USB: EHCI: suppress unwanted error messages").
+So it wasn't broken hardware after all :-)
 
+If that solves all or most cases the error was being hit, lowering its 
+severity is probably not needed.
 
-> Documentation/gpio.txt does not really mention the locking mechanism
-> assumed to modify GPIO lines.
-
-That function isn't part of the GPIO interface, despite
-its gpio_* prefix, so that's not relevant.
-
-It resembles gpio_set_value() though.  That can use at
-most spinlocks to establish its atomicity guarantee; it's
-described as "spinlock-safe", and in distinction to the
-gpio_set_value_cansleep() call which could use a mutex or
-other sleeping synch primitive.
-
+Cheers,
+FJP
