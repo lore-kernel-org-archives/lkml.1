@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764226AbYFFGoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764059AbYFFGsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764226AbYFFGoU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 02:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbYFFGoN
+	id S1764059AbYFFGsL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 02:48:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752386AbYFFGr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 02:44:13 -0400
-Received: from mx1.melware.net ([78.47.171.162]:55853 "EHLO mx1.melware.net"
+	Fri, 6 Jun 2008 02:47:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59094 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752386AbYFFGoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 02:44:12 -0400
-Date: Fri, 6 Jun 2008 08:44:08 +0200 (CEST)
-From: Armin Schindler <armin@melware.de>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] isdn divas: fix proc creation
-In-Reply-To: <20080606061744.GB4977@martell.zuzino.mipt.ru>
-Message-ID: <alpine.DEB.0.99.0806060842360.7260@k10.melware.de>
-References: <20080530233445.GB7358@martell.zuzino.mipt.ru>
- <alpine.DEB.0.99.0806051221380.30590@k10.melware.de>
- <20080606061744.GB4977@martell.zuzino.mipt.ru>
-Organization: Cytronics & Melware
+	id S1751721AbYFFGr4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 02:47:56 -0400
+Message-ID: <4848DD3C.9000001@redhat.com>
+Date: Fri, 06 Jun 2008 08:46:20 +0200
+From: Milan Broz <mbroz@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=us-ascii
+To: Alasdair G Kergon <agk@redhat.com>
+CC: Yan Li <elliot.li.tech@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ritesh Raj Sarraf <rrs@researchut.com>,
+       Christophe Saout <christophe@saout.de>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, Herbert Xu <herbert@gondor.apana.org.au>,
+       rjmaomao@gmail.com, dm-crypt@saout.de
+Subject: Re: 2.6.24 Kernel Soft Lock Up with heavy I/O in dm-crypt
+References: <20080602030738.GA7761@yantp.cn.ibm.com> <48439890.6030904@redhat.com> <20080602123145.GA8258@yantp.cn.ibm.com> <4843ECB8.4010002@redhat.com> <20080605224410.GA7584@yantp.cn.ibm.com>
+In-Reply-To: <20080605224410.GA7584@yantp.cn.ibm.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Jun 2008, Alexey Dobriyan wrote:
-> On Thu, Jun 05, 2008 at 12:25:06PM +0200, Armin Schindler wrote:
->> On Sat, 31 May 2008, Alexey Dobriyan wrote:
->>> 1. creating proc entry and not saving pointer to PDE and checking it
->>>   is not going to work.
->>
->> I don't know where you found this. I have look even in older versions, but
->> the pointer divas_proc_entry is set by proc_create(). The patch to
->> divasproc.c is wrong, it exists from the beginning of the driver.
->> (2.6.25.4 doesn't contain the bug you describe).
->
-> Check mainline kernel, namely, 2.6.26-rc5.
+Yan Li wrote:
+> On Mon, Jun 02, 2008 at 02:51:04PM +0200, Milan Broz wrote:
+>> Patch for 2.6.24 kernel
+>> Add cond_resched() to prevent stuck in big bio processing.
+> 
+> This patch actual has lead to performance _gain_.
+hmmm, nice:)
 
-Ah, okay. So someone removed the pointer between 2.6.25 and 2.6.26 then.
-In that case your patch is correct of course.
+> With patched kernel, soft lockup _no longer_ occurred.
 
-Armin
+Alasdair, please could you move this patch back to actual tree
+and sent it upstream?
 
->>> --- a/drivers/isdn/hardware/eicon/divasproc.c
->>> +++ b/drivers/isdn/hardware/eicon/divasproc.c
->>> @@ -125,8 +125,8 @@ static const struct file_operations divas_fops = {
->>>
->>> int create_divas_proc(void)
->>> {
->>> -	proc_create(divas_proc_name, S_IFREG | S_IRUGO, proc_net_eicon,
->>> -		    &divas_fops);
->>> +	divas_proc_entry = proc_create(divas_proc_name, S_IFREG | S_IRUGO,
->>> +					proc_net_eicon, &divas_fops);
->>> 	if (!divas_proc_entry)
->>> 		return (0);
->
+We have at least two separate reports confirming that it fixes
+the problem.
+
+Milan
+--
+mbroz@redhat.com
+
