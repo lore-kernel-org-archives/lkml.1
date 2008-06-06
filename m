@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933367AbYFFXcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933493AbYFFXd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933367AbYFFXcs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 19:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757858AbYFFXcj
+	id S933493AbYFFXd0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 19:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757858AbYFFXdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 19:32:39 -0400
-Received: from gate.crashing.org ([63.228.1.57]:37231 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757593AbYFFXci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 19:32:38 -0400
-Subject: Re: [PATCH] kobject: Export kobject_rename for pci_hotplug_core
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Alex Chiang <achiang@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       jbarnes@virtuousgeek.org, Matthew Wilcox <matthew@wil.cx>,
-       kristen.c.accardi@intel.com, greg@kroah.com, lenb@kernel.org,
-       pbadari@us.ibm.com, linux-pci@vger.kernel.org,
-       pcihpd-discuss@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <20080606045138.GA28538@ldl.fc.hp.com>
-References: <20080604200829.GC379@ldl.fc.hp.com>
-	 <20080604201606.GE379@ldl.fc.hp.com>
-	 <20080604224838.6b556a51.akpm@linux-foundation.org>
-	 <48478247.30809@jp.fujitsu.com>
-	 <20080604233348.eb46d8de.akpm@linux-foundation.org>
-	 <20080605151140.GA12991@ldl.fc.hp.com> <1212725261.12464.4.camel@pasglop>
-	 <20080606045138.GA28538@ldl.fc.hp.com>
-Content-Type: text/plain
-Date: Sat, 07 Jun 2008 09:20:00 +1000
-Message-Id: <1212794400.12464.36.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Jun 2008 19:33:15 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40586 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757252AbYFFXdO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 19:33:14 -0400
+Date: Fri, 6 Jun 2008 16:30:37 -0700
+From: Greg KH <greg@kroah.com>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-usb@vger.kernel.org
+Subject: Re: update checkpatch.pl to version 0.19
+Message-ID: <20080606233037.GA8548@kroah.com>
+References: <200806061922.m56JMJuq025990@hera.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200806061922.m56JMJuq025990@hera.kernel.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-06-05 at 22:51 -0600, Alex Chiang wrote:
-> * Benjamin Herrenschmidt <benh@kernel.crashing.org>:
-> > BTW. In the meantime, your current patch set seems fine to go.
-> 
-> That sounds suspiciously like an Acked-by: to me... ;)
+On Fri, Jun 06, 2008 at 07:22:25PM +0000, Linux Kernel Mailing List wrote:
+> @@ -1920,23 +2004,16 @@ sub process {
+>  				WARN("kfree(NULL) is safe this check is probabally not required\n" . $hereprev);
+>  			}
+>  		}
+> -# check for needless usb_free_urb() checks
+> -		if ($prevline =~ /\bif\s*\(([^\)]*)\)/) {
+> -			my $expr = $1;
+> -			if ($line =~ /\busb_free_urb\(\Q$expr\E\);/) {
+> -				WARN("usb_free_urb(NULL) is safe this check is probabally not required\n" . $hereprev);
+> -			}
+> -		}
+>  
 
-Yup, the only thing is .. I would like to do a few more tests to make
-sure we didn't break an obscure setup but I suppose we can always
-do fixup patches if necessary. So yes,
+I'm curious as to why this check was removed.  Any specific reason?  It
+was valid from what I can tell.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+thanks,
 
-> > I'll add code to actually do the renumbering of the slot
-> > separately, along with some other cleanup & rework of the
-> > pseries PCI hotplug I started doing.
-> 
-> Great, thanks!
-> 
-
+greg k-h
