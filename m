@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761874AbYFFPsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760768AbYFFPtF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761874AbYFFPsr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 11:48:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760836AbYFFPsG
+	id S1760768AbYFFPtF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 11:49:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757405AbYFFPsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 11:48:06 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:38352 "EHLO
+	Fri, 6 Jun 2008 11:48:17 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:38441 "EHLO
 	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760802AbYFFPsE (ORCPT
+	with ESMTP id S1760938AbYFFPsP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 11:48:04 -0400
-Message-Id: <20080606154654.812419477@theryb.frec.bull.fr>
+	Fri, 6 Jun 2008 11:48:15 -0400
+Message-Id: <20080606154654.961571361@theryb.frec.bull.fr>
 References: <20080606154654.356185262@theryb.frec.bull.fr>
 User-Agent: quilt/0.46-1
-Date: Fri, 06 Jun 2008 17:47:24 +0200
+Date: Fri, 06 Jun 2008 17:47:34 +0200
 From: Benjamin Thery <benjamin.thery@bull.net>
 To: Greg Kroah-Hartman <gregkh@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -22,71 +22,293 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Al Viro <viro@ftp.linux.org.uk>,
        Linux Containers <containers@lists.osdl.org>,
        Benjamin Thery <benjamin.thery@bull.net>
-Subject: [PATCH 03/11] sysfs: Implement __sysfs_get_dentry
+Subject: [PATCH 04/11] sysfs: Rename Support multiple superblocks
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sysfs: Implement __sysfs_get_dentry
+sysfs: Rename Support multiple superblocks
 
-This function is similar but much simpler to sysfs_get_dentry
-returns a sysfs dentry if one curently exists.
+This patch modifies the sysfs_rename_dir and sysfs_move_dir routines
+to support multiple sysfs dentry tries rooted in different
+sysfs superblocks.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 Signed-off-by: Benjamin Thery <benjamin.thery@bull.net>
 ---
- fs/sysfs/dir.c |   39 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 39 insertions(+)
+ fs/sysfs/dir.c |  195 ++++++++++++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 137 insertions(+), 58 deletions(-)
 
 Index: linux-mm/fs/sysfs/dir.c
 ===================================================================
 --- linux-mm.orig/fs/sysfs/dir.c
 +++ linux-mm/fs/sysfs/dir.c
-@@ -777,6 +777,45 @@ void sysfs_remove_dir(struct kobject * k
- 	__sysfs_remove_dir(sd);
+@@ -816,43 +816,113 @@ static struct dentry *__sysfs_get_dentry
+ 	return dentry;
  }
  
-+/**
-+ *	__sysfs_get_dentry - get dentry for the given sysfs_dirent
-+ *	@sb: superblock of the dentry to return
-+ *	@sd: sysfs_dirent of interest
-+ *
-+ *	Get dentry for @sd.  Only return a dentry if one currently
-+ *	exists.
-+ *
-+ *	LOCKING:
-+ *	Kernel thread context (may sleep)
-+ *
-+ *	RETURNS:
-+ *	Pointer to found dentry on success, NULL on failure.
-+ */
-+static struct dentry *__sysfs_get_dentry(struct super_block *sb,
-+					 struct sysfs_dirent *sd)
-+{
-+	struct inode *inode;
-+	struct dentry *dentry = NULL;
++struct sysfs_rename_struct {
++	struct list_head list;
++	struct dentry *old_dentry;
++	struct dentry *new_dentry;
++	struct dentry *old_parent;
++	struct dentry *new_parent;
++};
 +
-+	inode = ilookup5_nowait(sysfs_sb, sd->s_ino, sysfs_ilookup_test, sd);
-+	if (inode && !(inode->i_state & I_NEW)) {
-+		struct dentry *alias;
-+		spin_lock(&dcache_lock);
-+		list_for_each_entry(alias, &inode->i_dentry, d_alias) {
-+			if (!IS_ROOT(alias) && d_unhashed(alias))
-+				continue;
-+			if (alias->d_sb != sb)
-+				continue;
-+			dentry = alias;
-+			dget_locked(dentry);
-+			break;
-+		}
-+		spin_unlock(&dcache_lock);
++static void post_rename(struct list_head *head)
++{
++	struct sysfs_rename_struct *srs;
++	while (!list_empty(head)) {
++		srs = list_entry(head->next, struct sysfs_rename_struct, list);
++		dput(srs->old_dentry);
++		dput(srs->new_dentry);
++		dput(srs->old_parent);
++		dput(srs->new_parent);
++		list_del(&srs->list);
++		kfree(srs);
 +	}
-+	iput(inode);
-+	return dentry;
++}
++
++static int prep_rename(struct list_head *head,
++	struct sysfs_dirent *sd, struct sysfs_dirent *new_parent_sd,
++	const char *name)
++{
++	struct sysfs_rename_struct *srs;
++	struct super_block *sb;
++	struct dentry *dentry;
++	int error;
++
++	list_for_each_entry(sb, &sysfs_fs_type.fs_supers, s_instances) {
++		dentry = sysfs_get_dentry(sb, sd);
++		if (dentry == ERR_PTR(-EXDEV))
++			continue;
++		if (IS_ERR(dentry)) {
++			error = PTR_ERR(dentry);
++			goto err_out;
++		}
++
++		srs = kzalloc(sizeof(*srs), GFP_KERNEL);
++		if (!srs) {
++			error = -ENOMEM;
++			dput(dentry);
++			goto err_out;
++		}
++
++		INIT_LIST_HEAD(&srs->list);
++		list_add(head, &srs->list);
++		srs->old_dentry = dentry;
++		srs->old_parent = dget(dentry->d_parent);
++
++		dentry = sysfs_get_dentry(sb, new_parent_sd);
++		if (IS_ERR(dentry)) {
++			error = PTR_ERR(dentry);
++			goto err_out;
++		}
++		srs->new_parent = dentry;
++
++		error = -ENOMEM;
++		dentry = d_alloc_name(srs->new_parent, name);
++		if (!dentry)
++			goto err_out;
++		srs->new_dentry = dentry;
++	}
++	return 0;
++
++err_out:
++	post_rename(head);
++	return error;
 +}
 +
  int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
  {
  	struct sysfs_dirent *sd = kobj->sd;
+-	struct dentry *parent = NULL;
+-	struct dentry *old_dentry = NULL, *new_dentry = NULL;
++	struct list_head todo;
++	struct sysfs_rename_struct *srs;
++	struct inode *parent_inode = NULL;
+ 	const char *dup_name = NULL;
+ 	int error;
+ 
++	INIT_LIST_HEAD(&todo);
+ 	mutex_lock(&sysfs_rename_mutex);
+ 
+ 	error = 0;
+ 	if (strcmp(sd->s_name, new_name) == 0)
+ 		goto out;	/* nothing to rename */
+ 
+-	/* get the original dentry */
+-	old_dentry = sysfs_get_dentry(sysfs_sb, sd);
+-	if (IS_ERR(old_dentry)) {
+-		error = PTR_ERR(old_dentry);
+-		old_dentry = NULL;
+-		goto out;
+-	}
++	sysfs_grab_supers();
++	error = prep_rename(&todo, sd, sd->s_parent, new_name);
++	if (error)
++		goto out_release;
+ 
+-	parent = old_dentry->d_parent;
++	error = -ENOMEM;
++	mutex_lock(&sysfs_mutex);
++	parent_inode = sysfs_get_inode(sd->s_parent);
++	mutex_unlock(&sysfs_mutex);
++	if (!parent_inode)
++		goto out_release;
+ 
+-	/* lock parent and get dentry for new name */
+-	mutex_lock(&parent->d_inode->i_mutex);
++	mutex_lock(&parent_inode->i_mutex);
+ 	mutex_lock(&sysfs_mutex);
+ 
+ 	error = -EEXIST;
+ 	if (sysfs_find_dirent(sd->s_parent, new_name))
+ 		goto out_unlock;
+ 
+-	error = -ENOMEM;
+-	new_dentry = d_alloc_name(parent, new_name);
+-	if (!new_dentry)
+-		goto out_unlock;
+-
+ 	/* rename kobject and sysfs_dirent */
+ 	error = -ENOMEM;
+ 	new_name = dup_name = kstrdup(new_name, GFP_KERNEL);
+@@ -867,17 +937,21 @@ int sysfs_rename_dir(struct kobject * ko
+ 	sd->s_name = new_name;
+ 
+ 	/* rename */
+-	d_add(new_dentry, NULL);
+-	d_move(old_dentry, new_dentry);
++	list_for_each_entry(srs, &todo, list) {
++		d_add(srs->new_dentry, NULL);
++		d_move(srs->old_dentry, srs->new_dentry);
++	}
+ 
+ 	error = 0;
+- out_unlock:
++out_unlock:
+ 	mutex_unlock(&sysfs_mutex);
+-	mutex_unlock(&parent->d_inode->i_mutex);
++	mutex_unlock(&parent_inode->i_mutex);
+ 	kfree(dup_name);
+-	dput(old_dentry);
+-	dput(new_dentry);
+- out:
++out_release:
++	iput(parent_inode);
++	post_rename(&todo);
++	sysfs_release_supers();
++out:
+ 	mutex_unlock(&sysfs_rename_mutex);
+ 	return error;
+ }
+@@ -886,10 +960,12 @@ int sysfs_move_dir(struct kobject *kobj,
+ {
+ 	struct sysfs_dirent *sd = kobj->sd;
+ 	struct sysfs_dirent *new_parent_sd;
+-	struct dentry *old_parent, *new_parent = NULL;
+-	struct dentry *old_dentry = NULL, *new_dentry = NULL;
++	struct list_head todo;
++	struct sysfs_rename_struct *srs;
++	struct inode *old_parent_inode = NULL, *new_parent_inode = NULL;
+ 	int error;
+ 
++	INIT_LIST_HEAD(&todo);
+ 	mutex_lock(&sysfs_rename_mutex);
+ 	BUG_ON(!sd->s_parent);
+ 	new_parent_sd = new_parent_kobj->sd ? new_parent_kobj->sd : &sysfs_root;
+@@ -898,26 +974,29 @@ int sysfs_move_dir(struct kobject *kobj,
+ 	if (sd->s_parent == new_parent_sd)
+ 		goto out;	/* nothing to move */
+ 
+-	/* get dentries */
+-	old_dentry = sysfs_get_dentry(sysfs_sb, sd);
+-	if (IS_ERR(old_dentry)) {
+-		error = PTR_ERR(old_dentry);
+-		old_dentry = NULL;
+-		goto out;
+-	}
+-	old_parent = old_dentry->d_parent;
+-
+-	new_parent = sysfs_get_dentry(sysfs_sb, new_parent_sd);
+-	if (IS_ERR(new_parent)) {
+-		error = PTR_ERR(new_parent);
+-		new_parent = NULL;
+-		goto out;
+-	}
++	sysfs_grab_supers();
++	error = prep_rename(&todo, sd, new_parent_sd, sd->s_name);
++	if (error)
++		goto out_release;
++
++	error = -ENOMEM;
++	mutex_lock(&sysfs_mutex);
++	old_parent_inode = sysfs_get_inode(sd->s_parent);
++	mutex_unlock(&sysfs_mutex);
++	if (!old_parent_inode)
++		goto out_release;
++
++	error = -ENOMEM;
++	mutex_lock(&sysfs_mutex);
++	new_parent_inode = sysfs_get_inode(new_parent_sd);
++	mutex_unlock(&sysfs_mutex);
++	if (!new_parent_inode)
++		goto out_release;
+ 
+ again:
+-	mutex_lock(&old_parent->d_inode->i_mutex);
+-	if (!mutex_trylock(&new_parent->d_inode->i_mutex)) {
+-		mutex_unlock(&old_parent->d_inode->i_mutex);
++	mutex_lock(&old_parent_inode->i_mutex);
++	if (!mutex_trylock(&new_parent_inode->i_mutex)) {
++		mutex_unlock(&old_parent_inode->i_mutex);
+ 		goto again;
+ 	}
+ 	mutex_lock(&sysfs_mutex);
+@@ -926,14 +1005,11 @@ again:
+ 	if (sysfs_find_dirent(new_parent_sd, sd->s_name))
+ 		goto out_unlock;
+ 
+-	error = -ENOMEM;
+-	new_dentry = d_alloc_name(new_parent, sd->s_name);
+-	if (!new_dentry)
+-		goto out_unlock;
+-
+ 	error = 0;
+-	d_add(new_dentry, NULL);
+-	d_move(old_dentry, new_dentry);
++	list_for_each_entry(srs, &todo, list) {
++		d_add(srs->new_dentry, NULL);
++		d_move(srs->old_dentry, srs->new_dentry);
++	}
+ 
+ 	/* Remove from old parent's list and insert into new parent's list. */
+ 	sysfs_unlink_sibling(sd);
+@@ -942,14 +1018,17 @@ again:
+ 	sd->s_parent = new_parent_sd;
+ 	sysfs_link_sibling(sd);
+ 
+- out_unlock:
++out_unlock:
+ 	mutex_unlock(&sysfs_mutex);
+-	mutex_unlock(&new_parent->d_inode->i_mutex);
+-	mutex_unlock(&old_parent->d_inode->i_mutex);
+- out:
+-	dput(new_parent);
+-	dput(old_dentry);
+-	dput(new_dentry);
++	mutex_unlock(&new_parent_inode->i_mutex);
++	mutex_unlock(&old_parent_inode->i_mutex);
++
++out_release:
++	iput(new_parent_inode);
++	iput(old_parent_inode);
++	post_rename(&todo);
++	sysfs_release_supers();
++out:
+ 	mutex_unlock(&sysfs_rename_mutex);
+ 	return error;
+ }
 
 -- 
