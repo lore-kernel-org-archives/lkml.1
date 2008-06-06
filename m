@@ -1,62 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764501AbYFFIQo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762465AbYFFIW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764501AbYFFIQo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 04:16:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbYFFIQa
+	id S1762465AbYFFIW2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 04:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753166AbYFFIWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 04:16:30 -0400
-Received: from gw.goop.org ([64.81.55.164]:43409 "EHLO mail.goop.org"
+	Fri, 6 Jun 2008 04:22:15 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:52639 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752688AbYFFIQ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 04:16:27 -0400
-Message-ID: <4848F233.10008@goop.org>
-Date: Fri, 06 Jun 2008 09:15:47 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Jan Beulich <jbeulich@novell.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Stable Kernel <stable@kernel.org>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: set PAE PHYSICAL_MASK_SHIFT to match 64-bit
-References: <4848046A.5060006@goop.org> <87ve0ntk6v.fsf@basil.nowhere.org> <4848EE5C.6040003@goop.org> <48490DEC.76E4.0078.0@novell.com>
-In-Reply-To: <48490DEC.76E4.0078.0@novell.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751267AbYFFIWM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 04:22:12 -0400
+Date: Fri, 6 Jun 2008 18:22:06 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: linux-next: Tree for June 5
+Message-Id: <20080606182206.8bc36f71.sfr@canb.auug.org.au>
+In-Reply-To: <20080606010149.4d757b92.akpm@linux-foundation.org>
+References: <20080605175217.cee497f3.sfr@canb.auug.org.au>
+	<20080605195604.41623687.akpm@linux-foundation.org>
+	<20080606071707.GB9708@elte.hu>
+	<20080606072536.GA19334@elte.hu>
+	<20080606003327.9ac0e91b.akpm@linux-foundation.org>
+	<20080606074137.GA28962@elte.hu>
+	<20080606004743.a78180c3.akpm@linux-foundation.org>
+	<20080606175358.a439d1bb.sfr@canb.auug.org.au>
+	<20080606010149.4d757b92.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.5.0rc (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__6_Jun_2008_18_22_06_+1000_3vgIWoBuzzSr00/U"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
->>>> Jeremy Fitzhardinge <jeremy@goop.org> 06.06.08 09:59 >>>
->>>>         
->> Andi Kleen wrote:
->>     
->>> Jeremy Fitzhardinge <jeremy@goop.org> writes:
->>>   
->>>       
->>>> The 46-bit mask used in 64-bit seems pretty arbitrary. 
->>>>     
->>>>         
->>> The rationale for the 46 bits is that the kernel needs roughly 4x as 
->>> much virtual space as physical space and the virtual space is limited
->>> to 48bits.
->>>
->>> To be exact 47 bits is always user space and the 47 bits remaining
->>> for the kernel are split into half, with one half for the direct mapping
->>> and the other half for random mappings.  With some pushing you could
->>> extend it to 46.5 bits or so, but beyond that you'll be in trouble.
->>>   
->>>       
->> Why's that?  Is the issue the amount of memory needed for pagetables and 
->> page structures if you did have more than 2^48 bytes of physical memory?
->>     
+--Signature=_Fri__6_Jun_2008_18_22_06_+1000_3vgIWoBuzzSr00/U
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Andrew,
+
+On Fri, 6 Jun 2008 01:01:49 -0700 Andrew Morton <akpm@linux-foundation.org>=
+ wrote:
 >
-> No, it's the fact that the 1:1 mapping needs as much virtual space as
-> the physical range covered (including all holes).
+> Well yes - I just bodged it by hand then unbodged it later.  But we
+> have a bisection break there.  Admittedly a minor one, unless the bug
+> you're bisecting for requires that kprobes be configured.  But it would
+> be nice to squish it.
+>=20
+> I hope Ingo isn't following this
+> once-you've-checked-it-in-you-can't-fix-it stupidity :(
 
-Right, I see.  And suddenly 64-bits seems... constrained. ;)
+Its a break caused by the merge of the ftrace tree into the linux-next
+tree (because at the point I merge the ftrace tree, linux-next contains
+the rcu tree which has moves stuff into rculist.h), so logically that
+patch should become part of the merge commit.  If it was part of the
+merge, you could never bisect to a point where you got this build
+breakage.
 
-    J
+Each tree is fine on its own if you go one step back from the merge.
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__6_Jun_2008_18_22_06_+1000_3vgIWoBuzzSr00/U
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhI864ACgkQTgG2atn1QN+GzwCcDsddpCjLGZ/+JupcwRk3Kulm
+RmoAn3YKNPSQOrkX3XSGXfluJEODEQ5E
+=8Ux3
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__6_Jun_2008_18_22_06_+1000_3vgIWoBuzzSr00/U--
