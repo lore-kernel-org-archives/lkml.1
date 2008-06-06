@@ -1,49 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765197AbYFFP6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764982AbYFFP7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765197AbYFFP6y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 11:58:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760983AbYFFPzf
+	id S1764982AbYFFP7T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 11:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760982AbYFFPzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 6 Jun 2008 11:55:35 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:51800 "EHLO
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:51804 "EHLO
 	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758121AbYFFPz2 (ORCPT
+	with ESMTP id S1758633AbYFFPz2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 6 Jun 2008 11:55:28 -0400
-Message-Id: <20080606155527.250061367@fluff.org.uk>
+Message-Id: <20080606155527.429024311@fluff.org.uk>
 References: <20080606155117.074799346@fluff.org.uk>
 User-Agent: quilt/0.46-1
-Date: Fri, 06 Jun 2008 16:51:31 +0100
+Date: Fri, 06 Jun 2008 16:51:32 +0100
 From: Ben Dooks <ben-linux@fluff.org>
 To: linux-kernel@vger.kernel.org
 Cc: Pierre Ossman <drzeus@drzeus.cx>, Harald Welte <laforge@openmoko.org>,
        Thomas Kleffel <tk@maintech.de>,
        Roman Moravcik <roman.moravcik@gmail.com>,
        Ben Dooks <ben-linux@fluff.org>
-Subject: [patch 14/15] MMC: Fix use of msecs where jiffies are needed
-Content-Disposition: inline; filename=simtec/s3c24xx-sdmmc-detectchangefix.patch
+Subject: [patch 15/15] MMC: Add media presence detection to request handling.
+Content-Disposition: inline; filename=simtec/s3c24xx-sdmmc-add-mediacheck.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mmc_detect_change() takes jiffies, not msecs. Convert the
-previous value of msecs into jiffies before calling.
+Ensure that we have physical media present before attempting to
+send a request to a card. This ensures that we do not get flooded
+by errors from commands that can never be completed timing out.
 
 Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
 Index: linux-2.6.26-rc5-q/drivers/mmc/host/s3cmci.c
 ===================================================================
---- linux-2.6.26-rc5-q.orig/drivers/mmc/host/s3cmci.c	2008-06-06 15:47:32.000000000 +0100
-+++ linux-2.6.26-rc5-q/drivers/mmc/host/s3cmci.c	2008-06-06 15:47:34.000000000 +0100
-@@ -567,7 +567,7 @@ static irqreturn_t s3cmci_irq_cd(int irq
- 
- 	dbg(host, dbg_irq, "card detect\n");
- 
--	mmc_detect_change(host->mmc, 500);
-+	mmc_detect_change(host->mmc, msecs_to_jiffies(500));
- 
- 	return IRQ_HANDLED;
+--- linux-2.6.26-rc5-q.orig/drivers/mmc/host/s3cmci.c	2008-06-06 15:47:34.000000000 +0100
++++ linux-2.6.26-rc5-q/drivers/mmc/host/s3cmci.c	2008-06-06 15:47:35.000000000 +0100
+@@ -991,6 +991,20 @@ static void s3cmci_send_request(struct m
+ 	enable_irq(host->irq);
  }
+ 
++static int s3cmci_card_present(struct s3cmci_host *host)
++{
++	struct s3c24xx_mci_pdata *pdata = host->pdata;
++	int ret;
++
++	/* if we can't detect the presence, then always have card. */
++	if (pdata->gpio_detect == 0)
++		return 1;
++
++	ret = s3c2410_gpio_getpin(pdata->gpio_detect) ? 0 : 1;
++
++	return ret ^ pdata->detect_invert;
++}
++
+ static void s3cmci_request(struct mmc_host *mmc, struct mmc_request *mrq)
+ {
+  	struct s3cmci_host *host = mmc_priv(mmc);
+@@ -998,7 +1012,12 @@ static void s3cmci_request(struct mmc_ho
+ 	host->cmd_is_stop = 0;
+ 	host->mrq = mrq;
+ 
+-	s3cmci_send_request(mmc);
++	if (!s3cmci_card_present(host)) {
++		dbg(host, dbg_err, "%s: no medium present\n", __func__);
++		host->mrq->cmd->error = -ENOMEDIUM;
++		mmc_request_done(mmc, mrq);
++	} else
++		s3cmci_send_request(mmc);
+ }
+ 
+ static void s3cmci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
+Index: linux-2.6.26-rc5-q/include/asm-arm/arch-s3c2410/mci.h
+===================================================================
+--- linux-2.6.26-rc5-q.orig/include/asm-arm/arch-s3c2410/mci.h	2008-06-06 15:46:30.000000000 +0100
++++ linux-2.6.26-rc5-q/include/asm-arm/arch-s3c2410/mci.h	2008-06-06 15:47:35.000000000 +0100
+@@ -3,6 +3,7 @@
+ 
+ struct s3c24xx_mci_pdata {
+ 	unsigned int	wprotect_invert : 1;
++	unsigned int	detect_invert : 1;   /* set => detect active high. */
+ 
+ 	unsigned int	gpio_detect;
+ 	unsigned int	gpio_wprotect;
 
 -- 
 Ben (ben@fluff.org, http://www.fluff.org/)
