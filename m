@@ -1,70 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755057AbYFFJ5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755008AbYFFKDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755057AbYFFJ5d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 05:57:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbYFFJ5Z
+	id S1755008AbYFFKDY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 06:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbYFFKDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 05:57:25 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:21165 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752962AbYFFJ5Y convert rfc822-to-8bit (ORCPT
+	Fri, 6 Jun 2008 06:03:10 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:50722 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753200AbYFFKDI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 05:57:24 -0400
-Message-Id: <4849264D.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Fri, 06 Jun 2008 10:58:05 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Stable Kernel" <stable@kernel.org>,
-       <x86@kernel.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH UPDATED] x86: set PAE PHYSICAL_MASK_SHIFT to 44
-	bits.
-References: <4848046A.5060006@goop.org> <484823BD.76E4.0078.0@novell.com>
- <484901A3.3040401@goop.org>
-In-Reply-To: <484901A3.3040401@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Fri, 6 Jun 2008 06:03:08 -0400
+Date: Fri, 6 Jun 2008 13:03:02 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Patrick McManus <mcmanus@ducksong.com>
+cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       peterz@infradead.org, LKML <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>, rjw@sisk.pl,
+       Andrew Morton <akpm@linux-foundation.org>, johnpol@2ka.mipt.ru
+Subject: Re: [fixed] [patch] Re: [bug] stuck localhost TCP connections,
+ v2.6.26-rc3+
+In-Reply-To: <1212708571.19522.10.camel@tng>
+Message-ID: <Pine.LNX.4.64.0806061248410.16829@wrl-59.cs.helsinki.fi>
+References: <20080603094057.GA29480@elte.hu>  <Pine.LNX.4.64.0806032245490.3474@wrl-59.cs.helsinki.fi>
+  <Pine.LNX.4.64.0806040052270.3474@wrl-59.cs.helsinki.fi> 
+ <20080603.150344.145518113.davem@davemloft.net> 
+ <Pine.LNX.4.64.0806040208350.7315@wrl-59.cs.helsinki.fi>  <20080605142244.GA19216@elte.hu>
+  <Pine.LNX.4.64.0806052059380.31672@wrl-59.cs.helsinki.fi> 
+ <Pine.LNX.4.64.0806052355420.2522@wrl-59.cs.helsinki.fi> <1212708571.19522.10.camel@tng>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-516156546-1212746582=:16829"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ah, yes!
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Acked-By: Jan Beulich <jbeulich@novell.com>
+---696208474-516156546-1212746582=:16829
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 
->>> Jeremy Fitzhardinge <jeremy@goop.org> 06.06.08 11:21 >>>
-When a 64-bit x86 processor runs in 32-bit PAE mode, a pte can
-potentially have the same number of physical address bits as the
-64-bit host ("Enhanced Legacy PAE Paging").  This means, in theory,
-we could have up to 52 bits of physical address in a pte.
+On Thu, 5 Jun 2008, Patrick McManus wrote:
 
-The 32-bit kernel uses a 32-bit unsigned long to represent a pfn.
-This means that it can only represent physical addresses up to 32+12=44
-bits wide.  Rather than widening pfns everywhere, just set 2^44 as the
-Linux x86_32-PAE architectural limit for physical address size.
+> On Fri, 2008-06-06 at 00:13 +0300, Ilpo Järvinen wrote:
+> 
+> > 
+> > I'm out of new ideas what could be still wrong (I got confused and
+> > lost 
+> > track number of times while I tried to verify socket locking today and 
+> > probably don't have more time for that now)... Unless somebody else 
+> > (Patrick?) comes up with something quickly,
+> 
+> Sorry, I don't see anything - it seems to boil down to the same code in
+> the DA and non-DA case as far as I can tell, but after a while all the
+> twisty passages seem to look alike.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: Jan Beulich <jbeulich@novell.com>
----
- include/asm-x86/page_32.h |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-===================================================================
---- a/include/asm-x86/page_32.h
-+++ b/include/asm-x86/page_32.h
-@@ -22,7 +22,8 @@
+:-)
  
- 
- #ifdef CONFIG_X86_PAE
--#define __PHYSICAL_MASK_SHIFT	36
-+/* 44=32+12, the limit we can fit into an unsigned long pfn */
-+#define __PHYSICAL_MASK_SHIFT	44
- #define __VIRTUAL_MASK_SHIFT	32
- #define PAGETABLE_LEVELS	3
- 
+This Ingo's testcase should anyway be quite "simple", I mean that distcc 
+shouldn't do anything unexpected in a sense it shouldn't abort the flows 
+by not sending data, close the listening socket or other things like that.
 
+> If Ingo confirms that the recv end was running the locking patch code,
+> it would be interesting to just confirm the sysreq+t looks the same as
+> before - it is possible the patch turned the race into a non-obvious
+> deadlock.
 
+...Yes, but we want that from the receiver's host rather than from the 
+sender end. Also checking that sender is still doing window probes once 
+per 2min is probably worth of it though a change in that is quite 
+unlikely.
 
+> I'm sure your smaller revert will make the problem go away just as the
+> larger one did, fwiw. 
+
+I'd very much except it to.
+
+> The other odd thing is that Ingo did a lot of experimentation and was
+> only making this happen on localhost before (though I agree there is
+> nothing inherent about that lock and localhost) - isn't it odd that the
+> first trigger of it now is between two hosts? What do you make of that?
+
+...No, it occurred couple of times in the past between host as well, 
+nothing new in that.
+
+-- 
+ i.
+---696208474-516156546-1212746582=:16829--
