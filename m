@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764999AbYFFIjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764674AbYFFIom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764999AbYFFIjU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 04:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbYFFIjH
+	id S1764674AbYFFIom (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 04:44:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782AbYFFIob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 04:39:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48935 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753319AbYFFIjF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 04:39:05 -0400
-Date: Fri, 6 Jun 2008 01:38:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: linux-next: Tree for June 5
-Message-Id: <20080606013835.8dfd838b.akpm@linux-foundation.org>
-In-Reply-To: <20080606082325.GA10826@elte.hu>
-References: <20080605175217.cee497f3.sfr@canb.auug.org.au>
-	<20080605195604.41623687.akpm@linux-foundation.org>
-	<20080606071707.GB9708@elte.hu>
-	<20080606072536.GA19334@elte.hu>
-	<20080606003327.9ac0e91b.akpm@linux-foundation.org>
-	<20080606074137.GA28962@elte.hu>
-	<20080606004743.a78180c3.akpm@linux-foundation.org>
-	<20080606082325.GA10826@elte.hu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Jun 2008 04:44:31 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:4738 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753724AbYFFIoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 04:44:30 -0400
+Date: Fri, 6 Jun 2008 10:44:27 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, npiggin@suse.de,
+       linux-arch@vger.kernel.org, jeremy@goop.org, mingo@elte.hu
+Subject: Re: [PATCH 1/10] Add generic helpers for arch IPI function calls
+Message-ID: <20080606084426.GJ5757@kernel.dk>
+References: <1212051504-12561-1-git-send-email-jens.axboe@oracle.com> <1212051504-12561-2-git-send-email-jens.axboe@oracle.com> <20080530112440.GN4943@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080530112440.GN4943@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Jun 2008 10:23:25 +0200 Ingo Molnar <mingo@elte.hu> wrote:
-
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > > > > i just successfully booted your config on 4 separate 64-bit 
-> > > > > test-systems with latest -tip. (two dual-core boxes, a quad and a 
-> > > > > 16way box) Latest -tip includes sched-next and x86-next as well.
-> > > > 
-> > > > What's the point in testing a radically differenet kernel from the one 
-> > > > which is known to be crashing?
-> > > 
-> > > well, you Cc:-ed me, so i wanted to exclude -tip's 750+ commits in this 
-> > > area (scheduling, 64-bit x86) in the first step.
+On Fri, May 30 2008, Paul E. McKenney wrote:
+> On Thu, May 29, 2008 at 10:58:15AM +0200, Jens Axboe wrote:
+> > This adds kernel/smp.c which contains helpers for IPI function calls. In
+> > addition to supporting the existing smp_call_function() in a more efficient
+> > manner, it also adds a more scalable variant called smp_call_function_single()
+> > for calling a given function on a single CPU only.
 > > 
-> > What's the relationship between -tip and linux-next?
+> > The core of this is based on the x86-64 patch from Nick Piggin, lots of
+> > changes since then. "Alan D. Brunelle" <Alan.Brunelle@hp.com> has
+> > contributed lots of fixes and suggestions as well. Also thanks to
+> > Paul E. McKenney <paulmck@linux.vnet.ibm.com> for reviewing RCU usage
+> > and getting rid of the data allocation fallback deadlock.
 > 
-> most of the -tip topics (there are 75 of them currently) are present in 
-> linux-next - about ~70% of all -tip commits are in linux-next already. 
-> The stuff that is not in linux-next yet is either because it's: 
-> miscellany fixes (i.e. intentionally grabbed out-of-tree to make our 
-> tests work better), not cooked enough yet, or because we are still 
-> working it out - tip is less than a month old still.
-> 
-> in general the rule is that if there's anything we want to push 
-> upstream, it will show up in linux-next.
+> Looks much improved!!!  A few suggestions for header comments, and
+> there appears to be a leftover memory barrier that should now be
+> removed.  With these changes:
 
-I don't think it's a good idea for you guys to be off working on 2.6.28
-material when we're trying to stabilise 2.6.25, 2.6.26 and preparing
-for 2.6.27.
+Thanks Paul, I added the three extra comments to the kerneldoc for those
+functions. And you are right about write ordering memory barrier, we
+don't need that anymore.
 
-What's especially regrettable is that, afaik, you are expending testing
-resources on a tree which nobody will ever run rather than upon the
-tree which everyone _will_ run :(  We'd all be better off if that testing
-was being performed against linux-next.  Or at least some (most) of it.
+-- 
+Jens Axboe
 
-
-ho hum.
-
-Bisecting: 23 revisions left to test after this
-[919b0a2702e5a0284094f63215da65539f6ef692] Merge branch 'x86/ptemask' into auto-x86-next
-
-No -mm today...
