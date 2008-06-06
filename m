@@ -1,77 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbYFFMyB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756737AbYFFMyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755952AbYFFMyB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 08:54:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300AbYFFMxu
+	id S1756737AbYFFMyY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 08:54:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYFFMxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 08:53:50 -0400
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:32184 "HELO
+	Fri, 6 Jun 2008 08:53:51 -0400
+Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:32187 "HELO
 	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751498AbYFFMxt (ORCPT
+	by vger.kernel.org with SMTP id S1752016AbYFFMxt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 6 Jun 2008 08:53:49 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=OHjmNOzcWlvBoVEtv1AIHns84qeMvk3Kut2xKcGqGehRC7O2O7UhEqIS/CEvOPgt65xVcIrzrg1d+u4WETEsjcZb5wLnQmIWLEpPAf/tb/MJb6WY2zFicBxNTiDNhA+du//4dew7bBKP0MEBfl+ktwS6cF7sBCLpxk2zVHw8hOM=  ;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=o63d8HunSFSFfNhuxcorpFw65tkzT9fZd4p0+LLPRD7aJDDAwomdFwafhnjdyHfYMOscAzwyRFiNU0fu8v5PrKAfpMKfuLiQ3X9cXqzEidbRj9I8fh0UTU6wYotvRDfMOvgrrxnEu0X/u4VG3pp4SlPuZA58laIskRo6aHlF3sA=  ;
 X-YMail-OSG: Pex4baMVM1lNSXhkxFXTZKmC_x0bIELT5SGPOLv0iX3uycCYApeXh5RRy3cj9kfSL9TpHmOe3Ea_MsP.HxssAANgBRIsY1xpOxTZGhP832gtd5WDxi3izOnHqljGlj7nmWY-
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 2.6.26-rc5] make HPET_RTC_IRQ track HPET_EMULATE_RTC
-Date: Thu, 5 Jun 2008 22:41:44 -0700
+To: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+Subject: Re: Locking in the (now generic) GPIO infrastructure?
+Date: Fri, 6 Jun 2008 05:53:47 -0700
 User-Agent: KMail/1.9.9
-Cc: lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>
+Cc: LAK <linux-arm-kernel@lists.arm.linux.org.uk>,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>
+References: <c384c5ea0806040400j35236d5fo3854ce2ed30cd755@mail.gmail.com>
+In-Reply-To: <c384c5ea0806040400j35236d5fo3854ce2ed30cd755@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Message-Id: <200806052241.44713.david-b@pacbell.net>
+Message-Id: <200806060553.48057.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Brownell <dbrownell@users.sourceforge.net>
+On Wednesday 04 June 2008, Leon Woestenberg wrote:
+> include/asm-arm/arch-ixp4xx/platform.h:
+> static inline void gpio_line_set(u8 line, int value)
+> {
+>         if (value == IXP4XX_GPIO_HIGH)
+>             *IXP4XX_GPIO_GPOUTR |= (1 << line);
+>         else if (value == IXP4XX_GPIO_LOW)
+>             *IXP4XX_GPIO_GPOUTR &= ~(1 << line);
+> }
+> 
+> Under a Linux kernel where multiple drivers are accessing GPIO, the
+> latter does not seem safe against preemption (assuming the memory
+> read-modify-write is not atomic).
+> 
+> Shouldn't GPIO access be protected against concurrent access here?
 
-More Kconfig tweaks related to the legacy PC RTC code:
+Well, against an IRQ in the middle of those read/modify/write
+sequences hidden by the "|=" and "&=" syntax.  Last I knew,
+no XScale CPUs support on-chip SMP.
 
- - Describe the legacy PC RTC driver as such ... it's never quite
-   been clear that this driver is for PC RTCs, and now it's fair
-   to call this the "legacy" driver.
 
- - Force it to understand about HPET stealing its IRQs ... kernel
-   code does this always when HPET is in use, there should be no
-   option for users to goof up the config.
+> Documentation/gpio.txt does not really mention the locking mechanism
+> assumed to modify GPIO lines.
 
-This seems to fix kernel bugzilla #10729.
+That function isn't part of the GPIO interface, despite
+its gpio_* prefix, so that's not relevant.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- drivers/char/Kconfig |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+It resembles gpio_set_value() though.  That can use at
+most spinlocks to establish its atomicity guarantee; it's
+described as "spinlock-safe", and in distinction to the
+gpio_set_value_cansleep() call which could use a mutex or
+other sleeping synch primitive.
 
---- a/drivers/char/Kconfig	2008-05-24 11:57:49.000000000 -0700
-+++ b/drivers/char/Kconfig	2008-05-24 12:08:55.000000000 -0700
-@@ -749,7 +749,7 @@ config NVRAM
- if RTC_LIB=n
- 
- config RTC
--	tristate "Enhanced Real Time Clock Support"
-+	tristate "Enhanced Real Time Clock Support (legacy PC RTC driver)"
- 	depends on !PPC && !PARISC && !IA64 && !M68K && !SPARC && !FRV \
- 			&& !ARM && !SUPERH && !S390 && !AVR32
- 	---help---
-@@ -1036,9 +1036,9 @@ config HPET
- 	  non-periodic and/or periodic.
- 
- config HPET_RTC_IRQ
--	bool "HPET Control RTC IRQ" if !HPET_EMULATE_RTC
--	default n
--	depends on HPET
-+	bool
-+	default HPET_EMULATE_RTC
-+	depends on RTC && HPET
- 	help
- 	  If you say Y here, you will disable RTC_IRQ in drivers/char/rtc.c. It
- 	  is assumed the platform called hpet_alloc with the RTC IRQ values for
