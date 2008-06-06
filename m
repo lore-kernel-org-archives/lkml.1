@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755594AbYFFKKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755880AbYFFKL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755594AbYFFKKw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 06:10:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbYFFKKm
+	id S1755880AbYFFKL7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 06:11:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbYFFKLu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 06:10:42 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36868 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753580AbYFFKKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 06:10:41 -0400
-Date: Fri, 6 Jun 2008 12:10:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Mike Travis <travis@sgi.com>
-Subject: Re: linux-next: Tree for June 5
-Message-ID: <20080606101016.GC9490@elte.hu>
-References: <20080605175217.cee497f3.sfr@canb.auug.org.au> <20080605195604.41623687.akpm@linux-foundation.org> <20080606071707.GB9708@elte.hu> <20080606002957.6329a0ec.akpm@linux-foundation.org> <20080606024811.70db9ab2.akpm@linux-foundation.org> <20080606025413.3772f21e.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080606025413.3772f21e.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 6 Jun 2008 06:11:50 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:43951 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751571AbYFFKLt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 06:11:49 -0400
+Date: Fri, 6 Jun 2008 12:11:19 +0200
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Manuel Lauss <mano@roarinelk.homelinux.net>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+       sshtylyov@ru.mvista.com
+Subject: Re: [PATCH 0/9] au1xmmc updates #3
+Message-ID: <20080606121119.64ee6d18@mjolnir.drzeus.cx>
+In-Reply-To: <20080606071831.GC16498@roarinelk.homelinux.net>
+References: <20080519080339.GA21985@roarinelk.homelinux.net>
+	<20080605230923.0268dd23@mjolnir.drzeus.cx>
+	<20080606071831.GC16498@roarinelk.homelinux.net>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.2; i386-redhat-linux-gnu)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
+X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-495-1212746790-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+--=_freyr.drzeus.cx-495-1212746790-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-> > Author: Mike Travis <travis@sgi.com>  2008-05-12 12:21:13
-> > Committer: Thomas Gleixner <tglx@linutronix.de>  2008-05-23 09:08:00
-> > Parent: a9ad585c8a18f7ba754b85f5786976609b9d7d29 (x86: remove the static 256k node_to_cpumask_map)
-> > Branch: 
-> > Follows: v2.6.26-rc2
-> > Precedes: next-20080526
-> 
-> 29657a44f8660acd8751d7e9f5aac06ec8633481
->    x86: cleanup early per cpu variables/accesses v4
+On Fri, 6 Jun 2008 09:18:31 +0200
+Manuel Lauss <mano@roarinelk.homelinux.net> wrote:
 
-hm, these commits have not caused problems in testing before. Mike 
-Cc:-ed.
+> >=20
+> > The role of maintainer is vacant if you want it. *nudge* ;)
+>=20
+>=20
+> I'll do it as long as I have hardware or you find someone better.
+>=20
 
-	Ingo
+Great. Please include a patch for the MAINTAINERS file in your next set
+then.
+
+Rgds
+Pierre
+
+--=_freyr.drzeus.cx-495-1212746790-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkhJDUwACgkQ7b8eESbyJLhm0ACcCjGJ8INZM1goPpREsTU3SXyW
+KiAAnRSVanS24WeW35qeaw6M0d4/6nCe
+=yeHp
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-495-1212746790-0001-2--
