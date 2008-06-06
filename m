@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763487AbYFFRLh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762947AbYFFRPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763487AbYFFRLh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 13:11:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbYFFRL1
+	id S1762947AbYFFRPg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 13:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754858AbYFFRP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 13:11:27 -0400
-Received: from linode.ducksong.com ([64.22.125.164]:56950 "EHLO
-	linode.ducksong.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753066AbYFFRL0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 13:11:26 -0400
-Subject: Re: [fixed] [patch] Re: [bug] stuck localhost TCP connections,
-	v2.6.26-rc3+
-From: Patrick McManus <mcmanus@ducksong.com>
-To: Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       peterz@infradead.org, LKML <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>, rjw@sisk.pl,
-       Andrew Morton <akpm@linux-foundation.org>, johnpol@2ka.mipt.ru
-In-Reply-To: <Pine.LNX.4.64.0806061248410.16829@wrl-59.cs.helsinki.fi>
-References: <20080603094057.GA29480@elte.hu>
-	 <Pine.LNX.4.64.0806032245490.3474@wrl-59.cs.helsinki.fi>
-	 <Pine.LNX.4.64.0806040052270.3474@wrl-59.cs.helsinki.fi>
-	 <20080603.150344.145518113.davem@davemloft.net>
-	 <Pine.LNX.4.64.0806040208350.7315@wrl-59.cs.helsinki.fi>
-	 <20080605142244.GA19216@elte.hu>
-	 <Pine.LNX.4.64.0806052059380.31672@wrl-59.cs.helsinki.fi>
-	 <Pine.LNX.4.64.0806052355420.2522@wrl-59.cs.helsinki.fi>
-	 <1212708571.19522.10.camel@tng>
-	 <Pine.LNX.4.64.0806061248410.16829@wrl-59.cs.helsinki.fi>
-Content-Type: text/plain
-Date: Fri, 06 Jun 2008 13:11:33 -0400
-Message-Id: <1212772293.23706.22.camel@tng>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Jun 2008 13:15:28 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55344 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753956AbYFFRP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 13:15:27 -0400
+Date: Fri, 6 Jun 2008 19:15:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Mike Travis <travis@sgi.com>
+Subject: Re: linux-next: Tree for June 5
+Message-ID: <20080606171511.GC18524@elte.hu>
+References: <20080605175217.cee497f3.sfr@canb.auug.org.au> <20080605195604.41623687.akpm@linux-foundation.org> <20080606071707.GB9708@elte.hu> <20080606002957.6329a0ec.akpm@linux-foundation.org> <20080606024811.70db9ab2.akpm@linux-foundation.org> <20080606035413.37f340ef.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080606035413.37f340ef.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> This Ingo's testcase should anyway be quite "simple", I mean that distcc 
-> shouldn't do anything unexpected in a sense it shouldn't abort the flows 
-> by not sending data, close the listening socket or other things like that.
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> 	    x86: remove the static 256k node_to_cpumask_map
 > 
+> crash, as described earlier.
+> 
+> I don't know what happened to that early exception - it didn't come back.
 
-maybe - I've noted that I can get the distcc server to crash with just a
-little fuzz (telnet to it and close the telnet) - but it is true I
-haven't seen anything odd using the distcc client.
+hm, early exception, there's one commit i can think of right now:
 
-Anyhow, my news is that using rc5 I have managed to reproduce it on
-localhost - so it isn't just ingo anymore ! ;)
+ # tip/x86/xen: b20aecc: xen: fix early bootup crash on native hardware
 
-I didn't have a 16 cpu machine at my disposal, so I was concerned I
-wouldn't be able to make it happen - but I setup a 64 bit kvm image with
--smp 4, running on my core2-duo and created a makefile with 3 src files
-that I just compiled as "while true; do make -j3 all; done" - the
-makefile uses distcc to localhost and has intentionally broken
-dependencies so it just keeps recompiling stuff. The input files are
-approximately 135k, 98k, and 16k after running gcc -E on them (which I
-what I assume distcc does before putting them down the socket).
+but that got propagated to linux-next:
 
-On rc5 I could get the lockup in under 20 minutes.. usually 10. I think
-I did it 4 times. My compile test is probably a better trigger than the
-kernel compile because the distcc connects are never staggered like they
-would be in a large directory of files. (3 files, -j4).
+ # linux-next: b20aecc: xen: fix early bootup crash on native hardware
 
-When I apply the locking patch you (Ilpo) wrote, I cannot reproduce the
-error at all in the first 90 minutes of testing. I'll let the test run
-and update the list.
-
-I'm holding out hope that Ingo's report did not have the locking patch
-on the distcc server end - because it certainly makes a difference for 
-me.
-
--Patrick
-
+	Ingo
