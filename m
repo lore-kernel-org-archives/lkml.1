@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756825AbYFFNol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757257AbYFFNsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756825AbYFFNol (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 09:44:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754520AbYFFNoa
+	id S1757257AbYFFNsV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 09:48:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbYFFNsO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 09:44:30 -0400
-Received: from ik-out-1112.google.com ([66.249.90.181]:18531 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750930AbYFFNo3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 09:44:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=gCQ9rhzROgXw05EjbReYRStZPbE5mM77vm8g+BRSm913lzD35QkoXYjzf5ZRPbKkhQ
-         holYl+ItBnykBjTqkR2BWQpUIvM2k84bmzqHbSichHTzrb1upBcE3OBlLolMEo0I7A5c
-         SswtROONkv4fOGxSeDkTjhPOaYvXt0ch3nzQs=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch 2.6.26-rc5] make HPET_RTC_IRQ track HPET_EMULATE_RTC
-Date: Fri, 6 Jun 2008 16:44:23 +0300
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <200806052241.44713.david-b@pacbell.net>
-In-Reply-To: <200806052241.44713.david-b@pacbell.net>
+	Fri, 6 Jun 2008 09:48:14 -0400
+Received: from aybabtu.com ([69.60.117.155]:42646 "EHLO aybabtu.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751615AbYFFNsN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 09:48:13 -0400
+X-Greylist: delayed 2284 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Jun 2008 09:48:13 EDT
+Date: Fri, 6 Jun 2008 15:09:36 +0200
+From: Robert Millan <rmh@aybabtu.com>
+To: Andres Salomon <dilinger@queued.net>
+Cc: Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, mingo@redhat.com,
+       "H. Peter Anvin" <hpa@zytor.com>, tglx@linutronix.de
+Subject: Re: [PATCH] OLPC: pci: fix up PCI stuff so that PCI_GOANY supports OLPC
+Message-ID: <20080606130936.GA18193@thorin>
+References: <20080605152914.6f4ca839@ephemeral> <20080606110549.GA5396@elf.ucw.cz> <20080606084633.65f69d73@ephemeral>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200806061644.23449.maximlevitsky@gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080606084633.65f69d73@ephemeral>
+Organization: free as in freedom
+X-Message-Flag: Worried about Outlook viruses? Switch to Thunderbird! www.mozilla.com/thunderbird
+X-Debbugs-No-Ack: true
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 6 June 2008 08:41:44 David Brownell wrote:
-> From: David Brownell <dbrownell@users.sourceforge.net>
+On Fri, Jun 06, 2008 at 08:46:33AM -0400, Andres Salomon wrote:
+> On Fri, 6 Jun 2008 13:05:49 +0200
+> Pavel Machek <pavel@suse.cz> wrote:
 > 
-> More Kconfig tweaks related to the legacy PC RTC code:
+> > On Thu 2008-06-05 15:29:14, Andres Salomon wrote:
+> > > Previously, one would have to specifically choose CONFIG_OLPC and
+> > > CONFIG_PCI_GOOLPC in order to enable PCI_OLPC.  That doesn't really
+> > > work for distro kernels, so this patch allows one to choose
+> > 
+> > How do distros work on OLPC, anyway? It lacks normal BIOS, so you
+> > can't really use GRUB, right?
+> > 								Pavel
 > 
+> I believe Robert was actually working on grub support.
 
+The OLPC port of GRUB is mostly complete now.  There's a problem with
+finding the boot drive though (I'm working on that atm).  Other details
+at http://grub.enbug.org/OLPC
 
-Hi,
+As for the BIOS dependency, GRUB 2 is very portable so it wasn't a problem
+(we used the existing keyboard driver from the Coreboot port, and the OFW
+client framework we already had for powerpc).
 
-Remember long ago I had a discussion with you about HPET that
-steals RTC irq in 'legacy replacement' mode, and rtc driver thus
-implements rtc on 'top' of hpet.
+> I thought it made
+> little sense within the context of OFW, but if it is a requirement to make
+> installers happy, so be it.
 
-New rtc-cmos driver doesn't do this emulation, thus it isn't compatible
-with hpet driver.
+Some might find it practical to have the GRUB menu & update-grub to autobuild
+it :-)
 
-But there is a solution,  I didn't agree with firstly, but then I did, and
-I do agree now, and that to put hpet in normal mode.
+-- 
+Robert Millan
 
-What happened with patches that put hpet in normal independent mode?
-
-Best regards,
-	Maxim Levitsky
+<GPLv2> I know my rights; I want my phone call!
+<DRM> What good is a phone call… if you are unable to speak?
+(as seen on /.)
