@@ -1,112 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759962AbYFFOy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759613AbYFFO4j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759962AbYFFOy6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 10:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756202AbYFFOyt
+	id S1759613AbYFFO4j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 10:56:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756221AbYFFO4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 10:54:49 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:53367 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754063AbYFFOys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 10:54:48 -0400
-Message-ID: <48494FB6.1060509@sgi.com>
-Date: Fri, 06 Jun 2008 07:54:46 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 6 Jun 2008 10:56:31 -0400
+Received: from mailservice.tudelft.nl ([130.161.131.5]:23228 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753010AbYFFO4a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 10:56:30 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -8.389
+Message-ID: <48495017.8040003@tudelft.nl>
+Date: Fri, 06 Jun 2008 16:56:23 +0200
+From: Eric Piel <E.A.B.Piel@tudelft.nl>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.14) Gecko/20080504 Mandriva/2.0.0.14-1mdv2009.0 (2009.0) Thunderbird/2.0.0.14 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for June 5
-References: <20080605175217.cee497f3.sfr@canb.auug.org.au>	 <20080606002957.6329a0ec.akpm@linux-foundation.org>	 <20080606024811.70db9ab2.akpm@linux-foundation.org>	 <20080606035413.37f340ef.akpm@linux-foundation.org>	 <20080606115759.GA29321@elte.hu>	 <19f34abd0806060533x6d3ff66tc29306143103fc40@mail.gmail.com>	 <48493CBD.1000202@sgi.com>	 <19f34abd0806060650q203bef48rd3b20c0cabec4774@mail.gmail.com>	 <19f34abd0806060707x7570c835u4b1837b54dfa36ba@mail.gmail.com>	 <484947A9.5050804@sgi.com> <19f34abd0806060736m10424455kfbc3e6272d18646e@mail.gmail.com> <48494CA2.40102@sgi.com> <48494EE0.3030408@sgi.com>
-In-Reply-To: <48494EE0.3030408@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Pau Oliva Fora <pau@eslack.org>
+Cc: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>,
+       Jonathan Cameron <jic23@cam.ac.uk>, Jean Delvare <khali@linux-fr.org>,
+       Andrew Morton <akpm@osdl.org>, Torokhov <dmitry.torokhov@gmail.com>,
+       Burman <burman.yan@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       HWMON <lm-sensors@lm-sensors.org>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Pavel Machek <pavel@suse.cz>, Yan@ATrpms.net, Dmitry@ATrpms.net,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [lm-sensors] [PATCH 2.6.25.4] hwmon: HP Mobile Data Protection
+ System 3D ACPI driver -- please review!
+References: <1212235533.3815.5.camel@localhost>	<4846EBF5.2030406@tremplin-utc.net>	<20080604225830.1dff64fc@hyperion.delvare>	<20080604230510.GB30475@elf.ucw.cz>	<484728B2.1000209@tremplin-utc.net> <20080605082950.6957f1a2@hyperion.delvare> <4847B415.2080708@cam.ac.uk> <48484DD6.3050706@tremplin-utc.net> <4848683E.4070709@eslack.org>
+In-Reply-To: <4848683E.4070709@eslack.org>
+Content-Type: multipart/mixed;
+ boundary="------------040408070907010401070004"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> Mike Travis wrote:
->> Vegard Nossum wrote:
->>> On Fri, Jun 6, 2008 at 4:20 PM, Mike Travis <travis@sgi.com> wrote:
->>>> Vegard Nossum wrote:
->>>>> On Fri, Jun 6, 2008 at 3:50 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
->>>>>> On Fri, Jun 6, 2008 at 3:33 PM, Mike Travis <travis@sgi.com> wrote:
->>>>>>> Vegard Nossum wrote:
->>>>>>>> I reproced it with gc 4.1.2. I think the error is somewhere in kernel/sched.c.
->>>>>>>>
->>>>>>>> static int __build_sched_domains(const cpumask_t *cpu_map,
->>>>>>>>                                  struct sched_domain_attr *attr)
->>>>>>>> {
->>>>>>>> ...
->>>>>>>>         for (i = 0; i < MAX_NUMNODES; i++) {
->>>>>>>> ...
->>>>>>>>                 sg = kmalloc_node(sizeof(struct sched_group), GFP_KERNEL, i);
->>>>>>>> ...
->>>>>>>>
->>>>>>>> This code is calling into the allocator with a spurious value of i,
->>>>>>>> which causes SLAB to use an index (of 4 in my case) that is out of
->>>>>>>> bounds for its nodelist array (at least it hasn't been initialized).
->>>>>>>>
->>> ...
->>>
->>>>> The error is of course that the node masks for nodes > nr_node_ids are
->>>>> not valid. While this function ignores that:
->>>>>
->>>>> cpumask_t *_node_to_cpumask_ptr(int node)
->>>>> {
->>>>>         if (node_to_cpumask_map == NULL) {
->>>>>                 printk(KERN_WARNING
->>>>>                         "_node_to_cpumask_ptr(%d): no node_to_cpumask_map!\n",
->>>>>                         node);
->>>>>                 dump_stack();
->>>>>                 return &cpu_online_map;
->>>>>         }
->>>>>         return &node_to_cpumask_map[node];
->>>>> }
->>>>> EXPORT_SYMBOL(_node_to_cpumask_ptr);
->>>>>
->>>>> Notice the return statement. It needs to check if node < nr_node_ids.
->>>>>
->>> ...
->>>
->>>> Thanks, yes I had that some after thought.  It should check the node
->>>> index if CONFIG_DEBUG_PER_CPU_MAPS is enabled.  One gotcha is that
->>>> nr_node_ids is intialized to MAX_NUMNODES until setup_node_to_cpumask_map()
->>>> sets it to the correct value.  So uses before that should be caught by
->>>> the earlier check.
->>> I think it should always check the node index. The code in
->>> kernel/sched.c (see above) calls node_to_cpumask(i) on nodes 0 < i <
->>> MAX_NUMNODES and it WILL use invalid pointers. Or should
->>> kernel/sched.c be changed to use nr_node_ids instead of MAX_NUMNODES?
->>> I believe there are more places that do this than just sched.c.
->> Yes, using MAX_NUMNODES is usually incorrect (the same for NR_CPUS).
->> When I originally submitted the patch I searched for all usages to
->> make sure they were correct.  Unfortunately, later changes might not
->> have been validated.  (Hmm, maybe adding to checkpatch.pl a similar
->> warning as it now does for NR_CPUS...?)
->>
->>> I have attached two patches. The sched one fixes Andrew's boot
->>> problem. The x86 one is untested, but I believe it is better to BUG
->>> than silently corrupt some arbitrary memory. (Then the callers can be
->>> found easily and fixed at least.)
->> Andrew (or maybe it was Ingo) had suggested that instead of BUG use
->> dump_stack() and continue whenever possible.  In this case returning
->> an empty cpumask would be correct.
->>
->> Thanks,
->> Mike
-> 
-> Aha, here's the missing patch:
-> 
-> a953e4597abd51b74c99e0e3b7074532a60fd031
-> 
+This is a multi-part message in MIME format.
+--------------040408070907010401070004
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Oops, message got away from me prematurely... ;-)
+Pau Oliva Fora wrote:
+> Here's an i2c version of the driver for the LIS3LV02DL accelerometer,
+> please try to combine it too, so we'll end up having ACPI, SPI and I2C.
+Whaoo, you went fast!
+As there is a dmi_match, that shouldn't be too hard to incorporate it 
+nicely :-)
 
-Ingo - can we push this from tip to linux-next?
+BTW, do you really need the invert_x and invert_y and swap_xy 
+parameters? Don't all the HTC shift laptops have the sensors soldered 
+the same way? We've worked hard to remove those parameters in mdps ;-)
 
-Thanks,
-Mike
+See you,
+Eric
+
+
+--------------040408070907010401070004
+Content-Type: text/x-vcard; charset=utf-8;
+ name="E_A_B_Piel.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="E_A_B_Piel.vcf"
+
+begin:vcard
+fn;quoted-printable:=C3=89ric Piel
+n;quoted-printable:Piel;=C3=89ric
+org:Technical University of Delft;Software Engineering Research Group
+adr:HB 08.080;;Mekelweg 4;Delft;;2628 CD;The Netherlands
+email;internet:E.A.B.Piel@tudelft.nl
+tel;work:+31 15 278 6338
+tel;cell:+31 6 2437 9135
+x-mozilla-html:FALSE
+url:http://pieleric.free.fr
+version:2.1
+end:vcard
+
+
+--------------040408070907010401070004--
