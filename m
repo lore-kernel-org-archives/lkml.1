@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbYFFKaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbYFFKeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756167AbYFFKaG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 06:30:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbYFFK3x
+	id S1755978AbYFFKeO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 06:34:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbYFFKd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 06:29:53 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50806 "EHLO
+	Fri, 6 Jun 2008 06:33:58 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48162 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753580AbYFFK3w (ORCPT
+	with ESMTP id S1752857AbYFFKd5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 06:29:52 -0400
-Date: Fri, 6 Jun 2008 11:14:00 +0100
+	Fri, 6 Jun 2008 06:33:57 -0400
+Date: Fri, 6 Jun 2008 11:18:07 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Catalin(ux) M BOIE" <catab@embedromix.ro>
-Cc: linux-kernel@vger.kernel.org, rmk+serial@arm.linux.org.uk,
-       linux-serial@vger.kernel.org
-Subject: Re: [PATCH] Add support for a no-name 4 ports multiserial card
-Message-ID: <20080606111400.1eefc4fd@core>
-In-Reply-To: <1212736393-6837-1-git-send-email-catab@embedromix.ro>
-References: <1212736393-6837-1-git-send-email-catab@embedromix.ro>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Anil kumar <anils_r@yahoo.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: blk_queue_hardsect_size 520-byte sector
+Message-ID: <20080606111807.44d0be02@core>
+In-Reply-To: <20080606075432.GH5757@kernel.dk>
+References: <339116.28290.qm@web32404.mail.mud.yahoo.com>
+	<20080606075432.GH5757@kernel.dk>
 X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -30,53 +31,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri,  6 Jun 2008 10:13:13 +0300
-"Catalin(ux) M BOIE" <catab@embedromix.ro> wrote:
+On Fri, 6 Jun 2008 09:54:33 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-> It is a no-name PCI card. I found no reference to a producer so I
-> used the fake name "PDR".
+> On Thu, Jun 05 2008, Anil kumar wrote:
+> > Hi,
+> > 
+> > Can I call blk_queue_hardsect_size in a driver and set it to 520-byte
+> > as hardware sector size.  How does the kernel and block layers take
+> > the request, will it be in multiples of 520-bytes aligned or 512 bytes
+> > aligned?
+> 
+> No, Linux only supports power-of-2 hardware block sizes I'm afraid.
 
-We don't really want to get fake names into pci_ids. I'd rather
+And only some of those - which is why we can't support CP/M disks and
+also early smartmedia stuff (128/256 byte/sector)
 
-
->  		.vendor		= PCI_VENDOR_ID_PLX,
-> +		.device		= PCI_DEVICE_ID_PLX_9050,
-> +		.subvendor	= PCI_VENDOR_ID_PLX,
-> +		.subdevice	= PCI_SUBDEVICE_ID_PDR,
-
-Either the hex or a local and obviously unknown name like ID_UNKNOWN_1
-
-
-> +	pbn_plx_pdr,
-
-_unknown1
-
->  	pbn_oxsemi,
->  	pbn_intel_i960,
->  	pbn_sgi_ioc3,
-> @@ -1186,6 +1196,13 @@ static struct pciserial_board pci_boards[] __devinitdata = {
->  		.base_baud	= 115200,
->  		.uart_offset	= 8,
->  	},
-> +	/* PDR */
-> +	[pbn_plx_pdr] = {
-
-Ditto
-
-> +	/* PDR */
-
-Ditto
-
-> +	{	PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9050,
-> +		PCI_VENDOR_ID_PLX,
-> +		PCI_SUBDEVICE_ID_PDR, 0, 0,
-
-Ditto
-
-
-> +#define PCI_SUBDEVICE_ID_PDR		0x1584
-> +
-
-And not in here at all.
+If you are trying to deal with 520 byte blocks that are 512 bytes file
+system data + 8 bytes of meta data then use 512 byte block sizes and put
+the meta-data somewhere else or provide a different way to access it  -
+eg ATA uses 512 byte sectors for normal ATA but the sg_io() ioctl path
+allows the issuing of commands like READ_LONG for specific cases where
+the additional meta data is needed.
 
 Alan
