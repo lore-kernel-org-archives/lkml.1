@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756674AbYFFKgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755275AbYFFKgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756674AbYFFKgF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 06:36:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbYFFKfy
+	id S1755275AbYFFKgd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 06:36:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbYFFKgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 06:35:54 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48178 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753941AbYFFKfy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 06:35:54 -0400
-Date: Fri, 6 Jun 2008 11:09:28 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Chris Vine <chris@cvine.freeserve.co.uk>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: pppd and 2.6.25 serial driver
-Message-ID: <20080606110928.2e034c26@core>
-In-Reply-To: <20080605222355.be299fff.akpm@linux-foundation.org>
-References: <20080601215621.256db193@boulder.homenet>
-	<20080605222355.be299fff.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Jun 2008 06:36:21 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:9626 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754617AbYFFKgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 06:36:20 -0400
+Date: Fri, 6 Jun 2008 12:36:17 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Anil kumar <anils_r@yahoo.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: blk_queue_hardsect_size 520-byte sector
+Message-ID: <20080606103616.GO5757@kernel.dk>
+References: <339116.28290.qm@web32404.mail.mud.yahoo.com> <20080606075432.GH5757@kernel.dk> <20080606111807.44d0be02@core>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080606111807.44d0be02@core>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > The serial driver in 2.6.24.7 works correctly, and the good news is
-> > that 2.6.26-rc2 also works fine.
-> > 
+On Fri, Jun 06 2008, Alan Cox wrote:
+> On Fri, 6 Jun 2008 09:54:33 +0200
+> Jens Axboe <jens.axboe@oracle.com> wrote:
 > 
-> Fun.  Presumably that means there's some serial fix which we forgot
-> to backport.  Or it isn't in 2.6.25.x yet.
+> > On Thu, Jun 05 2008, Anil kumar wrote:
+> > > Hi,
+> > > 
+> > > Can I call blk_queue_hardsect_size in a driver and set it to 520-byte
+> > > as hardware sector size.  How does the kernel and block layers take
+> > > the request, will it be in multiples of 520-bytes aligned or 512 bytes
+> > > aligned?
+> > 
+> > No, Linux only supports power-of-2 hardware block sizes I'm afraid.
+> 
+> And only some of those - which is why we can't support CP/M disks and
+> also early smartmedia stuff (128/256 byte/sector)
 
-No relevant changes, and the 2.6.26 stuff isn't a trivial backport or
-relevant either that I can see. Also it seems to work for everyone else
-which makes me suspicious.
+Right, should've made that clearer - Linux only really supports
+power-of-2 hw block sizes, where the size is >= 512 and <=
+PAGE_CACHE_SIZE.
 
-Alan
+-- 
+Jens Axboe
+
