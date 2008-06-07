@@ -1,20 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763022AbYFGBTZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933388AbYFGBTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763022AbYFGBTZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:19:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756607AbYFGBJ1
+	id S933388AbYFGBTq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:19:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760389AbYFGBJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:09:27 -0400
-Received: from sous-sol.org ([216.99.217.87]:42497 "EHLO sous-sol.org"
+	Fri, 6 Jun 2008 21:09:29 -0400
+Received: from sous-sol.org ([216.99.217.87]:42506 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759974AbYFGBJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 21:09:20 -0400
-Message-Id: <20080607010611.618095964@sous-sol.org>
+	id S1757627AbYFGBJW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 21:09:22 -0400
+Message-Id: <20080607010555.470605116@sous-sol.org>
 References: <20080607010215.358296706@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 06 Jun 2008 18:02:37 -0700
+Date: Fri, 06 Jun 2008 18:02:25 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Jeff Garzik <jeff@garzik.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,9 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       maximilian attems <max@stro.at>
-Subject: [patch 22/50] types.h: dont expose struct ustat to userspace
-Content-Disposition: inline; filename=types.h-don-t-expose-struct-ustat-to-userspace.patch
+       Tejun Heo <htejun@gmail.com>, matthieu.castet@parrot.com,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 10/50] libata: force hardreset if link is in powersave mode
+Content-Disposition: inline; filename=libata-force-hardreset-if-link-is-in-powersave-mode.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,49 +36,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: maximilian attems <max@stro.at>
+From: Tejun Heo <htejun@gmail.com>
 
-upstream commit: 6c7c6afbb8c0e60d32a563cae7c6889211e9d9d8
+Inhibiting link PM mode doesn't bring the link back online if it's
+already in powersave mode.  If SRST is used in these cases, libata EH
+thinks that the link is offline and fails detection.  Force hardreset
+if link is in powersave mode.
 
-<linux/types.h> can't be used together with <sys/ustat.h> because they
-both define struct ustat:
-
-    $ cat test.c
-    #include <sys/ustat.h>
-    #include <linux/types.h>
-    $ gcc -c test.c
-    In file included from test.c:2:
-    /usr/include/linux/types.h:165: error: redefinition of 'struct ustat'
-
-has been reported a while ago to debian, but seems to have been
-lost in cat fighting: http://bugs.debian.org/429064
-
-Signed-off-by: maximilian attems <max@stro.at>
-Cc: <stable@kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
- include/linux/types.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/include/linux/types.h
-+++ b/include/linux/types.h
-@@ -197,8 +197,6 @@ typedef u64 resource_size_t;
- typedef u32 resource_size_t;
- #endif
+---
+ drivers/ata/libata-core.c |   12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -3947,6 +3947,7 @@ int ata_std_prereset(struct ata_link *li
+ 	struct ata_port *ap = link->ap;
+ 	struct ata_eh_context *ehc = &link->eh_context;
+ 	const unsigned long *timing = sata_ehc_deb_timing(ehc);
++	u32 sstatus;
+ 	int rc;
  
--#endif	/* __KERNEL__ */
--
- struct ustat {
- 	__kernel_daddr_t	f_tfree;
- 	__kernel_ino_t		f_tinode;
-@@ -206,4 +204,6 @@ struct ustat {
- 	char			f_fpack[6];
- };
+ 	/* handle link resume */
+@@ -3960,6 +3961,17 @@ int ata_std_prereset(struct ata_link *li
+ 	if (ap->flags & ATA_FLAG_PMP)
+ 		ehc->i.action |= ATA_EH_HARDRESET;
  
-+#endif	/* __KERNEL__ */
++	/* if link powersave is on, force hardreset */
++	if (sata_scr_read(link, SCR_STATUS, &sstatus) == 0) {
++		u8 ipm = sstatus >> 8;
 +
- #endif /* _LINUX_TYPES_H */
++		if (ipm == 2 || ipm == 6) {
++			ata_link_printk(link, KERN_INFO, "link in powersave "
++				"mode (ipm=%d), forcing hardreset\n", ipm);
++			ehc->i.action |= ATA_EH_HARDRESET;
++		}
++	}
++
+ 	/* if we're about to do hardreset, nothing more to do */
+ 	if (ehc->i.action & ATA_EH_HARDRESET)
+ 		return 0;
 
 -- 
