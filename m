@@ -1,83 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754727AbYFGAl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755262AbYFGAoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754727AbYFGAl0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 20:41:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121AbYFGAlQ
+	id S1755262AbYFGAoZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 20:44:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbYFGAoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 20:41:16 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:35328 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751897AbYFGAlP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 20:41:15 -0400
-Subject: Re: [PATCH -mm 2/2] kprobes: add tests for register_kprobes
-From: Jim Keniston <jkenisto@us.ibm.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       David Miller <davem@davemloft.net>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <484944CA.902@redhat.com>
-References: <484944CA.902@redhat.com>
-Content-Type: text/plain
-Date: Fri, 06 Jun 2008 17:36:26 -0700
-Message-Id: <1212798986.4088.23.camel@dyn9047018139.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Jun 2008 20:44:17 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:45493 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752716AbYFGAoQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 20:44:16 -0400
+Date: Fri, 6 Jun 2008 17:44:11 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Corey Minyard <minyard@acm.org>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@redhat.com, dvhltc@us.ibm.com, niv@us.ibm.com
+Subject: Re: Recoverable MCA interrupts from NMI handlers?  IPMI and RCU?
+Message-ID: <20080607004411.GI25053@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080606152134.GA13641@linux.vnet.ibm.com> <4849A3AC.5090107@acm.org> <4849D059.1000701@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4849D059.1000701@zytor.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-06-06 at 10:08 -0400, Masami Hiramatsu wrote:
-> Add testcases for *probe batch registration (register_kprobes)
-> to kprobes sanity tests.
+On Fri, Jun 06, 2008 at 05:03:37PM -0700, H. Peter Anvin wrote:
+> Corey Minyard wrote:
+> >If you mean the IPMI driver, it does not tie into any SMI.  It 
+> >theoretically could since there's a bit for that in the watchdog timer, 
+> >but there's been no demand and I haven't looked at it.  I guess it would 
+> >be better than an NMI.
+> >
+> >If it did tie in, it would most likely just panic to get useful 
+> >information out before the watchdog reset the system.
 > 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> CC: Jim Keniston <jkenisto@us.ibm.com>
-> CC: David Miller <davem@davemloft.net>
-> ---
->  ...
-> +
-> +static int test_kprobes(void)
-> +{
-> +	int ret;
-> +	struct kprobe *kps[2] = {&kp, &kp2};
+> The main reason I could see wanting to use SMI would be as a debugging 
+> tool, since SMI makes the entire state of the system available at a low 
+> level; however, trying to interact with the state of the kernel at this 
+> priority level seems beyond the pale in terms of complexity.
 
-preh_val and posth_val are being reused after test_kprobe(), which sets
-them to non-zero values.  Seems like you want to reinitialize them here
-as well as below.
+Works for me!  ;-)
 
-Ditto jph_val for jprobes and krph_val for kretprobes.
-
-Ack otherwise.
-Jim
-
-+
-> +	ret = register_kprobes(kps, 2);
-> +	if (ret < 0) {
-> +		printk(KERN_ERR "Kprobe smoke test failed: "
-> +				"register_kprobes returned %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	ret = target(rand1);
-> +
-> +	if (preh_val == 0) {
-> +		printk(KERN_ERR "Kprobe smoke test failed: "
-> +				"kprobe pre_handler not called\n");
-> +		handler_errors++;
-> +	}
-> +
-> +	if (posth_val == 0) {
-> +		printk(KERN_ERR "Kprobe smoke test failed: "
-> +				"kprobe post_handler not called\n");
-> +		handler_errors++;
-> +	}
-> +
-> +	preh_val = 0;
-> +	posth_val = 0;
-> +	ret = target2(rand1);
-> ...
-
+							Thanx, Paul
