@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762500AbYFGByx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760105AbYFGCBa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762500AbYFGByx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:54:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481AbYFGByZ
+	id S1760105AbYFGCBa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 22:01:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753438AbYFGCBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:54:25 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:61449 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758815AbYFGByA (ORCPT
+	Fri, 6 Jun 2008 22:01:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54908 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752692AbYFGCBT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 21:54:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=IxoWrFbuw5Mgo/iH2LTGwsA2Mr+4mO+VuyGPrn63KHLeAojTKCTlLh3Yw+lanqdQlw
-         Zkoox8uuqKP/M7Sq8QS6fL0mjuePwAaHtpYq9YPr/HEiFUxD00zCB++4dZBNg1uxF0JZ
-         OA+IwWWN5Kqq421loi/sywvrCrHGy8uSbuYWM=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] x86: fix fail with 64g above system with numa32
-Date: Fri, 6 Jun 2008 18:54:26 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200806031025.55026.yhlu.kernel@gmail.com> <200806031935.05202.yhlu.kernel@gmail.com> <200806061443.57488.yhlu.kernel@gmail.com>
-In-Reply-To: <200806061443.57488.yhlu.kernel@gmail.com>
+	Fri, 6 Jun 2008 22:01:19 -0400
+Date: Fri, 6 Jun 2008 18:57:30 -0700
+From: Greg KH <greg@kroah.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chris Wright <chrisw@sous-sol.org>, Tejun Heo <htejun@gmail.com>,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, matthieu.castet@parrot.com,
+       Chuck Ebbert <cebbert@redhat.com>, Dave Jones <davej@redhat.com>,
+       akpm@linux-foundation.org, Chuck Wolber <chuckw@quantumlinux.com>,
+       stable@kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [patch 10/50] libata: force hardreset if link is in
+	powersave mode
+Message-ID: <20080607015730.GA15123@kroah.com>
+References: <20080607010215.358296706@sous-sol.org> <20080607010555.470605116@sous-sol.org> <alpine.LFD.1.10.0806061826420.3473@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806061854.26421.yhlu.kernel@gmail.com>
+In-Reply-To: <alpine.LFD.1.10.0806061826420.3473@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jun 06, 2008 at 06:27:15PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Fri, 6 Jun 2008, Chris Wright wrote:
+> >
+> > -stable review patch.  If anyone has any objections, please let us know.
+> > ---------------------
+> > 
+> > From: Tejun Heo <htejun@gmail.com>
+> > 
+> > Inhibiting link PM mode doesn't bring the link back online if it's
+> > already in powersave mode.  If SRST is used in these cases, libata EH
+> > thinks that the link is offline and fails detection.  Force hardreset
+> > if link is in powersave mode.
+> 
+> This isn't upstream. Maybe there's some reason it's not needed upstream, 
+> but it would be nice to know.
 
-Signed-off-by : Yinghai Lu <yhlu.kernel@gmail.com>
+To quote Tejun when he sent this patch:
+	---
+	Patch for -stable only.  Devel branch now uses hardreset by
+	default so this type of promotion logic isn't necessary anymore.
 
---- a/arch/x86/kernel/srat_32.c	2008-06-06 17:37:51.000000000 -0700
-+++ b/arch/x86/kernel/srat_32.c	2008-06-06 17:38:38.000000000 -0700
-@@ -251,7 +251,7 @@ static int __init acpi20_parse_srat(stru
-  
- 	for_each_online_node(nid) {
- 		unsigned long start = node_start_pfn[nid];
--		unsigned long end = node_end_pfn[nid];
-+		unsigned long end = min(node_end_pfn[nid],max_pfn);
- 
- 		memory_present(nid, start, end);
- 		node_remap_size[nid] = node_memmap_size_bytes(nid, start, end);
+
+thanks,
+
+greg k-h
