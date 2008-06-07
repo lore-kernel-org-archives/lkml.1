@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761776AbYFGOse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761588AbYFGOxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761776AbYFGOse (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 10:48:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760673AbYFGOsQ
+	id S1761588AbYFGOxQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 10:53:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756345AbYFGOxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 10:48:16 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:3990 "EHLO
+	Sat, 7 Jun 2008 10:53:00 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:11991 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759792AbYFGOsP (ORCPT
+	with ESMTP id S1756228AbYFGOxA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 10:48:15 -0400
-Message-ID: <484A9FAB.5090202@colorfullife.com>
-Date: Sat, 07 Jun 2008 16:48:11 +0200
+	Sat, 7 Jun 2008 10:53:00 -0400
+Message-ID: <484AA0C5.9040108@colorfullife.com>
+Date: Sat, 07 Jun 2008 16:52:53 +0200
 From: Manfred Spraul <manfred@colorfullife.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
 To: Nadia Derbey <Nadia.Derbey@bull.net>
 CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] ipc/sem.c: convert undo structures to struct list_head
-References: <200805241637.m4OGb1iL006199@mail.q-ag.de> <483EC50E.1020103@bull.net>
-In-Reply-To: <483EC50E.1020103@bull.net>
+Subject: Re: [PATCH 3/4] ipc/sem.c: convert sem_array.sem_pending to struct
+ list_head
+References: <200805241638.m4OGc4L5006320@mail.q-ag.de> <483EC693.7030808@bull.net>
+In-Reply-To: <483EC693.7030808@bull.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -28,21 +29,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Nadia Derbey wrote:
 > Manfred Spraul wrote:
->> The undo structures contain two linked lists, the
->> attached patch replaces them with generic struct list_head lists.
+>> sem_array.sem_pending is a double linked list, the attached
+>> patch converts it to struct list_head.
+>>
+>> Signed-Off-By: Manfred Spraul <manfred@colorfullife.com>
 >
-> If I'm not wrong the undo list is a singly-linked list.
-> So here we are moving from a set of 4 pointers to a set of 8 pointers.
-> It's true that this makes the code much much more readable and clear, 
-> but I was wondering if it's worth?
+> Reviewed-By: Nadia Derbey <Nadia.Derbey@bull.net>
 >
-IMHO yes: Everything is allocated on demand and memory is not that 
-expensive.
+>>
+>> @@ -438,16 +405,15 @@ static void update_queue (struct sem_array * sma)
+>>      int error;
+>>      struct sem_queue * q;
+>>  
+>> -    q = sma->sem_pending;
+>> -    while(q) {
+>> +    q = list_entry(sma->sem_pending.next, struct sem_queue, list);
+>> +    while(&q->list != &sma->sem_pending) {
+>
+> I guess here you are not using list_first_entry() because the pending 
+> requests might be empty?
+>
+Actually - no. I wasn't aware of list_first_entry().
+But:
+- Looking at list.h: list_first_entry() shouldn't be used on empty lists.
+- the loop in update_queue() is complicated enough, some open-coding 
+doesn't hurt.
 
-With regard to the asserts: I'm a big fan of asserts, I usually use them 
-to document the locking.
-Perhaps assert_spin_locked() should evalute to a nop() for 
-non-CONFIG_DEBUG builds?
+>> @@ -1194,7 +1171,6 @@ asmlinkage long sys_semtimedop(int semid, 
+>> struct sembuf __user *tsops,
+>>  
+>>      sma = sem_lock(ns, semid);
+>>      if (IS_ERR(sma)) {
+>> -        BUG_ON(queue.prev != NULL);
+>
+> Instead of removing it why not replacing the bug_ON() by a check on 
+> the queue still being linked?
+>
+The list_del() poisoning is IMHO efficient enough.
 
 --
     Manfred
