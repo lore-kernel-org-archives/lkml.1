@@ -1,117 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760704AbYFGBKF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760601AbYFGBKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760704AbYFGBKF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:10:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757046AbYFGBGl
+	id S1760601AbYFGBKd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:10:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760023AbYFGBIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:06:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59947 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758741AbYFGBGj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 21:06:39 -0400
-Date: Fri, 6 Jun 2008 18:05:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
-       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org, eric.whitney@hp.com
-Subject: Re: [PATCH -mm 15/25] Ramfs and Ram Disk pages are non-reclaimable
-Message-Id: <20080606180510.87a49e19.akpm@linux-foundation.org>
-In-Reply-To: <20080606202859.408662219@redhat.com>
-References: <20080606202838.390050172@redhat.com>
-	<20080606202859.408662219@redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Jun 2008 21:08:46 -0400
+Received: from sous-sol.org ([216.99.217.87]:42248 "EHLO sous-sol.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760579AbYFGBIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 21:08:44 -0400
+Message-Id: <20080607010610.796754560@sous-sol.org>
+References: <20080607010215.358296706@sous-sol.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 06 Jun 2008 18:02:36 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Marcin Krol <hawk@pld-linux.org>, Nick Piggin <npiggin@suse.de>
+Subject: [patch 21/50] brd: dont show ramdisks in /proc/partitions
+Content-Disposition: inline; filename=brd-don-t-show-ramdisks-in-proc-partitions.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 06 Jun 2008 16:28:53 -0400
-Rik van Riel <riel@redhat.com> wrote:
+-stable review patch.  If anyone has any objections, please let us know.
+---------------------
 
-> 
-> From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-> 
-> Christoph Lameter pointed out that ram disk pages also clutter the
-> LRU lists.  When vmscan finds them dirty and tries to clean them,
-> the ram disk writeback function just redirties the page so that it
-> goes back onto the active list.  Round and round she goes...
-> 
-> Define new address_space flag [shares address_space flags member
-> with mapping's gfp mask] to indicate that the address space contains
-> all non-reclaimable pages.  This will provide for efficient testing
-> of ramdisk pages in page_reclaimable().
-> 
-> Also provide wrapper functions to set/test the noreclaim state to
-> minimize #ifdefs in ramdisk driver and any other users of this
-> facility.
-> 
-> Set the noreclaim state on address_space structures for new
-> ramdisk inodes.  Test the noreclaim state in page_reclaimable()
-> to cull non-reclaimable pages.
-> 
-> Similarly, ramfs pages are non-reclaimable.  Set the 'noreclaim'
-> address_space flag for new ramfs inodes.
-> 
-> These changes depend on [CONFIG_]NORECLAIM_LRU.
+From: Marcin Krol <hawk@pld-linux.org>
 
-hm
+upstream commit: 53978d0a7a27eb036b9bf33c4caa06257a9dbed7
 
-> 
-> @@ -61,6 +61,7 @@ struct inode *ramfs_get_inode(struct sup
->  		inode->i_mapping->a_ops = &ramfs_aops;
->  		inode->i_mapping->backing_dev_info = &ramfs_backing_dev_info;
->  		mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER);
-> +		mapping_set_noreclaim(inode->i_mapping);
->  		inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
->  		switch (mode & S_IFMT) {
->  		default:
+In 2.6.25, ramdisk devices show up in /proc/partitions, which is a
+behaviour change from the old rd.c.  Add GENHD_FL_SUPPRESS_PARTITION_INFO,
+which was present in rd.c.
 
-That's OK.
+All kernels prior to 2.6.25 weren't displaying ramdisks in
+/proc/partitions.  Since there are many userspace tools using information
+from /proc/partitions some of them may now behave incorrectly (I didn't
+tested any though).  For example before 2.6.25 /proc/partitions was empty
+if no block devices like hard disks and such were detected by kernel.  Now
+all 16 ramdisks are always visible there.  Some software may rely on such
+information (I mean, on empty /proc/partitions).
 
-> Index: linux-2.6.26-rc2-mm1/drivers/block/brd.c
-> ===================================================================
-> --- linux-2.6.26-rc2-mm1.orig/drivers/block/brd.c	2008-05-29 16:21:04.000000000 -0400
-> +++ linux-2.6.26-rc2-mm1/drivers/block/brd.c	2008-06-06 16:06:20.000000000 -0400
-> @@ -374,8 +374,21 @@ static int brd_ioctl(struct inode *inode
->  	return error;
->  }
->  
-> +/*
-> + * brd_open():
-> + * Just mark the mapping as containing non-reclaimable pages
-> + */
-> +static int brd_open(struct inode *inode, struct file *filp)
-> +{
-> +	struct address_space *mapping = inode->i_mapping;
-> +
-> +	mapping_set_noreclaim(mapping);
-> +	return 0;
-> +}
-> +
->  static struct block_device_operations brd_fops = {
->  	.owner =		THIS_MODULE,
-> +	.open  =		brd_open,
->  	.ioctl =		brd_ioctl,
->  #ifdef CONFIG_BLK_DEV_XIP
->  	.direct_access =	brd_direct_access,
+There was quite similar situation back in 2004, and ramdisks were excluded
+back from displaying.  Thats why I called this a regression (maybe a bit
+unfortunate).  See this patch for info:
+http://kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.3-rc2/2.6.3-rc2-mm1/broken-out/nbd-proc-partitions-fix.patch
 
-But this only works for pagecache in /dev/ramN.  afaict the pagecache
-for files which are written onto that "blokk device" remain on the LRU.
-But that's OK, isn't it?  For the ramdisk driver these pages _do_ have
-backing store and _can_ be written back and reclaimed, yes?
+I also think that someone somewhere (long time ago) excluded ramdisks from
+/proc/partitions for good reasons.  It is possible that now such new
+"feature" is harmless, but I think there are more chances that someone
+will say "hey, /proc/partitions has changed, now my software doesn't work"
+then "hey where did my new 2.6.25 feature go".  nbd devices are also
+excluded, maybe for very same (unknown to me) reasons.
 
+Signed-off-by: Marcin Krol <hawk@pld-linux.org>
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+Cc: <stable@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+---
+ drivers/block/brd.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-Still, I'm unsure about the whole implementation.  We already maintain
-this sort of information in the backing_dev.  Would it not be better to
-just avoid ever putting such pages onto the LRU in the first place?
+--- a/drivers/block/brd.c
++++ b/drivers/block/brd.c
+@@ -442,6 +442,7 @@ static struct brd_device *brd_alloc(int 
+ 	disk->fops		= &brd_fops;
+ 	disk->private_data	= brd;
+ 	disk->queue		= brd->brd_queue;
++	disk->flags |= GENHD_FL_SUPPRESS_PARTITION_INFO;
+ 	sprintf(disk->disk_name, "ram%d", i);
+ 	set_capacity(disk, rd_size * 2);
+ 
 
-
-Also, I expect there are a whole host of pseudo-filesystems (sysfs?)
-which have this problem.  Does the patch address all of them?  If not,
-can we come up with something which _does_ address them all without
-having to hunt down and change every such fs?
-
-
+-- 
