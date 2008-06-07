@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765762AbYFGWBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765899AbYFGWCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765762AbYFGWBo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 18:01:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbYFGVsv
+	id S1765899AbYFGWCA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 18:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760405AbYFGVsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 17:48:51 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38945 "EHLO ogre.sisk.pl"
+	Sat, 7 Jun 2008 17:48:52 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38994 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759603AbYFGVsj convert rfc822-to-8bit (ORCPT
+	id S1759578AbYFGVsk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 17:48:39 -0400
-Cc: "Christian Casteyde" <casteyde.christian@free.fr>
+	Sat, 7 Jun 2008 17:48:40 -0400
+Cc: "Tobias Diedrich" <ranma+kernel@tdiedrich.de>
 References: <GIilET9wkhI.A.JzB.81vSIB@albercik>
 In-Reply-To: <GIilET9wkhI.A.JzB.81vSIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -18,8 +18,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <dCRO4tbfLzK.A.EiC.c2vSIB@albercik>
-Subject: [Bug #10860] total system freeze at boot with 2.6.26-rc
+Message-ID: <dCRO4tbfLzK.A.iWC.W2vSIB@albercik>
+Subject: [Bug #10862] forcedeth: lockdep warning on ethtool -s
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sat,  7 Jun 2008 22:42:57 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -33,9 +33,10 @@ The following bug entry is on the current list of known regressions
 from 2.6.25.  Please verify if it still should be listed.
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10860
-Subject		: total system freeze at boot with 2.6.26-rc
-Submitter	: Christian Casteyde <casteyde.christian@free.fr>
-Date		: 2008-06-05 12:38 (3 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10862
+Subject		: forcedeth: lockdep warning on ethtool -s
+Submitter	: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+Date		: 2008-06-01 8:37 (7 days old)
+References	: http://marc.info/?l=linux-kernel&amp;m=121230964032247&amp;w=4
 
 
