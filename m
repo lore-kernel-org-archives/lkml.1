@@ -1,149 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760818AbYFGOWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760315AbYFGOaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760818AbYFGOWy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 10:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755086AbYFGOWo
+	id S1760315AbYFGOaz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 10:30:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbYFGOaq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 10:22:44 -0400
-Received: from lucidpixels.com ([75.144.35.66]:57417 "EHLO lucidpixels.com"
+	Sat, 7 Jun 2008 10:30:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39560 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754244AbYFGOWn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 10:22:43 -0400
-Date: Sat, 7 Jun 2008 10:22:35 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
-cc: Alan Piszcz <ap@solarrain.com>
-Subject: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte
- Veliciraptors
-Message-ID: <alpine.DEB.1.10.0806071015110.23323@p34.internal.lan>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1754244AbYFGOaq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jun 2008 10:30:46 -0400
+Message-ID: <484A9B26.8080409@redhat.com>
+Date: Sat, 07 Jun 2008 10:28:54 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+To: Pierre Ossman <drzeus@drzeus.cx>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch] MMC: wbsd: initialize tasklets before requesting interrupt
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First, the original benchmarks with 6-SATA drives with fixed formatting, using
-right justification and the same decimal point precision throughout:
-http://home.comcast.net/~jpiszcz/20080607/raid-benchmarks-decimal-fix-and-right-justified/disks.html
+MMC: wbsd: initialize tasklets before requesting interrupt
 
-Now for for veliciraptors!  Ever wonder what kind of speed is possible with
-3 disk, 4,5,6,7,8,9,10-disk RAID5s?  I ran a loop to find out, each run is
-executed three times and the average is taken of all three runs per each 
-RAID5 disk set.
+With CONFIG_DEBUG_SHIRQ set we will get an interrupt as soon as we
+allocate one. Tasklets may be scheduled in the interrupt handler but
+they will be initialized after the handler returns, causing a BUG()
+in kernel/softirq.c when they run.
 
-In short? The 965 no longer does justice with faster drives, a new chipset
-and motherboard are needed.  After reading or writing to 4-5 veliciraptors
-it saturates the bus/965 chipset.
+Should fix this Fedora bug report:
+https://bugzilla.redhat.com/show_bug.cgi?id=449817
 
-Here is a picture of the 12 veliciraptors I tested with:
-http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-veliciraptors/raptors.jpg
+Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
 
-Here are the bonnie++ results:
-http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-veliciraptors/veliciraptor-raid.html
+--- linux-2.6.25.noarch.orig/drivers/mmc/host/wbsd.c
++++ linux-2.6.25.noarch/drivers/mmc/host/wbsd.c
+@@ -1457,17 +1457,7 @@ static int __devinit wbsd_request_irq(st
+ 	int ret;
 
-For those who want the results in text:
-http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-veliciraptors/veliciraptor-raid.txt
+ 	/*
+-	 * Allocate interrupt.
+-	 */
+-
+-	ret = request_irq(irq, wbsd_irq, IRQF_SHARED, DRIVER_NAME, host);
+-	if (ret)
+-		return ret;
+-
+-	host->irq = irq;
+-
+-	/*
+-	 * Set up tasklets.
++	 * Set up tasklets. Must be done before requesting interrupt.
+ 	 */
+ 	tasklet_init(&host->card_tasklet, wbsd_tasklet_card,
+ 			(unsigned long)host);
+@@ -1480,6 +1470,15 @@ static int __devinit wbsd_request_irq(st
+ 	tasklet_init(&host->finish_tasklet, wbsd_tasklet_finish,
+ 			(unsigned long)host);
 
-System used, same/similar as before:
-Motherboard: Intel DG965WH
-Memory: 8GiB
-Kernel: 2.6.25.4
-Distribution: Debian Testing x86_64
-Filesystem: XFS with default mkfs.xfs parameters [auto-optimized for SW RAID]
-Mount options: defaults,noatime,nodiratime,logbufs=8,logbsize=262144 0 1
-Chunk size: 1024KiB
-RAID5 Layout: Default (left-symmetric)
-Mdadm Superblock used: 0.90
-
-Optimizations used (last one is for the CFQ scheduler), it improves 
-performance by a modest 5-10MiB/s:
-http://home.comcast.net/~jpiszcz/raid/20080601/raid5.html
-
-# Tell user what's going on.
-echo "Optimizing RAID Arrays..."
-
-# Define DISKS.
-cd /sys/block
-DISKS=$(/bin/ls -1d sd[a-z])
-
-# Set read-ahead.
-# > That's actually 65k x 512byte blocks so 32MiB
-echo "Setting read-ahead to 32 MiB for /dev/md3"
-blockdev --setra 65536 /dev/md3
-
-# Set stripe-cache_size for RAID5.
-echo "Setting stripe_cache_size to 16 MiB for /dev/md3"
-echo 16384 > /sys/block/md3/md/stripe_cache_size
-
-# Disable NCQ on all disks.
-echo "Disabling NCQ on all disks..."
-for i in $DISKS
-do
-   echo "Disabling NCQ on $i"
-   echo 1 > /sys/block/"$i"/device/queue_depth
-done
-
-# Fix slice_idle.
-# See http://www.nextre.it/oracledocs/ioscheduler_03.html
-echo "Fixing slice_idle to 0..."
-for i in $DISKS
-do
-   echo "Changing slice_idle to 0 on $i"
-   echo 0 > /sys/block/"$i"/queue/iosched/slice_idle
-done
-
-----
-
-Order of tests:
-
-1. Create RAID (mdadm)
-
-Example:
-
-
-   if [ $num_disks -eq 3 ]; then
-     mdadm --create /dev/md3 --verbose --level=5 -n $num_disks -c 1024 -e 0.90 \
-     /dev/sd[c-e]1 --assume-clean --run
-   fi
-
-2. Run optimize script (above)
-
-See above.
-
-3. mkfs.xfs -f /dev/md3
-
-mkfs.xfs auto-optimized for the underlying devices in an mdadm SW RAID.
-
-4. Run bonnie++ as shown below 3 times, averaged:
-
-/usr/bin/time /usr/sbin/bonnie++ -u 1000 -d /x/test -s 16384 -m p34 -n 16:100000:16:64 > $HOME/test"$run"_$num_disks-disks.txt 2>&1
-
-
-----
-
-A little more info, after 4-5 dd's, I have already maxed out the performance
-of what the chipset can offer, see below:
-
-knoppix@Knoppix:~$ vmstat 1
-procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
-  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
-  1  0      0 2755556   6176 203584    0    0   153     1   25  371  3  1 84 11
-  0  0      0 2755556   6176 203588    0    0     0     0   66  257  0  0 100  0
-  0  1      0 2605400 152204 203584    0    0     0 146028  257  396  0  5 77 18
-  0  1      0 2478176 277520 203604    0    0     0 125316  345  794  1  4 75 20
-  1  0      0 2349472 403984 203592    0    0     0 119136  297  256  0  5 75 20
-  2  1      0 2117292 631172 203512    0    0     0 232336  498 1019  0  8 66 26
-  0  2      0 2014400 731968 203556    0    0     0 241472  542 2078  1 11 63 25
-  3  0      0 2013412 733756 203492    0    0     0 302104  672 2760  0 14 59 27
-  0  3      0 2013576 735624 203520    0    0     0 362524  808 3356  0 15 56 29
-  0  4      0 2039312 736728 174860    0    0   120 425484  956 4899  1 20 52 26
-  0  4      0 2050236 738508 163712    0    0     0 482868 1008 5030  1 24 46 29
-  5  3      0 2050192 737916 163756    0    0     0 531532 1175 6033  0 26 43 31
-  3  4      0 2050220 738028 163744    0    0     0 606560 1312 6664  1 32 38 30
-  1  5      0 2049432 739184 163628    0    0     0 592756 1291 7195  1 30 35 34
-  8  3      0 2049488 738868 163580    0    0     0 675228 1721 10540 1 38 30 31
-Here, ~5 raptor 300s, no more linear improvement after this:
-  4  4      0 2050048 737816 163744    0    0     0 677820 1771 10514 1 36 32 31
-  6  4      0 2048764 738612 163684    0    0     0 697640 1842 13231 1 40 27 33
++	/*
++	 * Allocate interrupt.
++	 */
++	ret = request_irq(irq, wbsd_irq, IRQF_SHARED, DRIVER_NAME, host);
++	if (ret)
++		return ret;
++
++	host->irq = irq;
++
+ 	return 0;
+ }
 
