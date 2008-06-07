@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761412AbYFGBRI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933043AbYFGBRf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761412AbYFGBRI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:17:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759474AbYFGBJS
+	id S933043AbYFGBRf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:17:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759829AbYFGBJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:09:18 -0400
-Received: from sous-sol.org ([216.99.217.87]:42436 "EHLO sous-sol.org"
+	Fri, 6 Jun 2008 21:09:20 -0400
+Received: from sous-sol.org ([216.99.217.87]:42438 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760256AbYFGBJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759447AbYFGBJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 6 Jun 2008 21:09:09 -0400
-Message-Id: <20080607010618.448461135@sous-sol.org>
+Message-Id: <20080607010634.879061944@sous-sol.org>
 References: <20080607010215.358296706@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 06 Jun 2008 18:02:45 -0700
+Date: Fri, 06 Jun 2008 18:03:01 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,9 +23,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 30/50] x86: prevent PGE flush from interruption/preemption
-Content-Disposition: inline; filename=x86-prevent-pge-flush-from-interruption-preemption.patch
+       Dan Williams <dan.j.williams@intel.com>, Neil Brown <neilb@suse.de>
+Subject: [patch 46/50] md: do not compute parity unless it is on a failed drive
+Content-Disposition: inline; filename=md-do-not-compute-parity-unless-it-is-on-a-failed-drive.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,56 +33,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Ingo Molnar <mingo@elte.hu>
+From: Dan Williams <dan.j.williams@intel.com>
 
-upstream commit: b1979a5fda7869a790f4fd83fb06c78498d26ba1
+upstream commit: c337869d95011495fa181536786e74aa2d7ff031
 
-CR4 manipulation is not protected against interrupts and preemption,
-but KVM uses smp_function_call to manipulate the X86_CR4_VMXE bit
-either from the CPU hotplug code or from the kvm_init call.
+If a block is computed (rather than read) then a check/repair operation
+may be lead to believe that the data on disk is correct, when infact it
+isn't.  So only compute blocks for failed devices.
 
-We need to protect the CR4 manipulation from both interrupts and
-preemption.
+This issue has been around since at least 2.6.12, but has become harder to
+hit in recent kernels since most reads bypass the cache.
 
-Original bug report: http://lkml.org/lkml/2008/5/7/48
-Bugzilla entry: http://bugzilla.kernel.org/show_bug.cgi?id=10642
+echo repair > /sys/block/mdN/md/sync_action will set the parity blocks to the
+correct state.
 
-This is not a regression from 2.6.25, it's a long standing and hard to
-trigger bug.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: <stable@kernel.org>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Signed-off-by: Neil Brown <neilb@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- include/asm-x86/tlbflush.h |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ drivers/md/raid5.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
---- a/include/asm-x86/tlbflush.h
-+++ b/include/asm-x86/tlbflush.h
-@@ -22,12 +22,23 @@ static inline void __native_flush_tlb(vo
- 
- static inline void __native_flush_tlb_global(void)
- {
--	unsigned long cr4 = read_cr4();
-+	unsigned long flags;
-+	unsigned long cr4;
- 
-+	/*
-+	 * Read-modify-write to CR4 - protect it from preemption and
-+	 * from interrupts. (Use the raw variant because this code can
-+	 * be called from deep inside debugging code.)
-+	 */
-+	raw_local_irq_save(flags);
-+
-+	cr4 = read_cr4();
- 	/* clear PGE */
- 	write_cr4(cr4 & ~X86_CR4_PGE);
- 	/* write old PGE again and flush TLBs */
- 	write_cr4(cr4);
-+
-+	raw_local_irq_restore(flags);
- }
- 
- static inline void __native_flush_tlb_single(unsigned long addr)
+--- a/drivers/md/raid5.c
++++ b/drivers/md/raid5.c
+@@ -1984,6 +1984,7 @@ static int __handle_issuing_new_read_req
+ 		 * have quiesced.
+ 		 */
+ 		if ((s->uptodate == disks - 1) &&
++		    (s->failed && disk_idx == s->failed_num) &&
+ 		    !test_bit(STRIPE_OP_CHECK, &sh->ops.pending)) {
+ 			set_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.pending);
+ 			set_bit(R5_Wantcompute, &dev->flags);
+@@ -2069,7 +2070,9 @@ static void handle_issuing_new_read_requ
+ 			/* we would like to get this block, possibly
+ 			 * by computing it, but we might not be able to
+ 			 */
+-			if (s->uptodate == disks-1) {
++			if ((s->uptodate == disks - 1) &&
++			    (s->failed && (i == r6s->failed_num[0] ||
++					   i == r6s->failed_num[1]))) {
+ 				pr_debug("Computing stripe %llu block %d\n",
+ 				       (unsigned long long)sh->sector, i);
+ 				compute_block_1(sh, i, 0);
 
 -- 
