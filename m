@@ -1,114 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762264AbYFGQc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762506AbYFGQrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762264AbYFGQc3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 12:32:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758843AbYFGQcX
+	id S1762506AbYFGQrS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 12:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759565AbYFGQrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 12:32:23 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:51222 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757000AbYFGQcW (ORCPT
+	Sat, 7 Jun 2008 12:47:07 -0400
+Received: from liberdade.minaslivre.org ([72.232.18.203]:44966 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757267AbYFGQrG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 12:32:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=X2FuZlMAyfAtTXcVIKC3Oiq7S68rtt42RJWg+myqcvru12ZxS/hYYLhumTKTC4Ezdb
-         17v2K1PQJQ4xYSmH6h3UTL0s6X96O6vEwZ54y+PcyoHbJcqZPYazddi67pYS3Lyjt01x
-         amY7Vza7GWcJxdRQnfiuJC306LHPS4FgKe4Rs=
-Date: Sat, 7 Jun 2008 20:32:08 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: =?us-ascii?B?PT9JU08tODg1OS0yP1E/Tj1FOW1ldGhfTT1FMXJ0b25f?= 
-	<nm127@freemail.hu>,
-       ?=@gmail.com
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: cleanups to nmi_watchdog variable
-Message-ID: <20080607163208.GC7141@cvg>
-References: <484AAD0B.1030407@freemail.hu>
+	Sat, 7 Jun 2008 12:47:06 -0400
+X-Greylist: delayed 1459 seconds by postgrey-1.27 at vger.kernel.org; Sat, 07 Jun 2008 12:47:06 EDT
+Date: Sat, 7 Jun 2008 13:22:39 -0300
+From: Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org>
+To: linux-kernel@vger.kernel.org
+Cc: Takashi Iwai <tiwai@suse.de>
+Subject: [PATCH] Correct type and description of
+	CONFIG_AC97_POWER_SAVE_DEFAULT
+Message-ID: <20080607162238.GA7893@vespa.holoscopio.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <484AAD0B.1030407@freemail.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[=?ISO-8859-2?Q?N=E9meth_M=E1rton_ - Sat, Jun 07, 2008 at 05:45:15PM +0200]
-| From: Márton Németh <nm127@freemail.hu>
-| 
-| Use NMI_NONE instead of 0. As the symbol NMI_DISABLED equals to -1,
-| the nmi_watchdog variable should also be signed.
-| 
-| Signed-off-by: Márton Németh <nm127@freemail.hu>
-| ---
-| diff -upr linux-2.6.26-rc5.orig/arch/x86/kernel/io_apic_32.c linux-2.6.26-rc5/arch/x86/kernel/io_apic_32.c
-| --- linux-2.6.26-rc5.orig/arch/x86/kernel/io_apic_32.c	2008-06-07 12:35:24.000000000 +0200
-| +++ linux-2.6.26-rc5/arch/x86/kernel/io_apic_32.c	2008-06-07 12:40:20.000000000 +0200
-| @@ -2217,7 +2217,7 @@ static inline void __init check_timer(vo
-| 
-|  	if (nmi_watchdog == NMI_IO_APIC) {
-|  		printk(KERN_WARNING "timer doesn't work through the IO-APIC - disabling NMI Watchdog!\n");
-| -		nmi_watchdog = 0;
-| +		nmi_watchdog = NMI_NONE;
-|  	}
-| 
-|  	printk(KERN_INFO "...trying to set up timer as Virtual Wire IRQ...");
-| diff -upr linux-2.6.26-rc5.orig/arch/x86/kernel/io_apic_64.c linux-2.6.26-rc5/arch/x86/kernel/io_apic_64.c
-| --- linux-2.6.26-rc5.orig/arch/x86/kernel/io_apic_64.c	2008-06-05 18:39:49.000000000 +0200
-| +++ linux-2.6.26-rc5/arch/x86/kernel/io_apic_64.c	2008-06-07 12:37:01.000000000 +0200
-| @@ -1735,7 +1735,7 @@ static inline void __init check_timer(vo
-| 
-|  	if (nmi_watchdog == NMI_IO_APIC) {
-|  		printk(KERN_WARNING "timer doesn't work through the IO-APIC - disabling NMI Watchdog!\n");
-| -		nmi_watchdog = 0;
-| +		nmi_watchdog = NMI_NONE;
-|  	}
-| 
-|  	apic_printk(APIC_VERBOSE, KERN_INFO "...trying to set up timer as Virtual Wire IRQ...");
-| diff -upr linux-2.6.26-rc5.orig/arch/x86/kernel/nmi_32.c linux-2.6.26-rc5/arch/x86/kernel/nmi_32.c
-| --- linux-2.6.26-rc5.orig/arch/x86/kernel/nmi_32.c	2008-06-05 18:39:49.000000000 +0200
-| +++ linux-2.6.26-rc5/arch/x86/kernel/nmi_32.c	2008-06-07 11:19:55.000000000 +0200
-| @@ -43,7 +43,7 @@ static cpumask_t backtrace_mask = CPU_MA
-|   */
-|  atomic_t nmi_active = ATOMIC_INIT(0);		/* oprofile uses this */
-| 
-| -unsigned int nmi_watchdog = NMI_DEFAULT;
-| +int nmi_watchdog = NMI_DEFAULT;
-|  static unsigned int nmi_hz = HZ;
-| 
-|  static DEFINE_PER_CPU(short, wd_enabled);
-| diff -upr linux-2.6.26-rc5.orig/arch/x86/kernel/nmi_64.c linux-2.6.26-rc5/arch/x86/kernel/nmi_64.c
-| --- linux-2.6.26-rc5.orig/arch/x86/kernel/nmi_64.c	2008-06-05 18:39:49.000000000 +0200
-| +++ linux-2.6.26-rc5/arch/x86/kernel/nmi_64.c	2008-06-07 11:20:00.000000000 +0200
-| @@ -43,7 +43,7 @@ static cpumask_t backtrace_mask = CPU_MA
-|  atomic_t nmi_active = ATOMIC_INIT(0);		/* oprofile uses this */
-|  static int panic_on_timeout;
-| 
-| -unsigned int nmi_watchdog = NMI_DEFAULT;
-| +int nmi_watchdog = NMI_DEFAULT;
-|  static unsigned int nmi_hz = HZ;
-| 
-|  static DEFINE_PER_CPU(short, wd_enabled);
-| diff -upr linux-2.6.26-rc5.orig/include/asm-x86/nmi.h linux-2.6.26-rc5/include/asm-x86/nmi.h
-| --- linux-2.6.26-rc5.orig/include/asm-x86/nmi.h	2008-06-05 18:40:12.000000000 +0200
-| +++ linux-2.6.26-rc5/include/asm-x86/nmi.h	2008-06-07 11:21:20.000000000 +0200
-| @@ -61,7 +61,7 @@ extern void enable_timer_nmi_watchdog(vo
-|  extern int nmi_watchdog_tick(struct pt_regs *regs, unsigned reason);
-| 
-|  extern atomic_t nmi_active;
-| -extern unsigned int nmi_watchdog;
-| +extern int nmi_watchdog;
-|  #define NMI_DISABLED    -1
-|  #define NMI_NONE	0
-|  #define NMI_IO_APIC	1
-| 
+While CONFIG_HDA_POWER_SAVE_DEFAULT is used as a timeout in seconds,
+CONFIG_AC97_POWER_SAVE_DEFAULT simply enables or disables AC97 power
+saving.
+---
+ sound/pci/Kconfig           |    6 +++---
+ sound/pci/ac97/ac97_codec.c |    6 +++++-
+ 2 files changed, 8 insertions(+), 4 deletions(-)
 
-Good catch! Actually 0 -> NMI_NONE change already in -tip tree.
-Sign/signess mark - is good to be investigated. Thanks!
-
-		- Cyrill -
+diff --git a/sound/pci/Kconfig b/sound/pci/Kconfig
+index 7e47421..fe6aad2 100644
+--- a/sound/pci/Kconfig
++++ b/sound/pci/Kconfig
+@@ -968,11 +968,11 @@ config SND_AC97_POWER_SAVE
+ 	  sysfs, too.
+ 
+ config SND_AC97_POWER_SAVE_DEFAULT
+-	int "Default time-out for AC97 power-save mode"
++	bool "Activate AC97 power-save mode by default"
+ 	depends on SND_AC97_POWER_SAVE
+ 	default 0
+ 	help
+-	  The default time-out value in seconds for AC97 automatic
+-	  power-save mode.  0 means to disable the power-save mode.
++    By default, AC97 power-save mode is not active. This option
++    activates it by default.
+ 
+ endmenu
+diff --git a/sound/pci/ac97/ac97_codec.c b/sound/pci/ac97/ac97_codec.c
+index 45fd290..0566e3a 100644
+--- a/sound/pci/ac97/ac97_codec.c
++++ b/sound/pci/ac97/ac97_codec.c
+@@ -48,7 +48,11 @@ module_param(enable_loopback, bool, 0444);
+ MODULE_PARM_DESC(enable_loopback, "Enable AC97 ADC/DAC Loopback Control");
+ 
+ #ifdef CONFIG_SND_AC97_POWER_SAVE
+-static int power_save = CONFIG_SND_AC97_POWER_SAVE_DEFAULT;
++#ifdef CONFIG_SND_AC97_POWER_SAVE_DEFAULT
++static int power_save = 1;
++#else
++static int power_save = 0;
++#endif
+ module_param(power_save, bool, 0644);
+ MODULE_PARM_DESC(power_save, "Enable AC97 power-saving control");
+ #endif
+-- 
+1.5.5.3
