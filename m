@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761654AbYFGBNH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751876AbYFGBNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761654AbYFGBNH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:13:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760715AbYFGBJB
+	id S1751876AbYFGBNh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760018AbYFGBJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:09:01 -0400
-Received: from sous-sol.org ([216.99.217.87]:42365 "EHLO sous-sol.org"
+	Fri, 6 Jun 2008 21:09:04 -0400
+Received: from sous-sol.org ([216.99.217.87]:42383 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758201AbYFGBI7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 21:08:59 -0400
-Message-Id: <20080607010603.799687966@sous-sol.org>
+	id S1760733AbYFGBJB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 21:09:01 -0400
+Message-Id: <20080607010636.182581291@sous-sol.org>
 References: <20080607010215.358296706@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 06 Jun 2008 18:02:32 -0700
+Date: Fri, 06 Jun 2008 18:03:03 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,10 +23,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Steve French <smfrench@gmail.com>, Steve French <sfrench@us.ibm.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 17/50] CIFS: Fix UNC path prefix on QueryUnixPathInfo to have correct slash
-Content-Disposition: inline; filename=cifs-fix-unc-path-prefix-on-queryunixpathinfo-to-have-correct-slash.patch
+       Dan Williams <dan.j.williams@intel.com>, Neil Brown <neilb@suse.de>
+Subject: [patch 48/50] md: fix prexor vs sync_request race
+Content-Disposition: inline; filename=md-fix-prexor-vs-sync_request-race.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,82 +33,72 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Steve French <sfrench@us.ibm.com>
+From: Dan Williams <dan.j.williams@intel.com>
 
-upstream commit: 076d8423a98659a92837b07aa494cb74bfefe77c
+upstream commit: e0a115e5aa554b93150a8dc1c3fe15467708abb2
 
+During the initial array synchronization process there is a window between
+when a prexor operation is scheduled to a specific stripe and when it
+completes for a sync_request to be scheduled to the same stripe.  When
+this happens the prexor completes and the stripe is unconditionally marked
+"insync", effectively canceling the sync_request for the stripe.  Prior to
+2.6.23 this was not a problem because the prexor operation was done under
+sh->lock.  The effect in older kernels being that the prexor would still
+erroneously mark the stripe "insync", but sync_request would be held off
+and re-mark the stripe as "!in_sync".
 
-When a share was in DFS and the server was Unix/Linux, we were sending paths of the form
-    \\server\share/dir/file
-rather than
-    //server/share/dir/file
+Change the write completion logic to not mark the stripe "in_sync" if a
+prexor was performed.  The effect of the change is to sometimes not set
+STRIPE_INSYNC.  The worst this can do is cause the resync to stall waiting
+for STRIPE_INSYNC to be set.  If this were happening, then STRIPE_SYNCING
+would be set and handle_issuing_new_read_requests would cause all
+available blocks to eventually be read, at which point prexor would never
+be used on that stripe any more and STRIPE_INSYNC would eventually be set.
 
-There was some discussion between me and jra over whether we should use
-    /server/share/dir/file
-as MS sometimes says - but the documentation for this claims it should be
-doubleslash for this type of UNC-like path format and that works, so leaving
-it as doubleslash but converting the \ to / in the the //server/share portion.
+echo repair > /sys/block/mdN/md/sync_action will correct arrays that may
+have lost this race.
 
-This gets Samba to now correctly return STATUS_PATH_NOT_COVERED when it is
-supposed to (Windows already did since the direction of the slash was not an issue
-for them).  Still need another minor change to fully enable DFS (need to finish
-some chages to SMBGetDFSRefer
-
-Signed-off-by: Steve French <sfrench@us.ibm.com>
+Cc: <stable@kernel.org>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Signed-off-by: Neil Brown <neilb@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+[chrisw: backport to 2.6.25.5]
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/cifs/inode.c |   15 +++++++++++----
- 1 file changed, 11 insertions(+), 4 deletions(-)
+ drivers/md/raid5.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- a/fs/cifs/inode.c
-+++ b/fs/cifs/inode.c
-@@ -161,12 +161,14 @@ static void cifs_unix_info_to_inode(stru
- 	spin_unlock(&inode->i_lock);
- }
+--- a/drivers/md/raid5.c
++++ b/drivers/md/raid5.c
+@@ -2621,6 +2621,7 @@ static void handle_stripe5(struct stripe
+ 	struct stripe_head_state s;
+ 	struct r5dev *dev;
+ 	unsigned long pending = 0;
++	int prexor;
  
--static const unsigned char *cifs_get_search_path(struct cifsTconInfo *pTcon,
--					const char *search_path)
-+static const unsigned char *cifs_get_search_path(struct cifs_sb_info *cifs_sb,
-+						const char *search_path)
- {
- 	int tree_len;
- 	int path_len;
-+	int i;
- 	char *tmp_path;
-+	struct cifsTconInfo *pTcon = cifs_sb->tcon;
+ 	memset(&s, 0, sizeof(s));
+ 	pr_debug("handling stripe %llu, state=%#lx cnt=%d, pd_idx=%d "
+@@ -2740,9 +2741,11 @@ static void handle_stripe5(struct stripe
+ 	/* leave prexor set until postxor is done, allows us to distinguish
+ 	 * a rmw from a rcw during biodrain
+ 	 */
++	prexor = 0;
+ 	if (test_bit(STRIPE_OP_PREXOR, &sh->ops.complete) &&
+ 		test_bit(STRIPE_OP_POSTXOR, &sh->ops.complete)) {
  
- 	if (!(pTcon->Flags & SMB_SHARE_IS_IN_DFS))
- 		return search_path;
-@@ -180,6 +182,11 @@ static const unsigned char *cifs_get_sea
- 		return search_path;
- 
- 	strncpy(tmp_path, pTcon->treeName, tree_len);
-+	if (cifs_sb->mnt_cifs_flags & CIFS_MOUNT_POSIX_PATHS)
-+		for (i = 0; i < tree_len; i++) {
-+			if (tmp_path[i] == '\\')
-+				tmp_path[i] = '/';
-+		}
- 	strncpy(tmp_path+tree_len, search_path, path_len);
- 	tmp_path[tree_len+path_len] = 0;
- 	return tmp_path;
-@@ -199,7 +206,7 @@ int cifs_get_inode_info_unix(struct inod
- 	pTcon = cifs_sb->tcon;
- 	cFYI(1, ("Getting info on %s", search_path));
- 
--	full_path = cifs_get_search_path(pTcon, search_path);
-+	full_path = cifs_get_search_path(cifs_sb, search_path);
- 
- try_again_CIFSSMBUnixQPathInfo:
- 	/* could have done a find first instead but this returns more info */
-@@ -402,7 +409,7 @@ int cifs_get_inode_info(struct inode **p
- 			return -ENOMEM;
- 		pfindData = (FILE_ALL_INFO *)buf;
- 
--		full_path = cifs_get_search_path(pTcon, search_path);
-+		full_path = cifs_get_search_path(cifs_sb, search_path);
- 
- try_again_CIFSSMBQPathInfo:
- 		/* could do find first instead but this returns more info */
++		prexor = 1;
+ 		clear_bit(STRIPE_OP_PREXOR, &sh->ops.complete);
+ 		clear_bit(STRIPE_OP_PREXOR, &sh->ops.ack);
+ 		clear_bit(STRIPE_OP_PREXOR, &sh->ops.pending);
+@@ -2776,6 +2779,8 @@ static void handle_stripe5(struct stripe
+ 				if (!test_and_set_bit(
+ 				    STRIPE_OP_IO, &sh->ops.pending))
+ 					sh->ops.count++;
++				if (prexor)
++					continue;
+ 				if (!test_bit(R5_Insync, &dev->flags) ||
+ 				    (i == sh->pd_idx && s.failed == 0))
+ 					set_bit(STRIPE_INSYNC, &sh->state);
 
 -- 
