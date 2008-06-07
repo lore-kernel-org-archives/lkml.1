@@ -1,195 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbYFGKB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758709AbYFGKFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758934AbYFGKB3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 06:01:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbYFGKBV
+	id S1758709AbYFGKFe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 06:05:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755400AbYFGKF1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 06:01:21 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:37306 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753181AbYFGKBU (ORCPT
+	Sat, 7 Jun 2008 06:05:27 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:22010 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754677AbYFGKF0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 06:01:20 -0400
-Date: Sat, 7 Jun 2008 11:01:17 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: rpurdie@rpsys.net, linux-kernel@vger.kernel.org, mzxreary@0pointer.de
-Subject: [PATCH v2] Add backlight driver for Nvidia-based Apple Macbook Pros
-Message-ID: <20080607100117.GB803@srcf.ucam.org>
-References: <20080607025436.GB24254@srcf.ucam.org> <20080606230745.304d116b.akpm@linux-foundation.org>
+	Sat, 7 Jun 2008 06:05:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=l/o0uQrQa639Pi5Ju/iWilMFq57ZGDBBOMTmRT27GVG3LYWveLW1hCVOu4SwgWofr0
+         DeEztf87qEHZTRp0rBk5AWWVeJf91Lv0Yr4tsTiKHPjZQt0DzBIa+s0ACPKQBW9I/cJb
+         ZeiaL5AdlFbL4N4DLqbaHYRhgamUX0PnRCeyY=
+Message-ID: <84144f020806070305q33dd341wfbb36138d7b533a@mail.gmail.com>
+Date: Sat, 7 Jun 2008 13:05:23 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Matthew Garrett" <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH] Add backlight driver for Nvidia-based Apple Macbook Pros
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, rpurdie@rpsys.net,
+       linux-kernel@vger.kernel.org, mzxreary@0pointer.de
+In-Reply-To: <20080607095839.GA803@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080606230745.304d116b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+References: <20080607025436.GB24254@srcf.ucam.org>
+	 <20080606230745.304d116b.akpm@linux-foundation.org>
+	 <20080607095839.GA803@srcf.ucam.org>
+X-Google-Sender-Auth: b056b893ea119259
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nvidia-based Apple Macbook Pros don't appear to handle backlight control 
-through the graphics card registers or ACPI, but instead trigger changes 
-via SMI calls. This driver registers a generic backlight device that 
-lets existing userspace deal with it. Code derived from Julien Blache's 
-Pommed application.
+Hi Matthew,
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
+On Fri, Jun 06, 2008 at 11:07:45PM -0700, Andrew Morton wrote:
+>> Did this patch have appropriate attribution and signoffs?
 
----
+On Sat, Jun 7, 2008 at 12:58 PM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> Pommed is GPLv2.
 
-Added a missing static and a release_region() in the error path pointed 
-out by Andrey Panin and Andrew Morton
-
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index dcd8073..56f4572 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -112,3 +112,11 @@ config BACKLIGHT_CARILLO_RANCH
- 	help
- 	  If you have a Intel LE80578 (Carillo Ranch) say Y to enable the
- 	  backlight driver.
-+
-+config BACKLIGHT_MBP_NVIDIA
-+       tristate "Macbook Pro Nvidia Backlight Driver"
-+       depends on BACKLIGHT_CLASS_DEVICE && X86
-+       default n
-+       help
-+         If you have an Apple Macbook Pro with Nvidia graphics hardware say Y
-+	 to enable a driver for its backlight
-diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-index 33f6c7c..5b91515 100644
---- a/drivers/video/backlight/Makefile
-+++ b/drivers/video/backlight/Makefile
-@@ -10,3 +10,4 @@ obj-$(CONFIG_BACKLIGHT_LOCOMO)	+= locomolcd.o
- obj-$(CONFIG_BACKLIGHT_OMAP1)	+= omap1_bl.o
- obj-$(CONFIG_BACKLIGHT_PROGEAR) += progear_bl.o
- obj-$(CONFIG_BACKLIGHT_CARILLO_RANCH) += cr_bllcd.o
-+obj-$(CONFIG_BACKLIGHT_MBP_NVIDIA) += mbp_nvidia_bl.o
-diff --git a/drivers/video/backlight/mbp_nvidia_bl.c b/drivers/video/backlight/mbp_nvidia_bl.c
-new file mode 100644
-index 0000000..ebe6be5
---- /dev/null
-+++ b/drivers/video/backlight/mbp_nvidia_bl.c
-@@ -0,0 +1,116 @@
-+/*
-+ *  Backlight Driver for Nvidia 8600 in Macbook Pro
-+ *
-+ *  Copyright (c) Red Hat <mjg@redhat.com>
-+ *  Based on code from Pommed:
-+ *  Copyright (C) 2006 Nicolas Boichat <nicolas @boichat.ch>
-+ *  Copyright (C) 2006 Felipe Alfaro Solana <felipe_alfaro @linuxmail.org>
-+ *  Copyright (C) 2007 Julien BLACHE <jb@jblache.org>
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License version 2 as
-+ *  published by the Free Software Foundation.
-+ *
-+ *  This driver triggers SMIs which cause the firmware to change the
-+ *  backlight brightness. This is icky in many ways, but it's impractical to
-+ *  get at the firmware code in order to figure out what it's actually doing.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/platform_device.h>
-+#include <linux/backlight.h>
-+#include <linux/err.h>
-+#include <linux/dmi.h>
-+#include <linux/io.h>
-+
-+static struct backlight_device *mbp_backlight_device;
-+
-+static struct dmi_system_id __initdata mbp_device_table[] = {
-+	{
-+		.ident = "3,1",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "MacBookPro3,1"),
-+		},
-+	},
-+	{
-+		.ident = "3,2",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "MacBookPro3,2"),
-+		},
-+	},
-+	{
-+		.ident = "4,1",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "MacBookPro4,1"),
-+		},
-+	},
-+	{ }
-+};
-+
-+static int mbp_send_intensity(struct backlight_device *bd)
-+{
-+	int intensity = bd->props.brightness;
-+
-+	outb(0x04 | (intensity << 4), 0xb3);
-+	outb(0xbf, 0xb2);
-+
-+	return 0;
-+}
-+
-+static int mbp_get_intensity(struct backlight_device *bd)
-+{
-+	outb(0x03, 0xb3);
-+	outb(0xbf, 0xb2);
-+	return inb(0xb3) >> 4;
-+}
-+
-+static struct backlight_ops mbp_ops = {
-+	.get_brightness = mbp_get_intensity,
-+	.update_status  = mbp_send_intensity,
-+};
-+
-+static int __init mbp_init(void)
-+{
-+	if (!dmi_check_system(mbp_device_table))
-+		return -ENODEV;
-+
-+	if (!request_region(0xb2, 2, "Macbook Pro backlight"))
-+		return -ENXIO;
-+
-+	mbp_backlight_device = backlight_device_register("mbp_backlight",
-+							 NULL, NULL,
-+							 &mbp_ops);
-+	if (IS_ERR(mbp_backlight_device)) {
-+		release_region(0xb2, 2);
-+		return PTR_ERR(mbp_backlight_device);
-+	}
-+
-+	mbp_backlight_device->props.max_brightness = 15;
-+	mbp_backlight_device->props.brightness =
-+		mbp_get_intensity(mbp_backlight_device);
-+	backlight_update_status(mbp_backlight_device);
-+
-+	return 0;
-+}
-+
-+static void __exit mbp_exit(void)
-+{
-+	backlight_device_unregister(mbp_backlight_device);
-+
-+	release_region(0xb2, 2);
-+}
-+
-+module_init(mbp_init);
-+module_exit(mbp_exit);
-+
-+MODULE_AUTHOR("Matthew Garrett <mjg@redhat.com>");
-+MODULE_DESCRIPTION("Nvidia-based Macbook Pro Backlight Driver");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("svnApple Inc.:pnMacBookPro3,1");
-+MODULE_ALIAS("svnApple Inc.:pnMacBookPro3,2");
-+MODULE_ALIAS("svnApple Inc.:pnMacBookPro4,1");
-
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Andrew has required signoffs from all copyright holders of a patch in
+the past regardless of that.
