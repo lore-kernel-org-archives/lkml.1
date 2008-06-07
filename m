@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756746AbYFGBFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757621AbYFGBFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756746AbYFGBFj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755505AbYFGBFP
+	id S1757621AbYFGBFz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:05:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbYFGBFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:05:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44809 "EHLO
+	Fri, 6 Jun 2008 21:05:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54510 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754017AbYFGBFF (ORCPT
+	by vger.kernel.org with ESMTP id S1754059AbYFGBFF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 6 Jun 2008 21:05:05 -0400
-Date: Fri, 6 Jun 2008 18:04:34 -0700
+Date: Fri, 6 Jun 2008 18:04:39 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Rik van Riel <riel@redhat.com>
 Cc: linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
-       kosaki.motohiro@jp.fujitsu.com, minchan.kim@gmail.com
-Subject: Re: [PATCH -mm 05/25] define page_file_cache() function
-Message-Id: <20080606180434.f9558bab.akpm@linux-foundation.org>
-In-Reply-To: <20080606202858.624305330@redhat.com>
+       kosaki.motohiro@jp.fujitsu.com, Lee.Schermerhorn@hp.com
+Subject: Re: [PATCH -mm 06/25] split LRU lists into anon & file sets
+Message-Id: <20080606180439.e5954a2e.akpm@linux-foundation.org>
+In-Reply-To: <20080606202858.681500833@redhat.com>
 References: <20080606202838.390050172@redhat.com>
-	<20080606202858.624305330@redhat.com>
+	<20080606202858.681500833@redhat.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,158 +28,167 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 06 Jun 2008 16:28:43 -0400
+On Fri, 06 Jun 2008 16:28:44 -0400
 Rik van Riel <riel@redhat.com> wrote:
 
 > From: Rik van Riel <riel@redhat.com>
 > 
-> Define page_file_cache() function to answer the question:
-> 	is page backed by a file?
+> Split the LRU lists in two, one set for pages that are backed by
+> real file systems ("file") and one for pages that are backed by
+> memory and swap ("anon").  The latter includes tmpfs.
 > 
-> Originally part of Rik van Riel's split-lru patch.  Extracted
-> to make available for other, independent reclaim patches.
+> Eventually mlocked pages will be taken off the LRUs alltogether.
+> A patch for that already exists and just needs to be integrated
+> into this series.
 > 
-> Moved inline function to linux/mm_inline.h where it will
-> be needed by subsequent "split LRU" and "noreclaim" patches.  
-> 
-> Unfortunately this needs to use a page flag, since the
-> PG_swapbacked state needs to be preserved all the way
-> to the point where the page is last removed from the
-> LRU.  Trying to derive the status from other info in
-> the page resulted in wrong VM statistics in earlier
-> split VM patchsets.
+> This patch mostly has the infrastructure and a basic policy to
+> balance how much we scan the anon lists and how much we scan
+> the file lists. The big policy changes are in separate patches.
 >
 
-argh.  How many are left?
+The changelogs are a bit scrappy and could do with some care
 
-> +#ifndef LINUX_MM_INLINE_H
-> +#define LINUX_MM_INLINE_H
-> +
-> +/**
-> + * page_file_cache - should the page be on a file LRU or anon LRU?
-> + * @page: the page to test
-> + *
-> + * Returns !0 if @page is page cache page backed by a regular filesystem,
-> + * or 0 if @page is anonymous, tmpfs or otherwise ram or swap backed.
-> + *
-> + * We would like to get this info without a page flag, but the state
-> + * needs to survive until the page is last deleted from the LRU, which
-> + * could be as far down as __page_cache_release.
-> + */
-> +static inline int page_file_cache(struct page *page)
-> +{
-> +	if (PageSwapBacked(page))
-> +		return 0;
-> +
-> +	/* The page is page cache backed by a normal filesystem. */
-> +	return 2;
+- stale assertions such as the above
 
-2?
+- "From:<random number of spaces>Lee" in various places
 
-Maybe bool would suit here.
+- Some have the --- separator and others don't (this trips me up).
 
-Maybe a better name would be page_is_file_cache().  The gnu (gcc?)
-convention of putting _p at the end of predicate functions' names makes
-heaps of sense.
+- Stuff like "Against: 2.6.26-rc2-mm1" right in the middle of the
+  changelog for me to hunt down and squish.
 
+- "TODO:  DEBUGGING ONLY: NOT FOR UPSTREAM MERGE" <<-- what's up with this?
 
-This function doesn't do enough stuff to do that which it says it does.
-There must be a whole pile of preconditions which the caller must
-evaluate before this function can be usefully used.  I mean, it would
-be a bug to pass an anonymous page or a slab page or whatever into
-here?
+- random Capitalisation in Various patch Titles.
 
-> +}
-> +
->
-> ...
->
-> --- linux-2.6.26-rc2-mm1.orig/include/linux/page-flags.h	2008-05-23 14:21:21.000000000 -0400
-> +++ linux-2.6.26-rc2-mm1/include/linux/page-flags.h	2008-05-23 14:21:34.000000000 -0400
-> @@ -93,6 +93,7 @@ enum pageflags {
->  	PG_mappedtodisk,	/* Has blocks allocated on-disk */
->  	PG_reclaim,		/* To be reclaimed asap */
->  	PG_buddy,		/* Page is free, on buddy lists */
-> +	PG_swapbacked,		/* Page is backed by RAM/swap */
->  #ifdef CONFIG_IA64_UNCACHED_ALLOCATOR
->  	PG_uncached,		/* Page has been mapped as uncached */
->  #endif
-> @@ -160,6 +161,7 @@ PAGEFLAG(Pinned, owner_priv_1) TESTSCFLA
->  PAGEFLAG(Reserved, reserved) __CLEARPAGEFLAG(Reserved, reserved)
->  PAGEFLAG(Private, private) __CLEARPAGEFLAG(Private, private)
->  	__SETPAGEFLAG(Private, private)
-> +PAGEFLAG(SwapBacked, swapbacked) __CLEARPAGEFLAG(SwapBacked, swapbacked)
+- "V2 -> V3:" logging in the main changelog - not relevant in the
+  final commit hence more for me to edit away.
 
-Those __ClearPageFoo() functions scare my pants into the next suburb. 
-They can cause such horridly subtle bugs if misused.  Every single
-callsite should have special attention and careful justification in
-comments, IMO.
+- Strange inventions like "Originally Signed-off-by:"
+
+- please prefer to prefix the patch titles with a suitable subsystem
+  identifier.  In this case "vmscan: " would suit.
+
+- Other stuff I forgot.  A general recheck and cleanup would be nice.
+
+  I've actually fixed all ofthe above but I don't yet know whether
+  I'll be checking all this in.
+
+> Index: linux-2.6.26-rc2-mm1/fs/proc/proc_misc.c
+> ===================================================================
+> --- linux-2.6.26-rc2-mm1.orig/fs/proc/proc_misc.c	2008-05-23 14:21:21.000000000 -0400
+> +++ linux-2.6.26-rc2-mm1/fs/proc/proc_misc.c	2008-05-23 14:21:34.000000000 -0400
+> @@ -132,6 +132,10 @@ static int meminfo_read_proc(char *page,
+>  	unsigned long allowed;
+>  	struct vmalloc_info vmi;
+>  	long cached;
+> +	unsigned long inactive_anon;
+> +	unsigned long active_anon;
+> +	unsigned long inactive_file;
+> +	unsigned long active_file;
+
+Shouldn't this be an array[NR_LRU_LISTS]?
 
 >  /*
->   * Only test-and-set exist for PG_writeback.  The unconditional operators are
-> Index: linux-2.6.26-rc2-mm1/mm/memory.c
-> ===================================================================
-> --- linux-2.6.26-rc2-mm1.orig/mm/memory.c	2008-05-23 14:21:21.000000000 -0400
-> +++ linux-2.6.26-rc2-mm1/mm/memory.c	2008-05-23 14:21:34.000000000 -0400
-> @@ -1765,6 +1765,7 @@ gotten:
->  		ptep_clear_flush(vma, address, page_table);
->  		set_pte_at(mm, address, page_table, entry);
->  		update_mmu_cache(vma, address, entry);
-> +		SetPageSwapBacked(new_page);
->  		lru_cache_add_active(new_page);
->  		page_add_new_anon_rmap(new_page, vma, address);
+>   * display in kilobytes.
+> @@ -150,48 +154,61 @@ static int meminfo_read_proc(char *page,
 >  
-> @@ -2233,6 +2234,7 @@ static int do_anonymous_page(struct mm_s
->  	if (!pte_none(*page_table))
->  		goto release;
->  	inc_mm_counter(mm, anon_rss);
-> +	SetPageSwapBacked(page);
->  	lru_cache_add_active(page);
->  	page_add_new_anon_rmap(page, vma, address);
->  	set_pte_at(mm, address, page_table, entry);
-> @@ -2374,6 +2376,7 @@ static int __do_fault(struct mm_struct *
->  		set_pte_at(mm, address, page_table, entry);
->  		if (anon) {
->                          inc_mm_counter(mm, anon_rss);
-> +			SetPageSwapBacked(page);
->                          lru_cache_add_active(page);
->                          page_add_new_anon_rmap(page, vma, address);
+>  	get_vmalloc_info(&vmi);
+>  
+> +	inactive_anon = global_page_state(NR_INACTIVE_ANON);
+> +	active_anon   = global_page_state(NR_ACTIVE_ANON);
+> +	inactive_file = global_page_state(NR_INACTIVE_FILE);
+> +	active_file   = global_page_state(NR_ACTIVE_FILE);
 
-OK, someone lost their tab key and it wasn't you.
-
-<does git-blame>
-
-<blames Nick>
-
->  		} else {
->
-> ...
->
-> @@ -261,6 +261,7 @@ static void bad_page(struct page *page)
->  			1 << PG_slab    |
->  			1 << PG_swapcache |
->  			1 << PG_writeback |
-> +			1 << PG_swapbacked |
->  			1 << PG_buddy );
->  	set_page_count(page, 0);
->  	reset_page_mapcount(page);
-> @@ -494,6 +495,8 @@ static inline int free_pages_check(struc
->  		bad_page(page);
->  	if (PageDirty(page))
->  		__ClearPageDirty(page);
-> +	if (PageSwapBacked(page))
-> +		__ClearPageSwapBacked(page);
-
-OK, that one isn't so scary.
+then this can perhaps become a loop.
 
 >  	/*
->  	 * For now, we report if PG_reserved was found set, but do not
->  	 * clear it, and do not free the page.  But we shall soon need
-> @@ -644,6 +647,7 @@ static int prep_new_page(struct page *pa
->  			1 << PG_swapcache |
->  			1 << PG_writeback |
->  			1 << PG_reserved |
-> +			1 << PG_swapbacked |
->  			1 << PG_buddy ))))
->  		bad_page(page);
+>  	 * Tagged format, for easy grepping and expansion.
+>  	 */
+>  	len = sprintf(page,
+> -		"MemTotal:     %8lu kB\n"
+> -		"MemFree:      %8lu kB\n"
+> -		"Buffers:      %8lu kB\n"
+> -		"Cached:       %8lu kB\n"
+> -		"SwapCached:   %8lu kB\n"
+> -		"Active:       %8lu kB\n"
+> -		"Inactive:     %8lu kB\n"
+> +		"MemTotal:       %8lu kB\n"
+> +		"MemFree:        %8lu kB\n"
+> +		"Buffers:        %8lu kB\n"
+> +		"Cached:         %8lu kB\n"
+> +		"SwapCached:     %8lu kB\n"
+> +		"Active:         %8lu kB\n"
+> +		"Inactive:       %8lu kB\n"
+> +		"Active(anon):   %8lu kB\n"
+> +		"Inactive(anon): %8lu kB\n"
+> +		"Active(file):   %8lu kB\n"
+> +		"Inactive(file): %8lu kB\n"
+>  #ifdef CONFIG_HIGHMEM
+> -		"HighTotal:    %8lu kB\n"
+> -		"HighFree:     %8lu kB\n"
+> -		"LowTotal:     %8lu kB\n"
+> -		"LowFree:      %8lu kB\n"
+> -#endif
+> -		"SwapTotal:    %8lu kB\n"
+> -		"SwapFree:     %8lu kB\n"
+> -		"Dirty:        %8lu kB\n"
+> -		"Writeback:    %8lu kB\n"
+> -		"AnonPages:    %8lu kB\n"
+> -		"Mapped:       %8lu kB\n"
+> -		"Slab:         %8lu kB\n"
+> -		"SReclaimable: %8lu kB\n"
+> -		"SUnreclaim:   %8lu kB\n"
+> -		"PageTables:   %8lu kB\n"
+> -		"NFS_Unstable: %8lu kB\n"
+> -		"Bounce:       %8lu kB\n"
+> -		"WritebackTmp: %8lu kB\n"
+> -		"CommitLimit:  %8lu kB\n"
+> -		"Committed_AS: %8lu kB\n"
+> -		"VmallocTotal: %8lu kB\n"
+> -		"VmallocUsed:  %8lu kB\n"
+> -		"VmallocChunk: %8lu kB\n",
+> +		"HighTotal:      %8lu kB\n"
+> +		"HighFree:       %8lu kB\n"
+> +		"LowTotal:       %8lu kB\n"
+> +		"LowFree:        %8lu kB\n"
+> +#endif
+> +		"SwapTotal:      %8lu kB\n"
+> +		"SwapFree:       %8lu kB\n"
+> +		"Dirty:          %8lu kB\n"
+> +		"Writeback:      %8lu kB\n"
+> +		"AnonPages:      %8lu kB\n"
+> +		"Mapped:         %8lu kB\n"
+> +		"Slab:           %8lu kB\n"
+> +		"SReclaimable:   %8lu kB\n"
+> +		"SUnreclaim:     %8lu kB\n"
+> +		"PageTables:     %8lu kB\n"
+> +		"NFS_Unstable:   %8lu kB\n"
+> +		"Bounce:         %8lu kB\n"
+> +		"WritebackTmp:   %8lu kB\n"
+> +		"CommitLimit:    %8lu kB\n"
+> +		"Committed_AS:   %8lu kB\n"
+> +		"VmallocTotal:   %8lu kB\n"
+> +		"VmallocUsed:    %8lu kB\n"
+> +		"VmallocChunk:   %8lu kB\n",
+>  		K(i.totalram),
+>  		K(i.freeram),
+>  		K(i.bufferram),
+>  		K(cached),
+>  		K(total_swapcache_pages),
+> -		K(global_page_state(NR_ACTIVE)),
+> -		K(global_page_state(NR_INACTIVE)),
+> +		K(active_anon   + active_file),
+> +		K(inactive_anon + inactive_file),
+> +		K(active_anon),
+> +		K(inactive_anon),
+> +		K(active_file),
+> +		K(inactive_file),
+
+Do we really want to put all this stuff into /proc/meminfo?
+
+Would it be better to aggregate it in some manner for meminfo and show
+the fine-grained info in /proc/vmstat?
+
+
 
