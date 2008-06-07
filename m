@@ -1,46 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752790AbYFGEuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbYFGE5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752790AbYFGEuY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 00:50:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbYFGEuL
+	id S1755533AbYFGE5z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 00:57:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYFGE5o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 00:50:11 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56226 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751590AbYFGEuJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 00:50:09 -0400
-Date: Sat, 07 Jun 2008 13:46:00 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
-Subject: Re: [PATCH 3/3 v2] per-task-delay-accounting: update document and getdelays.c for memory reclaim
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, akpm@linux-foundation.org, nagar@watson.ibm.com,
-       balbir@in.ibm.com, sekharan@us.ibm.com, kamezawa.hiroyu@jp.fujitsu.com
-In-Reply-To: <20080605163338.8880eb7f.kobayashi.kk@ncos.nec.co.jp>
-References: <20080605162759.a6adf291.kobayashi.kk@ncos.nec.co.jp> <20080605163338.8880eb7f.kobayashi.kk@ncos.nec.co.jp>
-Message-Id: <20080607134438.9C43.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Sat, 7 Jun 2008 00:57:44 -0400
+Received: from jaguar.mkp.net ([192.139.46.146]:38418 "EHLO jaguar.mkp.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751809AbYFGE5n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jun 2008 00:57:43 -0400
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Subject: [PATCH 3 of 7] block: Find bio sector offset given idx and offset
+X-Mercurial-Node: 318fa71e735d25003f9c35abca3d3c25ad397c2d
+Message-Id: <318fa71e735d25003f9c.1212814536@sermon.lab.mkp.net>
+In-Reply-To: <patchbomb.1212814533@sermon.lab.mkp.net>
+Date: Sat, 07 Jun 2008 00:55:36 -0400
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Update document and make getdelays.c show delay accounting for memory reclaim.
-> 
-> For making a distinction between "swapping in pages" and "memory reclaim"
-> in getdelays.c, MEM is changed to SWAP.
-> 
-> Signed-off-by: Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
-
-looks good to me.
-
-but I don't know s/MEM/SWAP/ renaming is good or bad.
-You should hear delayacct developer opinion. IMHO.
+2 files changed, 26 insertions(+)
+fs/bio.c            |   24 ++++++++++++++++++++++++
+include/linux/bio.h |    2 ++
 
 
+Helper function to find the sector offset in a bio given bvec index
+and page offset.
 
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+
+---
+
+diff -r 550d61001baa -r 318fa71e735d fs/bio.c
+--- a/fs/bio.c	Sat Jun 07 00:45:14 2008 -0400
++++ b/fs/bio.c	Sat Jun 07 00:45:14 2008 -0400
+@@ -1232,6 +1232,30 @@
+ 	return bp;
+ }
+ 
++sector_t bio_sector_offset(struct bio *bio, unsigned short index, unsigned int offset)
++{
++	struct bio_vec *bv;
++	unsigned int sector_sz = bio->bi_bdev->bd_disk->queue->hardsect_size;
++	sector_t sectors;
++	int i;
++
++	sectors = 0;
++
++	BUG_ON(index >= bio->bi_vcnt);
++
++	bio_for_each_segment(bv, bio, i) {
++		if (i == index) {
++			if (offset > bv->bv_offset)
++				sectors += (offset - bv->bv_offset) / sector_sz;
++			return sectors;
++		}
++
++		sectors += bv->bv_len / sector_sz;
++	}
++
++	BUG();
++}
++EXPORT_SYMBOL(bio_sector_offset);
+ 
+ /*
+  * create memory pools for biovec's in a bio_set.
+diff -r 550d61001baa -r 318fa71e735d include/linux/bio.h
+--- a/include/linux/bio.h	Sat Jun 07 00:45:14 2008 -0400
++++ b/include/linux/bio.h	Sat Jun 07 00:45:14 2008 -0400
+@@ -315,6 +315,8 @@
+ extern int bio_add_pc_page(struct request_queue *, struct bio *, struct page *,
+ 			   unsigned int, unsigned int);
+ extern int bio_get_nr_vecs(struct block_device *);
++extern sector_t bio_sector_offset(struct bio *, unsigned short, unsigned int);
++
+ extern struct bio *bio_map_user(struct request_queue *, struct block_device *,
+ 				unsigned long, unsigned int, int);
+ struct sg_iovec;
 
 
