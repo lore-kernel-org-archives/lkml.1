@@ -1,116 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbYFGT22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbYFGTk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754708AbYFGT22 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 15:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbYFGT2R
+	id S1753838AbYFGTk0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 15:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbYFGTkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 15:28:17 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:42686 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751951AbYFGT2Q (ORCPT
+	Sat, 7 Jun 2008 15:40:15 -0400
+Received: from liberdade.minaslivre.org ([72.232.18.203]:58173 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750695AbYFGTkO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 15:28:16 -0400
-Message-ID: <484AE148.6000204@suse.de>
-Date: Sat, 07 Jun 2008 23:28:08 +0400
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Sat, 7 Jun 2008 15:40:14 -0400
+Date: Sat, 7 Jun 2008 16:40:07 -0300
+From: Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Correct type and description of
+	CONFIG_AC97_POWER_SAVE_DEFAULT
+Message-ID: <20080607194006.GA9516@vespa.holoscopio.com>
+References: <20080607162238.GA7893@vespa.holoscopio.com> <s5hlk1hp25b.wl%tiwai@suse.de>
 MIME-Version: 1.0
-To: Justin Mattock <justinmattock@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: ACPI: EC: GPE storm detected, disabling EC GPE
-References: <dd18b0c30806062321x2918f6feq7c817bde52ba0c4c@mail.gmail.com>	 <20080606235526.783acc83.akpm@linux-foundation.org> <dd18b0c30806070847t63b8dbc0x8bfcbafc359f7031@mail.gmail.com>
-In-Reply-To: <dd18b0c30806070847t63b8dbc0x8bfcbafc359f7031@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="+QahgC5+KEYLbs62"
+Content-Disposition: inline
+In-Reply-To: <s5hlk1hp25b.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Mattock wrote:
-> On Sat, Jun 7, 2008 at 6:55 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
->> On Sat, 7 Jun 2008 06:21:54 +0000 "Justin Mattock" <justinmattock@gmail.com> wrote:
->>
->>> Well; I was hoping it was going to be just an easy fix, but unfortunately
->>> changing
->>>  if (atomic_read(&ec->irq_count) > 5) {
->>>  to
->>> if (atomic_read(&ec->irq_count) > 20) {
->>> does seem to make the message disappear, for a while, probably at
->>> around three hours,(for me at least) then the message appeared again.
->>> :-(
->>> So leaving me back to the beginning of try to have a go at this.
->>> regards;
->> I removed bugzilla from cc - that only works if there's [Bug 1234] in
->> the Subject:.
->>
->> I added linux-acpi to cc - this is an acpi problem.
->>
->> What Justin is mysteriously referring to here is:
->>
->>
->> : From: "Justin Mattock" <justinmattock@gmail.com>
->> : To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
->> : Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
->> : Subject: GPE storm detected, disabling EC GPE
->> : Date:         Thu, 5 Jun 2008 21:01:55 +0000
->> : Sender: linux-kernel-owner@vger.kernel.org
->> :
->> : FWIW I noticed a post where the person had changed 5 to 20, and it
->> : seemed to work for them;
->> : So with that in mind I decide to give that a go, here is the location:
->> : drivers/acpi/ec.c
->> : @@ -527,47 +488,51 @@ static u32 acpi_ec_gpe_handler(void *data)
->> :  {
->> :         acpi_status status = AE_OK;
->> :         struct acpi_ec *ec = data;
->> :        u8 state = acpi_ec_read_status(ec);
->> :
->> :         pr_debug(PREFIX "~~~> interrupt\n");
->> :        atomic_inc(&ec->irq_count);
->> : -       if (atomic_read(&ec->irq_count) > 5) {
->> : +       if (atomic_read(&ec->irq_count) > 20) {
->> :                pr_err(PREFIX "GPE storm detected, disabling EC GPE\n");
->> :                ec_switch_to_poll_mode(ec);
->> :                goto end;
->> :        }
->> :
->> : Now I don't know if this will work for other brands, but for
->> : me(Macbook Pro ATI chipset) I have not received the
->> : GPE storm detected, disabling EC GPE message, but it's only been an
->> : hour, maybe after two or three this might appear.
->> : Also is this good or bad to set 5 to 20 for the system?
->>
->> Could someone from acpi land please help here?
->>
->> Justin, has this machine always had this problem or is it something
->> which earlier kernels handled correctly?
->>
->> Thanks.
->>
-> 
-> This issue just recently started, 2.6.25-rc9 and below don't give me
-> this message.
-> 
-Yes, the problem which we are fighting here is that almost all Acer notebooks come with
-broken EC. It sends interrupts not regarding the fact that we already ACKed it.
-It comes unnoticed on almost all machines (some notice laggy keyboard, because it's 
-the same controller after all and it's busy with sending ACPI interrupts and then 
-providing same status byte over and over), but on some machines keystrokes become 
-missing, which is not tolerable (#9998).
-Acer technical support does not care about the issue as they don't support Linux on these machines,
-and Windows seems to be fine.
-There is a similar bug report #10724, with two suggested patches, which should increase a threshold of 
-stray interrupts before we shutdown them and switch to poll mode.
 
-Regards,
-Alex.
+--+QahgC5+KEYLbs62
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Sat, Jun 07, 2008 at 07:48:16PM +0200, Takashi Iwai wrote:
+> At Sat, 7 Jun 2008 13:22:39 -0300,
+> Thadeu Lima de Souza Cascardo wrote:
+> >=20
+> > While CONFIG_HDA_POWER_SAVE_DEFAULT is used as a timeout in seconds,
+> > CONFIG_AC97_POWER_SAVE_DEFAULT simply enables or disables AC97 power
+> > saving.
+>=20
+> Thanks for the patch.  However, I can't take this as is.  The reasons
+> are below:
+>=20
+> The power_save option takes indeed an integer value, and this kconfig
+> is nothing but its default value.
+>=20
+> In your way, it's set always 1 if selected.  This is a very bad choice
+> as power_save value, because you'll turn on/off after one second.
+> This may lead to too frequent click noises.=20
+> Thus, even if we need to make it bool, a more sensitive value must be
+> chosen.  And, which value is sensitive is a matter of taste, and you
+> cannot define it alone by yourself.
+>=20
 
+As I said in my comment, that is true for CONFIG_HDA_POWER_SAVE_DEFAULT,
+which is, in fact, used as a number of seconds, and I left that as is.
+The static power_save variable in ac97_codec.c, however, is only used in
+a macro ac97_is_power_save_mode, which, in turn, is only used in two
+if's.
 
+> thanks,
+>=20
+> Takashi
+>=20
 
+Thank you.
 
+> > ---
+> >  sound/pci/Kconfig           |    6 +++---
+> >  sound/pci/ac97/ac97_codec.c |    6 +++++-
+> >  2 files changed, 8 insertions(+), 4 deletions(-)
+> >=20
+> > diff --git a/sound/pci/Kconfig b/sound/pci/Kconfig
+> > index 7e47421..fe6aad2 100644
+> > --- a/sound/pci/Kconfig
+> > +++ b/sound/pci/Kconfig
+> > @@ -968,11 +968,11 @@ config SND_AC97_POWER_SAVE
+> >  	  sysfs, too.
+> > =20
+> >  config SND_AC97_POWER_SAVE_DEFAULT
+> > -	int "Default time-out for AC97 power-save mode"
+> > +	bool "Activate AC97 power-save mode by default"
+> >  	depends on SND_AC97_POWER_SAVE
+> >  	default 0
+> >  	help
+> > -	  The default time-out value in seconds for AC97 automatic
+> > -	  power-save mode.  0 means to disable the power-save mode.
+> > +    By default, AC97 power-save mode is not active. This option
+> > +    activates it by default.
+> > =20
+> >  endmenu
+> > diff --git a/sound/pci/ac97/ac97_codec.c b/sound/pci/ac97/ac97_codec.c
+> > index 45fd290..0566e3a 100644
+> > --- a/sound/pci/ac97/ac97_codec.c
+> > +++ b/sound/pci/ac97/ac97_codec.c
+> > @@ -48,7 +48,11 @@ module_param(enable_loopback, bool, 0444);
+> >  MODULE_PARM_DESC(enable_loopback, "Enable AC97 ADC/DAC Loopback Contro=
+l");
+> > =20
+> >  #ifdef CONFIG_SND_AC97_POWER_SAVE
+> > -static int power_save =3D CONFIG_SND_AC97_POWER_SAVE_DEFAULT;
+> > +#ifdef CONFIG_SND_AC97_POWER_SAVE_DEFAULT
+> > +static int power_save =3D 1;
+> > +#else
+> > +static int power_save =3D 0;
+> > +#endif
+> >  module_param(power_save, bool, 0644);
+> >  MODULE_PARM_DESC(power_save, "Enable AC97 power-saving control");
+> >  #endif
+> > --=20
+> > 1.5.5.3
+> >=20
 
+--+QahgC5+KEYLbs62
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhK5BYACgkQyTpryRcqtS3UkACfRIxEuOd+dE5B3dor765O6YDE
+j5MAn2ImAkEPwUxd90jpt+7aVX2ZHD7p
+=Uy5h
+-----END PGP SIGNATURE-----
+
+--+QahgC5+KEYLbs62--
