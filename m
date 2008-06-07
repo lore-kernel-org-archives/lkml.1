@@ -1,65 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762970AbYFGQSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762264AbYFGQc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762970AbYFGQSz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 12:18:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759487AbYFGQSt
+	id S1762264AbYFGQc3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 12:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758843AbYFGQcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 12:18:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33490 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758740AbYFGQSs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 12:18:48 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] Fix an incompatible pointer type warning on x86_64
-	compilations
-To: tglx@linutronix.de
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
-Date: Sat, 07 Jun 2008 17:18:40 +0100
-Message-ID: <20080607161840.4803.48478.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.1
+	Sat, 7 Jun 2008 12:32:23 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:51222 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757000AbYFGQcW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jun 2008 12:32:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=X2FuZlMAyfAtTXcVIKC3Oiq7S68rtt42RJWg+myqcvru12ZxS/hYYLhumTKTC4Ezdb
+         17v2K1PQJQ4xYSmH6h3UTL0s6X96O6vEwZ54y+PcyoHbJcqZPYazddi67pYS3Lyjt01x
+         amY7Vza7GWcJxdRQnfiuJC306LHPS4FgKe4Rs=
+Date: Sat, 7 Jun 2008 20:32:08 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: =?us-ascii?B?PT9JU08tODg1OS0yP1E/Tj1FOW1ldGhfTT1FMXJ0b25f?= 
+	<nm127@freemail.hu>,
+       ?=@gmail.com
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: cleanups to nmi_watchdog variable
+Message-ID: <20080607163208.GC7141@cvg>
+References: <484AAD0B.1030407@freemail.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <484AAD0B.1030407@freemail.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix an incompatible pointer type warning on x86_64 compilations.
-early_memtest() is passing a u64* to find_e820_area_size() which is expecting
-an unsigned long.  Change t_start and t_size to unsigned long as those are
-also 64-bit types on x88_64.
+[=?ISO-8859-2?Q?N=E9meth_M=E1rton_ - Sat, Jun 07, 2008 at 05:45:15PM +0200]
+| From: Márton Németh <nm127@freemail.hu>
+| 
+| Use NMI_NONE instead of 0. As the symbol NMI_DISABLED equals to -1,
+| the nmi_watchdog variable should also be signed.
+| 
+| Signed-off-by: Márton Németh <nm127@freemail.hu>
+| ---
+| diff -upr linux-2.6.26-rc5.orig/arch/x86/kernel/io_apic_32.c linux-2.6.26-rc5/arch/x86/kernel/io_apic_32.c
+| --- linux-2.6.26-rc5.orig/arch/x86/kernel/io_apic_32.c	2008-06-07 12:35:24.000000000 +0200
+| +++ linux-2.6.26-rc5/arch/x86/kernel/io_apic_32.c	2008-06-07 12:40:20.000000000 +0200
+| @@ -2217,7 +2217,7 @@ static inline void __init check_timer(vo
+| 
+|  	if (nmi_watchdog == NMI_IO_APIC) {
+|  		printk(KERN_WARNING "timer doesn't work through the IO-APIC - disabling NMI Watchdog!\n");
+| -		nmi_watchdog = 0;
+| +		nmi_watchdog = NMI_NONE;
+|  	}
+| 
+|  	printk(KERN_INFO "...trying to set up timer as Virtual Wire IRQ...");
+| diff -upr linux-2.6.26-rc5.orig/arch/x86/kernel/io_apic_64.c linux-2.6.26-rc5/arch/x86/kernel/io_apic_64.c
+| --- linux-2.6.26-rc5.orig/arch/x86/kernel/io_apic_64.c	2008-06-05 18:39:49.000000000 +0200
+| +++ linux-2.6.26-rc5/arch/x86/kernel/io_apic_64.c	2008-06-07 12:37:01.000000000 +0200
+| @@ -1735,7 +1735,7 @@ static inline void __init check_timer(vo
+| 
+|  	if (nmi_watchdog == NMI_IO_APIC) {
+|  		printk(KERN_WARNING "timer doesn't work through the IO-APIC - disabling NMI Watchdog!\n");
+| -		nmi_watchdog = 0;
+| +		nmi_watchdog = NMI_NONE;
+|  	}
+| 
+|  	apic_printk(APIC_VERBOSE, KERN_INFO "...trying to set up timer as Virtual Wire IRQ...");
+| diff -upr linux-2.6.26-rc5.orig/arch/x86/kernel/nmi_32.c linux-2.6.26-rc5/arch/x86/kernel/nmi_32.c
+| --- linux-2.6.26-rc5.orig/arch/x86/kernel/nmi_32.c	2008-06-05 18:39:49.000000000 +0200
+| +++ linux-2.6.26-rc5/arch/x86/kernel/nmi_32.c	2008-06-07 11:19:55.000000000 +0200
+| @@ -43,7 +43,7 @@ static cpumask_t backtrace_mask = CPU_MA
+|   */
+|  atomic_t nmi_active = ATOMIC_INIT(0);		/* oprofile uses this */
+| 
+| -unsigned int nmi_watchdog = NMI_DEFAULT;
+| +int nmi_watchdog = NMI_DEFAULT;
+|  static unsigned int nmi_hz = HZ;
+| 
+|  static DEFINE_PER_CPU(short, wd_enabled);
+| diff -upr linux-2.6.26-rc5.orig/arch/x86/kernel/nmi_64.c linux-2.6.26-rc5/arch/x86/kernel/nmi_64.c
+| --- linux-2.6.26-rc5.orig/arch/x86/kernel/nmi_64.c	2008-06-05 18:39:49.000000000 +0200
+| +++ linux-2.6.26-rc5/arch/x86/kernel/nmi_64.c	2008-06-07 11:20:00.000000000 +0200
+| @@ -43,7 +43,7 @@ static cpumask_t backtrace_mask = CPU_MA
+|  atomic_t nmi_active = ATOMIC_INIT(0);		/* oprofile uses this */
+|  static int panic_on_timeout;
+| 
+| -unsigned int nmi_watchdog = NMI_DEFAULT;
+| +int nmi_watchdog = NMI_DEFAULT;
+|  static unsigned int nmi_hz = HZ;
+| 
+|  static DEFINE_PER_CPU(short, wd_enabled);
+| diff -upr linux-2.6.26-rc5.orig/include/asm-x86/nmi.h linux-2.6.26-rc5/include/asm-x86/nmi.h
+| --- linux-2.6.26-rc5.orig/include/asm-x86/nmi.h	2008-06-05 18:40:12.000000000 +0200
+| +++ linux-2.6.26-rc5/include/asm-x86/nmi.h	2008-06-07 11:21:20.000000000 +0200
+| @@ -61,7 +61,7 @@ extern void enable_timer_nmi_watchdog(vo
+|  extern int nmi_watchdog_tick(struct pt_regs *regs, unsigned reason);
+| 
+|  extern atomic_t nmi_active;
+| -extern unsigned int nmi_watchdog;
+| +extern int nmi_watchdog;
+|  #define NMI_DISABLED    -1
+|  #define NMI_NONE	0
+|  #define NMI_IO_APIC	1
+| 
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+Good catch! Actually 0 -> NMI_NONE change already in -tip tree.
+Sign/signess mark - is good to be investigated. Thanks!
 
- arch/x86/mm/init_64.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 156e6d7..998a06e 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -506,7 +506,7 @@ early_param("memtest", parse_memtest);
- 
- static void __init early_memtest(unsigned long start, unsigned long end)
- {
--	u64 t_start, t_size;
-+	unsigned long t_start, t_size;
- 	unsigned pattern;
- 
- 	if (!memtest_pattern)
-@@ -525,7 +525,7 @@ static void __init early_memtest(unsigned long start, unsigned long end)
- 			if (t_start + t_size > end)
- 				t_size = end - t_start;
- 
--			printk(KERN_CONT "\n  %016llx - %016llx pattern %d",
-+			printk(KERN_CONT "\n  %016lx - %016lx pattern %d",
- 				t_start, t_start + t_size, pattern);
- 
- 			memtest(t_start, t_size, pattern);
-
+		- Cyrill -
