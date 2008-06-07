@@ -1,517 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760839AbYFGI3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756962AbYFGIsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760839AbYFGI3v (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 04:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756148AbYFGI3C
+	id S1756962AbYFGIsV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 04:48:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbYFGIsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 04:29:02 -0400
-Received: from [78.13.70.189] ([78.13.70.189]:47942 "EHLO linux.localdomain"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753999AbYFGI2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 04:28:54 -0400
-From: Andrea Righi <righi.andrea@gmail.com>
-To: balbir@linux.vnet.ibm.com, menage@google.com
-Cc: matt@bluehost.com, roberto@unbit.it, randy.dunlap@oracle.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] i/o bandwidth controller infrastructure
-Date: Sat,  7 Jun 2008 00:27:29 +0200
-Message-Id: <1212791250-32320-3-git-send-email-righi.andrea@gmail.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
-References: <>
+	Sat, 7 Jun 2008 04:48:07 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:34609 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754152AbYFGIsE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jun 2008 04:48:04 -0400
+Date: Sat, 7 Jun 2008 11:47:59 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Oliver Pinter <oliver.pntr@gmail.com>, zsirmo@zsirmo.hu,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       netdev <netdev@vger.kernel.org>, Matt Carlson <mcarlson@broadcom.com>,
+       Michael Chan <mchan@broadcom.com>,
+       Brian Vowell <brian.vowell@gmail.com>
+Subject: Re: bug report
+In-Reply-To: <20080606225643.8be222a9.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0806071141480.24862@wrl-59.cs.helsinki.fi>
+References: <48499731.1080807@gmail.com> <6101e8c40806061844g5b7676d4xb48c5c69ad48391f@mail.gmail.com>
+ <20080606225643.8be222a9.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the core io-throttle kernel infrastructure. It creates the basic
-interfaces to cgroups and implements the I/O measurement and throttling
-functions.
+...Added Brian Vowell.
 
-Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
----
- block/Makefile                  |    2 +
- block/blk-io-throttle.c         |  405 +++++++++++++++++++++++++++++++++++++++
- include/linux/blk-io-throttle.h |   12 ++
- include/linux/cgroup_subsys.h   |    6 +
- init/Kconfig                    |   10 +
- 5 files changed, 435 insertions(+), 0 deletions(-)
- create mode 100644 block/blk-io-throttle.c
- create mode 100644 include/linux/blk-io-throttle.h
+On Fri, 6 Jun 2008, Andrew Morton wrote:
 
-diff --git a/block/Makefile b/block/Makefile
-index 5a43c7d..8dec69b 100644
---- a/block/Makefile
-+++ b/block/Makefile
-@@ -14,3 +14,5 @@ obj-$(CONFIG_IOSCHED_CFQ)	+= cfq-iosched.o
- 
- obj-$(CONFIG_BLK_DEV_IO_TRACE)	+= blktrace.o
- obj-$(CONFIG_BLOCK_COMPAT)	+= compat_ioctl.o
-+
-+obj-$(CONFIG_CGROUP_IO_THROTTLE)	+= blk-io-throttle.o
-diff --git a/block/blk-io-throttle.c b/block/blk-io-throttle.c
-new file mode 100644
-index 0000000..804df88
---- /dev/null
-+++ b/block/blk-io-throttle.c
-@@ -0,0 +1,405 @@
-+/*
-+ * blk-io-throttle.c
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public
-+ * License as published by the Free Software Foundation; either
-+ * version 2 of the License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public
-+ * License along with this program; if not, write to the
-+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-+ * Boston, MA 021110-1307, USA.
-+ *
-+ * Copyright (C) 2008 Andrea Righi <righi.andrea@gmail.com>
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/cgroup.h>
-+#include <linux/slab.h>
-+#include <linux/gfp.h>
-+#include <linux/err.h>
-+#include <linux/sched.h>
-+#include <linux/fs.h>
-+#include <linux/jiffies.h>
-+#include <linux/hardirq.h>
-+#include <linux/spinlock.h>
-+#include <linux/uaccess.h>
-+#include <linux/blk-io-throttle.h>
-+
-+#define iothrottle_for_each(n, r) \
-+	for (n = rb_first(r); n; n = rb_next(n))
-+
-+struct iothrottle_node {
-+	struct rb_node node;
-+	dev_t dev;
-+	unsigned long iorate;
-+	unsigned long req;
-+	unsigned long last_request;
-+};
-+
-+struct iothrottle {
-+	struct cgroup_subsys_state css;
-+	spinlock_t lock; /* protects the accounting of the cgroup i/o stats */
-+	struct rb_root tree;
-+};
-+
-+static inline struct iothrottle *cgroup_to_iothrottle(struct cgroup *cont)
-+{
-+	return container_of(cgroup_subsys_state(cont, iothrottle_subsys_id),
-+			    struct iothrottle, css);
-+}
-+
-+static inline struct iothrottle *task_to_iothrottle(struct task_struct *task)
-+{
-+	return container_of(task_subsys_state(task, iothrottle_subsys_id),
-+			    struct iothrottle, css);
-+}
-+
-+static inline struct iothrottle_node *iothrottle_search_node(
-+					const struct iothrottle *iot,
-+					dev_t dev)
-+{
-+	struct rb_node *node = (&iot->tree)->rb_node;
-+
-+	while (node) {
-+		struct iothrottle_node *data = container_of(node,
-+						struct iothrottle_node, node);
-+		if (dev < data->dev)
-+			node = node->rb_left;
-+		else if (dev > data->dev)
-+			node = node->rb_right;
-+		else
-+			return data;
-+	}
-+	return NULL;
-+}
-+
-+static inline int iothrottle_insert_node(struct iothrottle *iot,
-+					 struct iothrottle_node *data)
-+{
-+	struct rb_root *root = &iot->tree;
-+	struct rb_node **new = &(root->rb_node), *parent = NULL;
-+
-+	while (*new) {
-+		struct iothrottle_node *this = container_of(*new,
-+						struct iothrottle_node, node);
-+		parent = *new;
-+		if (data->dev < this->dev)
-+			new = &((*new)->rb_left);
-+		else if (data->dev > this->dev)
-+			new = &((*new)->rb_right);
-+		else
-+			return -EINVAL;
-+	}
-+	rb_link_node(&data->node, parent, new);
-+	rb_insert_color(&data->node, root);
-+
-+	return 0;
-+}
-+
-+static inline void iothrottle_delete_node(struct iothrottle *iot, dev_t dev)
-+{
-+	struct iothrottle_node *data = iothrottle_search_node(iot, dev);
-+
-+	if (likely(data)) {
-+		rb_erase(&data->node, &iot->tree);
-+		kfree(data);
-+	}
-+}
-+
-+/*
-+ * Note: called from kernel/cgroup.c with cgroup_lock() held.
-+ */
-+static struct cgroup_subsys_state *iothrottle_create(
-+			struct cgroup_subsys *ss, struct cgroup *cont)
-+{
-+	struct iothrottle *iot;
-+
-+	iot = kmalloc(sizeof(*iot), GFP_KERNEL);
-+	if (unlikely(!iot))
-+		return ERR_PTR(-ENOMEM);
-+
-+	spin_lock_init(&iot->lock);
-+	iot->tree = RB_ROOT;
-+
-+	return &iot->css;
-+}
-+
-+/*
-+ * Note: called from kernel/cgroup.c with cgroup_lock() held.
-+ */
-+static void iothrottle_destroy(struct cgroup_subsys *ss, struct cgroup *cont)
-+{
-+	struct iothrottle_node *data;
-+	struct rb_node *next;
-+	struct iothrottle *iot = cgroup_to_iothrottle(cont);
-+
-+	next = rb_first(&iot->tree);
-+	while (next) {
-+		data = rb_entry(next, struct iothrottle_node, node);
-+		next = rb_next(&data->node);
-+		rb_erase(&data->node, &iot->tree);
-+		kfree(data);
-+	}
-+	kfree(iot);
-+}
-+
-+static ssize_t iothrottle_read(struct cgroup *cont,
-+			       struct cftype *cft,
-+			       struct file *file,
-+			       char __user *userbuf,
-+			       size_t nbytes,
-+			       loff_t *ppos)
-+{
-+	struct iothrottle *iot;
-+	char *buffer, *s;
-+	struct rb_node *n;
-+	ssize_t ret;
-+
-+	buffer = kmalloc(nbytes + 1, GFP_KERNEL);
-+	if (unlikely(!buffer))
-+		return -ENOMEM;
-+
-+	cgroup_lock();
-+	if (cgroup_is_removed(cont)) {
-+		ret = -ENODEV;
-+		goto out;
-+	}
-+
-+	iot = cgroup_to_iothrottle(cont);
-+
-+	s = buffer;
-+	spin_lock_irq(&iot->lock);
-+	iothrottle_for_each(n, &iot->tree) {
-+		struct iothrottle_node *node =
-+				rb_entry(n, struct iothrottle_node, node);
-+		unsigned long delta = (long)jiffies - (long)node->last_request;
-+
-+		BUG_ON(!node->dev);
-+		s += snprintf(s, nbytes - (s - buffer),
-+				  "=== device (%u,%u) ===\n"
-+				  "bandwidth-max: %lu KiB/sec\n"
-+				  "    requested: %lu bytes\n"
-+				  " last request: %lu jiffies\n"
-+				  "        delta: %lu jiffies\n",
-+				  MAJOR(node->dev), MINOR(node->dev),
-+				  node->iorate, node->req,
-+				  node->last_request, delta);
-+	}
-+	spin_unlock_irq(&iot->lock);
-+	buffer[nbytes] = '\0';
-+
-+	ret = simple_read_from_buffer(userbuf, nbytes,
-+				      ppos, buffer, (s - buffer));
-+out:
-+	cgroup_unlock();
-+	kfree(buffer);
-+	return ret;
-+}
-+
-+static inline dev_t devname2dev_t(const char *buf)
-+{
-+	struct block_device *bdev;
-+	dev_t ret;
-+
-+	bdev = lookup_bdev(buf);
-+	if (IS_ERR(bdev))
-+		return 0;
-+
-+	BUG_ON(!bdev->bd_inode);
-+	ret = bdev->bd_inode->i_rdev;
-+	bdput(bdev);
-+
-+	return ret;
-+}
-+
-+static inline int iothrottle_parse_args(char *buf, size_t nbytes,
-+					dev_t *dev, unsigned long *val)
-+{
-+	char *p;
-+
-+	p = memchr(buf, ':', nbytes);
-+	if (!p)
-+		return -EINVAL;
-+	*p++ = '\0';
-+
-+	*dev = devname2dev_t(buf);
-+	if (!*dev)
-+		return -ENOTBLK;
-+
-+	return strict_strtoul(p, 10, val);
-+}
-+
-+static ssize_t iothrottle_write(struct cgroup *cont,
-+				struct cftype *cft,
-+				struct file *file,
-+				const char __user *userbuf,
-+				size_t nbytes, loff_t *ppos)
-+{
-+	struct iothrottle *iot;
-+	struct iothrottle_node *node, *tmpn = NULL;
-+	char *buffer, *tmpp;
-+	dev_t dev;
-+	unsigned long val;
-+	int ret;
-+
-+	if (unlikely(!nbytes))
-+		return -EINVAL;
-+
-+	buffer = kmalloc(nbytes + 1, GFP_KERNEL);
-+	if (unlikely(!buffer))
-+		return -ENOMEM;
-+
-+	if (copy_from_user(buffer, userbuf, nbytes)) {
-+		ret = -EFAULT;
-+		goto out1;
-+	}
-+
-+	buffer[nbytes] = '\0';
-+	tmpp = strstrip(buffer);
-+
-+	ret = iothrottle_parse_args(tmpp, nbytes, &dev, &val);
-+	if (ret)
-+		goto out1;
-+
-+	/*
-+	 * Pre-allocate a temporary node structure outside locks to use
-+	 * GFP_KERNEL, it will be kfree()ed later if unused.
-+	 */
-+	tmpn = kmalloc(sizeof(*tmpn), GFP_KERNEL);
-+
-+	cgroup_lock();
-+	if (cgroup_is_removed(cont)) {
-+		ret = -ENODEV;
-+		goto out2;
-+	}
-+
-+	iot = cgroup_to_iothrottle(cont);
-+
-+	spin_lock_irq(&iot->lock);
-+	if (!val) {
-+		/* Delete a block device limiting rule */
-+		iothrottle_delete_node(iot, dev);
-+		ret = nbytes;
-+		goto out3;
-+	}
-+	node = iothrottle_search_node(iot, dev);
-+	if (node) {
-+		/* Update a block device limiting rule */
-+		node->iorate = val;
-+		node->req = 0;
-+		node->last_request = jiffies;
-+		ret = nbytes;
-+		goto out3;
-+	}
-+	/* Add a new block device limiting rule */
-+	if (unlikely(!tmpn)) {
-+		ret = -ENOMEM;
-+		goto out3;
-+	}
-+	node = tmpn;
-+	tmpn = NULL;
-+
-+	node->iorate = val;
-+	node->req = 0;
-+	node->last_request = jiffies;
-+	node->dev = dev;
-+	ret = iothrottle_insert_node(iot, node);
-+	BUG_ON(ret);
-+	ret = nbytes;
-+out3:
-+	spin_unlock_irq(&iot->lock);
-+out2:
-+	cgroup_unlock();
-+	if (tmpn)
-+		kfree(tmpn);
-+out1:
-+	kfree(buffer);
-+	return ret;
-+}
-+
-+static struct cftype files[] = {
-+	{
-+		.name = "bandwidth",
-+		.read = iothrottle_read,
-+		.write = iothrottle_write,
-+	},
-+};
-+
-+static int iothrottle_populate(struct cgroup_subsys *ss, struct cgroup *cont)
-+{
-+	return cgroup_add_files(cont, ss, files, ARRAY_SIZE(files));
-+}
-+
-+struct cgroup_subsys iothrottle_subsys = {
-+	.name = "blockio",
-+	.create = iothrottle_create,
-+	.destroy = iothrottle_destroy,
-+	.populate = iothrottle_populate,
-+	.subsys_id = iothrottle_subsys_id,
-+};
-+
-+static inline int __cant_sleep(void)
-+{
-+	return in_atomic() || in_interrupt() || irqs_disabled();
-+}
-+
-+void cgroup_io_account(struct block_device *bdev, size_t bytes)
-+{
-+	struct iothrottle *iot;
-+	struct iothrottle_node *node;
-+	unsigned long delta, t;
-+	long sleep;
-+
-+	if (unlikely(!bdev))
-+		return;
-+
-+	BUG_ON(!bdev->bd_inode);
-+
-+	iot = task_to_iothrottle(current);
-+	if (unlikely(!iot))
-+		return;
-+
-+	spin_lock_irq(&iot->lock);
-+
-+	node = iothrottle_search_node(iot, bdev->bd_inode->i_rdev);
-+	if (!node || !node->iorate)
-+		goto out;
-+
-+	/* Account the I/O activity  */
-+	node->req += bytes;
-+
-+	/* Evaluate if we need to throttle the current process */
-+	delta = (long)jiffies - (long)node->last_request;
-+	if (!delta)
-+		goto out;
-+
-+	t = msecs_to_jiffies(node->req / node->iorate);
-+	if (!t)
-+		goto out;
-+
-+	sleep = t - delta;
-+	if (unlikely(sleep > 0)) {
-+		spin_unlock_irq(&iot->lock);
-+		if (__cant_sleep())
-+			return;
-+		pr_debug("io-throttle: task %p (%s) must sleep %lu jiffies\n",
-+			 current, current->comm, sleep);
-+		schedule_timeout_killable(sleep);
-+		return;
-+	}
-+
-+	/* Reset I/O accounting */
-+	node->req = 0;
-+	node->last_request = jiffies;
-+out:
-+	spin_unlock_irq(&iot->lock);
-+}
-+EXPORT_SYMBOL(cgroup_io_account);
-diff --git a/include/linux/blk-io-throttle.h b/include/linux/blk-io-throttle.h
-new file mode 100644
-index 0000000..cff0c13
---- /dev/null
-+++ b/include/linux/blk-io-throttle.h
-@@ -0,0 +1,12 @@
-+#ifndef BLK_IO_THROTTLE_H
-+#define BLK_IO_THROTTLE_H
-+
-+#ifdef CONFIG_CGROUP_IO_THROTTLE
-+extern void cgroup_io_account(struct block_device *bdev, size_t bytes);
-+#else
-+static inline void cgroup_io_account(struct block_device *bdev, size_t bytes)
-+{
-+}
-+#endif /* CONFIG_CGROUP_IO_THROTTLE */
-+
-+#endif /* BLK_IO_THROTTLE_H */
-diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
-index e287745..0caf3c2 100644
---- a/include/linux/cgroup_subsys.h
-+++ b/include/linux/cgroup_subsys.h
-@@ -48,3 +48,9 @@ SUBSYS(devices)
- #endif
- 
- /* */
-+
-+#ifdef CONFIG_CGROUP_IO_THROTTLE
-+SUBSYS(iothrottle)
-+#endif
-+
-+/* */
-diff --git a/init/Kconfig b/init/Kconfig
-index 6199d11..3117d99 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -306,6 +306,16 @@ config CGROUP_DEVICE
- 	  Provides a cgroup implementing whitelists for devices which
- 	  a process in the cgroup can mknod or open.
- 
-+config CGROUP_IO_THROTTLE
-+	bool "Enable cgroup I/O throttling (EXPERIMENTAL)"
-+	depends on CGROUPS && EXPERIMENTAL
-+	help
-+	  This allows to limit the maximum I/O bandwidth for specific
-+	  cgroup(s).
-+	  See Documentation/controllers/io-throttle.txt for more information.
-+
-+	  If unsure, say N.
-+
- config CPUSETS
- 	bool "Cpuset support"
- 	depends on SMP && CGROUPS
+> On Sat, 7 Jun 2008 03:44:32 +0200 "Oliver Pinter" <oliver.pntr@gmail.com> wrote:
+> 
+> > Add Ingon and netdev to CC
+> > 
+> > 
+> > On 6/6/08, Zsiros Attila <zsirmo@gmail.com> wrote:
+> > > Hy!
+> > >
+> > > I have a problem.
+> > >
+> > > http://www.cyberszeg.hu/log/kern.log
+> > > http://www.cyberszeg.hu/log/config-2.6.25.4
+> > > http://www.cyberszeg.hu/log/lspci.txt
+> > > http://www.cyberszeg.hu/log/ifconfig.txt
+> > >
+> 
+> : Jun  6 14:03:07 www kernel: [ 5897.660390] NETDEV WATCHDOG: eth0: transmit timed out
+> : Jun  6 14:03:07 www kernel: [ 5897.660398] tg3: eth0: transmit timed out, resetting
+> : Jun  6 14:03:07 www kernel: [ 5897.660432] tg3: DEBUG: MAC_TX_STATUS[0000001e] MAC_RX_STATUS[0000000e]
+> : Jun  6 14:03:07 www kernel: [ 5897.660454] tg3: DEBUG: RDMAC_STATUS[00000000] WDMAC_STATUS[00000000]
+> : Jun  6 14:03:07 www kernel: [ 5897.762983] tg3: tg3_stop_block timed out, ofs=1800 enable_bit=2
+> : Jun  6 14:03:07 www kernel: [ 5897.864168] tg3: tg3_stop_block timed out, ofs=c00 enable_bit=2
+> : Jun  6 14:03:07 www kernel: [ 5897.965619] tg3: tg3_stop_block timed out, ofs=4800 enable_bit=2
+> 
+> That looks like a driver failure.
+> 
+> : Jun  6 14:03:07 www kernel: [ 5898.096689] tg3: eth0: Link is down.
+> : Jun  6 14:03:11 www kernel: [ 5901.633931] tg3: eth0: Link is up at 1000 Mbps, full duplex.
+> : Jun  6 14:03:11 www kernel: [ 5901.633937] tg3: eth0: Flow control is on for TX and on for RX.
+> : Jun  6 14:04:11 www kernel: [ 6464.556309] clamscan: page allocation failure. order:3, mode:0x4020
+> : Jun  6 14:04:11 www kernel: [ 6464.556319] Pid: 24139, comm: clamscan Not tainted 2.6.25.4 #1
+> : Jun  6 14:04:11 www kernel: [ 6464.556325] 
+> : Jun  6 14:04:11 www kernel: [ 6464.556326] Call Trace:
+> : Jun  6 14:04:11 www kernel: [ 6464.556329]  <IRQ>  [__alloc_pages+544/890] __alloc_pages+0x220/0x37a
+> : Jun  6 14:04:11 www kernel: [ 6464.556353]  [tcp_v4_do_rcv+186/504] tcp_v4_do_rcv+0xba/0x1f8
+> : Jun  6 14:04:11 www kernel: [ 6464.556359]  [ktime_get+12/98] ktime_get+0xc/0x62
+> : Jun  6 14:04:11 www kernel: [ 6464.556364]  [__netdev_alloc_skb+23/49] __netdev_alloc_skb+0x17/0x31
+> : Jun  6 14:04:11 www kernel: [ 6464.556370]  [__slab_alloc+330/1403] __slab_alloc+0x14a/0x57b
+> : Jun  6 14:04:11 www kernel: [ 6464.556374]  [__netdev_alloc_skb+23/49] __netdev_alloc_skb+0x17/0x31
+> : Jun  6 14:04:11 www kernel: [ 6464.556379]  [__netdev_alloc_skb+23/49] __netdev_alloc_skb+0x17/0x31
+> : Jun  6 14:04:11 www kernel: [ 6464.556384]  [__kmalloc_track_caller+185/190] __kmalloc_track_caller+0xb9/0xbe
+> : Jun  6 14:04:11 www kernel: [ 6464.556391]  [__alloc_skb+86/305] __alloc_skb+0x56/0x131
+> : Jun  6 14:04:11 www kernel: [ 6464.556395]  [__netdev_alloc_skb+23/49] __netdev_alloc_skb+0x17/0x31
+> : Jun  6 14:04:11 www kernel: [ 6464.556408]  [_end+128472975/2130444940] :tg3:tg3_alloc_rx_skb+0x8f/0x17e
+> : Jun  6 14:04:11 www kernel: [ 6464.556418]  [_end+128493403/2130444940] :tg3:tg3_poll+0x6e8/0x922
+> : Jun  6 14:04:11 www kernel: [ 6464.556426]  [net_rx_action+134/309] net_rx_action+0x86/0x135
+> : Jun  6 14:04:11 www kernel: [ 6464.556433]  [__do_softirq+102/212] __do_softirq+0x66/0xd4
+> : Jun  6 14:04:11 www kernel: [ 6464.556439]  [call_softirq+28/48] call_softirq+0x1c/0x30
+> : Jun  6 14:04:11 www kernel: [ 6464.556444]  [do_softirq+48/107] do_softirq+0x30/0x6b
+> : Jun  6 14:04:11 www kernel: [ 6464.556448]  [do_IRQ+114/212] do_IRQ+0x72/0xd4
+> : Jun  6 14:04:11 www kernel: [ 6464.556453]  [ret_from_intr+0/10] ret_from_intr+0x0/0xa
+> 
+> The driver is trying to do a 32 kbyte GFP_ATOMIC memory allocation. 
+> rofl, good luck with that.
+> 
+> But the netwoking code sould survive this.
+> 
+> <12 billion more page allocation failures>
+> 
+> Are you using jumbo frames or have you manually set the MTU to
+> something enormous?  Because 32k is a pretty crazy amount of memory for
+> the driver to be trying to allocate - it's going to fail all over the
+> place, as you have discovered.
+
+Same allocation failed problem (among an TCP issue that is nowadays 
+fixed) was also reported by Brian Vowell:
+  http://bugzilla.kernel.org/show_bug.cgi?id=10767
+
+
 -- 
-1.5.4.3
-
+ i.
