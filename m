@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762998AbYFGBTB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763022AbYFGBTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762998AbYFGBTB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:19:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757075AbYFGBJY
+	id S1763022AbYFGBTZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756607AbYFGBJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:09:24 -0400
-Received: from sous-sol.org ([216.99.217.87]:42493 "EHLO sous-sol.org"
+	Fri, 6 Jun 2008 21:09:27 -0400
+Received: from sous-sol.org ([216.99.217.87]:42497 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759592AbYFGBJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759974AbYFGBJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 6 Jun 2008 21:09:20 -0400
-Message-Id: <20080607010632.546163901@sous-sol.org>
+Message-Id: <20080607010611.618095964@sous-sol.org>
 References: <20080607010215.358296706@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 06 Jun 2008 18:02:58 -0700
+Date: Fri, 06 Jun 2008 18:02:37 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,9 +23,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Thomas Tuttle <ttuttle@google.com>, Matt Mackall <mpm@selenic.com>
-Subject: [patch 43/50] pagemap: fix bug in add_to_pagemap, require aligned-length reads of /proc/pid/pagemap
-Content-Disposition: inline; filename=pagemap-fix-bug-in-add_to_pagemap-require-aligned-length-reads-of-proc-pid-pagemap.patch
+       maximilian attems <max@stro.at>
+Subject: [patch 22/50] types.h: dont expose struct ustat to userspace
+Content-Disposition: inline; filename=types.h-don-t-expose-struct-ustat-to-userspace.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,95 +33,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Thomas Tuttle <ttuttle@google.com>
+From: maximilian attems <max@stro.at>
 
-upstream commit: aae8679b0ebcaa92f99c1c3cb0cd651594a43915
+upstream commit: 6c7c6afbb8c0e60d32a563cae7c6889211e9d9d8
 
-Fix a bug in add_to_pagemap.  Previously, since pm->out was a char *,
-put_user was only copying 1 byte of every PFN, resulting in the top 7
-bytes of each PFN not being copied.  By requiring that reads be a multiple
-of 8 bytes, I can make pm->out and pm->end u64*s instead of char*s, which
-makes put_user work properly, and also simplifies the logic in
-add_to_pagemap a bit.
+<linux/types.h> can't be used together with <sys/ustat.h> because they
+both define struct ustat:
 
-[akpm@linux-foundation.org: coding-style fixes]
-Signed-off-by: Thomas Tuttle <ttuttle@google.com>
-Cc: Matt Mackall <mpm@selenic.com>
+    $ cat test.c
+    #include <sys/ustat.h>
+    #include <linux/types.h>
+    $ gcc -c test.c
+    In file included from test.c:2:
+    /usr/include/linux/types.h:165: error: redefinition of 'struct ustat'
+
+has been reported a while ago to debian, but seems to have been
+lost in cat fighting: http://bugs.debian.org/429064
+
+Signed-off-by: maximilian attems <max@stro.at>
 Cc: <stable@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- fs/proc/task_mmu.c |   28 +++++++++-------------------
- 1 file changed, 9 insertions(+), 19 deletions(-)
+ include/linux/types.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -524,7 +524,7 @@ const struct file_operations proc_clear_
- };
+--- a/include/linux/types.h
++++ b/include/linux/types.h
+@@ -197,8 +197,6 @@ typedef u64 resource_size_t;
+ typedef u32 resource_size_t;
+ #endif
  
- struct pagemapread {
--	char __user *out, *end;
-+	u64 __user *out, *end;
- };
- 
- #define PM_ENTRY_BYTES      sizeof(u64)
-@@ -547,21 +547,11 @@ struct pagemapread {
- static int add_to_pagemap(unsigned long addr, u64 pfn,
- 			  struct pagemapread *pm)
- {
--	/*
--	 * Make sure there's room in the buffer for an
--	 * entire entry.  Otherwise, only copy part of
--	 * the pfn.
--	 */
--	if (pm->out + PM_ENTRY_BYTES >= pm->end) {
--		if (copy_to_user(pm->out, &pfn, pm->end - pm->out))
--			return -EFAULT;
--		pm->out = pm->end;
--		return PM_END_OF_BUFFER;
--	}
+-#endif	/* __KERNEL__ */
 -
- 	if (put_user(pfn, pm->out))
- 		return -EFAULT;
--	pm->out += PM_ENTRY_BYTES;
-+	pm->out++;
-+	if (pm->out >= pm->end)
-+		return PM_END_OF_BUFFER;
- 	return 0;
- }
+ struct ustat {
+ 	__kernel_daddr_t	f_tfree;
+ 	__kernel_ino_t		f_tinode;
+@@ -206,4 +204,6 @@ struct ustat {
+ 	char			f_fpack[6];
+ };
  
-@@ -662,7 +652,7 @@ static ssize_t pagemap_read(struct file 
- 
- 	ret = -EINVAL;
- 	/* file position must be aligned */
--	if (*ppos % PM_ENTRY_BYTES)
-+	if ((*ppos % PM_ENTRY_BYTES) || (count % PM_ENTRY_BYTES))
- 		goto out_task;
- 
- 	ret = 0;
-@@ -692,8 +682,8 @@ static ssize_t pagemap_read(struct file 
- 		goto out_pages;
- 	}
- 
--	pm.out = buf;
--	pm.end = buf + count;
-+	pm.out = (u64 *)buf;
-+	pm.end = (u64 *)(buf + count);
- 
- 	if (!ptrace_may_attach(task)) {
- 		ret = -EIO;
-@@ -718,9 +708,9 @@ static ssize_t pagemap_read(struct file 
- 		if (ret == PM_END_OF_BUFFER)
- 			ret = 0;
- 		/* don't need mmap_sem for these, but this looks cleaner */
--		*ppos += pm.out - buf;
-+		*ppos += (char *)pm.out - buf;
- 		if (!ret)
--			ret = pm.out - buf;
-+			ret = (char *)pm.out - buf;
- 	}
- 
- out_pages:
++#endif	/* __KERNEL__ */
++
+ #endif /* _LINUX_TYPES_H */
 
 -- 
