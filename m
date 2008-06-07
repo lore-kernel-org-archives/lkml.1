@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757621AbYFGBFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758082AbYFGBGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757621AbYFGBFz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbYFGBFX
+	id S1758082AbYFGBGU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbYFGBFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:05:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54510 "EHLO
+	Fri, 6 Jun 2008 21:05:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37832 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754059AbYFGBFF (ORCPT
+	by vger.kernel.org with ESMTP id S1754279AbYFGBFI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 21:05:05 -0400
-Date: Fri, 6 Jun 2008 18:04:39 -0700
+	Fri, 6 Jun 2008 21:05:08 -0400
+Date: Fri, 6 Jun 2008 18:04:30 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Rik van Riel <riel@redhat.com>
 Cc: linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
-       kosaki.motohiro@jp.fujitsu.com, Lee.Schermerhorn@hp.com
-Subject: Re: [PATCH -mm 06/25] split LRU lists into anon & file sets
-Message-Id: <20080606180439.e5954a2e.akpm@linux-foundation.org>
-In-Reply-To: <20080606202858.681500833@redhat.com>
+       kosaki.motohiro@jp.fujitsu.com, minchan.kim@gmail.com,
+       Lee.Schermerhorn@hp.com, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH -mm 04/25] free swap space on swap-in/activation
+Message-Id: <20080606180430.38bf1d82.akpm@linux-foundation.org>
+In-Reply-To: <20080606202858.570020389@redhat.com>
 References: <20080606202838.390050172@redhat.com>
-	<20080606202858.681500833@redhat.com>
+	<20080606202858.570020389@redhat.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,167 +29,88 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 06 Jun 2008 16:28:44 -0400
+On Fri, 06 Jun 2008 16:28:42 -0400
 Rik van Riel <riel@redhat.com> wrote:
 
 > From: Rik van Riel <riel@redhat.com>
 > 
-> Split the LRU lists in two, one set for pages that are backed by
-> real file systems ("file") and one for pages that are backed by
-> memory and swap ("anon").  The latter includes tmpfs.
+> Free swap cache entries when swapping in pages if vm_swap_full()
+> [swap space > 1/2 used].  Uses new pagevec to reduce pressure
+> on locks.
 > 
-> Eventually mlocked pages will be taken off the LRUs alltogether.
-> A patch for that already exists and just needs to be integrated
-> into this series.
+> Signed-off-by: Rik van Riel <riel@redhat.com>
+> Signed-off-by: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+> Signed-off-by: MinChan Kim <minchan.kim@gmail.com>
 > 
-> This patch mostly has the infrastructure and a basic policy to
-> balance how much we scan the anon lists and how much we scan
-> the file lists. The big policy changes are in separate patches.
->
-
-The changelogs are a bit scrappy and could do with some care
-
-- stale assertions such as the above
-
-- "From:<random number of spaces>Lee" in various places
-
-- Some have the --- separator and others don't (this trips me up).
-
-- Stuff like "Against: 2.6.26-rc2-mm1" right in the middle of the
-  changelog for me to hunt down and squish.
-
-- "TODO:  DEBUGGING ONLY: NOT FOR UPSTREAM MERGE" <<-- what's up with this?
-
-- random Capitalisation in Various patch Titles.
-
-- "V2 -> V3:" logging in the main changelog - not relevant in the
-  final commit hence more for me to edit away.
-
-- Strange inventions like "Originally Signed-off-by:"
-
-- please prefer to prefix the patch titles with a suitable subsystem
-  identifier.  In this case "vmscan: " would suit.
-
-- Other stuff I forgot.  A general recheck and cleanup would be nice.
-
-  I've actually fixed all ofthe above but I don't yet know whether
-  I'll be checking all this in.
-
-> Index: linux-2.6.26-rc2-mm1/fs/proc/proc_misc.c
+> ---
+>  include/linux/pagevec.h |    1 +
+>  include/linux/swap.h    |    6 ++++++
+>  mm/swap.c               |   18 ++++++++++++++++++
+>  mm/swapfile.c           |   25 ++++++++++++++++++++++---
+>  mm/vmscan.c             |    7 +++++++
+>  5 files changed, 54 insertions(+), 3 deletions(-)
+> 
+> Index: linux-2.6.26-rc2-mm1/mm/vmscan.c
 > ===================================================================
-> --- linux-2.6.26-rc2-mm1.orig/fs/proc/proc_misc.c	2008-05-23 14:21:21.000000000 -0400
-> +++ linux-2.6.26-rc2-mm1/fs/proc/proc_misc.c	2008-05-23 14:21:34.000000000 -0400
-> @@ -132,6 +132,10 @@ static int meminfo_read_proc(char *page,
->  	unsigned long allowed;
->  	struct vmalloc_info vmi;
->  	long cached;
-> +	unsigned long inactive_anon;
-> +	unsigned long active_anon;
-> +	unsigned long inactive_file;
-> +	unsigned long active_file;
-
-Shouldn't this be an array[NR_LRU_LISTS]?
-
->  /*
->   * display in kilobytes.
-> @@ -150,48 +154,61 @@ static int meminfo_read_proc(char *page,
+> --- linux-2.6.26-rc2-mm1.orig/mm/vmscan.c	2008-05-23 14:21:33.000000000 -0400
+> +++ linux-2.6.26-rc2-mm1/mm/vmscan.c	2008-05-23 14:21:33.000000000 -0400
+> @@ -619,6 +619,9 @@ free_it:
+>  		continue;
 >  
->  	get_vmalloc_info(&vmi);
+>  activate_locked:
+> +		/* Not a candidate for swapping, so reclaim swap space. */
+> +		if (PageSwapCache(page) && vm_swap_full())
+
+The patch puts rather a lot of pressure onto vm_swap_full().  We might
+want to look into optimising that.
+
+- Is the 50% thing optimum?  Could go higher and perhaps should be
+  based on amount-of-memory.
+
+- Can precalculate the fraction rather than doing it inline all the time.
+
+- Can make total_swap_pages __read_mostly and have a think about
+  nr_swap_pages too.
+
+- Can completely optimise the thing away if !CONFIG_SWAP.
+
+
+Has all this code been tested with CONFIG_SWAP=n?
+
+> Index: linux-2.6.26-rc2-mm1/mm/swap.c
+> ===================================================================
+> --- linux-2.6.26-rc2-mm1.orig/mm/swap.c	2008-05-23 14:21:33.000000000 -0400
+> +++ linux-2.6.26-rc2-mm1/mm/swap.c	2008-05-23 14:21:33.000000000 -0400
+> @@ -443,6 +443,24 @@ void pagevec_strip(struct pagevec *pvec)
+>  	}
+>  }
 >  
-> +	inactive_anon = global_page_state(NR_INACTIVE_ANON);
-> +	active_anon   = global_page_state(NR_ACTIVE_ANON);
-> +	inactive_file = global_page_state(NR_INACTIVE_FILE);
-> +	active_file   = global_page_state(NR_ACTIVE_FILE);
+> +/*
+> + * Try to free swap space from the pages in a pagevec
+> + */
+> +void pagevec_swap_free(struct pagevec *pvec)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < pagevec_count(pvec); i++) {
+> +		struct page *page = pvec->pages[i];
+> +
+> +		if (PageSwapCache(page) && !TestSetPageLocked(page)) {
+> +			if (PageSwapCache(page))
+> +				remove_exclusive_swap_page_ref(page);
+> +			unlock_page(page);
+> +		}
+> +	}
+> +}
 
-then this can perhaps become a loop.
+What's going on here.
 
->  	/*
->  	 * Tagged format, for easy grepping and expansion.
->  	 */
->  	len = sprintf(page,
-> -		"MemTotal:     %8lu kB\n"
-> -		"MemFree:      %8lu kB\n"
-> -		"Buffers:      %8lu kB\n"
-> -		"Cached:       %8lu kB\n"
-> -		"SwapCached:   %8lu kB\n"
-> -		"Active:       %8lu kB\n"
-> -		"Inactive:     %8lu kB\n"
-> +		"MemTotal:       %8lu kB\n"
-> +		"MemFree:        %8lu kB\n"
-> +		"Buffers:        %8lu kB\n"
-> +		"Cached:         %8lu kB\n"
-> +		"SwapCached:     %8lu kB\n"
-> +		"Active:         %8lu kB\n"
-> +		"Inactive:       %8lu kB\n"
-> +		"Active(anon):   %8lu kB\n"
-> +		"Inactive(anon): %8lu kB\n"
-> +		"Active(file):   %8lu kB\n"
-> +		"Inactive(file): %8lu kB\n"
->  #ifdef CONFIG_HIGHMEM
-> -		"HighTotal:    %8lu kB\n"
-> -		"HighFree:     %8lu kB\n"
-> -		"LowTotal:     %8lu kB\n"
-> -		"LowFree:      %8lu kB\n"
-> -#endif
-> -		"SwapTotal:    %8lu kB\n"
-> -		"SwapFree:     %8lu kB\n"
-> -		"Dirty:        %8lu kB\n"
-> -		"Writeback:    %8lu kB\n"
-> -		"AnonPages:    %8lu kB\n"
-> -		"Mapped:       %8lu kB\n"
-> -		"Slab:         %8lu kB\n"
-> -		"SReclaimable: %8lu kB\n"
-> -		"SUnreclaim:   %8lu kB\n"
-> -		"PageTables:   %8lu kB\n"
-> -		"NFS_Unstable: %8lu kB\n"
-> -		"Bounce:       %8lu kB\n"
-> -		"WritebackTmp: %8lu kB\n"
-> -		"CommitLimit:  %8lu kB\n"
-> -		"Committed_AS: %8lu kB\n"
-> -		"VmallocTotal: %8lu kB\n"
-> -		"VmallocUsed:  %8lu kB\n"
-> -		"VmallocChunk: %8lu kB\n",
-> +		"HighTotal:      %8lu kB\n"
-> +		"HighFree:       %8lu kB\n"
-> +		"LowTotal:       %8lu kB\n"
-> +		"LowFree:        %8lu kB\n"
-> +#endif
-> +		"SwapTotal:      %8lu kB\n"
-> +		"SwapFree:       %8lu kB\n"
-> +		"Dirty:          %8lu kB\n"
-> +		"Writeback:      %8lu kB\n"
-> +		"AnonPages:      %8lu kB\n"
-> +		"Mapped:         %8lu kB\n"
-> +		"Slab:           %8lu kB\n"
-> +		"SReclaimable:   %8lu kB\n"
-> +		"SUnreclaim:     %8lu kB\n"
-> +		"PageTables:     %8lu kB\n"
-> +		"NFS_Unstable:   %8lu kB\n"
-> +		"Bounce:         %8lu kB\n"
-> +		"WritebackTmp:   %8lu kB\n"
-> +		"CommitLimit:    %8lu kB\n"
-> +		"Committed_AS:   %8lu kB\n"
-> +		"VmallocTotal:   %8lu kB\n"
-> +		"VmallocUsed:    %8lu kB\n"
-> +		"VmallocChunk:   %8lu kB\n",
->  		K(i.totalram),
->  		K(i.freeram),
->  		K(i.bufferram),
->  		K(cached),
->  		K(total_swapcache_pages),
-> -		K(global_page_state(NR_ACTIVE)),
-> -		K(global_page_state(NR_INACTIVE)),
-> +		K(active_anon   + active_file),
-> +		K(inactive_anon + inactive_file),
-> +		K(active_anon),
-> +		K(inactive_anon),
-> +		K(active_file),
-> +		K(inactive_file),
+Normally we'll bump a page's refcount to account for its presence in a
+pagevec.  This code doesn't do that.
 
-Do we really want to put all this stuff into /proc/meminfo?
+Is it safe?  If so, how come?
 
-Would it be better to aggregate it in some manner for meminfo and show
-the fine-grained info in /proc/vmstat?
-
+Suitable code comments should be added which explain this unusual and
+dangerous optimisation.  Or fix the bug :)
 
 
