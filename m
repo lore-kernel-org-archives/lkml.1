@@ -1,102 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757046AbYFGWta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758633AbYFGWyi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757046AbYFGWta (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 18:49:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbYFGWtU
+	id S1758633AbYFGWyi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 18:54:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbYFGWy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 18:49:20 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:57886 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752157AbYFGWtT (ORCPT
+	Sat, 7 Jun 2008 18:54:29 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:38931 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752240AbYFGWy2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 18:49:19 -0400
+	Sat, 7 Jun 2008 18:54:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=k5v+eAA7N137fLolvMrNDd//umoSc8++yLNvvl94g//ToNCJrdtrSOnePN+X1eBK5H
-         8VuXhgqxPMEPb3rWm+UlCNagDNRR04tYg6Y6VqWh2wHyjEBBg9sEKgGoYnpXB+jXd3oD
-         bfvgsjHMF8nOQlMsj21X31qbZ2AA9AInY/APo=
-Date: Sun, 8 Jun 2008 00:48:40 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: video4linux-list@redhat.com, LKML <linux-kernel@vger.kernel.org>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: [RFC PATCH] v4l: saa7134: fix multiple clients access (and oops)
-Message-ID: <20080607224835.GA25025@joi>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ScrBkoLqV3tiv3HwKpnsAKLOg0J8pGn31/Bvv8en+RPakZp32vA7a828pgSFs1/03Y
+         Kr1tHiKSipMkdRPCGLjLYONV8+xJCZL/9YSCM5f2JYca7PF5+jTsxyIjRmIzjcvkQsHM
+         W/cmzPbpNP2ur+SNv9rp8h5yWM3RiUDPg7IwA=
+Message-ID: <dd18b0c30806071554t1aa3e1afo34a8ed4d558a6438@mail.gmail.com>
+Date: Sat, 7 Jun 2008 22:54:27 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #10825] appletouch after wakeup
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Oliver Neukum" <oliver@neukum.org>
+In-Reply-To: <dCRO4tbfLzK.A.SAD.x2vSIB@albercik>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <GIilET9wkhI.A.JzB.81vSIB@albercik>
+	 <dCRO4tbfLzK.A.SAD.x2vSIB@albercik>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While looking for a reason of multiple oopses in empress_querycap as reported
-by kerneloops.org I noticed that only first open of device initializes
-struct_file->private_data properly. (Closing the device was broken too).
+On Sat, Jun 7, 2008 at 8:42 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10825
+> Subject         : appletouch after wakeup
+> Submitter       : Justin Mattock <justinmattock@gmail.com>
+> Date            : 2008-05-27 3:29 (12 days old)
+> References      : http://marc.info/?l=linux-kernel&amp;m=121185900618047&amp;w=4
+>                  http://lkml.org/lkml/2008/5/31/193
+>                  http://lkml.org/lkml/2008/5/31/193
+> Handled-By      : Oliver Neukum <oliver@neukum.org>
+>
+>
+>
 
-So initialize private_date and free all resources on last close.
-I think this change will fix oops in empress_querycap.
+I'm not seeing appletouch react this way after applying the patches.
+regards;
 
-http://kerneloops.org/guilty.php?guilty=empress_querycap&version=2.6.25-release&start=1671168&end=1703935&class=oops
-
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: video4linux-list@redhat.com
----
-
-Compile tested only. Please test on real hardware.
-
----
- drivers/media/video/saa7134/saa7134-empress.c |   23 +++++++++++++----------
- 1 files changed, 13 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/media/video/saa7134/saa7134-empress.c b/drivers/media/video/saa7134/saa7134-empress.c
-index 81431ee..e543074 100644
---- a/drivers/media/video/saa7134/saa7134-empress.c
-+++ b/drivers/media/video/saa7134/saa7134-empress.c
-@@ -96,11 +96,11 @@ static int ts_open(struct inode *inode, struct file *file)
- 	saa_writeb(SAA7134_AUDIO_MUTE_CTRL,
- 		saa_readb(SAA7134_AUDIO_MUTE_CTRL) & ~(1 << 6));
- 
--	dev->empress_users++;
--	file->private_data = dev;
- 	err = 0;
- 
- done_up:
-+	dev->empress_users++;
-+	file->private_data = dev;
- 	mutex_unlock(&dev->empress_tsq.vb_lock);
- done:
- 	return err;
-@@ -110,16 +110,19 @@ static int ts_release(struct inode *inode, struct file *file)
- {
- 	struct saa7134_dev *dev = file->private_data;
- 
--	videobuf_stop(&dev->empress_tsq);
--	videobuf_mmap_free(&dev->empress_tsq);
--	dev->empress_users--;
-+	mutex_lock(&dev->empress_tsq.vb_lock);
-+	if (--dev->empress_users == 0) {
-+		videobuf_stop(&dev->empress_tsq);
-+		videobuf_mmap_free(&dev->empress_tsq);
- 
--	/* stop the encoder */
--	ts_reset_encoder(dev);
-+		/* stop the encoder */
-+		ts_reset_encoder(dev);
- 
--	/* Mute audio */
--	saa_writeb(SAA7134_AUDIO_MUTE_CTRL,
--		saa_readb(SAA7134_AUDIO_MUTE_CTRL) | (1 << 6));
-+		/* Mute audio */
-+		saa_writeb(SAA7134_AUDIO_MUTE_CTRL,
-+			saa_readb(SAA7134_AUDIO_MUTE_CTRL) | (1 << 6));
-+	}
-+	mutex_unlock(&dev->empress_tsq.vb_lock);
- 
- 	return 0;
- }
 -- 
-1.5.4.5
-
+Justin P. Mattock
