@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763640AbYFGBUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763843AbYFGBVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763640AbYFGBUo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760470AbYFGBJc
+	id S1763843AbYFGBVH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759826AbYFGBJe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:09:32 -0400
-Received: from sous-sol.org ([216.99.217.87]:42514 "EHLO sous-sol.org"
+	Fri, 6 Jun 2008 21:09:34 -0400
+Received: from sous-sol.org ([216.99.217.87]:42518 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753629AbYFGBJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757375AbYFGBJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 6 Jun 2008 21:09:23 -0400
-Message-Id: <20080607010617.519962372@sous-sol.org>
+Message-Id: <20080607010635.472492057@sous-sol.org>
 References: <20080607010215.358296706@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 06 Jun 2008 18:02:44 -0700
+Date: Fri, 06 Jun 2008 18:03:02 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,10 +23,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       David Chinner <dgc@sgi.com>, Christoph Hellwig <hch@infradead.org>,
-       Lachlan McIlroy <lachlan@sgi.com>
-Subject: [patch 29/50] XFS: Fix memory corruption with small buffer reads
-Content-Disposition: inline; filename=xfs-fix-memory-corruption-with-small-buffer-reads.patch
+       Dan Williams <dan.j.williams@intel.com>, Neil Brown <neilb@suse.de>
+Subject: [patch 47/50] md: fix uninitialized use of mddev->recovery_wait
+Content-Disposition: inline; filename=md-fix-uninitialized-use-of-mddev-recovery_wait.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,139 +33,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Christoph Hellwig <hch@infradead.org>
+From: Dan Williams <dan.j.williams@intel.com>
 
-upstream commit: 6ab455eeaff6893cd06da33843e840d888cdc04a
+upstream commit: a6d8113a986c66aeb379a26b6e0062488b3e59e1
 
-When we have multiple buffers in a single page for a blocksize == pagesize
-filesystem we might overwrite the page contents if two callers hit it
-shortly after each other. To prevent that we need to keep the page locked
-until I/O is completed and the page marked uptodate.
+If an array was created with --assume-clean we will oops when trying to
+set ->resync_max.
 
-Thanks to Eric Sandeen for triaging this bug and finding a reproducible
-testcase and Dave Chinner for additional advice.
+Fix this by initializing ->recovery_wait in mddev_find.
 
-This should fix kernel.org bz #10421.
-
-Tested-by: Eric Sandeen <sandeen@sandeen.net>
-
-SGI-PV: 981813
-SGI-Modid: xfs-linux-melb:xfs-kern:31173a
-
-Signed-off-by: Christoph Hellwig <hch@infradead.org>
-Signed-off-by: David Chinner <dgc@sgi.com>
-Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+Cc: <stable@kernel.org>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Signed-off-by: Neil Brown <neilb@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- fs/xfs/linux-2.6/xfs_buf.c |   24 ++++++++++++++++++++----
- fs/xfs/linux-2.6/xfs_buf.h |   19 +++++++++++++++++++
- 2 files changed, 39 insertions(+), 4 deletions(-)
+ drivers/md/md.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/fs/xfs/linux-2.6/xfs_buf.c
-+++ b/fs/xfs/linux-2.6/xfs_buf.c
-@@ -387,6 +387,8 @@ _xfs_buf_lookup_pages(
- 		if (unlikely(page == NULL)) {
- 			if (flags & XBF_READ_AHEAD) {
- 				bp->b_page_count = i;
-+				for (i = 0; i < bp->b_page_count; i++)
-+					unlock_page(bp->b_pages[i]);
- 				return -ENOMEM;
- 			}
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -274,6 +274,7 @@ static mddev_t * mddev_find(dev_t unit)
+ 	atomic_set(&new->active, 1);
+ 	spin_lock_init(&new->write_lock);
+ 	init_waitqueue_head(&new->sb_wait);
++	init_waitqueue_head(&new->recovery_wait);
+ 	new->reshape_position = MaxSector;
+ 	new->resync_max = MaxSector;
  
-@@ -416,17 +418,24 @@ _xfs_buf_lookup_pages(
- 		ASSERT(!PagePrivate(page));
- 		if (!PageUptodate(page)) {
- 			page_count--;
--			if (blocksize < PAGE_CACHE_SIZE && !PagePrivate(page)) {
-+			if (blocksize >= PAGE_CACHE_SIZE) {
-+				if (flags & XBF_READ)
-+					bp->b_flags |= _XBF_PAGE_LOCKED;
-+			} else if (!PagePrivate(page)) {
- 				if (test_page_region(page, offset, nbytes))
- 					page_count++;
- 			}
- 		}
+@@ -5559,7 +5560,6 @@ void md_do_sync(mddev_t *mddev)
+ 		window/2,(unsigned long long) max_sectors/2);
  
--		unlock_page(page);
- 		bp->b_pages[i] = page;
- 		offset = 0;
- 	}
+ 	atomic_set(&mddev->recovery_active, 0);
+-	init_waitqueue_head(&mddev->recovery_wait);
+ 	last_check = 0;
  
-+	if (!(bp->b_flags & _XBF_PAGE_LOCKED)) {
-+		for (i = 0; i < bp->b_page_count; i++)
-+			unlock_page(bp->b_pages[i]);
-+	}
-+
- 	if (page_count == bp->b_page_count)
- 		bp->b_flags |= XBF_DONE;
- 
-@@ -746,6 +755,7 @@ xfs_buf_associate_memory(
- 	bp->b_count_desired = len;
- 	bp->b_buffer_length = buflen;
- 	bp->b_flags |= XBF_MAPPED;
-+	bp->b_flags &= ~_XBF_PAGE_LOCKED;
- 
- 	return 0;
- }
-@@ -1093,8 +1103,10 @@ _xfs_buf_ioend(
- 	xfs_buf_t		*bp,
- 	int			schedule)
- {
--	if (atomic_dec_and_test(&bp->b_io_remaining) == 1)
-+	if (atomic_dec_and_test(&bp->b_io_remaining) == 1) {
-+		bp->b_flags &= ~_XBF_PAGE_LOCKED;
- 		xfs_buf_ioend(bp, schedule);
-+	}
- }
- 
- STATIC void
-@@ -1125,6 +1137,9 @@ xfs_buf_bio_end_io(
- 
- 		if (--bvec >= bio->bi_io_vec)
- 			prefetchw(&bvec->bv_page->flags);
-+
-+		if (bp->b_flags & _XBF_PAGE_LOCKED)
-+			unlock_page(page);
- 	} while (bvec >= bio->bi_io_vec);
- 
- 	_xfs_buf_ioend(bp, 1);
-@@ -1163,7 +1178,8 @@ _xfs_buf_ioapply(
- 	 * filesystem block size is not smaller than the page size.
- 	 */
- 	if ((bp->b_buffer_length < PAGE_CACHE_SIZE) &&
--	    (bp->b_flags & XBF_READ) &&
-+	    ((bp->b_flags & (XBF_READ|_XBF_PAGE_LOCKED)) ==
-+	      (XBF_READ|_XBF_PAGE_LOCKED)) &&
- 	    (blocksize >= PAGE_CACHE_SIZE)) {
- 		bio = bio_alloc(GFP_NOIO, 1);
- 
---- a/fs/xfs/linux-2.6/xfs_buf.h
-+++ b/fs/xfs/linux-2.6/xfs_buf.h
-@@ -66,6 +66,25 @@ typedef enum {
- 	_XBF_PAGES = (1 << 18),	    /* backed by refcounted pages	   */
- 	_XBF_RUN_QUEUES = (1 << 19),/* run block device task queue	   */
- 	_XBF_DELWRI_Q = (1 << 21),   /* buffer on delwri queue		   */
-+
-+	/*
-+	 * Special flag for supporting metadata blocks smaller than a FSB.
-+	 *
-+	 * In this case we can have multiple xfs_buf_t on a single page and
-+	 * need to lock out concurrent xfs_buf_t readers as they only
-+	 * serialise access to the buffer.
-+	 *
-+	 * If the FSB size >= PAGE_CACHE_SIZE case, we have no serialisation
-+	 * between reads of the page. Hence we can have one thread read the
-+	 * page and modify it, but then race with another thread that thinks
-+	 * the page is not up-to-date and hence reads it again.
-+	 *
-+	 * The result is that the first modifcation to the page is lost.
-+	 * This sort of AGF/AGI reading race can happen when unlinking inodes
-+	 * that require truncation and results in the AGI unlinked list
-+	 * modifications being lost.
-+	 */
-+	_XBF_PAGE_LOCKED = (1 << 22),
- } xfs_buf_flags_t;
- 
- typedef enum {
+ 	if (j>2) {
 
 -- 
