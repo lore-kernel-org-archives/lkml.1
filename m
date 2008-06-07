@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762198AbYFGBOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbYFGBOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762198AbYFGBOX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:14:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759934AbYFGBJI
+	id S1755509AbYFGBOr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:14:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757927AbYFGBJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:09:08 -0400
-Received: from sous-sol.org ([216.99.217.87]:42379 "EHLO sous-sol.org"
+	Fri, 6 Jun 2008 21:09:09 -0400
+Received: from sous-sol.org ([216.99.217.87]:42399 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760217AbYFGBJB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 21:09:01 -0400
-Message-Id: <20080607010600.773462377@sous-sol.org>
+	id S1757926AbYFGBJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 21:09:03 -0400
+Message-Id: <20080607010552.869620643@sous-sol.org>
 References: <20080607010215.358296706@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 06 Jun 2008 18:02:29 -0700
+Date: Fri, 06 Jun 2008 18:02:22 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,10 +23,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jean Delvare <khali@linux-fr.org>, Ben Gardner <bgardner@wabtec.com>,
+       Eugeniy Meshcheryakov <eugen@debian.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 14/50] i2c/max6875: Really prevent 24RF08 corruption
-Content-Disposition: inline; filename=i2c-max6875-really-prevent-24rf08-corruption.patch
+Subject: [patch 07/50] USB: do not handle device 1410:5010 in option driver
+Content-Disposition: inline; filename=usb-do-not-handle-device-1410-5010-in-option-driver.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,37 +34,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Jean Delvare <khali@linux-fr.org>
+From: Eugeniy Meshcheryakov <eugen@debian.org>
 
-commit 70455e790391dac85d9b483a9e286a40df1ecc7f in upstream
+commit cdafc37a7b727b75ced65e31e47dafbd8b70f97f upstream
 
-i2c-core takes care of the possible corruption of 24RF08 chips for
-quite some times, so device drivers no longer need to do it. And they
-really should not, as applying the prevention twice voids it.
+This device is not a serial port, but a virtual CD-ROM device. For
+example with my Novatel MC950D:
 
-I thought that I had fixed all drivers long ago but apparently I had
-missed that one.
+lsusb -v -d 1410:5010 | grep InterfaceClass
+      bInterfaceClass         8 Mass Storage
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Cc: Ben Gardner <bgardner@wabtec.com>
+After some time (ca. 5min) or if virtual CD is ejected, device id
+changes to 1410:4400:
+
+% lsusb -v -d 1410:4400 | grep InterfaceClass
+      bInterfaceClass       255 Vendor Specific Class
+      bInterfaceClass       255 Vendor Specific Class
+
+Variable name says that 0x5010 is a Novatel U727, but searching in
+internet shows, that this device also provides virtual CD that should be
+ejected before use. Product id for serial port in this case is 0x4100.
+
+Signed-off-by: Eugeniy Meshcheryakov <eugen@debian.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 
 ---
- drivers/i2c/chips/max6875.c |    3 ---
+ drivers/usb/serial/option.c |    3 ---
  1 file changed, 3 deletions(-)
 
---- a/drivers/i2c/chips/max6875.c
-+++ b/drivers/i2c/chips/max6875.c
-@@ -207,9 +207,6 @@ static int max6875_detect(struct i2c_ada
- 	fake_client->flags = 0;
- 	strlcpy(fake_client->name, "max6875 subclient", I2C_NAME_SIZE);
+--- a/drivers/usb/serial/option.c
++++ b/drivers/usb/serial/option.c
+@@ -154,8 +154,6 @@ static int  option_send_setup(struct usb
+ #define NOVATELWIRELESS_PRODUCT_MC727		0x4100
+ #define NOVATELWIRELESS_PRODUCT_MC950D		0x4400
  
--	/* Prevent 24RF08 corruption (in case of user error) */
--	i2c_smbus_write_quick(real_client, 0);
+-#define NOVATELWIRELESS_PRODUCT_U727		0x5010
 -
- 	if ((err = i2c_attach_client(real_client)) != 0)
- 		goto exit_kfree2;
- 
+ /* FUTURE NOVATEL PRODUCTS */
+ #define NOVATELWIRELESS_PRODUCT_EVDO_1		0x6000
+ #define NOVATELWIRELESS_PRODUCT_HSPA_1		0x7000
+@@ -269,7 +267,6 @@ static struct usb_device_id option_ids[]
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_EU870D) }, /* Novatel EU850D/EU860D/EU870D */
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_MC950D) }, /* Novatel MC930D/MC950D */
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_MC727) }, /* Novatel MC727/U727/USB727 */
+-	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_U727) }, /* Novatel U727 */
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_EVDO_1) }, /* Novatel EVDO product */
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_HSPA_1) }, /* Novatel HSPA product */
+ 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_EMBEDDED_1) }, /* Novatel Embedded product */
 
 -- 
