@@ -1,67 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760648AbYFGBJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760704AbYFGBKF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760648AbYFGBJj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:09:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758689AbYFGBGg
+	id S1760704AbYFGBKF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:10:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757046AbYFGBGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:06:36 -0400
-Received: from smtp.flash.net.br ([201.46.240.48]:50658 "EHLO
-	madrid.flash.tv.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758633AbYFGBGf (ORCPT
+	Fri, 6 Jun 2008 21:06:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59947 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758741AbYFGBGj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 21:06:35 -0400
-X-Greylist: delayed 668 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Jun 2008 21:06:34 EDT
-Date: Fri, 6 Jun 2008 21:52:27 -0300
-From: Rog?rio Brito <rbrito@ime.usp.br>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6.26-rc4] Problems with rt2x00 USB interface on powerpc
-Message-ID: <20080607005227.GA1739@ime.usp.br>
-References: <20080601193000.GA3056@ime.usp.br> <20080606162324.GB635@tuxdriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080606162324.GB635@tuxdriver.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 6 Jun 2008 21:06:39 -0400
+Date: Fri, 6 Jun 2008 18:05:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
+       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org, eric.whitney@hp.com
+Subject: Re: [PATCH -mm 15/25] Ramfs and Ram Disk pages are non-reclaimable
+Message-Id: <20080606180510.87a49e19.akpm@linux-foundation.org>
+In-Reply-To: <20080606202859.408662219@redhat.com>
+References: <20080606202838.390050172@redhat.com>
+	<20080606202859.408662219@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First of all, thanks John for taking the time to reply to my
-message.
+On Fri, 06 Jun 2008 16:28:53 -0400
+Rik van Riel <riel@redhat.com> wrote:
 
-On Jun 06 2008, John W. Linville wrote:
-> On Sun, Jun 01, 2008 at 04:30:01PM -0300, Rogério Brito wrote:
-> > I have an iBook G3 600MHz combo (late 2001 model, powerpc) with a USB
-> > wireless card rt2x00 that doesn't work.
-> > 
-> > I just compiled a fresh 2.6.26-rc4 kernel and it can't get a lease from
-> > the access point, even though it is able to see the access point.
-> > 
-> > The userland here is Debian unstable (sid) and I can perform some of the
-> > steps in the direction of configuring the interface. For instance, the
-> > following works (I am using wep as the encryption system with other systems
-> > running under Linux, but, unfortunately, EVEN disabling encryption for the
-> > sake of the tests doesn't help here):
-(...)
-> > (Here, it is unable to grab an IP addess from the access point)
 > 
-> You should set the key _before_ setting the essid.
+> From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+> 
+> Christoph Lameter pointed out that ram disk pages also clutter the
+> LRU lists.  When vmscan finds them dirty and tries to clean them,
+> the ram disk writeback function just redirties the page so that it
+> goes back onto the active list.  Round and round she goes...
+> 
+> Define new address_space flag [shares address_space flags member
+> with mapping's gfp mask] to indicate that the address space contains
+> all non-reclaimable pages.  This will provide for efficient testing
+> of ramdisk pages in page_reclaimable().
+> 
+> Also provide wrapper functions to set/test the noreclaim state to
+> minimize #ifdefs in ramdisk driver and any other users of this
+> facility.
+> 
+> Set the noreclaim state on address_space structures for new
+> ramdisk inodes.  Test the noreclaim state in page_reclaimable()
+> to cull non-reclaimable pages.
+> 
+> Similarly, ramfs pages are non-reclaimable.  Set the 'noreclaim'
+> address_space flag for new ramfs inodes.
+> 
+> These changes depend on [CONFIG_]NORECLAIM_LRU.
 
-Thanks, but that unfortunately doesn't seem to help. :-(
+hm
 
-I have taken dmesg "snapshots" of my system together with many other
-information regarding how it is configured and I put it at my
-homepage, at <http://www.ime.usp.br/debug/>.
+> 
+> @@ -61,6 +61,7 @@ struct inode *ramfs_get_inode(struct sup
+>  		inode->i_mapping->a_ops = &ramfs_aops;
+>  		inode->i_mapping->backing_dev_info = &ramfs_backing_dev_info;
+>  		mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER);
+> +		mapping_set_noreclaim(inode->i_mapping);
+>  		inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+>  		switch (mode & S_IFMT) {
+>  		default:
 
->From what I am seeing, it looks like the bug mentioned in
-<http://bugzilla.kernel.org/show_bug.cgi?id=9388>, but I don't get the
-stack trace that is present there and I'm just trying to use WEP
-instead of WPA or anything fancier.
+That's OK.
 
-Thanks for all the help and please let me know if further information
-can be helpful for debugging this situation.
+> Index: linux-2.6.26-rc2-mm1/drivers/block/brd.c
+> ===================================================================
+> --- linux-2.6.26-rc2-mm1.orig/drivers/block/brd.c	2008-05-29 16:21:04.000000000 -0400
+> +++ linux-2.6.26-rc2-mm1/drivers/block/brd.c	2008-06-06 16:06:20.000000000 -0400
+> @@ -374,8 +374,21 @@ static int brd_ioctl(struct inode *inode
+>  	return error;
+>  }
+>  
+> +/*
+> + * brd_open():
+> + * Just mark the mapping as containing non-reclaimable pages
+> + */
+> +static int brd_open(struct inode *inode, struct file *filp)
+> +{
+> +	struct address_space *mapping = inode->i_mapping;
+> +
+> +	mapping_set_noreclaim(mapping);
+> +	return 0;
+> +}
+> +
+>  static struct block_device_operations brd_fops = {
+>  	.owner =		THIS_MODULE,
+> +	.open  =		brd_open,
+>  	.ioctl =		brd_ioctl,
+>  #ifdef CONFIG_BLK_DEV_XIP
+>  	.direct_access =	brd_direct_access,
+
+But this only works for pagecache in /dev/ramN.  afaict the pagecache
+for files which are written onto that "blokk device" remain on the LRU.
+But that's OK, isn't it?  For the ramdisk driver these pages _do_ have
+backing store and _can_ be written back and reclaimed, yes?
 
 
-Thanks again, Rogerio Brito
+Still, I'm unsure about the whole implementation.  We already maintain
+this sort of information in the backing_dev.  Would it not be better to
+just avoid ever putting such pages onto the LRU in the first place?
+
+
+Also, I expect there are a whole host of pseudo-filesystems (sysfs?)
+which have this problem.  Does the patch address all of them?  If not,
+can we come up with something which _does_ address them all without
+having to hunt down and change every such fs?
+
+
