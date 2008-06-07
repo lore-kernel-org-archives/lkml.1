@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758986AbYFGCrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756976AbYFGCyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758986AbYFGCrQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 22:47:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbYFGCqv
+	id S1756976AbYFGCyV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 22:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898AbYFGCyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 22:46:51 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:56537 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754988AbYFGCqu (ORCPT
+	Fri, 6 Jun 2008 22:54:10 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:43068 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753636AbYFGCyJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 22:46:50 -0400
+	Fri, 6 Jun 2008 22:54:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+        h=from:reply-to:to:subject:date:user-agent:cc:mime-version
          :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=OBO0z0JBK2hGyGQvxQCYLAXm9+sulwCdlczDWFxXVxL3sViWVpUhjiUZUlK5VMABFB
-         LP8IlClpZ3ghXm0bjK4XghqADpJ6v+5w6YmYxtBPpFp/2OvmDTJOESWh7ZdC2uGN+89D
-         Yj8BIE+Q00oN2gb3HMuoU8bj5zMi8TnUDdEWA=
-Message-ID: <386072610806061946q178daa09ge8b97568565c179c@mail.gmail.com>
-Date: Sat, 7 Jun 2008 10:46:49 +0800
-From: "Bryan Wu" <cooloney@kernel.org>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Subject: Re: serial/bfin_5xx.c build error
-Cc: "Adrian Bunk" <bunk@kernel.org>, "Graf Yang" <graf.yang@analog.com>,
-       sonic.zhang@analog.com, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <8bd0f97a0806061253s4ad62aa8j53b448b3d6a4faf4@mail.gmail.com>
+         :message-id;
+        b=cEp4nEk6qsj675PolIlFF1Awk7iTEIqguJ1lGuM1cz+6xKnaRwqcXqSK5DTSg+IYNE
+         oAllS6O15bXAJnDwOdq6voy+rI3jQZSrIvrF60hMbt99x9PdYjyil3nuRB23KnHz+v0G
+         kWqfl5AODmkge2xCMOL9LCaoufsTyQrr11CvE=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] x86: 64bit have arch srat
+Date: Fri, 6 Jun 2008 19:54:25 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080606162203.GB2201@cs181133002.pp.htv.fi>
-	 <386072610806060940r5bea0549va4a0a1ae587777bf@mail.gmail.com>
-	 <8bd0f97a0806061253s4ad62aa8j53b448b3d6a4faf4@mail.gmail.com>
-X-Google-Sender-Auth: 2cbebed81316ee88
+Message-Id: <200806061954.26062.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 7, 2008 at 3:53 AM, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> On Fri, Jun 6, 2008 at 12:40 PM, Bryan Wu <cooloney@kernel.org> wrote:
->> On Sat, Jun 7, 2008 at 12:22 AM, Adrian Bunk <bunk@kernel.org> wrote:
->>> Commit 7d01b475ab17018756c8df27c2ee3c220fab05f8
->>> (Blackfin Serial Driver: Enable IR function when user application)
->>> causes the following build error:
->>>
->>> <--  snip  -->
->>>
->>> ...
->>>  CC      drivers/serial/bfin_5xx.o
->>> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/bfin_5xx.c: In function 'bfin_serial_init':
->>> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/serial/bfin_5xx.c:1209: error: 'struct tty_driver' has no member named 'set_ldisc'
->>> make[3]: *** [drivers/serial/bfin_5xx.o] Error 1
->>>
->>> <--  snip  -->
->>>
->>> In case it can't be fixed quickly a revert might be an option for 2.6.26.
->>>
->>
->> Graf has already sent me a patch to fix this. After I test it on my
->> board, I will send it out for Linus git pull.
->
-> i dont think there's anything for us to do on our side.  i thought
-> Alan was sending the fix out for 2.6.26.
-> -mike
->
+[PATCH] x86: 64bit have arch srat
 
-Oh, no. Even with Alan and Linus pathc, we still need to fix some API change.
-I will send it out soon.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
--Bryan
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index df9ec89..c88784e 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -435,7 +435,7 @@ config ACPI_SRAT
+ 
+ config HAVE_ARCH_PARSE_SRAT
+ 	def_bool y
+-	depends on ACPI_SRAT
++	depends on ACPI_SRAT || X86_64
+ 
+ config X86_SUMMIT_NUMA
+ 	def_bool y
