@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758082AbYFGBGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757922AbYFGBG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758082AbYFGBGU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbYFGBFY
+	id S1757922AbYFGBG4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:06:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbYFGBF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:05:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37832 "EHLO
+	Fri, 6 Jun 2008 21:05:28 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59906 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754279AbYFGBFI (ORCPT
+	by vger.kernel.org with ESMTP id S1755279AbYFGBFO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 21:05:08 -0400
-Date: Fri, 6 Jun 2008 18:04:30 -0700
+	Fri, 6 Jun 2008 21:05:14 -0400
+Date: Fri, 6 Jun 2008 18:04:47 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Rik van Riel <riel@redhat.com>
 Cc: linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
-       kosaki.motohiro@jp.fujitsu.com, minchan.kim@gmail.com,
-       Lee.Schermerhorn@hp.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH -mm 04/25] free swap space on swap-in/activation
-Message-Id: <20080606180430.38bf1d82.akpm@linux-foundation.org>
-In-Reply-To: <20080606202858.570020389@redhat.com>
+       kosaki.motohiro@jp.fujitsu.com
+Subject: Re: [PATCH -mm 08/25] add some sanity checks to get_scan_ratio
+Message-Id: <20080606180447.5487a6e8.akpm@linux-foundation.org>
+In-Reply-To: <20080606202858.807500425@redhat.com>
 References: <20080606202838.390050172@redhat.com>
-	<20080606202858.570020389@redhat.com>
+	<20080606202858.807500425@redhat.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,88 +28,257 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 06 Jun 2008 16:28:42 -0400
+On Fri, 06 Jun 2008 16:28:46 -0400
 Rik van Riel <riel@redhat.com> wrote:
 
 > From: Rik van Riel <riel@redhat.com>
 > 
-> Free swap cache entries when swapping in pages if vm_swap_full()
-> [swap space > 1/2 used].  Uses new pagevec to reduce pressure
-> on locks.
+> The access ratio based scan rate determination in get_scan_ratio
+> works ok in most situations, but needs to be corrected in some
+> corner cases:
+> - if we run out of swap space, do not bother scanning the anon LRUs
+> - if we have already freed all of the page cache, we need to scan
+>   the anon LRUs
+
+Strange.  We'll never free *all* the pagecache?
+
+> - restore the *actual* access ratio based scan rate algorithm, the
+>   previous versions of this patch series had the wrong version
+> - scale the number of pages added to zone->nr_scan[l]
 > 
-> Signed-off-by: Rik van Riel <riel@redhat.com>
-> Signed-off-by: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-> Signed-off-by: MinChan Kim <minchan.kim@gmail.com>
-> 
-> ---
->  include/linux/pagevec.h |    1 +
->  include/linux/swap.h    |    6 ++++++
->  mm/swap.c               |   18 ++++++++++++++++++
->  mm/swapfile.c           |   25 ++++++++++++++++++++++---
->  mm/vmscan.c             |    7 +++++++
->  5 files changed, 54 insertions(+), 3 deletions(-)
-> 
-> Index: linux-2.6.26-rc2-mm1/mm/vmscan.c
-> ===================================================================
-> --- linux-2.6.26-rc2-mm1.orig/mm/vmscan.c	2008-05-23 14:21:33.000000000 -0400
-> +++ linux-2.6.26-rc2-mm1/mm/vmscan.c	2008-05-23 14:21:33.000000000 -0400
-> @@ -619,6 +619,9 @@ free_it:
->  		continue;
+> ...
+>
+> @@ -1180,15 +1191,19 @@ static void get_scan_ratio(struct zone *
+>  	file  = zone_page_state(zone, NR_ACTIVE_FILE) +
+>  		zone_page_state(zone, NR_INACTIVE_FILE);
 >  
->  activate_locked:
-> +		/* Not a candidate for swapping, so reclaim swap space. */
-> +		if (PageSwapCache(page) && vm_swap_full())
+> -	rotate_sum = zone->recent_rotated_file + zone->recent_rotated_anon;
+> -
+>  	/* Keep a floating average of RECENT references. */
+> -	if (unlikely(rotate_sum > min(anon, file))) {
+> +	if (unlikely(zone->recent_scanned_anon > anon / zone->inactive_ratio)) {
+>  		spin_lock_irq(&zone->lru_lock);
+> -		zone->recent_rotated_file /= 2;
+> +		zone->recent_scanned_anon /= 2;
+>  		zone->recent_rotated_anon /= 2;
+>  		spin_unlock_irq(&zone->lru_lock);
+> -		rotate_sum /= 2;
+> +	}
+> +
+> +	if (unlikely(zone->recent_scanned_file > file / 4)) {
 
-The patch puts rather a lot of pressure onto vm_swap_full().  We might
-want to look into optimising that.
+I see nothing in the changelog about this and there are no comments. 
+How can a reader possibly work out what you were thinking when this
+was typed in??
 
-- Is the 50% thing optimum?  Could go higher and perhaps should be
-  based on amount-of-memory.
+> +		spin_lock_irq(&zone->lru_lock);
+> +		zone->recent_scanned_file /= 2;
+> +		zone->recent_rotated_file /= 2;
+> +		spin_unlock_irq(&zone->lru_lock);
+>  	}
+>  
+>  	/*
+> @@ -1201,23 +1216,33 @@ static void get_scan_ratio(struct zone *
+>  	/*
+>  	 *                  anon       recent_rotated_anon
+>  	 * %anon = 100 * ----------- / ------------------- * IO cost
+> -	 *               anon + file       rotate_sum
+> +	 *               anon + file   recent_scanned_anon
+>  	 */
+> -	ap = (anon_prio * anon) / (anon + file + 1);
+> -	ap *= rotate_sum / (zone->recent_rotated_anon + 1);
+> -	if (ap == 0)
+> -		ap = 1;
+> -	else if (ap > 100)
+> -		ap = 100;
+> -	percent[0] = ap;
+> -
+> -	fp = (file_prio * file) / (anon + file + 1);
+> -	fp *= rotate_sum / (zone->recent_rotated_file + 1);
+> -	if (fp == 0)
+> -		fp = 1;
+> -	else if (fp > 100)
+> -		fp = 100;
+> -	percent[1] = fp;
+> +	ap = (anon_prio + 1) * (zone->recent_scanned_anon + 1);
+> +	ap /= zone->recent_rotated_anon + 1;
+> +
+> +	fp = (file_prio + 1) * (zone->recent_scanned_file + 1);
+> +	fp /= zone->recent_rotated_file + 1;
+> +
+> +	/* Normalize to percentages */
+> +	percent[0] = 100 * ap / (ap + fp + 1);
+> +	percent[1] = 100 - percent[0];
+> +
+> +	free = zone_page_state(zone, NR_FREE_PAGES);
+> +
+> +	/*
+> +	 * If we have no swap space, do not bother scanning anon pages.
+> +	 */
+> +	if (nr_swap_pages <= 0) {
+> +		percent[0] = 0;
+> +		percent[1] = 100;
+> +	}
+> +	/*
+> +	 * If we already freed most file pages, scan the anon pages
+> +	 * regardless of the page access ratios or swappiness setting.
+> +	 */
+> +	else if (file + free <= zone->pages_high)
+> +		percent[0] = 100;
+>  }
 
-- Can precalculate the fraction rather than doing it inline all the time.
+Perhaps the (nr_swap_pages <= 0) test could happen earlier on.
 
-- Can make total_swap_pages __read_mostly and have a think about
-  nr_swap_pages too.
+Please quadruple-check this code like a paranoid maniac looking for
+underflows, overflows and divides-by-zero.  Bear in mind that x/(y+1)
+can get a div-by-zero for sufficiently-unepected values of y.
 
-- Can completely optimise the thing away if !CONFIG_SWAP.
+The layout of the last bit is misleading, IMO.  Better and more typical
+would be:
+
+	if (nr_swap_pages <= 0) {
+		/*
+		 * If we have no swap space, do not bother scanning anon pages.
+		 */
+		percent[0] = 0;
+		percent[1] = 100;
+	} else if (file + free <= zone->pages_high) {
+		/*
+		 * If we already freed most file pages, scan the anon pages
+		 * regardless of the page access ratios or swappiness setting.
+		 */
+		percent[0] = 100;
+	}
+
+(Was there no need to wite percent[1] here?)
+
+>  
+> @@ -1238,13 +1263,17 @@ static unsigned long shrink_zone(int pri
+>  	for_each_lru(l) {
+>  		if (scan_global_lru(sc)) {
+>  			int file = is_file_lru(l);
+> +			int scan;
+>  			/*
+>  			 * Add one to nr_to_scan just to make sure that the
+> -			 * kernel will slowly sift through the active list.
+> +			 * kernel will slowly sift through each list.
+>  			 */
+> -			zone->nr_scan[l] += (zone_page_state(zone,
+> -				NR_INACTIVE_ANON + l) >> priority) + 1;
+> -			nr[l] = zone->nr_scan[l] * percent[file] / 100;
+> +			scan = zone_page_state(zone, NR_INACTIVE_ANON + l);
+> +			scan >>= priority;
+> +			scan = (scan * percent[file]) / 100;
+
+Oh, so that's what the [0] and [1] in get_scan_ratio() mean.  Perhaps
+doing this:
+
+	if (nr_swap_pages <= 0) {
+		percent[0] = 0;		/* anon */
+		percent[1] = 100;	/* file */
+
+would clarify things.  But much better would be
+
+/* comment goes here */
+struct scan_ratios {
+	unsigned long anon;
+	unsigned long file;
+};
+
+no?
 
 
-Has all this code been tested with CONFIG_SWAP=n?
+> +			zone->nr_scan[l] += scan + 1;
+> +			nr[l] = zone->nr_scan[l];
+>  			if (nr[l] >= sc->swap_cluster_max)
+>  				zone->nr_scan[l] = 0;
+>  			else
+> @@ -1261,7 +1290,7 @@ static unsigned long shrink_zone(int pri
+>  	}
+>  
+>  	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
+> -						 nr[LRU_INACTIVE_FILE]) {
+> +					nr[LRU_INACTIVE_FILE]) {
+>  		for_each_lru(l) {
+>  			if (nr[l]) {
+>  				nr_to_scan = min(nr[l],
+> @@ -1274,6 +1303,13 @@ static unsigned long shrink_zone(int pri
+>  		}
+>  	}
+>  
+> +	/*
+> +	 * Even if we did not try to evict anon pages at all, we want to
+> +	 * rebalance the anon lru active/inactive ratio.
+> +	 */
+> +	if (scan_global_lru(sc) && inactive_anon_low(zone))
+> +		shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
+> +
+>  	throttle_vm_writeout(sc->gfp_mask);
+>  	return nr_reclaimed;
+>  }
+> Index: linux-2.6.26-rc2-mm1/include/linux/mmzone.h
+> ===================================================================
+> --- linux-2.6.26-rc2-mm1.orig/include/linux/mmzone.h	2008-05-28 12:09:06.000000000 -0400
+> +++ linux-2.6.26-rc2-mm1/include/linux/mmzone.h	2008-05-28 12:11:51.000000000 -0400
+> @@ -289,6 +289,8 @@ struct zone {
+>  
+>  	unsigned long		recent_rotated_anon;
+>  	unsigned long		recent_rotated_file;
+> +	unsigned long		recent_scanned_anon;
+> +	unsigned long		recent_scanned_file;
 
+I think struct zone is sufficiently important and obscure that
+field-by-field /*documentation*/ is needed.  Not as kerneldoc, please -
+better to do it at the definition site
+
+>  	unsigned long		pages_scanned;	   /* since last reclaim */
+>  	unsigned long		flags;		   /* zone flags, see below */
+> Index: linux-2.6.26-rc2-mm1/mm/page_alloc.c
+> ===================================================================
+> --- linux-2.6.26-rc2-mm1.orig/mm/page_alloc.c	2008-05-28 12:09:06.000000000 -0400
+> +++ linux-2.6.26-rc2-mm1/mm/page_alloc.c	2008-05-28 12:11:51.000000000 -0400
+> @@ -3512,7 +3512,8 @@ static void __paginginit free_area_init_
+>  		}
+>  		zone->recent_rotated_anon = 0;
+>  		zone->recent_rotated_file = 0;
+> -//TODO recent_scanned_* ???
+> +		zone->recent_scanned_anon = 0;
+> +		zone->recent_scanned_file = 0;
+>  		zap_zone_vm_stats(zone);
+>  		zone->flags = 0;
+>  		if (!size)
 > Index: linux-2.6.26-rc2-mm1/mm/swap.c
 > ===================================================================
-> --- linux-2.6.26-rc2-mm1.orig/mm/swap.c	2008-05-23 14:21:33.000000000 -0400
-> +++ linux-2.6.26-rc2-mm1/mm/swap.c	2008-05-23 14:21:33.000000000 -0400
-> @@ -443,6 +443,24 @@ void pagevec_strip(struct pagevec *pvec)
->  	}
->  }
+> --- linux-2.6.26-rc2-mm1.orig/mm/swap.c	2008-05-28 12:09:06.000000000 -0400
+> +++ linux-2.6.26-rc2-mm1/mm/swap.c	2008-05-28 12:11:51.000000000 -0400
+> @@ -176,8 +176,8 @@ void activate_page(struct page *page)
 >  
-> +/*
-> + * Try to free swap space from the pages in a pagevec
-> + */
-> +void pagevec_swap_free(struct pagevec *pvec)
-> +{
-> +	int i;
+>  	spin_lock_irq(&zone->lru_lock);
+>  	if (PageLRU(page) && !PageActive(page)) {
+> -		int lru = LRU_BASE;
+> -		lru += page_file_cache(page);
+> +		int file = page_file_cache(page);
+> +		int lru = LRU_BASE + file;
+>  		del_page_from_lru_list(zone, page, lru);
+>  
+>  		SetPageActive(page);
+> @@ -185,6 +185,15 @@ void activate_page(struct page *page)
+>  		add_page_to_lru_list(zone, page, lru);
+>  		__count_vm_event(PGACTIVATE);
+>  		mem_cgroup_move_lists(page, true);
 > +
-> +	for (i = 0; i < pagevec_count(pvec); i++) {
-> +		struct page *page = pvec->pages[i];
-> +
-> +		if (PageSwapCache(page) && !TestSetPageLocked(page)) {
-> +			if (PageSwapCache(page))
-> +				remove_exclusive_swap_page_ref(page);
-> +			unlock_page(page);
+> +		if (file) {
+> +			zone->recent_scanned_file++;
+> +			zone->recent_rotated_file++;
+> +		} else {
+> +			/* Can this happen?  Maybe through tmpfs... */
+
+What's the status here?
+
+> +			zone->recent_scanned_anon++;
+> +			zone->recent_rotated_anon++;
 > +		}
-> +	}
-> +}
-
-What's going on here.
-
-Normally we'll bump a page's refcount to account for its presence in a
-pagevec.  This code doesn't do that.
-
-Is it safe?  If so, how come?
-
-Suitable code comments should be added which explain this unusual and
-dangerous optimisation.  Or fix the bug :)
-
+>  	}
+>  	spin_unlock_irq(&zone->lru_lock);
+>  }
 
