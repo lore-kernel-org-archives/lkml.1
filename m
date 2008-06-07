@@ -1,108 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756962AbYFGIsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756956AbYFGJNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756962AbYFGIsV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 04:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbYFGIsH
+	id S1756956AbYFGJNN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 05:13:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978AbYFGJM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 04:48:07 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:34609 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754152AbYFGIsE (ORCPT
+	Sat, 7 Jun 2008 05:12:57 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:34209 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753619AbYFGJM4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 04:48:04 -0400
-Date: Sat, 7 Jun 2008 11:47:59 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Oliver Pinter <oliver.pntr@gmail.com>, zsirmo@zsirmo.hu,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       netdev <netdev@vger.kernel.org>, Matt Carlson <mcarlson@broadcom.com>,
-       Michael Chan <mchan@broadcom.com>,
-       Brian Vowell <brian.vowell@gmail.com>
-Subject: Re: bug report
-In-Reply-To: <20080606225643.8be222a9.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0806071141480.24862@wrl-59.cs.helsinki.fi>
-References: <48499731.1080807@gmail.com> <6101e8c40806061844g5b7676d4xb48c5c69ad48391f@mail.gmail.com>
- <20080606225643.8be222a9.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 7 Jun 2008 05:12:56 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=SIfbEThynlPpKHruN3o9eC6BZq2jj6bfyiTR0qKn6dULPL9npZbnUk9xVTMJYdjQS
+	JpSmPl+dGSHHGtO9MSauw==
+Message-ID: <6599ad830806070212u13ea2c3fy931d37f2c9eab2a2@mail.gmail.com>
+Date: Sat, 7 Jun 2008 02:12:49 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Daniel Hokka Zakrisson" <daniel@hozac.com>
+Subject: Re: [RFC][PATCH] introduce task cgroup (#task restrictioon for prevent fork bomb by cgroup)
+Cc: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       containers@lists.osdl.org, LKML <linux-kernel@vger.kernel.org>,
+       "Li Zefan" <lizf@cn.fujitsu.com>
+In-Reply-To: <41480.192.168.101.12.1212702756.squirrel@intranet>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080605132512.9C31.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <41480.192.168.101.12.1212702756.squirrel@intranet>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-...Added Brian Vowell.
+On Thu, Jun 5, 2008 at 2:52 PM, Daniel Hokka Zakrisson <daniel@hozac.com> wrote:
+> Would it make more sense to implement this as part of an rlimit subsystem,
+> which also supports limiting e.g. address space, CPU time, number of open
+> files, etc.? If we create one subsystem per resource, I'm afraid we're
+> going to see quite some time spent in all those loops, and the options for
+> cgroupfs is going to become pretty long if you want to exclude just one or
+> two of the subsystems for one particular mount point.
+>
 
-On Fri, 6 Jun 2008, Andrew Morton wrote:
+In general, most of the cgroup loops that depend on the number of
+available subsystems are control path (fork/exit/task move) rather
+than data path.
 
-> On Sat, 7 Jun 2008 03:44:32 +0200 "Oliver Pinter" <oliver.pntr@gmail.com> wrote:
-> 
-> > Add Ingon and netdev to CC
-> > 
-> > 
-> > On 6/6/08, Zsiros Attila <zsirmo@gmail.com> wrote:
-> > > Hy!
-> > >
-> > > I have a problem.
-> > >
-> > > http://www.cyberszeg.hu/log/kern.log
-> > > http://www.cyberszeg.hu/log/config-2.6.25.4
-> > > http://www.cyberszeg.hu/log/lspci.txt
-> > > http://www.cyberszeg.hu/log/ifconfig.txt
-> > >
-> 
-> : Jun  6 14:03:07 www kernel: [ 5897.660390] NETDEV WATCHDOG: eth0: transmit timed out
-> : Jun  6 14:03:07 www kernel: [ 5897.660398] tg3: eth0: transmit timed out, resetting
-> : Jun  6 14:03:07 www kernel: [ 5897.660432] tg3: DEBUG: MAC_TX_STATUS[0000001e] MAC_RX_STATUS[0000000e]
-> : Jun  6 14:03:07 www kernel: [ 5897.660454] tg3: DEBUG: RDMAC_STATUS[00000000] WDMAC_STATUS[00000000]
-> : Jun  6 14:03:07 www kernel: [ 5897.762983] tg3: tg3_stop_block timed out, ofs=1800 enable_bit=2
-> : Jun  6 14:03:07 www kernel: [ 5897.864168] tg3: tg3_stop_block timed out, ofs=c00 enable_bit=2
-> : Jun  6 14:03:07 www kernel: [ 5897.965619] tg3: tg3_stop_block timed out, ofs=4800 enable_bit=2
-> 
-> That looks like a driver failure.
-> 
-> : Jun  6 14:03:07 www kernel: [ 5898.096689] tg3: eth0: Link is down.
-> : Jun  6 14:03:11 www kernel: [ 5901.633931] tg3: eth0: Link is up at 1000 Mbps, full duplex.
-> : Jun  6 14:03:11 www kernel: [ 5901.633937] tg3: eth0: Flow control is on for TX and on for RX.
-> : Jun  6 14:04:11 www kernel: [ 6464.556309] clamscan: page allocation failure. order:3, mode:0x4020
-> : Jun  6 14:04:11 www kernel: [ 6464.556319] Pid: 24139, comm: clamscan Not tainted 2.6.25.4 #1
-> : Jun  6 14:04:11 www kernel: [ 6464.556325] 
-> : Jun  6 14:04:11 www kernel: [ 6464.556326] Call Trace:
-> : Jun  6 14:04:11 www kernel: [ 6464.556329]  <IRQ>  [__alloc_pages+544/890] __alloc_pages+0x220/0x37a
-> : Jun  6 14:04:11 www kernel: [ 6464.556353]  [tcp_v4_do_rcv+186/504] tcp_v4_do_rcv+0xba/0x1f8
-> : Jun  6 14:04:11 www kernel: [ 6464.556359]  [ktime_get+12/98] ktime_get+0xc/0x62
-> : Jun  6 14:04:11 www kernel: [ 6464.556364]  [__netdev_alloc_skb+23/49] __netdev_alloc_skb+0x17/0x31
-> : Jun  6 14:04:11 www kernel: [ 6464.556370]  [__slab_alloc+330/1403] __slab_alloc+0x14a/0x57b
-> : Jun  6 14:04:11 www kernel: [ 6464.556374]  [__netdev_alloc_skb+23/49] __netdev_alloc_skb+0x17/0x31
-> : Jun  6 14:04:11 www kernel: [ 6464.556379]  [__netdev_alloc_skb+23/49] __netdev_alloc_skb+0x17/0x31
-> : Jun  6 14:04:11 www kernel: [ 6464.556384]  [__kmalloc_track_caller+185/190] __kmalloc_track_caller+0xb9/0xbe
-> : Jun  6 14:04:11 www kernel: [ 6464.556391]  [__alloc_skb+86/305] __alloc_skb+0x56/0x131
-> : Jun  6 14:04:11 www kernel: [ 6464.556395]  [__netdev_alloc_skb+23/49] __netdev_alloc_skb+0x17/0x31
-> : Jun  6 14:04:11 www kernel: [ 6464.556408]  [_end+128472975/2130444940] :tg3:tg3_alloc_rx_skb+0x8f/0x17e
-> : Jun  6 14:04:11 www kernel: [ 6464.556418]  [_end+128493403/2130444940] :tg3:tg3_poll+0x6e8/0x922
-> : Jun  6 14:04:11 www kernel: [ 6464.556426]  [net_rx_action+134/309] net_rx_action+0x86/0x135
-> : Jun  6 14:04:11 www kernel: [ 6464.556433]  [__do_softirq+102/212] __do_softirq+0x66/0xd4
-> : Jun  6 14:04:11 www kernel: [ 6464.556439]  [call_softirq+28/48] call_softirq+0x1c/0x30
-> : Jun  6 14:04:11 www kernel: [ 6464.556444]  [do_softirq+48/107] do_softirq+0x30/0x6b
-> : Jun  6 14:04:11 www kernel: [ 6464.556448]  [do_IRQ+114/212] do_IRQ+0x72/0xd4
-> : Jun  6 14:04:11 www kernel: [ 6464.556453]  [ret_from_intr+0/10] ret_from_intr+0x0/0xa
-> 
-> The driver is trying to do a 32 kbyte GFP_ATOMIC memory allocation. 
-> rofl, good luck with that.
-> 
-> But the netwoking code sould survive this.
-> 
-> <12 billion more page allocation failures>
-> 
-> Are you using jumbo frames or have you manually set the MTU to
-> something enormous?  Because 32k is a pretty crazy amount of memory for
-> the driver to be trying to allocate - it's going to fail all over the
-> place, as you have discovered.
+If these loops ever did become an issue it wouldn't be hard to cache
+which subsystems had callbacks of a given type, and thus make the loop
+overheap be linear in the number of subsystems actually using a given
+callback, rather than the number of registered subsystems. I've not
+done this yet since it didn't seem worth the complexity, but if the
+number of subsystems grows from what we have now it might be
+worthwhile.
 
-Same allocation failed problem (among an TCP issue that is nowadays 
-fixed) was also reported by Brian Vowell:
-  http://bugzilla.kernel.org/show_bug.cgi?id=10767
+Having a single rlimit subsystem seems a bit inflexible, since it
+would require anyone that wanted to track one resource to have to pay
+the overhead of tracking all resources. By splitting into separate
+subsystems, it would be possible to just pay the overhead for the
+resource tracking that you actually care about.
 
+You mention that you think it makes the set of mount arguments more
+complex, but if you have middleware that can limit resource X, adding
+X to the list of subsystems at the point when a cgroupfs is mounted
+seems simple compared to the rest of the structure required to actual
+set limits and monitor usage for X.
 
--- 
- i.
+Paul
