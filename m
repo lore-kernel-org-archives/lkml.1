@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763072AbYFGBSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762998AbYFGBTB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763072AbYFGBSm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760191AbYFGBJ0
+	id S1762998AbYFGBTB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:19:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757075AbYFGBJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:09:26 -0400
-Received: from sous-sol.org ([216.99.217.87]:42489 "EHLO sous-sol.org"
+	Fri, 6 Jun 2008 21:09:24 -0400
+Received: from sous-sol.org ([216.99.217.87]:42493 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758916AbYFGBJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759592AbYFGBJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 6 Jun 2008 21:09:20 -0400
-Message-Id: <20080607010559.637299265@sous-sol.org>
+Message-Id: <20080607010632.546163901@sous-sol.org>
 References: <20080607010215.358296706@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 06 Jun 2008 18:02:28 -0700
+Date: Fri, 06 Jun 2008 18:02:58 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,9 +23,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jean Delvare <khali@linux-fr.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 13/50] i2c-nforce2: Disable the second SMBus channel on the DFI Lanparty NF4 Expert
-Content-Disposition: inline; filename=i2c-nforce2-disable-the-second-smbus-channel-on-the-dfi-lanparty-nf4-expert.patch
+       Thomas Tuttle <ttuttle@google.com>, Matt Mackall <mpm@selenic.com>
+Subject: [patch 43/50] pagemap: fix bug in add_to_pagemap, require aligned-length reads of /proc/pid/pagemap
+Content-Disposition: inline; filename=pagemap-fix-bug-in-add_to_pagemap-require-aligned-length-reads-of-proc-pid-pagemap.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,77 +33,95 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Jean Delvare <khali@linux-fr.org>
+From: Thomas Tuttle <ttuttle@google.com>
 
-commit 08851d6eb4eeb0894f4d095dfdf8ab61c435ad57 in upstream
+upstream commit: aae8679b0ebcaa92f99c1c3cb0cd651594a43915
 
-There is a strange chip at 0x2e on the second SMBus channel of the
-DFI Lanparty NF4 Expert motherboard. Accessing the chip reboots the
-system. As there's nothing interesting on this SMBus channel, the
-easiest and safest thing to do is to disable it on that board.
+Fix a bug in add_to_pagemap.  Previously, since pm->out was a char *,
+put_user was only copying 1 byte of every PFN, resulting in the top 7
+bytes of each PFN not being copied.  By requiring that reads be a multiple
+of 8 bytes, I can make pm->out and pm->end u64*s instead of char*s, which
+makes put_user work properly, and also simplifies the logic in
+add_to_pagemap a bit.
 
-This is a better fix to bug #5889 than the it87 driver update that was
-done originally:
-http://bugzilla.kernel.org/show_bug.cgi?id=5889
-
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+[akpm@linux-foundation.org: coding-style fixes]
+Signed-off-by: Thomas Tuttle <ttuttle@google.com>
+Cc: Matt Mackall <mpm@selenic.com>
+Cc: <stable@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-
 ---
- drivers/i2c/busses/i2c-nforce2.c |   28 ++++++++++++++++++++++++----
- 1 file changed, 24 insertions(+), 4 deletions(-)
+ fs/proc/task_mmu.c |   28 +++++++++-------------------
+ 1 file changed, 9 insertions(+), 19 deletions(-)
 
---- a/drivers/i2c/busses/i2c-nforce2.c
-+++ b/drivers/i2c/busses/i2c-nforce2.c
-@@ -50,6 +50,7 @@
- #include <linux/init.h>
- #include <linux/i2c.h>
- #include <linux/delay.h>
-+#include <linux/dmi.h>
- #include <asm/io.h>
+--- a/fs/proc/task_mmu.c
++++ b/fs/proc/task_mmu.c
+@@ -524,7 +524,7 @@ const struct file_operations proc_clear_
+ };
  
- MODULE_LICENSE("GPL");
-@@ -109,6 +110,18 @@ struct nforce2_smbus {
- /* Misc definitions */
- #define MAX_TIMEOUT	100
+ struct pagemapread {
+-	char __user *out, *end;
++	u64 __user *out, *end;
+ };
  
-+/* We disable the second SMBus channel on these boards */
-+static struct dmi_system_id __devinitdata nforce2_dmi_blacklist2[] = {
-+	{
-+		.ident = "DFI Lanparty NF4 Expert",
-+		.matches = {
-+			DMI_MATCH(DMI_BOARD_VENDOR, "DFI Corp,LTD"),
-+			DMI_MATCH(DMI_BOARD_NAME, "LP UT NF4 Expert"),
-+		},
-+	},
-+	{ }
-+};
-+
- static struct pci_driver nforce2_driver;
+ #define PM_ENTRY_BYTES      sizeof(u64)
+@@ -547,21 +547,11 @@ struct pagemapread {
+ static int add_to_pagemap(unsigned long addr, u64 pfn,
+ 			  struct pagemapread *pm)
+ {
+-	/*
+-	 * Make sure there's room in the buffer for an
+-	 * entire entry.  Otherwise, only copy part of
+-	 * the pfn.
+-	 */
+-	if (pm->out + PM_ENTRY_BYTES >= pm->end) {
+-		if (copy_to_user(pm->out, &pfn, pm->end - pm->out))
+-			return -EFAULT;
+-		pm->out = pm->end;
+-		return PM_END_OF_BUFFER;
+-	}
+-
+ 	if (put_user(pfn, pm->out))
+ 		return -EFAULT;
+-	pm->out += PM_ENTRY_BYTES;
++	pm->out++;
++	if (pm->out >= pm->end)
++		return PM_END_OF_BUFFER;
+ 	return 0;
+ }
  
- static void nforce2_abort(struct i2c_adapter *adap)
-@@ -367,10 +380,17 @@ static int __devinit nforce2_probe(struc
- 		smbuses[0].base = 0;	/* to have a check value */
+@@ -662,7 +652,7 @@ static ssize_t pagemap_read(struct file 
+ 
+ 	ret = -EINVAL;
+ 	/* file position must be aligned */
+-	if (*ppos % PM_ENTRY_BYTES)
++	if ((*ppos % PM_ENTRY_BYTES) || (count % PM_ENTRY_BYTES))
+ 		goto out_task;
+ 
+ 	ret = 0;
+@@ -692,8 +682,8 @@ static ssize_t pagemap_read(struct file 
+ 		goto out_pages;
  	}
- 	/* SMBus adapter 2 */
--	res2 = nforce2_probe_smb(dev, 5, NFORCE_PCI_SMB2, &smbuses[1], "SMB2");
--	if (res2 < 0) {
--		dev_err(&dev->dev, "Error probing SMB2.\n");
--		smbuses[1].base = 0;	/* to have a check value */
-+	if (dmi_check_system(nforce2_dmi_blacklist2)) {
-+		dev_err(&dev->dev, "Disabling SMB2 for safety reasons.\n");
-+		res2 = -EPERM;
-+		smbuses[1].base = 0;
-+	} else {
-+		res2 = nforce2_probe_smb(dev, 5, NFORCE_PCI_SMB2, &smbuses[1],
-+					 "SMB2");
-+		if (res2 < 0) {
-+			dev_err(&dev->dev, "Error probing SMB2.\n");
-+			smbuses[1].base = 0;	/* to have a check value */
-+		}
+ 
+-	pm.out = buf;
+-	pm.end = buf + count;
++	pm.out = (u64 *)buf;
++	pm.end = (u64 *)(buf + count);
+ 
+ 	if (!ptrace_may_attach(task)) {
+ 		ret = -EIO;
+@@ -718,9 +708,9 @@ static ssize_t pagemap_read(struct file 
+ 		if (ret == PM_END_OF_BUFFER)
+ 			ret = 0;
+ 		/* don't need mmap_sem for these, but this looks cleaner */
+-		*ppos += pm.out - buf;
++		*ppos += (char *)pm.out - buf;
+ 		if (!ret)
+-			ret = pm.out - buf;
++			ret = (char *)pm.out - buf;
  	}
- 	if ((res1 < 0) && (res2 < 0)) {
- 		/* we did not find even one of the SMBuses, so we give up */
+ 
+ out_pages:
 
 -- 
