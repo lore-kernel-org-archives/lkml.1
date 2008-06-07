@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760434AbYFGB1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764923AbYFGB1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760434AbYFGB1X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:27:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760798AbYFGBJw
+	id S1764923AbYFGB1p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760811AbYFGBJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:09:52 -0400
-Received: from sous-sol.org ([216.99.217.87]:42575 "EHLO sous-sol.org"
+	Fri, 6 Jun 2008 21:09:53 -0400
+Received: from sous-sol.org ([216.99.217.87]:42574 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755735AbYFGBJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1760748AbYFGBJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 6 Jun 2008 21:09:34 -0400
-Message-Id: <20080607010554.457330224@sous-sol.org>
+Message-Id: <20080607010630.821493223@sous-sol.org>
 References: <20080607010215.358296706@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 06 Jun 2008 18:02:24 -0700
+Date: Fri, 06 Jun 2008 18:02:56 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,11 +23,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Tiger Yang <tiger.yang@oracle.com>, <linux-ext4@vger.kernel.org>,
-       Andreas Gruenbacher <agruen@suse.de>, Andreas Dilger <adilger@sun.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 09/50] ext3/4: fix uninitialized bs in ext3/4_xattr_set_handle()
-Content-Disposition: inline; filename=ext3-4-fix-uninitialized-bs-in-ext3-4_xattr_set_handle.patch
+       Casey Schaufler <casey@schaufler-ca.com>
+Subject: [patch 41/50] Smack: fuse mount hang fix
+Content-Disposition: inline; filename=smack-fuse-mount-hang-fix.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,60 +33,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Tiger Yang <tiger.yang@oracle.com>
+From: Casey Schaufler <casey@schaufler-ca.com>
 
-commit 7e01c8e5420b6c7f9d85d34c15d8c7a15c9fc720 upstream
+upstream commit: e97dcb0eadbb821eccd549d4987b653cf61e2374
 
-This fix the uninitialized bs when we try to replace a xattr entry in
-ibody with the new value which require more than free space.
+The d_instantiate hook for Smack can hang on the root inode of a
+filesystem if the file system code has not really done all the set-up.
+Fuse is known to encounter this problem.
 
-This situation only happens we format ext3/4 with inode size more than 128 and
-we have put xattr entries both in ibody and block.  The consequences about
-this bug is we will lost the xattr block which pointed by i_file_acl with all
-xattr entires in it.  We will alloc a new xattr block and put that large value
-entry in it.  The old xattr block will become orphan block.
+This change detects an attempt to instantiate a root inode and addresses
+it early in the processing, before any attempt is made to do something
+that might hang.
 
-Signed-off-by: Tiger Yang <tiger.yang@oracle.com>
-Cc: <linux-ext4@vger.kernel.org>
-Cc: Andreas Gruenbacher <agruen@suse.de>
-Acked-by: Andreas Dilger <adilger@sun.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
+Tested-by: Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-
 ---
- fs/ext3/xattr.c |    5 +++++
- fs/ext4/xattr.c |    5 +++++
- 2 files changed, 10 insertions(+)
+ security/smack/smack_lsm.c |   12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
---- a/fs/ext3/xattr.c
-+++ b/fs/ext3/xattr.c
-@@ -1000,6 +1000,11 @@ ext3_xattr_set_handle(handle_t *handle, 
- 			i.value = NULL;
- 			error = ext3_xattr_block_set(handle, inode, &i, &bs);
- 		} else if (error == -ENOSPC) {
-+			if (EXT3_I(inode)->i_file_acl && !bs.s.base) {
-+				error = ext3_xattr_block_find(inode, &i, &bs);
-+				if (error)
-+					goto cleanup;
-+			}
- 			error = ext3_xattr_block_set(handle, inode, &i, &bs);
- 			if (error)
- 				goto cleanup;
---- a/fs/ext4/xattr.c
-+++ b/fs/ext4/xattr.c
-@@ -1011,6 +1011,11 @@ ext4_xattr_set_handle(handle_t *handle, 
- 			i.value = NULL;
- 			error = ext4_xattr_block_set(handle, inode, &i, &bs);
- 		} else if (error == -ENOSPC) {
-+			if (EXT4_I(inode)->i_file_acl && !bs.s.base) {
-+				error = ext4_xattr_block_find(inode, &i, &bs);
-+				if (error)
-+					goto cleanup;
-+			}
- 			error = ext4_xattr_block_set(handle, inode, &i, &bs);
- 			if (error)
- 				goto cleanup;
+--- a/security/smack/smack_lsm.c
++++ b/security/smack/smack_lsm.c
+@@ -1865,6 +1865,18 @@ static void smack_d_instantiate(struct d
+ 	final = sbsp->smk_default;
+ 
+ 	/*
++	 * If this is the root inode the superblock
++	 * may be in the process of initialization.
++	 * If that is the case use the root value out
++	 * of the superblock.
++	 */
++	if (opt_dentry->d_parent == opt_dentry) {
++		isp->smk_inode = sbsp->smk_root;
++		isp->smk_flags |= SMK_INODE_INSTANT;
++		goto unlockandout;
++	}
++
++	/*
+ 	 * This is pretty hackish.
+ 	 * Casey says that we shouldn't have to do
+ 	 * file system specific code, but it does help
 
 -- 
