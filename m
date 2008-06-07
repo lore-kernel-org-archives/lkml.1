@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759825AbYFGGWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759011AbYFGGif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759825AbYFGGWH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 02:22:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbYFGGV4
+	id S1759011AbYFGGif (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 02:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753269AbYFGGiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 02:21:56 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:61075 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751827AbYFGGVz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 02:21:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=EToYpmOJtPV6JZ7XtBXfg7Uei6H/+ua73OK3UgD1+qbuHSiuAkbC85RG5x//9WI1oN
-         FjBO5itLpMB85gvFmINjokIppysfE+P3rk4RMg1z86sqCCPx2eMj865MnRrTP8HMx105
-         23WLbzQ2z8hYHFVHeXeLO56XuyXk9XV7ZWASA=
-Message-ID: <dd18b0c30806062321x2918f6feq7c817bde52ba0c4c@mail.gmail.com>
-Date: Sat, 7 Jun 2008 06:21:54 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: bugme-daemon@bugzilla.kernel.org
-Subject: ACPI: EC: GPE storm detected, disabling EC GPE
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+	Sat, 7 Jun 2008 02:38:25 -0400
+Received: from smtps.uol.com.br ([200.221.4.131]:57912 "EHLO smtp.uol.com.br"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753112AbYFGGiY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jun 2008 02:38:24 -0400
+Date: Sat, 7 Jun 2008 03:38:20 -0300
+From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [rtc-linux] state of GEN_RTC vs rtc subsystem
+Message-ID: <20080607063819.GA11623@ime.usp.br>
+References: <484473E6.5060400@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <484473E6.5060400@am.sony.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SIG5: b3fdc315a5fc0fc2bc0de5923762ca42
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well; I was hoping it was going to be just an easy fix, but unfortunately
-changing
- if (atomic_read(&ec->irq_count) > 5) {
- to
-if (atomic_read(&ec->irq_count) > 20) {
-does seem to make the message disappear, for a while, probably at
-around three hours,(for me at least) then the message appeared again.
-:-(
-So leaving me back to the beginning of try to have a go at this.
-regards;
+Hi there.
+
+On Jun 02 2008, Geoff Levand wrote:
+> Geoff Levand wrote:
+> > From what I can tell, those generic rtc routines the powerpc
+> > arch provides are not properly hooked into the new rtc subsystem.
+> > This causes problems for multi-platform builds where some platforms
+> > must use gen_rtc, and some must the new rtc subsytem.
+> 
+> Just to follow up, I found that David Woodhouse has submitted
+> a patch which does this:
+> 
+>    http://patchwork.ozlabs.org/linuxppc/patch?id=18139
+
+This is nice, since I was just going to ask why my config file (put at
+http://www.ime.usp.br/~rbrito/debug/config-2.6.26-rc4-4) has
+
+(...)
+# CONFIG_PPC_CLOCK is not set
+(...)
+
+Even if I force it to yes. When I run a "make oldconfig", it sets back
+the PPC_CLOCK to not set. :-(
+
+If anybody can explain what is going on (and how to correct it), I would
+kindly appreciate it (and even generate some documentation on the
+options, if I understand the issue it well enough).
+
+
+Regards, Rogério Brito.
+
 -- 
-Justin P. Mattock
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
