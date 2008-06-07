@@ -1,85 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763691AbYFGR50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763498AbYFGSHQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763691AbYFGR50 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 13:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761122AbYFGR5R
+	id S1763498AbYFGSHQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 14:07:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761146AbYFGSHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 13:57:17 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:31191 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1761423AbYFGR5Q (ORCPT
+	Sat, 7 Jun 2008 14:07:04 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:3697 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754475AbYFGSHC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 13:57:16 -0400
-Date: Sat, 7 Jun 2008 21:57:14 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: galak@kernel.crashing.org, wim@iguana.be, jochen@scram.de,
-       sfr@canb.auug.org.au, segher@kernel.crashing.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH -mm] watchdog: mpc8xxx_wdt: fix build
-Message-ID: <20080607175713.GA27793@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080602173726.GA24556@polina.dev.rtsoft.ru> <20080603164830.32457962.akpm@linux-foundation.org>
+	Sat, 7 Jun 2008 14:07:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Q1PB+Y0jyFIzIO1HDMTLxbWgojASqr93nLbGn9zVIvxwsnEXeQOW9IZ8+Tc6jtL26q
+         JJS9yJFcoJyM4F4ON+hyDgMpSAMwHIAadlR/TEPvgnAPOSWknZ8gTRpY85kj+TWPDMOS
+         WMfnhbkbwtRuSDlODsaHwmgrD6i7FstDRr/1k=
+Message-ID: <d120d5000806071107v4ce5fde8gbda57a4024e01a0b@mail.gmail.com>
+Date: Sat, 7 Jun 2008 14:07:00 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Stas Sergeev" <stsp@aknet.ru>, "Dmitry Torokhov" <dtor-oss@comcast.net>,
+       "Takashi Iwai" <tiwai@suse.de>,
+       "Linux kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch][resend] pcspkr: undepend of snd-pcsp
+In-Reply-To: <484ACB89.7040606@aknet.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080603164830.32457962.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <484ACB89.7040606@aknet.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  CC      drivers/watchdog/mpc8xxx_wdt.o
-drivers/watchdog/mpc8xxx_wdt.c: In function 'mpc8xxx_wdt_ioctl':
-drivers/watchdog/mpc8xxx_wdt.c:156: error: 'cmd' undeclared (first use in this function)
-drivers/watchdog/mpc8xxx_wdt.c:156: error: (Each undeclared identifier is reported only once
-drivers/watchdog/mpc8xxx_wdt.c:156: error: for each function it appears in.)
-drivers/watchdog/mpc8xxx_wdt.c: At top level:
-drivers/watchdog/mpc8xxx_wdt.c:176: warning: initialization from incompatible pointer type
+Hi Sergey,
 
-This patch ought to be folded into
-mpc8xxx_wdt-various-renames-mostly-s-mpc83xx-mpc8xxx-g.patch
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
 
-On Tue, Jun 03, 2008 at 04:48:30PM -0700, Andrew Morton wrote:
-> On Mon, 2 Jun 2008 21:37:26 +0400
-> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> 
-> > No comments on the previous version for two weeks... resending once
-> > again.
-> 
-> I did all the rework to make the patches apply on top of all the
-> pending watchdog work in Wim's tree and in -mm.  I haven't build tested
-> it yet.
+This is wierd, I have all 3 your mails :) The patch is in the
+'for-linus' branch of my tree and should be in mainline next time I
+ask Linus to pull.
 
-Well, only one hunk is mis-merged, in
-mpc8xxx_wdt-various-renames-mostly-s-mpc83xx-mpc8xxx-g.patch.
+Dmitry
 
-Here is the patch to fix it.
 
-I also run-time tested it, everything seem to work great.
+On 6/7/08, Stas Sergeev <stsp@aknet.ru> wrote:
+> Once again this mail returns to me
+> as a spam, without reaching Dmitry :(
+>
+> Hello.
+>
+> It should be possible to build
+> pcspkr driver together with snd-pcsp.
+> Even though right now there is no
+> good plan to get these drivers to
+> work together, some things were done,
+> namely:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=16dc42e018c2868211b4928f20a957c0c216126c
+> and
+> https://bugzilla.redhat.com/show_bug.cgi?id=448425
+> which looks more or less sufficient.
+>
+> And there was a discussion already:
+> http://kerneltrap.org/mailarchive/linux-kernel/2008/4/29/1652654
+>
+> The attached patch allows pcspkr to
+> be built together with snd-pcsp.
+>
+> Dmitry, could you please apply?
+>
+>
+> ------
+> Allow pcspkr to be built together with snd-pcsp.
+> The bug in a driver core that prevented this in
+> the past, is now fixed by
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=16dc42e018c2868211b4928f20a957c0c216126c
+>
+> Signed-off-by: Stas Sergeev <stsp@aknet.ru>
+> CC: Takashi Iwai <tiwai@suse.de>
+>
+>
 
-p.s. Would be very handy if linux-trees.git would track mmotm snapshots.
 
- drivers/watchdog/mpc8xxx_wdt.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
-index 8b82b91..3c5ed9e 100644
---- a/drivers/watchdog/mpc8xxx_wdt.c
-+++ b/drivers/watchdog/mpc8xxx_wdt.c
-@@ -142,7 +142,7 @@ static int mpc8xxx_wdt_release(struct inode *inode, struct file *file)
- 	return 0;
- }
- 
--static long mpc8xxx_wdt_ioctl(struct inode *inode, struct file *file,
-+static long mpc8xxx_wdt_ioctl(struct file *file, unsigned int cmd,
- 							unsigned long arg)
- {
- 	void __user *argp = (void __user *)arg;
 -- 
-1.5.5.1
-
+Dmitry
