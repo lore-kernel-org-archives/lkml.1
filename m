@@ -1,230 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760003AbYFGMe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759688AbYFGMuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760003AbYFGMe6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 08:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbYFGMet
+	id S1759688AbYFGMuW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 08:50:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbYFGMuK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 08:34:49 -0400
-Received: from mu-out-0910.google.com ([209.85.134.190]:33753 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752588AbYFGMes (ORCPT
+	Sat, 7 Jun 2008 08:50:10 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:64998 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752699AbYFGMuI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 08:34:48 -0400
+	Sat, 7 Jun 2008 08:50:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=GSz9gLx+DqSB7FGPENq7OO9CTsHUU4k4ndcQzO5KBHLZ/Gz9td+VkPJf7qs96zW2CI
-         nfEhQsMU/NehH+I2pHpDf6btradxpsovN+VHXRo/CYkLVWr10knBrq6W+JxRlEITZadb
-         OaSXYMakGYwNQXUwAsMrJ5mI2p0pbwJUVOy1k=
-Date: Sat, 7 Jun 2008 14:34:42 +0200
-From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, tglx <tglx@linutronix.de>,
-       hpa <hpa@zytor.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: coding style fixes to arch/x86/kernel/sys_i386_32.c
-Message-ID: <20080607143442.0d67012b@paolo-desktop>
-X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=nwApmRiPwhjmPw/sWUMXuH+lFEYL+KBksBGSHuNkNEsEtOyxaCKy5wUY/47TS86uY2
+         ehsYhJAbw3Gdq/B9T63pREQA9KFIkqvLN5suhZRZ3sy+SWY/Q2hkNRQ7i5LPQWgzfocg
+         pVsBWFCRogMTbfuoLgf+w50BlQjkSJhQFjSS4=
+Message-ID: <6101e8c40806070550h62866816s1d8f8c1ba31f59f@mail.gmail.com>
+Date: Sat, 7 Jun 2008 14:50:06 +0200
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+Subject: Re: bug report
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, zsirmo@zsirmo.hu,
+       LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
+       netdev <netdev@vger.kernel.org>, "Matt Carlson" <mcarlson@broadcom.com>,
+       "Michael Chan" <mchan@broadcom.com>,
+       "Brian Vowell" <brian.vowell@gmail.com>
+In-Reply-To: <Pine.LNX.4.64.0806071141480.24862@wrl-59.cs.helsinki.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <48499731.1080807@gmail.com>
+	 <6101e8c40806061844g5b7676d4xb48c5c69ad48391f@mail.gmail.com>
+	 <20080606225643.8be222a9.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0806071141480.24862@wrl-59.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Before:
-total: 16 errors, 25 warnings, 246 lines checked
+[snip]
+Jun  6 14:04:11 www kernel: [ 6464.556309] clamscan: page allocation
+failure. order:3, mode:0x4020 <------------- this
+Jun  6 14:04:11 www kernel: [ 6464.556319] Pid: 24139, comm: clamscan
+Not tainted 2.6.25.4 #1
+Jun  6 14:04:11 www kernel: [ 6464.556325]
+Jun  6 14:04:11 www kernel: [ 6464.556326] Call Trace:
+Jun  6 14:04:11 www kernel: [ 6464.556329]  <IRQ>
+[__alloc_pages+544/890] __alloc_pages+0x220/0x37a
+Jun  6 14:04:11 www kernel: [ 6464.556353]  [tcp_v4_do_rcv+186/504]
+tcp_v4_do_rcv+0xba/0x1f8
+[snip]
 
-After:
-total: 0 errors, 7 warnings, 246 lines checked
+...
 
-Compile tested.
+[snip]
+Jun  6 14:04:11 www kernel: [ 6464.558231] Pid: 24139, comm: clamscan
+Not tainted 2.6.25.4 #1
+Jun  6 14:04:11 www kernel: [ 6464.558234]
+Jun  6 14:04:11 www kernel: [ 6464.558235] Call Trace:
+Jun  6 14:04:11 www kernel: [ 6464.558239]  <IRQ>
+[__alloc_pages+544/890] __alloc_pages+0x220/0x37a
+Jun  6 14:04:11 www kernel: [ 6464.558257]  [tcp_v4_do_rcv+186/504]
+tcp_v4_do_rcv+0xba/0x1f8
+Jun  6 14:04:11 www kernel: [ 6464.558263]
+[apic_timer_interrupt+102/112] apic_timer_interrupt+0x6
+[snip]
 
-paolo@paolo-desktop:/tmp$ size sys*
-   text    data     bss     dec     hex filename
-   1209       0       0    1209     4b9 sys_i386_32.o.after
-   1209       0       0    1209     4b9 sys_i386_32.o.before
+On 6/7/08, Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
+> ...Added Brian Vowell.
+>
+> On Fri, 6 Jun 2008, Andrew Morton wrote:
+>
+>> On Sat, 7 Jun 2008 03:44:32 +0200 "Oliver Pinter" <oliver.pntr@gmail.com>
+>> wrote:
+>>
+>> > Add Ingon and netdev to CC
+>> >
+>> >
+>> > On 6/6/08, Zsiros Attila <zsirmo@gmail.com> wrote:
+>> > > Hy!
+>> > >
+>> > > I have a problem.
+>> > >
+>> > > http://www.cyberszeg.hu/log/kern.log
+>> > > http://www.cyberszeg.hu/log/config-2.6.25.4
+>> > > http://www.cyberszeg.hu/log/lspci.txt
+>> > > http://www.cyberszeg.hu/log/ifconfig.txt
+>> > >
+>>
+>> : Jun  6 14:03:07 www kernel: [ 5897.660390] NETDEV WATCHDOG: eth0:
+>> transmit timed out
+>> : Jun  6 14:03:07 www kernel: [ 5897.660398] tg3: eth0: transmit timed
+>> out, resetting
+>> : Jun  6 14:03:07 www kernel: [ 5897.660432] tg3: DEBUG:
+>> MAC_TX_STATUS[0000001e] MAC_RX_STATUS[0000000e]
+>> : Jun  6 14:03:07 www kernel: [ 5897.660454] tg3: DEBUG:
+>> RDMAC_STATUS[00000000] WDMAC_STATUS[00000000]
+>> : Jun  6 14:03:07 www kernel: [ 5897.762983] tg3: tg3_stop_block timed
+>> out, ofs=1800 enable_bit=2
+>> : Jun  6 14:03:07 www kernel: [ 5897.864168] tg3: tg3_stop_block timed
+>> out, ofs=c00 enable_bit=2
+>> : Jun  6 14:03:07 www kernel: [ 5897.965619] tg3: tg3_stop_block timed
+>> out, ofs=4800 enable_bit=2
+>>
+>> That looks like a driver failure.
+>>
+>> : Jun  6 14:03:07 www kernel: [ 5898.096689] tg3: eth0: Link is down.
+>> : Jun  6 14:03:11 www kernel: [ 5901.633931] tg3: eth0: Link is up at 1000
+>> Mbps, full duplex.
+>> : Jun  6 14:03:11 www kernel: [ 5901.633937] tg3: eth0: Flow control is on
+>> for TX and on for RX.
+>> : Jun  6 14:04:11 www kernel: [ 6464.556309] clamscan: page allocation
+>> failure. order:3, mode:0x4020
+>> : Jun  6 14:04:11 www kernel: [ 6464.556319] Pid: 24139, comm: clamscan
+>> Not tainted 2.6.25.4 #1
+>> : Jun  6 14:04:11 www kernel: [ 6464.556325]
+>> : Jun  6 14:04:11 www kernel: [ 6464.556326] Call Trace:
+>> : Jun  6 14:04:11 www kernel: [ 6464.556329]  <IRQ>
+>> [__alloc_pages+544/890] __alloc_pages+0x220/0x37a
+>> : Jun  6 14:04:11 www kernel: [ 6464.556353]  [tcp_v4_do_rcv+186/504]
+>> tcp_v4_do_rcv+0xba/0x1f8
+>> : Jun  6 14:04:11 www kernel: [ 6464.556359]  [ktime_get+12/98]
+>> ktime_get+0xc/0x62
+>> : Jun  6 14:04:11 www kernel: [ 6464.556364]  [__netdev_alloc_skb+23/49]
+>> __netdev_alloc_skb+0x17/0x31
+>> : Jun  6 14:04:11 www kernel: [ 6464.556370]  [__slab_alloc+330/1403]
+>> __slab_alloc+0x14a/0x57b
+>> : Jun  6 14:04:11 www kernel: [ 6464.556374]  [__netdev_alloc_skb+23/49]
+>> __netdev_alloc_skb+0x17/0x31
+>> : Jun  6 14:04:11 www kernel: [ 6464.556379]  [__netdev_alloc_skb+23/49]
+>> __netdev_alloc_skb+0x17/0x31
+>> : Jun  6 14:04:11 www kernel: [ 6464.556384]
+>> [__kmalloc_track_caller+185/190] __kmalloc_track_caller+0xb9/0xbe
+>> : Jun  6 14:04:11 www kernel: [ 6464.556391]  [__alloc_skb+86/305]
+>> __alloc_skb+0x56/0x131
+>> : Jun  6 14:04:11 www kernel: [ 6464.556395]  [__netdev_alloc_skb+23/49]
+>> __netdev_alloc_skb+0x17/0x31
+>> : Jun  6 14:04:11 www kernel: [ 6464.556408]  [_end+128472975/2130444940]
+>> :tg3:tg3_alloc_rx_skb+0x8f/0x17e
+>> : Jun  6 14:04:11 www kernel: [ 6464.556418]  [_end+128493403/2130444940]
+>> :tg3:tg3_poll+0x6e8/0x922
+>> : Jun  6 14:04:11 www kernel: [ 6464.556426]  [net_rx_action+134/309]
+>> net_rx_action+0x86/0x135
+>> : Jun  6 14:04:11 www kernel: [ 6464.556433]  [__do_softirq+102/212]
+>> __do_softirq+0x66/0xd4
+>> : Jun  6 14:04:11 www kernel: [ 6464.556439]  [call_softirq+28/48]
+>> call_softirq+0x1c/0x30
+>> : Jun  6 14:04:11 www kernel: [ 6464.556444]  [do_softirq+48/107]
+>> do_softirq+0x30/0x6b
+>> : Jun  6 14:04:11 www kernel: [ 6464.556448]  [do_IRQ+114/212]
+>> do_IRQ+0x72/0xd4
+>> : Jun  6 14:04:11 www kernel: [ 6464.556453]  [ret_from_intr+0/10]
+>> ret_from_intr+0x0/0xa
+>>
+>> The driver is trying to do a 32 kbyte GFP_ATOMIC memory allocation.
+>> rofl, good luck with that.
+>>
+>> But the netwoking code sould survive this.
+>>
+>> <12 billion more page allocation failures>
+>>
+>> Are you using jumbo frames or have you manually set the MTU to
+>> something enormous?  Because 32k is a pretty crazy amount of memory for
+>> the driver to be trying to allocate - it's going to fail all over the
+>> place, as you have discovered.
+>
+> Same allocation failed problem (among an TCP issue that is nowadays
+> fixed) was also reported by Brian Vowell:
+>   http://bugzilla.kernel.org/show_bug.cgi?id=10767
+>
+>
+> --
+>  i.
+>
 
-paolo@paolo-desktop:/tmp$ md5sum sys*
-6144f6d6ce7342c3e192681a1ccaa1c1  sys_i386_32.o.after
-6144f6d6ce7342c3e192681a1ccaa1c1  sys_i386_32.o.before
 
-
-Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
----
- arch/x86/kernel/sys_i386_32.c |   64 ++++++++++++++++++++--------------------
- 1 files changed, 32 insertions(+), 32 deletions(-)
-
-diff --git a/arch/x86/kernel/sys_i386_32.c b/arch/x86/kernel/sys_i386_32.c
-index d2ab52c..7066cb8 100644
---- a/arch/x86/kernel/sys_i386_32.c
-+++ b/arch/x86/kernel/sys_i386_32.c
-@@ -19,8 +19,8 @@
- #include <linux/utsname.h>
- #include <linux/ipc.h>
- 
--#include <asm/uaccess.h>
--#include <asm/unistd.h>
-+#include <linux/uaccess.h>
-+#include <linux/unistd.h>
- 
- asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
- 			  unsigned long prot, unsigned long flags,
-@@ -103,7 +103,7 @@ asmlinkage int old_select(struct sel_arg_struct __user *arg)
-  *
-  * This is really horribly ugly.
-  */
--asmlinkage int sys_ipc (uint call, int first, int second,
-+asmlinkage int sys_ipc(uint call, int first, int second,
- 			int third, void __user *ptr, long fifth)
- {
- 	int version, ret;
-@@ -113,24 +113,24 @@ asmlinkage int sys_ipc (uint call, int first, int second,
- 
- 	switch (call) {
- 	case SEMOP:
--		return sys_semtimedop (first, (struct sembuf __user *)ptr, second, NULL);
-+		return sys_semtimedop(first, (struct sembuf __user *)ptr, second, NULL);
- 	case SEMTIMEDOP:
- 		return sys_semtimedop(first, (struct sembuf __user *)ptr, second,
- 					(const struct timespec __user *)fifth);
- 
- 	case SEMGET:
--		return sys_semget (first, second, third);
-+		return sys_semget(first, second, third);
- 	case SEMCTL: {
- 		union semun fourth;
- 		if (!ptr)
- 			return -EINVAL;
- 		if (get_user(fourth.__pad, (void __user * __user *) ptr))
- 			return -EFAULT;
--		return sys_semctl (first, second, third, fourth);
-+		return sys_semctl(first, second, third, fourth);
- 	}
- 
- 	case MSGSND:
--		return sys_msgsnd (first, (struct msgbuf __user *) ptr, 
-+		return sys_msgsnd(first, (struct msgbuf __user *) ptr,
- 				   second, third);
- 	case MSGRCV:
- 		switch (version) {
-@@ -138,45 +138,45 @@ asmlinkage int sys_ipc (uint call, int first, int second,
- 			struct ipc_kludge tmp;
- 			if (!ptr)
- 				return -EINVAL;
--			
-+
- 			if (copy_from_user(&tmp,
--					   (struct ipc_kludge __user *) ptr, 
--					   sizeof (tmp)))
-+					   (struct ipc_kludge __user *) ptr,
-+					   sizeof(tmp)))
- 				return -EFAULT;
--			return sys_msgrcv (first, tmp.msgp, second,
-+			return sys_msgrcv(first, tmp.msgp, second,
- 					   tmp.msgtyp, third);
- 		}
- 		default:
--			return sys_msgrcv (first,
-+			return sys_msgrcv(first,
- 					   (struct msgbuf __user *) ptr,
- 					   second, fifth, third);
- 		}
- 	case MSGGET:
--		return sys_msgget ((key_t) first, second);
-+		return sys_msgget((key_t) first, second);
- 	case MSGCTL:
--		return sys_msgctl (first, second, (struct msqid_ds __user *) ptr);
-+		return sys_msgctl(first, second, (struct msqid_ds __user *) ptr);
- 
- 	case SHMAT:
- 		switch (version) {
- 		default: {
- 			ulong raddr;
--			ret = do_shmat (first, (char __user *) ptr, second, &raddr);
-+			ret = do_shmat(first, (char __user *) ptr, second, &raddr);
- 			if (ret)
- 				return ret;
--			return put_user (raddr, (ulong __user *) third);
-+			return put_user(raddr, (ulong __user *) third);
- 		}
- 		case 1:	/* iBCS2 emulator entry point */
- 			if (!segment_eq(get_fs(), get_ds()))
- 				return -EINVAL;
- 			/* The "(ulong *) third" is valid _only_ because of the kernel segment thing */
--			return do_shmat (first, (char __user *) ptr, second, (ulong *) third);
-+			return do_shmat(first, (char __user *) ptr, second, (ulong *) third);
- 		}
--	case SHMDT: 
--		return sys_shmdt ((char __user *)ptr);
-+	case SHMDT:
-+		return sys_shmdt((char __user *)ptr);
- 	case SHMGET:
--		return sys_shmget (first, second, third);
-+		return sys_shmget(first, second, third);
- 	case SHMCTL:
--		return sys_shmctl (first, second,
-+		return sys_shmctl(first, second,
- 				   (struct shmid_ds __user *) ptr);
- 	default:
- 		return -ENOSYS;
-@@ -186,28 +186,28 @@ asmlinkage int sys_ipc (uint call, int first, int second,
- /*
-  * Old cruft
-  */
--asmlinkage int sys_uname(struct old_utsname __user * name)
-+asmlinkage int sys_uname(struct old_utsname __user *name)
- {
- 	int err;
- 	if (!name)
- 		return -EFAULT;
- 	down_read(&uts_sem);
--	err = copy_to_user(name, utsname(), sizeof (*name));
-+	err = copy_to_user(name, utsname(), sizeof(*name));
- 	up_read(&uts_sem);
--	return err?-EFAULT:0;
-+	return err? -EFAULT:0;
- }
- 
--asmlinkage int sys_olduname(struct oldold_utsname __user * name)
-+asmlinkage int sys_olduname(struct oldold_utsname __user *name)
- {
- 	int error;
- 
- 	if (!name)
- 		return -EFAULT;
--	if (!access_ok(VERIFY_WRITE,name,sizeof(struct oldold_utsname)))
-+	if (!access_ok(VERIFY_WRITE, name, sizeof(struct oldold_utsname)))
- 		return -EFAULT;
--  
--  	down_read(&uts_sem);
--	
-+
-+	down_read(&uts_sem);
-+
- 	error = __copy_to_user(&name->sysname, &utsname()->sysname,
- 			       __OLD_UTS_LEN);
- 	error |= __put_user(0, name->sysname + __OLD_UTS_LEN);
-@@ -223,9 +223,9 @@ asmlinkage int sys_olduname(struct oldold_utsname __user * name)
- 	error |= __copy_to_user(&name->machine, &utsname()->machine,
- 				__OLD_UTS_LEN);
- 	error |= __put_user(0, name->machine + __OLD_UTS_LEN);
--	
-+
- 	up_read(&uts_sem);
--	
-+
- 	error = error ? -EFAULT : 0;
- 
- 	return error;
-@@ -241,6 +241,6 @@ int kernel_execve(const char *filename, char *const argv[], char *const envp[])
- 	long __res;
- 	asm volatile ("push %%ebx ; movl %2,%%ebx ; int $0x80 ; pop %%ebx"
- 	: "=a" (__res)
--	: "0" (__NR_execve),"ri" (filename),"c" (argv), "d" (envp) : "memory");
-+	: "0" (__NR_execve), "ri" (filename), "c" (argv), "d" (envp) : "memory");
- 	return __res;
- }
 -- 
-1.5.6.rc1.21.g03300
-
+Thanks,
+Oliver
