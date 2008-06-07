@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765172AbYFGBbF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933752AbYFGBbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765172AbYFGBbF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:31:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761753AbYFGBOd
+	id S933752AbYFGBbm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:31:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932377AbYFGBPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:14:33 -0400
-Received: from sous-sol.org ([216.99.217.87]:51055 "EHLO sous-sol.org"
+	Fri, 6 Jun 2008 21:15:23 -0400
+Received: from sous-sol.org ([216.99.217.87]:51068 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932259AbYFGBOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 21:14:30 -0400
-Message-Id: <20080607010634.138735129@sous-sol.org>
+	id S1762615AbYFGBPU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 21:15:20 -0400
+Message-Id: <20080607010609.714244995@sous-sol.org>
 References: <20080607010215.358296706@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 06 Jun 2008 18:03:00 -0700
+Date: Fri, 06 Jun 2008 18:02:35 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,11 +23,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Michael Halcrow <mhalcrow@us.ibm.com>,
-       Eric Sandeen <sandeen@redhat.com>,
-       Dave Kleikamp <shaggy@austin.ibm.com>
-Subject: [patch 45/50] eCryptfs: remove unnecessary page decrypt call
-Content-Disposition: inline; filename=ecryptfs-remove-unnecessary-page-decrypt-call.patch
+       Cedric Le Goater <clg@fr.ibm.com>, "Paul Menage" <menage@google.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: [patch 20/50] cgroups: remove node_ prefix_from ns subsystem
+Content-Disposition: inline; filename=cgroups-remove-node_-prefix_from-ns-subsystem.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,87 +34,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Michael Halcrow <mhalcrow@us.ibm.com>
+From: Cedric Le Goater <clg@fr.ibm.com>
 
-upstream commit: d3e49afbb66109613c3474f2273f5830ac2dcb09
+upstream commit: 5c02b575780d0d785815a1e7b79a98edddee895a
 
-The page decrypt calls in ecryptfs_write() are both pointless and buggy.
-Pointless because ecryptfs_get_locked_page() has already brought the page
-up to date, and buggy because prior mmap writes will just be blown away by
-the decrypt call.
+This is a slight change in the namespace cgroup subsystem api.
 
-This patch also removes the declaration of a now-nonexistent function
-ecryptfs_write_zeros().
+The change is that previously when cgroup_clone() was called (currently
+only from the unshare path in ns_proxy cgroup, you'd get a new group named
+"node_$pid" whereas now you'll get a group named after just your pid.)
 
-Thanks to Eric Sandeen and David Kleikamp for helping to track this
-down.
+The only users who would notice it are those who are using the ns_proxy
+cgroup subsystem to auto-create cgroups when namespaces are unshared -
+something of an experimental feature, which I think really needs more
+complete container/namespace support in order to be useful.  I suspect the
+only users are Cedric and Serge, or maybe a few others on
+containers@lists.linux-foundation.org.  And in fact it would only be
+noticed by the users who make the assumption about how the name is
+generated, rather than getting it from the /proc/<pid>/cgroups file for
+the process in question.
 
-Eric said:
+Whether the change is actually needed or not I'm fairly agnostic on, but I
+guess it is more elegant to just use the pid as the new group name rather
+than adding a fairly arbitrary "node_" prefix on the front.
 
-   fsx w/ mmap dies quickly ( < 100 ops) without this, and survives
-   nicely (to millions of ops+) with it in place.
-
-Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
-Cc: Eric Sandeen <sandeen@redhat.com>
-Cc: Dave Kleikamp <shaggy@austin.ibm.com>
+[menage@google.com: provided changelog]
+Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+Cc: "Paul Menage" <menage@google.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>
 Cc: <stable@kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-[chrisw: backport to 2.6.25.5]
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- fs/ecryptfs/ecryptfs_kernel.h |    2 --
- fs/ecryptfs/read_write.c      |   22 ----------------------
- 2 files changed, 24 deletions(-)
+ kernel/cgroup.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/fs/ecryptfs/ecryptfs_kernel.h
-+++ b/fs/ecryptfs/ecryptfs_kernel.h
-@@ -626,8 +626,6 @@ int ecryptfs_get_tfm_and_mutex_for_ciphe
- int ecryptfs_keyring_auth_tok_for_sig(struct key **auth_tok_key,
- 				      struct ecryptfs_auth_tok **auth_tok,
- 				      char *sig);
--int ecryptfs_write_zeros(struct file *file, pgoff_t index, int start,
--			 int num_zeros);
- int ecryptfs_write_lower(struct inode *ecryptfs_inode, char *data,
- 			 loff_t offset, size_t size);
- int ecryptfs_write_lower_page_segment(struct inode *ecryptfs_inode,
---- a/fs/ecryptfs/read_write.c
-+++ b/fs/ecryptfs/read_write.c
-@@ -157,20 +157,6 @@ int ecryptfs_write(struct file *ecryptfs
- 			       ecryptfs_page_idx, rc);
- 			goto out;
- 		}
--		if (start_offset_in_page) {
--			/* Read in the page from the lower
--			 * into the eCryptfs inode page cache,
--			 * decrypting */
--			rc = ecryptfs_decrypt_page(ecryptfs_page);
--			if (rc) {
--				printk(KERN_ERR "%s: Error decrypting "
--				       "page; rc = [%d]\n",
--				       __FUNCTION__, rc);
--				ClearPageUptodate(ecryptfs_page);
--				page_cache_release(ecryptfs_page);
--				goto out;
--			}
--		}
- 		ecryptfs_page_virt = kmap_atomic(ecryptfs_page, KM_USER0);
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -2808,7 +2808,7 @@ int cgroup_clone(struct task_struct *tsk
+ 	cg = tsk->cgroups;
+ 	parent = task_cgroup(tsk, subsys->subsys_id);
  
- 		/*
-@@ -349,14 +335,6 @@ int ecryptfs_read(char *data, loff_t off
- 			       ecryptfs_page_idx, rc);
- 			goto out;
- 		}
--		rc = ecryptfs_decrypt_page(ecryptfs_page);
--		if (rc) {
--			printk(KERN_ERR "%s: Error decrypting "
--			       "page; rc = [%d]\n", __FUNCTION__, rc);
--			ClearPageUptodate(ecryptfs_page);
--			page_cache_release(ecryptfs_page);
--			goto out;
--		}
- 		ecryptfs_page_virt = kmap_atomic(ecryptfs_page, KM_USER0);
- 		memcpy((data + data_offset),
- 		       ((char *)ecryptfs_page_virt + start_offset_in_page),
+-	snprintf(nodename, MAX_CGROUP_TYPE_NAMELEN, "node_%d", tsk->pid);
++	snprintf(nodename, MAX_CGROUP_TYPE_NAMELEN, "%d", tsk->pid);
+ 
+ 	/* Pin the hierarchy */
+ 	atomic_inc(&parent->root->sb->s_active);
 
 -- 
