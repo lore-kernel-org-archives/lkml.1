@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759921AbYFGGBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760891AbYFGGC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759921AbYFGGBj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 02:01:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259AbYFGGB3
+	id S1760891AbYFGGC5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 02:02:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113AbYFGGCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 02:01:29 -0400
-Received: from 1wt.eu ([62.212.114.60]:1506 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751524AbYFGGB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 02:01:28 -0400
-Date: Sat, 7 Jun 2008 08:01:12 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Michael Buesch <mb@bu3sch.de>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       stable@kernel.org
-Subject: Re: PATCH] net: b44.c fix sleeping-with-spinlock-helt during resume
-Message-ID: <20080607060112.GA9748@1wt.eu>
-References: <20080531201130.0244dc29@infradead.org> <200806011203.40437.mb@bu3sch.de> <20080601090107.1ed8d5a7@infradead.org>
+	Sat, 7 Jun 2008 02:02:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58827 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756105AbYFGGCs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jun 2008 02:02:48 -0400
+Date: Fri, 6 Jun 2008 23:02:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <greg@kroah.com>
+Cc: Andy Whitcroft <apw@shadowen.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-usb@vger.kernel.org
+Subject: Re: update checkpatch.pl to version 0.19
+Message-Id: <20080606230239.c1a8c002.akpm@linux-foundation.org>
+In-Reply-To: <20080606233037.GA8548@kroah.com>
+References: <200806061922.m56JMJuq025990@hera.kernel.org>
+	<20080606233037.GA8548@kroah.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080601090107.1ed8d5a7@infradead.org>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Arjan, Michael,
+On Fri, 6 Jun 2008 16:30:37 -0700 Greg KH <greg@kroah.com> wrote:
 
-On Sun, Jun 01, 2008 at 09:01:07AM -0700, Arjan van de Ven wrote:
-> On Sun, 1 Jun 2008 12:03:40 +0200
-> Michael Buesch <mb@bu3sch.de> wrote:
-> 
-> > Index: wireless-testing/drivers/ssb/driver_pcicore.c
-> > ===================================================================
-> > --- wireless-testing.orig/drivers/ssb/driver_pcicore.c
-> > 2008-04-23 16:06:56.000000000 +0200 +++
-> > wireless-testing/drivers/ssb/driver_pcicore.c	2008-06-01
-> > 12:02:33.000000000 +0200 @@ -537,12 +537,12 @@ int
-> > ssb_pcicore_dev_irqvecs_enable(struc int err = 0; u32 tmp;
+> On Fri, Jun 06, 2008 at 07:22:25PM +0000, Linux Kernel Mailing List wrote:
+> > @@ -1920,23 +2004,16 @@ sub process {
+> >  				WARN("kfree(NULL) is safe this check is probabally not required\n" . $hereprev);
+> >  			}
+> >  		}
+> > -# check for needless usb_free_urb() checks
+> > -		if ($prevline =~ /\bif\s*\(([^\)]*)\)/) {
+> > -			my $expr = $1;
+> > -			if ($line =~ /\busb_free_urb\(\Q$expr\E\);/) {
+> > -				WARN("usb_free_urb(NULL) is safe this check is probabally not required\n" . $hereprev);
+> > -			}
+> > -		}
 > >  
-> > -	might_sleep();
-> > -
-> >  	if (!pdev)
-> >  		goto out;
-> >  	bus = pdev->bus;
-> >  
-> > +	might_sleep_if(pdev->id.coreid != SSB_DEV_PCI);
-> > +
-> >  	/* Enable interrupts for this device. */
-> >  	if (bus->host_pci &&
-> >  	    ((pdev->id.revision >= 6) || (pdev->id.coreid ==
-> > SSB_DEV_PCIE))) {
-> > 
-> > 
-> > 
 > 
-> fair enough.... can we get something like this into 2.6.26 still? Quite
-> a few people are hitting this (even though the warning is harmless, it
-> still is better to silence it)
+> I'm curious as to why this check was removed.  Any specific reason?  It
+> was valid from what I can tell.
 
-Care to CC stable when people are already hitting the problem ?
+Because of the spelling?
 
-FWIW, the fix was merged in mainline as commit
-  a3bafeedfff2ac5fa0a316bea4570e27900b6fcc
+If so, let's be consistent:
 
-thanks!
-willy
+--- a/scripts/checkpatch.pl~a
++++ a/scripts/checkpatch.pl
+@@ -1997,14 +1997,6 @@ sub process {
+ 				$herecurr);
+ 		}
+ 
+-# check for needless kfree() checks
+-		if ($prevline =~ /\bif\s*\(([^\)]*)\)/) {
+-			my $expr = $1;
+-			if ($line =~ /\bkfree\(\Q$expr\E\);/) {
+-				WARN("kfree(NULL) is safe this check is probabally not required\n" . $hereprev);
+-			}
+-		}
+-
+ # warn about #ifdefs in C files
+ #		if ($line =~ /^.\s*\#\s*if(|n)def/ && ($realfile =~ /\.c$/)) {
+ #			print "#ifdef in C files should be avoided\n";
+_
 
