@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029AbYFGUTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755822AbYFGUXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755029AbYFGUTz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 16:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753400AbYFGUTp
+	id S1755822AbYFGUXs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 16:23:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbYFGUXi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 16:19:45 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:55396 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753395AbYFGUTo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 16:19:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=cyLNZU7YjkN8U6n6iHHyftsF8jMI37h2zVFi92cxbT9ryuTd3+ukU3/Np2q5DT1KtB
-         TUetYVkb/Wacer3LpcH4DCOk2VGhnb8gP1mijZuCjQgZuRYtw1hJm2d6nQDT7es1lMmL
-         95iYRqGiFtQDqWvccsTOrUubnqWfa+n5rZjg0=
-Message-ID: <19f34abd0806071319h19893ad5kcf938e1067b2a752@mail.gmail.com>
-Date: Sat, 7 Jun 2008 22:19:44 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [PATCH] kmemcheck: don't track pages allocated with interrupts disabled
-Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>, "Ingo Molnar" <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <484AE5C9.9070306@firstfloor.org>
+	Sat, 7 Jun 2008 16:23:38 -0400
+Received: from bay0-omc2-s38.bay0.hotmail.com ([65.54.246.174]:59030 "EHLO
+	bay0-omc2-s38.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752279AbYFGUXh convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jun 2008 16:23:37 -0400
+Message-ID: <BAY103-DAV11AE409F40D0878FC3A259B2B60@phx.gbl>
+X-Originating-IP: [88.35.96.158]
+X-Originating-Email: [pupilla@hotmail.com]
+From: "Marco Berizzi" <pupilla@hotmail.com>
+To: "David Miller" <davem@davemloft.net>
+Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
+       "Chris Wright" <chrisw@sous-sol.org>
+References: <BAY103-DAV20B0EEFFB30A41A8020C8B2CC0@phx.gbl><BAY103-DAV88950FC99CDE9EAAE27B2B2CE0@phx.gbl><20080520092511.GA9005@gondor.apana.org.au> <20080520.143238.87085088.davem@davemloft.net>
+Subject: Re: [patch 00/50] 2.6.25.6 -stable review
+Date: Sat, 7 Jun 2008 22:27:58 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080607143242.GA2893@damson.getinternet.no>
-	 <484AC165.7000702@firstfloor.org>
-	 <19f34abd0806071115s3e50d662p190a65fa2f091c7b@mail.gmail.com>
-	 <484AE5C9.9070306@firstfloor.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.2180
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2180
+X-OriginalArrivalTime: 07 Jun 2008 20:23:36.0786 (UTC) FILETIME=[5D8BC320:01C8C8DC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 7, 2008 at 9:47 PM, Andi Kleen <andi@firstfloor.org> wrote:
->
->> Maybe we can do the splitting when kmemcheck is enabled for the first
->> time, either with the proc handler or at boot if kmemcheck=1 is passed
->> on the command line. Both of these contexts should/can be
->> !irqs_disabled(), I think.
->
-> You could always split at boot when the CONFIG is enabled. I assume the
-> CONFIG alone has already quite a lot of overhead and it will be only
-> on in debug kernels and adding some more TLB misses shouldn't be really
-> a problem. Using 2MB pages in kernel is merely  an optimization.
+David Miller wrote:
 
-Actually, no, the CONFIG itself is now very low overhead. The only
-thing we do is a very simple check in the slab allocator each time you
-allocate or free an object (it's a couple of if()s, I doubt it would
-show up in anything but microbenchmarks). These is also maybe two or
-three calls for each page fault, but they return very quickly.
+> From: Herbert Xu <herbert@gondor.apana.org.au>
+> Date: Tue, 20 May 2008 17:25:11 +0800
+> 
+>> On Wed, May 14, 2008 at 10:19:57AM +0200, Marco Berizzi wrote:
+>> > 
+>> > I hope this helps.
+>> 
+>> OK found the problem, it was my fault after all :)
+>> 
+>> Dave, this patch needs to go into stable too.
+>> 
+>> [IPSEC]: Use the correct ip_local_out function
+>> 
+>> Because the IPsec output function xfrm_output_resume does its
+>> own dst_output call it should always call __ip_local_output
+>> instead of ip_local_output as the latter may invoke dst_output
+>> directly.  Otherwise the return values from nf_hook and dst_output
+>> may clash as they both use the value 1 but for different purposes.
+>> 
+>> When that clash occurs this can cause a packet to be used after
+>> it has been freed which usually leads to a crash.  Because the
+>> offending value is only returned from dst_output with qdiscs
+>> such as HTB, this bug is normally not visible.
+>> 
+>> Thanks to Marco Berizzi for his perseverance in tracking this
+>> down.
+>> 
+>> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+> 
+> Applied and queued to -stable, thanks!
 
-I didn't test, but this should be the only penalty of enabling the
-CONFIG. Of course, once you pass kmemcheck=1 at boot it will be a
-disaster :-)
+Hi David,
 
-But you are probably right nevertheless; the overhead of 4K pages
-instead 2M is probably negligible in most cases.
+I don't see this patch in Chris 2.6.25.6 -stable review message.
 
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
