@@ -1,67 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760520AbYFGKva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758908AbYFGK7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760520AbYFGKva (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 06:51:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759342AbYFGKvR
+	id S1758908AbYFGK7V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 06:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbYFGK7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 06:51:17 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:40243 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759253AbYFGKvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 06:51:05 -0400
-Date: Sat, 7 Jun 2008 12:51:46 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Keith Owens <kaos@ocs.com.au>
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Paulo Marques <pmarques@grupopie.com>
-Subject: Re: [RFC PATCH] drop support for KALLSYMS_EXTRA_PASS
-Message-ID: <20080607105146.GA25410@uranus.ravnborg.org>
-References: <20080603210732.GA6247@uranus.ravnborg.org> <17789.1212657564@ocs10w>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 7 Jun 2008 06:59:12 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:65108 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752851AbYFGK7K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jun 2008 06:59:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=ajShY6rTxJTXk8lWMsyv2nEJB9x4cDDbshqgilswHjSFiT1XXb0QGNpNYg6AAvuk38
+         8NGcM+23UrJ2O8Q6vBuXLxEnTdY482oW4lj9Be8UyqfJgpTFVhxBAC9R5KYY5o2Ht2QT
+         nGfUyoVB8ErOJsh/sFQqNUUe2/1/tnULCHp+w=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: ACPI: EC: GPE storm detected, disabling EC GPE
+Date: Sat, 7 Jun 2008 13:59:04 +0300
+User-Agent: KMail/1.9.9
+Cc: "Justin Mattock" <justinmattock@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, Alexey Starikovskiy <astarikovskiy@suse.de>
+References: <dd18b0c30806062321x2918f6feq7c817bde52ba0c4c@mail.gmail.com> <20080606235526.783acc83.akpm@linux-foundation.org>
+In-Reply-To: <20080606235526.783acc83.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <17789.1212657564@ocs10w>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200806071359.04426.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 05, 2008 at 07:19:24PM +1000, Keith Owens wrote:
-> Sam Ravnborg (on Tue, 3 Jun 2008 23:07:32 +0200) wrote:
-> >We have not seen any reports on inconsistent kallsysms data recently
-> >as in the last one or two years. At least I do not recall these
-> >and google had no hits in my searching.
-> >
-> >So I suggest removing this as to simplify the final linking.
-> >When doing "make allyesconfig" build this extra linking
-> >takes considerably time (and I usually forgoet to turn it off).
-> >
-> >In addition this patch removes the debug target: debug_kallsyms
-> >
-> >diff --git a/Makefile b/Makefile
-> >-define verify_kallsyms
-> >-	$(Q)$(if $($(quiet)cmd_sysmap),                                      \
-> >-	  echo '  $($(quiet)cmd_sysmap)  .tmp_System.map' &&)                \
-> >-	  $(cmd_sysmap) .tmp_vmlinux$(last_kallsyms) .tmp_System.map
-> >-	$(Q)cmp -s System.map .tmp_System.map ||                             \
-> >-		(echo Inconsistent kallsyms data;                            \
-> >-		 echo Try setting CONFIG_KALLSYMS_EXTRA_PASS;                \
-> >-		 rm .tmp_kallsyms* ; /bin/false )
-> >-endef
+On Saturday, 7 June 2008 09:55:26 Andrew Morton wrote:
+> On Sat, 7 Jun 2008 06:21:54 +0000 "Justin Mattock" <justinmattock@gmail.com> wrote:
 > 
-> I am not happy about removing the check for inconsistent kallsyms data.
-> Changes to the tool chain could cause this problem to recur and we
-> would not pick up on it.  If we do keep the check for inconsistent data
-> then we still need some way for the user to continue while the problem
-> is investigated.
+> > Well; I was hoping it was going to be just an easy fix, but unfortunately
+> > changing
+> >  if (atomic_read(&ec->irq_count) > 5) {
+> >  to
+> > if (atomic_read(&ec->irq_count) > 20) {
+> > does seem to make the message disappear, for a while, probably at
+> > around three hours,(for me at least) then the message appeared again.
+> > :-(
+> > So leaving me back to the beginning of try to have a go at this.
+> > regards;
 > 
-> Since your real complaint seems to be the extra time taken in make
-> allyesconfig then the solution is easy.  Change CONFIG_KALLSYMS_EXTRA_PASS
-> to a Makefile option, KALLSYMS_EXTRA_PASS=y.  No extra time required in
-> make allyesconfig.
-The primary complaint are the additional complexity in the Makefile.
-See http://lkml.org/lkml/2008/6/4/436 for a much simpler
-and thus more hackable method for linking vmlinux.
+> I removed bugzilla from cc - that only works if there's [Bug 1234] in
+> the Subject:.
+> 
+> I added linux-acpi to cc - this is an acpi problem.
+> 
+> What Justin is mysteriously referring to here is:
+> 
+> 
+> : From: "Justin Mattock" <justinmattock@gmail.com>
+> : To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+> : Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> : Subject: GPE storm detected, disabling EC GPE
+> : Date: 	Thu, 5 Jun 2008 21:01:55 +0000
+> : Sender: linux-kernel-owner@vger.kernel.org
+> : 
+> : FWIW I noticed a post where the person had changed 5 to 20, and it
+> : seemed to work for them;
+> : So with that in mind I decide to give that a go, here is the location:
+> : drivers/acpi/ec.c
+> : @@ -527,47 +488,51 @@ static u32 acpi_ec_gpe_handler(void *data)
+> :  {
+> :         acpi_status status = AE_OK;
+> :         struct acpi_ec *ec = data;
+> :        u8 state = acpi_ec_read_status(ec);
+> : 
+> :         pr_debug(PREFIX "~~~> interrupt\n");
+> :        atomic_inc(&ec->irq_count);
+> : -       if (atomic_read(&ec->irq_count) > 5) {
+> : +       if (atomic_read(&ec->irq_count) > 20) {
+> :                pr_err(PREFIX "GPE storm detected, disabling EC GPE\n");
+> :                ec_switch_to_poll_mode(ec);
+> :                goto end;
+> :        }
+> : 
+> : Now I don't know if this will work for other brands, but for
+> : me(Macbook Pro ATI chipset) I have not received the
+> : GPE storm detected, disabling EC GPE message, but it's only been an
+> : hour, maybe after two or three this might appear.
+> : Also is this good or bad to set 5 to 20 for the system?
+> 
+> Could someone from acpi land please help here?
+> 
+> Justin, has this machine always had this problem or is it something
+> which earlier kernels handled correctly?
+> 
+> Thanks.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-	Sam
+I have acer aspire 5720G which shows this message in latest -git
+but doesn't show it in ubuntu 2.6.24 kernel.
+
+I also noticed that in -git volume wheel behaves strangely, it sometimes increases volume
+when I rotate it in direction of decrease, and vise versa.
+
+Since the EC is in charge of volume wheel, it could be related.
+
+Best regards,
+	Maxim Levitsky
