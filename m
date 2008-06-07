@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759155AbYFGBKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761113AbYFGBLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759155AbYFGBKw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:10:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759466AbYFGBIt
+	id S1761113AbYFGBLW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760651AbYFGBIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:08:49 -0400
-Received: from sous-sol.org ([216.99.217.87]:42265 "EHLO sous-sol.org"
+	Fri, 6 Jun 2008 21:08:53 -0400
+Received: from sous-sol.org ([216.99.217.87]:42300 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760579AbYFGBIs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 21:08:48 -0400
-Message-Id: <20080607010551.736483245@sous-sol.org>
+	id S1760618AbYFGBIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 21:08:51 -0400
+Message-Id: <20080607010616.942955087@sous-sol.org>
 References: <20080607010215.358296706@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 06 Jun 2008 18:02:21 -0700
+Date: Fri, 06 Jun 2008 18:02:43 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,10 +23,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Iain McFarlane <iain@imcfarla.homelinux.net>,
-       Oliver Neukum <oneukum@suse.de>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 06/50] USB: add Zoom Telephonics Model 3095F V.92 USB Mini External modem to cdc-acm
-Content-Disposition: inline; filename=usb-add-zoom-telephonics-model-3095f-v.92-usb-mini-external-modem-to-cdc-acm.patch
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch 28/50] x86: disable TSC for sched_clock() when calibration failed
+Content-Disposition: inline; filename=x86-disable-tsc-for-sched_clock-when-calibration-failed.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,38 +33,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Iain McFarlane <iain@imcfarla.homelinux.net>
+From: Thomas Gleixner <tglx@linutronix.de>
 
-commit 6149ed5e3a6207595bd7362af7724d64f44af216 upstream
+upstream commit: 74dc51a3de06aa516e3b9fdc4017b2aeb38bf44b
 
-The patch below is a necessary workaround to support the Zoom Telephonics Model 3095F V.92 USB Mini External modem, which fails to initialise properly during normal probing thus:
+When the TSC calibration fails then TSC is still used in
+sched_clock(). Disable it completely in that case.
 
-May  3 22:53:00 imcfarla kernel: drivers/usb/class/cdc-acm.c: Zero length descriptor references
-May  3 22:53:00 imcfarla kernel: cdc_acm: probe of 5-2:1.0 failed with error -22
-
-Adding the patch below causes the probing section to be skipped, and the modem
-then initialises correctly.
-
-Signed-off-by: Iain McFarlane <iain@imcfarla.homelinux.net>
-Acked-by: Oliver Neukum <oneukum@suse.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: stable@kernel.org
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-
 ---
- drivers/usb/class/cdc-acm.c |    3 +++
- 1 file changed, 3 insertions(+)
+ arch/x86/kernel/tsc_32.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- a/drivers/usb/class/cdc-acm.c
-+++ b/drivers/usb/class/cdc-acm.c
-@@ -1242,6 +1242,9 @@ static struct usb_device_id acm_ids[] = 
- 	{ USB_DEVICE(0x22b8, 0x7000), /* Motorola Q Phone */
- 	.driver_info = NO_UNION_NORMAL, /* has no union descriptor */
- 	},
-+	{ USB_DEVICE(0x0803, 0x3095), /* Zoom Telephonics Model 3095F USB MODEM */
-+	.driver_info = NO_UNION_NORMAL, /* has no union descriptor */
-+	},
+--- a/arch/x86/kernel/tsc_32.c
++++ b/arch/x86/kernel/tsc_32.c
+@@ -401,6 +401,11 @@ void __init tsc_init(void)
  
- 	/* control interfaces with various AT-command sets */
- 	{ USB_INTERFACE_INFO(USB_CLASS_COMM, USB_CDC_SUBCLASS_ACM,
+ 	if (!cpu_khz) {
+ 		mark_tsc_unstable("could not calculate TSC khz");
++		/*
++		 * We need to disable the TSC completely in this case
++		 * to prevent sched_clock() from using it.
++		 */
++		tsc_disabled = 1;
+ 		return;
+ 	}
+ 
 
 -- 
