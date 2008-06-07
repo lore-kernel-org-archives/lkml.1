@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761608AbYFGPBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761592AbYFGPKD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761608AbYFGPBx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 11:01:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756637AbYFGPBo
+	id S1761592AbYFGPKD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 11:10:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756616AbYFGPJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 11:01:44 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:3923 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756603AbYFGPBn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 11:01:43 -0400
-Date: Sat, 7 Jun 2008 10:30:51 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Rog?rio Brito <rbrito@ime.usp.br>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6.26-rc4] Problems with rt2x00 USB interface on powerpc
-Message-ID: <20080607143051.GA3096@tuxdriver.com>
-References: <20080601193000.GA3056@ime.usp.br> <20080606162324.GB635@tuxdriver.com> <20080607005227.GA1739@ime.usp.br>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Sat, 7 Jun 2008 11:09:51 -0400
+Received: from adsl-67-120-171-161.dsl.lsan03.pacbell.net ([67.120.171.161]:44871
+	"HELO linuxace.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756750AbYFGPJu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jun 2008 11:09:50 -0400
+Date: Sat, 7 Jun 2008 08:09:48 -0700
+From: Phil Oester <kernel@linuxace.com>
+To: Oliver Pinter <oliver.pntr@gmail.com>
+Cc: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>, zsirmo@zsirmo.hu,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       netdev <netdev@vger.kernel.org>, Matt Carlson <mcarlson@broadcom.com>,
+       Michael Chan <mchan@broadcom.com>,
+       Brian Vowell <brian.vowell@gmail.com>
+Subject: Re: bug report
+Message-ID: <20080607150948.GA4690@linuxace.com>
+References: <48499731.1080807@gmail.com> <6101e8c40806061844g5b7676d4xb48c5c69ad48391f@mail.gmail.com> <20080606225643.8be222a9.akpm@linux-foundation.org> <Pine.LNX.4.64.0806071141480.24862@wrl-59.cs.helsinki.fi> <6101e8c40806070550h62866816s1d8f8c1ba31f59f@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080607005227.GA1739@ime.usp.br>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <6101e8c40806070550h62866816s1d8f8c1ba31f59f@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 06, 2008 at 09:52:27PM -0300, Rog?rio Brito wrote:
-> First of all, thanks John for taking the time to reply to my
-> message.
-> 
-> On Jun 06 2008, John W. Linville wrote:
-> > On Sun, Jun 01, 2008 at 04:30:01PM -0300, Rogério Brito wrote:
-> > > I have an iBook G3 600MHz combo (late 2001 model, powerpc) with a USB
-> > > wireless card rt2x00 that doesn't work.
-> > > 
-> > > I just compiled a fresh 2.6.26-rc4 kernel and it can't get a lease from
-> > > the access point, even though it is able to see the access point.
-> > > 
-> > > The userland here is Debian unstable (sid) and I can perform some of the
-> > > steps in the direction of configuring the interface. For instance, the
-> > > following works (I am using wep as the encryption system with other systems
-> > > running under Linux, but, unfortunately, EVEN disabling encryption for the
-> > > sake of the tests doesn't help here):
-> (...)
-> > > (Here, it is unable to grab an IP addess from the access point)
-> > 
-> > You should set the key _before_ setting the essid.
-> 
-> Thanks, but that unfortunately doesn't seem to help. :-(
-> 
-> I have taken dmesg "snapshots" of my system together with many other
-> information regarding how it is configured and I put it at my
-> homepage, at <http://www.ime.usp.br/debug/>.
+On Sat, Jun 07, 2008 at 02:50:06PM +0200, Oliver Pinter wrote:
+> [snip]
+> Jun  6 14:04:11 www kernel: [ 6464.556309] clamscan: page allocation
+> failure. order:3, mode:0x4020 <------------- this
 
-404
+"Me too".  Lots of order 3 allocation failures on e1000 nics
+since upgrading some heavy traffic boxes to 2.6.25 (though from 2.6.21,
+so unclear on when it began).
 
-> >From what I am seeing, it looks like the bug mentioned in
-> <http://bugzilla.kernel.org/show_bug.cgi?id=9388>, but I don't get the
-> stack trace that is present there and I'm just trying to use WEP
-> instead of WPA or anything fancier.
+Phil
 
-Did you apply this patch?
+Jun  2 11:11:24 px01 kernel: swapper: page allocation failure. order:3, mode:0x4020
+Jun  2 11:11:24 px01 kernel: Pid: 0, comm: swapper Not tainted 2.6.25.2-x86_64.1 #1
+Jun  2 11:11:24 px01 kernel: 
+Jun  2 11:11:24 px01 kernel: Call Trace:
+Jun  2 11:11:24 px01 kernel:  <IRQ>  [<ffffffff8024ce51>] __alloc_pages+0x2dd/0x2f6
+Jun  2 11:11:24 px01 kernel:  [<ffffffff8026578d>] __slab_alloc+0x16e/0x4f9
+Jun  2 11:11:24 px01 kernel:  [<ffffffff80394e84>] tcp_collapse+0x164/0x394
+Jun  2 11:11:25 px01 kernel:  [<ffffffff802656d0>] __slab_alloc+0xb1/0x4f9
+Jun  2 11:11:25 px01 kernel:  [<ffffffff80394e84>] tcp_collapse+0x164/0x394
+Jun  2 11:11:25 px01 kernel:  [<ffffffff8026685d>] __kmalloc_track_caller+0x82/0xb8
+Jun  2 11:11:25 px01 kernel:  [<ffffffff8036a124>] __alloc_skb+0x5b/0x121
+Jun  2 11:11:25 px01 kernel:  [<ffffffff80394e84>] tcp_collapse+0x164/0x394
+Jun  2 11:11:25 px01 kernel:  [<ffffffff80395261>] tcp_prune_queue+0x1ad/0x21e
+Jun  2 11:11:25 px01 kernel:  [<ffffffff803954ba>] tcp_data_queue+0x1e8/0xbab
+Jun  2 11:11:25 px01 kernel:  [<ffffffff803974e8>] tcp_rcv_established+0x64c/0x6fc
+Jun  2 11:11:25 px01 kernel:  [<ffffffff8039c76f>] tcp_v4_do_rcv+0x2c/0x1b4
+Jun  2 11:11:25 px01 kernel:  [<ffffffff8039e43e>] tcp_v4_rcv+0x6b3/0x705
+Jun  2 11:11:25 px01 kernel:  [<ffffffff80384cdc>] ip_local_deliver_finish+0xf6/0x1b3
+Jun  2 11:11:25 px01 kernel:  [<ffffffff80384bc3>] ip_rcv_finish+0x2bf/0x2e2
+Jun  2 11:11:25 px01 kernel:  [<ffffffff8023ada3>] getnstimeofday+0x2f/0x83
+Jun  2 11:11:25 px01 kernel:  [<ffffffff8036e6b2>] netif_receive_skb+0x1af/0x21b
+Jun  2 11:11:25 px01 kernel:  [<ffffffff8032da6d>] e1000_clean_rx_irq+0x3f3/0x4e7
 
-	http://bugzilla.kernel.org/attachment.cgi?id=14384
-
-John
--- 
-John W. Linville
-linville@tuxdriver.com
