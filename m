@@ -1,81 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762843AbYFGQQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762970AbYFGQSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762843AbYFGQQy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 12:16:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760833AbYFGQQr
+	id S1762970AbYFGQSz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 12:18:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759487AbYFGQSt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 12:16:47 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37430 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760542AbYFGQQq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 12:16:46 -0400
-Subject: Re: [patch] Re: PostgreSQL pgbench performance regression in
-	2.6.23+
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Greg Smith <gsmith@gregsmith.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-In-Reply-To: <1212848179.4668.3.camel@marge.simson.net>
-References: <1211440207.5733.8.camel@marge.simson.net>
-	 <20080522082814.GA4499@linux.vnet.ibm.com>
-	 <1211447105.4823.7.camel@marge.simson.net>
-	 <1211452465.7606.8.camel@marge.simson.net>
-	 <1211455553.4381.9.camel@marge.simson.net>
-	 <1211456659.29104.20.camel@twins>
-	 <1211458176.5693.6.camel@marge.simson.net>
-	 <1211459081.29104.40.camel@twins>
-	 <Pine.GSO.4.64.0805230232190.28654@westnet.com>
-	 <1211536814.5851.18.camel@marge.simson.net>
-	 <20080523101000.GA13964@elte.hu>
-	 <1211537717.5851.22.camel@marge.simson.net>
-	 <Pine.GSO.4.64.0805231907150.25273@westnet.com>
-	 <1211586407.4786.5.camel@marge.simson.net>
-	 <Pine.GSO.4.64.0805260851510.24771@westnet.com>
-	 <1211867950.5505.47.camel@marge.simson.net>
-	 <Pine.GSO.4.64.0806060027290.8466@westnet.com>
-	 <1212732780.13981.43.camel@marge.simson.net>
-	 <1212838682.5571.6.camel@marge.simson.net>
-	 <1212843008.4934.16.camel@marge.simson.net>
-	 <1212844027.19205.82.camel@lappy.programming.kicks-ass.net>
-	 <1212848179.4668.3.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Sat, 07 Jun 2008 18:16:19 +0200
-Message-Id: <1212855380.19205.96.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Sat, 7 Jun 2008 12:18:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33490 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758740AbYFGQSs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jun 2008 12:18:48 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] Fix an incompatible pointer type warning on x86_64
+	compilations
+To: tglx@linutronix.de
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
+Date: Sat, 07 Jun 2008 17:18:40 +0100
+Message-ID: <20080607161840.4803.48478.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-06-07 at 16:16 +0200, Mike Galbraith wrote:
-> On Sat, 2008-06-07 at 15:07 +0200, Peter Zijlstra wrote:
-> > On Sat, 2008-06-07 at 14:50 +0200, Mike Galbraith wrote:
-> > > Since I tested mysql+oltp and made the dang pdf of the results, I may
-> > > as well actually attach the thing <does that before continuing...>.
-> > > 
-> > > BTW, I have a question wrt avg_overlap.  When a wakeup cause the current
-> > > task to begin sharing CPU with a freshly awakened task, the current task
-> > > is tagged.. but the wakee isn't.  How come?  If one is sharing, so is
-> > > the other.
-> > 
-> > avg_overlap is about measuring how long we'll run after waking someone
-> > else. The other measure, how long our waker shares the cpu with us,
-> > hasn't proven to be relevant so far.
-> 
-> Yeah wrt relevance, I've been playing with making it mean this and that,
-> with approx 0 success ;-)  If it's a measure of how long we run after
-> waking though, don't we need to make sure it's not a cross CPU wakeup?
+Fix an incompatible pointer type warning on x86_64 compilations.
+early_memtest() is passing a u64* to find_e820_area_size() which is expecting
+an unsigned long.  Change t_start and t_size to unsigned long as those are
+also 64-bit types on x88_64.
 
-The idea was to dynamically detect sync wakeups, who's defining property
-is that the waker will sleep after waking the wakee. And who's effect is
-pulling tasks together on wakeups - so that we might have the most
-benefit of cache sharing.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-So if we were to exclude cross cpu wakeups from this measurement we'd
-handicap the whole scheme, because then we'd never measure that its
-actually a sync wakeup and wants to run on the same cpu.
+ arch/x86/mm/init_64.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 156e6d7..998a06e 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -506,7 +506,7 @@ early_param("memtest", parse_memtest);
+ 
+ static void __init early_memtest(unsigned long start, unsigned long end)
+ {
+-	u64 t_start, t_size;
++	unsigned long t_start, t_size;
+ 	unsigned pattern;
+ 
+ 	if (!memtest_pattern)
+@@ -525,7 +525,7 @@ static void __init early_memtest(unsigned long start, unsigned long end)
+ 			if (t_start + t_size > end)
+ 				t_size = end - t_start;
+ 
+-			printk(KERN_CONT "\n  %016llx - %016llx pattern %d",
++			printk(KERN_CONT "\n  %016lx - %016lx pattern %d",
+ 				t_start, t_start + t_size, pattern);
+ 
+ 			memtest(t_start, t_size, pattern);
 
