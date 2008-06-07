@@ -1,578 +1,808 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758976AbYFGMO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759917AbYFGMWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758976AbYFGMO4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 08:14:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbYFGMOq
+	id S1759917AbYFGMWt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 08:22:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbYFGMWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 08:14:46 -0400
-Received: from gv-out-0910.google.com ([216.239.58.188]:42050 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751539AbYFGMOo (ORCPT
+	Sat, 7 Jun 2008 08:22:39 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:56476 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751993AbYFGMWh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 08:14:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=k9D20NNZqYFOspD+8ktzop1ocb1awJX8y/5VCrWn6M2ttvPHvnp3QJBdurv/jSWkUh
-         WR7tV3oE+jg+Hc0n2KRORpBHicUHtqb9jk+9+ztNuCDp+yeO+FTdGu3bKsSd+ZcMYXb5
-         eIcX6SWQqtCKHntw9v8+ONpr4g4JqpRsffz8A=
-Date: Sat, 7 Jun 2008 14:14:35 +0200
-From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, hpa <hpa@zytor.com>,
-       tglx <tglx@linutronix.de>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] [patch] x86: coding style fixes to arch/x86/pci/irq.
-Message-ID: <20080607141435.0ab5fa48@paolo-desktop>
-X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 7 Jun 2008 08:22:37 -0400
+Date: Sat, 7 Jun 2008 13:22:27 +0100
+From: Ben Dooks <ben@fluff.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch 01/15] MMC: S3C24XX MMC/SD driver. From: Thomas Kleffel
+	<tk@maintech.de>
+Message-ID: <20080607122227.GA1500@fluff.org.uk>
+References: <20080606155117.074799346@fluff.org.uk> <20080606155524.699256747@fluff.org.uk> <20080606224928.a3ac2655.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080606224928.a3ac2655.akpm@linux-foundation.org>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Before:
-total: 60 errors, 85 warnings, 1237 lines checked
+On Fri, Jun 06, 2008 at 10:49:28PM -0700, Andrew Morton wrote:
+> On Fri, 06 Jun 2008 16:51:18 +0100 Ben Dooks <ben-linux@fluff.org> wrote:
+> 
+> > This is the latest S3C MMC/SD driver by Thomas Kleffel
+> 
+> If Thomas was the author then this patch should have had
+>
+> From: Thomas Kleffel <tk@maintech.de>
 
-After:
-total: 1 errors, 82 warnings, 1226 lines checked
+I thought I'd done this for all the relevant patches, will fix thus.
+ 
+> right at the top of the changelog so that the commit is correctly
+> attributed.
+> 
+> > Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+> 
+> Please pass these patches through chechpatch?  This one alone generates
+> 
+> total: 40 errors, 29 warnings, 1488 lines checked
+> 
+> many of which you would have fixed had you been aware of them.  That's
+> what checkpatch is for.
 
-WARNING: line over 80 characters
+Is it ok to fit another patch after this one to fixup these problems?
 
-Compile tested.
+> >
+> > ...
+> >
+> > +#define dbg(host, channels, args...)		 \
+> > +	if (dbgmap_err & channels) 		 \
+> > +		dev_err(&host->pdev->dev, args); \
+> > +	else if (dbgmap_info & channels)	 \
+> > +		dev_info(&host->pdev->dev, args);\
+> > +	else if (dbgmap_debug & channels)	 \
+> > +		dev_dbg(&host->pdev->dev, args);
+> > +
+> > +#define RESSIZE(ressource) (((ressource)->end - (ressource)->start)+1)
+> 
+> Could be written in C.  That would fix the bug wherein this macro
+> evaluates its argument twice.  "resource" is misspelled.
+> 
+> > +static struct s3c2410_dma_client s3cmci_dma_client = {
+> > +	.name		= "s3c-mci",
+> > +};
+> > +
+> > +static void finalize_request(struct s3cmci_host *host);
+> > +static void s3cmci_send_request(struct mmc_host *mmc);
+> > +static void s3cmci_reset(struct s3cmci_host *host);
+> > +
+> > +#ifdef CONFIG_MMC_DEBUG
+> > +
+> > +static inline void dbg_dumpregs(struct s3cmci_host *host, char *prefix)
+> 
+> too large to inline.
 
-paolo@paolo-desktop:/tmp$ size irq.o.*
-   text    data     bss     dec     hex filename
-   6128     440      76    6644    19f4 irq.o.after
-   6128     440      76    6644    19f4 irq.o.before
+yeah, fix that.
 
-Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
----
- arch/x86/pci/irq.c |  261 +++++++++++++++++++++++++---------------------------
- 1 files changed, 125 insertions(+), 136 deletions(-)
+> > +{
+> > +	u32 con, pre, cmdarg, cmdcon, cmdsta, r0, r1, r2, r3, timer, bsize;
+> > +	u32 datcon, datcnt, datsta, fsta, imask;
+> > +
+> > +	con 	= readl(host->base + S3C2410_SDICON);
+> > +	pre 	= readl(host->base + S3C2410_SDIPRE);
+> > +	cmdarg 	= readl(host->base + S3C2410_SDICMDARG);
+> > +	cmdcon 	= readl(host->base + S3C2410_SDICMDCON);
+> > +	cmdsta 	= readl(host->base + S3C2410_SDICMDSTAT);
+> > +	r0 	= readl(host->base + S3C2410_SDIRSP0);
+> > +	r1 	= readl(host->base + S3C2410_SDIRSP1);
+> > +	r2 	= readl(host->base + S3C2410_SDIRSP2);
+> > +	r3 	= readl(host->base + S3C2410_SDIRSP3);
+> > +	timer 	= readl(host->base + S3C2410_SDITIMER);
+> > +	bsize 	= readl(host->base + S3C2410_SDIBSIZE);
+> > +	datcon 	= readl(host->base + S3C2410_SDIDCON);
+> > +	datcnt 	= readl(host->base + S3C2410_SDIDCNT);
+> > +	datsta 	= readl(host->base + S3C2410_SDIDSTA);
+> > +	fsta 	= readl(host->base + S3C2410_SDIFSTA);
+> > +	imask   = readl(host->base + host->sdiimsk);
+> > +
+> > +	dbg(host, dbg_debug, "%s  CON:[%08x]  PRE:[%08x]  TMR:[%08x]\n",
+> > +				prefix, con, pre, timer);
+> > +
+> > +	dbg(host, dbg_debug, "%s CCON:[%08x] CARG:[%08x] CSTA:[%08x]\n",
+> > +				prefix, cmdcon, cmdarg, cmdsta);
+> > +
+> > +	dbg(host, dbg_debug, "%s DCON:[%08x] FSTA:[%08x]"
+> > +			       " DSTA:[%08x] DCNT:[%08x]\n",
+> > +				prefix, datcon, fsta, datsta, datcnt);
+> > +
+> > +	dbg(host, dbg_debug, "%s   R0:[%08x]   R1:[%08x]"
+> > +			       "   R2:[%08x]   R3:[%08x]\n",
+> > +				prefix, r0, r1, r2, r3);
+> > +}
+> > +
+> >
+> > ...
+> >
+> > +static void dbg_dumpcmd(struct s3cmci_host *host, struct mmc_command *cmd,
+> > +								int fail)
+> > +{
+> > +	unsigned int dbglvl = fail?dbg_fail:dbg_debug;
+> >
+> 
+> Spaces around the ? and :, please.
 
-diff --git a/arch/x86/pci/irq.c b/arch/x86/pci/irq.c
-index ca8df9c..f0859de 100644
---- a/arch/x86/pci/irq.c
-+++ b/arch/x86/pci/irq.c
-@@ -11,8 +11,8 @@
- #include <linux/slab.h>
- #include <linux/interrupt.h>
- #include <linux/dmi.h>
--#include <asm/io.h>
--#include <asm/smp.h>
-+#include <linux/io.h>
-+#include <linux/smp.h>
- #include <asm/io_apic.h>
- #include <linux/irq.h>
- #include <linux/acpi.h>
-@@ -61,7 +61,7 @@ void (*pcibios_disable_irq)(struct pci_dev *dev) = NULL;
-  *  and perform checksum verification.
-  */
+fixed.
  
--static inline struct irq_routing_table * pirq_check_routing_table(u8 *addr)
-+static inline struct irq_routing_table *pirq_check_routing_table(u8 *addr)
- {
- 	struct irq_routing_table *rt;
- 	int i;
-@@ -74,7 +74,7 @@ static inline struct irq_routing_table * pirq_check_routing_table(u8 *addr)
- 	    rt->size < sizeof(struct irq_routing_table))
- 		return NULL;
- 	sum = 0;
--	for (i=0; i < rt->size; i++)
-+	for (i = 0; i < rt->size; i++)
- 		sum += addr[i];
- 	if (!sum) {
- 		DBG(KERN_DEBUG "PCI: Interrupt Routing Table found at 0x%p\n", rt);
-@@ -100,7 +100,7 @@ static struct irq_routing_table * __init pirq_find_routing_table(void)
- 			return rt;
- 		printk(KERN_WARNING "PCI: PIRQ table NOT found at pirqaddr\n");
- 	}
--	for(addr = (u8 *) __va(0xf0000); addr < (u8 *) __va(0x100000); addr += 16) {
-+	for (addr = (u8 *) __va(0xf0000); addr < (u8 *) __va(0x100000); addr += 16) {
- 		rt = pirq_check_routing_table(addr);
- 		if (rt)
- 			return rt;
-@@ -122,20 +122,20 @@ static void __init pirq_peer_trick(void)
- 	struct irq_info *e;
+> checkpatch misses this.
+> 
+> > +	if (!cmd)
+> > +		return;
+> > +
+> > +	if (cmd->error == MMC_ERR_NONE) {
+> > +		dbg(host, dbglvl, "CMD[OK] %s R0:0x%08x\n",
+> > +			host->dbgmsg_cmd, cmd->resp[0]);
+> > +	} else {
+> > +		dbg(host, dbglvl, "CMD[ERR %i] %s Status:%s\n",
+> > +			cmd->error, host->dbgmsg_cmd, host->status);
+> > +	}
+> > +
+> > +	if (!cmd->data)
+> > +		return;
+> > +
+> > +	if (cmd->data->error == MMC_ERR_NONE) {
+> > +		dbg(host, dbglvl, "DAT[OK] %s\n", host->dbgmsg_dat);
+> > +	} else {
+> > +		dbg(host, dbglvl, "DAT[ERR %i] %s DCNT:0x%08x\n",
+> > +			cmd->data->error, host->dbgmsg_dat,
+> > +			readl(host->base + S3C2410_SDIDCNT));
+> > +	}
+> > +}
+> > +#endif
+> > +
+> > +static inline u32 enable_imask(struct s3cmci_host *host, u32 imask)
+> > +{
+> > +	u32 newmask;
+> > +
+> > +	newmask = readl(host->base + host->sdiimsk);
+> > +	newmask|= imask;
+> > +
+> > +	writel(newmask, host->base + host->sdiimsk);
+> > +
+> > +	return newmask;
+> > +}
+> > +
+> > +static inline u32 disable_imask(struct s3cmci_host *host, u32 imask)
+> > +{
+> > +	u32 newmask;
+> > +
+> > +	newmask = readl(host->base + host->sdiimsk);
+> > +	newmask&= ~imask;
+> > +
+> > +	writel(newmask, host->base + host->sdiimsk);
+> > +
+> > +	return newmask;
+> > +}
+> 
+> Probably too large to inline.  A useful metric is to build the .o file
+> with and without the `inline' statements and see which results in the
+> smaller /bin/size output.  Smaller is usuall faster.  And it's smaller.
+
+I'll have a look, but with the function pre-ambles and call overheads
+I expect these'll stay inlines.
+
+> > +static inline void clear_imask(struct s3cmci_host *host)
+> > +{
+> > +	writel(0, host->base + host->sdiimsk);
+> > +}
+> > +
+> > +static inline int get_data_buffer(struct s3cmci_host *host,
+> > +			volatile u32 *words, volatile u32 **pointer)
+> > +{
+> > +	struct scatterlist *sg;
+> > +
+> > +	if (host->pio_active == XFER_NONE)
+> > +		return -EINVAL;
+> > +
+> > +	if ((!host->mrq) || (!host->mrq->data))
+> > +		return -EINVAL;
+> > +
+> > +	if (host->pio_sgptr >= host->mrq->data->sg_len) {
+> > +		dbg(host, dbg_debug, "no more buffers (%i/%i)\n",
+> > +		      host->pio_sgptr, host->mrq->data->sg_len);
+> > +		return -EBUSY;
+> > +	}
+> > +	sg = &host->mrq->data->sg[host->pio_sgptr];
+> > +
+> > +	*words	= sg->length >> 2;
+> > +	*pointer= page_address(sg->page) + sg->offset;
+> > +
+> > +	host->pio_sgptr++;
+> > +
+> > +	dbg(host, dbg_sg, "new buffer (%i/%i)\n",
+> > +	      host->pio_sgptr, host->mrq->data->sg_len);
+> > +
+> > +	return 0;
+> > +}
+> 
+> This one has three callsites!
+
+Hmm, I'll leave it up to the compiler whether it wants to
+try and inline this.
+
+> > +#define FIFO_FILL(host) ((readl(host->base + S3C2410_SDIFSTA) & S3C2410_SDIFSTA_COUNTMASK) >> 2)
+> > +#define FIFO_FREE(host) ((63 - (readl(host->base + S3C2410_SDIFSTA) & S3C2410_SDIFSTA_COUNTMASK)) >> 2)
+> 
+> These didn't need to be implemented as macros.
+
+these are now inlined.
+
+> > +
+> > +static inline void do_pio_read(struct s3cmci_host *host)
+> > +{
+> > +	int res;
+> > +	u32 fifo;
+> > +	void __iomem *from_ptr;
+> > +
+> > +	//write real prescaler to host, it might be set slow to fix
+> > +	writel(host->prescaler, host->base + S3C2410_SDIPRE);
+> > +
+> > +	from_ptr = host->base + host->sdidata;
+> > +
+> > +	while ((fifo = FIFO_FILL(host))) {
+> > +		if (!host->pio_words) {
+> > +			res = get_data_buffer(host, &host->pio_words,
+> > +							&host->pio_ptr);
+> > +			if (res) {
+> > +				host->pio_active = XFER_NONE;
+> > +				host->complete_what = COMPLETION_FINALIZE;
+> > +
+> > +				dbg(host, dbg_pio, "pio_read(): "
+> > +					"complete (no more data).\n");
+> > +				return;
+> > +			}
+> > +
+> > +			dbg(host, dbg_pio, "pio_read(): new target: [%i]@[%p]\n",
+> > +			       host->pio_words, host->pio_ptr);
+> > +		}
+> > +
+> > +		dbg(host, dbg_pio, "pio_read(): fifo:[%02i] "
+> > +				   "buffer:[%03i] dcnt:[%08X]\n",
+> > +				   fifo, host->pio_words,
+> > +				   readl(host->base + S3C2410_SDIDCNT));
+> > +
+> > +		if (fifo > host->pio_words)
+> > +			fifo = host->pio_words;
+> > +
+> > +		host->pio_words-= fifo;
+> > +		host->pio_count+= fifo;
+> > +
+> > +		while(fifo--) {
+> > +			*(host->pio_ptr++) = readl(from_ptr);
+> > +		}
+> > +	}
+> > +
+> > +	if (!host->pio_words) {
+> > +		res = get_data_buffer(host, &host->pio_words, &host->pio_ptr);
+> > +		if (res) {
+> > +			dbg(host, dbg_pio, "pio_read(): "
+> > +				"complete (no more buffers).\n");
+> > +			host->pio_active = XFER_NONE;
+> > +			host->complete_what = COMPLETION_FINALIZE;
+> > +
+> > +			return;
+> > +		}
+> > +	}
+> > +
+> > +	enable_imask(host, S3C2410_SDIIMSK_RXFIFOHALF | S3C2410_SDIIMSK_RXFIFOLAST);
+> > +}
+> > +
+> > +static inline void do_pio_write(struct s3cmci_host *host)
+> > +{
+> > +	int res;
+> > +	u32 fifo;
+> > +
+> > +	void __iomem *to_ptr;
+> > +
+> > +	to_ptr = host->base + host->sdidata;
+> > +
+> > +	while ((fifo = FIFO_FREE(host))) {
+> > +		if (!host->pio_words) {
+> > +			res = get_data_buffer(host, &host->pio_words,
+> > +							&host->pio_ptr);
+> > +			if (res) {
+> > +				dbg(host, dbg_pio, "pio_write(): "
+> > +					"complete (no more data).\n");
+> > +				host->pio_active = XFER_NONE;
+> > +
+> > +				return;
+> > +			}
+> > +
+> > +			dbg(host, dbg_pio, "pio_write(): "
+> > +				"new source: [%i]@[%p]\n",
+> > +				host->pio_words, host->pio_ptr);
+> > +
+> > +		}
+> > +
+> > +		if (fifo > host->pio_words)
+> > +			fifo = host->pio_words;
+> > +
+> > +		host->pio_words-= fifo;
+> > +		host->pio_count+= fifo;
+> > +
+> > +		while(fifo--) {
+> > +			writel(*(host->pio_ptr++), to_ptr);
+> > +		}
+> > +	}
+> > +
+> > +	enable_imask(host, S3C2410_SDIIMSK_TXFIFOHALF);
+> > +}
+> 
+> Two callsites :(  This is one bloaty driver.
+
+un-inlined.
  
- 	memset(busmap, 0, sizeof(busmap));
--	for(i=0; i < (rt->size - sizeof(struct irq_routing_table)) / sizeof(struct irq_info); i++) {
-+	for (i = 0; i < (rt->size - sizeof(struct irq_routing_table)) / sizeof(struct irq_info); i++) {
- 		e = &rt->slots[i];
- #ifdef DEBUG
- 		{
- 			int j;
- 			DBG(KERN_DEBUG "%02x:%02x slot=%02x", e->bus, e->devfn/8, e->slot);
--			for(j=0; j<4; j++)
-+			for (j = 0; j < 4; j++)
- 				DBG(" %d:%02x/%04x", j, e->irq[j].link, e->irq[j].bitmap);
- 			DBG("\n");
- 		}
- #endif
- 		busmap[e->bus] = 1;
- 	}
--	for(i = 1; i < 256; i++) {
-+	for (i = 1; i < 256; i++) {
- 		int node;
- 		if (!busmap[i] || pci_find_bus(0, i))
- 			continue;
-@@ -285,7 +285,7 @@ static int pirq_ite_get(struct pci_dev *router, struct pci_dev *dev, int pirq)
- 	static const unsigned char pirqmap[4] = { 1, 0, 2, 3 };
+> > +static void pio_tasklet(unsigned long data)
+> > +{
+> > +	struct s3cmci_host *host = (struct s3cmci_host *) data;
+> > +
+> > +
+> > +	if (host->pio_active == XFER_WRITE)
+> > +		do_pio_write(host);
+> > +
+> > +	if (host->pio_active == XFER_READ)
+> > +		do_pio_read(host);
+> > +
+> > +	if (host->complete_what == COMPLETION_FINALIZE) {
+> > +		clear_imask(host);
+> > +		if (host->pio_active != XFER_NONE) {
+> > +			dbg(host, dbg_err, "unfinished %s "
+> > +				"- pio_count:[%u] pio_words:[%u]\n",
+> > +				(host->pio_active == XFER_READ)?"read":"write",
+> > +				host->pio_count, host->pio_words);
+> > +
+> > +			host->mrq->data->error = MMC_ERR_DMA;
+> > +		}
+> > +
+> > +		disable_irq(host->irq);
+> > +		finalize_request(host);
+> > +	}
+> > +}
+> 
+> I see no tasklet_disable() in the driver.  Is there anything to prevent
+> the tasklet from running after device close, rmmod, etc?
+
+fixed.
  
- 	WARN_ON_ONCE(pirq > 4);
--	return read_config_nybble(router,0x43, pirqmap[pirq-1]);
-+	return read_config_nybble(router, 0x43, pirqmap[pirq-1]);
- }
+> The disable_irq()/enable_irq() on every interrupt will be quite
+> inefficient and hostile to any device which shares the interrupt.  WHy
+> is it necessary?
+
+do you mean "on every request", no the driver won't be sharing
+interrupts with another block, and I would expect that it is to
+stop any interrupts when there is no request present, although
+I have not checked for this.
+
+> > +/*
+> > + * ISR for SDI Interface IRQ
+> > + * Communication between driver and ISR works as follows:
+> > + *   host->mrq 			points to current request
+> > + *   host->complete_what	tells the ISR when the request is considered done
+> > + *     COMPLETION_CMDSENT	  when the command was sent
+> > + *     COMPLETION_RSPFIN          when a response was received
+> > + *     COMPLETION_XFERFINISH	  when the data transfer is finished
+> > + *     COMPLETION_XFERFINISH_RSPFIN both of the above.
+> > + *   host->complete_request	is the completion-object the driver waits for
+> > + *
+> > + * 1) Driver sets up host->mrq and host->complete_what
+> > + * 2) Driver prepares the transfer
+> > + * 3) Driver enables interrupts
+> > + * 4) Driver starts transfer
+> > + * 5) Driver waits for host->complete_rquest
+> > + * 6) ISR checks for request status (errors and success)
+> > + * 6) ISR sets host->mrq->cmd->error and host->mrq->data->error
+> > + * 7) ISR completes host->complete_request
+> > + * 8) ISR disables interrupts
+> > + * 9) Driver wakes up and takes care of the request
+> > + *
+> > + * Note: "->error"-fields are expected to be set to 0 before the request
+> > + *       was issued by mmc.c - therefore they are only set, when an error
+> > + *       contition comes up
+> > + */
+> > +
+> > +static irqreturn_t s3cmci_irq(int irq, void *dev_id)
+> > +{
+> > +	struct s3cmci_host *host;
+> > +	struct mmc_command *cmd;
+> > +	u32 mci_csta, mci_dsta, mci_fsta, mci_dcnt, mci_imsk;
+> > +	u32 mci_cclear, mci_dclear;
+> > +	unsigned long iflags;
+> > +
+> > +	host = (struct s3cmci_host *)dev_id;
+> 
+> Unneeded and undesirable cast of void*.
+
+fuxed
+
+> > +	spin_lock_irqsave(&host->complete_lock, iflags);
+> > +
+> > +	mci_csta 	= readl(host->base + S3C2410_SDICMDSTAT);
+> > +	mci_dsta 	= readl(host->base + S3C2410_SDIDSTA);
+> > +	mci_dcnt 	= readl(host->base + S3C2410_SDIDCNT);
+> > +	mci_fsta 	= readl(host->base + S3C2410_SDIFSTA);
+> > +	mci_imsk	= readl(host->base + host->sdiimsk);
+> >
+> > ...
+> >
+> > +void s3cmci_dma_done_callback(struct s3c2410_dma_chan *dma_ch, void *buf_id,
+> > +	int size, enum s3c2410_dma_buffresult result)
+> > +{
+> > +	unsigned long iflags;
+> > +	u32 mci_csta, mci_dsta, mci_fsta, mci_dcnt;
+> > +	struct s3cmci_host *host = (struct s3cmci_host *)buf_id;
+> > +
+> > +	mci_csta 	= readl(host->base + S3C2410_SDICMDSTAT);
+> > +	mci_dsta 	= readl(host->base + S3C2410_SDIDSTA);
+> > +	mci_fsta 	= readl(host->base + S3C2410_SDIFSTA);
+> > +	mci_dcnt 	= readl(host->base + S3C2410_SDIDCNT);
+> > +
+> > +	if ((!host->mrq) || (!host->mrq) || (!host->mrq->data))
+> > +		return;
+> > +
+> > +	if (!host->dmatogo)
+> > +		return;
+> 
+> Can these things all really happen?
+
+I've not tried finding out.
+
+> > +	spin_lock_irqsave(&host->complete_lock, iflags);
+> > +
+> > +	if (result != S3C2410_RES_OK) {
+> > +		dbg(host, dbg_fail, "DMA FAILED: csta=0x%08x dsta=0x%08x "
+> > +			"fsta=0x%08x dcnt:0x%08x result:0x%08x toGo:%u\n",
+> > +			mci_csta, mci_dsta, mci_fsta,
+> > +			mci_dcnt, result, host->dmatogo);
+> > +
+> > +		goto fail_request;
+> > +	}
+> > +
+> > +	host->dmatogo--;
+> > +	if (host->dmatogo) {
+> > +		dbg(host, dbg_dma, "DMA DONE  Size:%i DSTA:[%08x] "
+> > +			"DCNT:[%08x] toGo:%u\n",
+> > +			size, mci_dsta, mci_dcnt, host->dmatogo);
+> > +
+> > +		goto out;
+> > +	}
+> > +
+> > +	dbg(host, dbg_dma, "DMA FINISHED Size:%i DSTA:%08x DCNT:%08x\n",
+> > +		size, mci_dsta, mci_dcnt);
+> > +
+> > +	host->complete_what = COMPLETION_FINALIZE;
+> > +
+> > +out:
+> > +	tasklet_schedule(&host->pio_tasklet);
+> > +	spin_unlock_irqrestore(&host->complete_lock, iflags);
+> > +	return;
+> > +
+> > +
+> > +fail_request:
+> > +	host->mrq->data->error = MMC_ERR_DMA;
+> > +	host->complete_what = COMPLETION_FINALIZE;
+> > +	writel(0, host->base + host->sdiimsk);
+> > +	goto out;
+> > +
+> > +}
+> > +
+> >
+> > ...
+> >
+> > +static int s3cmci_setup_data(struct s3cmci_host *host, struct mmc_data *data)
+> > +{
+> > +	u32 dcon, imsk, stoptries=3;
+> > +
+> > +	/* write DCON register */
+> > +
+> > +	if (!data) {
+> > +		writel(0, host->base + S3C2410_SDIDCON);
+> > +		return 0;
+> > +	}
+> > +
+> > +	while(readl(host->base + S3C2410_SDIDSTA) &
+> > +		(S3C2410_SDIDSTA_TXDATAON | S3C2410_SDIDSTA_RXDATAON)) {
+> > +
+> > +		dbg(host, dbg_err,
+> > +			"mci_setup_data() transfer stillin progress.\n");
+> > +
+> > +		writel(0, host->base + S3C2410_SDIDCON);
+> > +		s3cmci_reset(host);
+> > +
+> > +		if (0 == (stoptries--)) {
+> 
+> Swap 'em, please.  It's not necessary.
+
+fixed
+
+> > +#ifdef CONFIG_MMC_DEBUG
+> > +			dbg_dumpregs(host, "DRF");
+> > +#endif
+> > +
+> > +			return -EINVAL;
+> > +		}
+> > +	}
+> > +
+> > +	dcon  = data->blocks & S3C2410_SDIDCON_BLKNUM_MASK;
+> > +
+> > +	if (host->dodma) {
+> > +		dcon |= S3C2410_SDIDCON_DMAEN;
+> > +	}
+> > +
+> > +	if (host->bus_width == MMC_BUS_WIDTH_4) {
+> > +		dcon |= S3C2410_SDIDCON_WIDEBUS;
+> > +	}
+> > +
+> > +	if (!(data->flags & MMC_DATA_STREAM)) {
+> > +		dcon |= S3C2410_SDIDCON_BLOCKMODE;
+> > +	}
+> > +
+> > +	if (data->flags & MMC_DATA_WRITE) {
+> > +		dcon |= S3C2410_SDIDCON_TXAFTERRESP;
+> > +		dcon |= S3C2410_SDIDCON_XFER_TXSTART;
+> > +	}
+> > +
+> > +	if (data->flags & MMC_DATA_READ) {
+> > +		dcon |= S3C2410_SDIDCON_RXAFTERCMD;
+> > +		dcon |= S3C2410_SDIDCON_XFER_RXSTART;
+> > +	}
+> > +
+> >
+> > ...
+> >
+> > +static int s3cmci_prepare_dma(struct s3cmci_host *host, struct mmc_data *data)
+> > +{
+> > +	int dma_len, i;
+> > +
+> > +	int rw = (data->flags & MMC_DATA_WRITE)?1:0;
+> > +
+> > +	if (rw != ((data->flags & MMC_DATA_READ)?0:1))
+> > +		return -EINVAL;
+> 
+> That's pretty clumsy looking.
+> 
+> Setting both MMC_DATA_WRITE and MMC_DATA_READ would be a programming
+> bug, wouldn't it?  If so, BUG would be a more appropriate response.
+
+ok, changed.
  
- static int pirq_ite_set(struct pci_dev *router, struct pci_dev *dev, int pirq, int irq)
-@@ -314,7 +314,7 @@ static int pirq_opti_set(struct pci_dev *router, struct pci_dev *dev, int pirq,
+> > +	s3cmci_dma_setup(host, rw?S3C2410_DMASRC_MEM:S3C2410_DMASRC_HW);
+> > +	s3c2410_dma_ctrl(host->dma, S3C2410_DMAOP_FLUSH);
+> > +
+> > +	dma_len = dma_map_sg(mmc_dev(host->mmc), data->sg, data->sg_len,
+> > +				(rw)?DMA_TO_DEVICE:DMA_FROM_DEVICE);
+> > +
+> > +
+> > +	if (dma_len == 0)
+> > +		return -ENOMEM;
+> > +
+> > +	host->dma_complete = 0;
+> > +	host->dmatogo = dma_len;
+> > +
+> > +	for (i = 0; i < dma_len; i++) {
+> > +		int res;
+> > +
+> > +		dbg(host, dbg_dma, "enqueue %i:%u@%u\n", i,
+> > +			sg_dma_address(&data->sg[i]),
+> > +			sg_dma_len(&data->sg[i]));
+> > +
+> > +		res = s3c2410_dma_enqueue(host->dma, (void *) host,
+> > +				sg_dma_address(&data->sg[i]),
+> > +				sg_dma_len(&data->sg[i]));
+> > +
+> > +		if (res) {
+> > +			s3c2410_dma_ctrl(host->dma, S3C2410_DMAOP_FLUSH);
+> > +			return -EBUSY;
+> > +		}
+> > + 	}
+> > +
+> > +	s3c2410_dma_ctrl(host->dma, S3C2410_DMAOP_START);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> >
+> > ...
+> >
+> > +
+> > +	host->irq = platform_get_irq(pdev, 0);
+> > +	if (host->irq == 0) {
+> > +		dev_err(&pdev->dev, "failed to get interrupt resouce.\n");
+> > +		ret = -EINVAL;
+> > +		goto probe_iounmap;
+> > +	}
+> > +
+> > +	if (request_irq(host->irq, s3cmci_irq, 0, DRIVER_NAME, host)) {
+> 
+> So these interrupts cannot be shared?  The driver will never be used in
+> an environment where interrupt sharing is possible?
+
+All current SoCs in the family have one interrupt for each controller,
+so this is unlikely.
  
- /*
-  * Cyrix: nibble offset 0x5C
-- * 0x5C bits 7:4 is INTB bits 3:0 is INTA 
-+ * 0x5C bits 7:4 is INTB bits 3:0 is INTA
-  * 0x5D bits 7:4 is INTD bits 3:0 is INTC
-  */
- static int pirq_cyrix_get(struct pci_dev *router, struct pci_dev *dev, int pirq)
-@@ -350,7 +350,7 @@ static int pirq_cyrix_set(struct pci_dev *router, struct pci_dev *dev, int pirq,
-  *	Apparently there are systems implementing PCI routing table using
-  *	link values 0x01-0x04 and others using 0x41-0x44 for PCI INTA..D.
-  *	We try our best to handle both link mappings.
-- *	
-+ *
-  *	Currently (2003-05-21) it appears most SiS chipsets follow the
-  *	definition of routing registers from the SiS-5595 southbridge.
-  *	According to the SiS 5595 datasheets the revision id's of the
-@@ -370,7 +370,7 @@ static int pirq_cyrix_set(struct pci_dev *router, struct pci_dev *dev, int pirq,
-  *
-  *	0x62:	USBIRQ:
-  *		bit 6 OHCI function disabled (0), enabled (1)
-- *	
-+ *
-  *	0x6a:	ACPI/SCI IRQ: bits 4-6 reserved
-  *
-  *	0x7e:	Data Acq. Module IRQ - bits 4-6 reserved
-@@ -487,9 +487,7 @@ static int pirq_amd756_get(struct pci_dev *router, struct pci_dev *dev, int pirq
- 	u8 irq;
- 	irq = 0;
- 	if (pirq <= 4)
--	{
- 		irq = read_config_nybble(router, 0x56, pirq - 1);
--	}
- 	printk(KERN_INFO "AMD756: dev %04x:%04x, router pirq : %d get irq : %2d\n",
- 		dev->vendor, dev->device, pirq, irq);
- 	return irq;
-@@ -497,12 +495,10 @@ static int pirq_amd756_get(struct pci_dev *router, struct pci_dev *dev, int pirq
- 
- static int pirq_amd756_set(struct pci_dev *router, struct pci_dev *dev, int pirq, int irq)
- {
--	printk(KERN_INFO "AMD756: dev %04x:%04x, router pirq : %d SET irq : %2d\n", 
-+	printk(KERN_INFO "AMD756: dev %04x:%04x, router pirq : %d SET irq : %2d\n",
- 		dev->vendor, dev->device, pirq, irq);
- 	if (pirq <= 4)
--	{
- 		write_config_nybble(router, 0x56, pirq - 1, irq);
--	}
- 	return 1;
- }
- 
-@@ -549,50 +545,49 @@ static __init int intel_router_probe(struct irq_router *r, struct pci_dev *route
- 	if (pci_dev_present(pirq_440gx))
- 		return 0;
- 
--	switch(device)
--	{
--		case PCI_DEVICE_ID_INTEL_82371FB_0:
--		case PCI_DEVICE_ID_INTEL_82371SB_0:
--		case PCI_DEVICE_ID_INTEL_82371AB_0:
--		case PCI_DEVICE_ID_INTEL_82371MX:
--		case PCI_DEVICE_ID_INTEL_82443MX_0:
--		case PCI_DEVICE_ID_INTEL_82801AA_0:
--		case PCI_DEVICE_ID_INTEL_82801AB_0:
--		case PCI_DEVICE_ID_INTEL_82801BA_0:
--		case PCI_DEVICE_ID_INTEL_82801BA_10:
--		case PCI_DEVICE_ID_INTEL_82801CA_0:
--		case PCI_DEVICE_ID_INTEL_82801CA_12:
--		case PCI_DEVICE_ID_INTEL_82801DB_0:
--		case PCI_DEVICE_ID_INTEL_82801E_0:
--		case PCI_DEVICE_ID_INTEL_82801EB_0:
--		case PCI_DEVICE_ID_INTEL_ESB_1:
--		case PCI_DEVICE_ID_INTEL_ICH6_0:
--		case PCI_DEVICE_ID_INTEL_ICH6_1:
--		case PCI_DEVICE_ID_INTEL_ICH7_0:
--		case PCI_DEVICE_ID_INTEL_ICH7_1:
--		case PCI_DEVICE_ID_INTEL_ICH7_30:
--		case PCI_DEVICE_ID_INTEL_ICH7_31:
--		case PCI_DEVICE_ID_INTEL_ESB2_0:
--		case PCI_DEVICE_ID_INTEL_ICH8_0:
--		case PCI_DEVICE_ID_INTEL_ICH8_1:
--		case PCI_DEVICE_ID_INTEL_ICH8_2:
--		case PCI_DEVICE_ID_INTEL_ICH8_3:
--		case PCI_DEVICE_ID_INTEL_ICH8_4:
--		case PCI_DEVICE_ID_INTEL_ICH9_0:
--		case PCI_DEVICE_ID_INTEL_ICH9_1:
--		case PCI_DEVICE_ID_INTEL_ICH9_2:
--		case PCI_DEVICE_ID_INTEL_ICH9_3:
--		case PCI_DEVICE_ID_INTEL_ICH9_4:
--		case PCI_DEVICE_ID_INTEL_ICH9_5:
--		case PCI_DEVICE_ID_INTEL_TOLAPAI_0:
--		case PCI_DEVICE_ID_INTEL_ICH10_0:
--		case PCI_DEVICE_ID_INTEL_ICH10_1:
--		case PCI_DEVICE_ID_INTEL_ICH10_2:
--		case PCI_DEVICE_ID_INTEL_ICH10_3:
--			r->name = "PIIX/ICH";
--			r->get = pirq_piix_get;
--			r->set = pirq_piix_set;
--			return 1;
-+	switch (device) {
-+	case PCI_DEVICE_ID_INTEL_82371FB_0:
-+	case PCI_DEVICE_ID_INTEL_82371SB_0:
-+	case PCI_DEVICE_ID_INTEL_82371AB_0:
-+	case PCI_DEVICE_ID_INTEL_82371MX:
-+	case PCI_DEVICE_ID_INTEL_82443MX_0:
-+	case PCI_DEVICE_ID_INTEL_82801AA_0:
-+	case PCI_DEVICE_ID_INTEL_82801AB_0:
-+	case PCI_DEVICE_ID_INTEL_82801BA_0:
-+	case PCI_DEVICE_ID_INTEL_82801BA_10:
-+	case PCI_DEVICE_ID_INTEL_82801CA_0:
-+	case PCI_DEVICE_ID_INTEL_82801CA_12:
-+	case PCI_DEVICE_ID_INTEL_82801DB_0:
-+	case PCI_DEVICE_ID_INTEL_82801E_0:
-+	case PCI_DEVICE_ID_INTEL_82801EB_0:
-+	case PCI_DEVICE_ID_INTEL_ESB_1:
-+	case PCI_DEVICE_ID_INTEL_ICH6_0:
-+	case PCI_DEVICE_ID_INTEL_ICH6_1:
-+	case PCI_DEVICE_ID_INTEL_ICH7_0:
-+	case PCI_DEVICE_ID_INTEL_ICH7_1:
-+	case PCI_DEVICE_ID_INTEL_ICH7_30:
-+	case PCI_DEVICE_ID_INTEL_ICH7_31:
-+	case PCI_DEVICE_ID_INTEL_ESB2_0:
-+	case PCI_DEVICE_ID_INTEL_ICH8_0:
-+	case PCI_DEVICE_ID_INTEL_ICH8_1:
-+	case PCI_DEVICE_ID_INTEL_ICH8_2:
-+	case PCI_DEVICE_ID_INTEL_ICH8_3:
-+	case PCI_DEVICE_ID_INTEL_ICH8_4:
-+	case PCI_DEVICE_ID_INTEL_ICH9_0:
-+	case PCI_DEVICE_ID_INTEL_ICH9_1:
-+	case PCI_DEVICE_ID_INTEL_ICH9_2:
-+	case PCI_DEVICE_ID_INTEL_ICH9_3:
-+	case PCI_DEVICE_ID_INTEL_ICH9_4:
-+	case PCI_DEVICE_ID_INTEL_ICH9_5:
-+	case PCI_DEVICE_ID_INTEL_TOLAPAI_0:
-+	case PCI_DEVICE_ID_INTEL_ICH10_0:
-+	case PCI_DEVICE_ID_INTEL_ICH10_1:
-+	case PCI_DEVICE_ID_INTEL_ICH10_2:
-+	case PCI_DEVICE_ID_INTEL_ICH10_3:
-+		r->name = "PIIX/ICH";
-+		r->get = pirq_piix_get;
-+		r->set = pirq_piix_set;
-+		return 1;
- 	}
- 	return 0;
- }
-@@ -606,7 +601,7 @@ static __init int via_router_probe(struct irq_router *r,
- 	 * workarounds for some buggy BIOSes
- 	 */
- 	if (device == PCI_DEVICE_ID_VIA_82C586_0) {
--		switch(router->device) {
-+		switch (router->device) {
- 		case PCI_DEVICE_ID_VIA_82C686:
- 			/*
- 			 * Asus k7m bios wrongly reports 82C686A
-@@ -631,7 +626,7 @@ static __init int via_router_probe(struct irq_router *r,
- 		}
- 	}
- 
--	switch(device) {
-+	switch (device) {
- 	case PCI_DEVICE_ID_VIA_82C586_0:
- 		r->name = "VIA";
- 		r->get = pirq_via586_get;
-@@ -654,13 +649,12 @@ static __init int via_router_probe(struct irq_router *r,
- 
- static __init int vlsi_router_probe(struct irq_router *r, struct pci_dev *router, u16 device)
- {
--	switch(device)
--	{
--		case PCI_DEVICE_ID_VLSI_82C534:
--			r->name = "VLSI 82C534";
--			r->get = pirq_vlsi_get;
--			r->set = pirq_vlsi_set;
--			return 1;
-+	switch (device) {
-+	case PCI_DEVICE_ID_VLSI_82C534:
-+		r->name = "VLSI 82C534";
-+		r->get = pirq_vlsi_get;
-+		r->set = pirq_vlsi_set;
-+		return 1;
- 	}
- 	return 0;
- }
-@@ -668,14 +662,13 @@ static __init int vlsi_router_probe(struct irq_router *r, struct pci_dev *router
- 
- static __init int serverworks_router_probe(struct irq_router *r, struct pci_dev *router, u16 device)
- {
--	switch(device)
--	{
--		case PCI_DEVICE_ID_SERVERWORKS_OSB4:
--		case PCI_DEVICE_ID_SERVERWORKS_CSB5:
--			r->name = "ServerWorks";
--			r->get = pirq_serverworks_get;
--			r->set = pirq_serverworks_set;
--			return 1;
-+	switch (device) {
-+	case PCI_DEVICE_ID_SERVERWORKS_OSB4:
-+	case PCI_DEVICE_ID_SERVERWORKS_CSB5:
-+		r->name = "ServerWorks";
-+		r->get = pirq_serverworks_get;
-+		r->set = pirq_serverworks_set;
-+		return 1;
- 	}
- 	return 0;
- }
-@@ -684,7 +677,7 @@ static __init int sis_router_probe(struct irq_router *r, struct pci_dev *router,
- {
- 	if (device != PCI_DEVICE_ID_SI_503)
- 		return 0;
--		
-+
- 	r->name = "SIS";
- 	r->get = pirq_sis_get;
- 	r->set = pirq_sis_set;
-@@ -693,47 +686,43 @@ static __init int sis_router_probe(struct irq_router *r, struct pci_dev *router,
- 
- static __init int cyrix_router_probe(struct irq_router *r, struct pci_dev *router, u16 device)
- {
--	switch(device)
--	{
--		case PCI_DEVICE_ID_CYRIX_5520:
--			r->name = "NatSemi";
--			r->get = pirq_cyrix_get;
--			r->set = pirq_cyrix_set;
--			return 1;
-+	switch (device) {
-+	case PCI_DEVICE_ID_CYRIX_5520:
-+		r->name = "NatSemi";
-+		r->get = pirq_cyrix_get;
-+		r->set = pirq_cyrix_set;
-+		return 1;
- 	}
- 	return 0;
- }
- 
- static __init int opti_router_probe(struct irq_router *r, struct pci_dev *router, u16 device)
- {
--	switch(device)
--	{
--		case PCI_DEVICE_ID_OPTI_82C700:
--			r->name = "OPTI";
--			r->get = pirq_opti_get;
--			r->set = pirq_opti_set;
--			return 1;
-+	switch (device) {
-+	case PCI_DEVICE_ID_OPTI_82C700:
-+		r->name = "OPTI";
-+		r->get = pirq_opti_get;
-+		r->set = pirq_opti_set;
-+		return 1;
- 	}
- 	return 0;
- }
- 
- static __init int ite_router_probe(struct irq_router *r, struct pci_dev *router, u16 device)
- {
--	switch(device)
--	{
--		case PCI_DEVICE_ID_ITE_IT8330G_0:
--			r->name = "ITE";
--			r->get = pirq_ite_get;
--			r->set = pirq_ite_set;
--			return 1;
-+	switch (device) {
-+	case PCI_DEVICE_ID_ITE_IT8330G_0:
-+		r->name = "ITE";
-+		r->get = pirq_ite_get;
-+		r->set = pirq_ite_set;
-+		return 1;
- 	}
- 	return 0;
- }
- 
- static __init int ali_router_probe(struct irq_router *r, struct pci_dev *router, u16 device)
- {
--	switch(device)
--	{
-+	switch (device) {
- 	case PCI_DEVICE_ID_AL_M1533:
- 	case PCI_DEVICE_ID_AL_M1563:
- 		printk(KERN_DEBUG "PCI: Using ALI IRQ Router\n");
-@@ -747,25 +736,24 @@ static __init int ali_router_probe(struct irq_router *r, struct pci_dev *router,
- 
- static __init int amd_router_probe(struct irq_router *r, struct pci_dev *router, u16 device)
- {
--	switch(device)
--	{
--		case PCI_DEVICE_ID_AMD_VIPER_740B:
--			r->name = "AMD756";
--			break;
--		case PCI_DEVICE_ID_AMD_VIPER_7413:
--			r->name = "AMD766";
--			break;
--		case PCI_DEVICE_ID_AMD_VIPER_7443:
--			r->name = "AMD768";
--			break;
--		default:
--			return 0;
-+	switch (device) {
-+	case PCI_DEVICE_ID_AMD_VIPER_740B:
-+		r->name = "AMD756";
-+		break;
-+	case PCI_DEVICE_ID_AMD_VIPER_7413:
-+		r->name = "AMD766";
-+		break;
-+	case PCI_DEVICE_ID_AMD_VIPER_7443:
-+		r->name = "AMD768";
-+		break;
-+	default:
-+		return 0;
- 	}
- 	r->get = pirq_amd756_get;
- 	r->set = pirq_amd756_set;
- 	return 1;
- }
--		
-+
- static __init int pico_router_probe(struct irq_router *r, struct pci_dev *router, u16 device)
- {
- 	switch (device) {
-@@ -807,7 +795,7 @@ static struct pci_dev *pirq_router_dev;
-  *	FIXME: should we have an option to say "generic for
-  *	chipset" ?
-  */
-- 
-+
- static void __init pirq_find_router(struct irq_router *r)
- {
- 	struct irq_routing_table *rt = pirq_table;
-@@ -826,7 +814,7 @@ static void __init pirq_find_router(struct irq_router *r)
- 	r->name = "default";
- 	r->get = NULL;
- 	r->set = NULL;
--	
-+
- 	DBG(KERN_DEBUG "PCI: Attempting to find IRQ router for %04x:%04x\n",
- 	    rt->rtr_vendor, rt->rtr_device);
- 
-@@ -837,7 +825,7 @@ static void __init pirq_find_router(struct irq_router *r)
- 		return;
- 	}
- 
--	for( h = pirq_routers; h->vendor; h++) {
-+	for (h = pirq_routers; h->vendor; h++) {
- 		/* First look for a router match */
- 		if (rt->rtr_vendor == h->vendor && h->probe(r, pirq_router_dev, rt->rtr_device))
- 			break;
-@@ -889,7 +877,7 @@ static int pcibios_lookup_irq(struct pci_dev *dev, int assign)
- 
- 	if (!pirq_table)
- 		return 0;
--	
-+
- 	DBG(KERN_DEBUG "IRQ for %s[%c]", pci_name(dev), 'A' + pin);
- 	info = pirq_get_info(dev);
- 	if (!info) {
-@@ -928,8 +916,10 @@ static int pcibios_lookup_irq(struct pci_dev *dev, int assign)
- 	 */
- 	newirq = dev->irq;
- 	if (newirq && !((1 << newirq) & mask)) {
--		if ( pci_probe & PCI_USE_PIRQ_MASK) newirq = 0;
--		else printk("\n" KERN_WARNING
-+		if (pci_probe & PCI_USE_PIRQ_MASK)
-+			newirq = 0;
-+		else
-+			printk("\n" KERN_WARNING
- 			"PCI: IRQ %i for device %s doesn't match PIRQ mask "
- 			"- try pci=usepirqmask\n" KERN_DEBUG, newirq,
- 			pci_name(dev));
-@@ -949,8 +939,8 @@ static int pcibios_lookup_irq(struct pci_dev *dev, int assign)
- 		irq = pirq & 0xf;
- 		DBG(" -> hardcoded IRQ %d\n", irq);
- 		msg = "Hardcoded";
--	} else if ( r->get && (irq = r->get(pirq_router_dev, dev, pirq)) && \
--	((!(pci_probe & PCI_USE_PIRQ_MASK)) || ((1 << irq) & mask)) ) {
-+	} else if (r->get && (irq = r->get(pirq_router_dev, dev, pirq)) && \
-+	((!(pci_probe & PCI_USE_PIRQ_MASK)) || ((1 << irq) & mask))) {
- 		DBG(" -> got IRQ %d\n", irq);
- 		msg = "Found";
- 		eisa_set_level_irq(irq);
-@@ -985,15 +975,15 @@ static int pcibios_lookup_irq(struct pci_dev *dev, int assign)
- 			continue;
- 		if (info->irq[pin].link == pirq) {
- 			/* We refuse to override the dev->irq information. Give a warning! */
--		    	if ( dev2->irq && dev2->irq != irq && \
-+			if (dev2->irq && dev2->irq != irq && \
- 			(!(pci_probe & PCI_USE_PIRQ_MASK) || \
--			((1 << dev2->irq) & mask)) ) {
-+			((1 << dev2->irq) & mask))) {
- #ifndef CONFIG_PCI_MSI
--		    		printk(KERN_INFO "IRQ routing conflict for %s, have irq %d, want irq %d\n",
-+				printk(KERN_INFO "IRQ routing conflict for %s, have irq %d, want irq %d\n",
- 				       pci_name(dev2), dev2->irq, irq);
- #endif
--		    		continue;
--		    	}
-+				continue;
-+			}
- 			dev2->irq = irq;
- 			pirq_penalty[irq]++;
- 			if (dev != dev2)
-@@ -1031,8 +1021,7 @@ static void __init pcibios_fixup_irqs(void)
- 		/*
- 		 * Recalculate IRQ numbers if we use the I/O APIC.
- 		 */
--		if (io_apic_assign_pci_irqs)
--		{
-+		if (io_apic_assign_pci_irqs) {
- 			int irq;
- 
- 			if (pin) {
-@@ -1045,10 +1034,10 @@ static void __init pcibios_fixup_irqs(void)
- 	 * busses itself so we should get into this branch reliably.
- 	 */
- 				if (irq < 0 && dev->bus->parent) { /* go back to the bridge */
--					struct pci_dev * bridge = dev->bus->self;
-+					struct pci_dev *bridge = dev->bus->self;
- 
- 					pin = (pin + PCI_SLOT(dev->devfn)) % 4;
--					irq = IO_APIC_get_PCI_irq_vector(bridge->bus->number, 
-+					irq = IO_APIC_get_PCI_irq_vector(bridge->bus->number,
- 							PCI_SLOT(bridge->devfn), pin);
- 					if (irq >= 0)
- 						printk(KERN_WARNING "PCI: using PPB %s[%c] to get irq %d\n",
-@@ -1138,7 +1127,7 @@ static int __init pcibios_irq_init(void)
- 		pirq_find_router(&pirq_router);
- 		if (pirq_table->exclusive_irqs) {
- 			int i;
--			for (i=0; i<16; i++)
-+			for (i = 0; i < 16; i++)
- 				if (!(pirq_table->exclusive_irqs & (1 << i)))
- 					pirq_penalty[i] += 100;
- 		}
-@@ -1203,10 +1192,10 @@ static int pirq_enable_irq(struct pci_dev *dev)
- 			 */
- 			temp_dev = dev;
- 			while (irq < 0 && dev->bus->parent) { /* go back to the bridge */
--				struct pci_dev * bridge = dev->bus->self;
-+				struct pci_dev *bridge = dev->bus->self;
- 
- 				pin = (pin + PCI_SLOT(dev->devfn)) % 4;
--				irq = IO_APIC_get_PCI_irq_vector(bridge->bus->number, 
-+				irq = IO_APIC_get_PCI_irq_vector(bridge->bus->number,
- 						PCI_SLOT(bridge->devfn), pin);
- 				if (irq >= 0)
- 					printk(KERN_WARNING "PCI: using PPB %s[%c] to get irq %d\n",
+> > +		dev_err(&pdev->dev, "failed to request mci interrupt.\n");
+> > +		ret = -ENOENT;
+> > +		goto probe_iounmap;
+> > +	}
+> > +
+> > +	disable_irq(host->irq);
+> > +
+> > +	s3c2410_gpio_cfgpin(S3C2410_GPF2, S3C2410_GPF2_EINT2);
+> > +	set_irq_type(host->irq_cd, IRQT_BOTHEDGE);
+> > +
+> > +	if (request_irq(host->irq_cd, s3cmci_irq_cd, 0, DRIVER_NAME, host)) {
+> > +		dev_err(&pdev->dev,
+> > +			"failed to request card detect interrupt.\n");
+> > +
+> > +		ret = -ENOENT;
+> > +		goto probe_free_irq;
+> > +	}
+> > +
+> > +	if (s3c2410_dma_request(S3CMCI_DMA, &s3cmci_dma_client, NULL)) {
+> > +		dev_err(&pdev->dev, "unable to get DMA channel.\n");
+> > +		ret = -EBUSY;
+> > +		goto probe_free_irq_cd;
+> > +	}
+> > +
+> > +	host->clk = clk_get(&pdev->dev, "sdi");
+> > +	if (IS_ERR(host->clk)) {
+> > +		dev_err(&pdev->dev, "failed to find clock source.\n");
+> > +		ret = PTR_ERR(host->clk);
+> > +		host->clk = NULL;
+> > +		goto probe_free_host;
+> > +	}
+> > +
+> > +	if ((ret = clk_enable(host->clk))) {
+> > +		dev_err(&pdev->dev, "failed to enable clock source.\n");
+> > +		goto clk_free;
+> > +	}
+> > +
+> > +	host->clk_rate = clk_get_rate(host->clk);
+> > +
+> > +	mmc->ops 	= &s3cmci_ops;
+> > +	mmc->ocr_avail	= MMC_VDD_32_33;
+> > +	mmc->caps	= MMC_CAP_4_BIT_DATA;
+> > +	mmc->f_min 	= host->clk_rate / (host->clk_div * 256);
+> > +	mmc->f_max 	= host->clk_rate / host->clk_div;
+> > +
+> > +	mmc->max_blk_count	= 4095;
+> > +	mmc->max_blk_size	= 4095;
+> > +	mmc->max_req_size	= 4095 * 512;
+> > +	mmc->max_seg_size	= mmc->max_req_size;
+> > +
+> > +	mmc->max_phys_segs	= 128;
+> > +	mmc->max_hw_segs	= 128;
+> > +
+> > +	dbg(host, dbg_debug, "probe: mode:%s mapped mci_base:%p irq:%u irq_cd:%u dma:%u.\n",
+> > +		(host->is2440?"2440":""),
+> > +		host->base, host->irq, host->irq_cd, host->dma);
+> > +
+> > +	if ((ret = mmc_add_host(mmc))) {
+> > +		dev_err(&pdev->dev, "failed to add mmc host.\n");
+> > +		goto free_dmabuf;
+> > +	}
+> > +
+> > +	platform_set_drvdata(pdev, mmc);
+> > +
+> > +	dev_info(&pdev->dev,"initialisation done.\n");
+> > +	return 0;
+> > +
+> > + free_dmabuf:
+> > +	clk_disable(host->clk);
+> > +
+> > + clk_free:
+> > +	clk_put(host->clk);
+> > +
+> > + probe_free_irq_cd:
+> > + 	free_irq(host->irq_cd, host);
+> > +
+> > + probe_free_irq:
+> > + 	free_irq(host->irq, host);
+> > +
+> > + probe_iounmap:
+> > +	iounmap(host->base);
+> > +
+> > + probe_free_mem_region:
+> > +	release_mem_region(host->mem->start, RESSIZE(host->mem));
+> > +
+> > + probe_free_host:
+> > +	mmc_free_host(mmc);
+> > + probe_out:
+> > +	return ret;
+> > +}
+> > +
+> >
+> > ...
+> >
+> > +//FIXME: DMA Resource management ?!
+> 
+> ?
+> 
+> > +#define S3CMCI_DMA 0
+> > +
+> > +enum s3cmci_waitfor {
+> > +	COMPLETION_NONE,
+> > +	COMPLETION_FINALIZE,
+> > +	COMPLETION_CMDSENT,
+> > +	COMPLETION_RSPFIN,
+> > +	COMPLETION_XFERFINISH,
+> > +	COMPLETION_XFERFINISH_RSPFIN,
+> > +};
+> > +
+> > +struct s3cmci_host {
+> > +	struct platform_device	*pdev;
+> > +	struct mmc_host		*mmc;
+> > +	struct resource		*mem;
+> > +	struct clk		*clk;
+> > +	void __iomem		*base;
+> > +	int			irq;
+> > +	int			irq_cd;
+> > +	int			dma;
+> > +
+> > +	unsigned long		clk_rate;
+> > +	unsigned long		clk_div;
+> > +	unsigned long		real_rate;
+> > +	u8			prescaler;
+> > +
+> > +	int			is2440;
+> > +	unsigned		sdiimsk;
+> > +	unsigned		sdidata;
+> > +	int			dodma;
+> > +
+> > +	volatile int		dmatogo;
+> > +
+> > +	struct mmc_request	*mrq;
+> > +	int			cmd_is_stop;
+> > +
+> > +	spinlock_t		complete_lock;
+> > +	volatile enum s3cmci_waitfor
+> > +				complete_what;
+> > +
+> > +	volatile int		dma_complete;
+> > +
+> > +	volatile u32		pio_sgptr;
+> > +	volatile u32		pio_words;
+> > +	volatile u32		pio_count;
+> > +	volatile u32		*pio_ptr;
+> 
+> volatiles.  checkpatch..
+> 
+> > +#define XFER_NONE 0
+> > +#define XFER_READ 1
+> > +#define XFER_WRITE 2
+> > +	volatile u32		pio_active;
+> > +
+> > +	int			bus_width;
+> > +
+> > +	char 			dbgmsg_cmd[301];
+> > +	char 			dbgmsg_dat[301];
+> > +	volatile char		*status;
+> > +
+> > +	unsigned int		ccnt, dcnt;
+> > +	struct tasklet_struct	pio_tasklet;
+> > +};
+> 
+> Those problems were really really basic stuff.  kernel drivers 101.
+
+Yeah, however I don't want to go about writing a new driver
+for this from scratch, and having this interface supported
+would add more support for an SoC series used in an number
+of PDAs and other devices.
+
+Unfortunatley the original authour isn't interested in getting
+it submitted (IE, it works for the kernel he needs to use), and
+other people haven't stepped up to try and get this integrated.
+
 -- 
-1.5.6.rc1.21.g03300
+Ben (ben@fluff.org, http://www.fluff.org/)
 
+  'a smiley only costs 4 bytes'
