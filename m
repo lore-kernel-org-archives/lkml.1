@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763336AbYFGP6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762414AbYFGP66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763336AbYFGP6c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 11:58:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758740AbYFGP6X
+	id S1762414AbYFGP66 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 11:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758740AbYFGP6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 11:58:23 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:59486 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758682AbYFGP6W (ORCPT
+	Sat, 7 Jun 2008 11:58:41 -0400
+Received: from vs166246.vserver.de ([62.75.166.246]:47481 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760061AbYFGP6k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 11:58:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=dOUHN1mt8Wb2lNTIrog46B4AMZwqV3FGzwTDurcONG0ItSX6LVuGoIKb6gNe1LxTvV
-         V8F5CfF+w0T62dEVAD+LQX5SUVtS4ayIjJWjBEu3vsJhO/M6Z8q8/Varb/IfF4Ifzmpk
-         GzidGHW6e7f/kyLScA3P2JVDrkht8oXPblmmo=
-Date: Sat, 7 Jun 2008 19:58:08 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: macro@linux-mips.org, mingo@redhat.com, hpa@zytor.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/2] x86: io-apic cleanup
-Message-ID: <20080607155808.GB7141@cvg>
-References: <484aafbf.0407560a.301e.6a8c@mx.google.com>
+	Sat, 7 Jun 2008 11:58:40 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: stable@kernel.org
+Subject: [PATCH stable] ssb: Fix context assertion in ssb_pcicore_dev_irqvecs_enable
+Date: Sat, 7 Jun 2008 17:57:37 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: netdev@vger.kernel.org, "linux-kernel" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <484aafbf.0407560a.301e.6a8c@mx.google.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200806071757.38139.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Sat, Jun 07, 2008 at 07:53:55PM +0400]
-| This series doesn't introduce any functional change but
-| attempts to get rid of few hard-coded numbers in io-apic code.
-| 
-| Please review. Any comments are appreciated.
-| 
-| 		- Cyrill -
-| -- 
-| 
+This fixes a context assertion in ssb that makes b44 print
+out warnings on resume.
 
-Btw, the series is made over tip/x86/apic
+This fixes the following kernel oops:
+http://www.kerneloops.org/oops.php?number=12732
+http://www.kerneloops.org/oops.php?number=11410
 
-commit 2229ff84f01746d02fb6b79e156fb5cce48c908f
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Thu Jun 5 11:17:16 2008 +0200
+Upstream commit is a3bafeedfff2ac5fa0a316bea4570e27900b6fcc
 
-    x86, io-apic: fix nmi_watchdog=1 bootup hang
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
 
 
-		- Cyrill -
+Index: linux-2.6.25.4/drivers/ssb/driver_pcicore.c
+===================================================================
+--- linux-2.6.25.4.orig/drivers/ssb/driver_pcicore.c	2008-05-22 16:35:41.000000000 +0200
++++ linux-2.6.25.4/drivers/ssb/driver_pcicore.c	2008-06-07 17:20:55.000000000 +0200
+@@ -516,18 +516,18 @@ int ssb_pcicore_dev_irqvecs_enable(struc
+ {
+ 	struct ssb_device *pdev = pc->dev;
+ 	struct ssb_bus *bus;
+ 	int err = 0;
+ 	u32 tmp;
+ 
+-	might_sleep();
+-
+ 	if (!pdev)
+ 		goto out;
+ 	bus = pdev->bus;
+ 
++	might_sleep_if(pdev->id.coreid != SSB_DEV_PCI);
++
+ 	/* Enable interrupts for this device. */
+ 	if (bus->host_pci &&
+ 	    ((pdev->id.revision >= 6) || (pdev->id.coreid == SSB_DEV_PCIE))) {
+ 		u32 coremask;
+ 
+ 		/* Calculate the "coremask" for the device. */
