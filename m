@@ -1,63 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761325AbYFGOcI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761402AbYFGOc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761325AbYFGOcI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 10:32:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756148AbYFGObz
+	id S1761402AbYFGOc5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 10:32:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756135AbYFGOct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 10:31:55 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:25876 "EHLO
+	Sat, 7 Jun 2008 10:32:49 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:26172 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756118AbYFGObx (ORCPT
+	with ESMTP id S1756068AbYFGOcs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 10:31:53 -0400
+	Sat, 7 Jun 2008 10:32:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=DI0xnXpIjOieQs/bSgsBo6FmCSTh82fhADNJV07bs++iPJp7o2PPoOmyV7cXJWp2Z+
-         18R5tyKT2N1c0FIke2AJeiubgXUoazkKUPDmhd8QGlSs/YvkPu6cHF6ykAHcgEkb88aE
-         Tj7UL5SegIeOWtstjUXyx3U28G8ugXXut2NwM=
-Message-ID: <3d8471ca0806070731o98d62a9lab6caf394aa60277@mail.gmail.com>
-Date: Sat, 7 Jun 2008 16:31:50 +0200
-From: "Guillaume Chazarain" <guichaz@gmail.com>
-To: "Maxim Levitsky" <maximlevitsky@gmail.com>
-Subject: Re: ACPI: EC: GPE storm detected, disabling EC GPE
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Justin Mattock" <justinmattock@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org,
-       "Alexey Starikovskiy" <astarikovskiy@suse.de>
-In-Reply-To: <200806071359.04426.maximlevitsky@gmail.com>
+        h=date:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent:from;
+        b=DY6vRUjq2my8vgSZu/Nfq1FiqJ/0rcbbyiAl6r1U1mn2+7cIS4gVj7SnvkG2xY9RRy
+         k9sMLyd2ocXp8kZKSUx4f2S/X5j6ahKE6xROPotJZxVy3xllBxyyQ5Yzo0zXU84oYFjj
+         W9lxd64UwiuV/exeAgTlu5t9NPdLq2kzhHT7c=
+Date: Sat, 7 Jun 2008 16:32:42 +0200
+To: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] kmemcheck: don't track pages allocated with interrupts
+	disabled
+Message-ID: <20080607143242.GA2893@damson.getinternet.no>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <dd18b0c30806062321x2918f6feq7c817bde52ba0c4c@mail.gmail.com>
-	 <20080606235526.783acc83.akpm@linux-foundation.org>
-	 <200806071359.04426.maximlevitsky@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 7, 2008 at 12:59 PM, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
-> I also noticed that in -git volume wheel behaves strangely, it sometimes increases volume
-> when I rotate it in direction of decrease, and vise versa.
+Hi,
 
-I have a similar problem, the ACPI keys on my laptop are very laggy
-(like 1 second), maybe you are seeing the same thing with your volume
-wheel?
+It seems that I was wrong regarding the set_memory_4k() approach. It seems
+to only have worked because we were lucky. We may later reinstate the code
+to disable PSE, but this time not unconditionally, perhaps with a config
+option or boot-time option.
 
-changing
- if (atomic_read(&ec->irq_count) > 5) {
- to
-if (atomic_read(&ec->irq_count) > 20) {
-fixed the problem completely for me.
+That a new page needs to be allocated with interrupts disabled is probably
+rare enough that we can get away with this without losing too many pages
+that could otherwise have been tracked.
 
-It's all in http://bugzilla.kernel.org/show_bug.cgi?id=9998
+Again, this is overall nicer than unconditionally disabling PSE, since
+that incurs a much larger overhead in the case where kmemcheck is enabled
+in the config but disabled by default. (Ingo, you previously indicated that
+it would be nice if kernels could be configured in this way by default.)
 
-Cheers.
 
+Vegard
+
+
+From: Vegard Nossum <vegardno@ben.ifi.uio.no>
+Date: Sat, 7 Jun 2008 16:18:29 +0200
+Subject: [PATCH] kmemcheck: don't track pages allocated with interrupts disabled
+
+Because large physical pages need to be split to 4k-sized pages after
+the slab page has been allocated, and this needs to flush the page
+tables, we cannot track any pages that were allocated while interrupts
+were disabled.
+
+This fixes a boot crash that seems to depend on timing to appear.
+
+Signed-off-by: Vegard Nossum <vegardno@ben.ifi.uio.no>
+---
+ mm/kmemcheck.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/mm/kmemcheck.c b/mm/kmemcheck.c
+index 4efdf1e..b337374 100644
+--- a/mm/kmemcheck.c
++++ b/mm/kmemcheck.c
+@@ -10,6 +10,14 @@ void kmemcheck_alloc_shadow(struct kmem_cache *s, gfp_t flags, int node,
+ 	int pages;
+ 	int i;
+ 
++	/*
++	 * It's sad, but it's true. If interrupts are enabled while making
++	 * this allocation, it means that we can't split the large page
++	 * because it would require flushing the page tables.
++	 */
++	if (irqs_disabled())
++		return;
++
+ 	pages = 1 << order;
+ 
+ 	/*
 -- 
-Guillaume
+1.5.3.1
+
