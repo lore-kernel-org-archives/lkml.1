@@ -1,72 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760733AbYFGBpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759219AbYFGByD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760733AbYFGBpa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:45:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754714AbYFGBpI
+	id S1759219AbYFGByD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:54:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171AbYFGBxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:45:08 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:36183 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753739AbYFGBpH (ORCPT
+	Fri, 6 Jun 2008 21:53:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34924 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753739AbYFGBxu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 21:45:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Pj4QA+6zlJcENn1XkkoKrGJMEHIS88LBTYFtSwJo3ox+WMOg2w0mlVLVHzs5mRHESt
-         FeVvCIGjWH1AIUM1PckJ85wW1lWfqD1IfbE0C9UqtSYcTaXBWadCGW2ohuXqngUSB+Wa
-         xXuedy2PGFesLan9vmCGcRfS5FuJAQF5v1C4Q=
-Message-ID: <6101e8c40806061845y20cc6f15ne27bb51142782759@mail.gmail.com>
-Date: Sat, 7 Jun 2008 03:45:04 +0200
-From: "Oliver Pinter" <oliver.pntr@gmail.com>
-To: zsirmo@zsirmo.hu
-Subject: Re: bug report
-Cc: linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
-       netdev <netdev@vger.kernel.org>
-In-Reply-To: <6101e8c40806061844g5b7676d4xb48c5c69ad48391f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 6 Jun 2008 21:53:50 -0400
+Date: Fri, 6 Jun 2008 18:52:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
+       kosaki.motohiro@jp.fujitsu.com
+Subject: Re: [PATCH -mm 06/25] split LRU lists into anon & file sets
+Message-Id: <20080606185248.0b7f53da.akpm@linux-foundation.org>
+In-Reply-To: <20080606212231.5a51237c@bree.surriel.com>
+References: <20080606202838.390050172@redhat.com>
+	<20080606202858.681500833@redhat.com>
+	<20080606180439.e5954a2e.akpm@linux-foundation.org>
+	<20080606212231.5a51237c@bree.surriel.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48499731.1080807@gmail.com>
-	 <6101e8c40806061844g5b7676d4xb48c5c69ad48391f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, s/Ingon/Ingo/
+On Fri, 6 Jun 2008 21:22:31 -0400 Rik van Riel <riel@redhat.com> wrote:
 
-On 6/7/08, Oliver Pinter <oliver.pntr@gmail.com> wrote:
-> Add Ingon and netdev to CC
->
->
-> On 6/6/08, Zsiros Attila <zsirmo@gmail.com> wrote:
->> Hy!
->>
->> I have a problem.
->>
->> http://www.cyberszeg.hu/log/kern.log
->> http://www.cyberszeg.hu/log/config-2.6.25.4
->> http://www.cyberszeg.hu/log/lspci.txt
->> http://www.cyberszeg.hu/log/ifconfig.txt
->>
->> Best regards Zsirmo
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->
->
-> --
-> Thanks,
-> Oliver
->
+> On Fri, 6 Jun 2008 18:04:39 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > The changelogs are a bit scrappy and could do with some care
+> > 
+> > - stale assertions such as the above
+> > 
+> > - "From:<random number of spaces>Lee" in various places
+> > 
+> > - Some have the --- separator and others don't (this trips me up).
+> > 
+> > - Stuff like "Against: 2.6.26-rc2-mm1" right in the middle of the
+> >   changelog for me to hunt down and squish.
+> 
+> I got rid of all of those - until I merged in Lee's latest :(
+> 
+> > - "TODO:  DEBUGGING ONLY: NOT FOR UPSTREAM MERGE" <<-- what's up with this?
+> 
+> I'll remove this one.
+> 
+> > - random Capitalisation in Various patch Titles.
+> > 
+> > - "V2 -> V3:" logging in the main changelog - not relevant in the
+> >   final commit hence more for me to edit away.
+> 
+> I got rid of all of those - again, before merging Lee's latest.
+> Then I got rid of most of them, but apparently missed a few...
 
+Poeple often maintain that sort of info below the ^--- line.
 
--- 
-Thanks,
-Oliver
+>
+...
+>
+> > Do we really want to put all this stuff into /proc/meminfo?
+> >
+> > Would it be better to aggregate it in some manner for meminfo and show
+> > the fine-grained info in /proc/vmstat?
+> 
+> Good question.  I believe we'll want the memory usage statistics
+> in /proc/meminfo, but more temporary internal stuff like 
+> "writebacktmp" and "nfs_unstable" might not belong there.
+
+Well, I was just asking..  I haven't actually sat down and worked out
+what the proposed new meminfo will look like yet.
+
+(It's documented in Documentation/filesystems/proc.txt btw.  Or used
+to be ;))
