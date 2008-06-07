@@ -1,75 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757617AbYFGAVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbYFGAYi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757617AbYFGAVm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 20:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbYFGAVc
+	id S1755898AbYFGAYi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 20:24:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbYFGAY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 20:21:32 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:57758 "EHLO
-	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751403AbYFGAVb (ORCPT
+	Fri, 6 Jun 2008 20:24:29 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:47996 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752317AbYFGAY3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 20:21:31 -0400
-Date: Fri, 06 Jun 2008 18:21:20 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: SMP Affinity Issue with IRQ#
-In-reply-to: <fa.1w61C2V3iARylIuoDG4axNStuwg@ifi.uio.no>
-To: Khaled Al-Hamwi <khaled.linux@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <4849D480.2090806@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.1w61C2V3iARylIuoDG4axNStuwg@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Fri, 6 Jun 2008 20:24:29 -0400
+Date: Fri, 6 Jun 2008 17:24:37 -0700
+From: Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
+To: balbir@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, nagar@watson.ibm.com, balbir@in.ibm.com,
+       sekharan@us.ibm.com, kosaki.motohiro@jp.fujitsu.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 2/3 v2] per-task-delay-accounting: update taskstats for
+ memory reclaim delay
+Message-Id: <20080606172437.bcd7d98a.kobayashi.kk@ncos.nec.co.jp>
+In-Reply-To: <4848B983.4030502@linux.vnet.ibm.com>
+References: <20080605162759.a6adf291.kobayashi.kk@ncos.nec.co.jp>
+	<20080605163220.8397bed6.kobayashi.kk@ncos.nec.co.jp>
+	<4848B983.4030502@linux.vnet.ibm.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Khaled Al-Hamwi wrote:
-> Hi list,
-> 
-> I am trying to evaluate the performance of a Linux box when working as
-> IP forwarder.
-> I have a hardware traffic generator IXIA T400 on one end.
-> On the other end, I have a Linux box with kernel 2.6.16 and quad-core xeon CPU.
-> 
-> These two systems are connected through two crossover Gigabit cables and NICs.
-> The traffic is sent from IXIA through one NIC to the forwarding machine
-> and then it is forwarded back through the other NIC to IXIA.
-> 
-> I have two issues related to SMP affinity.
-> The first one is that when I set the SMP affinity through
-> /proc/irq/<IRQ#>/smp_affinity, it changes dynamically.
-> Is there any load balancing in the system that changes the affinity
-> after some time or after some packets are received?
-> Is there a way to set it permanently?
+Add members for memory reclaim delay to taskstats,
+and accumulate them in __delayacct_add_tsk() .
 
-Likely the irqbalance daemon is doing it. You should be able to stop it. 
-(Or you have the kernel IRQ balancing config option enabled, which you 
-likely shouldn't.)
+Signed-off-by: Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
+---
 
-> 
-> The second issue is that changing the SMP affinity results in
-> different delay and throughput measurements.
-> I am assigning each NIC to a different CPU.
-> If I used a different assignment but still each NIC is assigned to a
-> different CPU, I am getting different performance results.
-> I would expect that changing the assignment should yield the same
-> performance results.
-> The CPUs are identical and should have similar performance.
-> Here, I have two examples of two different assignments:
-> Example 1:
-> /proc/irq/16/smp_affinity (eth0)  ->   CPU#1
-> /proc/irq/20/smp_affinity (eth1)  ->   CPU#2
-> Example 2:
-> /proc/irq/16/smp_affinity (eth0)  ->   CPU#3
-> /proc/irq/20/smp_affinity (eth1)  ->   CPU#2
-> Which one of these two configurations can be used as a reference for
-> performance evaluation?
-> 
-> Any ideas??
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-I believe the current Intel quad core CPUs are really two dual-core CPU 
-dies in a common package. Splitting the network interrupts across the 
-two physical CPU chips will likely give you worse performance.
+> Two suggested changes
+>
+> 1. Please add all fields at the end (otherwise we risk breaking compatibility)
+> 2. please also update Documentation/accounting/taskstats-struct.txt
+>
+
+Thanks for your suggestion.
+Update version is here.
+
+In taskstats-struct.txt, there was not a discription for "Time accounting for SMT machines".
+This patch was made after the following patch had been applied.
+http://lkml.org/lkml/2008/6/6/436 .
+
+ Documentation/accounting/taskstats-struct.txt |    7 +++++++
+ include/linux/taskstats.h                     |    6 +++++-
+ kernel/delayacct.c                            |    3 +++
+ 3 files changed, 15 insertions(+), 1 deletions(-)
+
+diff --git a/Documentation/accounting/taskstats-struct.txt b/Documentation/accounting/taskstats-struct.txt
+index cd784f4..b988d11 100644
+--- a/Documentation/accounting/taskstats-struct.txt
++++ b/Documentation/accounting/taskstats-struct.txt
+@@ -26,6 +26,8 @@ There are three different groups of fields in the struct taskstats:
+ 
+ 5) Time accounting for SMT machines
+ 
++6) Extended delay accounting fields for memory reclaim
++
+ Future extension should add fields to the end of the taskstats struct, and
+ should not change the relative position of each field within the struct.
+ 
+@@ -170,4 +172,9 @@ struct taskstats {
+ 	__u64	ac_utimescaled;		/* utime scaled on frequency etc */
+ 	__u64	ac_stimescaled;		/* stime scaled on frequency etc */
+ 	__u64	cpu_scaled_run_real_total; /* scaled cpu_run_real_total */
++
++6) Extended delay accounting fields for memory reclaim
++	/* Delay waiting for memory reclaim */
++	__u64	freepages_count;
++	__u64	freepages_delay_total;
+ }
+diff --git a/include/linux/taskstats.h b/include/linux/taskstats.h
+index 5d69c07..18269e9 100644
+--- a/include/linux/taskstats.h
++++ b/include/linux/taskstats.h
+@@ -31,7 +31,7 @@
+  */
+ 
+ 
+-#define TASKSTATS_VERSION	6
++#define TASKSTATS_VERSION	7
+ #define TS_COMM_LEN		32	/* should be >= TASK_COMM_LEN
+ 					 * in linux/sched.h */
+ 
+@@ -157,6 +157,10 @@ struct taskstats {
+ 	__u64	ac_utimescaled;		/* utime scaled on frequency etc */
+ 	__u64	ac_stimescaled;		/* stime scaled on frequency etc */
+ 	__u64	cpu_scaled_run_real_total; /* scaled cpu_run_real_total */
++
++	/* Delay waiting for memory reclaim */
++	__u64	freepages_count;
++	__u64	freepages_delay_total;
+ };
+ 
+ 
+diff --git a/kernel/delayacct.c b/kernel/delayacct.c
+index 84b6782..b3179da 100644
+--- a/kernel/delayacct.c
++++ b/kernel/delayacct.c
+@@ -145,8 +145,11 @@ int __delayacct_add_tsk(struct taskstats *d, struct task_struct *tsk)
+ 	d->blkio_delay_total = (tmp < d->blkio_delay_total) ? 0 : tmp;
+ 	tmp = d->swapin_delay_total + tsk->delays->swapin_delay;
+ 	d->swapin_delay_total = (tmp < d->swapin_delay_total) ? 0 : tmp;
++	tmp = d->freepages_delay_total + tsk->delays->freepages_delay;
++	d->freepages_delay_total = (tmp < d->freepages_delay_total) ? 0 : tmp;
+ 	d->blkio_count += tsk->delays->blkio_count;
+ 	d->swapin_count += tsk->delays->swapin_count;
++	d->freepages_count += tsk->delays->freepages_count;
+ 	spin_unlock_irqrestore(&tsk->delays->lock, flags);
+ 
+ done:
+-- 
+1.5.0.6
