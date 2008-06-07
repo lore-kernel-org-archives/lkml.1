@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933752AbYFGBbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933793AbYFGBcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933752AbYFGBbm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:31:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932377AbYFGBPX
+	id S933793AbYFGBcV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758145AbYFGBQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:15:23 -0400
-Received: from sous-sol.org ([216.99.217.87]:51068 "EHLO sous-sol.org"
+	Fri, 6 Jun 2008 21:16:07 -0400
+Received: from sous-sol.org ([216.99.217.87]:51078 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762615AbYFGBPU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 21:15:20 -0400
-Message-Id: <20080607010609.714244995@sous-sol.org>
+	id S1755509AbYFGBQE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 21:16:04 -0400
+Message-Id: <20080607010636.816195762@sous-sol.org>
 References: <20080607010215.358296706@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 06 Jun 2008 18:02:35 -0700
+Date: Fri, 06 Jun 2008 18:03:04 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,10 +23,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Cedric Le Goater <clg@fr.ibm.com>, "Paul Menage" <menage@google.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: [patch 20/50] cgroups: remove node_ prefix_from ns subsystem
-Content-Disposition: inline; filename=cgroups-remove-node_-prefix_from-ns-subsystem.patch
+       "Andrew G. Morgan" <morgan@kernel.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Bojan Smojver <bojan@rexursive.com>
+Subject: [patch 49/50] capabilities: remain source compatible with 32-bit raw legacy capability support.
+Content-Disposition: inline; filename=capabilities-remain-source-compatible-with-32-bit-raw-legacy-capability-support.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,52 +35,304 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Cedric Le Goater <clg@fr.ibm.com>
+From: Andrew G. Morgan <morgan@kernel.org>
 
-upstream commit: 5c02b575780d0d785815a1e7b79a98edddee895a
+upstream commit: ca05a99a54db1db5bca72eccb5866d2a86f8517f
 
-This is a slight change in the namespace cgroup subsystem api.
+Source code out there hard-codes a notion of what the
+_LINUX_CAPABILITY_VERSION #define means in terms of the semantics of the
+raw capability system calls capget() and capset().  Its unfortunate, but
+true.
 
-The change is that previously when cgroup_clone() was called (currently
-only from the unshare path in ns_proxy cgroup, you'd get a new group named
-"node_$pid" whereas now you'll get a group named after just your pid.)
+Since the confusing header file has been in a released kernel, there is
+software that is erroneously using 64-bit capabilities with the semantics
+of 32-bit compatibilities.  These recently compiled programs may suffer
+corruption of their memory when sys_getcap() overwrites more memory than
+they are coded to expect, and the raising of added capabilities when using
+sys_capset().
 
-The only users who would notice it are those who are using the ns_proxy
-cgroup subsystem to auto-create cgroups when namespaces are unshared -
-something of an experimental feature, which I think really needs more
-complete container/namespace support in order to be useful.  I suspect the
-only users are Cedric and Serge, or maybe a few others on
-containers@lists.linux-foundation.org.  And in fact it would only be
-noticed by the users who make the assumption about how the name is
-generated, rather than getting it from the /proc/<pid>/cgroups file for
-the process in question.
+As such, this patch does a number of things to clean up the situation
+for all. It
 
-Whether the change is actually needed or not I'm fairly agnostic on, but I
-guess it is more elegant to just use the pid as the new group name rather
-than adding a fairly arbitrary "node_" prefix on the front.
+  1. forces the _LINUX_CAPABILITY_VERSION define to always retain its
+     legacy value.
 
-[menage@google.com: provided changelog]
-Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
-Cc: "Paul Menage" <menage@google.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: <stable@kernel.org>
+  2. adopts a new #define strategy for the kernel's internal
+     implementation of the preferred magic.
+
+  3. deprecates v2 capability magic in favor of a new (v3) magic
+     number. The functionality of v3 is entirely equivalent to v2,
+     the only difference being that the v2 magic causes the kernel
+     to log a "deprecated" warning so the admin can find applications
+     that may be using v2 inappropriately.
+
+[User space code continues to be encouraged to use the libcap API which
+protects the application from details like this.  libcap-2.10 is the first
+to support v3 capabilities.]
+
+Fixes issue reported in https://bugzilla.redhat.com/show_bug.cgi?id=447518.
+Thanks to Bojan Smojver for the report.
+
+[akpm@linux-foundation.org: s/depreciate/deprecate/g]
+[akpm@linux-foundation.org: be robust about put_user size]
+[akpm@linux-foundation.org: coding-style fixes]
+Signed-off-by: Andrew G. Morgan <morgan@kernel.org>
+Cc: Serge E. Hallyn <serue@us.ibm.com>
+Cc: Bojan Smojver <bojan@rexursive.com>
+Cc: stable@kernel.org
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- kernel/cgroup.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/proc/array.c            |    2 
+ include/linux/capability.h |   29 ++++++++---
+ kernel/capability.c        |  111 +++++++++++++++++++++++++++++----------------
+ 3 files changed, 95 insertions(+), 47 deletions(-)
 
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -2808,7 +2808,7 @@ int cgroup_clone(struct task_struct *tsk
- 	cg = tsk->cgroups;
- 	parent = task_cgroup(tsk, subsys->subsys_id);
+--- a/fs/proc/array.c
++++ b/fs/proc/array.c
+@@ -287,7 +287,7 @@ static void render_cap_t(struct seq_file
+ 	seq_printf(m, "%s", header);
+ 	CAP_FOR_EACH_U32(__capi) {
+ 		seq_printf(m, "%08x",
+-			   a->cap[(_LINUX_CAPABILITY_U32S-1) - __capi]);
++			   a->cap[(_KERNEL_CAPABILITY_U32S-1) - __capi]);
+ 	}
+ 	seq_printf(m, "\n");
+ }
+--- a/include/linux/capability.h
++++ b/include/linux/capability.h
+@@ -31,11 +31,11 @@ struct task_struct;
+ #define _LINUX_CAPABILITY_VERSION_1  0x19980330
+ #define _LINUX_CAPABILITY_U32S_1     1
  
--	snprintf(nodename, MAX_CGROUP_TYPE_NAMELEN, "node_%d", tsk->pid);
-+	snprintf(nodename, MAX_CGROUP_TYPE_NAMELEN, "%d", tsk->pid);
+-#define _LINUX_CAPABILITY_VERSION_2  0x20071026
++#define _LINUX_CAPABILITY_VERSION_2  0x20071026  /* deprecated - use v3 */
+ #define _LINUX_CAPABILITY_U32S_2     2
  
- 	/* Pin the hierarchy */
- 	atomic_inc(&parent->root->sb->s_active);
+-#define _LINUX_CAPABILITY_VERSION    _LINUX_CAPABILITY_VERSION_2
+-#define _LINUX_CAPABILITY_U32S       _LINUX_CAPABILITY_U32S_2
++#define _LINUX_CAPABILITY_VERSION_3  0x20080522
++#define _LINUX_CAPABILITY_U32S_3     2
+ 
+ typedef struct __user_cap_header_struct {
+ 	__u32 version;
+@@ -77,10 +77,23 @@ struct vfs_cap_data {
+ 	} data[VFS_CAP_U32];
+ };
+ 
+-#ifdef __KERNEL__
++#ifndef __KERNEL__
++
++/*
++ * Backwardly compatible definition for source code - trapped in a
++ * 32-bit world. If you find you need this, please consider using
++ * libcap to untrap yourself...
++ */
++#define _LINUX_CAPABILITY_VERSION  _LINUX_CAPABILITY_VERSION_1
++#define _LINUX_CAPABILITY_U32S     _LINUX_CAPABILITY_U32S_1
++
++#else
++
++#define _KERNEL_CAPABILITY_VERSION _LINUX_CAPABILITY_VERSION_3
++#define _KERNEL_CAPABILITY_U32S    _LINUX_CAPABILITY_U32S_3
+ 
+ typedef struct kernel_cap_struct {
+-	__u32 cap[_LINUX_CAPABILITY_U32S];
++	__u32 cap[_KERNEL_CAPABILITY_U32S];
+ } kernel_cap_t;
+ 
+ #define _USER_CAP_HEADER_SIZE  (sizeof(struct __user_cap_header_struct))
+@@ -350,7 +363,7 @@ typedef struct kernel_cap_struct {
+  */
+ 
+ #define CAP_FOR_EACH_U32(__capi)  \
+-	for (__capi = 0; __capi < _LINUX_CAPABILITY_U32S; ++__capi)
++	for (__capi = 0; __capi < _KERNEL_CAPABILITY_U32S; ++__capi)
+ 
+ # define CAP_FS_MASK_B0     (CAP_TO_MASK(CAP_CHOWN)		\
+ 			    | CAP_TO_MASK(CAP_DAC_OVERRIDE)	\
+@@ -360,7 +373,7 @@ typedef struct kernel_cap_struct {
+ 
+ # define CAP_FS_MASK_B1     (CAP_TO_MASK(CAP_MAC_OVERRIDE))
+ 
+-#if _LINUX_CAPABILITY_U32S != 2
++#if _KERNEL_CAPABILITY_U32S != 2
+ # error Fix up hand-coded capability macro initializers
+ #else /* HAND-CODED capability initializers */
+ 
+@@ -371,7 +384,7 @@ typedef struct kernel_cap_struct {
+ # define CAP_NFSD_SET     {{ CAP_FS_MASK_B0|CAP_TO_MASK(CAP_SYS_RESOURCE), \
+ 			     CAP_FS_MASK_B1 } }
+ 
+-#endif /* _LINUX_CAPABILITY_U32S != 2 */
++#endif /* _KERNEL_CAPABILITY_U32S != 2 */
+ 
+ #define CAP_INIT_INH_SET    CAP_EMPTY_SET
+ 
+--- a/kernel/capability.c
++++ b/kernel/capability.c
+@@ -53,6 +53,69 @@ static void warn_legacy_capability_use(v
+ }
+ 
+ /*
++ * Version 2 capabilities worked fine, but the linux/capability.h file
++ * that accompanied their introduction encouraged their use without
++ * the necessary user-space source code changes. As such, we have
++ * created a version 3 with equivalent functionality to version 2, but
++ * with a header change to protect legacy source code from using
++ * version 2 when it wanted to use version 1. If your system has code
++ * that trips the following warning, it is using version 2 specific
++ * capabilities and may be doing so insecurely.
++ *
++ * The remedy is to either upgrade your version of libcap (to 2.10+,
++ * if the application is linked against it), or recompile your
++ * application with modern kernel headers and this warning will go
++ * away.
++ */
++
++static void warn_deprecated_v2(void)
++{
++	static int warned;
++
++	if (!warned) {
++		char name[sizeof(current->comm)];
++
++		printk(KERN_INFO "warning: `%s' uses deprecated v2"
++		       " capabilities in a way that may be insecure.\n",
++		       get_task_comm(name, current));
++		warned = 1;
++	}
++}
++
++/*
++ * Version check. Return the number of u32s in each capability flag
++ * array, or a negative value on error.
++ */
++static int cap_validate_magic(cap_user_header_t header, unsigned *tocopy)
++{
++	__u32 version;
++
++	if (get_user(version, &header->version))
++		return -EFAULT;
++
++	switch (version) {
++	case _LINUX_CAPABILITY_VERSION_1:
++		warn_legacy_capability_use();
++		*tocopy = _LINUX_CAPABILITY_U32S_1;
++		break;
++	case _LINUX_CAPABILITY_VERSION_2:
++		warn_deprecated_v2();
++		/*
++		 * fall through - v3 is otherwise equivalent to v2.
++		 */
++	case _LINUX_CAPABILITY_VERSION_3:
++		*tocopy = _LINUX_CAPABILITY_U32S_3;
++		break;
++	default:
++		if (put_user((u32)_KERNEL_CAPABILITY_VERSION, &header->version))
++			return -EFAULT;
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++/*
+  * For sys_getproccap() and sys_setproccap(), any of the three
+  * capability set pointers may be NULL -- indicating that that set is
+  * uninteresting and/or not to be changed.
+@@ -71,27 +134,13 @@ asmlinkage long sys_capget(cap_user_head
+ {
+ 	int ret = 0;
+ 	pid_t pid;
+-	__u32 version;
+ 	struct task_struct *target;
+ 	unsigned tocopy;
+ 	kernel_cap_t pE, pI, pP;
+ 
+-	if (get_user(version, &header->version))
+-		return -EFAULT;
+-
+-	switch (version) {
+-	case _LINUX_CAPABILITY_VERSION_1:
+-		warn_legacy_capability_use();
+-		tocopy = _LINUX_CAPABILITY_U32S_1;
+-		break;
+-	case _LINUX_CAPABILITY_VERSION_2:
+-		tocopy = _LINUX_CAPABILITY_U32S_2;
+-		break;
+-	default:
+-		if (put_user(_LINUX_CAPABILITY_VERSION, &header->version))
+-			return -EFAULT;
+-		return -EINVAL;
+-	}
++	ret = cap_validate_magic(header, &tocopy);
++	if (ret != 0)
++		return ret;
+ 
+ 	if (get_user(pid, &header->pid))
+ 		return -EFAULT;
+@@ -118,7 +167,7 @@ out:
+ 	spin_unlock(&task_capability_lock);
+ 
+ 	if (!ret) {
+-		struct __user_cap_data_struct kdata[_LINUX_CAPABILITY_U32S];
++		struct __user_cap_data_struct kdata[_KERNEL_CAPABILITY_U32S];
+ 		unsigned i;
+ 
+ 		for (i = 0; i < tocopy; i++) {
+@@ -128,7 +177,7 @@ out:
+ 		}
+ 
+ 		/*
+-		 * Note, in the case, tocopy < _LINUX_CAPABILITY_U32S,
++		 * Note, in the case, tocopy < _KERNEL_CAPABILITY_U32S,
+ 		 * we silently drop the upper capabilities here. This
+ 		 * has the effect of making older libcap
+ 		 * implementations implicitly drop upper capability
+@@ -240,30 +289,16 @@ static inline int cap_set_all(kernel_cap
+  */
+ asmlinkage long sys_capset(cap_user_header_t header, const cap_user_data_t data)
+ {
+-	struct __user_cap_data_struct kdata[_LINUX_CAPABILITY_U32S];
++	struct __user_cap_data_struct kdata[_KERNEL_CAPABILITY_U32S];
+ 	unsigned i, tocopy;
+ 	kernel_cap_t inheritable, permitted, effective;
+-	__u32 version;
+ 	struct task_struct *target;
+ 	int ret;
+ 	pid_t pid;
+ 
+-	if (get_user(version, &header->version))
+-		return -EFAULT;
+-
+-	switch (version) {
+-	case _LINUX_CAPABILITY_VERSION_1:
+-		warn_legacy_capability_use();
+-		tocopy = _LINUX_CAPABILITY_U32S_1;
+-		break;
+-	case _LINUX_CAPABILITY_VERSION_2:
+-		tocopy = _LINUX_CAPABILITY_U32S_2;
+-		break;
+-	default:
+-		if (put_user(_LINUX_CAPABILITY_VERSION, &header->version))
+-			return -EFAULT;
+-		return -EINVAL;
+-	}
++	ret = cap_validate_magic(header, &tocopy);
++	if (ret != 0)
++		return ret;
+ 
+ 	if (get_user(pid, &header->pid))
+ 		return -EFAULT;
+@@ -281,7 +316,7 @@ asmlinkage long sys_capset(cap_user_head
+ 		permitted.cap[i] = kdata[i].permitted;
+ 		inheritable.cap[i] = kdata[i].inheritable;
+ 	}
+-	while (i < _LINUX_CAPABILITY_U32S) {
++	while (i < _KERNEL_CAPABILITY_U32S) {
+ 		effective.cap[i] = 0;
+ 		permitted.cap[i] = 0;
+ 		inheritable.cap[i] = 0;
 
 -- 
