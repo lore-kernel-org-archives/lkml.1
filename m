@@ -1,51 +1,238 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761816AbYFGPz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762607AbYFGP4b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761816AbYFGPz5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 11:55:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbYFGPzu
+	id S1762607AbYFGP4b (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 11:56:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758861AbYFGP4U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 11:55:50 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:32208 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752584AbYFGPzt (ORCPT
+	Sat, 7 Jun 2008 11:56:20 -0400
+Received: from server515i.exghost.com ([72.32.253.75]:1141 "EHLO
+	server515.appriver.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758259AbYFGP4S convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 11:55:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=T/JUE2d2a8gB3E0xvuwIkAawzbQPfAo74YARERB+WPBYGyOncBTsF9cCgVK+WW36E/
-         FcAUsAFDD3iVvix5NdSpLHuIfBXDS6KAuP+h/AyR4On5RumVB5w4oyT+HUU8Cn2Mlght
-         LanMEu067t5TCwQfdC2sVlRZtjF3hh4MQa2P4=
-Message-ID: <cd73a99e0806070855g5db5f0eel7667e1277f7ac586@mail.gmail.com>
-Date: Sat, 7 Jun 2008 17:55:46 +0200
-From: "Andrew Victor" <avictor.za@gmail.com>
-To: "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>
-Subject: Re: [PATCH 2/8] rename at91_nand -> atmel_nand: file names and Kconfig
-Cc: linux-mtd@lists.infradead.org, kernel@avr32linux.org,
-       "Nicolas Ferre" <nicolas.ferre@atmel.com>,
-       "Patrice VILCHEZ" <patrice.vilchez@atmel.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1212768298-13614-3-git-send-email-haavard.skinnemoen@atmel.com>
+	Sat, 7 Jun 2008 11:56:18 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1212768298-13614-1-git-send-email-haavard.skinnemoen@atmel.com>
-	 <1212768298-13614-2-git-send-email-haavard.skinnemoen@atmel.com>
-	 <1212768298-13614-3-git-send-email-haavard.skinnemoen@atmel.com>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte Veliciraptors
+Date: Sat, 7 Jun 2008 10:54:57 -0500
+Message-ID: <A20315AE59B5C34585629E258D76A97CA53294@34093-C3-EVS3.exchange.rackspace.com>
+In-Reply-To: <alpine.DEB.1.10.0806071015110.23323@p34.internal.lan>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte Veliciraptors
+Thread-Index: AcjIqhcW3DXcFt5tSseBEx58CHGH2wACDKwg
+References: <alpine.DEB.1.10.0806071015110.23323@p34.internal.lan>
+From: "David Lethe" <david@santools.com>
+To: "Justin Piszcz" <jpiszcz@lucidpixels.com>, <linux-kernel@vger.kernel.org>,
+       <linux-raid@vger.kernel.org>, <xfs@oss.sgi.com>
+Cc: "Alan Piszcz" <ap@solarrain.com>
+X-OriginalArrivalTime: 07 Jun 2008 15:56:15.0733 (UTC) FILETIME=[04555250:01C8C8B7]
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Primary: david@santools.com
+X-Note: This Email was scanned by AppRiver SecureTide
+X-ALLOW: david@santools.com ALLOWED
+X-Virus-Scan: V-
+X-Note: Spam Tests Failed: 
+X-Country-Path: PRIVATE->UNITED STATES->UNITED STATES
+X-Note-Sending-IP: 72.32.49.5
+X-Note-Reverse-DNS: fe1.exchange.rackspace.com
+X-Note-WHTLIST: david@santools.com
+X-Note: User Rule Hits: 
+X-Note: Global Rule Hits: 81 82 148 
+X-Note: Mail Class: ALLOWEDSENDER
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The AT91 NAND driver needs just a few tiny modifications to work on
-> AVR32 as well. Rename it atmel_nand to reflect this.
->
-> Also move the ECC register definitions into drivers/mtd/nand since they
-> are only useful to the atmel_nand driver, and get rid of the useless
-> filename at the top of each file.
->
-> Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+This is all interesting, but this has no relevance to the real world,
+where computers run application software.  You have a great foundation
+here, but it won't help anybody who is running a database, mail, or
+file/backup server because the I/Os are too large, and homogeneous.  You
+will get profoundly different sweet spots for RAID configurations once
+you model your bench to match something that people actually run.  I am
+not criticizing you for this, it is just that now I have a taste for
+what you have accomplished, and I want more more more :)
 
-Acked-by: Andrew Victor <linux@maxim.org.za>
+David
+
+ 
+-----Original Message-----
+From: linux-raid-owner@vger.kernel.org
+[mailto:linux-raid-owner@vger.kernel.org] On Behalf Of Justin Piszcz
+Sent: Saturday, June 07, 2008 9:23 AM
+To: linux-kernel@vger.kernel.org; linux-raid@vger.kernel.org;
+xfs@oss.sgi.com
+Cc: Alan Piszcz
+Subject: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte
+Veliciraptors
+
+First, the original benchmarks with 6-SATA drives with fixed formatting,
+using
+right justification and the same decimal point precision throughout:
+http://home.comcast.net/~jpiszcz/20080607/raid-benchmarks-decimal-fix-an
+d-right-justified/disks.html
+
+Now for for veliciraptors!  Ever wonder what kind of speed is possible
+with
+3 disk, 4,5,6,7,8,9,10-disk RAID5s?  I ran a loop to find out, each run
+is
+executed three times and the average is taken of all three runs per each
+
+RAID5 disk set.
+
+In short? The 965 no longer does justice with faster drives, a new
+chipset
+and motherboard are needed.  After reading or writing to 4-5
+veliciraptors
+it saturates the bus/965 chipset.
+
+Here is a picture of the 12 veliciraptors I tested with:
+http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-velicir
+aptors/raptors.jpg
+
+Here are the bonnie++ results:
+http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-velicir
+aptors/veliciraptor-raid.html
+
+For those who want the results in text:
+http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-velicir
+aptors/veliciraptor-raid.txt
+
+System used, same/similar as before:
+Motherboard: Intel DG965WH
+Memory: 8GiB
+Kernel: 2.6.25.4
+Distribution: Debian Testing x86_64
+Filesystem: XFS with default mkfs.xfs parameters [auto-optimized for SW
+RAID]
+Mount options: defaults,noatime,nodiratime,logbufs=8,logbsize=262144 0 1
+Chunk size: 1024KiB
+RAID5 Layout: Default (left-symmetric)
+Mdadm Superblock used: 0.90
+
+Optimizations used (last one is for the CFQ scheduler), it improves 
+performance by a modest 5-10MiB/s:
+http://home.comcast.net/~jpiszcz/raid/20080601/raid5.html
+
+# Tell user what's going on.
+echo "Optimizing RAID Arrays..."
+
+# Define DISKS.
+cd /sys/block
+DISKS=$(/bin/ls -1d sd[a-z])
+
+# Set read-ahead.
+# > That's actually 65k x 512byte blocks so 32MiB
+echo "Setting read-ahead to 32 MiB for /dev/md3"
+blockdev --setra 65536 /dev/md3
+
+# Set stripe-cache_size for RAID5.
+echo "Setting stripe_cache_size to 16 MiB for /dev/md3"
+echo 16384 > /sys/block/md3/md/stripe_cache_size
+
+# Disable NCQ on all disks.
+echo "Disabling NCQ on all disks..."
+for i in $DISKS
+do
+   echo "Disabling NCQ on $i"
+   echo 1 > /sys/block/"$i"/device/queue_depth
+done
+
+# Fix slice_idle.
+# See http://www.nextre.it/oracledocs/ioscheduler_03.html
+echo "Fixing slice_idle to 0..."
+for i in $DISKS
+do
+   echo "Changing slice_idle to 0 on $i"
+   echo 0 > /sys/block/"$i"/queue/iosched/slice_idle
+done
+
+----
+
+Order of tests:
+
+1. Create RAID (mdadm)
+
+Example:
+
+
+   if [ $num_disks -eq 3 ]; then
+     mdadm --create /dev/md3 --verbose --level=5 -n $num_disks -c 1024
+-e 0.90 \
+     /dev/sd[c-e]1 --assume-clean --run
+   fi
+
+2. Run optimize script (above)
+
+See above.
+
+3. mkfs.xfs -f /dev/md3
+
+mkfs.xfs auto-optimized for the underlying devices in an mdadm SW RAID.
+
+4. Run bonnie++ as shown below 3 times, averaged:
+
+/usr/bin/time /usr/sbin/bonnie++ -u 1000 -d /x/test -s 16384 -m p34 -n
+16:100000:16:64 > $HOME/test"$run"_$num_disks-disks.txt 2>&1
+
+
+----
+
+A little more info, after 4-5 dd's, I have already maxed out the
+performance
+of what the chipset can offer, see below:
+
+knoppix@Knoppix:~$ vmstat 1
+procs -----------memory---------- ---swap-- -----io---- -system--
+----cpu----
+  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy
+id wa
+  1  0      0 2755556   6176 203584    0    0   153     1   25  371  3
+1 84 11
+  0  0      0 2755556   6176 203588    0    0     0     0   66  257  0
+0 100  0
+  0  1      0 2605400 152204 203584    0    0     0 146028  257  396  0
+5 77 18
+  0  1      0 2478176 277520 203604    0    0     0 125316  345  794  1
+4 75 20
+  1  0      0 2349472 403984 203592    0    0     0 119136  297  256  0
+5 75 20
+  2  1      0 2117292 631172 203512    0    0     0 232336  498 1019  0
+8 66 26
+  0  2      0 2014400 731968 203556    0    0     0 241472  542 2078  1
+11 63 25
+  3  0      0 2013412 733756 203492    0    0     0 302104  672 2760  0
+14 59 27
+  0  3      0 2013576 735624 203520    0    0     0 362524  808 3356  0
+15 56 29
+  0  4      0 2039312 736728 174860    0    0   120 425484  956 4899  1
+20 52 26
+  0  4      0 2050236 738508 163712    0    0     0 482868 1008 5030  1
+24 46 29
+  5  3      0 2050192 737916 163756    0    0     0 531532 1175 6033  0
+26 43 31
+  3  4      0 2050220 738028 163744    0    0     0 606560 1312 6664  1
+32 38 30
+  1  5      0 2049432 739184 163628    0    0     0 592756 1291 7195  1
+30 35 34
+  8  3      0 2049488 738868 163580    0    0     0 675228 1721 10540 1
+38 30 31
+Here, ~5 raptor 300s, no more linear improvement after this:
+  4  4      0 2050048 737816 163744    0    0     0 677820 1771 10514 1
+36 32 31
+  6  4      0 2048764 738612 163684    0    0     0 697640 1842 13231 1
+40 27 33
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-raid" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
