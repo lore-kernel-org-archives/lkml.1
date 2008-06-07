@@ -1,68 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760117AbYFGBH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760341AbYFGBIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760117AbYFGBH6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:07:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756181AbYFGBFb
+	id S1760341AbYFGBIW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:08:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756225AbYFGBGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:05:31 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48638 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755929AbYFGBFS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 21:05:18 -0400
-Date: Fri, 6 Jun 2008 18:04:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
-       kosaki.motohiro@jp.fujitsu.com
-Subject: Re: [PATCH -mm 10/25] add newly swapped in pages to the inactive
- list
-Message-Id: <20080606180456.8139c57d.akpm@linux-foundation.org>
-In-Reply-To: <20080606202858.927526002@redhat.com>
-References: <20080606202838.390050172@redhat.com>
-	<20080606202858.927526002@redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Jun 2008 21:06:06 -0400
+Received: from saeurebad.de ([85.214.36.134]:58060 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756124AbYFGBGE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 21:06:04 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, greg@kroah.com,
+       justinmattock@gmail.com, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: [PATCH] isight_firmware: Avoid crash on loading invalid firmware
+References: <dd18b0c30806041213x45b7efdfo42de9b214a7ce9df@mail.gmail.com>
+	<20080606002601.a0f6c47c.akpm@linux-foundation.org>
+	<dd18b0c30806060137j7edc751se364ff21cfc8911b@mail.gmail.com>
+	<20080606121136.GA9087@srcf.ucam.org>
+	<20080606110711.a9a6a4f6.akpm@linux-foundation.org>
+	<dd18b0c30806061110qd3100b4p1ee9f8ef493a56c6@mail.gmail.com>
+	<dd18b0c30806061138h69c87d6am898a4eb409d379e1@mail.gmail.com>
+	<20080606185548.GB8576@kroah.com>
+	<20080606192135.GA16727@srcf.ucam.org>
+	<20080606123511.38ffbdde.akpm@linux-foundation.org>
+	<20080606194856.GA17708@srcf.ucam.org>
+Date: Sat, 07 Jun 2008 03:05:16 +0200
+In-Reply-To: <20080606194856.GA17708@srcf.ucam.org> (Matthew Garrett's message
+	of "Fri, 6 Jun 2008 20:48:56 +0100")
+Message-ID: <873anq5a2b.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 06 Jun 2008 16:28:48 -0400
-Rik van Riel <riel@redhat.com> wrote:
+Matthew Garrett <mjg59@srcf.ucam.org> writes:
 
-> From: Rik van Riel <riel@redhat.com>
-> 
-> Swapin_readahead can read in a lot of data that the processes in
-> memory never need.  Adding swap cache pages to the inactive list
-> prevents them from putting too much pressure on the working set.
-> 
-> This has the potential to help the programs that are already in
-> memory, but it could also be a disadvantage to processes that
-> are trying to get swapped in.
-> 
-> In short, this patch needs testing.
-> 
+> Different tools generate slightly different formats of the isight 
+> firmware. Ensure that the firmware buffer is not overrun, while still 
+> ensuring that the correct amount of data is written if trailing data is 
+> preseent. Fixes crash reported by Justin Mattock.
 
-<hopes that the changelog is out of date>
+You don't like the word `present', do you? ;)
 
-> 
-> ---
->  mm/swap_state.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6.26-rc2-mm1/mm/swap_state.c
-> ===================================================================
-> --- linux-2.6.26-rc2-mm1.orig/mm/swap_state.c	2008-05-28 09:40:59.000000000 -0400
-> +++ linux-2.6.26-rc2-mm1/mm/swap_state.c	2008-05-28 09:42:26.000000000 -0400
-> @@ -302,7 +302,7 @@ struct page *read_swap_cache_async(swp_e
->  			/*
->  			 * Initiate read into locked page and return.
->  			 */
-> -			lru_cache_add_active_anon(new_page);
-> +			lru_cache_add_anon(new_page);
->  			swap_readpage(NULL, new_page);
->  			return new_page;
->  		}
-
+	Hannes
