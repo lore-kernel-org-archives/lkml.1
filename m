@@ -1,103 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764568AbYFGB32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933664AbYFGB3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764568AbYFGB32 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:29:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760905AbYFGBKL
+	id S933664AbYFGB3q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:29:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761082AbYFGBKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:10:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51655 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760695AbYFGBKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 21:10:09 -0400
-Date: Fri, 6 Jun 2008 21:08:58 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
-       kosaki.motohiro@jp.fujitsu.com, mbligh@mbligh.org
-Subject: Re: [PATCH -mm 09/25] fix pagecache reclaim referenced bit check
-Message-ID: <20080606210858.32fd6f48@bree.surriel.com>
-In-Reply-To: <20080606180451.31f01e70.akpm@linux-foundation.org>
-References: <20080606202838.390050172@redhat.com>
-	<20080606202858.867179392@redhat.com>
-	<20080606180451.31f01e70.akpm@linux-foundation.org>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 6 Jun 2008 21:10:42 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:36646 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761020AbYFGBKl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 21:10:41 -0400
+Message-ID: <4849E00E.5090206@firstfloor.org>
+Date: Sat, 07 Jun 2008 03:10:38 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Scott Wiersdorf <scott@bluehost.com>
+CC: Balbir Singh <balbir@in.ibm.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, matt@bluehost.com
+Subject: Re: [PATCH 2.6.25-4] getdelays.c: signal handling for log rotation
+References: <20080605194334.GA56830@perlcode.org> <87d4muu0k2.fsf@basil.nowhere.org> <20080606204208.GB4283@perlcode.org>
+In-Reply-To: <20080606204208.GB4283@perlcode.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Jun 2008 18:04:51 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Fri, 06 Jun 2008 16:28:47 -0400
-> Rik van Riel <riel@redhat.com> wrote:
+Scott Wiersdorf wrote:
+> On Fri, Jun 06, 2008 at 03:59:09PM +0200, Andi Kleen wrote:
+>> Scott Wiersdorf <scott@perlcode.org> writes:
+>>
+>>> This adds a USR1 signal handler to getdelays.c, which causes getdelays
+>>> to close its logfile and reopen it (if '-w logfile' is
+>>> specified). This is useful in situations when getdelays is running for
+>>> a long time (i.e, the log file growing) and you need to rotate the
+>>> logs but don't want to lose any log data.
+>> You could do the same by sending SIGSTOP; copy file; truncate file; SIGCONT
 > 
-> > From: Rik van Riel <riel@redhat.com>
-> > 
-> > The -mm tree contains the patch
-> > vmscan-give-referenced-active-and-unmapped-pages-a-second-trip-around-the-lru.patch
-> > which gives referenced pagecache pages another trip around
-> > the active list.  This seems to help keep frequently accessed
-> > pagecache pages in memory.
-> > 
-> > However, it means that pagecache pages that get moved to the
-> > inactive list do not have their referenced bit set, and a
-> > reference to the page will not get it moved back to the active
-> > list
-> 
-> Should that be "the next reference"?  Because two references _will_ cause
-> the page to be activated?
+> I believe it, but you can miss a lot of important stuff between STOP
+> and CONT, especially on a busy system.
 
-Indeed, next reference would be a more accurate description.
+Do you have data on that or are you guessing?
 
-> >.  This patch sets the referenced bit on pagecache pages
-> > that get deactivated, so the next access to the page will promote
-> > it back to the active list.
-> > 
-> > ---
-> >  mm/vmscan.c |    4 ++++
-> >  1 file changed, 4 insertions(+)
-> > 
-> > Index: linux-2.6.26-rc2-mm1/mm/vmscan.c
-> > ===================================================================
-> > --- linux-2.6.26-rc2-mm1.orig/mm/vmscan.c	2008-05-28 12:11:51.000000000 -0400
-> > +++ linux-2.6.26-rc2-mm1/mm/vmscan.c	2008-05-28 12:14:34.000000000 -0400
-> > @@ -1062,8 +1062,13 @@ static void shrink_active_list(unsigned 
-> >  				list_add(&page->lru, &l_inactive);
-> >  				pgmoved++;
-> >  			}
-> > -		} else
-> > +		} else {
-> >  			list_add(&page->lru, &l_inactive);
-> > +			if (file && !page_mapped(page))
-> > +				/* Bypass use-once, make the next access count.
-> > +				 * See mark_page_accessed. */
-> > +				SetPageReferenced(page);
-> > +		}
-> >  	}
-> 
-> Will this change also cause these pages to get a second trip around the
-> inactive list?  Or do we at the end of the patch series end up
-> reclaiming pagecache regardless of their PageReferenced()?  If so, it
-> seems that we're making the pagecache pages a _lot_ stickier with this
-> change and my one - an additional trip around the active list and an
-> additional one around the inactive list.
+I suspect the later, I'm sceptical of your claim. A lot of events
+fit into the netlink socket buffer.
 
-At the end of the inactive list, we reclaim it regardless of
-PageReferenced().  As for making the pagecache pages stickier,
-we can balance that out by tweaking swappiness now that we
-have page cache and swap/ram backed pages living on separate
-sets of LRU lists.
-
-The balancing becomes a lot easier than before.
-
-> Changelog should spell all this out, I guess.
-
-It's not the Changelog I'm worried about as much as the
-people who are trying to read the code afterwards.
-
--- 
-All rights reversed.
+-Andi
