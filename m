@@ -1,61 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756222AbYFGUIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029AbYFGUTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756222AbYFGUIm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 16:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbYFGUIg
+	id S1755029AbYFGUTz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 16:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753400AbYFGUTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 16:08:36 -0400
-Received: from 1wt.eu ([62.212.114.60]:1526 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752592AbYFGUIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 16:08:35 -0400
-Date: Sat, 7 Jun 2008 22:08:18 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Alejandro Riveira =?iso-8859-1?Q?Fern=E1ndez?= 
-	<ariveira@gmail.com>
-Cc: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: wrong hardlink count in /proc
-Message-ID: <20080607200818.GI5609@1wt.eu>
-References: <20080607193424.GA25998@redhat.com> <20080607194604.GH5609@1wt.eu> <20080607195042.GB25998@redhat.com> <20080607220418.713fbbe5@Varda>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Sat, 7 Jun 2008 16:19:45 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:55396 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753395AbYFGUTo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jun 2008 16:19:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=cyLNZU7YjkN8U6n6iHHyftsF8jMI37h2zVFi92cxbT9ryuTd3+ukU3/Np2q5DT1KtB
+         TUetYVkb/Wacer3LpcH4DCOk2VGhnb8gP1mijZuCjQgZuRYtw1hJm2d6nQDT7es1lMmL
+         95iYRqGiFtQDqWvccsTOrUubnqWfa+n5rZjg0=
+Message-ID: <19f34abd0806071319h19893ad5kcf938e1067b2a752@mail.gmail.com>
+Date: Sat, 7 Jun 2008 22:19:44 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [PATCH] kmemcheck: don't track pages allocated with interrupts disabled
+Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>, "Ingo Molnar" <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <484AE5C9.9070306@firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080607220418.713fbbe5@Varda>
-User-Agent: Mutt/1.5.11
+References: <20080607143242.GA2893@damson.getinternet.no>
+	 <484AC165.7000702@firstfloor.org>
+	 <19f34abd0806071115s3e50d662p190a65fa2f091c7b@mail.gmail.com>
+	 <484AE5C9.9070306@firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 07, 2008 at 10:04:18PM +0200, Alejandro Riveira Fernández wrote:
-> El Sat, 7 Jun 2008 15:50:42 -0400
-> Dave Jones <davej@redhat.com> escribió:
-> 
-> > On Sat, Jun 07, 2008 at 09:46:04PM +0200, Willy Tarreau wrote:
-> >  > On Sat, Jun 07, 2008 at 03:34:24PM -0400, Dave Jones wrote:
-> >  > > In 2.6.25, 'find /proc/ -name foo' will print out ..
-> >  > > 
-> >  > > find: WARNING: Hard link count is wrong for /proc/1: this may be a bug
-> >  > > in your filesystem driver.  Automatically turning on find's -noleaf
-> >  > > option.  Earlier results may have failed to include directories that
-> >  > > should have been searched.
-> >  > 
-> >  > I also encountered this one. I think it is the one which 2.6.25.6 stable
-> >  > patch 42/50 fixes.
-> > 
-> > Ah, great.   I just noticed that .26rc doesn't seem affected, so sounds good.
-> 
->  well on my ubuntu box i get with .26-rc5
-> 
->  [alex@Varda:kernel/linux-2.6]$ uname -a                      
->  Linux Varda 2.6.26-rc5 #1 SMP PREEMPT Thu Jun 5 10:59:53 CEST 2008 x86_64 GNU/Linux
->  [alex@Varda:kernel/linux-2.6]$ LC_ALL=C sudo find /proc -name foo                                              
->  find: WARNING: Hard link count is wrong for /proc/1: this may be a bug in your filesystem driver.  Automatically turning   on find's -noleaf option.  Earlier results may have failed to include directories that should have been searched.
->  find: /proc/5257/net: Invalid argument
->  [alex@Varda:kernel/linux-2.6]$ 
+On Sat, Jun 7, 2008 at 9:47 PM, Andi Kleen <andi@firstfloor.org> wrote:
+>
+>> Maybe we can do the splitting when kmemcheck is enabled for the first
+>> time, either with the proc handler or at boot if kmemcheck=1 is passed
+>> on the command line. Both of these contexts should/can be
+>> !irqs_disabled(), I think.
+>
+> You could always split at boot when the CONFIG is enabled. I assume the
+> CONFIG alone has already quite a lot of overhead and it will be only
+> on in debug kernels and adding some more TLB misses shouldn't be really
+> a problem. Using 2MB pages in kernel is merely  an optimization.
 
-It was merged after 2.6.26-rc5. Commit id is aed54175 which is post-rc5.
+Actually, no, the CONFIG itself is now very low overhead. The only
+thing we do is a very simple check in the slab allocator each time you
+allocate or free an object (it's a couple of if()s, I doubt it would
+show up in anything but microbenchmarks). These is also maybe two or
+three calls for each page fault, but they return very quickly.
 
-Regards,
-Willy
+I didn't test, but this should be the only penalty of enabling the
+CONFIG. Of course, once you pass kmemcheck=1 at boot it will be a
+disaster :-)
 
+But you are probably right nevertheless; the overhead of 4K pages
+instead 2M is probably negligible in most cases.
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
