@@ -1,78 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbYFGDxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbYFGDzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755538AbYFGDxb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 23:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbYFGDxV
+	id S1756889AbYFGDzk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 23:55:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbYFGDzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 23:53:21 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:56379 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751864AbYFGDxV (ORCPT
+	Fri, 6 Jun 2008 23:55:33 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:20530 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751433AbYFGDzc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 23:53:21 -0400
-Date: Sat, 7 Jun 2008 04:49:22 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Chris Wright <chrisw@sous-sol.org>
-cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/50] 2.6.25.6 -stable review
-In-Reply-To: <20080607010215.358296706@sous-sol.org>
-Message-ID: <Pine.LNX.4.64.0806070444030.18246@blonde.site>
-References: <20080607010215.358296706@sous-sol.org>
+	Fri, 6 Jun 2008 23:55:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=wG1utiH74RIz9+peUSLYveIy3nKBBkSJaO3J/CzuI+68lcFBduXkrj1iTgkIwizNIW
+         hgAxnm6FG8+YCaoGB1IWaqvCvuhnyfq/BRraQIgCDrSf/E6GROmCgIYGhI2tyYxL80jI
+         eTEAdecEP52HvmwpAbOEnUobwNiSa81/2eGnM=
+Message-ID: <86802c440806062055j3431ef7cn72a92f2e0264d6ac@mail.gmail.com>
+Date: Fri, 6 Jun 2008 20:55:29 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: x86_64 boot hang when CONFIG_NUMA=n
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org
+In-Reply-To: <20080606084217.d725fe04.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <15271334.1212702611270.JavaMail.oracle@acsmt304.oracle.com>
+	 <86802c440806052241q90bb2dcmef9e98f2e24291e8@mail.gmail.com>
+	 <20080606084217.d725fe04.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Jun 2008, Chris Wright wrote:
-> This is the start of the stable review cycle for the 2.6.25.6 release.
-> There are 50 patches in this series, all will be posted as a response
-> to this one.  If anyone has any issues with these being applied, please
-> let us know.  If anyone is a maintainer of the proper subsystem, and
-> wants to add a Signed-off-by: line to the patch, please respond with it.
+On Fri, Jun 6, 2008 at 8:42 AM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> On Thu, 5 Jun 2008 22:41:01 -0700 Yinghai Lu wrote:
+>
+>> On Thu, Jun 5, 2008 at 2:50 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+>> > On 2.6.26-rc[2345], I am seeing a hang during boot with CONFIG_NUMA=n, but changing
+>> > to CONFIG_NUMA=y allows successful boot.
+>> >
+>> > This is on a 4-way AMD64 (HP) server with 8 GB RAM.
+>> >
+>> > Using initcall_debug, the last output on a hang is from arch/x86/pci/k8-bus_64.c:
+>> >
+>> > calling  early_fill_mp_bus_info+0x0/0x7b2
+>> > node 0 link 1: io port [1000, 3fff]
+>> > node 1 link 2: io port [4000, ffff]
+>> > TOM: 0000000080000000 aka 2048M
+>> > node 0 link 1: mmio [e8000000, fddfffff]
+>> > node 1 link 2: mmio [fde00000, fdffffff]
+>> > node 0 link 1: mmio [80000000, 83ffffff]
+>> > node 1 link 2: mmio [84000000, 8fffffff]
+>> > node 0 link 1: mmio [a0000, bffff]
+>> > TOM2: 0000000280000000 aka 10240M
+>> > bus: [00,3f] on node 0 link 1
+>> > bus: 00 index 0 io port: [0, 3fff]
+>> > bus: 00 index 1 mmio: [90000000, fddfffff]
+>> > bus: 00 index 2 mmio: [80000000, 83ffffff]
+>> > bus: 00 index 3 mmio: [a0000, bffff]
+>> > bus: 00 index 4 mmio: [fe000000, ffffffff]
+>> > bus: 00 index 5 mmio: [280000000, fcffffffff]
+>> > bus: [40,ff] on node 1 link 2
+>> > bus: 40 index 0 io port: [4000, ffff]
+>> > bus: 40 index 1 mmio: [fde00000, fdffffff]
+>> >
+>> >
+>> > There should be an index 2 line printed next, like this slightly modifed for debug
+>> > version does (with CONFIG_NUMA=y), or maybe the following line(s) just aren't
+>> > making it to the (net)console log and some other initcall function is actually
+>> > hanging:  (??)
+>> >
+>> > bus: [40,ff] on node 1 link 2
+>> > bus: 40 index 0/3 io port: [4000, ffff]
+>> > bus: 40 index 1/3 mmio: [fde00000, fdffffff]
+>> > bus: 40 index 2/3 mmio: [84000000, 8fffffff]
+>> > early_fill_mp_bus_info: done
+>> >
+>> >
+>> > Has anyone seen something like this?  Any patches to test?
+>> >
+>> > The next initcall functions (on a working boot) are:
+>> >
+>> > calling  arch_kdebugfs_init+0x0/0x8
+>> > initcall arch_kdebugfs_init+0x0/0x8 returned 0 after 0 msecs
+>> > calling  mtrr_if_init+0x0/0x77
+>> > initcall mtrr_if_init+0x0/0x77 returned 0 after 0 msecs
+>> > calling  ffh_cstate_init+0x0/0x31
+>> > initcall ffh_cstate_init+0x0/0x31 returned -1 after 0 msecs
+>> > initcall ffh_cstate_init+0x0/0x31 returned with error code -1
+>> > calling  acpi_pci_init+0x0/0x4a
+>> > ACPI: bus type pci registered
+>> > initcall acpi_pci_init+0x0/0x4a returned 0 after 0 msecs
+>>
+>> can you send out your config?
+>
+> Yes, sorry about omitting that.  Bad (not working) and good/working
+> are attached.
+>
 
-Please add 2.6.26-rc5's 2884f110d5409714f3a04eeb6d2ecd77da66b242
-into 2.6.25.6: it's actually not a serious problem, but it does
-look as if it's a serious problem, so we should stamp it out.
+can you check latest tip/master?
 
-Thanks,
-Hugh
+I tried that with your bad config on server test servers. all work well.
 
-x86: fix bad pmd ffff810000207xxx(9090909090909090)
-
-OGAWA Hirofumi and Fede have reported rare pmd_ERROR messages:
-mm/memory.c:127: bad pmd ffff810000207xxx(9090909090909090).
-
-Initialization's cleanup_highmap was leaving alignment filler
-behind in the pmd for MODULES_VADDR: when vmalloc's guard page
-would occupy a new page table, it's not allocated, and then
-module unload's vfree hits the bad 9090 pmd entry left over.
-
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
-
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 32ba13b..998a06e 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -206,7 +206,7 @@ void __init cleanup_highmap(void)
- 	pmd_t *last_pmd = pmd + PTRS_PER_PMD;
- 
- 	for (; pmd < last_pmd; pmd++, vaddr += PMD_SIZE) {
--		if (!pmd_present(*pmd))
-+		if (pmd_none(*pmd))
- 			continue;
- 		if (vaddr < (unsigned long) _text || vaddr > end)
- 			set_pmd(pmd, __pmd(0));
-
+YH
