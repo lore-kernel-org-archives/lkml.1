@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760315AbYFGBUQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763640AbYFGBUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760315AbYFGBUQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:20:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760418AbYFGBJb
+	id S1763640AbYFGBUo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:20:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760470AbYFGBJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:09:31 -0400
-Received: from sous-sol.org ([216.99.217.87]:42510 "EHLO sous-sol.org"
+	Fri, 6 Jun 2008 21:09:32 -0400
+Received: from sous-sol.org ([216.99.217.87]:42514 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754844AbYFGBJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753629AbYFGBJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 6 Jun 2008 21:09:23 -0400
-Message-Id: <20080607010603.257412553@sous-sol.org>
+Message-Id: <20080607010617.519962372@sous-sol.org>
 References: <20080607010215.358296706@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 06 Jun 2008 18:02:31 -0700
+Date: Fri, 06 Jun 2008 18:02:44 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,10 +23,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jan Beulich <jbeulich@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 16/50] i386: fix asm constraint in do_IRQ()
-Content-Disposition: inline; filename=i386-fix-asm-constraint-in-do_irq.patch
+       David Chinner <dgc@sgi.com>, Christoph Hellwig <hch@infradead.org>,
+       Lachlan McIlroy <lachlan@sgi.com>
+Subject: [patch 29/50] XFS: Fix memory corruption with small buffer reads
+Content-Disposition: inline; filename=xfs-fix-memory-corruption-with-small-buffer-reads.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,33 +34,139 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Jan Beulich <jbeulich@novell.com>
+From: Christoph Hellwig <hch@infradead.org>
 
-upstream commit: 5065dbafc299507f16731434e95b91dadff03006
+upstream commit: 6ab455eeaff6893cd06da33843e840d888cdc04a
 
-i386: fix asm constraint in do_IRQ()
+When we have multiple buffers in a single page for a blocksize == pagesize
+filesystem we might overwrite the page contents if two callers hit it
+shortly after each other. To prevent that we need to keep the page locked
+until I/O is completed and the page marked uptodate.
 
-Two prior changes resulted in the "ecx" clobber being lost.
+Thanks to Eric Sandeen for triaging this bug and finding a reproducible
+testcase and Dave Chinner for additional advice.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+This should fix kernel.org bz #10421.
+
+Tested-by: Eric Sandeen <sandeen@sandeen.net>
+
+SGI-PV: 981813
+SGI-Modid: xfs-linux-melb:xfs-kern:31173a
+
+Signed-off-by: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: David Chinner <dgc@sgi.com>
+Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- arch/x86/kernel/irq_32.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/xfs/linux-2.6/xfs_buf.c |   24 ++++++++++++++++++++----
+ fs/xfs/linux-2.6/xfs_buf.h |   19 +++++++++++++++++++
+ 2 files changed, 39 insertions(+), 4 deletions(-)
 
---- a/arch/x86/kernel/irq_32.c
-+++ b/arch/x86/kernel/irq_32.c
-@@ -134,7 +134,7 @@ unsigned int do_IRQ(struct pt_regs *regs
- 			: "=a" (arg1), "=d" (arg2), "=b" (bx)
- 			:  "0" (irq),   "1" (desc),  "2" (isp),
- 			   "D" (desc->handle_irq)
--			: "memory", "cc"
-+			: "memory", "cc", "ecx"
- 		);
- 	} else
- #endif
+--- a/fs/xfs/linux-2.6/xfs_buf.c
++++ b/fs/xfs/linux-2.6/xfs_buf.c
+@@ -387,6 +387,8 @@ _xfs_buf_lookup_pages(
+ 		if (unlikely(page == NULL)) {
+ 			if (flags & XBF_READ_AHEAD) {
+ 				bp->b_page_count = i;
++				for (i = 0; i < bp->b_page_count; i++)
++					unlock_page(bp->b_pages[i]);
+ 				return -ENOMEM;
+ 			}
+ 
+@@ -416,17 +418,24 @@ _xfs_buf_lookup_pages(
+ 		ASSERT(!PagePrivate(page));
+ 		if (!PageUptodate(page)) {
+ 			page_count--;
+-			if (blocksize < PAGE_CACHE_SIZE && !PagePrivate(page)) {
++			if (blocksize >= PAGE_CACHE_SIZE) {
++				if (flags & XBF_READ)
++					bp->b_flags |= _XBF_PAGE_LOCKED;
++			} else if (!PagePrivate(page)) {
+ 				if (test_page_region(page, offset, nbytes))
+ 					page_count++;
+ 			}
+ 		}
+ 
+-		unlock_page(page);
+ 		bp->b_pages[i] = page;
+ 		offset = 0;
+ 	}
+ 
++	if (!(bp->b_flags & _XBF_PAGE_LOCKED)) {
++		for (i = 0; i < bp->b_page_count; i++)
++			unlock_page(bp->b_pages[i]);
++	}
++
+ 	if (page_count == bp->b_page_count)
+ 		bp->b_flags |= XBF_DONE;
+ 
+@@ -746,6 +755,7 @@ xfs_buf_associate_memory(
+ 	bp->b_count_desired = len;
+ 	bp->b_buffer_length = buflen;
+ 	bp->b_flags |= XBF_MAPPED;
++	bp->b_flags &= ~_XBF_PAGE_LOCKED;
+ 
+ 	return 0;
+ }
+@@ -1093,8 +1103,10 @@ _xfs_buf_ioend(
+ 	xfs_buf_t		*bp,
+ 	int			schedule)
+ {
+-	if (atomic_dec_and_test(&bp->b_io_remaining) == 1)
++	if (atomic_dec_and_test(&bp->b_io_remaining) == 1) {
++		bp->b_flags &= ~_XBF_PAGE_LOCKED;
+ 		xfs_buf_ioend(bp, schedule);
++	}
+ }
+ 
+ STATIC void
+@@ -1125,6 +1137,9 @@ xfs_buf_bio_end_io(
+ 
+ 		if (--bvec >= bio->bi_io_vec)
+ 			prefetchw(&bvec->bv_page->flags);
++
++		if (bp->b_flags & _XBF_PAGE_LOCKED)
++			unlock_page(page);
+ 	} while (bvec >= bio->bi_io_vec);
+ 
+ 	_xfs_buf_ioend(bp, 1);
+@@ -1163,7 +1178,8 @@ _xfs_buf_ioapply(
+ 	 * filesystem block size is not smaller than the page size.
+ 	 */
+ 	if ((bp->b_buffer_length < PAGE_CACHE_SIZE) &&
+-	    (bp->b_flags & XBF_READ) &&
++	    ((bp->b_flags & (XBF_READ|_XBF_PAGE_LOCKED)) ==
++	      (XBF_READ|_XBF_PAGE_LOCKED)) &&
+ 	    (blocksize >= PAGE_CACHE_SIZE)) {
+ 		bio = bio_alloc(GFP_NOIO, 1);
+ 
+--- a/fs/xfs/linux-2.6/xfs_buf.h
++++ b/fs/xfs/linux-2.6/xfs_buf.h
+@@ -66,6 +66,25 @@ typedef enum {
+ 	_XBF_PAGES = (1 << 18),	    /* backed by refcounted pages	   */
+ 	_XBF_RUN_QUEUES = (1 << 19),/* run block device task queue	   */
+ 	_XBF_DELWRI_Q = (1 << 21),   /* buffer on delwri queue		   */
++
++	/*
++	 * Special flag for supporting metadata blocks smaller than a FSB.
++	 *
++	 * In this case we can have multiple xfs_buf_t on a single page and
++	 * need to lock out concurrent xfs_buf_t readers as they only
++	 * serialise access to the buffer.
++	 *
++	 * If the FSB size >= PAGE_CACHE_SIZE case, we have no serialisation
++	 * between reads of the page. Hence we can have one thread read the
++	 * page and modify it, but then race with another thread that thinks
++	 * the page is not up-to-date and hence reads it again.
++	 *
++	 * The result is that the first modifcation to the page is lost.
++	 * This sort of AGF/AGI reading race can happen when unlinking inodes
++	 * that require truncation and results in the AGI unlinked list
++	 * modifications being lost.
++	 */
++	_XBF_PAGE_LOCKED = (1 << 22),
+ } xfs_buf_flags_t;
+ 
+ typedef enum {
 
 -- 
