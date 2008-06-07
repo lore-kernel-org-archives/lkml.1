@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933616AbYFGB2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933591AbYFGB2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933616AbYFGB2e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760655AbYFGBKB
+	id S933591AbYFGB2z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:28:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760539AbYFGBKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:10:01 -0400
-Received: from sous-sol.org ([216.99.217.87]:42589 "EHLO sous-sol.org"
+	Fri, 6 Jun 2008 21:10:09 -0400
+Received: from sous-sol.org ([216.99.217.87]:42591 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754708AbYFGBJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 21:09:58 -0400
-Message-Id: <20080607010604.395806888@sous-sol.org>
+	id S1760898AbYFGBKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 21:10:07 -0400
+Message-Id: <20080607010619.349634333@sous-sol.org>
 References: <20080607010215.358296706@sous-sol.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 06 Jun 2008 18:02:33 -0700
+Date: Fri, 06 Jun 2008 18:02:46 -0700
 From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -23,11 +23,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Greg Kroah-Hartman <gregkh@suse.de>, Simon Kissel <kissel@viprinet.com>,
-       Nico Erfurth <ne@nicoerfurth.de>, Andrea Ghezzo <TS-EMEA@telit.com>,
-       Dietmar Staps <Dietmar.Staps@telit.com>
-Subject: [patch 18/50] USB: add TELIT HDSPA UC864-E modem to option driver
-Content-Disposition: inline; filename=usb-add-telit-hdspa-uc864-e-modem-to-option-driver.patch
+       Gary Hade <garyhade@us.ibm.com>, Greg KH <greg@kroah.com>,
+       Jan Beulich <jbeulich@novell.com>,
+       "Junichi Nomura" <j-nomura@ce.jp.nec.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch 31/50] Revert "PCI: remove default PCI expansion ROM memory allocation"
+Content-Disposition: inline; filename=revert-pci-remove-default-pci-expansion-rom-memory-allocation.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,43 +36,67 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Greg Kroah-Hartman <gregkh@suse.de>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-upstream commit: ee53b0ca0153b4f944cb142b5e65c96a1860d765
+upstream commit: 8d539108560ec121d59eee05160236488266221c
 
-This adds the Telit UC864-E HDSPA modem support to the option driver.
-This lets their customers comply with the GPL instead of having to use a
-binary driver from the manufacturer.
+This reverts commit 9f8daccaa05c14e5643bdd4faf5aed9cc8e6f11e, which was
+reported to break X startup (xf86-video-ati-6.8.0). See
 
-Cc: Simon Kissel <kissel@viprinet.com>
-Cc: Nico Erfurth <ne@nicoerfurth.de>
-Cc: Andrea Ghezzo <TS-EMEA@telit.com>
-Cc: Dietmar Staps <Dietmar.Staps@telit.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+	http://bugs.freedesktop.org/show_bug.cgi?id=15523
+
+for details.
+
+Reported-by: Laurence Withers <l@lwithers.me.uk>
+Cc: Gary Hade <garyhade@us.ibm.com>
+Cc: Greg KH <greg@kroah.com>
+Cc: Jan Beulich <jbeulich@novell.com>
+Cc: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+[cebbert@redhat.com: backport, remove first hunk to make port easier]
+[chrisw@sous-sol.org: add back first hunk]
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/usb/serial/option.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ arch/x86/pci/common.c |   17 -----------------
+ 1 file changed, 17 deletions(-)
 
---- a/drivers/usb/serial/option.c
-+++ b/drivers/usb/serial/option.c
-@@ -193,6 +193,9 @@ static int  option_send_setup(struct usb
+--- a/arch/x86/pci/common.c
++++ b/arch/x86/pci/common.c
+@@ -130,19 +130,6 @@ static void __devinit pcibios_fixup_ghos
+ 	}
+ }
  
- #define MAXON_VENDOR_ID				0x16d8
+-static void __devinit pcibios_fixup_device_resources(struct pci_dev *dev)
+-{
+-	struct resource *rom_r = &dev->resource[PCI_ROM_RESOURCE];
+-
+-	if (rom_r->parent)
+-		return;
+-	if (rom_r->start)
+-		/* we deal with BIOS assigned ROM later */
+-		return;
+-	if (!(pci_probe & PCI_ASSIGN_ROMS))
+-		rom_r->start = rom_r->end = rom_r->flags = 0;
+-}
+-
+ /*
+  *  Called after each bus is probed, but before its children
+  *  are examined.
+@@ -150,12 +137,8 @@ static void __devinit pcibios_fixup_devi
  
-+#define TELIT_VENDOR_ID				0x1bc7
-+#define TELIT_PRODUCT_UC864E			0x1003
-+
- static struct usb_device_id option_ids[] = {
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_COLT) },
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_RICOLA) },
-@@ -300,6 +303,7 @@ static struct usb_device_id option_ids[]
- 	{ USB_DEVICE(QUALCOMM_VENDOR_ID, 0x6613)}, /* Onda H600/ZTE MF330 */
- 	{ USB_DEVICE(MAXON_VENDOR_ID, 0x6280) }, /* BP3-USB & BP3-EXT HSDPA */
- 	{ USB_DEVICE(0x19d2, 0x0001) }, 	/* Telstra NextG CDMA */
-+	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_UC864E) },
- 	{ } /* Terminating entry */
- };
- MODULE_DEVICE_TABLE(usb, option_ids);
+ void __devinit  pcibios_fixup_bus(struct pci_bus *b)
+ {
+-	struct pci_dev *dev;
+-
+ 	pcibios_fixup_ghosts(b);
+ 	pci_read_bridge_bases(b);
+-	list_for_each_entry(dev, &b->devices, bus_list)
+-		pcibios_fixup_device_resources(dev);
+ }
+ 
+ /*
 
 -- 
