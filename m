@@ -1,58 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762734AbYFGBao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765172AbYFGBbF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762734AbYFGBao (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762080AbYFGBNG
+	id S1765172AbYFGBbF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:31:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761753AbYFGBOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:13:06 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:32892 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761824AbYFGBNE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 21:13:04 -0400
-Message-ID: <4849E09D.6090804@firstfloor.org>
-Date: Sat, 07 Jun 2008 03:13:01 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
-To: Scott Wiersdorf <scott@bluehost.com>
-CC: Balbir Singh <balbir@in.ibm.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, matt@bluehost.com
-Subject: Re: [PATCH 2.6.25-4] getdelays.c: signal handling for log rotation
-References: <20080605194334.GA56830@perlcode.org> <87d4muu0k2.fsf@basil.nowhere.org> <20080606204704.GA4330@perlcode.org>
-In-Reply-To: <20080606204704.GA4330@perlcode.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Jun 2008 21:14:33 -0400
+Received: from sous-sol.org ([216.99.217.87]:51055 "EHLO sous-sol.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932259AbYFGBOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 21:14:30 -0400
+Message-Id: <20080607010634.138735129@sous-sol.org>
+References: <20080607010215.358296706@sous-sol.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 06 Jun 2008 18:03:00 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Michael Halcrow <mhalcrow@us.ibm.com>,
+       Eric Sandeen <sandeen@redhat.com>,
+       Dave Kleikamp <shaggy@austin.ibm.com>
+Subject: [patch 45/50] eCryptfs: remove unnecessary page decrypt call
+Content-Disposition: inline; filename=ecryptfs-remove-unnecessary-page-decrypt-call.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Scott Wiersdorf wrote:
-> On Fri, Jun 06, 2008 at 03:59:09PM +0200, Andi Kleen wrote:
->> Scott Wiersdorf <scott@perlcode.org> writes:
->>
->>> This adds a USR1 signal handler to getdelays.c, which causes getdelays
->>> to close its logfile and reopen it (if '-w logfile' is
->>> specified). This is useful in situations when getdelays is running for
->>> a long time (i.e, the log file growing) and you need to rotate the
->>> logs but don't want to lose any log data.
->> You could do the same by sending SIGSTOP; copy file; truncate file; SIGCONT
-> 
-> Actually, I was wrong in my previous reply. Sorry for my error. The
-> above will work fine (no data loss; I guess the data queues somewhere
-> in some magic way?)
+-stable review patch.  If anyone has any objections, please let us know.
+---------------------
 
-netlink has a socket buffer like all other buffer. I think it's around
-128K.
+From: Michael Halcrow <mhalcrow@us.ibm.com>
 
-> I still think a single handler is elegant enough though, and works
-> better with many log rotation systems that want to send a single
-> signal to a pid (it's what we need where I'm working now, hence the
-> patch).
+upstream commit: d3e49afbb66109613c3474f2273f5830ac2dcb09
 
-Well in general it would be cool if there was nicer free userland for
-the obscure but useful delay accounting. The code in Documentation
-is really not much more than a example. Do you have something downloadable?
+The page decrypt calls in ecryptfs_write() are both pointless and buggy.
+Pointless because ecryptfs_get_locked_page() has already brought the page
+up to date, and buggy because prior mmap writes will just be blown away by
+the decrypt call.
 
--Andi
+This patch also removes the declaration of a now-nonexistent function
+ecryptfs_write_zeros().
 
+Thanks to Eric Sandeen and David Kleikamp for helping to track this
+down.
+
+Eric said:
+
+   fsx w/ mmap dies quickly ( < 100 ops) without this, and survives
+   nicely (to millions of ops+) with it in place.
+
+Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
+Cc: Eric Sandeen <sandeen@redhat.com>
+Cc: Dave Kleikamp <shaggy@austin.ibm.com>
+Cc: <stable@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+[chrisw: backport to 2.6.25.5]
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+---
+ fs/ecryptfs/ecryptfs_kernel.h |    2 --
+ fs/ecryptfs/read_write.c      |   22 ----------------------
+ 2 files changed, 24 deletions(-)
+
+--- a/fs/ecryptfs/ecryptfs_kernel.h
++++ b/fs/ecryptfs/ecryptfs_kernel.h
+@@ -626,8 +626,6 @@ int ecryptfs_get_tfm_and_mutex_for_ciphe
+ int ecryptfs_keyring_auth_tok_for_sig(struct key **auth_tok_key,
+ 				      struct ecryptfs_auth_tok **auth_tok,
+ 				      char *sig);
+-int ecryptfs_write_zeros(struct file *file, pgoff_t index, int start,
+-			 int num_zeros);
+ int ecryptfs_write_lower(struct inode *ecryptfs_inode, char *data,
+ 			 loff_t offset, size_t size);
+ int ecryptfs_write_lower_page_segment(struct inode *ecryptfs_inode,
+--- a/fs/ecryptfs/read_write.c
++++ b/fs/ecryptfs/read_write.c
+@@ -157,20 +157,6 @@ int ecryptfs_write(struct file *ecryptfs
+ 			       ecryptfs_page_idx, rc);
+ 			goto out;
+ 		}
+-		if (start_offset_in_page) {
+-			/* Read in the page from the lower
+-			 * into the eCryptfs inode page cache,
+-			 * decrypting */
+-			rc = ecryptfs_decrypt_page(ecryptfs_page);
+-			if (rc) {
+-				printk(KERN_ERR "%s: Error decrypting "
+-				       "page; rc = [%d]\n",
+-				       __FUNCTION__, rc);
+-				ClearPageUptodate(ecryptfs_page);
+-				page_cache_release(ecryptfs_page);
+-				goto out;
+-			}
+-		}
+ 		ecryptfs_page_virt = kmap_atomic(ecryptfs_page, KM_USER0);
+ 
+ 		/*
+@@ -349,14 +335,6 @@ int ecryptfs_read(char *data, loff_t off
+ 			       ecryptfs_page_idx, rc);
+ 			goto out;
+ 		}
+-		rc = ecryptfs_decrypt_page(ecryptfs_page);
+-		if (rc) {
+-			printk(KERN_ERR "%s: Error decrypting "
+-			       "page; rc = [%d]\n", __FUNCTION__, rc);
+-			ClearPageUptodate(ecryptfs_page);
+-			page_cache_release(ecryptfs_page);
+-			goto out;
+-		}
+ 		ecryptfs_page_virt = kmap_atomic(ecryptfs_page, KM_USER0);
+ 		memcpy((data + data_offset),
+ 		       ((char *)ecryptfs_page_virt + start_offset_in_page),
+
+-- 
