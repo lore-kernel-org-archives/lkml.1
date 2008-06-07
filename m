@@ -1,102 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933591AbYFGB2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764568AbYFGB32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933591AbYFGB2z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:28:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760539AbYFGBKJ
+	id S1764568AbYFGB32 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:29:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760905AbYFGBKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:10:09 -0400
-Received: from sous-sol.org ([216.99.217.87]:42591 "EHLO sous-sol.org"
+	Fri, 6 Jun 2008 21:10:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51655 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760898AbYFGBKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 21:10:07 -0400
-Message-Id: <20080607010619.349634333@sous-sol.org>
-References: <20080607010215.358296706@sous-sol.org>
-User-Agent: quilt/0.46-1
-Date: Fri, 06 Jun 2008 18:02:46 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Gary Hade <garyhade@us.ibm.com>, Greg KH <greg@kroah.com>,
-       Jan Beulich <jbeulich@novell.com>,
-       "Junichi Nomura" <j-nomura@ce.jp.nec.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 31/50] Revert "PCI: remove default PCI expansion ROM memory allocation"
-Content-Disposition: inline; filename=revert-pci-remove-default-pci-expansion-rom-memory-allocation.patch
+	id S1760695AbYFGBKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 21:10:09 -0400
+Date: Fri, 6 Jun 2008 21:08:58 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
+       kosaki.motohiro@jp.fujitsu.com, mbligh@mbligh.org
+Subject: Re: [PATCH -mm 09/25] fix pagecache reclaim referenced bit check
+Message-ID: <20080606210858.32fd6f48@bree.surriel.com>
+In-Reply-To: <20080606180451.31f01e70.akpm@linux-foundation.org>
+References: <20080606202838.390050172@redhat.com>
+	<20080606202858.867179392@redhat.com>
+	<20080606180451.31f01e70.akpm@linux-foundation.org>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
----------------------
+On Fri, 6 Jun 2008 18:04:51 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
+> On Fri, 06 Jun 2008 16:28:47 -0400
+> Rik van Riel <riel@redhat.com> wrote:
+> 
+> > From: Rik van Riel <riel@redhat.com>
+> > 
+> > The -mm tree contains the patch
+> > vmscan-give-referenced-active-and-unmapped-pages-a-second-trip-around-the-lru.patch
+> > which gives referenced pagecache pages another trip around
+> > the active list.  This seems to help keep frequently accessed
+> > pagecache pages in memory.
+> > 
+> > However, it means that pagecache pages that get moved to the
+> > inactive list do not have their referenced bit set, and a
+> > reference to the page will not get it moved back to the active
+> > list
+> 
+> Should that be "the next reference"?  Because two references _will_ cause
+> the page to be activated?
 
-upstream commit: 8d539108560ec121d59eee05160236488266221c
+Indeed, next reference would be a more accurate description.
 
-This reverts commit 9f8daccaa05c14e5643bdd4faf5aed9cc8e6f11e, which was
-reported to break X startup (xf86-video-ati-6.8.0). See
+> >.  This patch sets the referenced bit on pagecache pages
+> > that get deactivated, so the next access to the page will promote
+> > it back to the active list.
+> > 
+> > ---
+> >  mm/vmscan.c |    4 ++++
+> >  1 file changed, 4 insertions(+)
+> > 
+> > Index: linux-2.6.26-rc2-mm1/mm/vmscan.c
+> > ===================================================================
+> > --- linux-2.6.26-rc2-mm1.orig/mm/vmscan.c	2008-05-28 12:11:51.000000000 -0400
+> > +++ linux-2.6.26-rc2-mm1/mm/vmscan.c	2008-05-28 12:14:34.000000000 -0400
+> > @@ -1062,8 +1062,13 @@ static void shrink_active_list(unsigned 
+> >  				list_add(&page->lru, &l_inactive);
+> >  				pgmoved++;
+> >  			}
+> > -		} else
+> > +		} else {
+> >  			list_add(&page->lru, &l_inactive);
+> > +			if (file && !page_mapped(page))
+> > +				/* Bypass use-once, make the next access count.
+> > +				 * See mark_page_accessed. */
+> > +				SetPageReferenced(page);
+> > +		}
+> >  	}
+> 
+> Will this change also cause these pages to get a second trip around the
+> inactive list?  Or do we at the end of the patch series end up
+> reclaiming pagecache regardless of their PageReferenced()?  If so, it
+> seems that we're making the pagecache pages a _lot_ stickier with this
+> change and my one - an additional trip around the active list and an
+> additional one around the inactive list.
 
-	http://bugs.freedesktop.org/show_bug.cgi?id=15523
+At the end of the inactive list, we reclaim it regardless of
+PageReferenced().  As for making the pagecache pages stickier,
+we can balance that out by tweaking swappiness now that we
+have page cache and swap/ram backed pages living on separate
+sets of LRU lists.
 
-for details.
+The balancing becomes a lot easier than before.
 
-Reported-by: Laurence Withers <l@lwithers.me.uk>
-Cc: Gary Hade <garyhade@us.ibm.com>
-Cc: Greg KH <greg@kroah.com>
-Cc: Jan Beulich <jbeulich@novell.com>
-Cc: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-[cebbert@redhat.com: backport, remove first hunk to make port easier]
-[chrisw@sous-sol.org: add back first hunk]
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
----
- arch/x86/pci/common.c |   17 -----------------
- 1 file changed, 17 deletions(-)
+> Changelog should spell all this out, I guess.
 
---- a/arch/x86/pci/common.c
-+++ b/arch/x86/pci/common.c
-@@ -130,19 +130,6 @@ static void __devinit pcibios_fixup_ghos
- 	}
- }
- 
--static void __devinit pcibios_fixup_device_resources(struct pci_dev *dev)
--{
--	struct resource *rom_r = &dev->resource[PCI_ROM_RESOURCE];
--
--	if (rom_r->parent)
--		return;
--	if (rom_r->start)
--		/* we deal with BIOS assigned ROM later */
--		return;
--	if (!(pci_probe & PCI_ASSIGN_ROMS))
--		rom_r->start = rom_r->end = rom_r->flags = 0;
--}
--
- /*
-  *  Called after each bus is probed, but before its children
-  *  are examined.
-@@ -150,12 +137,8 @@ static void __devinit pcibios_fixup_devi
- 
- void __devinit  pcibios_fixup_bus(struct pci_bus *b)
- {
--	struct pci_dev *dev;
--
- 	pcibios_fixup_ghosts(b);
- 	pci_read_bridge_bases(b);
--	list_for_each_entry(dev, &b->devices, bus_list)
--		pcibios_fixup_device_resources(dev);
- }
- 
- /*
+It's not the Changelog I'm worried about as much as the
+people who are trying to read the code afterwards.
 
 -- 
+All rights reversed.
