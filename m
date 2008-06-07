@@ -1,181 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758201AbYFGBJC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760648AbYFGBJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758201AbYFGBJC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 21:09:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757132AbYFGBG3
+	id S1760648AbYFGBJj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 21:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758689AbYFGBGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 21:06:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40512 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758409AbYFGBG0 (ORCPT
+	Fri, 6 Jun 2008 21:06:36 -0400
+Received: from smtp.flash.net.br ([201.46.240.48]:50658 "EHLO
+	madrid.flash.tv.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758633AbYFGBGf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 21:06:26 -0400
-Date: Fri, 6 Jun 2008 18:05:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
-       kosaki.motohiro@jp.fujitsu.com
-Subject: Re: [PATCH -mm 16/25] SHM_LOCKED pages are non-reclaimable
-Message-Id: <20080606180514.93f620ff.akpm@linux-foundation.org>
-In-Reply-To: <20080606202859.466929557@redhat.com>
-References: <20080606202838.390050172@redhat.com>
-	<20080606202859.466929557@redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Jun 2008 21:06:35 -0400
+X-Greylist: delayed 668 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Jun 2008 21:06:34 EDT
+Date: Fri, 6 Jun 2008 21:52:27 -0300
+From: Rog?rio Brito <rbrito@ime.usp.br>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6.26-rc4] Problems with rt2x00 USB interface on powerpc
+Message-ID: <20080607005227.GA1739@ime.usp.br>
+References: <20080601193000.GA3056@ime.usp.br> <20080606162324.GB635@tuxdriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080606162324.GB635@tuxdriver.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 06 Jun 2008 16:28:54 -0400
-Rik van Riel <riel@redhat.com> wrote:
+First of all, thanks John for taking the time to reply to my
+message.
 
-> From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+On Jun 06 2008, John W. Linville wrote:
+> On Sun, Jun 01, 2008 at 04:30:01PM -0300, Rogério Brito wrote:
+> > I have an iBook G3 600MHz combo (late 2001 model, powerpc) with a USB
+> > wireless card rt2x00 that doesn't work.
+> > 
+> > I just compiled a fresh 2.6.26-rc4 kernel and it can't get a lease from
+> > the access point, even though it is able to see the access point.
+> > 
+> > The userland here is Debian unstable (sid) and I can perform some of the
+> > steps in the direction of configuring the interface. For instance, the
+> > following works (I am using wep as the encryption system with other systems
+> > running under Linux, but, unfortunately, EVEN disabling encryption for the
+> > sake of the tests doesn't help here):
+(...)
+> > (Here, it is unable to grab an IP addess from the access point)
 > 
-> Against:  2.6.26-rc2-mm1
-> 
-> While working with Nick Piggin's mlock patches,
+> You should set the key _before_ setting the essid.
 
-Change log refers to information which its reader has not got a hope
-of actually locating.
+Thanks, but that unfortunately doesn't seem to help. :-(
 
-> I noticed that
-> shmem segments locked via shmctl(SHM_LOCKED) were not being handled.
-> SHM_LOCKed pages work like ramdisk pages
+I have taken dmesg "snapshots" of my system together with many other
+information regarding how it is configured and I put it at my
+homepage, at <http://www.ime.usp.br/debug/>.
 
-Well, OK.  As long as one remembers that "ramdisk pages" are different
-from "pages of a file which is on ramdisk".  Tricky, huh?
+>From what I am seeing, it looks like the bug mentioned in
+<http://bugzilla.kernel.org/show_bug.cgi?id=9388>, but I don't get the
+stack trace that is present there and I'm just trying to use WEP
+instead of WPA or anything fancier.
 
-> --the writeback function
-> just redirties the page so that it can't be reclaimed.  Deal with
-> these using the same approach as for ram disk pages.
-> 
-> Use the AS_NORECLAIM flag to mark address_space of SHM_LOCKed
-> shared memory regions as non-reclaimable.  Then these pages
-> will be culled off the normal LRU lists during vmscan.
+Thanks for all the help and please let me know if further information
+can be helpful for debugging this situation.
 
-So I guess there's more justification for handling these pages in this
-manner, because someone could come along later and unlock them.  But
-that isn't true of /dev/ram0 pages and ramfs pages, etc.
 
-> Add new wrapper function to clear the mapping's noreclaim state
-> when/if shared memory segment is munlocked.
-> 
-> Add 'scan_mapping_noreclaim_page()' to mm/vmscan.c to scan all
-> pages in the shmem segment's mapping [struct address_space] for
-> reclaimability now that they're no longer locked.  If so, move
-> them to the appropriate zone lru list.  Note that
-> scan_mapping_noreclaim_page() must be able to sleep on page_lock(),
-> so we can't call it holding the shmem info spinlock nor the shmid
-> spinlock.  So, we pass the mapping [address_space] back to shmctl()
-> on SHM_UNLOCK for rescuing any nonreclaimable pages after dropping
-> the spinlocks.  Once we drop the shmid lock, the backing shmem file
-> can be deleted if the calling task doesn't have the shm area
-> attached.  To handle this, we take an extra reference on the file
-> before dropping the shmid lock and drop the reference after scanning
-> the mapping's noreclaim pages.
-> 
->
-> ...
->
-> +
-> +/**
-> + * check_move_noreclaim_page - check page for reclaimability and move to appropriate zone lru list
-> + * @page: page to check reclaimability and move to appropriate lru list
-> + * @zone: zone page is in
-> + *
-> + * Checks a page for reclaimability and moves the page to the appropriate
-> + * zone lru list.
-> + *
-> + * Restrictions: zone->lru_lock must be held, page must be on LRU and must
-> + * have PageNoreclaim set.
-> + */
-> +static void check_move_noreclaim_page(struct page *page, struct zone *zone)
-> +{
-> +
-> +	ClearPageNoreclaim(page); /* for page_reclaimable() */
-
-Confused.  Didn't we just lose track of our NR_NORECLAIM accounting?
-
-> +	if (page_reclaimable(page, NULL)) {
-> +		enum lru_list l = LRU_INACTIVE_ANON + page_file_cache(page);
-> +		__dec_zone_state(zone, NR_NORECLAIM);
-> +		list_move(&page->lru, &zone->list[l]);
-> +		__inc_zone_state(zone, NR_INACTIVE_ANON + l);
-> +	} else {
-> +		/*
-> +		 * rotate noreclaim list
-> +		 */
-> +		SetPageNoreclaim(page);
-> +		list_move(&page->lru, &zone->list[LRU_NORECLAIM]);
-> +	}
-> +}
-> +
-> +/**
-> + * scan_mapping_noreclaim_pages - scan an address space for reclaimable pages
-> + * @mapping: struct address_space to scan for reclaimable pages
-> + *
-> + * Scan all pages in mapping.  Check non-reclaimable pages for
-> + * reclaimability and move them to the appropriate zone lru list.
-> + */
-> +void scan_mapping_noreclaim_pages(struct address_space *mapping)
-> +{
-> +	pgoff_t next = 0;
-> +	pgoff_t end   = (i_size_read(mapping->host) + PAGE_CACHE_SIZE - 1) >>
-> +			 PAGE_CACHE_SHIFT;
-> +	struct zone *zone;
-> +	struct pagevec pvec;
-> +
-> +	if (mapping->nrpages == 0)
-> +		return;
-> +
-> +	pagevec_init(&pvec, 0);
-> +	while (next < end &&
-> +		pagevec_lookup(&pvec, mapping, next, PAGEVEC_SIZE)) {
-> +		int i;
-> +
-> +		zone = NULL;
-> +
-> +		for (i = 0; i < pagevec_count(&pvec); i++) {
-> +			struct page *page = pvec.pages[i];
-> +			pgoff_t page_index = page->index;
-> +			struct zone *pagezone = page_zone(page);
-> +
-> +			if (page_index > next)
-> +				next = page_index;
-> +			next++;
-> +
-> +			if (TestSetPageLocked(page)) {
-> +				/*
-> +				 * OK, let's do it the hard way...
-> +				 */
-> +				if (zone)
-> +					spin_unlock_irq(&zone->lru_lock);
-> +				zone = NULL;
-> +				lock_page(page);
-> +			}
-> +
-> +			if (pagezone != zone) {
-> +				if (zone)
-> +					spin_unlock_irq(&zone->lru_lock);
-> +				zone = pagezone;
-> +				spin_lock_irq(&zone->lru_lock);
-> +			}
-> +
-> +			if (PageLRU(page) && PageNoreclaim(page))
-> +				check_move_noreclaim_page(page, zone);
-> +
-> +			unlock_page(page);
-> +
-> +		}
-> +		if (zone)
-> +			spin_unlock_irq(&zone->lru_lock);
-> +		pagevec_release(&pvec);
-> +	}
-> +
-> +}
-
-This function can spend fantastically large amounts of time under
-spin_lock_irq().
-
+Thanks again, Rogerio Brito
