@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761038AbYFGOsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761776AbYFGOse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761038AbYFGOsR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 10:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756345AbYFGOsA
+	id S1761776AbYFGOse (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 10:48:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760673AbYFGOsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 10:48:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37854 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755086AbYFGOsA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 10:48:00 -0400
-Date: Sat, 7 Jun 2008 10:47:40 -0400
-From: Rik van Riel <riel@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, kosaki.motohiro@jp.fujitsu.com,
-       linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com, clameter@sgi.com
-Subject: Re: [PATCH -mm 02/25] Use an indexed array for LRU variables
-Message-ID: <20080607104740.6c12a324@bree.surriel.com>
-In-Reply-To: <20080607144105.9C52.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080606202858.449902618@redhat.com>
-	<20080606180426.89989a07.akpm@linux-foundation.org>
-	<20080607144105.9C52.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 7 Jun 2008 10:48:16 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:3990 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759792AbYFGOsP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jun 2008 10:48:15 -0400
+Message-ID: <484A9FAB.5090202@colorfullife.com>
+Date: Sat, 07 Jun 2008 16:48:11 +0200
+From: Manfred Spraul <manfred@colorfullife.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Nadia Derbey <Nadia.Derbey@bull.net>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] ipc/sem.c: convert undo structures to struct list_head
+References: <200805241637.m4OGb1iL006199@mail.q-ag.de> <483EC50E.1020103@bull.net>
+In-Reply-To: <483EC50E.1020103@bull.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 07 Jun 2008 14:43:50 +0900
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+Nadia Derbey wrote:
+> Manfred Spraul wrote:
+>> The undo structures contain two linked lists, the
+>> attached patch replaces them with generic struct list_head lists.
+>
+> If I'm not wrong the undo list is a singly-linked list.
+> So here we are moving from a set of 4 pointers to a set of 8 pointers.
+> It's true that this makes the code much much more readable and clear, 
+> but I was wondering if it's worth?
+>
+IMHO yes: Everything is allocated on demand and memory is not that 
+expensive.
 
-> > > Index: linux-2.6.26-rc2-mm1/include/linux/mm_inline.h
-> > > ===================================================================
-> > > --- linux-2.6.26-rc2-mm1.orig/include/linux/mm_inline.h	2008-05-23 14:21:21.000000000 -0400
-> > > +++ linux-2.6.26-rc2-mm1/include/linux/mm_inline.h	2008-05-23 14:21:33.000000000 -0400
-> > > @@ -1,40 +1,51 @@
-> > >  static inline void
-> > > +add_page_to_lru_list(struct zone *zone, struct page *page, enum lru_list l)
-> > > +{
-> > > +	list_add(&page->lru, &zone->list[l]);
-> > > +	__inc_zone_state(zone, NR_INACTIVE + l);
-> > 
-> >                                ^ that's a bug, isn't it?
-> 
-> this is definitely bug.
+With regard to the asserts: I'm a big fan of asserts, I usually use them 
+to document the locking.
+Perhaps assert_spin_locked() should evalute to a nop() for 
+non-CONFIG_DEBUG builds?
 
-I believe this is correct, actually.   I will rename/alias it to
-VMSCAN_BASE or something along those lines.
-
-> > oh, no it isn't.
-> > Can we rename NR_INACTIVE?  Maybe VMSCAN_BASE or something?
-> 
-> as far as i remembered, old version use LRU_INACTIVE. 
-
-LRU_* is used to index LRU arrays.
-
-NR_* is used as an offset into the zone state.
-
--- 
-All rights reversed.
+--
+    Manfred
