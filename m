@@ -1,73 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763524AbYFGR4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763691AbYFGR50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763524AbYFGR4e (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 13:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761267AbYFGR40
+	id S1763691AbYFGR50 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 13:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761122AbYFGR5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 13:56:26 -0400
-Received: from mail.gmx.net ([213.165.64.20]:34947 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1761146AbYFGR40 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 13:56:26 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+3NZxNkl+3sddaYq3MdhxTUs7MhwTu1zA+PFydQU
-	Db96eLgnM+R7as
-Subject: Re: [patch] Re: PostgreSQL pgbench performance regression in
-	2.6.23+
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Greg Smith <gsmith@gregsmith.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-In-Reply-To: <1212855380.19205.96.camel@lappy.programming.kicks-ass.net>
-References: <1211440207.5733.8.camel@marge.simson.net>
-	 <20080522082814.GA4499@linux.vnet.ibm.com>
-	 <1211447105.4823.7.camel@marge.simson.net>
-	 <1211452465.7606.8.camel@marge.simson.net>
-	 <1211455553.4381.9.camel@marge.simson.net>
-	 <1211456659.29104.20.camel@twins>
-	 <1211458176.5693.6.camel@marge.simson.net>
-	 <1211459081.29104.40.camel@twins>
-	 <Pine.GSO.4.64.0805230232190.28654@westnet.com>
-	 <1211536814.5851.18.camel@marge.simson.net>
-	 <20080523101000.GA13964@elte.hu>
-	 <1211537717.5851.22.camel@marge.simson.net>
-	 <Pine.GSO.4.64.0805231907150.25273@westnet.com>
-	 <1211586407.4786.5.camel@marge.simson.net>
-	 <Pine.GSO.4.64.0805260851510.24771@westnet.com>
-	 <1211867950.5505.47.camel@marge.simson.net>
-	 <Pine.GSO.4.64.0806060027290.8466@westnet.com>
-	 <1212732780.13981.43.camel@marge.simson.net>
-	 <1212838682.5571.6.camel@marge.simson.net>
-	 <1212843008.4934.16.camel@marge.simson.net>
-	 <1212844027.19205.82.camel@lappy.programming.kicks-ass.net>
-	 <1212848179.4668.3.camel@marge.simson.net>
-	 <1212855380.19205.96.camel@lappy.programming.kicks-ass.net>
-Content-Type: text/plain
-Date: Sat, 07 Jun 2008 19:56:21 +0200
-Message-Id: <1212861381.4953.8.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Sat, 7 Jun 2008 13:57:17 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:31191 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1761423AbYFGR5Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jun 2008 13:57:16 -0400
+Date: Sat, 7 Jun 2008 21:57:14 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: galak@kernel.crashing.org, wim@iguana.be, jochen@scram.de,
+       sfr@canb.auug.org.au, segher@kernel.crashing.org,
+       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH -mm] watchdog: mpc8xxx_wdt: fix build
+Message-ID: <20080607175713.GA27793@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20080602173726.GA24556@polina.dev.rtsoft.ru> <20080603164830.32457962.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <20080603164830.32457962.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  CC      drivers/watchdog/mpc8xxx_wdt.o
+drivers/watchdog/mpc8xxx_wdt.c: In function 'mpc8xxx_wdt_ioctl':
+drivers/watchdog/mpc8xxx_wdt.c:156: error: 'cmd' undeclared (first use in this function)
+drivers/watchdog/mpc8xxx_wdt.c:156: error: (Each undeclared identifier is reported only once
+drivers/watchdog/mpc8xxx_wdt.c:156: error: for each function it appears in.)
+drivers/watchdog/mpc8xxx_wdt.c: At top level:
+drivers/watchdog/mpc8xxx_wdt.c:176: warning: initialization from incompatible pointer type
 
-On Sat, 2008-06-07 at 18:16 +0200, Peter Zijlstra wrote:
+This patch ought to be folded into
+mpc8xxx_wdt-various-renames-mostly-s-mpc83xx-mpc8xxx-g.patch
 
-> The idea was to dynamically detect sync wakeups, who's defining property
-> is that the waker will sleep after waking the wakee. And who's effect is
-> pulling tasks together on wakeups - so that we might have the most
-> benefit of cache sharing.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+
+On Tue, Jun 03, 2008 at 04:48:30PM -0700, Andrew Morton wrote:
+> On Mon, 2 Jun 2008 21:37:26 +0400
+> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 > 
-> So if we were to exclude cross cpu wakeups from this measurement we'd
-> handicap the whole scheme, because then we'd never measure that its
-> actually a sync wakeup and wants to run on the same cpu.
+> > No comments on the previous version for two weeks... resending once
+> > again.
+> 
+> I did all the rework to make the patches apply on top of all the
+> pending watchdog work in Wim's tree and in -mm.  I haven't build tested
+> it yet.
 
-Ah, I get it now, thanks.
+Well, only one hunk is mis-merged, in
+mpc8xxx_wdt-various-renames-mostly-s-mpc83xx-mpc8xxx-g.patch.
 
-	-Mike
+Here is the patch to fix it.
+
+I also run-time tested it, everything seem to work great.
+
+p.s. Would be very handy if linux-trees.git would track mmotm snapshots.
+
+ drivers/watchdog/mpc8xxx_wdt.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
+index 8b82b91..3c5ed9e 100644
+--- a/drivers/watchdog/mpc8xxx_wdt.c
++++ b/drivers/watchdog/mpc8xxx_wdt.c
+@@ -142,7 +142,7 @@ static int mpc8xxx_wdt_release(struct inode *inode, struct file *file)
+ 	return 0;
+ }
+ 
+-static long mpc8xxx_wdt_ioctl(struct inode *inode, struct file *file,
++static long mpc8xxx_wdt_ioctl(struct file *file, unsigned int cmd,
+ 							unsigned long arg)
+ {
+ 	void __user *argp = (void __user *)arg;
+-- 
+1.5.5.1
 
