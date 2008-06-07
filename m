@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760315AbYFGOaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761325AbYFGOcI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760315AbYFGOaz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 10:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbYFGOaq
+	id S1761325AbYFGOcI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 10:32:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756148AbYFGObz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 10:30:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39560 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754244AbYFGOaq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 10:30:46 -0400
-Message-ID: <484A9B26.8080409@redhat.com>
-Date: Sat, 07 Jun 2008 10:28:54 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+	Sat, 7 Jun 2008 10:31:55 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:25876 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756118AbYFGObx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jun 2008 10:31:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=DI0xnXpIjOieQs/bSgsBo6FmCSTh82fhADNJV07bs++iPJp7o2PPoOmyV7cXJWp2Z+
+         18R5tyKT2N1c0FIke2AJeiubgXUoazkKUPDmhd8QGlSs/YvkPu6cHF6ykAHcgEkb88aE
+         Tj7UL5SegIeOWtstjUXyx3U28G8ugXXut2NwM=
+Message-ID: <3d8471ca0806070731o98d62a9lab6caf394aa60277@mail.gmail.com>
+Date: Sat, 7 Jun 2008 16:31:50 +0200
+From: "Guillaume Chazarain" <guichaz@gmail.com>
+To: "Maxim Levitsky" <maximlevitsky@gmail.com>
+Subject: Re: ACPI: EC: GPE storm detected, disabling EC GPE
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Justin Mattock" <justinmattock@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org,
+       "Alexey Starikovskiy" <astarikovskiy@suse.de>
+In-Reply-To: <200806071359.04426.maximlevitsky@gmail.com>
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus@drzeus.cx>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch] MMC: wbsd: initialize tasklets before requesting interrupt
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <dd18b0c30806062321x2918f6feq7c817bde52ba0c4c@mail.gmail.com>
+	 <20080606235526.783acc83.akpm@linux-foundation.org>
+	 <200806071359.04426.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MMC: wbsd: initialize tasklets before requesting interrupt
+On Sat, Jun 7, 2008 at 12:59 PM, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+> I also noticed that in -git volume wheel behaves strangely, it sometimes increases volume
+> when I rotate it in direction of decrease, and vise versa.
 
-With CONFIG_DEBUG_SHIRQ set we will get an interrupt as soon as we
-allocate one. Tasklets may be scheduled in the interrupt handler but
-they will be initialized after the handler returns, causing a BUG()
-in kernel/softirq.c when they run.
+I have a similar problem, the ACPI keys on my laptop are very laggy
+(like 1 second), maybe you are seeing the same thing with your volume
+wheel?
 
-Should fix this Fedora bug report:
-https://bugzilla.redhat.com/show_bug.cgi?id=449817
+changing
+ if (atomic_read(&ec->irq_count) > 5) {
+ to
+if (atomic_read(&ec->irq_count) > 20) {
+fixed the problem completely for me.
 
-Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
+It's all in http://bugzilla.kernel.org/show_bug.cgi?id=9998
 
---- linux-2.6.25.noarch.orig/drivers/mmc/host/wbsd.c
-+++ linux-2.6.25.noarch/drivers/mmc/host/wbsd.c
-@@ -1457,17 +1457,7 @@ static int __devinit wbsd_request_irq(st
- 	int ret;
+Cheers.
 
- 	/*
--	 * Allocate interrupt.
--	 */
--
--	ret = request_irq(irq, wbsd_irq, IRQF_SHARED, DRIVER_NAME, host);
--	if (ret)
--		return ret;
--
--	host->irq = irq;
--
--	/*
--	 * Set up tasklets.
-+	 * Set up tasklets. Must be done before requesting interrupt.
- 	 */
- 	tasklet_init(&host->card_tasklet, wbsd_tasklet_card,
- 			(unsigned long)host);
-@@ -1480,6 +1470,15 @@ static int __devinit wbsd_request_irq(st
- 	tasklet_init(&host->finish_tasklet, wbsd_tasklet_finish,
- 			(unsigned long)host);
-
-+	/*
-+	 * Allocate interrupt.
-+	 */
-+	ret = request_irq(irq, wbsd_irq, IRQF_SHARED, DRIVER_NAME, host);
-+	if (ret)
-+		return ret;
-+
-+	host->irq = irq;
-+
- 	return 0;
- }
-
+-- 
+Guillaume
