@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762874AbYFGWGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765831AbYFGWHH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762874AbYFGWGn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 18:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761965AbYFGVvH
+	id S1765831AbYFGWHH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 18:07:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764845AbYFGVxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 17:51:07 -0400
-Received: from hpsmtp-eml16.kpnxchange.com ([213.75.38.116]:8116 "EHLO
-	hpsmtp-eml16.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758231AbYFGVvD (ORCPT
+	Sat, 7 Jun 2008 17:53:35 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:40151 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764589AbYFGVxd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 17:51:03 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Jesper Krogh <jesper@krogh.cc>
-Subject: Re: Linux 2.6.26-rc5
-Date: Sat, 7 Jun 2008 23:50:59 +0200
-User-Agent: KMail/1.9.9
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, Avuton Olrich <avuton@gmail.com>
-References: <alpine.LFD.1.10.0806042018060.3473@woody.linux-foundation.org> <alpine.LFD.1.10.0806042018060.3473@woody.linux-foundation.org> <484AE520.7050001@krogh.cc>
-In-reply-To: <484AE520.7050001@krogh.cc>
+	Sat, 7 Jun 2008 17:53:33 -0400
+Message-ID: <484B0355.9030000@linux.vnet.ibm.com>
+Date: Sun, 08 Jun 2008 03:23:25 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [mmotm] __build_sched_domains panic
+References: <484AFC5A.3070006@linux.vnet.ibm.com> <19f34abd0806071444l4b142b00q348ff7a270f40344@mail.gmail.com>
+In-Reply-To: <19f34abd0806071444l4b142b00q348ff7a270f40344@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806072350.59976.elendil@planet.nl>
-X-OriginalArrivalTime: 07 Jun 2008 21:51:00.0438 (UTC) FILETIME=[93018F60:01C8C8E8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Krogh wrote:
-> Not that they seem critical to the system but I do get alot of these. I
-> cant remember having seen that before.
- 
-> [    2.904467] system 00:06: iomem range 0x0-0x0 could not be reserved
-> [    2.904469] system 00:06: iomem range 0x0-0x0 could not be reserved
-> [    2.904471] system 00:06: iomem range 0x0-0x0 could not be reserved
-> [    2.904473] system 00:06: iomem range 0x0-0x0 could not be reserved
-[...]
+Vegard Nossum wrote:
+> On Sat, Jun 7, 2008 at 11:23 PM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>> Hi, Andrew,
+>>
+>> I have an x86_64 system with 4 CPUs and 4GB memory and I see the following
+>> panic, when I boot with fake NUMA nodes. I am still investigating the problem. I
+>> was trying to use this setup to verify KAMEZAWA's fix for the memcgroup page
+>> migration problem.
+> 
+> Hi :)
+> 
+> This is already fixed. Actually, it was just caused by a missing patch.
+> 
+> You need a953e4597abd51b74c99e0e3b7074532a60fd031 from the -tip tree.
 
-I'm getting these too. Not present in the last -rc4 kernel I built.
+Thanks for the update!
 
-Reverting this commit (the only recent one to the file the message 
-originates from), gets rid of the extra zero-range messages:
-
-commit 4b34fe156455d26ee6ed67b61539f136bf4e439c
-Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Date:   Mon Jun 2 16:42:49 2008 -0600
-
-    PNP: mark resources that conflict with PCI devices "disabled"
-
-    Both the PNP/PCI conflict detection quirk and the PNP system
-    driver must use the same mechanism to mark resources as disabled.
-
-    I think it's best to keep the resource and to keep the type bit
-    (IORESOURCE_MEM, etc), so that we match the list from firmware
-    as closely as possible.
-
-    Fixes this regression from 2.6.25: http://lkml.org/lkml/2008/6/1/82
-
-    Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-    Tested-by: Avuton Olrich <avuton@gmail.com>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-Relevant CCs added.
-
-Cheers,
-FJP
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
