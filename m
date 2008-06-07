@@ -1,81 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757808AbYFGT6N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbYFGUEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757808AbYFGT6N (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 15:58:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbYFGT56
+	id S1755505AbYFGUEe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 16:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbYFGUEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 15:57:58 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1576 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753177AbYFGT55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 15:57:57 -0400
-Date: Sat, 7 Jun 2008 21:52:22 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Alan Stern <stern@rowland.harvard.edu>, Linus Torvalds <torvalds@osdl.org>
-Cc: gregkh@suse.de, Andrew Morton <akpm@osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Oliver Neukum <oliver@neukum.org>
-Subject: Re: 2.6.25-rc6: CONFIG_USB_PERSIST forced on
-Message-ID: <20080607195221.GB11109@ucw.cz>
-References: <20080606092546.GA2596@elf.ucw.cz> <Pine.LNX.4.44L0.0806061030210.2354-100000@iolanthe.rowland.org>
+	Sat, 7 Jun 2008 16:04:25 -0400
+Received: from ik-out-1112.google.com ([66.249.90.181]:17573 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751277AbYFGUEY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jun 2008 16:04:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=Hb6GEeUBhwdYFVi1kqg4uPps2PQJVNJph8/2Ta58sX/rPM6c7BmCM6odqua4YjI1je
+         4Rsybk0vGIdVcWucBowjuevGtXOjs49cckAGx0jd8ykCl0ib9XaxIaYNILmQlchvrrr0
+         PHrWGCFcEh4Hwk+09WX+K+Ofo/hb8Ns/YhphE=
+Date: Sat, 7 Jun 2008 22:04:18 +0200
+From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
+	<ariveira@gmail.com>
+To: Dave Jones <davej@redhat.com>
+Cc: Willy Tarreau <w@1wt.eu>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: wrong hardlink count in /proc
+Message-ID: <20080607220418.713fbbe5@Varda>
+In-Reply-To: <20080607195042.GB25998@redhat.com>
+References: <20080607193424.GA25998@redhat.com>
+	<20080607194604.GH5609@1wt.eu>
+	<20080607195042.GB25998@redhat.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0806061030210.2354-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2008-06-06 10:39:19, Alan Stern wrote:
-> On Fri, 6 Jun 2008, Pavel Machek wrote:
+El Sat, 7 Jun 2008 15:50:42 -0400
+Dave Jones <davej@redhat.com> escribió:
+
+> On Sat, Jun 07, 2008 at 09:46:04PM +0200, Willy Tarreau wrote:
+>  > On Sat, Jun 07, 2008 at 03:34:24PM -0400, Dave Jones wrote:
+>  > > In 2.6.25, 'find /proc/ -name foo' will print out ..
+>  > > 
+>  > > find: WARNING: Hard link count is wrong for /proc/1: this may be a bug
+>  > > in your filesystem driver.  Automatically turning on find's -noleaf
+>  > > option.  Earlier results may have failed to include directories that
+>  > > should have been searched.
+>  > 
+>  > I also encountered this one. I think it is the one which 2.6.25.6 stable
+>  > patch 42/50 fixes.
 > 
-> > Hi!
-> > 
-> > In 2.6.26-rc5, 
-> > 
-> > -config USB_PERSIST
-> > -       bool "USB device persistence during system suspend (DANGEROUS)"
-> > 
-> > is now on. Given that it was previously marked "DANGEROUS", that seems
-> > quite a change to me.
+> Ah, great.   I just noticed that .26rc doesn't seem affected, so sounds good.
+
+ well on my ubuntu box i get with .26-rc5
+
+ [alex@Varda:kernel/linux-2.6]$ uname -a                      
+ Linux Varda 2.6.26-rc5 #1 SMP PREEMPT Thu Jun 5 10:59:53 CEST 2008 x86_64 GNU/Linux
+ [alex@Varda:kernel/linux-2.6]$ LC_ALL=C sudo find /proc -name foo                                              
+ find: WARNING: Hard link count is wrong for /proc/1: this may be a bug in your filesystem driver.  Automatically turning   on find's -noleaf option.  Earlier results may have failed to include directories that should have been searched.
+ find: /proc/5257/net: Invalid argument
+ [alex@Varda:kernel/linux-2.6]$ 
+
 > 
-> It is.  Basically I did it because Linus asked for it -- or at least,
-> for something like it.  He felt that the danger of not having
-> USB_PERSIST when you need it is worse than the danger of having it when
-> you don't want it.
-
-Well, not-usb-persists means we force-unplug disks during suspend,
-after syncing them. Not _too_ bad.
-
-If you unplug disk while hibernated, modify it, and plug it back,
-youget _silent_ filesystem corruption. I call that bad.
-
-> > Besides, it seems to have broken usblp hibernation support, and maybe
-> > other devices that does not have reset_resume() present. (Big thanks
-> > for Oliver for doing investigation).
+> Thanks,
 > 
-> URL?  It's hard to see how lack of reset-resume support would mess 
-> anything up worse than it would be without USB_PERSIST.
-
-usblp driver sets 'suspended' flag in .suspend(), and resets it in
-.resume() -- except that with USB_PERSIST .resume() is not called :-(.
-
-I have novell bugzilla bug number somewhere...
-
-> > [Or is it that now USB_PERSIST is conditional on /sys fs setting, so
-> > while setting it on individual device is dangerous, it is still N by
-> > default? Changelog does not tell me...?]
+> 	Dave
 > 
-> USB_PERSIST is (and has always been) conditional on the power/persist
-> sysfs attribute setting.  The difference is that now the setting starts
-> out as On whereas before it started out as Off, and there no longer is
-> a Kconfig option to remove USB_PERSIST entirely.
-
-I consider the default to be dangerous here.
-
-							Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
