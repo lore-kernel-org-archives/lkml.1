@@ -1,71 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755822AbYFGUXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbYFGUZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755822AbYFGUXs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 16:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbYFGUXi
+	id S1756656AbYFGUZd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 16:25:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbYFGUZ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 16:23:38 -0400
-Received: from bay0-omc2-s38.bay0.hotmail.com ([65.54.246.174]:59030 "EHLO
-	bay0-omc2-s38.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752279AbYFGUXh convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 16:23:37 -0400
-Message-ID: <BAY103-DAV11AE409F40D0878FC3A259B2B60@phx.gbl>
-X-Originating-IP: [88.35.96.158]
-X-Originating-Email: [pupilla@hotmail.com]
-From: "Marco Berizzi" <pupilla@hotmail.com>
-To: "David Miller" <davem@davemloft.net>
-Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
-       "Chris Wright" <chrisw@sous-sol.org>
-References: <BAY103-DAV20B0EEFFB30A41A8020C8B2CC0@phx.gbl><BAY103-DAV88950FC99CDE9EAAE27B2B2CE0@phx.gbl><20080520092511.GA9005@gondor.apana.org.au> <20080520.143238.87085088.davem@davemloft.net>
-Subject: Re: [patch 00/50] 2.6.25.6 -stable review
-Date: Sat, 7 Jun 2008 22:27:58 +0200
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.2180
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2180
-X-OriginalArrivalTime: 07 Jun 2008 20:23:36.0786 (UTC) FILETIME=[5D8BC320:01C8C8DC]
+	Sat, 7 Jun 2008 16:25:26 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:6024 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753550AbYFGUZZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Jun 2008 16:25:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=Sfa9CxWZtzMnzdm284Fwm7bT4rt3IQbdsUGSsKMARhF2iXy/jIJysQcGosTeK/QbAW
+         HwK2QBpHlxyhVNDFM+najCyJ7ib/RCCi/LU8usgawSHYHmOPJdBF8OXSOOlRlZTdn46s
+         y7O+grvEtLmFi2woAATnIdMemSDtQuKFb0kCg=
+Date: Sat, 7 Jun 2008 22:25:17 +0200
+From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
+	<ariveira@gmail.com>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: wrong hardlink count in /proc
+Message-ID: <20080607222517.30c11413@Varda>
+In-Reply-To: <20080607200818.GI5609@1wt.eu>
+References: <20080607193424.GA25998@redhat.com>
+	<20080607194604.GH5609@1wt.eu>
+	<20080607195042.GB25998@redhat.com>
+	<20080607220418.713fbbe5@Varda>
+	<20080607200818.GI5609@1wt.eu>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
+El Sat, 7 Jun 2008 22:08:18 +0200
+Willy Tarreau <w@1wt.eu> escribió:
 
-> From: Herbert Xu <herbert@gondor.apana.org.au>
-> Date: Tue, 20 May 2008 17:25:11 +0800
+> On Sat, Jun 07, 2008 at 10:04:18PM +0200, Alejandro Riveira Fernández wrote:
+> > El Sat, 7 Jun 2008 15:50:42 -0400
+> > Dave Jones <davej@redhat.com> escribió:
+> > 
+> > > On Sat, Jun 07, 2008 at 09:46:04PM +0200, Willy Tarreau wrote:
+> > >  > On Sat, Jun 07, 2008 at 03:34:24PM -0400, Dave Jones wrote:
+> > >  > > In 2.6.25, 'find /proc/ -name foo' will print out ..
+> > >  > > 
+> > >  > > find: WARNING: Hard link count is wrong for /proc/1: this may be a bug
+> > >  > > in your filesystem driver.  Automatically turning on find's -noleaf
+> > >  > > option.  Earlier results may have failed to include directories that
+> > >  > > should have been searched.
+> > >  > 
+> > >  > I also encountered this one. I think it is the one which 2.6.25.6 stable
+> > >  > patch 42/50 fixes.
+> > > 
+> > > Ah, great.   I just noticed that .26rc doesn't seem affected, so sounds good.
+> > 
+> >  well on my ubuntu box i get with .26-rc5
+> > 
+> >  [alex@Varda:kernel/linux-2.6]$ uname -a                      
+> >  Linux Varda 2.6.26-rc5 #1 SMP PREEMPT Thu Jun 5 10:59:53 CEST 2008 x86_64 GNU/Linux
+> >  [alex@Varda:kernel/linux-2.6]$ LC_ALL=C sudo find /proc -name foo                                              
+> >  find: WARNING: Hard link count is wrong for /proc/1: this may be a bug in your filesystem driver.  Automatically turning   on find's -noleaf option.  Earlier results may have failed to include directories that should have been searched.
+> >  find: /proc/5257/net: Invalid argument
+> >  [alex@Varda:kernel/linux-2.6]$ 
 > 
->> On Wed, May 14, 2008 at 10:19:57AM +0200, Marco Berizzi wrote:
->> > 
->> > I hope this helps.
->> 
->> OK found the problem, it was my fault after all :)
->> 
->> Dave, this patch needs to go into stable too.
->> 
->> [IPSEC]: Use the correct ip_local_out function
->> 
->> Because the IPsec output function xfrm_output_resume does its
->> own dst_output call it should always call __ip_local_output
->> instead of ip_local_output as the latter may invoke dst_output
->> directly.  Otherwise the return values from nf_hook and dst_output
->> may clash as they both use the value 1 but for different purposes.
->> 
->> When that clash occurs this can cause a packet to be used after
->> it has been freed which usually leads to a crash.  Because the
->> offending value is only returned from dst_output with qdiscs
->> such as HTB, this bug is normally not visible.
->> 
->> Thanks to Marco Berizzi for his perseverance in tracking this
->> down.
->> 
->> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+> It was merged after 2.6.26-rc5. Commit id is aed54175 which is post-rc5.
+ 
+ Thank you
+
 > 
-> Applied and queued to -stable, thanks!
+> Regards,
+> Willy
 
-Hi David,
-
-I don't see this patch in Chris 2.6.25.6 -stable review message.
-
+ Alejandro
+> 
