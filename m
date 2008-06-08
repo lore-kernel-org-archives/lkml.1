@@ -1,72 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756163AbYFHNrG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756632AbYFHNrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756163AbYFHNrG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 09:47:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbYFHNp6
+	id S1756632AbYFHNrZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 09:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbYFHNqh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 09:45:58 -0400
-Received: from ns2.suse.de ([195.135.220.15]:43000 "EHLO mx2.suse.de"
+	Sun, 8 Jun 2008 09:46:37 -0400
+Received: from mx2.suse.de ([195.135.220.15]:42999 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752758AbYFHNp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752683AbYFHNp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 8 Jun 2008 09:45:56 -0400
-Message-Id: <20080608134629.963591078@halley.suse.de>
+Message-Id: <20080608134629.743220278@halley.suse.de>
 User-Agent: quilt/0.46_cvs20080326-16
-Date: Sun, 08 Jun 2008 15:46:31 +0200
+Date: Sun, 08 Jun 2008 15:46:30 +0200
 From: Bernhard Walle <bwalle@suse.de>
 To: kexec@lists.infradead.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        tglx@linutronix.de, vgoyal@redhat.com, anderson@redhat.com
-Subject: [patch 3/3] Use reserve_bootmem_generic() to reserve crashkernel memory on x86_64
+Subject: [patch 2/3] Add flags parameter to reserve_bootmem_generic()
 References: <20080608134628.757299158@halley.suse.de>
-Content-Disposition: inline; filename=use-bootmem-generic
+Content-Disposition: inline; filename=add-bootmem-generic-flags
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch uses reserve_bootmem_generic() instead of reserve_bootmem()
-to reserve the crashkernel memory on x86_64. That's necessary for NUMA
-machines, see 00212fef814612245ed0261cbac8426d0c9a31a5:
+This patch adds a 'flags' parameter to reserve_bootmem_generic() like it
+already has been added in reserve_bootmem() with commit
+72a7fe3967dbf86cb34e24fbf1d957fe24d2f246.
 
-  [PATCH] Fix kdump Crash Kernel boot memory reservation for NUMA machines
+It also changes all users to use BOOTMEM_DEFAULT, which doesn't effectively
+change the behaviour. Since the change is x86-specific, I don't think it's
+necessary to add a new API for migration. There are only 4 users of that
+function.
 
-  This patch will fix a boot memory reservation bug that trashes memory on
-  the ES7000 when loading the kdump crash kernel.
-
-  The code in arch/x86_64/kernel/setup.c to reserve boot memory for the crash
-  kernel uses the non-numa aware "reserve_bootmem" function instead of the
-  NUMA aware "reserve_bootmem_generic".  I checked to make sure that no other
-  function was using "reserve_bootmem" and found none, except the ones that
-  had NUMA ifdef'ed out.
-
-  I have tested this patch only on an ES7000 with NUMA on and off (numa=off)
-  in a single (non-NUMA) and multi-cell (NUMA) configurations.
-
-  Signed-off-by: Amul Shah <amul.shah@unisys.com>
-  Looks-good-to: Vivek Goyal <vgoyal@in.ibm.com>
-  Cc: Andi Kleen <ak@muc.de>
-  Signed-off-by: Andrew Morton <akpm@osdl.org>
-  Signed-off-by: Linus Torvalds <torvalds@osdl.org>
-
-The switch-back to reserve_bootmem() was accidentally introduced in
-5c3391f9f749023a49c64d607da4fb49263690eb when adding the BOOTMEM_EXCLUSIVE
-parameter.
+The change is necessary for the next patch, using reserve_bootmem_generic()
+for crashkernel reservation.
 
 
 Signed-off-by: Bernhard Walle <bwalle@suse.de>
 
 ---
- arch/x86/kernel/setup_64.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/kernel/e820_64.c |    3 ++-
+ arch/x86/kernel/efi_64.c  |    3 ++-
+ arch/x86/kernel/mpparse.c |    5 +++--
+ arch/x86/mm/init_64.c     |   17 ++++++++++++-----
+ include/asm-x86/proto.h   |    2 +-
+ 5 files changed, 20 insertions(+), 10 deletions(-)
 
---- a/arch/x86/kernel/setup_64.c
-+++ b/arch/x86/kernel/setup_64.c
-@@ -243,7 +243,7 @@ static void __init reserve_crashkernel(v
- 			return;
- 		}
+--- a/arch/x86/kernel/e820_64.c
++++ b/arch/x86/kernel/e820_64.c
+@@ -118,7 +118,8 @@ void __init early_res_to_bootmem(unsigne
+ 			continue;
+ 		printk(KERN_INFO "  early res: %d [%lx-%lx] %s\n", i,
+ 			final_start, final_end - 1, r->name);
+-		reserve_bootmem_generic(final_start, final_end - final_start);
++		reserve_bootmem_generic(final_start, final_end - final_start,
++			BOOTMEM_DEFAULT);
+ 	}
+ }
  
--		if (reserve_bootmem(crash_base, crash_size,
-+		if (reserve_bootmem_generic(crash_base, crash_size,
- 					BOOTMEM_EXCLUSIVE) < 0) {
- 			printk(KERN_INFO "crashkernel reservation failed - "
- 					"memory is in use\n");
+--- a/arch/x86/kernel/efi_64.c
++++ b/arch/x86/kernel/efi_64.c
+@@ -100,7 +100,8 @@ void __init efi_call_phys_epilog(void)
+ void __init efi_reserve_bootmem(void)
+ {
+ 	reserve_bootmem_generic((unsigned long)memmap.phys_map,
+-				memmap.nr_map * memmap.desc_size);
++				memmap.nr_map * memmap.desc_size,
++				BOOTMEM_DEFAULT);
+ }
+ 
+ void __iomem * __init efi_ioremap(unsigned long phys_addr, unsigned long size)
+--- a/arch/x86/kernel/mpparse.c
++++ b/arch/x86/kernel/mpparse.c
+@@ -729,10 +729,11 @@ static int __init smp_scan_config(unsign
+ 			if (!reserve)
+ 				return 1;
+ 
+-			reserve_bootmem_generic(virt_to_phys(mpf), PAGE_SIZE);
++			reserve_bootmem_generic(virt_to_phys(mpf), PAGE_SIZE,
++				BOOTMEM_DEFAULT);
+ 			if (mpf->mpf_physptr)
+ 				reserve_bootmem_generic(mpf->mpf_physptr,
+-							PAGE_SIZE);
++					PAGE_SIZE, BOOTMEM_DEFAULT);
+ #endif
+ 		return 1;
+ 		}
+Files a/arch/x86/kernel/setup_64.o and b/arch/x86/kernel/setup_64.o differ
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -798,12 +798,13 @@ void free_initrd_mem(unsigned long start
+ }
+ #endif
+ 
+-void __init reserve_bootmem_generic(unsigned long phys, unsigned len)
++int __init reserve_bootmem_generic(unsigned long phys, unsigned len, int flags)
+ {
+ #ifdef CONFIG_NUMA
+ 	int nid, next_nid;
+ #endif
+ 	unsigned long pfn = phys >> PAGE_SHIFT;
++	int ret;
+ 
+ 	if (pfn >= end_pfn) {
+ 		/*
+@@ -811,11 +812,11 @@ void __init reserve_bootmem_generic(unsi
+ 		 * firmware tables:
+ 		 */
+ 		if (pfn < max_pfn_mapped)
+-			return;
++			return -EFAULT;
+ 
+ 		printk(KERN_ERR "reserve_bootmem: illegal reserve %lx %u\n",
+ 				phys, len);
+-		return;
++		return -EFAULT;
+ 	}
+ 
+ 	/* Should check here against the e820 map to avoid double free */
+@@ -823,9 +824,13 @@ void __init reserve_bootmem_generic(unsi
+ 	nid = phys_to_nid(phys);
+ 	next_nid = phys_to_nid(phys + len - 1);
+ 	if (nid == next_nid)
+-		reserve_bootmem_node(NODE_DATA(nid), phys, len, BOOTMEM_DEFAULT);
++		ret = reserve_bootmem_node(NODE_DATA(nid), phys, len, flags);
+ 	else
+-		reserve_bootmem(phys, len, BOOTMEM_DEFAULT);
++		ret = reserve_bootmem(phys, len, flags);
++
++	if (ret != 0)
++		return ret;
++
+ #else
+ 	reserve_bootmem(phys, len, BOOTMEM_DEFAULT);
+ #endif
+@@ -834,6 +839,8 @@ void __init reserve_bootmem_generic(unsi
+ 		dma_reserve += len / PAGE_SIZE;
+ 		set_dma_reserve(dma_reserve);
+ 	}
++
++	return 0;
+ }
+ 
+ int kern_addr_valid(unsigned long addr)
+Files a/arch/x86/mm/init_64.o and b/arch/x86/mm/init_64.o differ
+--- a/include/asm-x86/proto.h
++++ b/include/asm-x86/proto.h
+@@ -14,7 +14,7 @@ extern void ia32_syscall(void);
+ extern void ia32_cstar_target(void);
+ extern void ia32_sysenter_target(void);
+ 
+-extern void reserve_bootmem_generic(unsigned long phys, unsigned len);
++extern int reserve_bootmem_generic(unsigned long phys, unsigned len, int flags);
+ 
+ extern void syscall32_cpu_init(void);
+ 
 
