@@ -1,55 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757937AbYFHQ53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755181AbYFHRIG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757937AbYFHQ53 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 12:57:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755855AbYFHQ5V
+	id S1755181AbYFHRIG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 13:08:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbYFHRHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 12:57:21 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42059 "EHLO ogre.sisk.pl"
+	Sun, 8 Jun 2008 13:07:51 -0400
+Received: from gate.crashing.org ([63.228.1.57]:41670 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755837AbYFHQ5V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 12:57:21 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Subject: Re: [Bug #10860] total system freeze at boot with 2.6.26-rc
-Date: Sun, 8 Jun 2008 18:58:05 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Christian Casteyde" <casteyde.christian@free.fr>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <GIilET9wkhI.A.JzB.81vSIB@albercik> <dCRO4tbfLzK.A.EiC.c2vSIB@albercik> <19f34abd0806071524p41721005mbe588922ea21d4cc@mail.gmail.com>
-In-Reply-To: <19f34abd0806071524p41721005mbe588922ea21d4cc@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	id S1752227AbYFHRHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 13:07:32 -0400
+In-Reply-To: <1212931024.32207.546.camel@pmac.infradead.org>
+References: <20080608094730.GA30098@uranus.ravnborg.org> <19f34abd0806080312j2b09179cpa384a0460af5874e@mail.gmail.com> <20080608104122.GA10545@uranus.ravnborg.org> <1212922141.32207.495.camel@pmac.infradead.org> <20080608111707.GB10545@uranus.ravnborg.org> <1212931024.32207.546.camel@pmac.infradead.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <2ccd2be2a739abf56d86266d5041bf07@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806081858.05834.rjw@sisk.pl>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>, geert@linux-m68k.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>, zippel@linux-m68k.org,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] Speed up "make headers_*"
+Date: Sun, 8 Jun 2008 19:06:46 +0200
+To: David Woodhouse <dwmw2@infradead.org>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 8 of June 2008, Vegard Nossum wrote:
-> On Sat, Jun 7, 2008 at 10:42 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.25.  Please verify if it still should be listed.
-> >
-> >
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10860
-> > Subject         : total system freeze at boot with 2.6.26-rc
-> > Submitter       : Christian Casteyde <casteyde.christian@free.fr>
-> > Date            : 2008-06-05 12:38 (3 days old)
-> 
-> I looked at the bugzilla entry, but it said not to post any replies in
-> there. I hope it's okay to reply here, because I couldn't find the
-> original discussion on LKML.
+> Assuming we _don't_ want the ac_ahz member to be included on m68k, this
+> should fix it (is __mc68000__ the right thing to use?)...
 
-That was an Andrew's message targeted at the people who were on its CC list.
+I think __m68k__ is preferred, it's harder to confuse for one of the
+tuning symbols (that is, __mc68040__ and friends).
 
-Of course you can update the Bugzilla entry. :-)
+It should function identically though, both __m68k__ and __mc68000__
+(and __mc68000 and mc68000) are defined under exactly the same
+conditions.
 
-Thanks,
-Rafael
+
+Segher
+
