@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760830AbYFHJDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761639AbYFHJD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760830AbYFHJDq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 05:03:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754862AbYFHJDi
+	id S1761639AbYFHJD7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 05:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760598AbYFHJDp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 05:03:38 -0400
-Received: from 1wt.eu ([62.212.114.60]:1558 "EHLO 1wt.eu"
+	Sun, 8 Jun 2008 05:03:45 -0400
+Received: from 1wt.eu ([62.212.114.60]:1561 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754776AbYFHJDi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 05:03:38 -0400
-Date: Sun, 8 Jun 2008 10:58:02 +0200
+	id S1759358AbYFHJDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 05:03:44 -0400
+Date: Sun, 8 Jun 2008 11:02:27 +0200
 From: Willy Tarreau <w@1wt.eu>
 To: stable@kernel.org
-Cc: linux-kernel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>,
-       Michael Halcrow <mhalcrow@us.ibm.com>
-Subject: Missing patch from stable [2/7]
-Message-ID: <20080608085802.GB6439@1wt.eu>
+Cc: linux-kernel@vger.kernel.org, James Chapman <jchapman@katalix.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Missing patch from stable [6/7]
+Message-ID: <20080608090227.GF6439@1wt.eu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,35 +34,68 @@ Thanks,
 Willy
 --
 
->From 2f9b12a31fcb738ea8c9eb0d4ddf906c6f1d696c Mon Sep 17 00:00:00 2001
-From: Michael Halcrow <mhalcrow@us.ibm.com>
-Date: Tue, 29 Apr 2008 00:59:52 -0700
-Subject: eCryptfs: protect crypt_stat->flags in ecryptfs_open()
+>From 199f7d24ae59894243687a234a909f44a8724506 Mon Sep 17 00:00:00 2001
+From: James Chapman <jchapman@katalix.com>
+Date: Wed, 4 Jun 2008 15:07:32 -0700
+Subject: lt2p: Fix possible WARN_ON from socket code when UDP socket is closed
 
-Make sure crypt_stat->flags is protected with a lock in ecryptfs_open().
+If an L2TP daemon closes a tunnel socket while packets are queued in
+the tunnel's reorder queue, a kernel warning is logged because the
+socket is closed while skbs are still referencing it. The fix is to
+purge the queue in the socket's release handler.
 
-Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+WARNING: at include/net/sock.h:351 udp_lib_unhash+0x41/0x68()
+Pid: 12998, comm: openl2tpd Not tainted 2.6.25 #8
+ [<c0423c58>] warn_on_slowpath+0x41/0x51
+ [<c05d33a7>] udp_lib_unhash+0x41/0x68
+ [<c059424d>] sk_common_release+0x23/0x90
+ [<c05d16be>] udp_lib_close+0x8/0xa
+ [<c05d8684>] inet_release+0x42/0x48
+ [<c0592599>] sock_release+0x14/0x60
+ [<c059299f>] sock_close+0x29/0x30
+ [<c046ef52>] __fput+0xad/0x15b
+ [<c046f1d9>] fput+0x17/0x19
+ [<c046c8c4>] filp_close+0x50/0x5a
+ [<c046da06>] sys_close+0x69/0x9f
+ [<c04048ce>] syscall_call+0x7/0xb
+
+Signed-off-by: James Chapman <jchapman@katalix.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 ---
- fs/ecryptfs/file.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ drivers/net/pppol2tp.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ecryptfs/file.c b/fs/ecryptfs/file.c
-index 2b8f5ed..2258b8f 100644
---- a/fs/ecryptfs/file.c
-+++ b/fs/ecryptfs/file.c
-@@ -195,7 +195,9 @@ static int ecryptfs_open(struct inode *inode, struct file *file)
- 		file, ecryptfs_inode_to_private(inode)->lower_file);
- 	if (S_ISDIR(ecryptfs_dentry->d_inode->i_mode)) {
- 		ecryptfs_printk(KERN_DEBUG, "This is a directory\n");
-+		mutex_lock(&crypt_stat->cs_mutex);
- 		crypt_stat->flags &= ~(ECRYPTFS_ENCRYPTED);
-+		mutex_unlock(&crypt_stat->cs_mutex);
- 		rc = 0;
- 		goto out;
- 	}
+diff --git a/drivers/net/pppol2tp.c b/drivers/net/pppol2tp.c
+index 8db342f..04c7e5b 100644
+--- a/drivers/net/pppol2tp.c
++++ b/drivers/net/pppol2tp.c
+@@ -1279,6 +1279,7 @@ out:
+ static int pppol2tp_release(struct socket *sock)
+ {
+ 	struct sock *sk = sock->sk;
++	struct pppol2tp_session *session;
+ 	int error;
+ 
+ 	if (!sk)
+@@ -1296,9 +1297,18 @@ static int pppol2tp_release(struct socket *sock)
+ 	sock_orphan(sk);
+ 	sock->sk = NULL;
+ 
++	session = pppol2tp_sock_to_session(sk);
++
+ 	/* Purge any queued data */
+ 	skb_queue_purge(&sk->sk_receive_queue);
+ 	skb_queue_purge(&sk->sk_write_queue);
++	if (session != NULL) {
++		struct sk_buff *skb;
++		while ((skb = skb_dequeue(&session->reorder_q))) {
++			kfree_skb(skb);
++			sock_put(sk);
++		}
++	}
+ 
+ 	release_sock(sk);
+ 
 -- 
 1.5.3.8
 
