@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756926AbYFHXFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756771AbYFHXLB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756926AbYFHXFs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 19:05:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755644AbYFHXFh
+	id S1756771AbYFHXLB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 19:11:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755919AbYFHXKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 19:05:37 -0400
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:40610 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755632AbYFHXFg (ORCPT
+	Sun, 8 Jun 2008 19:10:49 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:12132 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755859AbYFHXKt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 19:05:36 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=KD0ZnqSuqb+mGlYdVxCsolb5s+DINHwWIM1ZfqR/8kl/EXO3Zu93YwH4TzKfuzMpaohd/4070AOD4k+Wkct43VT/ZtRbH55j8r1TqN3mQuUqczNSuxhZah6ilz1QEfQKCUGHpuZxTakGoB2ls1PWnOkj9+C8EV+YvVwqPdMDpqM=  ;
-X-YMail-OSG: u6uprLgVM1kUt5nTuRH6L1Thk_.FMpmkYSG7l7Vw740nZsU49ywrtG3DvghWnR6LLD3x6hEqBBLzSxljd.OBTRkIRou21VTXqtPfolfsa4FiugghpRLOsqyONvrn_GldNTw-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 2.6.26-rc5] make HPET_RTC_IRQ track HPET_EMULATE_RTC
-Date: Sun, 8 Jun 2008 16:05:34 -0700
-User-Agent: KMail/1.9.9
-Cc: lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>
-References: <200806052241.44713.david-b@pacbell.net> <20080608140011.aa3762cd.akpm@linux-foundation.org>
-In-Reply-To: <20080608140011.aa3762cd.akpm@linux-foundation.org>
+	Sun, 8 Jun 2008 19:10:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=Djyj9k1nH08fhJJo5oKyd9urkrfsUnlD0ACjJpQXDg/lWjHsY40nceGmrgGDKocK5Q
+         0r37VJawFXtJr3S+Srd6MjiiNlXe4WSvfVAaMxMulS2VN3flGzwYcMJmyQJ228rn66q8
+         xgdFDExtnMzoT18a+uWWRQXiSMI5tL0byVD74=
+Message-ID: <b0943d9e0806081610n6f504a4wc2af285aa2c48d1a@mail.gmail.com>
+Date: Mon, 9 Jun 2008 00:10:47 +0100
+From: "Catalin Marinas" <catalin.marinas@gmail.com>
+To: git <git@vger.kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: [ANNOUNCE] Stacked GIT 0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200806081605.35042.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 08 June 2008, Andrew Morton wrote:
-> On Thu, 5 Jun 2008 22:41:44 -0700 David Brownell <david-b@pacbell.net> wrote:
-> 
-> > More Kconfig tweaks related to the legacy PC RTC code:
-> > 
-> >  - Describe the legacy PC RTC driver as such ... it's never quite
-> >    been clear that this driver is for PC RTCs, and now it's fair
-> >    to call this the "legacy" driver.
-> > 
-> >  - Force it to understand about HPET stealing its IRQs ... kernel
-> >    code does this always when HPET is in use, there should be no
-> >    option for users to goof up the config.
-> > 
-> > This seems to fix kernel bugzilla #10729.
-> 
-> hm.  "seems" is a bit soft.
+Stacked GIT 0.14.3 release is available from http://www.procode.org/stgit/.
 
-Fixes it for one reporter.  Another reporter has yet to respond.
+StGIT is a Python application providing similar functionality to Quilt
+(i.e. pushing/popping patches to/from a stack) on top of GIT. These
+operations are performed using GIT commands and the patches are stored
+as GIT commit objects, allowing easy merging of the StGIT patches into
+other repositories using standard GIT functionality.
 
+This is a maintenance release including bug-fixes for the "refresh"
+command, handling of file names with non-ASCII characters and user
+interface enhancements for "export" and "sync".
 
-> Do you think this should be in 2.6.26?
+Acknowledgements:
 
-Yes, unless someone more involved in the HPET stuff has a better
-solution.  (Or that legacy RTC gets a maintainer, who disagrees...)
+Karl Hasselström (6):
+      Fix problems in t1000-branch-create
+      Make t1003-new executable
+      Add rebase test for when upstream has deleted a non-ASCII file
+      Handle changed files with non-ASCII names
+      Test for another filename quoting issue in tree_status()
+      Handle refresh of changed files with non-ASCII names
 
-This does seem to suggest that we have an extra Kconfig variable
-here, by the way.
+Catalin Marinas (4):
+      Fix the sync'ing of unapplied patches only
+      Allow export to write unapplied files as well
+      Fix "refresh" failure with moved files (bug 11661)
+      Release 0.14.3
 
-- dave
-
-
-
+-- 
+Catalin
