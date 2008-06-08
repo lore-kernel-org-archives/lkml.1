@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbYFHUIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbYFHUIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756695AbYFHUIR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 16:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895AbYFHUHL
+	id S1756862AbYFHUIb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 16:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113AbYFHUHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 16:07:11 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:39600 "EHLO pasmtpB.tele.dk"
+	Sun, 8 Jun 2008 16:07:14 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:42970 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755792AbYFHUG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755789AbYFHUG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 8 Jun 2008 16:06:57 -0400
 From: Sam Ravnborg <sam@ravnborg.org>
 To: <linux-kernel@vger.kernel.org>, <linux-kbuild@vger.kernel.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 5/6] kbuild: error out early in make headers_install
-Date: Sun,  8 Jun 2008 22:07:37 +0200
-Message-Id: <1212955658-32168-5-git-send-email-sam@ravnborg.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, David Woodhouse <dwmw2@infradead.org>
+Subject: [PATCH 1/6] kbuild: refactor headers_* targets in Makefile
+Date: Sun,  8 Jun 2008 22:07:33 +0200
+Message-Id: <1212955658-32168-1-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.5.4.1.143.ge7e51
 In-Reply-To: <20080608094730.GA30098@uranus.ravnborg.org>
 References: <20080608094730.GA30098@uranus.ravnborg.org>
@@ -22,43 +22,84 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the a.out.h case by setting SRCARCH and error
-out early in case of an error.
-The a.out.h case failed with the *_all targets.
+o Use lower case for local variables
+o Add a helper target for common targets
+o Use $(hdr-inst)= ... to make Make invocations simpler
+o Add -rR to make invocations
+
+In total this adds more lines than it removes but the
+benefit is better readability
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: David Woodhouse <dwmw2@infradead.org>
 ---
- Makefile |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+ Makefile |   39 +++++++++++++++++++++++----------------
+ 1 files changed, 23 insertions(+), 16 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 2630f5f..8f8fd6f 100644
+index 8db70fe..2630f5f 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -1012,8 +1012,9 @@ __headers: include/linux/version.h scripts_basic FORCE
+@@ -996,36 +996,43 @@ depend dep:
  
- PHONY += headers_install_all
- headers_install_all: __headers
--	$(Q)for arch in $(hdr-archs); do \
--	 $(MAKE) ARCH=$$arch $(hdr-inst)=include BIASMDIR=-bi-$$arch ;\
-+	$(Q)set -e; for arch in $(hdr-archs); do \
-+	 $(MAKE) ARCH=$$arch SRCARCH=$$arch $(hdr-inst)=include \
-+	         BIASMDIR=-bi-$$arch ;\
+ # ---------------------------------------------------------------------------
+ # Kernel headers
+-INSTALL_HDR_PATH=$(objtree)/usr
+-export INSTALL_HDR_PATH
+ 
+-HDRFILTER=generic i386 x86_64
+-HDRARCHES=$(filter-out $(HDRFILTER),$(patsubst $(srctree)/include/asm-%/Kbuild,%,$(wildcard $(srctree)/include/asm-*/Kbuild)))
++#Default location for installed headers
++export INSTALL_HDR_PATH = $(objtree)/usr
+ 
+-PHONY += headers_install_all
+-headers_install_all: include/linux/version.h scripts_basic FORCE
++hdr-filter := generic um ppc
++hdr-archs  := $(filter-out $(hdr-filter),                           \
++                  $(patsubst $(srctree)/include/asm-%/Kbuild,%,     \
++                      $(wildcard $(srctree)/include/asm-*/Kbuild)))
++hdr-inst := -rR -f $(srctree)/scripts/Makefile.headersinst obj
++
++PHONY += __headers
++__headers: include/linux/version.h scripts_basic FORCE
+ 	$(Q)$(MAKE) $(build)=scripts scripts/unifdef
+-	$(Q)for arch in $(HDRARCHES); do \
+-	 $(MAKE) ARCH=$$arch -f $(srctree)/scripts/Makefile.headersinst obj=include BIASMDIR=-bi-$$arch ;\
++
++PHONY += headers_install_all
++headers_install_all: __headers
++	$(Q)for arch in $(hdr-archs); do \
++	 $(MAKE) ARCH=$$arch $(hdr-inst)=include BIASMDIR=-bi-$$arch ;\
  	 done
  
  PHONY += headers_install
-@@ -1026,8 +1027,9 @@ headers_install: __headers
+-headers_install: include/linux/version.h scripts_basic FORCE
+-	@if [ ! -r $(srctree)/include/asm-$(SRCARCH)/Kbuild ]; then \
++headers_install: __headers
++	$(Q)if [ ! -r $(srctree)/include/asm-$(SRCARCH)/Kbuild ]; then \
+ 	  echo '*** Error: Headers not exportable for this architecture ($(SRCARCH))'; \
+-	  exit 1 ; fi
+-	$(Q)$(MAKE) $(build)=scripts scripts/unifdef
+-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.headersinst ARCH=$(SRCARCH) obj=include
++	  exit 1 ; \
++	fi
++	$(Q)$(MAKE) $(hdr-inst)=include ARCH=$(SRCARCH)
  
  PHONY += headers_check_all
  headers_check_all: headers_install_all
--	$(Q)for arch in $(hdr-archs); do \
--	 $(MAKE) ARCH=$$arch $(hdr-inst)=include BIASMDIR=-bi-$$arch HDRCHECK=1 ;\
-+	$(Q)set -e; for arch in $(hdr-archs); do \
-+	 $(MAKE) ARCH=$$arch SRCARCH=$$arch $(hdr-inst)=include \
-+	         BIASMDIR=-bi-$$arch HDRCHECK=1 ;\
+-	$(Q)for arch in $(HDRARCHES); do \
+-	 $(MAKE) ARCH=$$arch -f $(srctree)/scripts/Makefile.headersinst obj=include BIASMDIR=-bi-$$arch HDRCHECK=1 ;\
++	$(Q)for arch in $(hdr-archs); do \
++	 $(MAKE) ARCH=$$arch $(hdr-inst)=include BIASMDIR=-bi-$$arch HDRCHECK=1 ;\
  	 done
  
  PHONY += headers_check
+ headers_check: headers_install
+-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.headersinst ARCH=$(SRCARCH) obj=include HDRCHECK=1
++	$(Q)$(MAKE) $(hdr-inst)=include ARCH=$(SRCARCH) HDRCHECK=1
+ 
+ # ---------------------------------------------------------------------------
+ # Modules
 -- 
 1.5.4.1.143.ge7e51
 
