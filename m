@@ -1,108 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756096AbYFHUbH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756441AbYFHUeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756096AbYFHUbH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 16:31:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbYFHUax
+	id S1756441AbYFHUeo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 16:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbYFHUeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 16:30:53 -0400
-Received: from monty.telenet-ops.be ([195.130.132.56]:52110 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754062AbYFHUaw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 16:30:52 -0400
-Date: Sun, 8 Jun 2008 22:30:48 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: stable@kernel.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Linux/m68k <linux-m68k@vger.kernel.org>, linux-ext4@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [PATCH] m68k: Add ext2_find_{first,next}_bit() for ext4
-Message-ID: <Pine.LNX.4.64.0806082229350.25145@anakin>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 8 Jun 2008 16:34:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35045 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753960AbYFHUeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 16:34:36 -0400
+Date: Sun, 8 Jun 2008 16:34:13 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
+       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org, eric.whitney@hp.com
+Subject: Re: [PATCH -mm 13/25] Noreclaim LRU Infrastructure
+Message-ID: <20080608163413.08d46427@bree.surriel.com>
+In-Reply-To: <20080606180506.081f686a.akpm@linux-foundation.org>
+References: <20080606202838.390050172@redhat.com>
+	<20080606202859.291472052@redhat.com>
+	<20080606180506.081f686a.akpm@linux-foundation.org>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+On Fri, 6 Jun 2008 18:05:06 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Fri, 06 Jun 2008 16:28:51 -0400
+> Rik van Riel <riel@redhat.com> wrote:
+> 
+> > 
+> > From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
 
-Add ext2_find_{first,next}_bit(), which are needed for ext4.
-They're derived out of the ext2_find_next_zero_bit found in the same file.
-Compile tested with crosstools
+> > The noreclaim infrastructure is enabled by a new mm Kconfig option
+> > [CONFIG_]NORECLAIM_LRU.
+> 
+> Having a config option for this really sucks, and needs extra-special
+> justification, rather than none.
 
-[Reworked to preserve all symmetry with ext2_find_{first,next}_zero_bit()]
+I believe the justification is that it uses a page flag.
 
-This fixes http://bugzilla.kernel.org/show_bug.cgi?id=10393
+PG_noreclaim would be the 20th page flag used, meaning there are
+4 more free if 8 bits are used for zone and node info, which would
+give 6 bits for NODE_SHIFT or 64 NUMA nodes - probably overkill
+for 32 bit x86.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- include/asm-m68k/bitops.h |   46 ++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 44 insertions(+), 2 deletions(-)
+If you want I'll get rid of CONFIG_NORECLAIM_LRU and make everything
+just compile in always.
 
---- a/include/asm-m68k/bitops.h
-+++ b/include/asm-m68k/bitops.h
-@@ -410,8 +410,50 @@ static inline int ext2_find_next_zero_bi
- 	res = ext2_find_first_zero_bit (p, size - 32 * (p - addr));
- 	return (p - addr) * 32 + res;
- }
--#define ext2_find_next_bit(addr, size, off) \
--	generic_find_next_le_bit((unsigned long *)(addr), (size), (off))
-+
-+static inline int ext2_find_first_bit(const void *vaddr, unsigned size)
-+{
-+	const unsigned long *p = vaddr, *addr = vaddr;
-+	int res;
-+
-+	if (!size)
-+		return 0;
-+
-+	size = (size >> 5) + ((size & 31) > 0);
-+	while (*p++ == 0UL)
-+	{
-+		if (--size == 0)
-+			return (p - addr) << 5;
-+	}
-+
-+	--p;
-+	for (res = 0; res < 32; res++)
-+		if (ext2_test_bit(res, p))
-+			break;
-+	return (p - addr) * 32 + res;
-+}
-+
-+static inline int ext2_find_next_bit(const void *vaddr, unsigned size,
-+				     unsigned offset)
-+{
-+	const unsigned long *addr = vaddr;
-+	const unsigned long *p = addr + (offset >> 5);
-+	int bit = offset & 31UL, res;
-+
-+	if (offset >= size)
-+		return size;
-+
-+	if (bit) {
-+		/* Look for one in first longword */
-+		for (res = bit; res < 32; res++)
-+			if (ext2_test_bit(res, p))
-+				return (p - addr) * 32 + res;
-+		p++;
-+	}
-+	/* No set bit yet, search remaining full bytes for a set bit */
-+	res = ext2_find_first_bit(p, size - 32 * (p - addr));
-+	return (p - addr) * 32 + res;
-+}
+Please let me know what your preference is.
  
- #endif /* __KERNEL__ */
+> > --- linux-2.6.26-rc2-mm1.orig/include/linux/page-flags.h	2008-05-29 16:21:04.000000000 -0400
+> > +++ linux-2.6.26-rc2-mm1/include/linux/page-flags.h	2008-06-06 16:05:15.000000000 -0400
+> > @@ -94,6 +94,9 @@ enum pageflags {
+> >  	PG_reclaim,		/* To be reclaimed asap */
+> >  	PG_buddy,		/* Page is free, on buddy lists */
+> >  	PG_swapbacked,		/* Page is backed by RAM/swap */
+> > +#ifdef CONFIG_NORECLAIM_LRU
+> > +	PG_noreclaim,		/* Page is "non-reclaimable"  */
+> > +#endif
+> 
+> I fear that we're messing up the terminology here.
+> 
+> Go into your 2.6.25 tree and do `grep -i reclaimable */*.c'.  The term
+> already means a few different things, but in the vmscan context,
+> "reclaimable" means that the page is unreferenced, clean and can be
+> stolen.  "reclaimable" also means a lot of other things, and we just
+> made that worse.
+> 
+> Can we think of a new term which uniquely describes this new concept
+> and use that, rather than flogging the old horse?
+
+Want to reuse the BSD term "pinned" instead?
+
+> > +/**
+> > + * add_page_to_noreclaim_list
+> > + * @page:  the page to be added to the noreclaim list
+> > + *
+> > + * Add page directly to its zone's noreclaim list.  To avoid races with
+> > + * tasks that might be making the page reclaimble while it's not on the
+> > + * lru, we want to add the page while it's locked or otherwise "invisible"
+> > + * to other tasks.  This is difficult to do when using the pagevec cache,
+> > + * so bypass that.
+> > + */
+> 
+> How does a task "make a page reclaimable"?  munlock()?  fsync()? 
+> exit()?
+> 
+> Choice of terminology matters...
+
+Lee?  Kosaki-san?
  
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+All rights reversed.
