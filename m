@@ -1,208 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764899AbYFHLxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764900AbYFHL45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764899AbYFHLxl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 07:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760787AbYFHLxe
+	id S1764900AbYFHL45 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 07:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760996AbYFHL4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 07:53:34 -0400
-Received: from mail1.aster.pl ([212.76.33.23]:9983 "EHLO mail1.aster.pl"
+	Sun, 8 Jun 2008 07:56:50 -0400
+Received: from mail.memset.com ([89.200.136.113]:41773 "EHLO mail.memset.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759740AbYFHLxd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 07:53:33 -0400
-Content-Disposition: inline
-From: "Jakub W. Jozwicki" <jozwicki@aster.pl>
+	id S1759762AbYFHL4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 07:56:49 -0400
+X-Greylist: delayed 1241 seconds by postgrey-1.27 at vger.kernel.org; Sun, 08 Jun 2008 07:56:49 EDT
+Date: Sun, 8 Jun 2008 12:35:27 +0100
+From: Nick Craig-Wood <nick@craig-wood.com>
 To: linux-kernel@vger.kernel.org
-Subject: Fwd: 2.6.25.4-rt4 problems
-Date: Sun, 8 Jun 2008 13:11:27 +0200
-User-Agent: KMail/1.9.9
+Subject: libata.force=1.5Gbps doesn't seem to work
+Message-ID: <20080608113527.GA5105@craig-wood.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200806081311.27729.jozwicki@aster.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-To have 2.6.24-rt4 and rt6 working without BUGs in dmesg I did some patching.
-Probably this was wrong and I only masked some other problem.
-I'm not a kernel specialist, so could you look at it?
+Ever since I changed to AHCI (by fiddling with random options in the
+BIOS) my external SATA drive is being run at 3.0 Gbps.  However it
+doesn't seem reliable at that - maybe the cable is too long. (It is
+probably about 80cm in total - one standard SATA cable going to the
+case and another from the case to the drive).
 
-Regards,
-Jakub
+I read in Documentation/kernel-parameters.txt that a command line of
 
-----------  Przekazana wiadomość  ----------
+  libata.force=1.5Gbps
 
-Temat: 2.6.25.4-rt4 problems
-Data: poniedziałek, 2 czerwca 2008
-Od: "Jakub W. Jozwicki" <jozwicki@aster.pl>
-Do: tglx@timesys.com
+Should force all my SATA disks to 1.5 Gbps.
 
-Hello,
-On my laptop I've been seeing constant flood of printk BUG from migh_sleep 
-coming from cpu_idle():
+However this doesn't seem to work.
 
-[  121.955048] BUG: sleeping function called from invalid context swapper(0) 
-at kernel/rtmutex.c:739
-[  121.955048] in_atomic():1 [00000001], irqs_disabled():0
-[  121.955048] Pid: 0, comm: swapper Not tainted 2.6.25.4-rt6 #2
-[  121.955048]  [<c0120f61>] __might_sleep+0xf1/0xf8
-[  121.955048]  [<c0466a4c>] __rt_spin_lock+0x24/0x61
-[  121.955048]  [<c0466a91>] rt_spin_lock+0x8/0xa
-[  121.955048]  [<c013f00d>] pm_qos_requirement+0x10/0x29
-[  121.955048]  [<c03a09a6>] menu_select+0x5d/0x7f
-[  121.955048]  [<c039ff48>] cpuidle_idle_call+0x47/0x9b
-[  121.955048]  [<c039ff01>] ? cpuidle_idle_call+0x0/0x9b
-[  121.955048]  [<c01060ff>] cpu_idle+0xaf/0x106
-[  121.955048]  [<c0453e5f>] rest_init+0x67/0x69
-[  121.955048]  =======================
+Edited highlights of dmesg - note the selection of 3.0 Gbps for ata6 -
+that is what I'm trying to avoid.
 
- I have fixed it with:
+[    1.087690] SCSI subsystem initialized
+[    1.091690] libata version 3.00 loaded.
+[    2.241029] ahci 0000:00:1f.2: version 3.0
+[    3.300329] ahci 0000:00:1f.2: AHCI 0001.0200 32 slots 6 ports 3 Gbps 0x3f impl SATA mode
+[    3.300366] ahci 0000:00:1f.2: flags: 64bit ncq sntf stag pm led clo pmp pio slum part
+[    3.309764] scsi0 : ahci
+[    3.309764] scsi1 : ahci
+[    3.309764] scsi2 : ahci
+[    3.309764] scsi3 : ahci
+[    3.309764] scsi4 : ahci
+[    3.309764] scsi5 : ahci
+[    3.309764] ata1: SATA max UDMA/133 abar m2048@0xfb106000 port 0xfb106100 irq 218
+[    3.309764] ata2: SATA max UDMA/133 abar m2048@0xfb106000 port 0xfb106180 irq 218
+[    3.309764] ata3: SATA max UDMA/133 abar m2048@0xfb106000 port 0xfb106200 irq 218
+[    3.309764] ata4: SATA max UDMA/133 abar m2048@0xfb106000 port 0xfb106280 irq 218
+[    3.309764] ata5: SATA max UDMA/133 abar m2048@0xfb106000 port 0xfb106300 irq 218
+[    3.309764] ata6: SATA max UDMA/133 abar m2048@0xfb106000 port 0xfb106380 irq 218
+[    3.845799] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+[    3.847892] ata1.00: HPA detected: current 586112591, native 586114704
+[    3.847926] ata1.00: ATA-7: Maxtor 7L300S0, BANC1E00, max UDMA/133
+[    3.847959] ata1.00: 586112591 sectors, multi 0: LBA48 NCQ (not used)
+[    3.850048] ata1.00: configured for UDMA/133
+[    4.343265] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+[    4.345363] ata2.00: ATA-7: Maxtor 7B300S0, BANC1B70, max UDMA/133
+[    4.345395] ata2.00: 586114704 sectors, multi 0: LBA48 NCQ (not used)
+[    4.344422] ata2.00: configured for UDMA/133
+[    4.667268] ata3: SATA link down (SStatus 0 SControl 300)
+[    4.987268] ata4: SATA link down (SStatus 0 SControl 300)
+[    5.307259] ata5: SATA link down (SStatus 0 SControl 300)
+[    5.791265] ata6: SATA link up 3.0 Gbps (SStatus 123 SControl 300)    <--- 1.5 Gbps desired here!
+[    5.695773] ata6.00: ATA-7: ST3250620NS,     3BKH, max UDMA/133
+[    5.695773] ata6.00: 488281250 sectors, multi 0: LBA48 NCQ (depth 31/32)
+[    5.827259] ata6.00: configured for UDMA/133
+[    5.827259] scsi 0:0:0:0: Direct-Access     ATA      Maxtor 7L300S0   BANC PQ: 0 ANSI: 5
+[    5.827259] scsi 1:0:0:0: Direct-Access     ATA      Maxtor 7B300S0   BANC PQ: 0 ANSI: 5
+[    5.827259] scsi 5:0:0:0: Direct-Access     ATA      ST3250620NS      n/a  PQ: 0 ANSI: 5
+[    6.899647] ahci 0000:04:00.0: AHCI 0001.0000 32 slots 2 ports 3 Gbps 0x3 impl SATA mode
+[    6.899684] ahci 0000:04:00.0: flags: 64bit ncq pm led clo pmp pio slum part
+[    6.903618] scsi6 : ahci
+[    6.903618] scsi7 : ahci
+[    6.903618] ata7: SATA max UDMA/133 abar m8192@0xfb000000 port 0xfb000100 irq 19
+[    6.903618] ata8: SATA max UDMA/133 abar m8192@0xfb000000 port 0xfb000180 irq 19
+[    7.219641] ata7: SATA link down (SStatus 0 SControl 300)
+[    7.539656] ata8: SATA link down (SStatus 0 SControl 300)
+[    7.777106] sd 0:0:0:0: [sda] Attached SCSI disk
+[    7.797106] sd 1:0:0:0: [sdb] Attached SCSI disk
+[    7.821107] sd 5:0:0:0: [sdc] Attached SCSI disk
 
---- linux-2.6.25.4/kernel/pm_qos_params.c	2008-05-15 17:00:12.000000000 +0200
-+++ linux-2.6.25-k01/kernel/pm_qos_params.c	2008-06-01 19:51:37.180887278 
-+0200
-@@ -192,12 +192,15 @@
-  */
- int pm_qos_requirement(int pm_qos_class)
- {
--	int ret_val;
-+	int ret_val, locked;
- 	unsigned long flags;
- 
--	spin_lock_irqsave(&pm_qos_lock, flags);
-+	locked = preempt_count() > 0;
-+	if (!locked)
-+	    spin_lock_irqsave(&pm_qos_lock, flags);
- 	ret_val = pm_qos_array[pm_qos_class]->target_value;
--	spin_unlock_irqrestore(&pm_qos_lock, flags);
-+	if (!locked)
-+	    spin_unlock_irqrestore(&pm_qos_lock, flags);
- 
- 	return ret_val;
- }
+$ cat /proc/cmdline
+root=/dev/md0 panic=60 combined_mode=libata libata.atapi_enabled=1 libata.force=1.5Gbps ro
 
+This is with a 2.6.26-rc5 + latest git
 
-Oh, and some functions were missing. To compile kernel I had to add:
+$ git-describe
+v2.6.26-rc5-159-gaab2545
 
---- linux-2.6.25.4/kernel/sched.c	2008-06-02 07:53:07.515908233 +0200
-+++ linux-2.6.25-k01/kernel/sched.c	2008-06-01 14:27:39.147029258 +0200
-@@ -671,6 +671,19 @@
-  */
- #define RUNTIME_INF	((u64)~0ULL)
- 
-+static inline u64 global_rt_period()
-+{
-+	return (u64)sysctl_sched_rt_period * NSEC_PER_USEC;
-+} 
-+
-+static inline u64 global_rt_runtime()
-+{
-+	if (sysctl_sched_rt_period < 0)
-+	    return RUNTIME_INF;
-+	    
-+	return (u64)sysctl_sched_rt_runtime * NSEC_PER_USEC;
-+}
-+
- /*
-  * We really dont want to do anything complex within switch_to()
-  * on PREEMPT_RT - this check enforces this.
+Thanks in advance for any help!
 
-To shut up another BUG:
-
---- linux-2.6.25.4/drivers/ata/libata-core.c	2008-05-15 17:00:12.000000000 
-+0200
-+++ linux-2.6.25-k01/drivers/ata/libata-core.c	2008-06-01 23:34:09.392635934 
-+0200
-@@ -5145,14 +5145,14 @@
- 		unsigned long flags;
- 
- 		/* FIXME: use a bounce buffer */
--		local_irq_save(flags);
-+		local_irq_save_nort(flags);
- 		buf = kmap_atomic(page, KM_IRQ0);
- 
- 		/* do the actual data transfer */
- 		ap->ops->data_xfer(qc->dev, buf + offset, qc->sect_size, do_write);
- 
- 		kunmap_atomic(buf, KM_IRQ0);
--		local_irq_restore(flags);
-+		local_irq_restore_nort(flags);
- 	} else {
- 		buf = page_address(page);
- 		ap->ops->data_xfer(qc->dev, buf + offset, qc->sect_size, do_write);
-@@ -5282,14 +5282,14 @@
- 		unsigned long flags;
- 
- 		/* FIXME: use bounce buffer */
--		local_irq_save(flags);
-+		local_irq_save_nort(flags);
- 		buf = kmap_atomic(page, KM_IRQ0);
- 
- 		/* do the actual data transfer */
- 		consumed = ap->ops->data_xfer(dev,  buf + offset, count, rw);
- 
- 		kunmap_atomic(buf, KM_IRQ0);
--		local_irq_restore(flags);
-+		local_irq_restore_nort(flags);
- 	} else {
- 		buf = page_address(page);
- 		consumed = ap->ops->data_xfer(dev,  buf + offset, count, rw);
-@@ -5462,7 +5462,7 @@
- {
- 	unsigned long flags = 0;
- 	int poll_next;
--
-+	
- 	WARN_ON((qc->flags & ATA_QCFLAG_ACTIVE) == 0);
- 
- 	/* Make sure ata_qc_issue_prot() does not throw things
-
-and:
-
-diff -U 3 -H -d -r -N -- linux-2.6.25.4/drivers/ata/libata-scsi.c 
-linux-2.6.25-k01/drivers/ata/libata-scsi.c
---- linux-2.6.25.4/drivers/ata/libata-scsi.c	2008-05-15 17:00:12.000000000 
-+0200
-+++ linux-2.6.25-k01/drivers/ata/libata-scsi.c	2008-06-02 00:03:27.528945648 
-+0200
-@@ -1705,14 +1705,14 @@
- 	struct scsi_cmnd *cmd = args->cmd;
- 	unsigned long flags;
- 
--	local_irq_save(flags);
-+	local_irq_save_nort(flags);
- 
- 	buflen = ata_scsi_rbuf_get(cmd, &rbuf);
- 	memset(rbuf, 0, buflen);
- 	rc = actor(args, rbuf, buflen);
- 	ata_scsi_rbuf_put(cmd, rbuf);
- 
--	local_irq_restore(flags);
-+	local_irq_restore_nort(flags);
- 
- 	if (rc == 0)
- 		cmd->result = SAM_STAT_GOOD;
-@@ -2489,7 +2489,7 @@
- 			unsigned int buflen;
- 			unsigned long flags;
- 
--			local_irq_save(flags);
-+			local_irq_save_nort(flags);
- 
- 			buflen = ata_scsi_rbuf_get(cmd, &buf);
- 
-@@ -2508,7 +2508,7 @@
- 
- 			ata_scsi_rbuf_put(cmd, buf);
- 
--			local_irq_restore(flags);
-+			local_irq_restore_nort(flags);
- 		}
- 
- 		cmd->result = SAM_STAT_GOOD;
-
-
--------------------------------------------------------
+-- 
+Nick Craig-Wood <nick@craig-wood.com> -- http://www.craig-wood.com/nick
