@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754637AbYFHRTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755687AbYFHRUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754637AbYFHRTU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 13:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbYFHRTJ
+	id S1755687AbYFHRUI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 13:20:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbYFHRTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 13:19:09 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:41436 "EHLO mail.screens.ru"
+	Sun, 8 Jun 2008 13:19:54 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:41468 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752006AbYFHRTJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 13:19:09 -0400
-Date: Sun, 8 Jun 2008 21:20:42 +0400
+	id S1754842AbYFHRT0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 13:19:26 -0400
+Date: Sun, 8 Jun 2008 21:20:40 +0400
 From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
@@ -17,8 +17,8 @@ Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
        Matthew Wilcox <matthew@wil.cx>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] __mutex_lock_common: use signal_pending_state()
-Message-ID: <20080608172042.GA10386@tv-sign.ru>
+Subject: [PATCH 0/3] TASK_WAKEKILL fixes
+Message-ID: <20080608172040.GA10380@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -27,29 +27,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change __mutex_lock_common() to use signal_pending_state() for the sake of
-the code re-use.
+The second patch is just an example of how the new helper can be used outside
+of schedule(), it doesn't change the behaviour.
 
-This adds 7 bytes to kernel/mutex.o, but afaics only because gcc isn't smart
-enough.
+I am not sure about the 3rd patch (it doesn't depend on the 1st patch),
 
-(btw, uninlining of __mutex_lock_common() shrinks .text from 2722 to 1542,
- perhaps it is worth doing).
+	On 06/05, Oleg Nesterov wrote:
+	>
+	> Please note that while this bug is not likely,
+	> it is _not_ theoretical. It does happen that user-space sends the unhandled
+	> fatal signals to init.
+	>
+	> Imho, this is 2.6.26 material. Unless I missed something, of course.
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+Of course, I missed something. Firstly, init doesn't read files that often.
+And, unlike the normal task, init can't be woken by the fatal signal unless
+this signal is SIGKILL. I doubt user-space can send SIGKILL to init. So this
+problem is minor.
 
---- 26-rc2/kernel/mutex.c~2_MUTEX_USE_HELPER	2008-06-04 22:05:53.000000000 +0400
-+++ 26-rc2/kernel/mutex.c	2008-06-08 19:08:32.000000000 +0400
-@@ -165,10 +165,7 @@ __mutex_lock_common(struct mutex *lock, 
- 		 * got a signal? (This code gets eliminated in the
- 		 * TASK_UNINTERRUPTIBLE case.)
- 		 */
--		if (unlikely((state == TASK_INTERRUPTIBLE &&
--					signal_pending(task)) ||
--			      (state == TASK_KILLABLE &&
--					fatal_signal_pending(task)))) {
-+		if (unlikely(signal_pending_state(state, task))) {
- 			mutex_remove_waiter(lock, &waiter,
- 					    task_thread_info(task));
- 			mutex_release(&lock->dep_map, 1, ip);
+To clarify, this patch doesn't fix the bug. We need changes in signal.c, but
+unfortunately it is not as easy as I thought, it needs more thinking. For
+example, we can change signal_wake_up() to check SIGNAL_UNKILLABLE before
+"|= TASK_WAKEKILL", but this is a) not exactly right (exec), and b) can't
+really help. The problem is that __fatal_signal_pending(init) is not right,
+but signal_group_exit() needs ->signal and thus isn't useable from schedule().
+Of course we can add a check into send_signal(), but this is so nasty...
 
