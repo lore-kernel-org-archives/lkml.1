@@ -1,123 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760060AbYFHBqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760715AbYFHB4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760060AbYFHBqb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 21:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756257AbYFHBqY
+	id S1760715AbYFHB4l (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 21:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757384AbYFHB4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 21:46:24 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:7091 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755552AbYFHBqX (ORCPT
+	Sat, 7 Jun 2008 21:56:35 -0400
+Received: from web53709.mail.re2.yahoo.com ([206.190.37.30]:35294 "HELO
+	web53709.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756699AbYFHB4e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 21:46:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=KdIydGFG4i6FT7l+v7AZHAg0+1L63gJj5Bh0lK3KFs5I+ZR1C2ye+u4xmbaIbkj7qy
-         4aajnqxC/+jWLIn4fkYd48miHrIAuYkJXyJ5ENJZkOF3FO8KIfxsMEPg9KXysJeHvDvO
-         nSLh7e/NEw8e78hf0xbZIR3PVtAu7xBCCs60Q=
-Message-ID: <e9c3a7c20806071846w60b74aeegdf3e39afb36b5d9a@mail.gmail.com>
-Date: Sat, 7 Jun 2008 18:46:20 -0700
-From: "Dan Williams" <dan.j.williams@gmail.com>
-To: "Justin Piszcz" <jpiszcz@lucidpixels.com>
-Subject: Re: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte Veliciraptors
-Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
-       "Alan Piszcz" <ap@solarrain.com>
-In-Reply-To: <alpine.DEB.1.10.0806071015110.23323@p34.internal.lan>
+	Sat, 7 Jun 2008 21:56:34 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=1c09p3TSw4GwDjsrZgM4c3JmkPd4Zx++uaTv1S2KydFRDFeei4s9/Nyx/HkGLbsVUwR5v33czvRXJP++62XSXdSjaExfemOiCT8EFFSS6UBQ7k3mU4W/aZgIyDXKCmBEYCrEGLfXEGfeUraXg51+1tNjQKErAgpAZc5ooRit0K0=;
+X-YMail-OSG: Fgl5l9gVM1kPjk8CV6mzbWuAdde2Z6F2LI3f2c7wUOqqvpTm_S6P1PafXyPLeuGJ5A--
+Date: Sat, 7 Jun 2008 18:56:33 -0700 (PDT)
+From: Benjamin Kidwell <benjkidwell@yahoo.com>
+Subject: Re: Linux-next Alsa hda_intel events/0 high CPU usage, bisected
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <s5hk5h1shys.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.DEB.1.10.0806071015110.23323@p34.internal.lan>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <424883.96640.qm@web53709.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 7, 2008 at 7:22 AM, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
-> First, the original benchmarks with 6-SATA drives with fixed formatting,
-> using
-> right justification and the same decimal point precision throughout:
-> http://home.comcast.net/~jpiszcz/20080607/raid-benchmarks-decimal-fix-and-right-justified/disks.html
->
-> Now for for veliciraptors!  Ever wonder what kind of speed is possible with
-> 3 disk, 4,5,6,7,8,9,10-disk RAID5s?  I ran a loop to find out, each run is
-> executed three times and the average is taken of all three runs per each
-> RAID5 disk set.
->
-> In short? The 965 no longer does justice with faster drives, a new chipset
-> and motherboard are needed.  After reading or writing to 4-5 veliciraptors
-> it saturates the bus/965 chipset.
->
-> Here is a picture of the 12 veliciraptors I tested with:
-> http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-veliciraptors/raptors.jpg
->
-> Here are the bonnie++ results:
-> http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-veliciraptors/veliciraptor-raid.html
->
-> For those who want the results in text:
-> http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-veliciraptors/veliciraptor-raid.txt
->
-> System used, same/similar as before:
-> Motherboard: Intel DG965WH
-> Memory: 8GiB
-> Kernel: 2.6.25.4
-> Distribution: Debian Testing x86_64
-> Filesystem: XFS with default mkfs.xfs parameters [auto-optimized for SW
-> RAID]
-> Mount options: defaults,noatime,nodiratime,logbufs=8,logbsize=262144 0 1
-> Chunk size: 1024KiB
-> RAID5 Layout: Default (left-symmetric)
-> Mdadm Superblock used: 0.90
->
-> Optimizations used (last one is for the CFQ scheduler), it improves
-> performance by a modest 5-10MiB/s:
-> http://home.comcast.net/~jpiszcz/raid/20080601/raid5.html
->
-> # Tell user what's going on.
-> echo "Optimizing RAID Arrays..."
->
-> # Define DISKS.
-> cd /sys/block
-> DISKS=$(/bin/ls -1d sd[a-z])
->
-> # Set read-ahead.
-> # > That's actually 65k x 512byte blocks so 32MiB
-> echo "Setting read-ahead to 32 MiB for /dev/md3"
-> blockdev --setra 65536 /dev/md3
->
-> # Set stripe-cache_size for RAID5.
-> echo "Setting stripe_cache_size to 16 MiB for /dev/md3"
+--- Takashi Iwai <> wrote:
 
-Sorry to sound like a broken record,  16MiB is not correct.
+> The problem is that your hardware reports the wrong DMA position.
+> I didn't expect that this delay is so much, (IOW, the hardware is so
+> buggy).  Maybe it should be put into its own workq.
 
-size=$((num_disks * 4 * 16384 / 1024))
-echo "Setting stripe_cache_size to $size MiB for /dev/md3"
+I've been getting my process timing information from ps, top, and htop, which
+I know can be unreliable in some ways (I've been using a tickless (NO_HZ=y)
+kernel). I recompiled the g8a4bd4d kernel with that option off and a few more
+changes to make my settings more conservative, and rechecked events/0. It
+still reports at a consistent 2.5%, (down from about 4.3% with previous kernel
+options) and after a short period of use (uptime 30 minutes) events/0 has had
+0:48 of time. In comparison, Xorg and Firefox (usually the biggest users)
+report 1:12 and 0:44 in the same timeframe. 
 
-...and commit 8b3e6cdc should improve the performance / stripe_cache_size ratio.
+So if I understand the purpose of the code, that means that my system has
+generated 48 seconds worth of timing mistakes in audio playback relative to 25
+minutes or so of audio stream, so that suggests the timing error of the
+hardware is about 3%! That seems like huge latency for hardware so I see why
+you wouldn't expect that.
 
-> echo 16384 > /sys/block/md3/md/stripe_cache_size
->
-> # Disable NCQ on all disks.
-> echo "Disabling NCQ on all disks..."
-> for i in $DISKS
-> do
->  echo "Disabling NCQ on $i"
->  echo 1 > /sys/block/"$i"/device/queue_depth
-> done
->
-> # Fix slice_idle.
-> # See http://www.nextre.it/oracledocs/ioscheduler_03.html
-> echo "Fixing slice_idle to 0..."
-> for i in $DISKS
-> do
->  echo "Changing slice_idle to 0 on $i"
->  echo 0 > /sys/block/"$i"/queue/iosched/slice_idle
-> done
->
+I should also say that close listening has convinced me that my audio
+performance has been IMPROVED by the patch - IOW, the code is working well at
+improving the audio stream, even though its using a fair amount of CPU time to
+do it. With the new code, I seem to hear less random clicks, interruptions, or
+static that I had previously blamed on the source of the audio. I don't know
+how to test the output to the speakers relative to the input source
+quantitatively, though.
 
-Thanks for putting this data together.
+Given that the worst-case-scenario for compensating for buggy hardware is
+worse than expected, what is the best behavior for the driver given hardware
+like mine? I don't know if a high CPU time for the events/0 process is
+actually a problem, I'm just not used to seeing a -5 niceness process so
+active under top. Let me know if you'd like any more info on my hardware or
+setup, or if there are any additional kernel config options that might affect
+my DMA reporting errors. I'm trying to be a useful linux-next tester, so any
+advice is appreciated.
+Ben
 
-Regards,
-Dan
+
+      
