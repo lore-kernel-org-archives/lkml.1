@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754967AbYFHReq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754732AbYFHRpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754967AbYFHReq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 13:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbYFHReg
+	id S1754732AbYFHRpT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 13:45:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbYFHRpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 13:34:36 -0400
-Received: from cantor.suse.de ([195.135.220.2]:60568 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753154AbYFHRef (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 13:34:35 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>, geert@linux-m68k.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>, zippel@linux-m68k.org,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>
-Subject: Re: [PATCH] Speed up "make headers_*"
-References: <20080608094730.GA30098@uranus.ravnborg.org>
-	<19f34abd0806080312j2b09179cpa384a0460af5874e@mail.gmail.com>
-	<20080608104122.GA10545@uranus.ravnborg.org>
-	<1212922141.32207.495.camel@pmac.infradead.org>
-	<20080608111707.GB10545@uranus.ravnborg.org>
-	<1212931024.32207.546.camel@pmac.infradead.org>
-	<2ccd2be2a739abf56d86266d5041bf07@kernel.crashing.org>
-X-Yow: I'm changing the CHANNEL..  But all I get is commercials
- for ``RONCO MIRACLE BAMBOO STEAMERS''!
-Date: Sun, 08 Jun 2008 19:34:28 +0200
-In-Reply-To: <2ccd2be2a739abf56d86266d5041bf07@kernel.crashing.org> (Segher
-	Boessenkool's message of "Sun, 8 Jun 2008 19:06:46 +0200")
-Message-ID: <jeod6b25ln.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.2 (gnu/linux)
+	Sun, 8 Jun 2008 13:45:06 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:1141 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751448AbYFHRpD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 13:45:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=agqikWhsWKlKAvvDQLc5NM7KC+BIznbXJP/u9J4oLUdnUR/gMm2ucvoXihrxb0B7V7
+         /GO8l8a6Hp0qAYaIcmBpbv2ts/nSqVY2UCj7nZPMCiBAQlbt7IKF564YGsgcZZ//uBx4
+         /P+Vm8MW6J9pTzVviqGQtTHH1T9IEw4/Ltb6c=
+Message-ID: <484C1A99.7070109@gmail.com>
+Date: Mon, 09 Jun 2008 01:44:57 +0800
+From: RuoMu Hu <huruomu@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Create proc entry under /proc/sys/kernel
+References: <484B91B9.5060204@gmail.com> <20080608111842.GA12240@martell.zuzino.mipt.ru>
+In-Reply-To: <20080608111842.GA12240@martell.zuzino.mipt.ru>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Segher Boessenkool <segher@kernel.crashing.org> writes:
-
->> Assuming we _don't_ want the ac_ahz member to be included on m68k, this
->> should fix it (is __mc68000__ the right thing to use?)...
+Alexey Dobriyan wrote:
+> On Sun, Jun 08, 2008 at 04:00:57PM +0800, RuoMu Hu wrote:
+>   
+>> Is it possible to create a proc entry under /proc/sys/kernel directly by 
+>> create_proc_read_entry in the way shown below?
+>>     
 >
-> I think __m68k__ is preferred, it's harder to confuse for one of the
-> tuning symbols (that is, __mc68040__ and friends).
+> No longer.
+>
+>   
+>> test_pde = create_proc_read_entry("/proc/sys/kernel/test", 0, NULL,
+>>                                    test_read_proc, NULL);
+>> if (test_pde == NULL) {
+>>    printk(KERN_ERR "Failed to create the test proc file.\n");
+>>    return -ENOMEM;
+>> }
+>>
+>> I'm using this in my kernel module but create_proc_read_entry always 
+>> returns fail, while there's no problem creating proc entries directly under 
+>> /proc.  The kernel source I'm building my kernel module against is 
+>> 2.6.25.4.
+>>     
+>
+> Use register_sysctl_table() for sysctls.
+>   
 
-__m68k__ wasn't pre-defined by gcc before 3.4.
+Thank you for your hint, it really helped me.
 
-Andreas.
+Another question: Is it possible to add an entry under /proc/sys/kernel 
+by register_sysctl_table() without modifying kernel source (adding an 
+entry to the kern_table[] array in kernel/sysctl.c)?
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Best regards,
+Romu
