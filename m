@@ -1,186 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764192AbYFHLe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764215AbYFHLji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764192AbYFHLe3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 07:34:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759479AbYFHLeW
+	id S1764215AbYFHLji (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 07:39:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758305AbYFHLja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 07:34:22 -0400
-Received: from mail0.aster.pl ([212.76.33.39]:17045 "EHLO mail0.aster.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759447AbYFHLeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 07:34:21 -0400
-X-Greylist: delayed 1362 seconds by postgrey-1.27 at vger.kernel.org; Sun, 08 Jun 2008 07:34:20 EDT
-From: "Jakub W. Jozwicki" <jozwicki@aster.pl>
-To: linux-kernel@vger.kernel.org
-Subject: sched_yield() on 2.6.25
-Date: Sun, 8 Jun 2008 13:34:10 +0200
-User-Agent: KMail/1.9.9
+	Sun, 8 Jun 2008 07:39:30 -0400
+Received: from mail.thorsten-knabe.de ([212.60.139.226]:57869 "EHLO
+	mail.thorsten-knabe.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757542AbYFHLj3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 07:39:29 -0400
+Message-ID: <484BC4DF.5000605@thorsten-knabe.de>
+Date: Sun, 08 Jun 2008 13:39:11 +0200
+From: Thorsten Knabe <linux@thorsten-knabe.de>
+User-Agent: Icedove 1.5.0.14eol (X11/20080509)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Jeff Dike <jdike@addtoit.com>
+CC: Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] Linux 2.6.25.4 task_struct leak
+References: <483EC624.90503@thorsten-knabe.de> <20080601213134.GJ4018@sequoia.sous-sol.org> <20080602010546.GA8578@c2.user-mode-linux.org> <484719C7.2020502@thorsten-knabe.de> <20080605004925.GA15461@c2.user-mode-linux.org>
+In-Reply-To: <20080605004925.GA15461@c2.user-mode-linux.org>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806081334.10875.jozwicki@aster.pl>
+X-Spam-Report: SpamAssassin@thorsten-knabe.de:
+	Content analysis details:   (-2.6 points, 5.0 required)
+	pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	-0.0 NO_RELAYS              Informational: message was not relayed via SMTP
+	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-I observe strange behavior of sched_yield() on 2.6.25 (strange comparing to 
-2.6.24). Here is the code (available at 
-http://systest.googlecode.com/files/systest20080119.tgz):
+Jeff Dike wrote:
+> I misunderstood - I thought you were seeing a task_struct leak within
+> UML rather than a leak on the host elicited by UML.
+> 
+>> As far as I understand the UML code in the kernel, an UML kernel uses
+>> some unusual clone() flags when creating new processes, which are seldom
+>> used by other applications and could be related to the bug.
+> 
+> Yes, it does.  I don't see the flags causing a leak, though.  What
+> might be more likely (although I really have no idea) is ptrace.
+> Possibly a reference is held when it should have been dropped.  This
+> might also show up with strace or gdb.
 
-------------------------------------------------------
-timer_t timer;
-sig_atomic_t cnt = 0;
-long long sum = 0;
-long times[21], min, max;
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-struct timespec ts = { 0, 0 };
-pthread_t last_th = 0;
+Hello Jeff.
 
-void *th_proc(void* p) {
-    int n = SIZE(times) -1;
-    pthread_t th;
-        
-    while(1) {    
-	pthread_mutex_lock(&mutex);
-	th = pthread_self();
-	if (pthread_equal(th,last_th)) {
-	    pthread_mutex_unlock(&mutex);
-	    sched_yield();
-	    continue;
-	}
-	rt_timer_stop(&ts);
-	last_th = th;
-	if (cnt>=1) {
-	    times[cnt-1] = ts_sum(&ts);
-	    if (cnt <= n) {
-		sum += times[cnt-1];
-		box(times[cnt-1],min,max);
-		#define uint unsigned int
-		printf("[%u] Thread switching time: %ldns\n",(uint)th, times[cnt-1]);
-	    }
-	    else {
-		printf("[%u] Thread switching time (not counted): %ldns\n",(uint)th, 
-times[cnt-1]);
-	    }
-	    cnt--;
-	}
-        ....
------------------------------------------------------
-and here are the results:
+Your assumption about ptrace causing the task_struct leak seems to be
+right. I bisected the problem down to a few commits using the repository
+at git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git.
 
-Setting cpu mask to 1
+Commit b7b71725fb9584454bfe5f231223bd63421798fb is the last known commit
+that does not leak task_structs, whereas commit
+a97f52e67890fda6b373c1c1895ff1c1c69b36c8 is leaking task_structs.
+Revisions in between do not even compile.
+Also I had to apply the changes from commit
+f9cb02b0be4de3c51edfdd701754e13d9a2d20d6 to most of the kernels I have
+tested, otherwise the UML process would crash on startup.
 
--- SYSTEM INFO -------------------
+HTH
+Thorsten
 
-localhost: Linux 2.6.24-rt4 #8 SMP PREEMPT RT Mon Jan 21 18:45:00 CET 2008
-
-Setting priority SCHED_OTHER to 0 (normal process) for 20802
-[3084102544] Thread switching time (not counted): 10709015ns
-[3075709840] Thread switching time: 35468301ns
-[3084102544] Thread switching time: 2793ns
-[3075709840] Thread switching time 30725ns
-[3084102544] Thread switching time: 10405ns
-[3075709840] Thread switching time: 2724ns
-[3084102544] Thread switching time: 2654ns
-[3075709840] Thread switching time: 2653ns
-[3084102544] Thread switching time: 3352ns
-[3075709840] Thread switching time: 2583ns
-[3084102544] Thread switching time: 2514ns
-[3075709840] Thread switching time: 2514ns
-[3084102544] Thread switching time: 2584ns
-[3075709840] Thread switching time: 2584ns
-[3084102544] Thread switching time: 2584ns
-[3075709840] Thread switching time: 2584ns
-[3084102544] Thread switching time: 2584ns
-[3075709840] Thread switching time: 2584ns
-[3084102544] Thread switching time: 2583ns
-[3075709840] Thread switching time: 2584ns
-[3084102544] Thread switching time: 2583ns
-[3084102544] n=20, min=2514, max=35468301, avg=1777723, stddev=7729151
-Setting priority SHED_FIFO to 99 (range is 1-99) for 20802
-[3084102544] Thread switching time (not counted): 31004ns
-[3075709840] Thread switching time: 2444ns
-[3084102544] Thread switching time: 2305ns
-[3075709840] Thread switching time: 2305ns
-[3084102544] Thread switching time: 2374ns
-[3075709840] Thread switching time: 2374ns
-[3084102544] Thread switching time: 2374ns
-[3075709840] Thread switching time: 2375ns
-[3084102544] Thread switching time: 2305ns
-[3075709840] Thread switching time: 2374ns
-[3084102544] Thread switching time: 2305ns
-[3075709840] Thread switching time: 2375ns
-[3084102544] Thread switching time: 2305ns
-[3075709840] Thread switching time: 2305ns
-[3084102544] Thread switching time: 2305ns
-[3075709840] Thread switching time: 2305ns
-[3084102544] Thread switching time: 2304ns
-[3075709840] Thread switching time: 2304ns
-[3084102544] Thread switching time: 2374ns
-[3075709840] Thread switching time: 2374ns
-[3084102544] Thread switching time: 2304ns
-[3084102544] n=20, min=2304, max=2444, avg=2339, stddev=41
-
---------------------------------------------------------------------------
-
-Ustawianie maski procesorow na 1
-
--- SYSTEM INFO -------------------
-
-hackett: Linux 2.6.25.4-rt6 #5 SMP PREEMPT RT Sun Jun 8 12:40:15 CEST 2008
-
-Ustawianie priorytetu dla SCHED_OTHER na 0 (zwykly proces) dla 20511
-[3085323152] Czas przelaczania watku (pomijany): 9286166ns
-[3076930448] Czas przelaczania watku: 38678449ns
-[3085323152] Czas przelaczania watku: 1181784ns
-[3076930448] Czas przelaczania watku: 284114ns
-[3085323152] Czas przelaczania watku: 2894642ns
-[3076930448] Czas przelaczania watku: 975962ns
-[3085323152] Czas przelaczania watku: 2010730ns
-[3076930448] Czas przelaczania watku: 980292ns
-[3085323152] Czas przelaczania watku: 2004934ns
-[3076930448] Czas przelaczania watku: 983994ns
-[3085323152] Czas przelaczania watku: 2009682ns
-[3076930448] Czas przelaczania watku: 984343ns
-[3085323152] Czas przelaczania watku: 2013036ns
-[3076930448] Czas przelaczania watku: 979035ns
-[3085323152] Czas przelaczania watku: 2013664ns
-[3076930448] Czas przelaczania watku: 973727ns
-[3085323152] Czas przelaczania watku: 1688204ns
-[3076930448] Czas przelaczania watku: 309397ns
-[3085323152] Czas przelaczania watku: 985181ns
-[3076930448] Czas przelaczania watku: 997822ns
-[3085323152] Czas przelaczania watku: 996495ns
-[3085323152] n=20, min=284114, max=38678449, avg=3197274, stddev=8164859
-Ustawianie priorytetu dla SHED_FIFO na 99 (zakres 1-99) dla 20511
-[3085323152] Czas przelaczania watku (pomijany): 39740ns
-[3076930448] Czas przelaczania watku: 2723ns
-[3085323152] Czas przelaczania watku: 2444ns
-[3076930448] Czas przelaczania watku: 2445ns
-[3085323152] Czas przelaczania watku: 2444ns
-[3076930448] Czas przelaczania watku: 2445ns
-[3085323152] Czas przelaczania watku: 2444ns
-[3076930448] Czas przelaczania watku: 2445ns
-[3085323152] Czas przelaczania watku: 2375ns
-[3076930448] Czas przelaczania watku: 2445ns
-[3085323152] Czas przelaczania watku: 2375ns
-[3076930448] Czas przelaczania watku: 2375ns
-[3085323152] Czas przelaczania watku: 2444ns
-[3076930448] Czas przelaczania watku: 2374ns
-[3085323152] Czas przelaczania watku: 2375ns
-[3076930448] Czas przelaczania watku: 2375ns
-[3085323152] Czas przelaczania watku: 2445ns
-[3076930448] Czas przelaczania watku: 2444ns
-[3085323152] Czas przelaczania watku: 2375ns
-[3076930448] Czas przelaczania watku: 2374ns
-[3085323152] Czas przelaczania watku: 2445ns
-[3085323152] n=20, min=2374, max=2723, avg=2430, stddev=75
-
-Is this behavior expected?
-
-Regards,
-Jakub
-
+-- 
+___
+ |        | /                 E-Mail: linux@thorsten-knabe.de
+ |horsten |/\nabe                WWW: http://linux.thorsten-knabe.de
