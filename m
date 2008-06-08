@@ -1,62 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763673AbYFHLNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763673AbYFHLQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763673AbYFHLNy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 07:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757617AbYFHLNo
+	id S1763673AbYFHLQe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 07:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758337AbYFHLQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 07:13:44 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55730 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757542AbYFHLNo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 07:13:44 -0400
-Date: Sun, 8 Jun 2008 08:13:29 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
+	Sun, 8 Jun 2008 07:16:26 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:59715 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757617AbYFHLQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 07:16:25 -0400
+Date: Sun, 8 Jun 2008 13:17:07 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
 To: David Woodhouse <dwmw2@infradead.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       David Miller <davem@davemloft.net>,
-       James.Bottomley@HansenPartnership.com,
-       ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Ksummit-2008-discuss] RFC: Moving firmware blobs out of the
- kernel.
-Message-ID: <20080608081329.36dce5e1@gaivota>
-In-Reply-To: <1212102258.20303.6.camel@shinybook.infradead.org>
-References: <1212077700.26088.83.camel@shinybook.infradead.org>
-	<20080529164745.GA21763@kroah.com>
-	<483F1232.4010003@linux.intel.com>
-	<20080529.140919.160813310.davem@davemloft.net>
-	<483F1C17.8040207@linux.intel.com>
-	<1212102258.20303.6.camel@shinybook.infradead.org>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-mandriva-linux-gnu)
+Cc: Vegard Nossum <vegard.nossum@gmail.com>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>
+Subject: Re: [PATCH] Speed up "make headers_*"
+Message-ID: <20080608111707.GB10545@uranus.ravnborg.org>
+References: <20080608094730.GA30098@uranus.ravnborg.org> <19f34abd0806080312j2b09179cpa384a0460af5874e@mail.gmail.com> <20080608104122.GA10545@uranus.ravnborg.org> <1212922141.32207.495.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1212922141.32207.495.camel@pmac.infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 May 2008 02:04:18 +0300
-David Woodhouse <dwmw2@infradead.org> wrote:
+On Sun, Jun 08, 2008 at 11:49:01AM +0100, David Woodhouse wrote:
+> On Sun, 2008-06-08 at 12:41 +0200, Sam Ravnborg wrote:
+> > headers_install.pl looks like this now.
+> > I am not happy about the way I call unifdef - can it be
+> > done better?
+> 
+> Possibly. unifdef only actually handles "#ifdef __KERNEL__" and
+> "#ifndef __KERNEL__", doesn't it? It shouldn't be too hard to recreate
+> at least that much functionality in perl, surely?
 
-> The firmware is an independent and separate work in itself. Section 2 of
-> the GPL talks about such sections of the work, explicitly.
+Correct. A quick grep shows that we have these different
+uses of __KERNEL__:
 
-For me, both inside kernel or on a separate tree would produce similar results.
-Yet, a separate tree will be a little more painful.
+#if defined(__ARM_EABI__) && !defined(__KERNEL__)
+#if !defined(CONFIG_M68K) || !defined(__KERNEL__)
+#if defined(CONFIG_VIDEO_V4L1_COMPAT) || !defined (__KERNEL__)
+#if defined(__GNUC__) && !defined(__STRICT_ANSI__) || defined(__KERNEL__)
+#if defined(__KERNEL__)
+#if defined(__KERNEL__) && !defined(__ASSEMBLY__)
+#if defined(__KERNEL__) && defined(CONFIG_PPC32)
+#if defined(__KERNEL__) && defined(CONFIG_SMP) && !defined(__ASSEMBLY__)
+#if !defined(__KERNEL__) || defined(CONFIG_X86)
+#if defined(__KERNEL__) || defined(__DEFINE_BSD_TERMIOS)
+#if !defined(__KERNEL__) && !defined(DIV_ROUND_UP)
+#if defined(__KERNEL__) || !defined(__GLIBC__) || (__GLIBC__ < 2)
+#if (!defined(__KERNEL__) && !defined(KERNEL) && !defined(INKERNEL) && !defined(_KERNEL)) || defined(USE_SEQ_MACROS) 
+#if defined(__KERNEL__) || defined(__linux__)
+# if (defined(__KERNEL__) || !defined(RELOC_DEBUG)) \
+#if defined(__KERNEL__) || defined(__USE_ALL)
+#if defined(__KERNEL__) || defined(__WANT_POSIX1B_SIGNALS__)
+#if defined(__KERNEL__) && defined(__x86_64__)
+#if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
+#ifdef  __KERNEL__
+#ifndef __KERNEL__
 
-One alternative to keep this at kernel -git tree would be to write a COPYING or
-LICENSE file at firmware dir, explicitly stating that most of those firmwares
-have proprietary licenses and are there just to make easier for kernel develoment.
+#else and #endif filtered away.
 
-Being in-tree or out kernel tree, we should explicitly state what license each
-firmware uses, and having the license terms of proprietary firmwares there.
+A script needs to take into account other preprocessor
+uses too due to their nested nature.
+But doable I'm sure.
 
-I would add a metatag at the .ihex file to reference to what license applies to
-each firmware. Something like FIRMWARE_LICENSE("some vendor license #1"). For
-those legacy firmwares where we don't know, we may simply add "unknown".
+And I rather have 100 lines perl than use the unifdef utility
+because we then have it collected in one place and can do even
+stricter validation.
 
-Cheers,
-Mauro
+
+> 
+> Bonus points for making it handle more interesting constructs like
+> "#if defined (KERNEL) || defined (FOO)", and for warning/erroring
+> whenever any ifdefs on CONFIG_xxx would be visible in userspace.
+> But those can come later; we don't have those yet anyway.
+
+Agree.
+
+	Sam
