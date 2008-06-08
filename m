@@ -1,57 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755372AbYFHSJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755213AbYFHSRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755372AbYFHSJo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 14:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbYFHSJe
+	id S1755213AbYFHSRV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 14:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbYFHSRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 14:09:34 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:19296 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753898AbYFHSJd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 14:09:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=PkLSVxorpW0TtKBNA/d0QTEwtVqb/ttkgoVi23q1YvSrOpeSWBOqqE2yOcvRo4cYon
-         zU/iMOBwBSKGe2IS92TakiExIPs7ADn3PN5qksb/0K3HEw1ZWCMapTxrqtJtQepw4yal
-         IVsgc+BFTb12iwqrVY8OTWam0JyD7NhmbQURg=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH] palm_bk3710: add warm-plug support
-Date: Sun, 8 Jun 2008 20:09:41 +0200
+	Sun, 8 Jun 2008 14:17:12 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:51211 "EHLO pardus.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753545AbYFHSRL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 14:17:11 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] include/linux/msdos_fs.h: Cleanup include/linux/msdos_fs.h for userspace.
+Date: Sun, 8 Jun 2008 21:16:48 +0300
 User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Frank Seidel <fseidel@suse.de>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Onur =?utf-8?q?K=C3=BC=C3=A7=C3=BCk?= <onur@pardus.org.tr>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Message-Id: <200806082009.41844.bzolnier@gmail.com>
+Message-Id: <200806082116.50355.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don't fail the probe if there are no devices attached to the controller.
+include/linux/msdos_fs.h header should use __u## rather than u## types else any userspace code (like syslinux) includes that header fails to compile like following;
 
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/arm/palm_bk3710.c |    3 ---
- 1 file changed, 3 deletions(-)
+[...]
+gcc -Wp,-MT,bootsect_bin.o,-MMD,.bootsect_bin.o.d -W -Wall -D_FILE_OFFSET_BITS=64 -g -Os -I. -I.. -I../libinstaller -c -o bootsect_bin.o ../bootsect_bin.c
+gcc -Wp,-MT,ldlinux_bin.o,-MMD,.ldlinux_bin.o.d -W -Wall -D_FILE_OFFSET_BITS=64 -g -Os -I. -I.. -I../libinstaller -c -o ldlinux_bin.o ../ldlinux_bin.c
+In file included from syslinux.c:52:
+/usr/include/linux/msdos_fs.h:61: error: expected ')' before 'media'
+[...]
 
-Index: b/drivers/ide/arm/palm_bk3710.c
-===================================================================
---- a/drivers/ide/arm/palm_bk3710.c
-+++ b/drivers/ide/arm/palm_bk3710.c
-@@ -405,9 +405,6 @@ static int __devinit palm_bk3710_probe(s
+Noticed by Onur Küçük <onur@pardus.org.tr>
+
+Cc: Frank Seidel <fseidel@suse.de>
+CC: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+CC: Onur Küçük <onur@pardus.org.tr>
+
+Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
+
+ include/linux/msdos_fs.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/msdos_fs.h b/include/linux/msdos_fs.h
+index b03b274..3825b1c 100644
+--- a/include/linux/msdos_fs.h
++++ b/include/linux/msdos_fs.h
+@@ -58,7 +58,7 @@
+ #define MSDOS_DOTDOT	"..         "	/* "..", padded to MSDOS_NAME chars */
  
- 	ide_device_add(idx, &palm_bk3710_port_info);
- 
--	if (!hwif->present)
--		goto out;
--
- 	return 0;
- out:
- 	printk(KERN_WARNING "Palm Chip BK3710 IDE Register Fail\n");
+ /* media of boot sector */
+-static inline int fat_valid_media(u8 media)
++static inline int fat_valid_media(__u8 media)
+ {
+ 	return 0xf8 <= media || media == 0xf0;
+ }
+
+Cheers
+-- 
+S.Çağlar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
