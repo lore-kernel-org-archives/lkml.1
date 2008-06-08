@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760715AbYFHB4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761017AbYFHCFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760715AbYFHB4l (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Jun 2008 21:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757384AbYFHB4f
+	id S1761017AbYFHCFT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Jun 2008 22:05:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757577AbYFHCFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Jun 2008 21:56:35 -0400
-Received: from web53709.mail.re2.yahoo.com ([206.190.37.30]:35294 "HELO
-	web53709.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756699AbYFHB4e (ORCPT
+	Sat, 7 Jun 2008 22:05:06 -0400
+Received: from outbound.icp-qv1-irony-out2.iinet.net.au ([203.59.1.107]:52985
+	"EHLO outbound.icp-qv1-irony-out2.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757557AbYFHCFF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Jun 2008 21:56:34 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=1c09p3TSw4GwDjsrZgM4c3JmkPd4Zx++uaTv1S2KydFRDFeei4s9/Nyx/HkGLbsVUwR5v33czvRXJP++62XSXdSjaExfemOiCT8EFFSS6UBQ7k3mU4W/aZgIyDXKCmBEYCrEGLfXEGfeUraXg51+1tNjQKErAgpAZc5ooRit0K0=;
-X-YMail-OSG: Fgl5l9gVM1kPjk8CV6mzbWuAdde2Z6F2LI3f2c7wUOqqvpTm_S6P1PafXyPLeuGJ5A--
-Date: Sat, 7 Jun 2008 18:56:33 -0700 (PDT)
-From: Benjamin Kidwell <benjkidwell@yahoo.com>
-Subject: Re: Linux-next Alsa hda_intel events/0 high CPU usage, bisected
-To: linux-kernel@vger.kernel.org
-In-Reply-To: <s5hk5h1shys.wl%tiwai@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <424883.96640.qm@web53709.mail.re2.yahoo.com>
+	Sat, 7 Jun 2008 22:05:05 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgUBAHbaSkh8qNvt/2dsb2JhbAAIrhU
+X-IronPort-AV: E=Sophos;i="4.27,606,1204470000"; 
+   d="scan'208";a="326948250"
+Subject: Re: bcm33xx port
+From: Ben Nizette <bn@niasdigital.com>
+To: Luke -Jr <luke@dashjr.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200806072019.42108.luke@dashjr.org>
+References: <200806072019.42108.luke@dashjr.org>
+Content-Type: text/plain
+Organization: Nias Digital
+Date: Sun, 08 Jun 2008 12:04:58 +1000
+Message-Id: <1212890698.4089.17.camel@moss.renham>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Takashi Iwai <> wrote:
 
-> The problem is that your hardware reports the wrong DMA position.
-> I didn't expect that this delay is so much, (IOW, the hardware is so
-> buggy).  Maybe it should be put into its own workq.
+On Sat, 2008-06-07 at 20:19 -0500, Luke -Jr wrote:
+> I am working on a port for the bcm33xx platform, which includes a MIPS CPU:
+> 	http://wiki.openwrt.org/BroadcomBCM33xxPort
+> 
+> However, I seem to be hitting problems with memory allocation, as 
+> load_elf_binary is segfaulting inside padzero/__bzero.
 
-I've been getting my process timing information from ps, top, and htop, which
-I know can be unreliable in some ways (I've been using a tickless (NO_HZ=y)
-kernel). I recompiled the g8a4bd4d kernel with that option off and a few more
-changes to make my settings more conservative, and rechecked events/0. It
-still reports at a consistent 2.5%, (down from about 4.3% with previous kernel
-options) and after a short period of use (uptime 30 minutes) events/0 has had
-0:48 of time. In comparison, Xorg and Firefox (usually the biggest users)
-report 1:12 and 0:44 in the same timeframe. 
+Seems to have issues way before that ;-)
 
-So if I understand the purpose of the code, that means that my system has
-generated 48 seconds worth of timing mistakes in audio playback relative to 25
-minutes or so of audio stream, so that suggests the timing error of the
-hardware is about 3%! That seems like huge latency for hardware so I see why
-you wouldn't expect that.
+> 
+> This is my first attempt at real Linux kernel development, so if anyone could 
+> throw me pointers on how I would approach debugging and fixing this problem, 
+> I'd really appreciate it. (boot log with early printk is attached)
 
-I should also say that close listening has convinced me that my audio
-performance has been IMPROVED by the patch - IOW, the code is working well at
-improving the audio stream, even though its using a fair amount of CPU time to
-do it. With the new code, I seem to hear less random clicks, interruptions, or
-static that I had previously blamed on the source of the audio. I don't know
-how to test the output to the speakers relative to the input source
-quantitatively, though.
+I'm not too up on MIPS but there're a few things in the log which stand
+out to me:
 
-Given that the worst-case-scenario for compensating for buggy hardware is
-worse than expected, what is the best behavior for the driver given hardware
-like mine? I don't know if a high CPU time for the events/0 process is
-actually a problem, I'm just not used to seeing a -5 niceness process so
-active under top. Let me know if you'd like any more info on my hardware or
-setup, or if there are any additional kernel config options that might affect
-my DMA reporting errors. I'm trying to be a useful linux-next tester, so any
-advice is appreciated.
-Ben
+Determined physical RAM map:
+ memory: 00fa0000 @ 00000000 (usable)
+User-defined physical RAM map:
+ memory: 007a1200 @ 00000000 (usable)
 
+Can you confirm these sizes and locations for RAM?  Does anything change
+if you don't force the size constraint?
 
-      
+CPU frequency 32.00 MHz
+
+Really?  Is your bootloader setting the CPU up correctly before handing
+control to Linux?
+
+irq 8: nobody cared (try booting with the "irqpoll" option)
+
+What's on IRQ8, should anyone care at this early stage?  Did the
+bootloader enable this (should it)?
+
+Reserved instruction in kernel code[#1]:
+
+You're compiling with an appropriate -march switch?
+
+Good luck :-)
+	--Ben.
