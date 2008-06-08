@@ -1,74 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbYFHSgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755850AbYFHSiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756081AbYFHSgt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 14:36:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755727AbYFHSgj
+	id S1755850AbYFHSiT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 14:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754091AbYFHSiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 14:36:39 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:40397 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754027AbYFHSgi (ORCPT
+	Sun, 8 Jun 2008 14:38:03 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:43486 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754020AbYFHSiA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 14:36:38 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: caglar@pardus.org.tr
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Frank Seidel <fseidel@suse.de>,
-       Onur =?iso-8859-1?Q?K=FC=E7=FCk?= <onur@pardus.org.tr>
-Subject: Re: [PATCH] include/linux/msdos_fs.h: Cleanup include/linux/msdos_fs.h for userspace.
-References: <200806082116.50355.caglar@pardus.org.tr>
-Date: Mon, 09 Jun 2008 03:36:26 +0900
-In-Reply-To: <200806082116.50355.caglar@pardus.org.tr>
- (=?iso-2022-jp-2?B?IlMuGyQoRCouGyhCYRskKEQrOxsoQmxhcg==?= Onur"'s
-	message of "Sun, 8 Jun 2008 21:16:48 +0300")
-Message-ID: <87wskzn591.fsf@duaron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp-2
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+	Sun, 8 Jun 2008 14:38:00 -0400
+Subject: Re: 2,6.26-rc4-git2 - long pause during boot
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: chris2553@googlemail.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       Hannes Reinecke <hare@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-usb@vger.kernel.org
+In-Reply-To: <200806080619.17531.chris2553@googlemail.com>
+References: <200806010415.05290.chris2553@googlemail.com>
+	 <20080606110345.581fdc77.akpm@linux-foundation.org>
+	 <1212777612.16182.21.camel@localhost.localdomain>
+	 <200806080619.17531.chris2553@googlemail.com>
+Content-Type: text/plain
+Date: Sun, 08 Jun 2008 13:37:56 -0500
+Message-Id: <1212950276.3574.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"S.Çağlar Onur" <caglar@pardus.org.tr> writes:
+On Sun, 2008-06-08 at 06:19 +0000, Chris Clayton wrote:
+> --Boundary-00=_NG3SIU63+Zdv2JV
+> Content-Type: text/plain;
+>   charset="utf-8"
+> Content-Transfer-Encoding: quoted-printable
+> Content-Disposition: inline
+> 
+> On Friday 06 June 2008, James Bottomley wrote:
+> > On Fri, 2008-06-06 at 11:03 -0700, Andrew Morton wrote:
+> > > On Fri, 06 Jun 2008 10:22:22 -0500 James Bottomley=20
+> <James.Bottomley@HansenPartnership.com> wrote:
+> > > > On Thu, 2008-06-05 at 23:25 -0700, Andrew Morton wrote:
+> > > > > On Thu, 5 Jun 2008 23:21:45 -0700 Andrew Morton=20
+> <akpm@linux-foundation.org> wrote:
+> > > > > > <watches wodim wibble for five minutes then report "CD/DVD-Record=
+> er
+> > > > > > not ready."  Pretends not to have noticed.>
+> > > > >
+> > > > > It goes much better when the CD is inserted upside up.
+> > > >
+> > > > So I can close this regression if I send you a pack of CD ring labels
+> > > > with "other way up" on them for you to affix to the underside of your
+> > > > CDs ... ?
+> > >
+> > > Would prefer double-sided CDs.
+> >
+> > I just discovered my budget only runs to a permanent marker for you to
+> > write the instructions on the rim yourself ...
+> >
+> > > Is this 20-second-delay thing known-about/expected/etc?
+> >
+> > If it's not the scsi_bus_uevent problem, then no, it isn't.
+> >
+> > The odd thing is that it occurs in the middle of USB initialisation from
+> >
+> 
+> Because of this oddity, I've also built 2.6.26-rc5-git2 with verbose USB 
+> debugging on. A boot log from that kernel is attached. You will see lots of 
+> ETIME errors from usb. A log from a similarly verbose 2.6.25.5 kernel does not 
+> show these errors. usb-devel added to cc list.
 
-> include/linux/msdos_fs.h header should use __u## rather than u## types else any userspace code (like syslinux) includes that header fails to compile like following;
->
-> [...]
-> gcc -Wp,-MT,bootsect_bin.o,-MMD,.bootsect_bin.o.d -W -Wall -D_FILE_OFFSET_BITS=64 -g -Os -I. -I.. -I../libinstaller -c -o bootsect_bin.o ../bootsect_bin.c
-> gcc -Wp,-MT,ldlinux_bin.o,-MMD,.ldlinux_bin.o.d -W -Wall -D_FILE_OFFSET_BITS=64 -g -Os -I. -I.. -I../libinstaller -c -o ldlinux_bin.o ../ldlinux_bin.c
-> In file included from syslinux.c:52:
-> /usr/include/linux/msdos_fs.h:61: error: expected ')' before 'media'
-> [...]
->
-> Noticed by Onur Küçük <onur@pardus.org.tr>
->
-> Cc: Frank Seidel <fseidel@suse.de>
-> CC: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-> CC: Onur Küçük <onur@pardus.org.tr>
->
-> Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
+I'm starting to think this might be a distribution problem.  I tried
+booting my laptop on your config (only system I have with ata_piix)
+without an initrd (bit painful for fedora 9) and I didn't see any slow
+downs (in fact it was a lot faster than previously; makes note to file
+bug with redhat about their initramfs).
 
-Looks good to me. Thanks.
+The one thing the patch you identified does is to add the SCSI target to
+the BUS and type model for the generic device.  What this does is to add
+extra uevents for the target.  If your hotplug handlers aren't set up to
+expect this, they could be delaying the system progress.
 
-Acked-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+What hotplug scripts are you using (and does /sbin/hotplug exist)?
 
->  include/linux/msdos_fs.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/include/linux/msdos_fs.h b/include/linux/msdos_fs.h
-> index b03b274..3825b1c 100644
-> --- a/include/linux/msdos_fs.h
-> +++ b/include/linux/msdos_fs.h
-> @@ -58,7 +58,7 @@
->  #define MSDOS_DOTDOT	"..         "	/* "..", padded to MSDOS_NAME chars */
->  
->  /* media of boot sector */
-> -static inline int fat_valid_media(u8 media)
-> +static inline int fat_valid_media(__u8 media)
->  {
->  	return 0xf8 <= media || media == 0xf0;
->  }
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> > > upstairs kernel: usb 11-2: Product: USB Flash Memory Jun  6 17:26:31
+> > > upstairs kernel: usb 11-2: SerialNumber: 0EC065712361A91E
+> >
+> > I'm a bit baffled as to how that could be SCSI related, but I suppose it
+> > could be udev related somehow.  Perhaps turning on driver core debugging
+> > might help (that's CONFIG_DEBUG DRIVER ... it depends on
+> > CONFIG_DEBUG_KERNEL for activation).  Hopefully the verbose kernel logs
+> > from here might tell us what's going on in the lacunae.
+> >
+> 
+> Triggered by James' bafflement and for my own peace of mind, I've run another
+> bisect session. This time I started with v2.6.26 as good and v2.6.26-rc2 as bad.
+> It highlighted the same patch as the "culprit".
+
+Actually, that's not really necessary.  Bisection is taking you back
+through kernel history, so unless the bug has two separate causes, it's
+pretty likely to home in on the same section of code.
+
+James
+
+
