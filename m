@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757335AbYFHVKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbYFHVM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757335AbYFHVKg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 17:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755289AbYFHVKY
+	id S1757315AbYFHVM6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 17:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755451AbYFHVMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 17:10:24 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:55709 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755052AbYFHVKX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 17:10:23 -0400
-X-Greylist: delayed 1747 seconds by postgrey-1.27 at vger.kernel.org; Sun, 08 Jun 2008 17:10:19 EDT
-Date: Sun, 8 Jun 2008 22:41:08 +0200
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Sven Schnelle <svens@stackframe.org>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] macb: use random mac if stored address in EEPROM is
- invalid
-Message-ID: <20080608224108.1f73f219@siona.local>
-In-Reply-To: <87wsl56qob.fsf@apollo.stackframe.org>
-References: <87wsl56qob.fsf@apollo.stackframe.org>
-Organization: Atmel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Sun, 8 Jun 2008 17:12:51 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:53396 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755215AbYFHVMu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 17:12:50 -0400
+Date: Sun, 8 Jun 2008 23:13:31 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Mike Frysinger <vapier@gentoo.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] Speed up "make headers_*"
+Message-ID: <20080608211331.GA32741@uranus.ravnborg.org>
+References: <20080608094730.GA30098@uranus.ravnborg.org> <20080608200727.GA32141@uranus.ravnborg.org> <1212958734.2534.51.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1212958734.2534.51.camel@shinybook.infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 04 Jun 2008 19:44:20 +0200
-Sven Schnelle <svens@stackframe.org> wrote:
-
-> We should use a random mac address if the EEPROM doesn't contain a valid
-> one. This makes life on Boards with unprogrammed EEPROM devices easier.
+On Sun, Jun 08, 2008 at 09:58:54PM +0100, David Woodhouse wrote:
+> It doesn't look like headers_check_all will work after your patches --
+> but to be fair I don't think it worked _before_ them either. When you
+> run headers_install_all, there's no asm/ directory -- and thus the check
+> will fail for any headers in linux/ which try to include <asm/*.h>. 
 > 
-> Signed-off-by: Sven Schnelle <svens@stackframe.org>
+> Did this _ever_ work?
+It relied on what was installed in asm previously resulting in
+arbitary failures - which confused me a little.
 
-Hmm. I don't know. How common is this on properly configured boards?
+What I did in headers_check.pl was to introduce a second try.
+If we see a #include <asm/file.h> then we try both of:
+asm/file.h (first)
+asm-$arch/file.h (if the asm/file.h did not succeed)
 
-Btw, the macb driver doesn't read any EEPROM. It reads the hardware
-registers of the controller because ARM for some bizarre reason insists
-on the boot loader passing the MAC address through hardware registers
-(despite the fact that the maintainer of the boot loader insists on
-_not_ doing that.)
+So with my version it actually works as expected and we
+hit a bug in cris.
+I've also implmented the feature that we stop on error so
+when cris has a bug we do not try the rest.
 
-But if assigning a random mac address when a real mac address isn't
-available is common practice in netdev-land, I guess this patch fine
-with me.
+It is both good and bad.
 
-Haavard
+	Sam
