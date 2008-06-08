@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757112AbYFHXXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757390AbYFHXdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757112AbYFHXXQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 19:23:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755962AbYFHXW6
+	id S1757390AbYFHXdm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 19:33:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756055AbYFHXdd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 19:22:58 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56555 "EHLO
+	Sun, 8 Jun 2008 19:33:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55529 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755424AbYFHXW6 (ORCPT
+	by vger.kernel.org with ESMTP id S1756048AbYFHXdc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 19:22:58 -0400
-Date: Sun, 8 Jun 2008 16:22:08 -0700
+	Sun, 8 Jun 2008 19:33:32 -0400
+Date: Sun, 8 Jun 2008 16:32:37 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
-       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org, eric.whitney@hp.com
-Subject: Re: [PATCH -mm 13/25] Noreclaim LRU Infrastructure
-Message-Id: <20080608162208.a2683a6c.akpm@linux-foundation.org>
-In-Reply-To: <20080608173244.0ac4ad9b@bree.surriel.com>
-References: <20080606202838.390050172@redhat.com>
-	<20080606202859.291472052@redhat.com>
-	<20080606180506.081f686a.akpm@linux-foundation.org>
-	<20080608163413.08d46427@bree.surriel.com>
-	<20080608135704.a4b0dbe1.akpm@linux-foundation.org>
-	<20080608173244.0ac4ad9b@bree.surriel.com>
+To: Johannes Weiner <hannes@saeurebad.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, Yasunori Goto <y-goto@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 00/14] bootmem rewrite v4
+Message-Id: <20080608163237.71463df0.akpm@linux-foundation.org>
+In-Reply-To: <87fxrnmw5s.fsf@saeurebad.de>
+References: <20080605224940.434439989@saeurebad.de>
+	<20080608133447.e5293600.akpm@linux-foundation.org>
+	<87fxrnmw5s.fsf@saeurebad.de>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -32,83 +30,115 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 8 Jun 2008 17:32:44 -0400 Rik van Riel <riel@redhat.com> wrote:
+On Sun, 08 Jun 2008 23:52:47 +0200 Johannes Weiner <hannes@saeurebad.de> wrote:
 
-> On Sun, 8 Jun 2008 13:57:04 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
+> Hi,
 > 
-> > > > > From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-> > > 
-> > > > > The noreclaim infrastructure is enabled by a new mm Kconfig option
-> > > > > [CONFIG_]NORECLAIM_LRU.
-> > > > 
-> > > > Having a config option for this really sucks, and needs extra-special
-> > > > justification, rather than none.
-> > > 
-> > > I believe the justification is that it uses a page flag.
-> > > 
-> > > PG_noreclaim would be the 20th page flag used, meaning there are
-> > > 4 more free if 8 bits are used for zone and node info, which would
-> > > give 6 bits for NODE_SHIFT or 64 NUMA nodes - probably overkill
-> > > for 32 bit x86.
-
-This feature isn't available on 32-bit cpus is it?
-
-> > > If you want I'll get rid of CONFIG_NORECLAIM_LRU and make everything
-> > > just compile in always.
-> > 
-> > Seems unlikely to be useful?  The only way in which this would be an
-> > advantage if if we hae some other feature which also needs a page flag
-> > but which will never be concurrently enabled with this one.
-
-^^this?
-
-> > > Please let me know what your preference is.
-> > 
-> > Don't use another page flag?
+> Andrew Morton <akpm@linux-foundation.org> writes:
 > 
-> I don't see how that would work.  We need a way to identify
-> the status of the page.
-
-We'll run out one day.  Then we will have little choice but to increase
-the size of the pageframe.
-
-This is a direct downside of adding more lru lists.
-
-The this-is-64-bit-only problem really sucks, IMO.  We still don't know
-the reason for that decision.  Presumably it was because we've already
-run out of page flags?  If so, the time for the larger pageframe is
-upon us.
-
-> > > > > +#ifdef CONFIG_NORECLAIM_LRU
-> > > > > +	PG_noreclaim,		/* Page is "non-reclaimable"  */
-> > > > > +#endif
-> > > > 
-> > > > I fear that we're messing up the terminology here.
-> > > > 
-> > > > Go into your 2.6.25 tree and do `grep -i reclaimable */*.c'.  The term
-> > > > already means a few different things, but in the vmscan context,
-> > > > "reclaimable" means that the page is unreferenced, clean and can be
-> > > > stolen.  "reclaimable" also means a lot of other things, and we just
-> > > > made that worse.
-> > > > 
-> > > > Can we think of a new term which uniquely describes this new concept
-> > > > and use that, rather than flogging the old horse?
-> > > 
-> > > Want to reuse the BSD term "pinned" instead?
-> > 
-> > mm, "pinned" in Linuxland means "someone took a ref on it to prevent it
-> > from being reclaimed".
-> > 
-> > As a starting point: what, in your english-language-paragraph-length
-> > words, does this flag mean?
+> > On Fri, 06 Jun 2008 00:49:40 +0200 Johannes Weiner <hannes@saeurebad.de> wrote:
+> >
+> >> This is a complete overhaul of the bootmem allocator while preserving
+> >> most of its original functionality.
+> >
+> > Confused.  This conflicts with patches from yourself which I have already
+> > merged.
 > 
-> "Cannot be reclaimed because someone has it locked in memory
-> through mlock, or the page belongs to something that cannot
-> be evicted like ramfs."
+> Hum.  I just tried again:
+> 
+> - checkout v2.6.26-rc5
+> - get latest mmotm broken-out tarball (stamp-2008-06-07-02-27)
+> - git-quiltimport
+> - apply the bootmem series
+> 
+> and no conflicts.  Anything I missed?  Which files are conflicting, btw?
+> 
 
-Ray's "unevictable" sounds good.  It's not a term we've used elsewhere.
+bootmem-reorder-code-to-match-new-bootmem-structure.patch spits:
 
-It's all a bit arbitrary, but it's just a label which maps onto a
-concept and if we all honour that mapping carefully in our code and
-writings, VM maintenance becomes that bit easier.
+***************
+*** 575,609 ****
+  	return ptr;
+  }
+  #endif
+- 
+- #ifndef ARCH_LOW_ADDRESS_LIMIT
+- #define ARCH_LOW_ADDRESS_LIMIT	0xffffffffUL
+- #endif
+- 
+- void * __init __alloc_bootmem_low(unsigned long size, unsigned long align,
+- 				  unsigned long goal)
+- {
+- 	bootmem_data_t *bdata;
+- 	void *ptr;
+- 
+- 	list_for_each_entry(bdata, &bdata_list, list) {
+- 		ptr = alloc_bootmem_core(bdata, size, align, goal,
+- 					ARCH_LOW_ADDRESS_LIMIT);
+- 		if (ptr)
+- 			return ptr;
+- 	}
+- 
+- 	/*
+- 	 * Whoops, we cannot satisfy the allocation request.
+- 	 */
+- 	printk(KERN_ALERT "low bootmem alloc of %lu bytes failed!\n", size);
+- 	panic("Out of low memory");
+- 	return NULL;
+- }
+- 
+- void * __init __alloc_bootmem_low_node(pg_data_t *pgdat, unsigned long size,
+- 				       unsigned long align, unsigned long goal)
+- {
+- 	return alloc_bootmem_core(pgdat->bdata, size, align, goal,
+- 				ARCH_LOW_ADDRESS_LIMIT);
+- }
+--- 606,608 ----
+  	return ptr;
+  }
+  #endif
+
+and
+
+***************
+*** 79,107 ****
+  	__alloc_bootmem(x, PAGE_SIZE, __pa(MAX_DMA_ADDRESS))
+  #define alloc_bootmem_low_pages(x) \
+  	__alloc_bootmem_low(x, PAGE_SIZE, 0)
+- #endif /* !CONFIG_HAVE_ARCH_BOOTMEM_NODE */
+- 
+- extern unsigned long free_all_bootmem(void);
+- extern unsigned long free_all_bootmem_node(pg_data_t *pgdat);
+- extern void *__alloc_bootmem_node(pg_data_t *pgdat,
+- 				  unsigned long size,
+- 				  unsigned long align,
+- 				  unsigned long goal);
+- extern unsigned long init_bootmem_node(pg_data_t *pgdat,
+- 				       unsigned long freepfn,
+- 				       unsigned long startpfn,
+- 				       unsigned long endpfn);
+- extern void reserve_bootmem_node(pg_data_t *pgdat,
+- 				 unsigned long physaddr,
+- 				 unsigned long size,
+- 				 int flags);
+- extern void free_bootmem_node(pg_data_t *pgdat,
+- 			      unsigned long addr,
+- 			      unsigned long size);
+- extern void *alloc_bootmem_section(unsigned long size,
+- 				   unsigned long section_nr);
+- 
+- #ifndef CONFIG_HAVE_ARCH_BOOTMEM_NODE
+  #define alloc_bootmem_node(pgdat, x) \
+  	__alloc_bootmem_node(pgdat, x, SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS))
+  #define alloc_bootmem_pages_node(pgdat, x) \
+--- 101,106 ----
+  	__alloc_bootmem(x, PAGE_SIZE, __pa(MAX_DMA_ADDRESS))
+  #define alloc_bootmem_low_pages(x) \
+  	__alloc_bootmem_low(x, PAGE_SIZE, 0)
+  #define alloc_bootmem_node(pgdat, x) \
+  	__alloc_bootmem_node(pgdat, x, SMP_CACHE_BYTES, __pa(MAX_DMA_ADDRESS))
+  #define alloc_bootmem_pages_node(pgdat, x) \
+
+Seems that Nick's mm-introduce-non-panic-alloc_bootmem.patch mucked
+things up.  I'll have a go at fixing things.
+
