@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbYFHRMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754637AbYFHRTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754508AbYFHRMT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 13:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbYFHRMJ
+	id S1754637AbYFHRTU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 13:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbYFHRTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 13:12:09 -0400
-Received: from ns2.suse.de ([195.135.220.15]:56648 "EHLO mx2.suse.de"
+	Sun, 8 Jun 2008 13:19:09 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:41436 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751283AbYFHRMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 13:12:08 -0400
-Date: Sun, 8 Jun 2008 19:12:00 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de, vgoyal@redhat.com,
-       anderson@redhat.com
-Subject: Re: [patch 2/3] Add flags parameter to reserve_bootmem_generic()
-Message-ID: <20080608191200.529d0619@kopernikus.site>
-In-Reply-To: <20080608142606.GE2487@hacking>
-References: <20080608134628.757299158@halley.suse.de>
-	<20080608134629.743220278@halley.suse.de>
-	<20080608142606.GE2487@hacking>
-Organization: SUSE LINUX Products GmbH
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i686-pc-linux-gnu)
+	id S1752006AbYFHRTJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 13:19:09 -0400
+Date: Sun, 8 Jun 2008 21:20:42 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/3] __mutex_lock_common: use signal_pending_state()
+Message-ID: <20080608172042.GA10386@tv-sign.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* WANG Cong <xiyou.wangcong@gmail.com> [2008-06-08 22:26]:
->
-> Since 'reserve_bootmem_generic' is changed from 'void' to 'int',
-> we should check its return value for failure when possible, right?
+Change __mutex_lock_common() to use signal_pending_state() for the sake of
+the code re-use.
 
-That may make sense here, but that's unrelated to my change.
+This adds 7 bytes to kernel/mutex.o, but afaics only because gcc isn't smart
+enough.
 
-Just because the error *can* be caught by checking the return value
-doesn't mean that it *must* be caught always. It was silently ignored
-before in the efi_reserve_bootmem() function before, and so is it now.
-No behaviour change.
+(btw, uninlining of __mutex_lock_common() shrinks .text from 2722 to 1542,
+ perhaps it is worth doing).
 
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
+--- 26-rc2/kernel/mutex.c~2_MUTEX_USE_HELPER	2008-06-04 22:05:53.000000000 +0400
++++ 26-rc2/kernel/mutex.c	2008-06-08 19:08:32.000000000 +0400
+@@ -165,10 +165,7 @@ __mutex_lock_common(struct mutex *lock, 
+ 		 * got a signal? (This code gets eliminated in the
+ 		 * TASK_UNINTERRUPTIBLE case.)
+ 		 */
+-		if (unlikely((state == TASK_INTERRUPTIBLE &&
+-					signal_pending(task)) ||
+-			      (state == TASK_KILLABLE &&
+-					fatal_signal_pending(task)))) {
++		if (unlikely(signal_pending_state(state, task))) {
+ 			mutex_remove_waiter(lock, &waiter,
+ 					    task_thread_info(task));
+ 			mutex_release(&lock->dep_map, 1, ip);
 
-Bernhard
--- 
-Bernhard Walle, SUSE LINUX Products GmbH, Architecture Maintenance
