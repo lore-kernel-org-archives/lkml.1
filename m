@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757495AbYFHPrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757417AbYFHPzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757495AbYFHPrm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 11:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbYFHPrd
+	id S1757417AbYFHPzQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 11:55:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754810AbYFHPzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 11:47:33 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:39696 "EHLO relay.sw.ru"
+	Sun, 8 Jun 2008 11:55:04 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:36637 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754699AbYFHPrc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 11:47:32 -0400
+	id S1754448AbYFHPzB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 11:55:01 -0400
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [PATCH] prevent get_user_pages call from kernel thread 
+Subject: [PATCH] fix bio_add_page for non trivial merge_bvec_fn case
 From: Dmitri Monakhov <dmonakhov@openvz.org>
-Date: Sun, 08 Jun 2008 19:37:32 +0400
-Message-ID: <m34p84uedf.fsf@dmon-lap.sw.ru>
+Date: Sun, 08 Jun 2008 19:45:08 +0400
+Message-ID: <m3y75gszgb.fsf@dmon-lap.sw.ru>
 User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -21,48 +21,59 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes, yes.. everybody know that it is bad to write from kernel thread, and it
-is madness to do it with O_DIRECT. But occasionally file with O_DIRECT flag
-may be passed to loop device via LOOP_SET_FD. So if system hasn't address
-space ops, or simply hide it like GFS, it is possible to kill kernel via
-two lines program. In fact we can't effectively guard kernel space by
-disabling O_DIRECT in loop's code, because user space can change it back
-via fcntl(,F_SETFL,). Let's simply add sanity check mm related logic.
+We have to properly decrease all related bio's counters, especially bi_size
+in order to merge_bvec_fn return right result. Usually this result in
+false merge rejects for two absolutely valid bio_vecs. This may cause 
+significant performance penalty for example Itanium: page_size == 16k,
+fs_block_size == 1k and block device is raid with small chunk_size.
 
 Signed-off-by: Dmitri Monakhov <dmonakhov@openvz.org>
 ---
- drivers/block/loop.c |    1 +
- fs/direct-io.c       |    4 ++++
- 2 files changed, 5 insertions(+), 0 deletions(-)
+ fs/bio.c |   16 ++++++++++++----
+ 1 files changed, 12 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/block/loop.c b/drivers/block/loop.c
-index d3a25b0..bb2a262 100644
---- a/drivers/block/loop.c
-+++ b/drivers/block/loop.c
-@@ -753,6 +753,7 @@ static int loop_set_fd(struct loop_device *lo, struct file *lo_file,
+diff --git a/fs/bio.c b/fs/bio.c
+index 7856257..d713074 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -332,14 +332,21 @@ static int __bio_add_page(struct request_queue *q, struct bio *bio, struct page
  
- 	mapping = file->f_mapping;
- 	inode = mapping->host;
-+	file->f_mode &= ~O_DIRECT;
+ 		if (page == prev->bv_page &&
+ 		    offset == prev->bv_offset + prev->bv_len) {
++			/* Temprory detacth last bio_vec. */
++			bio->bi_size -= prev->bv_len;
++			bio->bi_vcnt--;
++			bio->bi_phys_segments--;
++			bio->bi_hw_segments--;
++
+ 			prev->bv_len += len;
+ 			if (q->merge_bvec_fn &&
+ 			    q->merge_bvec_fn(q, bio, prev) < len) {
+ 				prev->bv_len -= len;
+-				return 0;
++				len = 0;
+ 			}
  
- 	if (!(file->f_mode & FMODE_WRITE))
- 		lo_flags |= LO_FLAGS_READ_ONLY;
-diff --git a/fs/direct-io.c b/fs/direct-io.c
-index 9e81add..8e17224 100644
---- a/fs/direct-io.c
-+++ b/fs/direct-io.c
-@@ -149,6 +149,10 @@ static int dio_refill_pages(struct dio *dio)
- 	int ret;
- 	int nr_pages;
+-			goto done;
++			bio->bi_size += prev->bv_len;
++			goto out_add_bvec;
+ 		}
+ 	}
  
-+	if (unlikely(!current->mm)) {
-+		WARN_ON_ONCE(1);
-+		return -EINVAL;
-+	}
- 	nr_pages = min(dio->total_pages - dio->curr_page, DIO_PAGES);
- 	down_read(&current->mm->mmap_sem);
- 	ret = get_user_pages(
+@@ -394,11 +401,12 @@ static int __bio_add_page(struct request_queue *q, struct bio *bio, struct page
+ 	    BIOVEC_VIRT_MERGEABLE(bvec-1, bvec)))
+ 		bio->bi_flags &= ~(1 << BIO_SEG_VALID);
+ 
++	bio->bi_size += len;
++out_add_bvec:
+ 	bio->bi_vcnt++;
+ 	bio->bi_phys_segments++;
+ 	bio->bi_hw_segments++;
+- done:
+-	bio->bi_size += len;
+ 	return len;
+ }
+ 
 -- 
 1.5.4.rc4
-
 
