@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757195AbYFHPmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbYFHPoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757195AbYFHPmQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 11:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbYFHPmD
+	id S1757364AbYFHPoB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 11:44:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbYFHPny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 11:42:03 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:42245 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754549AbYFHPmB (ORCPT
+	Sun, 8 Jun 2008 11:43:54 -0400
+Received: from mu-out-0910.google.com ([209.85.134.189]:49097 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754668AbYFHPnx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 11:42:01 -0400
+	Sun, 8 Jun 2008 11:43:53 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=w05p3kD3gZuS6t6+BqxpoEX3Lcbzfof1QPafG1QH8ckokI+V5XANCPu3dLO5NVfQAS
-         BBb80qNe1ZmGppKWrD3P0hHT2Ke5LEOHcQGi61y/WQkKYlWTxRuWN8gwI7+DJWcSurYr
-         GhMp9G6sOTAmNV0lazRgz2Qunq2YZLJ1KNvsQ=
-Message-ID: <484BFDA9.7050308@gmail.com>
-Date: Sun, 08 Jun 2008 10:41:29 -0500
-From: Roger Heflin <rogerheflin@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=f2RjdQd6mED54snbYx7wjq2cng0LhzJzFh711ieUnLTmk0QKb3JQY6WjzB2Ku1kbOM
+         i4QOUO9ST0j1OqbCVc2WAcAEBlcIEyRk+CuFO0zwDZv8ZoeEHFYT3MeEiLtJckgtvUoJ
+         loGHgz1I7KL5TErNejaLzyxUT9UdbZq8A94Eg=
+Date: Sun, 8 Jun 2008 19:43:42 +0400
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: cbou@mail.ru, dwmw2@infradead.org
+Subject: [PATCH] Fix race in power_supply_uevent.
+Message-ID: <20080608154342.GA6935@doriath.ww600.siemens.net>
 MIME-Version: 1.0
-To: Nick Craig-Wood <nick@craig-wood.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: libata.force=1.5Gbps doesn't seem to work
-References: <20080608113527.GA5105@craig-wood.com>
-In-Reply-To: <20080608113527.GA5105@craig-wood.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Craig-Wood wrote:
-> Ever since I changed to AHCI (by fiddling with random options in the
-> BIOS) my external SATA drive is being run at 3.0 Gbps.  However it
-> doesn't seem reliable at that - maybe the cable is too long. (It is
-> probably about 80cm in total - one standard SATA cable going to the
-> case and another from the case to the drive).
-> 
-> I read in Documentation/kernel-parameters.txt that a command line of
-> 
->   libata.force=1.5Gbps
-> 
-> Should force all my SATA disks to 1.5 Gbps.
-> 
-> However this doesn't seem to work.
+Commit 54d29ad33e3483bcc7ca433a21cf294854e5154a introduced a race
+in power_supply_uevent. Previously it checked that power_supply
+is available by checking for dev->driver_data. But now dev->driver_data
+is set before power_supply->dev is initialised.
 
-I cannot help with the option not working, but you might see if the drives can 
-be jumpered to force 1.5Gbps, I know a number of the manufacturers have jumpers 
-to force 1.5Gbps since a number of older chipsets (Via sata and probably others) 
-don't properly auto-neg 1.5Gbps on a 3.0Gbps drive, and fail to work at all.
+Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+---
+ drivers/power/power_supply_sysfs.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-                                  Roger
+diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
+index c444d6b..49215da 100644
+--- a/drivers/power/power_supply_sysfs.c
++++ b/drivers/power/power_supply_sysfs.c
+@@ -201,7 +201,7 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
+ 
+ 	dev_dbg(dev, "uevent\n");
+ 
+-	if (!psy) {
++	if (!psy || !psy->dev) {
+ 		dev_dbg(dev, "No power supply yet\n");
+ 		return ret;
+ 	}
+-- 
+1.5.5.1
+
+
+-- 
+With best wishes
+Dmitry
+
