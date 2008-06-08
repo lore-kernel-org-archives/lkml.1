@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbYFHPoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757495AbYFHPrm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757364AbYFHPoB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 11:44:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbYFHPny
+	id S1757495AbYFHPrm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 11:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbYFHPrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 11:43:54 -0400
-Received: from mu-out-0910.google.com ([209.85.134.189]:49097 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754668AbYFHPnx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 11:43:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=f2RjdQd6mED54snbYx7wjq2cng0LhzJzFh711ieUnLTmk0QKb3JQY6WjzB2Ku1kbOM
-         i4QOUO9ST0j1OqbCVc2WAcAEBlcIEyRk+CuFO0zwDZv8ZoeEHFYT3MeEiLtJckgtvUoJ
-         loGHgz1I7KL5TErNejaLzyxUT9UdbZq8A94Eg=
-Date: Sun, 8 Jun 2008 19:43:42 +0400
-From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: cbou@mail.ru, dwmw2@infradead.org
-Subject: [PATCH] Fix race in power_supply_uevent.
-Message-ID: <20080608154342.GA6935@doriath.ww600.siemens.net>
+	Sun, 8 Jun 2008 11:47:33 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:39696 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754699AbYFHPrc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 11:47:32 -0400
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [PATCH] prevent get_user_pages call from kernel thread 
+From: Dmitri Monakhov <dmonakhov@openvz.org>
+Date: Sun, 08 Jun 2008 19:37:32 +0400
+Message-ID: <m34p84uedf.fsf@dmon-lap.sw.ru>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 54d29ad33e3483bcc7ca433a21cf294854e5154a introduced a race
-in power_supply_uevent. Previously it checked that power_supply
-is available by checking for dev->driver_data. But now dev->driver_data
-is set before power_supply->dev is initialised.
+Yes, yes.. everybody know that it is bad to write from kernel thread, and it
+is madness to do it with O_DIRECT. But occasionally file with O_DIRECT flag
+may be passed to loop device via LOOP_SET_FD. So if system hasn't address
+space ops, or simply hide it like GFS, it is possible to kill kernel via
+two lines program. In fact we can't effectively guard kernel space by
+disabling O_DIRECT in loop's code, because user space can change it back
+via fcntl(,F_SETFL,). Let's simply add sanity check mm related logic.
 
-Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Signed-off-by: Dmitri Monakhov <dmonakhov@openvz.org>
 ---
- drivers/power/power_supply_sysfs.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/block/loop.c |    1 +
+ fs/direct-io.c       |    4 ++++
+ 2 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
-index c444d6b..49215da 100644
---- a/drivers/power/power_supply_sysfs.c
-+++ b/drivers/power/power_supply_sysfs.c
-@@ -201,7 +201,7 @@ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
+diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+index d3a25b0..bb2a262 100644
+--- a/drivers/block/loop.c
++++ b/drivers/block/loop.c
+@@ -753,6 +753,7 @@ static int loop_set_fd(struct loop_device *lo, struct file *lo_file,
  
- 	dev_dbg(dev, "uevent\n");
+ 	mapping = file->f_mapping;
+ 	inode = mapping->host;
++	file->f_mode &= ~O_DIRECT;
  
--	if (!psy) {
-+	if (!psy || !psy->dev) {
- 		dev_dbg(dev, "No power supply yet\n");
- 		return ret;
- 	}
+ 	if (!(file->f_mode & FMODE_WRITE))
+ 		lo_flags |= LO_FLAGS_READ_ONLY;
+diff --git a/fs/direct-io.c b/fs/direct-io.c
+index 9e81add..8e17224 100644
+--- a/fs/direct-io.c
++++ b/fs/direct-io.c
+@@ -149,6 +149,10 @@ static int dio_refill_pages(struct dio *dio)
+ 	int ret;
+ 	int nr_pages;
+ 
++	if (unlikely(!current->mm)) {
++		WARN_ON_ONCE(1);
++		return -EINVAL;
++	}
+ 	nr_pages = min(dio->total_pages - dio->curr_page, DIO_PAGES);
+ 	down_read(&current->mm->mmap_sem);
+ 	ret = get_user_pages(
 -- 
-1.5.5.1
+1.5.4.rc4
 
-
--- 
-With best wishes
-Dmitry
 
