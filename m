@@ -1,149 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758128AbYFHWHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757990AbYFHWJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758128AbYFHWHi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 18:07:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757659AbYFHWHY
+	id S1757990AbYFHWJs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 18:09:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756585AbYFHWJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 18:07:24 -0400
-Received: from saeurebad.de ([85.214.36.134]:33224 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757438AbYFHWHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 18:07:23 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de, vgoyal@redhat.com,
-       anderson@redhat.com
-Subject: Re: [patch 2/3] Add flags parameter to reserve_bootmem_generic()
-References: <20080608134628.757299158@halley.suse.de>
-	<20080608134629.743220278@halley.suse.de>
-Date: Mon, 09 Jun 2008 00:06:36 +0200
-In-Reply-To: <20080608134629.743220278@halley.suse.de> (Bernhard Walle's
-	message of "Sun, 08 Jun 2008 15:46:30 +0200")
-Message-ID: <877iczmvir.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Sun, 8 Jun 2008 18:09:40 -0400
+Received: from smtps.uol.com.br ([200.221.4.131]:38559 "EHLO smtp.uol.com.br"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756403AbYFHWJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 18:09:40 -0400
+Date: Sun, 8 Jun 2008 19:09:34 -0300
+From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
+To: Ivo van Doorn <ivdoorn@gmail.com>
+Cc: "John W. Linville" <linville@tuxdriver.com>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.26-rc4] Problems with rt2x00 USB interface on powerpc
+Message-ID: <20080608220934.GA22242@ime.usp.br>
+References: <20080601193000.GA3056@ime.usp.br> <200806081242.54896.IvDoorn@gmail.com> <20080608213513.GA30499@ime.usp.br> <200806090002.17938.IvDoorn@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200806090002.17938.IvDoorn@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SIG5: cf323e32f559880365a8388c22342d51
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi, Ivo.
 
-Bernhard Walle <bwalle@suse.de> writes:
+Thank you very much for your very kind reply.
 
-> This patch adds a 'flags' parameter to reserve_bootmem_generic() like it
-> already has been added in reserve_bootmem() with commit
-> 72a7fe3967dbf86cb34e24fbf1d957fe24d2f246.
->
-> It also changes all users to use BOOTMEM_DEFAULT, which doesn't effectively
-> change the behaviour. Since the change is x86-specific, I don't think it's
-> necessary to add a new API for migration. There are only 4 users of that
-> function.
->
-> The change is necessary for the next patch, using reserve_bootmem_generic()
-> for crashkernel reservation.
->
->
-> Signed-off-by: Bernhard Walle <bwalle@suse.de>
->
-> ---
->  arch/x86/kernel/e820_64.c |    3 ++-
->  arch/x86/kernel/efi_64.c  |    3 ++-
->  arch/x86/kernel/mpparse.c |    5 +++--
->  arch/x86/mm/init_64.c     |   17 ++++++++++++-----
->  include/asm-x86/proto.h   |    2 +-
->  5 files changed, 20 insertions(+), 10 deletions(-)
->
-> --- a/arch/x86/kernel/e820_64.c
-> +++ b/arch/x86/kernel/e820_64.c
-> @@ -118,7 +118,8 @@ void __init early_res_to_bootmem(unsigne
->  			continue;
->  		printk(KERN_INFO "  early res: %d [%lx-%lx] %s\n", i,
->  			final_start, final_end - 1, r->name);
-> -		reserve_bootmem_generic(final_start, final_end - final_start);
-> +		reserve_bootmem_generic(final_start, final_end - final_start,
-> +			BOOTMEM_DEFAULT);
->  	}
->  }
->  
-> --- a/arch/x86/kernel/efi_64.c
-> +++ b/arch/x86/kernel/efi_64.c
-> @@ -100,7 +100,8 @@ void __init efi_call_phys_epilog(void)
->  void __init efi_reserve_bootmem(void)
->  {
->  	reserve_bootmem_generic((unsigned long)memmap.phys_map,
-> -				memmap.nr_map * memmap.desc_size);
-> +				memmap.nr_map * memmap.desc_size,
-> +				BOOTMEM_DEFAULT);
->  }
->  
->  void __iomem * __init efi_ioremap(unsigned long phys_addr, unsigned long size)
-> --- a/arch/x86/kernel/mpparse.c
-> +++ b/arch/x86/kernel/mpparse.c
-> @@ -729,10 +729,11 @@ static int __init smp_scan_config(unsign
->  			if (!reserve)
->  				return 1;
->  
-> -			reserve_bootmem_generic(virt_to_phys(mpf), PAGE_SIZE);
-> +			reserve_bootmem_generic(virt_to_phys(mpf), PAGE_SIZE,
-> +				BOOTMEM_DEFAULT);
->  			if (mpf->mpf_physptr)
->  				reserve_bootmem_generic(mpf->mpf_physptr,
-> -							PAGE_SIZE);
-> +					PAGE_SIZE, BOOTMEM_DEFAULT);
->  #endif
->  		return 1;
->  		}
-> Files a/arch/x86/kernel/setup_64.o and b/arch/x86/kernel/setup_64.o differ
-> --- a/arch/x86/mm/init_64.c
-> +++ b/arch/x86/mm/init_64.c
-> @@ -798,12 +798,13 @@ void free_initrd_mem(unsigned long start
->  }
->  #endif
->  
-> -void __init reserve_bootmem_generic(unsigned long phys, unsigned len)
-> +int __init reserve_bootmem_generic(unsigned long phys, unsigned len, int flags)
->  {
->  #ifdef CONFIG_NUMA
->  	int nid, next_nid;
->  #endif
->  	unsigned long pfn = phys >> PAGE_SHIFT;
-> +	int ret;
->  
->  	if (pfn >= end_pfn) {
->  		/*
-> @@ -811,11 +812,11 @@ void __init reserve_bootmem_generic(unsi
->  		 * firmware tables:
->  		 */
->  		if (pfn < max_pfn_mapped)
-> -			return;
-> +			return -EFAULT;
->  
->  		printk(KERN_ERR "reserve_bootmem: illegal reserve %lx %u\n",
->  				phys, len);
-> -		return;
-> +		return -EFAULT;
->  	}
->  
->  	/* Should check here against the e820 map to avoid double free */
-> @@ -823,9 +824,13 @@ void __init reserve_bootmem_generic(unsi
->  	nid = phys_to_nid(phys);
->  	next_nid = phys_to_nid(phys + len - 1);
->  	if (nid == next_nid)
-> -		reserve_bootmem_node(NODE_DATA(nid), phys, len, BOOTMEM_DEFAULT);
-> +		ret = reserve_bootmem_node(NODE_DATA(nid), phys, len, flags);
->  	else
-> -		reserve_bootmem(phys, len, BOOTMEM_DEFAULT);
-> +		ret = reserve_bootmem(phys, len, flags);
-> +
-> +	if (ret != 0)
-> +		return ret;
-> +
->  #else
->  	reserve_bootmem(phys, len, BOOTMEM_DEFAULT);
-                                   ^^^^^^^^^^^^^^^   flags?
-And you ignore the return value here.
+On Jun 09 2008, Ivo van Doorn wrote:
+> Hi,
+> 
+> > Nice to know that. I saw that the code has changed quite a good
+> > amount...
+> 
+> Hehe, yes rt2x00 code is moving quit a lot per kernel release.
 
-	Hannes
+Granted. :-) You have been working quite a lot. :-)
+
+> > Anyway, I don't know if you saw the various outputs that I put at my
+> > homepage (lots of dmesgs with the 2.6.26-rc4 kernel):
+> > http://www.ime.usp.br/~rbrito/debug/
+> 
+> Yeah, saw them.
+
+Hope that they prove somewhat useful.
+
+> > > > I don't know if the firmware is needed in my case or not, though (my USB
+> > > > adaptor is a D-Link DWL-G122 H/W Ver. B1, F/W Ver.: 2.03---took that info
+> > > > from the back of the stick).
+> > > 
+> > > Which driver is actually being used? rt2500usb or rt73usb?
+> > 
+> > The driver that actually gets loaded is rt2500usb. I tried rmmod'ing
+> > rt2500usb and loading rt73usb, but a quick iwconfig doesn't even show
+> > the interfaces.
+> 
+> That means it really is a rt2500usb device. ;)
+
+Yes. :) I have firmware files installed under /lib/firmware also (taken
+from Debian's unstable release---which is what I am using). Are they
+needed?
+
+> > > Also what was the last kernel version on which the driver worked for
+> > > you?
+> > 
+> > Unfortunately, I don't have any kernel for which this has worked for
+> > me. I just did an experiment: I plugged the adaptor on a ia32
+> > notebook where a rt61pci works fine (it is running Ubuntu's
+> > Hardy---well, actually, there are some problems, but I can get to
+> > that latter), but the USB key was non working with the symptoms that
+> > I described above.
+> 
+> That is most unfortunate, since register dumps are usually most usefull when
+> I can compare the actual register values between a working and
+> non-working setup.
+
+Ok. I will try to compile an 2.6.18 kernel with the out-of-tree modules.
+I hope that this can prove useful. I plan on getting register dumps (and
+I also hope that it will work; perhaps getting the register values with
+the legacy rt2500 drivers would help you, if they are available at all.
+I don't even know if they will work here, but I guess that I will give
+them a shot).
+
+> However I just realized I had a D-Link stick myself, and apparently I have the exact
+> same model/type. I'll compile a 2.6.26-rc5 kernel and see if that stick works for me,
+> if so, I have the working register dump. And if not, then we can rule
+> out endian problems.
+
+Thank you so much.
+
+I will compile other versions of the kernel just to see if I can see the
+status of the driver with other versions of kernels/drivers. Since I
+just installed a cross-compiler yesterday night on a *much* faster
+machine, I don't have to wait more than 1 hour for each kernel
+modification that I make (this iBook is slow).
+
+As I said earlier, I plan on doing whatever test you want me to.
+
+
+Thanks, Rogério Brito.
+
+-- 
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
