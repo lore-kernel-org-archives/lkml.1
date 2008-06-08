@@ -1,110 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757990AbYFHWJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757661AbYFHWNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757990AbYFHWJs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 18:09:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756585AbYFHWJk
+	id S1757661AbYFHWNx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 18:13:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756055AbYFHWNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 18:09:40 -0400
-Received: from smtps.uol.com.br ([200.221.4.131]:38559 "EHLO smtp.uol.com.br"
+	Sun, 8 Jun 2008 18:13:46 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:63852 "EHLO serum.com.pl"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756403AbYFHWJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 18:09:40 -0400
-Date: Sun, 8 Jun 2008 19:09:34 -0300
-From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Cc: "John W. Linville" <linville@tuxdriver.com>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.26-rc4] Problems with rt2x00 USB interface on powerpc
-Message-ID: <20080608220934.GA22242@ime.usp.br>
-References: <20080601193000.GA3056@ime.usp.br> <200806081242.54896.IvDoorn@gmail.com> <20080608213513.GA30499@ime.usp.br> <200806090002.17938.IvDoorn@gmail.com>
+	id S1754062AbYFHWNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 18:13:45 -0400
+Date: Sun, 8 Jun 2008 23:13:22 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Luke -Jr <luke@dashjr.org>
+cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mips@linux-mips.org
+Subject: Re: bcm33xx port
+In-Reply-To: <200806081527.31221.luke@dashjr.org>
+Message-ID: <Pine.LNX.4.55.0806082249330.15673@cliff.in.clinika.pl>
+References: <200806072113.26433.luke@dashjr.org> <200806081357.02601.luke@dashjr.org>
+ <Pine.LNX.4.55.0806082041150.15673@cliff.in.clinika.pl> <200806081527.31221.luke@dashjr.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200806090002.17938.IvDoorn@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SIG5: cf323e32f559880365a8388c22342d51
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Ivo.
+On Sun, 8 Jun 2008, Luke -Jr wrote:
 
-Thank you very much for your very kind reply.
+> Is merging with mainline something I can help with, being a beginner in this 
+> area generally and not having any part in writing them?
 
-On Jun 09 2008, Ivo van Doorn wrote:
-> Hi,
+ Well, you can certainly serve as a messenger telling them if they want
+people to get proper support from upstream maintainers they better merge
+sooner rather than later.  Otherwise it is them who should really be
+bothered with cases like yours.
+
+ The general principle is: "merge as soon as you can, even if code is
+incomplete" as you get more attention and perhaps developers involved as a
+result, some free support (e.g. with bulk changes done automatically to
+all the relevant bits in the tree) and avoid duplicated work; also when at
+the time of the merge you are told to rewrite your code differently.
+
+> >  Not exactly.  Try harder -- this is simple arithmetic and you've got all
+> > the data given above already. :)
 > 
-> > Nice to know that. I saw that the code has changed quite a good
-> > amount...
+> 200 / 2? I'm not really sure what a 'jiffy' is..
+
+ Hmm, I have thought it can be inferred from the code involved or failing
+that -- Google...  Well, anyway, a jiffy is a tick of the kernel timer or,
+specifically in this context and to be more precise, the interval between
+such two consecutive ticks or, in other words, 1/HZ.
+
+> >  I have seen that already and wrote these stores in __bzero are protected.
+> > Perhaps the fixup fails for some reason, but you need to investigate it
+> > and this is why I suggested to see how the RI handler is reached.  Since
+> > this is a known point the failure leads to, you should be able to work
+> > backwards from there quite easily.
 > 
-> Hehe, yes rt2x00 code is moving quit a lot per kernel release.
+> Ah, so what you're saying is that perhaps the 'sw' is triggering a TLB 
+> exception, and the handler for *that* is causing the RI problem?
 
-Granted. :-) You have been working quite a lot. :-)
+ This is almost certain what happens here.  The pointer involved is a
+valid (user) address and is correctly aligned, so you cannot get an
+address error exception.  A TLB exception is next on the list to check.
 
-> > Anyway, I don't know if you saw the various outputs that I put at my
-> > homepage (lots of dmesgs with the 2.6.26-rc4 kernel):
-> > http://www.ime.usp.br/~rbrito/debug/
-> 
-> Yeah, saw them.
+ Of course you cannot rule out I-cache corruption or suchlike, but if I
+were you, I would start with simple assumptions first.
 
-Hope that they prove somewhat useful.
-
-> > > > I don't know if the firmware is needed in my case or not, though (my USB
-> > > > adaptor is a D-Link DWL-G122 H/W Ver. B1, F/W Ver.: 2.03---took that info
-> > > > from the back of the stick).
-> > > 
-> > > Which driver is actually being used? rt2500usb or rt73usb?
-> > 
-> > The driver that actually gets loaded is rt2500usb. I tried rmmod'ing
-> > rt2500usb and loading rt73usb, but a quick iwconfig doesn't even show
-> > the interfaces.
-> 
-> That means it really is a rt2500usb device. ;)
-
-Yes. :) I have firmware files installed under /lib/firmware also (taken
-from Debian's unstable release---which is what I am using). Are they
-needed?
-
-> > > Also what was the last kernel version on which the driver worked for
-> > > you?
-> > 
-> > Unfortunately, I don't have any kernel for which this has worked for
-> > me. I just did an experiment: I plugged the adaptor on a ia32
-> > notebook where a rt61pci works fine (it is running Ubuntu's
-> > Hardy---well, actually, there are some problems, but I can get to
-> > that latter), but the USB key was non working with the symptoms that
-> > I described above.
-> 
-> That is most unfortunate, since register dumps are usually most usefull when
-> I can compare the actual register values between a working and
-> non-working setup.
-
-Ok. I will try to compile an 2.6.18 kernel with the out-of-tree modules.
-I hope that this can prove useful. I plan on getting register dumps (and
-I also hope that it will work; perhaps getting the register values with
-the legacy rt2500 drivers would help you, if they are available at all.
-I don't even know if they will work here, but I guess that I will give
-them a shot).
-
-> However I just realized I had a D-Link stick myself, and apparently I have the exact
-> same model/type. I'll compile a 2.6.26-rc5 kernel and see if that stick works for me,
-> if so, I have the working register dump. And if not, then we can rule
-> out endian problems.
-
-Thank you so much.
-
-I will compile other versions of the kernel just to see if I can see the
-status of the driver with other versions of kernels/drivers. Since I
-just installed a cross-compiler yesterday night on a *much* faster
-machine, I don't have to wait more than 1 hour for each kernel
-modification that I make (this iBook is slow).
-
-As I said earlier, I plan on doing whatever test you want me to.
-
-
-Thanks, Rogério Brito.
-
--- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+  Maciej
