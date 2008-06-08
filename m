@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764100AbYFHLoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764328AbYFHLrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764100AbYFHLoi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 07:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758369AbYFHLoa
+	id S1764328AbYFHLrR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 07:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758801AbYFHLrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 07:44:30 -0400
-Received: from mx1.wp.pl ([212.77.101.5]:50990 "EHLO mx1.wp.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758179AbYFHLo3 convert rfc822-to-8bit (ORCPT
+	Sun, 8 Jun 2008 07:47:08 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:55304 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758419AbYFHLrH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 07:44:29 -0400
-Date: Sun, 8 Jun 2008 13:47:02 +0200
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       lm-sensors@lm-sensors.org
-Cc: khali@linux-fr.org, <rh1985@wp.pl>
-Subject: [PATCH] Unhide the SMBus on the Compaq Deskpro EN
-Message-Id: <20080608134702.401b9fb5.krzysztof.h1@wp.pl>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+	Sun, 8 Jun 2008 07:47:07 -0400
+Subject: Re: [PATCH] Speed up "make headers_*"
+From: David Woodhouse <dwmw2@infradead.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20080608113028.GE10545@uranus.ravnborg.org>
+References: <20080608094730.GA30098@uranus.ravnborg.org>
+	 <1212924004.32207.498.camel@pmac.infradead.org>
+	 <20080608113028.GE10545@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Sun, 08 Jun 2008 12:47:03 +0100
+Message-Id: <1212925623.32207.517.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8BIT
-X-WP-AV: skaner antywirusowy poczty Wirtualnej Polski S. A.
-X-WP-SPAM: NO 0000000 [URPE]                               
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+On Sun, 2008-06-08 at 13:30 +0200, Sam Ravnborg wrote:
+> I will name it ASMDIR and set it to 'y' if we shall install to asm/
 
-This patch unhides the SMBus on Compaq Deskpro EN
-SFF P667 with the Intel 815E chipset. Unhiding it reveals 
-a THMC51 hardware monitoring chip.
+That works if we can't just make the top-level Makefile set $(dst) for
+itself. Which perhaps we could, if we stopped it running the whole
+recursive installation on include/ for each arch, and instead made it
+run only on include/asm-$(ARCH) for each arch.
 
-Jean Delvare has checked that this machine has no ACPI
-magic touching the SMBus nor the hardware monitoring chip,
-so this should be safe.
+And do a separate run for the other directories, of course -- probably
+with $(ARCH) and $(SRCARCH) set to empty or something.
 
-The patch was tested on Fedora Core 9 with 2.6.25.4 kernel.
+That also might help shave a little more time off by not repeating the
+export 20 times for every non-asm subdirectory. (Not that we actually
+_do_ repeat it, but even the make invocation and the dependency checks
+take time).
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-Tested-by: Rafa³ Ha³aduda <rh1985@wp.pl>
-CC: Jean Delvare <khali@linux-fr.org>
-
----
-If someone owns the Compaq Deskpro EN machine, please
-test the patch as well.
-
-diff -urp linux-2.6.25/drivers/pci/quirks.c linux-new/drivers/pci/quirks.c
---- linux-2.6.25/drivers/pci/quirks.c	2008-05-27 21:58:34.380144607 +0200
-+++ linux-new/drivers/pci/quirks.c	2008-05-30 23:12:57.510219450 +0200
-@@ -1054,6 +1054,14 @@ static void __init asus_hides_smbus_host
- 				 * its on-board VGA controller */
- 				asus_hides_smbus = 1;
- 			}
-+		else if (dev->device == PCI_DEVICE_ID_INTEL_82815_CGC)
-+			switch (dev->subsystem_device) {
-+			case 0x001A: /* Compaq Deskpro EN SSF P667 815E */
-+				/* Motherboard doesn't have host bridge
-+				 * subvendor/subdevice IDs, therefore checking
-+				 * its on-board VGA controller */
-+				asus_hides_smbus = 1;
-+			}
- 	}
- }
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_82845_HB,	asus_hides_smbus_hostbridge);
-@@ -1068,6 +1076,7 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_I
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_82915GM_HB, asus_hides_smbus_hostbridge);
- 
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_82810_IG3,	asus_hides_smbus_hostbridge);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_82815_CGC,	asus_hides_smbus_hostbridge);
- 
- static void asus_hides_smbus_lpc(struct pci_dev *dev)
- {
+-- 
+dwmw2
 
