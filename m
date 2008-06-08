@@ -1,102 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764800AbYFHMGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764236AbYFHMOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764800AbYFHMGS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 08:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760016AbYFHMGH
+	id S1764236AbYFHMOi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 08:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759832AbYFHMO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 08:06:07 -0400
-Received: from server.zsirmo.hu ([84.21.11.243]:35184 "EHLO server.zsirmo.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756034AbYFHMGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 08:06:06 -0400
-X-Greylist: delayed 574 seconds by postgrey-1.27 at vger.kernel.org; Sun, 08 Jun 2008 08:06:06 EDT
-Message-ID: <484BC8DC.6080606@zsirmo.hu>
-Date: Sun, 08 Jun 2008 13:56:12 +0200
-From: Zsiros Attila <zsirmo@zsirmo.hu>
-Reply-To: zsirmo@zsirmo.hu
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Oliver Pinter <oliver.pntr@gmail.com>
-CC: Phil Oester <kernel@linuxace.com>,
-       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       netdev <netdev@vger.kernel.org>, Matt Carlson <mcarlson@broadcom.com>,
-       Michael Chan <mchan@broadcom.com>,
-       Brian Vowell <brian.vowell@gmail.com>
-Subject: Re: bug report
-References: <48499731.1080807@gmail.com>	 <6101e8c40806061844g5b7676d4xb48c5c69ad48391f@mail.gmail.com>	 <20080606225643.8be222a9.akpm@linux-foundation.org>	 <Pine.LNX.4.64.0806071141480.24862@wrl-59.cs.helsinki.fi>	 <6101e8c40806070550h62866816s1d8f8c1ba31f59f@mail.gmail.com>	 <20080607150948.GA4690@linuxace.com> <6101e8c40806071153r1c3dbd03lffa6c43a9140ad4d@mail.gmail.com>
-In-Reply-To: <6101e8c40806071153r1c3dbd03lffa6c43a9140ad4d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Sun, 8 Jun 2008 08:14:28 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:40937 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754953AbYFHMO2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 08:14:28 -0400
+Subject: Re: [PATCH] Speed up "make headers_*"
+From: David Woodhouse <dwmw2@infradead.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <1212925623.32207.517.camel@pmac.infradead.org>
+References: <20080608094730.GA30098@uranus.ravnborg.org>
+	 <1212924004.32207.498.camel@pmac.infradead.org>
+	 <20080608113028.GE10545@uranus.ravnborg.org>
+	 <1212925623.32207.517.camel@pmac.infradead.org>
+Content-Type: text/plain
+Date: Sun, 08 Jun 2008 13:14:25 +0100
+Message-Id: <1212927265.32207.527.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hy!
+On Sun, 2008-06-08 at 12:47 +0100, David Woodhouse wrote:
+> On Sun, 2008-06-08 at 13:30 +0200, Sam Ravnborg wrote:
+> > I will name it ASMDIR and set it to 'y' if we shall install to asm/
+> 
+> That works if we can't just make the top-level Makefile set $(dst) for
+> itself. Which perhaps we could, if we stopped it running the whole
+> recursive installation on include/ for each arch, and instead made it
+> run only on include/asm-$(ARCH) for each arch.
+> 
+> And do a separate run for the other directories, of course -- probably
+> with $(ARCH) and $(SRCARCH) set to empty or something.
+> 
+> That also might help shave a little more time off by not repeating the
+> export 20 times for every non-asm subdirectory. (Not that we actually
+> _do_ repeat it, but even the make invocation and the dependency checks
+> take time).
 
-Newer log
-http://www.cyberszeg.hu/log/kern2.log
+Something like this takes the time for 'headers_install_all' from 30s to
+20s on my machine, and from 9s to 1.5s when it doesn't actually have to
+do anything. I have yet to actually remove $(BIARCH) and just override
+$(dst), though.
 
-Zsirmo
+diff --git a/Makefile b/Makefile
+index eff8fee..4eae126 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1017,6 +1017,14 @@ headers_install_all: __headers
+ 	         BIASMDIR=-bi-$$arch ;\
+ 	 done
+ 
++PHONY += headers_install_all_faster
++headers_install_all_faster: __headers
++	$(Q)$(MAKE) ARCH= SRCARCH= $(hdr-inst)=include
++	$(Q)set -e; for arch in $(hdr-archs); do \
++	 $(MAKE) ARCH=$$arch SRCARCH=$$arch $(hdr-inst)=include/asm-$$arch \
++	         BIASMDIR=-bi-$$arch ;\
++	 done
++
+ PHONY += headers_install
+ headers_install: __headers
+ 	$(Q)if [ ! -r $(srctree)/include/asm-$(SRCARCH)/Kbuild ]; then \
+diff --git a/include/Kbuild b/include/Kbuild
+index b522887..9393f7e 100644
+--- a/include/Kbuild
++++ b/include/Kbuild
+@@ -5,4 +5,6 @@ header-y += mtd/
+ header-y += rdma/
+ header-y += video/
+ 
++ifneq ($(ARCH),)
+ header-y += asm-$(ARCH)/
++endif
 
-Oliver Pinter írta:
-> Hi!
->
-> Attila first use one other nic (rtl8169), and after one other (3com
-> BCM570). All NIC producted this error...
-> the full thread in Hungarian Unix Portal: http://hup.hu/node/56295
->
-> On 6/7/08, Phil Oester <kernel@linuxace.com> wrote:
->   
->> On Sat, Jun 07, 2008 at 02:50:06PM +0200, Oliver Pinter wrote:
->>     
->>> [snip]
->>> Jun  6 14:04:11 www kernel: [ 6464.556309] clamscan: page allocation
->>> failure. order:3, mode:0x4020 <------------- this
->>>       
->> "Me too".  Lots of order 3 allocation failures on e1000 nics
->> since upgrading some heavy traffic boxes to 2.6.25 (though from 2.6.21,
->> so unclear on when it began).
->>
->> Phil
->>
->> Jun  2 11:11:24 px01 kernel: swapper: page allocation failure. order:3,
->> mode:0x4020
->> Jun  2 11:11:24 px01 kernel: Pid: 0, comm: swapper Not tainted
->> 2.6.25.2-x86_64.1 #1
->> Jun  2 11:11:24 px01 kernel:
->> Jun  2 11:11:24 px01 kernel: Call Trace:
->> Jun  2 11:11:24 px01 kernel:  <IRQ>  [<ffffffff8024ce51>]
->> __alloc_pages+0x2dd/0x2f6
->> Jun  2 11:11:24 px01 kernel:  [<ffffffff8026578d>] __slab_alloc+0x16e/0x4f9
->> Jun  2 11:11:24 px01 kernel:  [<ffffffff80394e84>] tcp_collapse+0x164/0x394
->> Jun  2 11:11:25 px01 kernel:  [<ffffffff802656d0>] __slab_alloc+0xb1/0x4f9
->> Jun  2 11:11:25 px01 kernel:  [<ffffffff80394e84>] tcp_collapse+0x164/0x394
->> Jun  2 11:11:25 px01 kernel:  [<ffffffff8026685d>]
->> __kmalloc_track_caller+0x82/0xb8
->> Jun  2 11:11:25 px01 kernel:  [<ffffffff8036a124>] __alloc_skb+0x5b/0x121
->> Jun  2 11:11:25 px01 kernel:  [<ffffffff80394e84>] tcp_collapse+0x164/0x394
->> Jun  2 11:11:25 px01 kernel:  [<ffffffff80395261>]
->> tcp_prune_queue+0x1ad/0x21e
->> Jun  2 11:11:25 px01 kernel:  [<ffffffff803954ba>]
->> tcp_data_queue+0x1e8/0xbab
->> Jun  2 11:11:25 px01 kernel:  [<ffffffff803974e8>]
->> tcp_rcv_established+0x64c/0x6fc
->> Jun  2 11:11:25 px01 kernel:  [<ffffffff8039c76f>] tcp_v4_do_rcv+0x2c/0x1b4
->> Jun  2 11:11:25 px01 kernel:  [<ffffffff8039e43e>] tcp_v4_rcv+0x6b3/0x705
->> Jun  2 11:11:25 px01 kernel:  [<ffffffff80384cdc>]
->> ip_local_deliver_finish+0xf6/0x1b3
->> Jun  2 11:11:25 px01 kernel:  [<ffffffff80384bc3>] ip_rcv_finish+0x2bf/0x2e2
->> Jun  2 11:11:25 px01 kernel:  [<ffffffff8023ada3>] getnstimeofday+0x2f/0x83
->> Jun  2 11:11:25 px01 kernel:  [<ffffffff8036e6b2>]
->> netif_receive_skb+0x1af/0x21b
->> Jun  2 11:11:25 px01 kernel:  [<ffffffff8032da6d>]
->> e1000_clean_rx_irq+0x3f3/0x4e7
->>
->>
->>     
->
->
->   
+-- 
+dwmw2
 
