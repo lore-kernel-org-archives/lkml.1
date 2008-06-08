@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756879AbYFHVA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757106AbYFHVDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756879AbYFHVA5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 17:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755215AbYFHVAt
+	id S1757106AbYFHVDX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 17:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754384AbYFHVDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 17:00:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42356 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755211AbYFHVAs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 17:00:48 -0400
-Date: Sun, 8 Jun 2008 14:00:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 2.6.26-rc5] make HPET_RTC_IRQ track HPET_EMULATE_RTC
-Message-Id: <20080608140011.aa3762cd.akpm@linux-foundation.org>
-In-Reply-To: <200806052241.44713.david-b@pacbell.net>
-References: <200806052241.44713.david-b@pacbell.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 8 Jun 2008 17:03:16 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43097 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754778AbYFHVDP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 17:03:15 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: 2.6.26-rc5-git2: snd-emu10k1 does not work
+Date: Sun, 8 Jun 2008 23:03:58 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Takashi Iwai <tiwai@suse.de>, Andrew Morton <akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806082303.59245.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Jun 2008 22:41:44 -0700 David Brownell <david-b@pacbell.net> wrote:
+Hi,
 
-> More Kconfig tweaks related to the legacy PC RTC code:
-> 
->  - Describe the legacy PC RTC driver as such ... it's never quite
->    been clear that this driver is for PC RTCs, and now it's fair
->    to call this the "legacy" driver.
-> 
->  - Force it to understand about HPET stealing its IRQs ... kernel
->    code does this always when HPET is in use, there should be no
->    option for users to goof up the config.
-> 
-> This seems to fix kernel bugzilla #10729.
+snd-emu10k1 doesn't work on one of my test boxes.  The driver apparently loads,
+but the card is not visible, for example, to any mixer apps (including the ALSA
+mixer).  However, YaST correctly detects and reports the card (the system is
+openSUSE 10.3, x86-64).  The openSUSE-made kernel (2.6.22-something) does
+correctly work on the same hardware.
 
-hm.  "seems" is a bit soft.
+Is there anything I should pay attention to, like any options related to /proc
+or sysfs that could have an effect on the audio adapter?
 
-Do you think this should be in 2.6.26?
+Thanks,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
