@@ -1,23 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754984AbYFHODk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755344AbYFHOLE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754984AbYFHODk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 10:03:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbYFHODa
+	id S1755344AbYFHOLE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 10:11:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbYFHOKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 10:03:30 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40169
+	Sun, 8 Jun 2008 10:10:52 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49269
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753171AbYFHOD3 (ORCPT
+	by vger.kernel.org with ESMTP id S1752583AbYFHOKv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 10:03:29 -0400
-Date: Sun, 08 Jun 2008 07:03:29 -0700 (PDT)
-Message-Id: <20080608.070329.193717669.davem@davemloft.net>
+	Sun, 8 Jun 2008 10:10:51 -0400
+Date: Sun, 08 Jun 2008 07:10:51 -0700 (PDT)
+Message-Id: <20080608.071051.212882594.davem@davemloft.net>
 To: w@1wt.eu
-Cc: stable@kernel.org, linux-kernel@vger.kernel.org, jchapman@katalix.com
-Subject: Re: Missing patch from stable [5/7]
+Cc: pupilla@hotmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       chrisw@sous-sol.org
+Subject: Re: [patch 00/50] 2.6.25.6 -stable review
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080608090150.GE6439@1wt.eu>
-References: <20080608090150.GE6439@1wt.eu>
+In-Reply-To: <20080608123601.GB10491@1wt.eu>
+References: <20080607204325.GJ5609@1wt.eu>
+	<BAY103-DAV7370611E1B3FEA8FD69B9B2B10@phx.gbl>
+	<20080608123601.GB10491@1wt.eu>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -27,18 +30,30 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Willy Tarreau <w@1wt.eu>
-Date: Sun, 8 Jun 2008 11:01:50 +0200
+Date: Sun, 8 Jun 2008 14:36:01 +0200
 
-> Hi,
-> 
-> this patch from mainline seems suitable for -stable, but was not proposed
-> for inclusion. I think we should include it for next review unless the
-> author disagrees.
+> Indeed. Most likely it was simply lost somewhere in the e-mail chain.
+> Then best thing to do is to retransmit it for next batch of patches.
+> Chris, here's the fix in question.
 
-This one is in my -stable submission queue, it's just that I've
-been traveling for nearly 3 weeks so I've only been able to
-push mainling bug fixes during this time, at best.
+It did not get lost at all, it's perfectly sitting in my
+networking -stable queue waiting for me to have an
+opportunity to submit it to the -stable folks after I do
+some testing.
 
-If people exercise some patience, my travels end on Monday so
-I should be able to unload my -stable networking backlog this
-week.
+If you ask me in the future about the status of a -stable
+patch from the networking, I'll let you know exactly what
+is happening to that patch wrt. stable.  I rarely forget
+to submit an appropriate patch, and when I do forget you
+merely have to let me know (rather than submitting it
+to -stable directly, please don't do that) so that I can
+fit it in with what I plan to submit to -stable already.
+
+Right now is an unusual situation where I am in a 3 week
+period of near constant travel, otherwise all of this
+stuff would have been submitted already.  As I stated in
+another reply to you, that period is ending tomorrow so I
+should be able to crank out all of these patches to -stable
+some time this week.
+
+Thanks.
