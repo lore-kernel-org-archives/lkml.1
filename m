@@ -1,39 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbYFHUMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756597AbYFHUOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756661AbYFHUMS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 16:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754805AbYFHUMJ
+	id S1756597AbYFHUOi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 16:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754994AbYFHUOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 16:12:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49326 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754481AbYFHUMI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 16:12:08 -0400
-Date: Sun, 8 Jun 2008 13:12:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: kosaki.motohiro@jp.fujitsu.com
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH 4/5] add throttle to shrink_zone()
-Message-Id: <20080608131203.e8cd69b7.akpm@linux-foundation.org>
-In-Reply-To: <20080605021505.306358710@jp.fujitsu.com>
-References: <20080605021211.871673550@jp.fujitsu.com>
-	<20080605021505.306358710@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 8 Jun 2008 16:14:30 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:62626 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754863AbYFHUO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 16:14:29 -0400
+Date: Sun, 8 Jun 2008 21:14:06 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: "Kevin D. Kissell" <kevink@mips.com>
+cc: Luke -Jr <luke@dashjr.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mips@linux-mips.org
+Subject: Re: bcm33xx port
+In-Reply-To: <484C38A6.7080503@mips.com>
+Message-ID: <Pine.LNX.4.55.0806082103320.15673@cliff.in.clinika.pl>
+References: <200806072113.26433.luke@dashjr.org> <200806072332.06460.luke@dashjr.org>
+ <Pine.LNX.4.55.0806081332560.15673@cliff.in.clinika.pl> <200806081357.02601.luke@dashjr.org>
+ <484C38A6.7080503@mips.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 05 Jun 2008 11:12:15 +0900 kosaki.motohiro@jp.fujitsu.com wrote:
+On Sun, 8 Jun 2008, Kevin D. Kissell wrote:
 
-> add throttle to shrink_zone() for performance improvement and prevent incorrect oom.
+> > The RI error spits out a bunch of info, including epc which presumably points 
+> > to the instruction causing the problem: ac85ffc0; this is 'sw a1,-64(a0)'
+> >   
+> But unless the processor itself is actually defective, there is no way that
+> a  SW instruction can cause an RI exception.  Sometimes a kernel crash
+> is so violent that the kernel stack frame cannot be reliably decoded by
+> the crash dump code, and this would appear to be one of those cases.
+> I find the address of 0xac85ffc0 to be a bit suspicious, myself.  That's
+> a kseg1 (non-cacheable identity map) address for physical address
+> 0x0c85ffc0, which would be legitimate (though suspicious) if you had
+> 256MB of RAM, but the boot log quote you posted earlier suggests
+> that you've only got 16M.  Is there really memory of some kind at
+> that address?  Are you calling routines in a boot ROM from Linux?
 
-We should have a description of how all this works, please.  I thought
-that was present in earlier iterations of this patchset.
+ Well, 0xac85ffc0 is the instruction word corresponding to 'sw a1,-64(a0)'.
+:)  The actual address of the failure is apparently 0x004e010c, which is
+pretty much a standard location somewhere within a user executable proper.
 
-It's quite hard and quite unreliable to reverse engineer both the
-design and your thinking from the implementation.
-
+  Maciej
