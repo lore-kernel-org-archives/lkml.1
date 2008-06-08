@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757467AbYFHUJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756662AbYFHUJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757467AbYFHUJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 16:09:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756617AbYFHUH5
+	id S1756662AbYFHUJx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 16:09:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754945AbYFHUJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 16:07:57 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:54293 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756109AbYFHUH4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 16:07:56 -0400
-Message-ID: <484C3C13.7020609@garzik.org>
-Date: Sun, 08 Jun 2008 16:07:47 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Jay Cliburn <jacliburn@bellsouth.net>
-CC: David Miller <davem@davemloft.net>, w@1wt.eu, pupilla@hotmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       chrisw@sous-sol.org
-Subject: Re: [patch 00/50] 2.6.25.6 -stable review
-References: <20080607204325.GJ5609@1wt.eu>	<BAY103-DAV7370611E1B3FEA8FD69B9B2B10@phx.gbl>	<20080608123601.GB10491@1wt.eu>	<20080608.071051.212882594.davem@davemloft.net> <20080608103835.0c0b1e83@osprey.hogchain.net>
-In-Reply-To: <20080608103835.0c0b1e83@osprey.hogchain.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 8 Jun 2008 16:09:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50880 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754905AbYFHUJm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 16:09:42 -0400
+Date: Sun, 8 Jun 2008 13:09:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: kosaki.motohiro@jp.fujitsu.com
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH 5/5] introduce sysctl of throttle
+Message-Id: <20080608130935.ea7076fc.akpm@linux-foundation.org>
+In-Reply-To: <20080605021505.694195095@jp.fujitsu.com>
+References: <20080605021211.871673550@jp.fujitsu.com>
+	<20080605021505.694195095@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jay Cliburn wrote:
-> On Sun, 08 Jun 2008 07:10:51 -0700 (PDT)
-> David Miller <davem@davemloft.net> wrote:
-> 
-> 
->> If you ask me in the future about the status of a -stable
->> patch from the networking, I'll let you know exactly what
->> is happening to that patch wrt. stable.  I rarely forget
->> to submit an appropriate patch, and when I do forget you
->> merely have to let me know (rather than submitting it
->> to -stable directly, please don't do that) so that I can
->> fit it in with what I plan to submit to -stable already.
-> 
-> 
-> As a netdev driver maintainer, I've been following this workflow for
-> patches that need to go to -stable:
-> 
-> 1.  I submit a mainline patch to Jeff Garzik.
-> 2.  Jeff submits to David.
-> 3.  David submits to Linus.
-> 4.  Linus merges patch into mainline.
-> 5.  I extract mainline commit ID.
-> 6.  I apply and test patch against appropriate 2.6.x.y git tree.
-> 7.  I submit patch directly to -stable.
-> 
-> David's admonition tells me I'm doing it wrong, and that I should
-> submit the stable patch to Jeff as well.  Am I right?
+On Thu, 05 Jun 2008 11:12:16 +0900 kosaki.motohiro@jp.fujitsu.com wrote:
 
-I usually encourage a more-parallel process where you simply email 
-stable@kernel.org with the upstream commit id of the change(s) in question.
+> introduce sysctl parameter of max task of throttle.
+> 
+> <usage>
+>  # echo 5 > /proc/sys/vm/max_nr_task_per_zone
+> </usage>
+> 
+> 
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> 
+> 
+> ---
+>  include/linux/swap.h |    2 ++
+>  kernel/sysctl.c      |    9 +++++++++
+>  mm/vmscan.c          |    4 +++-
+>  3 files changed, 14 insertions(+), 1 deletion(-)
+> 
+> Index: b/mm/vmscan.c
+> ===================================================================
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -125,9 +125,11 @@ struct scan_control {
+>  int vm_swappiness = 60;
+>  long vm_total_pages;	/* The total number of pages which the VM controls */
+>  
+> -#define MAX_RECLAIM_TASKS CONFIG_NR_MAX_RECLAIM_TASKS_PER_ZONE
+> +#define MAX_RECLAIM_TASKS vm_max_nr_task_per_zone
+>  static LIST_HEAD(shrinker_list);
+>  static DECLARE_RWSEM(shrinker_rwsem);
+> +int vm_max_nr_task_per_zone __read_mostly
+> +       = CONFIG_NR_MAX_RECLAIM_TASKS_PER_ZONE;
 
-	Jeff
+It would be nice if we could remove
+CONFIG_NR_MAX_RECLAIM_TASKS_PER_ZONE altogether.  Its a pretty obscure
+thing and we haven't provided people wait any information which would
+permit them to tune it anwyay.
 
+In which case this patch should be folded into [4/5].
 
 
