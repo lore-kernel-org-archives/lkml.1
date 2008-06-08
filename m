@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756206AbYFHTGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbYFHTrG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756206AbYFHTGR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 15:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754383AbYFHTGE
+	id S1754863AbYFHTrG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 15:47:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbYFHTqy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 15:06:04 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:42286 "EHLO smtp6.pp.htv.fi"
+	Sun, 8 Jun 2008 15:46:54 -0400
+Received: from gate.crashing.org ([63.228.1.57]:53925 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754216AbYFHTGC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 15:06:02 -0400
-Date: Sun, 8 Jun 2008 22:05:13 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: geert@linux-m68k.org, zippel@linux-m68k.org
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: m68k: could the Apollo support possibly work?
-Message-ID: <20080608190513.GE4048@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751244AbYFHTqy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 15:46:54 -0400
+In-Reply-To: <jeod6b25ln.fsf@sykes.suse.de>
+References: <20080608094730.GA30098@uranus.ravnborg.org> <19f34abd0806080312j2b09179cpa384a0460af5874e@mail.gmail.com> <20080608104122.GA10545@uranus.ravnborg.org> <1212922141.32207.495.camel@pmac.infradead.org> <20080608111707.GB10545@uranus.ravnborg.org> <1212931024.32207.546.camel@pmac.infradead.org> <2ccd2be2a739abf56d86266d5041bf07@kernel.crashing.org> <jeod6b25ln.fsf@sykes.suse.de>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <443677aecf2a9bfcb7fb8bb0fa1d71b5@kernel.crashing.org>
+Content-Transfer-Encoding: 7bit
+Cc: geert@linux-m68k.org, Linus Torvalds <torvalds@linux-foundation.org>,
+       zippel@linux-m68k.org, Jan Engelhardt <jengelh@computergmbh.de>,
+       Sam Ravnborg <sam@ravnborg.org>, David Woodhouse <dwmw2@infradead.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] Speed up "make headers_*"
+Date: Sun, 8 Jun 2008 21:45:34 +0200
+To: Andreas Schwab <schwab@suse.de>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nothing seems to set apollo_model (apollo_parse_bootinfo() has no caller).
+On 8 jun 2008, at 19:34, Andreas Schwab wrote:
+>>> Assuming we _don't_ want the ac_ahz member to be included on m68k, 
+>>> this
+>>> should fix it (is __mc68000__ the right thing to use?)...
+>>
+>> I think __m68k__ is preferred, it's harder to confuse for one of the
+>> tuning symbols (that is, __mc68040__ and friends).
+>
+> __m68k__ wasn't pre-defined by gcc before 3.4.
 
-Therefore trying to boot an Apollo machine seems to do:
-  arch/m68k/kernel/setup.c:setup_arch()
-    arch/m68k/apollo/config.c:config_apollo()
-      arch/m68k/apollo/config.c:dn_setup_model() 
-        panic()
+Darn, I knew I should have checked the history.  __mc68000__ is
+the best thing to use, then, some people still use 3.3 (don't ask
+me why).
 
-Do I miss anything?
 
-Does anyone still have this hardware and tried booting it in recent years?
-
-This problem already exists in kernel 2.4.0, and my gut feeling is 
-it's quite dead code I could remove.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Segher
 
