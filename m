@@ -1,53 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764328AbYFHLrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764411AbYFHLvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764328AbYFHLrR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 07:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758801AbYFHLrI
+	id S1764411AbYFHLvs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 07:51:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758237AbYFHLvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 07:47:08 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55304 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758419AbYFHLrH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 07:47:07 -0400
-Subject: Re: [PATCH] Speed up "make headers_*"
-From: David Woodhouse <dwmw2@infradead.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20080608113028.GE10545@uranus.ravnborg.org>
-References: <20080608094730.GA30098@uranus.ravnborg.org>
-	 <1212924004.32207.498.camel@pmac.infradead.org>
-	 <20080608113028.GE10545@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Sun, 08 Jun 2008 12:47:03 +0100
-Message-Id: <1212925623.32207.517.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 8 Jun 2008 07:51:37 -0400
+Received: from bay0-omc2-s24.bay0.hotmail.com ([65.54.246.160]:62020 "EHLO
+	bay0-omc2-s24.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758020AbYFHLvg convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 07:51:36 -0400
+Message-ID: <BAY103-DAV7370611E1B3FEA8FD69B9B2B10@phx.gbl>
+X-Originating-IP: [88.35.96.158]
+X-Originating-Email: [pupilla@hotmail.com]
+From: "Marco Berizzi" <pupilla@hotmail.com>
+To: "Willy Tarreau" <w@1wt.eu>
+Cc: "David Miller" <davem@davemloft.net>, <linux-kernel@vger.kernel.org>,
+       <netdev@vger.kernel.org>, "Chris Wright" <chrisw@sous-sol.org>
+References: <20080520.143238.87085088.davem@davemloft.net> <BAY103-DAV11AE409F40D0878FC3A259B2B60@phx.gbl> <20080607204325.GJ5609@1wt.eu>
+Subject: Re: [patch 00/50] 2.6.25.6 -stable review
+Date: Sun, 8 Jun 2008 13:56:01 +0200
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.2180
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2180
+X-OriginalArrivalTime: 08 Jun 2008 11:51:35.0364 (UTC) FILETIME=[00908840:01C8C95E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-06-08 at 13:30 +0200, Sam Ravnborg wrote:
-> I will name it ASMDIR and set it to 'y' if we shall install to asm/
+Willy Tarreau wrote:
 
-That works if we can't just make the top-level Makefile set $(dst) for
-itself. Which perhaps we could, if we stopped it running the whole
-recursive installation on include/ for each arch, and instead made it
-run only on include/asm-$(ARCH) for each arch.
+> On Sat, Jun 07, 2008 at 10:27:58PM +0200, Marco Berizzi wrote:
+>> David Miller wrote:
+>> 
+>> > From: Herbert Xu <herbert@gondor.apana.org.au>
+>> > Date: Tue, 20 May 2008 17:25:11 +0800
+>> > 
+>> >> On Wed, May 14, 2008 at 10:19:57AM +0200, Marco Berizzi wrote:
+>> >> > 
+>> >> > I hope this helps.
+>> >> 
+>> >> OK found the problem, it was my fault after all :)
+>> >> 
+>> >> Dave, this patch needs to go into stable too.
+>> >> 
+>> >> [IPSEC]: Use the correct ip_local_out function
+>> >> 
+>> >> Because the IPsec output function xfrm_output_resume does its
+>> >> own dst_output call it should always call __ip_local_output
+>> >> instead of ip_local_output as the latter may invoke dst_output
+>> >> directly.  Otherwise the return values from nf_hook and dst_output
+>> >> may clash as they both use the value 1 but for different purposes.
+>> >> 
+>> >> When that clash occurs this can cause a packet to be used after
+>> >> it has been freed which usually leads to a crash.  Because the
+>> >> offending value is only returned from dst_output with qdiscs
+>> >> such as HTB, this bug is normally not visible.
+>> >> 
+>> >> Thanks to Marco Berizzi for his perseverance in tracking this
+>> >> down.
+>> >> 
+>> >> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+>> > 
+>> > Applied and queued to -stable, thanks!
+>> 
+>> Hi David,
+>> 
+>> I don't see this patch in Chris 2.6.25.6 -stable review message.
+> 
+> Is it already in mainline ?
 
-And do a separate run for the other directories, of course -- probably
-with $(ARCH) and $(SRCARCH) set to empty or something.
-
-That also might help shave a little more time off by not repeating the
-export 20 times for every non-asm subdirectory. (Not that we actually
-_do_ repeat it, but even the make invocation and the dependency checks
-take time).
-
--- 
-dwmw2
+yes, since 2008/05/20
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1ac06e0306d0192a7a4d9ea1c9e06d355ce7e7d3
 
