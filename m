@@ -1,117 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764859AbYFHMaO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764740AbYFHMg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764859AbYFHMaO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 08:30:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761020AbYFHMaA
+	id S1764740AbYFHMg3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 08:36:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754953AbYFHMgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 08:30:00 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55185 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759950AbYFHMaA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 08:30:00 -0400
-Subject: Re: [PATCH] Speed up "make headers_*"
-From: David Woodhouse <dwmw2@infradead.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <1212927265.32207.527.camel@pmac.infradead.org>
-References: <20080608094730.GA30098@uranus.ravnborg.org>
-	 <1212924004.32207.498.camel@pmac.infradead.org>
-	 <20080608113028.GE10545@uranus.ravnborg.org>
-	 <1212925623.32207.517.camel@pmac.infradead.org>
-	 <1212927265.32207.527.camel@pmac.infradead.org>
-Content-Type: text/plain
-Date: Sun, 08 Jun 2008 13:29:56 +0100
-Message-Id: <1212928196.32207.530.camel@pmac.infradead.org>
+	Sun, 8 Jun 2008 08:36:19 -0400
+Received: from 1wt.eu ([62.212.114.60]:1581 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752628AbYFHMgT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 08:36:19 -0400
+Date: Sun, 8 Jun 2008 14:36:01 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Marco Berizzi <pupilla@hotmail.com>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [patch 00/50] 2.6.25.6 -stable review
+Message-ID: <20080608123601.GB10491@1wt.eu>
+References: <20080520.143238.87085088.davem@davemloft.net> <BAY103-DAV11AE409F40D0878FC3A259B2B60@phx.gbl> <20080607204325.GJ5609@1wt.eu> <BAY103-DAV7370611E1B3FEA8FD69B9B2B10@phx.gbl>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <BAY103-DAV7370611E1B3FEA8FD69B9B2B10@phx.gbl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-06-08 at 13:14 +0100, David Woodhouse wrote:
-> I have yet to actually remove $(BIARCH) and just override $(dst),
-> though.
+On Sun, Jun 08, 2008 at 01:56:01PM +0200, Marco Berizzi wrote:
+> Willy Tarreau wrote:
+> 
+> > On Sat, Jun 07, 2008 at 10:27:58PM +0200, Marco Berizzi wrote:
+> >> David Miller wrote:
+> >> 
+> >> > From: Herbert Xu <herbert@gondor.apana.org.au>
+> >> > Date: Tue, 20 May 2008 17:25:11 +0800
+> >> > 
+> >> >> On Wed, May 14, 2008 at 10:19:57AM +0200, Marco Berizzi wrote:
+> >> >> > 
+> >> >> > I hope this helps.
+> >> >> 
+> >> >> OK found the problem, it was my fault after all :)
+> >> >> 
+> >> >> Dave, this patch needs to go into stable too.
+> >> >> 
+> >> >> [IPSEC]: Use the correct ip_local_out function
+> >> >> 
+> >> >> Because the IPsec output function xfrm_output_resume does its
+> >> >> own dst_output call it should always call __ip_local_output
+> >> >> instead of ip_local_output as the latter may invoke dst_output
+> >> >> directly.  Otherwise the return values from nf_hook and dst_output
+> >> >> may clash as they both use the value 1 but for different purposes.
+> >> >> 
+> >> >> When that clash occurs this can cause a packet to be used after
+> >> >> it has been freed which usually leads to a crash.  Because the
+> >> >> offending value is only returned from dst_output with qdiscs
+> >> >> such as HTB, this bug is normally not visible.
+> >> >> 
+> >> >> Thanks to Marco Berizzi for his perseverance in tracking this
+> >> >> down.
+> >> >> 
+> >> >> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+> >> > 
+> >> > Applied and queued to -stable, thanks!
+> >> 
+> >> Hi David,
+> >> 
+> >> I don't see this patch in Chris 2.6.25.6 -stable review message.
+> > 
+> > Is it already in mainline ?
+> 
+> yes, since 2008/05/20
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1ac06e0306d0192a7a4d9ea1c9e06d355ce7e7d3
 
-Done that now, although headers_check_all is still not fixed to cope
-with it...
+Indeed. Most likely it was simply lost somewhere in the e-mail chain.
+Then best thing to do is to retransmit it for next batch of patches.
+Chris, here's the fix in question.
 
-diff --git a/Makefile b/Makefile
-index eff8fee..1376c33 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1012,9 +1012,9 @@ __headers: include/linux/version.h scripts_basic FORCE
- 
- PHONY += headers_install_all
- headers_install_all: __headers
-+	$(Q)$(MAKE) ARCH= SRCARCH= $(hdr-inst)=include
- 	$(Q)set -e; for arch in $(hdr-archs); do \
--	 $(MAKE) ARCH=$$arch SRCARCH=$$arch $(hdr-inst)=include \
--	         BIASMDIR=-bi-$$arch ;\
-+	 $(MAKE) ARCH=$$arch SRCARCH=$$arch $(hdr-inst)=include/asm-$$arch; \
- 	 done
- 
- PHONY += headers_install
-@@ -1029,7 +1029,7 @@ PHONY += headers_check_all
- headers_check_all: headers_install_all
- 	$(Q)set -e; for arch in $(hdr-archs); do \
- 	 $(MAKE) ARCH=$$arch SRCARCH=$$arch $(hdr-inst)=include \
--	         BIASMDIR=-bi-$$arch HDRCHECK=1 ;\
-+	         HDRCHECK=1 ;\
- 	 done
- 
- PHONY += headers_check
-diff --git a/include/Kbuild b/include/Kbuild
-index b522887..9393f7e 100644
---- a/include/Kbuild
-+++ b/include/Kbuild
-@@ -5,4 +5,6 @@ header-y += mtd/
- header-y += rdma/
- header-y += video/
- 
-+ifneq ($(ARCH),)
- header-y += asm-$(ARCH)/
-+endif
-diff --git a/scripts/Makefile.headersinst b/scripts/Makefile.headersinst
-index 80df6f3..e96d18e 100644
---- a/scripts/Makefile.headersinst
-+++ b/scripts/Makefile.headersinst
-@@ -14,15 +14,6 @@ include $(kbuild-file)
- 
- include scripts/Kbuild.include
- 
--# If this is include/asm-$(ARCH) then override $(_dst) so that
--# we install to include/asm directly.
--# Unless $(BIASMDIR) is set, in which case we're probably doing
--# a 'headers_install_all' build and we should keep the -$(ARCH)
--# in the directory name.
--ifeq ($(obj),include/asm-$(ARCH)$(BIASMDIR))
--     _dst := include/asm
--endif
--
- install      := $(INSTALL_HDR_PATH)/$(_dst)
- 
- header-y     := $(sort $(header-y) $(unifdef-y))
-@@ -88,8 +79,12 @@ endif
- # Recursion
- hdr-inst := -rR -f $(srctree)/scripts/Makefile.headersinst obj
- .PHONY: $(subdirs)
-+
-+# If the next directory is include/asm-$(ARCH) then override
-+# $(_dst) so that we install to include/asm directly.
- $(subdirs):
--	$(Q)$(MAKE) $(hdr-inst)=$(obj)/$@ dst=$(_dst)/$@
-+	$(Q)$(MAKE) $(hdr-inst)=$(obj)/$@ \
-+		dst=$(patsubst include/asm-$(ARCH),include/asm,$(_dst)/$@)
- 
- targets := $(wildcard $(sort $(targets)))
- cmd_files := $(wildcard \
+Thanks,
+Willy
+--
 
+>From 1ac06e0306d0192a7a4d9ea1c9e06d355ce7e7d3 Mon Sep 17 00:00:00 2001
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Date: Tue, 20 May 2008 14:32:14 -0700
+Subject: ipsec: Use the correct ip_local_out function
+
+Because the IPsec output function xfrm_output_resume does its
+own dst_output call it should always call __ip_local_output
+instead of ip_local_output as the latter may invoke dst_output
+directly.  Otherwise the return values from nf_hook and dst_output
+may clash as they both use the value 1 but for different purposes.
+
+When that clash occurs this can cause a packet to be used after
+it has been freed which usually leads to a crash.  Because the
+offending value is only returned from dst_output with qdiscs
+such as HTB, this bug is normally not visible.
+
+Thanks to Marco Berizzi for his perseverance in tracking this
+down.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ net/ipv4/route.c |    2 +-
+ net/ipv6/route.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/net/ipv4/route.c b/net/ipv4/route.c
+index 92f90ae..df41026 100644
+--- a/net/ipv4/route.c
++++ b/net/ipv4/route.c
+@@ -160,7 +160,7 @@ static struct dst_ops ipv4_dst_ops = {
+ 	.negative_advice =	ipv4_negative_advice,
+ 	.link_failure =		ipv4_link_failure,
+ 	.update_pmtu =		ip_rt_update_pmtu,
+-	.local_out =		ip_local_out,
++	.local_out =		__ip_local_out,
+ 	.entry_size =		sizeof(struct rtable),
+ 	.entries =		ATOMIC_INIT(0),
+ };
+diff --git a/net/ipv6/route.c b/net/ipv6/route.c
+index b7a4a87..48534c6 100644
+--- a/net/ipv6/route.c
++++ b/net/ipv6/route.c
+@@ -109,7 +109,7 @@ static struct dst_ops ip6_dst_ops_template = {
+ 	.negative_advice	=	ip6_negative_advice,
+ 	.link_failure		=	ip6_link_failure,
+ 	.update_pmtu		=	ip6_rt_update_pmtu,
+-	.local_out		=	ip6_local_out,
++	.local_out		=	__ip6_local_out,
+ 	.entry_size		=	sizeof(struct rt6_info),
+ 	.entries		=	ATOMIC_INIT(0),
+ };
 -- 
-dwmw2
+1.5.3.8
 
