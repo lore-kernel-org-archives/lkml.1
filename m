@@ -1,102 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764900AbYFHL45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764800AbYFHMGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764900AbYFHL45 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 07:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760996AbYFHL4u
+	id S1764800AbYFHMGS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 08:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760016AbYFHMGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 07:56:50 -0400
-Received: from mail.memset.com ([89.200.136.113]:41773 "EHLO mail.memset.com"
+	Sun, 8 Jun 2008 08:06:07 -0400
+Received: from server.zsirmo.hu ([84.21.11.243]:35184 "EHLO server.zsirmo.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759762AbYFHL4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 07:56:49 -0400
-X-Greylist: delayed 1241 seconds by postgrey-1.27 at vger.kernel.org; Sun, 08 Jun 2008 07:56:49 EDT
-Date: Sun, 8 Jun 2008 12:35:27 +0100
-From: Nick Craig-Wood <nick@craig-wood.com>
-To: linux-kernel@vger.kernel.org
-Subject: libata.force=1.5Gbps doesn't seem to work
-Message-ID: <20080608113527.GA5105@craig-wood.com>
+	id S1756034AbYFHMGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 08:06:06 -0400
+X-Greylist: delayed 574 seconds by postgrey-1.27 at vger.kernel.org; Sun, 08 Jun 2008 08:06:06 EDT
+Message-ID: <484BC8DC.6080606@zsirmo.hu>
+Date: Sun, 08 Jun 2008 13:56:12 +0200
+From: Zsiros Attila <zsirmo@zsirmo.hu>
+Reply-To: zsirmo@zsirmo.hu
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Oliver Pinter <oliver.pntr@gmail.com>
+CC: Phil Oester <kernel@linuxace.com>,
+       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       netdev <netdev@vger.kernel.org>, Matt Carlson <mcarlson@broadcom.com>,
+       Michael Chan <mchan@broadcom.com>,
+       Brian Vowell <brian.vowell@gmail.com>
+Subject: Re: bug report
+References: <48499731.1080807@gmail.com>	 <6101e8c40806061844g5b7676d4xb48c5c69ad48391f@mail.gmail.com>	 <20080606225643.8be222a9.akpm@linux-foundation.org>	 <Pine.LNX.4.64.0806071141480.24862@wrl-59.cs.helsinki.fi>	 <6101e8c40806070550h62866816s1d8f8c1ba31f59f@mail.gmail.com>	 <20080607150948.GA4690@linuxace.com> <6101e8c40806071153r1c3dbd03lffa6c43a9140ad4d@mail.gmail.com>
+In-Reply-To: <6101e8c40806071153r1c3dbd03lffa6c43a9140ad4d@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ever since I changed to AHCI (by fiddling with random options in the
-BIOS) my external SATA drive is being run at 3.0 Gbps.  However it
-doesn't seem reliable at that - maybe the cable is too long. (It is
-probably about 80cm in total - one standard SATA cable going to the
-case and another from the case to the drive).
+Hy!
 
-I read in Documentation/kernel-parameters.txt that a command line of
+Newer log
+http://www.cyberszeg.hu/log/kern2.log
 
-  libata.force=1.5Gbps
+Zsirmo
 
-Should force all my SATA disks to 1.5 Gbps.
+Oliver Pinter írta:
+> Hi!
+>
+> Attila first use one other nic (rtl8169), and after one other (3com
+> BCM570). All NIC producted this error...
+> the full thread in Hungarian Unix Portal: http://hup.hu/node/56295
+>
+> On 6/7/08, Phil Oester <kernel@linuxace.com> wrote:
+>   
+>> On Sat, Jun 07, 2008 at 02:50:06PM +0200, Oliver Pinter wrote:
+>>     
+>>> [snip]
+>>> Jun  6 14:04:11 www kernel: [ 6464.556309] clamscan: page allocation
+>>> failure. order:3, mode:0x4020 <------------- this
+>>>       
+>> "Me too".  Lots of order 3 allocation failures on e1000 nics
+>> since upgrading some heavy traffic boxes to 2.6.25 (though from 2.6.21,
+>> so unclear on when it began).
+>>
+>> Phil
+>>
+>> Jun  2 11:11:24 px01 kernel: swapper: page allocation failure. order:3,
+>> mode:0x4020
+>> Jun  2 11:11:24 px01 kernel: Pid: 0, comm: swapper Not tainted
+>> 2.6.25.2-x86_64.1 #1
+>> Jun  2 11:11:24 px01 kernel:
+>> Jun  2 11:11:24 px01 kernel: Call Trace:
+>> Jun  2 11:11:24 px01 kernel:  <IRQ>  [<ffffffff8024ce51>]
+>> __alloc_pages+0x2dd/0x2f6
+>> Jun  2 11:11:24 px01 kernel:  [<ffffffff8026578d>] __slab_alloc+0x16e/0x4f9
+>> Jun  2 11:11:24 px01 kernel:  [<ffffffff80394e84>] tcp_collapse+0x164/0x394
+>> Jun  2 11:11:25 px01 kernel:  [<ffffffff802656d0>] __slab_alloc+0xb1/0x4f9
+>> Jun  2 11:11:25 px01 kernel:  [<ffffffff80394e84>] tcp_collapse+0x164/0x394
+>> Jun  2 11:11:25 px01 kernel:  [<ffffffff8026685d>]
+>> __kmalloc_track_caller+0x82/0xb8
+>> Jun  2 11:11:25 px01 kernel:  [<ffffffff8036a124>] __alloc_skb+0x5b/0x121
+>> Jun  2 11:11:25 px01 kernel:  [<ffffffff80394e84>] tcp_collapse+0x164/0x394
+>> Jun  2 11:11:25 px01 kernel:  [<ffffffff80395261>]
+>> tcp_prune_queue+0x1ad/0x21e
+>> Jun  2 11:11:25 px01 kernel:  [<ffffffff803954ba>]
+>> tcp_data_queue+0x1e8/0xbab
+>> Jun  2 11:11:25 px01 kernel:  [<ffffffff803974e8>]
+>> tcp_rcv_established+0x64c/0x6fc
+>> Jun  2 11:11:25 px01 kernel:  [<ffffffff8039c76f>] tcp_v4_do_rcv+0x2c/0x1b4
+>> Jun  2 11:11:25 px01 kernel:  [<ffffffff8039e43e>] tcp_v4_rcv+0x6b3/0x705
+>> Jun  2 11:11:25 px01 kernel:  [<ffffffff80384cdc>]
+>> ip_local_deliver_finish+0xf6/0x1b3
+>> Jun  2 11:11:25 px01 kernel:  [<ffffffff80384bc3>] ip_rcv_finish+0x2bf/0x2e2
+>> Jun  2 11:11:25 px01 kernel:  [<ffffffff8023ada3>] getnstimeofday+0x2f/0x83
+>> Jun  2 11:11:25 px01 kernel:  [<ffffffff8036e6b2>]
+>> netif_receive_skb+0x1af/0x21b
+>> Jun  2 11:11:25 px01 kernel:  [<ffffffff8032da6d>]
+>> e1000_clean_rx_irq+0x3f3/0x4e7
+>>
+>>
+>>     
+>
+>
+>   
 
-However this doesn't seem to work.
-
-Edited highlights of dmesg - note the selection of 3.0 Gbps for ata6 -
-that is what I'm trying to avoid.
-
-[    1.087690] SCSI subsystem initialized
-[    1.091690] libata version 3.00 loaded.
-[    2.241029] ahci 0000:00:1f.2: version 3.0
-[    3.300329] ahci 0000:00:1f.2: AHCI 0001.0200 32 slots 6 ports 3 Gbps 0x3f impl SATA mode
-[    3.300366] ahci 0000:00:1f.2: flags: 64bit ncq sntf stag pm led clo pmp pio slum part
-[    3.309764] scsi0 : ahci
-[    3.309764] scsi1 : ahci
-[    3.309764] scsi2 : ahci
-[    3.309764] scsi3 : ahci
-[    3.309764] scsi4 : ahci
-[    3.309764] scsi5 : ahci
-[    3.309764] ata1: SATA max UDMA/133 abar m2048@0xfb106000 port 0xfb106100 irq 218
-[    3.309764] ata2: SATA max UDMA/133 abar m2048@0xfb106000 port 0xfb106180 irq 218
-[    3.309764] ata3: SATA max UDMA/133 abar m2048@0xfb106000 port 0xfb106200 irq 218
-[    3.309764] ata4: SATA max UDMA/133 abar m2048@0xfb106000 port 0xfb106280 irq 218
-[    3.309764] ata5: SATA max UDMA/133 abar m2048@0xfb106000 port 0xfb106300 irq 218
-[    3.309764] ata6: SATA max UDMA/133 abar m2048@0xfb106000 port 0xfb106380 irq 218
-[    3.845799] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-[    3.847892] ata1.00: HPA detected: current 586112591, native 586114704
-[    3.847926] ata1.00: ATA-7: Maxtor 7L300S0, BANC1E00, max UDMA/133
-[    3.847959] ata1.00: 586112591 sectors, multi 0: LBA48 NCQ (not used)
-[    3.850048] ata1.00: configured for UDMA/133
-[    4.343265] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-[    4.345363] ata2.00: ATA-7: Maxtor 7B300S0, BANC1B70, max UDMA/133
-[    4.345395] ata2.00: 586114704 sectors, multi 0: LBA48 NCQ (not used)
-[    4.344422] ata2.00: configured for UDMA/133
-[    4.667268] ata3: SATA link down (SStatus 0 SControl 300)
-[    4.987268] ata4: SATA link down (SStatus 0 SControl 300)
-[    5.307259] ata5: SATA link down (SStatus 0 SControl 300)
-[    5.791265] ata6: SATA link up 3.0 Gbps (SStatus 123 SControl 300)    <--- 1.5 Gbps desired here!
-[    5.695773] ata6.00: ATA-7: ST3250620NS,     3BKH, max UDMA/133
-[    5.695773] ata6.00: 488281250 sectors, multi 0: LBA48 NCQ (depth 31/32)
-[    5.827259] ata6.00: configured for UDMA/133
-[    5.827259] scsi 0:0:0:0: Direct-Access     ATA      Maxtor 7L300S0   BANC PQ: 0 ANSI: 5
-[    5.827259] scsi 1:0:0:0: Direct-Access     ATA      Maxtor 7B300S0   BANC PQ: 0 ANSI: 5
-[    5.827259] scsi 5:0:0:0: Direct-Access     ATA      ST3250620NS      n/a  PQ: 0 ANSI: 5
-[    6.899647] ahci 0000:04:00.0: AHCI 0001.0000 32 slots 2 ports 3 Gbps 0x3 impl SATA mode
-[    6.899684] ahci 0000:04:00.0: flags: 64bit ncq pm led clo pmp pio slum part
-[    6.903618] scsi6 : ahci
-[    6.903618] scsi7 : ahci
-[    6.903618] ata7: SATA max UDMA/133 abar m8192@0xfb000000 port 0xfb000100 irq 19
-[    6.903618] ata8: SATA max UDMA/133 abar m8192@0xfb000000 port 0xfb000180 irq 19
-[    7.219641] ata7: SATA link down (SStatus 0 SControl 300)
-[    7.539656] ata8: SATA link down (SStatus 0 SControl 300)
-[    7.777106] sd 0:0:0:0: [sda] Attached SCSI disk
-[    7.797106] sd 1:0:0:0: [sdb] Attached SCSI disk
-[    7.821107] sd 5:0:0:0: [sdc] Attached SCSI disk
-
-$ cat /proc/cmdline
-root=/dev/md0 panic=60 combined_mode=libata libata.atapi_enabled=1 libata.force=1.5Gbps ro
-
-This is with a 2.6.26-rc5 + latest git
-
-$ git-describe
-v2.6.26-rc5-159-gaab2545
-
-Thanks in advance for any help!
-
--- 
-Nick Craig-Wood <nick@craig-wood.com> -- http://www.craig-wood.com/nick
