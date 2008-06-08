@@ -1,61 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbYFHOTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbYFHO3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755506AbYFHOTn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 10:19:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYFHOTd
+	id S1755842AbYFHO3u (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 10:29:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753716AbYFHO3k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 10:19:33 -0400
-Received: from 1wt.eu ([62.212.114.60]:1590 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751494AbYFHOTc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 10:19:32 -0400
-Date: Sun, 8 Jun 2008 16:19:17 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: David Miller <davem@davemloft.net>
-Cc: pupilla@hotmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       chrisw@sous-sol.org
-Subject: Re: [patch 00/50] 2.6.25.6 -stable review
-Message-ID: <20080608141917.GA12754@1wt.eu>
-References: <20080607204325.GJ5609@1wt.eu> <BAY103-DAV7370611E1B3FEA8FD69B9B2B10@phx.gbl> <20080608123601.GB10491@1wt.eu> <20080608.071051.212882594.davem@davemloft.net>
-Mime-Version: 1.0
+	Sun, 8 Jun 2008 10:29:40 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:48271 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753598AbYFHO3j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 10:29:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=BUeeG+AcaVNL58pJEZurd9755q3/WeisOAfOEDH51bIBT6lWmWOkJB8hLW0O+xPFdz
+         6ESzPkcqZ04twVcFhaC/DCoj62v09bcLt4NGDtXWvA4GByoaKxXL+/gw3oJgy7rVSTyI
+         /DXP/P4QFtRKGsOvueqnvwwQe+eaYcxrunp0c=
+Date: Sun, 8 Jun 2008 22:26:06 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Bernhard Walle <bwalle@suse.de>
+Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
+       mingo@redhat.com, tglx@linutronix.de, vgoyal@redhat.com,
+       anderson@redhat.com
+Subject: Re: [patch 2/3] Add flags parameter to reserve_bootmem_generic()
+Message-ID: <20080608142606.GE2487@hacking>
+References: <20080608134628.757299158@halley.suse.de> <20080608134629.743220278@halley.suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080608.071051.212882594.davem@davemloft.net>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080608134629.743220278@halley.suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 08, 2008 at 07:10:51AM -0700, David Miller wrote:
-> From: Willy Tarreau <w@1wt.eu>
-> Date: Sun, 8 Jun 2008 14:36:01 +0200
+On Sun, Jun 08, 2008 at 03:46:30PM +0200, Bernhard Walle wrote:
+>This patch adds a 'flags' parameter to reserve_bootmem_generic() like it
+>already has been added in reserve_bootmem() with commit
+>72a7fe3967dbf86cb34e24fbf1d957fe24d2f246.
+>
+>It also changes all users to use BOOTMEM_DEFAULT, which doesn't effectively
+>change the behaviour. Since the change is x86-specific, I don't think it's
+>necessary to add a new API for migration. There are only 4 users of that
+>function.
+>
+>The change is necessary for the next patch, using reserve_bootmem_generic()
+>for crashkernel reservation.
+>
+>
+>Signed-off-by: Bernhard Walle <bwalle@suse.de>
+>
+>---
+> arch/x86/kernel/e820_64.c |    3 ++-
+> arch/x86/kernel/efi_64.c  |    3 ++-
+> arch/x86/kernel/mpparse.c |    5 +++--
+> arch/x86/mm/init_64.c     |   17 ++++++++++++-----
+> include/asm-x86/proto.h   |    2 +-
+> 5 files changed, 20 insertions(+), 10 deletions(-)
+>
+>--- a/arch/x86/kernel/e820_64.c
+>+++ b/arch/x86/kernel/e820_64.c
+>@@ -118,7 +118,8 @@ void __init early_res_to_bootmem(unsigne
+> 			continue;
+> 		printk(KERN_INFO "  early res: %d [%lx-%lx] %s\n", i,
+> 			final_start, final_end - 1, r->name);
+>-		reserve_bootmem_generic(final_start, final_end - final_start);
+>+		reserve_bootmem_generic(final_start, final_end - final_start,
+>+			BOOTMEM_DEFAULT);
+> 	}
+> }
 > 
-> > Indeed. Most likely it was simply lost somewhere in the e-mail chain.
-> > Then best thing to do is to retransmit it for next batch of patches.
-> > Chris, here's the fix in question.
-> 
-> It did not get lost at all, it's perfectly sitting in my
-> networking -stable queue waiting for me to have an
-> opportunity to submit it to the -stable folks after I do
-> some testing.
-> 
-> If you ask me in the future about the status of a -stable
-> patch from the networking, I'll let you know exactly what
-> is happening to that patch wrt. stable.  I rarely forget
-> to submit an appropriate patch, and when I do forget you
-> merely have to let me know (rather than submitting it
-> to -stable directly, please don't do that) so that I can
-> fit it in with what I plan to submit to -stable already.
+>--- a/arch/x86/kernel/efi_64.c
+>+++ b/arch/x86/kernel/efi_64.c
+>@@ -100,7 +100,8 @@ void __init efi_call_phys_epilog(void)
+> void __init efi_reserve_bootmem(void)
+> {
+> 	reserve_bootmem_generic((unsigned long)memmap.phys_map,
+>-				memmap.nr_map * memmap.desc_size);
+>+				memmap.nr_map * memmap.desc_size,
+>+				BOOTMEM_DEFAULT);
+> }
 
-OK
+Just one comment.
 
-> Right now is an unusual situation where I am in a 3 week
-> period of near constant travel, otherwise all of this
-> stuff would have been submitted already.  As I stated in
-> another reply to you, that period is ending tomorrow so I
-> should be able to crank out all of these patches to -stable
-> some time this week.
+Since 'reserve_bootmem_generic' is changed from 'void' to 'int',
+we should check its return value for failure when possible, right?
 
-Perfect, thank you David.
-Willy
 
+-- 
+Hi, I'm a .signature virus, please copy/paste me to help me spread
+all over the world.
