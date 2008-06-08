@@ -1,158 +1,812 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761148AbYFHKTh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762063AbYFHKVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761148AbYFHKTh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 06:19:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756878AbYFHKT1
+	id S1762063AbYFHKVM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 06:21:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756823AbYFHKU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 06:19:27 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:45707 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756272AbYFHKT0 (ORCPT
+	Sun, 8 Jun 2008 06:20:57 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:36052 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756781AbYFHKU4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 06:19:26 -0400
+	Sun, 8 Jun 2008 06:20:56 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=o8L8IenUaUppJxlUOi9mK5WgESXM/yuFiPjHgt32TMWtPPDR/JYn7FNYvOErBOOJ2f
-         uiUzTK0kAXCAjwQNjWXFzdsAzFmnltufkqPNKaIPAbRI37hBeiOgFEtfoLIYSRr0QQVH
-         trtz3Vbku29iGADQC1PKS9euihAJTtV5x+qu0=
-Message-ID: <aec7e5c30806080319y7b9b6a89icacbfa67b117fb2b@mail.gmail.com>
-Date: Sun, 8 Jun 2008 19:19:25 +0900
-From: "Magnus Damm" <magnus.damm@gmail.com>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Subject: Re: [PATCH] uio_pdrv: Unique IRQ Mode
-Cc: linux-kernel@vger.kernel.org, Uwe.Kleine-Koenig@digi.com, gregkh@suse.de,
-       akpm@linux-foundation.org, lethal@linux-sh.org, tglx@linutronix.de
-In-Reply-To: <20080605112744.GB3198@local>
+        b=UpWK41eM8R2HLIsRL9eoFqH3Wjr94amEMFXvXkp1py/nQC2lksc+NDdOijAuLDxNTw
+         +S35feU+nkQNDdnDr7EByrxMB4XvleE6vwNHSkbUaZc3JSkgdWLtqU6hOheh4NqSHrV1
+         WVn0Mbt61zzGmyut4PIuJnwWjMnyQzgQXh1Xs=
+Message-ID: <74d0deb30806080320h16f61fa9w390dece68f70183e@mail.gmail.com>
+Date: Sun, 8 Jun 2008 12:20:53 +0200
+From: "pHilipp Zabel" <philipp.zabel@gmail.com>
+To: "Dmitry Baryshkov" <dbaryshkov@gmail.com>
+Subject: Re: [RFC][PATCH 3/3] Clocklib: Refactor PXA arm arch to use clocklib.
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>,
+       "Russell King" <rmk+lkml@arm.linux.org.uk>,
+       "Paul Mundt" <lethal@linux-sh.org>, "Pavel Machek" <pavel@ucw.cz>,
+       tony@atomide.com, paul@pwsan.com,
+       "David Brownell" <david-b@pacbell.net>,
+       "Mark Brown" <broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <20080608092214.GA11500@doriath.ww600.siemens.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080604060826.17162.46972.sendpatchset@rx1.opensource.se>
-	 <20080604101144.GA3207@local>
-	 <aec7e5c30806041825o4c6c859fp8380063e9384622@mail.gmail.com>
-	 <20080605090916.GA3198@local>
-	 <aec7e5c30806050246t248abc39vbc1e71d4475a0a0d@mail.gmail.com>
-	 <20080605112744.GB3198@local>
+References: <20080608091954.GA11200@doriath.ww600.siemens.net>
+	 <20080608092214.GA11500@doriath.ww600.siemens.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 5, 2008 at 8:27 PM, Hans J. Koch <hjk@linutronix.de> wrote:
-> On Thu, Jun 05, 2008 at 06:46:35PM +0900, Magnus Damm wrote:
->> On Thu, Jun 5, 2008 at 6:09 PM, Hans J. Koch <hjk@linutronix.de> wrote:
->> > On Thu, Jun 05, 2008 at 10:25:27AM +0900, Magnus Damm wrote:
->> >> On Wed, Jun 4, 2008 at 7:11 PM, Hans J. Koch <hjk@linutronix.de> wrote:
->> >> > On Wed, Jun 04, 2008 at 03:08:26PM +0900, Magnus Damm wrote:
->> >> >> From: Magnus Damm <damm@igel.co.jp>
->> >> >>
->> >> >> This patch adds a "Unique IRQ Mode" to the uio_pdrv UIO platform driver.
->> >> >> In this mode the user space driver is responsible for acknowledging and
->> >> >> re-enabling the interrupt. Shared interrupts are not supported.
->> >> >
->> >> > I still don't see any gain in this. This only works for embedded
->> >> > devices, so a user has to setup hardware specific code in his board
->> >> > support anyway.
->> >>
->> >> Exactly what in my patch makes this platform driver only suitable for
->> >> embedded devices?
->> >
->> > You assume the interrupt is not shared. You can never do that on a
->> > normal x86 PC, for example. E.g. for a PCI card you don't know which irq
->> > it'll get and if it is shared or not.
->>
->> So your main objection against this patch is that you cannot use it
->> with shared interrupts?
+On Sun, Jun 8, 2008 at 11:22 AM, Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
+> Make PXA use clocklib for clocks support.
 >
-> I think I've explained my objections detailed enough.
-
-It's still unclear to me. Please make a brief summary of your objections.
-
->> >> I don't think the board support level is the
->> >> proper place for this code.
->> >
->> > You have to write code there anyway, e.g. code that configures your GPIO
->> > as input, makes it generate interrupts and so on. And of course, you
->> > have to setup your platform device as well. If you simply add the irq
->> > handler, you can use uio_pdrv as-is. And if you _know_ that on your
->> > platform the irq is not shared, this might really be a one-liner that
->> > simply calls irq_disable. That's OK in board specific code, but not in a
->> > generic driver.
->>
->> Ever heard about system on chip?
+> Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+> ---
+>  arch/arm/Kconfig           |    1 +
+>  arch/arm/mach-pxa/clock.c  |  135 +++++++++++------------------------------
+>  arch/arm/mach-pxa/clock.h  |   92 +++++++++++++++++++----------
+>  arch/arm/mach-pxa/pxa25x.c |   68 +++++++++++++--------
+>  arch/arm/mach-pxa/pxa27x.c |   75 ++++++++++++++---------
+>  arch/arm/mach-pxa/pxa3xx.c |  144 ++++++++++++++++++++++++++++----------------
+>  6 files changed, 275 insertions(+), 240 deletions(-)
 >
-> ATM, I work with iMX31 and AT91SAM9263, before that I had a PXA270,
-> can't remember what was before that...
-> So yes, I've heard of SoC.
+> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+> index 9d93017..8f02e29 100644
+> --- a/arch/arm/Kconfig
+> +++ b/arch/arm/Kconfig
+> @@ -397,6 +397,7 @@ config ARCH_PXA
+>        select GENERIC_TIME
+>        select GENERIC_CLOCKEVENTS
+>        select TICK_ONESHOT
+> +       select CLOCKLIB
+>        help
+>          Support for Intel/Marvell's PXA2xx/PXA3xx processor line.
 >
->> Not all platform devices need board
->> specific setup.
+> diff --git a/arch/arm/mach-pxa/clock.c b/arch/arm/mach-pxa/clock.c
+> index e97dc59..d9e7eba 100644
+> --- a/arch/arm/mach-pxa/clock.c
+> +++ b/arch/arm/mach-pxa/clock.c
+> @@ -8,6 +8,7 @@
+>  #include <linux/err.h>
+>  #include <linux/string.h>
+>  #include <linux/clk.h>
+> +#include <linux/clocklib.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/delay.h>
+> @@ -20,135 +21,71 @@
+>  #include "generic.h"
+>  #include "clock.h"
 >
-> If it's a device within the SoC, you won't use UIO for that. If you did,
-> your platform would depend on certain userspace software which is simply
-> crap. And devices outside the SoC are board specific.
+> -static LIST_HEAD(clocks);
+> -static DEFINE_MUTEX(clocks_mutex);
+> -static DEFINE_SPINLOCK(clocks_lock);
+> -
+> -static struct clk *clk_lookup(struct device *dev, const char *id)
+> +static int clk_gpio11_enable(struct clk *clk)
+>  {
+> -       struct clk *p;
+> -
+> -       list_for_each_entry(p, &clocks, node)
+> -               if (strcmp(id, p->name) == 0 && p->dev == dev)
+> -                       return p;
+> -
+> -       return NULL;
+> +       pxa_gpio_mode(GPIO11_3_6MHz_MD);
 
-Why wouldn't we use UIO for device within the Soc? I've been doing
-that for quite some time now.
+I think pxa2xx_mfp_config should be used here for consistency.
 
->> >> The patch contains no board specific code,
->> >> and it is independent of both architecture and cpu model.
->> >
->> > Every platform device driver depends on board support.
->>
->> Is that so? I suggest that you have a look at the mfd drivers and think again.
+> +       return 0;
+>  }
 >
-> All I said about board support also applies to platform support files
-> like at91sam9263_devices.c, I'm simply talking about the file where you
-> define your struct platform_device.
-
-Oh, I see. That's cpu specific code in my mind.
-
->> >> > So, NAK to this until somebody convinces me that I completely missed the
->> >> > point.
->> >>
->> >> We can reuse this driver for _many_ different SuperH processor models.
->> >> Most of these processor models even have more than one hardware block
->> >> that can be exported to user space using this uio_pdrv driver in
->> >> "Unique IRQ Mode". There is nothing board specific with this at all,
->> >> so yes, I think you are missing the point.
->> >
->> > First, I won't accept anything that changes the current UIO behaviour.
->> > If uio_info->irq is not set, then uio_register_device will fail. That's
->> > it. Your patch redefines the meaning of irq-not-set if uio_pdrv is used.
->>
->> How is this changing the UIO behavior? I'm modifying the uio_pdrv
->> driver, which is a driver that you didn't even write yourself.
+> -struct clk *clk_get(struct device *dev, const char *id)
+> +static void clk_gpio11_disable(struct clk *clk)
+>  {
+> -       struct clk *p, *clk = ERR_PTR(-ENOENT);
+> -
+> -       mutex_lock(&clocks_mutex);
+> -       p = clk_lookup(dev, id);
+> -       if (!p)
+> -               p = clk_lookup(NULL, id);
+> -       if (p)
+> -               clk = p;
+> -       mutex_unlock(&clocks_mutex);
+> -
+> -       return clk;
+> +       /* do nothing */
+>  }
+> -EXPORT_SYMBOL(clk_get);
 >
-> uio_pdrv is a generic driver, so I consider it part of the UIO
-> framework. It adds new possibilities for authors of UIO platform device
-> drivers (which are the vast majority of all UIO drivers). It is not just
-> another UIO driver, but part of the system. It'll appear in UIO
-> documentation, I'll explain it in future UIO presentations, and so on.
+> -void clk_put(struct clk *clk)
+> +static unsigned long clk_gpio11_get_rate(struct clk *clk)
+>  {
+> +       return 3686400;
+>  }
+> -EXPORT_SYMBOL(clk_put);
+> -
+> -int clk_enable(struct clk *clk)
+> -{
+> -       unsigned long flags;
+> -
+> -       spin_lock_irqsave(&clocks_lock, flags);
+> -       if (clk->enabled++ == 0)
+> -               clk->ops->enable(clk);
+> -       spin_unlock_irqrestore(&clocks_lock, flags);
 >
-> And I consider it my job to make sure that such generic code is clean,
-> obvious, and consistent.
-
-Would you like me to write longer comments? Or some slides?
-
->> And yet
->> you seem to have very strong feelings against this patch.
+> -       if (clk->delay)
+> -               udelay(clk->delay);
+> +static const struct clk_ops clk_gpio11_ops = {
+> +       .enable =       clk_gpio11_enable,
+> +       .disable =      clk_gpio11_disable,
+> +       .get_rate =     clk_gpio11_get_rate,
+> +       .round_rate =   clk_no_round_rate,
+> +};
 >
-> I explained why. My reasons are purely technical, please don't take this
-> as a personal offense.
+> -       return 0;
+> -}
+> -EXPORT_SYMBOL(clk_enable);
+> +static struct clk clk_gpio11 = {
+> +       .name = "GPIO27_CLK",
+> +       .ops = &clk_gpio11_ops,
+> +       .release = clk_static_release,
+> +};
+>
+> -void clk_disable(struct clk *clk)
+> +int clk_cken_enable(struct clk *clk)
+>  {
+> -       unsigned long flags;
+> +       struct clk_cken *priv = container_of(clk, struct clk_cken, clk);
+>
+> -       WARN_ON(clk->enabled == 0);
+> +       CKEN |= 1 << priv->cken;
+>
+> -       spin_lock_irqsave(&clocks_lock, flags);
+> -       if (--clk->enabled == 0)
+> -               clk->ops->disable(clk);
+> -       spin_unlock_irqrestore(&clocks_lock, flags);
+> -}
+> -EXPORT_SYMBOL(clk_disable);
+> +       if (priv->delay)
+> +               udelay(priv->delay);
+>
+> -unsigned long clk_get_rate(struct clk *clk)
+> -{
+> -       unsigned long rate;
+> -
+> -       rate = clk->rate;
+> -       if (clk->ops->getrate)
+> -               rate = clk->ops->getrate(clk);
+> -
+> -       return rate;
+> +       return 0;
+>  }
+> -EXPORT_SYMBOL(clk_get_rate);
+>
+> -
+> -static void clk_gpio27_enable(struct clk *clk)
+> +void clk_cken_disable(struct clk *clk)
+>  {
+> -       pxa_gpio_mode(GPIO11_3_6MHz_MD);
+> -}
+> +       struct clk_cken *priv = container_of(clk, struct clk_cken, clk);
+>
+> -static void clk_gpio27_disable(struct clk *clk)
+> -{
+> +       CKEN &= ~(1 << priv->cken);
+>  }
+>
+> -static const struct clkops clk_gpio27_ops = {
+> -       .enable         = clk_gpio27_enable,
+> -       .disable        = clk_gpio27_disable,
+> -};
+> -
+> -
+> -void clk_cken_enable(struct clk *clk)
+> +unsigned long clk_cken_get_rate(struct clk *clk)
+>  {
+> -       CKEN |= 1 << clk->cken;
+> -}
+> +       struct clk_cken *priv = container_of(clk, struct clk_cken, clk);
+> +
+> +       return priv->rate;
+>
+> -void clk_cken_disable(struct clk *clk)
+> -{
+> -       CKEN &= ~(1 << clk->cken);
+>  }
+>
+> -const struct clkops clk_cken_ops = {
+> +const struct clk_ops clk_cken_ops = {
+>        .enable         = clk_cken_enable,
+>        .disable        = clk_cken_disable,
+> +       .get_rate       = clk_cken_get_rate,
+> +       .round_rate     = clk_no_round_rate,
+>  };
+>
+> -static struct clk common_clks[] = {
+> -       {
+> -               .name           = "GPIO27_CLK",
+> -               .ops            = &clk_gpio27_ops,
+> -               .rate           = 3686400,
+> -       },
+> -};
+> -
+> -void clks_register(struct clk *clks, size_t num)
+> -{
+> -       int i;
+> -
+> -       mutex_lock(&clocks_mutex);
+> -       for (i = 0; i < num; i++)
+> -               list_add(&clks[i].node, &clocks);
+> -       mutex_unlock(&clocks_mutex);
+> -}
+> -
+>  static int __init clk_init(void)
+>  {
+> -       clks_register(common_clks, ARRAY_SIZE(common_clks));
+> -       return 0;
+> +       return clk_add(NULL, &clk_gpio11);
+>  }
+>  arch_initcall(clk_init);
+> diff --git a/arch/arm/mach-pxa/clock.h b/arch/arm/mach-pxa/clock.h
+> index bc6b77e..599b553 100644
+> --- a/arch/arm/mach-pxa/clock.h
+> +++ b/arch/arm/mach-pxa/clock.h
+> @@ -1,43 +1,73 @@
+> -struct clk;
+> +#include <linux/clk.h>
+> +#include <linux/clocklib.h>
+>
+> -struct clkops {
+> -       void                    (*enable)(struct clk *);
+> -       void                    (*disable)(struct clk *);
+> -       unsigned long           (*getrate)(struct clk *);
+> -};
+> -
+> -struct clk {
+> -       struct list_head        node;
+> -       const char              *name;
+> -       struct device           *dev;
+> -       const struct clkops     *ops;
+> +struct clk_cken {
+> +       struct clk              clk;
+>        unsigned long           rate;
+>        unsigned int            cken;
+>        unsigned int            delay;
+> -       unsigned int            enabled;
+>  };
+>
+> -#define INIT_CKEN(_name, _cken, _rate, _delay, _dev)   \
+> -       {                                               \
+> -               .name   = _name,                        \
+> -               .dev    = _dev,                         \
+> -               .ops    = &clk_cken_ops,                \
+> -               .rate   = _rate,                        \
+> -               .cken   = CKEN_##_cken,                 \
+> -               .delay  = _delay,                       \
+> -       }
+> +int clk_cken_enable(struct clk *clk);
+> +void clk_cken_disable(struct clk *clk);
+> +unsigned long clk_cken_get_rate(struct clk *clk);
+> +
+> +extern const struct clk_ops clk_cken_ops;
+>
+> -#define INIT_CK(_name, _cken, _ops, _dev)              \
+> +static inline void clk_static_release(struct clk *clk)
+> +{
+> +       printk(KERN_ERR "Can't release static clock: %s!!!\n", clk->name);
+> +       BUG();
+> +}
+> +
+> +static inline long clk_no_round_rate(struct clk *clk,
+> +               unsigned long hz, bool apply)
+> +{
+> +       return clk->ops->get_rate(clk);
+> +}
+> +
+> +#define INIT_CKEN(_name, _cken, _rate, _delay)         \
+> +       &(struct clk_cken) {                            \
+> +               .clk.name       = _name,                \
+> +               .clk.ops        = &clk_cken_ops,        \
+> +               .clk.release    = clk_static_release,   \
+> +               .cken           = CKEN_##_cken,         \
+> +               .rate           = _rate,                \
+> +               .delay          = _delay,               \
+> +       } .clk
+> +
+> +#define INIT_CK(_name, _cken, _ops)                    \
+> +       &(struct clk_cken) {                            \
+> +               .clk.name       = _name,                \
+> +               .clk.ops        = _ops,                 \
+> +               .clk.release    = clk_static_release,   \
+> +               .cken           = CKEN_##_cken,         \
+> +       } .clk
+> +
+> +#define INIT_DEVCK(_parent_name, _name, _dev)          \
+>        {                                               \
+> -               .name   = _name,                        \
+> -               .dev    = _dev,                         \
+> -               .ops    = _ops,                         \
+> -               .cken   = CKEN_##_cken,                 \
+> +               .clk.name       = _name,                \
+> +               .clk.ops        = &clk_devck_ops,       \
+> +               .clk.release    = clk_static_release,   \
+> +               .parent         = _parent_name,         \
+> +               .dev            = _dev,                 \
+>        }
+>
+> -extern const struct clkops clk_cken_ops;
+>
+> -void clk_cken_enable(struct clk *clk);
+> -void clk_cken_disable(struct clk *clk);
+> +static inline void clks_register(struct clk *parent,
+> +               struct clk **clks, int size)
+> +{
+> +       int i;
+> +       for (i = 0; i < size; i++)
+> +               clk_add(parent, clks[i]);
+> +}
+>
+> -void clks_register(struct clk *clks, size_t num);
+> +static inline void clks_devck_register(struct clk_devck *clks, int size)
+> +{
+> +       int i;
+> +       for (i = 0; i < size; i++) {
+> +               struct clk *parent = clk_get(NULL, clks[i].parent);
+> +               if (parent)
+> +                       clk_add(parent, &clks[i].clk);
+> +       }
+> +}
+> diff --git a/arch/arm/mach-pxa/pxa25x.c b/arch/arm/mach-pxa/pxa25x.c
+> index e5b417d..b00a8b9 100644
+> --- a/arch/arm/mach-pxa/pxa25x.c
+> +++ b/arch/arm/mach-pxa/pxa25x.c
+> @@ -102,10 +102,10 @@ static unsigned long clk_pxa25x_lcd_getrate(struct clk *clk)
+>        return pxa25x_get_memclk_frequency_10khz() * 10000;
+>  }
+>
+> -static const struct clkops clk_pxa25x_lcd_ops = {
+> +static const struct clk_ops clk_pxa25x_lcd_ops = {
+>        .enable         = clk_cken_enable,
+>        .disable        = clk_cken_disable,
+> -       .getrate        = clk_pxa25x_lcd_getrate,
+> +       .get_rate       = clk_pxa25x_lcd_getrate,
+>  };
+>
+>  /*
+> @@ -113,31 +113,42 @@ static const struct clkops clk_pxa25x_lcd_ops = {
+>  * 95.842MHz -> MMC 19.169MHz, I2C 31.949MHz, FICP 47.923MHz, USB 47.923MHz
+>  * 147.456MHz -> UART 14.7456MHz, AC97 12.288MHz, I2S 5.672MHz (allegedly)
+>  */
+> -static struct clk pxa25x_hwuart_clk =
+> -       INIT_CKEN("UARTCLK", HWUART, 14745600, 1, &pxa_device_hwuart.dev)
+> -;
+> -
+> -static struct clk pxa25x_clks[] = {
+> -       INIT_CK("LCDCLK", LCD, &clk_pxa25x_lcd_ops, &pxa_device_fb.dev),
+> -       INIT_CKEN("UARTCLK", FFUART, 14745600, 1, &pxa_device_ffuart.dev),
+> -       INIT_CKEN("UARTCLK", BTUART, 14745600, 1, &pxa_device_btuart.dev),
+> -       INIT_CKEN("UARTCLK", STUART, 14745600, 1, NULL),
+> -       INIT_CKEN("UDCCLK", USB, 47923000, 5, &pxa_device_udc.dev),
+> -       INIT_CKEN("MMCCLK", MMC, 19169000, 0, &pxa_device_mci.dev),
+> -       INIT_CKEN("I2CCLK", I2C, 31949000, 0, &pxa_device_i2c.dev),
+> -
+> -       INIT_CKEN("SSPCLK",  SSP, 3686400, 0, &pxa25x_device_ssp.dev),
+> -       INIT_CKEN("SSPCLK", NSSP, 3686400, 0, &pxa25x_device_nssp.dev),
+> -       INIT_CKEN("SSPCLK", ASSP, 3686400, 0, &pxa25x_device_assp.dev),
+> -
+> -       INIT_CKEN("AC97CLK",     AC97,     24576000, 0, NULL),
+> +static struct clk *pxa25x_hwuart_clk =
+> +       INIT_CKEN("HWUARTCLK", HWUART, 14745600, 1);
+> +static struct clk_devck pxa25x_hwuart_devclk =
+> +       INIT_DEVCK("HWUARTCLK", "UARTCLK", &pxa_device_hwuart.dev);
+> +
+> +static struct clk *pxa25x_clks[] = {
+> +       INIT_CK("LCDCLK", LCD, &clk_pxa25x_lcd_ops), /* &pxa_device_fb.dev */
+> +       INIT_CKEN("FFUARTCLK", FFUART, 14745600, 1),
+> +       INIT_CKEN("BTUARTCLK", BTUART, 14745600, 1),
+> +       INIT_CKEN("STUARTCLK", STUART, 14745600, 1),
+> +       INIT_CKEN("UDCCLK", USB, 47923000, 5), /* &pxa_device_udc.dev */
+> +       INIT_CKEN("MMCCLK", MMC, 19169000, 0), /* &pxa_device_mci.dev */
+> +       INIT_CKEN("I2CCLK", I2C, 31949000, 0), /* &pxa_device_i2c.dev */
+> +
+> +       INIT_CKEN("SSP_CLK",  SSP, 3686400, 0),
+> +       INIT_CKEN("NSSPCLK", NSSP, 3686400, 0),
+> +       INIT_CKEN("ASSPCLK", ASSP, 3686400, 0),
+> +
+> +       INIT_CKEN("AC97CLK",     AC97,     24576000, 0),
+>
+>        /*
+> -       INIT_CKEN("PWMCLK",  PWM0, 3686400,  0, NULL),
+> -       INIT_CKEN("PWMCLK",  PWM0, 3686400,  0, NULL),
+> -       INIT_CKEN("I2SCLK",  I2S,  14745600, 0, NULL),
+> +       INIT_CKEN("PWMCLK",  PWM0, 3686400,  0),
+> +       INIT_CKEN("PWMCLK",  PWM0, 3686400,  0),
+> +       INIT_CKEN("I2SCLK",  I2S,  14745600, 0),
+>        */
+> -       INIT_CKEN("FICPCLK", FICP, 47923000, 0, NULL),
+> +       INIT_CKEN("FICPCLK", FICP, 47923000, 0),
+> +};
+> +
+> +static struct clk_devck clk_children[] = {
+> +       INIT_DEVCK("FFUARTCLK", "UARTCLK", &pxa_device_ffuart.dev),
+> +       INIT_DEVCK("BTUARTCLK", "UARTCLK", &pxa_device_btuart.dev),
+> +       INIT_DEVCK("STUARTCLK", "UARTCLK", &pxa_device_stuart.dev),
+> +
+> +       INIT_DEVCK("SSP_CLK", "SSPCLK", &pxa25x_device_ssp.dev),
+> +       INIT_DEVCK("NSSPCLK", "SSPCLK", &pxa25x_device_nssp.dev),
+> +       INIT_DEVCK("ASSPCLK", "SSPCLK", &pxa25x_device_assp.dev),
+>  };
+>
+>  #ifdef CONFIG_PM
+> @@ -284,11 +295,14 @@ static int __init pxa25x_init(void)
+>        int i, ret = 0;
+>
+>        /* Only add HWUART for PXA255/26x; PXA210/250/27x do not have it. */
+> -       if (cpu_is_pxa25x())
+> -               clks_register(&pxa25x_hwuart_clk, 1);
+> +       if (cpu_is_pxa25x()) {
+> +               clk_add(NULL, pxa25x_hwuart_clk);
+> +               clk_add(pxa25x_hwuart_clk, &pxa25x_hwuart_devclk.clk);
+> +       }
+>
+>        if (cpu_is_pxa21x() || cpu_is_pxa25x()) {
+> -               clks_register(pxa25x_clks, ARRAY_SIZE(pxa25x_clks));
+> +               clks_register(NULL, pxa25x_clks, ARRAY_SIZE(pxa25x_clks));
+> +               clks_devck_register(ARRAY_AND_SIZE(clk_children));
+>
+>                if ((ret = pxa_init_dma(16)))
+>                        return ret;
+> diff --git a/arch/arm/mach-pxa/pxa27x.c b/arch/arm/mach-pxa/pxa27x.c
+> index 7e94583..6e13e78 100644
+> --- a/arch/arm/mach-pxa/pxa27x.c
+> +++ b/arch/arm/mach-pxa/pxa27x.c
+> @@ -45,7 +45,7 @@ unsigned int pxa27x_get_clk_frequency_khz(int info)
+>  {
+>        unsigned long ccsr, clkcfg;
+>        unsigned int l, L, m, M, n2, N, S;
+> -               int cccr_a, t, ht, b;
+> +       int cccr_a, t, ht, b;
+>
+>        ccsr = CCSR;
+>        cccr_a = CCCR & (1 << 25);
+> @@ -88,7 +88,7 @@ unsigned int pxa27x_get_memclk_frequency_10khz(void)
+>  {
+>        unsigned long ccsr, clkcfg;
+>        unsigned int l, L, m, M;
+> -               int cccr_a, b;
+> +       int cccr_a, b;
+>
+>        ccsr = CCSR;
+>        cccr_a = CCCR & (1 << 25);
+> @@ -130,47 +130,61 @@ static unsigned long clk_pxa27x_lcd_getrate(struct clk *clk)
+>        return pxa27x_get_lcdclk_frequency_10khz() * 10000;
+>  }
+>
+> -static const struct clkops clk_pxa27x_lcd_ops = {
+> +static const struct clk_ops clk_pxa27x_lcd_ops = {
+>        .enable         = clk_cken_enable,
+>        .disable        = clk_cken_disable,
+> -       .getrate        = clk_pxa27x_lcd_getrate,
+> +       .get_rate       = clk_pxa27x_lcd_getrate,
+> +       .round_rate     = clk_no_round_rate,
+>  };
+>
+> -static struct clk pxa27x_clks[] = {
+> -       INIT_CK("LCDCLK", LCD,    &clk_pxa27x_lcd_ops, &pxa_device_fb.dev),
+> -       INIT_CK("CAMCLK", CAMERA, &clk_pxa27x_lcd_ops, NULL),
+> +static struct clk *pxa27x_clks[] = {
+> +       INIT_CK("LCDCLK", LCD,    &clk_pxa27x_lcd_ops), /* &pxa_device_fb.dev */
+> +       INIT_CK("CAMCLK", CAMERA, &clk_pxa27x_lcd_ops),
+>
+> -       INIT_CKEN("UARTCLK", FFUART, 14857000, 1, &pxa_device_ffuart.dev),
+> -       INIT_CKEN("UARTCLK", BTUART, 14857000, 1, &pxa_device_btuart.dev),
+> -       INIT_CKEN("UARTCLK", STUART, 14857000, 1, NULL),
+> +       INIT_CKEN("FFUARTCLK", FFUART, 14857000, 1),
+> +       INIT_CKEN("BTUARTCLK", BTUART, 14857000, 1),
+> +       INIT_CKEN("STUARTCLK", STUART, 14857000, 1),
+>
+> -       INIT_CKEN("I2SCLK",  I2S,  14682000, 0, &pxa_device_i2s.dev),
+> -       INIT_CKEN("I2CCLK",  I2C,  32842000, 0, &pxa_device_i2c.dev),
+> -       INIT_CKEN("UDCCLK",  USB,  48000000, 5, &pxa_device_udc.dev),
+> -       INIT_CKEN("MMCCLK",  MMC,  19500000, 0, &pxa_device_mci.dev),
+> -       INIT_CKEN("FICPCLK", FICP, 48000000, 0, &pxa_device_ficp.dev),
+> +       INIT_CKEN("I2SCLK",  I2S,  14682000, 0), /* &pxa_device_i2s.dev */
+> +       INIT_CKEN("I2C_CLK",  I2C,  32842000, 0),
+> +       INIT_CKEN("UDCCLK",  USB,  48000000, 5), /* &pxa_device_udc.dev */
+> +       INIT_CKEN("MMCCLK",  MMC,  19500000, 0), /* &pxa_device_mci.dev */
+> +       INIT_CKEN("FICPCLK", FICP, 48000000, 0), /* &pxa_device_ficp.dev */
+>
+> -       INIT_CKEN("USBCLK", USBHOST, 48000000, 0, &pxa27x_device_ohci.dev),
+> -       INIT_CKEN("I2CCLK", PWRI2C, 13000000, 0, &pxa27x_device_i2c_power.dev),
+> -       INIT_CKEN("KBDCLK", KEYPAD, 32768, 0, &pxa27x_device_keypad.dev),
+> +       INIT_CKEN("USBCLK", USBHOST, 48000000, 0), /* &pxa27x_device_ohci.dev */
+> +       INIT_CKEN("PWRI2CCLK", PWRI2C, 13000000, 0),
+> +       INIT_CKEN("KBDCLK", KEYPAD, 32768, 0), /* &pxa27x_device_keypad.dev */
+>
+> -       INIT_CKEN("SSPCLK", SSP1, 13000000, 0, &pxa27x_device_ssp1.dev),
+> -       INIT_CKEN("SSPCLK", SSP2, 13000000, 0, &pxa27x_device_ssp2.dev),
+> -       INIT_CKEN("SSPCLK", SSP3, 13000000, 0, &pxa27x_device_ssp3.dev),
+> +       INIT_CKEN("SSP1CLK", SSP1, 13000000, 0),
+> +       INIT_CKEN("SSP2CLK", SSP2, 13000000, 0),
+> +       INIT_CKEN("SSP3CLK", SSP3, 13000000, 0),
+>
+> -       INIT_CKEN("AC97CLK",     AC97,     24576000, 0, NULL),
+> -       INIT_CKEN("AC97CONFCLK", AC97CONF, 24576000, 0, NULL),
+> +       INIT_CKEN("AC97CLK",     AC97,     24576000, 0),
+> +       INIT_CKEN("AC97CONFCLK", AC97CONF, 24576000, 0),
+>
+>        /*
+> -       INIT_CKEN("PWMCLK",  PWM0, 13000000, 0, NULL),
+> -       INIT_CKEN("MSLCLK",  MSL,  48000000, 0, NULL),
+> -       INIT_CKEN("USIMCLK", USIM, 48000000, 0, NULL),
+> -       INIT_CKEN("MSTKCLK", MEMSTK, 19500000, 0, NULL),
+> -       INIT_CKEN("IMCLK",   IM,   0, 0, NULL),
+> -       INIT_CKEN("MEMCLK",  MEMC, 0, 0, NULL),
+> +       INIT_CKEN("PWMCLK",  PWM0, 13000000, 0),
+> +       INIT_CKEN("MSLCLK",  MSL,  48000000, 0),
+> +       INIT_CKEN("USIMCLK", USIM, 48000000, 0),
+> +       INIT_CKEN("MSTKCLK", MEMSTK, 19500000, 0),
+> +       INIT_CKEN("IMCLK",   IM,   0, 0),
+> +       INIT_CKEN("MEMCLK",  MEMC, 0, 0),
+>        */
+>  };
+>
+> +static struct clk_devck clk_children[] = {
+> +       INIT_DEVCK("FFUARTCLK", "UARTCLK", &pxa_device_ffuart.dev),
+> +       INIT_DEVCK("BTUARTCLK", "UARTCLK", &pxa_device_btuart.dev),
+> +       INIT_DEVCK("STUARTCLK", "UARTCLK", &pxa_device_stuart.dev),
+> +
+> +       INIT_DEVCK("I2C_CLK", "I2CCLK", &pxa_device_i2c.dev),
+> +       INIT_DEVCK("PWRI2CCLK", "I2CCLK", &pxa27x_device_i2c_power.dev),
+> +
+> +       INIT_DEVCK("SSP1CLK", "SSPCLK", &pxa27x_device_ssp1.dev),
+> +       INIT_DEVCK("SSP2CLK", "SSPCLK", &pxa27x_device_ssp2.dev),
+> +       INIT_DEVCK("SSP3CLK", "SSPCLK", &pxa27x_device_ssp3.dev),
+> +};
+> +
+>  #ifdef CONFIG_PM
+>
+>  #define SAVE(x)                sleep_save[SLEEP_SAVE_##x] = x
+> @@ -378,7 +392,8 @@ static int __init pxa27x_init(void)
+>        int i, ret = 0;
+>
+>        if (cpu_is_pxa27x()) {
+> -               clks_register(pxa27x_clks, ARRAY_SIZE(pxa27x_clks));
+> +               clks_register(NULL, ARRAY_AND_SIZE(pxa27x_clks));
+> +               clks_devck_register(ARRAY_AND_SIZE(clk_children));
+>
+>                if ((ret = pxa_init_dma(32)))
+>                        return ret;
+> diff --git a/arch/arm/mach-pxa/pxa3xx.c b/arch/arm/mach-pxa/pxa3xx.c
+> index 644550b..efea4cd 100644
+> --- a/arch/arm/mach-pxa/pxa3xx.c
+> +++ b/arch/arm/mach-pxa/pxa3xx.c
+> @@ -21,6 +21,7 @@
+>  #include <linux/irq.h>
+>  #include <linux/io.h>
+>  #include <linux/sysdev.h>
+> +#include <linux/delay.h>
+>
+>  #include <asm/hardware.h>
+>  #include <asm/arch/pxa3xx-regs.h>
+> @@ -144,46 +145,61 @@ static unsigned long clk_pxa3xx_hsio_getrate(struct clk *clk)
+>        return hsio_clk;
+>  }
+>
+> -static void clk_pxa3xx_cken_enable(struct clk *clk)
+> +static int clk_pxa3xx_cken_enable(struct clk *clk)
+>  {
+> -       unsigned long mask = 1ul << (clk->cken & 0x1f);
+> +       struct clk_cken *priv = container_of(clk, struct clk_cken, clk);
+> +       unsigned long mask = 1ul << (priv->cken & 0x1f);
+>
+> -       if (clk->cken < 32)
+> +       if (priv->cken < 32)
+>                CKENA |= mask;
+>        else
+>                CKENB |= mask;
+> +
+> +       if (priv->delay)
+> +               udelay(priv->delay);
+> +
+> +       return 0;
+>  }
+>
+>  static void clk_pxa3xx_cken_disable(struct clk *clk)
+>  {
+> -       unsigned long mask = 1ul << (clk->cken & 0x1f);
+> +       struct clk_cken *priv = container_of(clk, struct clk_cken, clk);
+> +       unsigned long mask = 1ul << (priv->cken & 0x1f);
+>
+> -       if (clk->cken < 32)
+> +       if (priv->cken < 32)
+>                CKENA &= ~mask;
+>        else
+>                CKENB &= ~mask;
+>  }
+>
+> -static const struct clkops clk_pxa3xx_cken_ops = {
+> +static const struct clk_ops clk_pxa3xx_cken_ops = {
+>        .enable         = clk_pxa3xx_cken_enable,
+>        .disable        = clk_pxa3xx_cken_disable,
+> +       .round_rate     = clk_no_round_rate,
+> +       .get_rate       = clk_cken_get_rate,
+>  };
+>
+> -static const struct clkops clk_pxa3xx_hsio_ops = {
+> +static const struct clk_ops clk_pxa3xx_hsio_ops = {
+>        .enable         = clk_pxa3xx_cken_enable,
+>        .disable        = clk_pxa3xx_cken_disable,
+> -       .getrate        = clk_pxa3xx_hsio_getrate,
+> +       .round_rate     = clk_no_round_rate,
+> +       .get_rate       = clk_pxa3xx_hsio_getrate,
+>  };
+>
+> -static const struct clkops clk_pxa3xx_ac97_ops = {
+> +static const struct clk_ops clk_pxa3xx_ac97_ops = {
+>        .enable         = clk_pxa3xx_cken_enable,
+>        .disable        = clk_pxa3xx_cken_disable,
+> -       .getrate        = clk_pxa3xx_ac97_getrate,
+> +       .round_rate     = clk_no_round_rate,
+> +       .get_rate       = clk_pxa3xx_ac97_getrate,
+>  };
+>
+> -static void clk_pout_enable(struct clk *clk)
+> +static int clk_pout_enable(struct clk *clk)
+>  {
+> -       OSCC |= OSCC_PEN;
+> +       OSCC &= ~OSCC_PEN;
+> +
+> +       udelay(70);
+> +
+> +       return 0;
+>  }
+>
+>  static void clk_pout_disable(struct clk *clk)
+> @@ -191,58 +207,79 @@ static void clk_pout_disable(struct clk *clk)
+>        OSCC &= ~OSCC_PEN;
+>  }
+>
+> -static const struct clkops clk_pout_ops = {
+> +static unsigned long clk_pout_get_rate(struct clk *clk)
+> +{
+> +       return 13000000;
+> +}
+> +
+> +static const struct clk_ops clk_pout_ops = {
+>        .enable         = clk_pout_enable,
+>        .disable        = clk_pout_disable,
+> +       .round_rate     = clk_no_round_rate,
+> +       .get_rate       = clk_pout_get_rate,
+>  };
+>
+> -#define PXA3xx_CKEN(_name, _cken, _rate, _delay, _dev) \
+> -       {                                               \
+> -               .name   = _name,                        \
+> -               .dev    = _dev,                         \
+> -               .ops    = &clk_pxa3xx_cken_ops,         \
+> -               .rate   = _rate,                        \
+> -               .cken   = CKEN_##_cken,                 \
+> -               .delay  = _delay,                       \
+> -       }
+> -
+> -#define PXA3xx_CK(_name, _cken, _ops, _dev)            \
+> -       {                                               \
+> -               .name   = _name,                        \
+> -               .dev    = _dev,                         \
+> -               .ops    = _ops,                         \
+> -               .cken   = CKEN_##_cken,                 \
+> -       }
+> -
+> -static struct clk pxa3xx_clks[] = {
+> -       {
+> +#define PXA3xx_CKEN(_name, _cken, _rate, _delay)       \
+> +       &(struct clk_cken) {                            \
+> +               .clk.name       = _name,                \
+> +               .clk.ops        = &clk_pxa3xx_cken_ops, \
+> +               .clk.release    = clk_static_release,   \
+> +               .cken           = CKEN_##_cken,         \
+> +               .rate           = _rate,                \
+> +               .delay          = _delay,               \
+> +       }.clk
+> +
+> +#define PXA3xx_CK(_name, _cken, _ops)                  \
+> +       &(struct clk_cken) {                            \
+> +               .clk.name       = _name,                \
+> +               .clk.ops        = _ops,                 \
+> +               .clk.release    = clk_static_release,   \
+> +               .cken           = CKEN_##_cken,         \
+> +       }.clk
+> +
+> +static struct clk *pxa3xx_clks[] = {
+> +       &(struct clk) {
+>                .name           = "CLK_POUT",
+>                .ops            = &clk_pout_ops,
+> -               .rate           = 13000000,
+> -               .delay          = 70,
+> +               .release        = clk_static_release,
+>        },
+>
+> -       PXA3xx_CK("LCDCLK",  LCD,    &clk_pxa3xx_hsio_ops, &pxa_device_fb.dev),
+> -       PXA3xx_CK("CAMCLK",  CAMERA, &clk_pxa3xx_hsio_ops, NULL),
+> -       PXA3xx_CK("AC97CLK", AC97,   &clk_pxa3xx_ac97_ops, NULL),
+> +       PXA3xx_CK("LCDCLK",  LCD,    &clk_pxa3xx_hsio_ops), /* &pxa_device_fb.dev */
+> +       PXA3xx_CK("CAMCLK",  CAMERA, &clk_pxa3xx_hsio_ops),
+> +       PXA3xx_CK("AC97CLK", AC97,   &clk_pxa3xx_ac97_ops),
+>
+> -       PXA3xx_CKEN("UARTCLK", FFUART, 14857000, 1, &pxa_device_ffuart.dev),
+> -       PXA3xx_CKEN("UARTCLK", BTUART, 14857000, 1, &pxa_device_btuart.dev),
+> -       PXA3xx_CKEN("UARTCLK", STUART, 14857000, 1, NULL),
+> +       PXA3xx_CKEN("FFUARTCLK", FFUART, 14857000, 1),
+> +       PXA3xx_CKEN("BTUARTCLK", BTUART, 14857000, 1),
+> +       PXA3xx_CKEN("STUARTCLK", STUART, 14857000, 1),
+> +
+> +       PXA3xx_CKEN("I2CCLK", I2C,  32842000, 0), /* &pxa_device_i2c.dev */
+> +       PXA3xx_CKEN("UDCCLK", UDC,  48000000, 5), /* &pxa_device_udc.dev */
+> +       PXA3xx_CKEN("USBCLK", USBH, 48000000, 0), /* &pxa27x_device_ohci.dev */
+> +       PXA3xx_CKEN("KBDCLK", KEYPAD,  32768, 0), /* &pxa27x_device_keypad.dev */
+> +
+> +       PXA3xx_CKEN("SSP1CLK", SSP1, 13000000, 0),
+> +       PXA3xx_CKEN("SSP2CLK", SSP2, 13000000, 0), /* &pxa27x_device_ssp2.dev */
+> +       PXA3xx_CKEN("SSP3CLK", SSP3, 13000000, 0), /* &pxa27x_device_ssp3.dev */
+> +       PXA3xx_CKEN("SSP4CLK", SSP4, 13000000, 0), /* &pxa3xx_device_ssp4.dev */
+> +
+> +       PXA3xx_CKEN("MMC1CLK", MMC1, 19500000, 0),
+> +       PXA3xx_CKEN("MMC2CLK", MMC2, 19500000, 0),
+> +       PXA3xx_CKEN("MMC3CLK", MMC3, 19500000, 0),
+> +};
+>
+> -       PXA3xx_CKEN("I2CCLK", I2C,  32842000, 0, &pxa_device_i2c.dev),
+> -       PXA3xx_CKEN("UDCCLK", UDC,  48000000, 5, &pxa_device_udc.dev),
+> -       PXA3xx_CKEN("USBCLK", USBH, 48000000, 0, &pxa27x_device_ohci.dev),
+> -       PXA3xx_CKEN("KBDCLK", KEYPAD,  32768, 0, &pxa27x_device_keypad.dev),
+> +static struct clk_devck clk_children[] = {
+> +       INIT_DEVCK("FFUARTCLK", "UARTCLK", &pxa_device_ffuart.dev),
+> +       INIT_DEVCK("BTUARTCLK", "UARTCLK", &pxa_device_btuart.dev),
+> +       INIT_DEVCK("STUARTCLK", "UARTCLK", &pxa_device_stuart.dev),
+>
+> -       PXA3xx_CKEN("SSPCLK", SSP1, 13000000, 0, &pxa27x_device_ssp1.dev),
+> -       PXA3xx_CKEN("SSPCLK", SSP2, 13000000, 0, &pxa27x_device_ssp2.dev),
+> -       PXA3xx_CKEN("SSPCLK", SSP3, 13000000, 0, &pxa27x_device_ssp3.dev),
+> -       PXA3xx_CKEN("SSPCLK", SSP4, 13000000, 0, &pxa3xx_device_ssp4.dev),
+> +       INIT_DEVCK("SSP1CLK", "SSPCLK", &pxa27x_device_ssp1.dev),
+> +       INIT_DEVCK("SSP2CLK", "SSPCLK", &pxa27x_device_ssp2.dev),
+> +       INIT_DEVCK("SSP3CLK", "SSPCLK", &pxa27x_device_ssp3.dev),
+> +       INIT_DEVCK("SSP4CLK", "SSPCLK", &pxa3xx_device_ssp4.dev),
+>
+> -       PXA3xx_CKEN("MMCCLK", MMC1, 19500000, 0, &pxa_device_mci.dev),
+> -       PXA3xx_CKEN("MMCCLK", MMC2, 19500000, 0, &pxa3xx_device_mci2.dev),
+> -       PXA3xx_CKEN("MMCCLK", MMC3, 19500000, 0, &pxa3xx_device_mci3.dev),
+> +       INIT_DEVCK("MMC1CLK", "MMCCLK", &pxa_device_mci.dev),
+> +       INIT_DEVCK("MMC2CLK", "MMCCLK", &pxa3xx_device_mci2.dev),
+> +       INIT_DEVCK("MMC3CLK", "MMCCLK", &pxa3xx_device_mci3.dev),
+>  };
+>
+>  #ifdef CONFIG_PM
+> @@ -555,7 +592,8 @@ static int __init pxa3xx_init(void)
+>                 */
+>                ASCR &= ~(ASCR_RDH | ASCR_D1S | ASCR_D2S | ASCR_D3S);
+>
+> -               clks_register(pxa3xx_clks, ARRAY_SIZE(pxa3xx_clks));
+> +               clks_register(NULL, ARRAY_AND_SIZE(pxa3xx_clks));
+> +               clks_devck_register(ARRAY_AND_SIZE(clk_children));
+>
+>                if ((ret = pxa_init_dma(32)))
+>                        return ret;
+> --
+> 1.5.5.1
+>
+>
+> --
+> With best wishes
+> Dmitry
+>
+>
 
-No offense taken. But I can't really see your technical arguments. If
-something in my code is unclear please ask before NAK.
-
-> Unfortunately, I'm one of the two UIO maintainers, so I feel obliged to
-> review your patch and give my opinion. That doesn't mean I'm
-> the big boss who makes the final decision. I can be critized and
-> overridden. If Greg loves your patch and merges it, fine. Try it.
-
-Maybe I will. =)
-
-Thank you.
-
-/ magnus
+regards
+Philipp
