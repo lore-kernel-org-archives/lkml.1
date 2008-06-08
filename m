@@ -1,80 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764859AbYFHMXi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764859AbYFHMaO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764859AbYFHMXi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 08:23:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762063AbYFHMX1
+	id S1764859AbYFHMaO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 08:30:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761020AbYFHMaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 08:23:27 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:21632 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761989AbYFHMX0 (ORCPT
+	Sun, 8 Jun 2008 08:30:00 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:55185 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759950AbYFHMaA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 08:23:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=DhNtcWXcFPaju5lXTGKQQyYORiqVuievPbAz/PHZE2qHc7F/4q7+AEmqNRSIQPSc7w
-         FFxczDfs7WQT/azHLWB/x6HfX2zgeL37yYQpq6ZYvlElNpZPZHYqkxRPDdDuS49MYRLc
-         ieeswNpNG/nn5+m98gKbTcq7rYlmx4i/wishM=
-Message-ID: <8499950a0806080523l15e5ba01v30c4c78b59e0a4d7@mail.gmail.com>
-Date: Sun, 8 Jun 2008 13:23:24 +0100
-From: "Oleg Verych" <olecom@gmail.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>
+	Sun, 8 Jun 2008 08:30:00 -0400
 Subject: Re: [PATCH] Speed up "make headers_*"
-Cc: "David Woodhouse" <dwmw2@infradead.org>,
-       "Vegard Nossum" <vegard.nossum@gmail.com>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
+From: David Woodhouse <dwmw2@infradead.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Jan Engelhardt" <jengelh@computergmbh.de>
-In-Reply-To: <20080608111707.GB10545@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <1212927265.32207.527.camel@pmac.infradead.org>
 References: <20080608094730.GA30098@uranus.ravnborg.org>
-	 <19f34abd0806080312j2b09179cpa384a0460af5874e@mail.gmail.com>
-	 <20080608104122.GA10545@uranus.ravnborg.org>
-	 <1212922141.32207.495.camel@pmac.infradead.org>
-	 <20080608111707.GB10545@uranus.ravnborg.org>
+	 <1212924004.32207.498.camel@pmac.infradead.org>
+	 <20080608113028.GE10545@uranus.ravnborg.org>
+	 <1212925623.32207.517.camel@pmac.infradead.org>
+	 <1212927265.32207.527.camel@pmac.infradead.org>
+Content-Type: text/plain
+Date: Sun, 08 Jun 2008 13:29:56 +0100
+Message-Id: <1212928196.32207.530.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Correct. A quick grep shows that we have these different
-> uses of __KERNEL__:
->
-> #if defined(__ARM_EABI__) && !defined(__KERNEL__)
-> #if !defined(CONFIG_M68K) || !defined(__KERNEL__)
-> #if defined(CONFIG_VIDEO_V4L1_COMPAT) || !defined (__KERNEL__)
-> #if defined(__GNUC__) && !defined(__STRICT_ANSI__) || defined(__KERNEL__)
-> #if defined(__KERNEL__)
+On Sun, 2008-06-08 at 13:14 +0100, David Woodhouse wrote:
+> I have yet to actually remove $(BIARCH) and just override $(dst),
+> though.
 
-> #ifndef __KERNEL__
->
-> #else and #endif filtered away.
->
-> A script needs to take into account other preprocessor
-> uses too due to their nested nature.
-> But doable I'm sure.
->
-> And I rather have 100 lines perl than use the unifdef utility
-> because we then have it collected in one place and can do even
-> stricter validation.
+Done that now, although headers_check_all is still not fixed to cope
+with it...
 
-I've suggested some time ago to adopt a coding style for simple
-
-#if defined(__KERNEL__)
-#ifndef __KERNEL__
-
-this will be much clearner as for developers to know the scope by
-using simple /* __KERNEL__ */  /* !__KERNEL__ */, and `sed`
-script for that would be from 1 to 4 lines.
+diff --git a/Makefile b/Makefile
+index eff8fee..1376c33 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1012,9 +1012,9 @@ __headers: include/linux/version.h scripts_basic FORCE
+ 
+ PHONY += headers_install_all
+ headers_install_all: __headers
++	$(Q)$(MAKE) ARCH= SRCARCH= $(hdr-inst)=include
+ 	$(Q)set -e; for arch in $(hdr-archs); do \
+-	 $(MAKE) ARCH=$$arch SRCARCH=$$arch $(hdr-inst)=include \
+-	         BIASMDIR=-bi-$$arch ;\
++	 $(MAKE) ARCH=$$arch SRCARCH=$$arch $(hdr-inst)=include/asm-$$arch; \
+ 	 done
+ 
+ PHONY += headers_install
+@@ -1029,7 +1029,7 @@ PHONY += headers_check_all
+ headers_check_all: headers_install_all
+ 	$(Q)set -e; for arch in $(hdr-archs); do \
+ 	 $(MAKE) ARCH=$$arch SRCARCH=$$arch $(hdr-inst)=include \
+-	         BIASMDIR=-bi-$$arch HDRCHECK=1 ;\
++	         HDRCHECK=1 ;\
+ 	 done
+ 
+ PHONY += headers_check
+diff --git a/include/Kbuild b/include/Kbuild
+index b522887..9393f7e 100644
+--- a/include/Kbuild
++++ b/include/Kbuild
+@@ -5,4 +5,6 @@ header-y += mtd/
+ header-y += rdma/
+ header-y += video/
+ 
++ifneq ($(ARCH),)
+ header-y += asm-$(ARCH)/
++endif
+diff --git a/scripts/Makefile.headersinst b/scripts/Makefile.headersinst
+index 80df6f3..e96d18e 100644
+--- a/scripts/Makefile.headersinst
++++ b/scripts/Makefile.headersinst
+@@ -14,15 +14,6 @@ include $(kbuild-file)
+ 
+ include scripts/Kbuild.include
+ 
+-# If this is include/asm-$(ARCH) then override $(_dst) so that
+-# we install to include/asm directly.
+-# Unless $(BIASMDIR) is set, in which case we're probably doing
+-# a 'headers_install_all' build and we should keep the -$(ARCH)
+-# in the directory name.
+-ifeq ($(obj),include/asm-$(ARCH)$(BIASMDIR))
+-     _dst := include/asm
+-endif
+-
+ install      := $(INSTALL_HDR_PATH)/$(_dst)
+ 
+ header-y     := $(sort $(header-y) $(unifdef-y))
+@@ -88,8 +79,12 @@ endif
+ # Recursion
+ hdr-inst := -rR -f $(srctree)/scripts/Makefile.headersinst obj
+ .PHONY: $(subdirs)
++
++# If the next directory is include/asm-$(ARCH) then override
++# $(_dst) so that we install to include/asm directly.
+ $(subdirs):
+-	$(Q)$(MAKE) $(hdr-inst)=$(obj)/$@ dst=$(_dst)/$@
++	$(Q)$(MAKE) $(hdr-inst)=$(obj)/$@ \
++		dst=$(patsubst include/asm-$(ARCH),include/asm,$(_dst)/$@)
+ 
+ targets := $(wildcard $(sort $(targets)))
+ cmd_files := $(wildcard \
 
 -- 
-sed 'sed && sh + olecom = love'  <<  ''
--o--=O`C
- #oo'L O
-<___=E M
+dwmw2
+
