@@ -1,79 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764411AbYFHLvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764899AbYFHLxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764411AbYFHLvs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 07:51:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758237AbYFHLvh
+	id S1764899AbYFHLxl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 07:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760787AbYFHLxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 07:51:37 -0400
-Received: from bay0-omc2-s24.bay0.hotmail.com ([65.54.246.160]:62020 "EHLO
-	bay0-omc2-s24.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758020AbYFHLvg convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 07:51:36 -0400
-Message-ID: <BAY103-DAV7370611E1B3FEA8FD69B9B2B10@phx.gbl>
-X-Originating-IP: [88.35.96.158]
-X-Originating-Email: [pupilla@hotmail.com]
-From: "Marco Berizzi" <pupilla@hotmail.com>
-To: "Willy Tarreau" <w@1wt.eu>
-Cc: "David Miller" <davem@davemloft.net>, <linux-kernel@vger.kernel.org>,
-       <netdev@vger.kernel.org>, "Chris Wright" <chrisw@sous-sol.org>
-References: <20080520.143238.87085088.davem@davemloft.net> <BAY103-DAV11AE409F40D0878FC3A259B2B60@phx.gbl> <20080607204325.GJ5609@1wt.eu>
-Subject: Re: [patch 00/50] 2.6.25.6 -stable review
-Date: Sun, 8 Jun 2008 13:56:01 +0200
+	Sun, 8 Jun 2008 07:53:34 -0400
+Received: from mail1.aster.pl ([212.76.33.23]:9983 "EHLO mail1.aster.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759740AbYFHLxd convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 07:53:33 -0400
+Content-Disposition: inline
+From: "Jakub W. Jozwicki" <jozwicki@aster.pl>
+To: linux-kernel@vger.kernel.org
+Subject: Fwd: 2.6.25.4-rt4 problems
+Date: Sun, 8 Jun 2008 13:11:27 +0200
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.2180
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2180
-X-OriginalArrivalTime: 08 Jun 2008 11:51:35.0364 (UTC) FILETIME=[00908840:01C8C95E]
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200806081311.27729.jozwicki@aster.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau wrote:
+Hello,
+To have 2.6.24-rt4 and rt6 working without BUGs in dmesg I did some patching.
+Probably this was wrong and I only masked some other problem.
+I'm not a kernel specialist, so could you look at it?
 
-> On Sat, Jun 07, 2008 at 10:27:58PM +0200, Marco Berizzi wrote:
->> David Miller wrote:
->> 
->> > From: Herbert Xu <herbert@gondor.apana.org.au>
->> > Date: Tue, 20 May 2008 17:25:11 +0800
->> > 
->> >> On Wed, May 14, 2008 at 10:19:57AM +0200, Marco Berizzi wrote:
->> >> > 
->> >> > I hope this helps.
->> >> 
->> >> OK found the problem, it was my fault after all :)
->> >> 
->> >> Dave, this patch needs to go into stable too.
->> >> 
->> >> [IPSEC]: Use the correct ip_local_out function
->> >> 
->> >> Because the IPsec output function xfrm_output_resume does its
->> >> own dst_output call it should always call __ip_local_output
->> >> instead of ip_local_output as the latter may invoke dst_output
->> >> directly.  Otherwise the return values from nf_hook and dst_output
->> >> may clash as they both use the value 1 but for different purposes.
->> >> 
->> >> When that clash occurs this can cause a packet to be used after
->> >> it has been freed which usually leads to a crash.  Because the
->> >> offending value is only returned from dst_output with qdiscs
->> >> such as HTB, this bug is normally not visible.
->> >> 
->> >> Thanks to Marco Berizzi for his perseverance in tracking this
->> >> down.
->> >> 
->> >> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
->> > 
->> > Applied and queued to -stable, thanks!
->> 
->> Hi David,
->> 
->> I don't see this patch in Chris 2.6.25.6 -stable review message.
-> 
-> Is it already in mainline ?
+Regards,
+Jakub
 
-yes, since 2008/05/20
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1ac06e0306d0192a7a4d9ea1c9e06d355ce7e7d3
+----------  Przekazana wiadomość  ----------
 
+Temat: 2.6.25.4-rt4 problems
+Data: poniedziałek, 2 czerwca 2008
+Od: "Jakub W. Jozwicki" <jozwicki@aster.pl>
+Do: tglx@timesys.com
+
+Hello,
+On my laptop I've been seeing constant flood of printk BUG from migh_sleep 
+coming from cpu_idle():
+
+[  121.955048] BUG: sleeping function called from invalid context swapper(0) 
+at kernel/rtmutex.c:739
+[  121.955048] in_atomic():1 [00000001], irqs_disabled():0
+[  121.955048] Pid: 0, comm: swapper Not tainted 2.6.25.4-rt6 #2
+[  121.955048]  [<c0120f61>] __might_sleep+0xf1/0xf8
+[  121.955048]  [<c0466a4c>] __rt_spin_lock+0x24/0x61
+[  121.955048]  [<c0466a91>] rt_spin_lock+0x8/0xa
+[  121.955048]  [<c013f00d>] pm_qos_requirement+0x10/0x29
+[  121.955048]  [<c03a09a6>] menu_select+0x5d/0x7f
+[  121.955048]  [<c039ff48>] cpuidle_idle_call+0x47/0x9b
+[  121.955048]  [<c039ff01>] ? cpuidle_idle_call+0x0/0x9b
+[  121.955048]  [<c01060ff>] cpu_idle+0xaf/0x106
+[  121.955048]  [<c0453e5f>] rest_init+0x67/0x69
+[  121.955048]  =======================
+
+ I have fixed it with:
+
+--- linux-2.6.25.4/kernel/pm_qos_params.c	2008-05-15 17:00:12.000000000 +0200
++++ linux-2.6.25-k01/kernel/pm_qos_params.c	2008-06-01 19:51:37.180887278 
++0200
+@@ -192,12 +192,15 @@
+  */
+ int pm_qos_requirement(int pm_qos_class)
+ {
+-	int ret_val;
++	int ret_val, locked;
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&pm_qos_lock, flags);
++	locked = preempt_count() > 0;
++	if (!locked)
++	    spin_lock_irqsave(&pm_qos_lock, flags);
+ 	ret_val = pm_qos_array[pm_qos_class]->target_value;
+-	spin_unlock_irqrestore(&pm_qos_lock, flags);
++	if (!locked)
++	    spin_unlock_irqrestore(&pm_qos_lock, flags);
+ 
+ 	return ret_val;
+ }
+
+
+Oh, and some functions were missing. To compile kernel I had to add:
+
+--- linux-2.6.25.4/kernel/sched.c	2008-06-02 07:53:07.515908233 +0200
++++ linux-2.6.25-k01/kernel/sched.c	2008-06-01 14:27:39.147029258 +0200
+@@ -671,6 +671,19 @@
+  */
+ #define RUNTIME_INF	((u64)~0ULL)
+ 
++static inline u64 global_rt_period()
++{
++	return (u64)sysctl_sched_rt_period * NSEC_PER_USEC;
++} 
++
++static inline u64 global_rt_runtime()
++{
++	if (sysctl_sched_rt_period < 0)
++	    return RUNTIME_INF;
++	    
++	return (u64)sysctl_sched_rt_runtime * NSEC_PER_USEC;
++}
++
+ /*
+  * We really dont want to do anything complex within switch_to()
+  * on PREEMPT_RT - this check enforces this.
+
+To shut up another BUG:
+
+--- linux-2.6.25.4/drivers/ata/libata-core.c	2008-05-15 17:00:12.000000000 
++0200
++++ linux-2.6.25-k01/drivers/ata/libata-core.c	2008-06-01 23:34:09.392635934 
++0200
+@@ -5145,14 +5145,14 @@
+ 		unsigned long flags;
+ 
+ 		/* FIXME: use a bounce buffer */
+-		local_irq_save(flags);
++		local_irq_save_nort(flags);
+ 		buf = kmap_atomic(page, KM_IRQ0);
+ 
+ 		/* do the actual data transfer */
+ 		ap->ops->data_xfer(qc->dev, buf + offset, qc->sect_size, do_write);
+ 
+ 		kunmap_atomic(buf, KM_IRQ0);
+-		local_irq_restore(flags);
++		local_irq_restore_nort(flags);
+ 	} else {
+ 		buf = page_address(page);
+ 		ap->ops->data_xfer(qc->dev, buf + offset, qc->sect_size, do_write);
+@@ -5282,14 +5282,14 @@
+ 		unsigned long flags;
+ 
+ 		/* FIXME: use bounce buffer */
+-		local_irq_save(flags);
++		local_irq_save_nort(flags);
+ 		buf = kmap_atomic(page, KM_IRQ0);
+ 
+ 		/* do the actual data transfer */
+ 		consumed = ap->ops->data_xfer(dev,  buf + offset, count, rw);
+ 
+ 		kunmap_atomic(buf, KM_IRQ0);
+-		local_irq_restore(flags);
++		local_irq_restore_nort(flags);
+ 	} else {
+ 		buf = page_address(page);
+ 		consumed = ap->ops->data_xfer(dev,  buf + offset, count, rw);
+@@ -5462,7 +5462,7 @@
+ {
+ 	unsigned long flags = 0;
+ 	int poll_next;
+-
++	
+ 	WARN_ON((qc->flags & ATA_QCFLAG_ACTIVE) == 0);
+ 
+ 	/* Make sure ata_qc_issue_prot() does not throw things
+
+and:
+
+diff -U 3 -H -d -r -N -- linux-2.6.25.4/drivers/ata/libata-scsi.c 
+linux-2.6.25-k01/drivers/ata/libata-scsi.c
+--- linux-2.6.25.4/drivers/ata/libata-scsi.c	2008-05-15 17:00:12.000000000 
++0200
++++ linux-2.6.25-k01/drivers/ata/libata-scsi.c	2008-06-02 00:03:27.528945648 
++0200
+@@ -1705,14 +1705,14 @@
+ 	struct scsi_cmnd *cmd = args->cmd;
+ 	unsigned long flags;
+ 
+-	local_irq_save(flags);
++	local_irq_save_nort(flags);
+ 
+ 	buflen = ata_scsi_rbuf_get(cmd, &rbuf);
+ 	memset(rbuf, 0, buflen);
+ 	rc = actor(args, rbuf, buflen);
+ 	ata_scsi_rbuf_put(cmd, rbuf);
+ 
+-	local_irq_restore(flags);
++	local_irq_restore_nort(flags);
+ 
+ 	if (rc == 0)
+ 		cmd->result = SAM_STAT_GOOD;
+@@ -2489,7 +2489,7 @@
+ 			unsigned int buflen;
+ 			unsigned long flags;
+ 
+-			local_irq_save(flags);
++			local_irq_save_nort(flags);
+ 
+ 			buflen = ata_scsi_rbuf_get(cmd, &buf);
+ 
+@@ -2508,7 +2508,7 @@
+ 
+ 			ata_scsi_rbuf_put(cmd, buf);
+ 
+-			local_irq_restore(flags);
++			local_irq_restore_nort(flags);
+ 		}
+ 
+ 		cmd->result = SAM_STAT_GOOD;
+
+
+-------------------------------------------------------
