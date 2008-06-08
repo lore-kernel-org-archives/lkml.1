@@ -1,106 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765161AbYFHMoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765110AbYFHMxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765161AbYFHMoa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 08:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756377AbYFHMoX
+	id S1765110AbYFHMxW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 08:53:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758077AbYFHMxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 08:44:23 -0400
-Received: from 1wt.eu ([62.212.114.60]:1585 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752628AbYFHMoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 08:44:22 -0400
-Date: Sun, 8 Jun 2008 14:29:20 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Miklos Szeredi <mszeredi@suse.cz>
-Cc: stable@kernel.org, linux-kernel@vger.kernel.org,
-       Michael Halcrow <mhalcrow@us.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: Missing patch from stable [3/7]
-Message-ID: <20080608122920.GA10491@1wt.eu>
-References: <20080608085923.GC6439@1wt.eu> <1212923462.4020.224.camel@tucsk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1212923462.4020.224.camel@tucsk>
-User-Agent: Mutt/1.5.11
+	Sun, 8 Jun 2008 08:53:13 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:61574 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755567AbYFHMxM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 08:53:12 -0400
+Date: Sun, 8 Jun 2008 13:53:05 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Luke -Jr <luke@dashjr.org>
+cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mips@linux-mips.org
+Subject: Re: bcm33xx port
+In-Reply-To: <200806072332.06460.luke@dashjr.org>
+Message-ID: <Pine.LNX.4.55.0806081332560.15673@cliff.in.clinika.pl>
+References: <200806072113.26433.luke@dashjr.org>
+ <Pine.LNX.4.55.0806080342310.15673@cliff.in.clinika.pl> <200806072332.06460.luke@dashjr.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 08, 2008 at 01:11:02PM +0200, Miklos Szeredi wrote:
-> 
-> On Sun, 2008-06-08 at 10:59 +0200, Willy Tarreau wrote:
-> > this patch from mainline seems suitable for -stable,
-> 
-> Willy,
-> 
-> Thanks for picking up these ecryptfs patches ...but they hardly meet
-> _any_ of the -stable rules.  In particular:
-> 
-> 
->  - It must be obviously correct and tested.
-> 
-> It's obvious, but I don't know if it's been tested (or even looked at by
-> the maintainer).
+On Sat, 7 Jun 2008, Luke -Jr wrote:
 
-well, some of them (eg: Cyrill's fix for missed mutex_unlock) are obviously
-needed.
+> Well, I always imagined memory layout as being a simple flat range from 0 to 
+> all_memory_in_system, but this is my first experience with it at such a low 
+> level, so I guess I don't know what's "odd" or "normal".
 
->  - It cannot be bigger than 100 lines, with context.
-> 
-> Check.
-> 
->  - It must fix only one thing.
-> 
-> No, it's a small fix as well as a cleanup.
-> 
->  - It must fix a real bug that bothers people (not a, "This could be a
->    problem..." type thing).
-> 
-> No, it doesn't seem to bother anybody.
+ You mean the layout of virtual memory?  Well, have a look at what the
+Alpha defines as sparse memory for something certainly less
+straightforward than what MIPS segments are.  Anyway, what's reported here
+is physical memory and there is nothing special about it.
 
-Generally speaking, everything which relates to locking is hard to diagnose.
-I've been hit for years by locking bugs in the NFS client on old 2.4, and
-they hit me at most once in a week.
+> VxWorks, including the boot loader, is not CFE as far as I am aware. If you're 
+> referring to the "CFEv2" in the log, that appears to be the default of a 
+> switch (eg, if Linux doesn't detect anything else).
 
->  - It must fix a problem that causes a build error (but not for things
->    marked CONFIG_BROKEN), an oops, a hang, data corruption, a real
->    security issue, or some "oh, that's not good" issue.  In short, something
->    critical.
-> 
-> Not critical at all.
+ That message is not included in the standard kernel -- how can I know it
+is meaningless?  As I wrote CFE is standard Broadcom firmware.
 
-OK
+> The calibration code was crashing, so I set it to a fixed 1 value.
+> Worst case, some code won't delay as long as it wants to, right?
 
->  - No "theoretical race condition" issues, unless an explanation of how the
->    race can be exploited is also provided.
-> 
-> It's theoretical, I have no idea how it's exploitable, if at all.
+ That's grossly wrong.  If you need to preset it for the time being till
+you debug calibration, then for a MIPS processor assume one instruction
+per clock tick and two instructions per loop -- that may not be entirely
+correct, but is a good approximation.  Otherwise you risk peripheral
+devices are not driven correctly with all sorts of the nasty results.
 
-OK, but being exploitable is one thing, randomly failing is another one. If
-you think it cannot cause trouble, then OK.
+> >  You have got something seriously broken -- __bzero traps exceptions on
+> > stores for graceful recovery as user addresses may be accessed as is the
+> > case here.  If the reserved instruction exception handler is reached, then
+> > clearly the store instruction is not the immediate cause.
+> 
+> What else could it be?
 
->  - It cannot contain any "trivial" fixes in it (spelling changes,
->    whitespace cleanups, etc).
-> 
-> Check.
-> 
->  - It must follow the Documentation/SubmittingPatches rules.
-> 
-> Check.
-> 
->  - It or an equivalent fix must already exist in Linus' tree.  Quote the
->    respective commit ID in Linus' tree in your patch submission to -stable.
-> 
-> Check.
-> 
-> 
-> Total: 4/9, not a very convincing score :)
+ Well, you've got the system and I have no crystal ball.  You have means
+to debug it.  See how control is passed to the RI exception.  Find which 
+of the TLB exceptions happens and how it proceeds.  Etc...
 
-Well, you know the implications of leaving these known bugs open more than
-me. If you think some of them are really not needed, I'm fine with this,
-but some definitely fix real bugs (judging by the code and the comments).
-
-Thanks,
-Willy
-
+  Maciej
