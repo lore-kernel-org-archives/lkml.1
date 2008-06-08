@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755443AbYFHOPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbYFHOTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755443AbYFHOPj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 10:15:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbYFHOPc
+	id S1755506AbYFHOTn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 10:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYFHOTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 10:15:32 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:44869 "EHLO mx2.suse.de"
+	Sun, 8 Jun 2008 10:19:33 -0400
+Received: from 1wt.eu ([62.212.114.60]:1590 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753186AbYFHOPb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 10:15:31 -0400
-Date: Sun, 8 Jun 2008 16:16:07 +0200
-To: kexec@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, anderson@redhat.com,
-       hpa@zytor.com, tglx@linutronix.de, vgoyal@redhat.com
-Subject: [patch] [PATCH] Use BOOTMEM_EXCLUSIVE for i386
-Message-ID: <20080608141607.GA25743@suse.de>
-Mail-Followup-To: kexec@lists.infradead.org,
-	linux-kernel@vger.kernel.org, mingo@redhat.com, anderson@redhat.com,
-	hpa@zytor.com, tglx@linutronix.de, vgoyal@redhat.com
-MIME-Version: 1.0
+	id S1751494AbYFHOTc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 10:19:32 -0400
+Date: Sun, 8 Jun 2008 16:19:17 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: David Miller <davem@davemloft.net>
+Cc: pupilla@hotmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       chrisw@sous-sol.org
+Subject: Re: [patch 00/50] 2.6.25.6 -stable review
+Message-ID: <20080608141917.GA12754@1wt.eu>
+References: <20080607204325.GJ5609@1wt.eu> <BAY103-DAV7370611E1B3FEA8FD69B9B2B10@phx.gbl> <20080608123601.GB10491@1wt.eu> <20080608.071051.212882594.davem@davemloft.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Organization: SUSE LINUX Products GmbH
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: bwalle@suse.de (Bernhard Walle)
+In-Reply-To: <20080608.071051.212882594.davem@davemloft.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch uses the BOOTMEM_EXCLUSIVE for crashkernel reservation also for i386
-and prints a error message on failure.
+On Sun, Jun 08, 2008 at 07:10:51AM -0700, David Miller wrote:
+> From: Willy Tarreau <w@1wt.eu>
+> Date: Sun, 8 Jun 2008 14:36:01 +0200
+> 
+> > Indeed. Most likely it was simply lost somewhere in the e-mail chain.
+> > Then best thing to do is to retransmit it for next batch of patches.
+> > Chris, here's the fix in question.
+> 
+> It did not get lost at all, it's perfectly sitting in my
+> networking -stable queue waiting for me to have an
+> opportunity to submit it to the -stable folks after I do
+> some testing.
+> 
+> If you ask me in the future about the status of a -stable
+> patch from the networking, I'll let you know exactly what
+> is happening to that patch wrt. stable.  I rarely forget
+> to submit an appropriate patch, and when I do forget you
+> merely have to let me know (rather than submitting it
+> to -stable directly, please don't do that) so that I can
+> fit it in with what I plan to submit to -stable already.
 
-The patch is still for 2.6.26 since it is only bug fixing. The unification of
-reserve_crashkernel() between i386 and x86_64 should be done for 2.6.27.
+OK
 
+> Right now is an unusual situation where I am in a 3 week
+> period of near constant travel, otherwise all of this
+> stuff would have been submitted already.  As I stated in
+> another reply to you, that period is ending tomorrow so I
+> should be able to crank out all of these patches to -stable
+> some time this week.
 
+Perfect, thank you David.
+Willy
 
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
-
----
- arch/x86/kernel/setup_32.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
-
---- a/arch/x86/kernel/setup_32.c
-+++ b/arch/x86/kernel/setup_32.c
-@@ -532,10 +532,16 @@ static void __init reserve_crashkernel(v
- 					(unsigned long)(crash_size >> 20),
- 					(unsigned long)(crash_base >> 20),
- 					(unsigned long)(total_mem >> 20));
-+
-+			if (reserve_bootmem(crash_base, crash_size,
-+					BOOTMEM_EXCLUSIVE) < 0) {
-+				printk(KERN_INFO "crashkernel reservation "
-+					"failed - memory is in use\n");
-+				return;
-+			}
-+
- 			crashk_res.start = crash_base;
- 			crashk_res.end   = crash_base + crash_size - 1;
--			reserve_bootmem(crash_base, crash_size,
--					BOOTMEM_DEFAULT);
- 		} else
- 			printk(KERN_INFO "crashkernel reservation failed - "
- 					"you have to specify a base address\n");
