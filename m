@@ -1,115 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757853AbYFHP5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757236AbYFHQHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757853AbYFHP5R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 11:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754721AbYFHP5G
+	id S1757236AbYFHQHc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 12:07:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755075AbYFHQHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 11:57:06 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:61788 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754661AbYFHP5D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 11:57:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=IixYuvjFiIhGu8ovwXf+tGKtrIrvKqga9kjC3sz2PL3wM5JzaUQNKAG/U3A5NHU24+
-         GQ2/UspLpMGZ5QFOIBLzWzRWlObEy3ec8TUGLWlINxO2D7z7IIx3Nc3DKnyug4AxpdHo
-         wgNDqn8H9twacZU1nZeqLWb5wacVuSV0c0qyA=
-Date: Sun, 8 Jun 2008 19:56:49 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: nm127@freemail.hu
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: cleanups to nmi_watchdog variable
-Message-ID: <20080608155649.GC7020@cvg>
-References: <484AAD0B.1030407@freemail.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Sun, 8 Jun 2008 12:07:20 -0400
+Received: from 1wt.eu ([62.212.114.60]:1615 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754762AbYFHQHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 12:07:19 -0400
+Date: Sun, 8 Jun 2008 18:06:56 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Jay Cliburn <jacliburn@bellsouth.net>
+Cc: David Miller <davem@davemloft.net>, pupilla@hotmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       chrisw@sous-sol.org, jeff@garzik.org
+Subject: Re: [patch 00/50] 2.6.25.6 -stable review
+Message-ID: <20080608160656.GL5609@1wt.eu>
+References: <20080607204325.GJ5609@1wt.eu> <BAY103-DAV7370611E1B3FEA8FD69B9B2B10@phx.gbl> <20080608123601.GB10491@1wt.eu> <20080608.071051.212882594.davem@davemloft.net> <20080608103835.0c0b1e83@osprey.hogchain.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <484AAD0B.1030407@freemail.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080608103835.0c0b1e83@osprey.hogchain.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Jun 08, 2008 at 10:38:35AM -0500, Jay Cliburn wrote:
+> On Sun, 08 Jun 2008 07:10:51 -0700 (PDT)
+> David Miller <davem@davemloft.net> wrote:
+> 
+> 
+> > If you ask me in the future about the status of a -stable
+> > patch from the networking, I'll let you know exactly what
+> > is happening to that patch wrt. stable.  I rarely forget
+> > to submit an appropriate patch, and when I do forget you
+> > merely have to let me know (rather than submitting it
+> > to -stable directly, please don't do that) so that I can
+> > fit it in with what I plan to submit to -stable already.
+> 
+> 
+> As a netdev driver maintainer, I've been following this workflow for
+> patches that need to go to -stable:
+> 
+> 1.  I submit a mainline patch to Jeff Garzik.
+> 2.  Jeff submits to David.
+> 3.  David submits to Linus.
+> 4.  Linus merges patch into mainline.
+> 5.  I extract mainline commit ID.
+> 6.  I apply and test patch against appropriate 2.6.x.y git tree.
+> 7.  I submit patch directly to -stable.
+> 
+> David's admonition tells me I'm doing it wrong, and that I should
+> submit the stable patch to Jeff as well.  Am I right?
 
-| From: Márton Németh <nm127@freemail.hu>
-| 
-| Use NMI_NONE instead of 0. As the symbol NMI_DISABLED equals to -1,
-| the nmi_watchdog variable should also be signed.
-| 
-| Signed-off-by: Márton Németh <nm127@freemail.hu>
-| ---
-| diff -upr linux-2.6.26-rc5.orig/arch/x86/kernel/io_apic_32.c linux-2.6.26-rc5/arch/x86/kernel/io_apic_32.c
-| --- linux-2.6.26-rc5.orig/arch/x86/kernel/io_apic_32.c	2008-06-07 12:35:24.000000000 +0200
-| +++ linux-2.6.26-rc5/arch/x86/kernel/io_apic_32.c	2008-06-07 12:40:20.000000000 +0200
-| @@ -2217,7 +2217,7 @@ static inline void __init check_timer(vo
-| 
-|  	if (nmi_watchdog == NMI_IO_APIC) {
-|  		printk(KERN_WARNING "timer doesn't work through the IO-APIC - disabling NMI Watchdog!\n");
-| -		nmi_watchdog = 0;
-| +		nmi_watchdog = NMI_NONE;
-|  	}
-| 
-|  	printk(KERN_INFO "...trying to set up timer as Virtual Wire IRQ...");
-| diff -upr linux-2.6.26-rc5.orig/arch/x86/kernel/io_apic_64.c linux-2.6.26-rc5/arch/x86/kernel/io_apic_64.c
-| --- linux-2.6.26-rc5.orig/arch/x86/kernel/io_apic_64.c	2008-06-05 18:39:49.000000000 +0200
-| +++ linux-2.6.26-rc5/arch/x86/kernel/io_apic_64.c	2008-06-07 12:37:01.000000000 +0200
-| @@ -1735,7 +1735,7 @@ static inline void __init check_timer(vo
-| 
-|  	if (nmi_watchdog == NMI_IO_APIC) {
-|  		printk(KERN_WARNING "timer doesn't work through the IO-APIC - disabling NMI Watchdog!\n");
-| -		nmi_watchdog = 0;
-| +		nmi_watchdog = NMI_NONE;
-|  	}
-| 
-|  	apic_printk(APIC_VERBOSE, KERN_INFO "...trying to set up timer as Virtual Wire IRQ...");
-| diff -upr linux-2.6.26-rc5.orig/arch/x86/kernel/nmi_32.c linux-2.6.26-rc5/arch/x86/kernel/nmi_32.c
-| --- linux-2.6.26-rc5.orig/arch/x86/kernel/nmi_32.c	2008-06-05 18:39:49.000000000 +0200
-| +++ linux-2.6.26-rc5/arch/x86/kernel/nmi_32.c	2008-06-07 11:19:55.000000000 +0200
-| @@ -43,7 +43,7 @@ static cpumask_t backtrace_mask = CPU_MA
-|   */
-|  atomic_t nmi_active = ATOMIC_INIT(0);		/* oprofile uses this */
-| 
-| -unsigned int nmi_watchdog = NMI_DEFAULT;
-| +int nmi_watchdog = NMI_DEFAULT;
-|  static unsigned int nmi_hz = HZ;
-| 
-|  static DEFINE_PER_CPU(short, wd_enabled);
-| diff -upr linux-2.6.26-rc5.orig/arch/x86/kernel/nmi_64.c linux-2.6.26-rc5/arch/x86/kernel/nmi_64.c
-| --- linux-2.6.26-rc5.orig/arch/x86/kernel/nmi_64.c	2008-06-05 18:39:49.000000000 +0200
-| +++ linux-2.6.26-rc5/arch/x86/kernel/nmi_64.c	2008-06-07 11:20:00.000000000 +0200
-| @@ -43,7 +43,7 @@ static cpumask_t backtrace_mask = CPU_MA
-|  atomic_t nmi_active = ATOMIC_INIT(0);		/* oprofile uses this */
-|  static int panic_on_timeout;
-| 
-| -unsigned int nmi_watchdog = NMI_DEFAULT;
-| +int nmi_watchdog = NMI_DEFAULT;
-|  static unsigned int nmi_hz = HZ;
-| 
-|  static DEFINE_PER_CPU(short, wd_enabled);
-| diff -upr linux-2.6.26-rc5.orig/include/asm-x86/nmi.h linux-2.6.26-rc5/include/asm-x86/nmi.h
-| --- linux-2.6.26-rc5.orig/include/asm-x86/nmi.h	2008-06-05 18:40:12.000000000 +0200
-| +++ linux-2.6.26-rc5/include/asm-x86/nmi.h	2008-06-07 11:21:20.000000000 +0200
-| @@ -61,7 +61,7 @@ extern void enable_timer_nmi_watchdog(vo
-|  extern int nmi_watchdog_tick(struct pt_regs *regs, unsigned reason);
-| 
-|  extern atomic_t nmi_active;
-| -extern unsigned int nmi_watchdog;
-| +extern int nmi_watchdog;
-|  #define NMI_DISABLED    -1
-|  #define NMI_NONE	0
-|  #define NMI_IO_APIC	1
-| 
+The normal recommended method to get patches automatically sent to
+stable is to add a "Cc: stable@kernel.org" line above your signed-off-by
+line. That way it is automatically sent to stable when Linus merges it,
+and David gets notified. This should *theorically* save him some of the
+work consisting in checking his stable queue for unmerged patches, but
+his workflow may be different. Also, this method is particularly suited
+to ensure that patches don't get lost when the maintainer does not have
+a specific stable queue, which is not the case here, according to David.
 
-We should leave nmi_watchdog as unsigned. The only snippet which
-could be reviewed as controversy point  - is touch_nmi_watchdog()
-where we just test nmi_watchdog for being greater than 0. Actually
-there NMI_NONE should be used instead. But frankly some additional
-simplification is needed.
+Regards,
+Willy
 
-		- Cyrill -
