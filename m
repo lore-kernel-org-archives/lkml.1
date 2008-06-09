@@ -1,44 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756215AbYFIQlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757600AbYFIQlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756215AbYFIQlS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 12:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbYFIQlF
+	id S1757600AbYFIQlh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 12:41:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340AbYFIQl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 12:41:05 -0400
-Received: from nn7.de ([85.214.94.156]:56210 "EHLO nn7.de"
+	Mon, 9 Jun 2008 12:41:27 -0400
+Received: from mga09.intel.com ([134.134.136.24]:23829 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752653AbYFIQlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 12:41:04 -0400
-Subject: Re: 26-rc5+git hang on boot bluetooth hidd/hid_devices
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <1213022913.17870.4.camel@violet.holtmann.net>
-References: <1213015948.7018.48.camel@localhost>
-	 <1213022913.17870.4.camel@violet.holtmann.net>
-Content-Type: text/plain
+	id S1751922AbYFIQl0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 12:41:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,613,1204531200"; 
+   d="scan'208";a="392567049"
+Message-ID: <484D5CCB.10302@intel.com>
+Date: Mon, 09 Jun 2008 09:39:39 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080417)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Pavel Machek <pavel@suse.cz>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, len.brown@intel.com,
+       cpufreq@lists.linux.org.uk, davej@codemonkey.org.uk
+Subject: Re: bug? acpi p-state + ondemand keeps dropping max freq
+References: <20080606140846.GA9580@ucw.cz>	<20080607213918.GC1746@elf.ucw.cz> <20080607145435.4afc9812@infradead.org>
+In-Reply-To: <20080607145435.4afc9812@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Mon, 09 Jun 2008 18:38:29 +0200
-Message-Id: <1213029509.4521.29.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+X-OriginalArrivalTime: 09 Jun 2008 16:41:25.0413 (UTC) FILETIME=[A8412D50:01C8CA4F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-06-09 at 16:48 +0200, Marcel Holtmann wrote:
-> Hi Soeren,
+Arjan van de Ven wrote:
+> On Sat, 7 Jun 2008 23:39:18 +0200
+> Pavel Machek <pavel@suse.cz> wrote:
 > 
-> > updating to 2.6.26-rc5+git I recognize that debian sid suddenly hangs on
-> > boot when bluetooth is activated. The last message I see is starting
-> > hidd/hid_devices. And well 2.6.24/25 boot.
-> > 
-> > Does anybody else observe this? Any ideas?
+>>> # echo 1866000 > scaling_max_freq ; cat scaling_max_freq
+>>> 800000
+>>> # echo 1866000 > scaling_max_freq ; cat scaling_max_freq
+>>> 800000
+>>>
+>>>
+>>> This renders my Dothan to utterly poor speeds. (standard T43)
+>>>
+>>> performance cpufreq governor makes no difference - I still can't
+>>> change the frequency upper/lower values.
+>> Hmm, I have similar problem in Novell bugzilla, on very different hw:
+>>
+>> https://bugzilla.novell.com/show_bug.cgi?id=396311
+>>
+>> 								Pavel
+>>
 > 
-> is HID2HCI switching utility on? Do you have a HID proxy adapter in your
-> system? If yes, then it is actually an USB issue.
+> 
+> are either of you running gnome-power-manager or kpowersaved ?
+> sometimes these programs (and more likely, the patches added by a
+> distro maintainer who doesn't fully realize how power works) tend to
+> muck with kernel settings around CPU frequency that they have
+> absolutely no business touching...
 
-yes hid2hci is on as this system is a macbookpro that tends to forget
-that it has internal bluetooth after resume (if resume even works)
+I neither run gnome nor kde. there's nothing running on this box that is managing
+power settings.
 
-Soeren
+Auke
+
+
