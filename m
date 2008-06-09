@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756407AbYFITCd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbYFITJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756407AbYFITCd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 15:02:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbYFITC0
+	id S1754840AbYFITJi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 15:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbYFITJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 15:02:26 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47579 "EHLO mx2.mail.elte.hu"
+	Mon, 9 Jun 2008 15:09:28 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49226 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752757AbYFITCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 15:02:25 -0400
-Date: Mon, 9 Jun 2008 21:02:04 +0200
+	id S1752441AbYFITJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 15:09:27 -0400
+Date: Mon, 9 Jun 2008 21:09:11 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Cc: hpa <hpa@zytor.com>, tglx <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH] x86: coding style fixes to arch/x86/kernel/io_apic_32.c
-Message-ID: <20080609190204.GA13674@elte.hu>
-References: <20080608130718.5d36e25b@paolo-desktop>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: update mptable v7 - fix
+Message-ID: <20080609190911.GA20997@elte.hu>
+References: <200805041823.57198.yhlu.kernel@gmail.com> <200805251600.26325.yhlu.kernel@gmail.com> <200806011317.38622.yhlu.kernel@gmail.com> <200806081953.26877.yhlu.kernel@gmail.com> <20080609101318.GA23873@elte.hu> <86802c440806091051j30ac4480oe6be0a7b288f772c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080608130718.5d36e25b@paolo-desktop>
+In-Reply-To: <86802c440806091051j30ac4480oe6be0a7b288f772c@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,68 +37,18 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-> Before:
-> total: 91 errors, 73 warnings, 2850 lines checked
-> 
-> After:
-> total: 1 errors, 47 warnings, 2848 lines checked
+> thanks. So X86_MPPARSE is not needed when SMP is not enabled?
 
-applied, thanks. A small detail:
+here's the condition:
 
-> +++ b/arch/x86/kernel/io_apic_32.c
-> @@ -37,12 +37,12 @@
->  #include <linux/kthread.h>
->  #include <linux/jiffies.h>	/* time_after() */
->  
-> -#include <asm/io.h>
-> -#include <asm/smp.h>
-> +#include <linux/io.h>
-> +#include <linux/smp.h>
+config X86_MPPARSE
+        def_bool y
+        depends on (X86_32 && (X86_LOCAL_APIC && !X86_VISWS)) || X86_64
 
-i suspect checkpatch suggested that asm/smp.h -> linux/smp.h change, but 
-there was a subtle detail here - asm/smp.h has dual role on x86, it also 
-carries a fair number of low level details about APIC/SMP details - 
-which matters on UP IOAPIC.
-
-so the fix below was needed as well.
+64-bit has it unconditionally, 32-bit has it on SMP, UP-IOAPIC or 
+UP-local-APIC mode. [ (and VISWS is an ugly complication we should try 
+to eradicate similarly to NUMAQ, if possible :-) ]
 
 	Ingo
-
-------------->
-Subject: build fix to "x86: coding style fixes to arch/x86/kernel/io_apic_32.c"
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon Jun 09 20:58:55 CEST 2008
-
-io_apic_32.c relied on asm/smp.h include, to pick up lowlevel
-arch details:
-
-arch/x86/kernel/io_apic_32.c:75: error: array type has incomplete element type
-arch/x86/kernel/io_apic_32.c:79: error: array type has incomplete element type
-arch/x86/kernel/io_apic_32.c:152: error: field ‘entry’ has incomplete type
-arch/x86/kernel/io_apic_32.c:156: error: return type is an incomplete type
-arch/x86/kernel/io_apic_32.c: In function ‘ioapic_read_entry’:
-arch/x86/kernel/io_apic_32.c:163: warning: ‘return’ with a value, in function returning void
-arch/x86/kernel/io_apic_32.c: At top level:
-
-so add it back.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/io_apic_32.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-Index: linux/arch/x86/kernel/io_apic_32.c
-===================================================================
---- linux.orig/arch/x86/kernel/io_apic_32.c
-+++ linux/arch/x86/kernel/io_apic_32.c
-@@ -39,6 +39,8 @@
- 
- #include <linux/io.h>
- #include <linux/smp.h>
-+
-+#include <asm/smp.h>
- #include <asm/desc.h>
- #include <asm/timer.h>
- #include <asm/i8259.h>
