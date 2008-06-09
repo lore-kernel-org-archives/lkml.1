@@ -1,152 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759515AbYFIJn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759613AbYFIJoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759515AbYFIJn3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 05:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758380AbYFIJnU
+	id S1759613AbYFIJoU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 05:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758635AbYFIJoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 05:43:20 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:43373 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758153AbYFIJnT (ORCPT
+	Mon, 9 Jun 2008 05:44:09 -0400
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.123]:51100 "EHLO
+	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758153AbYFIJoH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 05:43:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=ZqlGNnHLE+zOewV/qt4bFuIIXXFF76MLyznCvllOQP7WmbLTNH1U6gpcAtVTNoD/8X
-         te3KrFiCqlRUj634vssYZ/pG1jqCiI+qQsOT2/I3ujKJ6WLs6WmX71HvtBRaaxA/ftzf
-         wAeGruywHb4hd4VgszIlQ7GEwmXI9jpAHzJUY=
-Message-ID: <484CFB2E.30202@gmail.com>
-Date: Mon, 09 Jun 2008 18:43:10 +0900
-From: Tejun Heo <htejun@gmail.com>
+	Mon, 9 Jun 2008 05:44:07 -0400
+X-Greylist: delayed 5016 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Jun 2008 05:44:07 EDT
+Message-ID: <484CE70A.60703@cfl.rr.com>
+Date: Mon, 09 Jun 2008 04:17:14 -0400
+From: Mark Hounschell <dmarkh@cfl.rr.com>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Peer Chen <pchen@nvidia.com>
-CC: "Hemmann, Volker Armin" <volker.armin.hemmann@tu-clausthal.de>,
-       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Kuan Luo <kluo@nvidia.com>
-Subject: Re: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
-References: <200803091922.33083.volker.armin.hemmann@tu-clausthal.de> <200805291654.03617.volker.armin.hemmann@tu-clausthal.de> <483F804F.1@gmail.com> <200805301243.39751.volker.armin.hemmann@tu-clausthal.de> <4840A085.2080101@gmail.com> <15F501D1A78BD343BE8F4D8DB854566B2AA19253@hkemmail01.nvidia.com> <484CF531.30804@gmail.com>
-In-Reply-To: <484CF531.30804@gmail.com>
+To: "Luis Claudio R. Goncalves" <lclaudio@uudg.org>
+CC: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.24.7-rt13 Oops
+References: <1212723195.24785.40.camel@localhost.localdomain> <484BA2E3.9010305@cfl.rr.com> <20080608125119.GS28755@unix.sh>
+In-Reply-To: <20080608125119.GS28755@unix.sh>
 X-Enigmail-Version: 0.95.6
-Content-Type: multipart/mixed;
- boundary="------------010700080500010502070206"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010700080500010502070206
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Luis Claudio R. Goncalves wrote:
+> On Sun, Jun 08, 2008 at 05:14:11AM -0400, Mark Hounschell wrote:
+>> BUG: unable to handle kernel paging request at virtual address 00656c0c
+> 
+> It seems like you have just found a buffer overflow in vsnprintf... as the
+> requested address was "el\n" :)
+> 
+> I wonder where do this data came from. Could you please send us the log
+> lines around this oops? I have the impression something was printed right
+> before the oops.
+> 
+> Luis
+> 
 
-Volker, can you please test the attached patch?
+There is nothing else around the Oops in the log. However a non-RT 
+kernel will print this.
 
-Thanks.
+Jun  9 04:15:26 harley kernel: CDB:
+Jun  9 04:15:26 harley kernel: aic7xxx_dev_reset returns 0x2002
 
--- 
-tejun
+>> printing eip: c01cb82e *pde = 00000000
+>> Oops: 0000 [#1] PREEMPT SMP
+>> Modules linked in: lp af_packet appletalk ax25 ipx p8023 udf ip6t_LOG 
+>> nf_conntrack_ipv6 xt_pkttype ipt_LOG xt_limit snd_pcm_oss snd_mixer_oss 
+>> snd_seq snd_seq_device ip6t_REJECT xt_tcpudp ipt_REJECT xt_state 
+>> iptable_mangle iptable_nat nf_nat iptable_filter ip6table_mangle 
+>> nf_conntrack_ipv4 nf_conntrack ip_tables ip6table_filter ip6_tables 
+>> x_tables ipv6 fuse loop dm_mod snd_hda_intel snd_pcm snd_timer rtc_cmos snd 
+>> rtc_core osst ati_agp i2c_piix4 e1000 ide_cd soundcore parport_pc agpgart 
+>> rtc_lib cdrom sky2 k8temp snd_page_alloc st hwmon i2c_core parport ide_disk 
+>> sg ehci_hcd ohci_hcd usbcore ssb sd_mod edd ext3 mbcache jbd aic7xxx 
+>> scsi_transport_spi pata_jmicron atiixp ide_core ahci libata scsi_mod
+>>
+>> Pid: 9661, comm: v27 Not tainted (2.6.24.7-rt13 #3)
+>> EIP: 0060:[<c01cb82e>] EFLAGS: 00210097 CPU: 1
+>> EIP is at strnlen+0x6/0x18
+>> EAX: 00656c0c EBX: 00656c0c ECX: 00656c0c EDX: fffffffe
+>> ESI: c03c605c EDI: ebb2fdb0 EBP: ffffffff ESP: ebb2fccc
+>>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068 preempt:00000002
+>> Process v27 (pid: 9661, ti=ebb2e000 task=f3ca1810 task.ti=ebb2e000)
+>> Stack: c01caf08 00200246 c0177fb3 f3c22b40 ebb2fd54 c4835a70 c4835a6c 
+>> 00000400
+>>        c03c604c c01c6572 c03c644c 00000000 ffffffff f4f573b6 00000400 
+>> 00656c0c
+>>        f325a9e0 c03c604c c01cb170 ebb2fda8 f4f5739c c011b8fd ebb2fda8 
+>> 00000b61
+>> Call Trace:
+>>  [<c01caf08>] vsnprintf+0x29d/0x46a
+>>  [<c0177fb3>] dput+0x2c/0xff
+>>  [<c01c6572>] __next_cpu+0x12/0x21
+>>  [<c01cb170>] vscnprintf+0x14/0x20
+>>  [<c011b8fd>] vprintk+0xdc/0x2c8
+>>  [<c010309a>] __switch_to+0x15/0x11f
+>>  [<c02b5505>] __spin_unlock+0xc/0x20
+>>  [<c011698b>] finish_task_switch+0x26/0x83
+>>  [<c011bb04>] printk+0x1b/0x1f
+>>  [<f4f4cf18>] ahc_linux_queue_recovery_cmd+0x6f/0x982 [aic7xxx]
+>>  [<c012e02e>] lock_hrtimer_base+0x15/0x2f
+>>  [<c01659a8>] kmem_cache_alloc+0x7d/0xb1
+>>  [<f4f4d839>] ahc_linux_dev_reset+0xe/0x2a [aic7xxx]
+>>  [<f482c801>] scsi_try_bus_device_reset+0x1d/0x3c [scsi_mod]
+>>  [<f482e152>] scsi_reset_provider+0x98/0x12a [scsi_mod]
+>>  [<c0159a52>] find_extend_vma+0x12/0x49
+>>  [<c0133aa8>] get_futex_key+0x6e/0x122
+>>  [<c0133e37>] futex_wait+0x1fc/0x2dc
+>>  [<c0134226>] futex_wahke+0xb8/0xc2
+>>  [<c0134dd0>] do_futex+0x7a/0x9eb
+>>  [<c012d99f>] hrtimer_forward+0xba/0xd0
+>>  [<f4e6c660>] sg_ioctl+0x8d3/0x9dd [sg]
+>>  [<c02b5505>] __spin_unlock+0xc/0x20
+>>  [<c01301d6>] getnstimeofday+0x2b/0xb2
+>>  [<c02b422f>] rt_mutex_lock+0x15/0x3f
+>>  [<c0137d4c>] rt_down+0xe/0x26
+>>  [<c017307c>] do_ioctl+0x4c/0x62
+>>  [<c01732c9>] vfs_ioctl+0x237/0x249
+>>  [<c0173320>] sys_ioctl+0x45/0x5d
+>>  [<c010402a>] sysenter_past_esp+0x5f/0x85
+>>  =======================
+>> ---------------------------
+>> | preempt count: 00000002 ]
+>> | 2-level deep critical section nesting:
+>> ----------------------------------------
+>> .. [<c011b832>] .... vprintk+0x11/0x2c8
+>> .....[<00000000>] ..   ( <= _stext+0x3feff000/0x14)
+>> .. [<c02b515e>] .... __spin_lock+0xd/0x23
+>> .....[<00000000>] ..   ( <= _stext+0x3feff000/0x14)
+>>
+>> Code: c9 74 0c f2 ae 74 05 bf 01 00 00 00 4f 89 fa 5f 89 d0 c3 85 c9 57 89 
+>> c7 89 d0 74 05 f2 ae 75 01 4f 89 f8 5f c3 89 c1 89 c8 eb 06 <80> 38 00 74 
+>> 07 40 4a 83 fa ff 75 f4 29 c8 c3 90 90 90 57 83 c9
+>> EIP: [<c01cb82e>] strnlen+0x6/0x18 SS:ESP 0068:ebb2fccc
+>> ---[ end trace a30b09d6b0410b5f ]---
+>> note: v27[9661] exited with preempt_count 1
+>>
+>>
+>> What causes it:
+>>
+>>     rst_command = SG_SCSI_RESET_DEVICE;
+>>     if (ioctl(Q->DevSpec1, SG_SCSI_RESET, &rst_command) < 0)
+>>             perror("gen_rst: Scsi Device Reset");
+>>
+>>
+>> Regards
+>> Mark
+>>
+>>
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> ---end quoted text---
+> 
 
---------------010700080500010502070206
-Content-Type: text/x-patch;
- name="mcp65-ahci.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="mcp65-ahci.patch"
 
-diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-index 544b7d6..1c62b8e 100644
---- a/drivers/ata/ahci.c
-+++ b/drivers/ata/ahci.c
-@@ -89,6 +89,7 @@ enum {
- 	board_ahci_sb600	= 3,
- 	board_ahci_mv		= 4,
- 	board_ahci_sb700	= 5,
-+	board_ahci_mcp65	= 6,
- 
- 	/* global controller registers */
- 	HOST_CAP		= 0x00, /* host capabilities */
-@@ -190,6 +191,7 @@ enum {
- 	AHCI_HFLAG_NO_PMP		= (1 << 6), /* no PMP */
- 	AHCI_HFLAG_NO_HOTPLUG		= (1 << 7), /* ignore PxSERR.DIAG.N */
- 	AHCI_HFLAG_SECT255		= (1 << 8), /* max 255 sectors */
-+	AHCI_HFLAG_YES_NCQ		= (1 << 9), /* force NCQ cap on */
- 
- 	/* ap->flags bits */
- 
-@@ -384,6 +386,14 @@ static const struct ata_port_info ahci_port_info[] = {
- 		.udma_mask	= ATA_UDMA6,
- 		.port_ops	= &ahci_ops,
- 	},
-+	/* board_ahci_mcp65 */
-+	{
-+		AHCI_HFLAGS	(AHCI_HFLAG_YES_NCQ),
-+		.flags		= AHCI_FLAG_COMMON,
-+		.pio_mask	= 0x1f, /* pio0-4 */
-+		.udma_mask	= ATA_UDMA6,
-+		.port_ops	= &ahci_ops,
-+	},
- };
- 
- static const struct pci_device_id ahci_pci_tbl[] = {
-@@ -438,14 +448,14 @@ static const struct pci_device_id ahci_pci_tbl[] = {
- 	{ PCI_VDEVICE(VIA, 0x6287), board_ahci_vt8251 }, /* VIA VT8251 */
- 
- 	/* NVIDIA */
--	{ PCI_VDEVICE(NVIDIA, 0x044c), board_ahci },		/* MCP65 */
--	{ PCI_VDEVICE(NVIDIA, 0x044d), board_ahci },		/* MCP65 */
--	{ PCI_VDEVICE(NVIDIA, 0x044e), board_ahci },		/* MCP65 */
--	{ PCI_VDEVICE(NVIDIA, 0x044f), board_ahci },		/* MCP65 */
--	{ PCI_VDEVICE(NVIDIA, 0x045c), board_ahci },		/* MCP65 */
--	{ PCI_VDEVICE(NVIDIA, 0x045d), board_ahci },		/* MCP65 */
--	{ PCI_VDEVICE(NVIDIA, 0x045e), board_ahci },		/* MCP65 */
--	{ PCI_VDEVICE(NVIDIA, 0x045f), board_ahci },		/* MCP65 */
-+	{ PCI_VDEVICE(NVIDIA, 0x044c), board_ahci_mcp65 },	/* MCP65 */
-+	{ PCI_VDEVICE(NVIDIA, 0x044d), board_ahci_mcp65 },	/* MCP65 */
-+	{ PCI_VDEVICE(NVIDIA, 0x044e), board_ahci_mcp65 },	/* MCP65 */
-+	{ PCI_VDEVICE(NVIDIA, 0x044f), board_ahci_mcp65 },	/* MCP65 */
-+	{ PCI_VDEVICE(NVIDIA, 0x045c), board_ahci_mcp65 },	/* MCP65 */
-+	{ PCI_VDEVICE(NVIDIA, 0x045d), board_ahci_mcp65 },	/* MCP65 */
-+	{ PCI_VDEVICE(NVIDIA, 0x045e), board_ahci_mcp65 },	/* MCP65 */
-+	{ PCI_VDEVICE(NVIDIA, 0x045f), board_ahci_mcp65 },	/* MCP65 */
- 	{ PCI_VDEVICE(NVIDIA, 0x0550), board_ahci },		/* MCP67 */
- 	{ PCI_VDEVICE(NVIDIA, 0x0551), board_ahci },		/* MCP67 */
- 	{ PCI_VDEVICE(NVIDIA, 0x0552), board_ahci },		/* MCP67 */
-@@ -624,6 +634,12 @@ static void ahci_save_initial_config(struct pci_dev *pdev,
- 		cap &= ~HOST_CAP_NCQ;
- 	}
- 
-+	if (!(cap & HOST_CAP_NCQ) && (hpriv->flags & AHCI_HFLAG_YES_NCQ)) {
-+		dev_printk(KERN_INFO, &pdev->dev,
-+			   "controller can do NCQ, turning on CAP_NCQ\n");
-+		cap |= HOST_CAP_NCQ;
-+	}
-+
- 	if ((cap & HOST_CAP_PMP) && (hpriv->flags & AHCI_HFLAG_NO_PMP)) {
- 		dev_printk(KERN_INFO, &pdev->dev,
- 			   "controller can't do PMP, turning off CAP_PMP\n");
-@@ -2118,7 +2134,8 @@ static void ahci_p5wdh_workaround(struct ata_host *host)
- static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- {
- 	static int printed_version;
--	struct ata_port_info pi = ahci_port_info[ent->driver_data];
-+	unsigned int board_id = ent->driver_data;
-+	struct ata_port_info pi = ahci_port_info[board_id];
- 	const struct ata_port_info *ppi[] = { &pi, NULL };
- 	struct device *dev = &pdev->dev;
- 	struct ahci_host_priv *hpriv;
-@@ -2167,6 +2184,11 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		return -ENOMEM;
- 	hpriv->flags |= (unsigned long)pi.private_data;
- 
-+	/* MCP65 revision A1 and A2 can't do MSI */
-+	if (board_id == board_ahci_mcp65 &&
-+	    (pdev->revision == 0xa1 || pdev->revision == 0xa2))
-+		hpriv->flags |= AHCI_HFLAG_NO_MSI;
-+
- 	if ((hpriv->flags & AHCI_HFLAG_NO_MSI) || pci_enable_msi(pdev))
- 		pci_intx(pdev, 1);
- 
-
---------------010700080500010502070206--
