@@ -1,52 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759921AbYFIKbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760060AbYFIKeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759921AbYFIKbM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 06:31:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759063AbYFIKa7
+	id S1760060AbYFIKeV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 06:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759189AbYFIKeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 06:30:59 -0400
-Received: from gv-out-0910.google.com ([216.239.58.190]:49406 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759126AbYFIKaz (ORCPT
+	Mon, 9 Jun 2008 06:34:13 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:41175 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759126AbYFIKeM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 06:30:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=Gk08YvR5LMlMA2IiXwlgAWq+WeonLwRpYopNW8VVQzbM8oPfUIOi6RK3CQogN+0RY+
-         7BH9+4uEHWBEHXMWNSdLxhSR+F7B2SuT819DamNATSNUSCfoomOk7nfjJwDOLITR5xE5
-         mBcSOqukeOVvJCE3e5iXxn2ZwMucRhSQ5onus=
-Message-ID: <484D061E.5000308@gmail.com>
-Date: Mon, 09 Jun 2008 12:29:50 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Mon, 9 Jun 2008 06:34:12 -0400
+Message-ID: <484D070D.4010209@linux.vnet.ibm.com>
+Date: Mon, 09 Jun 2008 16:03:49 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
-       marcel@holtmann.org, linux-kernel@vger.kernel.org,
-       anssi.hannula@gmail.com
-Subject: Re: [PATCH 06/10] HID: move logitech report quirks
-References: <1210931362-18422-1-git-send-email-jirislaby@gmail.com> <1210931362-18422-2-git-send-email-jirislaby@gmail.com> <1210931362-18422-3-git-send-email-jirislaby@gmail.com> <1210931362-18422-4-git-send-email-jirislaby@gmail.com> <1210931362-18422-5-git-send-email-jirislaby@gmail.com> <1210931362-18422-6-git-send-email-jirislaby@gmail.com> <Pine.LNX.4.64.0806041415130.10085@jikos.suse.cz>
-In-Reply-To: <Pine.LNX.4.64.0806041415130.10085@jikos.suse.cz>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
+Subject: Re: [RFC][PATCH 0/2] memcg: hierarchy support (v3)
+References: <20080604135815.498eaf82.kamezawa.hiroyu@jp.fujitsu.com> <484CF82E.1010508@linux.vnet.ibm.com> <20080609185505.4259019f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080609185505.4259019f.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+KAMEZAWA Hiroyuki wrote:
+> On Mon, 09 Jun 2008 15:00:22 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+>> KAMEZAWA Hiroyuki wrote:
+>>> Hi, this is third version.
+>>>
+>>> While small changes in codes, the whole _tone_ of code is changed.
+>>> I'm not in hurry, any comments are welcome.
+>>>
+>>> based on 2.6.26-rc2-mm1 + memcg patches in -mm queue.
+>>>
+>> Hi, Kamezawa-San,
+>>
+>> Sorry for the delay in responding. Like we discussed last time, I'd prefer a
+>> shares based approach for hierarchial memcg management. I'll review/try these
+>> patches and provide more feedback.
+>>
+> Hi,
+> 
+> I'm now totally re-arranging patches, so just see concepts.
+> 
+> In previous e-mail, I thought that there was a difference between 'your share'
+> and 'my share'. So, please explain again ? 
+> 
+> My 'share' has following characteristics.
+> 
+>   - work as soft-limit. not hard-limit.
+>   - no limit when there are not high memory pressure.
+>   - resource usage will be proportionally fair to each group's share (priority)
+>     under memory pressure.
+> 
 
-On 06/04/2008 02:16 PM, Jiri Kosina wrote:
-> On Fri, 16 May 2008, Jiri Slaby wrote:
->> Move them from core code to a separate driver.
-> is there a reason why this moves only the report descriptor 
-> Logitech-specific quirks, but leaves the input mapping still in 
-> hid-input-quirks.c and doesn't move it into ->input_mapping method too?
+My share is very similar to yours.
 
-No, there is no strong reason, I just postponed it to the second round of 
-changes. I wanted to hear comments first, so I only moved fully only apple 
-driver (to present how the concept was thought). After things settle down, I'm 
-going to move the rest of quirks including this one.
+A group might have a share of 100% and a hard limit of 1G. In this case the hard
+limit applies if the system has more than 1G of memory. I think of hard limit as
+the final controlling factor and shares are suggestive.
+
+Yes, my shares also have the same factors, but can be overridden by hard limits.
+
+
+> If you want to work on this, I can stop this for a while and do other important
+> patches, like background reclaim, mlock limitter, guarantee, etc.. because my 
+> priority to hierarchy is not very high (but it seems better to do this before
+> other misc works, so I did.). 
+> 
+
+I do, but I don't want to stop you from doing it. mlock limitter is definitely
+important, along with some control for large pages. Hierarchy is definitely
+important, since we cannot add other major functionality without first solving
+this proble, After that, High on my list is
+
+1. Soft limits
+2. Performance/space trade-offs
+
+> Anyway, we have to test the new LRU (RvR LRU) at first in the next -mm ;)
+
+Yes :) I just saw that going in
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
