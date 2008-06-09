@@ -1,114 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759491AbYFIJyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759502AbYFIKAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759491AbYFIJyo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 05:54:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758635AbYFIJyg
+	id S1759502AbYFIKAj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 06:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758857AbYFIKAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 05:54:36 -0400
-Received: from www.tglx.de ([62.245.132.106]:33399 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758439AbYFIJyf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 05:54:35 -0400
-Date: Mon, 9 Jun 2008 11:54:09 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
-Cc: "Hans J. Koch" <hjk@linutronix.de>, Magnus Damm <magnus.damm@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "lethal@linux-sh.org" <lethal@linux-sh.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>
-Subject: Re: [PATCH] uio_pdrv: Unique IRQ Mode
-Message-ID: <20080609095408.GB3223@local>
-References: <20080604060826.17162.46972.sendpatchset@rx1.opensource.se> <20080604101144.GA3207@local> <aec7e5c30806041825o4c6c859fp8380063e9384622@mail.gmail.com> <20080605090916.GA3198@local> <aec7e5c30806050246t248abc39vbc1e71d4475a0a0d@mail.gmail.com> <20080605112744.GB3198@local> <aec7e5c30806080319y7b9b6a89icacbfa67b117fb2b@mail.gmail.com> <20080608205455.GA3191@local> <20080609075701.GA20656@digi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080609075701.GA20656@digi.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 9 Jun 2008 06:00:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35471 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752649AbYFIKA3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 06:00:29 -0400
+Date: Mon, 9 Jun 2008 02:59:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kasper Sandberg <lkml@metanurb.dk>
+Cc: LKML Mailinglist <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] Make some ext3 kernel messages useful by showing device
+Message-Id: <20080609025926.0ecb6aea.akpm@linux-foundation.org>
+In-Reply-To: <1212951761.32756.4.camel@localhost>
+References: <1212951761.32756.4.camel@localhost>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 09, 2008 at 09:57:01AM +0200, Uwe Kleine-König wrote:
-> Hello Hans,
+On Sun, 08 Jun 2008 21:02:41 +0200 Kasper Sandberg <lkml@metanurb.dk> wrote:
+
+> Hello.
 > 
-> > Did you notice that in this thread nobody spoke up to support your
-> > patch?
-> Actually I like what the patch tries to achieve.  I'd like to have it a
-> bit more explicit tough:
-> 
-> - Provide the irq disabling handler in uio_pdrv.c (or even uio.c) with a
->   prototype in an adequate header.  Then the platforms that want this
->   kind of handling can request it explicitly.
+> Some of the ext3 warnings in super.c are not really as useful as they
+> can be, for instance the "EXT3-fs warning: maximal mount count reached,
+> running e2fsck is recommended" message, does not tell which device it
+> actually is.
 
-You could provide an irqcontrol() function in uio_pdrv that calls a function
-defined in board support. If no function is defined there, it returns
--ENOSYS. That would be consistent behaviour and not limited to
-non-shared interrupts. Note that this requires the add-write-function
-patch I recently posted.
+Seems sensible.
 
-> 
-> - Don't use this handler automatically.
-> 
-> - Provide the function named uio_pdrv_unique_irqcontrol in Magnus' patch
->   in uio_pdrv.c and in an adequate header.
+> Below is patch(both inlined, and in attached form, since i dont trust my
+> mailer),
 
-Why invent a new name? The approach above works with all kinds of irqs on
-all platforms.
+That really tricks me.  Because the resulting file applies nicely with
+`patch --dry-run' but doesn't apply with plain old `patch'.  Inlined is
+preferred, attached is grumpily accepted, but please avoid duplicating
+the patch.
 
-> 
-> - Either rely on userspace to enable the irq before reading/polling or
->   assert that in kernel space.  See also
->   http://thread.gmane.org/gmane.linux.kernel/684683/focus=689635
->   (I asked tglx about the race condition via irc, but without a response
->   so far.)
+> to a patch which fixes that particular message, and a few more.
+> I could look at the rest if anyones interrested?
 
-There are two problems:
-1) If the hardware is designed in such a broken way that userspace needs
-a read-modify-write operation on a combined irq mask/status register to
-re-enable the irq, then this is racy against a new interrupt that occurs
-simultaneously. We have seen this on two devices so far.
+We like to keep ext3 and ext4 in sync as much as poss, please.
 
-2) If we wanted to make sure the interrupt is enabled in read() and
-poll(), we would have the problem that userspace usually calls poll()
-and then read() immediately afterwards. This would enable the irq twice,
-which can lead to two interrupts being seen in some cases.
+> Oh, and i dont really know if this is nessecary, but:
+> Signed-off-by: Kasper Sandberg <lkml@metanurb.dk>
 
-For both reasons, we decided that introducing the write() function to
-enable and disable irqs is the best solution. Greg already added that
-patch to his tree, so it should appear in one of the next kernels.
+It is very much preferred, thanks.
 
->   Currently the former is done, but if we decide to let it as it is, I'd
->   like to have it documented.  (I.e. something like:  "Before
->   polling/reading /dev/uioX assert that irqs are enabled.")
-
-We cannot do this, at least not in a clean way.
+(patch retained for linux-ext4 review)
 
 > 
-> The last point is a bit independent from that mode, but applies to
-> devices that have a irqcontrol function in general.
+> --- super.c.orig	2008-06-08 20:49:26.153047364 +0200
+> +++ super.c	2008-06-08 20:45:20.812047463 +0200
+> @@ -1188,31 +1188,31 @@
+>  	int res = 0;
+>  
+>  	if (le32_to_cpu(es->s_rev_level) > EXT3_MAX_SUPP_REV) {
+> -		printk (KERN_ERR "EXT3-fs warning: revision level too high, "
+> -			"forcing read-only mode\n");
+> +		printk (KERN_ERR "EXT3-fs on %s warning: revision level too high, "
+> +			"forcing read-only mode\n", sb->s_id);
+>  		res = MS_RDONLY;
+>  	}
+>  	if (read_only)
+>  		return res;
+>  	if (!(sbi->s_mount_state & EXT3_VALID_FS))
+> -		printk (KERN_WARNING "EXT3-fs warning: mounting unchecked fs, "
+> -			"running e2fsck is recommended\n");
+> +		printk (KERN_WARNING "EXT3-fs on %s warning: mounting unchecked fs, "
+> +			"running e2fsck is recommended\n", sb->s_id);
+>  	else if ((sbi->s_mount_state & EXT3_ERROR_FS))
+>  		printk (KERN_WARNING
+> -			"EXT3-fs warning: mounting fs with errors, "
+> -			"running e2fsck is recommended\n");
+> +			"EXT3-fs on %s warning: mounting fs with errors, "
+> +			"running e2fsck is recommended\n", sb->s_id);
+>  	else if ((__s16) le16_to_cpu(es->s_max_mnt_count) >= 0 &&
+>  		 le16_to_cpu(es->s_mnt_count) >=
+>  		 (unsigned short) (__s16) le16_to_cpu(es->s_max_mnt_count))
+>  		printk (KERN_WARNING
+> -			"EXT3-fs warning: maximal mount count reached, "
+> -			"running e2fsck is recommended\n");
+> +			"EXT3-fs on %s warning: maximal mount count reached, "
+> +			"running e2fsck is recommended\n", sb->s_id);
+>  	else if (le32_to_cpu(es->s_checkinterval) &&
+>  		(le32_to_cpu(es->s_lastcheck) +
+>  			le32_to_cpu(es->s_checkinterval) <= get_seconds()))
+>  		printk (KERN_WARNING
+> -			"EXT3-fs warning: checktime reached, "
+> -			"running e2fsck is recommended\n");
+> +			"EXT3-fs on %s warning: checktime reached, "
+> +			"running e2fsck is recommended\n", sb->s_id);
+>  #if 0
+>  		/* @@@ We _will_ want to clear the valid bit if we find
+>                     inconsistencies, to force a fsck at reboot.  But for
+> @@ -1339,8 +1339,8 @@
+>  	}
+>  
+>  	if (bdev_read_only(sb->s_bdev)) {
+> -		printk(KERN_ERR "EXT3-fs: write access "
+> -			"unavailable, skipping orphan cleanup.\n");
+> +		printk(KERN_ERR "EXT3-fs on %s: write access "
+> +			"unavailable, skipping orphan cleanup.\n", sb->s_id);
+>  		return;
+>  	}
+>  
 > 
-> Apart from the general things above, I'd change a few things in the
-> implementation:
 > 
->  - call dev_info->irqcontrol(OFF) in the handler (instead of
->    disable_irq()) and demand that calling this is idempotent.
->    With this change it isn't uio_pdrv specific any more and could go to
->    uio.c.
-
-Why should we want to do this? You save five lines of irq handler code
-by introducing the need for an irqcontrol() function.
-I already said that in the discussion with Magnus, I don't see any
-advantage in this. Magnus cannot tell me either, he just keeps telling
-me "but we can do it" over and over again.
-With the modifications mentioned above, it would be a little better, but
-I still don't see what we really gain. Your uio_pdrv is a nice and clean
-thing, I don't want to add code that makes it less obvious just to save
-five lines of irq handler code in some cornercases (or nothing at all,
-if we need an irqcontrol() function instead).
-
-Thanks,
-Hans
-
