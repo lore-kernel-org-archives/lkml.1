@@ -1,54 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbYFINjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755940AbYFINjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754740AbYFINjW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 09:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751329AbYFINjN
+	id S1755940AbYFINjg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 09:39:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbYFINjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 09:39:13 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:44067 "EHLO smtp4.pp.htv.fi"
+	Mon, 9 Jun 2008 09:39:14 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:48643 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751283AbYFINjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1750966AbYFINjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 9 Jun 2008 09:39:12 -0400
-Date: Mon, 9 Jun 2008 16:38:19 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Kay Sievers <kay.sievers@vrfy.org>, Neil Brown <neilb@suse.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [patch 01/50] block: do_mounts - accept root=<non-existant
-	partition>
-Message-ID: <20080609133819.GC20194@cs181133002.pp.htv.fi>
-References: <20080607010215.358296706@sous-sol.org> <20080607010545.198839305@sous-sol.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080607010545.198839305@sous-sol.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Subject: Re: [PATCH] Make some ext3 kernel messages useful by showing device
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML Mailinglist <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org
+In-Reply-To: <20080609025926.0ecb6aea.akpm@linux-foundation.org>
+References: <1212951761.32756.4.camel@localhost>
+	 <20080609025926.0ecb6aea.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 09 Jun 2008 15:38:10 +0200
+Message-Id: <1213018690.10545.7.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We have reports from two different people running into problems that 
-are exposed by this patch.
+On Mon, 2008-06-09 at 02:59 -0700, Andrew Morton wrote:
+> On Sun, 08 Jun 2008 21:02:41 +0200 Kasper Sandberg <lkml@metanurb.dk> wrote:
+> 
+> > Hello.
+> > 
+> > Some of the ext3 warnings in super.c are not really as useful as they
+> > can be, for instance the "EXT3-fs warning: maximal mount count reached,
+> > running e2fsck is recommended" message, does not tell which device it
+> > actually is.
+> 
+> Seems sensible.
+> 
+> > Below is patch(both inlined, and in attached form, since i dont trust my
+> > mailer),
+> 
+> That really tricks me.  Because the resulting file applies nicely with
+> `patch --dry-run' but doesn't apply with plain old `patch'.  Inlined is
+> preferred, attached is grumpily accepted, but please avoid duplicating
+> the patch.
 
-Although it's unclear what's actually going wrong this patch is IMHO 
-not -stable fodder until that's sorted out.
+I do not know what happened, i did with diff -Naur. I attached because
+of the fact that i _KNOW_ evolution is not to be trusted with inlined,
+but i also know inlined is easier for review, even if it is not properly
+accepted as input for patch.
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+> 
+> > to a patch which fixes that particular message, and a few more.
+> > I could look at the rest if anyones interrested?
+> 
+> We like to keep ext3 and ext4 in sync as much as poss, please.
+Yes, i will do this soon, i have a few things to do first though.
+> 
+> > Oh, and i dont really know if this is nessecary, but:
+> > Signed-off-by: Kasper Sandberg <lkml@metanurb.dk>
+> 
+> It is very much preferred, thanks.
+> 
+> (patch retained for linux-ext4 review)
+> 
+> > 
+> > --- super.c.orig	2008-06-08 20:49:26.153047364 +0200
+> > +++ super.c	2008-06-08 20:45:20.812047463 +0200
+> > @@ -1188,31 +1188,31 @@
+> >  	int res = 0;
+> >  
+> >  	if (le32_to_cpu(es->s_rev_level) > EXT3_MAX_SUPP_REV) {
+> > -		printk (KERN_ERR "EXT3-fs warning: revision level too high, "
+> > -			"forcing read-only mode\n");
+> > +		printk (KERN_ERR "EXT3-fs on %s warning: revision level too high, "
+> > +			"forcing read-only mode\n", sb->s_id);
+> >  		res = MS_RDONLY;
+> >  	}
+> >  	if (read_only)
+> >  		return res;
+> >  	if (!(sbi->s_mount_state & EXT3_VALID_FS))
+> > -		printk (KERN_WARNING "EXT3-fs warning: mounting unchecked fs, "
+> > -			"running e2fsck is recommended\n");
+> > +		printk (KERN_WARNING "EXT3-fs on %s warning: mounting unchecked fs, "
+> > +			"running e2fsck is recommended\n", sb->s_id);
+> >  	else if ((sbi->s_mount_state & EXT3_ERROR_FS))
+> >  		printk (KERN_WARNING
+> > -			"EXT3-fs warning: mounting fs with errors, "
+> > -			"running e2fsck is recommended\n");
+> > +			"EXT3-fs on %s warning: mounting fs with errors, "
+> > +			"running e2fsck is recommended\n", sb->s_id);
+> >  	else if ((__s16) le16_to_cpu(es->s_max_mnt_count) >= 0 &&
+> >  		 le16_to_cpu(es->s_mnt_count) >=
+> >  		 (unsigned short) (__s16) le16_to_cpu(es->s_max_mnt_count))
+> >  		printk (KERN_WARNING
+> > -			"EXT3-fs warning: maximal mount count reached, "
+> > -			"running e2fsck is recommended\n");
+> > +			"EXT3-fs on %s warning: maximal mount count reached, "
+> > +			"running e2fsck is recommended\n", sb->s_id);
+> >  	else if (le32_to_cpu(es->s_checkinterval) &&
+> >  		(le32_to_cpu(es->s_lastcheck) +
+> >  			le32_to_cpu(es->s_checkinterval) <= get_seconds()))
+> >  		printk (KERN_WARNING
+> > -			"EXT3-fs warning: checktime reached, "
+> > -			"running e2fsck is recommended\n");
+> > +			"EXT3-fs on %s warning: checktime reached, "
+> > +			"running e2fsck is recommended\n", sb->s_id);
+> >  #if 0
+> >  		/* @@@ We _will_ want to clear the valid bit if we find
+> >                     inconsistencies, to force a fsck at reboot.  But for
+> > @@ -1339,8 +1339,8 @@
+> >  	}
+> >  
+> >  	if (bdev_read_only(sb->s_bdev)) {
+> > -		printk(KERN_ERR "EXT3-fs: write access "
+> > -			"unavailable, skipping orphan cleanup.\n");
+> > +		printk(KERN_ERR "EXT3-fs on %s: write access "
+> > +			"unavailable, skipping orphan cleanup.\n", sb->s_id);
+> >  		return;
+> >  	}
+> >  
+> > 
+> > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
