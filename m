@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757089AbYFITMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754278AbYFITMf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757089AbYFITMV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 15:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755657AbYFITMA
+	id S1754278AbYFITMf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 15:12:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbYFITMS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 15:12:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41310 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755809AbYFITL7 (ORCPT
+	Mon, 9 Jun 2008 15:12:18 -0400
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:3997 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756814AbYFITMR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 15:11:59 -0400
-Date: Mon, 9 Jun 2008 12:09:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-Cc: Peter Oberparleiter <oberparleiter@googlemail.com>,
-       linux-kernel@vger.kernel.org, ltp-coverage@lists.sourceforge.net,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 0/6] gcov kernel support
-Message-Id: <20080609120954.7d41a5bf.akpm@linux-foundation.org>
-In-Reply-To: <484D34DC.40401@de.ibm.com>
-References: <4843F6BF.9070409@de.ibm.com>
-	<20080609002509.7782442e.akpm@linux-foundation.org>
-	<484D34DC.40401@de.ibm.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Jun 2008 15:12:17 -0400
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Mike Travis <travis@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [patch 00/41] cpu alloc / cpu ops v3: Optimize per cpu access
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080530035620.587204923@sgi.com>
+	<20080529215827.b659d032.akpm@linux-foundation.org>
+	<4846AFCF.30500@sgi.com> <4848CC22.6090109@cosmosbay.com>
+	<Pine.LNX.4.64.0806091136410.30727@schroedinger.engr.sgi.com>
+Date: Mon, 09 Jun 2008 21:11:54 +0200
+In-Reply-To: <Pine.LNX.4.64.0806091136410.30727@schroedinger.engr.sgi.com> (Christoph Lameter's message of "Mon, 9 Jun 2008 11:44:23 -0700 (PDT)")
+Message-ID: <87abhuqv7p.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 09 Jun 2008 19:04:43.0568 (UTC) FILETIME=[AD278300:01C8CA63]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 09 Jun 2008 15:49:16 +0200 Peter Oberparleiter <peter.oberparleiter@de.ibm.com> wrote:
+Christoph Lameter <clameter@sgi.com> writes:
 
-> Andrew Morton wrote:
-> > On Mon, 02 Jun 2008 15:33:51 +0200 Peter Oberparleiter <peter.oberparleiter@de.ibm.com> wrote:
-> > 
-> >> This is version #3 of the gcov kernel support patch set 
-> > 
-> > My build tree is now filled with dead symlinks, like
-> > 
-> > lrwxrwxrwx 1 akpm akpm 64 Jun  9 00:06 security/selinux/nlmsgtab.gcda -> /sys/kernel/debug/gcov/usr/src/25/security/selinux/nlmsgtab.gcda
-> 
-> Unfortunately a necessary evil of this approach: symlinks are created
-> for all compiled source files while link targets are only available when
-> the corresponding code is executed. In other words: those links will be
-> dead for source files which don't compile to actual code and for modules
-> as long as they are not loaded.
+> The problem is that offsets relative to %gs or %fs are limited by the 
+> small memory model that is chosen.
 
-It doesn't seem awfully useful.  I don't run kernels on my build
-machines and I'm sure many are in the same situation.  So gcov is going
-to need a way of locating these files on the *target* machine.  And
-once that is available, there is no need to add all these symlinks into
-the build directory.
+Actually they are not. If you really want you can do 
+movabs $64bit,%reg ; op ...,%gs:(%reg) 
+It's just not very efficient compared to small (or rather kernel) model
+and also older binutils didn't support large model.
 
-> > Which causes (at least)
-> > 
-> > ctags: Warning: cannot open source file "security/selinux/ss/conditional.gcda" : No such file or directory
-> > ctags: Warning: cannot open source file "security/selinux/netlink.gcda" : No such file or directory
-> > ctags: Warning: cannot open source file "security/selinux/netlabel.gcda" : No such file or directory
-> 
-> > and probably other thing which I haven't discovered yet.
-> 
-> I'm sure there's some kind of 'find' magic that can be used to work
-> around dead links. I'll see how this can be applied to the ctags case -
-> though neither 'make tags' nor 'make TAGS' seem to produce any warnings
-> on my system..
-
-I use
-
-	ctags -R --excmd=pattern --format=1
-
+-Andi
