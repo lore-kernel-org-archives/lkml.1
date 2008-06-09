@@ -1,67 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbYFITAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756407AbYFITCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755341AbYFITAr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 15:00:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbYFITAi
+	id S1756407AbYFITCd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 15:02:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbYFITC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 15:00:38 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48603 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751088AbYFITAh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 15:00:37 -0400
-Date: Mon, 9 Jun 2008 12:00:36 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [patch 04/41] cpu ops: Core piece for generic atomic per cpu
- operations
-In-Reply-To: <200806060959.13362.rusty@rustcorp.com.au>
-Message-ID: <Pine.LNX.4.64.0806091158020.30776@schroedinger.engr.sgi.com>
-References: <20080530035620.587204923@sgi.com> <200806021200.41652.rusty@rustcorp.com.au>
- <4846DC6B.6030802@sgi.com> <200806060959.13362.rusty@rustcorp.com.au>
+	Mon, 9 Jun 2008 15:02:26 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47579 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752757AbYFITCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 15:02:25 -0400
+Date: Mon, 9 Jun 2008 21:02:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+Cc: hpa <hpa@zytor.com>, tglx <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH] x86: coding style fixes to arch/x86/kernel/io_apic_32.c
+Message-ID: <20080609190204.GA13674@elte.hu>
+References: <20080608130718.5d36e25b@paolo-desktop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080608130718.5d36e25b@paolo-desktop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Jun 2008, Rusty Russell wrote:
 
-> > Also, the above cpu_local_wrap(...) adds:
-> >
-> > 	#define cpu_local_wrap(l)               \
-> > 	({                                      \
-> > 	        preempt_disable();              \
-> > 	        (l);                            \
-> > 	        preempt_enable();               \
-> > 	})                                      \
-> >
-> > ... and there isn't a non-preemption version that I can find.
+* Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
+
+> Before:
+> total: 91 errors, 73 warnings, 2850 lines checked
 > 
-> Yes, this should be fixed.  I thought i386 had optimized versions pre-merge, 
-> but I was wrong (%gs for per-cpu came later, and noone cleaned up these naive 
-> versions).  Did you want me to write them?
+> After:
+> total: 1 errors, 47 warnings, 2848 lines checked
 
-How can that be fixed? You have no atomic instruction that calculates the 
-per cpu address in one go. And as long as that is the case you need to 
-disable preempt. Otherwise you may increment the per cpu variable of 
-another processor because the process was rescheduled after the address 
-was calculated but before the increment was done.
+applied, thanks. A small detail:
 
-> > One other distinction is CPU_INC increments an arbitrary sized variable
-> > while local_inc requires a local_t variable.  This may not make it usable
-> > in all cases.
-> 
-> You might be right, but note that local_t is 64 bit on 64-bit platforms.  And 
-> speculation of possible use cases isn't a good reason to rip out working 
-> infrastructure :)
+> +++ b/arch/x86/kernel/io_apic_32.c
+> @@ -37,12 +37,12 @@
+>  #include <linux/kthread.h>
+>  #include <linux/jiffies.h>	/* time_after() */
+>  
+> -#include <asm/io.h>
+> -#include <asm/smp.h>
+> +#include <linux/io.h>
+> +#include <linux/smp.h>
 
-Its fundamentally broken since because of the preemption issue. This is 
-also why local_t is rarely used.
+i suspect checkpatch suggested that asm/smp.h -> linux/smp.h change, but 
+there was a subtle detail here - asm/smp.h has dual role on x86, it also 
+carries a fair number of low level details about APIC/SMP details - 
+which matters on UP IOAPIC.
 
+so the fix below was needed as well.
 
+	Ingo
+
+------------->
+Subject: build fix to "x86: coding style fixes to arch/x86/kernel/io_apic_32.c"
+From: Ingo Molnar <mingo@elte.hu>
+Date: Mon Jun 09 20:58:55 CEST 2008
+
+io_apic_32.c relied on asm/smp.h include, to pick up lowlevel
+arch details:
+
+arch/x86/kernel/io_apic_32.c:75: error: array type has incomplete element type
+arch/x86/kernel/io_apic_32.c:79: error: array type has incomplete element type
+arch/x86/kernel/io_apic_32.c:152: error: field ‘entry’ has incomplete type
+arch/x86/kernel/io_apic_32.c:156: error: return type is an incomplete type
+arch/x86/kernel/io_apic_32.c: In function ‘ioapic_read_entry’:
+arch/x86/kernel/io_apic_32.c:163: warning: ‘return’ with a value, in function returning void
+arch/x86/kernel/io_apic_32.c: At top level:
+
+so add it back.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/io_apic_32.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+Index: linux/arch/x86/kernel/io_apic_32.c
+===================================================================
+--- linux.orig/arch/x86/kernel/io_apic_32.c
++++ linux/arch/x86/kernel/io_apic_32.c
+@@ -39,6 +39,8 @@
+ 
+ #include <linux/io.h>
+ #include <linux/smp.h>
++
++#include <asm/smp.h>
+ #include <asm/desc.h>
+ #include <asm/timer.h>
+ #include <asm/i8259.h>
