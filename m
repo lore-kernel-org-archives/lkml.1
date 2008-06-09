@@ -1,255 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760151AbYFIKKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760155AbYFIKKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760151AbYFIKKi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 06:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759205AbYFIKKY
+	id S1760155AbYFIKKy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 06:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760111AbYFIKKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 06:10:24 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:58560 "EHLO WNmonitoring"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759406AbYFIKKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 06:10:22 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH] Char: mxser, globals cleanup
-Date: Mon,  9 Jun 2008 12:08:27 +0200
-Message-Id: <1213006112-25965-2-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1213006112-25965-1-git-send-email-jirislaby@gmail.com>
-References: <1213006112-25965-1-git-send-email-jirislaby@gmail.com>
+	Mon, 9 Jun 2008 06:10:34 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41331 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760106AbYFIKKc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 06:10:32 -0400
+Date: Mon, 9 Jun 2008 12:20:25 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: andi@firstfloor.org, grundler@google.com, muli@il.ibm.com,
+       linux-kernel@vger.kernel.org, mgross@linux.intel.com,
+       linux-scsi@vger.kernel.org
+Subject: Re: Intel IOMMU (and IOMMU for Virtualization) performances
+Message-ID: <20080609102025.GB21661@one.firstfloor.org>
+References: <20080606213659.GC15085@il.ibm.com> <da824cf30806061451p4005a4ecoa9af8687e3ec51e5@mail.gmail.com> <87lk1fqayg.fsf@basil.nowhere.org> <20080609184052Z.fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080609184052Z.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- remove unused mxvar_diagflag
-- move mxser_msr into the only user/function
-- GMStatus, hmm, fix race-prone access to it. We need only one instance for
-  real, not MXSER_PORTS. Move it to MOXA_GETMSTATUS ioctl.
-- mxser_mon_ext, almost the same, but alloc it on heap, since it has more than
-  2 kilos.
-- fix indexing, `i' is not the index value, `i * MXSER_PORTS_PER_BOARD + j' is
+On Mon, Jun 09, 2008 at 06:36:29PM +0900, FUJITA Tomonori wrote:
+> On Mon, 09 Jun 2008 10:17:11 +0200
+> Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > "Grant Grundler" <grundler@google.com> writes:
+> > >
+> > > The historical DMA mapping "failure mode" is a kernel panic.  Resizing or
+> > 
+> > Hasn't been for a long time, except in some extreme cases.  All drivers
+> > are expected to check return values for a long time now.
+> 
+> Agreed, but I think that lots of network drivers still assume that DMA
+> mapping always succeeds (they don't check return values).
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
----
- drivers/char/mxser.c |  130 +++++++++++++++++++++-----------------------------
- 1 files changed, 55 insertions(+), 75 deletions(-)
+Those should be just fixed. 
 
-diff --git a/drivers/char/mxser.c b/drivers/char/mxser.c
-index 644202c..0fedb1c 100644
---- a/drivers/char/mxser.c
-+++ b/drivers/char/mxser.c
-@@ -291,8 +291,6 @@ struct mxser_mstatus {
- 	int dcd;
- };
- 
--static struct mxser_mstatus GMStatus[MXSER_PORTS];
--
- static int mxserBoardCAP[MXSER_BOARDS] = {
- 	0, 0, 0, 0
- 	/*  0x180, 0x280, 0x200, 0x320 */
-@@ -301,9 +299,6 @@ static int mxserBoardCAP[MXSER_BOARDS] = {
- static struct mxser_board mxser_boards[MXSER_BOARDS];
- static struct tty_driver *mxvar_sdriver;
- static struct mxser_log mxvar_log;
--static int mxvar_diagflag;
--static unsigned char mxser_msr[MXSER_PORTS + 1];
--static struct mxser_mon_ext mon_data_ext;
- static int mxser_set_baud_method[MXSER_PORTS + 1];
- 
- static void mxser_enable_must_enchance_mode(unsigned long baseio)
-@@ -547,6 +542,7 @@ static void process_txrx_fifo(struct mxser_port *info)
- 
- static unsigned char mxser_get_msr(int baseaddr, int mode, int port)
- {
-+	static unsigned char mxser_msr[MXSER_PORTS + 1];
- 	unsigned char status = 0;
- 
- 	status = inb(baseaddr + UART_MSR);
-@@ -1659,62 +1655,60 @@ static int mxser_ioctl_special(unsigned int cmd, void __user *argp)
- 			ret = -EFAULT;
- 		unlock_kernel();
- 		return ret;
--	case MOXA_GETMSTATUS:
-+	case MOXA_GETMSTATUS: {
-+		struct mxser_mstatus ms, __user *msu = argp;
- 		lock_kernel();
- 		for (i = 0; i < MXSER_BOARDS; i++)
- 			for (j = 0; j < MXSER_PORTS_PER_BOARD; j++) {
- 				port = &mxser_boards[i].ports[j];
-+				memset(&ms, 0, sizeof(ms));
- 
--				GMStatus[i].ri = 0;
--				if (!port->ioaddr) {
--					GMStatus[i].dcd = 0;
--					GMStatus[i].dsr = 0;
--					GMStatus[i].cts = 0;
--					continue;
--				}
-+				if (!port->ioaddr)
-+					goto copy;
- 
- 				if (!port->tty || !port->tty->termios)
--					GMStatus[i].cflag =
--						port->normal_termios.c_cflag;
-+					ms.cflag = port->normal_termios.c_cflag;
- 				else
--					GMStatus[i].cflag =
--						port->tty->termios->c_cflag;
-+					ms.cflag = port->tty->termios->c_cflag;
- 
- 				status = inb(port->ioaddr + UART_MSR);
--				if (status & 0x80 /*UART_MSR_DCD */ )
--					GMStatus[i].dcd = 1;
--				else
--					GMStatus[i].dcd = 0;
--
--				if (status & 0x20 /*UART_MSR_DSR */ )
--					GMStatus[i].dsr = 1;
--				else
--					GMStatus[i].dsr = 0;
--
--
--				if (status & 0x10 /*UART_MSR_CTS */ )
--					GMStatus[i].cts = 1;
--				else
--					GMStatus[i].cts = 0;
-+				if (status & UART_MSR_DCD)
-+					ms.dcd = 1;
-+				if (status & UART_MSR_DSR)
-+					ms.dsr = 1;
-+				if (status & UART_MSR_CTS)
-+					ms.cts = 1;
-+			copy:
-+				if (copy_to_user(msu, &ms, sizeof(ms))) {
-+					unlock_kernel();
-+					return -EFAULT;
-+				}
-+				msu++;
- 			}
- 		unlock_kernel();
--		if (copy_to_user(argp, GMStatus,
--				sizeof(struct mxser_mstatus) * MXSER_PORTS))
--			return -EFAULT;
- 		return 0;
-+	}
- 	case MOXA_ASPP_MON_EXT: {
--		int p, shiftbit;
--		unsigned long opmode;
--		unsigned cflag, iflag;
-+		struct mxser_mon_ext *me; /* it's 2k, stack unfriendly */
-+		unsigned int cflag, iflag, p;
-+		u8 opmode;
-+
-+		me = kzalloc(sizeof(*me), GFP_KERNEL);
-+		if (!me)
-+			return -ENOMEM;
- 
- 		lock_kernel();
--		for (i = 0; i < MXSER_BOARDS; i++) {
--			for (j = 0; j < MXSER_PORTS_PER_BOARD; j++) {
-+		for (i = 0, p = 0; i < MXSER_BOARDS; i++) {
-+			for (j = 0; j < MXSER_PORTS_PER_BOARD; j++, p++) {
-+				if (p >= ARRAY_SIZE(me->rx_cnt)) {
-+					i = MXSER_BOARDS;
-+					break;
-+				}
- 				port = &mxser_boards[i].ports[j];
- 				if (!port->ioaddr)
- 					continue;
- 
--				status = mxser_get_msr(port->ioaddr, 0, i);
-+				status = mxser_get_msr(port->ioaddr, 0, p);
- 
- 				if (status & UART_MSR_TERI)
- 					port->icount.rng++;
-@@ -1726,16 +1720,13 @@ static int mxser_ioctl_special(unsigned int cmd, void __user *argp)
- 					port->icount.cts++;
- 
- 				port->mon_data.modem_status = status;
--				mon_data_ext.rx_cnt[i] = port->mon_data.rxcnt;
--				mon_data_ext.tx_cnt[i] = port->mon_data.txcnt;
--				mon_data_ext.up_rxcnt[i] =
--					port->mon_data.up_rxcnt;
--				mon_data_ext.up_txcnt[i] =
--					port->mon_data.up_txcnt;
--				mon_data_ext.modem_status[i] =
-+				me->rx_cnt[p] = port->mon_data.rxcnt;
-+				me->tx_cnt[p] = port->mon_data.txcnt;
-+				me->up_rxcnt[p] = port->mon_data.up_rxcnt;
-+				me->up_txcnt[p] = port->mon_data.up_txcnt;
-+				me->modem_status[p] =
- 					port->mon_data.modem_status;
--				mon_data_ext.baudrate[i] =
--					tty_get_baud_rate(port->tty);
-+				me->baudrate[p] = tty_get_baud_rate(port->tty);
- 
- 				if (!port->tty || !port->tty->termios) {
- 					cflag = port->normal_termios.c_cflag;
-@@ -1745,40 +1736,31 @@ static int mxser_ioctl_special(unsigned int cmd, void __user *argp)
- 					iflag = port->tty->termios->c_iflag;
- 				}
- 
--				mon_data_ext.databits[i] = cflag & CSIZE;
--
--				mon_data_ext.stopbits[i] = cflag & CSTOPB;
--
--				mon_data_ext.parity[i] =
--					cflag & (PARENB | PARODD | CMSPAR);
--
--				mon_data_ext.flowctrl[i] = 0x00;
-+				me->databits[p] = cflag & CSIZE;
-+				me->stopbits[p] = cflag & CSTOPB;
-+				me->parity[p] = cflag & (PARENB | PARODD |
-+						CMSPAR);
- 
- 				if (cflag & CRTSCTS)
--					mon_data_ext.flowctrl[i] |= 0x03;
-+					me->flowctrl[p] |= 0x03;
- 
- 				if (iflag & (IXON | IXOFF))
--					mon_data_ext.flowctrl[i] |= 0x0C;
-+					me->flowctrl[p] |= 0x0C;
- 
- 				if (port->type == PORT_16550A)
--					mon_data_ext.fifo[i] = 1;
--				else
--					mon_data_ext.fifo[i] = 0;
-+					me->fifo[p] = 1;
- 
--				p = i % 4;
--				shiftbit = p * 2;
--				opmode = inb(port->opmode_ioaddr) >> shiftbit;
-+				opmode = inb(port->opmode_ioaddr) >>
-+						((p % 4) * 2);
- 				opmode &= OP_MODE_MASK;
--
--				mon_data_ext.iftype[i] = opmode;
--
-+				me->iftype[p] = opmode;
- 			}
- 		}
- 		unlock_kernel();
--		if (copy_to_user(argp, &mon_data_ext,
--					sizeof(mon_data_ext)))
--			return -EFAULT;
--		return 0;
-+		if (copy_to_user(argp, me, sizeof(*me)))
-+			ret = -EFAULT;
-+		kfree(me);
-+		return ret;
- 	}
- 	default:
- 		return -ENOIOCTLCMD;
-@@ -2809,8 +2791,6 @@ static int __init mxser_module_init(void)
- 		goto err_put;
- 	}
- 
--	mxvar_diagflag = 0;
--
- 	m = 0;
- 	/* Start finding ISA boards here */
- 	for (isaloop = 0; isaloop < 2; isaloop++)
--- 
-1.5.4.5
+You're right. I reviewed some new drivers and was surprised that they
+even got that wrong (code reviewers were supposed to flag this in the
+first place)
 
+I would guess in practice the main offender would be tg3.c/bnx2.c.
+On the other hand Intel IOMMU systems should usually use e1000e which
+checks.
+
+-Andi
