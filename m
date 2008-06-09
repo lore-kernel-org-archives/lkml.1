@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760669AbYFIVOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760512AbYFIVO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760669AbYFIVOn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 17:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759319AbYFIVMx
+	id S1760512AbYFIVO0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 17:14:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758528AbYFIVLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 17:12:53 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:31105 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758966AbYFIVMv (ORCPT
+	Mon, 9 Jun 2008 17:11:00 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52570 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757136AbYFIVKv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 17:12:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=Yi4Q9RifYXWme7l3dxAydggvQMomOwVIo3il2xg9IEccMUzlh66NM7Sz748sJhHSEH
-         mn0GojuyTj/TtEyFtFoohMZKv0Xzg6J+msSE/fxicBjIjIzb+6xNb/bmEcU92HWRzhwe
-         80Rx+8IynURjm8V7ACI41rAEwqwgNIQhECJjU=
-Message-ID: <84144f020806091412q778198cbi57a3a8b061a56f8f@mail.gmail.com>
-Date: Tue, 10 Jun 2008 00:12:50 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] vmallocinfo: Add NUMA informations
-Cc: "Christoph Lameter" <clameter@sgi.com>, dada1@cosmosbay.com,
-       kosaki.motohiro@jp.fujitsu.com, nickpiggin@yahoo.com.au,
-       hugh@veritas.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20080609140503.83985d10.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48439916.2070108@cosmosbay.com>
-	 <20080602160548.B6D4.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <4844BC75.8040705@cosmosbay.com>
-	 <20080603144054.973284bb.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0806090715020.29723@schroedinger.engr.sgi.com>
-	 <20080609140503.83985d10.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 5e5865df37109719
+	Mon, 9 Jun 2008 17:10:51 -0400
+Message-Id: <20080609211047.409885034@attica.americas.sgi.com>
+References: <20080609211028.110089743@attica.americas.sgi.com>
+User-Agent: quilt/0.46-1
+Date: Mon, 09 Jun 2008 16:10:39 -0500
+From: steiner@sgi.com
+To: akpm@osdl.org, linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, tglx@linutronix.de, holt@sgi.com, andrea@qumranet.com
+Subject: [patch 11/11] GRU Driver - makefile & Kconfig file changes
+Content-Disposition: inline; filename=gru_makefile
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 12:05 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> yup.  Oh well, it's not a big deal.
->
-> Except the inlined
->
->        if (n != 0 && size > ULONG_MAX / n)
->                return NULL;
->
-> is a bit bloaty/inefficient.  I expect that it's often the case that
-> one of `n' and `size' is not a compile-time constant.
+The Makefile & Kconfig changes for the GRU driver.
 
-I think it was out-of-line at first but then somebody made it inline
-as an optimization...
 
-On Tue, Jun 10, 2008 at 12:05 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> otoh, there's one good thing about kcalloc: it actually checks for
-> multiplicative overflows, whereas the open-coded version often forgets
-> to do that.
+Signed-off-by: Jack Steiner <steiner@sgi.com>
 
-Yes. That's why we did kcalloc() in the first place. kzalloc() (aka
-akpmalloc) came in much later.
+---
+ drivers/misc/gru/Makefile |    5 +++++
+ drivers/misc/Kconfig      |   13 ++++++++++
+ 5 file changed, 18 insertions(+)
+
+Index: linux/drivers/misc/gru/Makefile
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux/drivers/misc/gru/Makefile	2008-06-09 13:53:05.920793394 -0500
+@@ -0,0 +1,5 @@
++
++EXTRA_CFLAGS += -DDEBUG -Werror -Wall
++obj-$(CONFIG_SGI_GRU) := gru.o
++gru-y := grufile.o grumain.o grufault.o grutlbpurge.o gruprocfs.o grukservices.o
++
+Index: linux/drivers/misc/Kconfig
+===================================================================
+--- linux.orig/drivers/misc/Kconfig	2008-06-03 21:02:49.000000000 -0500
++++ linux/drivers/misc/Kconfig	2008-06-03 21:07:51.203689479 -0500
+@@ -391,4 +391,13 @@ config SGI_XP
+ 	  this feature will allow for direct communication between SSIs
+ 	  based on a network adapter and DMA messaging.
+ 
++config SGI_GRU
++	tristate "SGI GRU driver"
++	depends on X86_64 || IA64
++	default n
++	select MMU_NOTIFIER
++	---help---
++	This option enables basic support for the SGI UV GRU driver. If
++	you are not running on a SGI UV system, say N.
++
+ endif # MISC_DEVICES
+
+-- 
+Thanks
+
+Jack Steiner (steiner@sgi.com)          651-683-5302
+Sr Principal Engineer                   SGI - Silicon Graphics, Inc.
+
+
