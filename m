@@ -1,220 +1,326 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761719AbYFIWiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469AbYFIWik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761719AbYFIWiQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 18:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761313AbYFIWeX
+	id S1753469AbYFIWik (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 18:38:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761650AbYFIWe0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 18:34:23 -0400
+	Mon, 9 Jun 2008 18:34:26 -0400
 Received: from hu-out-0506.google.com ([72.14.214.239]:26395 "EHLO
 	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761588AbYFIWeU (ORCPT
+	with ESMTP id S1760464AbYFIWeY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 18:34:20 -0400
+	Mon, 9 Jun 2008 18:34:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=to:subject:from:date:message-id;
-        b=qOBmfQ17fR1DoC5VruR5WJmmUX7hdEeivzwQMbits3RsLCYwdbI+siYUoLgR/jWq47
-         Lpks5TG7r+ynOXu5pVKS+oHnH9py5NegHR6Y1QOLlb//PY2Gb4mLzspUlhxHj9zH7Y+0
-         qMNmexe6bPQvrTTfsxEapSPm0gkqO60E0GFyE=
+        b=Lrtk2S+5v4JFpRL2P4ChmPeoJnuZNa23q7W8Jyqm69BA79iqi4MjikgBe42ja/xROF
+         svtvl3rzG+j0WVVMX/wPuIHg/M0Hs6syvmtsvn9D+/DfOYbKRYoVDnaOqZqZaWqMIqMj
+         zvcFB9TCywojxVjuJG7thaogr/BGnLQObGzig=
 To: linux-kernel@vger.kernel.org
-Subject: [patch 10/21] perfmon2 minimal:  X86 32-bit hooks
+Subject: [patch 11/21] perfmon2 minimal:  PMU mapping
 From: eranian@googlemail.com
-Date: Mon, 09 Jun 2008 15:34:17 -0700 (PDT)
-Message-ID: <484dafe9.1358560a.0808.0262@mx.google.com>
+Date: Mon, 09 Jun 2008 15:34:21 -0700 (PDT)
+Message-ID: <484dafed.0c58560a.4023.669f@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the necessary hooks to the X86 32-bit code
-to support initialization, interrupts, context switching,
-and termination of a perfmon session.
+This patch adds PMU resource description management functions.
+Perfmon2 exports a logical view of the PMU with uniform register
+names across all architectures. Each logical register is then
+map onto an actual PMU register via a mapping table. Such table
+exists for each PMU model.
+
+PMU description tables are hardcoded into the kernel and one
+is selected during boot.
 
 Signed-off-by: Stephane Eranian <eranian@gmail.com>
 --
 
-Index: o/arch/x86/kernel/apic_32.c
+Index: o/perfmon/perfmon_pmu.c
 ===================================================================
---- o.orig/arch/x86/kernel/apic_32.c	2008-06-04 11:09:10.000000000 +0200
-+++ o/arch/x86/kernel/apic_32.c	2008-06-04 11:10:18.000000000 +0200
-@@ -28,6 +28,7 @@
- #include <linux/acpi_pmtmr.h>
- #include <linux/module.h>
- #include <linux/dmi.h>
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ o/perfmon/perfmon_pmu.c	2008-06-04 16:18:33.000000000 +0200
+@@ -0,0 +1,255 @@
++/*
++ * perfmon_pmu.c: perfmon2 PMU configuration management
++ *
++ * This file implements the perfmon2 interface which
++ * provides access to the hardware performance counters
++ * of the host processor.
++ *
++ * The initial version of perfmon.c was written by
++ * Ganesh Venkitachalam, IBM Corp.
++ *
++ * Then it was modified for perfmon-1.x by Stephane Eranian and
++ * David Mosberger, Hewlett Packard Co.
++ *
++ * Version Perfmon-2.x is a complete rewrite of perfmon-1.x
++ * by Stephane Eranian, Hewlett Packard Co.
++ *
++ * Copyright (c) 1999-2006 Hewlett-Packard Development Company, L.P.
++ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
++ *                David Mosberger-Tang <davidm@hpl.hp.com>
++ *
++ * More information about perfmon available at:
++ * 	http://perfmon2.sf.net
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++ * 02111-1307 USA
++ */
++#include <linux/module.h>
 +#include <linux/perfmon_kern.h>
- 
- #include <asm/atomic.h>
- #include <asm/smp.h>
-@@ -1380,6 +1381,9 @@
- #ifdef CONFIG_X86_MCE_P4THERMAL
- 	set_intr_gate(THERMAL_APIC_VECTOR, thermal_interrupt);
- #endif
-+#ifdef CONFIG_PERFMON
-+	set_intr_gate(LOCAL_PERFMON_VECTOR, pmu_interrupt);
-+#endif
- }
- 
- /**
-Index: o/arch/x86/kernel/entry_32.S
-===================================================================
---- o.orig/arch/x86/kernel/entry_32.S	2008-06-04 11:09:10.000000000 +0200
-+++ o/arch/x86/kernel/entry_32.S	2008-06-04 11:10:18.000000000 +0200
-@@ -464,7 +464,7 @@
- 	ALIGN
- 	RING0_PTREGS_FRAME		# can't unwind into user space anyway
- work_pending:
--	testb $_TIF_NEED_RESCHED, %cl
-+	testw $(_TIF_NEED_RESCHED|_TIF_PERFMON_WORK), %cx
- 	jz work_notifysig
- work_resched:
- 	call schedule
-Index: o/arch/x86/kernel/process_32.c
-===================================================================
---- o.orig/arch/x86/kernel/process_32.c	2008-06-04 11:09:10.000000000 +0200
-+++ o/arch/x86/kernel/process_32.c	2008-06-04 11:10:18.000000000 +0200
-@@ -36,6 +36,7 @@
- #include <linux/personality.h>
- #include <linux/tick.h>
- #include <linux/percpu.h>
-+#include <linux/perfmon_kern.h>
- #include <linux/prctl.h>
- 
- #include <asm/uaccess.h>
-@@ -316,6 +317,7 @@
- 		tss->x86_tss.io_bitmap_base = INVALID_IO_BITMAP_OFFSET;
- 		put_cpu();
- 	}
-+	pfm_exit_thread();
- }
- 
- void flush_thread(void)
-@@ -372,6 +374,8 @@
- 
- 	savesegment(gs, p->thread.gs);
- 
-+	pfm_copy_thread(p);
++#include "perfmon_priv.h"
 +
- 	tsk = current;
- 	if (unlikely(test_tsk_thread_flag(tsk, TIF_IO_BITMAP))) {
- 		p->thread.io_bitmap_ptr = kmemdup(tsk->thread.io_bitmap_ptr,
-@@ -486,6 +490,9 @@
- 	prev = &prev_p->thread;
- 	next = &next_p->thread;
- 
-+	if (test_tsk_thread_flag(prev_p, TIF_PERFMON_CTXSW))
-+		pfm_ctxsw_out(prev_p, next_p);
-+
- 	debugctl = prev->debugctlmsr;
- 	if (next->ds_area_msr != prev->ds_area_msr) {
- 		/* we clear debugctl to make sure DS
-@@ -498,6 +505,9 @@
- 	if (next->debugctlmsr != debugctl)
- 		update_debugctlmsr(next->debugctlmsr);
- 
-+	if (test_tsk_thread_flag(next_p, TIF_PERFMON_CTXSW))
-+		pfm_ctxsw_in(prev_p, next_p);
-+
- 	if (test_tsk_thread_flag(next_p, TIF_DEBUG)) {
- 		set_debugreg(next->debugreg0, 0);
- 		set_debugreg(next->debugreg1, 1);
-Index: o/arch/x86/kernel/signal_32.c
-===================================================================
---- o.orig/arch/x86/kernel/signal_32.c	2008-06-04 11:09:10.000000000 +0200
-+++ o/arch/x86/kernel/signal_32.c	2008-06-04 11:10:18.000000000 +0200
-@@ -18,6 +18,7 @@
- #include <linux/sched.h>
- #include <linux/wait.h>
- #include <linux/elf.h>
-+#include <linux/perfmon_kern.h>
- #include <linux/smp.h>
- #include <linux/mm.h>
- 
-@@ -663,6 +664,10 @@
- 		clear_thread_flag(TIF_SINGLESTEP);
- 	}
- 
-+	/* process perfmon asynchronous work (e.g. block thread or reset) */
-+	if (thread_info_flags & _TIF_PERFMON_WORK)
-+		pfm_handle_work(regs);
-+
- 	/* deal with pending signal delivery */
- 	if (thread_info_flags & _TIF_SIGPENDING)
- 		do_signal(regs);
-Index: o/include/asm-x86/mach-default/entry_arch.h
-===================================================================
---- o.orig/include/asm-x86/mach-default/entry_arch.h	2008-06-04 11:09:10.000000000 +0200
-+++ o/include/asm-x86/mach-default/entry_arch.h	2008-06-04 11:10:18.000000000 +0200
-@@ -31,4 +31,8 @@
- BUILD_INTERRUPT(thermal_interrupt,THERMAL_APIC_VECTOR)
- #endif
- 
-+#ifdef CONFIG_PERFMON
-+BUILD_INTERRUPT(pmu_interrupt,LOCAL_PERFMON_VECTOR)
++#ifndef CONFIG_MODULE_UNLOAD
++#define module_refcount(n)	1
 +#endif
 +
- #endif
-Index: o/include/asm-x86/mach-default/irq_vectors.h
++static __cacheline_aligned_in_smp DEFINE_SPINLOCK(pfm_pmu_conf_lock);
++
++static __cacheline_aligned_in_smp DEFINE_SPINLOCK(pfm_pmu_acq_lock);
++static u32 pfm_pmu_acquired;
++
++/*
++ * perfmon core must acces PMU information ONLY through pfm_pmu_conf
++ * if pfm_pmu_conf is NULL, then no description is registered
++ */
++struct pfm_pmu_config	*pfm_pmu_conf;
++EXPORT_SYMBOL(pfm_pmu_conf);
++
++static int pfm_pmu_regdesc_init(u64 *unavail_pmcs, u64 *unavail_pmds)
++{
++	struct pfm_regmap_desc *d;
++	u16 n, n2, n_counters, i;
++	int max1, max2, max3;
++
++	/*
++	 * compute the number of implemented PMC from the
++	 * description table
++	 */
++	n = 0;
++	max1 = max2 = -1;
++	d = pfm_pmu_conf->pmc_desc;
++	for (i = 0; i < pfm_pmu_conf->num_pmc_entries;  i++, d++) {
++		if (!(d->type & PFM_REG_I))
++			continue;
++
++		if (test_bit(i, cast_ulp(unavail_pmcs)))
++			continue;
++
++		__set_bit(i, cast_ulp(pfm_pmu_conf->regs.pmcs));
++
++		max1 = i;
++		n++;
++	}
++
++	if (!n) {
++		PFM_INFO("%s PMU description has no PMC registers",
++			 pfm_pmu_conf->pmu_name);
++		return -EINVAL;
++	}
++
++	pfm_pmu_conf->regs.max_pmc = max1 + 1;
++	pfm_pmu_conf->regs.num_pmcs = n;
++
++	n = n_counters = n2 = 0;
++	max1 = max2 = max3 = -1;
++	d = pfm_pmu_conf->pmd_desc;
++	for (i = 0; i < pfm_pmu_conf->num_pmd_entries;  i++, d++) {
++		if (!(d->type & PFM_REG_I))
++			continue;
++
++		if (test_bit(i, cast_ulp(unavail_pmds)))
++			continue;
++
++		__set_bit(i, cast_ulp(pfm_pmu_conf->regs.pmds));
++		max1 = i;
++		n++;
++
++		/*
++		 * read-write registers
++		 */
++		if (!(d->type & PFM_REG_RO)) {
++			__set_bit(i, cast_ulp(pfm_pmu_conf->regs.rw_pmds));
++			max3 = i;
++			n2++;
++		}
++
++		/*
++		 * counter registers
++		 */
++		if (d->type & PFM_REG_C64) {
++			__set_bit(i, cast_ulp(pfm_pmu_conf->regs.cnt_pmds));
++			n_counters++;
++		}
++
++		/*
++		 * PMD with intr capabilities
++		 */
++		if (d->type & PFM_REG_INTR) {
++			__set_bit(i, cast_ulp(pfm_pmu_conf->regs.intr_pmds));
++			max2 = i;
++		}
++	}
++
++	if (!n) {
++		PFM_INFO("%s PMU description has no PMD registers",
++			 pfm_pmu_conf->pmu_name);
++		return -EINVAL;
++	}
++
++	pfm_pmu_conf->regs.max_pmd = max1 + 1;
++	pfm_pmu_conf->regs.max_intr_pmd  = max2 + 1;
++
++	pfm_pmu_conf->regs.num_counters = n_counters;
++	pfm_pmu_conf->regs.num_pmds = n;
++	pfm_pmu_conf->regs.max_rw_pmd = max3 + 1;
++	pfm_pmu_conf->regs.num_rw_pmd = n2;
++
++	return 0;
++}
++
++int pfm_pmu_register(struct pfm_pmu_config *cfg)
++{
++	int ret = -EBUSY;
++
++	if (perfmon_disabled) {
++		PFM_INFO("perfmon disabled, cannot add PMU description");
++		return -ENOSYS;
++	}
++
++	spin_lock(&pfm_pmu_conf_lock);
++
++	if (pfm_pmu_conf)
++		goto unlock;
++
++	pfm_pmu_conf = cfg;
++	pfm_pmu_conf->ovfl_mask = (1ULL << cfg->counter_width) - 1;
++
++unlock:
++	spin_unlock(&pfm_pmu_conf_lock);
++
++	if (ret)
++		PFM_INFO("register %s PMU error %d", cfg->pmu_name, ret);
++	else
++		PFM_INFO("%s PMU installed", cfg->pmu_name);
++	return ret;
++}
++
++/*
++ * acquire PMU resource from lower-level PMU register allocator
++ * (currently perfctr-watchdog.c)
++ *
++ * acquisition is done when the first context is created (and not
++ * when it is loaded). We grab all that is defined in the description
++ * module and then we make adjustments at the arch-specific level.
++ *
++ * The PMU resource is released when the last perfmon context is
++ * destroyed.
++ *
++ * interrupts are not masked
++ */
++int pfm_pmu_acquire(void)
++{
++	u64 unavail_pmcs[PFM_PMC_BV];
++	u64 unavail_pmds[PFM_PMD_BV];
++	int ret = 0;
++
++	spin_lock(&pfm_pmu_acq_lock);
++
++	PFM_DBG("pmu_acquired=%d", pfm_pmu_acquired);
++
++	pfm_pmu_acquired++;
++
++	if (pfm_pmu_acquired == 1) {
++
++		memset(unavail_pmcs, 0, sizeof(unavail_pmcs));
++		memset(unavail_pmds, 0, sizeof(unavail_pmds));
++
++		ret = pfm_arch_pmu_acquire(unavail_pmcs, unavail_pmds);
++		if (ret) {
++			pfm_pmu_acquired--;
++		} else {
++			pfm_pmu_regdesc_init(unavail_pmcs, unavail_pmds);
++
++			/* available PMU ressources */
++			PFM_DBG("PMU acquired: %u PMCs, %u PMDs, %u counters",
++				pfm_pmu_conf->regs.num_pmcs,
++				pfm_pmu_conf->regs.num_pmds,
++				pfm_pmu_conf->regs.num_counters);
++		}
++	}
++	spin_unlock(&pfm_pmu_acq_lock);
++
++	return ret;
++}
++
++/*
++ * release the PMU resource
++ *
++ * actual release happens when last context is destroyed
++ *
++ * interrupts are not masked
++ */
++void pfm_pmu_release(void)
++{
++	BUG_ON(irqs_disabled());
++
++	/*
++	 * we need to use a spinlock because release takes some time
++	 * and we may have a race with pfm_pmu_acquire()
++	 */
++	spin_lock(&pfm_pmu_acq_lock);
++
++	PFM_DBG("pmu_acquired=%d", pfm_pmu_acquired);
++
++	/*
++	 * we decouple test and decrement because if we had errors
++	 * in pfm_pmu_acquire(), we still come here on pfm_context_free()
++	 * but with pfm_pmu_acquire=0
++	 */
++	if (pfm_pmu_acquired > 0 && --pfm_pmu_acquired == 0) {
++		pfm_arch_pmu_release();
++		memset(&pfm_pmu_conf->regs, 0, sizeof(pfm_pmu_conf->regs));
++		PFM_DBG("PMU released");
++	}
++	spin_unlock(&pfm_pmu_acq_lock);
++}
+Index: o/perfmon/Makefile
 ===================================================================
---- o.orig/include/asm-x86/mach-default/irq_vectors.h	2008-06-04 11:09:10.000000000 +0200
-+++ o/include/asm-x86/mach-default/irq_vectors.h	2008-06-04 11:10:18.000000000 +0200
-@@ -56,6 +56,7 @@
-  * sources per level' errata.
-  */
- #define LOCAL_TIMER_VECTOR	0xef
-+#define LOCAL_PERFMON_VECTOR	0xee
+--- o.orig/perfmon/Makefile	2008-06-04 16:18:22.000000000 +0200
++++ o/perfmon/Makefile	2008-06-04 16:18:33.000000000 +0200
+@@ -5,4 +5,4 @@
+ obj-$(CONFIG_PERFMON) = perfmon_ctx.o perfmon_ctxsw.o		\
+ 			perfmon_file.o perfmon_attach.o 	\
+ 			perfmon_res.o perfmon_init.o		\
+-			perfmon_intr.o
++			perfmon_intr.o perfmon_pmu.o
+Index: o/perfmon/perfmon_priv.h
+===================================================================
+--- o.orig/perfmon/perfmon_priv.h	2008-06-04 16:18:42.000000000 +0200
++++ o/perfmon/perfmon_priv.h	2008-06-04 16:18:47.000000000 +0200
+@@ -52,6 +52,9 @@
+ 
+ void pfm_free_context(struct pfm_context *ctx);
+ 
++int pfm_pmu_acquire(void);
++void pfm_pmu_release(void);
++
+ void pfm_save_pmds(struct pfm_context *ctx);
  
  /*
-  * First APIC vector available to drivers: (vectors 0x30-0xee)
-@@ -63,7 +64,7 @@
-  * levels. (0x80 is the syscall vector)
-  */
- #define FIRST_DEVICE_VECTOR	0x31
--#define FIRST_SYSTEM_VECTOR	0xef
-+#define FIRST_SYSTEM_VECTOR	0xee
- 
- #define TIMER_IRQ 0
- 
-Index: o/include/asm-x86/thread_info_32.h
-===================================================================
---- o.orig/include/asm-x86/thread_info_32.h	2008-06-04 11:09:10.000000000 +0200
-+++ o/include/asm-x86/thread_info_32.h	2008-06-04 11:10:18.000000000 +0200
-@@ -132,6 +132,7 @@
- #define TIF_SYSCALL_AUDIT	6	/* syscall auditing active */
- #define TIF_SECCOMP		7	/* secure computing */
- #define TIF_HRTICK_RESCHED	9	/* reprogram hrtick timer */
-+#define TIF_PERFMON_WORK	10	/* work for pfm_handle_work() */
- #define TIF_MEMDIE		16
- #define TIF_DEBUG		17	/* uses debug registers */
- #define TIF_IO_BITMAP		18	/* uses I/O bitmap */
-@@ -141,6 +142,7 @@
- #define TIF_DEBUGCTLMSR		22	/* uses thread_struct.debugctlmsr */
- #define TIF_DS_AREA_MSR 	23      /* uses thread_struct.ds_area_msr */
- #define TIF_BTS_TRACE_TS        24      /* record scheduling event timestamps */
-+#define TIF_PERFMON_CTXSW	25	/* perfmon needs ctxsw calls */
- 
- #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
- #define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
-@@ -159,6 +161,8 @@
- #define _TIF_DEBUGCTLMSR	(1 << TIF_DEBUGCTLMSR)
- #define _TIF_DS_AREA_MSR	(1 << TIF_DS_AREA_MSR)
- #define _TIF_BTS_TRACE_TS	(1 << TIF_BTS_TRACE_TS)
-+#define _TIF_PERFMON_WORK	(1 << TIF_PERFMON_WORK)
-+#define _TIF_PERFMON_CTXSW	(1 << TIF_PERFMON_CTXSW)
- 
- /* work to do on interrupt/exception return */
- #define _TIF_WORK_MASK							\
-@@ -168,9 +172,9 @@
- #define _TIF_ALLWORK_MASK	(0x0000FFFF & ~_TIF_SECCOMP)
- 
- /* flags to check in __switch_to() */
--#define _TIF_WORK_CTXSW						\
--	(_TIF_IO_BITMAP | _TIF_NOTSC | _TIF_DEBUGCTLMSR |	\
--	 _TIF_DS_AREA_MSR | _TIF_BTS_TRACE_TS)
-+#define _TIF_WORK_CTXSW \
-+    (_TIF_IO_BITMAP | _TIF_NOTSC | _TIF_DEBUGCTLMSR | \
-+     _TIF_DS_AREA_MSR | _TIF_BTS_TRACE_TS | _TIF_PERFMON_CTXSW)
- #define _TIF_WORK_CTXSW_PREV _TIF_WORK_CTXSW
- #define _TIF_WORK_CTXSW_NEXT (_TIF_WORK_CTXSW | _TIF_DEBUG)
- 
 
 -- 
 
