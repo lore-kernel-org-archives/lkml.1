@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760133AbYFIOzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761533AbYFIOzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760133AbYFIOzN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 10:55:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbYFIOzA
+	id S1761533AbYFIOzx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 10:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYFIOzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 10:55:00 -0400
-Received: from 85-10-209-111.clients.your-server.de ([85.10.209.111]:37459
-	"EHLO mail.road.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753898AbYFIOy7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 10:54:59 -0400
-X-Greylist: delayed 435 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Jun 2008 10:54:59 EDT
-From: Uli Luckas <u.luckas@road.de>
-Organization: Road GmbH
-To: linux-kernel@vger.kernel.org
-Subject: Frame buffers and early i2c
-Date: Mon, 9 Jun 2008 16:47:42 +0200
-User-Agent: KMail/1.9.9
-Cc: khali@linux-fr.org, adaplas@gmail.com
+	Mon, 9 Jun 2008 10:55:44 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47629 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752588AbYFIOzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 10:55:43 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: 2.6.26-rc5-git2: snd-emu10k1 does not work
+Date: Mon, 9 Jun 2008 16:56:30 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200806082303.59245.rjw@sisk.pl> <s5h7iczc6ex.wl%tiwai@suse.de>
+In-Reply-To: <s5h7iczc6ex.wl%tiwai@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806091647.42757.u.luckas@road.de>
+Message-Id: <200806091656.31251.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am in the process of trying out a display connected to a colibri board's 
-pxa frame buffer device. The display's power supply is switch through i2c.
+On Monday, 9 of June 2008, Takashi Iwai wrote:
+> At Sun, 8 Jun 2008 23:03:58 +0200,
+> Rafael J. Wysocki wrote:
+> > 
+> > Hi,
+> > 
+> > snd-emu10k1 doesn't work on one of my test boxes.  The driver apparently loads,
+> > but the card is not visible, for example, to any mixer apps (including the ALSA
+> > mixer).  However, YaST correctly detects and reports the card (the system is
+> > openSUSE 10.3, x86-64).  The openSUSE-made kernel (2.6.22-something) does
+> > correctly work on the same hardware.
+> > 
+> > Is there anything I should pay attention to, like any options related to /proc
+> > or sysfs that could have an effect on the audio adapter?
+> 
+> First off, check /proc/asound/cards whether snd-emu10k1 driver is
+> really loaded on the first slot.  I guess something else occupies the
+> position.
 
-In order to use the frame buffer console I have i2c and pxafb compiled in.
+This is quite possible, as there is an on-board audio in this box too and I'm
+not sure if the setup switch really turns it off.
 
-By default, the pxafb driver get's initialized before the i2c bus causing the 
-display power up to fail.
+> If yes, a simple solution is to add the following option for snd module:
+> 
+> 	options snd slots=snd-emu10k1
+> 
+> then the first slot is reserved for emu10k1.  Note that this option is
+> available for 2.6.25 or later kernel.
 
-What do i2c people think about changing the link order here?
+I'll try later today and let you know.
 
-What do other frame buffer drivers handle the absence of i2c during early 
-boot?
-
-regards,
-Uli
-
-
--- 
-
-------- ROAD ...the handyPC Company - - -  ) ) )
-
-Uli Luckas
-Software Development
-
-ROAD GmbH
-Bennigsenstr. 14 | 12159 Berlin | Germany
-fon: +49 (30) 230069 - 64 | fax: +49 (30) 230069 - 69
-url: www.road.de
-
-Amtsgericht Charlottenburg: HRB 96688 B
-Managing directors: Hans-Peter Constien, Hubertus von Streit
+Thanks,
+Rafael
