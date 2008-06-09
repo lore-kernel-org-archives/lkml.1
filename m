@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761810AbYFIPMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758178AbYFIPXF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761810AbYFIPMi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 11:12:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079AbYFIPMb
+	id S1758178AbYFIPXF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 11:23:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbYFIPWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 11:12:31 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:53668 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753882AbYFIPMb (ORCPT
+	Mon, 9 Jun 2008 11:22:54 -0400
+Received: from tesla.comm.utoronto.ca ([128.100.11.1]:54554 "EHLO
+	tesla.comm.toronto.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752675AbYFIPWx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 11:12:31 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: 2.6.25-rc6: CONFIG_USB_PERSIST forced on
-Date: Mon, 9 Jun 2008 17:12:45 +0200
-User-Agent: KMail/1.9.9
-Cc: Pavel Machek <pavel@suse.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linus Torvalds <torvalds@linuxfoundation.org>, gregkh@suse.de,
-       Andrew Morton <akpm@linuxfoundation.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0806091100060.2943-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0806091100060.2943-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806091712.46869.oliver@neukum.org>
+	Mon, 9 Jun 2008 11:22:53 -0400
+Subject: Re: [PATCH] Input: Add newer Apple keyboards to hid quirks table
+From: Alexander Karpenko <alexander@comm.utoronto.ca>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0806091342420.10085@jikos.suse.cz>
+References: <20080607024631.GA24254@srcf.ucam.org>
+	 <Pine.LNX.4.64.0806091342420.10085@jikos.suse.cz>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 09 Jun 2008 11:22:44 -0400
+Message-Id: <1213024964.8396.7.camel@tesseract>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag 09 Juni 2008 17:03:10 schrieb Alan Stern:
-> On Mon, 9 Jun 2008, Pavel Machek wrote:
+Hi Jiri,
+
+The Macbook Pro 4,1 has no numlock key. I am not sure what
+the ﻿HID_QUIRK_APPLE_NUMLOCK_EMULATION flag does.
+
+On a somewhat related note, the function key secondary functionality has
+also changed in the new Macbook Pro/Air models; this requires the
+"powerbook_fn_keys" lookup table in drivers/hid/hid-input.c to be
+updated accordingly. The new key layout is detailed here:
+http://support.apple.com/kb/HT1117
+
+Regards,
+Alex
+
+
+On Mon, 2008-06-09 at 13:44 +0200, Jiri Kosina wrote:
+> On Sat, 7 Jun 2008, Matthew Garrett wrote:
 > 
-> > Besides, it seems to break suspend/resume of printers, and probably
-> > all the drivers that do not have reset_resume() method. That's
-> > actually a regression.
-> > 
-> > https://bugzilla.novell.com/show_bug.cgi?id=394820
+> > The keyboards in recent Apple hardware are still not properly supported 
+> > by Linux due to them not being in the hid quirks table. This patch adds 
+> > the current hardware. Device IDs come from the Mactel Linux project.
 > 
-> The right way to fix this is to add reset_resume to the printer driver.  
+> Hi Matthew,
+> 
+> the patch adding these product IDs is already queued in my 
+> 'upstream-fixes' branch.
+> 
+> However ...
+> 
+> > +	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ANSI, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
+> > +	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ISO, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_APPLE_ISO_KEYBOARD },
+> > +	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_JIS, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
+> > +	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
+> > +	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_ISO, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_APPLE_ISO_KEYBOARD },
+> > +	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_JIS, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
+> 
+> Alexandre's original patch is missing the 
+> HID_QUIRK_APPLE_NUMLOCK_EMULATION quirk ... Alexandre, was this 
+> intentional?
+> 
+> Thanks,
+> 
 
-reset_resume() is supposed to restore all state. The printer driver does
-not know which state a printer is in, except for the trivial case of the
-printer not being in use, as it doesn't know the meaning of the data
-going to the printer.
-
-You might argue that you deserve what you get when you hibernate
-while printing, but then it makes no sense to implement it anyhow,
-disconnection and reconnection work just as well and are cleaner.
-The same is true for many devices.
-
-	Regards
-		Oliver
