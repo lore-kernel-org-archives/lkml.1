@@ -1,50 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760958AbYFIMz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759977AbYFINCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760958AbYFIMz7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 08:55:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758138AbYFIMzs
+	id S1759977AbYFINCd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 09:02:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756217AbYFINCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 08:55:48 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:40942 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757545AbYFIMzr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 08:55:47 -0400
-Date: Mon, 9 Jun 2008 06:55:30 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Maxim Shchetynin <maxim@linux.vnet.ibm.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: AZFS file system proposal
-Message-ID: <20080609125530.GF30405@parisc-linux.org>
-References: <20080609104650.4f220492@mercedes-benz.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080609104650.4f220492@mercedes-benz.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 9 Jun 2008 09:02:24 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:38558 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755206AbYFINCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 09:02:23 -0400
+Date: Mon, 9 Jun 2008 23:02:14 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Julia Lawall <julia@diku.dk>
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 1/4] arch/powerpc: add missing of_node_put
+Message-Id: <20080609230214.ad6dca86.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.64.0806091418340.16009@ask.diku.dk>
+References: <Pine.LNX.4.64.0806091418340.16009@ask.diku.dk>
+X-Mailer: Sylpheed 2.5.0rc (GTK+ 2.12.10; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__9_Jun_2008_23_02_14_+1000_N=6vYmNszaIZm8Hs"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 09, 2008 at 10:46:50AM +0200, Maxim Shchetynin wrote:
-> +config AZ_FS
-> +	tristate "AZFS filesystem support"
-> +	help
-> +	  Non-buffered filesystem for block devices with a gendisk and
-> +	  with direct_access() method in gendisk->fops.
-> +	  AZFS does not buffer outgoing traffic and is doing no read ahead.
-> +	  It supports mount options (given with -o) bs=x,uid=x,gid=x.
-> +	  If block-size (bs) is not specified AZFS uses block-size used
-> +	  by block device. Though mmap() method is available only if
-> +	  block-size equals to or is greater than system page size.
+--Signature=_Mon__9_Jun_2008_23_02_14_+1000_N=6vYmNszaIZm8Hs
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This is a terrible description.  I can't even suggest better wording
-because I don't understand it.  The correct wording would not mention
-gendisks, fops or direct_access().  It would tell the user what they
-might use it for.
+On Mon, 9 Jun 2008 14:20:04 +0200 (CEST) Julia Lawall <julia@diku.dk> wrote:
+>
+> From: Julia Lawall <julia@diku.dk>
+>=20
+> of_node_put is needed before discarding a value received from
+> of_find_node_by_type, eg in error handling code.
+>=20
+> The semantic patch that makes the change is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
+>=20
+> // <smpl>
+> @@
+> struct device_node *n;
+> struct device_node *n1;
+> struct device_node *n2;
+> statement S;
+> identifier f1,f2;
+> expression E1,E2;
+> constant C;
+> @@
+>=20
+> n =3D of_find_node_by_type(...)
+> ...
+> if (!n) S
+> ... when !=3D of_node_put(n)
+>     when !=3D n1 =3D f1(n,...)
+>     when !=3D E1 =3D n
+>     when any
+>     when strict
+> (
+> + of_node_put(n);
+>   return -C;
+> |
+>   of_node_put(n);
+> |
+>   n2 =3D f2(n,...)
+> |
+>   E2 =3D n
+> |
+>   return ...;
+> )
+> // </smpl>
+>=20
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__9_Jun_2008_23_02_14_+1000_N=6vYmNszaIZm8Hs
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhNKdYACgkQTgG2atn1QN/+0wCeJKxpRtOfAv90OEMbebOK1aTO
+rDEAoIo9qAqf94KWekVVmhW3dlCKgLAu
+=cV31
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__9_Jun_2008_23_02_14_+1000_N=6vYmNszaIZm8Hs--
