@@ -1,247 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbYFINm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753795AbYFINna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755567AbYFINm5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 09:42:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbYFINmr
+	id S1753795AbYFINna (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 09:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbYFINnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 09:42:47 -0400
-Received: from server515c.exghost.com ([72.32.253.79]:1092 "EHLO
-	server515.appriver.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751713AbYFINmp convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 09:42:45 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte Veliciraptors
-Date: Mon, 9 Jun 2008 08:41:18 -0500
-Message-ID: <A20315AE59B5C34585629E258D76A97CA535E9@34093-C3-EVS3.exchange.rackspace.com>
-In-Reply-To: <8CA981CB5C2B4D6-E68-18E2@MBLK-M14.sysops.aol.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte Veliciraptors
-Thread-Index: AcjKBbwKtody6LDlSUirhjQlBGmFpgAKkHOg
-References: <alpine.DEB.1.10.0806071015110.23323@p34.internal.lan> <e9c3a7c20806071846w60b74aeegdf3e39afb36b5d9a@mail.gmail.com> <8CA981CB5C2B4D6-E68-18E2@MBLK-M14.sysops.aol.com>
-From: "David Lethe" <david@santools.com>
-To: <thomas62186218@aol.com>, <dan.j.williams@gmail.com>,
-       <jpiszcz@lucidpixels.com>
-Cc: <linux-kernel@vger.kernel.org>, <linux-raid@vger.kernel.org>,
-       <xfs@oss.sgi.com>, <ap@solarrain.com>
-X-OriginalArrivalTime: 09 Jun 2008 13:42:40.0402 (UTC) FILETIME=[AFA65F20:01C8CA36]
-X-Policy: GLOBAL
-X-Policy: GLOBAL
-X-Policy: GLOBAL
-X-Policy: GLOBAL
-X-Policy: GLOBAL
-X-Policy: GLOBAL
-X-Policy: GLOBAL
-X-Primary: david@santools.com
-X-Note: This Email was scanned by AppRiver SecureTide
-X-ALLOW: david@santools.com ALLOWED
-X-Virus-Scan: V-
-X-Note: Spam Tests Failed: 
-X-Country-Path: PRIVATE->UNITED STATES->UNITED STATES
-X-Note-Sending-IP: 72.32.49.5
-X-Note-Reverse-DNS: fe1.exchange.rackspace.com
-X-Note-WHTLIST: david@santools.com
-X-Note: User Rule Hits: 
-X-Note: Global Rule Hits: 81 82 148 
-X-Note: Mail Class: ALLOWEDSENDER
+	Mon, 9 Jun 2008 09:43:21 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:54661 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752006AbYFINnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 09:43:20 -0400
+Date: Mon, 9 Jun 2008 15:42:47 +0200
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Victor <linux@maxim.org.za>, Eric BENARD <ebenard@free.fr>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH 4/7] mmc: at91_mci: add multiwrite switch
+Message-ID: <20080609154247.06db4c3e@mjolnir.drzeus.cx>
+In-Reply-To: <20080609130831.GC30971@flint.arm.linux.org.uk>
+References: <483FE9E7.7020707@atmel.com>
+	<483FEE58.5000500@atmel.com>
+	<20080601144251.GS5818@flint.arm.linux.org.uk>
+	<20080609124249.349995df@mjolnir.drzeus.cx>
+	<20080609130831.GC30971@flint.arm.linux.org.uk>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.2; i386-redhat-linux-gnu)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
+X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-13658-1213018641-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For faster random I/O:
- * Decrease chunk size
- * Migrate files that have higher random I/O to a RAID1 set, using disks
-with the lowest access time/latency
- * If possible, use the /dev/shm file system 
- * Determine I/O size of apps that produce most of the random I/O, and
-make sure that md+filesystem matches. If most random I/O is 32KB, then
-don't waste bandwidth by making md read 256KB at a time, or making it
-read 2x16KB I/Os. Also don't build md sets like 4-drive RAID5, (Do a
-5-drive RAID5 set), because non-parity data isn't a multiple of 2. A
-10-drive RAID5 set with heavy random I/O is also profoundly wrong
-because you are just removing the opportunity to have all of those heads
-processing random I/O. 
- * If you only have one partition on a md set, then partition it into a
-few file systems. This may provide greater opportunity for caching I/Os.
- * Experiment with different file systems, and optimize accordingly.  
- * Turn of journaling, or at least move journals to RAID1 devices.
- * Add RAM and try to increase buffer cache in attempt to improve cache
-hit percentage (this works up to a point)
- * Buy a small SSD and migrate files that get pounded with random I/O to
-that device. (Make sure you don't get a flash SSD, but a DRAM based SSD
-that satisfies random I/O in nanoseconds instead of millisecs). They are
-expensive, but the appropriate device.  This is how companies such as
-Google & Ebay manage to get things done. 
-The biggest thing to remember about random I/O, is that they are
-expensive, so just step back and think about ways to minimize the I/O
-requests to disk in the first place, and/or to spread the I/O across
-multiple raidsets that can work independently to satisfy your load.  All
-suggestions above will not work for everybody. You must understand the
-nature of the bottleneck. 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-David
+--=_freyr.drzeus.cx-13658-1213018641-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
------Original Message-----
-From: linux-raid-owner@vger.kernel.org
-[mailto:linux-raid-owner@vger.kernel.org] On Behalf Of
-thomas62186218@aol.com
-Sent: Monday, June 09, 2008 2:51 AM
-To: dan.j.williams@gmail.com; jpiszcz@lucidpixels.com
-Cc: linux-kernel@vger.kernel.org; linux-raid@vger.kernel.org;
-xfs@oss.sgi.com; ap@solarrain.com
-Subject: Re: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte
-Veliciraptors
+On Mon, 9 Jun 2008 14:08:31 +0100
+Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
 
-Thank you for sharing these results. One issue that I consistently see 
-with these results is miserable random IO performance. Looking at these 
-numbers, even a low-end RAID controller with 128MB of cache will outrun 
-md-based RAIDs in random IO benchmarks. In today's world of virtual 
-machines, etc, random IO is far more common than sequential IO. What 
-can be done with md (or something else) to alleviate this problem?
+> On Mon, Jun 09, 2008 at 12:42:49PM +0200, Pierre Ossman wrote:
+> >=20
+> > This is why I asked people to audit their drivers to make sure it's
+> > the lower bound that's returned, but I've not received much in the way
+> > of replies.
+>=20
+> You won't do from me concerning pxamci - I don't look after it anymore
+> after one of my MMC cards got eaten by the misbehaving bugger.  I don't
+> think anyone else is looking after it, so that means the driver's
+> effectively unmaintained.
 
--Thomas
+pxamxi is marked as orphaned in MAINTAINERS, so I didn't expect an
+answer about that one from anyone. :)
 
+You're still listed for the primecell driver though. What's the status
+on that one?
 
------Original Message-----
-From: Dan Williams <dan.j.williams@gmail.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org; linux-raid@vger.kernel.org; 
-xfs@oss.sgi.com; Alan Piszcz <ap@solarrain.com>
-Sent: Sat, 7 Jun 2008 6:46 pm
-Subject: Re: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte 
-Veliciraptors
+Rgds
+Pierre
 
+--=_freyr.drzeus.cx-13658-1213018641-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
 
+iEYEARECAAYFAkhNM1wACgkQ7b8eESbyJLiQFQCfdHGjctrNcIe+yDuMvauCvG+V
+m1YAnjy20va8uwgL9y+A6mH4FLZApOoP
+=lVkR
+-----END PGP SIGNATURE-----
 
-
-
-
-
-
-
-On Sat, Jun 7, 2008 at 7:22 AM, Justin Piszcz <jpiszcz@lucidpixels.com> 
-wrote:
-> First, the original benchmarks with 6-SATA drives with fixed 
-formatting,
-> using
-> right justification and the same decimal point precision throughout:
-> 
-http://home.comcast.net/~jpiszcz/20080607/raid-benchmarks-decimal-fix-an
-d-right-justified/disks.html
->
-> Now for for veliciraptors!  Ever wonder what kind of speed is 
-possible with
-> 3 disk, 4,5,6,7,8,9,10-disk RAID5s?  I ran a loop to find out, each 
-run is
-> executed three times and the average is taken of all three runs per 
-each
-> RAID5 disk set.
->
-> In short? The 965 no longer does justice with faster drives, a new 
-chipset
-> and motherboard are needed.  After reading or writing to 4-5 
-veliciraptors
-> it saturates the bus/965 chipset.
->
-> Here is a picture of the 12 veliciraptors I tested with:
-> 
-http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-velicir
-aptors/raptors.jpg
->
-> Here are the bonnie++ results:
-> 
-http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-velicir
-aptors/veliciraptor-raid.html
->
-> For those who want the results in text:
-> 
-http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-velicir
-aptors/veliciraptor-raid.txt
->
-> System used, same/similar as before:
-> Motherboard: Intel DG965WH
-> Memory: 8GiB
-> Kernel: 2.6.25.4
-> Distribution: Debian Testing x86_64
-> Filesystem: XFS with default mkfs.xfs parameters [auto-optimized for 
-SW
-> RAID]
-> Mount options: defaults,noatime,nodiratime,logbufs=8,logbsize=262144 
-0 1
-> Chunk size: 1024KiB
-> RAID5 Layout: Default (left-symmetric)
-> Mdadm Superblock used: 0.90
->
-> Optimizations used (last one is for the CFQ scheduler), it improves
-> performance by a modest 5-10MiB/s:
-> http://home.comcast.net/~jpiszcz/raid/20080601/raid5.html
->
-> # Tell user what's going on.
-> echo "Optimizing RAID Arrays..."
->
-> # Define DISKS.
-> cd /sys/block
-> DISKS=$(/bin/ls -1d sd[a-z])
->
-> # Set read-ahead.
-> # > That's actually 65k x 512byte blocks so 32MiB
-> echo "Setting read-ahead to 32 MiB for /dev/md3"
-> blockdev --setra 65536 /dev/md3
->
-> # Set stripe-cache_size for RAID5.
-> echo "Setting stripe_cache_size to 16 MiB for /dev/md3"
-
-Sorry to sound like a broken record,  16MiB is not correct.
-
-size=$((num_disks * 4 * 16384 / 1024))
-echo "Setting stripe_cache_size to $size MiB for /dev/md3"
-
-...and commit 8b3e6cdc should improve the performance / 
-stripe_cache_size ratio.
-
-> echo 16384 > /sys/block/md3/md/stripe_cache_size
->
-> # Disable NCQ on all disks.
-> echo "Disabling NCQ on all disks..."
-> for i in $DISKS
-> do
->  echo "Disabling NCQ on $i"
->  echo 1 > /sys/block/"$i"/device/queue_depth
-> done
->
-> # Fix slice_idle.
-> # See http://www.nextre.it/oracledocs/ioscheduler_03.html
-> echo "Fixing slice_idle to 0..."
-> for i in $DISKS
-> do
->  echo "Changing slice_idle to 0 on $i"
->  echo 0 > /sys/block/"$i"/queue/iosched/slice_idle
-> done
->
-
-Thanks for putting this data together.
-
-Regards,
-Dan
---
-To unsubscribe from this list: send the line "unsubscribe linux-raid" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-
-
-
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-raid" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-
+--=_freyr.drzeus.cx-13658-1213018641-0001-2--
