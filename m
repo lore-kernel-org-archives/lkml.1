@@ -1,140 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757309AbYFITtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757741AbYFITuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757309AbYFITtQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 15:49:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753606AbYFITtD
+	id S1757741AbYFITuj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 15:50:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbYFITub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 15:49:03 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35157 "EHLO mx1.redhat.com"
+	Mon, 9 Jun 2008 15:50:31 -0400
+Received: from sous-sol.org ([216.99.217.87]:46659 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753604AbYFITtB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 15:49:01 -0400
-Message-ID: <484D8813.4040807@redhat.com>
-Date: Mon, 09 Jun 2008 16:44:19 -0300
-From: Glauber Costa <gcosta@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1752747AbYFITua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 15:50:30 -0400
+Date: Mon, 9 Jun 2008 12:49:24 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Linux 2.6.25.6
+Message-ID: <20080609194924.GL30402@sequoia.sous-sol.org>
 MIME-Version: 1.0
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu, hugh@veritas.com
-Subject: Re: [PATCH 11/15] x86: move enabling of io_apic to prepare_cpus
-References: <1213021018-14159-1-git-send-email-gcosta@redhat.com> <1213021018-14159-2-git-send-email-gcosta@redhat.com> <1213021018-14159-3-git-send-email-gcosta@redhat.com> <1213021018-14159-4-git-send-email-gcosta@redhat.com> <1213021018-14159-5-git-send-email-gcosta@redhat.com> <1213021018-14159-6-git-send-email-gcosta@redhat.com> <1213021018-14159-7-git-send-email-gcosta@redhat.com> <1213021018-14159-8-git-send-email-gcosta@redhat.com> <1213021018-14159-9-git-send-email-gcosta@redhat.com> <1213021018-14159-10-git-send-email-gcosta@redhat.com> <1213021018-14159-11-git-send-email-gcosta@redhat.com> <1213021018-14159-12-git-send-email-gcosta@redhat.com> <Pine.LNX.4.55.0806091620250.26593@cliff.in.clinika.pl>
-In-Reply-To: <Pine.LNX.4.55.0806091620250.26593@cliff.in.clinika.pl>
-Content-Type: multipart/mixed;
- boundary="------------060401050605090806010400"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060401050605090806010400
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+We (the -stable team) are announcing the release of the 2.6.25.6 kernel.
 
-Maciej W. Rozycki wrote:
-> On Mon, 9 Jun 2008, Glauber Costa wrote:
-> 
->> Do it, instead of keeping in io_apic_32.c. This is the way x86_64
->> already does.
-> 
->  This change looks wrong -- is native_smp_prepare_cpus() at all run on
-> !CONFIG_SMP?  I don't think so.  You have to do this differently.
-> 
->   Maciej
+It contains a number of assorted bugfixes all over the tree.  Users are
+encouraged to update.
 
-How about this one instead?
+I'll also be replying to this message with a copy of the patch between
+2.6.25.5 and 2.6.25.6
 
-This one does enable_IO_APIC in the init_uniprocessor too, and should 
-account for the !smp case.
+The updated 2.6.25.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.25.y.git
+and can be browsed at the normal kernel.org git web browser:
+        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.25.y.git;a=summary
 
---------------060401050605090806010400
-Content-Type: text/x-patch;
- name="0001-x86-move-enabling-of-io_apic-to-prepare_cpus.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0001-x86-move-enabling-of-io_apic-to-prepare_cpus.patch"
+thanks,
+-chris
+--------
 
->From 87f8366012e1dc3cf7212e241b0aa552d7825338 Mon Sep 17 00:00:00 2001
-From: Glauber Costa <gcosta@redhat.com>
-Date: Wed, 28 May 2008 17:04:12 -0300
-Subject: [PATCH] x86: move enabling of io_apic to prepare_cpus
+ Makefile                                       |    2 
+ arch/powerpc/kernel/smp.c                      |    2 
+ arch/powerpc/mm/slb.c                          |   21 ++--
+ arch/x86/kernel/apic_64.c                      |    2 
+ arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c     |   10 ++
+ arch/x86/kernel/irq_32.c                       |    2 
+ arch/x86/kernel/process_32.c                   |    5 -
+ arch/x86/kernel/process_64.c                   |    5 -
+ arch/x86/kernel/ptrace.c                       |    7 +
+ arch/x86/kernel/tsc_32.c                       |   38 ++++----
+ arch/x86/kernel/tsc_64.c                       |    5 -
+ arch/x86/mm/init_64.c                          |    2 
+ arch/x86/pci/common.c                          |   17 ---
+ drivers/ata/libata-core.c                      |   12 ++
+ drivers/cpufreq/cpufreq.c                      |    4 
+ drivers/hid/hid-input.c                        |    5 -
+ drivers/hid/usbhid/hid-quirks.c                |   38 ++++----
+ drivers/i2c/busses/i2c-nforce2.c               |   28 +++++-
+ drivers/i2c/chips/max6875.c                    |    3 
+ drivers/infiniband/ulp/ipoib/ipoib_multicast.c |    6 +
+ drivers/md/md.c                                |    2 
+ drivers/md/raid5.c                             |   10 ++
+ drivers/net/atl1/atl1_main.c                   |    1 
+ drivers/net/ps3_gelic_wireless.c               |    2 
+ drivers/usb/class/cdc-acm.c                    |    3 
+ drivers/usb/host/ohci-omap.c                   |    3 
+ drivers/usb/host/ohci-sm501.c                  |    3 
+ drivers/usb/misc/ldusb.c                       |    4 
+ drivers/usb/serial/ftdi_sio.c                  |    1 
+ drivers/usb/serial/ftdi_sio.h                  |    6 +
+ drivers/usb/serial/option.c                    |    9 +-
+ drivers/usb/serial/pl2303.c                    |    1 
+ drivers/usb/serial/pl2303.h                    |    1 
+ drivers/usb/storage/unusual_devs.h             |   10 ++
+ fs/cifs/inode.c                                |   15 ++-
+ fs/ecryptfs/ecryptfs_kernel.h                  |    2 
+ fs/ecryptfs/read_write.c                       |   22 ----
+ fs/ext3/xattr.c                                |    5 +
+ fs/ext4/xattr.c                                |    5 +
+ fs/proc/array.c                                |    2 
+ fs/proc/base.c                                 |   33 +++++--
+ fs/proc/task_mmu.c                             |   28 ++----
+ fs/xfs/linux-2.6/xfs_buf.c                     |   24 ++++-
+ fs/xfs/linux-2.6/xfs_buf.h                     |   19 ++++
+ include/asm-x86/tlbflush.h                     |   13 ++
+ include/linux/capability.h                     |   29 ++++--
+ include/linux/hid.h                            |    1 
+ include/linux/types.h                          |    4 
+ kernel/capability.c                            |  111 ++++++++++++++++---------
+ kernel/cgroup.c                                |    2 
+ mm/memory_hotplug.c                            |   78 ++++++++---------
+ mm/mmap.c                                      |    8 +
+ mm/page_alloc.c                                |    3 
+ net/ipv6/netfilter/nf_conntrack_reasm.c        |    8 +
+ net/netfilter/nf_conntrack_expect.c            |    4 
+ net/netfilter/xt_connlimit.c                   |    3 
+ net/netfilter/xt_iprange.c                     |    2 
+ security/smack/smack_lsm.c                     |   12 ++
+ 58 files changed, 449 insertions(+), 254 deletions(-)
 
-Do it, instead of keeping in io_apic_32.c. This is the way x86_64 already does.
+Alexey Dobriyan (1):
+      atl1: fix 4G memory corruption bug
 
-Signed-off-by: Glauber Costa <gcosta@redhat.com>
----
- arch/x86/kernel/apic_32.c    |    3 +++
- arch/x86/kernel/io_apic_32.c |    4 ++--
- arch/x86/kernel/smpboot.c    |    2 +-
- include/asm-x86/hw_irq.h     |    2 --
- 4 files changed, 6 insertions(+), 5 deletions(-)
+Andrew G. Morgan (1):
+      capabilities: remain source compatible with 32-bit raw legacy capability support.
 
-diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
-index fa8cf79..8385dc6 100644
---- a/arch/x86/kernel/apic_32.c
-+++ b/arch/x86/kernel/apic_32.c
-@@ -1273,6 +1273,9 @@ int __init APIC_init_uniprocessor(void)
- 	setup_local_APIC();
- 
- #ifdef CONFIG_X86_IO_APIC
-+	if (!skip_ioapic_setup && nr_ioapics)
-+		enable_IO_APIC();
-+
- 	if (!smp_found_config || skip_ioapic_setup || !nr_ioapics)
- #endif
- 		localise_nmi_watchdog();
-diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
-index 7fc071f..fa4f0a0 100644
---- a/arch/x86/kernel/io_apic_32.c
-+++ b/arch/x86/kernel/io_apic_32.c
-@@ -1606,7 +1606,7 @@ void /*__init*/ print_PIC(void)
- 
- #endif  /*  0  */
- 
--static void __init enable_IO_APIC(void)
-+void __init enable_IO_APIC(void)
- {
- 	union IO_APIC_reg_01 reg_01;
- 	int i8259_apic, i8259_pin;
-@@ -2295,7 +2295,7 @@ void __init setup_IO_APIC(void)
- 	for (i = first_system_vector; i < NR_VECTORS; i++)
- 		set_bit(i, used_vectors);
- 
--	enable_IO_APIC();
-+	/* calling enable_IO_APIC() is moved to setup_local_APIC for BP */
- 
- 	if (acpi_ioapic)
- 		io_apic_irqs = ~0;	/* all IRQs go through IOAPIC */
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index f5ac5b2..e537c7b 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -1175,7 +1175,7 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
- 	 */
- 	setup_local_APIC();
- 
--#ifdef CONFIG_X86_64
-+#ifdef CONFIG_X86_IO_APIC
- 	/*
- 	 * Enable IO APIC before setting up error vector
- 	 */
-diff --git a/include/asm-x86/hw_irq.h b/include/asm-x86/hw_irq.h
-index 18f067c..4c81d1b 100644
---- a/include/asm-x86/hw_irq.h
-+++ b/include/asm-x86/hw_irq.h
-@@ -67,9 +67,7 @@ extern void print_IO_APIC(void);
- extern int IO_APIC_get_PCI_irq_vector(int bus, int slot, int fn);
- extern void setup_ioapic_dest(void);
- 
--#ifdef CONFIG_X86_64
- extern void enable_IO_APIC(void);
--#endif
- 
- /* IPI functions */
- extern void send_IPI_self(int vector);
--- 
-1.5.4.5
+Atsushi Nemoto (1):
+      usb-serial: Use ftdi_sio driver for RATOC REX-USB60F
 
+CHIKAMA masaki (1):
+      cpufreq: fix null object access on Transmeta CPU
 
---------------060401050605090806010400--
+Casey Schaufler (1):
+      Smack: fuse mount hang fix
+
+Cedric Le Goater (1):
+      cgroups: remove node_ prefix_from ns subsystem
+
+Chris Wright (1):
+      Linux 2.6.25.6
+
+Christoph Hellwig (1):
+      XFS: Fix memory corruption with small buffer reads
+
+Chuck Ebbert (1):
+      x86: don't read maxlvt before checking if APIC is mapped
+
+Dan Williams (4):
+      USB: option: add new Dell 5520 HSDPA variant
+      md: do not compute parity unless it is on a failed drive
+      md: fix uninitialized use of mddev->recovery_wait
+      md: fix prexor vs sync_request race
+
+Diego 'Flameeyes' Petteno (1):
+      HID: split Numlock emulation quirk from HID_QUIRK_APPLE_HAS_FN.
+
+Eugeniy Meshcheryakov (1):
+      USB: do not handle device 1410:5010 in 'option' driver
+
+Filip Aben (1):
+      USB: unusual_devs: Add support for GI 0401 SD-Card interface
+
+Greg Kroah-Hartman (3):
+      USB: add Telstra NextG CDMA id to option driver
+      USB: fix build errors in ohci-omap.c and ohci-sm501.c
+      USB: add TELIT HDSPA UC864-E modem to option driver
+
+Heiko Carstens (1):
+      memory_hotplug: always initialize pageblock bitmap
+
+Hugh Dickins (1):
+      x86: fix bad pmd ffff810000207xxx(9090909090909090)
+
+Iain McFarlane (1):
+      USB: add Zoom Telephonics Model 3095F V.92 USB Mini External modem to cdc-acm
+
+Ingo Molnar (1):
+      x86: prevent PGE flush from interruption/preemption
+
+Jack Morgenstein (1):
+      IPoIB: Test for NULL broadcast object in ipiob_mcast_join_finish()
+
+Jan Beulich (1):
+      i386: fix asm constraint in do_IRQ()
+
+Jean Delvare (2):
+      i2c-nforce2: Disable the second SMBus channel on the DFI Lanparty NF4 Expert
+      i2c/max6875: Really prevent 24RF08 corruption
+
+Jiri Kosina (1):
+      brk: make sys_brk() honor COMPAT_BRK when computing lower bound
+
+Linus Torvalds (1):
+      Revert "PCI: remove default PCI expansion ROM memory allocation"
+
+Masakazu Mokuno (1):
+      PS3: gelic: fix memory leak
+
+Michael Halcrow (1):
+      eCryptfs: remove unnecessary page decrypt call
+
+Patrick McHardy (3):
+      netfilter: nf_conntrack_expect: fix error path unwind in nf_conntrack_expect_init()
+      netfilter: xt_connlimit: fix accouning when receive RST packet in ESTABLISHED state
+      netfilter: nf_conntrack_ipv6: fix inconsistent lock state in nf_ct_frag6_gather()
+
+Paul Mackerras (1):
+      POWERPC Bolt in SLB entry for kernel stack on secondary cpus
+
+Phil Oester (1):
+      netfilter: xt_iprange: module aliases for xt_iprange
+
+Roland McGrath (1):
+      x86: user_regset_view table fix for ia32 on 64-bit
+
+Rusty Russell (1):
+      x86: if we cannot calibrate the TSC, we panic.
+
+Steve French (1):
+      CIFS: Fix UNC path prefix on QueryUnixPathInfo to have correct slash
+
+Suresh Siddha (1):
+      x86, fpu: fix CONFIG_PREEMPT=y corruption of application's FPU stack
+
+Tejun Heo (1):
+      libata: force hardreset if link is in powersave mode
+
+Thomas Gleixner (3):
+      x86: fix setup of cyc2ns in tsc_64.c
+      x86: distangle user disabled TSC from unstable
+      x86: disable TSC for sched_clock() when calibration failed
+
+Thomas Tuttle (1):
+      pagemap: fix bug in add_to_pagemap, require aligned-length reads of /proc/pid/pagemap
+
+Tiger Yang (1):
+      ext3/4: fix uninitialized bs in ext3/4_xattr_set_handle()
+
+Vegard Nossum (1):
+      proc: calculate the correct /proc/<pid> link count
+
+Venkatesh Pallipadi (1):
+      CPUFREQ: Make acpi-cpufreq more robust against BIOS freq changes behind our back.
+
+Xiaofan Chen (1):
+      USB: remove PICDEM FS USB demo (04d8:000c) device from ldusb
+
+maximilian attems (1):
+      types.h: don't expose struct ustat to userspace
+
