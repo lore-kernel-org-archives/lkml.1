@@ -1,265 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760782AbYFIXvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761453AbYFIXyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760782AbYFIXvl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 19:51:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754298AbYFIXve
+	id S1761453AbYFIXyU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 19:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756202AbYFIXyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 19:51:34 -0400
-Received: from [78.13.68.104] ([78.13.68.104]:37807 "EHLO linux.localdomain"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751442AbYFIXve (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 19:51:34 -0400
-From: Andrea Righi <righi.andrea@gmail.com>
-To: balbir@linux.vnet.ibm.com
-Cc: menage@google.com, kamezawa.hiroyu@jp.fujitsu.com,
-       kosaki.motohiro@jp.fujitsu.com, xemul@openvz.org,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
-       Andrea Righi <righi.andrea@gmail.com>
-Subject: [RFC PATCH 4/5] use the memcg VM overcommit prototypes
-Date: Tue, 10 Jun 2008 01:33:02 +0200
-Message-Id: <1213054383-18137-5-git-send-email-righi.andrea@gmail.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
-References: <>
+	Mon, 9 Jun 2008 19:54:11 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:44690 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753190AbYFIXyK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 19:54:10 -0400
+Date: Mon, 9 Jun 2008 16:54:09 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [patch 04/41] cpu ops: Core piece for generic atomic per cpu
+ operations
+In-Reply-To: <200806100927.48597.rusty@rustcorp.com.au>
+Message-ID: <Pine.LNX.4.64.0806091651390.9749@schroedinger.engr.sgi.com>
+References: <20080530035620.587204923@sgi.com> <200806060959.13362.rusty@rustcorp.com.au>
+ <Pine.LNX.4.64.0806091158020.30776@schroedinger.engr.sgi.com>
+ <200806100927.48597.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Apply the new memory controller VM prototypes to the opportune kernel routines.
+On Tue, 10 Jun 2008, Rusty Russell wrote:
 
-Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
----
- ipc/shm.c     |    6 ++++--
- kernel/fork.c |    2 +-
- mm/mmap.c     |   10 ++++++----
- mm/mprotect.c |    2 +-
- mm/mremap.c   |    4 ++--
- mm/shmem.c    |   49 +++++++++++++++++++++++++++++++++++++++++--------
- mm/swapfile.c |    4 ++--
- 7 files changed, 57 insertions(+), 20 deletions(-)
+> > > Yes, this should be fixed.  I thought i386 had optimized versions
+> > > pre-merge, but I was wrong (%gs for per-cpu came later, and noone cleaned
+> > > up these naive versions).  Did you want me to write them?
+> >
+> > How can that be fixed? You have no atomic instruction that calculates the
+> > per cpu address in one go.
+> 
+> Huh?  "incl %fs:varname" does exactly this.
 
-diff --git a/ipc/shm.c b/ipc/shm.c
-index 554429a..420bfa9 100644
---- a/ipc/shm.c
-+++ b/ipc/shm.c
-@@ -384,12 +384,14 @@ static int newseg(struct ipc_namespace *ns, struct ipc_params *params)
- 		shp->mlock_user = current->user;
- 	} else {
- 		int acctflag = VM_ACCOUNT;
-+		struct vm_acct_values v;
- 		/*
- 		 * Do not allow no accounting for OVERCOMMIT_NEVER, even
--	 	 * if it's asked for.
-+		 * if it's asked for.
- 		 */
-+		vm_acct_get_config(current->mm, &v);
- 		if  ((shmflg & SHM_NORESERVE) &&
--				sysctl_overcommit_memory != OVERCOMMIT_NEVER)
-+				v.overcommit_memory != OVERCOMMIT_NEVER)
- 			acctflag = 0;
- 		file = shmem_file_setup(name, size, acctflag);
- 	}
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 19908b2..eaffa56 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -336,7 +336,7 @@ fail_nomem_policy:
- 	kmem_cache_free(vm_area_cachep, tmp);
- fail_nomem:
- 	retval = -ENOMEM;
--	vm_unacct_memory(charge);
-+	vm_unacct_memory(mm, charge);
- 	goto out;
- }
+Right that is what the cpu alloc patches do. So you could implement 
+cpu_local_inc on top of some of the cpu alloc patches.
+
+> > And as long as that is the case you need to 
+> > disable preempt. Otherwise you may increment the per cpu variable of
+> > another processor because the process was rescheduled after the address
+> > was calculated but before the increment was done.
+> 
+> But of course, that is not a problem.  You make local_t an atomic_t, and then 
+> it doesn't matter which CPU you incremented.
+
+But then the whole point of local_t is gone. Why not use atomic_t in the 
+first place?
  
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 256599e..ab40277 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -1028,6 +1028,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
- 	int error;
- 	struct rb_node **rb_link, *rb_parent;
- 	unsigned long charged = 0;
-+	struct vm_acct_values v;
- 	struct inode *inode =  file ? file->f_path.dentry->d_inode : NULL;
- 
- 	/* Clear old maps */
-@@ -1044,6 +1045,7 @@ munmap_back:
- 	if (!may_expand_vm(mm, len >> PAGE_SHIFT))
- 		return -ENOMEM;
- 
-+	vm_acct_get_config(mm, &v);
- 	if (accountable && (!(flags & MAP_NORESERVE) ||
- 			    sysctl_overcommit_memory == OVERCOMMIT_NEVER)) {
- 		if (vm_flags & VM_SHARED) {
-@@ -1170,7 +1172,7 @@ free_vma:
- 	kmem_cache_free(vm_area_cachep, vma);
- unacct_error:
- 	if (charged)
--		vm_unacct_memory(charged);
-+		vm_unacct_memory(mm, charged);
- 	return error;
- }
- 
-@@ -1698,7 +1700,7 @@ static void unmap_region(struct mm_struct *mm,
- 	tlb = tlb_gather_mmu(mm, 0);
- 	update_hiwater_rss(mm);
- 	unmap_vmas(&tlb, vma, start, end, &nr_accounted, NULL);
--	vm_unacct_memory(nr_accounted);
-+	vm_unacct_memory(mm, nr_accounted);
- 	free_pgtables(&tlb, vma, prev? prev->vm_end: FIRST_USER_ADDRESS,
- 				 next? next->vm_start: 0);
- 	tlb_finish_mmu(tlb, start, end);
-@@ -1959,7 +1961,7 @@ unsigned long do_brk(unsigned long addr, unsigned long len)
- 	 */
- 	vma = kmem_cache_zalloc(vm_area_cachep, GFP_KERNEL);
- 	if (!vma) {
--		vm_unacct_memory(len >> PAGE_SHIFT);
-+		vm_unacct_memory(mm, len >> PAGE_SHIFT);
- 		return -ENOMEM;
- 	}
- 
-@@ -1998,7 +2000,7 @@ void exit_mmap(struct mm_struct *mm)
- 	/* Don't update_hiwater_rss(mm) here, do_exit already did */
- 	/* Use -1 here to ensure all VMAs in the mm are unmapped */
- 	end = unmap_vmas(&tlb, vma, 0, -1, &nr_accounted, NULL);
--	vm_unacct_memory(nr_accounted);
-+	vm_unacct_memory(mm, nr_accounted);
- 	free_pgtables(&tlb, vma, FIRST_USER_ADDRESS, 0);
- 	tlb_finish_mmu(tlb, 0, end);
- 
-diff --git a/mm/mprotect.c b/mm/mprotect.c
-index a5bf31c..2b1ad3b 100644
---- a/mm/mprotect.c
-+++ b/mm/mprotect.c
-@@ -216,7 +216,7 @@ success:
- 	return 0;
- 
- fail:
--	vm_unacct_memory(charged);
-+	vm_unacct_memory(mm, charged);
- 	return error;
- }
- 
-diff --git a/mm/mremap.c b/mm/mremap.c
-index 08e3c7f..9dc5921 100644
---- a/mm/mremap.c
-+++ b/mm/mremap.c
-@@ -217,7 +217,7 @@ static unsigned long move_vma(struct vm_area_struct *vma,
- 
- 	if (do_munmap(mm, old_addr, old_len) < 0) {
- 		/* OOM: unable to split vma, just get accounts right */
--		vm_unacct_memory(excess >> PAGE_SHIFT);
-+		vm_unacct_memory(mm, excess >> PAGE_SHIFT);
- 		excess = 0;
- 	}
- 	mm->hiwater_vm = hiwater_vm;
-@@ -407,7 +407,7 @@ unsigned long do_mremap(unsigned long addr,
- 	}
- out:
- 	if (ret & ~PAGE_MASK)
--		vm_unacct_memory(charged);
-+		vm_unacct_memory(mm, charged);
- out_nc:
- 	return ret;
- }
-diff --git a/mm/shmem.c b/mm/shmem.c
-index e2a6ae1..2cd56be 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -163,14 +163,30 @@ static inline struct shmem_sb_info *SHMEM_SB(struct super_block *sb)
-  */
- static inline int shmem_acct_size(unsigned long flags, loff_t size)
- {
--	return (flags & VM_ACCOUNT)?
--		security_vm_enough_memory(VM_ACCT(size)): 0;
-+	if (!(flags & VM_ACCOUNT))
-+		return 0;
-+	/*
-+	 * TODO: find a way to correctly account shared memory also for the
-+	 * cgroup memory controller, as well as non-shared memory.  For now
-+	 * simply undo the accounting in the cgroup's committed space and
-+	 * report the size only in the global committed memory.
-+	 */
-+	mem_cgroup_vm_acct_memory(current->mm, -VM_ACCT(size));
-+	return security_vm_enough_memory(VM_ACCT(size));
- }
- 
- static inline void shmem_unacct_size(unsigned long flags, loff_t size)
- {
--	if (flags & VM_ACCOUNT)
--		vm_unacct_memory(VM_ACCT(size));
-+	/*
-+	 * TODO: find a way to correctly account shared memory also for the
-+	 * cgroup memory controller, as well as non-shared memory.  For now
-+	 * simply undo the accounting in the cgroup's committed space and
-+	 * report the size only in the global committed memory.
-+	 */
-+	if (!(flags & VM_ACCOUNT))
-+		return;
-+	mem_cgroup_vm_acct_memory(current->mm, VM_ACCT(size));
-+	vm_unacct_memory(current->mm, VM_ACCT(size));
- }
- 
- /*
-@@ -181,14 +197,31 @@ static inline void shmem_unacct_size(unsigned long flags, loff_t size)
-  */
- static inline int shmem_acct_block(unsigned long flags)
- {
--	return (flags & VM_ACCOUNT)?
--		0: security_vm_enough_memory(VM_ACCT(PAGE_CACHE_SIZE));
-+	/*
-+	 * TODO: find a way to correctly account shared memory also for the
-+	 * cgroup memory controller, as well as non-shared memory.  For now
-+	 * simply undo the accounting in the cgroup's committed space and
-+	 * report the size only in the global committed memory.
-+	 */
-+	if (flags & VM_ACCOUNT)
-+		return 0;
-+	mem_cgroup_vm_acct_memory(current->mm, -VM_ACCT(PAGE_CACHE_SIZE));
-+	return security_vm_enough_memory(VM_ACCT(PAGE_CACHE_SIZE));
- }
- 
- static inline void shmem_unacct_blocks(unsigned long flags, long pages)
- {
--	if (!(flags & VM_ACCOUNT))
--		vm_unacct_memory(pages * VM_ACCT(PAGE_CACHE_SIZE));
-+	/*
-+	 * TODO: find a way to correctly account shared memory also for the
-+	 * cgroup memory controller, as well as non-shared memory.  For now
-+	 * simply undo the accounting in the cgroup's committed space and
-+	 * report the size only in the global committed memory.
-+	 */
-+	if (flags & VM_ACCOUNT)
-+		return;
-+	mem_cgroup_vm_acct_memory(current->mm,
-+				  pages * VM_ACCT(PAGE_CACHE_SIZE));
-+	vm_unacct_memory(current->mm, pages * VM_ACCT(PAGE_CACHE_SIZE));
- }
- 
- static const struct super_operations shmem_ops;
-diff --git a/mm/swapfile.c b/mm/swapfile.c
-index bd1bb59..87b7d1a 100644
---- a/mm/swapfile.c
-+++ b/mm/swapfile.c
-@@ -1213,7 +1213,7 @@ asmlinkage long sys_swapoff(const char __user * specialfile)
- 	char * pathname;
- 	int i, type, prev;
- 	int err;
--	
-+
- 	if (!capable(CAP_SYS_ADMIN))
- 		return -EPERM;
- 
-@@ -1245,7 +1245,7 @@ asmlinkage long sys_swapoff(const char __user * specialfile)
- 		goto out_dput;
- 	}
- 	if (!security_vm_enough_memory(p->pages))
--		vm_unacct_memory(p->pages);
-+		vm_unacct_memory(current->mm, p->pages);
- 	else {
- 		err = -ENOMEM;
- 		spin_unlock(&swap_lock);
--- 
-1.5.4.3
+> By definition if the caller cared, they would have had premption disabled.
+
+There are numerous instances where the caller does not care about 
+preemption. Its just important that one per cpu counter is increment in 
+the least intrusive way. See f.e. the VM event counters.
 
