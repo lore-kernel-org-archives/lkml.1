@@ -1,49 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758722AbYFISUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759391AbYFISUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758722AbYFISUJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 14:20:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750728AbYFIST6
+	id S1759391AbYFISUy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 14:20:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbYFISUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 14:19:58 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:63277 "EHLO serum.com.pl"
+	Mon, 9 Jun 2008 14:20:46 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:49211 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754171AbYFIST5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 14:19:57 -0400
-Date: Mon, 9 Jun 2008 19:18:52 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alessandro Zummo <a.zummo@towertech.it>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] NTP: Let update_persistent_clock() sleep
-In-Reply-To: <Pine.LNX.4.64.0806091950360.6791@localhost.localdomain>
-Message-ID: <Pine.LNX.4.55.0806091912390.26593@cliff.in.clinika.pl>
-References: <Pine.LNX.4.55.0805281856200.29522@cliff.in.clinika.pl>
- <20080528201612.d2641dc3.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0806091950360.6791@localhost.localdomain>
+	id S1754058AbYFISUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 14:20:45 -0400
+Date: Mon, 9 Jun 2008 11:20:44 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mike Travis <travis@sgi.com>
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/4] x86: Replace xxx_pda() operations with x86_xx_percpu().
+In-Reply-To: <484D6A05.7010508@sgi.com>
+Message-ID: <Pine.LNX.4.64.0806091119150.30592@schroedinger.engr.sgi.com>
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com>
+ <20080604003019.711845000@polaris-admin.engr.sgi.com> <20080609130302.GA20943@elte.hu>
+ <484D6A05.7010508@sgi.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Paravirt support is on. We have seen an issue with that in the past. Why 
+was that again?
 
-> > Roman does most of the NTP work afaik.  I consider Thomas's git-hrt
-> > tree to be the route via which NTP changes get into linux-next and
-> > mainline.
-> 
-> That function is a little misplaced, we already have a driver/rtc dir, 
-> where this should go in the long term and ntp.c only providing the 
-> trigger, that time is stable. There it would also be possible to better 
-> take into account any quirks needed to update the chip.
+Also check that there is really no use of the segment register before 
+start_kernel() loads it. If the segment register is used to refer to pda 
+stuff before start_kernel then we need to make sure that the right value 
+is loaded in the asm (head64.c).
 
- I posted a separate change to implement a backend using the RTC class
-device.  I think this is the right solution till all the platforms are
-moved away from legacy RTC drivers.
 
- I think you are right about the long-term implications and apart from any
-possible quirks I think the interface could get improved as there are RTC
-chips we support nowadays that provide sub-second resolution.
-
-  Maciej
