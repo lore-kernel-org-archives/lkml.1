@@ -1,50 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbYFIC1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757609AbYFICgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757596AbYFIC1D (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 22:27:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755535AbYFIC0w
+	id S1757609AbYFICgv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 22:36:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755603AbYFICgk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 22:26:52 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32849
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755121AbYFIC0v (ORCPT
+	Sun, 8 Jun 2008 22:36:40 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:32822 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755535AbYFICgi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 22:26:51 -0400
-Date: Sun, 08 Jun 2008 19:26:51 -0700 (PDT)
-Message-Id: <20080608.192651.193722134.davem@davemloft.net>
-To: jeff@garzik.org
-Cc: jacliburn@bellsouth.net, w@1wt.eu, pupilla@hotmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       chrisw@sous-sol.org
-Subject: Re: [patch 00/50] 2.6.25.6 -stable review
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <484C3C13.7020609@garzik.org>
-References: <20080608.071051.212882594.davem@davemloft.net>
-	<20080608103835.0c0b1e83@osprey.hogchain.net>
-	<484C3C13.7020609@garzik.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 8 Jun 2008 22:36:38 -0400
+Date: Sun, 8 Jun 2008 19:28:21 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: linux-wireless <linux-wireless@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Satyam Sharma <ssatyam@cse.iitk.ac.in>, Felix Fietkau <nbd@openwrt.org>,
+       Al Viro <viro@ftp.linux.org.uk>, "H. Peter Anvin" <hpa@kernel.org>
+Subject: Re: Is configfs the right solution for configuration based fs?
+Message-ID: <20080609022821.GL29740@mail.oracle.com>
+Mail-Followup-To: "Luis R. Rodriguez" <mcgrof@gmail.com>,
+	linux-wireless <linux-wireless@vger.kernel.org>,
+	linux kernel <linux-kernel@vger.kernel.org>,
+	Greg KH <greg@kroah.com>, Satyam Sharma <ssatyam@cse.iitk.ac.in>,
+	Felix Fietkau <nbd@openwrt.org>, Al Viro <viro@ftp.linux.org.uk>,
+	"H. Peter Anvin" <hpa@kernel.org>
+References: <43e72e890806081425h4e785800nc618fc1985f9809f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <43e72e890806081425h4e785800nc618fc1985f9809f@mail.gmail.com>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Sun, 08 Jun 2008 16:07:47 -0400
+On Sun, Jun 08, 2008 at 02:25:36PM -0700, Luis R. Rodriguez wrote:
+> I was really interested in looking to start a filesystem based
+> approach for configuration of wireless a while back, an alternative to
+> nl80211 if you will, but I stopped after I was told about some major
+> issues with configfs. I forget the issues raised clearly so I'd like
+> to bring this up for debate to see what really are the issues, what
+> needs to be fixed so we can *properly* use a fs for configuration of
+> subsystems. I thought configfs was the solution. We currently use and
+> abuse debugfs, but it doesn't matter -- we don't expect users to
+> depend on those files for ABI. It, however, it would be nice to
+> finally export some of these values into a concise place so userspace
+> *can* rely on them.
 
-> Jay Cliburn wrote:
-> > David's admonition tells me I'm doing it wrong, and that I should
-> > submit the stable patch to Jeff as well.  Am I right?
+	I'd love to hear about the issues as well.  I'd also love to see
+what you require, so as to either be able to explain how configfs can do
+it for you, or to say that configfs isn't the right fit.  configfs is
+designed with a particular goal, and some things don't fit that - and
+that's fine.
+
+> Perhaps a fs is not even the most optimized approach for size anyway
+> so the benefits may just be helping with the easy design of userspace
+> applications. Feedback on experiences are welcomed.
 > 
-> I usually encourage a more-parallel process where you simply email 
-> stable@kernel.org with the upstream commit id of the change(s) in question.
+> PS. I'm hoping those who *really* hate configs can comment
 
-Right, and if Jeff wants to work things that way for the
-networking drivers that's fine.
+	You probably expect me to be all "configfs solves world peace,
+how can you hate it?"  Nah.  I'd really like to understand your need and
+how configfs doesn't fit.  configfs may not fit.  configfs may fit and
+I need to explain it better.  Or configfs may not fit but should, and we
+then can see how to make it right.
 
-Personally, I like to make sure some time passes between when
-a fix goes into Linus's tree and when I push it into -stable
-because time is often what shakes out the last remaining problems
-introduced by some change no matter how seeming obvious the
-patch is.
+Joel
+
+-- 
+
+"Nothing is wrong with California that a rise in the ocean level
+ wouldn't cure."
+        - Ross MacDonald
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
