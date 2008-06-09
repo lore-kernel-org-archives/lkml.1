@@ -1,187 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759881AbYFIWKP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759272AbYFIWLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759881AbYFIWKP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 18:10:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbYFIWJ7
+	id S1759272AbYFIWLX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 18:11:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYFIWLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 18:09:59 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49479 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753289AbYFIWJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 18:09:58 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] x86 GART: Add resume handling (was: Re: >3G => iommu => suspend problems -- was Re: SB600 AHCI: Hard Disk Corruption)
-Date: Tue, 10 Jun 2008 00:10:48 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@suse.cz>, the arch/x86 maintainers <x86@kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <1211717435.6038.53.camel@localhost.localdomain> <200806090036.32267.rjw@sisk.pl> <20080609124630.GA28799@elte.hu>
-In-Reply-To: <20080609124630.GA28799@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Jun 2008 18:11:12 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54511 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753317AbYFIWLL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 18:11:11 -0400
+Date: Mon, 9 Jun 2008 17:11:06 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       tglx@linutronix.de, holt@sgi.com, andrea@qumranet.com
+Subject: Re: [patch 09/11] GRU Driver - /proc interfaces
+Message-ID: <20080609221105.GA20211@sgi.com>
+References: <20080609211028.110089743@attica.americas.sgi.com> <20080609211046.935659965@attica.americas.sgi.com> <adaskvm70qp.fsf@cisco.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806100010.49194.rjw@sisk.pl>
+In-Reply-To: <adaskvm70qp.fsf@cisco.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 9 of June 2008, Ingo Molnar wrote:
+On Mon, Jun 09, 2008 at 02:32:46PM -0700, Roland Dreier wrote:
+>  > This file externalizes some GRU state & statistics to the user using the /proc
+>  > file system.
 > 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > > Looks ok to me.
-> > 
-> > Still, it may be improved. :-)
-> > 
-> > First, we shouldn't mix the "early PCI config access" thing with the 
-> > "normal" method.  Second, we don't have to check for the K8 north 
-> > bridges on resume, because we already know where they are in the 
-> > configuration space and we can use this information.
-> > 
-> > Updated patch follows.  It has been tested a little on my new 4 GB 
-> > test box on which 2.6.26-rc4 failed miserably with severe 
-> > consequences.  More testing welcome, but please be careful.
-> 
-> Rafael, could we try this against the tip/x86/gart tree perhaps? It 
-> already has a couple of fixes from Pavel and your patch collides with 
-> them in a non-obvious way.
-> 
->   http://people.redhat.com/mingo/tip.git/README
+> We don't put stuff like this in /proc any more.  Depending on how the
+> data will be used, either debugfs or a bunch of sysfs attributes would
+> be typical ways to export it.
 
-Okay, appended is the patch rebased on tip/x86/gart with (mainline) commit
-cd76374e9de4501acc74f833dc6cb5e7a5dca115 "suspend-vs-iommu: prevent suspend if
-we could not resume" (which appears to be missing from tip/x86/gart) applied.
+I was afraid of that. The data is not just for debugging. The info
+must be available in standard production systems. So debugfs is not
+appropriate.
 
-This version of the patch doesn't break compilation, but it hasn't been really
-tested yet.
+Can you give me a pointer to a driver to use as a prototype
+for /sys information.
 
-Thanks,
-Rafael
+ The GRU driver currently generates files that look like:
 
----
-Add resume handling to GART IOMMU.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/x86/kernel/aperture_64.c |    2 +
- arch/x86/kernel/pci-gart_64.c |   57 ++++++++++++++++++++++++++++++++++++++----
- include/asm-x86/gart.h        |    1 
- 3 files changed, 55 insertions(+), 5 deletions(-)
-
-Index: tip.git/arch/x86/kernel/aperture_64.c
-===================================================================
---- tip.git.orig/arch/x86/kernel/aperture_64.c
-+++ tip.git/arch/x86/kernel/aperture_64.c
-@@ -496,4 +496,6 @@ out:
- 			write_pci_config(bus, slot, 3, AMD64_GARTAPERTUREBASE, aper_alloc >> 25);
- 		}
- 	}
-+
-+	set_up_gart_resume(aper_order, aper_alloc);
- }
-Index: tip.git/arch/x86/kernel/pci-gart_64.c
-===================================================================
---- tip.git.orig/arch/x86/kernel/pci-gart_64.c
-+++ tip.git/arch/x86/kernel/pci-gart_64.c
-@@ -549,14 +549,63 @@ static __init unsigned read_aperture(str
- 	return aper_base;
- }
- 
-+static void enable_gart_translations(void)
-+{
-+	int i;
-+
-+	for (i = 0; i < num_k8_northbridges; i++) {
-+		struct pci_dev *dev = k8_northbridges[i];
-+
-+		enable_gart_translation(dev, __pa(agp_gatt_table));
-+	}
-+}
-+
-+/*
-+ * If fix_up_north_bridges is set, the north bridges have to be fixed up on
-+ * resume in the same way as they are handled in gart_iommu_hole_init().
-+ */
-+static bool fix_up_north_bridges;
-+static u32 aperture_order;
-+static u32 aperture_alloc;
-+
-+void set_up_gart_resume(u32 aper_order, u32 aper_alloc)
-+{
-+	fix_up_north_bridges = true;
-+	aperture_order = aper_order;
-+	aperture_alloc = aper_alloc;
-+}
-+
- static int gart_resume(struct sys_device *dev)
- {
-+	printk(KERN_INFO "PCI-DMA: Resuming GART IOMMU\n");
-+
-+	if (fix_up_north_bridges) {
-+		int i;
-+
-+		printk(KERN_INFO "PCI-DMA: Restoring GART aperture settings\n");
-+
-+		for (i = 0; i < num_k8_northbridges; i++) {
-+			struct pci_dev *dev = k8_northbridges[i];
-+
-+			/*
-+			 * Don't enable translations just yet.  That is the next
-+			 * step.  Restore the pre-suspend aperture settings.
-+			 */
-+			pci_write_config_dword(dev, AMD64_GARTAPERTURECTL,
-+						aperture_order << 1);
-+			pci_write_config_dword(dev, AMD64_GARTAPERTUREBASE,
-+						aperture_alloc >> 25);
-+		}
-+	}
-+
-+	enable_gart_translations();
-+
- 	return 0;
- }
- 
- static int gart_suspend(struct sys_device *dev, pm_message_t state)
- {
--	return -EINVAL;
-+	return 0;
- }
- 
- static struct sysdev_class gart_sysdev_class = {
-@@ -614,16 +663,14 @@ static __init int init_k8_gatt(struct ag
- 	memset(gatt, 0, gatt_size);
- 	agp_gatt_table = gatt;
- 
--	for (i = 0; i < num_k8_northbridges; i++) {
--		dev = k8_northbridges[i];
--		enable_gart_translation(dev, __pa(gatt));
--	}
-+	enable_gart_translations();
- 
- 	error = sysdev_class_register(&gart_sysdev_class);
- 	if (!error)
- 		error = sysdev_register(&device_gart);
- 	if (error)
- 		panic("Could not register gart_sysdev -- would corrupt data on next suspend");
-+
- 	flush_gart();
- 
- 	printk(KERN_INFO "PCI-DMA: aperture base @ %x size %u KB\n",
-Index: tip.git/include/asm-x86/gart.h
-===================================================================
---- tip.git.orig/include/asm-x86/gart.h
-+++ tip.git/include/asm-x86/gart.h
-@@ -14,6 +14,7 @@ extern void gart_iommu_shutdown(void);
- extern void __init gart_parse_options(char *);
- extern void early_gart_iommu_check(void);
- extern void gart_iommu_hole_init(void);
-+extern void set_up_gart_resume(u32, u32);
- extern int fallback_aper_order;
- extern int fallback_aper_force;
- extern int gart_iommu_aperture;
+	
+# cat /proc/gru/statistics
+              11 vdata_free
+              13 gts_alloc
+              11 gts_free
+              13 assign_context
+              11 free_context
+              13 load_context
+              11 unload_context
+              13 nopfn
+              13 asid_new
+               2 asid_next
+             230 intr
+              24 call_os
+              13 set_task_slice
+              38 migrate_check
+             230 tlb_dropin
+              12 tlb_dropin_fail_upm
+             ....
 
 
+# cat /proc/gru/gru_status
+#  gid  nid    ctx   cbr   dsr     ctx   cbr   dsr
+#             busy  busy  busy    free  free  free
+     0    0      2     4  4096      14   124 28672
+     1    0      1     2  1024      15   126 31744
+     2    1      0     0     0      16   128 32768
+     3    1      1     2  1024      15   126 31744
+     ...
+
+
+AFAICT, this is not a format that is compatible with the /sys guidelines of 1 value
+per file.
+
+A system can have 1000's of GRU chiplets. Having separate collection of files for
+each set of metrics is clumsy. What other drivers have similar issues. I'll
+gladly copy whatever makes sense.
+
+
+--- jack
