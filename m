@@ -1,65 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761090AbYFILQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760535AbYFILZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761090AbYFILQR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 07:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760939AbYFILP6
+	id S1760535AbYFILZO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 07:25:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759630AbYFILZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 07:15:58 -0400
-Received: from mga11.intel.com ([192.55.52.93]:49748 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753923AbYFILP6 convert rfc822-to-8bit (ORCPT
+	Mon, 9 Jun 2008 07:25:00 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:43334 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759616AbYFILZA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 07:15:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,612,1204531200"; 
-   d="scan'208";a="337992158"
-Content-class: urn:content-classes:message
+	Mon, 9 Jun 2008 07:25:00 -0400
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: Dotan Barak <dotanba@gmail.com>, LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       OF-General <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>, OF-EWG <ewg@lists.openfabrics.org>
+Subject: [PATCH] IB/ehca: Reject recv WRs if QP is in RESET state
+Date: Mon, 9 Jun 2008 13:24:20 +0200
+User-Agent: KMail/1.9.1
+Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>
+References: <200806061835.43802.fenkes@de.ibm.com> <48499C11.7030504@gmail.com>
+In-Reply-To: <48499C11.7030504@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: [patch]modify the MIPS CPU classfication
-Date: Mon, 9 Jun 2008 19:15:58 +0800
-Message-ID: <42DFA526FC41B1429CE7279EF83C6BDC01404341@pdsmsx415.ccr.corp.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch]modify the MIPS CPU classfication
-Thread-Index: AcjKIjEbexxBO5k+To62Keu79ukJrg==
-From: "Chen, Huacai" <huacai.chen@intel.com>
-To: <linux-mips@linux-mips.org>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 09 Jun 2008 11:15:54.0822 (UTC) FILETIME=[2F1D7E60:01C8CA22]
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806091324.20869.fenkes@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The company ID of Loongson1/Loongson2 is PRID_COMP_LEGACY, but they were
-classified in the list whoes company ID is  PRID_COMP_MIPS. This patch
-move them to the right place.
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+---
+On Friday 06 June 2008 22:20, Dotan Barak wrote:
 
-Signed-off-by: Huacai Chen <huacai.chen@intel.com>
+> I checked the code in the ehca driver and noticed that
+> post RR to a QP is being accepted in any state (including the RESET state).
 
------
-diff --git a/include/asm-mips/cpu.h b/include/asm-mips/cpu.h
-index 1c35cac..d3ffe93 100644
---- a/include/asm-mips/cpu.h
-+++ b/include/asm-mips/cpu.h
-@@ -68,6 +68,8 @@
- #define PRID_IMP_RM9000        0x3400
- #define PRID_IMP_R5432     0x5400
- #define PRID_IMP_R5500     0x5500
-+#define PRID_IMP_LOONGSON1      0x4200
-+#define PRID_IMP_LOONGSON2      0x6300
+You're right, this is only consistent -- thanks for pointing it out!
 
- #define PRID_IMP_UNKNOWN   0xff00
+Regards,
+  Joachim
 
-@@ -90,8 +92,6 @@
- #define PRID_IMP_24KE      0x9600
- #define PRID_IMP_74K       0x9700
- #define PRID_IMP_1004K     0x9900
--#define PRID_IMP_LOONGSON1      0x4200
--#define PRID_IMP_LOONGSON2      0x6300
+ drivers/infiniband/hw/ehca/ehca_reqs.c |   12 ++++++++++--
+ 1 files changed, 10 insertions(+), 2 deletions(-)
 
- /*
-  * These are the PRID's for when 23:16 == PRID_COMP_SIBYTE
------
+diff --git a/drivers/infiniband/hw/ehca/ehca_reqs.c b/drivers/infiniband/hw/ehca/ehca_reqs.c
+index f093b00..ad197f4 100644
+--- a/drivers/infiniband/hw/ehca/ehca_reqs.c
++++ b/drivers/infiniband/hw/ehca/ehca_reqs.c
+@@ -544,8 +544,16 @@ int ehca_post_recv(struct ib_qp *qp,
+ 		   struct ib_recv_wr *recv_wr,
+ 		   struct ib_recv_wr **bad_recv_wr)
+ {
+-	return internal_post_recv(container_of(qp, struct ehca_qp, ib_qp),
+-				  qp->device, recv_wr, bad_recv_wr);
++	struct ehca_qp *my_qp = container_of(qp, struct ehca_qp, ib_qp);
++
++	/* Reject WR if QP is in RESET state */
++	if (unlikely(my_qp->state == IB_QPS_RESET)) {
++		ehca_err(qp->device, "Invalid QP state  qp_state=%d qpn=%x",
++			 my_qp->state, qp->qp_num);
++		return -EINVAL;
++	}
++
++	return internal_post_recv(my_qp, qp->device, recv_wr, bad_recv_wr);
+ }
+ 
+ int ehca_post_srq_recv(struct ib_srq *srq,
+-- 
+1.5.5
+
