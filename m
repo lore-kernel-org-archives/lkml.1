@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758005AbYFIOSO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759876AbYFIOSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758005AbYFIOSO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 10:18:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbYFIOR4
+	id S1759876AbYFIOSk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 10:18:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbYFIOS2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 10:17:56 -0400
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:49585 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752626AbYFIORz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 10:17:55 -0400
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH][2.6.26] ehea: set mac address fix
-Date: Mon, 9 Jun 2008 15:17:37 +0100
-User-Agent: KMail/1.8.2
-Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
-       "Jan-Bernd Themann" <themann@de.ibm.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>, hering2@de.ibm.com
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806091617.38396.ossthema@de.ibm.com>
+	Mon, 9 Jun 2008 10:18:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40867 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752653AbYFIOS2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 10:18:28 -0400
+From: Glauber Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu,
+       hugh@veritas.com
+Subject: [PATCH 02/15] x86: don't use gdt_page openly.
+Date: Mon,  9 Jun 2008 11:16:45 -0300
+Message-Id: <1213021018-14159-3-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.5.4.5
+In-Reply-To: <1213021018-14159-2-git-send-email-gcosta@redhat.com>
+References: <1213021018-14159-1-git-send-email-gcosta@redhat.com>
+ <1213021018-14159-2-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-eHEA has to call firmware functions in order to change the mac address
-of a logical port. This patch checks if the logical port is up
-when calling the register / deregister mac address calls. If the port
-is down these firmware calls would fail and are therefore not executed.
+There's a macro available for that.
 
-Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
-
+Signed-off-by: Glauber Costa <gcosta@redhat.com>
 ---
+ arch/x86/kernel/traps_32.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff -Nurp -X dontdiff linux-2.6.26-rc4/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
---- linux-2.6.26-rc4/drivers/net/ehea/ehea_main.c	2008-05-26 20:08:11.000000000 +0200
-+++ patched_kernel/drivers/net/ehea/ehea_main.c	2008-06-09 15:42:17.000000000 +0200
-@@ -1766,16 +1766,20 @@ static int ehea_set_mac_addr(struct net_
- 	mutex_lock(&ehea_bcmc_regs.lock);
+diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
+index a92b0c7..9ad896d 100644
+--- a/arch/x86/kernel/traps_32.c
++++ b/arch/x86/kernel/traps_32.c
+@@ -1135,7 +1135,7 @@ void do_spurious_interrupt_bug(struct pt_regs *regs, long error_code)
  
- 	/* Deregister old MAC in pHYP */
--	ret = ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
--	if (ret)
--		goto out_upregs;
-+	if (port->state == EHEA_PORT_UP) {
-+		ret = ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
-+		if (ret)
-+			goto out_upregs;
-+	}
- 
- 	port->mac_addr = cb0->port_mac_addr << 16;
- 
- 	/* Register new MAC in pHYP */
--	ret = ehea_broadcast_reg_helper(port, H_REG_BCMC);
--	if (ret)
--		goto out_upregs;
-+	if (port->state == EHEA_PORT_UP) {
-+		ret = ehea_broadcast_reg_helper(port, H_REG_BCMC);
-+		if (ret)
-+			goto out_upregs;
-+	}
- 
- 	ret = 0;
- 
+ unsigned long patch_espfix_desc(unsigned long uesp, unsigned long kesp)
+ {
+-	struct desc_struct *gdt = __get_cpu_var(gdt_page).gdt;
++	struct desc_struct *gdt = get_cpu_gdt_table(smp_processor_id());
+ 	unsigned long base = (kesp - uesp) & -THREAD_SIZE;
+ 	unsigned long new_kesp = kesp - base;
+ 	unsigned long lim_pages = (new_kesp | (THREAD_SIZE - 1)) >> PAGE_SHIFT;
+-- 
+1.5.4.5
+
