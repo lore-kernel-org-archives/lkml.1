@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759129AbYFIGhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758653AbYFIGiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759129AbYFIGhx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 02:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758606AbYFIGhg
+	id S1758653AbYFIGiX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 02:38:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757630AbYFIGiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 02:37:36 -0400
-Received: from fnoeppeil48.netpark.at ([217.175.205.176]:49730 "EHLO
+	Mon, 9 Jun 2008 02:38:08 -0400
+Received: from fnoeppeil48.netpark.at ([217.175.205.176]:47167 "EHLO
 	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757141AbYFIGhf (ORCPT
+	with ESMTP id S1757563AbYFIGiH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 02:37:35 -0400
-Date: Mon, 9 Jun 2008 08:37:33 +0200
+	Mon, 9 Jun 2008 02:38:07 -0400
+Date: Mon, 9 Jun 2008 08:38:03 +0200
 From: Manuel Lauss <mano@roarinelk.homelinux.net>
 To: linux-mips@linux-mips.org, sshtylyov@ru.mvista.com, drzeus@drzeus.cx,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 3/8] au1xmmc: enable 4 bit transfer mode
-Message-ID: <20080609063733.GD8724@roarinelk.homelinux.net>
+Subject: [PATCH 4/8] au1xmmc: SDIO IRQ support.
+Message-ID: <20080609063803.GE8724@roarinelk.homelinux.net>
 References: <20080609063521.GA8724@roarinelk.homelinux.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -26,71 +26,60 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From f05df3bb70a64b2996e2c8f1591be35a351959c2 Mon Sep 17 00:00:00 2001
+>From e4bbe21c402e8cdd3a1536db36779f3cae6d47d8 Mon Sep 17 00:00:00 2001
 From: Manuel Lauss <mlau@msc-ge.com>
-Date: Sat, 17 May 2008 17:53:57 +0200
-Subject: [PATCH] au1xmmc: enable 4 bit transfer mode
+Date: Sat, 17 May 2008 17:58:52 +0200
+Subject: [PATCH] au1xmmc: SDIO IRQ support
+
+Wire up the SD controllers' SDIO IRQ capability.
 
 Signed-off-by: Manuel Lauss <mano@roarinelk.homelinux.net>
 ---
- drivers/mmc/host/au1xmmc.c |   22 +++++++++++++++++-----
- 1 files changed, 17 insertions(+), 5 deletions(-)
+ drivers/mmc/host/au1xmmc.c |   16 +++++++++++++++-
+ 1 files changed, 15 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/mmc/host/au1xmmc.c b/drivers/mmc/host/au1xmmc.c
-index d8776d6..2bd4cf4 100644
+index 2bd4cf4..16b5640 100644
 --- a/drivers/mmc/host/au1xmmc.c
 +++ b/drivers/mmc/host/au1xmmc.c
-@@ -95,14 +95,13 @@ static inline void IRQ_OFF(struct au1xmmc_host *host, u32 mask)
+@@ -736,6 +736,9 @@ static irqreturn_t au1xmmc_irq(int irq, void *dev_id)
+ 	if (!(status & SD_STATUS_I))
+ 		return IRQ_NONE;	/* not ours */
  
- static inline void SEND_STOP(struct au1xmmc_host *host)
- {
--
--	/* We know the value of CONFIG2, so avoid a read we don't need */
--	u32 mask = SD_CONFIG2_EN;
-+	u32 config2;
- 
- 	WARN_ON(host->status != HOST_S_DATA);
- 	host->status = HOST_S_STOP;
- 
--	au_writel(mask | SD_CONFIG2_DF, HOST_CONFIG2(host));
-+	config2 = au_readl(HOST_CONFIG2(host));
-+	au_writel(config2 | SD_CONFIG2_DF, HOST_CONFIG2(host));
- 	au_sync();
- 
- 	/* Send the stop commmand */
-@@ -697,6 +696,7 @@ static void au1xmmc_reset_controller(struct au1xmmc_host *host)
- static void au1xmmc_set_ios(struct mmc_host* mmc, struct mmc_ios* ios)
- {
- 	struct au1xmmc_host *host = mmc_priv(mmc);
-+	u32 config2;
- 
- 	if (ios->power_mode == MMC_POWER_OFF)
- 		au1xmmc_set_power(host, 0);
-@@ -708,6 +708,18 @@ static void au1xmmc_set_ios(struct mmc_host* mmc, struct mmc_ios* ios)
- 		au1xmmc_set_clock(host, ios->clock);
- 		host->clock = ios->clock;
- 	}
++	if (status & SD_STATUS_SI)	/* SDIO */
++		mmc_signal_sdio_irq(host->mmc);
 +
-+	config2 = au_readl(HOST_CONFIG2(host));
-+	switch (ios->bus_width) {
-+	case MMC_BUS_WIDTH_4:
-+		config2 |= SD_CONFIG2_WB;
-+		break;
-+	case MMC_BUS_WIDTH_1:
-+		config2 &= ~SD_CONFIG2_WB;
-+		break;
-+	}
-+	au_writel(config2, HOST_CONFIG2(host));
-+	au_sync();
+ 	if (host->mrq && (status & STATUS_TIMEOUT)) {
+ 		if (status & SD_STATUS_RAT)
+ 			host->mrq->cmd->error = -ETIMEDOUT;
+@@ -862,10 +865,21 @@ static void au1xmmc_dbdma_shutdown(struct au1xmmc_host *host)
  }
+ #endif
  
- #define STATUS_TIMEOUT (SD_STATUS_RAT | SD_STATUS_DT)
-@@ -952,7 +964,7 @@ static int __devinit au1xmmc_probe(struct platform_device *pdev)
++static void au1xmmc_enable_sdio_irq(struct mmc_host *mmc, int en)
++{
++	struct au1xmmc_host *host = mmc_priv(mmc);
++
++	if (en)
++		IRQ_ON(host, SD_CONFIG_SI);
++	else
++		IRQ_OFF(host, SD_CONFIG_SI);
++}
++
+ static const struct mmc_host_ops au1xmmc_ops = {
+ 	.request	= au1xmmc_request,
+ 	.set_ios	= au1xmmc_set_ios,
+ 	.get_ro		= au1xmmc_card_readonly,
++	.enable_sdio_irq = au1xmmc_enable_sdio_irq,
+ };
+ 
+ static void au1xmmc_poll_event(unsigned long arg)
+@@ -964,7 +978,7 @@ static int __devinit au1xmmc_probe(struct platform_device *pdev)
  	mmc->max_blk_count = 512;
  
  	mmc->ocr_avail = AU1XMMC_OCR;
--	mmc->caps = 0;
-+	mmc->caps = MMC_CAP_4_BIT_DATA;
+-	mmc->caps = MMC_CAP_4_BIT_DATA;
++	mmc->caps = MMC_CAP_4_BIT_DATA | MMC_CAP_SDIO_IRQ;
  
  	host->status = HOST_S_IDLE;
  
