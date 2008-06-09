@@ -1,67 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758651AbYFIURV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758973AbYFIURt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758651AbYFIURV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 16:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbYFIURN
+	id S1758973AbYFIURt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 16:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758717AbYFIURj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 16:17:13 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:56122 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752737AbYFIURN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 16:17:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=n2WJN06ujnrKfICtVfFuRIyOzBOSp8rCFPjKiakqE2eIbgtt7gg7UjYjAxYT2AFjkX
-         Fmgerv7doHZ4sYes3mB5e6jodEe8fqE8vNymTu6EbvHwYvBe4WUuowA7LMl4mRDweZz/
-         p0vFEAIdqvPnfmiNRDiZW+zIxpKknPRNjflcU=
-Message-ID: <cd73a99e0806091317q37d134acu8b7d4033e769fcc1@mail.gmail.com>
-Date: Mon, 9 Jun 2008 22:17:12 +0200
-From: "Andrew Victor" <avictor.za@gmail.com>
-To: "Richard Genoud" <richard.genoud@gmail.com>
-Subject: Re: [PATCH 4/8] atmel_nand: Clean up and fix probe() error path
-Cc: "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>,
-       linux-mtd@lists.infradead.org, kernel@avr32linux.org,
-       "Nicolas Ferre" <nicolas.ferre@atmel.com>,
-       "Patrice VILCHEZ" <patrice.vilchez@atmel.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <80b317760806090004v56436872oac76944e39f57860@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 9 Jun 2008 16:17:39 -0400
+Received: from ns1.suse.de ([195.135.220.2]:52683 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758708AbYFIURh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 16:17:37 -0400
+Date: Mon, 9 Jun 2008 22:17:32 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Amul Shah <amul.shah@unisys.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Vivek Goyal <vgoyal@redhat.com>,
+       Johannes Weiner <hannes@saeurebad.de>, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, anderson@redhat.com,
+       "Romer, Benjamin M" <Benjamin.Romer@unisys.com>
+Subject: Re: [patch 2/3] Add flags parameter to reserve_bootmem_generic()
+Message-ID: <20080609221732.1e14e5d5@kopernikus.site>
+In-Reply-To: <1213041041.19111.68.camel@ustr-shaha1-linux-dev.na.uis.unisys.com>
+References: <20080608134628.757299158@halley.suse.de>
+	<20080608134629.743220 278@halley.suse.de>
+	<87bq2bmvro.fsf@saeurebad.de>
+	<20080609132207.GC3542@re dhat.com>
+	<20080609182341.00d6e746@halley.suse.de>
+	<484D5CCB.5020709@firstfloor.org>
+	<1213041041.19111.68.camel@ustr-shaha1-linux-dev.na.uis.unisys.com>
+Organization: SUSE LINUX Products GmbH
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1212768298-13614-1-git-send-email-haavard.skinnemoen@atmel.com>
-	 <1212768298-13614-2-git-send-email-haavard.skinnemoen@atmel.com>
-	 <1212768298-13614-3-git-send-email-haavard.skinnemoen@atmel.com>
-	 <1212768298-13614-4-git-send-email-haavard.skinnemoen@atmel.com>
-	 <1212768298-13614-5-git-send-email-haavard.skinnemoen@atmel.com>
-	 <cd73a99e0806070908n5c9b6be4ned0386905555a1b7@mail.gmail.com>
-	 <20080607191815.3dc24360@siona.local>
-	 <80b317760806090004v56436872oac76944e39f57860@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
-
->> Then the driver can do
->>        if (host->board->ecc_regs)
->>                host->ecc = host->board->ecc_regs;
->>        else if (regs)
->>                host->ecc = ioremap(regs->start, regs->end - regs->start + 1);
->>
->>        if (hard_ecc && !host->ecc)
->>                printk("Hardware ECC not available\n");
->>
->> Right? I think we use a similar trick in the atmel_serial driver too.
+* Amul Shah <amul.shah@unisys.com> [2008-06-09 15:50]:
 >
-> It may be the best solution indeed.
+> > Don't remember the details. Perhaps Amul does (cc'ed)
+> > 
+> > -Andi
+> >   
+> 
+> The short story is that the kexec kernel was panicking when trying to
+> reserve the MP tables.  The panic occurs because the MP tables resided
+> in a reserved memory area above the highest address (80MB phys at that
+> time) in the user defined E820 map used by the kexec kernel.
+> 
+> I had placed my code to affect only MP table reservation (see patch
+> below) because it is unique to just that code path.  Andi decided a
+> generalized approach would be better in case other vendors had similar
+> issues.
 
-Agreed.
+Ok, in that case it makes indeed sense to just return success here.
+Here's my third version of that patch:
+
+-------------------------------------------------------------------------
+From: Bernhard Walle <bwalle@suse.de>
+Subject: Add 'flags' parameter to reserve_bootmem_generic()
+
+This patch adds a 'flags' parameter to reserve_bootmem_generic() like it
+already has been added in reserve_bootmem() with commit
+72a7fe3967dbf86cb34e24fbf1d957fe24d2f246.
+
+It also changes all users to use BOOTMEM_DEFAULT, which doesn't effectively
+change the behaviour. Since the change is x86-specific, I don't think it's
+necessary to add a new API for migration. There are only 4 users of that
+function.
+
+The change is necessary for the next patch, using reserve_bootmem_generic()
+for crashkernel reservation.
 
 
-Regards,
-  Andrew Victor
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
+
+---
+ arch/x86/kernel/e820_64.c |    3 ++-
+ arch/x86/kernel/efi_64.c  |    3 ++-
+ arch/x86/kernel/mpparse.c |    5 +++--
+ arch/x86/mm/init_64.c     |   19 +++++++++++++------
+ include/asm-x86/proto.h   |    2 +-
+ 5 files changed, 21 insertions(+), 11 deletions(-)
+
+--- a/arch/x86/kernel/e820_64.c
++++ b/arch/x86/kernel/e820_64.c
+@@ -118,7 +118,8 @@ void __init early_res_to_bootmem(unsigne
+ 			continue;
+ 		printk(KERN_INFO "  early res: %d [%lx-%lx] %s\n", i,
+ 			final_start, final_end - 1, r->name);
+-		reserve_bootmem_generic(final_start, final_end - final_start);
++		reserve_bootmem_generic(final_start, final_end - final_start,
++			BOOTMEM_DEFAULT);
+ 	}
+ }
+ 
+--- a/arch/x86/kernel/efi_64.c
++++ b/arch/x86/kernel/efi_64.c
+@@ -100,7 +100,8 @@ void __init efi_call_phys_epilog(void)
+ void __init efi_reserve_bootmem(void)
+ {
+ 	reserve_bootmem_generic((unsigned long)memmap.phys_map,
+-				memmap.nr_map * memmap.desc_size);
++				memmap.nr_map * memmap.desc_size,
++				BOOTMEM_DEFAULT);
+ }
+ 
+ void __iomem * __init efi_ioremap(unsigned long phys_addr, unsigned long size)
+--- a/arch/x86/kernel/mpparse.c
++++ b/arch/x86/kernel/mpparse.c
+@@ -729,10 +729,11 @@ static int __init smp_scan_config(unsign
+ 			if (!reserve)
+ 				return 1;
+ 
+-			reserve_bootmem_generic(virt_to_phys(mpf), PAGE_SIZE);
++			reserve_bootmem_generic(virt_to_phys(mpf), PAGE_SIZE,
++				BOOTMEM_DEFAULT);
+ 			if (mpf->mpf_physptr)
+ 				reserve_bootmem_generic(mpf->mpf_physptr,
+-							PAGE_SIZE);
++					PAGE_SIZE, BOOTMEM_DEFAULT);
+ #endif
+ 		return 1;
+ 		}
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -798,12 +798,13 @@ void free_initrd_mem(unsigned long start
+ }
+ #endif
+ 
+-void __init reserve_bootmem_generic(unsigned long phys, unsigned len)
++int __init reserve_bootmem_generic(unsigned long phys, unsigned len, int flags)
+ {
+ #ifdef CONFIG_NUMA
+ 	int nid, next_nid;
+ #endif
+ 	unsigned long pfn = phys >> PAGE_SHIFT;
++	int ret;
+ 
+ 	if (pfn >= end_pfn) {
+ 		/*
+@@ -811,11 +812,11 @@ void __init reserve_bootmem_generic(unsi
+ 		 * firmware tables:
+ 		 */
+ 		if (pfn < max_pfn_mapped)
+-			return;
++			return 0;
+ 
+ 		printk(KERN_ERR "reserve_bootmem: illegal reserve %lx %u\n",
+ 				phys, len);
+-		return;
++		return -EFAULT;
+ 	}
+ 
+ 	/* Should check here against the e820 map to avoid double free */
+@@ -823,17 +824,23 @@ void __init reserve_bootmem_generic(unsi
+ 	nid = phys_to_nid(phys);
+ 	next_nid = phys_to_nid(phys + len - 1);
+ 	if (nid == next_nid)
+-		reserve_bootmem_node(NODE_DATA(nid), phys, len, BOOTMEM_DEFAULT);
++		ret = reserve_bootmem_node(NODE_DATA(nid), phys, len, flags);
+ 	else
+-		reserve_bootmem(phys, len, BOOTMEM_DEFAULT);
++		ret = reserve_bootmem(phys, len, flags);
++
+ #else
+-	reserve_bootmem(phys, len, BOOTMEM_DEFAULT);
++	ret = reserve_bootmem(phys, len, flags);
+ #endif
+ 
++	if (ret != 0)
++		return ret;
++
+ 	if (phys+len <= MAX_DMA_PFN*PAGE_SIZE) {
+ 		dma_reserve += len / PAGE_SIZE;
+ 		set_dma_reserve(dma_reserve);
+ 	}
++
++	return 0;
+ }
+ 
+ int kern_addr_valid(unsigned long addr)
+--- a/include/asm-x86/proto.h
++++ b/include/asm-x86/proto.h
+@@ -14,7 +14,7 @@ extern void ia32_syscall(void);
+ extern void ia32_cstar_target(void);
+ extern void ia32_sysenter_target(void);
+ 
+-extern void reserve_bootmem_generic(unsigned long phys, unsigned len);
++extern int reserve_bootmem_generic(unsigned long phys, unsigned len, int flags);
+ 
+ extern void syscall32_cpu_init(void);
+ 
+
+
+
