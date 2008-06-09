@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760570AbYFIXJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761238AbYFIXJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760570AbYFIXJl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 19:09:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760057AbYFIXJX
+	id S1761238AbYFIXJz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 19:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760195AbYFIXJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 19:09:23 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:36401 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759592AbYFIXJU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 19:09:20 -0400
-Date: Mon, 9 Jun 2008 16:07:47 -0700
-From: Greg KH <greg@kroah.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: chris2553@googlemail.com, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       Hannes Reinecke <hare@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-usb@vger.kernel.org
-Subject: Re: 2,6.26-rc4-git2 - long pause during boot
-Message-ID: <20080609230747.GD23391@kroah.com>
-References: <200806010415.05290.chris2553@googlemail.com> <20080606110345.581fdc77.akpm@linux-foundation.org> <1212777612.16182.21.camel@localhost.localdomain> <200806080619.17531.chris2553@googlemail.com> <1212950276.3574.7.camel@localhost.localdomain>
+	Mon, 9 Jun 2008 19:09:28 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:46488 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760150AbYFIXJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 19:09:26 -0400
+Date: Mon, 9 Jun 2008 16:09:25 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mike Travis <travis@sgi.com>
+cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [patch 04/41] cpu ops: Core piece for generic atomic per cpu
+ operations
+In-Reply-To: <4846DC6B.6030802@sgi.com>
+Message-ID: <Pine.LNX.4.64.0806091605490.9534@schroedinger.engr.sgi.com>
+References: <20080530035620.587204923@sgi.com> <200805301708.51284.rusty@rustcorp.com.au>
+ <Pine.LNX.4.64.0805301055270.14564@schroedinger.engr.sgi.com>
+ <200806021200.41652.rusty@rustcorp.com.au> <4846DC6B.6030802@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1212950276.3574.7.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 08, 2008 at 01:37:56PM -0500, James Bottomley wrote:
-> > Because of this oddity, I've also built 2.6.26-rc5-git2 with verbose USB 
-> > debugging on. A boot log from that kernel is attached. You will see lots of 
-> > ETIME errors from usb. A log from a similarly verbose 2.6.25.5 kernel does not 
-> > show these errors. usb-devel added to cc list.
-> 
-> I'm starting to think this might be a distribution problem.  I tried
-> booting my laptop on your config (only system I have with ata_piix)
-> without an initrd (bit painful for fedora 9) and I didn't see any slow
-> downs (in fact it was a lot faster than previously; makes note to file
-> bug with redhat about their initramfs).
+On Wed, 4 Jun 2008, Mike Travis wrote:
 
-What distro is this being seen on?  I know that openSUSE 11.0 betas did
-have a bug in their init scripts that was causing a long delay, much
-like this one.  But it has been fixed in the later releases
-(hopefully...)
+> 0000000000000013 <test_local_inc>:
+>   13:   55                      push   %rbp
+>   14:   65 48 8b 05 00 00 00    mov    %gs:0(%rip),%rax        # 1c <test_local_inc+0x9>
+>   1b:   00
+>   1c:   48 89 e5                mov    %rsp,%rbp
+>   1f:   48 ff 04 07             incq   (%rdi,%rax,1)
+>   23:   c9                      leaveq
+>   24:   c3                      retq
 
-thanks,
+Note also that the address calculation occurs before the incq. That is why 
+disabling preemption is required otherwise the processor may change 
+between the determination of the per cpu area address and the increment.
 
-greg k-h
+The local_t operations could be modified to avoid the preemption issues 
+with the zero based patches applied. Then there would still be the 
+inflexbility of not being able to increment an arbitrary variable.
+
+I think it is also bad to treat a per cpu variable like an atomic. Its not 
+truly atomic nor are strictly atomic accesses used. It is fine to use 
+regular operations on the per cpu variable provided one has either 
+disabled preemption or interrupts. The per cpu atomic wrt interrupt ops 
+are only useful when preemption and/or interrupts are off.
+
