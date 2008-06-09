@@ -1,115 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758448AbYFIT53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbYFIT7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758448AbYFIT53 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 15:57:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbYFIT5V
+	id S1758100AbYFIT7R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 15:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753889AbYFIT7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 15:57:21 -0400
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:27473 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753384AbYFIT5V (ORCPT
+	Mon, 9 Jun 2008 15:59:04 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:8073 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753564AbYFIT7B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 15:57:21 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=WX01nxLGwz9rZM+iRfAcyk2BntN7NCBFUIfIqw/OIxlr67l7qHyvr4lzEwdb3j2M9HktkCWQVqdJ5GSONTUwMk3Wu8qBf/QwGCbFjLVJ3bWTAa7aCb2UlHk8VEzZNwwNMRWjKgkYpkZdSpwF0uN+qmjnlM5vT/N0GF7wqckyNMQ=  ;
-X-YMail-OSG: xe5o0pkVM1m6XhFpt0.9WYIlJLsd0_Bl0awG4BmaX.QLFoRF5tmZRoyzouYdFGw._N5Ptz5UlI9D67WPM..GwQdsk6H24VOmX1Pt4cQ1doOyg6z4c_VNQCCQvguqWBUmAm6T00f2_g53GKuJudEWx5hs
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Stefan Hellermann" <stefan@the2masters.de>
-Subject: Re: GPIO-Ports on VIA EPIA-SN
-Date: Mon, 9 Jun 2008 12:57:18 -0700
-User-Agent: KMail/1.9.9
-Cc: "Bart Van Assche" <bart.vanassche@gmail.com>, linux-kernel@vger.kernel.org
-References: <1213034405.2592.22.camel@hel-stefan.lan> <e2e108260806091203v6685d31duf057a3f9744fe7d4@mail.gmail.com>
-In-Reply-To: <e2e108260806091203v6685d31duf057a3f9744fe7d4@mail.gmail.com>
+	Mon, 9 Jun 2008 15:59:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=iTgbFbvrzppJKhy4mJit9av8gRZoXpBAYRvd2J3H7TTBvEg0ySx6fDxDqmcSwYRdBf
+         kEjT/LYZNlTtWUyV4Tmma2yh5fucdQCsw19gkQOI61iQpjztkcYmEJaYFRnShpvRY8Zo
+         U0LflopcHWTl0kDQ7l155EGOapBUiMyJEzEp8=
+Message-ID: <6278d2220806091259t47c9b070v269da0f5855ef014@mail.gmail.com>
+Date: Mon, 9 Jun 2008 20:59:00 +0100
+From: "Daniel J Blueman" <daniel.blueman@gmail.com>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: ALC883 recording troubles...
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806091257.18845.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 June 2008, Bart Van Assche wrote:
-> On Mon, Jun 9, 2008 at 8:00 PM, Stefan Hellermann <stefan@the2masters.de> wrote:
-> > I have a VIA Epia-SN embedded-board with 8 GPIO-connectors. I got the
-> > attached documentation from VIA after I asked how to use the
-> > GPIO-connectors with Linux.
-> 
-> Are you already familiar with the LDD book
-> (http://lwn.net/Kernel/LDD3/ +
-> http://lwn.net/Articles/2.6-kernel-api/) ? That book is a good
-> starting point, together with the file Documentation/gpio.txt in the
-> Linux kernel tree.
+Hi Takashi-san,
 
-So in short:  you'll want to add a Kconfig option for your board,
-and when it's selected you'll want to link in some EPIA-specific
-int logic.  That logic will register a gpio_chip, and then you'll
-be able to use the standard GPIO calls (and whatever uses them).
+I'm experiencing DC offset with the microphone on 2.6.24 (Ubuntu 8.04
+LTS x86-64). I can see on Audacity that the DC offset that varies with
+the recording capture level. Plus, the mixer playback->mic-boost
+muting enables/disables mic-boost in recording.
 
-You will also want something like the appended patch ... but do
-the "select" commands when your board is selected.
+It feels like the ALC883 pins aren't configured quite right. The mobo
+is an Asus P5E-VM with current BIOS [1]
 
-Of course an entirely roll-your-own approach could work too, but
-I won't recommend that here.
+What's the routine to debug this? Would it help to install windows,
+dump the register space and compare?
 
-- Dave
+Thanks in advance,
+  Daniel
 
+--- [1]
 
-===== CUT HERE
-DEBUG ONLY -- make X86_PC use gpiolib.
+$ sudo lspci -vvvxxxs 0:1b.0
+00:1b.0 Audio device: Intel Corporation 82801I (ICH9 Family) HD Audio
+Controller (rev 02)
+	Subsystem: ASUSTeK Computer Inc. Unknown device 829f
+	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort- >SERR- <PERR-
+	Latency: 0, Cache Line Size: 32 bytes
+	Interrupt: pin A routed to IRQ 22
+	Region 0: Memory at fe9f8000 (64-bit, non-prefetchable) [size=16K]
+	Capabilities: [50] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=55mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [60] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
+		Address: 0000000000000000  Data: 0000
+	Capabilities: [70] Express Unknown type IRQ 0
+		Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag-
+		Device: Latency L0s <64ns, L1 <1us
+		Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
+		Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop+
+		Device: MaxPayload 128 bytes, MaxReadReq 128 bytes
+		Link: Supported Speed unknown, Width x0, ASPM unknown, Port 0
+		Link: Latency L0s <64ns, L1 <1us
+		Link: ASPM Disabled CommClk- ExtSynch-
+		Link: Speed unknown, Width x0
+00: 86 80 3e 29 06 00 10 00 02 00 03 04 08 00 00 00
+10: 04 80 9f fe 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 43 10 9f 82
+30: 00 00 00 00 50 00 00 00 00 00 00 00 0f 01 00 00
+40: 01 00 00 07 00 00 00 00 00 00 00 00 00 00 00 00
+50: 01 60 42 c8 00 00 00 00 00 00 00 00 00 00 00 00
+60: 05 70 80 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 10 00 91 00 00 00 00 10 00 08 10 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 04 00 01 00 00 00 00 31 00 a3 02 00 00 00 00
+d0: 61 00 a3 02 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 86 0f 02 00 00 00 00 00
 
-It's not clear to me how the various x86-ish platforms should
-be made to work here, since there seems to be no convention
-that each platform type has its own <asm/arch/...> subdir.
-
----
- arch/x86/Kconfig       |    2 ++
- include/asm-x86/gpio.h |   20 +++++++++++++++++++-
- 2 files changed, 21 insertions(+), 1 deletion(-)
-
---- g26.orig/arch/x86/Kconfig	2008-06-03 19:43:53.000000000 -0700
-+++ g26/arch/x86/Kconfig	2008-06-03 20:03:25.000000000 -0700
-@@ -236,6 +236,8 @@ choice
- 
- config X86_PC
- 	bool "PC-compatible"
-+	select GENERIC_GPIO
-+	select HAVE_GPIO_LIB
- 	help
- 	  Choose this option if your computer is a standard PC or compatible.
- 
---- g26.orig/include/asm-x86/gpio.h	2008-06-03 19:43:53.000000000 -0700
-+++ g26/include/asm-x86/gpio.h	2008-06-03 20:03:25.000000000 -0700
-@@ -1,6 +1,24 @@
- #ifndef _ASM_I386_GPIO_H
- #define _ASM_I386_GPIO_H
- 
--#include <gpio.h>
-+// #include <gpio.h>
-+
-+#include <linux/errno.h>
-+#include <asm-generic/gpio.h>           /* cansleep wrappers */
-+
-+#define gpio_get_value	__gpio_get_value
-+#define gpio_set_value	__gpio_set_value
-+#define gpio_cansleep	__gpio_cansleep
-+
-+static inline int gpio_to_irq(unsigned gpio)
-+{
-+	return -ENOSYS;
-+}
-+
-+static inline int irq_to_gpio(unsigned irq)
-+{
-+	return -EINVAL;
-+}
-+
- 
- #endif /* _ASM_I386_GPIO_H */
-
-
+$ aplay -l
+**** List of PLAYBACK Hardware Devices ****
+card 0: Intel [HDA Intel], device 0: ALC883 Analog [ALC883 Analog]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 0: Intel [HDA Intel], device 1: ALC883 Digital [ALC883 Digital]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 0: Intel [HDA Intel], device 3: ATI HDMI [ATI HDMI]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 2: HDMI [HDA ATI HDMI], device 3: ATI HDMI [ATI HDMI]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+daniel@veyron:~$ aplay -L
+default:CARD=Intel
+    HDA Intel, ALC883 Analog
+    Default Audio Device
+front:CARD=Intel,DEV=0
+    HDA Intel, ALC883 Analog
+    Front speakers
+surround40:CARD=Intel,DEV=0
+    HDA Intel, ALC883 Analog
+    4.0 Surround output to Front and Rear speakers
+surround41:CARD=Intel,DEV=0
+    HDA Intel, ALC883 Analog
+    4.1 Surround output to Front, Rear and Subwoofer speakers
+surround50:CARD=Intel,DEV=0
+    HDA Intel, ALC883 Analog
+    5.0 Surround output to Front, Center and Rear speakers
+surround51:CARD=Intel,DEV=0
+    HDA Intel, ALC883 Analog
+    5.1 Surround output to Front, Center, Rear and Subwoofer speakers
+surround71:CARD=Intel,DEV=0
+    HDA Intel, ALC883 Analog
+    7.1 Surround output to Front, Center, Side, Rear and Woofer speakers
+null
+    Discard all samples (playback) or generate zero samples (capture)
+default:CARD=U0x46d0x990
+    USB Device 0x46d:0x990, USB Audio
+    Default Audio Device
+front:CARD=U0x46d0x990,DEV=0
+    USB Device 0x46d:0x990, USB Audio
+    Front speakers
+surround40:CARD=U0x46d0x990,DEV=0
+    USB Device 0x46d:0x990, USB Audio
+    4.0 Surround output to Front and Rear speakers
+surround41:CARD=U0x46d0x990,DEV=0
+    USB Device 0x46d:0x990, USB Audio
+    4.1 Surround output to Front, Rear and Subwoofer speakers
+surround50:CARD=U0x46d0x990,DEV=0
+    USB Device 0x46d:0x990, USB Audio
+    5.0 Surround output to Front, Center and Rear speakers
+surround51:CARD=U0x46d0x990,DEV=0
+    USB Device 0x46d:0x990, USB Audio
+    5.1 Surround output to Front, Center, Rear and Subwoofer speakers
+surround71:CARD=U0x46d0x990,DEV=0
+    USB Device 0x46d:0x990, USB Audio
+    7.1 Surround output to Front, Center, Side, Rear and Woofer speakers
+iec958:CARD=U0x46d0x990,DEV=0
+    USB Device 0x46d:0x990, USB Audio
+    IEC958 (S/PDIF) Digital Audio Output
+front:CARD=HDMI
+    HDA ATI HDMI
+    Front speakers
+surround40:CARD=HDMI
+    HDA ATI HDMI
+    4.0 Surround output to Front and Rear speakers
+surround41:CARD=HDMI
+    HDA ATI HDMI
+    4.1 Surround output to Front, Rear and Subwoofer speakers
+surround50:CARD=HDMI
+    HDA ATI HDMI
+    5.0 Surround output to Front, Center and Rear speakers
+surround51:CARD=HDMI
+    HDA ATI HDMI
+    5.1 Surround output to Front, Center, Rear and Subwoofer speakers
+surround71:CARD=HDMI
+    HDA ATI HDMI
+    7.1 Surround output to Front, Center, Side, Rear and Woofer speakers
+-- 
+Daniel J Blueman
