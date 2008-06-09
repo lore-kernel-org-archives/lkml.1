@@ -1,50 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759542AbYFIVof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756022AbYFIVs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759542AbYFIVof (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 17:44:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758618AbYFIVoW
+	id S1756022AbYFIVs5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 17:48:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbYFIVst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 17:44:22 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:33740 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758539AbYFIVoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 17:44:22 -0400
-From: Paul Jackson <pj@sgi.com>
-To: akpm@linux-foundation.org
-Cc: Simon Derr <simon.derr@bull.net>, Paul Menage <menage@google.com>,
-       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
-Date: Mon, 09 Jun 2008 14:44:19 -0700
-Message-Id: <20080609214419.260968.50473.sendpatchset@jackhammer.engr.sgi.com>
-Subject: [PATCH] cpusets: provide another web page URL in MAINTAINERS file
+	Mon, 9 Jun 2008 17:48:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37609 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751899AbYFIVst (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 17:48:49 -0400
+Date: Mon, 9 Jun 2008 14:48:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: 2.6.26-rc5-mm1
+Message-Id: <20080609144834.c6fcb625.akpm@linux-foundation.org>
+In-Reply-To: <200806092114.54467.m.kozlowski@tuxland.pl>
+References: <20080609053908.8021a635.akpm@linux-foundation.org>
+	<484D67EF.5090203@linux.vnet.ibm.com>
+	<200806092114.54467.m.kozlowski@tuxland.pl>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Jackson <pj@sgi.com>
+On Mon, 9 Jun 2008 21:14:54 +0200
+Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
 
-Add URL for another CPUSETS web page to the MAINTAINERS file.
+> Hello Balbir,
+> 
+> > Andrew Morton wrote:
+> > > Temporarily at
+> > > 
+> > >   http://userweb.kernel.org/~akpm/2.6.26-rc5-mm1/
+> > > 
+> > 
+> > I've hit a segfault, the last few lines on my console are
+> > 
+> > 
+> > Testing -fstack-protector-all feature
+> > registered taskstats version 1
+> > debug: unmapping init memory ffffffff80c03000..ffffffff80dd8000
+> > init[1]: segfault at 7fff701fe880 ip 7fff701fee5e sp 7fff7006e6d0 error 7
+> > 
+> > With absolutely no stack trace. I'll dig deeper.
+> 
+> Hey, I see something similar and I actually have a stack trace. Here it goes:
+> 
+> bash[498] segfault at ffffffff80868b58 ip ffffffffff600412 sp 7fffa3d010f0 error 7
+> init[1] segfault at ffffffff80868b58 ip ffffffffff600412 sp 7fff9e97f640 error 7
+> init[1] segfault at ffffffff80868b58 ip ffffffffff600412 sp 7fff9e97eed0 error 7
+> Kernel panic - not syncing: Attemted to kill init!
+> Pid 1, comm: init Not tainted 2.6.26-rc5-mm1 #1
+> 
+> Call Trace:
+> [<ffffffff80254632>] panic+0xe2/0x260
+> [<ffffffff802fa8ba>] ? __slab_free+0x10a/0x630
+> [<ffffffff80265a8e>] ? __sigqueue_free+0x5e/0x70
+> [<ffffffff802851eb>] ? trace_hardirqs_off+0x1b/0x30
+> [<ffffffff802851eb>] ? trace_hardirqs_off+0x1b/0x30
+> [<ffffffff80259b54>] do_exit+0xb84/0xc30
+> [<ffffffff80259c5a>] do_group_exit+0x5a/0x110
+> [<ffffffff8026a3b5>] get_signal_to_deliver+0x2c5/0x620
+> [<ffffffff8020bb3b>] do_notify_resume+0x11b/0xd10
+> [<ffffffff8028da5b>] ? trace_hardirqs_on+0x1b/0x30
+> [<ffffffff805cd0f3>] ? _spin_unlock_irqrestore+0x93/0x130
+> [<ffffffff8026865c>] ? force_sig_info+0x10c/0x130
+> [<ffffffff8022fb9c>] ? force_sig_info_fault+0x2c/0x40
+> [<ffffffff802dd7dd>] ? print_vma_addr+0x10d/0x1d0
+> [<ffffffff805cbb67>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+> [<ffffffff8028d8da>] ? trace_hardirqs_on_caller+0x15a/0x2c0
+> [<ffffffff8020d4c9>] retint_signal+0x46/0x8d
+> 
+> This was copied manually so typos are possible.
+> 
 
-This URL provides links to major LGPL user level C libraries supporting
-cpuset usage and user level cpu and node masks.
-
-Signed-off-by: Paul Jackson <pj@sgi.com>
-
----
- MAINTAINERS |    1 +
- 1 file changed, 1 insertion(+)
-
---- 2.6.26-rc5-mm1.orig/MAINTAINERS	2008-06-09 14:31:06.000000000 -0700
-+++ 2.6.26-rc5-mm1/MAINTAINERS	2008-06-09 14:35:20.007598587 -0700
-@@ -1207,6 +1207,7 @@ M:	pj@sgi.com
- M:	menage@google.com
- L:	linux-kernel@vger.kernel.org
- W:	http://www.bullopensource.org/cpuset/
-+W:	http://oss.sgi.com/projects/cpusets/
- S:	Supported
- 
- CRAMFS FILESYSTEM
-
--- 
-                          I won't rest till it's the best ...
-                          Programmer, Linux Scalability
-                          Paul Jackson <pj@sgi.com> 1.650.933.1373
+Thanks.  Could someone send a config please?  Or a bisection result ;)
