@@ -1,178 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754748AbYFIQhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755577AbYFIQjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754748AbYFIQhV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 12:37:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbYFIQhK
+	id S1755577AbYFIQjS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 12:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbYFIQjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 12:37:10 -0400
-Received: from ns1.suse.de ([195.135.220.2]:34295 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752181AbYFIQhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 12:37:08 -0400
-Date: Mon, 9 Jun 2008 18:37:44 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Johannes Weiner <hannes@saeurebad.de>
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de, vgoyal@redhat.com,
-       anderson@redhat.com
-Subject: Re: [patch 2/3] Add flags parameter to reserve_bootmem_generic()
-Message-ID: <20080609183744.4dc04784@halley.suse.de>
-In-Reply-To: <877iczmvir.fsf@saeurebad.de>
-References: <20080608134628.757299158@halley.suse.de>
-	<20080608134629.743220278@halley.suse.de>
-	<877iczmvir.fsf@saeurebad.de>
-Organization: SUSE Linux Products GmbH
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Jun 2008 12:39:08 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:25537 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751922AbYFIQjG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 12:39:06 -0400
+X-IronPort-AV: E=Sophos;i="4.27,613,1204531200"; 
+   d="scan'208";a="39710444"
+From: Roland Dreier <rdreier@cisco.com>
+To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+Cc: Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>,
+       general@lists.openfabrics.org, LKML <linux-kernel@vger.kernel.org>,
+       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>, hnguyen@de.ibm.com,
+       fenkes@de.ibm.com, raisch@de.ibm.com, TKLEIN@de.ibm.com,
+       THEMANN@de.ibm.com
+Subject: Re: [PATCH 2/2] IB/ehca: In case of lost interrupts, trigger EOI to reenable interrupts
+References: <200806091745.19147.ossrosch@linux.vnet.ibm.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Mon, 09 Jun 2008 09:38:59 -0700
+In-Reply-To: <200806091745.19147.ossrosch@linux.vnet.ibm.com> (Stefan
+	Roscher's message of "Mon, 9 Jun 2008 17:45:17 +0200")
+Message-ID: <adatzg28sws.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 09 Jun 2008 16:39:00.0160 (UTC) FILETIME=[51AD5400:01C8CA4F]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Johannes Weiner [2008-06-09 00:06]:
->
-> > +
-> >  #else
-> >  	reserve_bootmem(phys, len, BOOTMEM_DEFAULT);  
->                                    ^^^^^^^^^^^^^^^   flags?
-> And you ignore the return value here.
+ > +				if (desc->chip && desc->chip->eoi)
+ > +					desc->chip->eoi(irq);
 
-Thanks for catching that. Updated patch:
+This doesn't seem like the type of thing a device driver should be
+doing.  Both patches are rather short on changelog text -- what is the
+issue here and how does this fix it?
 
-------------------------------------------------------------------
-From: Bernhard Walle <bwalle@suse.de>
-Subject: Add 'flags' parameter to reserve_bootmem_generic()
-
-This patch adds a 'flags' parameter to reserve_bootmem_generic() like it
-already has been added in reserve_bootmem() with commit
-72a7fe3967dbf86cb34e24fbf1d957fe24d2f246.
-
-It also changes all users to use BOOTMEM_DEFAULT, which doesn't effectively
-change the behaviour. Since the change is x86-specific, I don't think it's
-necessary to add a new API for migration. There are only 4 users of that
-function.
-
-The change is necessary for the next patch, using reserve_bootmem_generic()
-for crashkernel reservation.
-
-
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
-
----
- arch/x86/kernel/e820_64.c |    3 ++-
- arch/x86/kernel/efi_64.c  |    3 ++-
- arch/x86/kernel/mpparse.c |    5 +++--
- arch/x86/mm/init_64.c     |   19 +++++++++++++------
- include/asm-x86/proto.h   |    2 +-
- 5 files changed, 21 insertions(+), 11 deletions(-)
-
---- a/arch/x86/kernel/e820_64.c
-+++ b/arch/x86/kernel/e820_64.c
-@@ -118,7 +118,8 @@ void __init early_res_to_bootmem(unsigne
- 			continue;
- 		printk(KERN_INFO "  early res: %d [%lx-%lx] %s\n", i,
- 			final_start, final_end - 1, r->name);
--		reserve_bootmem_generic(final_start, final_end - final_start);
-+		reserve_bootmem_generic(final_start, final_end - final_start,
-+			BOOTMEM_DEFAULT);
- 	}
- }
- 
---- a/arch/x86/kernel/efi_64.c
-+++ b/arch/x86/kernel/efi_64.c
-@@ -100,7 +100,8 @@ void __init efi_call_phys_epilog(void)
- void __init efi_reserve_bootmem(void)
- {
- 	reserve_bootmem_generic((unsigned long)memmap.phys_map,
--				memmap.nr_map * memmap.desc_size);
-+				memmap.nr_map * memmap.desc_size,
-+				BOOTMEM_DEFAULT);
- }
- 
- void __iomem * __init efi_ioremap(unsigned long phys_addr, unsigned long size)
---- a/arch/x86/kernel/mpparse.c
-+++ b/arch/x86/kernel/mpparse.c
-@@ -729,10 +729,11 @@ static int __init smp_scan_config(unsign
- 			if (!reserve)
- 				return 1;
- 
--			reserve_bootmem_generic(virt_to_phys(mpf), PAGE_SIZE);
-+			reserve_bootmem_generic(virt_to_phys(mpf), PAGE_SIZE,
-+				BOOTMEM_DEFAULT);
- 			if (mpf->mpf_physptr)
- 				reserve_bootmem_generic(mpf->mpf_physptr,
--							PAGE_SIZE);
-+					PAGE_SIZE, BOOTMEM_DEFAULT);
- #endif
- 		return 1;
- 		}
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -798,12 +798,13 @@ void free_initrd_mem(unsigned long start
- }
- #endif
- 
--void __init reserve_bootmem_generic(unsigned long phys, unsigned len)
-+int __init reserve_bootmem_generic(unsigned long phys, unsigned len, int flags)
- {
- #ifdef CONFIG_NUMA
- 	int nid, next_nid;
- #endif
- 	unsigned long pfn = phys >> PAGE_SHIFT;
-+	int ret;
- 
- 	if (pfn >= end_pfn) {
- 		/*
-@@ -811,11 +812,11 @@ void __init reserve_bootmem_generic(unsi
- 		 * firmware tables:
- 		 */
- 		if (pfn < max_pfn_mapped)
--			return;
-+			return -EFAULT;
- 
- 		printk(KERN_ERR "reserve_bootmem: illegal reserve %lx %u\n",
- 				phys, len);
--		return;
-+		return -EFAULT;
- 	}
- 
- 	/* Should check here against the e820 map to avoid double free */
-@@ -823,17 +824,23 @@ void __init reserve_bootmem_generic(unsi
- 	nid = phys_to_nid(phys);
- 	next_nid = phys_to_nid(phys + len - 1);
- 	if (nid == next_nid)
--		reserve_bootmem_node(NODE_DATA(nid), phys, len, BOOTMEM_DEFAULT);
-+		ret = reserve_bootmem_node(NODE_DATA(nid), phys, len, flags);
- 	else
--		reserve_bootmem(phys, len, BOOTMEM_DEFAULT);
-+		ret = reserve_bootmem(phys, len, flags);
-+
- #else
--	reserve_bootmem(phys, len, BOOTMEM_DEFAULT);
-+	ret = reserve_bootmem(phys, len, flags);
- #endif
- 
-+	if (ret != 0)
-+		return ret;
-+
- 	if (phys+len <= MAX_DMA_PFN*PAGE_SIZE) {
- 		dma_reserve += len / PAGE_SIZE;
- 		set_dma_reserve(dma_reserve);
- 	}
-+
-+	return 0;
- }
- 
- int kern_addr_valid(unsigned long addr)
---- a/include/asm-x86/proto.h
-+++ b/include/asm-x86/proto.h
-@@ -14,7 +14,7 @@ extern void ia32_syscall(void);
- extern void ia32_cstar_target(void);
- extern void ia32_sysenter_target(void);
- 
--extern void reserve_bootmem_generic(unsigned long phys, unsigned len);
-+extern int reserve_bootmem_generic(unsigned long phys, unsigned len, int flags);
- 
- extern void syscall32_cpu_init(void);
- 
+ - R.
