@@ -1,46 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758829AbYFIWQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbYFIWUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758829AbYFIWQW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 18:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbYFIWQP
+	id S1756718AbYFIWUa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 18:20:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbYFIWUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 18:16:15 -0400
-Received: from cantor.suse.de ([195.135.220.2]:34439 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750803AbYFIWQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 18:16:14 -0400
-Date: Mon, 9 Jun 2008 15:14:41 -0700
-From: Greg KH <gregkh@suse.de>
-To: Mirco Tischler <mt-ml@gmx.de>
-Cc: Adrian Bunk <bunk@kernel.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG: 2.6.26-rc3] ERROR: "____ilog2_NaN" undefined
-Message-ID: <20080609221440.GA22227@suse.de>
-References: <1211735607.14556.14.camel@mtlp.tischlernetz> <20080525181118.GG1791@cs181133002.pp.htv.fi> <1211742202.14556.25.camel@mtlp.tischlernetz> <20080525201807.GK1791@cs181133002.pp.htv.fi> <1211749036.16921.16.camel@mtlp.tischlernetz> <20080525210329.GN1791@cs181133002.pp.htv.fi> <1211752151.16921.25.camel@mtlp.tischlernetz> <1211836606.10718.18.camel@mtlp.tischlernetz> <20080527235619.GI11310@cs181133002.pp.htv.fi> <20080608144112.1d623ed4@mtlp.tischlernetz>
+	Mon, 9 Jun 2008 18:20:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55665 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753052AbYFIWUW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 18:20:22 -0400
+Date: Mon, 9 Jun 2008 15:19:58 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Pavel Machek <pavel@suse.cz>
+cc: Greg KH <gregkh@suse.de>, Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>,
+       Andrew Morton <akpm@linuxfoundation.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.25-rc6: CONFIG_USB_PERSIST forced on
+In-Reply-To: <20080609215651.GF21429@elf.ucw.cz>
+Message-ID: <alpine.LFD.1.10.0806091458121.3218@woody.linux-foundation.org>
+References: <200806091712.46869.oliver@neukum.org> <Pine.LNX.4.44L0.0806091142390.2943-100000@iolanthe.rowland.org> <20080609195015.GA6601@suse.de> <20080609205916.GC21429@elf.ucw.cz> <alpine.LFD.1.10.0806091435120.3218@woody.linux-foundation.org>
+ <20080609215651.GF21429@elf.ucw.cz>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080608144112.1d623ed4@mtlp.tischlernetz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 08, 2008 at 02:41:12PM +0200, Mirco Tischler wrote:
-> Here's an update:
-> I've contacted the gcc folks. Here is the bugzilla entry:
-> http://gcc.gnu.org/bugzilla/show_bug.cgi?id=36359
-> We were able to trace the error down to usb_submit_urb() in
-> drivers/usb/core/urb.c which calls ilog2() and the gcc falsely assumes its
-> argument (urb->interval) to be zero. But as I understood they say it's the
-> kernel's fault because the code depends on correct optimization what seems a
-> little weird for me as incorrect optimization is a gcc bug IMHO. But I am not
-> an expert and maybe I've just understood something wrong because I'm not a
-> native speaker.
 
-I'm confused how the kernel code could be at fault here.
 
-How could it be fixed to not be at fault?
+On Mon, 9 Jun 2008, Pavel Machek wrote:
+> 
+> With USB_PERSIST on, you have problem on all drivers but usb-storage,
+> AFAICT... because usb-storage seems to be the only driver implementing
+> reset_resume.
 
-thanks,
+So let's *fix* it. It's not as if USB_PERSIST is new - it was there 
+for well over a year. Disabling it yet again will obviously not fix 
+*anything*.
 
-greg k-h
+> I guess it is possible to do something like "if reset_resume() is
+> unavailable, try plain resume()" in usb/driver.c, but I'd really
+> changes to the suspend/resume callback to go in -rc1 so that they are
+> tested properly, and not hot-patch it now.
+
+And how many people have actually even reported the problem? And how big 
+do you seriously expect the patch to be?
+
+This isn't even a regression - it's behavior that has always been there. 
+It's just that now the behavior is much more exposed, and by being more 
+exposed, people now see a bug that they didn't see before. Let's just try 
+to *fix* it first, especially since the guesses about how to fix it have 
+so far been fairly simple.
+
+For example, if it's really just a "if we don't have a reset_resume() 
+function, use the regular resume instead", does this trivial patch make a 
+difference? I dunno, but it seems to be what people are saying we should 
+just try. Much simpler than a revert.
+
+		Linus
+
+---
+ drivers/usb/core/driver.c |   16 +++++-----------
+ 1 files changed, 5 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/usb/core/driver.c b/drivers/usb/core/driver.c
+index 1e56f1c..893a1fe 100644
+--- a/drivers/usb/core/driver.c
++++ b/drivers/usb/core/driver.c
+@@ -885,17 +885,11 @@ static int usb_resume_interface(struct usb_interface *intf, int reset_resume)
+ 	}
+ 	driver = to_usb_driver(intf->dev.driver);
+ 
+-	if (reset_resume) {
+-		if (driver->reset_resume) {
+-			status = driver->reset_resume(intf);
+-			if (status)
+-				dev_err(&intf->dev, "%s error %d\n",
+-						"reset_resume", status);
+-		} else {
+-			/* status = -EOPNOTSUPP; */
+-			dev_warn(&intf->dev, "no %s for driver %s?\n",
+-					"reset_resume", driver->name);
+-		}
++	if (reset_resume && driver->reset_resume) {
++		status = driver->reset_resume(intf);
++		if (status)
++			dev_err(&intf->dev, "%s error %d\n",
++					"reset_resume", status);
+ 	} else {
+ 		if (driver->resume) {
+ 			status = driver->resume(intf);
