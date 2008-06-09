@@ -1,91 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757137AbYFIHiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756534AbYFIHvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757137AbYFIHiq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 03:38:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755027AbYFIHif
+	id S1756534AbYFIHvg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 03:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbYFIHvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 03:38:35 -0400
-Received: from mail.netone.net.tr ([193.192.98.182]:42063 "EHLO
-	mail.netone.net.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754299AbYFIHie (ORCPT
+	Mon, 9 Jun 2008 03:51:22 -0400
+Received: from imo-d05.mx.aol.com ([205.188.157.37]:47376 "EHLO
+	imo-d05.mx.aol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751522AbYFIHvP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 03:38:34 -0400
-Message-ID: <484CDDEC.7050405@netone.net.tr>
-Date: Mon, 09 Jun 2008 10:38:20 +0300
-From: Tarkan Erimer <tarkan@netone.net.tr>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Mon, 9 Jun 2008 03:51:15 -0400
+X-MB-Message-Type: User
+Content-Type: text/plain; charset="us-ascii"; format=flowed
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
+       ap@solarrain.com
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.25.4-rt6
-References: <1212793171.7695.2.camel@localhost.localdomain>
-In-Reply-To: <1212793171.7695.2.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-9; format=flowed
+To: dan.j.williams@gmail.com, jpiszcz@lucidpixels.com
+X-AOL-IP: 69.116.196.1
+References: <alpine.DEB.1.10.0806071015110.23323@p34.internal.lan> <e9c3a7c20806071846w60b74aeegdf3e39afb36b5d9a@mail.gmail.com>
+Date: Mon, 09 Jun 2008 03:51:07 -0400
+From: thomas62186218@aol.com
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Jun 2008 07:35:46.0309 (UTC) FILETIME=[6E3A5B50:01C8CA03]
+Subject: Re: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte Veliciraptors
+X-MB-Message-Source: WebUI
+X-Mailer: AOL Webmail 37080-STANDARD
+In-Reply-To: <e9c3a7c20806071846w60b74aeegdf3e39afb36b5d9a@mail.gmail.com>
+Message-Id: <8CA981CB5C2B4D6-E68-18E2@MBLK-M14.sysops.aol.com>
+X-Spam-Flag: NO
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I got this error message at compile stage. Also it is the same error 
-that was on -rt4. -rt3 compiles and runs fine.
+Thank you for sharing these results. One issue that I consistently see 
+with these results is miserable random IO performance. Looking at these 
+numbers, even a low-end RAID controller with 128MB of cache will outrun 
+md-based RAIDs in random IO benchmarks. In today's world of virtual 
+machines, etc, random IO is far more common than sequential IO. What 
+can be done with md (or something else) to alleviate this problem?
+
+-Thomas
 
 
-VDSOSYM arch/x86/vdso/vdso32-syms.lds
-LD arch/x86/vdso/built-in.o
-CC kernel/sched.o
-kernel/sched.c: In function 'sched_init':
-kernel/sched.c:7702: error: implicit declaration of function 
-'global_rt_runtime'
-make[2]: *** [kernel/sched.o] Error 1
-make[1]: *** [kernel] Error 2
-make[1]: Leaving directory `/usr/src/linux-2.6.25.4'
-make: *** [debian/stamp-build-kernel] Error 2
-root@tarkane:/usr/src/linux-2.6.25.4#
+-----Original Message-----
+From: Dan Williams <dan.j.williams@gmail.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org; linux-raid@vger.kernel.org; 
+xfs@oss.sgi.com; Alan Piszcz <ap@solarrain.com>
+Sent: Sat, 7 Jun 2008 6:46 pm
+Subject: Re: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte 
+Veliciraptors
 
-Steven Rostedt wrote:
-> We are pleased to announce the 2.6.25.4-rt6 tree, which can be
-> downloaded from the location:
+
+
+
+
+
+
+
+
+
+On Sat, Jun 7, 2008 at 7:22 AM, Justin Piszcz <jpiszcz@lucidpixels.com> 
+wrote:
+> First, the original benchmarks with 6-SATA drives with fixed 
+formatting,
+> using
+> right justification and the same decimal point precision throughout:
+> 
+http://home.comcast.net/~jpiszcz/20080607/raid-benchmarks-decimal-fix-and-right-justified/disks.html
 >
->   http://rt.et.redhat.com/download/
+> Now for for veliciraptors!  Ever wonder what kind of speed is 
+possible with
+> 3 disk, 4,5,6,7,8,9,10-disk RAID5s?  I ran a loop to find out, each 
+run is
+> executed three times and the average is taken of all three runs per 
+each
+> RAID5 disk set.
 >
-> Information on the RT patch can be found at:
+> In short? The 965 no longer does justice with faster drives, a new 
+chipset
+> and motherboard are needed.  After reading or writing to 4-5 
+veliciraptors
+> it saturates the bus/965 chipset.
 >
->   http://rt.wiki.kernel.org/index.php/Main_Page
+> Here is a picture of the 12 veliciraptors I tested with:
+> 
+http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-veliciraptors/raptors.jpg
 >
-> Changes since 2.6.25.4-rt5
+> Here are the bonnie++ results:
+> 
+http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-veliciraptors/veliciraptor-raid.html
 >
->   - sched_cpupri hotplug support (Gregory Haskins)
+> For those who want the results in text:
+> 
+http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-veliciraptors/veliciraptor-raid.txt
 >
->   - sched_cpupri prio count (Gregory Haskins)
+> System used, same/similar as before:
+> Motherboard: Intel DG965WH
+> Memory: 8GiB
+> Kernel: 2.6.25.4
+> Distribution: Debian Testing x86_64
+> Filesystem: XFS with default mkfs.xfs parameters [auto-optimized for 
+SW
+> RAID]
+> Mount options: defaults,noatime,nodiratime,logbufs=8,logbsize=262144 
+0 1
+> Chunk size: 1024KiB
+> RAID5 Layout: Default (left-symmetric)
+> Mdadm Superblock used: 0.90
 >
->   - ftrace hotplug fix (Steven Rostedt)
+> Optimizations used (last one is for the CFQ scheduler), it improves
+> performance by a modest 5-10MiB/s:
+> http://home.comcast.net/~jpiszcz/raid/20080601/raid5.html
 >
-> to build a 2.6.25.4-rt6 tree, the following patches should be applied:
+> # Tell user what's going on.
+> echo "Optimizing RAID Arrays..."
 >
->   http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.25.tar.bz2
->   http://kernel.org/pub/linux/kernel/v2.6/patch-2.6.25.4.bz2
->   http://rt.et.redhat.com/download/patch-2.6.25.4-rt6.bz2
+> # Define DISKS.
+> cd /sys/block
+> DISKS=$(/bin/ls -1d sd[a-z])
 >
+> # Set read-ahead.
+> # > That's actually 65k x 512byte blocks so 32MiB
+> echo "Setting read-ahead to 32 MiB for /dev/md3"
+> blockdev --setra 65536 /dev/md3
 >
+> # Set stripe-cache_size for RAID5.
+> echo "Setting stripe_cache_size to 16 MiB for /dev/md3"
+
+Sorry to sound like a broken record,  16MiB is not correct.
+
+size=$((num_disks * 4 * 16384 / 1024))
+echo "Setting stripe_cache_size to $size MiB for /dev/md3"
+
+...and commit 8b3e6cdc should improve the performance / 
+stripe_cache_size ratio.
+
+> echo 16384 > /sys/block/md3/md/stripe_cache_size
 >
-> And like always, my RT version of Matt Mackall's ketchup will get this
-> for you nicely:
+> # Disable NCQ on all disks.
+> echo "Disabling NCQ on all disks..."
+> for i in $DISKS
+> do
+>  echo "Disabling NCQ on $i"
+>  echo 1 > /sys/block/"$i"/device/queue_depth
+> done
 >
->   http://people.redhat.com/srostedt/rt/tools/ketchup-0.9.8-rt3
+> # Fix slice_idle.
+> # See http://www.nextre.it/oracledocs/ioscheduler_03.html
+> echo "Fixing slice_idle to 0..."
+> for i in $DISKS
+> do
+>  echo "Changing slice_idle to 0 on $i"
+>  echo 0 > /sys/block/"$i"/queue/iosched/slice_idle
+> done
 >
->
-> The broken out patches are also available.
->
->
-> -- Steve
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->   
+
+Thanks for putting this data together.
+
+Regards,
+Dan
+--
+To unsubscribe from this list: send the line "unsubscribe linux-raid" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
+
+
 
