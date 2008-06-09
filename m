@@ -1,92 +1,471 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760584AbYFIKfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760167AbYFIKia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760584AbYFIKfZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 06:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760270AbYFIKfI
+	id S1760167AbYFIKia (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 06:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758901AbYFIKiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 06:35:08 -0400
-Received: from rv-out-0506.google.com ([209.85.198.225]:25394 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760254AbYFIKfG (ORCPT
+	Mon, 9 Jun 2008 06:38:22 -0400
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:34837 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758859AbYFIKiV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 06:35:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=JlwwW2V0ThJBy9xUkIDZf2MOCJ/jYh2cjmaHZ+hoOTLd+FpuAEc6ufW37gdz6k7NMB
-         OklVxxoVtwGzKoIDyZvS6WzR6XCs4RwDImRVz3Kc9Di4x2YuGXFVwvVwGVKy1QwkCmy6
-         wR8E7KRAEUuRZM1pNO4JM7Hh2NWILLiESM1Vo=
-Message-ID: <19f34abd0806090335p36e3e8a1kf180dda236356754@mail.gmail.com>
-Date: Mon, 9 Jun 2008 12:35:05 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [bug, 2.6.26-rc4/rc5] sporadic bootup crashes in blk_lookup_devt()/prepare_namespace()
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Jens Axboe" <jens.axboe@oracle.com>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <19f34abd0806090209l541d93c6jaba2704314b34418@mail.gmail.com>
+	Mon, 9 Jun 2008 06:38:21 -0400
+Message-ID: <484D07F0.6020407@linux.vnet.ibm.com>
+Date: Mon, 09 Jun 2008 16:07:36 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
+Subject: Re: [RFC][PATCH 1/2] memcg: res_counter hierarchy
+References: <20080604135815.498eaf82.kamezawa.hiroyu@jp.fujitsu.com> <20080604140153.fec6cc99.kamezawa.hiroyu@jp.fujitsu.com> <484CFC7F.20300@linux.vnet.ibm.com> <20080609192002.b04354c4.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080609192002.b04354c4.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080609080312.GA32458@elte.hu>
-	 <20080609020623.b6727f2b.akpm@linux-foundation.org>
-	 <19f34abd0806090209l541d93c6jaba2704314b34418@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 9, 2008 at 11:09 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> On Mon, Jun 9, 2008 at 11:06 AM, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
->> On Mon, 9 Jun 2008 10:03:12 +0200 Ingo Molnar <mingo@elte.hu> wrote:
->>
->>> -tip testing has started triggering a new type of sporadic bootup crash
->>> a few days ago. Find below a collection of 14 crashes i've managed to
->>> capture so far, which are all similar to this crash pattern:
+KAMEZAWA Hiroyuki wrote:
+> On Mon, 09 Jun 2008 15:18:47 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+>> KAMEZAWA Hiroyuki wrote:
+>>> A simple hard-wall hierarhcy support for res_counter.
 >>>
->>>  BUG: unable to handle kernel paging request at ffff81003b984fb8
->>>  IP: [<ffffffff803fafd4>] blk_lookup_devt+0x42/0xa0
->>>  PGD 8063 PUD 9063 PMD 3be2d163 PTE 800000003b984160
->>>  Oops: 0000 [1] SMP DEBUG_PAGEALLOC
+>>> Changelog v2->v3
+>>>  - changed the name and arguments of functions.
+>>>  - rewrote to be read easily.
+>>>  - named as HardWall hierarchy.
 >>>
->>>  Call Trace:
->>>   [<ffffffff80bac17b>] ? ip_auto_config+0x0/0xd94
->>>   [<ffffffff80209259>] name_to_dev_t+0x145/0xeec
->>>   [<ffffffff803ff2be>] ? __next_cpu_nr+0x22/0x2b
->>>   [<ffffffff80b7f372>] prepare_namespace+0x91/0x14c
->>>   [<ffffffff80b7eb70>] kernel_init+0x2fe/0x314
->>>   [<ffffffff80251f3d>] ? trace_hardirqs_on_caller+0xca/0xee
->>>   [<ffffffff80741bbb>] ? trace_hardirqs_on_thunk+0x3a/0x3f
->>>   [<ffffffff80251f3d>] ? trace_hardirqs_on_caller+0xca/0xee
->>>   [<ffffffff8020d3f8>] child_rip+0xa/0x12
->>>   [<ffffffff8020c90c>] ? restore_args+0x0/0x30
->>>   [<ffffffff8025068d>] ? trace_hardirqs_off+0xd/0xf
->>>   [<ffffffff80b7e872>] ? kernel_init+0x0/0x314
->>>   [<ffffffff8020d3ee>] ? child_rip+0x0/0x12
+>>> This implements following model
+>>>  - A cgroup's tree means hierarchy of resource.
+>>>  - All child's resource is moved from its parents.
+>>>  - The resource moved to children is charged as parent's usage.
+>>>  - The resource moves when child->limit is changed.
+>>>  - The sum of resource for children and its own usage is limited by "limit".
+>>>
+>>> This implies
+>>>  - No dynamic automatic hierarhcy balancing in the kernel.
+>>>  - Each resource is isolated completely.
+>>>  - The kernel just supports resource-move-at-change-in-limit.
+>>>  - The user (middle-ware) is responsible to make hierarhcy balanced well.
+>> We'd definitely like to see a user level tool/application as a demo of how this
+>> can be achieved.
 >>
->> Did you work out where it's dying?  Deref of `dev' I assume?
->
->                        struct gendisk *disk = dev_to_disk(dev);
->
+> I don't have one, now. I'll write one when I have time. Need now ?
+> Hmm...maybe I(we) need some more patches to implement useful statistics,
+> notifier to middlewares.
+> 
 
-I'm sorry, this is slightly misleading. The dev_to_disk() doesn't contain any dereferences, so therefore that can obviously not be the source of the page fault. It is just simple pointer arithmetic.
+Yes, we need more useful statistics.
 
-The actual dereference happens on the next line, but it appears that this dereference and the pointer magic above is collapsed by gcc into a single instruction, cmp -0x44(%ebx), %esi. I assume the -0x44 would be = 0 - offsetof(device in gendisk) + offsetof(minors in gendisk).
+> 
+> 
+>>>    Good balance can be achieved by changing limit from user land.
+>>>
+>>>
+>>> Background:
+>>>  Recently, there are popular resource isolation technique widely used,
+>>>  i.e. Hardware-Virtualization. We can do hierarchical resource isolation
+>>>  by using cgroup on it. But supporting hierarchy management in croups
+>>>  has some advantages of performance, unity and costs of management.
+>>>
+>>>  There are good resource management in other OSs, they support some kind of
+>>>  hierarchical resource management. We wonder what kind of hierarchy policy
+>>>  is good for Linux. And there is an another point. Hierarchical system can be
+>>>  implemented by the kernel and user-land co-operation.  So, there are various
+>>>  choices to do in the kernel. Doing all in the kernel or export some proper
+>>>  interfaces to the user-land. Middle-wares are tend to be used for management.
+>>>  I hope there will be Open Source one.
+>>>
+>>>  At supporting hierarchy in cgroup, several aspects of characteristics of
+>>>  policy of hierarchy can be considered. Some needs automatic balancing
+>>>  between several groups.
+>>>
+>>>   - fairness    ... how fairness is kept under policy
+>>>
+>>>   - performance ... should be _fast_. multi-level resource balancing tend
+>>>                  to use much amount of CPU and can cause soft lockup.
+>>>
+>>>   - predictability ... resource management are usually used for resource
+>>>                  isolation. the kernel must not break the isolation and
+>>>                  predictability of users against application's progress.
+>>>
+>>>   - flexibility ... some sophisticated dynamic resource balancing with
+>>>  		 soft-limit is welcomed when the user doesn't want strict
+>>> 		 resource isolation or when the user cannot estimate how much
+>>> 		 they want correctly.
+>> Soft limits has been on my plate for a while now. I'll take a crack at it. At
+>> the moment the statistics is a bit of a worry, since users/administrators need
+>> good statistics to take further action.
+>>
+> Yes, statistics is not enough now.
+> 
+> 
+> 
+>>> Hard Wall Hierarchy.
+>>>
+>>>  This patch implements a hard-wall model of hierarchy for resources.
+>>>  Works well for users who want strict resource isolation.
+>>>
+>>>  This model allows the move of resource only between a parent and its children.
+>>>  The resource is moved to a child when it declares the amount of resources to be
+>>>  used. (by limit)
+>> The other reason for preferring a shares based approach is that, the it will be
+>> more in line with the CPU controllers interfaces.
+>>
+> 
+> You have to think of the major difference of tha nature of CPU and Memory.
+> We have to reclaim the resource with some feedbacks among sevral cgroups.
+> But ok, if it's can be implemented in simple way.
+> I have no objections if cost is very low. My concern is only performance.
+> (and maintenance)
+> 
 
-So the error seems to be in dereferencing disk->minors, not dev.
+True, I don't see hierarchy as adding too much additional cost.
 
-And the fact that this causes a page fault seems to be pure luck; if the struct device object is placed higher than 0x44 in a page, it won't give the page fault (but simply access some valid, random memory). There seems to be a pretty good chance of an address being offset more than 0x44 bytes within a page given that a whole page is 0x1000 bytes :-)
+> 
+>>> Index: temp-2.6.26-rc2-mm1/include/linux/res_counter.h
+>>> ===================================================================
+>>> --- temp-2.6.26-rc2-mm1.orig/include/linux/res_counter.h
+>>> +++ temp-2.6.26-rc2-mm1/include/linux/res_counter.h
+>>> @@ -38,6 +38,16 @@ struct res_counter {
+>>>  	 * the number of unsuccessful attempts to consume the resource
+>>>  	 */
+>>>  	unsigned long long failcnt;
+>>> +
+>>> +	/*
+>>> +	 * hierarchy support: the parent of this resource.
+>>> +	 */
+>>> +	struct res_counter *parent;
+>>> +	/*
+>>> +	 * the amount of resources assigned to children.
+>>> +	 */
+>>> +	unsigned long long for_children;
+>>> +
+>> I would prefer to use a better name, lent_out? reserved_for_children?
+>> borrowed_by_children?
+>>
+> ok. use other names.
+> 
+> 
+> 
+>>>  	/*
+>>>  	 * the lock to protect all of the above.
+>>>  	 * the routines below consider this to be IRQ-safe
+>>> @@ -63,9 +73,20 @@ u64 res_counter_read_u64(struct res_coun
+>>>  ssize_t res_counter_read(struct res_counter *counter, int member,
+>>>  		const char __user *buf, size_t nbytes, loff_t *pos,
+>>>  		int (*read_strategy)(unsigned long long val, char *s));
+>>> +
+>>> +/*
+>>> + * An interface for setting res_counter's member (ex. limit)
+>>> + * the new parameter is passed by *buf and translated by write_strategy().
+>>> + * Then, it is applied to member under the control of set_strategy().
+>>> + * If write_strategy() and set_strategy() can be NULL. see res_counter.c
+>>> + */
+>>> +
+>>>  ssize_t res_counter_write(struct res_counter *counter, int member,
+>>> -		const char __user *buf, size_t nbytes, loff_t *pos,
+>>> -		int (*write_strategy)(char *buf, unsigned long long *val));
+>>> +	const char __user *buf, size_t nbytes, loff_t *pos,
+>>> +        int (*write_strategy)(char *buf, unsigned long long *val),
+>>> +	int (*set_strategy)(struct res_counter *res, unsigned long long val,
+>>> +			    int what),
+>>> +	);
+>>>
+>>>  /*
+>>>   * the field descriptors. one for each member of res_counter
+>>> @@ -76,15 +97,33 @@ enum {
+>>>  	RES_MAX_USAGE,
+>>>  	RES_LIMIT,
+>>>  	RES_FAILCNT,
+>>> +	RES_FOR_CHILDREN,
+>> RES_BORROWED? RES_BORROWED_BY_CHILDREN?
+>>
+> ok, again.
+> 
+>>>  };
+>>>
+>>>  /*
+>>>   * helpers for accounting
+>>>   */
+>>>
+>>> +/*
+>>> + * initialize res_counter.
+>>> + * @counter : the counter
+>>> + *
+>>> + * initialize res_counter and set default limit to very big value(unlimited)
+>>> + */
+>>> +
+>>>  void res_counter_init(struct res_counter *counter);
+>>>
+>>>  /*
+>>> + * initialize res_counter under hierarchy.
+>>> + * @counter : the counter
+>>> + * @parent : the parent of the counter
+>>> + *
+>>> + * initialize res_counter and set default limit to 0. and set "parent".
+>>> + */
+>>> +void res_counter_init_hierarchy(struct res_counter *counter,
+>>> +				struct res_counter *parent);
+>>> +
+>>> +/*
+>>>   * charge - try to consume more resource.
+>>>   *
+>>>   * @counter: the counter
+>>> @@ -153,4 +192,51 @@ static inline void res_counter_reset_fai
+>>>  	cnt->failcnt = 0;
+>>>  	spin_unlock_irqrestore(&cnt->lock, flags);
+>>>  }
+>>> +
+>>> +/**
+>>> + * Move resources from a parent to a child.
+>>> + * At success,
+>>> + *           parent->usage += val.
+>>> + *           parent->for_children += val.
+>>> + *           child->limit += val.
+>>> + *
+>>> + * @child:    an entity to set res->limit. The parent is child->parent.
+>>> + * @val:      the amount of resource to be moved.
+>>> + * @callback: called when the parent's free resource is not enough to be moved.
+>>> + *            this can be NULL if no callback is necessary.
+>>> + * @retry:    limit for the number of trying to callback.
+>>> + *            -1 means infinite loop. At each retry, yield() is called.
+>>> + * Returns 0 at success, !0 at failure.
+>>> + *
+>>> + * The callback returns 0 at success, !0 at failure.
+>>> + *
+>>> + */
+>>> +
+>>> +int res_counter_move_resource(struct res_counter *child,
+>>> +	unsigned long long val,
+>>> +        int (*callback)(struct res_counter *res, unsigned long long val),
+>>> +	int retry);
+>>> +
+>>> +
+>>> +/**
+>>> + * Return resource to its parent.
+>>> + * At success,
+>>> + *           parent->usage  -= val.
+>>> + *           parent->for_children -= val.
+>>> + *           child->limit -= val.
+>>> + *
+>>> + * @child:   entry to resize. The parent is child->parent.
+>>> + * @val  :   How much does child repay to parent ? -1 means 'all'
+>>> + * @callback: A callback for decreasing resource usage of child before
+>>> + *            returning. If NULL, just deceases child's limit.
+>>> + * @retry:   # of retries at calling callback for freeing resource.
+>>> + *            -1 means infinite loop. At each retry, yield() is called.
+>>> + * Returns 0 at success.
+>>> + */
+>>> +
+>>> +int res_counter_return_resource(struct res_counter *child,
+>>> +	unsigned long long val,
+>>> +	int (*callback)(struct res_counter *res, unsigned long long val),
+>>> +	int retry);
+>>> +
+>>>  #endif
+>>> Index: temp-2.6.26-rc2-mm1/Documentation/controllers/resource_counter.txt
+>>> ===================================================================
+>>> --- temp-2.6.26-rc2-mm1.orig/Documentation/controllers/resource_counter.txt
+>>> +++ temp-2.6.26-rc2-mm1/Documentation/controllers/resource_counter.txt
+>>> @@ -44,6 +44,13 @@ to work with it.
+>>>   	Protects changes of the above values.
+>>>
+>>>
+>>> + f. struct res_counter *parent
+>>> +
+>>> +	Parent res_counter under hierarchy.
+>>> +
+>>> + g. unsigned long long for_children
+>>> +
+>>> +	Resources assigned to children. This is included in usage.
+>>>
+>>>  2. Basic accounting routines
+>>>
+>>> @@ -179,3 +186,37 @@ counter fields. They are recommended to 
+>>>      still can help with it).
+>>>
+>>>   c. Compile and run :)
+>>> +
+>>> +
+>>> +6. Hierarchy
+>>> + a. No Hierarchy
+>>> +   each cgroup can use its own private resource.
+>>> +
+>>> + b. Hard-wall Hierarhcy
+>>> +   A simple hierarchical tree system for resource isolation.
+>>> +   Allows moving resources only between a parent and its children.
+>>> +   A parent can move its resource to children and remember the amount to
+>>> +   for_children member. A child can get new resource only from its parent.
+>>> +   Limit of a child is the amount of resource which is moved from its parent.
+>>> +
+>> OK, after reading this I am totally sure I want a shares based interface. Limits
+>> are not shared like this.
+>>
+>> A child and a parent should both be capable of having a limit of 1G, but they
+>> could use different shares factors to govern, how much each children will get.
+>> Doing it this way, breaks limit semantics.
+>>
+> Not easy to use in my point of view. Can we use 'share' in proper way 
+> on no-swap machine ?
+> 
 
-The other condition that must be present for this fault to trigger is that the previous page must not have been mapped. Ouch. That sounds like two rare conditions!
+Not sure I understand your question. Share represents the share of available
+resources.
 
+> 
+>>> +   When add "val" to a child,
+>>> +	parent->usage += val
+>>> +	parent->for_children += val
+>>> +	child->limit += val
+>>> +   When a child returns its resource
+>>> +	parent->usage -= val
+>>> +	parent->for_children -= val
+>>> +	child->limit -= val.
+>>> +
+>>> +   This implements resource isolation among each group. This works very well
+>>> +   when you want to use strict resource isolation.
+>>> +
+>>> +   Usage Hint:
+>>> +   This seems for static resource assignment but dynamic resource re-assignment
+>>> +   can be done by resetting "limit" of groups. When you consider "limit" as
+>>> +   the amount of allowed _current_ resource, a sophisticated resource management
+>>> +   system based on strict resource isolation can be implemented.
+>>> +
+>>> +c. Soft-wall Hierarchy
+>>> +   TBD.
+>>> +
+>>> Index: temp-2.6.26-rc2-mm1/kernel/res_counter.c
+>>> ===================================================================
+>>> --- temp-2.6.26-rc2-mm1.orig/kernel/res_counter.c
+>>> +++ temp-2.6.26-rc2-mm1/kernel/res_counter.c
+>>> @@ -20,6 +20,14 @@ void res_counter_init(struct res_counter
+>>>  	counter->limit = (unsigned long long)LLONG_MAX;
+>>>  }
+>>>
+>>> +void res_counter_init_hierarchy(struct res_counter *counter,
+>>> +		struct res_counter *parent)
+>>> +{
+>>> +	spin_lock_init(&counter->lock);
+>>> +	counter->limit = 0;
+>>> +	counter->parent = parent;
+>>> +}
+>>> +
+>>>  int res_counter_charge_locked(struct res_counter *counter, unsigned long val)
+>>>  {
+>>>  	if (counter->usage + val > counter->limit) {
+>>> @@ -74,6 +82,8 @@ res_counter_member(struct res_counter *c
+>>>  		return &counter->limit;
+>>>  	case RES_FAILCNT:
+>>>  		return &counter->failcnt;
+>>> +	case RES_FOR_CHILDREN:
+>>> +		return &counter->for_children;
+>>>  	};
+>>>
+>>>  	BUG();
+>>> @@ -104,7 +114,9 @@ u64 res_counter_read_u64(struct res_coun
+>>>
+>>>  ssize_t res_counter_write(struct res_counter *counter, int member,
+>>>  		const char __user *userbuf, size_t nbytes, loff_t *pos,
+>>> -		int (*write_strategy)(char *st_buf, unsigned long long *val))
+>>> +		int (*write_strategy)(char *st_buf, unsigned long long *val),
+>>> +		int (*set_strategy)(struct res_counter *res,
+>>> +			unsigned long long val, int what))
+>>>  {
+>>>  	int ret;
+>>>  	char *buf, *end;
+>>> @@ -133,13 +145,101 @@ ssize_t res_counter_write(struct res_cou
+>>>  		if (*end != '\0')
+>>>  			goto out_free;
+>>>  	}
+>>> -	spin_lock_irqsave(&counter->lock, flags);
+>>> -	val = res_counter_member(counter, member);
+>>> -	*val = tmp;
+>>> -	spin_unlock_irqrestore(&counter->lock, flags);
+>>> -	ret = nbytes;
+>>> +	if (set_strategy) {
+>>> +		ret = set_strategy(res, tmp, member);
+>>
+>> I'm afraid, I don't understand the set_strategy and it's purpose.
+>>
+> Sorry. I'm now rewritten and removed this.
+> 
+> 
 
-Vegard
+OK
+
+> 
+>>> +		if (!ret)
+>>> +			ret = nbytes;
+>>> +	} else {
+>>> +		spin_lock_irqsave(&counter->lock, flags);
+>>> +		val = res_counter_member(counter, member);
+>>> +		*val = tmp;
+>>> +		spin_unlock_irqrestore(&counter->lock, flags);
+>>> +		ret = nbytes;
+>>> +	}
+>>>  out_free:
+>>>  	kfree(buf);
+>>>  out:
+>>>  	return ret;
+>>>  }
+>>> +
+>>> +
+>>> +int res_counter_move_resource(struct res_counter *child,
+>>> +				unsigned long long val,
+>>> +	int (*callback)(struct res_counter *res, unsigned long long val),
+>>> +	int retry)
+>>> +{
+>>> +	struct res_counter *parent = child->parent;
+>>> +	unsigned long flags;
+>>> +
+>>> +	BUG_ON(!parent);
+>>> +
+>>> +	while (1) {
+>>> +		spin_lock_irqsave(&parent->lock, flags);
+>>> +		if (parent->usage + val < parent->limit) {
+>>> +			parent->for_children += val;
+>>> +			parent->usage += val;
+>>> +			break;
+>>> +		}
+>>> +		spin_unlock_irqrestore(&parent->lock, flags);
+>>> +
+>>> +		if (!retry || !callback)
+>>> +			goto failed;
+>>> +		/* -1 means  infinite loop */
+>>> +		if (retry != -1)
+>>> +			--retry;
+>> I don't like the idea of spinning in an infinite loop, I would prefer to fail
+>> things instead of burning CPU cycles.
+>>
+> ok, will remove "-1" case.
+> 
+> 
+> 
+> 
+>>> +		yield();
+>>> +		callback(parent, val);
+>> This code is not very understandable. Why do we yield before callback?
+>>
+> 
+> yield() after callback() means that res_counter's state will be
+> far different from the state after callback.
+> So, we have to yield before call back and check res_coutner sooner.
+> 
+
+But does yield() get us any guarantees of seeing the state change?
 
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while the programmer was not looking is intellectually dishonest as it disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
