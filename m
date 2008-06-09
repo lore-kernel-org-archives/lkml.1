@@ -1,102 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759553AbYFIXPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760983AbYFIXQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759553AbYFIXPj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 19:15:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193AbYFIXPa
+	id S1760983AbYFIXQQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 19:16:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754591AbYFIXP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 19:15:30 -0400
-Received: from 213.237.47.228.adsl.vbr.worldonline.dk ([213.237.47.228]:18424
-	"EHLO rap.rap.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754137AbYFIXP3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 19:15:29 -0400
-Date: Tue, 10 Jun 2008 01:15:26 +0200
-From: Keld =?iso-8859-1?Q?J=F8rn?= Simonsen <keld@dkuug.dk>
-To: David Lethe <david@santools.com>
-Cc: thomas62186218@aol.com, dan.j.williams@gmail.com, jpiszcz@lucidpixels.com,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       xfs@oss.sgi.com, ap@solarrain.com
-Subject: Re: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte Veliciraptors
-Message-ID: <20080609231526.GA6404@rap.rap.dk>
-References: <alpine.DEB.1.10.0806071015110.23323@p34.internal.lan> <e9c3a7c20806071846w60b74aeegdf3e39afb36b5d9a@mail.gmail.com> <8CA981CB5C2B4D6-E68-18E2@MBLK-M14.sysops.aol.com> <A20315AE59B5C34585629E258D76A97CA535E9@34093-C3-EVS3.exchange.rackspace.com> <20080609142717.GB24950@rap.rap.dk> <A20315AE59B5C34585629E258D76A97CA536EF@34093-C3-EVS3.exchange.rackspace.com>
+	Mon, 9 Jun 2008 19:15:59 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:51784 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754427AbYFIXP7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 19:15:59 -0400
+Date: Tue, 10 Jun 2008 09:15:45 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+Cc: Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>, TKLEIN@de.ibm.com,
+       fenkes@de.ibm.com, raisch@de.ibm.com, THEMANN@de.ibm.com
+Subject: Re: [PATCH 1/2] ibmebus: Change ibmebus_request_irq() to optionally
+ return irq number
+Message-Id: <20080610091545.eb36d72f.sfr@canb.auug.org.au>
+In-Reply-To: <200806091744.30930.ossrosch@linux.vnet.ibm.com>
+References: <200806091744.30930.ossrosch@linux.vnet.ibm.com>
+X-Mailer: Sylpheed 2.5.0rc (GTK+ 2.12.10; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <A20315AE59B5C34585629E258D76A97CA536EF@34093-C3-EVS3.exchange.rackspace.com>
-User-Agent: Mutt/1.5.11
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__10_Jun_2008_09_15_45_+1000_KSWuMORr5A4Yt6.m"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 09, 2008 at 09:56:14AM -0500, David Lethe wrote:
-> 
-> 
-> From: Keld Jørn Simonsen [mailto:keld@dkuug.dk] 
-> Sent: Monday, June 09, 2008 9:27 AM
-> To: David Lethe
-> Cc: thomas62186218@aol.com; dan.j.williams@gmail.com; jpiszcz@lucidpixels.com; linux-kernel@vger.kernel.org; linux-raid@vger.kernel.org; xfs@oss.sgi.com; ap@solarrain.com
-> Subject: Re: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte Veliciraptors
-> 
-> For faster random IO I would suggest to use raid10,f2 for the random
-> reading, it performs like raid0, something like more than double the
-> speed of a normal single-drive file system. For random writes raid10,f2
-> performs like most other mirrorred raids, given that data needs to be
-> written twice.
-> 
-> Try and see if you can gat any HW raids to match that performance.
-> 
-> best regards
-> keld
-> 
-> --------------------------------------------------------------------------------
-> Keld:
-> That is counter-intuitive. The issue is random IOPs, not throughput.
+--Signature=_Tue__10_Jun_2008_09_15_45_+1000_KSWuMORr5A4Yt6.m
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-That probably depends on your use. I run Linux mirrors, and for that
-purpose thruputi of random IO, especially reading, is key.
+Hi Stefan,
 
-For data bases it is probably something else, probably IOP. here I also
-think that Linux MD raid has good performance. Once again I think my pet
-RAID type, raid10,f2 has something to offer, especially with lower
-random seek rates, as the track span is shorter, and on the outer,
-faster tracks.
+On Mon, 9 Jun 2008 17:44:29 +0200 Stefan Roscher <ossrosch@linux.vnet.ibm.c=
+om> wrote:
+>
+> Signed-off-by: Stefan Roscher <stefan.roscher@de.ibm.com>
 
-And other uses may have other bottlenecks. In general I think that
-thruput is an important figure, as it shows how fast a system can
-process a given amount of data. Areas where this may count include web servers,
-file servers, print servers, ordinary workstations.
+Before Paulus gets to you:  Why are we doing this?  Please write an
+explanatory commit message.
 
-I actually think those 2 measures for random IO: IO thruput, and IO transactions per
-second, for read and write, are the two most important measures. 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-For the IO transacions per second I agree that your suggestions are good
-advice.
+--Signature=_Tue__10_Jun_2008_09_15_45_+1000_KSWuMORr5A4Yt6.m
+Content-Type: application/pgp-signature
 
-I would like to have good benchmarking tools for this, and also I would
-like figures on how Linux MD compares to different HW RAID.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-> I do not 
-> understand how a RAID10 would provide more IOs per sec than RAID1. Or, since
-> you are using RAID10, then how could RAID10 serve more random I/Os then a pair
-> of RAID1 filesystems? 
+iEYEARECAAYFAkhNuaEACgkQTgG2atn1QN9a/QCfTnObsOEEainNPvQaRDPhBLKv
+j9UAoIPBPZVy8IBXcJ7pNRAonJW1xFS3
+=6Sx0
+-----END PGP SIGNATURE-----
 
-In theory you are right. The MD implementation of RAID1 does not seem to
-handle random seeks so well, AFAIK. Then the seeks are confined with
-raid10,f2 to less than half of the disk arm movement, taht does speed
-things up a little.
-
-> RAID0 dictates that each disk will supply half 
-> of the data you want per application I/O request. At least with RAID1, then each
-> disk can get all the data you want with a single request, and dual-porting/load balancing 
-> will allow both disks to work independently of each other on reads so the disk with
-> the least amount of load at any time can work on the request. That is why RAID1 can be
-> faster than JBOD.
-> 
-> Granted writes are handled differently, but with any RAID0 implementation you still have to write
-> Half of the data to each disk requiring 2 I/Os + journaling & housekeeping.
-
-yes, indeed.
-
-best regards
-keld
+--Signature=_Tue__10_Jun_2008_09_15_45_+1000_KSWuMORr5A4Yt6.m--
