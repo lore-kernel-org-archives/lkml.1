@@ -1,78 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761618AbYFIXm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760910AbYFIXqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761618AbYFIXm2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 19:42:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761186AbYFIXlp
+	id S1760910AbYFIXqm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 19:46:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbYFIXqe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 19:41:45 -0400
-Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:60368 "EHLO
-	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760815AbYFIXlo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 19:41:44 -0400
-From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Message-Id: <200806092341.m59NfOFu022668@turbo.physics.adelaide.edu.au>
-Subject: Re: [PATCH] Fujitsu U810 keyboard light support
-To: jules@panic.cs-bristol.org.uk (Julian Brown)
-Date: Tue, 10 Jun 2008 09:11:24 +0930 (CST)
-Cc: linux-kernel@vger.kernel.org,
-       jwoithe@physics.adelaide.edu.au (Jonathan Woithe)
-In-Reply-To: <20080608204948.GA22405@panic.cs-bristol.org.uk> from "Julian Brown" at Jun 08, 2008 09:49:48 PM
-X-Mailer: ELM [version 2.5 PL6]
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Jun 2008 19:46:34 -0400
+Received: from [78.13.68.104] ([78.13.68.104]:39600 "EHLO linux.localdomain"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754325AbYFIXqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 19:46:34 -0400
+From: Andrea Righi <righi.andrea@gmail.com>
+To: balbir@linux.vnet.ibm.com
+Cc: menage@google.com, kamezawa.hiroyu@jp.fujitsu.com,
+       kosaki.motohiro@jp.fujitsu.com, xemul@openvz.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       Andrea Righi <righi.andrea@gmail.com>
+Subject: [RFC PATCH 5/5] refresh VM committed space after a task migration
+Date: Tue, 10 Jun 2008 01:33:03 +0200
+Message-Id: <1213054383-18137-6-git-send-email-righi.andrea@gmail.com>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Julian
+Update VM committed space statistics when a task is migrated from a cgroup to
+another. To implement this feature we must keep track of the space committed by
+each task (that is directly accounted in the task_struct).
 
-Thanks for your patch.
+Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+---
+ include/linux/sched.h |    3 +++
+ kernel/fork.c         |    3 +++
+ mm/memcontrol.c       |    6 ++++++
+ 3 files changed, 12 insertions(+), 0 deletions(-)
 
-> This patch contains support for the Fujitsu U810 mini-laptops'
-> keyboard-illuminating "headlights". Information on how to control these
-> was reverse-engineered from the ACPI DSDT and from disassembling the
-> Windows driver for the device (i.e. it's not 100% certain that this
-> patch won't make your laptop explode, but it works for me. A more likely
-> problem is that I might have broken support for other Fujitsu laptops,
-> but I can't test that).
-> 
-> The patched fujitsu-laptop module creates two entities in the /sys
-> hierarchy:
-> 
->   /sys/devices/platform/fujitsu-laptop/kbd_light
->   /sys/class/leds/kbd_light/*
-> 
-> So that then, the lights can be controlled by reading/writing to these
-> files. (Probably not all the LED class things are relevant, though).
-> 
-> The fujitsu-laptop module before patching only uses the FUJ02B1 ACPI "HID"
-> (namespace? Identifier?), but the keyboard LEDs (as well as several other
-> possibly-interesting things) hang off the FUJ02E3 ("FEXT") HID. I'm not
-> sure if adding the latter to the existing driver (vs. creating a new one)
-> was the right thing to do, but I think it's probably sensible.
-> 
-> Any comments/suggestions?
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index ae0be3c..8b458df 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1277,6 +1277,9 @@ struct task_struct {
+ 	/* cg_list protected by css_set_lock and tsk->alloc_lock */
+ 	struct list_head cg_list;
+ #endif
++#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++	atomic_long_t vm_committed_space;
++#endif
+ #ifdef CONFIG_FUTEX
+ 	struct robust_list_head __user *robust_list;
+ #ifdef CONFIG_COMPAT
+diff --git a/kernel/fork.c b/kernel/fork.c
+index eaffa56..9fafbdb 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -219,6 +219,9 @@ static struct task_struct *dup_task_struct(struct task_struct *orig)
+ 	/* One for us, one for whoever does the "release_task()" (usually parent) */
+ 	atomic_set(&tsk->usage,2);
+ 	atomic_set(&tsk->fs_excl, 0);
++#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++	atomic_long_set(&tsk->vm_committed_space, 0);
++#endif
+ #ifdef CONFIG_BLK_DEV_IO_TRACE
+ 	tsk->btrace_seq = 0;
+ #endif
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index e3e34e9..bc4923e 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -1334,6 +1334,7 @@ static void mem_cgroup_move_task(struct cgroup_subsys *ss,
+ {
+ 	struct mm_struct *mm;
+ 	struct mem_cgroup *mem, *old_mem;
++	long committed;
+ 
+ 	if (mem_cgroup_subsys.disabled)
+ 		return;
+@@ -1355,6 +1356,11 @@ static void mem_cgroup_move_task(struct cgroup_subsys *ss,
+ 	if (!thread_group_leader(p))
+ 		goto out;
+ 
++	preempt_disable();
++	committed = atomic_long_read(&p->vm_committed_space);
++	atomic_long_sub(committed, &old_mem->vmacct.vm_committed_space);
++	atomic_long_add(committed, &mem->vmacct.vm_committed_space);
++	preempt_enable();
+ out:
+ 	mmput(mm);
+ }
+-- 
+1.5.4.3
 
-There is a later version of the fujitsu-laptop module floating around the
-linux-acpi list (v0.4.1) which I have submitted for inclusion in the next
-merge window.  This version adds support additional backlight controls used
-on some Fujitsu laptops, and for some of the fujitsu hotkeys.  The latter is
-done using the FUJ02E3 HID.  It has been extensively tested on the fujitsu
-laptops we currently have access to.  As it stands your current patch will
-clash horribly with the new fujitsu-laptop version.
-
-IMHO the easiest way forward would be for you to rebase your patch against
-this newer fujitsu-laptop version and see where things go from there.  As
-maintainer of the fujitsu-laptop module I would rather get the current
-well-tested hotkeys/backlight code in and use that as the base for your
-"headlights" patch.  That way we can build on the work that's already been
-done rather than reinventing the wheel (so to speak).  You'll find the patch
-on the linux-acpi list - contact me off-list if you can't locate it.
-
-FYI the fujitsu-laptop development generally happens through the linux-acpi
-subsystem/list.
-
-Regards
-  jonathan
