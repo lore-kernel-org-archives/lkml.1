@@ -1,99 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758351AbYFIDkO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754798AbYFIEDG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758351AbYFIDkO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 23:40:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756722AbYFIDkB
+	id S1754798AbYFIEDG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 00:03:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750699AbYFIECy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 23:40:01 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:24592 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756491AbYFIDkA (ORCPT
+	Mon, 9 Jun 2008 00:02:54 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:13680 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750698AbYFIECx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 23:40:00 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: Linux 2.6.26-rc5
-Date: Sun, 8 Jun 2008 21:39:45 -0600
-User-Agent: KMail/1.9.9
-Cc: Jesper Krogh <jesper@krogh.cc>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Avuton Olrich <avuton@gmail.com>
-References: <alpine.LFD.1.10.0806042018060.3473@woody.linux-foundation.org> <484AE520.7050001@krogh.cc> <200806072350.59976.elendil@planet.nl>
-In-Reply-To: <200806072350.59976.elendil@planet.nl>
+	Mon, 9 Jun 2008 00:02:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Hm2hw35aigMT9CSdiHLT85ZGfqTvJXZszWOo60g3omtyFEEFPOqFQM8eAQXw4eTVrb
+         kuUOrWY91t/dWklY2zRL+jYa3X2P+18WR6dZiiJ6tABUXfGAGD3SY6u3ZLaIVgnLNLJ7
+         DfA/lnecsw/D55sYShPWf/Z38dzoP3kG5Ctuo=
+Message-ID: <dd18b0c30806082102h5d3e3928j98d01b71dba729f9@mail.gmail.com>
+Date: Mon, 9 Jun 2008 04:02:51 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Matthew Garrett" <mjg59@srcf.ucam.org>
+Subject: Re: BUG: unable to handle kernel paging request at f8dbf000 "isight_firmware"
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <dd18b0c30806081723y77f5038fm427b020d3723706a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806082139.45829.bjorn.helgaas@hp.com>
+References: <dd18b0c30806081151q7895a930te5fd374e35471c7a@mail.gmail.com>
+	 <20080608231105.GA28358@srcf.ucam.org>
+	 <dd18b0c30806081723y77f5038fm427b020d3723706a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 07 June 2008 3:50:59 pm Frans Pop wrote:
-> Jesper Krogh wrote:
-> > Not that they seem critical to the system but I do get alot of these. I
-> > cant remember having seen that before.
-> >
-> > [    2.904467] system 00:06: iomem range 0x0-0x0 could not be reserved
-> > [    2.904469] system 00:06: iomem range 0x0-0x0 could not be reserved
-> > [    2.904471] system 00:06: iomem range 0x0-0x0 could not be reserved
-> > [    2.904473] system 00:06: iomem range 0x0-0x0 could not be reserved
+On Mon, Jun 9, 2008 at 12:23 AM, Justin Mattock <justinmattock@gmail.com> wrote:
+> On Sun, Jun 8, 2008 at 11:11 PM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+>> On Sun, Jun 08, 2008 at 06:51:42PM +0000, Justin Mattock wrote:
+>>
+>>> Now on to the status with isight firmware, It seems The two modules
+>>> are loading uvcvideo and isight_firmware, but there not talking with
+>>> each other upon booting,
+>>
+>> I'm not quite sure I understand. They don't talk to each other as such -
+>> the firmware driver loads the firmware, at which point the isight will
+>> disconnect and reappear with a new USB id. uvcvideo should then be able
+>> to bind. What are you actually seeing?
+>>
+>> --
+>> Matthew Garrett | mjg59@srcf.ucam.org
+>>
 >
-> [...]
+> There not binding, or uvcvideo is not binding,
+> under dmesg I see:
+> when not binding:
+> [   14.971002] firmware: requesting isight.fw
+> [   15.183152] usbcore: registered new interface driver isight_firmware
 >
-> I'm getting these too. Not present in the last -rc4 kernel I built.
+> [   16.849152] usbcore: registered new interface driver uvcvideo
 >
-> Reverting this commit (the only recent one to the file the message
-> originates from), gets rid of the extra zero-range messages:
+> when binded:
 >
-> commit 4b34fe156455d26ee6ed67b61539f136bf4e439c
-> Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> Date:   Mon Jun 2 16:42:49 2008 -0600
+> [   15.319330] firmware: requesting isight.fw
+> [   15.433080] usbcore: registered new interface driver isight_firmware
 >
->     PNP: mark resources that conflict with PCI devices "disabled"
+> [   16.810149] usbcore: registered new interface driver uvcvideo
+> [   17.810745] uvcvideo: Found UVC 1.00 device Built-in iSight (05ac:8501)
+> [   17.819252] uvcvideo: Failed to query (135) UVC control 1 (unit 0)
+> : -32 (exp. 26).
 >
->     Both the PNP/PCI conflict detection quirk and the PNP system
->     driver must use the same mechanism to mark resources as disabled.
+> I've noticed the not binding more than binding. Usually I have to
+> start the system and remove the two modules, and then modprobe the two
+>  then a reboot to have a proper load or binding of the two. Keep in
+> mind I am using a uvcvideo module that is a few weeks old, so maybe
+> this
+> is whats causing this.
+> regards;
+> --
+> Justin P. Mattock
 >
->     I think it's best to keep the resource and to keep the type bit
->     (IORESOURCE_MEM, etc), so that we match the list from firmware
->     as closely as possible.
->
->     Fixes this regression from 2.6.25: http://lkml.org/lkml/2008/6/1/82
->
->     Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
->     Tested-by: Avuton Olrich <avuton@gmail.com>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
->
-> Relevant CCs added.
 
-The patch below should fix this and is already in Linus' tree.
-Can you give it a whirl to confirm?  Thanks!
+O.K. after loading the latest uvcvideo, the issue is still prevalent.,
+Hopefully I explain to you so you can get an
+idea of what I'm seeing: on a cold boot the isight_firmware and
+uvcvideo are not binding, but If after the system starts from the cold
+boot, with
+isight_firmware and uvcvideo not binding, a simlple rmmod and modprobe
+of the two modules will bind the two. then with a reboot
+the two will almost certainly stay binded, but if instead of a reboot
+a shutdown -h now. upon starting up the two won't be binded anymore.
+almost as if the firmware is loading in the wrong location, but am
+uncertain how that area works.
+Hope this helps you, better see the problem I'm looking at.
+regards;
 
-
-PNP: skip UNSET MEM resources as well as DISABLED ones
-
-We don't need to reserve "unset" resources.  Trying to reserve
-them results in messages like this, which are ugly but harmless:
-
-    system 00:08: iomem range 0x0-0x0 could not be reserved
-
-Future PNP patches will remove use of IORESOURCE_UNSET, but
-we still need it for now.
-
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-
-Index: work11/drivers/pnp/system.c
-===================================================================
---- work11.orig/drivers/pnp/system.c	2008-06-05 09:46:33.000000000 -0600
-+++ work11/drivers/pnp/system.c	2008-06-05 10:29:10.000000000 -0600
-@@ -81,7 +81,7 @@ static void reserve_resources_of_dev(str
- 	}
- 
- 	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_MEM, i)); i++) {
--		if (res->flags & IORESOURCE_DISABLED)
-+		if (res->flags & (IORESOURCE_UNSET | IORESOURCE_DISABLED))
- 			continue;
- 
- 		reserve_range(dev, res->start, res->end, 0);
-
+-- 
+Justin P. Mattock
