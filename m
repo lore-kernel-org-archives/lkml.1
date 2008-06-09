@@ -1,76 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763106AbYF0UwL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763563AbYF0Uwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763106AbYF0UwL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 16:52:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760756AbYF0Uum
+	id S1763563AbYF0Uwd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 16:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762285AbYF0Uuu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 16:50:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34916 "EHLO mx1.redhat.com"
+	Fri, 27 Jun 2008 16:50:50 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34928 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760089AbYF0Uuk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 16:50:40 -0400
+	id S1762004AbYF0Uut (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 16:50:49 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 From: Roland McGrath <roland@redhat.com>
 To: Oleg Nesterov <oleg@tv-sign.ru>
 X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] coredump: elf_core_dump: skip kernel threads
-In-Reply-To: Oleg Nesterov's message of  Monday, 16 June 2008 20:26:03 +0400 <20080616162603.GA21028@tv-sign.ru>
-References: <20080616162603.GA21028@tv-sign.ru>
-X-Antipastobozoticataclysm: Bariumenemanilow
-Message-Id: <20080627204953.C2A49154224@magilla.localdomain>
-Date: Thu, 19 Jun 2008 00:19:32 -0700 (PDT)
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] sched: fix TASK_WAKEKILL vs SIGKILL race
+In-Reply-To: Oleg Nesterov's message of  Sunday, 8 June 2008 21:20:41 +0400 <20080608172041.GA10383@tv-sign.ru>
+References: <20080608172041.GA10383@tv-sign.ru>
+Emacs: impress your (remaining) friends and neighbors.
+Message-Id: <20080627204954.4CC04154226@magilla.localdomain>
+Date: Mon,  9 Jun 2008 14:10:50 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Perhaps a little prettier like this:
+I was also concerned about perturbing the schedule() hot path with the
+original patch.  With this version making signal_pending_state() inline,
+I think it's good.
 
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -1469,6 +1469,12 @@ static int fill_thread_core_info(struct 
- 	return 1;
- }
- 
-+static bool is_dump_thread(struct task_struct *dump_task,
-+			   struct task_struct *thread)
-+{
-+	return !(thread->flags & PF_KTHREAD) && thread->mm == dump_task->mm;
-+}
-+
- static int fill_note_info(struct elfhdr *elf, int phdrs,
- 			  struct elf_note_info *info,
- 			  long signr, struct pt_regs *regs)
-@@ -1518,7 +1524,7 @@ static int fill_note_info(struct elfhdr 
- 	 */
- 	rcu_read_lock();
- 	do_each_thread(g, p)
--		if (p->mm == dump_task->mm) {
-+		if (is_dump_thread(dump_task, p)) {
- 			t = kzalloc(offsetof(struct elf_thread_core_info,
- 					     notes[info->thread_notes]),
- 				    GFP_ATOMIC);
-@@ -1722,7 +1728,7 @@ static int fill_note_info(struct elfhdr 
- 		struct elf_thread_status *ets;
- 		rcu_read_lock();
- 		do_each_thread(g, p)
--			if (current->mm == p->mm && current != p) {
-+			if (p != current && is_dump_thread(current, p)) {
- 				ets = kzalloc(sizeof(*ets), GFP_ATOMIC);
- 				if (!ets) {
- 					rcu_read_unlock();
+> Note this "__TASK_STOPPED | __TASK_TRACED" check in signal_pending_state().
+> This is needed to preserve the current behaviour (ptrace_notify). I hope
+> this check will be removed soon, but this (afaics good) change needs the
+> separate discussion.
 
-Or maybe you'll have other reasons to add a task_user_mm() that returns
-NULL for kthreads, and then just use task_user_mm(p) == dump_task->mm here.
-
-> It is sad we have to iterate over all threads in system and use GFP_ATOMIC.
-> Hopefully we can kill theses ugly do_each_thread()s, but this needs some
-> nontrivial changes in mm_struct and do_coredump.
-
-Agreed, and twice at that (coredump_wait).  But this is something more to
-consider for the future, and I wouldn't worry about it right now.
+Agreed.  I think it might actually already be safe to drop it, but we can
+get to that after this settles.
 
 
 Thanks,
