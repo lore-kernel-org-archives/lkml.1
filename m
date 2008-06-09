@@ -1,98 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761021AbYFINKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761238AbYFINMB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761021AbYFINKy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 09:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751728AbYFINKq
+	id S1761238AbYFINMB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 09:12:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757439AbYFINLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 09:10:46 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:51420 "EHLO smtps.tip.net.au"
+	Mon, 9 Jun 2008 09:11:52 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37046 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750998AbYFINKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 09:10:45 -0400
-Date: Mon, 9 Jun 2008 23:10:37 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Julia Lawall <julia@diku.dk>
-Cc: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 4/4] drivers/macintosh/therm_adt746x.c: add missing
- of_node_put
-Message-Id: <20080609231037.b8aa7561.sfr@canb.auug.org.au>
-In-Reply-To: <Pine.LNX.4.64.0806091421200.16009@ask.diku.dk>
-References: <Pine.LNX.4.64.0806091421200.16009@ask.diku.dk>
-X-Mailer: Sylpheed 2.5.0rc (GTK+ 2.12.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__9_Jun_2008_23_10_37_+1000_HKYG/_Axzb=z6d7v"
+	id S1757843AbYFINLv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 09:11:51 -0400
+Date: Mon, 9 Jun 2008 15:11:36 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alok Kataria <akataria@vmware.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Dan Hecht <dhecht@vmware.com>, Tim Mann <mann@vmware.com>,
+       Zachary Amsden <zach@vmware.com>, Sahil Rihan <srihan@vmware.com>
+Subject: Re: [RFC PATCH] x86:Use cpu_khz for loops_per_jiffy calculation
+Message-ID: <20080609131136.GA27588@elte.hu>
+References: <1212540069.19290.57.camel@promb-2n-dhcp368.eng.vmware.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1212540069.19290.57.camel@promb-2n-dhcp368.eng.vmware.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__9_Jun_2008_23_10_37_+1000_HKYG/_Axzb=z6d7v
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Mon, 9 Jun 2008 14:21:51 +0200 (CEST) Julia Lawall <julia@diku.dk> wrote:
->
-> From: Julia Lawall <julia@diku.dk>
->=20
-> of_node_put is needed before discarding a value received from
-> of_find_node_by_name, eg in error handling code.
->=20
-> The semantic patch that makes the change is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
->=20
-> // <smpl>
-> @@
-> struct device_node *n;
-> struct device_node *n1;
-> statement S;
-> identifier f;
-> expression E;
-> constant C;
-> @@
->=20
-> n =3D of_find_node_by_name(...)
-> ...
-> if (!n) S
-> ... when !=3D of_node_put(n)
->     when !=3D n1 =3D f(n,...)
->     when !=3D E =3D n
->     when any
->     when strict
-> (
-> + of_node_put(n);
->   return -C;
-> |
->   of_node_put(n);
-> |
->   n1 =3D f(n,...)
-> |
->   E =3D n
-> |
->   return ...;
-> )
-> // </smpl>
->=20
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+* Alok Kataria <akataria@vmware.com> wrote:
 
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> --- linux-2.6.orig/arch/x86/kernel/tsc_32.c	2008-05-27 12:28:16.000000000 -0700
+> +++ linux-2.6/arch/x86/kernel/tsc_32.c	2008-06-03 17:28:46.000000000 -0700
+> @@ -401,6 +401,7 @@
+>  void __init tsc_init(void)
+>  {
+>  	int cpu;
+> +	u64 lpj;
+>  
+>  	if (!cpu_has_tsc || tsc_disabled) {
+>  		/* Disable the TSC in case of !cpu_has_tsc */
+> @@ -421,6 +422,10 @@
+>  		return;
+>  	}
+>  
+> +	lpj = ((u64)cpu_khz * 1000);
+> +	do_div(lpj, HZ);
+> +	lpj_tsc = lpj;
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+that wont work very well as lpj_tsc is not declared.
 
---Signature=_Mon__9_Jun_2008_23_10_37_+1000_HKYG/_Axzb=z6d7v
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhNK80ACgkQTgG2atn1QN9GFgCfQNgpZmLlg9arSLT+Y8mCW+Xt
-9KYAn0p59n2uytbhr13aoaCRdP2w2nKa
-=0s7l
------END PGP SIGNATURE-----
-
---Signature=_Mon__9_Jun_2008_23_10_37_+1000_HKYG/_Axzb=z6d7v--
+	Ingo
