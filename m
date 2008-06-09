@@ -1,136 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758225AbYFIA46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756734AbYFIBMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758225AbYFIA46 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 20:56:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756242AbYFIA4u
+	id S1756734AbYFIBMW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 21:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754350AbYFIBMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 20:56:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37154 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755996AbYFIA4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 20:56:49 -0400
-Date: Sun, 8 Jun 2008 20:56:29 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
-       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org, eric.whitney@hp.com
-Subject: Re: [PATCH -mm 13/25] Noreclaim LRU Infrastructure
-Message-ID: <20080608205629.5b519110@bree.surriel.com>
-In-Reply-To: <20080608165434.67c87e5c.akpm@linux-foundation.org>
-References: <20080606202838.390050172@redhat.com>
-	<20080606202859.291472052@redhat.com>
-	<20080606180506.081f686a.akpm@linux-foundation.org>
-	<20080608163413.08d46427@bree.surriel.com>
-	<20080608135704.a4b0dbe1.akpm@linux-foundation.org>
-	<20080608173244.0ac4ad9b@bree.surriel.com>
-	<20080608162208.a2683a6c.akpm@linux-foundation.org>
-	<20080608193420.2a9cc030@bree.surriel.com>
-	<20080608165434.67c87e5c.akpm@linux-foundation.org>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 8 Jun 2008 21:12:12 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:49740 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752771AbYFIBML (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Jun 2008 21:12:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=U0yvmjxYcjO4bnirm2pDvAVvWIa4BnuGY9RrA1b5o6XOAEvivXRxn2tF6F1+TXvcK+
+         EVmJBBVseNIxDVmDnDUiYiYYFuuojcp3LBkMNBSTkftEQHCCojDNKppdoIGIdh61SVQQ
+         pFh3Gi9Hj6WLuUW798e5RXrwbmQ3iZVOtxOIc=
+Message-ID: <aec7e5c30806081812m532882e0p7ad3ef9a74f53337@mail.gmail.com>
+Date: Mon, 9 Jun 2008 10:12:09 +0900
+From: "Magnus Damm" <magnus.damm@gmail.com>
+To: "Hans J. Koch" <hjk@linutronix.de>
+Subject: Re: [PATCH] uio_pdrv: Unique IRQ Mode
+Cc: linux-kernel@vger.kernel.org, Uwe.Kleine-Koenig@digi.com, gregkh@suse.de,
+       akpm@linux-foundation.org, lethal@linux-sh.org, tglx@linutronix.de
+In-Reply-To: <20080608205455.GA3191@local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080604060826.17162.46972.sendpatchset@rx1.opensource.se>
+	 <20080604101144.GA3207@local>
+	 <aec7e5c30806041825o4c6c859fp8380063e9384622@mail.gmail.com>
+	 <20080605090916.GA3198@local>
+	 <aec7e5c30806050246t248abc39vbc1e71d4475a0a0d@mail.gmail.com>
+	 <20080605112744.GB3198@local>
+	 <aec7e5c30806080319y7b9b6a89icacbfa67b117fb2b@mail.gmail.com>
+	 <20080608205455.GA3191@local>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 8 Jun 2008 16:54:34 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Sun, 8 Jun 2008 19:34:20 -0400 Rik van Riel <riel@redhat.com> wrote:
+On Mon, Jun 9, 2008 at 5:54 AM, Hans J. Koch <hjk@linutronix.de> wrote:
+> On Sun, Jun 08, 2008 at 07:19:25PM +0900, Magnus Damm wrote:
+>> >>
+>> >> So your main objection against this patch is that you cannot use it
+>> >> with shared interrupts?
+>> >
+>> > I think I've explained my objections detailed enough.
+>>
+>> It's still unclear to me. Please make a brief summary of your objections.
+>
+> The objection is that your code offers no advantages. What can we do
+> with your patch applied that we cannot do with uio_pdrv alone?
 
-> > Please let me know which direction I should take, so I can fix
-> > up the patch set accordingly.
-> 
-> I'm getting rather wobbly about all of this.
-> 
-> This is, afair, by far the most intrusive and high-risk change we've
-> looked at doing since 2.5.x, for small values of x.
+Yes, it is possible to have board or architecture specific hooks, but
+does that really make sense if the code is generic and can be reused
+by multiple architectures? I say it doesn't make sense at all.
 
-Nowhere near as intrusive or risky as eg. the timer changes that went
-in a few releases ago.
- 
-> I mean, it's taken many years of work to get reclaim into its current
-> state (and the reduction in reported problems will in part be due to
-> the quadrupling-odd of memory over that time).
+>> > If it's a device within the SoC, you won't use UIO for that. If you did,
+>> > your platform would depend on certain userspace software which is simply
+>> > crap. And devices outside the SoC are board specific.
+>>
+>> Why wouldn't we use UIO for device within the Soc?
+>
+> Can't you read? I've answered that in the lines above your question.
 
-Actually, memory is now getting so large that the current code no
-longer works right.  On machines 16GB and up, we have discovered
-really pathetic behaviour by the VM currently upstream.
+I'm sure there are blocks within the SoC that must be managed by the
+kernel, but that's not always the case. Certain things can be managed
+by user space just fine. For instance, video acceleration hardware.
 
-Things like the VM scanning over the (locked) shared memory segment
-over and over and over again, to get at the 1GB of freeable pagecache
-memory in the system.  Or the system scanning over all anonymous
-memory over and over again, despite the fact that there is no more
-swap space left.
+>> I've been doing
+>> that for quite some time now.
+>
+> Really? I haven't seen any such driver yet. IMO, support for everything
+> inside a SoC should be completely within the kernel, I wouldn't do it
+> with UIO. But it's up to the arch maintainer to decide that. Did you ask
+> him?
 
-With heavy anonymous memory workloads, Linux can stall for minutes
-once memory runs low and something needs to be swapped out, because
-pretty much all memory is anonymous and everything has the referenced
-bit set.  We have seen systems with 128GB of RAM hang overnight, once
-every CPU got wedged in the pageout scanning code.  Typically the VM
-decides on a first page to swap out in 2-3 minutes though, and then
-it will start several gigabytes of swap IO at once...
+Regarding driver source, I have posted a user space test driver here:
 
-Definately not acceptable behaviour.
+http://article.gmane.org/gmane.linux.ports.sh.devel/3927
 
-> And we're now proposing radical changes which again will take years to sort
-> out, all on behalf of a small number of workloads upon a minority of 64-bit
-> machines which themselves are a minority of the Linux base.
+As for kernel driver source, you have it earlier in this thread. I'm
+planning on pushing my user space VIDIX driver upstream, but I'd like
+to get the kernel parts merged first or at least acked. This UIO
+specific piece of the puzzle unfortunately seems to take forever.
+Which really is a shame, because it's all very simple.
 
-Hardware gets larger.  4 years ago few people cared about systems
-with more than 4GB of memory, but nowadays people have that in their
-desktops.
+>> >> >> The patch contains no board specific code,
+>> >> >> and it is independent of both architecture and cpu model.
+>> >> >
+>> >> > Every platform device driver depends on board support.
+>> >>
+>> >> Is that so? I suggest that you have a look at the mfd drivers and think again.
+>> >
+>> > All I said about board support also applies to platform support files
+>> > like at91sam9263_devices.c, I'm simply talking about the file where you
+>> > define your struct platform_device.
+>>
+>> Oh, I see. That's cpu specific code in my mind.
+>
+> It's completely unimportant if your struct platform_device appears in
+> platform-, board-, or cpu-support. Or elsewhere. I won't let myself be
+> tricked into a discussion about terms.
 
-> And it will take longer to get those problems sorted out if 32-bt
-> machines aren't even compiing the new code in.
+No of course, please keep on referring to everything outside of
+drivers/ as board code.
 
-32 bit systems will still get the file/anon LRU split.  The only
-thing that is 64 bit only in the current patch set is keeping the
-unevictable pages off of the LRU lists.
+>> >> >> > So, NAK to this until somebody convinces me that I completely missed the
+>> >> >> > point.
+>> >> >>
+>> >> >> We can reuse this driver for _many_ different SuperH processor models.
+>> >> >> Most of these processor models even have more than one hardware block
+>> >> >> that can be exported to user space using this uio_pdrv driver in
+>> >> >> "Unique IRQ Mode". There is nothing board specific with this at all,
+>> >> >> so yes, I think you are missing the point.
+>> >> >
+>> >> > First, I won't accept anything that changes the current UIO behaviour.
+>> >> > If uio_info->irq is not set, then uio_register_device will fail. That's
+>> >> > it. Your patch redefines the meaning of irq-not-set if uio_pdrv is used.
+>> >>
+>> >> How is this changing the UIO behavior? I'm modifying the uio_pdrv
+>> >> driver, which is a driver that you didn't even write yourself.
+>> >
+>> > uio_pdrv is a generic driver, so I consider it part of the UIO
+>> > framework. It adds new possibilities for authors of UIO platform device
+>> > drivers (which are the vast majority of all UIO drivers). It is not just
+>> > another UIO driver, but part of the system. It'll appear in UIO
+>> > documentation, I'll explain it in future UIO presentations, and so on.
+>> >
+>> > And I consider it my job to make sure that such generic code is clean,
+>> > obvious, and consistent.
+>>
+>> Would you like me to write longer comments? Or some slides?
+>
+> ;-)
+>
+>>
+>> >> And yet
+>> >> you seem to have very strong feelings against this patch.
+>> >
+>> > I explained why. My reasons are purely technical, please don't take this
+>> > as a personal offense.
+>>
+>> No offense taken. But I can't really see your technical arguments.
+>
+> Once more (for the last time): The technical argument against your patch
+> is that it offers no advantages. It makes other code more complicated,
+> less obvious, and less consistent. This might be OK if we had big
+> advantages in return, but this isn't the case.
 
-This means that balancing between file and anon eviction will be
-the same on 32 and 64 bit systems and things should get sorted out
-on both systems at the same time.
+I say:
+a) We need this for 5+ different SuperH hardware blocks.
+b) This approach can be used by most architectures.
+c) The code is architecture independent.
 
-> Are all of thse changes really justified?
+You say "it offers no advantages".
 
-People with large Linux servers are experiencing system stalls
-of several minutes, or at worst complete livelocks, with the
-current VM.
+> Furthermore, your approach works only on certain platforms. But that
+> doesn't matter anymore, because the above is already enough to NAK your
+> patch. We won't add code just because it could be done.
+>
+>> If something in my code is unclear please ask before NAK.
+>
+> If I post a patch, it is my job to make it clear what advantages we have
+> if we apply it. And no, nothing is unclear with your patch.
 
-I believe that those issues need to be fixed.
+I'm glad to hear that you understand it all.
 
-After discussing this for a long time with Larry Woodman,
-Lee Schermerhorn and others, I am convinced that they can
-not be fixed by putting a bandaid on the current code.
+>>
+>> > Unfortunately, I'm one of the two UIO maintainers, so I feel obliged to
+>> > review your patch and give my opinion. That doesn't mean I'm
+>> > the big boss who makes the final decision. I can be critized and
+>> > overridden. If Greg loves your patch and merges it, fine. Try it.
+>>
+>> Maybe I will. =)
+>
+> Did you notice that in this thread nobody spoke up to support your
+> patch?
 
-After all, the fundamental problem often is that the file backed
-and mem/swap backed pages are on the same LRU.
+Maybe no one really cares about arguing about a few lines of code? And
+I mean, what is it to argue about - it's not exactly rocket science.
 
-Think of a case that is becoming more and more common: a database
-server with 128GB of RAM, 2GB of (hardly ever used) swap, 80GB of
-locked shared memory segment, 30GB of other anonymous memory and
-5GB of page cache.
+Thanks for your help.
 
-Do you think it is reasonable for the VM to have to scan over
-110GB of essentially unevictable memory, just to get at the 5GB
-of page cache?
-
-> Because I guess we should have a think about alternative approaches.
-
-We have.  We failed to come up with anything that avoids the
-problem without actually fixing the fundamental issues.
-
-If you have an idea, please let us know.
-
-Otherwise, please give us a chance to shake things out in -mm.
-
-I will prepare kernel RPMs for Fedora so users in the community can
-easily test these patches too, and help find scenarios where these
-patches do not perform as well as what the current kernel has.
-
-I have time to track down and fix any issues that people find.
-
--- 
-All rights reversed.
+/ magnus
