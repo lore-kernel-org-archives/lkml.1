@@ -1,62 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758673AbYFIIOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758389AbYFIITC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758673AbYFIIOg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 04:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755506AbYFIIO2
+	id S1758389AbYFIITC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 04:19:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbYFIISw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 04:14:28 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:19901 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755476AbYFIIO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 04:14:27 -0400
-Date: Mon, 9 Jun 2008 17:12:24 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] sched: Kill off dead cfs_rq_set_shares().
-Message-ID: <20080609081224.GA11751@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+	Mon, 9 Jun 2008 04:18:52 -0400
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:17723 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752675AbYFIISv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 04:18:51 -0400
+To: "Grant Grundler" <grundler@google.com>
+Cc: "Muli Ben-Yehuda" <muli@il.ibm.com>,
+       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, mgross@linux.intel.com,
+       linux-scsi@vger.kernel.org
+Subject: Re: Intel IOMMU (and IOMMU for Virtualization) performances
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080604235053K.fujita.tomonori@lab.ntt.co.jp>
+	<da824cf30806041106p1de2355fg38594fcb9dcbf203@mail.gmail.com>
+	<20080606202119.GQ15085@il.ibm.com>
+	<da824cf30806061428t4b7ed816i74d961946d77c88b@mail.gmail.com>
+	<20080606213659.GC15085@il.ibm.com>
+	<da824cf30806061451p4005a4ecoa9af8687e3ec51e5@mail.gmail.com>
+Date: Mon, 09 Jun 2008 10:17:11 +0200
+In-Reply-To: <da824cf30806061451p4005a4ecoa9af8687e3ec51e5@mail.gmail.com> (Grant Grundler's message of "Fri, 6 Jun 2008 14:51:17 -0700")
+Message-ID: <87lk1fqayg.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 09 Jun 2008 08:10:01.0139 (UTC) FILETIME=[37008830:01C8CA08]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Building with CONFIG_FAIR_GROUP_SCHED=y on UP results in an unused
-cfs_rq_set_shares() reference. As nothing is using this dummy function
-in the first place, just kill it off.
+"Grant Grundler" <grundler@google.com> writes:
+>
+> The historical DMA mapping "failure mode" is a kernel panic.  Resizing or
 
-Against current git, but still seems to be relevant to 'sched-devel' in
--tip.
+Hasn't been for a long time, except in some extreme cases.  All drivers
+are expected to check return values for a long time now.
 
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-
----
-
- kernel/sched.c |    8 --------
- 1 file changed, 8 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index bfb8ad8..25de9ef 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1471,16 +1471,8 @@ static unsigned long source_load(int cpu, int type);
- static unsigned long target_load(int cpu, int type);
- static unsigned long cpu_avg_load_per_task(int cpu);
- static int task_hot(struct task_struct *p, u64 now, struct sched_domain *sd);
--#else /* CONFIG_SMP */
--
--#ifdef CONFIG_FAIR_GROUP_SCHED
--static void cfs_rq_set_shares(struct cfs_rq *cfs_rq, unsigned long shares)
--{
--}
- #endif
- 
--#endif /* CONFIG_SMP */
--
- #include "sched_stats.h"
- #include "sched_idletask.c"
- #include "sched_fair.c"
+-Andi
