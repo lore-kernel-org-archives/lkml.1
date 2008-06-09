@@ -1,20 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbYFIQMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbYFIQQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754895AbYFIQMj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 12:12:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYFIQMb
+	id S1754171AbYFIQQw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 12:16:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750811AbYFIQQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 12:12:31 -0400
-Received: from mail.issp.bas.bg ([195.96.236.10]:34484 "EHLO mail.issp.bas.bg"
+	Mon, 9 Jun 2008 12:16:41 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60147 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751329AbYFIQMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 12:12:30 -0400
-From: Marin Mitov <mitov@issp.bas.bg>
-Organization: Institute of Solid State Physics
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH][resubmit] x86: enable preemption in delay
-Date: Mon, 9 Jun 2008 19:11:21 +0300
-User-Agent: KMail/1.9.9
+	id S1750728AbYFIQQk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 12:16:40 -0400
+Date: Mon, 9 Jun 2008 18:16:06 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Marin Mitov <mitov@issp.bas.bg>
 Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        linux-rt-users <linux-rt-users@vger.kernel.org>, akpm@osdl.org,
@@ -24,214 +21,53 @@ Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
        Gregory Haskins <ghaskins@novell.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andi Kleen <andi-suse@firstfloor.org>
-References: <200805252108.25011.mitov@issp.bas.bg> <200806011901.23619.mitov@issp.bas.bg> <20080609121309.GA13610@elte.hu>
-In-Reply-To: <20080609121309.GA13610@elte.hu>
+Subject: Re: [PATCH][resubmit] x86: enable preemption in delay
+Message-ID: <20080609161606.GA24841@elte.hu>
+References: <200805252108.25011.mitov@issp.bas.bg> <200806011901.23619.mitov@issp.bas.bg> <20080609121309.GA13610@elte.hu> <200806091911.21850.mitov@issp.bas.bg>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806091911.21850.mitov@issp.bas.bg>
+In-Reply-To: <200806091911.21850.mitov@issp.bas.bg>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.3
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 June 2008 03:13:09 pm Ingo Molnar wrote:
+
+* Marin Mitov <mitov@issp.bas.bg> wrote:
+
+> > i think Thomas had a concern with the original fix - forgot the 
+> > details.
 > 
-> * Marin Mitov <mitov@issp.bas.bg> wrote:
+> Here they are:
 > 
-> > Hi all,
-> > 
-> > This is a resubmit of the patch proposed by Ingo and me few month ago:
-> > 
-> > http://lkml.org/lkml/2007/11/20/343
-> > 
-> > It was in -mm for a while and then removed due to a move into the 
-> > mainline, but it never appeared in it.
+> http://lkml.org/lkml/2008/5/25/251
 > 
-> hm, we've got this overlapping commit in -tip for the same general 
-> problem:
+> but see my comment to it.
 > 
-> |  # x86/urgent: e71e716: x86: enable preemption in delay
-> |
-> |  From: Steven Rostedt <rostedt@goodmis.org>
-> |  Date: Sun, 25 May 2008 11:13:32 -0400
-> |  Subject: [PATCH] x86: enable preemption in delay
+> There is no principal difference between both patches. I have seen 
+> Steven's one as merged in linux-2.6.26-rc5. The only difference (if it 
+> matters of all) is that in mine patch 
+> preempt_disable()/preempt_enable() sections are shorter and protect 
+> only the code that must be protected:
 > 
-> i think Thomas had a concern with the original fix - forgot the details.
-
-Here they are:
-
-http://lkml.org/lkml/2008/5/25/251
-
-but see my comment to it.
-
+> preempt_disable()
+> rdtscl()
+> smp_processor_id()
+> preempt_enable()
 > 
-> 	Ingo
+> As far as Steven's patch is already merged - let it be :-)
 
-There is no principal difference between both patches. I have seen Steven's
-one as merged in linux-2.6.26-rc5. The only difference (if it matters of all) is
-that in mine patch preempt_disable()/preempt_enable() sections are shorter
-and protect only the code that must be protected: 
+we could still merge your enhancements as well ontop of Steven's, if you 
+would like to pursue it. If so then please send a patch against -rc5 or 
+against -tip. Reducing the length of preempt-off sections is a fair 
+goal.
 
-preempt_disable()
-rdtscl()
-smp_processor_id()
-preempt_enable()
-
-As far as Steven's patch is already merged - let it be :-)
-
-Regards 
-
-Marin Mitov
-
-> 
-> ------------------>
-> commit e71e716c531557308895598002bee24c431d3be1
-> Author: Steven Rostedt <rostedt@goodmis.org>
-> Date:   Sun May 25 11:13:32 2008 -0400
-> 
->     x86: enable preemption in delay
->     
->     The RT team has been searching for a nasty latency. This latency shows
->     up out of the blue and has been seen to be as big as 5ms!
->     
->     Using ftrace I found the cause of the latency.
->     
->        pcscd-2995  3dNh1 52360300us : irq_exit (smp_apic_timer_interrupt)
->        pcscd-2995  3dN.2 52360301us : idle_cpu (irq_exit)
->        pcscd-2995  3dN.2 52360301us : rcu_irq_exit (irq_exit)
->        pcscd-2995  3dN.1 52360771us : smp_apic_timer_interrupt (apic_timer_interrupt
->     )
->        pcscd-2995  3dN.1 52360771us : exit_idle (smp_apic_timer_interrupt)
->     
->     Here's an example of a 400 us latency. pcscd took a timer interrupt and
->     returned with "need resched" enabled, but did not reschedule until after
->     the next interrupt came in at 52360771us 400us later!
->     
->     At first I thought we somehow missed a preemption check in entry.S. But
->     I also noticed that this always seemed to happen during a __delay call.
->     
->        pcscd-2995  3dN.2 52360836us : rcu_irq_exit (irq_exit)
->        pcscd-2995  3.N.. 52361265us : preempt_schedule (__delay)
->     
->     Looking at the x86 delay, I found my problem.
->     
->     In git commit 35d5d08a085c56f153458c3f5d8ce24123617faf, Andrew Morton
->     placed preempt_disable around the entire delay due to TSC's not working
->     nicely on SMP.  Unfortunately for those that care about latencies this
->     is devastating! Especially when we have callers to mdelay(8).
->     
->     Here I enable preemption during the loop and account for anytime the task
->     migrates to a new CPU. The delay asked for may be extended a bit by
->     the migration, but delay only guarantees that it will delay for that minimum
->     time. Delaying longer should not be an issue.
->     
->     [
->       Thanks to Thomas Gleixner for spotting that cpu wasn't updated,
->         and to place the rep_nop between preempt_enabled/disable.
->     ]
->     
->     Signed-off-by: Steven Rostedt <srostedt@redhat.com>
->     Cc: akpm@osdl.org
->     Cc: Clark Williams <clark.williams@gmail.com>
->     Cc: Peter Zijlstra <peterz@infradead.org>
->     Cc: "Luis Claudio R. Goncalves" <lclaudio@uudg.org>
->     Cc: Gregory Haskins <ghaskins@novell.com>
->     Cc: Linus Torvalds <torvalds@linux-foundation.org>
->     Cc: Andi Kleen <andi-suse@firstfloor.org>
->     Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> 
-> diff --git a/arch/x86/lib/delay_32.c b/arch/x86/lib/delay_32.c
-> index 4535e6d..d710f2d 100644
-> --- a/arch/x86/lib/delay_32.c
-> +++ b/arch/x86/lib/delay_32.c
-> @@ -44,13 +44,36 @@ static void delay_loop(unsigned long loops)
->  static void delay_tsc(unsigned long loops)
->  {
->  	unsigned long bclock, now;
-> +	int cpu;
->  
-> -	preempt_disable();		/* TSC's are per-cpu */
-> +	preempt_disable();
-> +	cpu = smp_processor_id();
->  	rdtscl(bclock);
-> -	do {
-> -		rep_nop();
-> +	for (;;) {
->  		rdtscl(now);
-> -	} while ((now-bclock) < loops);
-> +		if ((now - bclock) >= loops)
-> +			break;
-> +
-> +		/* Allow RT tasks to run */
-> +		preempt_enable();
-> +		rep_nop();
-> +		preempt_disable();
-> +
-> +		/*
-> +		 * It is possible that we moved to another CPU, and
-> +		 * since TSC's are per-cpu we need to calculate
-> +		 * that. The delay must guarantee that we wait "at
-> +		 * least" the amount of time. Being moved to another
-> +		 * CPU could make the wait longer but we just need to
-> +		 * make sure we waited long enough. Rebalance the
-> +		 * counter for this CPU.
-> +		 */
-> +		if (unlikely(cpu != smp_processor_id())) {
-> +			loops -= (now - bclock);
-> +			cpu = smp_processor_id();
-> +			rdtscl(bclock);
-> +		}
-> +	}
->  	preempt_enable();
->  }
->  
-> diff --git a/arch/x86/lib/delay_64.c b/arch/x86/lib/delay_64.c
-> index bbc6105..4c441be 100644
-> --- a/arch/x86/lib/delay_64.c
-> +++ b/arch/x86/lib/delay_64.c
-> @@ -31,14 +31,36 @@ int __devinit read_current_timer(unsigned long *timer_value)
->  void __delay(unsigned long loops)
->  {
->  	unsigned bclock, now;
-> +	int cpu;
->  
-> -	preempt_disable();		/* TSC's are pre-cpu */
-> +	preempt_disable();
-> +	cpu = smp_processor_id();
->  	rdtscl(bclock);
-> -	do {
-> -		rep_nop(); 
-> +	for (;;) {
->  		rdtscl(now);
-> +		if ((now - bclock) >= loops)
-> +			break;
-> +
-> +		/* Allow RT tasks to run */
-> +		preempt_enable();
-> +		rep_nop();
-> +		preempt_disable();
-> +
-> +		/*
-> +		 * It is possible that we moved to another CPU, and
-> +		 * since TSC's are per-cpu we need to calculate
-> +		 * that. The delay must guarantee that we wait "at
-> +		 * least" the amount of time. Being moved to another
-> +		 * CPU could make the wait longer but we just need to
-> +		 * make sure we waited long enough. Rebalance the
-> +		 * counter for this CPU.
-> +		 */
-> +		if (unlikely(cpu != smp_processor_id())) {
-> +			loops -= (now - bclock);
-> +			cpu = smp_processor_id();
-> +			rdtscl(bclock);
-> +		}
->  	}
-> -	while ((now-bclock) < loops);
->  	preempt_enable();
->  }
->  EXPORT_SYMBOL(__delay);
-> 
-
-
+	Ingo
