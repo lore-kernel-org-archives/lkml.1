@@ -1,129 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760714AbYFIMzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760958AbYFIMz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760714AbYFIMzh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 08:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759984AbYFIMzA
+	id S1760958AbYFIMz7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 08:55:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758138AbYFIMzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 08:55:00 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:55285 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759962AbYFIMy7 (ORCPT
+	Mon, 9 Jun 2008 08:55:48 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:40942 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757545AbYFIMzr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 08:54:59 -0400
-Date: Mon, 9 Jun 2008 14:54:56 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: David Martin <tasio@hierro.tasio.net>, Maarten Bressers <mbres@gentoo.org>,
-       Daniel Drake <dsd@gentoo.org>, linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>
-Subject: Re: [regression/bisected] corrupt CD data after media change and
- delay
-In-Reply-To: <1212765202.16182.5.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0806091443000.17741@vixen.sonytel.be>
-References: <Pine.LNX.4.64.0806061458300.6228@vixen.sonytel.be>
- <1212765202.16182.5.camel@localhost.localdomain>
+	Mon, 9 Jun 2008 08:55:47 -0400
+Date: Mon, 9 Jun 2008 06:55:30 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Maxim Shchetynin <maxim@linux.vnet.ibm.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: AZFS file system proposal
+Message-ID: <20080609125530.GF30405@parisc-linux.org>
+References: <20080609104650.4f220492@mercedes-benz.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1080947316-1213016096=:17741"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080609104650.4f220492@mercedes-benz.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Mon, Jun 09, 2008 at 10:46:50AM +0200, Maxim Shchetynin wrote:
+> +config AZ_FS
+> +	tristate "AZFS filesystem support"
+> +	help
+> +	  Non-buffered filesystem for block devices with a gendisk and
+> +	  with direct_access() method in gendisk->fops.
+> +	  AZFS does not buffer outgoing traffic and is doing no read ahead.
+> +	  It supports mount options (given with -o) bs=x,uid=x,gid=x.
+> +	  If block-size (bs) is not specified AZFS uses block-size used
+> +	  by block device. Though mmap() method is available only if
+> +	  block-size equals to or is greater than system page size.
 
----584349381-1080947316-1213016096=:17741
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+This is a terrible description.  I can't even suggest better wording
+because I don't understand it.  The correct wording would not mention
+gendisks, fops or direct_access().  It would tell the user what they
+might use it for.
 
-On Fri, 6 Jun 2008, James Bottomley wrote:
-> On Fri, 2008-06-06 at 16:06 +0200, Geert Uytterhoeven wrote:
-> > When mounting a CD/DVD more than 30 seconds after inserting it, and reading
-> > from it, we get:
-> > 
-> >     attempt to access beyond end of device
-> >     sr0: rw=0, want=371932, limit=371928
-> >     Buffer I/O error on device sr0, logical block 92982
-> >     attempt to access beyond end of device
-> >     sr0: rw=0, want=371936, limit=371928
-> >     Buffer I/O error on device sr0, logical block 92983
-> >     attempt to access beyond end of device
-> >     sr0: rw=0, want=371940, limit=371928
-> >     Buffer I/O error on device sr0, logical block 92984
-> >     attempt to access beyond end of device
-> >     sr0: rw=0, want=371944, limit=371928
-> >     Buffer I/O error on device sr0, logical block 92985
-> >     attempt to access beyond end of device
-> >     sr0: rw=0, want=371948, limit=371928
-> >     Buffer I/O error on device sr0, logical block 92986
-> >     ...
-> > 
-> > It can be reproduced on a PS3 with busybox userland using:
-> > 
-> >     # Insert first CD
-> >     $ mount /dev/sr0 /mnt
-> >     $ ls -R /mnt
-> >     $ umount /mnt
-> >     $ eject
-> >     # Remove first CD
-> > 
-> >     # Insert second CD
-> >     # Wait at least 30 seconds
-> >     $ mount /dev/sr0 /mnt
-> >     $ tar cf /dev/null /mnt
-> > 
-> > It does not happen when mounting the second CD within 30 seconds after
-> > inserting it, which is consistent with
-> > 
-> >     #define SR_TIMEOUT     (30 * HZ)
-> > 
-> > I can't seem to reproduce it with a Debian or Fedora Core 6 userland.
-> > 
-> > The problem is present in 2.6.25.
-> > 2.6.24 is OK.
-> 
-> Also, in the two different situations, what does
-> 
-> cat /sys/block/sr0/size
-> 
-> (assuming your cd is sr0) give you?  My first theory is an incorrect
-> size propagating from something.
-
-Nice first theory!
-
-Initially /sys/block/sr0/size is 2097151.
-
-After inserting the first CD, and mounting it, /sys/block/sr0/size is changed
-to the size of the first CD (in 512 byte blocks).
-
-After ejecting the first CD and inserting the second CD, the behavior is like
-this:
-  1. when immediately mounting the CD, /sys/block/sr0/size is updated to the
-     size of the second CD,
-  2. when waiting more than 30 seconds before mounting the CD,
-     /sys/block/sr0/size is not updated, and keeps the old value.
-
-Surprisingly, it doesn't behave like this when inserting the first CD.
-/sys/block/sr0/size is always updated, whether I wait 30 seconds before
-mounting it or not.
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-Sony Technology and Software Centre Europe
-A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
-VAT BE 0413.825.160 · RPR Brussels
-Fortis 293-0376800-10 GEBA-BE-BB
----584349381-1080947316-1213016096=:17741--
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
