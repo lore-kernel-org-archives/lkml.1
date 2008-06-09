@@ -1,456 +1,247 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755211AbYFINlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbYFINm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755211AbYFINlT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 09:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbYFINlB
+	id S1755567AbYFINm5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 09:42:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbYFINmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 09:41:01 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38145 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750966AbYFINk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 09:40:58 -0400
-Date: Mon, 9 Jun 2008 15:38:03 +0200
-From: Karel Zak <kzak@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org
-Subject: [ANNOUNCE] util-linux-ng 2.14 (stable)
-Message-ID: <20080609133803.GA22057@nb.net.home>
+	Mon, 9 Jun 2008 09:42:47 -0400
+Received: from server515c.exghost.com ([72.32.253.79]:1092 "EHLO
+	server515.appriver.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751713AbYFINmp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 09:42:45 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte Veliciraptors
+Date: Mon, 9 Jun 2008 08:41:18 -0500
+Message-ID: <A20315AE59B5C34585629E258D76A97CA535E9@34093-C3-EVS3.exchange.rackspace.com>
+In-Reply-To: <8CA981CB5C2B4D6-E68-18E2@MBLK-M14.sysops.aol.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte Veliciraptors
+Thread-Index: AcjKBbwKtody6LDlSUirhjQlBGmFpgAKkHOg
+References: <alpine.DEB.1.10.0806071015110.23323@p34.internal.lan> <e9c3a7c20806071846w60b74aeegdf3e39afb36b5d9a@mail.gmail.com> <8CA981CB5C2B4D6-E68-18E2@MBLK-M14.sysops.aol.com>
+From: "David Lethe" <david@santools.com>
+To: <thomas62186218@aol.com>, <dan.j.williams@gmail.com>,
+       <jpiszcz@lucidpixels.com>
+Cc: <linux-kernel@vger.kernel.org>, <linux-raid@vger.kernel.org>,
+       <xfs@oss.sgi.com>, <ap@solarrain.com>
+X-OriginalArrivalTime: 09 Jun 2008 13:42:40.0402 (UTC) FILETIME=[AFA65F20:01C8CA36]
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Primary: david@santools.com
+X-Note: This Email was scanned by AppRiver SecureTide
+X-ALLOW: david@santools.com ALLOWED
+X-Virus-Scan: V-
+X-Note: Spam Tests Failed: 
+X-Country-Path: PRIVATE->UNITED STATES->UNITED STATES
+X-Note-Sending-IP: 72.32.49.5
+X-Note-Reverse-DNS: fe1.exchange.rackspace.com
+X-Note-WHTLIST: david@santools.com
+X-Note: User Rule Hits: 
+X-Note: Global Rule Hits: 81 82 148 
+X-Note: Mail Class: ALLOWEDSENDER
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+For faster random I/O:
+ * Decrease chunk size
+ * Migrate files that have higher random I/O to a RAID1 set, using disks
+with the lowest access time/latency
+ * If possible, use the /dev/shm file system 
+ * Determine I/O size of apps that produce most of the random I/O, and
+make sure that md+filesystem matches. If most random I/O is 32KB, then
+don't waste bandwidth by making md read 256KB at a time, or making it
+read 2x16KB I/Os. Also don't build md sets like 4-drive RAID5, (Do a
+5-drive RAID5 set), because non-parity data isn't a multiple of 2. A
+10-drive RAID5 set with heavy random I/O is also profoundly wrong
+because you are just removing the opportunity to have all of those heads
+processing random I/O. 
+ * If you only have one partition on a md set, then partition it into a
+few file systems. This may provide greater opportunity for caching I/Os.
+ * Experiment with different file systems, and optimize accordingly.  
+ * Turn of journaling, or at least move journals to RAID1 devices.
+ * Add RAM and try to increase buffer cache in attempt to improve cache
+hit percentage (this works up to a point)
+ * Buy a small SSD and migrate files that get pounded with random I/O to
+that device. (Make sure you don't get a flash SSD, but a DRAM based SSD
+that satisfies random I/O in nanoseconds instead of millisecs). They are
+expensive, but the appropriate device.  This is how companies such as
+Google & Ebay manage to get things done. 
+The biggest thing to remember about random I/O, is that they are
+expensive, so just step back and think about ways to minimize the I/O
+requests to disk in the first place, and/or to spread the I/O across
+multiple raidsets that can work independently to satisfy your load.  All
+suggestions above will not work for everybody. You must understand the
+nature of the bottleneck. 
 
-The stable util-linux-ng 2.14 release is available at
+David
 
-    ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.14/
+-----Original Message-----
+From: linux-raid-owner@vger.kernel.org
+[mailto:linux-raid-owner@vger.kernel.org] On Behalf Of
+thomas62186218@aol.com
+Sent: Monday, June 09, 2008 2:51 AM
+To: dan.j.williams@gmail.com; jpiszcz@lucidpixels.com
+Cc: linux-kernel@vger.kernel.org; linux-raid@vger.kernel.org;
+xfs@oss.sgi.com; ap@solarrain.com
+Subject: Re: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte
+Veliciraptors
 
-Feedback and bug reports, as always, are welcomed.
+Thank you for sharing these results. One issue that I consistently see 
+with these results is miserable random IO performance. Looking at these 
+numbers, even a low-end RAID controller with 128MB of cache will outrun 
+md-based RAIDs in random IO benchmarks. In today's world of virtual 
+machines, etc, random IO is far more common than sequential IO. What 
+can be done with md (or something else) to alleviate this problem?
 
-    Karel
-
-
-Util-linux-ng 2.14 Release Notes
-================================
-
-Release highlights
-------------------
-
- mount(8) supports new "nofail" mount option.
-
- mount(8) supports auto-destruction of loop devices.
-
- losetup(8) supports new command line option "-j" to show status of all
- loop devices associated with given file.
-
- losetup(8) supports unlimited number of loop devices.
-
- losetup(8) supports new command line option "--sizelimit" to set data end.
-
- ldattach(8) command has been added to util-linux-ng. The ldattach
- daemon opens the specified device file and attaches the line discipline
- to it for processing of the sent and/or received data.
-
- setterm(8) supports new command line option "-blank [force|poke]" for
- TIOCL_{BLANKED,BLANK}SCREEN.
-
- tailf(8) has been reimplemented to use inotify.
-
- tailf(8) supports new command line option "-n" to specifying output lines.
-
- mkswap(8) supports new command line option "-U" to set UUID explicitly.
-
- fdisk(8) has been fixed to calculate partition size in 2^N.
-
- cal(8) supports highlighting an arbitrary date.
-
- agetty(8) makes username-in-uppercase feature optional (off by default).
- Users who use uppercase-only terminals need to use the option "-U" now.
-
- losetup(8), mount(8), umount(8), fdisk(8) and sfdisk(8) support static
- linking when compiled with --enable-static-programs.
-
- hwclock(8) supports new command line option "adjfile" to override
- the default /etc/adjtime.
-
- scriptreplay(1) command has been re-written from Perl to C.
+-Thomas
 
 
-Deprecated
-----------
-
- The losetup(8) '-s' option (introduced by util-linux-ng-2.13) is deprecated
- now.  This short form of the option '--show' could be in collision with
- Loop-AES losetup implementation where the same option is used for the loop
- sizelimit.
-
-
-Fixed security issues
----------------------
-
- CVE-2008-1926 - audit log injection via login
-
-		 The problem was originally reported for OpenSSH few months
-         ago (CVE-2007-3102). The login(1) is affected by the same
-         bug when built with the option "--with-audit".
+-----Original Message-----
+From: Dan Williams <dan.j.williams@gmail.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org; linux-raid@vger.kernel.org; 
+xfs@oss.sgi.com; Alan Piszcz <ap@solarrain.com>
+Sent: Sat, 7 Jun 2008 6:46 pm
+Subject: Re: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte 
+Veliciraptors
 
 
-Stable maintenance releases between v2.13 and v2.14
----------------------------------------------------
-
-util-linux-ng 2.13.1.1 [22-Apr-2008]
-
- * ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.13/v2.13.1.1-ReleaseNotes
-   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.13/v2.13.1.1-ChangeLog
-
-util-linux-ng 2.13.1 [16-Jan-2008]
-
- * ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.13/v2.13.1-ReleaseNotes
-   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.13/v2.13.1-ChangeLog
 
 
-ChangeLog between v2.13 and v2.14
----------------------------------
 
- For more details see ChangeLog files at:
- ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.14/
 
-agetty:
-   - cleanup MAXHOSTNAMELEN  [Karel Zak]
-   - make username-in-uppercase feature optional (off by default.)  [Hamish Coleman]
-   - non-linux support (use pathnames.h)  [Karel Zak]
-   - replace termio with termios interface  [Samuel Thibault]
-   - ungettextize several debugging messages.  [Benno Schulenberg]
-blockdev:
-   - add --getsz to blockdev.8  [Karel Zak]
-   - add missing description about option --report in manpage  [Li Zefan]
-   - fix  opened file leaving unclosed  [lizf]
-   - use lib/blkdev.c, fix --report  [Karel Zak]
-build-sys:
-   - add --enable-static-programs  [Stepan Kasal, Karel Zak]
-   - add AC_CANONICAL_HOST  [Miklos Szeredi]
-   - add VARSUFFIX to UTIL_CHECK_LIB  [Karel Zak]
-   - add err.h check  [Karel Zak]
-   - add support ionice for Super-H architecture  [Karel Zak]
-   - add v2.14 to NEWS  [Karel Zak]
-   - autogen.sh reports versions of autotools now  [Karel Zak]
-   - build arch(1) during distcheck  [Stepan Kasal]
-   - cleanup "x$foo" usage  [Karel Zak]
-   - cleanup disk-utils/Makefile.am (use $utils_common)  [Karel Zak]
-   - cleanup usage of linux/major.h  [Samuel Thibault]
-   - disable syscall fallbacks for non-linux systems  [Karel Zak]
-   - do not add -luuid to BLKID_LIBS  [Stepan Kasal]
-   - fix missing deps for swapon  [Matthias Koenig]
-   - ignore a bunch of generated files, mostly binaries  [James Youngman]
-   - nls/locale handling in util-linux-ng general  [Mike Frysinger]
-   - non-linux support  [Samuel Thibault]
-   - release++  [Karel Zak]
-   - remove errs.h  [Karel Zak]
-   - remove files that are no longer delivered from git  [LaMont Jones]
-   - remove hardcoded _GNU_SOURCE  [Karel Zak]
-   - remove unnecessary check-local target from login-utils/  [Karel Zak]
-   - set AC_PREREQ to 2.60, increment version to 2.14  [Karel Zak]
-   - simplify code around RDEV_LINKS and SETARCH_LINKS  [Stepan Kasal]
-   - unify method for checking system calls and fallback handling  [Mike Frysinger, Stepan Kasal]
-   - update .gitignore files  [Karel Zak]
-   - use dist_man_MANS instead of man_MANS  [Stepan Kasal]
-   - use ncursesw (wide version) when possibe  [Karel Zak, Mike Frysinger]
-   - use pkg-config to find the libs for static build  [Stepan Kasal]
-   - use portable $(VAR =) instead of gmake-specific $(addsuffix)  [Stepan Kasal]
-cal:
-   - add description about option -V to manpage  [Li Zefan]
-   - add support for highlighting an arbitrary date  [Pádraig Brady]
-   - avoid -Wformat warnings  [Jim Meyering]
-   - fix weekday alignment for certain locales  [Pádraig Brady]
-   - replace errs.h with libc err.h  [Karel Zak]
-   - use HAVE_LIB{NCURSES,NCURSESW} instead HAVE_NCURSES  [Karel Zak]
-cfdisk:
-   - define portable {DEFAULT,ALTERNATE}_DEVICE  [Samuel Thibault]
-   - display cylinders beyond 1024  [Peter Breitenlohner]
-   - slightly increase the size of menu buttons  [Benno Schulenberg]
-   - translate partition-type names when they are printed.  [Benno Schulenberg]
-chfn:
-   - add pam_end() call and cleanup PAM code  [Karel Zak]
-   - fix compiler warnings in selinux stuff  [Karel Zak]
-chfn, chsh, login:
-   - collapsing three similar messages into a single one  [Benno Schulenberg]
-chsh:
-   - should use pam_end function to terminate the PAM transaction  [Yu Zhiguo, Karel Zak]
-column:
-   - replace errs.h with libc err.h  [Karel Zak]
-ddate:
-   - 11th, 12th and 13th of month  [Volker Schatz]
-docs:
-   - add a note about minix v3 to TODO file  [Karel Zak]
-   - add info about .bugfix releases and branches  [Karel Zak]
-   - add note about incorrect tag 2.13.1  [Karel Zak]
-   - add note about losetup --sizelimit to ReleaseNotes  [Karel Zak]
-   - add note about static linking  [Karel Zak]
-   - add v2.14 ReleaseNotes  [Karel Zak]
-   - cleanup DEPRECATED file  [Karel Zak]
-   - cleanup README.devel, add note about coding style and Signed-off-by  [Karel Zak]
-   - fix ChangeLog URL  [Pascal Terjan]
-   - fix stable branche name in README.devel  [Karel Zak]
-   - mark vipw(1) is deprecated in favor of vipw from shadow-utils  [Karel Zak]
-   - refresh TODO list  [Karel Zak]
-   - remove date from ReleasNotes  [Karel Zak]
-   - tweak a few messages for clarity  [Benno Schulenberg]
-   - update AUTHORS file  [Karel Zak]
-   - update TODO file  [Karel Zak]
-   - update v2.14 ReleaseNotes  [Karel Zak]
-   - we already rewrote the scriptreplay script; remove that TODO entry  [James Youngman]
-elvtune:
-   - use get_linux_version()  [Karel Zak]
-fdformat:
-   - install to /usr/sbin instead to /usr/bin  [Karel Zak]
-fdisk:
-   - better fallback for get_random_id()  [H. Peter Anvin]
-   - calculate +size{K,M,G} in 2^N  [Karel Zak]
-   - cleanup BLK* ioctls usage  [Karel Zak]
-   - doesn't recognize the VMware ESX partitions  [Karel Zak]
-   - doing useless ioctl when editing an image  [Pascal Terjan]
-   - fix building for AVR32 and CRIS  [Imre Kaloz]
-   - fix typo  [Karel Zak]
-   - message tweak  [Karel Zak]
-   - non-linux support (MAXPATHLEN)  [Karel Zak]
-   - non-linux support (use standard uintxy_t instead __uxy)  [Samuel Thibault]
-   - use more readable "GPT" name rather than "EFI GPT"  [Robert Millan]
-   - use swab macros from bitops.h  [Karel Zak]
-flock:
-   - typo in man page  [A. Costa]
-fsck.cramfs:
-   - clean up gcc warnings  [Randy Dunlap]
-fsck.minix:
-   - correct the error message given when we can't open the device  [James Youngman]
-   - reset the terminal state if we are killed by a fatal signal  [James Youngman]
-getopt:
-   - fix path to examples in getopt.1  [Karel Zak]
-   - install example scripts as SCRIPTS, not DATA  [Peter Breitenlohner]
-hwclock:
-   - add --adjfile=path option  [Karel Zak]
-   - check for ENODEV  [David Woodhouse]
-   - do not create a zero adjfile  [Alain Guibert]
-   - fix --rtc option  [Matthias Koenig, Karel Zak]
-include:
-   - <stdint.h> provides everything  [Samuel Thibault]
-   - add bitops.h with swab{16,32,64} macros  [Karel Zak]
-   - add mount paths to pathnames.h  [Karel Zak]
-   - cleanup pathnames.h  [Karel Zak]
-ionice:
-   - add a note about permissions to ionice.1  [Karel Zak]
-   - update man page to reflect IDLE class change in  2.6.25  [Karel Zak]
-ipcs:
-   - add information about POSIX compatibility to ipcs.1  [Karel Zak]
-kill:
-   - man page is missing a description of "kill -0"  [Karel Zak]
-ldattach:
-   - add NLS support  [Karel Zak]
-   - new command  [Tilman Schmidt]
-   - use glibc termios  [Karel Zak]
-lib:
-   - add blkdev.{c,h}  [Stefan Krah, Karel Zak]
-   - add linux_version.{c,h}  [Stefan Krah]
-login:
-   - audit log injection attack via login  [Steve Grubb]
-   - fix a small memory leak and remove unnecessary zeroing  [Karel Zak]
-   - login segfaults on EOF (rh#298461)  [Karel Zak]
-   - replace termio with termios interface  [Samuel Thibault]
-   - rewrite is_local() to remove limits on line length  [James Youngman]
-login-utils:
-   - cleanup strlen() and fgets() usage  [James Youngman]
-losetup:
-   - add --associated option  [Karel Zak]
-   - add --sizelimit option  [Shachar Shemesh]
-   - canonicalize loopfile name  [Karel Zak, Matthias Koenig]
-   - clean up gcc warnings  [Randy Dunlap]
-   - fix errno usage  [Karel Zak]
-   - fix typo in losetup.8  [Karel Zak]
-   - mark the option -s as deprecated  [Karel Zak]
-   - remove duplicate xstrdup() and error()  [Karel Zak]
-   - split help message into two smaller parts  [Benno Schulenberg]
-   - support unlimited number of loops  [Karel Zak]
-   - use standard uintxy_t types (struct loop_info64)  [Samuel Thibault]
-mesg:
-   - replace errs.h with libc err.h  [Karel Zak]
-mkfs.cramfs:
-   - clean up gcc warnings  [Randy Dunlap, Karel Zak]
-   - remove unused header file  [lizf]
-   - switch on localization.  [Benno Schulenberg]
-mkfs.minix:
-   - add sectorsize check  [Matthias Koenig]
-   - clean up gcc warnings  [Karel Zak]
-   - clean up gcc warnings  [Randy Dunlap]
-   - device size cleanup  [Matthias Koenig]
-mkswap:
-   - BLKGETSIZE cleanup  [Karel Zak]
-   - cleanup kB vs. KiB usage in error messages  [Karel Zak]
-   - fix compiler warnings  [Karel Zak]
-   - linux_version() code consolidation  [Karel Zak]
-   - possible to crash with SELinux relabeling support  [KaiGai Kohei]
-   - set UUID for swap space (add -U option)  [Martin Schulze]
-   - set errno=0 in write_all()  [Karel Zak]
-   - when writing the signature page, handle EINTR returns  [Karel Zak]
-more:
-   - cleanup gcc warnings  [Randy Dunlap]
-   - non-linux support  [Samuel Thibault]
-   - replace CBAUD with cfgetispeed()  [Samuel Thibault]
-   - use HAVE_WIDECHAR instead ENABLE_WIDECHAR  [Karel Zak]
-mount:
-   - "can't create lock file" message sometimes means failure, sometimes not  [Mark McLoughlin]
-   - "nofail" mount option  [Matthias Koenig, Karel Zak]
-   - -L|-U segfault when label or uuid doesn't exist  [Karel Zak]
-   - add more details to the --version output  [Karel Zak]
-   - add support for sizelimit= mount option (for loop mounts)  [Shachar Shemesh]
-   - allow auto-destruction of loop devices  [Bernardo Innocenti]
-   - chain of symlinks to fstab causes use of pointer after free  [Norbert Buchmuller]
-   - clean up gcc warnings (mount_mntent.c)  [Randy Dunlap]
-   - clean up global variables  [Karel Zak]
-   - cleanup "none" fstype usage  [Karel Zak]
-   - cleanup KERNEL_VERSION, remove my_dev_t.h  [Karel Zak]
-   - cleanup canonicalize() usage  [Karel Zak]
-   - cleanup error() and die()  [Karel Zak]
-   - cleanup usage of _PATH_*  [Karel Zak]
-   - doesn't drop privileges properly when calling helpers  [Ludwig Nussel]
-   - don't call canonicalize(SPEC) for cifs, smbfs and nfs  [Karel Zak]
-   - don't canonicalize LABEL= or UUID= spec  [Karel Zak]
-   - drop the part always true from a while condition  [Pascal Terjan]
-   - fix a small typo in mount.8  [Christophe Blaess]
-   - fix fd leak  [Matthias Koenig]
-   - fix typo in mount.8  [Karel Zak]
-   - hint about helper program if device doesn't exist  [Karel Zak]
-   - improve chmod & chown usage and clean up gcc warnings (fstab.c)  [Karel Zak]
-   - improve error message when helper program not present  [LaMont Jones]
-   - prevent loop mounting the same file twice  [Karel Zak, Matthias Koenig]
-   - remount doesn't care about loop=  [Karel Zak]
-   - remove MS_{REPLACE,AFTER,BEFORE,OVER}  [Karel Zak]
-   - remove built-in support for background mounts  [Karel Zak]
-   - remove redundant fflush  [Karel Zak]
-   - remove set_proc_name()  [Karel Zak]
-   - remove useless if-before-my_free, define my_free as a macro  [Karel Zak]
-   - use MNTTYPE_SWAP (from mntent.h)  [Karel Zak]
-   - use atexit() rather than (*at_die)()  [Karel Zak]
-   - use blkdev_get_size()  [Karel Zak]
-   - use canonicalize in getfs_by_devname  [Karel Zak]
-namei:
-   - add to identify FIFO (named pipe) and update manpage  [Li Zefan]
-   - cleanup tailing white-spaces  [Karel Zak]
-   - non-linux support (get_current_dir_name() and PATH_MAX)  [Karel Zak, Samuel Thibault]
-partx:
-   - fix compiler warnings  [Karel Zak]
-   - use swab macros from bitops.h  [Karel Zak]
-pg:
-   - fix segfault on search  [Rajeev V. Pillai]
-po:
-   - add eu.po (from translationproject.org)  [Mikel Olasagasti]
-   - add pl.po (from translationproject.org)  [Andrzej Krzysztofowicz]
-   - fix typo in de.po  [Karel Zak]
-   - merge changes  [Karel Zak]
-   - update POTFILES.in  [Karel Zak]
-   - update ca.po (from translationproject.org)  [Josep Puigdemont]
-   - update cs.po (from translationproject.org)  [Petr Pisar]
-   - update da.po (from translationproject.org)  [Claus Hindsgaul]
-   - update de.po (from translationproject.org)  [Michael Piefel]
-   - update es.po (from translationproject.org)  [Santiago Vila Doncel]
-   - update et.po (from translationproject.org)  [Meelis Roos]
-   - update fi.po (from translationproject.org)  [Lauri Nurmi]
-   - update fr.po (from translationproject.org)  [Michel Robitaille]
-   - update hu.po (from translationproject.org)  [Gabor Kelemen]
-   - update id.po (from translationproject.org)  [Arif E. Nugroho]
-   - update it.po (from translationproject.org)  [Marco Colombo]
-   - update ja.po (from translationproject.org)  [Daisuke Yamashita]
-   - update nl.po (from translationproject.org)  [Benno Schulenberg]
-   - update po files  [Karel Zak]
-   - update pt_BR.po (from translationproject.org)  [Rodrigo Stulzer Lopes]
-   - update ru.po (from translationproject.org)  [Pavel Maryanov]
-   - update sl.po (from translationproject.org)  [Simon Mihevc]
-   - update sv.po (from translationproject.org)  [Daniel Nylander]
-   - update tr.po (from translationproject.org)  [Nilgün Belma Bugüner]
-   - update uk.po (from translationproject.org)  [Maxim V. Dziumanenko]
-   - update vi.po (from translationproject.org)  [Clytie Siddall]
-rename:
-   - add description about option -V to manpage  [Li Zefan]
-   - remove useless variable  [Li Zefan]
-renice:
-   - detect errors in arguments, add -v, -h and long options  [LaMont Jones, Karel Zak]
-rev:
-   - use warn() in errs.h  [Li Zefan]
-rtcwake:
-   - fix UTC time usage  [David Brownell]
-   - fix the default mode to "standby"  [Paulius Zaleckas]
-   - fix typo  [Karel Zak]
-   - fix typo SATE -> STATE  [Mike Frysinger]
-   - fix verbose message  [Karel Zak]
-   - include libgen.h for basename prototype  [Mike Frysinger]
-   - misc cleanups  [David Brownell]
-script:
-   - cleanup gcc warnings  [Randy Dunlap]
-   - cleanup includes  [Samuel Thibault]
-   - dies on SIGWINCH  [Karel Zak]
-   - read returns a size_t  [James Youngman]
-scriptreplay:
-   - gettextize a forgotten messages  [Karel Zak]
-   - rewrite in C  [Karel Zak, James Youngman]
-setarch:
-   - add fallback for linux/personality  [Karel Zak]
-   - add long options to setarch and update manpage  [Karel Zak, Li Zefan]
-   - add missing alpha subarchs  [Oliver Falk]
-   - adding groff symlinks to setarch manual page  [Arkadiusz Miskiewicz]
-   - fix compiler warning  [LaMont Jones]
-   - generate groff links in a better way  [Karel Zak]
-   - provide backwards compatibility  [Dmitry V. Levin]
-   - tweak the help text, and gettextize a forgotten message  [Benno Schulenberg]
-setterm:
-   - add -blan [force|poke] options for TIOCL_{BLANKED,BLANK}SCREEN  [Samuel Thibault, Karel Zak]
-   - dump by TIOCLINUX is deprecated since linux 1.1.92.  [Karel Zak]
-   - opened file leaving unclosed  [Karel Zak, lizf]
-   - remove unnecessaty ifndef TCGETS  [Samuel Thibault]
-sfdisk:
-   - allow partitioning drives of over 2^31 sectors.  [Kunihiko IMAI]
-   - cleanup 83 gcc warnings  [Randy Dunlap]
-   - opened files leaving unclosed  [Karel Zak, Li Zefan]
-   - remove unnecessary linux/unistd.h  [Samuel Thibault]
-   - use get_linux_version()  [Karel Zak]
-shutdown:
-   - use _PATH_MOUNTED instead of _PATH_MTAB  [Stepan Kasal]
-swapon:
-   - Reinitialize software suspend areas to avoid future corruption.  [Kees Cook, Karel Zak]
-   - add sundries.h  [Karel Zak]
-   - clean up gcc warnings  [Randy Dunlap]
-   - cleanup usage output  [Karel Zak]
-   - cleanup usage()  [Karel Zak]
-   - fix swsuspend detection  [Karel Zak]
-   - fix typo in usage()  [Karel Zak]
-   - readjust the usage summaries  [Benno Schulenberg]
-   - remove unnecessary myrealpath() call  [Karel Zak]
-sys-utils:
-   - correct setarch.8 manpage link creation  [Frédéric Bothamy]
-tailf:
-   - add option -n to specifying output lines  [Li Zefan]
-   - clean up gcc warnings & fix use of errno  [Karel Zak]
-   - inotify based reimplementation  [Karel Zak]
-   - non-linux support  [Samuel Thibault]
-   - opened file leaving unclosed  [lizf]
-   - replace errs.h with libc err.h  [Karel Zak]
-tests:
-   - add "sort" to cramfs test  [Karel Zak]
-   - add test for include/pathnames.h  [Karel Zak]
-   - add ts-mount-noncanonical  [Karel Zak]
-   - exactly define a time format in ls -l output  [Karel Zak]
-   - fix blkid cache usage  [Karel Zak]
-   - move test_bkdev to lib/  [Karel Zak]
-   - redirect libblkid cache to BLKID_FILE  [Karel Zak]
-   - rename test_sysinfo, remove tailing white-spaces  [Karel Zak]
-   - use losetup -s  [Karel Zak]
-umount:
-   - add hint about lsof & fuser  [Karel Zak]
-   - don't print duplicate error messages  [Karel Zak]
-   - use atexit() rather than (*at_die)()  [Karel Zak]
-wall:
-   - cleanup MAXHOSTNAMELEN  [Karel Zak]
 
--- 
- Karel Zak  <kzak@redhat.com>
+
+
+
+On Sat, Jun 7, 2008 at 7:22 AM, Justin Piszcz <jpiszcz@lucidpixels.com> 
+wrote:
+> First, the original benchmarks with 6-SATA drives with fixed 
+formatting,
+> using
+> right justification and the same decimal point precision throughout:
+> 
+http://home.comcast.net/~jpiszcz/20080607/raid-benchmarks-decimal-fix-an
+d-right-justified/disks.html
+>
+> Now for for veliciraptors!  Ever wonder what kind of speed is 
+possible with
+> 3 disk, 4,5,6,7,8,9,10-disk RAID5s?  I ran a loop to find out, each 
+run is
+> executed three times and the average is taken of all three runs per 
+each
+> RAID5 disk set.
+>
+> In short? The 965 no longer does justice with faster drives, a new 
+chipset
+> and motherboard are needed.  After reading or writing to 4-5 
+veliciraptors
+> it saturates the bus/965 chipset.
+>
+> Here is a picture of the 12 veliciraptors I tested with:
+> 
+http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-velicir
+aptors/raptors.jpg
+>
+> Here are the bonnie++ results:
+> 
+http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-velicir
+aptors/veliciraptor-raid.html
+>
+> For those who want the results in text:
+> 
+http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-velicir
+aptors/veliciraptor-raid.txt
+>
+> System used, same/similar as before:
+> Motherboard: Intel DG965WH
+> Memory: 8GiB
+> Kernel: 2.6.25.4
+> Distribution: Debian Testing x86_64
+> Filesystem: XFS with default mkfs.xfs parameters [auto-optimized for 
+SW
+> RAID]
+> Mount options: defaults,noatime,nodiratime,logbufs=8,logbsize=262144 
+0 1
+> Chunk size: 1024KiB
+> RAID5 Layout: Default (left-symmetric)
+> Mdadm Superblock used: 0.90
+>
+> Optimizations used (last one is for the CFQ scheduler), it improves
+> performance by a modest 5-10MiB/s:
+> http://home.comcast.net/~jpiszcz/raid/20080601/raid5.html
+>
+> # Tell user what's going on.
+> echo "Optimizing RAID Arrays..."
+>
+> # Define DISKS.
+> cd /sys/block
+> DISKS=$(/bin/ls -1d sd[a-z])
+>
+> # Set read-ahead.
+> # > That's actually 65k x 512byte blocks so 32MiB
+> echo "Setting read-ahead to 32 MiB for /dev/md3"
+> blockdev --setra 65536 /dev/md3
+>
+> # Set stripe-cache_size for RAID5.
+> echo "Setting stripe_cache_size to 16 MiB for /dev/md3"
+
+Sorry to sound like a broken record,  16MiB is not correct.
+
+size=$((num_disks * 4 * 16384 / 1024))
+echo "Setting stripe_cache_size to $size MiB for /dev/md3"
+
+...and commit 8b3e6cdc should improve the performance / 
+stripe_cache_size ratio.
+
+> echo 16384 > /sys/block/md3/md/stripe_cache_size
+>
+> # Disable NCQ on all disks.
+> echo "Disabling NCQ on all disks..."
+> for i in $DISKS
+> do
+>  echo "Disabling NCQ on $i"
+>  echo 1 > /sys/block/"$i"/device/queue_depth
+> done
+>
+> # Fix slice_idle.
+> # See http://www.nextre.it/oracledocs/ioscheduler_03.html
+> echo "Fixing slice_idle to 0..."
+> for i in $DISKS
+> do
+>  echo "Changing slice_idle to 0 on $i"
+>  echo 0 > /sys/block/"$i"/queue/iosched/slice_idle
+> done
+>
+
+Thanks for putting this data together.
+
+Regards,
+Dan
+--
+To unsubscribe from this list: send the line "unsubscribe linux-raid" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
+
+
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-raid" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
