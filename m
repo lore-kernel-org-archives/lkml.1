@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbYFIVKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754197AbYFIVLB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755433AbYFIVKc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 17:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbYFIVKW
+	id S1754197AbYFIVLB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 17:11:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756115AbYFIVKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 17:10:22 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:39650 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751393AbYFIVKV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 17:10:21 -0400
-Date: Mon, 9 Jun 2008 22:10:02 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: "Catalin(ux) M BOIE" <catab@embedromix.ro>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       linux-serial@vger.kernel.org, akpm@linux-foundation.org,
-       pazke@pazke.donpac.ru
-Subject: Re: [PATCH] Add support for a no-name 4 ports multiserial card
-Message-ID: <20080609211002.GB13254@flint.arm.linux.org.uk>
-References: <1212736393-6837-1-git-send-email-catab@embedromix.ro> <20080606111400.1eefc4fd@core> <20080606194036.GB18231@flint.arm.linux.org.uk> <484D8CCC.1070701@embedromix.ro>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <484D8CCC.1070701@embedromix.ro>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 9 Jun 2008 17:10:47 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:51444 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751393AbYFIVKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 17:10:46 -0400
+Message-Id: <20080609211028.110089743@attica.americas.sgi.com>
+User-Agent: quilt/0.46-1
+Date: Mon, 09 Jun 2008 16:10:28 -0500
+From: steiner@sgi.com
+To: akpm@osdl.org, linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, tglx@linutronix.de, holt@sgi.com, andrea@qumranet.com
+Subject: [patch 00/11] GRU Driver
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 09, 2008 at 11:04:28PM +0300, Catalin(ux) M BOIE wrote:
-> Rusell, I am very sorry about: sending e-mail without patch,
-> sending from an old mail address and calling you "Rusty".
 
-Keep going, you made another mistake above. 8)
+This series of patches adds a driver for the SGI UV GRU. The driver is still
+in development but it currently compiles for both x86_64 & IA64. All simple
+regression tests pass on IA64. Although features remain to be added, I'd like to
+start the process of getting the driver into the kernel. Additional kernel
+drivers will depend on services provide by the GRU driver.
 
-> Andrew, please hold on a little bit to get the Ack from Russel.
+The GRU is a hardware resource located in the system chipset. The GRU
+contains memory that is mmaped into the user address space. This memory is
+used to communicate with the GRU to perform functions such as load/store,
+scatter/gather, bcopy, AMOs, etc.  The GRU is directly accessed by user
+instructions using user virtual addresses. GRU instructions (ex., bcopy) use
+user virtual addresses for operands.
 
-And again but differently.
+The GRU contains a large TLB that is functionally very similar to processor TLBs.
+Because the external contains a TLB with user virtual address, it requires
+callouts from the core VM system when certain types of changes are made to
+the process page tables. There are several MMUOPS patches currently being
+discussed but none has been accepted into the kernel. The GRU driver 
+is built using version V18 from Andrea Arcangeli.
 
-> The last version of the patch is attached. Please Ack it if it is OK
-> for you. If not, please let me know.
-
-Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+--- jack
