@@ -1,44 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbYFINy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759217AbYFINym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756218AbYFINy2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 09:54:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYFINyR
+	id S1759217AbYFINym (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 09:54:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbYFINyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 09:54:17 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:48524 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751811AbYFINyQ (ORCPT
+	Mon, 9 Jun 2008 09:54:23 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:56521 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753865AbYFINyW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 09:54:16 -0400
-Date: Mon, 9 Jun 2008 14:53:57 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Pierre Ossman <drzeus@drzeus.cx>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Victor <linux@maxim.org.za>, Eric BENARD <ebenard@free.fr>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: [PATCH 4/7] mmc: at91_mci: add multiwrite switch
-Message-ID: <20080609135356.GD30971@flint.arm.linux.org.uk>
-References: <483FE9E7.7020707@atmel.com> <483FEE58.5000500@atmel.com> <20080601144251.GS5818@flint.arm.linux.org.uk> <20080609124249.349995df@mjolnir.drzeus.cx> <20080609130831.GC30971@flint.arm.linux.org.uk> <20080609154247.06db4c3e@mjolnir.drzeus.cx>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080609154247.06db4c3e@mjolnir.drzeus.cx>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 9 Jun 2008 09:54:22 -0400
+Date: Mon, 9 Jun 2008 15:54:20 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: David Martin <tasio@hierro.tasio.net>, linux-scsi@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Maarten Bressers <mbres@gentoo.org>, Daniel Drake <dsd@gentoo.org>,
+       Cell Broadband Engine OSS Development 
+	<cbe-oss-dev@ozlabs.org>
+Subject: Re: [Cbe-oss-dev] [regression/bisected] corrupt CD data after media
+ change and delay
+In-Reply-To: <Pine.LNX.4.64.0806091443000.17741@vixen.sonytel.be>
+Message-ID: <Pine.LNX.4.64.0806091546260.22138@vixen.sonytel.be>
+References: <Pine.LNX.4.64.0806061458300.6228@vixen.sonytel.be>
+ <1212765202.16182.5.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0806091443000.17741@vixen.sonytel.be>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-744764440-1213019660=:22138"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 09, 2008 at 03:42:47PM +0200, Pierre Ossman wrote:
-> You're still listed for the primecell driver though. What's the status
-> on that one?
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-It's always reported the number of bytes transferred to/from the card
-(which I think includes the wait for the busy signal to deassert.)
+---584349381-744764440-1213019660=:22138
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Probably the best thing is to mark MMCI as orphaned as well - for much
-the same reason.  I've only one remaining MMC card which I use for
-other purposes.  I'm not willing to sacrifice that one for further
-testing, neither am I willing to buy another card to just be used for
-testing purposes.
+On Mon, 9 Jun 2008, Geert Uytterhoeven wrote:
+> On Fri, 6 Jun 2008, James Bottomley wrote:
+> > On Fri, 2008-06-06 at 16:06 +0200, Geert Uytterhoeven wrote:
+> > > When mounting a CD/DVD more than 30 seconds after inserting it, and reading
+> > > from it, we get:
+> > > 
+> > >     attempt to access beyond end of device
+> > >     sr0: rw=0, want=371932, limit=371928
+> > >     Buffer I/O error on device sr0, logical block 92982
+> > >     attempt to access beyond end of device
+> > >     sr0: rw=0, want=371936, limit=371928
+> > >     Buffer I/O error on device sr0, logical block 92983
+> > >     attempt to access beyond end of device
+> > >     sr0: rw=0, want=371940, limit=371928
+> > >     Buffer I/O error on device sr0, logical block 92984
+> > >     attempt to access beyond end of device
+> > >     sr0: rw=0, want=371944, limit=371928
+> > >     Buffer I/O error on device sr0, logical block 92985
+> > >     attempt to access beyond end of device
+> > >     sr0: rw=0, want=371948, limit=371928
+> > >     Buffer I/O error on device sr0, logical block 92986
+> > >     ...
+> > > 
+> > > It can be reproduced on a PS3 with busybox userland using:
+> > > 
+> > >     # Insert first CD
+> > >     $ mount /dev/sr0 /mnt
+> > >     $ ls -R /mnt
+> > >     $ umount /mnt
+> > >     $ eject
+> > >     # Remove first CD
+> > > 
+> > >     # Insert second CD
+> > >     # Wait at least 30 seconds
+> > >     $ mount /dev/sr0 /mnt
+> > >     $ tar cf /dev/null /mnt
+> > > 
+> > > It does not happen when mounting the second CD within 30 seconds after
+> > > inserting it, which is consistent with
+> > > 
+> > >     #define SR_TIMEOUT     (30 * HZ)
+> > > 
+> > > I can't seem to reproduce it with a Debian or Fedora Core 6 userland.
+> > > 
+> > > The problem is present in 2.6.25.
+> > > 2.6.24 is OK.
+> > 
+> > Also, in the two different situations, what does
+> > 
+> > cat /sys/block/sr0/size
+> > 
+> > (assuming your cd is sr0) give you?  My first theory is an incorrect
+> > size propagating from something.
+> 
+> Nice first theory!
+> 
+> Initially /sys/block/sr0/size is 2097151.
+> 
+> After inserting the first CD, and mounting it, /sys/block/sr0/size is changed
+> to the size of the first CD (in 512 byte blocks).
+> 
+> After ejecting the first CD and inserting the second CD, the behavior is like
+> this:
+>   1. when immediately mounting the CD, /sys/block/sr0/size is updated to the
+>      size of the second CD,
+>   2. when waiting more than 30 seconds before mounting the CD,
+>      /sys/block/sr0/size is not updated, and keeps the old value.
+> 
+> Surprisingly, it doesn't behave like this when inserting the first CD.
+> /sys/block/sr0/size is always updated, whether I wait 30 seconds before
+> mounting it or not.
+
+I managed to reproduce it on my laptop (Core 2 Duo, SATA DVD-RAM, running
+Ubuntu 8.04 for amd64), by booting Debian's 2.6.25 kernel into recovery mode.
+So the problem is not PS3-specific.
+
+Worse, I never got an updated /sys/block/sr0/size for the second CD, not even
+when mounting it ASAP (which is ca. 15-20 seconds after inserting it).  It
+always stayed at the value for the first CD.
+
+Note that Debian's tar is `smart' and optimizes `tar cf /dev/null' by never
+reading the input files, so you have to e.g. pipe the resulting archive to
+`cat > /dev/null' or so.
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+Sony Technology and Software Centre Europe
+A division of Sony Service Centre (Europe) N.V.
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
+VAT BE 0413.825.160 · RPR Brussels
+Fortis 293-0376800-10 GEBA-BE-BB
+---584349381-744764440-1213019660=:22138--
