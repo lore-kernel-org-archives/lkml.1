@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759506AbYFIVML@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759647AbYFIVM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759506AbYFIVML (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 17:12:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757503AbYFIVKw
+	id S1759647AbYFIVM2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 17:12:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757696AbYFIVKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 17:10:52 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52531 "EHLO
+	Mon, 9 Jun 2008 17:10:54 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52537 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752724AbYFIVKq (ORCPT
+	with ESMTP id S1753027AbYFIVKr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 17:10:46 -0400
-Message-Id: <20080609211044.992972808@attica.americas.sgi.com>
+	Mon, 9 Jun 2008 17:10:47 -0400
+Message-Id: <20080609211045.973006742@attica.americas.sgi.com>
 References: <20080609211028.110089743@attica.americas.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 09 Jun 2008 16:10:29 -0500
+Date: Mon, 09 Jun 2008 16:10:33 -0500
 From: steiner@sgi.com
 To: akpm@osdl.org, linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, tglx@linutronix.de, holt@sgi.com, andrea@qumranet.com
-Subject: [patch 01/11] GRU Driver - hardware data structures
-Content-Disposition: inline; filename=gru_handles_header
+Subject: [patch 05/11] GRU Driver - driver initialization, file & vma ops
+Content-Disposition: inline; filename=gru_file
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains the definitions of the hardware GRU data structures that are used
-by the driver to manage the GRU.
+This file contains the functions for initializing the driver, handling file & vma
+operations and for processing IOCTL requests from the user.
 
 Signed-off-by: Jack Steiner <steiner@sgi.com>
 
 ---
- drivers/misc/gru/gruhandles.h |  690 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 690 insertions(+)
+ drivers/misc/gru/grufile.c |  474 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 474 insertions(+)
 
-Index: linux/drivers/misc/gru/gruhandles.h
+Index: linux/drivers/misc/gru/grufile.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux/drivers/misc/gru/gruhandles.h	2008-06-09 13:53:05.864786467 -0500
-@@ -0,0 +1,690 @@
++++ linux/drivers/misc/gru/grufile.c	2008-06-09 13:53:05.852784983 -0500
+@@ -0,0 +1,474 @@
 +/*
 + * SN Platform GRU Driver
 + *
-+ *              GRU HANDLE DEFINITION
++ *              FILE OPERATIONS & DRIVER INITIALIZATION
++ *
++ * This file supports the user system call for file open, close, mmap, etc.
++ * This also incudes the driver initialization code.
 + *
 + *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
 + *
@@ -59,674 +62,455 @@ Index: linux/drivers/misc/gru/gruhandles.h
 + *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 + */
 +
-+#ifndef __GRUHANDLES_H__
-+#define __GRUHANDLES_H__
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/slab.h>
++#include <linux/mm.h>
++#include <linux/smp_lock.h>
++#include <linux/spinlock.h>
++#include <linux/device.h>
++#include <linux/miscdevice.h>
++#include <linux/proc_fs.h>
++#include <linux/interrupt.h>
++#include <linux/uaccess.h>
++#include "gru.h"
++#include "grulib.h"
++#include "grutables.h"
 +
-+/*
-+ * Manifest constants for GRU Memory Map
-+ */
-+#define GRU_GSEG0_BASE		0
-+#define GRU_MCS_BASE		(64 * 1024 * 1024)
-+#define GRU_SIZE		(128UL * 1024 * 1024)
-+
-+/* Handle & resource counts */
-+#define GRU_NUM_CB		128
-+#define GRU_NUM_DSR_BYTES	(32 * 1024)
-+#define GRU_NUM_TFM		16
-+#define GRU_NUM_TGH		24
-+#define GRU_NUM_CBE		128
-+#define GRU_NUM_TFH		128
-+#define GRU_NUM_CCH		16
-+#define GRU_NUM_GSH		1
-+
-+/* Maximum resource counts that can be reserved by user programs */
-+#define GRU_NUM_USER_CBR	GRU_NUM_CBE
-+#define GRU_NUM_USER_DSR_BYTES	GRU_NUM_DSR_BYTES
-+
-+/* Bytes per handle & handle stride. Code assumes all cb, tfh, cbe handles
-+ * are the same */
-+#define GRU_HANDLE_BYTES	64
-+#define GRU_HANDLE_STRIDE	256
-+
-+/* Base addresses of handles */
-+#define GRU_TFM_BASE		(GRU_MCS_BASE + 0x00000)
-+#define GRU_TGH_BASE		(GRU_MCS_BASE + 0x08000)
-+#define GRU_CBE_BASE		(GRU_MCS_BASE + 0x10000)
-+#define GRU_TFH_BASE		(GRU_MCS_BASE + 0x18000)
-+#define GRU_CCH_BASE		(GRU_MCS_BASE + 0x20000)
-+#define GRU_GSH_BASE		(GRU_MCS_BASE + 0x30000)
-+
-+/* User gseg constants */
-+#define GRU_GSEG_STRIDE		(4 * 1024 * 1024)
-+#define GSEG_BASE(a)		((a) & ~(GRU_GSEG_PAGESIZE - 1))
-+
-+/* Data segment constants */
-+#define GRU_DSR_AU_BYTES	1024
-+#define GRU_DSR_CL		(GRU_NUM_DSR_BYTES / GRU_CACHE_LINE_BYTES)
-+#define GRU_DSR_AU_CL		(GRU_DSR_AU_BYTES / GRU_CACHE_LINE_BYTES)
-+#define GRU_DSR_AU		(GRU_NUM_DSR_BYTES / GRU_DSR_AU_BYTES)
-+
-+/* Control block constants */
-+#define GRU_CBR_AU_SIZE		2
-+#define GRU_CBR_AU		(GRU_NUM_CBE / GRU_CBR_AU_SIZE)
-+
-+/* Convert resource counts to the number of AU */
-+#define GRU_DS_BYTES_TO_AU(n)	(((n) + GRU_DSR_AU_BYTES - 1) / \
-+				 GRU_DSR_AU_BYTES)
-+#define GRU_CB_COUNT_TO_AU(n)	(((n) + GRU_CBR_AU_SIZE - 1) / 	\
-+				 GRU_CBR_AU_SIZE)
-+
-+/* UV limits */
-+#define GRU_CHIPLETS_PER_HUB	2
-+#define GRU_HUBS_PER_BLADE	1
-+#define GRU_CHIPLETS_PER_BLADE	(GRU_HUBS_PER_BLADE * GRU_CHIPLETS_PER_HUB)
-+
-+/* User GRU Gseg offsets */
-+#define GRU_CB_BASE		0
-+#define GRU_CB_LIMIT		(GRU_CB_BASE + GRU_HANDLE_STRIDE * GRU_NUM_CBE)
-+#define GRU_DS_BASE		0x20000
-+#define GRU_DS_LIMIT		(GRU_DS_BASE + GRU_NUM_DSR_BYTES)
-+
-+/* General addressing macros. b=grubase, c=ctxnum, i=cbnum, cl=cacheline#  */
-+#define GRU_GSEG(b, c)		((void *)((b) + GRU_GSEG0_BASE +	\
-+		GRU_GSEG_STRIDE * (c)))
-+#define GRU_GSEG_CB(b, c, i)	((void *)(GRU_GSEG((b), (c)) +		\
-+		GRU_CB_BASE + GRU_HANDLE_STRIDE * (i)))
-+#define GRU_GSEG_DS(b, c, cl)	((void *)(GRU_GSEG((b), (c)) +		\
-+		GRU_DS_BASE + GRU_CACHE_LINE_BYTES * (cl)))
-+#define GRU_TFM(b, c)		((struct gru_tlb_fault_map *)		\
-+		((unsigned long)(b) + GRU_TFM_BASE + (c) * GRU_HANDLE_STRIDE))
-+#define GRU_TGH(b, c)		((struct gru_tlb_global_handle *)	\
-+		((unsigned long)(b) + GRU_TGH_BASE + (c) * GRU_HANDLE_STRIDE))
-+#define GRU_CBE(b, n)		((struct gru_control_block_extended *)	\
-+		((unsigned long)(b) + GRU_CBE_BASE + (n) * GRU_HANDLE_STRIDE))
-+#define GRU_TFH(b, n)		((struct gru_tlb_fault_handle *)	\
-+		((unsigned long)(b) + GRU_TFH_BASE + (n) * GRU_HANDLE_STRIDE))
-+#define GRU_CCH(b, n)		((struct gru_context_configuration_handle *) \
-+		((unsigned long)(b) + GRU_CCH_BASE + (n) * GRU_HANDLE_STRIDE))
-+#define GRU_GSH(b)		((struct gru_global_status_handle *)	\
-+		((unsigned long)(b) + GRU_GSH_BASE))
-+
-+/*
-+ * Test if an offset is a valid kernel handle address.
-+ * 	Ex:  TYPE_IS(CBE, chiplet_offset)
-+ */
-+#define TYPE_IS(hn, h)		((h) >= GRU_##hn##_BASE && (h) < 	\
-+	GRU_##hn##_BASE + GRU_NUM_##hn * GRU_HANDLE_STRIDE && 		\
-+				 (((h) & (GRU_HANDLE_STRIDE - 1)) == 0))
-+
-+/*
-+ * Test a GRU physical address to determine the type of address range (does
-+ * NOT validate holes)
-+ */
-+#define IS_MCS_PADDR(h)		(((h) & (GRU_SIZE - 1)) >= GRU_MCS_BASE)
-+#define IS_CBR_PADDR(h)		(((h) & (GRU_SIZE - 1)) < 		\
-+		GRU_MCS_BASE && (((h) & (GRU_GSEG_STRIDE - 1)) < GRU_DS_BASE))
-+#define IS_DSR_PADDR(h)		(((h) & (GRU_SIZE - 1)) < GRU_MCS_BASE && \
-+		(((h) & (GRU_GSEG_STRIDE - 1)) >= GRU_DS_BASE))
-+
-+/* Convert an arbitrary handle address to the beginning of the GRU segment */
-+#ifndef __PLUGIN__
-+#define GRUBASE(h)		((void *)((unsigned long)(h) & ~(GRU_SIZE - 1)))
++#if defined __x86_64__
++#include <asm/genapic.h>
++#include <asm/irq.h>
++#define IS_UV()		is_uv_system()
++#elif defined __ia64
++#include <asm/system.h>
++#define IS_UV()		ia64_platform_is("uv")
 +#else
-+/* Emulator hack */
-+extern void *gmu_grubase(void *h);
-+#define GRUBASE(h)		gmu_grubase(h)
++#define IS_UV()		0
 +#endif
 +
-+/* Convert a GRU physical address to the chiplet offset */
-+#define GSEGPOFF(h) ((h) & (GRU_SIZE - 1))
++#include <asm/uv/uv_hub.h>
++#include <asm/uv/uv_mmrs.h>
 +
-+/* Convert a GSEG CB address to the relative CB number within the context */
-+#define CBNUM(cb) ((((unsigned long)(cb) - GRU_CB_BASE) % GRU_GSEG_PAGESIZE) / \
-+			GRU_HANDLE_STRIDE)
++struct gru_blade_state *gru_base[GRU_MAX_BLADES] __read_mostly;
++unsigned long gru_start_paddr, gru_end_paddr __read_mostly;
++struct gru_stats_s gru_stats;
 +
-+/* Convert a TFH address to the relative TFH number within the GRU*/
-+#define TFHNUM(tfh) ((((unsigned long)(tfh) - GRU_TFH_BASE) % GRU_SIZE) / \
-+			GRU_HANDLE_STRIDE)
++/* Guaranteed user available resources on each node */
++static int max_user_cbrs, max_user_dsr_bytes;
 +
-+/* Convert a CCH address to the relative context number within the GRU*/
-+#define CCHNUM(cch) ((((unsigned long)(cch) - GRU_CCH_BASE) % GRU_SIZE) / \
-+			GRU_HANDLE_STRIDE)
++static struct file_operations gru_fops;
++static struct miscdevice gru_miscdev;
 +
-+/* Convert a CBE address to the relative context number within the GRU*/
-+#define CBENUM(cbe) ((((unsigned long)(cbe) - GRU_CBE_BASE) % GRU_SIZE) / \
-+			GRU_HANDLE_STRIDE)
 +
-+/* Convert a TFM address to the relative context number within the GRU*/
-+#define TFMNUM(tfm) ((((unsigned long)(tfm) - GRU_TFM_BASE) % GRU_SIZE) / \
-+			GRU_HANDLE_STRIDE)
++/*
++ * gru_vma_close
++ *
++ * Called when unmapping a device mapping. Frees all gru resources
++ * and tables belonging to the vma.
++ */
++static void gru_vma_close(struct vm_area_struct *vma)
++{
++	struct gru_vma_data *vdata;
++	struct gru_thread_state *gts;
++	struct list_head *entry, *next;
 +
-+/* byte offset to a specific GRU chiplet. (p=pnode, c=chiplet (0 or 1)*/
-+#define GRUCHIPOFFSET(p, c) (GRU_SIZE * ((p) * 2 + (c)))
++	if (!vma->vm_private_data)
++		return;
 +
-+#ifndef BITS_TO_LONGS
-+#define BITS_TO_LONGS(bits)     (((bits)+64-1)/64)
++	vdata = vma->vm_private_data;
++	vma->vm_private_data = NULL;
++	gru_dbg(grudev, "vma %p, file %p, vdata %p\n", vma, vma->vm_file,
++				vdata);
++	list_for_each_safe(entry, next, &vdata->vd_head) {
++		gts =
++		    list_entry(entry, struct gru_thread_state, ts_next);
++		list_del(&gts->ts_next);
++		mutex_lock(&gts->ts_ctxlock);
++		if (gts->ts_gru)
++			gru_unload_context(gts, 0);
++		mutex_unlock(&gts->ts_ctxlock);
++		gts_drop(gts);
++	}
++	kfree(vdata);
++	STAT(vdata_free);
++}
++
++/*
++ * gru_file_mmap
++ *
++ * Called when mmaping the device.  Initializes the vma with a fault handler
++ * and private data structure necessary to allocate, track, and free the
++ * underlying pages.
++ */
++static int gru_file_mmap(struct file *file, struct vm_area_struct *vma)
++{
++	if ((vma->vm_flags & (VM_SHARED | VM_WRITE)) != (VM_SHARED | VM_WRITE))
++		return -EPERM;
++
++	vma->vm_flags |=
++	    (VM_IO | VM_DONTCOPY | VM_LOCKED | VM_DONTEXPAND | VM_PFNMAP |
++			VM_RESERVED);
++	vma->vm_page_prot = PAGE_SHARED;
++	vma->vm_ops = &gru_vm_ops;
++
++	vma->vm_private_data = gru_alloc_vma_data(vma, 0);
++	if (!vma->vm_private_data)
++		return -ENOMEM;
++
++	gru_dbg(grudev, "file %p, vaddr 0x%lx, vma %p, vdata %p\n",
++		file, vma->vm_start, vma, vma->vm_private_data);
++	return 0;
++}
++
++/*
++ * Create a new GRU context
++ */
++static int gru_create_new_context(unsigned long arg)
++{
++	struct gru_create_context_req req;
++	struct vm_area_struct *vma;
++	struct gru_vma_data *vdata;
++	int ret = -EINVAL;
++
++
++	if (copy_from_user(&req, (void __user *)arg, sizeof(req)))
++		return -EFAULT;
++
++	if (req.data_segment_bytes == 0 ||
++				req.data_segment_bytes > max_user_dsr_bytes)
++		return -EINVAL;
++	if (!req.control_blocks || !req.maximum_thread_count ||
++				req.control_blocks > max_user_cbrs)
++		return -EINVAL;
++
++	if (!(req.options & GRU_OPT_MISS_MASK))
++		req.options |= GRU_OPT_MISS_FMM_INTR;
++
++	down_write(&current->mm->mmap_sem);
++	vma = gru_find_vma(req.gseg);
++	if (vma) {
++		vdata = vma->vm_private_data;
++		vdata->vd_user_options = req.options;
++		vdata->vd_dsr_au_count =
++		    GRU_DS_BYTES_TO_AU(req.data_segment_bytes);
++		vdata->vd_cbr_au_count = GRU_CB_COUNT_TO_AU(req.control_blocks);
++		ret = 0;
++	}
++	up_write(&current->mm->mmap_sem);
++
++	return ret;
++}
++
++/*
++ * Get GRU configuration info (temp - for emulator testing)
++ */
++static long gru_get_config_info(unsigned long arg)
++{
++	struct gru_config_info info;
++	int nodesperblade;
++
++	if (num_online_nodes() > 1 &&
++			(uv_node_to_blade_id(1) == uv_node_to_blade_id(0)))
++		nodesperblade = 2;
++	else
++		nodesperblade = 1;
++	info.cpus = num_online_cpus();
++	info.nodes = num_online_nodes();
++	info.blades = info.nodes / nodesperblade;
++	info.chiplets = GRU_CHIPLETS_PER_BLADE * info.blades;
++
++	if (copy_to_user((void __user *)arg, &info, sizeof(info)))
++		return -EFAULT;
++	return 0;
++}
++
++/*
++ * Get GRU chiplet status
++ */
++static long gru_get_chiplet_status(unsigned long arg)
++{
++	struct gru_state *gru;
++	struct gru_chiplet_info info;
++
++	if (copy_from_user(&info, (void __user *)arg, sizeof(info)))
++		return -EFAULT;
++
++	if (info.node == -1)
++		info.node = numa_node_id();
++	if (info.node >= num_possible_nodes() ||
++			info.chiplet >= GRU_CHIPLETS_PER_HUB ||
++			info.node < 0 || info.chiplet < 0)
++		return -EINVAL;
++
++	info.blade = uv_node_to_blade_id(info.node);
++	gru = get_gru(info.blade, info.chiplet);
++
++	info.total_dsr_bytes = GRU_NUM_DSR_BYTES;
++	info.total_cbr = GRU_NUM_CB;
++	info.total_user_dsr_bytes = GRU_NUM_DSR_BYTES -
++		gru->gs_reserved_dsr_bytes;
++	info.total_user_cbr = GRU_NUM_CB - gru->gs_reserved_cbrs;
++	info.free_user_dsr_bytes = hweight64(gru->gs_dsr_map) *
++			GRU_DSR_AU_BYTES;
++	info.free_user_cbr = hweight64(gru->gs_cbr_map) * GRU_CBR_AU_SIZE;
++
++	if (copy_to_user((void __user *)arg, &info, sizeof(info)))
++		return -EFAULT;
++	return 0;
++}
++
++/*
++ * gru_file_unlocked_ioctl
++ *
++ * Called to update file attributes via IOCTL calls.
++ */
++static long gru_file_unlocked_ioctl(struct file *file, unsigned int req,
++				    unsigned long arg)
++{
++	int err = -EBADRQC;
++
++	gru_dbg(grudev, "file %p\n", file);
++
++	switch (req) {
++	case GRU_CREATE_CONTEXT:
++		err = gru_create_new_context(arg);
++		break;
++	case GRU_SET_TASK_SLICE:
++		err = gru_set_task_slice(arg);
++		break;
++	case GRU_USER_GET_EXCEPTION_DETAIL:
++		err = gru_get_exception_detail(arg);
++		break;
++	case GRU_USER_UNLOAD_CONTEXT:
++		err = gru_user_unload_context(arg);
++		break;
++	case GRU_GET_CHIPLET_STATUS:
++		err = gru_get_chiplet_status(arg);
++		break;
++	case GRU_USER_FLUSH_TLB:
++		err = gru_user_flush_tlb(arg);
++		break;
++	case GRU_USER_CALL_OS:
++		err = gru_handle_user_call_os(arg);
++		break;
++	case GRU_GET_CONFIG_INFO:
++		err = gru_get_config_info(arg);
++		break;
++	}
++	return err;
++}
++
++/*
++ * Called at init time to build tables for all GRUs that are present in the
++ * system.
++ */
++static void gru_init_chiplet(struct gru_state *gru, unsigned long paddr,
++			     void *vaddr, int nid, int bid, int grunum)
++{
++	spin_lock_init(&gru->gs_lock);
++	spin_lock_init(&gru->gs_asid_lock);
++	gru->gs_gru_base_paddr = paddr;
++	gru->gs_gru_base_vaddr = vaddr;
++	gru->gs_gid = bid * GRU_CHIPLETS_PER_BLADE + grunum;
++	gru->gs_blade = gru_base[bid];
++	gru->gs_blade_id = bid;
++	gru->gs_cbr_map = (GRU_CBR_AU == 64) ? ~0 : (1UL << GRU_CBR_AU) - 1;
++	gru->gs_dsr_map = (1UL << GRU_DSR_AU) - 1;
++	gru_tgh_flush_init(gru);
++	gru_dbg(grudev, "bid %d, nid %d, gru %x, vaddr %p (0x%lx)\n",
++		bid, nid, gru->gs_gid, gru->gs_gru_base_vaddr,
++		gru->gs_gru_base_paddr);
++	gru_kservices_init(gru);
++}
++
++static int gru_init_tables(unsigned long gru_base_paddr, void *gru_base_vaddr)
++{
++	int pnode, nid, bid, grunum;
++	int cbrs, dsrbytes, n;
++	int order = get_order(sizeof(struct gru_blade_state));
++	struct page *page;
++	struct gru_state *gru;
++	unsigned long paddr;
++	void *vaddr;
++
++	max_user_cbrs = GRU_NUM_CB;
++	max_user_dsr_bytes = GRU_NUM_DSR_BYTES;
++	for_each_online_node(nid) {
++		bid = uv_node_to_blade_id(nid);
++		pnode = uv_node_to_pnode(nid);
++		if (gru_base[bid])
++			continue;
++		page = alloc_pages_node(nid, GFP_KERNEL, order);
++		if (!page)
++			goto fail;
++		gru_base[bid] = page_address(page);
++		memset(gru_base[bid], 0, sizeof(struct gru_blade_state));
++		gru_base[bid]->bs_lru_gru = &gru_base[bid]->bs_grus[0];
++		spin_lock_init(&gru_base[bid]->bs_lock);
++
++		dsrbytes = 0;
++		cbrs = 0;
++		for (gru = gru_base[bid]->bs_grus, grunum = 0;
++		     grunum < GRU_CHIPLETS_PER_BLADE; grunum++, gru++) {
++			paddr = gru_base_paddr + GRUCHIPOFFSET(pnode, grunum);
++			vaddr = gru_base_vaddr + GRUCHIPOFFSET(pnode, grunum);
++			gru_init_chiplet(gru, paddr, vaddr, bid, nid, grunum);
++			n = hweight64(gru->gs_cbr_map) * GRU_CBR_AU_SIZE;
++			cbrs = max(cbrs, n);
++			n = hweight64(gru->gs_dsr_map) * GRU_DSR_AU_BYTES;
++			dsrbytes = max(dsrbytes, n);
++		}
++		max_user_cbrs = min(max_user_cbrs, cbrs);
++		max_user_dsr_bytes = min(max_user_dsr_bytes, dsrbytes);
++	}
++
++	return 0;
++
++fail:
++	for (nid--; nid >= 0; nid--)
++		free_pages((unsigned long)gru_base[nid], order);
++	return -ENOMEM;
++}
++
++#ifdef __ia64__
++
++static int get_base_irq(void)
++{
++	return IRQ_GRU;
++}
++
++#elif defined __x86_64__
++
++static void noop(unsigned int irq)
++{
++}
++
++static struct irq_chip gru_chip = {
++	.name		= "gru",
++	.mask		= noop,
++	.unmask		= noop,
++	.ack		= noop,
++};
++
++static int get_base_irq(void)
++{
++	set_irq_chip(IRQ_GRU, &gru_chip);
++	set_irq_chip(IRQ_GRU + 1, &gru_chip);
++	return IRQ_GRU;
++}
 +#endif
 +
 +/*
-+ * GSH - GRU Status Handle
-+ *	Shows status of each CBR/CBR resources
-+ */
-+struct gru_global_status_handle {
-+	unsigned long bits[BITS_TO_LONGS(GRU_NUM_CBE) * 2];
-+	unsigned long fill[4];
-+};
-+
-+enum gru_gsh_status {
-+	GSHSTATUS_INACTIVE,
-+	GSHSTATUS_IDLE,
-+	GSHSTATUS_ACTIVE,
-+	GSHSTATUS_INTERRUPTED
-+};
-+
-+/*
-+ * Global TLB Fault Map
-+ * 	Bitmap of outstanding TLB misses needing interrupt/polling service.
++ * gru_init
 + *
++ * Called at boot or module load time to initialize the GRUs.
 + */
-+struct gru_tlb_fault_map {
-+	unsigned long fault_bits[BITS_TO_LONGS(GRU_NUM_CBE)];
-+	unsigned long fill0[2];
-+	unsigned long done_bits[BITS_TO_LONGS(GRU_NUM_CBE)];
-+	unsigned long fill1[2];
-+};
-+
-+/*
-+ * TGH - TLB Global Handle
-+ * 	Used for TLB flushing.
-+ *
-+ */
-+struct gru_tlb_global_handle {
-+	unsigned int cmd:1;		/* DW 0 */
-+	unsigned int delresp:1;
-+	unsigned int opc:1;
-+	unsigned int fill1:5;
-+
-+	unsigned int fill2:8;
-+
-+	unsigned int status:2;
-+	unsigned long fill3:2;
-+	unsigned int state:3;
-+	unsigned long fill4:1;
-+
-+	unsigned int cause:3;
-+	unsigned long fill5:37;
-+
-+	unsigned long vaddr:64;		/* DW 1 */
-+
-+	unsigned int asid:24;		/* DW 2 */
-+	unsigned int fill6:8;
-+
-+	unsigned int pagesize:5;
-+	unsigned int fill7:11;
-+
-+	unsigned int global:1;
-+	unsigned int fill8:15;
-+
-+	unsigned long vaddrmask:39;	/* DW 3 */
-+	unsigned int fill9:9;
-+	unsigned int n:10;
-+	unsigned int fill10:6;
-+
-+	unsigned int ctxbitmap:16;	/* DW4 */
-+	unsigned long fill11[3];
-+};
-+
-+enum gru_tgh_cmd {
-+	TGHCMD_START
-+};
-+
-+enum gru_tgh_opc {
-+	TGHOP_TLBNOP,
-+	TGHOP_TLBINV
-+};
-+
-+enum gru_tgh_status {
-+	TGHSTATUS_IDLE,
-+	TGHSTATUS_EXCEPTION,
-+	TGHSTATUS_ACTIVE
-+};
-+
-+enum gru_tgh_state {
-+	TGHSTATE_IDLE,
-+	TGHSTATE_PE_INVAL,
-+	TGHSTATE_INTERRUPT_INVAL,
-+	TGHSTATE_WAITDONE,
-+	TGHSTATE_RESTART_CTX,
-+};
-+
-+/*
-+ * TFH - TLB Global Handle
-+ * 	Used for TLB dropins into the GRU TLB.
-+ *
-+ */
-+struct gru_tlb_fault_handle {
-+	unsigned int cmd:1;		/* DW 0 - low 32*/
-+	unsigned int delresp:1;
-+	unsigned int fill0:2;
-+	unsigned int opc:3;
-+	unsigned int fill1:9;
-+
-+	unsigned int status:2;
-+	unsigned int fill2:1;
-+	unsigned int color:1;
-+	unsigned int state:3;
-+	unsigned int fill3:1;
-+
-+	unsigned int cause:7;		/* DW 0 - high 32 */
-+	unsigned int fill4:1;
-+
-+	unsigned int indexway:12;
-+	unsigned int fill5:4;
-+
-+	unsigned int ctxnum:4;
-+	unsigned int fill6:12;
-+
-+	unsigned long missvaddr:64;	/* DW 1 */
-+
-+	unsigned int missasid:24;	/* DW 2 */
-+	unsigned int fill7:8;
-+	unsigned int fillasid:24;
-+	unsigned int dirty:1;
-+	unsigned int gaa:2;
-+	unsigned long fill8:5;
-+
-+	unsigned long pfn:41;		/* DW 3 */
-+	unsigned int fill9:7;
-+	unsigned int pagesize:5;
-+	unsigned int fill10:11;
-+
-+	unsigned long fillvaddr:64;	/* DW 4 */
-+
-+	unsigned long fill11[3];
-+};
-+
-+enum gru_tfh_opc {
-+	TFHOP_NOOP,
-+	TFHOP_RESTART,
-+	TFHOP_WRITE_ONLY,
-+	TFHOP_WRITE_RESTART,
-+	TFHOP_EXCEPTION,
-+	TFHOP_USER_POLLING_MODE = 7,
-+};
-+
-+enum tfh_status {
-+	TFHSTATUS_IDLE,
-+	TFHSTATUS_EXCEPTION,
-+	TFHSTATUS_ACTIVE,
-+};
-+
-+enum tfh_state {
-+	TFHSTATE_INACTIVE,
-+	TFHSTATE_IDLE,
-+	TFHSTATE_MISS_UPM,
-+	TFHSTATE_MISS_FMM,
-+	TFHSTATE_HW_ERR,
-+	TFHSTATE_WRITE_TLB,
-+	TFHSTATE_RESTART_CBR,
-+};
-+
-+/* TFH cause bits */
-+enum tfh_cause {
-+	TFHCAUSE_NONE,
-+	TFHCAUSE_TLB_MISS,
-+	TFHCAUSE_TLB_MOD,
-+	TFHCAUSE_HW_ERROR_RR,
-+	TFHCAUSE_HW_ERROR_MAIN_ARRAY,
-+	TFHCAUSE_HW_ERROR_VALID,
-+	TFHCAUSE_HW_ERROR_PAGESIZE,
-+	TFHCAUSE_INSTRUCTION_EXCEPTION,
-+	TFHCAUSE_UNCORRECTIBLE_ERROR,
-+};
-+
-+/* GAA values */
-+#define GAA_RAM				0x0
-+#define GAA_NCRAM			0x2
-+#define GAA_MMIO			0x1
-+#define GAA_REGISTER			0x3
-+
-+/* GRU paddr shift for pfn. (NOTE: shift is NOT by actual pagesize) */
-+#define GRU_PADDR_SHIFT			12
-+
-+/*
-+ * Context Configuration handle
-+ * 	Used to allocate resources to a GSEG context.
-+ *
-+ */
-+struct gru_context_configuration_handle {
-+	unsigned int cmd:1;			/* DW0 */
-+	unsigned int delresp:1;
-+	unsigned int opc:3;
-+	unsigned int unmap_enable:1;
-+	unsigned int req_slice_set_enable:1;
-+	unsigned int req_slice:2;
-+	unsigned int cb_int_enable:1;
-+	unsigned int tlb_int_enable:1;
-+	unsigned int tfm_fault_bit_enable:1;
-+	unsigned int tlb_int_select:4;
-+
-+	unsigned int status:2;
-+	unsigned int state:2;
-+	unsigned int reserved2:4;
-+
-+	unsigned int cause:4;
-+	unsigned int tfm_done_bit_enable:1;
-+	unsigned int unused:3;
-+
-+	unsigned int dsr_allocation_map;
-+
-+	unsigned long cbr_allocation_map;	/* DW1 */
-+
-+	unsigned int asid[8];			/* DW 2 - 5 */
-+	unsigned short sizeavail[8];		/* DW 6 - 7 */
-+} __attribute__ ((packed));
-+
-+enum gru_cch_opc {
-+	CCHOP_START = 1,
-+	CCHOP_ALLOCATE,
-+	CCHOP_INTERRUPT,
-+	CCHOP_DEALLOCATE,
-+	CCHOP_INTERRUPT_SYNC,
-+};
-+
-+enum gru_cch_status {
-+	CCHSTATUS_IDLE,
-+	CCHSTATUS_EXCEPTION,
-+	CCHSTATUS_ACTIVE,
-+};
-+
-+enum gru_cch_state {
-+	CCHSTATE_INACTIVE,
-+	CCHSTATE_MAPPED,
-+	CCHSTATE_ACTIVE,
-+	CCHSTATE_INTERRUPTED,
-+};
-+
-+/* CCH Exception cause */
-+enum gru_cch_cause {
-+	CCHCAUSE_REGION_REGISTER_WRITE_ERROR = 1,
-+	CCHCAUSE_ILLEGAL_OPCODE = 2,
-+	CCHCAUSE_INVALID_START_REQUEST = 3,
-+	CCHCAUSE_INVALID_ALLOCATION_REQUEST = 4,
-+	CCHCAUSE_INVALID_DEALLOCATION_REQUEST = 5,
-+	CCHCAUSE_INVALID_INTERRUPT_REQUEST = 6,
-+	CCHCAUSE_CCH_BUSY = 7,
-+	CCHCAUSE_NO_CBRS_TO_ALLOCATE = 8,
-+	CCHCAUSE_BAD_TFM_CONFIG = 9,
-+	CCHCAUSE_CBR_RESOURCES_OVERSUBSCRIPED = 10,
-+	CCHCAUSE_DSR_RESOURCES_OVERSUBSCRIPED = 11,
-+	CCHCAUSE_CBR_DEALLOCATION_ERROR = 12,
-+};
-+/*
-+ * CBE - Control Block Extended
-+ * 	Maintains internal GRU state for active CBs.
-+ *
-+ */
-+struct gru_control_block_extended {
-+	unsigned int reserved0:1;	/* DW 0  - low */
-+	unsigned int imacpy:3;
-+	unsigned int reserved1:4;
-+	unsigned int xtypecpy:3;
-+	unsigned int iaa0cpy:2;
-+	unsigned int iaa1cpy:2;
-+	unsigned int reserved2:1;
-+	unsigned int opccpy:8;
-+	unsigned int exopccpy:8;
-+
-+	unsigned int idef2cpy:22;	/* DW 0  - high */
-+	unsigned int reserved3:10;
-+
-+	unsigned int idef4cpy:22;	/* DW 1 */
-+	unsigned int reserved4:10;
-+	unsigned int idef4upd:22;
-+	unsigned int reserved5:10;
-+
-+	unsigned long idef1upd:64;	/* DW 2 */
-+
-+	unsigned long idef5cpy:64;	/* DW 3 */
-+
-+	unsigned long idef6cpy:64;	/* DW 4 */
-+
-+	unsigned long idef3upd:64;	/* DW 5 */
-+
-+	unsigned long idef5upd:64;	/* DW 6 */
-+
-+	unsigned int idef2upd:22;	/* DW 7 */
-+	unsigned int reserved6:10;
-+
-+	unsigned int ecause:20;
-+	unsigned int cbrstate:4;
-+	unsigned int cbrexecstatus:8;
-+};
-+
-+enum gru_cbr_state {
-+	CBRSTATE_INACTIVE,
-+	CBRSTATE_IDLE,
-+	CBRSTATE_PE_CHECK,
-+	CBRSTATE_QUEUED,
-+	CBRSTATE_WAIT_RESPONSE,
-+	CBRSTATE_INTERRUPTED,
-+	CBRSTATE_INTERRUPTED_MISS_FMM,
-+	CBRSTATE_BUSY_INTERRUPT_MISS_FMM,
-+	CBRSTATE_INTERRUPTED_MISS_UPM,
-+	CBRSTATE_BUSY_INTERRUPTED_MISS_UPM,
-+	CBRSTATE_REQUEST_ISSUE,
-+	CBRSTATE_BUSY_INTERRUPT,
-+};
-+
-+/* CBE cbrexecstatus bits */
-+#define CBR_EXS_ABORT_OCC_BIT			0
-+#define CBR_EXS_INT_OCC_BIT			1
-+#define CBR_EXS_PENDING_BIT			2
-+#define CBR_EXS_QUEUED_BIT			3
-+#define CBR_EXS_TLBHW_BIT			4
-+#define CBR_EXS_EXCEPTION_BIT			5
-+
-+#define CBR_EXS_ABORT_OCC			(1 << CBR_EXS_ABORT_OCC_BIT)
-+#define CBR_EXS_INT_OCC				(1 << CBR_EXS_INT_OCC_BIT)
-+#define CBR_EXS_PENDING				(1 << CBR_EXS_PENDING_BIT)
-+#define CBR_EXS_QUEUED				(1 << CBR_EXS_QUEUED_BIT)
-+#define CBR_EXS_TLBHW				(1 << CBR_EXS_TLBHW_BIT)
-+#define CBR_EXS_EXCEPTION			(1 << CBR_EXS_EXCEPTION_BIT)
-+
-+/* CBE ecause bits  - defined in gru_instructions.h */
-+
-+/*
-+ * Convert a processor pagesize into the strange encoded pagesize used by the
-+ * GRU. Processor pagesize is encoded as log of bytes per page. (or PAGE_SHIFT)
-+ * 	pagesize	log pagesize	grupagesize
-+ * 	  4k			12	0
-+ * 	 16k 			14	1
-+ * 	 64k			16	2
-+ * 	256k			18	3
-+ * 	  1m			20	4
-+ * 	  2m			21	5
-+ * 	  4m			22	6
-+ * 	 16m			24	7
-+ * 	 64m			26	8
-+ * 	...
-+ */
-+#define GRU_PAGESIZE(sh)	((((sh) > 20 ? (sh) + 2: (sh)) >> 1) - 6)
-+#define GRU_SIZEAVAIL(sh)	(1UL << GRU_PAGESIZE(sh))
-+
-+/* minimum TLB purge count to ensure a full purge */
-+#define GRUMAXINVAL		1024UL
-+
-+/*-----------------------------------------------------------------------------
-+ *
-+ * Handle operations
-+ */
-+
-+#define cch_to_gsh(c)		GRU_GSH(GRUBASE(c))
-+#define cch_to_tfh(c, i)	GRU_TFH(GRUBASE(c), (i))
-+#define cch_to_cbe(c, i)	GRU_CBE(GRUBASE(c), (i))
-+#define cbe_to_tfh(c)		GRU_TFH(GRUBASE(c), CBENUM(c))
-+#define cbe_to_cch(c)		GRU_CCH(GRUBASE(c), CBENUM(c))
-+#define tfh_to_cbe(c)		GRU_CBE(GRUBASE(c), TFHNUM(c))
-+#define cb_to_cbe(c, n)		GRU_CBE(GRUBASE(c), (n))
-+
-+#ifdef __KERNEL__
-+#include "gru_instructions.h"
-+
-+/* Extract the status field from a kernel handle */
-+#define GET_MSEG_HANDLE_STATUS(h)	(((*(unsigned long *)(h)) >> 16) & 3)
-+
-+static inline void start_instruction(void *h)
++static int __init gru_init(void)
 +{
-+	unsigned long *w0 = h;
++	int ret, irq;
++	char id[10];
++	void *gru_start_vaddr;
 +
-+	wmb();		/* setting CMD bit must be last */
-+	*w0 = *w0 | 1;
-+	gru_flush_cache(h);
-+}
-+
-+static inline int wait_instruction_complete(void *h)
-+{
-+	int status;
-+
-+	do {
-+		cpu_relax();
-+		barrier();
-+		status = GET_MSEG_HANDLE_STATUS(h);
-+	} while (status == CCHSTATUS_ACTIVE);
-+	return status;
-+}
++	if (!IS_UV())
++		return 0;
 +
 +#if defined __ia64__
-+static inline void cch_allocate_set_asids(
-+		  struct gru_context_configuration_handle *cch, int asidval)
-+{
-+	int i;
-+
-+	for (i = 0; i <= RGN_HPAGE; i++) {  /*  assume HPAGE is last region */
-+		cch->asid[i] = (asidval++);
-+		if (i == RGN_HPAGE)
-+			cch->sizeavail[i] = GRU_SIZEAVAIL(hpage_shift);
-+		else
-+			cch->sizeavail[i] = GRU_SIZEAVAIL(PAGE_SHIFT);
-+	}
-+}
-+#elif defined __x86_64__
-+static inline void cch_allocate_set_asids(
-+		  struct gru_context_configuration_handle *cch, int asidval)
-+{
-+	int i;
-+
-+	for (i = 0; i < 8; i++) {
-+		cch->asid[i] = asidval++;
-+		cch->sizeavail[i] = GRU_SIZEAVAIL(PAGE_SHIFT) |
-+			GRU_SIZEAVAIL(21);
-+	}
-+}
++	gru_start_paddr = 0xd000000000UL; /* ZZZZZZZZZZZZZZZZZZZ fixme */
++#else
++	gru_start_paddr = uv_read_local_mmr(UVH_RH_GAM_GRU_OVERLAY_CONFIG_MMR);
 +#endif
++	gru_start_vaddr = __va(gru_start_paddr);
++	gru_end_paddr = gru_start_paddr + MAX_NUMNODES * GRU_SIZE;
++	printk(KERN_INFO "GRU space: 0x%lx - 0x%lx\n",
++	       gru_start_paddr, gru_end_paddr);
++	for (irq = get_base_irq(); irq < GRU_CHIPLETS_PER_BLADE; irq++) {
++		ret = request_irq(irq, gru_intr, 0, id, NULL);
++		if (ret) {
++			printk(KERN_ERR "%s: request_irq failed\n",
++			       GRU_DRIVER_ID_STR);
++			goto exit1;
++		}
++	}
 +
-+static inline int cch_allocate(struct gru_context_configuration_handle *cch,
-+			       int asidval, unsigned long cbrmap,
-+			       unsigned long dsrmap)
-+{
-+	cch_allocate_set_asids(cch, asidval);
-+	cch->dsr_allocation_map = dsrmap;
-+	cch->cbr_allocation_map = cbrmap;
-+	cch->opc = CCHOP_ALLOCATE;
-+	start_instruction(cch);
-+	return wait_instruction_complete(cch);
++	ret = misc_register(&gru_miscdev);
++	if (ret) {
++		printk(KERN_ERR "%s: misc_register failed\n",
++		       GRU_DRIVER_ID_STR);
++		goto exit1;
++	}
++
++	ret = gru_proc_init();
++	if (ret) {
++		printk(KERN_ERR "%s: proc init failed\n", GRU_DRIVER_ID_STR);
++		goto exit2;
++	}
++
++	ret = gru_init_tables(gru_start_paddr, gru_start_vaddr);
++	if (ret) {
++		printk(KERN_ERR "%s: init tables failed\n", GRU_DRIVER_ID_STR);
++		goto exit3;
++	}
++
++	printk(KERN_INFO "%s: v%s\n", GRU_DRIVER_ID_STR,
++	       GRU_DRIVER_VERSION_STR);
++	return 0;
++
++exit3:
++	gru_proc_exit();
++exit2:
++	misc_deregister(&gru_miscdev);
++exit1:
++	for (--irq; irq >= 0; irq--)
++		free_irq(IRQ_GRU + irq, NULL);
++	return ret;
++
 +}
 +
-+static inline int cch_start(struct gru_context_configuration_handle *cch)
++static void __exit gru_exit(void)
 +{
-+	cch->opc = CCHOP_START;
-+	start_instruction(cch);
-+	return wait_instruction_complete(cch);
++	int i, bid;
++	int order = get_order(sizeof(struct gru_state) *
++			      GRU_CHIPLETS_PER_BLADE);
++
++	for (i = 0; i < GRU_CHIPLETS_PER_BLADE; i++)
++		free_irq(IRQ_GRU + i, NULL);
++
++	for (bid = 0; bid < GRU_MAX_BLADES; bid++)
++		free_pages((unsigned long)gru_base[bid], order);
++
++	misc_deregister(&gru_miscdev);
++	gru_proc_exit();
 +}
 +
-+static inline int cch_interrupt(struct gru_context_configuration_handle *cch)
-+{
-+	cch->opc = CCHOP_INTERRUPT;
-+	start_instruction(cch);
-+	return wait_instruction_complete(cch);
-+}
++static struct file_operations gru_fops = {
++	.owner		= THIS_MODULE,
++	.unlocked_ioctl	= gru_file_unlocked_ioctl,
++	.mmap		= gru_file_mmap,
++};
 +
-+static inline int cch_deallocate(struct gru_context_configuration_handle *cch)
-+{
-+	cch->opc = CCHOP_DEALLOCATE;
-+	start_instruction(cch);
-+	return wait_instruction_complete(cch);
-+}
++static struct miscdevice gru_miscdev = {
++	.minor		= MISC_DYNAMIC_MINOR,
++	.name		= "gru",
++	.fops		= &gru_fops,
++};
 +
-+static inline int cch_interrupt_sync(struct gru_context_configuration_handle
-+				     *cch)
-+{
-+	cch->opc = CCHOP_INTERRUPT_SYNC;
-+	start_instruction(cch);
-+	return wait_instruction_complete(cch);
-+}
++struct vm_operations_struct gru_vm_ops = {
++	.close		= gru_vma_close,
++	.fault		= gru_fault,
++};
 +
-+static inline int tgh_invalidate(struct gru_tlb_global_handle *tgh,
-+				 unsigned long vaddr, unsigned long vaddrmask,
-+				 int asid, int pagesize, int global, int n,
-+				 unsigned short ctxbitmap)
-+{
-+	tgh->vaddr = vaddr;
-+	tgh->asid = asid;
-+	tgh->pagesize = pagesize;
-+	tgh->n = n;
-+	tgh->global = global;
-+	tgh->vaddrmask = vaddrmask;
-+	tgh->ctxbitmap = ctxbitmap;
-+	tgh->opc = TGHOP_TLBINV;
-+	start_instruction(tgh);
-+	return wait_instruction_complete(tgh);
-+}
++module_init(gru_init);
++module_exit(gru_exit);
 +
-+static inline void tfh_write_only(struct gru_tlb_fault_handle *tfh,
-+				  unsigned long pfn, unsigned long vaddr,
-+				  int asid, int dirty, int pagesize)
-+{
-+	tfh->fillasid = asid;
-+	tfh->fillvaddr = vaddr;
-+	tfh->pfn = pfn;
-+	tfh->dirty = dirty;
-+	tfh->pagesize = pagesize;
-+	tfh->opc = TFHOP_WRITE_ONLY;
-+	start_instruction(tfh);
-+}
++module_param(options, ulong, 0644);
++MODULE_PARM_DESC(options, "Various debug options");
 +
-+static inline void tfh_write_restart(struct gru_tlb_fault_handle *tfh,
-+				     unsigned long paddr, int gaa,
-+				     unsigned long vaddr, int asid, int dirty,
-+				     int pagesize)
-+{
-+	tfh->fillasid = asid;
-+	tfh->fillvaddr = vaddr;
-+	tfh->pfn = paddr >> GRU_PADDR_SHIFT;
-+	tfh->gaa = gaa;
-+	tfh->dirty = dirty;
-+	tfh->pagesize = pagesize;
-+	tfh->opc = TFHOP_WRITE_RESTART;
-+	start_instruction(tfh);
-+}
++MODULE_AUTHOR("Silicon Graphics, Inc.");
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION(GRU_DRIVER_ID_STR GRU_DRIVER_VERSION_STR);
++MODULE_VERSION(GRU_DRIVER_VERSION_STR);
 +
-+static inline void tfh_restart(struct gru_tlb_fault_handle *tfh)
-+{
-+	tfh->opc = TFHOP_RESTART;
-+	start_instruction(tfh);
-+}
-+
-+static inline void tfh_user_polling_mode(struct gru_tlb_fault_handle *tfh)
-+{
-+	tfh->opc = TFHOP_USER_POLLING_MODE;
-+	start_instruction(tfh);
-+}
-+
-+static inline void tfh_exception(struct gru_tlb_fault_handle *tfh)
-+{
-+	tfh->opc = TFHOP_EXCEPTION;
-+	start_instruction(tfh);
-+}
-+#endif /* __KERNEL__ */
-+
-+#endif /* __GRUHANDLES_H__ */
 
 -- 
 Thanks
