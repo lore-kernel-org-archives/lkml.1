@@ -1,118 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759502AbYFIKAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbYFIKBL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759502AbYFIKAj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 06:00:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758857AbYFIKAa
+	id S1758729AbYFIKBL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 06:01:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758795AbYFIKAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 06:00:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35471 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752649AbYFIKA3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 06:00:29 -0400
-Date: Mon, 9 Jun 2008 02:59:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kasper Sandberg <lkml@metanurb.dk>
-Cc: LKML Mailinglist <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] Make some ext3 kernel messages useful by showing device
-Message-Id: <20080609025926.0ecb6aea.akpm@linux-foundation.org>
-In-Reply-To: <1212951761.32756.4.camel@localhost>
-References: <1212951761.32756.4.camel@localhost>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Jun 2008 06:00:54 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:24286 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758909AbYFIKAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 06:00:53 -0400
+Date: Mon, 9 Jun 2008 18:58:51 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh updates for 2.6.26-rc6
+Message-ID: <20080609095851.GA12763@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 08 Jun 2008 21:02:41 +0200 Kasper Sandberg <lkml@metanurb.dk> wrote:
+Please pull from:
 
-> Hello.
-> 
-> Some of the ext3 warnings in super.c are not really as useful as they
-> can be, for instance the "EXT3-fs warning: maximal mount count reached,
-> running e2fsck is recommended" message, does not tell which device it
-> actually is.
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.26.git
 
-Seems sensible.
+Which contains:
 
-> Below is patch(both inlined, and in attached form, since i dont trust my
-> mailer),
+Nobuhiro Iwamatsu (1):
+      sh: Fix compile error SH7763 setup code
 
-That really tricks me.  Because the resulting file applies nicely with
-`patch --dry-run' but doesn't apply with plain old `patch'.  Inlined is
-preferred, attached is grumpily accepted, but please avoid duplicating
-the patch.
+Paul Mundt (1):
+      sh: Add -mno-fdpic to default flags.
 
-> to a patch which fixes that particular message, and a few more.
-> I could look at the rest if anyones interrested?
+Yoshihiro Shimoda (2):
+      usb: r8a66597-hcd: Add support for SH7723 USB host
+      sh: add resource of USB host for SH7723
 
-We like to keep ext3 and ext4 in sync as much as poss, please.
+Yusuke.Goda (1):
+      sh: Add SH7723 SCIF support
 
-> Oh, and i dont really know if this is nessecary, but:
-> Signed-off-by: Kasper Sandberg <lkml@metanurb.dk>
-
-It is very much preferred, thanks.
-
-(patch retained for linux-ext4 review)
-
-> 
-> --- super.c.orig	2008-06-08 20:49:26.153047364 +0200
-> +++ super.c	2008-06-08 20:45:20.812047463 +0200
-> @@ -1188,31 +1188,31 @@
->  	int res = 0;
->  
->  	if (le32_to_cpu(es->s_rev_level) > EXT3_MAX_SUPP_REV) {
-> -		printk (KERN_ERR "EXT3-fs warning: revision level too high, "
-> -			"forcing read-only mode\n");
-> +		printk (KERN_ERR "EXT3-fs on %s warning: revision level too high, "
-> +			"forcing read-only mode\n", sb->s_id);
->  		res = MS_RDONLY;
->  	}
->  	if (read_only)
->  		return res;
->  	if (!(sbi->s_mount_state & EXT3_VALID_FS))
-> -		printk (KERN_WARNING "EXT3-fs warning: mounting unchecked fs, "
-> -			"running e2fsck is recommended\n");
-> +		printk (KERN_WARNING "EXT3-fs on %s warning: mounting unchecked fs, "
-> +			"running e2fsck is recommended\n", sb->s_id);
->  	else if ((sbi->s_mount_state & EXT3_ERROR_FS))
->  		printk (KERN_WARNING
-> -			"EXT3-fs warning: mounting fs with errors, "
-> -			"running e2fsck is recommended\n");
-> +			"EXT3-fs on %s warning: mounting fs with errors, "
-> +			"running e2fsck is recommended\n", sb->s_id);
->  	else if ((__s16) le16_to_cpu(es->s_max_mnt_count) >= 0 &&
->  		 le16_to_cpu(es->s_mnt_count) >=
->  		 (unsigned short) (__s16) le16_to_cpu(es->s_max_mnt_count))
->  		printk (KERN_WARNING
-> -			"EXT3-fs warning: maximal mount count reached, "
-> -			"running e2fsck is recommended\n");
-> +			"EXT3-fs on %s warning: maximal mount count reached, "
-> +			"running e2fsck is recommended\n", sb->s_id);
->  	else if (le32_to_cpu(es->s_checkinterval) &&
->  		(le32_to_cpu(es->s_lastcheck) +
->  			le32_to_cpu(es->s_checkinterval) <= get_seconds()))
->  		printk (KERN_WARNING
-> -			"EXT3-fs warning: checktime reached, "
-> -			"running e2fsck is recommended\n");
-> +			"EXT3-fs on %s warning: checktime reached, "
-> +			"running e2fsck is recommended\n", sb->s_id);
->  #if 0
->  		/* @@@ We _will_ want to clear the valid bit if we find
->                     inconsistencies, to force a fsck at reboot.  But for
-> @@ -1339,8 +1339,8 @@
->  	}
->  
->  	if (bdev_read_only(sb->s_bdev)) {
-> -		printk(KERN_ERR "EXT3-fs: write access "
-> -			"unavailable, skipping orphan cleanup.\n");
-> +		printk(KERN_ERR "EXT3-fs on %s: write access "
-> +			"unavailable, skipping orphan cleanup.\n", sb->s_id);
->  		return;
->  	}
->  
-> 
-> 
+ arch/sh/Makefile                       |    2 +
+ arch/sh/kernel/cpu/sh4a/setup-sh7723.c |   41 ++++++++++++++++++++++++++++++++
+ arch/sh/kernel/cpu/sh4a/setup-sh7763.c |    9 ++++---
+ drivers/usb/host/Kconfig               |    8 +++---
+ 4 files changed, 52 insertions(+), 8 deletions(-)
