@@ -1,58 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760219AbYFIOn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760749AbYFIOoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760219AbYFIOn3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 10:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbYFIOnV
+	id S1760749AbYFIOoX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 10:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbYFIOoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 10:43:21 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:49697 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759145AbYFIOnU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 10:43:20 -0400
-Message-ID: <484D416F.6050504@linux.vnet.ibm.com>
-Date: Mon, 09 Jun 2008 20:12:55 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 9 Jun 2008 10:44:15 -0400
+Received: from sacred.ru ([62.205.161.221]:47780 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751809AbYFIOoP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 10:44:15 -0400
+Message-ID: <484D4119.1050206@openvz.org>
+Date: Mon, 09 Jun 2008 18:41:29 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-To: Scott Wiersdorf <scott@bluehost.com>
-CC: Andi Kleen <andi@firstfloor.org>, Balbir Singh <balbir@in.ibm.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       matt@bluehost.com
-Subject: Re: [PATCH 2.6.25-4] getdelays.c: signal handling for log rotation
-References: <20080605194334.GA56830@perlcode.org> <87d4muu0k2.fsf@basil.nowhere.org> <20080606204704.GA4330@perlcode.org> <4849E09D.6090804@firstfloor.org> <1213021229.4645.67.camel@tub.office.bluehost.com>
-In-Reply-To: <1213021229.4645.67.camel@tub.office.bluehost.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Oleg Nesterov <oleg@tv-sign.ru>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/3] pidns: remove now unused kill_proc function
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 09 Jun 2008 18:43:45 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Scott Wiersdorf wrote:
-> On Sat, 2008-06-07 at 03:13 +0200, Andi Kleen wrote:
->> Scott Wiersdorf wrote: 
->>> I still think a single handler is elegant enough though, and works
->>> better with many log rotation systems that want to send a single
->>> signal to a pid (it's what we need where I'm working now, hence the
->>> patch).
->> Well in general it would be cool if there was nicer free userland for
->> the obscure but useful delay accounting. The code in Documentation
->> is really not much more than a example. Do you have something downloadable?
-> 
-> I don't. I'm really not much of a C programmer; I'm just hacking on this
-> file for our company because we have a use for it. I'm all for it going
-> into userland, but don't have the time to be responsible for that.
+This function operated on a pid_t to kill a task, which is
+no longer valid in a containerized system.
 
-Andi,
+It has finally lost all its users and we can safely remove 
+it from the tree.
 
-I've come across http://people.suug.ch/~tgr/taskstats/. It seems like a good
-implementation. The code in Documentation/accounting is to show a prototype of
-the implementation and to keep it updated as we add new features.
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+---
+ include/linux/sched.h |    1 -
+ kernel/signal.c       |   12 ------------
+ 2 files changed, 0 insertions(+), 13 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 4efb39b..4d877ea 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1792,7 +1792,6 @@ extern void force_sig(int, struct task_struct *);
+ extern void force_sig_specific(int, struct task_struct *);
+ extern int send_sig(int, struct task_struct *, int);
+ extern void zap_other_threads(struct task_struct *p);
+-extern int kill_proc(pid_t, int, int);
+ extern struct sigqueue *sigqueue_alloc(void);
+ extern void sigqueue_free(struct sigqueue *);
+ extern int send_sigqueue(struct sigqueue *,  struct task_struct *, int group);
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 0514da5..5e5463a 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -1228,17 +1228,6 @@ int kill_pid(struct pid *pid, int sig, int priv)
+ }
+ EXPORT_SYMBOL(kill_pid);
+ 
+-int
+-kill_proc(pid_t pid, int sig, int priv)
+-{
+-	int ret;
+-
+-	rcu_read_lock();
+-	ret = kill_pid_info(sig, __si_special(priv), find_pid(pid));
+-	rcu_read_unlock();
+-	return ret;
+-}
+-
+ /*
+  * These functions support sending signals using preallocated sigqueue
+  * structures.  This is needed "because realtime applications cannot
+@@ -1910,7 +1899,6 @@ EXPORT_SYMBOL(recalc_sigpending);
+ EXPORT_SYMBOL_GPL(dequeue_signal);
+ EXPORT_SYMBOL(flush_signals);
+ EXPORT_SYMBOL(force_sig);
+-EXPORT_SYMBOL(kill_proc);
+ EXPORT_SYMBOL(ptrace_notify);
+ EXPORT_SYMBOL(send_sig);
+ EXPORT_SYMBOL(send_sig_info);
