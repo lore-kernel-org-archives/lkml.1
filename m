@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758829AbYFIMUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760288AbYFIMVK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758829AbYFIMUd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 08:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754676AbYFIMUV
+	id S1760288AbYFIMVK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 08:21:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756259AbYFIMUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 08:20:21 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:48396 "EHLO mgw2.diku.dk"
+	Mon, 9 Jun 2008 08:20:53 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:48454 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751164AbYFIMUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 08:20:20 -0400
-Date: Mon, 9 Jun 2008 14:20:04 +0200 (CEST)
+	id S1759870AbYFIMUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 08:20:45 -0400
+Date: Mon, 9 Jun 2008 14:20:42 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: paulus@samba.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/4] arch/powerpc: add missing of_node_put
-Message-ID: <Pine.LNX.4.64.0806091418340.16009@ask.diku.dk>
+To: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 2/4] drivers/macintosh/smu.c: add missing of_node_put
+Message-ID: <Pine.LNX.4.64.0806091420080.16009@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -66,18 +66,23 @@ Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
 
-diff -u -p a/arch/powerpc/platforms/pseries/nvram.c b/arch/powerpc/platforms/pseries/nvram.c
---- a/arch/powerpc/platforms/pseries/nvram.c
-+++ b/arch/powerpc/platforms/pseries/nvram.c
-@@ -131,8 +131,10 @@ int __init pSeries_nvram_init(void)
- 		return -ENODEV;
+diff -u -p a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
+--- a/drivers/macintosh/smu.c
++++ b/drivers/macintosh/smu.c
+@@ -483,12 +483,15 @@ int __init smu_init (void)
  
- 	nbytes_p = of_get_property(nvram, "#bytes", &proplen);
--	if (nbytes_p == NULL || proplen != sizeof(unsigned int))
-+	if (nbytes_p == NULL || proplen != sizeof(unsigned int)) {
-+		of_node_put(nvram);
- 		return -EIO;
+ 	if (smu_cmdbuf_abs == 0) {
+ 		printk(KERN_ERR "SMU: Command buffer not allocated !\n");
++		of_node_put(np);
+ 		return -EINVAL;
+ 	}
+ 
+ 	smu = alloc_bootmem(sizeof(struct smu_device));
+-	if (smu == NULL)
++	if (smu == NULL) {
++		of_node_put(np);
+ 		return -ENOMEM;
 +	}
+ 	memset(smu, 0, sizeof(*smu));
  
- 	nvram_size = *nbytes_p;
- 
+ 	spin_lock_init(&smu->lock);
