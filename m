@@ -1,181 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762347AbYFIWmw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763576AbYFIWn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762347AbYFIWmw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 18:42:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762327AbYFIWgF
+	id S1763576AbYFIWn1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 18:43:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761987AbYFIWil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 18:36:05 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:12940 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761181AbYFIWgD (ORCPT
+	Mon, 9 Jun 2008 18:38:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53282 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762916AbYFIWii (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 18:36:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=bbH/7BZnQwYn8egrQ+ejZPysxo9U260Q5A9tdUi1OmGNJLXO37R7aRH1IcosZswD1T
-         GBIOgR7i1OLVhR3w7v3Zk4vWI15UWD1Q1i7fMki5VexdOzYWMLXTTuEgzzJnbul+onTR
-         SX0mOXGLqrgVTssz0dE6omTqlhr51/HAMeakU=
-Message-ID: <dd18b0c30806091536s724ba33cmfdd9ccb49b0cbd53@mail.gmail.com>
-Date: Mon, 9 Jun 2008 22:36:02 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Oliver Neukum" <oliver@neukum.org>
-Subject: Re: [Bug #10825] appletouch after wakeup
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <dd18b0c30806091504u43e0e901jb786e57f5cbf47cd@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 9 Jun 2008 18:38:38 -0400
+Date: Mon, 9 Jun 2008 15:37:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Rik van Riel <riel@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: 2.6.26-rc5-mm1: kernel BUG at mm/filemap.c:575!
+Message-Id: <20080609153749.8256c9ce.akpm@linux-foundation.org>
+In-Reply-To: <20080609204559.GA4863@martell.zuzino.mipt.ru>
+References: <20080609053908.8021a635.akpm@linux-foundation.org>
+	<20080609204559.GA4863@martell.zuzino.mipt.ru>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <GIilET9wkhI.A.JzB.81vSIB@albercik>
-	 <200806092231.32190.oliver@neukum.org>
-	 <dd18b0c30806091352g390b1e5dj11118bce07942ef6@mail.gmail.com>
-	 <200806092316.56459.oliver@neukum.org>
-	 <dd18b0c30806091504u43e0e901jb786e57f5cbf47cd@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 9, 2008 at 10:04 PM, Justin Mattock <justinmattock@gmail.com> wrote:
-> On Mon, Jun 9, 2008 at 9:16 PM, Oliver Neukum <oliver@neukum.org> wrote:
->> Am Montag 09 Juni 2008 22:52:21 schrieb Justin Mattock:
->>> On Mon, Jun 9, 2008 at 8:31 PM, Oliver Neukum <oliver@neukum.org> wrote:
->>> > Am Montag 09 Juni 2008 22:29:05 schrieb Justin Mattock:
->>> >> On Mon, Jun 9, 2008 at 7:53 PM, Oliver Neukum <oliver@neukum.org> wrote:
->>> >> > Am Montag 09 Juni 2008 18:18:19 schrieb Justin Mattock:
->>> >
->>> >> >> Cool; just an update, I've suspended the system numerous times it
->>> >> >> seems appletouch is behaving correctly, in fact
->>> >> >> I think better, why: when I start the system I have two finger scroll
->>> >> >> functionality, then when suspending the system
->>> >> >> after waking up the two finger scroll is still functional.
->>> >> >> regards;
->>> >> >>
->>> >> >
->>> >> > With last week's patch or today's patch?
->>> >> >
->>> >> >        Regards
->>> >> >                Oliver
->>> >> >
->>> >> >
->>> >>
->>> >> Last weeks patch.
->>> >> regards;
->>> >>
->>> >
->>> > Could you also try today's patch?
->>> >
->>> >        Regards
->>> >                Oliver
->>> >
->>> >
->>>
->>> Sure, where is it located.
->>> regards;
->>>
->>
->> Didn't I mail it to you? Anyway, here it is.
->>
->>        Regards
->>                Oliver
->>
->> ----
->>
->> --- linux-2.6.26-rc5/drivers/usb/core/quirks.c  2008-06-05 13:45:57.000000000 +0200
->> +++ linux-2.6.26-rc5-btusb/drivers/usb/core/quirks.c    2008-06-06 08:12:10.000000000 +0200
->> @@ -47,6 +47,9 @@ static const struct usb_device_id usb_qu
->>        /* Edirol SD-20 */
->>        { USB_DEVICE(0x0582, 0x0027), .driver_info = USB_QUIRK_RESET_RESUME },
->>
->> +       /* appletouch */
->> +       { USB_DEVICE(0x05ac, 0x021a), .driver_info = USB_QUIRK_RESET_RESUME },
->> +
->>        /* Avision AV600U */
->>        { USB_DEVICE(0x0638, 0x0a13), .driver_info =
->>          USB_QUIRK_STRING_FETCH_255 },
->> --- linux-2.6.26-rc5-btusb/drivers/input/mouse/appletouch.c.alt 2008-06-09 10:40:00.000000000 +0200
->> +++ linux-2.6.26-rc5-btusb/drivers/input/mouse/appletouch.c     2008-06-09 10:40:03.000000000 +0200
->> @@ -589,6 +589,20 @@ static void atp_close(struct input_dev *
->>        dev->open = 0;
->>  }
->>
->> +static int handle_geyser(struct atp *dev)
->> +{
->> +       struct usb_device *udev = dev->udev;
->> +
->> +       if (!atp_is_fountain(dev)) {
->> +               /* switch to raw sensor mode */
->> +               if (atp_geyser_init(udev))
->> +                       return -EIO;
->> +
->> +               printk(KERN_INFO "appletouch: Geyser mode initialized.\n");
->> +       }
->> +       return 0;
->> +}
->> +
->>  static int atp_probe(struct usb_interface *iface, const struct usb_device_id *id)
->>  {
->>        struct atp *dev;
->> @@ -744,6 +758,20 @@ static void atp_disconnect(struct usb_in
->>        printk(KERN_INFO "input: appletouch disconnected\n");
->>  }
->>
->> +static int recover_dev(struct atp *dev)
->> +{
->> +       int rv;
->> +
->> +       rv = handle_geyser(dev);
->> +       if (rv < 0)
->> +               return rv;
->> +
->> +       if (dev->open && usb_submit_urb(dev->urb, GFP_NOIO))
->> +               return -EIO;
->> +
->> +       return 0;
->> +}
->> +
->>  static int atp_suspend(struct usb_interface *iface, pm_message_t message)
->>  {
->>        struct atp *dev = usb_get_intfdata(iface);
->> @@ -764,12 +792,20 @@ static int atp_resume(struct usb_interfa
->>        return 0;
->>  }
->>
->> +static int atp_reset_resume(struct usb_interface *iface)
->> +{
->> +       struct atp *dev = usb_get_intfdata(iface);
->> +
->> +       return recover_dev(dev);
->> +}
->> +
->>  static struct usb_driver atp_driver = {
->>        .name           = "appletouch",
->>        .probe          = atp_probe,
->>        .disconnect     = atp_disconnect,
->>        .suspend        = atp_suspend,
->>        .resume         = atp_resume,
->> +       .reset_resume   = atp_reset_resume,
->>        .id_table       = atp_table,
->>  };
->>
->>
->>
+On Tue, 10 Jun 2008 00:45:59 +0400
+Alexey Dobriyan <adobriyan@gmail.com> wrote:
+
+> This happened after LTP run finished.
+> 
+> ------------[ cut here ]------------
+> kernel BUG at mm/filemap.c:575!
+> invalid opcode: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
+> last sysfs file: /sys/kernel/uevent_seqnum
+> CPU 1 
+> Modules linked in: ext2 nf_conntrack_irc xt_state iptable_filter ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack ip_tables x_tables usblp uhci_hcd ehci_hcd usbcore sr_mod cdrom
+> Pid: 19327, comm: pdflush Not tainted 2.6.26-rc5-mm1 #4
+> RIP: 0010:[<ffffffff80266a37>]  [<ffffffff80266a37>] unlock_page+0x17/0x40
+> RSP: 0018:ffff81015c697540  EFLAGS: 00010246
+> RAX: 0000000000000000 RBX: ffffe20000e38c08 RCX: 0000000000000034
+> RDX: 0000000000000000 RSI: ffffe20000e38c08 RDI: ffffe20000e38c08
+> RBP: ffff81015c697550 R08: 0000000000000002 R09: 000000000007794e
+> R10: ffffffff8028b6f1 R11: 0000000000000001 R12: ffffe20000e38c08
+> R13: 0000000000000000 R14: ffff81015c6977a0 R15: ffff81015c6978c0
+> FS:  0000000000000000(0000) GS:ffff81017f845320(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> CR2: 00007fb64f84f020 CR3: 0000000000201000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process pdflush (pid: 19327, threadinfo ffff81015c696000, task ffff81015c795690)
+> Stack:  ffff81015c697550 0000000000000000 ffff81015c697680 ffffffff802722ce
+>  ffffe20005367df8 ffff81015c697640 0000000000000000 0000000000000001
+>  0000000000000001 0000000000000001 ffffe20000b02d38 ffffe20001274970
+> Call Trace:
+>  [<ffffffff802722ce>] shrink_page_list+0x2ce/0x6d0
+>  [<ffffffff80254f37>] ? mark_held_locks+0x47/0x90
+>  [<ffffffff8025517d>] ? trace_hardirqs_on+0xd/0x10
+>  [<ffffffff802550e9>] ? trace_hardirqs_on_caller+0xc9/0x150
+>  [<ffffffff802728f4>] shrink_list+0x224/0x590
+>  [<ffffffff80272eab>] shrink_zone+0x24b/0x330
+>  [<ffffffff80273407>] try_to_free_pages+0x267/0x3e0
 >
-> You probably did,  I'll apply this and let you know.
-> regards;
->
-> --
-> Justin P. Mattock
+> ...
 >
 
-O.K. This is smaller than last weeks? anyways I applied the patch, and
-am not seeing appletouch freak out like it did, also
-two finger scroll is still active upon wakeup(FWIW).  Cool, and thanks
-for the help.
-regards;
+We unlocked an already-unlocked page.
 
--- 
-Justin P. Mattock
+Although pretty straightforward, shrink_page_list() is, umm, large.
+
+This part:
+
+		if (PagePrivate(page)) {
+			if (!try_to_release_page(page, sc->gfp_mask))
+				goto activate_locked;
+			if (!mapping && page_count(page) == 1) {
+				unlock_page(page);
+				if (put_page_testzero(page))
+					goto free_it;
+				else {
+					nr_reclaimed++;
+					continue;
+				}
+			}
+		}
+
+		if (!mapping || !__remove_mapping(mapping, page))
+			goto keep_locked;
+
+free_it:
+		unlock_page(page);
+
+has a very obvious double-unlock.  It was added by the obviously-buggy,
+reviewed-by-everyone mm-speculative-page-references.patch - part of
+Nick's lockless pagecache work.
+
+argh.  This means that I need to a) stop merging anything and b) be
+sent a fix really fast or drop them all and fix up all the fallout and
+c) get -mm2 out asap to that someone can test all the other
+page-reclaim changes.  argh.
+
+Also, what's up with that "continue" which got added there?  We just
+leave the page floating about without reattaching it to any LRU? 
+Where's the code comment explaining wth is going on in there?
+
+More argh.  
