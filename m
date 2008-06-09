@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760627AbYFIWYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758145AbYFIWYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760627AbYFIWYA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 18:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758317AbYFIWXM
+	id S1758145AbYFIWYc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 18:24:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759326AbYFIWXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 18:23:12 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:47006 "EHLO smtp5.pp.htv.fi"
+	Mon, 9 Jun 2008 18:23:17 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:40931 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758742AbYFIWXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 18:23:10 -0400
-Date: Tue, 10 Jun 2008 01:22:16 +0300
+	id S1760066AbYFIWXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 18:23:14 -0400
+Date: Tue, 10 Jun 2008 01:22:20 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: jgarzik@pobox.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] add missing lance_* exports
-Message-ID: <20080609222216.GD1987@cs181133002.pp.htv.fi>
+To: geert@linux-m68k.org, zippel@linux-m68k.org
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] export amiga_vblank
+Message-ID: <20080609222219.GE1987@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -30,11 +30,7 @@ This patch fixes the following build error:
 ...
   Building modules, stage 2.
   MODPOST 1203 modules
-ERROR: "lance_open" [drivers/net/mvme147.ko] undefined!
-ERROR: "lance_close" [drivers/net/mvme147.ko] undefined!
-ERROR: "lance_tx_timeout" [drivers/net/mvme147.ko] undefined!
-ERROR: "lance_set_multicast" [drivers/net/mvme147.ko] undefined!
-ERROR: "lance_start_xmit" [drivers/net/mvme147.ko] undefined!
+ERROR: "amiga_vblank" [drivers/video/amifb.ko] undefined!
 ...
 make[2]: *** [__modpost] Error 1
 
@@ -44,53 +40,17 @@ Reported-by: Adrian Bunk <bunk@kernel.org>
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-
- drivers/net/7990.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-506cb8d679dd0aedae861635aca435e5cd09bcc2 diff --git a/drivers/net/7990.c b/drivers/net/7990.c
-index 750a46f..ad6b8a5 100644
---- a/drivers/net/7990.c
-+++ b/drivers/net/7990.c
-@@ -506,6 +506,7 @@ int lance_open (struct net_device *dev)
+d087380beb0b6a63699bc167b4b012e9e02549e9 diff --git a/arch/m68k/amiga/config.c b/arch/m68k/amiga/config.c
+index 50f5daa..dd0734e 100644
+--- a/arch/m68k/amiga/config.c
++++ b/arch/m68k/amiga/config.c
+@@ -51,6 +51,8 @@ unsigned long amiga_chipset;
+ EXPORT_SYMBOL(amiga_chipset);
  
- 	return res;
- }
-+EXPORT_SYMBOL_GPL(lance_open);
+ unsigned char amiga_vblank;
++EXPORT_SYMBOL(amiga_vblank);
++
+ unsigned char amiga_psfreq;
  
- int lance_close (struct net_device *dev)
- {
-@@ -521,6 +522,7 @@ int lance_close (struct net_device *dev)
- 
-         return 0;
- }
-+EXPORT_SYMBOL_GPL(lance_close);
- 
- void lance_tx_timeout(struct net_device *dev)
- {
-@@ -529,7 +531,7 @@ void lance_tx_timeout(struct net_device *dev)
- 	dev->trans_start = jiffies;
- 	netif_wake_queue (dev);
- }
--
-+EXPORT_SYMBOL_GPL(lance_tx_timeout);
- 
- int lance_start_xmit (struct sk_buff *skb, struct net_device *dev)
- {
-@@ -586,6 +588,7 @@ int lance_start_xmit (struct sk_buff *skb, struct net_device *dev)
- 
-         return 0;
- }
-+EXPORT_SYMBOL_GPL(lance_start_xmit);
- 
- /* taken from the depca driver via a2065.c */
- static void lance_load_multicast (struct net_device *dev)
-@@ -654,6 +657,7 @@ void lance_set_multicast (struct net_device *dev)
- 	if (!stopped)
- 		netif_start_queue (dev);
- }
-+EXPORT_SYMBOL_GPL(lance_set_multicast);
- 
- #ifdef CONFIG_NET_POLL_CONTROLLER
- void lance_poll(struct net_device *dev)
+ struct amiga_hw_present amiga_hw_present;
 
