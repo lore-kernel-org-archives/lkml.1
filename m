@@ -1,99 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759545AbYFIJfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759490AbYFIJhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759545AbYFIJfi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 05:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758260AbYFIJf1
+	id S1759490AbYFIJhB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 05:37:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758487AbYFIJgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 05:35:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42919 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759441AbYFIJf1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 05:35:27 -0400
-Date: Mon, 9 Jun 2008 02:35:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Jakub W. Jozwicki" <jozwicki@aster.pl>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: sched_yield() on 2.6.25
-Message-Id: <20080609023518.4a7d9868.akpm@linux-foundation.org>
-In-Reply-To: <200806081334.10875.jozwicki@aster.pl>
-References: <200806081334.10875.jozwicki@aster.pl>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Mon, 9 Jun 2008 05:36:51 -0400
+Received: from sh.osrg.net ([192.16.179.4]:44901 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758396AbYFIJgu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 05:36:50 -0400
+Date: Mon, 9 Jun 2008 18:36:23 +0900
+To: grundler@google.com
+Cc: fujita.tomonori@lab.ntt.co.jp, James.Bottomley@hansenpartnership.com,
+       linux-kernel@vger.kernel.org, mgross@linux.intel.com,
+       linux-scsi@vger.kernel.org, alex.williamson@hp.com,
+       bjorn.helgaas@hp.com
+Subject: Re: Intel IOMMU (and IOMMU for Virtualization) performances
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <da824cf30806052248h3ac4ff21ocada15c376b399af@mail.gmail.com>
+References: <1212692488.4241.8.camel@localhost.localdomain>
+	<20080606133955B.fujita.tomonori@lab.ntt.co.jp>
+	<da824cf30806052248h3ac4ff21ocada15c376b399af@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080609183125W.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 8 Jun 2008 13:34:10 +0200 "Jakub W. Jozwicki" <jozwicki@aster.pl> wrote:
+On Thu, 5 Jun 2008 22:48:13 -0700
+"Grant Grundler" <grundler@google.com> wrote:
 
-> Hello,
-> I observe strange behavior of sched_yield() on 2.6.25 (strange comparing to 
-> 2.6.24). Here is the code (available at 
-> http://systest.googlecode.com/files/systest20080119.tgz):
+> On Thu, Jun 5, 2008 at 9:44 PM, FUJITA Tomonori
+> <fujita.tomonori@lab.ntt.co.jp> wrote:
+> ...
+> > The current Intel IOMMU scheme is a bit unbalanced. It invalidates the
+> > translation table every time dma_unmap_* is called, but it does the
+> > batching of the TLB flushes. But it's what the most of Linux's IOMMU
+> > code does.
+> >
+> > I think that only PARISC (and IA64, of course) IOMMUs do the batching
+> > of invalidating the translation table entries.
 > 
-> ------------------------------------------------------
-> timer_t timer;
-> sig_atomic_t cnt = 0;
-> long long sum = 0;
-> long times[21], min, max;
-> pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-> struct timespec ts = { 0, 0 };
-> pthread_t last_th = 0;
-> 
-> void *th_proc(void* p) {
->     int n = SIZE(times) -1;
->     pthread_t th;
->         
->     while(1) {    
-> 	pthread_mutex_lock(&mutex);
-> 	th = pthread_self();
-> 	if (pthread_equal(th,last_th)) {
-> 	    pthread_mutex_unlock(&mutex);
-> 	    sched_yield();
-> 	    continue;
-> 	}
-> 	rt_timer_stop(&ts);
-> 	last_th = th;
-> 	if (cnt>=1) {
-> 	    times[cnt-1] = ts_sum(&ts);
-> 	    if (cnt <= n) {
-> 		sum += times[cnt-1];
-> 		box(times[cnt-1],min,max);
-> 		#define uint unsigned int
-> 		printf("[%u] Thread switching time: %ldns\n",(uint)th, times[cnt-1]);
-> 	    }
-> 	    else {
-> 		printf("[%u] Thread switching time (not counted): %ldns\n",(uint)th, 
-> times[cnt-1]);
-> 	    }
-> 	    cnt--;
-> 	}
->         ....
-> -----------------------------------------------------
-> and here are the results:
-> 
-> Setting cpu mask to 1
-> 
-> -- SYSTEM INFO -------------------
-> 
-> localhost: Linux 2.6.24-rt4 #8 SMP PREEMPT RT Mon Jan 21 18:45:00 CET 2008
-> 
-> Setting priority SCHED_OTHER to 0 (normal process) for 20802
-> [3084102544] Thread switching time (not counted): 10709015ns
-> [3075709840] Thread switching time: 35468301ns
-> [3084102544] Thread switching time: 2793ns
-> [3075709840] Thread switching time 30725ns
-> [3084102544] Thread switching time: 10405ns
-> [3075709840] Thread switching time: 2724ns
-> [3084102544] Thread switching time: 2654ns
-> [3075709840] Thread switching time: 2653ns
-> [3084102544] Thread switching time: 3352ns
-> [3075709840] Thread switching time: 2583ns
-> [3084102544] Thread switching time: 2514ns
-> [3075709840] Thread switching time: 2514ns
+> 1/2 correct. PARISC and IA64 could be the same in this regard but are not.
+> See where sba_mark_invalid() is called in the respective sba_iommu.c.
+> PARISC invalidates the IO Pdir entry immediately but batches the
+> IO TLB shootdown and resource "free". IA64 could (and probably should)
+> do the same. Added Alex Williamson and Bjorn Helgaas to CC list.
+> Not an urgent issue though unless they are doing perf measurements
+> with SSDs or other block device with equivalent IOPS.
 
-It would save us some time if you were to tell us what these results
-mean, please.
+Oops, thanks.
 
+Seems that IA64 does the batching of sba_mark_invalid, sba_free_range,
+and flushing TLB. IA64 and PARISC look different in this regard.
