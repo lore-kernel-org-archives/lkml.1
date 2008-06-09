@@ -1,110 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761374AbYFIOq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761237AbYFIOrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761374AbYFIOq0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 10:46:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759738AbYFIOqO
+	id S1761237AbYFIOrA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 10:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbYFIOqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 10:46:14 -0400
-Received: from sacred.ru ([62.205.161.221]:48174 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759420AbYFIOqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 10:46:12 -0400
-Message-ID: <484D4199.7090609@openvz.org>
-Date: Mon, 09 Jun 2008 18:43:37 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Mon, 9 Jun 2008 10:46:48 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:40033 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755476AbYFIOqq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 10:46:46 -0400
+Date: Mon, 9 Jun 2008 10:46:44 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Chris Clayton <chris2553@googlemail.com>
+cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       Hannes Reinecke <hare@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       USB list <linux-usb@vger.kernel.org>,
+       <linux1394-devel@lists.sourceforge.net>
+Subject: Re: 2,6.26-rc4-git2 - long pause during boot
+In-Reply-To: <200806080619.17531.chris2553@googlemail.com>
+Message-ID: <Pine.LNX.4.44L0.0806091040440.2943-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Oleg Nesterov <oleg@tv-sign.ru>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/3] pidns: remove now unused find_pid function.
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 09 Jun 2008 18:45:52 +0400 (MSD)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This one had the only users so far - the kill_proc, which is
-removed, so drop this (invalid in namespaced world) call too.
+On Sun, 8 Jun 2008, Chris Clayton wrote:
 
-And of course - erase all references on it from comments.
+> > The odd thing is that it occurs in the middle of USB initialisation from
+> >
+> 
+> Because of this oddity, I've also built 2.6.26-rc5-git2 with verbose USB 
+> debugging on. A boot log from that kernel is attached. You will see lots of 
+> ETIME errors from usb. A log from a similarly verbose 2.6.25.5 kernel does not 
+> show these errors. usb-devel added to cc list.
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+In fact the log shows that the 30-second delay occurs in the middle of
+ohci1394 (Firewire) initialization, not USB initialization:
 
----
- include/linux/pid.h   |    4 +---
- include/linux/sched.h |    2 +-
- kernel/pid.c          |    8 +-------
- 3 files changed, 3 insertions(+), 11 deletions(-)
+Jun  8 05:26:35 upstairs kernel: ohci1394: fw-host0: OHCI-1394 1.1 (PCI): IRQ=[22]  MMIO=[fbfff000-fbfff7ff]  Max Packet=[2048]  IR/IT contexts=[4/8] 
+Jun  8 05:26:35 upstairs kernel: ohci_hcd 0000:02:0a.0: urb f71cb680 path 2 ep1in 5e160000 cc 5 --> status -62 
+Jun  8 05:26:35 upstairs kernel: hub 1-2:1.0: transfer --> -62 
+Jun  8 05:27:08 upstairs kernel: driver: '0000:02:0b.0': driver_bound: bound to device 'ohci1394' 
+Jun  8 05:27:08 upstairs kernel: bus: 'pci': really_probe: bound device 0000:02:0b.0 to driver ohci1394 
 
-diff --git a/include/linux/pid.h b/include/linux/pid.h
-index 6f084b9..ff1b2a5 100644
---- a/include/linux/pid.h
-+++ b/include/linux/pid.h
-@@ -48,7 +48,7 @@ enum pid_type
-  */
- 
- struct upid {
--	/* Try to keep pid_chain in the same cacheline as nr for find_pid */
-+	/* Try to keep pid_chain in the same cacheline as nr for find_vpid */
- 	int nr;
- 	struct pid_namespace *ns;
- 	struct hlist_node pid_chain;
-@@ -105,14 +105,12 @@ extern struct pid_namespace init_pid_ns;
-  * or rcu_read_lock() held.
-  *
-  * find_pid_ns() finds the pid in the namespace specified
-- * find_pid() find the pid by its global id, i.e. in the init namespace
-  * find_vpid() finr the pid by its virtual id, i.e. in the current namespace
-  *
-  * see also find_task_by_pid() set in include/linux/sched.h
-  */
- extern struct pid *find_pid_ns(int nr, struct pid_namespace *ns);
- extern struct pid *find_vpid(int nr);
--extern struct pid *find_pid(int nr);
- 
- /*
-  * Lookup a PID in the hash table, and return with it's count elevated.
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 4d877ea..7c0443b 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1710,7 +1710,7 @@ extern struct pid_namespace init_pid_ns;
-  * find_task_by_pid():
-  *      finds a task by its global pid
-  *
-- * see also find_pid() etc in include/linux/pid.h
-+ * see also find_vpid() etc in include/linux/pid.h
-  */
- 
- extern struct task_struct *find_task_by_pid_type_ns(int type, int pid,
-diff --git a/kernel/pid.c b/kernel/pid.c
-index 30bd5d4..9da013e 100644
---- a/kernel/pid.c
-+++ b/kernel/pid.c
-@@ -309,12 +309,6 @@ struct pid *find_vpid(int nr)
- }
- EXPORT_SYMBOL_GPL(find_vpid);
- 
--struct pid *find_pid(int nr)
--{
--	return find_pid_ns(nr, &init_pid_ns);
--}
--EXPORT_SYMBOL_GPL(find_pid);
--
- /*
-  * attach_pid() must be called with the tasklist_lock write-held.
-  */
-@@ -482,7 +476,7 @@ EXPORT_SYMBOL(task_session_nr_ns);
- /*
-  * Used by proc to find the first pid that is greater then or equal to nr.
-  *
-- * If there is a pid at nr this function is exactly the same as find_pid.
-+ * If there is a pid at nr this function is exactly the same as find_pid_ns.
-  */
- struct pid *find_ge_pid(int nr, struct pid_namespace *ns)
- {
--- 
-1.5.3.4
+Those -62 errors from ohci_hcd are red herrings.  To test this, try 
+booting with "nousb".
+
+Alan Stern
 
