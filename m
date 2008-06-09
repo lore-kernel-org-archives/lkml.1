@@ -1,104 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757477AbYFIRvh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758189AbYFIRz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757477AbYFIRvh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 13:51:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbYFIRv3
+	id S1758189AbYFIRz2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 13:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbYFIRzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 13:51:29 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:18147 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752102AbYFIRv2 (ORCPT
+	Mon, 9 Jun 2008 13:55:20 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:43547 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753475AbYFIRzU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 13:51:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=LCn3QJiHmL9THyy7oAWpl1w9qWxrVebmzui8dXcHBX4SJu8/YIYKcUV6bs32jNUzHe
-         el2uv9ceUZrPjIebH3IpgAzhrnFdN22CGNXQavt4MYO07imw0FvZt254DFM9BsrkVrFV
-         57w43d0AmOHRkvJJnxDKmVJr6u11u3wc6FFIs=
-Message-ID: <86802c440806091051j30ac4480oe6be0a7b288f772c@mail.gmail.com>
-Date: Mon, 9 Jun 2008 10:51:28 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: update mptable v7 - fix
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080609101318.GA23873@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 9 Jun 2008 13:55:20 -0400
+Subject: Re: [RFC PATCH] x86:Use cpu_khz for loops_per_jiffy calculation
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Daniel Hecht <dhecht@vmware.com>, Tim Mann <mann@vmware.com>,
+       Zach Amsden <zach@vmware.com>, Sahil Rihan <srihan@vmware.com>
+In-Reply-To: <20080609131136.GA27588@elte.hu>
+References: <1212540069.19290.57.camel@promb-2n-dhcp368.eng.vmware.com>
+	 <20080609131136.GA27588@elte.hu>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Mon, 09 Jun 2008 10:55:16 -0700
+Message-Id: <1213034116.24546.10.camel@promb-2n-dhcp368.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200805041823.57198.yhlu.kernel@gmail.com>
-	 <200805251600.26325.yhlu.kernel@gmail.com>
-	 <200806011317.38622.yhlu.kernel@gmail.com>
-	 <200806081953.26877.yhlu.kernel@gmail.com>
-	 <20080609101318.GA23873@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 9, 2008 at 3:13 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
->> [PATCH] x86: update mptable v7 - fix
->>
->> need to call early_reserve_e820 to prelocate mptable for 32bit
->>
->> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->>
->> Index: linux-2.6/arch/x86/kernel/setup_32.c
->> ===================================================================
->> --- linux-2.6.orig/arch/x86/kernel/setup_32.c
->> +++ linux-2.6/arch/x86/kernel/setup_32.c
->> @@ -761,6 +761,8 @@ void __init setup_arch(char **cmdline_p)
->>        */
->>       max_pfn = e820_end_of_ram();
->>
->> +     /* pre allocte 4k for mptable mpc */
->> +     early_reserve_e820_mpc_new();
->
-> applied, thanks. It needed the small build fix below as well, for UP
-> 32-bit.
->
->        Ingo
->
-> --------------->
-> commit 3c803fb3e1972566f7a1613f53f7e5a70fbde83f
-> Author: Ingo Molnar <mingo@elte.hu>
-> Date:   Sun May 25 21:16:06 2008 +0200
->
->    x86, mpparse: build fix
->
->    fix:
->
->      LD      .tmp_vmlinux1
->      arch/x86/kernel/built-in.o: In function `setup_arch':
->      : undefined reference to `early_reserve_e820_mpc_new'
->
->    Signed-off-by: Ingo Molnar <mingo@elte.hu>
->
-> diff --git a/include/asm-x86/mpspec.h b/include/asm-x86/mpspec.h
-> index 6e9c958..b8ba374 100644
-> --- a/include/asm-x86/mpspec.h
-> +++ b/include/asm-x86/mpspec.h
-> @@ -46,7 +46,11 @@ extern unsigned long mp_lapic_addr;
->
->  extern void find_smp_config(void);
->  extern void get_smp_config(void);
-> +#ifdef CONFIG_X86_MPPARSE
->  extern void early_reserve_e820_mpc_new(void);
-> +#else
-> +static inline void early_reserve_e820_mpc_new(void) { }
-> +#endif
->
->  void __cpuinit generic_processor_info(int apicid, int version);
->  #ifdef CONFIG_ACPI
+On Mon, 2008-06-09 at 06:11 -0700, Ingo Molnar wrote:
+> * Alok Kataria <akataria@vmware.com> wrote:
+> 
+> > --- linux-2.6.orig/arch/x86/kernel/tsc_32.c   2008-05-27 12:28:16.000000000 -0700
+> > +++ linux-2.6/arch/x86/kernel/tsc_32.c        2008-06-03 17:28:46.000000000 -0700
+> > @@ -401,6 +401,7 @@
+> >  void __init tsc_init(void)
+> >  {
+> >       int cpu;
+> > +     u64 lpj;
+> >
+> >       if (!cpu_has_tsc || tsc_disabled) {
+> >               /* Disable the TSC in case of !cpu_has_tsc */
+> > @@ -421,6 +422,10 @@
+> >               return;
+> >       }
+> >
+> > +     lpj = ((u64)cpu_khz * 1000);
+> > +     do_div(lpj, HZ);
+> > +     lpj_tsc = lpj;
+> 
+> that wont work very well as lpj_tsc is not declared.
 
-thanks. So X86_MPPARSE is not needed when SMP is not enabled?
+lpj_tsc is declared in include/linux/delay.h, and that declaration is
+available in tsc_32.c 
 
-YH
+I compile tested against current git too and seems fine to me. 
+
+Also this patch is not to be applied to any tree yet, i will make a
+different patch which calculates lpj_tsc from tsc_khz instead and use it
+only for the boor processor. 
+There were some concerns from Arjan and Pavel regarding cpu frequency
+being different on different cpus. I was waiting to hear back from them
+before sending a new patch.
+
+Let me know your comments on my questions/suggestions from the earlier
+post
+http://marc.info/?l=linux-kernel&m=121269125317375&w=2
+
+
+Thanks,
+Alok
+
+
+> 
+>         Ingo
+
