@@ -1,123 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762511AbYFIWam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762614AbYFIWa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762511AbYFIWam (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 18:30:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761800AbYFIW1j
+	id S1762614AbYFIWa7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 18:30:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760927AbYFIW15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 18:27:39 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:47274 "EHLO smtp5.pp.htv.fi"
+	Mon, 9 Jun 2008 18:27:57 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:47294 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755206AbYFIW1i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 18:27:38 -0400
-Date: Tue, 10 Jun 2008 01:26:44 +0300
+	id S1761254AbYFIW1z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 18:27:55 -0400
+Date: Tue, 10 Jun 2008 01:27:01 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: "H. Peter Anvin" <hpa@kernel.org>,
+To: "H. Peter Anvin" <hpa@kernel.org>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
        =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>,
        linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Frank Seidel <fseidel@suse.de>,
        Onur =?utf-8?B?S8O8w6fDvGs=?= <onur@pardus.org.tr>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [2.6 patch] fat/dir.c: switch to struct __fat_fs_dirent
-Message-ID: <20080609222644.GY1987@cs181133002.pp.htv.fi>
-References: <200806082116.50355.caglar@pardus.org.tr> <20080608184310.GD4048@cs181133002.pp.htv.fi> <87prqrn4d8.fsf@duaron.myhome.or.jp> <484C83D9.2020402@kernel.org> <87iqwjmekq.fsf@duaron.myhome.or.jp>
+Subject: [2.6 patch] remove the in-kernel struct dirent{,64}
+Message-ID: <20080609222701.GZ1987@cs181133002.pp.htv.fi>
+References: <200806082116.50355.caglar@pardus.org.tr> <20080608184310.GD4048@cs181133002.pp.htv.fi> <87prqrn4d8.fsf@duaron.myhome.or.jp> <484C83D9.2020402@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <87iqwjmekq.fsf@duaron.myhome.or.jp>
+In-Reply-To: <484C83D9.2020402@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 09, 2008 at 01:12:37PM +0900, OGAWA Hirofumi wrote:
-> "H. Peter Anvin" <hpa@kernel.org> writes:
-> 
-> > The other thing about this header that needs to be fixed is the 
-> > definition of the following ioctls:
-> >
-> > #define VFAT_IOCTL_READDIR_BOTH         _IOR('r', 1, struct dirent [2])
-> > #define VFAT_IOCTL_READDIR_SHORT        _IOR('r', 2, struct dirent [2])
-> >
-> > "struct dirent" is a kernel type here, but is a **different type** in 
-> > userspace!  This means both the structure and the IOCTL number is wrong!
-> >
-> > We need to make this either __kernel_dirent_t[*] or something like 
-> > struct __msdos_fs_dirent.
-> 
-> I see. "struct dirent" in linux/dirent.h has very few users in kernel,
-> and probably userland doesn't use it, so it seems it should be renamed.
-> 
-> Well, the patch is like this (sorry, other cleanup is in this patch)?
->...
+The kernel struct dirent{,64} were different from the ones in 
+userspace.
 
-Can you apply the patch below after your patch?
+Even worse, we exported the kernel ones to userspace.
 
-Since fat was the only user of struct dirent in the kernel (there's an 
-unused JFS #define I'll also kill) we can then get rid of the 
-conflicting structs.
+But after the fat usages are fixed we can remove the conflicting 
+kernel versions.
 
-> Thanks.
->...
-
-cu
-Adrian
-
-
-<--  snip  -->
-
-
-struct __fat_fs_dirent is what was formerly the kernel struct dirent
-(that was different from the userspace struct dirent).
-
-Converting all fat users to struct __fat_fs_dirent will allow us to get 
-rid of the conflicting struct dirent definition.
-
+Reported-by: H. Peter Anvin <hpa@kernel.org>
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- fs/fat/dir.c |    7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+This patch has to be applied after the two patches that change fat to 
+use __fat_fs_dirent.
 
-b8c595b4b225c2485d8dbc7ff4cbcdc8e6113672 diff --git a/fs/fat/dir.c b/fs/fat/dir.c
-index 486725e..041a112 100644
---- a/fs/fat/dir.c
-+++ b/fs/fat/dir.c
-@@ -17,7 +17,6 @@
- #include <linux/slab.h>
- #include <linux/time.h>
- #include <linux/msdos_fs.h>
--#include <linux/dirent.h>
- #include <linux/smp_lock.h>
- #include <linux/buffer_head.h>
- #include <linux/compat.h>
-@@ -715,7 +714,7 @@ efault:									   \
- 	return -EFAULT;							   \
- }
+ include/linux/Kbuild   |    1 -
+ include/linux/dirent.h |   20 --------------------
+ 2 files changed, 21 deletions(-)
+
+d447529e60e097e260ed43ca97b04dde36954c8b diff --git a/include/linux/Kbuild b/include/linux/Kbuild
+index 93b9885..4d3649a 100644
+--- a/include/linux/Kbuild
++++ b/include/linux/Kbuild
+@@ -186,7 +186,6 @@ unifdef-y += connector.h
+ unifdef-y += cuda.h
+ unifdef-y += cyclades.h
+ unifdef-y += dccp.h
+-unifdef-y += dirent.h
+ unifdef-y += dlm.h
+ unifdef-y += dlm_plock.h
+ unifdef-y += edd.h
+diff --git a/include/linux/dirent.h b/include/linux/dirent.h
+index 5d6023b..f072fb8 100644
+--- a/include/linux/dirent.h
++++ b/include/linux/dirent.h
+@@ -1,23 +1,6 @@
+ #ifndef _LINUX_DIRENT_H
+ #define _LINUX_DIRENT_H
  
--FAT_IOCTL_FILLDIR_FUNC(fat_ioctl_filldir, dirent)
-+FAT_IOCTL_FILLDIR_FUNC(fat_ioctl_filldir, __fat_fs_dirent)
+-struct dirent {
+-	long		d_ino;
+-	__kernel_off_t	d_off;
+-	unsigned short	d_reclen;
+-	char		d_name[256]; /* We must not include limits.h! */
+-};
+-
+-struct dirent64 {
+-	__u64		d_ino;
+-	__s64		d_off;
+-	unsigned short	d_reclen;
+-	unsigned char	d_type;
+-	char		d_name[256];
+-};
+-
+-#ifdef __KERNEL__
+-
+ struct linux_dirent64 {
+ 	u64		d_ino;
+ 	s64		d_off;
+@@ -26,7 +9,4 @@ struct linux_dirent64 {
+ 	char		d_name[0];
+ };
  
- static int fat_ioctl_readdir(struct inode *inode, struct file *filp,
- 			     void __user *dirent, filldir_t filldir,
-@@ -741,7 +740,7 @@ static int fat_ioctl_readdir(struct inode *inode, struct file *filp,
- static int fat_dir_ioctl(struct inode *inode, struct file *filp,
- 			 unsigned int cmd, unsigned long arg)
- {
--	struct dirent __user *d1 = (struct dirent __user *)arg;
-+	struct __fat_fs_dirent __user *d1 = (struct __fat_fs_dirent __user *)arg;
- 	int short_only, both;
- 
- 	switch (cmd) {
-@@ -757,7 +756,7 @@ static int fat_dir_ioctl(struct inode *inode, struct file *filp,
- 		return fat_generic_ioctl(inode, filp, cmd, arg);
- 	}
- 
--	if (!access_ok(VERIFY_WRITE, d1, sizeof(struct dirent[2])))
-+	if (!access_ok(VERIFY_WRITE, d1, sizeof(struct __fat_fs_dirent[2])))
- 		return -EFAULT;
- 	/*
- 	 * Yes, we don't need this put_user() absolutely. However old
+-#endif	/* __KERNEL__ */
+-
+-
+ #endif
 
