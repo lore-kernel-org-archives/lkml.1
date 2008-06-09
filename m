@@ -1,108 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757240AbYFIU7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757994AbYFIU7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757240AbYFIU7h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 16:59:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbYFIU72
+	id S1757994AbYFIU7v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 16:59:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756926AbYFIU7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 16:59:28 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:55078 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752324AbYFIU71 (ORCPT
+	Mon, 9 Jun 2008 16:59:36 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:53538 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756197AbYFIU7f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 16:59:27 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5313"; a="3617610"
-Message-ID: <484D99AD.4000306@qualcomm.com>
-Date: Mon, 09 Jun 2008 13:59:25 -0700
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 9 Jun 2008 16:59:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=TVkh2hiKXqShZnPl7LKAPtpIZ4/osIuoYZVoU5VPxvMUBN6COljwBo97zKInF03Xvh
+         9Ynl4LbZRnH+TiwDJzE9cyC8lyHvmpw8xo8HuyIu8WGGdIq5b0onYtKKIKJ9T0j0dhZ0
+         ZGt/F6et0GyKdzZjjzU04kFj61ErTQHnIyNXY=
+Message-ID: <4d8e3fd30806091359p1cda5e45o206160c76a7f5bc5@mail.gmail.com>
+Date: Mon, 9 Jun 2008 22:59:28 +0200
+From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] x86: coding style fixes to arch/x86/kernel/io_apic_32.c
+Cc: hpa <hpa@zytor.com>, tglx <tglx@linutronix.de>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "the arch/x86 maintainers" <x86@kernel.org>
+In-Reply-To: <20080609190204.GA13674@elte.hu>
 MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Paul Jackson <pj@sgi.com>, mingo@elte.hu, peterz@infradead.org,
-       menage@google.com, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [patch] sched: prevent bound kthreads from changing cpus_allowed
-References: <alpine.DEB.1.10.0806051255500.31157@chino.kir.corp.google.com> <20080605152953.dcfefa47.pj@sgi.com> <alpine.DEB.1.10.0806051357480.32537@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.1.10.0806051357480.32537@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080608130718.5d36e25b@paolo-desktop>
+	 <20080609190204.GA13674@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes wrote:
->>  2) Sometimes calls to kthread_bind are binding to any online cpu, such as in:
+On Mon, Jun 9, 2008 at 9:02 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
+>
+>> Before:
+>> total: 91 errors, 73 warnings, 2850 lines checked
 >>
->> 	drivers/infiniband/hw/ehca/ehca_irq.c:	kthread_bind(cct->task, any_online_cpu(cpu_online_map));
+>> After:
+>> total: 1 errors, 47 warnings, 2848 lines checked
+>
+> applied, thanks. A small detail:
+
+Thank you. Did you manage to look/apply the other two patches as well?
+http://lkml.org/lkml/2008/6/7/64
+http://lkml.org/lkml/2008/6/7/62
+
+The latter might suffer for the same problem you fixed with the below patch.
+
+>> +++ b/arch/x86/kernel/io_apic_32.c
+>> @@ -37,12 +37,12 @@
+>>  #include <linux/kthread.h>
+>>  #include <linux/jiffies.h>   /* time_after() */
 >>
->>     In such cases, the PF_THREAD_BOUND seems inappropriate.  The caller of
->>     kthread_bind() really doesn't seem to care where that thread is bound;
->>     they just want it on a CPU that is still online.
->>
-> 
-> This particular case is simply moving the thread to any online cpu so that 
-> it survives long enough for the subsequent kthread_stop() in 
-> destroy_comp_task().  So I don't see a problem with this instance.
-> 
-> A caller to kthread_bind() can always remove PF_THREAD_BOUND itself upon 
-> return, but I haven't found any cases in the tree where that is currently 
-> necessary.  And doing that would defeat the semantics of kthread_bind() 
-> where these threads are supposed to be bound to a specific cpu and not 
-> allowed to run on others.
+>> -#include <asm/io.h>
+>> -#include <asm/smp.h>
+>> +#include <linux/io.h>
+>> +#include <linux/smp.h>
+>
+> i suspect checkpatch suggested that asm/smp.h -> linux/smp.h change, but
+> there was a subtle detail here - asm/smp.h has dual role on x86, it also
+> carries a fair number of low level details about APIC/SMP details -
+> which matters on UP IOAPIC.
 
-Actually I have another use case here. Above example in particular may be ok 
-but it does demonstrate the issue nicely. Which is that in some cases kthreads 
-are bound to a CPU but do not have a strict "must run here" requirement and 
-could be moved if needed.
-For example I need an ability to move workqueue threads. Workqueue threads do 
-kthread_bind().
-So how about we add something like kthread_bind_strict() which  would set 
-PF_THREAD_BOUND ?
-We could also simply add flags argument to the kthread_bind() which would be 
-better imo but requires more changes. ie It'd look like
-	kthread_bind(..., cpu, KTHREAD_BIND_STRICT);
+You are right.
+Sorry for not catching that.
 
-Things like migration threads, stop machine, etc would use the strict version 
-and everything else would use non-strict bind.
+BTW, I'm a bit lost in all the branches you are managing in the tip tree :-)
+Which one should I look at to notice when the patches are applied?
 
----
-On the related note (this seems like the right crowd :). What do people think 
-about kthreads and cpusets in general. We currently have a bit of a disconnect 
-in the logic.
-1. kthreads can be put into a cpuset at which point their cpus_allowed mask is 
-updated properly
-2. kthread's cpus_allowed mask is updated properly when cpuset setup changes 
-(cpus added, removed, etc).
-3. kthreads inherit cpuset from a parent (kthreadd for example) _but_  they 
-either do kthread_bind() or set_cpus_allowed() and both of those simply ignore 
-inherited cpusets.
+Thanks.
 
-Notice how scenario #3 does not fit into the overall picture. The behaviour is 
-inconsistent.
-How about this:
-- Split sched_setaffinity into
-
-	sched_setaffinity()
-	{
-		task *p = get_task_by_pid();
-		return task_setaffinity(p);
-	}
-
-	task_setaffinity(task, cpumask, flags)
-	{
-		if (flags & FORCE) {
-			// Used for kthreads that require strict binding.
-			// Detach the task from the current cpuset
-			// and put it into the root cpuset.
-   			// Set PF_THREAD_BOUND.
-		}
-
-		// Rest of the original sched_setaffinity logic
-	}
-
-- Have kthreads call task_setaffinity() instead of set_cpus_allowed() directly.
-That way the behaviour will be consistent across the board.
-
-Comments ?
-
-Max
-
+Regards,
+-- 
+Paolo
+http://paolo.ciarrocchi.googlepages.com/
