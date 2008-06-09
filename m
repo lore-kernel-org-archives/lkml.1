@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757038AbYFITkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbYFITms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757038AbYFITkz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 15:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbYFITko
+	id S1757450AbYFITms (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 15:42:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbYFITmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 15:40:44 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:51794 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753263AbYFITko (ORCPT
+	Mon, 9 Jun 2008 15:42:40 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:36347 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752700AbYFITmj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 15:40:44 -0400
-Date: Mon, 9 Jun 2008 15:40:42 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-cc: Chris Clayton <chris2553@googlemail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Hannes Reinecke <hare@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       <linux1394-devel@lists.sourceforge.net>
-Subject: Re: 2,6.26-rc4-git2 - long pause during boot
-In-Reply-To: <484D8019.3090900@s5r6.in-berlin.de>
-Message-ID: <Pine.LNX.4.44L0.0806091533160.14688-100000@iolanthe.rowland.org>
+	Mon, 9 Jun 2008 15:42:39 -0400
+X-IronPort-AV: E=Sophos;i="4.27,613,1204531200"; 
+   d="scan'208";a="39789145"
+From: Roland Dreier <rdreier@cisco.com>
+To: "Meyers\, Jordan" <Jordan_Meyers@cable.comcast.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: Can Linux control PCIe Transaction Layer Packet creation, when writing to a region pointed to by Base Address Register
+References: <38F5F6E4D905F142BAA734B9D894F12407634DB1@CAPLSEXCMB01.cable.comcast.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Mon, 09 Jun 2008 12:42:38 -0700
+In-Reply-To: <38F5F6E4D905F142BAA734B9D894F12407634DB1@CAPLSEXCMB01.cable.comcast.com>
+	(Jordan Meyers's message of "Mon, 9 Jun 2008 12:13:21 -0700")
+Message-ID: <adaprqq8kep.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 09 Jun 2008 19:42:38.0650 (UTC) FILETIME=[F93579A0:01C8CA68]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Jun 2008, Stefan Richter wrote:
+ > Any thoughts or suggestions of how to ensure a buffer's data is
+ > transferred from the driver to the PCIe card in a single TLP (where
+ > the intended payload size is less than the max payload value in
+ > Device Control register of the PCI register space)?
 
-> The log at http://lkml.org/lkml/2008/6/6/317 shows two pauses.  One in 
-> the middle of USB related messages with no FireWire stuff around 
-> (17:25:19 to 17:25:44).  The other with parport, ieee1394, USB messages 
-> around it (17:25:44 to 17:26:31).
-> 
->  From there, the last 17:25:44 message is strange:  The device 
-> 00110666000013cc which is the controller is reported as being removed. 
-> Chris, did you do something at this point?
+If you are doing MMIO (memory-mapped IO, that is, the CPU is using write
+operations to write to a memory-mapped PCI BAR), then you probably
+cannot ensure that the data goes into a single PCIe packet.  I think the
+best you can do is map the PCI memory into the CPU's address space with
+write combining (WC) enabled (see ioremap_wc() in recent kernels), which
+is likely to generate larger bursts if possible.
 
-It's also worth noting that the first 17:25:44 message is highly 
-suspicious.  It is the initial output of the ohci-hcd driver, 
-indicating that the udev/hotplug system had just loaded that driver.  
-This doesn't seem to have anything to do with the SCSI stack.
-
-Whatever caused the delay, it also managed to pause the other hotplug 
-task which was in the midst of loading uhci-hcd.
-
-Alan Stern
-
+ - R.
