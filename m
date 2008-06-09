@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760712AbYFILPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761090AbYFILQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760712AbYFILPz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 07:15:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753923AbYFILPr
+	id S1761090AbYFILQR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 07:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760939AbYFILP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 07:15:47 -0400
-Received: from smtp-04.mandic.com.br ([200.225.81.151]:37160 "EHLO
-	smtp-04.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752996AbYFILPr (ORCPT
+	Mon, 9 Jun 2008 07:15:58 -0400
+Received: from mga11.intel.com ([192.55.52.93]:49748 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753923AbYFILP6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 07:15:47 -0400
-Message-ID: <484D10DE.30704@diamondcut.com.br>
-Date: Mon, 09 Jun 2008 08:15:42 -0300
-From: "Renato S. Yamane" <yamane@diamondcut.com.br>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Mon, 9 Jun 2008 07:15:58 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,612,1204531200"; 
+   d="scan'208";a="337992158"
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: linux-kernel@vger.kernel.org, hmh@hmh.eng.br, devzero@web.de
-Subject: Re: [Bug 10797] Something is consuming power after shutdown
-References: <483AB443.6020807@diamondcut.com.br> <20080531074433.GE5405@ucw.cz> <4842BB89.5090908@diamondcut.com.br> <20080602192012.GA7748@ucw.cz> <4846744A.9040204@diamondcut.com.br>
-In-Reply-To: <4846744A.9040204@diamondcut.com.br>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Subject: [patch]modify the MIPS CPU classfication
+Date: Mon, 9 Jun 2008 19:15:58 +0800
+Message-ID: <42DFA526FC41B1429CE7279EF83C6BDC01404341@pdsmsx415.ccr.corp.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch]modify the MIPS CPU classfication
+Thread-Index: AcjKIjEbexxBO5k+To62Keu79ukJrg==
+From: "Chen, Huacai" <huacai.chen@intel.com>
+To: <linux-mips@linux-mips.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 09 Jun 2008 11:15:54.0822 (UTC) FILETIME=[2F1D7E60:01C8CA22]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+The company ID of Loongson1/Loongson2 is PRID_COMP_LEGACY, but they were
+classified in the list whoes company ID is  PRID_COMP_MIPS. This patch
+move them to the right place.
 
-Renato S. Yamane wrote:
-> Pavel Machek wrote:
->> Renato S. Yamane wrote:
->>> Pavel Machek wrote:
->>>> (And yes, your hw is broken; on pc it is traditionaly hw
->>>> responsibility to power machine down.)
->>> OK, I try do this but I think this is very difficult because demand
->>> power is very low and is not enought to do hot some component. But I
->>> will try.
->>>
->>> I don't think that my hardware is broked because I don't have this kind
->>> of problem on Kernel <=2.6.22 or in other OS.
->>> Track: <http://bugzilla.kernel.org/show_bug.cgi?id=10797>
->> Can you try to find out when that started happening?
->> does it still happen with acpi=off?
->> does it each too much power if you use 4second hold of power button to
->> shut it down from running linux?
-> 
-> With acpi=off this problem don't happening, but a lot of other problem
-> happening (as fan control).
-> 
-> I will try halt my laptop holding power button today and report you
-> tomorrow.
+Signed-off-by: Huacai Chen <huacai.chen@intel.com>
 
-If I hold power button to force shutdown I don't have this problem with
-battery charge.
+-----
+diff --git a/include/asm-mips/cpu.h b/include/asm-mips/cpu.h
+index 1c35cac..d3ffe93 100644
+--- a/include/asm-mips/cpu.h
++++ b/include/asm-mips/cpu.h
+@@ -68,6 +68,8 @@
+ #define PRID_IMP_RM9000        0x3400
+ #define PRID_IMP_R5432     0x5400
+ #define PRID_IMP_R5500     0x5500
++#define PRID_IMP_LOONGSON1      0x4200
++#define PRID_IMP_LOONGSON2      0x6300
 
-Best regards,
-Renato S. Yamane
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+ #define PRID_IMP_UNKNOWN   0xff00
 
-iD8DBQFITRDdrf2L358fCLsRAuKUAJ9N2HVzuFnOA5zDes286/F8LgPfNgCePS4Z
-YMWoFzYl+eF3/do1Je9oly8=
-=31/g
------END PGP SIGNATURE-----
+@@ -90,8 +92,6 @@
+ #define PRID_IMP_24KE      0x9600
+ #define PRID_IMP_74K       0x9700
+ #define PRID_IMP_1004K     0x9900
+-#define PRID_IMP_LOONGSON1      0x4200
+-#define PRID_IMP_LOONGSON2      0x6300
+
+ /*
+  * These are the PRID's for when 23:16 == PRID_COMP_SIBYTE
+-----
