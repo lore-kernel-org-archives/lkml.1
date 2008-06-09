@@ -1,120 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbYFIN6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759452AbYFIN7P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756218AbYFIN6z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 09:58:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbYFIN6r
+	id S1759452AbYFIN7P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 09:59:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbYFIN6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 09:58:47 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:42189 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751388AbYFIN6q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 09:58:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=WqLJPFKH8E15jfUJJ2cCJDCSboFlBe0nzv9hIcCwKfoAteVP/jeDGcnSQzG8u5L6F5
-         /bPIJqE5IOFJIEiHzCIEHaxE5hsgwY5VBsykWt1BKeYBvNiXBwCpZ18ZXJ8gi4Y8ep9B
-         /mzMQKReyzANLV+RUGHo29APaesmt/PhBrzyY=
-Message-ID: <19f34abd0806090658v54f3a912n2ed30ad6cc20d00@mail.gmail.com>
-Date: Mon, 9 Jun 2008 15:58:46 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: [bug, 2.6.26-rc4/rc5] sporadic bootup crashes in blk_lookup_devt()/prepare_namespace()
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, "Jens Axboe" <jens.axboe@oracle.com>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "Kay Sievers" <kay.sievers@vrfy.org>,
-       "Neil Brown" <neilb@suse.de>,
-       "Mariusz Kozlowski" <m.kozlowski@tuxland.pl>
-In-Reply-To: <20080609133426.GB20194@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080609080312.GA32458@elte.hu>
-	 <20080609020623.b6727f2b.akpm@linux-foundation.org>
-	 <19f34abd0806090209l541d93c6jaba2704314b34418@mail.gmail.com>
-	 <20080609133426.GB20194@cs181133002.pp.htv.fi>
+	Mon, 9 Jun 2008 09:58:51 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:58962 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753858AbYFIN6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 09:58:51 -0400
+Date: Mon, 9 Jun 2008 15:58:19 +0200
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Victor <linux@maxim.org.za>, Eric BENARD <ebenard@free.fr>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH 4/7] mmc: at91_mci: add multiwrite switch
+Message-ID: <20080609155819.20349623@mjolnir.drzeus.cx>
+In-Reply-To: <20080609135356.GD30971@flint.arm.linux.org.uk>
+References: <483FE9E7.7020707@atmel.com>
+	<483FEE58.5000500@atmel.com>
+	<20080601144251.GS5818@flint.arm.linux.org.uk>
+	<20080609124249.349995df@mjolnir.drzeus.cx>
+	<20080609130831.GC30971@flint.arm.linux.org.uk>
+	<20080609154247.06db4c3e@mjolnir.drzeus.cx>
+	<20080609135356.GD30971@flint.arm.linux.org.uk>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.2; i386-redhat-linux-gnu)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
+X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-13713-1213019572-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/9/08, Adrian Bunk <bunk@kernel.org> wrote:
-> On Mon, Jun 09, 2008 at 11:09:07AM +0200, Vegard Nossum wrote:
->  > On Mon, Jun 9, 2008 at 11:06 AM, Andrew Morton
->  > <akpm@linux-foundation.org> wrote:
->  > > On Mon, 9 Jun 2008 10:03:12 +0200 Ingo Molnar <mingo@elte.hu> wrote:
->  > >
->  > >> -tip testing has started triggering a new type of sporadic bootup crash
->  > >> a few days ago. Find below a collection of 14 crashes i've managed to
->  > >> capture so far, which are all similar to this crash pattern:
->  > >>
->  > >>  BUG: unable to handle kernel paging request at ffff81003b984fb8
->  > >>  IP: [<ffffffff803fafd4>] blk_lookup_devt+0x42/0xa0
->  > >>  PGD 8063 PUD 9063 PMD 3be2d163 PTE 800000003b984160
->  > >>  Oops: 0000 [1] SMP DEBUG_PAGEALLOC
->  > >>
->  > >>  Call Trace:
->  > >>   [<ffffffff80bac17b>] ? ip_auto_config+0x0/0xd94
->  > >>   [<ffffffff80209259>] name_to_dev_t+0x145/0xeec
->  > >>   [<ffffffff803ff2be>] ? __next_cpu_nr+0x22/0x2b
->  > >>   [<ffffffff80b7f372>] prepare_namespace+0x91/0x14c
->  > >>   [<ffffffff80b7eb70>] kernel_init+0x2fe/0x314
->  > >>   [<ffffffff80251f3d>] ? trace_hardirqs_on_caller+0xca/0xee
->  > >>   [<ffffffff80741bbb>] ? trace_hardirqs_on_thunk+0x3a/0x3f
->  > >>   [<ffffffff80251f3d>] ? trace_hardirqs_on_caller+0xca/0xee
->  > >>   [<ffffffff8020d3f8>] child_rip+0xa/0x12
->  > >>   [<ffffffff8020c90c>] ? restore_args+0x0/0x30
->  > >>   [<ffffffff8025068d>] ? trace_hardirqs_off+0xd/0xf
->  > >>   [<ffffffff80b7e872>] ? kernel_init+0x0/0x314
->  > >>   [<ffffffff8020d3ee>] ? child_rip+0x0/0x12
->  > >
->  > > Did you work out where it's dying?  Deref of `dev' I assume?
->  >
->  >                         struct gendisk *disk = dev_to_disk(dev);
->
->
-> Mariusz already ran into this.
->
->  Neil already did some analysis of what could cause such problems [1],
->  but since Mariusz was no longer able to reproduce it with more recent
->  kernels it became somehow forgotten.
->
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Hi,
+--=_freyr.drzeus.cx-13713-1213019572-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Thanks, that matches exactly my findings too. And I agree very much
-that it's strange how something which is not a gendisk can sneak
-itself onto this list. So I have a feeling that it's something more
-subtle than that.
+On Mon, 9 Jun 2008 14:53:57 +0100
+Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
 
-It seems that Ingo is able to reproduce this "quite often", given the
-number of reports he had (even though it was several thousand
-bootups). We might simply add a printk() in there to determine which
-device it is that is failing -- and look up the corresponding code to
-see if it's doing anything weird.
+> On Mon, Jun 09, 2008 at 03:42:47PM +0200, Pierre Ossman wrote:
+> > You're still listed for the primecell driver though. What's the status
+> > on that one?
+>=20
+> It's always reported the number of bytes transferred to/from the card
+> (which I think includes the wait for the busy signal to deassert.)
+>=20
 
-But it seems more likely to be some kind of corruption.
+If only all hardware was like that...
 
-I'm by no means familiar with this area, so please excuse me if what
-I'm writing seems very obvious or stupid :-)
+> Probably the best thing is to mark MMCI as orphaned as well - for much
+> the same reason.  I've only one remaining MMC card which I use for
+> other purposes.  I'm not willing to sacrifice that one for further
+> testing, neither am I willing to buy another card to just be used for
+> testing purposes.
 
-It seems that this list (block_class.devices) is protected by
-block_class_lock in block/genhd.c. This list is only ever modified by
-device_add() and device_del() in drivers/base/core.c. Both of those
-are (only) protected by dev->class->sem, however. Is there a locking
-mismatch here? But none of the locking code here seems to be changed
-in years...
+Fair enough. Could you send a patch, preferably with some relevant
+list(s) cc:d in case someone else wants to take over the work?
+
+Rgds
+Pierre
 
 
-Vegard
+--=_freyr.drzeus.cx-13713-1213019572-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkhNNv8ACgkQ7b8eESbyJLiKUACg2Udqerz5q6nfKFgquWfVu9NR
+GKEAoJNNJNJNxZckIhotDuzPACaeaLel
+=cXzW
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-13713-1213019572-0001-2--
