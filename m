@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758673AbYFIGXH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758632AbYFIGfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758673AbYFIGXH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 02:23:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbYFIGW4
+	id S1758632AbYFIGfe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 02:35:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbYFIGfZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 02:22:56 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:48482 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756822AbYFIGWz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 02:22:55 -0400
-Date: Mon, 9 Jun 2008 08:23:32 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Mike Frysinger <vapier@gentoo.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] Speed up "make headers_*"
-Message-ID: <20080609062332.GA5622@uranus.ravnborg.org>
-References: <20080608094730.GA30098@uranus.ravnborg.org> <20080608200727.GA32141@uranus.ravnborg.org> <1212958734.2534.51.camel@shinybook.infradead.org>
-Mime-Version: 1.0
+	Mon, 9 Jun 2008 02:35:25 -0400
+Received: from fnoeppeil48.netpark.at ([217.175.205.176]:36096 "EHLO
+	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753622AbYFIGfY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 02:35:24 -0400
+Date: Mon, 9 Jun 2008 08:35:21 +0200
+From: Manuel Lauss <mano@roarinelk.homelinux.net>
+To: linux-mips@linux-mips.org, sshtylyov@ru.mvista.com, drzeus@drzeus.cx,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/8] au1xmmc updates #4
+Message-ID: <20080609063521.GA8724@roarinelk.homelinux.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1212958734.2534.51.camel@shinybook.infradead.org>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 08, 2008 at 09:58:54PM +0100, David Woodhouse wrote:
-> It doesn't look like headers_check_all will work after your patches --
-> but to be fair I don't think it worked _before_ them either. When you
-> run headers_install_all, there's no asm/ directory -- and thus the check
-> will fail for any headers in linux/ which try to include <asm/*.h>. 
+Hello,
 
-Accidentially I left an older hack in my patch:
-+headers_check_all: headers_install headers_install_all
-                    ^^^^^^^^^^^^^^^
-+       $(Q)$(MAKE) $(hdr-inst)=include HDRCHECK=1
+The following set of patches updates the au1xmmc driver with new features
+and moves code not belonging to the driver source to MIPS/Alchemy board
+files.
 
+I also took the opportunity to clean up the drivers probe() and irq()
+handlers to make it a "proper" platform device (patches #1 and #2).
 
-This made us install both to asm/ and asm-x86 (as this is an x86 box).
+Patches #3, #4 and #6 implement new features, #5 and #7 are cleanups.
 
-I will remove this hack before hitting kbuild-next.
+The patches are intended to be applied on top of each other, against
+current mainline git (2.6.23-rc5+).
 
-	Sam
+Changes since V3:
+- previous patches #1 and #2 are dropped since they are already upstream.
+  ("Alchemy: export get_au1x00_speed for modules" and
+   "Alchemy: dbdma: add API to delete custom DDMA device")
+
+- few additional minor fixes and patches folded into others.
+
+- I'm taking over maintainership of the driver for as long as I have
+  hardware to test it on.
+
+Changes since V2:
+- address almost all Sergei Shtylyov's comments:
+  pb1200/db1200 mmc device registration moved back to original location,
+  remove the au1xmmc.h header as part of codingstyle cleanup
+  other nits.
+
+- 2 more patches (#8, #9)
+
+Changes since V1:
+- fix a bug in patch #6: SDIO irq should be checked for independently
+  from other irq events.
+- more trivial cleanups
+
+Db1200 users, please test!  I verified the poll timer works on one of
+older boards, however since I don't have Db1200 and Pb1200 boards I'm
+not sure whether the driver still works with both SD controllers enabled!
+
+Thanks!
+	Manuel Lauss
