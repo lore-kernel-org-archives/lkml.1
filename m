@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757640AbYFIRRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753061AbYFIRSM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757640AbYFIRRv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 13:17:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbYFIRRk
+	id S1753061AbYFIRSM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 13:18:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756603AbYFIRRn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 13:17:40 -0400
-Received: from sous-sol.org ([216.99.217.87]:46248 "EHLO sous-sol.org"
+	Mon, 9 Jun 2008 13:17:43 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:48148 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755570AbYFIRRW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 13:17:22 -0400
-Date: Mon, 9 Jun 2008 10:08:40 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: "H. Peter Anvin" <hpa@kernel.org>
-Cc: Chris Wright <chrisw@sous-sol.org>, Marcin Krol <hawk@pld-linux.org>,
-       jejb@kernel.org, "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
-       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Domenico Andreoli <cavokz@gmail.com>, Nick Piggin <npiggin@suse.de>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
-       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 21/50] brd: dont show ramdisks in
-	/proc/partitions
-Message-ID: <20080609170840.GG30402@sequoia.sous-sol.org>
-References: <20080607010215.358296706@sous-sol.org> <20080607010610.796754560@sous-sol.org> <484B02CF.6000606@kernel.org>
+	id S1756238AbYFIRRm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 13:17:42 -0400
+Date: Mon, 9 Jun 2008 12:17:41 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andrew Morgan <morgan@kernel.org>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [ linus-git ] prctl(PR_SET_KEEPCAPS, ...) is broken for some
+	configs, e.g. CONFIG_SECURITY_SELINUX
+Message-ID: <20080609171741.GA13403@us.ibm.com>
+References: <1212932321.4675.9.camel@earth> <484BF662.9070100@kernel.org> <20080608110630.08a45cc6.akpm@linux-foundation.org> <484C5E84.2020307@kernel.org> <20080608163926.56f1be3d.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <484B02CF.6000606@kernel.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080608163926.56f1be3d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* H. Peter Anvin (hpa@kernel.org) wrote:
-> This seems a bit like cargo cult programming to me.  If there isn't a 
-> known, good, reason to revert this behaviour change, I would consider it 
-> a bugfix, not a regression.
+Quoting Andrew Morton (akpm@linux-foundation.org):
+> On Sun, 08 Jun 2008 15:34:44 -0700 Andrew Morgan <morgan@kernel.org> wrote:
+> 
+> > | On Sun, 08 Jun 2008 08:10:26 -0700 Andrew Morgan <morgan@kernel.org>
+> > wrote:
+> > |
+> > |> Nacked-by: Andrew G. Morgan <morgan@kernel.org>
+> > |>
+> > |> In a configuration in which you are not using capabilities, what is the
+> > |> "keep capabilities" operation supposed to do? Lie to you?
+> > |>
+> > |> http://bugzilla.kernel.org/show_bug.cgi?id=10748
+> > |
+> > | I totally agree with comment 11 there. Quite a number of people have
+> > already
+> > | hit this and more surely will.  How can we help them (and hence us)?
+> >
+> > What do people think about comment #8 from Stephen Smalley?:
+> > 
+> > The dummy module is generally in the untenable position of having to lie
+> > to userspace or break the existing capability-related system call
+> > interface.  It should just go away, and make capability the default
+> > module (w/ stubs for the rest of the LSM hooks as with dummy).  Then
+> > CONFIG_SECURITY=n will yield the same result as CONFIG_SECURITY=y w/o
+> > any further options.
+> 
+> (removed pgp crap, undid top-posting.  Your emails are very hard to reply to)
+> 
+> It's a fine comment, but I am not knowledgeable enough in this area to
+> say whether it's a desirable thing to do for 2.6.26.
+> 
+> I fear that nothing will happen, and we'll end up wasting a lot of
+> peoples' time sending hey-why-did-my-dhcp-break reports.
 
-We have one /proc/partitions parser that got broken (never saw details
-on how).  I don't care for this change either (esp. since nbd is still
-left out...it's inconsistent).
+If we decide to get rid of dummy long-term, then it's far less
+distasteful to have it lie and claim the keepcaps worked in the
+meantime.
 
-This is now the upstream behaviour (obvious since it's a -stable
-candidate), and the change was introduced in 2.6.25...I'd actually prefer
-to drop this patch, but there's no good reason to deviate if upstream
-keeps this one.  I can defer while upstream gets revisited, can you
-revisit this upstream?
+So for 2.6.26 we could have dummy lie, then plan to make capabilities
+the default for 2.6.27?
 
-thanks,
--chris
+-serge
