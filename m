@@ -1,89 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758390AbYFIFow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758373AbYFIGEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758390AbYFIFow (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 01:44:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbYFIFon
+	id S1758373AbYFIGEf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 02:04:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbYFIGE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 01:44:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49573 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751189AbYFIFom (ORCPT
+	Mon, 9 Jun 2008 02:04:26 -0400
+Received: from 202.54.90.7.ill-bgl.static.vsnl.net.in ([202.54.90.7]:36395
+	"HELO 202.54.90.7.ill-bgl.static.vsnl.net.in"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751743AbYFIGEZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 01:44:42 -0400
-Date: Sun, 8 Jun 2008 22:44:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
-       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org, eric.whitney@hp.com
-Subject: Re: [PATCH -mm 13/25] Noreclaim LRU Infrastructure
-Message-Id: <20080608224404.086b15ae.akpm@linux-foundation.org>
-In-Reply-To: <20080608225800.17d2e29b@bree.surriel.com>
-References: <20080606202838.390050172@redhat.com>
-	<20080606202859.291472052@redhat.com>
-	<20080606180506.081f686a.akpm@linux-foundation.org>
-	<20080608163413.08d46427@bree.surriel.com>
-	<20080608135704.a4b0dbe1.akpm@linux-foundation.org>
-	<20080608173244.0ac4ad9b@bree.surriel.com>
-	<20080608162208.a2683a6c.akpm@linux-foundation.org>
-	<20080608193420.2a9cc030@bree.surriel.com>
-	<20080608165434.67c87e5c.akpm@linux-foundation.org>
-	<20080608225800.17d2e29b@bree.surriel.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Jun 2008 02:04:25 -0400
+X-Greylist: delayed 21422 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Jun 2008 02:04:24 EDT
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: mmc_test : some results
+Content-class: urn:content-classes:message
+Date: Mon, 9 Jun 2008 05:51:52 +0530
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Message-ID: <5BF78BCE8D9BF14A83F836BD9E3916BA0DDFC3@blrms.slti.sanyo.co.in>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: mmc_test : some results
+Thread-Index: AcjH7WV3VtVQWbJ0T7eJ2eWYrn02CgCW4TOw
+References: <48495843.1050902@atmel.com>
+From: "Gururaja Hebbar K R" <gururajakr@sanyo.co.in>
+To: "Nicolas Ferre" <nicolas.ferre@atmel.com>,
+       "Pierre Ossman" <drzeus@drzeus.cx>,
+       "ARM Linux Mailing List" <linux-arm-kernel@lists.arm.linux.org.uk>,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 8 Jun 2008 22:58:00 -0400 Rik van Riel <riel@redhat.com> wrote:
+Hi Nicolas,
 
-> On Sun, 8 Jun 2008 16:54:34 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > ho hum.  Can you remind us what problems this patchset actually
-> > addresses?  Preferably in order of seriousness?
-> 
-> Here are some other problems that my patch series can easily fix,
-> because file cache and anon/swap backed pages live on separate
-> LRUs:
-> 
-> http://feedblog.org/2007/09/29/using-o_direct-on-linux-and-innodb-to-fix-swap-insanity/
-> 
-> http://blogs.smugmug.com/don/2008/05/01/mysql-and-the-linux-swap-problem/
+Could you please be kind enough to share the test program so that we can
+test mmc driver on other platforms.
 
-Sorry, but sending us off to look at random bug reports (from people
-who didn't report a bug) is not how we discuss or changelog kernel
-patches.
+ i have a customized arm9 versatile board with mmci controller and
+would like to test the same
 
-It is for good reasons that we like to see an accurate and detailed
-analysis of the problems which are being addressed, and a description
-of the means by which they were solved.
+TIA,
+
+Regards
+Gururaja
 
 
-> I do not know for sure whether the patch set does fix it yet for
-> everyone, or whether it needs some more tuning first, but it is
-> fairly easily fixable by tweaking the relative pressure on both
-> sets of LRU lists.
+-----Original Message-----
+From: linux-arm-kernel-bounces@lists.arm.linux.org.uk
+[mailto:linux-arm-kernel-bounces@lists.arm.linux.org.uk] On Behalf Of
+Nicolas Ferre
+Sent: Friday, June 06, 2008 8:31 AM
+To: Pierre Ossman; ARM Linux Mailing List; Linux Kernel list
+Subject: mmc_test : some results
 
-I expect it will help, yes.  On 64-bit systems.  It's unclear whether
-mlock or SHM_LOCK is part of the issue here - if it is then 32-bit
-systems will still be exposed to these things.
+Hi Pierre,
 
-I also expect that it will introduce new problems, ones which can take a
-very long time to diagnose and fix.  Inevitable, but hopefully acceptable,
-if the benefit is there.
+Here are the results of a mmc_test run played on at91_mci after applying
+this patch series :
+http://lkml.org/lkml/2008/5/30/201
 
-> No tricks of skipping over one type of pages while scanning, or
-> treating the referenced bits differently when the moon is in some
-> particular phase required - one set of lists for each type of
-> pages, and variable pressure between the two.
+I skipped some of the tests just to concentrate on those ones.
 
-For the unevictable pages we have previously considered just taking
-them off the LRU and leaving them off - reattach them at
-SHM_UNLOCK-time and at munlock()-time (potentially subject to
-reexamination of any other vmas which map each page).
+Can you tell me if the test is correct : are the errors reported for the
+xfer_size tests the normal behavior (I assume yes because a failure is
+simulated) ?
 
-I believe that Andrea had code which leaves the anon pages off the LRU
-as well, but I forget the details.
+~ # echo 1  > /sys/class/mmc_host/mmc0/mmc0\:e624/test
+mmc0: Starting tests of card mmc0:e624...
+mmc0: Test case 1. Basic write (no data verification)...
+mmc0: Result: OK
+mmc0: Test case 2. Basic read (no data verification)...
+mmc0: Result: OK
+mmc0: Test case 3. Basic write (with data verification)...
+mmc0: Result: OK
+mmc0: Test case 4. Basic read (with data verification)...
+mmc0: Result: OK
+mmc0: Test case 5. Multi-block write...
+mmc0: Result: OK
+mmc0: Test case 6. Multi-block read...
+mmc0: Result: OK
+mmc0: Test case 7. Correct xfer_size at write (start failure)...
+mmc0: Result: ERROR (-84)
+mmc0: Test case 8. Correct xfer_size at read (start failure)...
+mmc0: Result: ERROR (-110)
+mmc0: Test case 9. Correct xfer_size at write (midway failure)...
+mmc0: Result: ERROR (-84)
+mmc0: Test case 10. Correct xfer_size at read (midway failure)...
+mmc0: Result: ERROR (-110)
+mmc0: Tests completed.
+~ #
 
+Thanks, regards,
+--
+Nicolas Ferre
+
+
+-------------------------------------------------------------------
+List admin:
+http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
