@@ -1,66 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759175AbYFIIrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758632AbYFIJDq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759175AbYFIIrT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 04:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756968AbYFIIrH
+	id S1758632AbYFIJDq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 05:03:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757552AbYFIJDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 04:47:07 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:12870 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756832AbYFIIrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 04:47:06 -0400
-Date: Mon, 9 Jun 2008 10:47:03 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Kyle McMartin <kyle@mcmartin.ca>
-Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, npiggin@suse.de,
-       linux-arch@vger.kernel.org, jeremy@goop.org, mingo@elte.hu,
-       paulmck@linux.vnet.ibm.com, Kyle McMartin <kyle@parisc-linux.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>
-Subject: Re: [PATCH 9/10] parisc: convert to generic helpers for IPI  function calls
-Message-ID: <20080609084701.GW5757@kernel.dk>
-References: <1212051504-12561-1-git-send-email-jens.axboe@oracle.com> <1212051504-12561-10-git-send-email-jens.axboe@oracle.com> <20080531070049.GA6623@phobos.i.cabal.ca> <20080602081749.GG5757@kernel.dk> <20080602160943.GB25011@phobos.i.cabal.ca> <20080606084743.GL5757@kernel.dk> <20080606211143.GA20770@phobos.i.cabal.ca>
+	Mon, 9 Jun 2008 05:03:36 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:26624 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757411AbYFIJDf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 05:03:35 -0400
+Date: Mon, 9 Jun 2008 18:01:23 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: "Hans J. Koch" <hjk@linutronix.de>
+Cc: Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org,
+       Uwe.Kleine-Koenig@digi.com, gregkh@suse.de, akpm@linux-foundation.org,
+       tglx@linutronix.de
+Subject: Re: [PATCH] uio_pdrv: Unique IRQ Mode
+Message-ID: <20080609090123.GA12080@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	"Hans J. Koch" <hjk@linutronix.de>,
+	Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org,
+	Uwe.Kleine-Koenig@digi.com, gregkh@suse.de,
+	akpm@linux-foundation.org, tglx@linutronix.de
+References: <20080604060826.17162.46972.sendpatchset@rx1.opensource.se> <20080604101144.GA3207@local> <aec7e5c30806041825o4c6c859fp8380063e9384622@mail.gmail.com> <20080605090916.GA3198@local> <aec7e5c30806050246t248abc39vbc1e71d4475a0a0d@mail.gmail.com> <20080605112744.GB3198@local> <aec7e5c30806080319y7b9b6a89icacbfa67b117fb2b@mail.gmail.com> <20080608205455.GA3191@local> <aec7e5c30806081812m532882e0p7ad3ef9a74f53337@mail.gmail.com> <20080609084411.GA3223@local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080606211143.GA20770@phobos.i.cabal.ca>
+In-Reply-To: <20080609084411.GA3223@local>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 06 2008, Kyle McMartin wrote:
-> On Fri, Jun 06, 2008 at 10:47:43AM +0200, Jens Axboe wrote:
-> > > Thanks, I'll try it out this evening.
+On Mon, Jun 09, 2008 at 10:44:12AM +0200, Hans J. Koch wrote:
+> On Mon, Jun 09, 2008 at 10:12:09AM +0900, Magnus Damm wrote:
+> > >> > If it's a device within the SoC, you won't use UIO for that. If you did,
+> > >> > your platform would depend on certain userspace software which is simply
+> > >> > crap. And devices outside the SoC are board specific.
+> > >>
+> > >> Why wouldn't we use UIO for device within the Soc?
+> > >
+> > > Can't you read? I've answered that in the lines above your question.
 > > 
-> > How did that go?
+> > I'm sure there are blocks within the SoC that must be managed by the
+> > kernel, but that's not always the case. Certain things can be managed
+> > by user space just fine. For instance, video acceleration hardware.
+> 
+> There are standard kernel subsystems to handle such devices. You should
+> only make it a UIO driver if v4l, drm, fb doesn't work for some
+> important reason.
+> 
+It's _precisely_ because the kernel is not the place to manage the
+devices in question that UIO is being used in the first place. Some
+things simply don't belong in the kernel. This has been stated several
+times. Are you purposely only selectively reading this thread?
+
+> > > Once more (for the last time): The technical argument against your patch
+> > > is that it offers no advantages. It makes other code more complicated,
+> > > less obvious, and less consistent. This might be OK if we had big
+> > > advantages in return, but this isn't the case.
 > > 
+> > I say:
+> > a) We need this for 5+ different SuperH hardware blocks.
+> > b) This approach can be used by most architectures.
+> > c) The code is architecture independent.
+> > 
+> > You say "it offers no advantages".
 > 
-> Ah, sorry, I forgot to mention that. Seems to be working fine, at
-> least, I'm getting jobs scheduled on each cpu, afaict.
+> Yes, and your answer is the proof.
 > 
-> Needed this patch though, and from the looks of things, a bunch of
-> other architectures will need it as well.
-> 
-> Signed-off-by: Kyle McMartin <kyle@mcmartin.ca>
-
-> 
-> diff --git a/include/asm-parisc/smp.h b/include/asm-parisc/smp.h
-> index 306f495..ad24e7f 100644
-> --- a/include/asm-parisc/smp.h
-> +++ b/include/asm-parisc/smp.h
-> @@ -62,4 +62,7 @@ static inline void __cpu_die (unsigned int cpu) {
->  }
->  extern int __cpu_up (unsigned int cpu);
->  
-> +void arch_send_call_function_ipi(cpumask_t mask);
-> +void arch_send_call_function_single_ipi(int cpu);
-> +
->  #endif /*  __ASM_SMP_H */
-
-Yeah, the very latest (not posted) needs this, as archs can now put
-inline versions in asm/smp.h if they wish. I'll update parisc and
-the others, thanks!
-
--- 
-Jens Axboe
-
+Given that stunning technical rebuttal, the constructive way forward
+seems to be to follow Uwe's suggestions and respin the patch.
