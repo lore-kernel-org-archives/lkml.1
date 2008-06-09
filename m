@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760288AbYFIMVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760764AbYFIMVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760288AbYFIMVK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 08:21:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756259AbYFIMUx
+	id S1760764AbYFIMVf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 08:21:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754852AbYFIMVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 08:20:53 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:48454 "EHLO mgw2.diku.dk"
+	Mon, 9 Jun 2008 08:21:24 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:48503 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759870AbYFIMUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 08:20:45 -0400
-Date: Mon, 9 Jun 2008 14:20:42 +0200 (CEST)
+	id S1756072AbYFIMVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 08:21:23 -0400
+Date: Mon, 9 Jun 2008 14:21:18 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
+To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/4] drivers/macintosh/smu.c: add missing of_node_put
-Message-ID: <Pine.LNX.4.64.0806091420080.16009@ask.diku.dk>
+Subject: [PATCH 3/4] drivers/video/fsl-diu-fb.c: add missing of_node_put
+Message-ID: <Pine.LNX.4.64.0806091420450.16009@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -66,23 +66,31 @@ Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
 
-diff -u -p a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
---- a/drivers/macintosh/smu.c
-+++ b/drivers/macintosh/smu.c
-@@ -483,12 +483,15 @@ int __init smu_init (void)
- 
- 	if (smu_cmdbuf_abs == 0) {
- 		printk(KERN_ERR "SMU: Command buffer not allocated !\n");
-+		of_node_put(np);
- 		return -EINVAL;
+diff -u -p a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -1664,8 +1664,10 @@ static int __init fsl_diu_init(void)
  	}
  
- 	smu = alloc_bootmem(sizeof(struct smu_device));
--	if (smu == NULL)
-+	if (smu == NULL) {
+ 	prop = of_get_property(np, "d-cache-size", NULL);
+-	if (prop == NULL)
++	if (prop == NULL) {
 +		of_node_put(np);
- 		return -ENOMEM;
+ 		return -ENODEV;
 +	}
- 	memset(smu, 0, sizeof(*smu));
  
- 	spin_lock_init(&smu->lock);
+ 	/* Freescale PLRU requires 13/8 times the cache size to do a proper
+ 	   displacement flush
+@@ -1674,8 +1676,10 @@ static int __init fsl_diu_init(void)
+ 	coherence_data_size /= 8;
+ 
+ 	prop = of_get_property(np, "d-cache-line-size", NULL);
+-	if (prop == NULL)
++	if (prop == NULL) {
++		of_node_put(np);
+ 		return -ENODEV;
++	}
+ 	d_cache_line_size = *prop;
+ 
+ 	of_node_put(np);
+ 	
