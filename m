@@ -1,185 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759627AbYFIWJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759881AbYFIWKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759627AbYFIWJp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 18:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbYFIWJf
+	id S1759881AbYFIWKP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 18:10:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbYFIWJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 18:09:35 -0400
-Received: from web53708.mail.re2.yahoo.com ([206.190.37.29]:40185 "HELO
-	web53708.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754427AbYFIWJe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 18:09:34 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=ugfpZTRhldzmuk72IIemOAPCol2Y/j5flY6nh1LtcQu7B5TUe/SEqY6T7xuwIkMMcOq18GVgzb7gE/O2fs4jeuK+9PVH1R4tvy+A1Phou6+6sztRJXtgmLj4TAU56wAIROfyeY8pLSbswy5rroXt0SPz+fkhryUgatogTAl8tvo=;
-X-YMail-OSG: 1jUl7rUVM1lrdoeLrz63i8G80BOsns55lVRUzWNbIhvqW9beaM1r7s5czlHkAT0Aa4l8VE6lTX6zH9ddOvO582A48QSYksEWFrpLoJPYwtHkHJBXsXI9AkjGQO1msdeMl2ZJPIYYikt5MaqzTJEfYA--
-Date: Mon, 9 Jun 2008 15:09:33 -0700 (PDT)
-From: Benjamin Kidwell <benjkidwell@yahoo.com>
-Subject: Re: Linux-next Alsa hda_intel events/0 high CPU usage, bisected
-To: linux-kernel@vger.kernel.org
-In-Reply-To: <s5hk5h1shys.wl%tiwai@suse.de>
+	Mon, 9 Jun 2008 18:09:59 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49479 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753289AbYFIWJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 18:09:58 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] x86 GART: Add resume handling (was: Re: >3G => iommu => suspend problems -- was Re: SB600 AHCI: Hard Disk Corruption)
+Date: Tue, 10 Jun 2008 00:10:48 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Pavel Machek <pavel@suse.cz>, the arch/x86 maintainers <x86@kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <1211717435.6038.53.camel@localhost.localdomain> <200806090036.32267.rjw@sisk.pl> <20080609124630.GA28799@elte.hu>
+In-Reply-To: <20080609124630.GA28799@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <364147.92870.qm@web53708.mail.re2.yahoo.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806100010.49194.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Takashi Iwai <> wrote:
->Here is the patch to do another trick.
->The driver tries to delay the IRQ timing in one sample so that the DMA
->pointer returns the proper position.
+On Monday, 9 of June 2008, Ingo Molnar wrote:
+> 
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > > Looks ok to me.
+> > 
+> > Still, it may be improved. :-)
+> > 
+> > First, we shouldn't mix the "early PCI config access" thing with the 
+> > "normal" method.  Second, we don't have to check for the K8 north 
+> > bridges on resume, because we already know where they are in the 
+> > configuration space and we can use this information.
+> > 
+> > Updated patch follows.  It has been tested a little on my new 4 GB 
+> > test box on which 2.6.26-rc4 failed miserably with severe 
+> > consequences.  More testing welcome, but please be careful.
+> 
+> Rafael, could we try this against the tip/x86/gart tree perhaps? It 
+> already has a couple of fixes from Pavel and your patch collides with 
+> them in a non-obvious way.
+> 
+>   http://people.redhat.com/mingo/tip.git/README
 
-I refer to the above patch as "patch #2" in discussing the tests below.
+Okay, appended is the patch rebased on tip/x86/gart with (mainline) commit
+cd76374e9de4501acc74f833dc6cb5e7a5dca115 "suspend-vs-iommu: prevent suspend if
+we could not resume" (which appears to be missing from tip/x86/gart) applied.
 
->Could you check the patch below in addition?  It's against my latest
->git tree and should be applicable as is to linux-next (since it merges
->from my tree), too.
->This will show some latency time in the kernel messages.  If the
->average latency is about 20 or 30us, this is almost in the expected
->range.  Occasional high latencies should be the result of
->cond_resched(), so it can be ignored.
+This version of the patch doesn't break compilation, but it hasn't been really
+tested yet.
 
-Thanks very much for your time. Both patches applied to next-20080606. Patch
-#2 to delay IRQ had 20/21 line offsets in hunks 4,5, and 6. I built kernels
-with patch #1 only and with both patch #1 and #2. With reporting only (#1)
-patch:
-[   28.897483] hda-intel: Invalid position buffer, using LPIB read method
-instead.
-[   28.900819] XXX hda: max_delay=4535702 ns
-[   29.344196] XXX hda: avg_delay=940 us
-[   37.787584] XXX hda: max_delay=730886 ns
-[   38.008854] XXX hda: max_delay=733118 ns
-[   38.799034] XXX hda: max_delay=734487 ns
-[   38.849953] XXX hda: avg_delay=721 us
-[   38.958973] XXX hda: max_delay=728287 ns
-[   40.269209] XXX hda: max_delay=2020331 ns
-[   40.840784] XXX hda: max_delay=6639814 ns
-[   46.543949] XXX hda: max_delay=8514464 ns
-[   47.660992] XXX hda: avg_delay=905 us
-[   55.677483] XXX hda: max_delay=721319 ns
-[   55.701527] XXX hda: max_delay=722752 ns
-[   56.515656] XXX hda: max_delay=724277 ns
-[   56.762500] XXX hda: max_delay=729125 ns
-[   58.147477] XXX hda: max_delay=3541590 ns
-[   61.185499] XXX hda: max_delay=5094055 ns
-[   68.174152] XXX hda: max_delay=7323778 ns
-[  190.467470] XXX hda: max_delay=7446118 ns
-[  205.747463] XXX hda: max_delay=8168689 ns
-[  206.240797] XXX hda: max_delay=8587483 ns
-[  252.643947] XXX hda: max_delay=9425211 ns
+Thanks,
+Rafael
 
-With BOTH patches applied:
-[   29.988316] hda-intel: Invalid position buffer, using LPIB read method
-instead.
-[   29.991655] XXX hda: max_delay=4357840 ns
-[   30.435030] XXX hda: avg_delay=603 us
-[   36.211751] XXX hda: max_delay=374595 ns
-[   36.534235] XXX hda: max_delay=1521772 ns
-[   37.278175] XXX hda: avg_delay=404 us
-[   37.384060] XXX hda: max_delay=366048 ns
-[   37.408317] XXX hda: max_delay=372760 ns
-[   37.583300] XXX hda: max_delay=2233243 ns
-[   39.310484] XXX hda: max_delay=2369779 ns
-[   39.367269] XXX hda: max_delay=9307321 ns
-[   46.185005] XXX hda: avg_delay=502 us
-[   66.041615] XXX hda: max_delay=367668 ns
-[   66.065345] XXX hda: max_delay=372093 ns
-[   67.521437] XXX hda: max_delay=373733 ns
-[   68.656740] XXX hda: max_delay=373915 ns
-[   71.574977] XXX hda: max_delay=4827092 ns
-[  107.734975] XXX hda: max_delay=6589856 ns
-[  111.288309] XXX hda: max_delay=6715648 ns
-[  151.121642] XXX hda: max_delay=7695259 ns
-[  220.478297] XXX hda: max_delay=9907063 ns
-[  352.964963] XXX hda: max_delay=10756583 ns
+---
+Add resume handling to GART IOMMU.
 
-With both patches in place, CPU% reported by ps for events/0 during sound
-playback is substantially reduced. ps reports consistent 0.6% cpu instead of
-2-3% or more. I notice that the avg_delay report is much higher than the
-20-30us you say is the expected range.  It is lower with the second patch
-applied, but still large.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ arch/x86/kernel/aperture_64.c |    2 +
+ arch/x86/kernel/pci-gart_64.c |   57 ++++++++++++++++++++++++++++++++++++++----
+ include/asm-x86/gart.h        |    1 
+ 3 files changed, 55 insertions(+), 5 deletions(-)
 
-Additional experimentation with various .config options had also shown that
-options such as CONFIG_HZ also affect the reported CPU% and TIME from
-events/0. Here's output from a kernel with both new patches applied and
-configued with HZ=1000, and PREEMPT_RCU=y instead of 300 and
-PREEMPT_VOLUNTARY.
-
-[   29.550748] hda-intel: Invalid position buffer, using LPIB read method
-instead.
-[   29.553750] XXX hda: max_delay=3314411 ns
-[   29.998764] XXX hda: avg_delay=519 us
-[   31.406760] eth0: no IPv6 routers present
-[   35.297443] XXX hda: max_delay=375157 ns
-[   36.355211] XXX hda: avg_delay=147 us
-[   36.595685] XXX hda: max_delay=367326 ns
-[   36.620318] XXX hda: max_delay=373443 ns
-[   37.041228] XXX hda: max_delay=1481064 ns
-[   37.364519] XXX hda: max_delay=3983313 ns
-[   41.265473] XXX hda: max_delay=5290882 ns
-[   45.309086] XXX hda: avg_delay=437 us
-[   80.042739] XXX hda: max_delay=367816 ns
-[   80.067627] XXX hda: max_delay=370010 ns
-[   80.955786] XXX hda: max_delay=389501 ns
-[   82.881726] XXX hda: max_delay=1042298 ns
-[   95.345744] XXX hda: max_delay=1144114 ns
-[   95.397576] XXX hda: max_delay=3741325 ns
-[  104.039739] XXX hda: max_delay=6832958 ns
-[  137.435750] XXX hda: max_delay=9916982 ns
-
-With this higher timer frequency and patch #2, ps reports avg. 1.2% events/0
-usage vs. 2.3% with reporting patch #1 only. Here are timings from the same
-.config but with only patch #1 (reporting) applied:
-
-[   29.782022] hda-intel: Invalid position buffer, using LPIB read method
-instead.
-[   29.782708] XXX hda: max_delay=578709 ns
-[   29.804012] XXX hda: max_delay=667540 ns
-[   29.825934] XXX hda: max_delay=672530 ns
-[   29.847229] XXX hda: max_delay=727943 ns
-[   29.890260] XXX hda: max_delay=987514 ns
-[   30.231269] XXX hda: avg_delay=677 us
-[   30.254334] eth0: no IPv6 routers present
-[   35.129783] XXX hda: max_delay=725808 ns
-[   35.205719] XXX hda: max_delay=2394065 ns
-[   36.181885] XXX hda: avg_delay=787 us
-[   36.191131] XXX hda: max_delay=719683 ns
-[   36.215970] XXX hda: max_delay=725257 ns
-[   36.487256] XXX hda: max_delay=725928 ns
-[   36.734025] XXX hda: max_delay=726886 ns
-[   36.758713] XXX hda: max_delay=728874 ns
-[   37.257252] XXX hda: max_delay=5298044 ns
-[   43.330254] XXX hda: max_delay=6694653 ns
-[   44.392286] XXX hda: max_delay=7673067 ns
-[   44.892458] XXX hda: avg_delay=849 us
-[   70.744252] XXX hda: max_delay=721293 ns
-[   70.769134] XXX hda: max_delay=724172 ns
-[   71.262857] XXX hda: max_delay=726017 ns
-[   71.459987] XXX hda: max_delay=726454 ns
-[   71.657588] XXX hda: max_delay=729122 ns
-[   72.002882] XXX hda: max_delay=732543 ns
-[   78.322253] XXX hda: max_delay=948022 ns
-[   81.901253] XXX hda: max_delay=1121037 ns
-[   81.951748] XXX hda: max_delay=2948531 ns
-[   85.387252] XXX hda: max_delay=7308180 ns
-[  101.678225] XXX hda: max_delay=8139181 ns
-[  190.655620] XXX hda: max_delay=8721454 ns
-[  315.991170] XXX hda: max_delay=10913594 ns
-[  438.610252] XXX hda: max_delay=11273250 ns 
-
-SUMMARY: the IRQ timing delay change patch (#2) produces improvement in all
-test cases, reducing the avg_delay and events/0 CPU%. The avg_delay is still
-outside expected values, but perhaps this is the best possible result given
-the bugginess of the hardware. Audio quality and system performance are very
-good in all tests.
-
-Thanks again very much for your time and the test patches. Happy to provide
-more info and testing if its useful to you.
-Ben
+Index: tip.git/arch/x86/kernel/aperture_64.c
+===================================================================
+--- tip.git.orig/arch/x86/kernel/aperture_64.c
++++ tip.git/arch/x86/kernel/aperture_64.c
+@@ -496,4 +496,6 @@ out:
+ 			write_pci_config(bus, slot, 3, AMD64_GARTAPERTUREBASE, aper_alloc >> 25);
+ 		}
+ 	}
++
++	set_up_gart_resume(aper_order, aper_alloc);
+ }
+Index: tip.git/arch/x86/kernel/pci-gart_64.c
+===================================================================
+--- tip.git.orig/arch/x86/kernel/pci-gart_64.c
++++ tip.git/arch/x86/kernel/pci-gart_64.c
+@@ -549,14 +549,63 @@ static __init unsigned read_aperture(str
+ 	return aper_base;
+ }
+ 
++static void enable_gart_translations(void)
++{
++	int i;
++
++	for (i = 0; i < num_k8_northbridges; i++) {
++		struct pci_dev *dev = k8_northbridges[i];
++
++		enable_gart_translation(dev, __pa(agp_gatt_table));
++	}
++}
++
++/*
++ * If fix_up_north_bridges is set, the north bridges have to be fixed up on
++ * resume in the same way as they are handled in gart_iommu_hole_init().
++ */
++static bool fix_up_north_bridges;
++static u32 aperture_order;
++static u32 aperture_alloc;
++
++void set_up_gart_resume(u32 aper_order, u32 aper_alloc)
++{
++	fix_up_north_bridges = true;
++	aperture_order = aper_order;
++	aperture_alloc = aper_alloc;
++}
++
+ static int gart_resume(struct sys_device *dev)
+ {
++	printk(KERN_INFO "PCI-DMA: Resuming GART IOMMU\n");
++
++	if (fix_up_north_bridges) {
++		int i;
++
++		printk(KERN_INFO "PCI-DMA: Restoring GART aperture settings\n");
++
++		for (i = 0; i < num_k8_northbridges; i++) {
++			struct pci_dev *dev = k8_northbridges[i];
++
++			/*
++			 * Don't enable translations just yet.  That is the next
++			 * step.  Restore the pre-suspend aperture settings.
++			 */
++			pci_write_config_dword(dev, AMD64_GARTAPERTURECTL,
++						aperture_order << 1);
++			pci_write_config_dword(dev, AMD64_GARTAPERTUREBASE,
++						aperture_alloc >> 25);
++		}
++	}
++
++	enable_gart_translations();
++
+ 	return 0;
+ }
+ 
+ static int gart_suspend(struct sys_device *dev, pm_message_t state)
+ {
+-	return -EINVAL;
++	return 0;
+ }
+ 
+ static struct sysdev_class gart_sysdev_class = {
+@@ -614,16 +663,14 @@ static __init int init_k8_gatt(struct ag
+ 	memset(gatt, 0, gatt_size);
+ 	agp_gatt_table = gatt;
+ 
+-	for (i = 0; i < num_k8_northbridges; i++) {
+-		dev = k8_northbridges[i];
+-		enable_gart_translation(dev, __pa(gatt));
+-	}
++	enable_gart_translations();
+ 
+ 	error = sysdev_class_register(&gart_sysdev_class);
+ 	if (!error)
+ 		error = sysdev_register(&device_gart);
+ 	if (error)
+ 		panic("Could not register gart_sysdev -- would corrupt data on next suspend");
++
+ 	flush_gart();
+ 
+ 	printk(KERN_INFO "PCI-DMA: aperture base @ %x size %u KB\n",
+Index: tip.git/include/asm-x86/gart.h
+===================================================================
+--- tip.git.orig/include/asm-x86/gart.h
++++ tip.git/include/asm-x86/gart.h
+@@ -14,6 +14,7 @@ extern void gart_iommu_shutdown(void);
+ extern void __init gart_parse_options(char *);
+ extern void early_gart_iommu_check(void);
+ extern void gart_iommu_hole_init(void);
++extern void set_up_gart_resume(u32, u32);
+ extern int fallback_aper_order;
+ extern int fallback_aper_force;
+ extern int gart_iommu_aperture;
 
 
-      
