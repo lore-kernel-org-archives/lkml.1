@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760093AbYFILxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761285AbYFILxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760093AbYFILxP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 07:53:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755098AbYFILw7
+	id S1761285AbYFILxe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 07:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760043AbYFILxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 07:52:59 -0400
-Received: from mail.transmode.se ([83.241.175.147]:35653 "EHLO
-	tmnt04.transmode.se" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754815AbYFILw7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 07:52:59 -0400
-Subject: Re: [PATCH] seq_file: make seq_lseek accept SEEK_END
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Reply-To: joakim.tjernlund@transmode.se
-To: Alexey Dobriyan <adobriyan@parallels.com>
-Cc: akpm@osdl.org, viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org,
-       "busybox@busybox.net" <busybox@busybox.net>
-In-Reply-To: <200806091501.13170.adobriyan@parallels.com>
-References: <200806091501.13170.adobriyan@parallels.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Transmode AB
-Date: Mon, 09 Jun 2008 13:52:55 +0200
-Message-Id: <1213012375.16530.9.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Mon, 9 Jun 2008 07:53:14 -0400
+Received: from web26005.mail.ukl.yahoo.com ([217.12.10.216]:25333 "HELO
+	web26005.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759970AbYFILxM convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 07:53:12 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Jun 2008 07:53:12 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.co.uk;
+  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=EMKwwkt1KJkq9vX/3NumZSYTOCrD1i/SKF99njlJmuWPdKu/2hRsXBHl72AEWcwJxEiBUW8NQj7iwYxIEk698PiDKmNe26w4g2CIghc292EWNBDbtbOxYNZCoJa8Vm7anefPTpcnc6XTRUYLaII94a/RnrkWdRT2ci0KiMyd/eA=;
+X-Mailer: YahooMailWebService/0.7.199
+Date: Mon, 9 Jun 2008 11:46:30 +0000 (GMT)
+From: Will C <willjcroz@yahoo.co.uk>
+Subject: Re: Better support for Delkin cardbus CF adapters -- IDE layer
+To: linux-kernel@vger.kernel.org
+Cc: yorgasor@gmail.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Message-ID: <300869.94850.qm@web26005.mail.ukl.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-busybox has been fixed, at least in trunk, not to do 
-xlseek(fd, 0, SEEK_END) anymore to address this problem.
-Perhaps there are other apps out there that needs this too, but I don't
-know of any. Older busyboxes needs this change though.
-I have moved on and don't have a setup handy where I can test this.
-Perhaps someone at the bb list has, CC:ing bb list.
+( please CC me also )
 
- Jocke
+I have the same Delkin 32-bit UDMA Cardbus to CF adpater also, (vid: 0x1145 pid: 0xf103)
 
-On Mon, 2008-06-09 at 15:01 +0400, Alexey Dobriyan wrote:
-> Apologies for delay, such simple thing should have been sent long ago.
-> Joakim, please, confirm.
-> -------------------------------------------
-> [PATCH] seq_file: make seq_lseek accept SEEK_END
-> 
-> and pretend seq_files have zero length. This should be enough
-> to fix busybox start-stop-daemon:
-> http://marc.info/?t=120836691600002&r=1&w=2
-> 
-> It does xlseek(fd, 0, SEEK_END) to estimate amount of memory to malloc
-> but satisfied with 0. Sudden -EINVAL from lseek(2) breaks it.
-> 
-> X-Introduced-By: f16278c679aa72e28288435b313ba2d4494d6be5
-> Signed-off-by: Alexey Dobriyan <adobriyan@parallels.com>
-> ---
-> 
->  fs/seq_file.c |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> --- a/fs/seq_file.c
-> +++ b/fs/seq_file.c
-> @@ -254,6 +254,8 @@ loff_t seq_lseek(struct file *file, loff_t offset, int origin)
->  	switch (origin) {
->  		case 1:
->  			offset += file->f_pos;
-> +		case 2:
-> +			/* pretend it's zero length */
->  		case 0:
->  			if (offset < 0)
->  				break;
-> 
-> 
+The windows driver for it, supplied by Delkin is written by Workbit, it seems they make the bridge chip inside:
+
+http://www.workbit.co.jp/products/utata.html
+
+
+Google translation:
+
+http://66.102.9.104/translate_c?hl=en&sl=ja&u=http://www.workbit.co.jp/products/utata.html
+
+
+The contact form does not translate correctly and so it seems someone fluent in Japanese would be the best bet to approach Workbit for documentation/specification.
+
+I have a brand new spare card here (with a Delkin 2GB 305x speed CF card in it) and am willing to send it to a kernel developer interested in working on a driver for it (Mark Lord?). Alternatively if anyone wants me to dump registers under Windows, test drivers etc I am prepared to put in the time to help in these ways. FWIW there seems to be a MacOSX driver available as well as a windows one according to the site.
+
+This card is currently the fastest CF reader available (except for clumsy FireWire readers) and offers an ideal  way of adding a SSD to a laptop - since it is very fast (40MB/s) and could enable a laptop to run its OS from the Cardbus slot, leaving the the main HDD to be spun up whenever large amounts of data need to be accessed. There seems to be a lot 'DIY SSD' enthusiasts out there (like me) along with digital photographers who would make use of a driver for this card under Linux.
+
+Please let me know if anyone is interested and I can help in any way.
+
+Cheers,
+
+Will Crozier
+
+
+
+      __________________________________________________________
+Sent from Yahoo! Mail.
+A Smarter Email http://uk.docs.yahoo.com/nowyoucan.html
