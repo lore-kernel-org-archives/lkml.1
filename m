@@ -1,66 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758836AbYFIX3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760739AbYFIXaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758836AbYFIX3c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 19:29:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754876AbYFIX3W
+	id S1760739AbYFIXaf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 19:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754876AbYFIXa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 19:29:22 -0400
-Received: from ozlabs.org ([203.10.76.45]:35198 "EHLO ozlabs.org"
+	Mon, 9 Jun 2008 19:30:27 -0400
+Received: from gw.goop.org ([64.81.55.164]:56625 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754322AbYFIX3V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 19:29:21 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [patch 04/41] cpu ops: Core piece for generic atomic per cpu operations
-Date: Tue, 10 Jun 2008 09:27:48 +1000
-User-Agent: KMail/1.9.9
-Cc: Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
-       Peter Zijlstra <peterz@infradead.org>
-References: <20080530035620.587204923@sgi.com> <200806060959.13362.rusty@rustcorp.com.au> <Pine.LNX.4.64.0806091158020.30776@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0806091158020.30776@schroedinger.engr.sgi.com>
+	id S1753263AbYFIXa0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 19:30:26 -0400
+Message-ID: <484DBCE7.9030008@goop.org>
+Date: Tue, 10 Jun 2008 00:29:43 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Christoph Lameter <clameter@sgi.com>
+CC: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/4] x86: Replace xxx_pda() operations with x86_xx_percpu().
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.711845000@polaris-admin.engr.sgi.com> <20080609130302.GA20943@elte.hu> <484D6A05.7010508@sgi.com> <Pine.LNX.4.64.0806091119150.30592@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0806091119150.30592@schroedinger.engr.sgi.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806100927.48597.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 10 June 2008 05:00:36 Christoph Lameter wrote:
-> On Fri, 6 Jun 2008, Rusty Russell wrote:
-> > > Also, the above cpu_local_wrap(...) adds:
-> > >
-> > > 	#define cpu_local_wrap(l)               \
-> > > 	({                                      \
-> > > 	        preempt_disable();              \
-> > > 	        (l);                            \
-> > > 	        preempt_enable();               \
-> > > 	})                                      \
-> > >
-> > > ... and there isn't a non-preemption version that I can find.
-> >
-> > Yes, this should be fixed.  I thought i386 had optimized versions
-> > pre-merge, but I was wrong (%gs for per-cpu came later, and noone cleaned
-> > up these naive versions).  Did you want me to write them?
->
-> How can that be fixed? You have no atomic instruction that calculates the
-> per cpu address in one go.
+Christoph Lameter wrote:
+> Paravirt support is on. We have seen an issue with that in the past. Why 
+> was that again?
+>   
 
-Huh?  "incl %fs:varname" does exactly this.
+I'm not aware of any paravirt-related percpu bugs (other than the fact 
+that the last major revision of per-cpu variables was done under the 
+aegis of paravirt-ops).
 
-> And as long as that is the case you need to 
-> disable preempt. Otherwise you may increment the per cpu variable of
-> another processor because the process was rescheduled after the address
-> was calculated but before the increment was done.
+But booting on bare hardware with pvops enabled should be exactly the 
+same as non-pvops with respect to percpu.
 
-But of course, that is not a problem.  You make local_t an atomic_t, and then 
-it doesn't matter which CPU you incremented.
-
-By definition if the caller cared, they would have had premption disabled.
-
-Hope that clarifies,
-Rusty.
+    J
