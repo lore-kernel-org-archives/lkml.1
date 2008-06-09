@@ -1,56 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760892AbYFINJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761021AbYFINKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760892AbYFINJS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 09:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757712AbYFINJF
+	id S1761021AbYFINKy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 09:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751728AbYFINKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 09:09:05 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:60157 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757681AbYFINJD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 09:09:03 -0400
-Date: Mon, 9 Jun 2008 14:08:31 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Pierre Ossman <drzeus@drzeus.cx>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Victor <linux@maxim.org.za>, Eric BENARD <ebenard@free.fr>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: [PATCH 4/7] mmc: at91_mci: add multiwrite switch
-Message-ID: <20080609130831.GC30971@flint.arm.linux.org.uk>
-References: <483FE9E7.7020707@atmel.com> <483FEE58.5000500@atmel.com> <20080601144251.GS5818@flint.arm.linux.org.uk> <20080609124249.349995df@mjolnir.drzeus.cx>
+	Mon, 9 Jun 2008 09:10:46 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:51420 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750998AbYFINKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 09:10:45 -0400
+Date: Mon, 9 Jun 2008 23:10:37 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Julia Lawall <julia@diku.dk>
+Cc: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 4/4] drivers/macintosh/therm_adt746x.c: add missing
+ of_node_put
+Message-Id: <20080609231037.b8aa7561.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.64.0806091421200.16009@ask.diku.dk>
+References: <Pine.LNX.4.64.0806091421200.16009@ask.diku.dk>
+X-Mailer: Sylpheed 2.5.0rc (GTK+ 2.12.10; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080609124249.349995df@mjolnir.drzeus.cx>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__9_Jun_2008_23_10_37_+1000_HKYG/_Axzb=z6d7v"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 09, 2008 at 12:42:49PM +0200, Pierre Ossman wrote:
-> On Sun, 1 Jun 2008 15:42:52 +0100
-> Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
-> 
-> > If Pierre wants to remove the MULTIWRITE flag, I'd like to hear his
-> > solution for the pxamci driver, where the only way to ascertain how
-> > many bytes were transmitted may be to walk the SG list comparing the
-> > DMA pointer with what was in the hardware DMA engine at the time.
-> > Maybe.
-> 
-> You set bytes_xfered to 0. As mentioned in my previous mail, I had a
-> chat with Jens about this and upper layers can only expect to get the
-> lower bound in how many bytes were written. Other hardware/drivers
-> already behaves like this so there is no point in crippling the MMC
-> layer in an effort to give nicer guarantees.
-> 
-> This is why I asked people to audit their drivers to make sure it's
-> the lower bound that's returned, but I've not received much in the way
-> of replies.
+--Signature=_Mon__9_Jun_2008_23_10_37_+1000_HKYG/_Axzb=z6d7v
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-You won't do from me concerning pxamci - I don't look after it anymore
-after one of my MMC cards got eaten by the misbehaving bugger.  I don't
-think anyone else is looking after it, so that means the driver's
-effectively unmaintained.
+On Mon, 9 Jun 2008 14:21:51 +0200 (CEST) Julia Lawall <julia@diku.dk> wrote:
+>
+> From: Julia Lawall <julia@diku.dk>
+>=20
+> of_node_put is needed before discarding a value received from
+> of_find_node_by_name, eg in error handling code.
+>=20
+> The semantic patch that makes the change is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
+>=20
+> // <smpl>
+> @@
+> struct device_node *n;
+> struct device_node *n1;
+> statement S;
+> identifier f;
+> expression E;
+> constant C;
+> @@
+>=20
+> n =3D of_find_node_by_name(...)
+> ...
+> if (!n) S
+> ... when !=3D of_node_put(n)
+>     when !=3D n1 =3D f(n,...)
+>     when !=3D E =3D n
+>     when any
+>     when strict
+> (
+> + of_node_put(n);
+>   return -C;
+> |
+>   of_node_put(n);
+> |
+>   n1 =3D f(n,...)
+> |
+>   E =3D n
+> |
+>   return ...;
+> )
+> // </smpl>
+>=20
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__9_Jun_2008_23_10_37_+1000_HKYG/_Axzb=z6d7v
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhNK80ACgkQTgG2atn1QN9GFgCfQNgpZmLlg9arSLT+Y8mCW+Xt
+9KYAn0p59n2uytbhr13aoaCRdP2w2nKa
+=0s7l
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__9_Jun_2008_23_10_37_+1000_HKYG/_Axzb=z6d7v--
