@@ -1,61 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbYFINuM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbYFINy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756218AbYFINuM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 09:50:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750699AbYFINuA
+	id S1756218AbYFINy2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 09:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYFINyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 09:50:00 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:57214 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750928AbYFINt7 (ORCPT
+	Mon, 9 Jun 2008 09:54:17 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:48524 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751811AbYFINyQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 09:49:59 -0400
-Message-ID: <484D34DC.40401@de.ibm.com>
-Date: Mon, 09 Jun 2008 15:49:16 +0200
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Peter Oberparleiter <oberparleiter@googlemail.com>,
-       linux-kernel@vger.kernel.org, ltp-coverage@lists.sourceforge.net,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 0/6] gcov kernel support
-References: <4843F6BF.9070409@de.ibm.com> <20080609002509.7782442e.akpm@linux-foundation.org>
-In-Reply-To: <20080609002509.7782442e.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Jun 2008 09:54:16 -0400
+Date: Mon, 9 Jun 2008 14:53:57 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Pierre Ossman <drzeus@drzeus.cx>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Victor <linux@maxim.org.za>, Eric BENARD <ebenard@free.fr>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH 4/7] mmc: at91_mci: add multiwrite switch
+Message-ID: <20080609135356.GD30971@flint.arm.linux.org.uk>
+References: <483FE9E7.7020707@atmel.com> <483FEE58.5000500@atmel.com> <20080601144251.GS5818@flint.arm.linux.org.uk> <20080609124249.349995df@mjolnir.drzeus.cx> <20080609130831.GC30971@flint.arm.linux.org.uk> <20080609154247.06db4c3e@mjolnir.drzeus.cx>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080609154247.06db4c3e@mjolnir.drzeus.cx>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 02 Jun 2008 15:33:51 +0200 Peter Oberparleiter <peter.oberparleiter@de.ibm.com> wrote:
-> 
->> This is version #3 of the gcov kernel support patch set 
-> 
-> My build tree is now filled with dead symlinks, like
-> 
-> lrwxrwxrwx 1 akpm akpm 64 Jun  9 00:06 security/selinux/nlmsgtab.gcda -> /sys/kernel/debug/gcov/usr/src/25/security/selinux/nlmsgtab.gcda
+On Mon, Jun 09, 2008 at 03:42:47PM +0200, Pierre Ossman wrote:
+> You're still listed for the primecell driver though. What's the status
+> on that one?
 
-Unfortunately a necessary evil of this approach: symlinks are created
-for all compiled source files while link targets are only available when
-the corresponding code is executed. In other words: those links will be
-dead for source files which don't compile to actual code and for modules
-as long as they are not loaded.
+It's always reported the number of bytes transferred to/from the card
+(which I think includes the wait for the busy signal to deassert.)
 
-> Which causes (at least)
-> 
-> ctags: Warning: cannot open source file "security/selinux/ss/conditional.gcda" : No such file or directory
-> ctags: Warning: cannot open source file "security/selinux/netlink.gcda" : No such file or directory
-> ctags: Warning: cannot open source file "security/selinux/netlabel.gcda" : No such file or directory
-
-> and probably other thing which I haven't discovered yet.
-
-I'm sure there's some kind of 'find' magic that can be used to work
-around dead links. I'll see how this can be applied to the ctags case -
-though neither 'make tags' nor 'make TAGS' seem to produce any warnings
-on my system..
-
-
-Regards,
-  Peter
+Probably the best thing is to mark MMCI as orphaned as well - for much
+the same reason.  I've only one remaining MMC card which I use for
+other purposes.  I'm not willing to sacrifice that one for further
+testing, neither am I willing to buy another card to just be used for
+testing purposes.
