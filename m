@@ -1,59 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759738AbYFIKHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759870AbYFIKJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759738AbYFIKHf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 06:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758667AbYFIKHZ
+	id S1759870AbYFIKJr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 06:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758695AbYFIKJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 06:07:25 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:42256 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758728AbYFIKHY (ORCPT
+	Mon, 9 Jun 2008 06:09:37 -0400
+Received: from mail9.hitachi.co.jp ([133.145.228.44]:53282 "EHLO
+	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758966AbYFIKJg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 06:07:24 -0400
-Date: Mon, 9 Jun 2008 13:07:23 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "=?utf-8?q?Ilpo=20J=C3=A4rvinen?=" <ilpo.jarvinen@helsinki.fi>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Bug #10823] stuck localhost TCP connections, v2.6.26-rc3+
-In-Reply-To: <dCRO4tbfLzK.A._ED.02vSIB@albercik>
-Message-ID: <Pine.LNX.4.64.0806091305110.16829@wrl-59.cs.helsinki.fi>
-References: <GIilET9wkhI.A.JzB.81vSIB@albercik> <dCRO4tbfLzK.A._ED.02vSIB@albercik>
+	Mon, 9 Jun 2008 06:09:36 -0400
+X-AuditID: 0ac90647-ab321ba000004aeb-8a-484d015e3562
+Message-ID: <484D0155.4040701@hitachi.com>
+Date: Mon, 09 Jun 2008 19:09:25 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-843103139-1213006043=:16829"
+To: Andreas Dilger <adilger@sun.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       Jan Kara <jack@suse.cz>, sct@redhat.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jbacik@redhat.com, cmm@us.ibm.com,
+       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
+Subject: Re: [PATCH 1/5] jbd: strictly check for write errors on data buffers
+References: <20080603153050.fb99ac8a.akpm@linux-foundation.org> 
+    <20080604101925.GB16572@duck.suse.cz> 
+    <20080604111911.c1fe09c6.akpm@linux-foundation.org> 
+    <20080604212202.GA8727@mit.edu> 
+    <20080604145848.e3da6f20.akpm@linux-foundation.org> 
+    <20080604225155.GB8727@mit.edu> <20080605093536.GE27370@duck.suse.cz> 
+    <4847CF07.1020904@hitachi.com> <20080605142948.GA25477@mit.edu> 
+    <20080605092006.ba7dceef.akpm@linux-foundation.org> 
+    <20080605184941.GX2961@webber.adilger.int>
+In-Reply-To: <20080605184941.GX2961@webber.adilger.int>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Andreas Dilger wrote:
+> On Jun 05, 2008  09:20 -0700, Andrew Morton wrote:
 
----696208474-843103139-1213006043=:16829
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-
-On Sat, 7 Jun 2008, Rafael J. Wysocki wrote:
-
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+>>I guess we need to undo this.  And yes, propagating errors into AS_EIO
+>>is the way.  I guess that's safe without holding lock_page(), as long
+>>as the bh is pinned.
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.25.  Please verify if it still should be listed.
+> Something like the following instead if -EIO and journal abort:
 > 
+> 		if (!buffer_uptodate(bh)) {
+> 			set_bit(AS_EIO, &bh->b_page->mapping->flags);
+> 			SetPageError(bh->b_page);
+> 		}
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10823
-> Subject		: stuck localhost TCP connections, v2.6.26-rc3+
-> Submitter	: Ingo Molnar <mingo@elte.hu>
-> Date		: 2008-05-26 11:56 (13 days old)
-> References	: http://marc.info/?l=linux-kernel&amp;m=121180311931349&amp;w=4
-> Handled-By	: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+> It seems end_buffer_async_write() does this already, but
+> journal_do_submit_data() uses end_buffer_write_sync() and it does not
+> do either of those operations.
 
-This should still be listed. We have a potential patch but testing of it 
-might have hit another bug with similar symptoms. Also a known to working 
-revert exists. ...But neither is in mainline / net-2.6 yet.
+Thank you for your suggestion.  I wrote an additional patch to do
+that below.  Please apply it as the 6th patch of this patch series.
 
+BTW, I'm developing a patch which makes "abort the journal if a file
+data buffer has an error" tunable.  I'll send it in another thread
+because it's not a bug fix patch.
+
+Regards,
 -- 
- i.
----696208474-843103139-1213006043=:16829--
+Hidehiro Kawai
+Hitachi, Systems Development Laboratory
+Linux Technology Center
+
+
+Subject: JBD: don't abort if flushing file data failed
+
+In ordered mode, it is not appropriate behavior to abort the journal
+when we failed to write file data.  This patch calls printk()
+instead of aborting the journal.  Additionally, set AS_EIO into
+the address_space object of the buffer which is written out by
+journal_do_submit_data() and failed so that fsync() can get -EIO.
+
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+---
+ fs/jbd/commit.c |   12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+Index: linux-2.6.26-rc4/fs/jbd/commit.c
+===================================================================
+--- linux-2.6.26-rc4.orig/fs/jbd/commit.c
++++ linux-2.6.26-rc4/fs/jbd/commit.c
+@@ -432,8 +432,11 @@ void journal_commit_transaction(journal_
+ 			wait_on_buffer(bh);
+ 			spin_lock(&journal->j_list_lock);
+ 		}
+-		if (unlikely(!buffer_uptodate(bh)))
++		if (unlikely(!buffer_uptodate(bh))) {
++			set_bit(AS_EIO, &bh->b_page->mapping->flags);
++			SetPageError(bh->b_page);
+ 			err = -EIO;
++		}
+ 		if (!inverted_lock(journal, bh)) {
+ 			put_bh(bh);
+ 			spin_lock(&journal->j_list_lock);
+@@ -452,8 +455,11 @@ void journal_commit_transaction(journal_
+ 	}
+ 	spin_unlock(&journal->j_list_lock);
+ 
+-	if (err)
+-		journal_abort(journal, err);
++	if (err) {
++		printk(KERN_WARNING
++		       "JBD: Detected IO errors during flushing file data\n");
++		err = 0;
++	}
+ 
+ 	journal_write_revoke_records(journal, commit_transaction);
+ 
+
+
+
