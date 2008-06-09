@@ -1,163 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760045AbYFIKKL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760151AbYFIKKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760045AbYFIKKL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 06:10:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759925AbYFIKJ4
+	id S1760151AbYFIKKi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 06:10:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759205AbYFIKKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 06:09:56 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:55312 "EHLO WNmonitoring"
+	Mon, 9 Jun 2008 06:10:24 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:58560 "EHLO WNmonitoring"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758695AbYFIKJz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 06:09:55 -0400
+	id S1759406AbYFIKKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 06:10:22 -0400
 From: Jiri Slaby <jirislaby@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH] Char: mxser, ioctl cleanup
-Date: Mon,  9 Jun 2008 12:08:26 +0200
-Message-Id: <1213006112-25965-1-git-send-email-jirislaby@gmail.com>
+Subject: [PATCH] Char: mxser, globals cleanup
+Date: Mon,  9 Jun 2008 12:08:27 +0200
+Message-Id: <1213006112-25965-2-git-send-email-jirislaby@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
+In-Reply-To: <1213006112-25965-1-git-send-email-jirislaby@gmail.com>
+References: <1213006112-25965-1-git-send-email-jirislaby@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- remove break ctl from ioctl handler, it's never reached, since
-  tty_ops->break_ctl is defined (mxser break handling is done in software)
-- mark MOXA_GET_MAJOR as deprecated
-- fix TIOCGICOUNT (some retval non-checks of put_user). Use copy_to_user
-  to whole structure instead.
+- remove unused mxvar_diagflag
+- move mxser_msr into the only user/function
+- GMStatus, hmm, fix race-prone access to it. We need only one instance for
+  real, not MXSER_PORTS. Move it to MOXA_GETMSTATUS ioctl.
+- mxser_mon_ext, almost the same, but alloc it on heap, since it has more than
+  2 kilos.
+- fix indexing, `i' is not the index value, `i * MXSER_PORTS_PER_BOARD + j' is
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 ---
- drivers/char/mxser.c |   78 ++++++++++++-------------------------------------
- 1 files changed, 19 insertions(+), 59 deletions(-)
+ drivers/char/mxser.c |  130 +++++++++++++++++++++-----------------------------
+ 1 files changed, 55 insertions(+), 75 deletions(-)
 
 diff --git a/drivers/char/mxser.c b/drivers/char/mxser.c
-index 4b81a85..644202c 100644
+index 644202c..0fedb1c 100644
 --- a/drivers/char/mxser.c
 +++ b/drivers/char/mxser.c
-@@ -16,7 +16,6 @@
-  *	Fed through a cleanup, indent and remove of non 2.6 code by Alan Cox
-  *	<alan@redhat.com>. The original 1.8 code is available on www.moxa.com.
-  *	- Fixed x86_64 cleanness
-- *	- Fixed sleep with spinlock held in mxser_send_break
-  */
+@@ -291,8 +291,6 @@ struct mxser_mstatus {
+ 	int dcd;
+ };
  
- #include <linux/module.h>
-@@ -1473,27 +1472,6 @@ static int mxser_get_lsr_info(struct mxser_port *info,
- 	return put_user(result, value);
- }
- 
--/*
-- * This routine sends a break character out the serial port.
-- */
--static void mxser_send_break(struct mxser_port *info, int duration)
--{
--	unsigned long flags;
+-static struct mxser_mstatus GMStatus[MXSER_PORTS];
 -
--	if (!info->ioaddr)
--		return;
--	set_current_state(TASK_INTERRUPTIBLE);
--	spin_lock_irqsave(&info->slock, flags);
--	outb(inb(info->ioaddr + UART_LCR) | UART_LCR_SBC,
--		info->ioaddr + UART_LCR);
--	spin_unlock_irqrestore(&info->slock, flags);
--	schedule_timeout(duration);
--	spin_lock_irqsave(&info->slock, flags);
--	outb(inb(info->ioaddr + UART_LCR) & ~UART_LCR_SBC,
--		info->ioaddr + UART_LCR);
--	spin_unlock_irqrestore(&info->slock, flags);
--}
--
- static int mxser_tiocmget(struct tty_struct *tty, struct file *file)
+ static int mxserBoardCAP[MXSER_BOARDS] = {
+ 	0, 0, 0, 0
+ 	/*  0x180, 0x280, 0x200, 0x320 */
+@@ -301,9 +299,6 @@ static int mxserBoardCAP[MXSER_BOARDS] = {
+ static struct mxser_board mxser_boards[MXSER_BOARDS];
+ static struct tty_driver *mxvar_sdriver;
+ static struct mxser_log mxvar_log;
+-static int mxvar_diagflag;
+-static unsigned char mxser_msr[MXSER_PORTS + 1];
+-static struct mxser_mon_ext mon_data_ext;
+ static int mxser_set_baud_method[MXSER_PORTS + 1];
+ 
+ static void mxser_enable_must_enchance_mode(unsigned long baseio)
+@@ -547,6 +542,7 @@ static void process_txrx_fifo(struct mxser_port *info)
+ 
+ static unsigned char mxser_get_msr(int baseaddr, int mode, int port)
  {
- 	struct mxser_port *info = tty->driver_data;
-@@ -1662,6 +1640,8 @@ static int mxser_ioctl_special(unsigned int cmd, void __user *argp)
++	static unsigned char mxser_msr[MXSER_PORTS + 1];
+ 	unsigned char status = 0;
  
- 	switch (cmd) {
- 	case MOXA_GET_MAJOR:
-+		printk(KERN_WARNING "mxser: '%s' uses deprecated ioctl %x, fix "
-+				"your userspace\n", current->comm, cmd);
- 		return put_user(ttymajor, (int __user *)argp);
- 
- 	case MOXA_CHKPORTENABLE:
-@@ -1832,7 +1812,6 @@ static int mxser_ioctl(struct tty_struct *tty, struct file *file,
- {
- 	struct mxser_port *info = tty->driver_data;
- 	struct async_icount cnow;
--	struct serial_icounter_struct __user *p_cuser;
- 	unsigned long flags;
- 	void __user *argp = (void __user *)arg;
- 	int retval;
-@@ -1881,21 +1860,6 @@ static int mxser_ioctl(struct tty_struct *tty, struct file *file,
- 		return -EIO;
- 
- 	switch (cmd) {
--	case TCSBRK:		/* SVID version: non-zero arg --> no break */
--		retval = tty_check_change(tty);
--		if (retval)
--			return retval;
--		tty_wait_until_sent(tty, 0);
--		if (!arg)
--			mxser_send_break(info, HZ / 4);	/* 1/4 second */
--		return 0;
--	case TCSBRKP:		/* support for POSIX tcsendbreak() */
--		retval = tty_check_change(tty);
--		if (retval)
--			return retval;
--		tty_wait_until_sent(tty, 0);
--		mxser_send_break(info, arg ? arg * (HZ / 10) : HZ / 4);
--		return 0;
- 	case TIOCGSERIAL:
+ 	status = inb(baseaddr + UART_MSR);
+@@ -1659,62 +1655,60 @@ static int mxser_ioctl_special(unsigned int cmd, void __user *argp)
+ 			ret = -EFAULT;
+ 		unlock_kernel();
+ 		return ret;
+-	case MOXA_GETMSTATUS:
++	case MOXA_GETMSTATUS: {
++		struct mxser_mstatus ms, __user *msu = argp;
  		lock_kernel();
- 		retval = mxser_get_serial_info(info, argp);
-@@ -1927,30 +1891,26 @@ static int mxser_ioctl(struct tty_struct *tty, struct file *file,
- 	 * NB: both 1->0 and 0->1 transitions are counted except for
- 	 *     RI where only 0->1 is counted.
- 	 */
--	case TIOCGICOUNT:
-+	case TIOCGICOUNT: {
-+		struct serial_icounter_struct icnt = { 0 };
- 		spin_lock_irqsave(&info->slock, flags);
- 		cnow = info->icount;
- 		spin_unlock_irqrestore(&info->slock, flags);
--		p_cuser = argp;
--		if (put_user(cnow.frame, &p_cuser->frame))
+ 		for (i = 0; i < MXSER_BOARDS; i++)
+ 			for (j = 0; j < MXSER_PORTS_PER_BOARD; j++) {
+ 				port = &mxser_boards[i].ports[j];
++				memset(&ms, 0, sizeof(ms));
+ 
+-				GMStatus[i].ri = 0;
+-				if (!port->ioaddr) {
+-					GMStatus[i].dcd = 0;
+-					GMStatus[i].dsr = 0;
+-					GMStatus[i].cts = 0;
+-					continue;
+-				}
++				if (!port->ioaddr)
++					goto copy;
+ 
+ 				if (!port->tty || !port->tty->termios)
+-					GMStatus[i].cflag =
+-						port->normal_termios.c_cflag;
++					ms.cflag = port->normal_termios.c_cflag;
+ 				else
+-					GMStatus[i].cflag =
+-						port->tty->termios->c_cflag;
++					ms.cflag = port->tty->termios->c_cflag;
+ 
+ 				status = inb(port->ioaddr + UART_MSR);
+-				if (status & 0x80 /*UART_MSR_DCD */ )
+-					GMStatus[i].dcd = 1;
+-				else
+-					GMStatus[i].dcd = 0;
+-
+-				if (status & 0x20 /*UART_MSR_DSR */ )
+-					GMStatus[i].dsr = 1;
+-				else
+-					GMStatus[i].dsr = 0;
+-
+-
+-				if (status & 0x10 /*UART_MSR_CTS */ )
+-					GMStatus[i].cts = 1;
+-				else
+-					GMStatus[i].cts = 0;
++				if (status & UART_MSR_DCD)
++					ms.dcd = 1;
++				if (status & UART_MSR_DSR)
++					ms.dsr = 1;
++				if (status & UART_MSR_CTS)
++					ms.cts = 1;
++			copy:
++				if (copy_to_user(msu, &ms, sizeof(ms))) {
++					unlock_kernel();
++					return -EFAULT;
++				}
++				msu++;
+ 			}
+ 		unlock_kernel();
+-		if (copy_to_user(argp, GMStatus,
+-				sizeof(struct mxser_mstatus) * MXSER_PORTS))
 -			return -EFAULT;
--		if (put_user(cnow.brk, &p_cuser->brk))
--			return -EFAULT;
--		if (put_user(cnow.overrun, &p_cuser->overrun))
--			return -EFAULT;
--		if (put_user(cnow.buf_overrun, &p_cuser->buf_overrun))
--			return -EFAULT;
--		if (put_user(cnow.parity, &p_cuser->parity))
--			return -EFAULT;
--		if (put_user(cnow.rx, &p_cuser->rx))
--			return -EFAULT;
--		if (put_user(cnow.tx, &p_cuser->tx))
--			return -EFAULT;
--		put_user(cnow.cts, &p_cuser->cts);
--		put_user(cnow.dsr, &p_cuser->dsr);
--		put_user(cnow.rng, &p_cuser->rng);
--		put_user(cnow.dcd, &p_cuser->dcd);
--		return 0;
-+
-+		icnt.frame = cnow.frame;
-+		icnt.brk = cnow.brk;
-+		icnt.overrun = cnow.overrun;
-+		icnt.buf_overrun = cnow.buf_overrun;
-+		icnt.parity = cnow.parity;
-+		icnt.rx = cnow.rx;
-+		icnt.tx = cnow.tx;
-+		icnt.cts = cnow.cts;
-+		icnt.dsr = cnow.dsr;
-+		icnt.rng = cnow.rng;
-+		icnt.dcd = cnow.dcd;
-+
-+		return copy_to_user(argp, &icnt, sizeof(icnt)) ? -EFAULT : 0;
+ 		return 0;
 +	}
- 	case MOXA_HighSpeedOn:
- 		return put_user(info->baud_base != 115200 ? 1 : 0, (int __user *)argp);
- 	case MOXA_SDS_RSTICOUNTER:
+ 	case MOXA_ASPP_MON_EXT: {
+-		int p, shiftbit;
+-		unsigned long opmode;
+-		unsigned cflag, iflag;
++		struct mxser_mon_ext *me; /* it's 2k, stack unfriendly */
++		unsigned int cflag, iflag, p;
++		u8 opmode;
++
++		me = kzalloc(sizeof(*me), GFP_KERNEL);
++		if (!me)
++			return -ENOMEM;
+ 
+ 		lock_kernel();
+-		for (i = 0; i < MXSER_BOARDS; i++) {
+-			for (j = 0; j < MXSER_PORTS_PER_BOARD; j++) {
++		for (i = 0, p = 0; i < MXSER_BOARDS; i++) {
++			for (j = 0; j < MXSER_PORTS_PER_BOARD; j++, p++) {
++				if (p >= ARRAY_SIZE(me->rx_cnt)) {
++					i = MXSER_BOARDS;
++					break;
++				}
+ 				port = &mxser_boards[i].ports[j];
+ 				if (!port->ioaddr)
+ 					continue;
+ 
+-				status = mxser_get_msr(port->ioaddr, 0, i);
++				status = mxser_get_msr(port->ioaddr, 0, p);
+ 
+ 				if (status & UART_MSR_TERI)
+ 					port->icount.rng++;
+@@ -1726,16 +1720,13 @@ static int mxser_ioctl_special(unsigned int cmd, void __user *argp)
+ 					port->icount.cts++;
+ 
+ 				port->mon_data.modem_status = status;
+-				mon_data_ext.rx_cnt[i] = port->mon_data.rxcnt;
+-				mon_data_ext.tx_cnt[i] = port->mon_data.txcnt;
+-				mon_data_ext.up_rxcnt[i] =
+-					port->mon_data.up_rxcnt;
+-				mon_data_ext.up_txcnt[i] =
+-					port->mon_data.up_txcnt;
+-				mon_data_ext.modem_status[i] =
++				me->rx_cnt[p] = port->mon_data.rxcnt;
++				me->tx_cnt[p] = port->mon_data.txcnt;
++				me->up_rxcnt[p] = port->mon_data.up_rxcnt;
++				me->up_txcnt[p] = port->mon_data.up_txcnt;
++				me->modem_status[p] =
+ 					port->mon_data.modem_status;
+-				mon_data_ext.baudrate[i] =
+-					tty_get_baud_rate(port->tty);
++				me->baudrate[p] = tty_get_baud_rate(port->tty);
+ 
+ 				if (!port->tty || !port->tty->termios) {
+ 					cflag = port->normal_termios.c_cflag;
+@@ -1745,40 +1736,31 @@ static int mxser_ioctl_special(unsigned int cmd, void __user *argp)
+ 					iflag = port->tty->termios->c_iflag;
+ 				}
+ 
+-				mon_data_ext.databits[i] = cflag & CSIZE;
+-
+-				mon_data_ext.stopbits[i] = cflag & CSTOPB;
+-
+-				mon_data_ext.parity[i] =
+-					cflag & (PARENB | PARODD | CMSPAR);
+-
+-				mon_data_ext.flowctrl[i] = 0x00;
++				me->databits[p] = cflag & CSIZE;
++				me->stopbits[p] = cflag & CSTOPB;
++				me->parity[p] = cflag & (PARENB | PARODD |
++						CMSPAR);
+ 
+ 				if (cflag & CRTSCTS)
+-					mon_data_ext.flowctrl[i] |= 0x03;
++					me->flowctrl[p] |= 0x03;
+ 
+ 				if (iflag & (IXON | IXOFF))
+-					mon_data_ext.flowctrl[i] |= 0x0C;
++					me->flowctrl[p] |= 0x0C;
+ 
+ 				if (port->type == PORT_16550A)
+-					mon_data_ext.fifo[i] = 1;
+-				else
+-					mon_data_ext.fifo[i] = 0;
++					me->fifo[p] = 1;
+ 
+-				p = i % 4;
+-				shiftbit = p * 2;
+-				opmode = inb(port->opmode_ioaddr) >> shiftbit;
++				opmode = inb(port->opmode_ioaddr) >>
++						((p % 4) * 2);
+ 				opmode &= OP_MODE_MASK;
+-
+-				mon_data_ext.iftype[i] = opmode;
+-
++				me->iftype[p] = opmode;
+ 			}
+ 		}
+ 		unlock_kernel();
+-		if (copy_to_user(argp, &mon_data_ext,
+-					sizeof(mon_data_ext)))
+-			return -EFAULT;
+-		return 0;
++		if (copy_to_user(argp, me, sizeof(*me)))
++			ret = -EFAULT;
++		kfree(me);
++		return ret;
+ 	}
+ 	default:
+ 		return -ENOIOCTLCMD;
+@@ -2809,8 +2791,6 @@ static int __init mxser_module_init(void)
+ 		goto err_put;
+ 	}
+ 
+-	mxvar_diagflag = 0;
+-
+ 	m = 0;
+ 	/* Start finding ISA boards here */
+ 	for (isaloop = 0; isaloop < 2; isaloop++)
 -- 
 1.5.4.5
 
