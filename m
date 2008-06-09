@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754226AbYFIT7b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755036AbYFIUHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754226AbYFIT7b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 15:59:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757049AbYFIT7Q
+	id S1755036AbYFIUHo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 16:07:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbYFIUHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 15:59:16 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:43651 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756553AbYFIT7Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 15:59:16 -0400
-Date: Mon, 9 Jun 2008 14:59:15 -0500
-From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
-To: scameron@beardog.cca.cpqcorp.net
-Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org
-Subject: Re: [patch] cciss: Fix regression that no device nodes are created if no logical drives are configured.
-Message-ID: <20080609195915.GA12866@beardog.cca.cpqcorp.net>
-References: <20080609184649.GV8065@beardog.cca.cpqcorp.net>
+	Mon, 9 Jun 2008 16:07:30 -0400
+Received: from 1wt.eu ([62.212.114.60]:1651 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754082AbYFIUHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 16:07:24 -0400
+Date: Mon, 9 Jun 2008 21:49:29 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: "H. Peter Anvin" <hpa@kernel.org>, Marcin Krol <hawk@pld-linux.org>,
+       jejb@kernel.org, "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
+       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>, Nick Piggin <npiggin@suse.de>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
+       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [patch 21/50] brd: dont show ramdisks in /proc/partitions
+Message-ID: <20080609194928.GM5609@1wt.eu>
+References: <20080607010215.358296706@sous-sol.org> <20080607010610.796754560@sous-sol.org> <484B02CF.6000606@kernel.org> <20080609170840.GG30402@sequoia.sous-sol.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080609184649.GV8065@beardog.cca.cpqcorp.net>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080609170840.GG30402@sequoia.sous-sol.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 09, 2008 at 01:46:49PM -0500, scameron@beardog.cca.cpqcorp.net wrote:
+On Mon, Jun 09, 2008 at 10:08:40AM -0700, Chris Wright wrote:
+> * H. Peter Anvin (hpa@kernel.org) wrote:
+> > This seems a bit like cargo cult programming to me.  If there isn't a 
+> > known, good, reason to revert this behaviour change, I would consider it 
+> > a bugfix, not a regression.
 > 
-> 
-> Fix regression in cciss driver that if no logical drives are configured,
-> no device nodes at all get created.
-> 
-> Signed-off-by: Stephen M. Cameron <scameron@beardog.cca.cpqcorp.net>
-Acked-by: Mike Miller <mike.miller@hp.com>
-> 
-> ---
-> 
->  drivers/block/cciss.c |    4 ++++
->  1 files changed, 4 insertions(+)
-> 
-> diff -puN drivers/block/cciss.c~cciss_fix_cxd0_missing_if_no_drives drivers/block/cciss.c
-> --- linux-2.6.26rc5/drivers/block/cciss.c~cciss_fix_cxd0_missing_if_no_drives	2008-06-09 09:27:37.000000000 -0500
-> +++ linux-2.6.26rc5-root/drivers/block/cciss.c	2008-06-09 12:33:07.000000000 -0500
-> @@ -3535,6 +3535,10 @@ static int __devinit cciss_init_one(stru
->  	for (j = 0; j <= hba[i]->highest_lun; j++)
->  		add_disk(hba[i]->gendisk[j]);
->  
-> +	/* we must register the controller even if no disks exist */
-> +	if (hba[i]->highest_lun == -1)
-> +		add_disk(hba[i]->gendisk[0]);
-> +
->  	return 1;
->  
->        clean4:
-> _
+> We have one /proc/partitions parser that got broken (never saw details
+> on how).  I don't care for this change either (esp. since nbd is still
+> left out...it's inconsistent).
+
+I also had one of my old install scripts proposing me to choose between
+16 ramdisks to install to. Quite bothering in fact. I'm not sure we
+really can consider ramdisks as partitions. Also, all of them are listed,
+whether they are initialized or not.
+
+In fact, I was glad to see this "fixed" with this patch.
+
+Regards,
+willy
+
