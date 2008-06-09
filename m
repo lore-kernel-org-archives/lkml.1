@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759293AbYFIGlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758361AbYFIGoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759293AbYFIGlR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 02:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757704AbYFIGlA
+	id S1758361AbYFIGoq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 02:44:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753696AbYFIGog
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 02:41:00 -0400
-Received: from monty.telenet-ops.be ([195.130.132.56]:32776 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756858AbYFIGk7 (ORCPT
+	Mon, 9 Jun 2008 02:44:36 -0400
+Received: from wilson.telenet-ops.be ([195.130.132.42]:41161 "EHLO
+	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753524AbYFIGof (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 02:40:59 -0400
-Date: Mon, 9 Jun 2008 08:40:57 +0200 (CEST)
+	Mon, 9 Jun 2008 02:44:35 -0400
+Date: Mon, 9 Jun 2008 08:44:33 +0200 (CEST)
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Luke -Jr <luke@dashjr.org>
-cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-mips@linux-mips.org
-Subject: Re: bcm33xx port
-In-Reply-To: <200806081836.42351.luke@dashjr.org>
-Message-ID: <Pine.LNX.4.64.0806090839100.25145@anakin>
-References: <200806072113.26433.luke@dashjr.org> <200806081527.31221.luke@dashjr.org>
- <Pine.LNX.4.55.0806082249330.15673@cliff.in.clinika.pl> <200806081836.42351.luke@dashjr.org>
+To: Adrian Bunk <bunk@kernel.org>, Peter De Schrijver <p2@debian.org>
+cc: Roman Zippel <zippel@linux-m68k.org>, linux-m68k@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: m68k: could the Apollo support possibly work?
+In-Reply-To: <20080608190513.GE4048@cs181133002.pp.htv.fi>
+Message-ID: <Pine.LNX.4.64.0806090842490.25145@anakin>
+References: <20080608190513.GE4048@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 8 Jun 2008, Luke -Jr wrote:
-> On Sunday 08 June 2008, Maciej W. Rozycki wrote:
-> > On Sun, 8 Jun 2008, Luke -Jr wrote:
-> > > >  Not exactly.  Try harder -- this is simple arithmetic and you've got
-> > > > all the data given above already. :)
-> > >
-> > > 200 / 2? I'm not really sure what a 'jiffy' is..
-> >
-> >  Hmm, I have thought it can be inferred from the code involved or failing
-> > that -- Google...  Well, anyway, a jiffy is a tick of the kernel timer or,
-> > specifically in this context and to be more precise, the interval between
-> > such two consecutive ticks or, in other words, 1/HZ.
-                                                     ^^
-Look at CONFIG_HZ, which is probably 100, 250, or 1000.
-
-> jiffy = 1 / 200000 HZ = 0.000005 sec/tick
-> loop = 200000 instructions / 2 instructions per loop = 100000 loops/sec
+On Sun, 8 Jun 2008, Adrian Bunk wrote:
+> Nothing seems to set apollo_model (apollo_parse_bootinfo() has no caller).
 > 
-> So 0.00000000005 loops per jiffy? But it can't be, since loops_per_jiffy isn't 
-> floating point... :/
+> Therefore trying to boot an Apollo machine seems to do:
+>   arch/m68k/kernel/setup.c:setup_arch()
+>     arch/m68k/apollo/config.c:config_apollo()
+>       arch/m68k/apollo/config.c:dn_setup_model() 
+>         panic()
+> 
+> Do I miss anything?
 
-So loops_per_jiffie is approx. CPU clock frequency / CONFIG_HZ.
+Obviously it should be called from m68k_parse_bootinfo(), but there's no
+MACH_IS_APOLLO case there. Strange...
+
+> Does anyone still have this hardware and tried booting it in recent years?
+> 
+> This problem already exists in kernel 2.4.0, and my gut feeling is 
+> it's quite dead code I could remove.
+
+P2?
 
 Gr{oetje,eeting}s,
 
