@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760570AbYFIW04@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761618AbYFIW1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760570AbYFIW04 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 18:26:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760639AbYFIWYC
+	id S1761618AbYFIW1T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 18:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758649AbYFIWYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 18:24:02 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:40985 "EHLO smtp6.pp.htv.fi"
+	Mon, 9 Jun 2008 18:24:08 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:53947 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760625AbYFIWYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 18:24:00 -0400
-Date: Tue, 10 Jun 2008 01:23:06 +0300
+	id S1760656AbYFIWYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 18:24:06 -0400
+Date: Tue, 10 Jun 2008 01:23:12 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: dmitry.torokhov@gmail.com
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make q40kbd_lock static
-Message-ID: <20080609222306.GL1987@cs181133002.pp.htv.fi>
+To: paulus@samba.org, geert@linux-m68k.org, zippel@linux-m68k.org
+Cc: linux-m68k@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: [2.6 patch] drivers/macintosh/: possible cleanups
+Message-ID: <20080609222312.GM1987@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,22 +24,102 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global q40kbd_lock static.
+This patch contains the following possible cleanups:
+- make the following needlessly global code static:
+  - adb.c: adb_controller
+  - adb.c: adb_init()
+  - adbhid.c: adb_to_linux_keycodes[]
+  - via-pmu68k.c: backlight_level
+  - via-pmu68k.c: backlight_enabled
+- remove the following unused code:
+  - via-pmu68k.c: sleep_notifier_list
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-1bf64b91d180438d8810ea49a02687657d3a488e diff --git a/drivers/input/serio/q40kbd.c b/drivers/input/serio/q40kbd.c
-index d962a8d..52a531b 100644
---- a/drivers/input/serio/q40kbd.c
-+++ b/drivers/input/serio/q40kbd.c
-@@ -49,7 +49,7 @@ MODULE_AUTHOR("Vojtech Pavlik <vojtech@ucw.cz>");
- MODULE_DESCRIPTION("Q40 PS/2 keyboard controller driver");
- MODULE_LICENSE("GPL");
+
+ drivers/macintosh/adb.c        |    5 ++---
+ drivers/macintosh/adbhid.c     |    2 +-
+ drivers/macintosh/via-pmu68k.c |    5 ++---
+ include/linux/adb.h            |    1 -
+ 4 files changed, 5 insertions(+), 8 deletions(-)
+
+45413fb42fb4215d80bb15f50a5bdc869465e9a1 diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
+index dbaad39..61b62a6 100644
+--- a/drivers/macintosh/adb.c
++++ b/drivers/macintosh/adb.c
+@@ -46,7 +46,6 @@
+ #endif
  
--DEFINE_SPINLOCK(q40kbd_lock);
-+static DEFINE_SPINLOCK(q40kbd_lock);
- static struct serio *q40kbd_port;
- static struct platform_device *q40kbd_device;
  
+-EXPORT_SYMBOL(adb_controller);
+ EXPORT_SYMBOL(adb_client_list);
+ 
+ extern struct adb_driver via_macii_driver;
+@@ -80,7 +79,7 @@ static struct adb_driver *adb_driver_list[] = {
+ 
+ static struct class *adb_dev_class;
+ 
+-struct adb_driver *adb_controller;
++static struct adb_driver *adb_controller;
+ BLOCKING_NOTIFIER_HEAD(adb_client_list);
+ static int adb_got_sleep;
+ static int adb_inited;
+@@ -290,7 +289,7 @@ static int adb_resume(struct platform_device *dev)
+ }
+ #endif /* CONFIG_PM */
+ 
+-int __init adb_init(void)
++static int __init adb_init(void)
+ {
+ 	struct adb_driver *driver;
+ 	int i;
+diff --git a/drivers/macintosh/adbhid.c b/drivers/macintosh/adbhid.c
+index ef4c117..af72f97 100644
+--- a/drivers/macintosh/adbhid.c
++++ b/drivers/macintosh/adbhid.c
+@@ -75,7 +75,7 @@ static struct notifier_block adbhid_adb_notifier = {
+ #define ADB_KEY_POWER_OLD	0x7e
+ #define ADB_KEY_POWER		0x7f
+ 
+-u16 adb_to_linux_keycodes[128] = {
++static u16 adb_to_linux_keycodes[128] = {
+ 	/* 0x00 */ KEY_A, 		/*  30 */
+ 	/* 0x01 */ KEY_S, 		/*  31 */
+ 	/* 0x02 */ KEY_D,		/*  32 */
+diff --git a/drivers/macintosh/via-pmu68k.c b/drivers/macintosh/via-pmu68k.c
+index e2f84da..b64741c 100644
+--- a/drivers/macintosh/via-pmu68k.c
++++ b/drivers/macintosh/via-pmu68k.c
+@@ -101,7 +101,6 @@ static int pmu_kind = PMU_UNKNOWN;
+ static int pmu_fully_inited;
+ 
+ int asleep;
+-BLOCKING_NOTIFIER_HEAD(sleep_notifier_list);
+ 
+ static int pmu_probe(void);
+ static int pmu_init(void);
+@@ -741,8 +740,8 @@ pmu_handle_data(unsigned char *data, int len)
+ 	}
+ }
+ 
+-int backlight_level = -1;
+-int backlight_enabled = 0;
++static int backlight_level = -1;
++static int backlight_enabled = 0;
+ 
+ #define LEVEL_TO_BRIGHT(lev)	((lev) < 1? 0x7f: 0x4a - ((lev) << 1))
+ 
+diff --git a/include/linux/adb.h b/include/linux/adb.h
+index 64d8878..63bca50 100644
+--- a/include/linux/adb.h
++++ b/include/linux/adb.h
+@@ -84,7 +84,6 @@ enum adb_message {
+     ADB_MSG_PRE_RESET,	/* Called before resetting the bus */
+     ADB_MSG_POST_RESET	/* Called after resetting the bus (re-do init & register) */
+ };
+-extern struct adb_driver *adb_controller;
+ extern struct blocking_notifier_head adb_client_list;
+ 
+ int adb_request(struct adb_request *req, void (*done)(struct adb_request *),
 
