@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757641AbYFIWAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758622AbYFIWBF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757641AbYFIWAa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 18:00:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbYFIWAU
+	id S1758622AbYFIWBF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 18:01:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbYFIWAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 18:00:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38966 "EHLO
+	Mon, 9 Jun 2008 18:00:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57777 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752169AbYFIWAT (ORCPT
+	by vger.kernel.org with ESMTP id S1753137AbYFIWAt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 18:00:19 -0400
-Date: Mon, 9 Jun 2008 14:59:23 -0700
+	Mon, 9 Jun 2008 18:00:49 -0400
+Date: Mon, 9 Jun 2008 14:55:04 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: zippel@linux-m68k.org, tglx@linutronix.de, a.zummo@towertech.it,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] NTP: Let update_persistent_clock() sleep
-Message-Id: <20080609145923.fe5dc86d.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.55.0806091912390.26593@cliff.in.clinika.pl>
-References: <Pine.LNX.4.55.0805281856200.29522@cliff.in.clinika.pl>
-	<20080528201612.d2641dc3.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0806091950360.6791@localhost.localdomain>
-	<Pine.LNX.4.55.0806091912390.26593@cliff.in.clinika.pl>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, apw@shadowen.org, linux-pci@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [BUG] 2.6.26-rc5-mm1- kernel BUG at
+ arch/x86/kernel/io_apic_64.c:355!
+Message-Id: <20080609145504.6cdfc886.akpm@linux-foundation.org>
+In-Reply-To: <484D68F8.9090807@linux.vnet.ibm.com>
+References: <20080609053908.8021a635.akpm@linux-foundation.org>
+	<484D68F8.9090807@linux.vnet.ibm.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,101 +29,85 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Jun 2008 19:18:52 +0100 (BST)
-"Maciej W. Rozycki" <macro@linux-mips.org> wrote:
+On Mon, 09 Jun 2008 23:01:36 +0530
+Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
-> Hi,
+> Hi Andrew,
 > 
-> > > Roman does most of the NTP work afaik.  I consider Thomas's git-hrt
-> > > tree to be the route via which NTP changes get into linux-next and
-> > > mainline.
-> > 
-> > That function is a little misplaced, we already have a driver/rtc dir, 
-> > where this should go in the long term and ntp.c only providing the 
-> > trigger, that time is stable. There it would also be possible to better 
-> > take into account any quirks needed to update the chip.
+> The 2.6.26-rc5-mm1 kernel panics while bootup on 32 way, x86_64 machine.
+> passing noapic as the command line parameter, boots up
+> the machine fine.
 > 
->  I posted a separate change to implement a backend using the RTC class
-> device.  I think this is the right solution till all the platforms are
-> moved away from legacy RTC drivers.
+> kernel BUG at arch/x86/kernel/io_apic_64.c:355!
+> invalid opcode: 0000 [1] SMP 
+> last sysfs file: 
+> CPU 24 
+> Modules linked in:
+> Pid: 1, comm: swapper Not tainted 2.6.26-rc5-mm1-autotest #1
+> RIP: 0010:[<ffffffff8021b9da>]  [<ffffffff8021b9da>] add_pin_to_irq+0x7a/0x90
+> RSP: 0018:ffff81061e4cbb60  EFLAGS: 00010216
+> RAX: 00000000000000f0 RBX: 00000000000000f0 RCX: 0000000000000001
+> RDX: 0000000000000018 RSI: 0000000000000006 RDI: 00000000000000f0
+> RBP: 0000000000000006 R08: 0000000000000018 R09: 0000000000000006
+> R10: 0000000000000008 R11: ffffffff803948e6 R12: 0000000000000001
+> R13: 0000000000000001 R14: 0000000000000018 R15: ffff81061e4cbc04
+> FS:  0000000000000000(0000) GS:ffff810bfe7be5c0(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process swapper (pid: 1, threadinfo ffff81061e4ca000, task ffff81032e4b96d0)
+> Stack:  0000000000000006 ffffffff8021ba6e 00000000000000f0 0000000000000001
+>  0000000000000000 0000000000000000 ffff81061e4cbc00 ffffffff80218991
+>  00000000000000f0 0000000000000000 0000000000000001 ffffffff80218a1a
+> Call Trace:
+>  [<ffffffff8021ba6e>] io_apic_set_pci_routing+0x7e/0xb0
+>  [<ffffffff80218991>] mp_register_gsi+0xb1/0xd0
+>  [<ffffffff80218a1a>] acpi_register_gsi+0x6a/0x70
+>  [<ffffffff80394b20>] acpi_pci_irq_enable+0x14f/0x220
+>  [<ffffffff803948e6>] acpi_pci_allocate_irq+0x0/0x4c
+>  [<ffffffff8036e14a>] do_pci_enable_device+0x4a/0x70
+>  [<ffffffff8036e1c1>] __pci_enable_device_flags+0x51/0x60
+>  [<ffffffff804f1608>] tg3_init_one+0x58/0x1640
+>  [<ffffffff80229790>] default_wake_function+0x0/0x10
+>  [<ffffffff8022e942>] set_cpus_allowed_ptr+0xc2/0xf0
+>  [<ffffffff803703b7>] pci_device_probe+0xe7/0x130
+>  [<ffffffff803c38b6>] driver_probe_device+0x96/0x1a0
+>  [<ffffffff803c3a49>] __driver_attach+0x89/0x90
+>  [<ffffffff803c39c0>] __driver_attach+0x0/0x90
+>  [<ffffffff803c2dbd>] bus_for_each_dev+0x4d/0x80
+>  [<ffffffff8028f708>] kmem_cache_alloc+0xc8/0xf0
+>  [<ffffffff803c341e>] bus_add_driver+0xae/0x220
+>  [<ffffffff803c3cd6>] driver_register+0x56/0x130
+>  [<ffffffff80370678>] __pci_register_driver+0x68/0xb0
+>  [<ffffffff806e5060>] tg3_init+0x0/0x20
+>  [<ffffffff806c8a63>] kernel_init+0x153/0x320
+>  [<ffffffff8020c378>] child_rip+0xa/0x12
+>  [<ffffffff806c8910>] kernel_init+0x0/0x320
+>  [<ffffffff8020c36e>] child_rip+0x0/0x12
 > 
->  I think you are right about the long-term implications and apart from any
-> possible quirks I think the interface could get improved as there are RTC
-> chips we support nowadays that provide sub-second resolution.
 > 
+> Code: 89 05 27 88 43 00 7f 29 48 0f bf c1 48 8d 14 00 48 c1 e0 03 48 29 d0 48 8d 90 00 44 74 80 66 89 32 66 44 89 42 02 48 83 c4 08 c3 <0f> 0b eb fe 66 90 48 c7 c7 08 7d 5e 80 31 c0 e8 72 7b 01 00 66 
+> RIP  [<ffffffff8021b9da>] add_pin_to_irq+0x7a/0x90
+>  RSP <ffff81061e4cbb60>
+> ---[ end trace 5a53b6247c28d358 ]---
+
+Here:
+
+static void add_pin_to_irq(unsigned int irq, int apic, int pin)
+{
+	static int first_free_entry = NR_IRQS;
+	struct irq_pin_list *entry = irq_2_pin + irq;
+
+	BUG_ON(irq >= NR_IRQS);
 
 
-Are there any objections to the patch under discussion?
+There are massive changes to tg3, massive changes in the relevant x86
+ACPI code and massive changes everywhere else.
+
+So I don't have a clue who broke it, but it wasn't me!
+
+You're testing linux-next, aren't you.  Did you test the June 6 tree,
+upon which 2.6.26-rc5-mm1 was based?
 
 Thanks.
-
-
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-
-This is a change that makes the 11-minute RTC update be run in the process
-context.  This is so that update_persistent_clock() can sleep, which may
-be required for certain types of RTC hardware -- most notably I2C devices.
-
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Roman Zippel <zippel@linux-m68k.org>
-Cc: Rik van Riel <riel@redhat.com>
-Cc: Alessandro Zummo <a.zummo@towertech.it>
-Cc: David Brownell <david-b@pacbell.net>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- kernel/time/ntp.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
-diff -puN kernel/time/ntp.c~ntp-let-update_persistent_clock-sleep kernel/time/ntp.c
---- a/kernel/time/ntp.c~ntp-let-update_persistent_clock-sleep
-+++ a/kernel/time/ntp.c
-@@ -10,13 +10,13 @@
- 
- #include <linux/mm.h>
- #include <linux/time.h>
--#include <linux/timer.h>
- #include <linux/timex.h>
- #include <linux/jiffies.h>
- #include <linux/hrtimer.h>
- #include <linux/capability.h>
- #include <linux/math64.h>
- #include <linux/clocksource.h>
-+#include <linux/workqueue.h>
- #include <asm/timex.h>
- 
- /*
-@@ -218,11 +218,11 @@ void second_overflow(void)
- /* Disable the cmos update - used by virtualization and embedded */
- int no_sync_cmos_clock  __read_mostly;
- 
--static void sync_cmos_clock(unsigned long dummy);
-+static void sync_cmos_clock(struct work_struct *work);
- 
--static DEFINE_TIMER(sync_cmos_timer, sync_cmos_clock, 0, 0);
-+static DECLARE_DELAYED_WORK(sync_cmos_work, sync_cmos_clock);
- 
--static void sync_cmos_clock(unsigned long dummy)
-+static void sync_cmos_clock(struct work_struct *work)
- {
- 	struct timespec now, next;
- 	int fail = 1;
-@@ -258,13 +258,13 @@ static void sync_cmos_clock(unsigned lon
- 		next.tv_sec++;
- 		next.tv_nsec -= NSEC_PER_SEC;
- 	}
--	mod_timer(&sync_cmos_timer, jiffies + timespec_to_jiffies(&next));
-+	schedule_delayed_work(&sync_cmos_work, timespec_to_jiffies(&next));
- }
- 
- static void notify_cmos_timer(void)
- {
- 	if (!no_sync_cmos_clock)
--		mod_timer(&sync_cmos_timer, jiffies + 1);
-+		schedule_delayed_work(&sync_cmos_work, 0);
- }
- 
- #else
-_
-
