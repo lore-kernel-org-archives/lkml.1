@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758288AbYFIFf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758486AbYFIFjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758288AbYFIFf1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 01:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758211AbYFIFes
+	id S1758486AbYFIFjR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 01:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbYFIFjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 01:34:48 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:58356 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752266AbYFIFeB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 01:34:01 -0400
-Message-ID: <484CC08E.8050106@np.css.fujitsu.com>
-Date: Mon, 09 Jun 2008 14:33:02 +0900
-From: Kentaro Makita <k-makita@np.css.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Mon, 9 Jun 2008 01:39:05 -0400
+Received: from mail.gmx.net ([213.165.64.20]:57181 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752052AbYFIFjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 01:39:04 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX19aPFxEGDZaWAqZ4vFDcFAe5E8lA4/TdkA5ZUxDHl
+	YfUFbJfvYrCmEc
+Date: Mon, 9 Jun 2008 07:39:10 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+X-X-Sender: lyakh@axis700.grange
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, perex@perex.cz
+Subject: Re: [PATCH] ac97: add support for wm9711 master left inv switch
+In-Reply-To: <20080608170127.b9610d2e.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0806090737560.21763@axis700.grange>
+References: <Pine.LNX.4.64.0806061659550.3338@axis700.grange>
+ <20080608170127.b9610d2e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org,
-       viro@ZenIV.linux.org.uk, harvey.harrison@gmail.com
-Subject: [PATCH -mm 2/2] vfs: add cond_resched_lock while scanning dentry
- LRU lists
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-o add cond_resched_lock(&dcache_lock) while scanning LRU lists on superblocks
-  in __shrink_dcache_sb()
+On Sun, 8 Jun 2008, Andrew Morton wrote:
 
-Signed-off-by: Kentaro Makita <k-makita@np.css.fujitsu.com>
+> On Fri, 6 Jun 2008 17:02:57 +0200 (CEST) Guennadi Liakhovetski <g.liakhovetski@pengutronix.de> wrote:
+> 
+> > From: Juergen Beisert <j.beisert@pengutronix.de>
+> > 
+> > This patch adds support for Master Left Inv Switch on wm9711.
+> > At least required to drive the mono speaker on the PXA270 platfrom
+> > 
+> > Signed-off-by: Juergen Beisert <j.beisert@pengutronix.de>
+> 
+> Please include your own signed-off-by when forwarding other people's patches.
+
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+
+Thanks
+Guennadi
 ---
- fs/dcache.c |    1 +
- 1 files changed, 1 insertion(+)
-
-Index: b/fs/dcache.c
-===================================================================
---- a/fs/dcache.c	2008-06-05 11:48:57.000000000 +0900
-+++ b/fs/dcache.c	2008-06-05 11:49:19.000000000 +0900
-@@ -484,6 +484,7 @@ restart:
- 				if (--cnt == 0)
- 					break;
- 			}
-+			cond_resched_lock(&dcache_lock);
- 		}
- 	}
- 	while (!list_empty(&tmp)) {
-
-
-
-
-
-
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
