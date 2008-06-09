@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761493AbYFIWsJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760343AbYFIWvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761493AbYFIWsJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 18:48:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754472AbYFIWrx
+	id S1760343AbYFIWvo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 18:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbYFIWvg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 18:47:53 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41836
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754193AbYFIWrw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 18:47:52 -0400
-Date: Mon, 09 Jun 2008 15:47:52 -0700 (PDT)
-Message-Id: <20080609.154752.148433093.davem@davemloft.net>
-To: samuel@sortiz.org
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [patch, v2.6.26-rc5] net/irda build fix: mcs7780
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <47304c8330b37ab2677d72f8c8adbe12@localhost>
-References: <20080604.170123.234927220.davem@davemloft.net>
-	<20080609082257.GA15282@elte.hu>
-	<47304c8330b37ab2677d72f8c8adbe12@localhost>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 9 Jun 2008 18:51:36 -0400
+Received: from ozlabs.org ([203.10.76.45]:60342 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751523AbYFIWvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 18:51:35 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18509.44672.668946.207110@cargo.ozlabs.ibm.com>
+Date: Tue, 10 Jun 2008 08:28:16 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+Cc: Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>,
+       general@lists.openfabrics.org, "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>, TKLEIN@de.ibm.com,
+       fenkes@de.ibm.com, raisch@de.ibm.com, THEMANN@de.ibm.com
+Subject: Re: [PATCH 0/2] Prevent loss of interrupts in IB/ehca
+In-Reply-To: <200806091742.29421.ossrosch@linux.vnet.ibm.com>
+References: <200806091742.29421.ossrosch@linux.vnet.ibm.com>
+X-Mailer: VM 7.19 under Emacs 22.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: <samuel@sortiz.org>
-Date: Mon, 09 Jun 2008 11:26:37 +0200
+Stefan Roscher writes:
 
+> This patchset contains two changes for IB/ehca and ibmebus.
 > 
-> On Mon, 9 Jun 2008 10:22:57 +0200, Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > -tip testing found the following build error:
-> > 
-> >   drivers/built-in.o: In function `mcs_receive_irq':
-> >   mcs7780.c:(.text+0x4e429): undefined reference to `crc32_le'
-> >   drivers/built-in.o: In function `mcs_hard_xmit':
-> >   mcs7780.c:(.text+0x4e9af): undefined reference to `crc32_le'
-> > 
-> > with:
-> > 
-> >   http://redhat.com/~mingo/misc/config-Sun_Jun__8_22_56_14_CEST_2008.bad
-> > 
-> > the reason is a missing enablement of the CRC32 library in the Kconfig.
-> > 
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> Many thanks Ingo.
-> 
-> Dave, I can take it with my next IrDA patch set. But since it's a build
-> failure, you may want to take it immediatly, it's up to you.
-> In the latter case:
-> 
-> Signed-off-by: Samuel Ortiz <samuel@sortiz.org>
+> The first patch enables ibmebus_request_irq() to optionally return the 
+> IRQ number, which is used by the second patch to trigger EOI in case of 
+> lost interrupts.
 
-I'll apply this now, thanks everyone.
+At first sight it seems like a very bad idea for a driver to be poking
+into the internals of the interrupt subsystem like this.  Under what
+circumstances do interrupts get lost, and why does doing an extra EOI
+like this fix the problem?
+
+Paul.
