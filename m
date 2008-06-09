@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756022AbYFIVs5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756125AbYFIVwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756022AbYFIVs5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 17:48:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbYFIVst
+	id S1756125AbYFIVwd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 17:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbYFIVw0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 17:48:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37609 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751899AbYFIVst (ORCPT
+	Mon, 9 Jun 2008 17:52:26 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:38486 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752724AbYFIVwX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 17:48:49 -0400
-Date: Mon, 9 Jun 2008 14:48:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Cc: balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: 2.6.26-rc5-mm1
-Message-Id: <20080609144834.c6fcb625.akpm@linux-foundation.org>
-In-Reply-To: <200806092114.54467.m.kozlowski@tuxland.pl>
-References: <20080609053908.8021a635.akpm@linux-foundation.org>
-	<484D67EF.5090203@linux.vnet.ibm.com>
-	<200806092114.54467.m.kozlowski@tuxland.pl>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 9 Jun 2008 17:52:23 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: NOvell
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.25-rc6: CONFIG_USB_PERSIST forced on
+Date: Mon, 9 Jun 2008 23:52:40 +0200
+User-Agent: KMail/1.9.9
+Cc: Pavel Machek <pavel@suse.cz>, Greg KH <gregkh@suse.de>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Linus Torvalds <torvalds@linuxfoundation.org>,
+       Andrew Morton <akpm@linuxfoundation.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <200806091712.46869.oliver@neukum.org> <20080609205916.GC21429@elf.ucw.cz> <alpine.LFD.1.10.0806091435120.3218@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0806091435120.3218@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806092352.41681.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Jun 2008 21:14:54 +0200
-Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
+Am Montag 09 Juni 2008 23:39:10 schrieb Linus Torvalds:
+> 
+> On Mon, 9 Jun 2008, Pavel Machek wrote:
+> > 
+> > I believe we should just revert the "CONFIG_USB_PERSIST force on"
+> > patch, and solve this properly in 2.6.27.
+> 
+> Why?
+> 
+> The code would _still_ be buggy with that revert in place. You have to 
+> enable CONFIG_USB_PERSIST just to get even the _possibility_ of the sane 
+> behavior. 
+> 
+> If there is a problem with usblp, it just needs to be fixed. 
 
-> Hello Balbir,
-> 
-> > Andrew Morton wrote:
-> > > Temporarily at
-> > > 
-> > >   http://userweb.kernel.org/~akpm/2.6.26-rc5-mm1/
-> > > 
-> > 
-> > I've hit a segfault, the last few lines on my console are
-> > 
-> > 
-> > Testing -fstack-protector-all feature
-> > registered taskstats version 1
-> > debug: unmapping init memory ffffffff80c03000..ffffffff80dd8000
-> > init[1]: segfault at 7fff701fe880 ip 7fff701fee5e sp 7fff7006e6d0 error 7
-> > 
-> > With absolutely no stack trace. I'll dig deeper.
-> 
-> Hey, I see something similar and I actually have a stack trace. Here it goes:
-> 
-> bash[498] segfault at ffffffff80868b58 ip ffffffffff600412 sp 7fffa3d010f0 error 7
-> init[1] segfault at ffffffff80868b58 ip ffffffffff600412 sp 7fff9e97f640 error 7
-> init[1] segfault at ffffffff80868b58 ip ffffffffff600412 sp 7fff9e97eed0 error 7
-> Kernel panic - not syncing: Attemted to kill init!
-> Pid 1, comm: init Not tainted 2.6.26-rc5-mm1 #1
-> 
-> Call Trace:
-> [<ffffffff80254632>] panic+0xe2/0x260
-> [<ffffffff802fa8ba>] ? __slab_free+0x10a/0x630
-> [<ffffffff80265a8e>] ? __sigqueue_free+0x5e/0x70
-> [<ffffffff802851eb>] ? trace_hardirqs_off+0x1b/0x30
-> [<ffffffff802851eb>] ? trace_hardirqs_off+0x1b/0x30
-> [<ffffffff80259b54>] do_exit+0xb84/0xc30
-> [<ffffffff80259c5a>] do_group_exit+0x5a/0x110
-> [<ffffffff8026a3b5>] get_signal_to_deliver+0x2c5/0x620
-> [<ffffffff8020bb3b>] do_notify_resume+0x11b/0xd10
-> [<ffffffff8028da5b>] ? trace_hardirqs_on+0x1b/0x30
-> [<ffffffff805cd0f3>] ? _spin_unlock_irqrestore+0x93/0x130
-> [<ffffffff8026865c>] ? force_sig_info+0x10c/0x130
-> [<ffffffff8022fb9c>] ? force_sig_info_fault+0x2c/0x40
-> [<ffffffff802dd7dd>] ? print_vma_addr+0x10d/0x1d0
-> [<ffffffff805cbb67>] ? trace_hardirqs_on_thunk+0x3a/0x3f
-> [<ffffffff8028d8da>] ? trace_hardirqs_on_caller+0x15a/0x2c0
-> [<ffffffff8020d4c9>] retint_signal+0x46/0x8d
-> 
-> This was copied manually so typos are possible.
-> 
+There's a problem with every driver that does not implement reset_resume().
+That's the majority of drivers.
 
-Thanks.  Could someone send a config please?  Or a bisection result ;)
+	Regards
+		Oliver
+
