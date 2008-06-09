@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326AbYFIP4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754771AbYFIP5B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753326AbYFIP4b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 11:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751329AbYFIP4X
+	id S1754771AbYFIP5B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 11:57:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbYFIP4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 11:56:23 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:12177 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751214AbYFIP4W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 11:56:22 -0400
-X-IronPort-AV: E=Sophos;i="4.27,613,1204531200"; 
-   d="scan'208";a="110737933"
-From: Roland Dreier <rdreier@cisco.com>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-usb@vger.kernel.org
-Subject: Re: update checkpatch.pl to version 0.19
-References: <200806061922.m56JMJuq025990@hera.kernel.org>
-	<20080606233037.GA8548@kroah.com>
-	<20080606230239.c1a8c002.akpm@linux-foundation.org>
-	<20080607173436.GA17603@kroah.com>
-	<20080609083301.GA6701@shadowen.org>
-X-Message-Flag: Warning: May contain useful information
-Date: Mon, 09 Jun 2008 08:56:19 -0700
-In-Reply-To: <20080609083301.GA6701@shadowen.org> (Andy Whitcroft's message of
-	"Mon, 9 Jun 2008 09:33:01 +0100")
-Message-ID: <ada3anma9gc.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Mon, 9 Jun 2008 11:56:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33346 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751765AbYFIP4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 11:56:51 -0400
+Message-ID: <484D51CE.60709@redhat.com>
+Date: Mon, 09 Jun 2008 12:52:46 -0300
+From: Glauber Costa <gcosta@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 09 Jun 2008 15:56:19.0690 (UTC) FILETIME=[5B849CA0:01C8CA49]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       tglx@linutronix.de, mingo@elte.hu, hugh@veritas.com
+Subject: Re: [PATCH 11/15] x86: move enabling of io_apic to prepare_cpus
+References: <1213021018-14159-1-git-send-email-gcosta@redhat.com> <1213021018-14159-2-git-send-email-gcosta@redhat.com> <1213021018-14159-3-git-send-email-gcosta@redhat.com> <1213021018-14159-4-git-send-email-gcosta@redhat.com> <1213021018-14159-5-git-send-email-gcosta@redhat.com> <1213021018-14159-6-git-send-email-gcosta@redhat.com> <1213021018-14159-7-git-send-email-gcosta@redhat.com> <1213021018-14159-8-git-send-email-gcosta@redhat.com> <1213021018-14159-9-git-send-email-gcosta@redhat.com> <1213021018-14159-10-git-send-email-gcosta@redhat.com> <1213021018-14159-11-git-send-email-gcosta@redhat.com> <1213021018-14159-12-git-send-email-gcosta@redhat.com> <Pine.LNX.4.55.0806091620250.26593@cliff.in.clinika.pl>
+In-Reply-To: <Pine.LNX.4.55.0806091620250.26593@cliff.in.clinika.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > The issue I have is I have a comprehensive test suite which is kept in
- > lock step with checkpatch itself, all in my own tree.  Now that is just
- > noise for mainline.  What I want to be able to do is keep that in lock
- > step with developments in my tree, but not merge it upstream.  So far
- > I've not found a workable solution with git for that.
+Maciej W. Rozycki wrote:
+> On Mon, 9 Jun 2008, Glauber Costa wrote:
+> 
+>> Do it, instead of keeping in io_apic_32.c. This is the way x86_64
+>> already does.
+> 
+>  This change looks wrong -- is native_smp_prepare_cpus() at all run on
+> !CONFIG_SMP?  I don't think so.  You have to do this differently.
+You're right.
 
->From my naive point of view: why wouldn't we want a test suite upstream,
-if one is already written?
-
- - R.
+I'll update this one.
