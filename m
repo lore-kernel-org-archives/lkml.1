@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbYFIR1l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbYFIR14@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757476AbYFIR1l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 13:27:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbYFIR1d
+	id S1758544AbYFIR14 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 13:27:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756491AbYFIR1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 13:27:33 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:40744 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753634AbYFIR1d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 13:27:33 -0400
-Message-ID: <484D67EF.5090203@linux.vnet.ibm.com>
-Date: Mon, 09 Jun 2008 22:57:11 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 9 Jun 2008 13:27:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38101 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756238AbYFIR1j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 13:27:39 -0400
+Message-ID: <484D670C.6050203@redhat.com>
+Date: Mon, 09 Jun 2008 14:23:24 -0300
+From: Glauber Costa <gcosta@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: 2.6.26-rc5-mm1
-References: <20080609053908.8021a635.akpm@linux-foundation.org>
-In-Reply-To: <20080609053908.8021a635.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       tglx@linutronix.de, mingo@elte.hu, hugh@veritas.com
+Subject: Re: [PATCH 03/15] x86: remove early_gdt_descr reference
+References: <1213021018-14159-1-git-send-email-gcosta@redhat.com>	 <1213021018-14159-2-git-send-email-gcosta@redhat.com>	 <1213021018-14159-3-git-send-email-gcosta@redhat.com>	 <1213021018-14159-4-git-send-email-gcosta@redhat.com>	 <1213024983.3508.28.camel@localhost.localdomain>	 <484D5119.5020206@redhat.com> <1213032042.3508.54.camel@localhost.localdomain>
+In-Reply-To: <1213032042.3508.54.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> Temporarily at
+James Bottomley wrote:
+> On Mon, 2008-06-09 at 12:49 -0300, Glauber Costa wrote:
+>> James Bottomley wrote:
+>>> On Mon, 2008-06-09 at 11:16 -0300, Glauber Costa wrote:
+>>>> since we use switch_to_new_gdt, there is no point
+>>>> in assigning early_gdt_descr except for the first
+>>>> assignment, which is done manually.
+>>> What makes you think you can do this?  If you don't update the early
+>>> boot gdt, they all end up using the Boot CPU one.  The problem with this
+>>> is that there's a time from start_secondary to switch_to_new_gdt where
+>>> the per cpu selector (%fs) and the pda selector (%gs) are those of the
+>>> boot CPU.   The former isn't a problem but the CPU number is in the
+>>> latter, and it's used in that path before we get to the initialisation.
+>> You are right, I missed it.
+>>
+>> However, it only seem to be used in cpu_init, and very early. Sure there 
+>> are some users _before_ we load the new gdt, but nothing prevents them 
+>> to be moved after it. (Of course, this patch is wrong anyway).
+>>
+>> And if we do that, we can even take the %fs loading out of head_32.S
+>> Of course, it's only valid if those are indeed the only early users of it.
+>>
+>> Is there any other use I'm missing?
 > 
->   http://userweb.kernel.org/~akpm/2.6.26-rc5-mm1/
-> 
+> Well, %fs loading there is done for the boot CPU. To eliminate that you
+> have to not only verify that start_secondary doesn't use anything in
+> per_cpu areas, but also verify that nothing in start_kernel() up until
+> boot_cpu_init() does ... That's a lot of smp_processor_id() references
+> to convert.
+Yes, after a second look, it would be tricky indeed. But only for cpu0.
+For all the others, I still think we could get rid of the problem by 
+switching to the new gdt earlier in cpu_init.
 
-I've hit a segfault, the last few lines on my console are
+What do you think?
 
-
-Testing -fstack-protector-all feature
-registered taskstats version 1
-debug: unmapping init memory ffffffff80c03000..ffffffff80dd8000
-init[1]: segfault at 7fff701fe880 ip 7fff701fee5e sp 7fff7006e6d0 error 7
-
-With absolutely no stack trace. I'll dig deeper.
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
