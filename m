@@ -1,46 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754278AbYFITMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756407AbYFITPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754278AbYFITMf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 15:12:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbYFITMS
+	id S1756407AbYFITPW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 15:15:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbYFITPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 15:12:18 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:3997 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756814AbYFITMR (ORCPT
+	Mon, 9 Jun 2008 15:15:08 -0400
+Received: from orion.ambsoft.pl ([212.109.144.130]:41572 "EHLO
+	orion.ambsoft.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753562AbYFITPH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 15:12:17 -0400
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [patch 00/41] cpu alloc / cpu ops v3: Optimize per cpu access
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080530035620.587204923@sgi.com>
-	<20080529215827.b659d032.akpm@linux-foundation.org>
-	<4846AFCF.30500@sgi.com> <4848CC22.6090109@cosmosbay.com>
-	<Pine.LNX.4.64.0806091136410.30727@schroedinger.engr.sgi.com>
-Date: Mon, 09 Jun 2008 21:11:54 +0200
-In-Reply-To: <Pine.LNX.4.64.0806091136410.30727@schroedinger.engr.sgi.com> (Christoph Lameter's message of "Mon, 9 Jun 2008 11:44:23 -0700 (PDT)")
-Message-ID: <87abhuqv7p.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Mon, 9 Jun 2008 15:15:07 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: 2.6.26-rc5-mm1
+Date: Mon, 9 Jun 2008 21:14:54 +0200
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+References: <20080609053908.8021a635.akpm@linux-foundation.org> <484D67EF.5090203@linux.vnet.ibm.com>
+In-Reply-To: <484D67EF.5090203@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 09 Jun 2008 19:04:43.0568 (UTC) FILETIME=[AD278300:01C8CA63]
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200806092114.54467.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter <clameter@sgi.com> writes:
+Hello Balbir,
 
-> The problem is that offsets relative to %gs or %fs are limited by the 
-> small memory model that is chosen.
+> Andrew Morton wrote:
+> > Temporarily at
+> > 
+> >   http://userweb.kernel.org/~akpm/2.6.26-rc5-mm1/
+> > 
+> 
+> I've hit a segfault, the last few lines on my console are
+> 
+> 
+> Testing -fstack-protector-all feature
+> registered taskstats version 1
+> debug: unmapping init memory ffffffff80c03000..ffffffff80dd8000
+> init[1]: segfault at 7fff701fe880 ip 7fff701fee5e sp 7fff7006e6d0 error 7
+> 
+> With absolutely no stack trace. I'll dig deeper.
 
-Actually they are not. If you really want you can do 
-movabs $64bit,%reg ; op ...,%gs:(%reg) 
-It's just not very efficient compared to small (or rather kernel) model
-and also older binutils didn't support large model.
+Hey, I see something similar and I actually have a stack trace. Here it goes:
 
--Andi
+bash[498] segfault at ffffffff80868b58 ip ffffffffff600412 sp 7fffa3d010f0 error 7
+init[1] segfault at ffffffff80868b58 ip ffffffffff600412 sp 7fff9e97f640 error 7
+init[1] segfault at ffffffff80868b58 ip ffffffffff600412 sp 7fff9e97eed0 error 7
+Kernel panic - not syncing: Attemted to kill init!
+Pid 1, comm: init Not tainted 2.6.26-rc5-mm1 #1
+
+Call Trace:
+[<ffffffff80254632>] panic+0xe2/0x260
+[<ffffffff802fa8ba>] ? __slab_free+0x10a/0x630
+[<ffffffff80265a8e>] ? __sigqueue_free+0x5e/0x70
+[<ffffffff802851eb>] ? trace_hardirqs_off+0x1b/0x30
+[<ffffffff802851eb>] ? trace_hardirqs_off+0x1b/0x30
+[<ffffffff80259b54>] do_exit+0xb84/0xc30
+[<ffffffff80259c5a>] do_group_exit+0x5a/0x110
+[<ffffffff8026a3b5>] get_signal_to_deliver+0x2c5/0x620
+[<ffffffff8020bb3b>] do_notify_resume+0x11b/0xd10
+[<ffffffff8028da5b>] ? trace_hardirqs_on+0x1b/0x30
+[<ffffffff805cd0f3>] ? _spin_unlock_irqrestore+0x93/0x130
+[<ffffffff8026865c>] ? force_sig_info+0x10c/0x130
+[<ffffffff8022fb9c>] ? force_sig_info_fault+0x2c/0x40
+[<ffffffff802dd7dd>] ? print_vma_addr+0x10d/0x1d0
+[<ffffffff805cbb67>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+[<ffffffff8028d8da>] ? trace_hardirqs_on_caller+0x15a/0x2c0
+[<ffffffff8020d4c9>] retint_signal+0x46/0x8d
+
+This was copied manually so typos are possible.
+
+	Mariusz
