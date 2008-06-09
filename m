@@ -1,63 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbYFIMCJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757829AbYFIMDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757347AbYFIMCJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 08:02:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754676AbYFIMB6
+	id S1757829AbYFIMDp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 08:03:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755062AbYFIMDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 08:01:58 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52573 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754428AbYFIMB5 (ORCPT
+	Mon, 9 Jun 2008 08:03:36 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53679 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754917AbYFIMDf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 08:01:57 -0400
-Date: Mon, 9 Jun 2008 10:00:52 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Linus Torvalds <torvalds@linuxfoundation.org>, gregkh@suse.de,
-       Andrew Morton <akpm@linuxfoundation.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Oliver Neukum <oliver@neukum.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.25-rc6: CONFIG_USB_PERSIST forced on
-Message-ID: <20080609080052.GA27899@elf.ucw.cz>
-References: <20080606092546.GA2596@elf.ucw.cz> <Pine.LNX.4.44L0.0806061030210.2354-100000@iolanthe.rowland.org> <20080607195221.GB11109@ucw.cz> <alpine.LFD.1.10.0806071525030.3473@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0806071525030.3473@woody.linux-foundation.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 9 Jun 2008 08:03:35 -0400
+From: kamezawa.hiroyu@jp.fujitsu.com
+Message-ID: <29463997.1213012967896.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Mon, 9 Jun 2008 21:02:47 +0900 (JST)
+To: balbir@linux.vnet.ibm.com
+Subject: Re: Re: [RFC][PATCH 1/2] memcg: res_counter hierarchy
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>, menage@google.com,
+       xemul@openvz.org, yamamoto@valinux.co.jp
+In-Reply-To: <484D07F0.6020407@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="iso-2022-jp"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: @nifty Webmail 2.0
+References: <484D07F0.6020407@linux.vnet.ibm.com>
+ <20080604135815.498eaf82.kamezawa.hiroyu@jp.fujitsu.com> <20080604140153.fec6cc99.kamezawa.hiroyu@jp.fujitsu.com> <484CFC7F.20300@linux.vnet.ibm.com> <20080609192002.b04354c4.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+----- Original Message -----
+way, breaks limit semantics.
+>>>
+>> Not easy to use in my point of view. Can we use 'share' in proper way 
+>> on no-swap machine ?
+>> 
+>
+>Not sure I understand your question. Share represents the share of available
+>resources.
+>
 
-On Sat 2008-06-07 15:26:12, Linus Torvalds wrote:
-> On Sat, 7 Jun 2008, Pavel Machek wrote:
-> > Well, not-usb-persists means we force-unplug disks during suspend,
-> > after syncing them. Not _too_ bad.
-> > 
-> > If you unplug disk while hibernated, modify it, and plug it back,
-> > youget _silent_ filesystem corruption. I call that bad.
-> 
-> .. and if the USB layer unplugs them unconditionally while the filesystem 
-> is mounted, you _unconditionally_ get a system that doesn't work.
+If no swap, you cannot reclaim anonymous pages and shared memory.
+Then, the kernel has to abandon any kinds of auto-balancing somewhere.
+(just an example. Things will be more complicated when we consinder
+ mlocked pages and swap-resource-controller.)
 
-If your device did not loose power during s2ram, it should just work.
 
-There's a tweak you can set in /sys you can set if your device is not
-removable, you can set it for non-removable devices that _do_ loose
-power.
+>> yield() after callback() means that res_counter's state will be
+>> far different from the state after callback.
+>> So, we have to yield before call back and check res_coutner sooner.
+>> 
+>
+>But does yield() get us any guarantees of seeing the state change?
+>
+Hmm, myabe my explanation is bad.
 
-Besides, it seems to break suspend/resume of printers, and probably
-all the drivers that do not have reset_resume() method. That's
-actually a regression.
+in following sequence
+   1.callback()
+   2.yield()
+   3.check usage again
+Elapsed time between 1->3 is big.
 
-https://bugzilla.novell.com/show_bug.cgi?id=394820
+in following
+   1.yield()
+   2.callback()
+   3.check usage again
+Elapsed time between 2->3 is small.
 
-								Pavel
+There is an option to implement "changing limit grarually"
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks,
+-Kame
+
+
+
+
+
+
+
+
+
