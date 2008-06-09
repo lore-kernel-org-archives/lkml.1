@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757117AbYFIUzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbYFIU5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757117AbYFIUzS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 16:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbYFIUzC
+	id S1755935AbYFIU5s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 16:57:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbYFIU5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 16:55:02 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:34452 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752599AbYFIUzA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 16:55:00 -0400
-Message-ID: <484D9263.2040401@zytor.com>
-Date: Mon, 09 Jun 2008 13:28:19 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Chris Wright <chrisw@sous-sol.org>
-CC: Marcin Krol <hawk@pld-linux.org>, jejb@kernel.org,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
-       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Domenico Andreoli <cavokz@gmail.com>, Nick Piggin <npiggin@suse.de>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
-       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 21/50] brd: dont show ramdisks in	/proc/partitions
-References: <20080607010215.358296706@sous-sol.org> <20080607010610.796754560@sous-sol.org> <484B02CF.6000606@kernel.org> <20080609170840.GG30402@sequoia.sous-sol.org>
-In-Reply-To: <20080609170840.GG30402@sequoia.sous-sol.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 9 Jun 2008 16:57:40 -0400
+Received: from mx2.suse.de ([195.135.220.15]:50814 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751960AbYFIU5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 16:57:39 -0400
+Date: Mon, 9 Jun 2008 22:57:34 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Amul Shah <amul.shah@unisys.com>, Andi Kleen <andi@firstfloor.org>,
+       Johannes Weiner <hannes@saeurebad.de>, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, anderson@redhat.com,
+       "Romer, Benjamin M" <Benjamin.Romer@unisys.com>
+Subject: Re: [patch 2/3] Add flags parameter to reserve_bootmem_generic()
+Message-ID: <20080609225734.2bb9ee64@kopernikus.site>
+In-Reply-To: <20080609205429.GJ3542@redhat.com>
+References: <20080608134628.757299158@halley.suse.de>
+	<20080608134629.743220278@halley.suse.de>
+	<87bq2bmvro.fsf@saeurebad.de>
+	<20080609132207.GC3542@redhat.com>
+	<20080609182341.00d6e746@halley.suse.de>
+	<484D5CCB.5020709@firstfloor.org>
+	<1213041041.19111.68.camel@ustr-shaha1-linux-dev.na.uis.unisys.com>
+	<20080609221732.1e14e5d5@kopernikus.site>
+	<20080609202935.GI3542@redhat.com>
+	<20080609224211.2ef0f74c@kopernikus.site>
+	<20080609205429.GJ3542@redhat.com>
+Organization: SUSE LINUX Products GmbH
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Wright wrote:
-> * H. Peter Anvin (hpa@kernel.org) wrote:
->> This seems a bit like cargo cult programming to me.  If there isn't a 
->> known, good, reason to revert this behaviour change, I would consider it 
->> a bugfix, not a regression.
+* Vivek Goyal <vgoyal@redhat.com> [2008-06-09 16:54]:
+>
+> On Mon, Jun 09, 2008 at 10:42:11PM +0200, Bernhard Walle wrote:
+> > Hi Vivek,
+> > 
+> > * Vivek Goyal <vgoyal@redhat.com> [2008-06-09 16:29]:
+> > >
+> > > Can you please put some more explanation comment here to explain that
+> > > why it is ok to return with success, despite the fact that we never
+> > > reserved any memory.
+> > 
+> > Do you think that's ok?
+> > 
+> >     When booting the kdump kernel, the MP tables (for example,
+> >     or other firmware-reserved memory) of the BIOS are beyond
+> >     end_pfn. (kexec-tools adds exactmap parameters to the kernel
+> >     so that the E820 map is no longer used.) Therefore, it's ok
+> >     to return "success" here. For normal boot, the MP tables
+> >     must be reserved normally.
+> > 
 > 
-> We have one /proc/partitions parser that got broken (never saw details
-> on how).  I don't care for this change either (esp. since nbd is still
-> left out...it's inconsistent).
-> 
-> This is now the upstream behaviour (obvious since it's a -stable
-> candidate), and the change was introduced in 2.6.25...I'd actually prefer
-> to drop this patch, but there's no good reason to deviate if upstream
-> keeps this one.  I can defer while upstream gets revisited, can you
-> revisit this upstream?
+> Looks good. Thanks
 
-I had to ask Chris offline what he meant with this... basically, he and 
-I both agree that absent hard evidence of malfunction, we should revert 
-to 2.6.25 behaviour.
+Should I resend the whole patch series to Linus for inclusion?
 
-	-hpa
 
+
+Bernhard
+-- 
+Bernhard Walle, SUSE LINUX Products GmbH, Architecture Maintenance
