@@ -1,37 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757822AbYFIVEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758315AbYFIVFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757822AbYFIVEy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 17:04:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbYFIVEp
+	id S1758315AbYFIVFf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 17:05:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753779AbYFIVFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 17:04:45 -0400
-Received: from mail.suse.de ([195.135.220.2]:56399 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752945AbYFIVEo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 17:04:44 -0400
-Date: Mon, 9 Jun 2008 23:04:41 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Amul Shah <amul.shah@unisys.com>, Andi Kleen <andi@firstfloor.org>,
-       Johannes Weiner <hannes@saeurebad.de>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, anderson@redhat.com,
-       "Romer, Benjamin M" <Benjamin.Romer@unisys.com>
-Subject: Re: [patch 2/3] Add flags parameter to reserve_bootmem_generic()
-Message-ID: <20080609230441.77d3dc8a@kopernikus.site>
-In-Reply-To: <20080609210055.GK3542@redhat.com>
-References: <87bq2bmvro.fsf@saeurebad.de>
-	<20080609132207.GC3542@redhat.com>
-	<20080609182341.00d6e746@halley.suse.de>
-	<484D5CCB.5020709@firstfloor.org>
-	<1213041041.19111.68.camel@ustr-shaha1-linux-dev.na.uis.unisys.com>
-	<20080609221732.1e14e5d5@kopernikus.site>
-	<20080609202935.GI3542@redhat.com>
-	<20080609224211.2ef0f74c@kopernikus.site>
-	<20080609205429.GJ3542@redhat.com>
-	<20080609225734.2bb9ee64@kopernikus.site>
-	<20080609210055.GK3542@redhat.com>
-Organization: SUSE LINUX Products GmbH
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i686-pc-linux-gnu)
+	Mon, 9 Jun 2008 17:05:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47917 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752875AbYFIVFZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 17:05:25 -0400
+Date: Mon, 9 Jun 2008 14:05:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: dada1@cosmosbay.com, kosaki.motohiro@jp.fujitsu.com,
+       nickpiggin@yahoo.com.au, hugh@veritas.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] vmallocinfo: Add NUMA informations
+Message-Id: <20080609140503.83985d10.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0806090715020.29723@schroedinger.engr.sgi.com>
+References: <48439916.2070108@cosmosbay.com>
+	<20080602160548.B6D4.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<4844BC75.8040705@cosmosbay.com>
+	<20080603144054.973284bb.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0806090715020.29723@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -39,18 +31,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Vivek Goyal <vgoyal@redhat.com> [2008-06-09 17:00]:
+On Mon, 9 Jun 2008 07:16:48 -0700 (PDT)
+Christoph Lameter <clameter@sgi.com> wrote:
+
+> On Tue, 3 Jun 2008, Andrew Morton wrote:
 > 
-> I am really not sure. :-). In the past, Andrew picked up the patches, kept
-> in his tree for couple of days and if something is important, he will push
-> it out to Linus.
+> > > +	if (NUMA_BUILD) {
+> > > +		unsigned int *counters, nr;
+> > > +
+> > > +		counters = kzalloc(nr_node_ids * sizeof(unsigned int),
+> > 
+> > This is kcalloc().  If you like that sorts of thing - I think kcalloc()
+> > is pretty pointless personally.
+> 
+> Same here. I think its generally ignored. I tried to remove it at some 
+> point in the past. If we want kcalloc then we also need kczalloc.
 
-Ok, I'm a bit confused about linux-next, and the new x86 tree from
-Ingo/Thomas and how to merge patches. So, I'll wait a few days and then
-resend the patches with Andrew in Cc.
+kcalloc() zeroes the returned memory - it's like calloc().
 
+> It would 
+> be best to keep the interface simple.
 
+yup.  Oh well, it's not a big deal.
 
-Bernhard
--- 
-Bernhard Walle, SUSE LINUX Products GmbH, Architecture Maintenance
+Except the inlined
+
+        if (n != 0 && size > ULONG_MAX / n)
+                return NULL;
+
+is a bit bloaty/inefficient.  I expect that it's often the case that
+one of `n' and `size' is not a compile-time constant.
+
+otoh, there's one good thing about kcalloc: it actually checks for
+multiplicative overflows, whereas the open-coded version often forgets
+to do that.
+
