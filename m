@@ -1,75 +1,362 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760632AbYFIKrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760141AbYFIK5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760632AbYFIKrH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 06:47:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759452AbYFIKq4
+	id S1760141AbYFIK5P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 06:57:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758428AbYFIK5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 06:46:56 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:60606 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754238AbYFIKqz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 06:46:55 -0400
-Date: Mon, 9 Jun 2008 12:46:23 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: Marc Pignat <marc.pignat@hevs.ch>, Eric BENARD <ebenard@free.fr>,
-       Andrew Victor <linux@maxim.org.za>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Anti Sullin <anti.sullin@artecdesign.ee>,
-       =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>,
-       Ville =?UTF-8?B?U3lyasOkbMOk?= <syrjala@sci.fi>
-Subject: Re: [PATCH 0/7] mmc: at91_mci: rework to allow better transfer
-Message-ID: <20080609124623.5b6bda48@mjolnir.drzeus.cx>
-In-Reply-To: <483FE9E7.7020707@atmel.com>
-References: <483FE9E7.7020707@atmel.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.2; i386-redhat-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
-X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-12309-1213008058-0001-2"
+	Mon, 9 Jun 2008 06:57:04 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:58241 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757710AbYFIK5B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 06:57:01 -0400
+Message-ID: <484D0C66.5060000@linux.vnet.ibm.com>
+Date: Mon, 09 Jun 2008 16:26:38 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
+Subject: Re: [RFC][PATCH 2/2] memcg: hardwall hierarhcy for memcg
+References: <20080604135815.498eaf82.kamezawa.hiroyu@jp.fujitsu.com> <20080604140329.8db1b67e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080604140329.8db1b67e.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+KAMEZAWA Hiroyuki wrote:
+> Hard-Wall hierarchy support for memcg.
+>  - new member hierarchy_model is added to memcg.
+> 
+> Only root cgroup can modify this only when there is no children.
+> 
 
---=_freyr.drzeus.cx-12309-1213008058-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Sounds like the correct thing TODO and also maintains compatibility
 
-On Fri, 30 May 2008 13:49:59 +0200
-Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
+> Adds following functions for supporting HARDWALL hierarchy.
+>  - try to reclaim memory at the change of "limit".
+>  - try to reclaim all memory at force_empty
+>  - returns resources to the parent at destroy.
+> 
+> Changelog v2->v3
+>  - added documentation.
+>  - hierarhcy_model parameter is added.
+> 
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> ---
+>  Documentation/controllers/memory.txt |   27 +++++-
+>  mm/memcontrol.c                      |  156 ++++++++++++++++++++++++++++++++++-
+>  2 files changed, 178 insertions(+), 5 deletions(-)
+> 
+> Index: temp-2.6.26-rc2-mm1/mm/memcontrol.c
+> ===================================================================
+> --- temp-2.6.26-rc2-mm1.orig/mm/memcontrol.c
+> +++ temp-2.6.26-rc2-mm1/mm/memcontrol.c
+> @@ -137,6 +137,8 @@ struct mem_cgroup {
+>  	struct mem_cgroup_lru_info info;
+> 
+>  	int	prev_priority;	/* for recording reclaim priority */
+> +
+> +	int	hierarchy_model; /* used hierarchical policy */
 
-> Hi Pierre,
->=20
-> Following your announce of future removal of the MMC multiwrite switch=20
-> and the contributions of several people of the AT91 community, here is a=
-=20
-> patches series :
-> Those patches should enhance transfer of data and setup a sane base for=20
-> a working SDIO support.
->=20
+Could we enumerate what these policies are?
 
-I have no big concerns about the patches. There were some comments from
-other people though. Do you want to have a look at those first?
+>  	/*
+>  	 * statistics.
+>  	 */
+> @@ -144,6 +146,10 @@ struct mem_cgroup {
+>  };
+>  static struct mem_cgroup init_mem_cgroup;
+> 
+> +
+> +#define MEMCG_NO_HIERARCHY	(0)
 
-Rgds
-Pierre
+Nice to indent with the #define below
 
---=_freyr.drzeus.cx-12309-1213008058-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
+> +#define MEMCG_HARDWALL_HIERARCHY	(1)
+> +
+>  /*
+>   * We use the lower bit of the page->page_cgroup pointer as a bit spin
+>   * lock.  We need to ensure that page->page_cgroup is at least two
+> @@ -792,6 +798,89 @@ int mem_cgroup_shrink_usage(struct mm_st
+>  }
+> 
+>  /*
+> + * Memory Controller hierarchy support.
+> + */
+> +
+> +/*
+> + * shrink usage to be res->usage + val < res->limit.
+> + */
+> +
+> +int memcg_shrink_val(struct res_counter *cnt, unsigned long long val)
+> +{
+> +	struct mem_cgroup *memcg = container_of(cnt, struct mem_cgroup, res);
+> +	unsigned long flags;
+> +	int ret = 1;
+> +	int progress = 1;
+> +
+> +retry:
+> +	spin_lock_irqsave(&cnt->lock, flags);
+> +	/* Need to shrink ? */
+> +	if (cnt->usage + val <= cnt->limit)
+> +		ret = 0;
+> +	spin_unlock_irqrestore(&cnt->lock, flags);
+> +
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+We have res_counter_check_under_limit(), may be we could re-use that here by
+adding parameters.
 
-iEYEARECAAYFAkhNCgQACgkQ7b8eESbyJLgIIgCgzgdypHp0YNqVnNymDYbf9uii
-eU0AnRlEIi3RFcyznp/VixlBFku6zDtH
-=uchq
------END PGP SIGNATURE-----
+> +	if (!ret)
+> +		return 0;
+> +
+> +	if (!progress)
+> +		return 1;
+> +	progress = try_to_free_mem_cgroup_pages(memcg, GFP_KERNEL);
+> +
+> +	goto retry;
+> +}
+> +
+> +/*
+> + * For Hard Wall Hierarchy.
+> + */
+> +
+> +int mem_cgroup_resize_callback(struct res_counter *cnt,
+> +			unsigned long long val, int what)
+> +{
+> +	unsigned long flags, borrow;
+> +	unsigned long long diffs;
+> +	int ret = 0;
+> +
+> +	BUG_ON(what != RES_LIMIT);
+> +
+> +	/* Is this under hierarchy ? */
+> +	if (!cnt->parent) {
+> +		spin_lock_irqsave(&cnt->lock, flags);
+> +		cnt->limit = val;
 
---=_freyr.drzeus.cx-12309-1213008058-0001-2--
+I know callback is called from the two functions specified in patch 1/2 (move
+and return resource). I don't understand why it is OK to force the limit to be
+val, if it is the root node?
+
+> +		spin_unlock_irqrestore(&cnt->lock, flags);
+> +		return 0;
+> +	}
+> +
+> +	spin_lock_irqsave(&cnt->lock, flags);
+> +	if (val > cnt->limit) {
+> +		diffs = val - cnt->limit;
+> +		borrow = 1;
+> +	} else {
+> +		diffs = cnt->limit - val;
+> +		borrow = 0;
+> +	}
+> +	spin_unlock_irqrestore(&cnt->lock, flags);
+> +
+> +	if (borrow)
+> +		ret = res_counter_move_resource(cnt,diffs,
+> +					memcg_shrink_val,
+> +					MEM_CGROUP_RECLAIM_RETRIES);
+> +	else
+> +		ret = res_counter_return_resource(cnt, diffs,
+> +					memcg_shrink_val,
+> +					MEM_CGROUP_RECLAIM_RETRIES);
+> +	return ret;
+> +}
+> +
+> +
+> +void memcg_shrink_all(struct mem_cgroup *mem)
+> +{
+
+memcg_shrink_to_limit?
+
+> +	unsigned long long val;
+> +
+> +	val = res_counter_read_u64(&mem->res, RES_LIMIT);
+> +	memcg_shrink_val(&mem->res, val);
+> +}
+> +
+> +/*
+>   * This routine traverse page_cgroup in given list and drop them all.
+>   * *And* this routine doesn't reclaim page itself, just removes page_cgroup.
+>   */
+> @@ -848,6 +937,8 @@ static int mem_cgroup_force_empty(struct
+>  	if (mem_cgroup_subsys.disabled)
+>  		return 0;
+> 
+> +	memcg_shrink_all(mem);
+> +
+>  	css_get(&mem->css);
+>  	/*
+>  	 * page reclaim code (kswapd etc..) will move pages between
+> @@ -896,11 +987,44 @@ static ssize_t mem_cgroup_write(struct c
+>  				struct file *file, const char __user *userbuf,
+>  				size_t nbytes, loff_t *ppos)
+>  {
+> -	return res_counter_write(&mem_cgroup_from_cont(cont)->res,
+> +	struct mem_cgroup *memcg = mem_cgroup_from_cont(cont);
+> +
+> +	if (cft->private != RES_LIMIT
+> +		|| !cont->parent
+> +		|| memcg->hierarchy_model == MEMCG_NO_HIERARCHY)
+> +		return res_counter_write(&memcg->res, cft->private, userbuf,
+> +			nbytes, ppos, mem_cgroup_write_strategy, NULL);
+> +	else
+> +		return res_counter_write(&memcg->res,
+>  				cft->private, userbuf, nbytes, ppos,
+> -				mem_cgroup_write_strategy);
+> +				mem_cgroup_write_strategy,
+> +				mem_cgroup_resize_callback);
+> +}
+> +
+> +
+> +static u64 mem_cgroup_read_hierarchy(struct cgroup *cgrp, struct cftype *cft)
+> +{
+> +	struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
+> +	return memcg->hierarchy_model;
+> +}
+> +
+> +static int mem_cgroup_write_hierarchy(struct cgroup *cgrp, struct cftype *cft,
+> +				u64 val)
+> +{
+> +	struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
+> +	/* chage policy is allowed to ROOT cgroup && no children */
+> +	if (cgrp->parent)
+> +		return -EINVAL;
+> +	if (!list_empty(&cgrp->children))
+> +		return -EINVAL;
+> +	if (val == 0 || val == 1) {
+> +		memcg->hierarchy_model = val;
+> +		return 0;
+> +	}
+> +	return -EINVAL;
+>  }
+> 
+> +
+>  static int mem_cgroup_reset(struct cgroup *cont, unsigned int event)
+>  {
+>  	struct mem_cgroup *mem;
+> @@ -992,6 +1116,16 @@ static struct cftype mem_cgroup_files[] 
+>  		.name = "stat",
+>  		.read_map = mem_control_stat_show,
+>  	},
+> +	{
+> +		.name = "hierarchy_model",
+> +		.read_u64 = mem_cgroup_read_hierarchy,
+> +		.write_u64 = mem_cgroup_write_hierarchy,
+> +	},
+> +	{
+> +		.name = "assigned_to_child",
+> +		.private = RES_FOR_CHILDREN,
+> +		.read_u64 = mem_cgroup_read,
+> +	},
+>  };
+> 
+>  static int alloc_mem_cgroup_per_zone_info(struct mem_cgroup *mem, int node)
+> @@ -1056,19 +1190,27 @@ static void mem_cgroup_free(struct mem_c
+>  static struct cgroup_subsys_state *
+>  mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+>  {
+> -	struct mem_cgroup *mem;
+> +	struct mem_cgroup *mem, *parent;
+>  	int node;
+> 
+>  	if (unlikely((cont->parent) == NULL)) {
+>  		mem = &init_mem_cgroup;
+>  		page_cgroup_cache = KMEM_CACHE(page_cgroup, SLAB_PANIC);
+> +		parent = NULL;
+>  	} else {
+>  		mem = mem_cgroup_alloc();
+>  		if (!mem)
+>  			return ERR_PTR(-ENOMEM);
+> +		parent = mem_cgroup_from_cont(cont->parent);
+>  	}
+> 
+> -	res_counter_init(&mem->res);
+> +	if (!parent || parent->hierarchy_model == MEMCG_NO_HIERARCHY) {
+> +		res_counter_init(&mem->res);
+> +		mem->hierarchy_model = MEMCG_NO_HIERARCHY;
+> +	} else {
+> +		res_counter_init_hierarchy(&mem->res, &parent->res);
+> +		mem->hierarchy_model = parent->hierarchy_model;
+> +	}
+> 
+>  	for_each_node_state(node, N_POSSIBLE)
+>  		if (alloc_mem_cgroup_per_zone_info(mem, node))
+> @@ -1096,6 +1238,12 @@ static void mem_cgroup_destroy(struct cg
+>  	int node;
+>  	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
+> 
+> +	if (cont->parent &&
+> +	    mem->hierarchy_model == MEMCG_HARDWALL_HIERARCHY) {
+> +		/* we did what we can...just returns what we borrow */
+> +		res_counter_return_resource(&mem->res, -1, NULL, 0);
+> +	}
+> +
+>  	for_each_node_state(node, N_POSSIBLE)
+>  		free_mem_cgroup_per_zone_info(mem, node);
+> 
+> Index: temp-2.6.26-rc2-mm1/Documentation/controllers/memory.txt
+> ===================================================================
+> --- temp-2.6.26-rc2-mm1.orig/Documentation/controllers/memory.txt
+> +++ temp-2.6.26-rc2-mm1/Documentation/controllers/memory.txt
+> @@ -237,12 +237,37 @@ cgroup might have some charge associated
+>  tasks have migrated away from it. Such charges are automatically dropped at
+>  rmdir() if there are no tasks.
+> 
+> -5. TODO
+> +5. Hierarchy Model
+> +  the kernel supports following kinds of hierarchy models.
+> +  (your middle-ware may support others based on this.)
+> +
+> +  5-a. Independent Hierarchy
+> +  There are no relationship between any cgroups, even among a parent and
+> +  children. This is the default mode. To use this hierarchy, write 0
+> +  to root cgroup's memory.hierarchy_model
+> +  echo 0 > .../memory.hierarchy_model.
+> +
+> +  5-b. Hardwall Hierarchy.
+> +  The resource has to be moved from the parent to the child before use it.
+> +  When a child's limit is set to 'val', val of the resource is moved from
+> +  the parent to the child. the parent's usage += val.
+> +  The amount of children's usage is reported by the file
+> +
+> +  - memory.assigned_to_child
+> +
+> +  This policy doesn't provide sophisticated automatic resource balancing in
+> +  the kernel. But this is very good for strict resource isolation. Users
+> +  can get high predictability of behavior of applications if this is used
+> +  under proper environments.
+> +
+> +
+> +6. TODO
+> 
+>  1. Add support for accounting huge pages (as a separate controller)
+>  2. Make per-cgroup scanner reclaim not-shared pages first
+>  3. Teach controller to account for shared-pages
+>  4. Start reclamation when the limit is lowered
+> +   (this is already done in Hardwall Hierarchy)
+
+Excellent! May be we should split this patch out?
+
+>  5. Start reclamation in the background when the limit is
+>     not yet hit but the usage is getting closer
+> 
+> 
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
