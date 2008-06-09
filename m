@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761238AbYFIOTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755942AbYFIOTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761238AbYFIOTi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 10:19:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758005AbYFIOSc
+	id S1755942AbYFIOTx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 10:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758857AbYFIOSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 10:18:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40878 "EHLO mx1.redhat.com"
+	Mon, 9 Jun 2008 10:18:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40881 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753876AbYFIOSb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 10:18:31 -0400
+	id S1754054AbYFIOSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 10:18:32 -0400
 From: Glauber Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu,
-       hugh@veritas.com,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [PATCH 03/15] x86: remove early_gdt_descr reference
-Date: Mon,  9 Jun 2008 11:16:46 -0300
-Message-Id: <1213021018-14159-4-git-send-email-gcosta@redhat.com>
+       hugh@veritas.com
+Subject: [PATCH 05/15] x86: use initial_code for i386
+Date: Mon,  9 Jun 2008 11:16:48 -0300
+Message-Id: <1213021018-14159-6-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1213021018-14159-3-git-send-email-gcosta@redhat.com>
+In-Reply-To: <1213021018-14159-5-git-send-email-gcosta@redhat.com>
 References: <1213021018-14159-1-git-send-email-gcosta@redhat.com>
  <1213021018-14159-2-git-send-email-gcosta@redhat.com>
  <1213021018-14159-3-git-send-email-gcosta@redhat.com>
+ <1213021018-14159-4-git-send-email-gcosta@redhat.com>
+ <1213021018-14159-5-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-since we use switch_to_new_gdt, there is no point
-in assigning early_gdt_descr except for the first
-assignment, which is done manually.
+x86_64 jumps to whatever is written in "initial_code" symbol,
+instead of a fixed address. Do it for i386 too. It will allow us
+to integrate more of the smp boot code.
 
 Signed-off-by: Glauber Costa <gcosta@redhat.com>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>
 ---
- arch/x86/kernel/smpboot.c           |    1 -
- arch/x86/mach-voyager/voyager_smp.c |    1 -
- 2 files changed, 0 insertions(+), 2 deletions(-)
+ arch/x86/kernel/head_32.S |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index c77a7d2..181b109 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -898,7 +898,6 @@ do_rest:
- #ifdef CONFIG_X86_32
- 	per_cpu(current_task, cpu) = c_idle.idle;
- 	init_gdt(cpu);
--	early_gdt_descr.address = (unsigned long)get_cpu_gdt_table(cpu);
- 	c_idle.idle->thread.ip = (unsigned long) start_secondary;
- 	/* Stack for startup_32 can be just as for start_secondary onwards */
- 	irq_ctx_init(cpu);
-diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
-index 8dedd01..6b97d9b 100644
---- a/arch/x86/mach-voyager/voyager_smp.c
-+++ b/arch/x86/mach-voyager/voyager_smp.c
-@@ -529,7 +529,6 @@ static void __init do_boot_cpu(__u8 cpu)
+diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
+index b98b338..ffb73a5 100644
+--- a/arch/x86/kernel/head_32.S
++++ b/arch/x86/kernel/head_32.S
+@@ -455,7 +455,10 @@ is386:	movl $2,%ecx		# set MP
+ 	jmp initialize_secondary # all other CPUs call initialize_secondary
+ 1:
+ #endif /* CONFIG_SMP */
+-	jmp i386_start_kernel
++	jmp *(initial_code)
++.align 4
++ENTRY(initial_code)
++	.long i386_start_kernel
  
- 	init_gdt(cpu);
- 	per_cpu(current_task, cpu) = idle;
--	early_gdt_descr.address = (unsigned long)get_cpu_gdt_table(cpu);
- 	irq_ctx_init(cpu);
- 
- 	/* Note: Don't modify initial ss override */
+ /*
+  * We depend on ET to be correct. This checks for 287/387.
 -- 
 1.5.4.5
 
