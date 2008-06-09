@@ -1,170 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756534AbYFIHvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757051AbYFIHzB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756534AbYFIHvg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 03:51:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbYFIHvW
+	id S1757051AbYFIHzB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 03:55:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbYFIHyx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 03:51:22 -0400
-Received: from imo-d05.mx.aol.com ([205.188.157.37]:47376 "EHLO
-	imo-d05.mx.aol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751522AbYFIHvP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 03:51:15 -0400
-X-MB-Message-Type: User
-Content-Type: text/plain; charset="us-ascii"; format=flowed
-Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
-       ap@solarrain.com
+	Mon, 9 Jun 2008 03:54:53 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:32947 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752244AbYFIHyw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 03:54:52 -0400
+Message-ID: <484CE1BA.108@atmel.com>
+Date: Mon, 09 Jun 2008 09:54:34 +0200
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-To: dan.j.williams@gmail.com, jpiszcz@lucidpixels.com
-X-AOL-IP: 69.116.196.1
-References: <alpine.DEB.1.10.0806071015110.23323@p34.internal.lan> <e9c3a7c20806071846w60b74aeegdf3e39afb36b5d9a@mail.gmail.com>
-Date: Mon, 09 Jun 2008 03:51:07 -0400
-From: thomas62186218@aol.com
+To: Gururaja Hebbar K R <gururajakr@sanyo.co.in>
+CC: Pierre Ossman <drzeus@drzeus.cx>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: mmc_test : some results
+References: <48495843.1050902@atmel.com> <5BF78BCE8D9BF14A83F836BD9E3916BA0DDFC3@blrms.slti.sanyo.co.in>
+In-Reply-To: <5BF78BCE8D9BF14A83F836BD9E3916BA0DDFC3@blrms.slti.sanyo.co.in>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Subject: Re: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte Veliciraptors
-X-MB-Message-Source: WebUI
-X-Mailer: AOL Webmail 37080-STANDARD
-In-Reply-To: <e9c3a7c20806071846w60b74aeegdf3e39afb36b5d9a@mail.gmail.com>
-Message-Id: <8CA981CB5C2B4D6-E68-18E2@MBLK-M14.sysops.aol.com>
-X-Spam-Flag: NO
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you for sharing these results. One issue that I consistently see 
-with these results is miserable random IO performance. Looking at these 
-numbers, even a low-end RAID controller with 128MB of cache will outrun 
-md-based RAIDs in random IO benchmarks. In today's world of virtual 
-machines, etc, random IO is far more common than sequential IO. What 
-can be done with md (or something else) to alleviate this problem?
-
--Thomas
-
-
------Original Message-----
-From: Dan Williams <dan.j.williams@gmail.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org; linux-raid@vger.kernel.org; 
-xfs@oss.sgi.com; Alan Piszcz <ap@solarrain.com>
-Sent: Sat, 7 Jun 2008 6:46 pm
-Subject: Re: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte 
-Veliciraptors
-
-
-
-
-
-
-
-
-
-
-On Sat, Jun 7, 2008 at 7:22 AM, Justin Piszcz <jpiszcz@lucidpixels.com> 
-wrote:
-> First, the original benchmarks with 6-SATA drives with fixed 
-formatting,
-> using
-> right justification and the same decimal point precision throughout:
+Gururaja Hebbar K R :
+> Hi Nicolas,
 > 
-http://home.comcast.net/~jpiszcz/20080607/raid-benchmarks-decimal-fix-and-right-justified/disks.html
->
-> Now for for veliciraptors!  Ever wonder what kind of speed is 
-possible with
-> 3 disk, 4,5,6,7,8,9,10-disk RAID5s?  I ran a loop to find out, each 
-run is
-> executed three times and the average is taken of all three runs per 
-each
-> RAID5 disk set.
->
-> In short? The 965 no longer does justice with faster drives, a new 
-chipset
-> and motherboard are needed.  After reading or writing to 4-5 
-veliciraptors
-> it saturates the bus/965 chipset.
->
-> Here is a picture of the 12 veliciraptors I tested with:
-> 
-http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-veliciraptors/raptors.jpg
->
-> Here are the bonnie++ results:
-> 
-http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-veliciraptors/veliciraptor-raid.html
->
-> For those who want the results in text:
-> 
-http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-veliciraptors/veliciraptor-raid.txt
->
-> System used, same/similar as before:
-> Motherboard: Intel DG965WH
-> Memory: 8GiB
-> Kernel: 2.6.25.4
-> Distribution: Debian Testing x86_64
-> Filesystem: XFS with default mkfs.xfs parameters [auto-optimized for 
-SW
-> RAID]
-> Mount options: defaults,noatime,nodiratime,logbufs=8,logbsize=262144 
-0 1
-> Chunk size: 1024KiB
-> RAID5 Layout: Default (left-symmetric)
-> Mdadm Superblock used: 0.90
->
-> Optimizations used (last one is for the CFQ scheduler), it improves
-> performance by a modest 5-10MiB/s:
-> http://home.comcast.net/~jpiszcz/raid/20080601/raid5.html
->
-> # Tell user what's going on.
-> echo "Optimizing RAID Arrays..."
->
-> # Define DISKS.
-> cd /sys/block
-> DISKS=$(/bin/ls -1d sd[a-z])
->
-> # Set read-ahead.
-> # > That's actually 65k x 512byte blocks so 32MiB
-> echo "Setting read-ahead to 32 MiB for /dev/md3"
-> blockdev --setra 65536 /dev/md3
->
-> # Set stripe-cache_size for RAID5.
-> echo "Setting stripe_cache_size to 16 MiB for /dev/md3"
+> Could you please be kind enough to share the test program so that we can
+> test mmc driver on other platforms.
 
-Sorry to sound like a broken record,  16MiB is not correct.
+mmc_test is included in the mainline kernel :
+http://lkml.org/lkml/2008/5/17/45
 
-size=$((num_disks * 4 * 16384 / 1024))
-echo "Setting stripe_cache_size to $size MiB for /dev/md3"
+I just selected the tests I wanted to use in the source code (in 
+mmc_test_cases tab).
 
-...and commit 8b3e6cdc should improve the performance / 
-stripe_cache_size ratio.
-
-> echo 16384 > /sys/block/md3/md/stripe_cache_size
->
-> # Disable NCQ on all disks.
-> echo "Disabling NCQ on all disks..."
-> for i in $DISKS
-> do
->  echo "Disabling NCQ on $i"
->  echo 1 > /sys/block/"$i"/device/queue_depth
-> done
->
-> # Fix slice_idle.
-> # See http://www.nextre.it/oracledocs/ioscheduler_03.html
-> echo "Fixing slice_idle to 0..."
-> for i in $DISKS
-> do
->  echo "Changing slice_idle to 0 on $i"
->  echo 0 > /sys/block/"$i"/queue/iosched/slice_idle
-> done
->
-
-Thanks for putting this data together.
-
-Regards,
-Dan
---
-To unsubscribe from this list: send the line "unsubscribe linux-raid" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-
-
-
+Cheers,
+-- 
+Nicolas Ferre
 
