@@ -1,96 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760076AbYFILEK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760249AbYFILJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760076AbYFILEK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 07:04:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759487AbYFILD5
+	id S1760249AbYFILJf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 07:09:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759175AbYFILJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 07:03:57 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:35743 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759452AbYFILD4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 07:03:56 -0400
-Date: Mon, 9 Jun 2008 13:03:53 +0200
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: Joel.Becker@oracle.com
-Cc: ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 4/4] configfs: Make multiple default_group
-	destructions lockdep friendly
-Message-ID: <20080609110353.GK18153@localhost>
-Reply-To: Louis.Rilling@kerlabs.com
-References: <20080522114048.265996107@kerlabs.com> <20080522114947.927196541@kerlabs.com> <4836F48A.70008@kerlabs.com> <20080602230721.GD19500@mail.oracle.com> <20080603160034.GA17308@localhost> <20080606230154.GK29740@mail.oracle.com>
+	Mon, 9 Jun 2008 07:09:26 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:49484 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759536AbYFILJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 07:09:26 -0400
+Date: Mon, 9 Jun 2008 13:08:54 +0200
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: ARM Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Marc Pignat <marc.pignat@hevs.ch>
+Subject: Re: mmc_test : some results
+Message-ID: <20080609130854.2237c05a@mjolnir.drzeus.cx>
+In-Reply-To: <48495843.1050902@atmel.com>
+References: <48495843.1050902@atmel.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.2; i386-redhat-linux-gnu)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
+X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20080606230154.GK29740@mail.oracle.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-12401-1213009409-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 06, 2008 at 04:01:54PM -0700, Joel Becker wrote:
-> On Tue, Jun 03, 2008 at 06:00:34PM +0200, Louis Rilling wrote:
-> > On Mon, Jun 02, 2008 at 04:07:21PM -0700, Joel Becker wrote:
-> > > 	A couple comments.
-> > > 	First, put a BUG_ON() where you have BAD BAD BAD - we shouldn't
-> > > be creating a depth we can't delete.
-> > 
-> > I think that the best way to avoid this is to use the same numbering scheme
-> > while attaching default groups.
-> 
-> 	If I'm reading this right, when we come back up from one child
-> chain, we update the parent to be the same as the child - this is, i
-> assume, to allow all the locks to be held at once.  IOW, you are trying
-> to have all locks in the default groups have unique lock levels,
-> regardless of their depth.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Exactly, otherwise lockdep will issue a warning as soon as one tries to remove
-a config group having default groups at the same depth, because it will see two
-mutexes locked with same sub-class.
+--=_freyr.drzeus.cx-12401-1213009409-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-> 	This is obviously limiting on the number of default groups for
-> one item - it's a total cap, not a depth cap.  But I have another
-> concern.  We lock a particular default_group with level N, then its
-> child default_group with level N+1.  But how does that integrate with
-> VFS locking of the same mutexes?
-> 	Say we have an group G.  It has one default group D1.  D1 has a
-> default group itself, D2.  So, when we populate the groups, we lock G at
-> MUTEX_CHILD, D1 at MUTEX_CHILD+1, and D2 at MUTEX_CHILD+2.  However,
-> when the VFS navigates the tree (eg, lookup() or someone attempting an
-> rmdir() of D2's non-default child), it will lock with _PARENT and
-> _CHILD, not with our subclasses.
-> 	Am I right about this?  We won't be using the same classes as
-> the VFS, and thus won't be able to see about interactions between the
-> VFS locking and our locking?  I'd love to be wrong :-)
+On Fri, 06 Jun 2008 17:31:15 +0200
+Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
 
-You are perfectly right, unfortunately. This is the reason why I proposed
-another way that temporarily disables lockdep, and let us prove the correctness
-manually (actually, this manual solution still lets lockdep verify that the
-assumption about I_MUTEX_PARENT -> I_MUTEX_CHILD nesting is correct).
+> Hi Pierre,
+>=20
+> Here are the results of a mmc_test run played on at91_mci after applying=
+=20
+> this patch series :
+> http://lkml.org/lkml/2008/5/30/201
+>=20
+> I skipped some of the tests just to concentrate on those ones.
+>=20
+> Can you tell me if the test is correct : are the errors reported for the=
+=20
+> xfer_size tests the normal behavior (I assume yes because a failure is=20
+> simulated) ?
 
-A real solution without disabling lockdep and that would integrate with the VFS
-should make lockdep aware of lock trees (like i_mutex locks inside a same
-filesystem), or more generally lock graphs, and let lockdep verify that locks of
-a tree are always taken while respecting a same order. IOW, if we are able to
-consistently tag the nodes of a tree with unique numbers (consistently means
-that the resulting order on the nodes is never changed when adding or removing
-nodes), lockdep should check that locks of the tree are always taken in
-ascending tag order.
-	This seems unfortunately hard (impossible?) to achieve with reasonable
-constraints: lockdep should not need to add links between the locks (this would
-make addition and removal of nodes error prone), and lockdep should not need to
-renumber all the nodes of a tree when adding a new node.
+No. You're supposed to get an OK there as well. Basically it tests that
+the driver doesn't report some unexpected error (-ETIMEDOUT is the
+desired one) or overreports the number of written bytes.
+>=20
+> ~ # echo 1  > /sys/class/mmc_host/mmc0/mmc0\:e624/test
 
-As a conclusion, I still suggest to temporarily disable lockdep, which will have
-the advantage of letting people use lockdep (for other areas) while using
-configfs, because lockdep simply cannot help us with configfs hierarchical
-locking right now.
+FYI, I've added some changes that will make that invocation only run
+test 1. Do echo "" for all tests in the future.
 
-Louis
+Rgds
+Pierre
 
--- 
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
+--=_freyr.drzeus.cx-12401-1213009409-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkhND0sACgkQ7b8eESbyJLjuEwCfeZfk78YomXTtMF5hej5hZffO
+Qo8AnjrGdgcC75XI8gAK2OlhPxZKnxDj
+=z4BM
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-12401-1213009409-0001-2--
