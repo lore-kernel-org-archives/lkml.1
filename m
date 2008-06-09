@@ -1,39 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757333AbYFIABy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757956AbYFIADu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757333AbYFIABy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Jun 2008 20:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbYFIABp
+	id S1757956AbYFIADu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Jun 2008 20:03:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754574AbYFIADn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Jun 2008 20:01:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52012 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752784AbYFIABp (ORCPT
+	Sun, 8 Jun 2008 20:03:43 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:56925 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754531AbYFIADn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Jun 2008 20:01:45 -0400
-Date: Sun, 8 Jun 2008 17:01:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, perex@perex.cz
-Subject: Re: [PATCH] ac97: add support for wm9711 master left inv switch
-Message-Id: <20080608170127.b9610d2e.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0806061659550.3338@axis700.grange>
-References: <Pine.LNX.4.64.0806061659550.3338@axis700.grange>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 8 Jun 2008 20:03:43 -0400
+Date: Mon, 9 Jun 2008 01:03:39 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Lennart Poettering <mzxreary@0pointer.de>
+Cc: rpurdie@rpsys.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add backlight driver for Nvidia-based Apple Macbook Pros
+Message-ID: <20080609000339.GA28756@srcf.ucam.org>
+References: <20080607025436.GB24254@srcf.ucam.org> <20080608183255.GB3580@tango.0pointer.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080608183255.GB3580@tango.0pointer.de>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Jun 2008 17:02:57 +0200 (CEST) Guennadi Liakhovetski <g.liakhovetski@pengutronix.de> wrote:
+On Sun, Jun 08, 2008 at 08:32:55PM +0200, Lennart Poettering wrote:
 
-> From: Juergen Beisert <j.beisert@pengutronix.de>
-> 
-> This patch adds support for Master Left Inv Switch on wm9711.
-> At least required to drive the mono speaker on the PXA270 platfrom
-> 
-> Signed-off-by: Juergen Beisert <j.beisert@pengutronix.de>
+> It should be pretty easy to figure out the right string for
+> DMI autoloading. Just do a cat /sys/class/dmi/id/modalias and replace the
+> part of the string you consider not very useful for identifying the
+> machine with (dates, version numbers, empty strings, 0123456
+> rubbish data, ...) with an asterisk.
 
-Please include your own signed-off-by when forwarding other people's patches.
+Ah! Spaces are removed in the sysfs interface. That would explain the 
+problem. I'll send a new version.
 
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
