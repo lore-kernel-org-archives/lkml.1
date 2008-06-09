@@ -1,90 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760239AbYFIKfF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760584AbYFIKfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760239AbYFIKfF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 06:35:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759268AbYFIKez
+	id S1760584AbYFIKfZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 06:35:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760270AbYFIKfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 06:34:55 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:6003 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759189AbYFIKey (ORCPT
+	Mon, 9 Jun 2008 06:35:08 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:25394 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760254AbYFIKfG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 06:34:54 -0400
+	Mon, 9 Jun 2008 06:35:06 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=B+klKjCu1XJGzJ82xiDdavn8xz1zqGNQIJUNAHr7gGxXjMS1hu/grdQ6ppvOG1jTh6
-         qCqnqVhWJzMauSdcRbrgJN/qkk1ozULx2z9prnv43yuav+oVW33aNAl5mszF3b43dDjM
-         4ScfOUTTFw8DdafqR/n1kNvcMVPbWZwO2wD8M=
-Message-ID: <484D070E.9050707@gmail.com>
-Date: Mon, 09 Jun 2008 12:33:50 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=JlwwW2V0ThJBy9xUkIDZf2MOCJ/jYh2cjmaHZ+hoOTLd+FpuAEc6ufW37gdz6k7NMB
+         OklVxxoVtwGzKoIDyZvS6WzR6XCs4RwDImRVz3Kc9Di4x2YuGXFVwvVwGVKy1QwkCmy6
+         wR8E7KRAEUuRZM1pNO4JM7Hh2NWILLiESM1Vo=
+Message-ID: <19f34abd0806090335p36e3e8a1kf180dda236356754@mail.gmail.com>
+Date: Mon, 9 Jun 2008 12:35:05 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [bug, 2.6.26-rc4/rc5] sporadic bootup crashes in blk_lookup_devt()/prepare_namespace()
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "Jens Axboe" <jens.axboe@oracle.com>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <19f34abd0806090209l541d93c6jaba2704314b34418@mail.gmail.com>
 MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
-       marcel@holtmann.org, linux-kernel@vger.kernel.org,
-       anssi.hannula@gmail.com
-Subject: Re: [PATCH 06/10] HID: move logitech report quirks
-References: <1210931362-18422-1-git-send-email-jirislaby@gmail.com> <1210931362-18422-2-git-send-email-jirislaby@gmail.com> <1210931362-18422-3-git-send-email-jirislaby@gmail.com> <1210931362-18422-4-git-send-email-jirislaby@gmail.com> <1210931362-18422-5-git-send-email-jirislaby@gmail.com> <1210931362-18422-6-git-send-email-jirislaby@gmail.com> <Pine.LNX.4.64.0806041520140.10085@jikos.suse.cz>
-In-Reply-To: <Pine.LNX.4.64.0806041520140.10085@jikos.suse.cz>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080609080312.GA32458@elte.hu>
+	 <20080609020623.b6727f2b.akpm@linux-foundation.org>
+	 <19f34abd0806090209l541d93c6jaba2704314b34418@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/04/2008 03:21 PM, Jiri Kosina wrote:
-> On Fri, 16 May 2008, Jiri Slaby wrote:
-> 
->>  static const struct hid_device_id hid_blacklist[] = {
->> +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_MX3000_RECEIVER) },
->> +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_S510_RECEIVER) },
->> +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_S510_RECEIVER_2) },
->>  	{ }
->>  };
-> 
-> This shouldn't be needed as soon as the userspace supports the proper 
-> module autoloading, right?
+On Mon, Jun 9, 2008 at 11:09 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> On Mon, Jun 9, 2008 at 11:06 AM, Andrew Morton
+> <akpm@linux-foundation.org> wrote:
+>> On Mon, 9 Jun 2008 10:03:12 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+>>
+>>> -tip testing has started triggering a new type of sporadic bootup crash
+>>> a few days ago. Find below a collection of 14 crashes i've managed to
+>>> capture so far, which are all similar to this crash pattern:
+>>>
+>>>  BUG: unable to handle kernel paging request at ffff81003b984fb8
+>>>  IP: [<ffffffff803fafd4>] blk_lookup_devt+0x42/0xa0
+>>>  PGD 8063 PUD 9063 PMD 3be2d163 PTE 800000003b984160
+>>>  Oops: 0000 [1] SMP DEBUG_PAGEALLOC
+>>>
+>>>  Call Trace:
+>>>   [<ffffffff80bac17b>] ? ip_auto_config+0x0/0xd94
+>>>   [<ffffffff80209259>] name_to_dev_t+0x145/0xeec
+>>>   [<ffffffff803ff2be>] ? __next_cpu_nr+0x22/0x2b
+>>>   [<ffffffff80b7f372>] prepare_namespace+0x91/0x14c
+>>>   [<ffffffff80b7eb70>] kernel_init+0x2fe/0x314
+>>>   [<ffffffff80251f3d>] ? trace_hardirqs_on_caller+0xca/0xee
+>>>   [<ffffffff80741bbb>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+>>>   [<ffffffff80251f3d>] ? trace_hardirqs_on_caller+0xca/0xee
+>>>   [<ffffffff8020d3f8>] child_rip+0xa/0x12
+>>>   [<ffffffff8020c90c>] ? restore_args+0x0/0x30
+>>>   [<ffffffff8025068d>] ? trace_hardirqs_off+0xd/0xf
+>>>   [<ffffffff80b7e872>] ? kernel_init+0x0/0x314
+>>>   [<ffffffff8020d3ee>] ? child_rip+0x0/0x12
+>>
+>> Did you work out where it's dying?  Deref of `dev' I assume?
+>
+>                        struct gendisk *disk = dev_to_disk(dev);
+>
 
-This is needed to tell generic drivers not to bind these, its' generic 
-blacklist. I have no idea how this could be done better with current drivers/base/.
+I'm sorry, this is slightly misleading. The dev_to_disk() doesn't contain any dereferences, so therefore that can obviously not be the source of the page fault. It is just simple pointer arithmetic.
 
->> +#define LOGITECH_RDESC	0x1
->> +
->> +/*
->> + * Certain Logitech keyboards send in report #3 keys which are far
->> + * above the logical maximum described in descriptor. This extends
->> + * the original value of 0x28c of logical maximum to 0x104d
->> + */
->> +static void lg_report_fixup(struct hid_device *hdev, __u8 *rdesc,
->> +		unsigned int rsize)
->> +{
->> +	if (rsize >= 90 && rdesc[83] == 0x26
->> +			&& rdesc[84] == 0x8c
->> +			&& rdesc[85] == 0x02) {
->> +		dev_info(&hdev->dev, "fixing up Logitech keyboard report "
->> +				"descriptor\n");
->> +		rdesc[84] = rdesc[89] = 0x4d;
->> +		rdesc[85] = rdesc[90] = 0x10;
->> +	}
->> +}
->> +
->> +static const struct hid_device_id lg_devices[] = {
->> +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_MX3000_RECEIVER),
->> +		.driver_data = LOGITECH_RDESC },
->> +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_S510_RECEIVER),
->> +		.driver_data = LOGITECH_RDESC },
->> +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_S510_RECEIVER_2),
->> +		.driver_data = LOGITECH_RDESC },
->> +	{ }
-> 
-> You set the LOGITECH_RDESC flag here, but it is then never used anywhere. 
-> I guess that your original intent was to check for this flag in 
-> lg_report_fixup(), right?
+The actual dereference happens on the next line, but it appears that this dereference and the pointer magic above is collapsed by gcc into a single instruction, cmp -0x44(%ebx), %esi. I assume the -0x44 would be = 0 - offsetof(device in gendisk) + offsetof(minors in gendisk).
 
-I assumed use of these in the second round (see my previous email) :). Anyway 
-they are useless now.
+So the error seems to be in dereferencing disk->minors, not dev.
+
+And the fact that this causes a page fault seems to be pure luck; if the struct device object is placed higher than 0x44 in a page, it won't give the page fault (but simply access some valid, random memory). There seems to be a pretty good chance of an address being offset more than 0x44 bytes within a page given that a whole page is 0x1000 bytes :-)
+
+The other condition that must be present for this fault to trigger is that the previous page must not have been mapped. Ouch. That sounds like two rare conditions!
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while the programmer was not looking is intellectually dishonest as it disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
