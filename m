@@ -1,54 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbYFITJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756682AbYFITJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754840AbYFITJi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 15:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbYFITJ2
+	id S1756682AbYFITJz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 15:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbYFITJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 15:09:28 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49226 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752441AbYFITJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 15:09:27 -0400
-Date: Mon, 9 Jun 2008 21:09:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: update mptable v7 - fix
-Message-ID: <20080609190911.GA20997@elte.hu>
-References: <200805041823.57198.yhlu.kernel@gmail.com> <200805251600.26325.yhlu.kernel@gmail.com> <200806011317.38622.yhlu.kernel@gmail.com> <200806081953.26877.yhlu.kernel@gmail.com> <20080609101318.GA23873@elte.hu> <86802c440806091051j30ac4480oe6be0a7b288f772c@mail.gmail.com>
+	Mon, 9 Jun 2008 15:09:43 -0400
+Received: from gv-out-0910.google.com ([216.239.58.190]:30255 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755210AbYFITJk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 15:09:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FUbZiCtY3VgalEYk5BzmOSvCYI5UmZZ7stF92qCiyKiRgxz7+rkmJKxuh2Pnu+vys2
+         Or/1jlyAgRaSdNHi3VDhNFMI04bugBJQoQ6AIDQqetFH5qnRvkmI3NZ4BrAX82iE4co7
+         xjuPL1PmInprDal4XHLqO2wNW/a70lZYUIUUM=
+Date: Mon, 9 Jun 2008 21:08:57 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: video4linux-list@redhat.com, LKML <linux-kernel@vger.kernel.org>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: [PATCH] v4l: saa7134: fix race between opening and closing the
+	device
+Message-ID: <20080609190854.GA5855@joi>
+References: <20080607224835.GA25025@joi> <20080608063104.GA5608@joi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <86802c440806091051j30ac4480oe6be0a7b288f772c@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080608063104.GA5608@joi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Jun 08, 2008 at 08:31:04AM +0200, Marcin Slusarz wrote:
+> On Sun, Jun 08, 2008 at 12:48:35AM +0200, Marcin Slusarz wrote:
+> > (...)
+> 
+> This patch is stupid. Please ignore.
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+Ok, I think this one should be considered for inclusion.
+I don't think it has anything to do with oops in empress_querycap,
+but who knows ;)
+Compile tested only.
+---
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+Subject: [PATCH] v4l: saa7134: fix race between opening and closing the device
 
-> thanks. So X86_MPPARSE is not needed when SMP is not enabled?
+decrementing dev->empress_users should be done as last action of ts_release,
+because it sleeps and write access to dev->empress_started is not protected
+in any way
+(additionally closing thread could mute audio after opening thread unmuted it)
 
-here's the condition:
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: video4linux-list@redhat.com
+---
+ drivers/media/video/saa7134/saa7134-empress.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-config X86_MPPARSE
-        def_bool y
-        depends on (X86_32 && (X86_LOCAL_APIC && !X86_VISWS)) || X86_64
+diff --git a/drivers/media/video/saa7134/saa7134-empress.c b/drivers/media/video/saa7134/saa7134-empress.c
+index 81431ee..0da683a 100644
+--- a/drivers/media/video/saa7134/saa7134-empress.c
++++ b/drivers/media/video/saa7134/saa7134-empress.c
+@@ -112,7 +112,6 @@ static int ts_release(struct inode *inode, struct file *file)
+ 
+ 	videobuf_stop(&dev->empress_tsq);
+ 	videobuf_mmap_free(&dev->empress_tsq);
+-	dev->empress_users--;
+ 
+ 	/* stop the encoder */
+ 	ts_reset_encoder(dev);
+@@ -121,6 +120,8 @@ static int ts_release(struct inode *inode, struct file *file)
+ 	saa_writeb(SAA7134_AUDIO_MUTE_CTRL,
+ 		saa_readb(SAA7134_AUDIO_MUTE_CTRL) | (1 << 6));
+ 
++	dev->empress_users--;
++
+ 	return 0;
+ }
+ 
+-- 
+1.5.4.5
 
-64-bit has it unconditionally, 32-bit has it on SMP, UP-IOAPIC or 
-UP-local-APIC mode. [ (and VISWS is an ugly complication we should try 
-to eradicate similarly to NUMAQ, if possible :-) ]
-
-	Ingo
