@@ -1,184 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758652AbYFIIny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758933AbYFIIon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758652AbYFIIny (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 04:43:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755861AbYFIInn
+	id S1758933AbYFIIon (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 04:44:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751069AbYFIIoe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 04:43:43 -0400
-Received: from 213.237.47.228.adsl.vbr.worldonline.dk ([213.237.47.228]:13693
-	"EHLO rap.rap.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755823AbYFIInm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 04:43:42 -0400
-Date: Mon, 9 Jun 2008 10:43:40 +0200
-From: Keld =?iso-8859-1?Q?J=F8rn?= Simonsen <keld@dkuug.dk>
-To: thomas62186218@aol.com
-Cc: dan.j.williams@gmail.com, jpiszcz@lucidpixels.com,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       xfs@oss.sgi.com, ap@solarrain.com
-Subject: Re: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte Veliciraptors
-Message-ID: <20080609084340.GA22209@rap.rap.dk>
-References: <alpine.DEB.1.10.0806071015110.23323@p34.internal.lan> <e9c3a7c20806071846w60b74aeegdf3e39afb36b5d9a@mail.gmail.com> <8CA981CB5C2B4D6-E68-18E2@MBLK-M14.sysops.aol.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Mon, 9 Jun 2008 04:44:34 -0400
+Received: from www.tglx.de ([62.245.132.106]:52923 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751323AbYFIIod (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 04:44:33 -0400
+Date: Mon, 9 Jun 2008 10:44:12 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, linux-kernel@vger.kernel.org,
+       Uwe.Kleine-Koenig@digi.com, gregkh@suse.de, akpm@linux-foundation.org,
+       lethal@linux-sh.org, tglx@linutronix.de
+Subject: Re: [PATCH] uio_pdrv: Unique IRQ Mode
+Message-ID: <20080609084411.GA3223@local>
+References: <20080604060826.17162.46972.sendpatchset@rx1.opensource.se> <20080604101144.GA3207@local> <aec7e5c30806041825o4c6c859fp8380063e9384622@mail.gmail.com> <20080605090916.GA3198@local> <aec7e5c30806050246t248abc39vbc1e71d4475a0a0d@mail.gmail.com> <20080605112744.GB3198@local> <aec7e5c30806080319y7b9b6a89icacbfa67b117fb2b@mail.gmail.com> <20080608205455.GA3191@local> <aec7e5c30806081812m532882e0p7ad3ef9a74f53337@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <8CA981CB5C2B4D6-E68-18E2@MBLK-M14.sysops.aol.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <aec7e5c30806081812m532882e0p7ad3ef9a74f53337@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 09, 2008 at 03:51:07AM -0400, thomas62186218@aol.com wrote:
-> Thank you for sharing these results. One issue that I consistently see 
-> with these results is miserable random IO performance. Looking at these 
-> numbers, even a low-end RAID controller with 128MB of cache will outrun 
-> md-based RAIDs in random IO benchmarks. In today's world of virtual 
-> machines, etc, random IO is far more common than sequential IO. What 
-> can be done with md (or something else) to alleviate this problem?
+On Mon, Jun 09, 2008 at 10:12:09AM +0900, Magnus Damm wrote:
+> >
+> > The objection is that your code offers no advantages. What can we do
+> > with your patch applied that we cannot do with uio_pdrv alone?
+> 
+> Yes, it is possible to have board or architecture specific hooks, but
+> does that really make sense if the code is generic and can be reused
+> by multiple architectures? I say it doesn't make sense at all.
 
-Have you got any numbers to back up this?
+So that's your answer when I ask what your code has to offer?
 
-What benchmark are you using for random IO?
+> 
+> >> > If it's a device within the SoC, you won't use UIO for that. If you did,
+> >> > your platform would depend on certain userspace software which is simply
+> >> > crap. And devices outside the SoC are board specific.
+> >>
+> >> Why wouldn't we use UIO for device within the Soc?
+> >
+> > Can't you read? I've answered that in the lines above your question.
+> 
+> I'm sure there are blocks within the SoC that must be managed by the
+> kernel, but that's not always the case. Certain things can be managed
+> by user space just fine. For instance, video acceleration hardware.
 
-Anyway the numbers that Justin reported was with an outdate motherboard,
+There are standard kernel subsystems to handle such devices. You should
+only make it a UIO driver if v4l, drm, fb doesn't work for some
+important reason.
 
-My take is that Linux MD raid can outperform most HW RAID by a factor of two
-on random IO.
+> 
+> >> I've been doing
+> >> that for quite some time now.
+> >
+> > Really? I haven't seen any such driver yet. IMO, support for everything
+> > inside a SoC should be completely within the kernel, I wouldn't do it
+> > with UIO. But it's up to the arch maintainer to decide that. Did you ask
+> > him?
+> 
+> Regarding driver source, I have posted a user space test driver here:
+> 
+> http://article.gmane.org/gmane.linux.ports.sh.devel/3927
+> 
+> As for kernel driver source, you have it earlier in this thread. I'm
+> planning on pushing my user space VIDIX driver upstream, but I'd like
+> to get the kernel parts merged first or at least acked. This UIO
+> specific piece of the puzzle unfortunately seems to take forever.
+> Which really is a shame, because it's all very simple.
 
-Best regards
-keld
+Why do you need that stuff that works only with irqs that are not
+shared? Why don't you simply do it with uio_pdrv? Or a normal UIO
+driver?
+After a brief look over your userspace code, I cannot see why you need
+any additions to the UIO core code.
 
-> -Thomas
+> > Once more (for the last time): The technical argument against your patch
+> > is that it offers no advantages. It makes other code more complicated,
+> > less obvious, and less consistent. This might be OK if we had big
+> > advantages in return, but this isn't the case.
 > 
+> I say:
+> a) We need this for 5+ different SuperH hardware blocks.
+> b) This approach can be used by most architectures.
+> c) The code is architecture independent.
 > 
-> -----Original Message-----
-> From: Dan Williams <dan.j.williams@gmail.com>
-> To: Justin Piszcz <jpiszcz@lucidpixels.com>
-> Cc: linux-kernel@vger.kernel.org; linux-raid@vger.kernel.org; 
-> xfs@oss.sgi.com; Alan Piszcz <ap@solarrain.com>
-> Sent: Sat, 7 Jun 2008 6:46 pm
-> Subject: Re: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte 
-> Veliciraptors
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> On Sat, Jun 7, 2008 at 7:22 AM, Justin Piszcz <jpiszcz@lucidpixels.com> 
-> wrote:
-> >First, the original benchmarks with 6-SATA drives with fixed 
-> formatting,
-> >using
-> >right justification and the same decimal point precision throughout:
-> >
-> http://home.comcast.net/~jpiszcz/20080607/raid-benchmarks-decimal-fix-and-right-justified/disks.html
-> >
-> >Now for for veliciraptors!  Ever wonder what kind of speed is 
-> possible with
-> >3 disk, 4,5,6,7,8,9,10-disk RAID5s?  I ran a loop to find out, each 
-> run is
-> >executed three times and the average is taken of all three runs per 
-> each
-> >RAID5 disk set.
-> >
-> >In short? The 965 no longer does justice with faster drives, a new 
-> chipset
-> >and motherboard are needed.  After reading or writing to 4-5 
-> veliciraptors
-> >it saturates the bus/965 chipset.
-> >
-> >Here is a picture of the 12 veliciraptors I tested with:
-> >
-> http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-veliciraptors/raptors.jpg
-> >
-> >Here are the bonnie++ results:
-> >
-> http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-veliciraptors/veliciraptor-raid.html
-> >
-> >For those who want the results in text:
-> >
-> http://home.comcast.net/~jpiszcz/20080607/raid5-benchmarks-3to10-veliciraptors/veliciraptor-raid.txt
-> >
-> >System used, same/similar as before:
-> >Motherboard: Intel DG965WH
-> >Memory: 8GiB
-> >Kernel: 2.6.25.4
-> >Distribution: Debian Testing x86_64
-> >Filesystem: XFS with default mkfs.xfs parameters [auto-optimized for 
-> SW
-> >RAID]
-> >Mount options: defaults,noatime,nodiratime,logbufs=8,logbsize=262144 
-> 0 1
-> >Chunk size: 1024KiB
-> >RAID5 Layout: Default (left-symmetric)
-> >Mdadm Superblock used: 0.90
-> >
-> >Optimizations used (last one is for the CFQ scheduler), it improves
-> >performance by a modest 5-10MiB/s:
-> >http://home.comcast.net/~jpiszcz/raid/20080601/raid5.html
-> >
-> ># Tell user what's going on.
-> >echo "Optimizing RAID Arrays..."
-> >
-> ># Define DISKS.
-> >cd /sys/block
-> >DISKS=$(/bin/ls -1d sd[a-z])
-> >
-> ># Set read-ahead.
-> ># > That's actually 65k x 512byte blocks so 32MiB
-> >echo "Setting read-ahead to 32 MiB for /dev/md3"
-> >blockdev --setra 65536 /dev/md3
-> >
-> ># Set stripe-cache_size for RAID5.
-> >echo "Setting stripe_cache_size to 16 MiB for /dev/md3"
-> 
-> Sorry to sound like a broken record,  16MiB is not correct.
-> 
-> size=$((num_disks * 4 * 16384 / 1024))
-> echo "Setting stripe_cache_size to $size MiB for /dev/md3"
-> 
-> ...and commit 8b3e6cdc should improve the performance / 
-> stripe_cache_size ratio.
-> 
-> >echo 16384 > /sys/block/md3/md/stripe_cache_size
-> >
-> ># Disable NCQ on all disks.
-> >echo "Disabling NCQ on all disks..."
-> >for i in $DISKS
-> >do
-> > echo "Disabling NCQ on $i"
-> > echo 1 > /sys/block/"$i"/device/queue_depth
-> >done
-> >
-> ># Fix slice_idle.
-> ># See http://www.nextre.it/oracledocs/ioscheduler_03.html
-> >echo "Fixing slice_idle to 0..."
-> >for i in $DISKS
-> >do
-> > echo "Changing slice_idle to 0 on $i"
-> > echo 0 > /sys/block/"$i"/queue/iosched/slice_idle
-> >done
-> >
-> 
-> Thanks for putting this data together.
-> 
-> Regards,
-> Dan
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> You say "it offers no advantages".
+
+Yes, and your answer is the proof.
+
+Thanks,
+Hans
+
