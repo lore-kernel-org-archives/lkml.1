@@ -1,46 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbYFIRTE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbYFIRVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756747AbYFIRTE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 13:19:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbYFIRSy
+	id S1756839AbYFIRVU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 13:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbYFIRVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 13:18:54 -0400
-Received: from sous-sol.org ([216.99.217.87]:46256 "EHLO sous-sol.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752715AbYFIRSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 13:18:53 -0400
-Date: Mon, 9 Jun 2008 10:12:53 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Miklos Szeredi <mszeredi@suse.cz>
-Cc: Willy Tarreau <w@1wt.eu>, Christoph Hellwig <hch@infradead.org>,
-       stable@kernel.org, Michael Halcrow <mhalcrow@us.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [stable] Missing patch from stable [3/7]
-Message-ID: <20080609171253.GI30402@sequoia.sous-sol.org>
-References: <20080608085923.GC6439@1wt.eu> <1212923462.4020.224.camel@tucsk> <20080608122920.GA10491@1wt.eu> <1212936622.4020.236.camel@tucsk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1212936622.4020.236.camel@tucsk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 9 Jun 2008 13:21:08 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:38065 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751214AbYFIRVH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 13:21:07 -0400
+Subject: Re: [PATCH 03/15] x86: remove early_gdt_descr reference
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Glauber Costa <gcosta@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       tglx@linutronix.de, mingo@elte.hu, hugh@veritas.com
+In-Reply-To: <484D5119.5020206@redhat.com>
+References: <1213021018-14159-1-git-send-email-gcosta@redhat.com>
+	 <1213021018-14159-2-git-send-email-gcosta@redhat.com>
+	 <1213021018-14159-3-git-send-email-gcosta@redhat.com>
+	 <1213021018-14159-4-git-send-email-gcosta@redhat.com>
+	 <1213024983.3508.28.camel@localhost.localdomain>
+	 <484D5119.5020206@redhat.com>
+Content-Type: text/plain
+Date: Mon, 09 Jun 2008 12:20:41 -0500
+Message-Id: <1213032042.3508.54.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Miklos Szeredi (mszeredi@suse.cz) wrote:
-> On Sun, 2008-06-08 at 14:29 +0200, Willy Tarreau wrote:
-> > Well, you know the implications of leaving these known bugs open more than
-> > me. If you think some of them are really not needed, I'm fine with this,
-> > but some definitely fix real bugs (judging by the code and the comments).
+On Mon, 2008-06-09 at 12:49 -0300, Glauber Costa wrote:
+> James Bottomley wrote:
+> > On Mon, 2008-06-09 at 11:16 -0300, Glauber Costa wrote:
+> >> since we use switch_to_new_gdt, there is no point
+> >> in assigning early_gdt_descr except for the first
+> >> assignment, which is done manually.
+> > 
+> > What makes you think you can do this?  If you don't update the early
+> > boot gdt, they all end up using the Boot CPU one.  The problem with this
+> > is that there's a time from start_secondary to switch_to_new_gdt where
+> > the per cpu selector (%fs) and the pda selector (%gs) are those of the
+> > boot CPU.   The former isn't a problem but the CPU number is in the
+> > latter, and it's used in that path before we get to the initialisation.
 > 
-> Yeah.  Perhaps there should also be a rule, that -stable patches for
-> EXPERIMENTAL stuff (like ecryptfs) are automatically rejected.  And then
-> they wouldn't increase the workload for the people collecting/reviewing
-> the stable series.
+> You are right, I missed it.
+> 
+> However, it only seem to be used in cpu_init, and very early. Sure there 
+> are some users _before_ we load the new gdt, but nothing prevents them 
+> to be moved after it. (Of course, this patch is wrong anyway).
+> 
+> And if we do that, we can even take the %fs loading out of head_32.S
+> Of course, it's only valid if those are indeed the only early users of it.
+> 
+> Is there any other use I'm missing?
 
-Both users and distros enable code marked EXPERIMENTAL.  It's not
-that uncommon for code to get stuck in EXPERIMENTAL long after it's in
-general use.
+Well, %fs loading there is done for the boot CPU. To eliminate that you
+have to not only verify that start_secondary doesn't use anything in
+per_cpu areas, but also verify that nothing in start_kernel() up until
+boot_cpu_init() does ... That's a lot of smp_processor_id() references
+to convert.
 
-thanks,
--chris
+James
+
+
