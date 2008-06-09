@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761287AbYFIW0B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761002AbYFIWZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761287AbYFIW0B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 18:26:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760260AbYFIWXi
+	id S1761002AbYFIWZT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 18:25:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755628AbYFIWXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 18:23:38 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:40954 "EHLO smtp6.pp.htv.fi"
+	Mon, 9 Jun 2008 18:23:24 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:53887 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760261AbYFIWXf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 18:23:35 -0400
-Date: Tue, 10 Jun 2008 01:22:40 +0300
+	id S1753934AbYFIWXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 18:23:22 -0400
+Date: Tue, 10 Jun 2008 01:22:28 +0300
 From: Adrian Bunk <bunk@kernel.org>
 To: geert@linux-m68k.org, zippel@linux-m68k.org
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] m68k/mac/: possible cleanups
-Message-ID: <20080609222240.GI1987@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] m68k/amiga/: possible cleanups
+Message-ID: <20080609222228.GG1987@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,512 +24,141 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This patch contains the following possible cleanups:
-- make the following needlessly global code (always) static:
-  - baboon.c: struct baboon
-  - baboon.c: baboon_irq()
-  - config.c: mac_orig_videoaddr
-  - config.c: mac_identify()
-  - config.c: mac_report_hardware()
-  - config.c: mac_debug_console_write()
-  - config.c: mac_sccb_console_write()
-  - config.c: mac_scca_console_write()
-  - config.c: mac_init_scc_port()
-  - oss.c: oss_irq()
-  - oss.c: oss_nubus_irq()
-  - psc.c: psc_debug_dump()
-  - psc.c: psc_dma_die_die_die()
-  - via.c: rbv_clear
-- remove the unused bootparse.c
+- amiints.c: add a proper prototype for amiga_init_IRQ() in 
+             include/asm-m68k/amigaints.h
+- make the following needlessly global code static:
+  - config.c: amiga_model
+  - config.c: amiga_psfreq
+  - config.c: amiga_serial_console_write()
 - #if 0 the following unused functions:
-  - config.c: mac_debugging_short()
-  - config.c: mac_debugging_long()
-- remove the following unused code:
-  - config.c: mac_bisize
-  - config.c: mac_env
-  - config.c: mac_SCC_init_done
-  - config.c: mac_SCC_reset_done
-  - config.c: mac_init_scca_port()
-  - config.c: mac_init_sccb_port()
+  - config.c: amiga_serial_puts()
+  - config.c: amiga_serial_console_wait_key()
+  - config.c: amiga_serial_gets()
+- remove the following unused variable:
+  - config.c: amiga_masterclock
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- arch/m68k/mac/Makefile        |    2 
- arch/m68k/mac/baboon.c        |   26 +++----
- arch/m68k/mac/bootparse.c     |  122 ----------------------------------
- arch/m68k/mac/config.c        |   11 +--
- arch/m68k/mac/debug.c         |   41 ++---------
- arch/m68k/mac/oss.c           |    8 +-
- arch/m68k/mac/psc.c           |    4 -
- arch/m68k/mac/via.c           |    2 
- include/asm-m68k/mac_baboon.h |    2 
- include/asm-m68k/mac_via.h    |    1 
- include/asm-m68k/macintosh.h  |    5 -
- 11 files changed, 35 insertions(+), 189 deletions(-)
+ arch/m68k/amiga/config.c     |   20 ++++++--------------
+ include/asm-m68k/amigahw.h   |    4 ----
+ include/asm-m68k/amigaints.h |    2 ++
+ 3 files changed, 8 insertions(+), 18 deletions(-)
 
-85484a9afa74515effef5d64809496a962d3dadc diff --git a/arch/m68k/mac/Makefile b/arch/m68k/mac/Makefile
-index 1d265ba..daebd80 100644
---- a/arch/m68k/mac/Makefile
-+++ b/arch/m68k/mac/Makefile
-@@ -2,5 +2,5 @@
- # Makefile for Linux arch/m68k/mac source directory
- #
+7468c1d57c48a277ac1b2cdd237eee7a962bb2ad diff --git a/arch/m68k/amiga/config.c b/arch/m68k/amiga/config.c
+index dd0734e..df679d9 100644
+--- a/arch/m68k/amiga/config.c
++++ b/arch/m68k/amiga/config.c
+@@ -36,14 +36,11 @@
+ #include <asm/machdep.h>
+ #include <asm/io.h>
  
--obj-y		:= config.o bootparse.o macints.o iop.o via.o oss.o psc.o \
-+obj-y		:= config.o macints.o iop.o via.o oss.o psc.o \
- 			baboon.o macboing.o debug.o misc.o
-diff --git a/arch/m68k/mac/baboon.c b/arch/m68k/mac/baboon.c
-index 673a108..dae9c98 100644
---- a/arch/m68k/mac/baboon.c
-+++ b/arch/m68k/mac/baboon.c
-@@ -23,9 +23,7 @@
- /* #define DEBUG_IRQS */
+-unsigned long amiga_model;
+-EXPORT_SYMBOL(amiga_model);
++static unsigned long amiga_model;
  
- int baboon_present;
--volatile struct baboon *baboon;
+ unsigned long amiga_eclock;
+ EXPORT_SYMBOL(amiga_eclock);
+ 
+-unsigned long amiga_masterclock;
 -
--irqreturn_t baboon_irq(int, void *);
-+static volatile struct baboon *baboon;
+ unsigned long amiga_colorclock;
+ EXPORT_SYMBOL(amiga_colorclock);
  
- #if 0
- extern int macide_ack_intr(struct ata_channel *);
-@@ -50,20 +48,10 @@ void __init baboon_init(void)
- }
+@@ -53,7 +50,7 @@ EXPORT_SYMBOL(amiga_chipset);
+ unsigned char amiga_vblank;
+ EXPORT_SYMBOL(amiga_vblank);
  
- /*
-- * Register the Baboon interrupt dispatcher on nubus slot $C.
-- */
--
--void __init baboon_register_interrupts(void)
--{
--	request_irq(IRQ_NUBUS_C, baboon_irq, IRQ_FLG_LOCK|IRQ_FLG_FAST,
--		    "baboon", (void *) baboon);
--}
--
--/*
-  * Baboon interrupt handler. This works a lot like a VIA.
-  */
+-unsigned char amiga_psfreq;
++static unsigned char amiga_psfreq;
  
--irqreturn_t baboon_irq(int irq, void *dev_id)
-+static irqreturn_t baboon_irq(int irq, void *dev_id)
- {
- 	int irq_bit, irq_num;
- 	unsigned char events;
-@@ -95,6 +83,16 @@ irqreturn_t baboon_irq(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
+ struct amiga_hw_present amiga_hw_present;
+ EXPORT_SYMBOL(amiga_hw_present);
+@@ -94,8 +91,6 @@ static char *amiga_models[] __initdata = {
+ static char amiga_model_name[13] = "Amiga ";
  
-+/*
-+ * Register the Baboon interrupt dispatcher on nubus slot $C.
-+ */
-+
-+void __init baboon_register_interrupts(void)
-+{
-+	request_irq(IRQ_NUBUS_C, baboon_irq, IRQ_FLG_LOCK|IRQ_FLG_FAST,
-+		    "baboon", (void *) baboon);
-+}
-+
- void baboon_irq_enable(int irq) {
- #ifdef DEBUG_IRQUSE
- 	printk("baboon_irq_enable(%d)\n", irq);
-diff --git a/arch/m68k/mac/bootparse.c b/arch/m68k/mac/bootparse.c
-deleted file mode 100644
-index 36d2236..0000000
---- a/arch/m68k/mac/bootparse.c
-+++ /dev/null
-@@ -1,122 +0,0 @@
--#include <linux/string.h>
--#include <linux/kernel.h>
--#include <linux/sched.h>
--#include <asm/irq.h>
--#include <asm/setup.h>
--#include <asm/bootinfo.h>
--#include <asm/macintosh.h>
--
--/*
-- *	Booter vars
-- */
--
--int boothowto;
--int _boothowto;
--
--/*
-- *	Called early to parse the environment (passed to us from the booter)
-- *	into a bootinfo struct. Will die as soon as we have our own booter
-- */
--
--#define atol(x)	simple_strtoul(x,NULL,0)
--
--void parse_booter(char *env)
--{
--	char *name;
--	char *value;
--#if 0
--	while(0 && *env)
--#else
--	while(*env)
--#endif
--	{
--		name=env;
--		value=name;
--		while(*value!='='&&*value)
--			value++;
--		if(*value=='=')
--			*value++=0;
--		env=value;
--		while(*env)
--			env++;
--		env++;
--#if 0
--		if(strcmp(name,"VIDEO_ADDR")==0)
--			mac_mch.videoaddr=atol(value);
--		if(strcmp(name,"ROW_BYTES")==0)
--			mac_mch.videorow=atol(value);
--		if(strcmp(name,"SCREEN_DEPTH")==0)
--			mac_mch.videodepth=atol(value);
--		if(strcmp(name,"DIMENSIONS")==0)
--			mac_mch.dimensions=atol(value);
--#endif
--		if(strcmp(name,"BOOTTIME")==0)
--			mac_bi_data.boottime=atol(value);
--		if(strcmp(name,"GMTBIAS")==0)
--			mac_bi_data.gmtbias=atol(value);
--		if(strcmp(name,"BOOTERVER")==0)
--			mac_bi_data.bootver=atol(value);
--		if(strcmp(name,"MACOS_VIDEO")==0)
--			mac_bi_data.videological=atol(value);
--		if(strcmp(name,"MACOS_SCC")==0)
--			mac_bi_data.sccbase=atol(value);
--		if(strcmp(name,"MACHINEID")==0)
--			mac_bi_data.id=atol(value);
--		if(strcmp(name,"MEMSIZE")==0)
--			mac_bi_data.memsize=atol(value);
--		if(strcmp(name,"SERIAL_MODEM_FLAGS")==0)
--			mac_bi_data.serialmf=atol(value);
--		if(strcmp(name,"SERIAL_MODEM_HSKICLK")==0)
--			mac_bi_data.serialhsk=atol(value);
--		if(strcmp(name,"SERIAL_MODEM_GPICLK")==0)
--			mac_bi_data.serialgpi=atol(value);
--		if(strcmp(name,"SERIAL_PRINT_FLAGS")==0)
--			mac_bi_data.printmf=atol(value);
--		if(strcmp(name,"SERIAL_PRINT_HSKICLK")==0)
--			mac_bi_data.printhsk=atol(value);
--		if(strcmp(name,"SERIAL_PRINT_GPICLK")==0)
--			mac_bi_data.printgpi=atol(value);
--		if(strcmp(name,"PROCESSOR")==0)
--			mac_bi_data.cpuid=atol(value);
--		if(strcmp(name,"ROMBASE")==0)
--			mac_bi_data.rombase=atol(value);
--		if(strcmp(name,"TIMEDBRA")==0)
--			mac_bi_data.timedbra=atol(value);
--		if(strcmp(name,"ADBDELAY")==0)
--			mac_bi_data.adbdelay=atol(value);
--	}
--#if 0	/* XXX: TODO with m68k_mach_* */
--	/* Fill in the base stuff */
--	boot_info.machtype=MACH_MAC;
--	/* Read this from the macinfo we got ! */
--/*	boot_info.cputype=CPU_68020|FPUB_68881;*/
--/*	boot_info.memory[0].addr=0;*/
--/*	boot_info.memory[0].size=((mac_bi_data.id>>7)&31)<<20;*/
--	boot_info.num_memory=1;		/* On a MacII */
--	boot_info.ramdisk_size=0;	/* For now */
--	*boot_info.command_line=0;
--#endif
-- }
--
--
--void print_booter(char *env)
--{
--	char *name;
--	char *value;
--	while(*env)
--	{
--		name=env;
--		value=name;
--		while(*value!='='&&*value)
--			value++;
--		if(*value=='=')
--			*value++=0;
--		env=value;
--		while(*env)
--			env++;
--		env++;
--		printk("%s=%s\n", name,value);
--	}
-- }
--
--
-diff --git a/arch/m68k/mac/config.c b/arch/m68k/mac/config.c
-index ad3e3ba..c45e184 100644
---- a/arch/m68k/mac/config.c
-+++ b/arch/m68k/mac/config.c
-@@ -46,7 +46,6 @@
- /* Mac bootinfo struct */
- 
- struct mac_booter_data mac_bi_data;
--int mac_bisize = sizeof mac_bi_data;
- 
- /* New m68k bootinfo stuff and videobase */
- 
-@@ -55,10 +54,8 @@ extern struct mem_info m68k_memory[NUM_MEMINFO];
- 
- extern struct mem_info m68k_ramdisk;
- 
--void *mac_env;					/* Loaded by the boot asm */
--
- /* The phys. video addr. - might be bogus on some machines */
--unsigned long mac_orig_videoaddr;
-+static unsigned long mac_orig_videoaddr;
- 
- /* Mac specific timer functions */
- extern unsigned long mac_gettimeoffset(void);
-@@ -79,6 +76,8 @@ extern void mac_mksound(unsigned int, unsigned int);
- extern void nubus_sweep_video(void);
- 
- static void mac_get_model(char *str);
-+static void mac_identify(void);
-+static void mac_report_hardware(void);
- 
- static void __init mac_sched_init(irq_handler_t vector)
- {
-@@ -765,7 +764,7 @@ static struct mac_model mac_data_table[] = {
- 	}
- };
- 
--void __init mac_identify(void)
-+static void __init mac_identify(void)
- {
- 	struct mac_model *m;
- 
-@@ -821,7 +820,7 @@ void __init mac_identify(void)
- 	baboon_init();
- }
- 
--void __init mac_report_hardware(void)
-+static void __init mac_report_hardware(void)
- {
- 	printk(KERN_INFO "Apple Macintosh %s\n", macintosh_config->name);
- }
-diff --git a/arch/m68k/mac/debug.c b/arch/m68k/mac/debug.c
-index e8a5713..2165740 100644
---- a/arch/m68k/mac/debug.c
-+++ b/arch/m68k/mac/debug.c
-@@ -51,6 +51,8 @@ extern void mac_serial_print(const char *);
- static int peng, line;
+ static void amiga_sched_init(irq_handler_t handler);
+-/* amiga specific irq functions */
+-extern void amiga_init_IRQ(void);
+ static void amiga_get_model(char *model);
+ static int amiga_get_hardware_list(char *buffer);
+ /* amiga specific timer functions */
+@@ -109,8 +104,6 @@ static void amiga_reset(void);
+ extern void amiga_init_sound(void);
+ static void amiga_mem_console_write(struct console *co, const char *b,
+ 				    unsigned int count);
+-void amiga_serial_console_write(struct console *co, const char *s,
+-				unsigned int count);
+ #ifdef CONFIG_HEARTBEAT
+ static void amiga_heartbeat(int on);
+ #endif
+@@ -420,8 +413,7 @@ void __init config_amiga(void)
+ 	mach_heartbeat = amiga_heartbeat;
  #endif
  
+-	/* Fill in the clock values (based on the 700 kHz E-Clock) */
+-	amiga_masterclock = 40*amiga_eclock;	/* 28 MHz */
++	/* Fill in the clock value (based on the 700 kHz E-Clock) */
+ 	amiga_colorclock = 5*amiga_eclock;	/* 3.5 MHz */
+ 
+ 	/* clear all DMA bits */
+@@ -819,8 +811,8 @@ static void amiga_serial_putc(char c)
+ 		;
+ }
+ 
+-void amiga_serial_console_write(struct console *co, const char *s,
+-				unsigned int count)
++static void amiga_serial_console_write(struct console *co, const char *s,
++				       unsigned int count)
+ {
+ 	while (count--) {
+ 		if (*s == '\n')
+@@ -829,7 +821,7 @@ void amiga_serial_console_write(struct console *co, const char *s,
+ 	}
+ }
+ 
+-#ifdef CONFIG_SERIAL_CONSOLE
 +#if 0
+ void amiga_serial_puts(const char *s)
+ {
+ 	amiga_serial_console_write(NULL, s, strlen(s));
+diff --git a/include/asm-m68k/amigahw.h b/include/asm-m68k/amigahw.h
+index a16fe4e..5ca5dd9 100644
+--- a/include/asm-m68k/amigahw.h
++++ b/include/asm-m68k/amigahw.h
+@@ -22,8 +22,6 @@
+      *  Different Amiga models
+      */
+ 
+-extern unsigned long amiga_model;
+-
+ #define AMI_UNKNOWN	(0)
+ #define AMI_500		(1)
+ #define AMI_500PLUS	(2)
+@@ -59,11 +57,9 @@ extern unsigned long amiga_chipset;
+      */
+ 
+ extern unsigned long amiga_eclock;	/* 700 kHz E Peripheral Clock */
+-extern unsigned long amiga_masterclock;	/* 28 MHz Master Clock */
+ extern unsigned long amiga_colorclock;	/* 3.5 MHz Color Clock */
+ extern unsigned long amiga_chip_size;	/* Chip RAM Size (bytes) */
+ extern unsigned char amiga_vblank;	/* VBLANK Frequency */
+-extern unsigned char amiga_psfreq;	/* Power Supply Frequency */
+ 
+ 
+ #define AMIGAHW_DECLARE(name)	unsigned name : 1
+diff --git a/include/asm-m68k/amigaints.h b/include/asm-m68k/amigaints.h
+index 7c87134..31101eb 100644
+--- a/include/asm-m68k/amigaints.h
++++ b/include/asm-m68k/amigaints.h
+@@ -98,6 +98,8 @@
+ #define CIA_ICR_ALL	0x1f
+ #define CIA_ICR_SETCLR	0x80
+ 
++void amiga_init_IRQ(void);
 +
- void mac_debugging_short(int pos, short num)
- {
- #ifdef DEBUG_SCREEN
-@@ -125,6 +127,8 @@ void mac_debugging_long(int pos, long addr)
- #endif
- }
- 
-+#endif  /*  0  */
-+
- #ifdef DEBUG_SERIAL
- /*
-  * TODO: serial debug code
-@@ -142,12 +146,6 @@ struct mac_SCC {
- 
- # define scc (*((volatile struct mac_SCC*)mac_bi_data.sccbase))
- 
--/* Flag that serial port is already initialized and used */
--int mac_SCC_init_done;
--/* Can be set somewhere, if a SCC master reset has already be done and should
-- * not be repeated; used by kgdb */
--int mac_SCC_reset_done;
--
- static int scc_port = -1;
- 
- static struct console mac_console_driver = {
-@@ -171,8 +169,8 @@ static struct console mac_console_driver = {
-  * this driver if Mac.
-  */
- 
--void mac_debug_console_write(struct console *co, const char *str,
--			     unsigned int count)
-+static void mac_debug_console_write(struct console *co, const char *str,
-+				    unsigned int count)
- {
- 	mac_serial_print(str);
- }
-@@ -209,8 +207,8 @@ static inline void mac_scca_out(char c)
- 	scc.cha_a_data = c;
- }
- 
--void mac_sccb_console_write(struct console *co, const char *str,
--			    unsigned int count)
-+static void mac_sccb_console_write(struct console *co, const char *str,
-+				   unsigned int count)
- {
- 	while (count--) {
- 		if (*str == '\n')
-@@ -219,8 +217,8 @@ void mac_sccb_console_write(struct console *co, const char *str,
- 	}
- }
- 
--void mac_scca_console_write(struct console *co, const char *str,
--			    unsigned int count)
-+static void mac_scca_console_write(struct console *co, const char *str,
-+				   unsigned int count)
- {
- 	while (count--) {
- 		if (*str == '\n')
-@@ -265,14 +263,8 @@ void mac_scca_console_write(struct console *co, const char *str,
- 		    barrier();				\
- 	} while(0)
- 
--#ifndef CONFIG_SERIAL_CONSOLE
- static void __init mac_init_scc_port(int cflag, int port)
--#else
--void mac_init_scc_port(int cflag, int port)
--#endif
- {
--	extern int mac_SCC_reset_done;
--
- 	/*
- 	 * baud rates: 1200, 1800, 2400, 4800, 9600, 19.2k, 38.4k, 57.6k, 115.2k
- 	 */
-@@ -340,22 +332,9 @@ void mac_init_scc_port(int cflag, int port)
- 		SCCA_WRITE(3, reg3 | 1);
- 		SCCA_WRITE(5, reg5 | 8);
- 	}
--
--	mac_SCC_reset_done = 1;
--	mac_SCC_init_done = 1;
- }
- #endif /* DEBUG_SERIAL */
- 
--void mac_init_scca_port(int cflag)
--{
--	mac_init_scc_port(cflag, 0);
--}
--
--void mac_init_sccb_port(int cflag)
--{
--	mac_init_scc_port(cflag, 1);
--}
--
- static int __init mac_debug_setup(char *arg)
- {
- 	if (!MACH_IS_MAC)
-diff --git a/arch/m68k/mac/oss.c b/arch/m68k/mac/oss.c
-index 3c943d2..43d83e0 100644
---- a/arch/m68k/mac/oss.c
-+++ b/arch/m68k/mac/oss.c
-@@ -30,8 +30,8 @@
- int oss_present;
- volatile struct mac_oss *oss;
- 
--irqreturn_t oss_irq(int, void *);
--irqreturn_t oss_nubus_irq(int, void *);
-+static irqreturn_t oss_irq(int, void *);
-+static irqreturn_t oss_nubus_irq(int, void *);
- 
- extern irqreturn_t via1_irq(int, void *);
- extern irqreturn_t mac_scc_dispatch(int, void *);
-@@ -92,7 +92,7 @@ void __init oss_nubus_init(void)
-  * and SCSI; everything else is routed to its own autovector IRQ.
-  */
- 
--irqreturn_t oss_irq(int irq, void *dev_id)
-+static irqreturn_t oss_irq(int irq, void *dev_id)
- {
- 	int events;
- 
-@@ -126,7 +126,7 @@ irqreturn_t oss_irq(int irq, void *dev_id)
-  * Unlike the VIA/RBV this is on its own autovector interrupt level.
-  */
- 
--irqreturn_t oss_nubus_irq(int irq, void *dev_id)
-+static irqreturn_t oss_nubus_irq(int irq, void *dev_id)
- {
- 	int events, irq_bit, i;
- 
-diff --git a/arch/m68k/mac/psc.c b/arch/m68k/mac/psc.c
-index d66f723..f84a4dd 100644
---- a/arch/m68k/mac/psc.c
-+++ b/arch/m68k/mac/psc.c
-@@ -36,7 +36,7 @@ irqreturn_t psc_irq(int, void *);
-  * Debugging dump, used in various places to see what's going on.
-  */
- 
--void psc_debug_dump(void)
-+static void psc_debug_dump(void)
- {
- 	int	i;
- 
-@@ -55,7 +55,7 @@ void psc_debug_dump(void)
-  * expanded to cover what I think are the other 7 channels.
-  */
- 
--void psc_dma_die_die_die(void)
-+static void psc_dma_die_die_die(void)
- {
- 	int i;
- 
-diff --git a/arch/m68k/mac/via.c b/arch/m68k/mac/via.c
-index fa485df..f3b27d0 100644
---- a/arch/m68k/mac/via.c
-+++ b/arch/m68k/mac/via.c
-@@ -45,7 +45,7 @@ volatile long *via_memory_bogon=(long *)&via_memory_bogon;
- int rbv_present;
- int via_alt_mapping;
- EXPORT_SYMBOL(via_alt_mapping);
--__u8 rbv_clear;
-+static __u8 rbv_clear;
- 
- /*
-  * Globals for accessing the VIA chip registers without having to
-diff --git a/include/asm-m68k/mac_baboon.h b/include/asm-m68k/mac_baboon.h
-index e878508..c2a042b 100644
---- a/include/asm-m68k/mac_baboon.h
-+++ b/include/asm-m68k/mac_baboon.h
-@@ -29,6 +29,4 @@ struct baboon {
- 				 */
- };
- 
--extern volatile struct baboon *baboon;
--
- #endif /* __ASSEMBLY **/
-diff --git a/include/asm-m68k/mac_via.h b/include/asm-m68k/mac_via.h
-index 59b758c..39afb43 100644
---- a/include/asm-m68k/mac_via.h
-+++ b/include/asm-m68k/mac_via.h
-@@ -253,7 +253,6 @@
- 
- extern volatile __u8 *via1,*via2;
- extern int rbv_present,via_alt_mapping;
--extern __u8 rbv_clear;
- 
- static inline int rbv_set_video_bpp(int bpp)
- {
-diff --git a/include/asm-m68k/macintosh.h b/include/asm-m68k/macintosh.h
-index 28b0f49..05309f7 100644
---- a/include/asm-m68k/macintosh.h
-+++ b/include/asm-m68k/macintosh.h
-@@ -12,8 +12,6 @@ extern void mac_reset(void);
- extern void mac_poweroff(void);
- extern void mac_init_IRQ(void);
- extern int mac_irq_pending(unsigned int);
--extern void mac_identify(void);
--extern void mac_report_hardware(void);
- 
- /*
-  *	Floppy driver magic hook - probably shouldnt be here
-@@ -21,9 +19,6 @@ extern void mac_report_hardware(void);
- 
- extern void via1_set_head(int);
- 
--extern void parse_booter(char *ptr);
--extern void print_booter(char *ptr);
--
- /*
-  *	Macintosh Table
-  */
+ /* to access the interrupt control registers of CIA's use only
+ ** these functions, they behave exactly like the amiga os routines
+ */
 
