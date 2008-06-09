@@ -1,47 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbYFITms@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbYFITsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757450AbYFITms (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 15:42:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbYFITmk
+	id S1755975AbYFITsR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 15:48:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753490AbYFITsE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 15:42:40 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:36347 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752700AbYFITmj (ORCPT
+	Mon, 9 Jun 2008 15:48:04 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:53452 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753073AbYFITsD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 15:42:39 -0400
-X-IronPort-AV: E=Sophos;i="4.27,613,1204531200"; 
-   d="scan'208";a="39789145"
-From: Roland Dreier <rdreier@cisco.com>
-To: "Meyers\, Jordan" <Jordan_Meyers@cable.comcast.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: Can Linux control PCIe Transaction Layer Packet creation, when writing to a region pointed to by Base Address Register
-References: <38F5F6E4D905F142BAA734B9D894F12407634DB1@CAPLSEXCMB01.cable.comcast.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Mon, 09 Jun 2008 12:42:38 -0700
-In-Reply-To: <38F5F6E4D905F142BAA734B9D894F12407634DB1@CAPLSEXCMB01.cable.comcast.com>
-	(Jordan Meyers's message of "Mon, 9 Jun 2008 12:13:21 -0700")
-Message-ID: <adaprqq8kep.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Mon, 9 Jun 2008 15:48:03 -0400
+Message-ID: <484D88B2.30309@zytor.com>
+Date: Mon, 09 Jun 2008 12:46:58 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 09 Jun 2008 19:42:38.0650 (UTC) FILETIME=[F93579A0:01C8CA68]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: update mptable v7 - fix
+References: <200805041823.57198.yhlu.kernel@gmail.com>	 <200805251600.26325.yhlu.kernel@gmail.com>	 <200806011317.38622.yhlu.kernel@gmail.com>	 <200806081953.26877.yhlu.kernel@gmail.com>	 <20080609101318.GA23873@elte.hu>	 <86802c440806091051j30ac4480oe6be0a7b288f772c@mail.gmail.com>	 <20080609190911.GA20997@elte.hu> <86802c440806091238o30ca6910w93163f45fd1419ae@mail.gmail.com>
+In-Reply-To: <86802c440806091238o30ca6910w93163f45fd1419ae@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Any thoughts or suggestions of how to ensure a buffer's data is
- > transferred from the driver to the PCIe card in a single TLP (where
- > the intended payload size is less than the max payload value in
- > Device Control register of the PCI register space)?
+Yinghai Lu wrote:
+> 
+> VISWS or VOYAGER depends on !PCI, that is some odd system.
+> 
 
-If you are doing MMIO (memory-mapped IO, that is, the CPU is using write
-operations to write to a memory-mapped PCI BAR), then you probably
-cannot ensure that the data goes into a single PCIe packet.  I think the
-best you can do is map the PCI memory into the CPU's address space with
-write combining (WC) enabled (see ioremap_wc() in recent kernels), which
-is likely to generate larger bursts if possible.
+Both are long-since obsolete systems.
 
- - R.
+	-hpa
