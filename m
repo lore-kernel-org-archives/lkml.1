@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbYFIQIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbYFIQJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754079AbYFIQIb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 12:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbYFIQIY
+	id S1755467AbYFIQJV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 12:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbYFIQJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 12:08:24 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43106 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751329AbYFIQIX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 12:08:23 -0400
-Message-ID: <484D5578.7070709@sgi.com>
-Date: Mon, 09 Jun 2008 09:08:24 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 9 Jun 2008 12:09:03 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33572 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751392AbYFIQJB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 12:09:01 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 3 of 7] block: Find bio sector offset given idx and offset
+References: <318fa71e735d25003f9c.1212814536@sermon.lab.mkp.net>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Mon, 09 Jun 2008 12:07:59 -0400
+In-Reply-To: <318fa71e735d25003f9c.1212814536@sermon.lab.mkp.net> (Martin
+	K. Petersen's message of "Sat, 07 Jun 2008 00:55:36 -0400")
+Message-ID: <x498wxebnhc.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] x86: Replace xxx_pda() operations with	x86_xx_percpu().
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.711845000@polaris-admin.engr.sgi.com> <20080609130302.GA20943@elte.hu>
-In-Reply-To: <20080609130302.GA20943@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
-> 
->>   * It is now possible to use percpu operations for pda access
->>     since the pda is in the percpu area. Drop the pda operations.
-> 
-> FYI, this one didnt build with the attached config.
-> 
-> 	Ingo
-> 
+"Martin K. Petersen" <martin.petersen@oracle.com> writes:
 
-Ok, thanks, I will check it out.
+> 2 files changed, 26 insertions(+)
+> fs/bio.c            |   24 ++++++++++++++++++++++++
+> include/linux/bio.h |    2 ++
+>
+>
+> Helper function to find the sector offset in a bio given bvec index
+> and page offset.
+>
 
-I'm still having problems getting your previous "instantaneous
-reboot" problem working.  It has something to do with cpu_clock
-interrupt, but I've still not figured out why it's failing.
+Unless I've missed something, this helper isn't used anywhere in your
+patchset.
 
-THanks,
-Mike
+Cheers,
+
+Jeff
