@@ -1,132 +1,456 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755940AbYFINjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755211AbYFINlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755940AbYFINjg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 09:39:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbYFINjO
+	id S1755211AbYFINlT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 09:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbYFINlB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 09:39:14 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:48643 "EHLO pasmtpA.tele.dk"
+	Mon, 9 Jun 2008 09:41:01 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38145 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750966AbYFINjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 09:39:12 -0400
-Subject: Re: [PATCH] Make some ext3 kernel messages useful by showing device
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML Mailinglist <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org
-In-Reply-To: <20080609025926.0ecb6aea.akpm@linux-foundation.org>
-References: <1212951761.32756.4.camel@localhost>
-	 <20080609025926.0ecb6aea.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 09 Jun 2008 15:38:10 +0200
-Message-Id: <1213018690.10545.7.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
-Content-Transfer-Encoding: 7bit
+	id S1750966AbYFINk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 09:40:58 -0400
+Date: Mon, 9 Jun 2008 15:38:03 +0200
+From: Karel Zak <kzak@redhat.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org
+Subject: [ANNOUNCE] util-linux-ng 2.14 (stable)
+Message-ID: <20080609133803.GA22057@nb.net.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-06-09 at 02:59 -0700, Andrew Morton wrote:
-> On Sun, 08 Jun 2008 21:02:41 +0200 Kasper Sandberg <lkml@metanurb.dk> wrote:
-> 
-> > Hello.
-> > 
-> > Some of the ext3 warnings in super.c are not really as useful as they
-> > can be, for instance the "EXT3-fs warning: maximal mount count reached,
-> > running e2fsck is recommended" message, does not tell which device it
-> > actually is.
-> 
-> Seems sensible.
-> 
-> > Below is patch(both inlined, and in attached form, since i dont trust my
-> > mailer),
-> 
-> That really tricks me.  Because the resulting file applies nicely with
-> `patch --dry-run' but doesn't apply with plain old `patch'.  Inlined is
-> preferred, attached is grumpily accepted, but please avoid duplicating
-> the patch.
 
-I do not know what happened, i did with diff -Naur. I attached because
-of the fact that i _KNOW_ evolution is not to be trusted with inlined,
-but i also know inlined is easier for review, even if it is not properly
-accepted as input for patch.
+The stable util-linux-ng 2.14 release is available at
 
-> 
-> > to a patch which fixes that particular message, and a few more.
-> > I could look at the rest if anyones interrested?
-> 
-> We like to keep ext3 and ext4 in sync as much as poss, please.
-Yes, i will do this soon, i have a few things to do first though.
-> 
-> > Oh, and i dont really know if this is nessecary, but:
-> > Signed-off-by: Kasper Sandberg <lkml@metanurb.dk>
-> 
-> It is very much preferred, thanks.
-> 
-> (patch retained for linux-ext4 review)
-> 
-> > 
-> > --- super.c.orig	2008-06-08 20:49:26.153047364 +0200
-> > +++ super.c	2008-06-08 20:45:20.812047463 +0200
-> > @@ -1188,31 +1188,31 @@
-> >  	int res = 0;
-> >  
-> >  	if (le32_to_cpu(es->s_rev_level) > EXT3_MAX_SUPP_REV) {
-> > -		printk (KERN_ERR "EXT3-fs warning: revision level too high, "
-> > -			"forcing read-only mode\n");
-> > +		printk (KERN_ERR "EXT3-fs on %s warning: revision level too high, "
-> > +			"forcing read-only mode\n", sb->s_id);
-> >  		res = MS_RDONLY;
-> >  	}
-> >  	if (read_only)
-> >  		return res;
-> >  	if (!(sbi->s_mount_state & EXT3_VALID_FS))
-> > -		printk (KERN_WARNING "EXT3-fs warning: mounting unchecked fs, "
-> > -			"running e2fsck is recommended\n");
-> > +		printk (KERN_WARNING "EXT3-fs on %s warning: mounting unchecked fs, "
-> > +			"running e2fsck is recommended\n", sb->s_id);
-> >  	else if ((sbi->s_mount_state & EXT3_ERROR_FS))
-> >  		printk (KERN_WARNING
-> > -			"EXT3-fs warning: mounting fs with errors, "
-> > -			"running e2fsck is recommended\n");
-> > +			"EXT3-fs on %s warning: mounting fs with errors, "
-> > +			"running e2fsck is recommended\n", sb->s_id);
-> >  	else if ((__s16) le16_to_cpu(es->s_max_mnt_count) >= 0 &&
-> >  		 le16_to_cpu(es->s_mnt_count) >=
-> >  		 (unsigned short) (__s16) le16_to_cpu(es->s_max_mnt_count))
-> >  		printk (KERN_WARNING
-> > -			"EXT3-fs warning: maximal mount count reached, "
-> > -			"running e2fsck is recommended\n");
-> > +			"EXT3-fs on %s warning: maximal mount count reached, "
-> > +			"running e2fsck is recommended\n", sb->s_id);
-> >  	else if (le32_to_cpu(es->s_checkinterval) &&
-> >  		(le32_to_cpu(es->s_lastcheck) +
-> >  			le32_to_cpu(es->s_checkinterval) <= get_seconds()))
-> >  		printk (KERN_WARNING
-> > -			"EXT3-fs warning: checktime reached, "
-> > -			"running e2fsck is recommended\n");
-> > +			"EXT3-fs on %s warning: checktime reached, "
-> > +			"running e2fsck is recommended\n", sb->s_id);
-> >  #if 0
-> >  		/* @@@ We _will_ want to clear the valid bit if we find
-> >                     inconsistencies, to force a fsck at reboot.  But for
-> > @@ -1339,8 +1339,8 @@
-> >  	}
-> >  
-> >  	if (bdev_read_only(sb->s_bdev)) {
-> > -		printk(KERN_ERR "EXT3-fs: write access "
-> > -			"unavailable, skipping orphan cleanup.\n");
-> > +		printk(KERN_ERR "EXT3-fs on %s: write access "
-> > +			"unavailable, skipping orphan cleanup.\n", sb->s_id);
-> >  		return;
-> >  	}
-> >  
-> > 
-> > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+    ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.14/
 
+Feedback and bug reports, as always, are welcomed.
+
+    Karel
+
+
+Util-linux-ng 2.14 Release Notes
+================================
+
+Release highlights
+------------------
+
+ mount(8) supports new "nofail" mount option.
+
+ mount(8) supports auto-destruction of loop devices.
+
+ losetup(8) supports new command line option "-j" to show status of all
+ loop devices associated with given file.
+
+ losetup(8) supports unlimited number of loop devices.
+
+ losetup(8) supports new command line option "--sizelimit" to set data end.
+
+ ldattach(8) command has been added to util-linux-ng. The ldattach
+ daemon opens the specified device file and attaches the line discipline
+ to it for processing of the sent and/or received data.
+
+ setterm(8) supports new command line option "-blank [force|poke]" for
+ TIOCL_{BLANKED,BLANK}SCREEN.
+
+ tailf(8) has been reimplemented to use inotify.
+
+ tailf(8) supports new command line option "-n" to specifying output lines.
+
+ mkswap(8) supports new command line option "-U" to set UUID explicitly.
+
+ fdisk(8) has been fixed to calculate partition size in 2^N.
+
+ cal(8) supports highlighting an arbitrary date.
+
+ agetty(8) makes username-in-uppercase feature optional (off by default).
+ Users who use uppercase-only terminals need to use the option "-U" now.
+
+ losetup(8), mount(8), umount(8), fdisk(8) and sfdisk(8) support static
+ linking when compiled with --enable-static-programs.
+
+ hwclock(8) supports new command line option "adjfile" to override
+ the default /etc/adjtime.
+
+ scriptreplay(1) command has been re-written from Perl to C.
+
+
+Deprecated
+----------
+
+ The losetup(8) '-s' option (introduced by util-linux-ng-2.13) is deprecated
+ now.  This short form of the option '--show' could be in collision with
+ Loop-AES losetup implementation where the same option is used for the loop
+ sizelimit.
+
+
+Fixed security issues
+---------------------
+
+ CVE-2008-1926 - audit log injection via login
+
+		 The problem was originally reported for OpenSSH few months
+         ago (CVE-2007-3102). The login(1) is affected by the same
+         bug when built with the option "--with-audit".
+
+
+Stable maintenance releases between v2.13 and v2.14
+---------------------------------------------------
+
+util-linux-ng 2.13.1.1 [22-Apr-2008]
+
+ * ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.13/v2.13.1.1-ReleaseNotes
+   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.13/v2.13.1.1-ChangeLog
+
+util-linux-ng 2.13.1 [16-Jan-2008]
+
+ * ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.13/v2.13.1-ReleaseNotes
+   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.13/v2.13.1-ChangeLog
+
+
+ChangeLog between v2.13 and v2.14
+---------------------------------
+
+ For more details see ChangeLog files at:
+ ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.14/
+
+agetty:
+   - cleanup MAXHOSTNAMELEN  [Karel Zak]
+   - make username-in-uppercase feature optional (off by default.)  [Hamish Coleman]
+   - non-linux support (use pathnames.h)  [Karel Zak]
+   - replace termio with termios interface  [Samuel Thibault]
+   - ungettextize several debugging messages.  [Benno Schulenberg]
+blockdev:
+   - add --getsz to blockdev.8  [Karel Zak]
+   - add missing description about option --report in manpage  [Li Zefan]
+   - fix  opened file leaving unclosed  [lizf]
+   - use lib/blkdev.c, fix --report  [Karel Zak]
+build-sys:
+   - add --enable-static-programs  [Stepan Kasal, Karel Zak]
+   - add AC_CANONICAL_HOST  [Miklos Szeredi]
+   - add VARSUFFIX to UTIL_CHECK_LIB  [Karel Zak]
+   - add err.h check  [Karel Zak]
+   - add support ionice for Super-H architecture  [Karel Zak]
+   - add v2.14 to NEWS  [Karel Zak]
+   - autogen.sh reports versions of autotools now  [Karel Zak]
+   - build arch(1) during distcheck  [Stepan Kasal]
+   - cleanup "x$foo" usage  [Karel Zak]
+   - cleanup disk-utils/Makefile.am (use $utils_common)  [Karel Zak]
+   - cleanup usage of linux/major.h  [Samuel Thibault]
+   - disable syscall fallbacks for non-linux systems  [Karel Zak]
+   - do not add -luuid to BLKID_LIBS  [Stepan Kasal]
+   - fix missing deps for swapon  [Matthias Koenig]
+   - ignore a bunch of generated files, mostly binaries  [James Youngman]
+   - nls/locale handling in util-linux-ng general  [Mike Frysinger]
+   - non-linux support  [Samuel Thibault]
+   - release++  [Karel Zak]
+   - remove errs.h  [Karel Zak]
+   - remove files that are no longer delivered from git  [LaMont Jones]
+   - remove hardcoded _GNU_SOURCE  [Karel Zak]
+   - remove unnecessary check-local target from login-utils/  [Karel Zak]
+   - set AC_PREREQ to 2.60, increment version to 2.14  [Karel Zak]
+   - simplify code around RDEV_LINKS and SETARCH_LINKS  [Stepan Kasal]
+   - unify method for checking system calls and fallback handling  [Mike Frysinger, Stepan Kasal]
+   - update .gitignore files  [Karel Zak]
+   - use dist_man_MANS instead of man_MANS  [Stepan Kasal]
+   - use ncursesw (wide version) when possibe  [Karel Zak, Mike Frysinger]
+   - use pkg-config to find the libs for static build  [Stepan Kasal]
+   - use portable $(VAR =) instead of gmake-specific $(addsuffix)  [Stepan Kasal]
+cal:
+   - add description about option -V to manpage  [Li Zefan]
+   - add support for highlighting an arbitrary date  [Pádraig Brady]
+   - avoid -Wformat warnings  [Jim Meyering]
+   - fix weekday alignment for certain locales  [Pádraig Brady]
+   - replace errs.h with libc err.h  [Karel Zak]
+   - use HAVE_LIB{NCURSES,NCURSESW} instead HAVE_NCURSES  [Karel Zak]
+cfdisk:
+   - define portable {DEFAULT,ALTERNATE}_DEVICE  [Samuel Thibault]
+   - display cylinders beyond 1024  [Peter Breitenlohner]
+   - slightly increase the size of menu buttons  [Benno Schulenberg]
+   - translate partition-type names when they are printed.  [Benno Schulenberg]
+chfn:
+   - add pam_end() call and cleanup PAM code  [Karel Zak]
+   - fix compiler warnings in selinux stuff  [Karel Zak]
+chfn, chsh, login:
+   - collapsing three similar messages into a single one  [Benno Schulenberg]
+chsh:
+   - should use pam_end function to terminate the PAM transaction  [Yu Zhiguo, Karel Zak]
+column:
+   - replace errs.h with libc err.h  [Karel Zak]
+ddate:
+   - 11th, 12th and 13th of month  [Volker Schatz]
+docs:
+   - add a note about minix v3 to TODO file  [Karel Zak]
+   - add info about .bugfix releases and branches  [Karel Zak]
+   - add note about incorrect tag 2.13.1  [Karel Zak]
+   - add note about losetup --sizelimit to ReleaseNotes  [Karel Zak]
+   - add note about static linking  [Karel Zak]
+   - add v2.14 ReleaseNotes  [Karel Zak]
+   - cleanup DEPRECATED file  [Karel Zak]
+   - cleanup README.devel, add note about coding style and Signed-off-by  [Karel Zak]
+   - fix ChangeLog URL  [Pascal Terjan]
+   - fix stable branche name in README.devel  [Karel Zak]
+   - mark vipw(1) is deprecated in favor of vipw from shadow-utils  [Karel Zak]
+   - refresh TODO list  [Karel Zak]
+   - remove date from ReleasNotes  [Karel Zak]
+   - tweak a few messages for clarity  [Benno Schulenberg]
+   - update AUTHORS file  [Karel Zak]
+   - update TODO file  [Karel Zak]
+   - update v2.14 ReleaseNotes  [Karel Zak]
+   - we already rewrote the scriptreplay script; remove that TODO entry  [James Youngman]
+elvtune:
+   - use get_linux_version()  [Karel Zak]
+fdformat:
+   - install to /usr/sbin instead to /usr/bin  [Karel Zak]
+fdisk:
+   - better fallback for get_random_id()  [H. Peter Anvin]
+   - calculate +size{K,M,G} in 2^N  [Karel Zak]
+   - cleanup BLK* ioctls usage  [Karel Zak]
+   - doesn't recognize the VMware ESX partitions  [Karel Zak]
+   - doing useless ioctl when editing an image  [Pascal Terjan]
+   - fix building for AVR32 and CRIS  [Imre Kaloz]
+   - fix typo  [Karel Zak]
+   - message tweak  [Karel Zak]
+   - non-linux support (MAXPATHLEN)  [Karel Zak]
+   - non-linux support (use standard uintxy_t instead __uxy)  [Samuel Thibault]
+   - use more readable "GPT" name rather than "EFI GPT"  [Robert Millan]
+   - use swab macros from bitops.h  [Karel Zak]
+flock:
+   - typo in man page  [A. Costa]
+fsck.cramfs:
+   - clean up gcc warnings  [Randy Dunlap]
+fsck.minix:
+   - correct the error message given when we can't open the device  [James Youngman]
+   - reset the terminal state if we are killed by a fatal signal  [James Youngman]
+getopt:
+   - fix path to examples in getopt.1  [Karel Zak]
+   - install example scripts as SCRIPTS, not DATA  [Peter Breitenlohner]
+hwclock:
+   - add --adjfile=path option  [Karel Zak]
+   - check for ENODEV  [David Woodhouse]
+   - do not create a zero adjfile  [Alain Guibert]
+   - fix --rtc option  [Matthias Koenig, Karel Zak]
+include:
+   - <stdint.h> provides everything  [Samuel Thibault]
+   - add bitops.h with swab{16,32,64} macros  [Karel Zak]
+   - add mount paths to pathnames.h  [Karel Zak]
+   - cleanup pathnames.h  [Karel Zak]
+ionice:
+   - add a note about permissions to ionice.1  [Karel Zak]
+   - update man page to reflect IDLE class change in  2.6.25  [Karel Zak]
+ipcs:
+   - add information about POSIX compatibility to ipcs.1  [Karel Zak]
+kill:
+   - man page is missing a description of "kill -0"  [Karel Zak]
+ldattach:
+   - add NLS support  [Karel Zak]
+   - new command  [Tilman Schmidt]
+   - use glibc termios  [Karel Zak]
+lib:
+   - add blkdev.{c,h}  [Stefan Krah, Karel Zak]
+   - add linux_version.{c,h}  [Stefan Krah]
+login:
+   - audit log injection attack via login  [Steve Grubb]
+   - fix a small memory leak and remove unnecessary zeroing  [Karel Zak]
+   - login segfaults on EOF (rh#298461)  [Karel Zak]
+   - replace termio with termios interface  [Samuel Thibault]
+   - rewrite is_local() to remove limits on line length  [James Youngman]
+login-utils:
+   - cleanup strlen() and fgets() usage  [James Youngman]
+losetup:
+   - add --associated option  [Karel Zak]
+   - add --sizelimit option  [Shachar Shemesh]
+   - canonicalize loopfile name  [Karel Zak, Matthias Koenig]
+   - clean up gcc warnings  [Randy Dunlap]
+   - fix errno usage  [Karel Zak]
+   - fix typo in losetup.8  [Karel Zak]
+   - mark the option -s as deprecated  [Karel Zak]
+   - remove duplicate xstrdup() and error()  [Karel Zak]
+   - split help message into two smaller parts  [Benno Schulenberg]
+   - support unlimited number of loops  [Karel Zak]
+   - use standard uintxy_t types (struct loop_info64)  [Samuel Thibault]
+mesg:
+   - replace errs.h with libc err.h  [Karel Zak]
+mkfs.cramfs:
+   - clean up gcc warnings  [Randy Dunlap, Karel Zak]
+   - remove unused header file  [lizf]
+   - switch on localization.  [Benno Schulenberg]
+mkfs.minix:
+   - add sectorsize check  [Matthias Koenig]
+   - clean up gcc warnings  [Karel Zak]
+   - clean up gcc warnings  [Randy Dunlap]
+   - device size cleanup  [Matthias Koenig]
+mkswap:
+   - BLKGETSIZE cleanup  [Karel Zak]
+   - cleanup kB vs. KiB usage in error messages  [Karel Zak]
+   - fix compiler warnings  [Karel Zak]
+   - linux_version() code consolidation  [Karel Zak]
+   - possible to crash with SELinux relabeling support  [KaiGai Kohei]
+   - set UUID for swap space (add -U option)  [Martin Schulze]
+   - set errno=0 in write_all()  [Karel Zak]
+   - when writing the signature page, handle EINTR returns  [Karel Zak]
+more:
+   - cleanup gcc warnings  [Randy Dunlap]
+   - non-linux support  [Samuel Thibault]
+   - replace CBAUD with cfgetispeed()  [Samuel Thibault]
+   - use HAVE_WIDECHAR instead ENABLE_WIDECHAR  [Karel Zak]
+mount:
+   - "can't create lock file" message sometimes means failure, sometimes not  [Mark McLoughlin]
+   - "nofail" mount option  [Matthias Koenig, Karel Zak]
+   - -L|-U segfault when label or uuid doesn't exist  [Karel Zak]
+   - add more details to the --version output  [Karel Zak]
+   - add support for sizelimit= mount option (for loop mounts)  [Shachar Shemesh]
+   - allow auto-destruction of loop devices  [Bernardo Innocenti]
+   - chain of symlinks to fstab causes use of pointer after free  [Norbert Buchmuller]
+   - clean up gcc warnings (mount_mntent.c)  [Randy Dunlap]
+   - clean up global variables  [Karel Zak]
+   - cleanup "none" fstype usage  [Karel Zak]
+   - cleanup KERNEL_VERSION, remove my_dev_t.h  [Karel Zak]
+   - cleanup canonicalize() usage  [Karel Zak]
+   - cleanup error() and die()  [Karel Zak]
+   - cleanup usage of _PATH_*  [Karel Zak]
+   - doesn't drop privileges properly when calling helpers  [Ludwig Nussel]
+   - don't call canonicalize(SPEC) for cifs, smbfs and nfs  [Karel Zak]
+   - don't canonicalize LABEL= or UUID= spec  [Karel Zak]
+   - drop the part always true from a while condition  [Pascal Terjan]
+   - fix a small typo in mount.8  [Christophe Blaess]
+   - fix fd leak  [Matthias Koenig]
+   - fix typo in mount.8  [Karel Zak]
+   - hint about helper program if device doesn't exist  [Karel Zak]
+   - improve chmod & chown usage and clean up gcc warnings (fstab.c)  [Karel Zak]
+   - improve error message when helper program not present  [LaMont Jones]
+   - prevent loop mounting the same file twice  [Karel Zak, Matthias Koenig]
+   - remount doesn't care about loop=  [Karel Zak]
+   - remove MS_{REPLACE,AFTER,BEFORE,OVER}  [Karel Zak]
+   - remove built-in support for background mounts  [Karel Zak]
+   - remove redundant fflush  [Karel Zak]
+   - remove set_proc_name()  [Karel Zak]
+   - remove useless if-before-my_free, define my_free as a macro  [Karel Zak]
+   - use MNTTYPE_SWAP (from mntent.h)  [Karel Zak]
+   - use atexit() rather than (*at_die)()  [Karel Zak]
+   - use blkdev_get_size()  [Karel Zak]
+   - use canonicalize in getfs_by_devname  [Karel Zak]
+namei:
+   - add to identify FIFO (named pipe) and update manpage  [Li Zefan]
+   - cleanup tailing white-spaces  [Karel Zak]
+   - non-linux support (get_current_dir_name() and PATH_MAX)  [Karel Zak, Samuel Thibault]
+partx:
+   - fix compiler warnings  [Karel Zak]
+   - use swab macros from bitops.h  [Karel Zak]
+pg:
+   - fix segfault on search  [Rajeev V. Pillai]
+po:
+   - add eu.po (from translationproject.org)  [Mikel Olasagasti]
+   - add pl.po (from translationproject.org)  [Andrzej Krzysztofowicz]
+   - fix typo in de.po  [Karel Zak]
+   - merge changes  [Karel Zak]
+   - update POTFILES.in  [Karel Zak]
+   - update ca.po (from translationproject.org)  [Josep Puigdemont]
+   - update cs.po (from translationproject.org)  [Petr Pisar]
+   - update da.po (from translationproject.org)  [Claus Hindsgaul]
+   - update de.po (from translationproject.org)  [Michael Piefel]
+   - update es.po (from translationproject.org)  [Santiago Vila Doncel]
+   - update et.po (from translationproject.org)  [Meelis Roos]
+   - update fi.po (from translationproject.org)  [Lauri Nurmi]
+   - update fr.po (from translationproject.org)  [Michel Robitaille]
+   - update hu.po (from translationproject.org)  [Gabor Kelemen]
+   - update id.po (from translationproject.org)  [Arif E. Nugroho]
+   - update it.po (from translationproject.org)  [Marco Colombo]
+   - update ja.po (from translationproject.org)  [Daisuke Yamashita]
+   - update nl.po (from translationproject.org)  [Benno Schulenberg]
+   - update po files  [Karel Zak]
+   - update pt_BR.po (from translationproject.org)  [Rodrigo Stulzer Lopes]
+   - update ru.po (from translationproject.org)  [Pavel Maryanov]
+   - update sl.po (from translationproject.org)  [Simon Mihevc]
+   - update sv.po (from translationproject.org)  [Daniel Nylander]
+   - update tr.po (from translationproject.org)  [Nilgün Belma Bugüner]
+   - update uk.po (from translationproject.org)  [Maxim V. Dziumanenko]
+   - update vi.po (from translationproject.org)  [Clytie Siddall]
+rename:
+   - add description about option -V to manpage  [Li Zefan]
+   - remove useless variable  [Li Zefan]
+renice:
+   - detect errors in arguments, add -v, -h and long options  [LaMont Jones, Karel Zak]
+rev:
+   - use warn() in errs.h  [Li Zefan]
+rtcwake:
+   - fix UTC time usage  [David Brownell]
+   - fix the default mode to "standby"  [Paulius Zaleckas]
+   - fix typo  [Karel Zak]
+   - fix typo SATE -> STATE  [Mike Frysinger]
+   - fix verbose message  [Karel Zak]
+   - include libgen.h for basename prototype  [Mike Frysinger]
+   - misc cleanups  [David Brownell]
+script:
+   - cleanup gcc warnings  [Randy Dunlap]
+   - cleanup includes  [Samuel Thibault]
+   - dies on SIGWINCH  [Karel Zak]
+   - read returns a size_t  [James Youngman]
+scriptreplay:
+   - gettextize a forgotten messages  [Karel Zak]
+   - rewrite in C  [Karel Zak, James Youngman]
+setarch:
+   - add fallback for linux/personality  [Karel Zak]
+   - add long options to setarch and update manpage  [Karel Zak, Li Zefan]
+   - add missing alpha subarchs  [Oliver Falk]
+   - adding groff symlinks to setarch manual page  [Arkadiusz Miskiewicz]
+   - fix compiler warning  [LaMont Jones]
+   - generate groff links in a better way  [Karel Zak]
+   - provide backwards compatibility  [Dmitry V. Levin]
+   - tweak the help text, and gettextize a forgotten message  [Benno Schulenberg]
+setterm:
+   - add -blan [force|poke] options for TIOCL_{BLANKED,BLANK}SCREEN  [Samuel Thibault, Karel Zak]
+   - dump by TIOCLINUX is deprecated since linux 1.1.92.  [Karel Zak]
+   - opened file leaving unclosed  [Karel Zak, lizf]
+   - remove unnecessaty ifndef TCGETS  [Samuel Thibault]
+sfdisk:
+   - allow partitioning drives of over 2^31 sectors.  [Kunihiko IMAI]
+   - cleanup 83 gcc warnings  [Randy Dunlap]
+   - opened files leaving unclosed  [Karel Zak, Li Zefan]
+   - remove unnecessary linux/unistd.h  [Samuel Thibault]
+   - use get_linux_version()  [Karel Zak]
+shutdown:
+   - use _PATH_MOUNTED instead of _PATH_MTAB  [Stepan Kasal]
+swapon:
+   - Reinitialize software suspend areas to avoid future corruption.  [Kees Cook, Karel Zak]
+   - add sundries.h  [Karel Zak]
+   - clean up gcc warnings  [Randy Dunlap]
+   - cleanup usage output  [Karel Zak]
+   - cleanup usage()  [Karel Zak]
+   - fix swsuspend detection  [Karel Zak]
+   - fix typo in usage()  [Karel Zak]
+   - readjust the usage summaries  [Benno Schulenberg]
+   - remove unnecessary myrealpath() call  [Karel Zak]
+sys-utils:
+   - correct setarch.8 manpage link creation  [Frédéric Bothamy]
+tailf:
+   - add option -n to specifying output lines  [Li Zefan]
+   - clean up gcc warnings & fix use of errno  [Karel Zak]
+   - inotify based reimplementation  [Karel Zak]
+   - non-linux support  [Samuel Thibault]
+   - opened file leaving unclosed  [lizf]
+   - replace errs.h with libc err.h  [Karel Zak]
+tests:
+   - add "sort" to cramfs test  [Karel Zak]
+   - add test for include/pathnames.h  [Karel Zak]
+   - add ts-mount-noncanonical  [Karel Zak]
+   - exactly define a time format in ls -l output  [Karel Zak]
+   - fix blkid cache usage  [Karel Zak]
+   - move test_bkdev to lib/  [Karel Zak]
+   - redirect libblkid cache to BLKID_FILE  [Karel Zak]
+   - rename test_sysinfo, remove tailing white-spaces  [Karel Zak]
+   - use losetup -s  [Karel Zak]
+umount:
+   - add hint about lsof & fuser  [Karel Zak]
+   - don't print duplicate error messages  [Karel Zak]
+   - use atexit() rather than (*at_die)()  [Karel Zak]
+wall:
+   - cleanup MAXHOSTNAMELEN  [Karel Zak]
+
+-- 
+ Karel Zak  <kzak@redhat.com>
