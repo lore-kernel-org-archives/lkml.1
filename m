@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760718AbYFILLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760818AbYFILNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760718AbYFILLx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 07:11:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759570AbYFILLp
+	id S1760818AbYFILNW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 07:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759570AbYFILNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 07:11:45 -0400
-Received: from mx1.suse.de ([195.135.220.2]:53565 "EHLO mx1.suse.de"
+	Mon, 9 Jun 2008 07:13:15 -0400
+Received: from mx1.suse.de ([195.135.220.2]:53734 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759285AbYFILLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 07:11:45 -0400
-Date: Mon, 09 Jun 2008 13:11:43 +0200
-Message-ID: <s5h3anmdfrk.wl%tiwai@suse.de>
+	id S1759487AbYFILNO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 07:13:14 -0400
+Date: Mon, 09 Jun 2008 13:13:12 +0200
+Message-ID: <s5hzlpuc14n.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Benjamin Kidwell <benjkidwell@yahoo.com>
 Cc: linux-kernel@vger.kernel.org
 Subject: Re: Linux-next Alsa hda_intel events/0 high CPU usage, bisected
-In-Reply-To: <424883.96640.qm@web53709.mail.re2.yahoo.com>
+In-Reply-To: <s5h3anmdfrk.wl%tiwai@suse.de>
 References: <s5hk5h1shys.wl%tiwai@suse.de>
 	<424883.96640.qm@web53709.mail.re2.yahoo.com>
+	<s5h3anmdfrk.wl%tiwai@suse.de>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28)
  (fuki) (x86_64-suse-linux)
@@ -27,68 +28,103 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Sat, 7 Jun 2008 18:56:33 -0700 (PDT),
-Benjamin Kidwell wrote:
+At Mon, 09 Jun 2008 13:11:43 +0200,
+I wrote:
 > 
-> --- Takashi Iwai <> wrote:
+> At Sat, 7 Jun 2008 18:56:33 -0700 (PDT),
+> Benjamin Kidwell wrote:
+> > 
+> > --- Takashi Iwai <> wrote:
+> > 
+> > > The problem is that your hardware reports the wrong DMA position.
+> > > I didn't expect that this delay is so much, (IOW, the hardware is so
+> > > buggy).  Maybe it should be put into its own workq.
+> > 
+> > I've been getting my process timing information from ps, top, and htop, which
+> > I know can be unreliable in some ways (I've been using a tickless (NO_HZ=y)
+> > kernel). I recompiled the g8a4bd4d kernel with that option off and a few more
+> > changes to make my settings more conservative, and rechecked events/0. It
+> > still reports at a consistent 2.5%, (down from about 4.3% with previous kernel
+> > options) and after a short period of use (uptime 30 minutes) events/0 has had
+> > 0:48 of time. In comparison, Xorg and Firefox (usually the biggest users)
+> > report 1:12 and 0:44 in the same timeframe. 
+> > 
+> > So if I understand the purpose of the code, that means that my system has
+> > generated 48 seconds worth of timing mistakes in audio playback relative to 25
+> > minutes or so of audio stream, so that suggests the timing error of the
+> > hardware is about 3%! That seems like huge latency for hardware so I see why
+> > you wouldn't expect that.
 > 
-> > The problem is that your hardware reports the wrong DMA position.
-> > I didn't expect that this delay is so much, (IOW, the hardware is so
-> > buggy).  Maybe it should be put into its own workq.
-> 
-> I've been getting my process timing information from ps, top, and htop, which
-> I know can be unreliable in some ways (I've been using a tickless (NO_HZ=y)
-> kernel). I recompiled the g8a4bd4d kernel with that option off and a few more
-> changes to make my settings more conservative, and rechecked events/0. It
-> still reports at a consistent 2.5%, (down from about 4.3% with previous kernel
-> options) and after a short period of use (uptime 30 minutes) events/0 has had
-> 0:48 of time. In comparison, Xorg and Firefox (usually the biggest users)
-> report 1:12 and 0:44 in the same timeframe. 
-> 
-> So if I understand the purpose of the code, that means that my system has
-> generated 48 seconds worth of timing mistakes in audio playback relative to 25
-> minutes or so of audio stream, so that suggests the timing error of the
-> hardware is about 3%! That seems like huge latency for hardware so I see why
-> you wouldn't expect that.
+> Could you check the patch below in addition?  It's against my latest
+> git tree and should be applicable as is to linux-next (since it merges
+> from my tree), too.
 
-Could you check the patch below in addition?  It's against my latest
-git tree and should be applicable as is to linux-next (since it merges
-from my tree), too.
-
-This will show some latency time in the kernel messages.  If the
-average latency is about 20 or 30us, this is almost in the expected
-range.  Occasional high latencies should be the result of
-cond_resched(), so it can be ignored.
-
-> I should also say that close listening has convinced me that my audio
-> performance has been IMPROVED by the patch - IOW, the code is working well at
-> improving the audio stream, even though its using a fair amount of CPU time to
-> do it. With the new code, I seem to hear less random clicks, interruptions, or
-> static that I had previously blamed on the source of the audio. I don't know
-> how to test the output to the speakers relative to the input source
-> quantitatively, though.
-
-First we need to gather some hardware information to sort out the
-issue.  If the latency is almost constant, we may add some another
-trick, e.g. setting different IRQ-trigger pointers.  I'll prepare
-another patch.
-
-
-> Given that the worst-case-scenario for compensating for buggy hardware is
-> worse than expected, what is the best behavior for the driver given hardware
-> like mine? I don't know if a high CPU time for the events/0 process is
-> actually a problem, I'm just not used to seeing a -5 niceness process so
-> active under top. Let me know if you'd like any more info on my hardware or
-> setup, or if there are any additional kernel config options that might affect
-> my DMA reporting errors. I'm trying to be a useful linux-next tester, so any
-> advice is appreciated.
-
-The loop has cond_resched() and thus it won't give a significant
-system latency (and thus niceness wouldn't be much important here). 
-But, of course, such a loop takes some CPU time, and it'd be better to
-avoid.
+Doh forgot the patch.  Here it is.
 
 
 thanks,
 
 Takashi
+
+
+diff --git a/sound/pci/hda/hda_intel.c b/sound/pci/hda/hda_intel.c
+index dc68709..c0ae0e8 100644
+--- a/sound/pci/hda/hda_intel.c
++++ b/sound/pci/hda/hda_intel.c
+@@ -917,6 +917,26 @@ static void azx_init_pci(struct azx *chip)
+ }
+ 
+ 
++static struct timespec irq_pending_time;
++static long max_delay, avg_delay, avg_count;
++
++static void check_latency(void)
++{
++	struct timespec end_time;
++	long delay;
++
++	getnstimeofday(&end_time);
++	delay = end_time.tv_sec - irq_pending_time.tv_sec;
++	delay *= 1000000000L;
++	delay += end_time.tv_nsec - irq_pending_time.tv_nsec;
++	if (delay > max_delay) {
++		max_delay = delay;
++		printk(KERN_DEBUG "XXX hda: max_delay=%ld ns\n", max_delay);
++	}
++	avg_delay += delay / 1000;
++	avg_count++;
++}
++
+ static int azx_position_ok(struct azx *chip, struct azx_dev *azx_dev);
+ 
+ /*
+@@ -952,6 +972,7 @@ static irqreturn_t azx_interrupt(int irq, void *dev_id)
+ 			} else {
+ 				/* bogus IRQ, process it later */
+ 				azx_dev->irq_pending = 1;
++				getnstimeofday(&irq_pending_time);
+ 				schedule_work(&chip->irq_pending_work);
+ 			}
+ 		}
+@@ -1288,6 +1309,13 @@ static int azx_pcm_close(struct snd_pcm_substream *substream)
+ 	hinfo->ops.close(hinfo, apcm->codec, substream);
+ 	snd_hda_power_down(apcm->codec);
+ 	mutex_unlock(&chip->open_mutex);
++	if (avg_count) {
++		printk(KERN_DEBUG "XXX hda: avg_delay=%ld us\n",
++		       avg_delay / avg_count);
++		avg_count = 0;
++		avg_delay = 0;
++		max_delay = 0;
++	}
+ 	return 0;
+ }
+ 
+@@ -1521,6 +1549,7 @@ static void azx_irq_pending_work(struct work_struct *work)
+ 				azx_dev->irq_pending = 0;
+ 				spin_unlock(&chip->reg_lock);
+ 				snd_pcm_period_elapsed(azx_dev->substream);
++				check_latency();
+ 				spin_lock(&chip->reg_lock);
+ 			} else
+ 				pending++;
