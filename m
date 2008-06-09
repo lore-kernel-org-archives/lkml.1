@@ -1,62 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754233AbYFIQDA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbYFIQIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754233AbYFIQDA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 12:03:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751502AbYFIQCv
+	id S1754079AbYFIQIb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 12:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbYFIQIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 12:02:51 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34460 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751392AbYFIQCu (ORCPT
+	Mon, 9 Jun 2008 12:08:24 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43106 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751329AbYFIQIX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 12:02:50 -0400
-Date: Mon, 9 Jun 2008 08:58:18 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Neil Brown <neilb@suse.de>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       Dave Young <hidave.darkstar@gmail.com>
-Subject: Re: [bug, 2.6.26-rc4/rc5] sporadic bootup crashes in
- blk_lookup_devt()/prepare_namespace()
-In-Reply-To: <1213026413.14898.5.camel@linux.site>
-Message-ID: <alpine.LFD.1.10.0806090850090.3473@woody.linux-foundation.org>
-References: <20080609080312.GA32458@elte.hu>  <20080609020623.b6727f2b.akpm@linux-foundation.org>  <19f34abd0806090209l541d93c6jaba2704314b34418@mail.gmail.com>  <20080609133426.GB20194@cs181133002.pp.htv.fi>  <19f34abd0806090658v54f3a912n2ed30ad6cc20d00@mail.gmail.com>
-  <19f34abd0806090728s3b3fdbeq7dd3d31d02c8f28e@mail.gmail.com>  <20080609165757.184724ff@gondolin.boeblingen.de.ibm.com>  <alpine.LFD.1.10.0806090819410.3473@woody.linux-foundation.org> <1213026413.14898.5.camel@linux.site>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 9 Jun 2008 12:08:23 -0400
+Message-ID: <484D5578.7070709@sgi.com>
+Date: Mon, 09 Jun 2008 09:08:24 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/4] x86: Replace xxx_pda() operations with	x86_xx_percpu().
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.711845000@polaris-admin.engr.sgi.com> <20080609130302.GA20943@elte.hu>
+In-Reply-To: <20080609130302.GA20943@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 9 Jun 2008, Kay Sievers wrote:
+Ingo Molnar wrote:
+> * Mike Travis <travis@sgi.com> wrote:
 > 
-> I think we should keep the patch, as it fixed a different issue, and it
-> seems the bug was there even before the patch - the function was just
-> not called 3 times, so even more unlikely to trigger it.
+>>   * It is now possible to use percpu operations for pda access
+>>     since the pda is in the percpu area. Drop the pda operations.
+> 
+> FYI, this one didnt build with the attached config.
+> 
+> 	Ingo
+> 
 
-No, before the patch we never did a "dev_to_disk()" on the device. We just 
-did
+Ok, thanks, I will check it out.
 
-	if (strcmp(dev->bus_id, name) == 0) {
-		devt = dev->devt;
-		break;
-	}
+I'm still having problems getting your previous "instantaneous
+reboot" problem working.  It has something to do with cpu_clock
+interrupt, but I've still not figured out why it's failing.
 
-and we simply didn't care if it was a disk or a partition - it would work 
-correctly for both.
-
-Your patch made it simply not work for partitions at all (by dereferencing 
-an illegal address off them). My fix makes it ignore partitions entirely, 
-but I'm a bit nervous that there might be some setup that sets up *only* 
-partitions, not any base device at all. I guess that is unlikely, but it 
-worries me a bit.
-
-		Linus
+THanks,
+Mike
