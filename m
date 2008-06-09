@@ -1,50 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759504AbYFIVf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760099AbYFIVf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759504AbYFIVf0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 17:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753779AbYFIVfM
+	id S1760099AbYFIVf4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 17:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbYFIVfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 17:35:12 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:49851 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752656AbYFIVfL (ORCPT
+	Mon, 9 Jun 2008 17:35:39 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:4726 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754758AbYFIVfh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 17:35:11 -0400
-X-IronPort-AV: E=Sophos;i="4.27,614,1204531200"; 
-   d="scan'208";a="55058013"
-From: Roland Dreier <rdreier@cisco.com>
-To: steiner@sgi.com
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       tglx@linutronix.de, holt@sgi.com, andrea@qumranet.com
-Subject: Re: [patch 11/11] GRU Driver - makefile & Kconfig file changes
-References: <20080609211028.110089743@attica.americas.sgi.com>
-	<20080609211047.409885034@attica.americas.sgi.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Mon, 09 Jun 2008 14:35:09 -0700
-In-Reply-To: <20080609211047.409885034@attica.americas.sgi.com>
-	(steiner@sgi.com's message of "Mon, 09 Jun 2008 16:10:39 -0500")
-Message-ID: <adaod6a70mq.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Mon, 9 Jun 2008 17:35:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Yf/Vk+vLchvvRvEHhWIgNbb3HTbXxJu21PobS3qKM7U0rdrFCeeSRPhTrDEN5lsXMb
+         iRErZUlwFb2Hed9sgENJJVp+wXF1wlwJiiPPODGX7h3jBbJOGW++wxijiTK3C1ADv+td
+         xtfrPzPztFbYDJcDENiOjbC3/ZTvJj2yAj9dI=
+Message-ID: <c6b1100b0806091435w1b151bb8lb6dd13f4ac8e705a@mail.gmail.com>
+Date: Mon, 9 Jun 2008 22:35:32 +0100
+From: "Chris Clayton" <chris2553@googlemail.com>
+To: "Alan Stern" <stern@rowland.harvard.edu>
+Subject: Re: 2,6.26-rc4-git2 - long pause during boot
+Cc: "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "SCSI development list" <linux-scsi@vger.kernel.org>,
+       "USB list" <linux-usb@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "James Bottomley" <James.Bottomley@hansenpartnership.com>,
+       "Hannes Reinecke" <hare@suse.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux1394-devel@lists.sourceforge.net
+In-Reply-To: <Pine.LNX.4.44L0.0806091533160.14688-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 09 Jun 2008 21:35:09.0889 (UTC) FILETIME=[B142CB10:01C8CA78]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <484D8019.3090900@s5r6.in-berlin.de>
+	 <Pine.LNX.4.44L0.0806091533160.14688-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > +EXTRA_CFLAGS += -DDEBUG -Werror -Wall
+2008/6/9 Alan Stern <stern@rowland.harvard.edu>:
+> On Mon, 9 Jun 2008, Stefan Richter wrote:
+>
 
-Not sure if it's appropriate to set these flags for your driver...
+Sorry folks, I'm unexpectedly away from the computers that these
+"problems" occur on.
 
- > +	---help---
- > +	This option enables basic support for the SGI UV GRU driver. If
- > +	you are not running on a SGI UV system, say N.
+I should be back at home tomorrow and will answer you all as quickly
+as possible then.
 
-"...enables basic support for the SGI UV GRU."  And it would be a good
-idea to include some info about what UV GRU does -- your 0/11
-introduction mail had a good description that would be nice to have here
-as well.
+Thanks,
 
- - R.
+Chris
+
+>> The log at http://lkml.org/lkml/2008/6/6/317 shows two pauses.  One in
+>> the middle of USB related messages with no FireWire stuff around
+>> (17:25:19 to 17:25:44).  The other with parport, ieee1394, USB messages
+>> around it (17:25:44 to 17:26:31).
+>>
+>>  From there, the last 17:25:44 message is strange:  The device
+>> 00110666000013cc which is the controller is reported as being removed.
+>> Chris, did you do something at this point?
+>
+> It's also worth noting that the first 17:25:44 message is highly
+> suspicious.  It is the initial output of the ohci-hcd driver,
+> indicating that the udev/hotplug system had just loaded that driver.
+> This doesn't seem to have anything to do with the SCSI stack.
+>
+> Whatever caused the delay, it also managed to pause the other hotplug
+> task which was in the midst of loading uhci-hcd.
+>
+> Alan Stern
+>
+>
+
+
+
+-- 
+Beauty is in the eye of the beerholder.
