@@ -1,71 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbYFIU5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756744AbYFIU6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755935AbYFIU5s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 16:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbYFIU5k
+	id S1756744AbYFIU6m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 16:58:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbYFIU6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 16:57:40 -0400
-Received: from mx2.suse.de ([195.135.220.15]:50814 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751960AbYFIU5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 16:57:39 -0400
-Date: Mon, 9 Jun 2008 22:57:34 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Amul Shah <amul.shah@unisys.com>, Andi Kleen <andi@firstfloor.org>,
-       Johannes Weiner <hannes@saeurebad.de>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, anderson@redhat.com,
-       "Romer, Benjamin M" <Benjamin.Romer@unisys.com>
-Subject: Re: [patch 2/3] Add flags parameter to reserve_bootmem_generic()
-Message-ID: <20080609225734.2bb9ee64@kopernikus.site>
-In-Reply-To: <20080609205429.GJ3542@redhat.com>
-References: <20080608134628.757299158@halley.suse.de>
-	<20080608134629.743220278@halley.suse.de>
-	<87bq2bmvro.fsf@saeurebad.de>
-	<20080609132207.GC3542@redhat.com>
-	<20080609182341.00d6e746@halley.suse.de>
-	<484D5CCB.5020709@firstfloor.org>
-	<1213041041.19111.68.camel@ustr-shaha1-linux-dev.na.uis.unisys.com>
-	<20080609221732.1e14e5d5@kopernikus.site>
-	<20080609202935.GI3542@redhat.com>
-	<20080609224211.2ef0f74c@kopernikus.site>
-	<20080609205429.GJ3542@redhat.com>
-Organization: SUSE LINUX Products GmbH
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Jun 2008 16:58:34 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59617 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752913AbYFIU6d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 16:58:33 -0400
+Date: Mon, 9 Jun 2008 22:59:16 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Greg KH <gregkh@suse.de>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oliver@neukum.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linus Torvalds <torvalds@linuxfoundation.org>,
+       Andrew Morton <akpm@linuxfoundation.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.25-rc6: CONFIG_USB_PERSIST forced on
+Message-ID: <20080609205916.GC21429@elf.ucw.cz>
+References: <200806091712.46869.oliver@neukum.org> <Pine.LNX.4.44L0.0806091142390.2943-100000@iolanthe.rowland.org> <20080609195015.GA6601@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080609195015.GA6601@suse.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Vivek Goyal <vgoyal@redhat.com> [2008-06-09 16:54]:
->
-> On Mon, Jun 09, 2008 at 10:42:11PM +0200, Bernhard Walle wrote:
-> > Hi Vivek,
+On Mon 2008-06-09 12:50:15, Greg KH wrote:
+> On Mon, Jun 09, 2008 at 11:44:21AM -0400, Alan Stern wrote:
+> > On Mon, 9 Jun 2008, Oliver Neukum wrote:
 > > 
-> > * Vivek Goyal <vgoyal@redhat.com> [2008-06-09 16:29]:
-> > >
-> > > Can you please put some more explanation comment here to explain that
-> > > why it is ok to return with success, despite the fact that we never
-> > > reserved any memory.
+> > > Am Montag 09 Juni 2008 17:03:10 schrieb Alan Stern:
+> > > > On Mon, 9 Jun 2008, Pavel Machek wrote:
+> > > > 
+> > > > > Besides, it seems to break suspend/resume of printers, and probably
+> > > > > all the drivers that do not have reset_resume() method. That's
+> > > > > actually a regression.
+> > > > > 
+> > > > > https://bugzilla.novell.com/show_bug.cgi?id=394820
+> > > > 
+> > > > The right way to fix this is to add reset_resume to the printer driver.  
+> > > 
+> > > reset_resume() is supposed to restore all state. The printer driver does
+> > > not know which state a printer is in, except for the trivial case of the
+> > > printer not being in use, as it doesn't know the meaning of the data
+> > > going to the printer.
+> > > 
+> > > You might argue that you deserve what you get when you hibernate
+> > > while printing, but then it makes no sense to implement it anyhow,
+> > > disconnection and reconnection work just as well and are cleaner.
+> > > The same is true for many devices.
 > > 
-> > Do you think that's ok?
-> > 
-> >     When booting the kdump kernel, the MP tables (for example,
-> >     or other firmware-reserved memory) of the BIOS are beyond
-> >     end_pfn. (kexec-tools adds exactmap parameters to the kernel
-> >     so that the E820 map is no longer used.) Therefore, it's ok
-> >     to return "success" here. For normal boot, the MP tables
-> >     must be reserved normally.
-> > 
+> > In which case the correct approach is the second one I mentioned (which 
+> > you omitted in your reply): Make usbcore unbind drivers that don't 
+> > support reset_resume.
 > 
-> Looks good. Thanks
+> That sounds reasonable to me.  Oliver or Pavel, care to try this out?
 
-Should I resend the whole patch series to Linus for inclusion?
+I'm not an USB hacker, and 2.6.26 release is pretty near. I do have
+USB printer somewhere around, maybe it still works.
 
+But problem is _not_ limited to usblp. usblp is just a part of
+problem, the one we caught in testing.
 
+reset_resume() is only implemented in storage/usb.c... while resume()
+is pretty widespread in the usb drivers.
 
-Bernhard
+I believe we should just revert the "CONFIG_USB_PERSIST force on"
+patch, and solve this properly in 2.6.27.
+									Pavel
 -- 
-Bernhard Walle, SUSE LINUX Products GmbH, Architecture Maintenance
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
