@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758899AbYFIIXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758972AbYFIIYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758899AbYFIIXU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 04:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755991AbYFIIXI
+	id S1758972AbYFIIYW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 04:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756216AbYFIIYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 04:23:08 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59712 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755840AbYFIIXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 04:23:06 -0400
-Date: Mon, 9 Jun 2008 10:22:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [patch, v2.6.26-rc5] net/irda build fix: mcs7780
-Message-ID: <20080609082257.GA15282@elte.hu>
-References: <20080604.170123.234927220.davem@davemloft.net>
+	Mon, 9 Jun 2008 04:24:15 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37747 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755991AbYFIIYO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 04:24:14 -0400
+Message-ID: <484CE85C.1000201@jp.fujitsu.com>
+Date: Mon, 09 Jun 2008 17:22:52 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080604.170123.234927220.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Bug #10787] pcie hotplug bootup crash fix
+References: <GIilET9wkhI.A.JzB.81vSIB@albercik> <dCRO4tbfLzK.A.VoD.Y3vSIB@albercik>
+In-Reply-To: <dCRO4tbfLzK.A.VoD.Y3vSIB@albercik>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is fixed (workaround for now) in 2.6.26-rc5.
 
--tip testing found the following build error:
+Thanks,
+Kenji Kaneshige
 
-  drivers/built-in.o: In function `mcs_receive_irq':
-  mcs7780.c:(.text+0x4e429): undefined reference to `crc32_le'
-  drivers/built-in.o: In function `mcs_hard_xmit':
-  mcs7780.c:(.text+0x4e9af): undefined reference to `crc32_le'
 
-with:
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10787
+> Subject		: pcie hotplug bootup crash fix
+> Submitter	: Ingo Molnar <mingo@elte.hu>
+> Date		: 2008-05-24 16:58 (15 days old)
+> References	: http://marc.info/?l=linux-kernel&amp;m=121164842212038&amp;w=4
+> Handled-By	: Ingo Molnar <mingo@elte.hu>
+> Patch		: http://marc.info/?l=linux-kernel&amp;m=121164842212038&amp;w=4
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
-  http://redhat.com/~mingo/misc/config-Sun_Jun__8_22_56_14_CEST_2008.bad
 
-the reason is a missing enablement of the CRC32 library in the Kconfig.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- drivers/net/irda/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
-
-Index: linux/drivers/net/irda/Kconfig
-===================================================================
---- linux.orig/drivers/net/irda/Kconfig
-+++ linux/drivers/net/irda/Kconfig
-@@ -329,6 +329,7 @@ config PXA_FICP
- config MCS_FIR
- 	tristate "MosChip MCS7780 IrDA-USB dongle"
- 	depends on IRDA && USB && EXPERIMENTAL
-+	select CRC32
- 	help
- 	  Say Y or M here if you want to build support for the MosChip
- 	  MCS7780 IrDA-USB bridge device driver.
