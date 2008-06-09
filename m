@@ -1,85 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbYFIRkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbYFIRsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756603AbYFIRkY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 13:40:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbYFIRkN
+	id S1755514AbYFIRsg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 13:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbYFIRs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 13:40:13 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:48297 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751448AbYFIRkM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 13:40:12 -0400
-Subject: Re: [PATCH 03/15] x86: remove early_gdt_descr reference
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Glauber Costa <gcosta@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu, hugh@veritas.com
-In-Reply-To: <484D670C.6050203@redhat.com>
-References: <1213021018-14159-1-git-send-email-gcosta@redhat.com>
-	 <1213021018-14159-2-git-send-email-gcosta@redhat.com>
-	 <1213021018-14159-3-git-send-email-gcosta@redhat.com>
-	 <1213021018-14159-4-git-send-email-gcosta@redhat.com>
-	 <1213024983.3508.28.camel@localhost.localdomain>
-	 <484D5119.5020206@redhat.com>
-	 <1213032042.3508.54.camel@localhost.localdomain>
-	 <484D670C.6050203@redhat.com>
-Content-Type: text/plain
-Date: Mon, 09 Jun 2008 12:40:02 -0500
-Message-Id: <1213033202.3508.60.camel@localhost.localdomain>
+	Mon, 9 Jun 2008 13:48:26 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:64593 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752987AbYFIRsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 13:48:25 -0400
+Date: Mon, 9 Jun 2008 19:48:59 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-mtd@lists.infradead.org,
+       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Subject: Re: [patch 2.6.26-rc5-git] at91_nand speedup via
+ {read,write}s{b,w}()
+Message-ID: <20080609194859.3a9b5fcb@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <200806091007.37494.david-b@pacbell.net>
+References: <200806090313.28515.david-b@pacbell.net>
+	<20080609133124.0eb97e25@hskinnemo-gx745.norway.atmel.com>
+	<200806091007.37494.david-b@pacbell.net>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Jun 2008 17:48:10.0896 (UTC) FILETIME=[FBB56100:01C8CA58]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-06-09 at 14:23 -0300, Glauber Costa wrote:
-> James Bottomley wrote:
-> > On Mon, 2008-06-09 at 12:49 -0300, Glauber Costa wrote:
-> >> James Bottomley wrote:
-> >>> On Mon, 2008-06-09 at 11:16 -0300, Glauber Costa wrote:
-> >>>> since we use switch_to_new_gdt, there is no point
-> >>>> in assigning early_gdt_descr except for the first
-> >>>> assignment, which is done manually.
-> >>> What makes you think you can do this?  If you don't update the early
-> >>> boot gdt, they all end up using the Boot CPU one.  The problem with this
-> >>> is that there's a time from start_secondary to switch_to_new_gdt where
-> >>> the per cpu selector (%fs) and the pda selector (%gs) are those of the
-> >>> boot CPU.   The former isn't a problem but the CPU number is in the
-> >>> latter, and it's used in that path before we get to the initialisation.
-> >> You are right, I missed it.
-> >>
-> >> However, it only seem to be used in cpu_init, and very early. Sure there 
-> >> are some users _before_ we load the new gdt, but nothing prevents them 
-> >> to be moved after it. (Of course, this patch is wrong anyway).
-> >>
-> >> And if we do that, we can even take the %fs loading out of head_32.S
-> >> Of course, it's only valid if those are indeed the only early users of it.
-> >>
-> >> Is there any other use I'm missing?
+David Brownell <david-b@pacbell.net> wrote:
+> On Monday 09 June 2008, Haavard Skinnemoen wrote:
+> > David Brownell <david-b@pacbell.net> wrote:
+> > > This uses __raw_{read,write}s{b,w}() primitives to access data on NAND
+> > > chips for more efficient I/O.
+> > > 
+> > > On an arm926 with memory clocked at 100 MHz, this reduced the elapsed
+> > > time for a 64 MByte read by 16%.  ("dd" /dev/mtd0 to /dev/null, with
+> > > an 8-bit NAND using hardware ECC and 128KB blocksize.)
 > > 
-> > Well, %fs loading there is done for the boot CPU. To eliminate that you
-> > have to not only verify that start_secondary doesn't use anything in
-> > per_cpu areas, but also verify that nothing in start_kernel() up until
-> > boot_cpu_init() does ... That's a lot of smp_processor_id() references
-> > to convert.
-> Yes, after a second look, it would be tricky indeed. But only for cpu0.
-> For all the others, I still think we could get rid of the problem by 
-> switching to the new gdt earlier in cpu_init.
+> > Nice. Here are some numbers from my setup (256 MB, 8-bit, software ECC).
+> > 
+> > Before:
+> > real	2m38.131s
+> > user	0m0.228s
+> > sys	2m37.740s
+> > 
+> > After:
+> > real	2m27.404s
+> > user	0m0.180s
+> > sys	2m27.068s
+> > 
+> > which is a 6.8% speedup. I guess hardware ECC helps...
 > 
-> What do you think?
+> The AVR32 versions of readsb/writesb didn't look to me as if they'd
+> be quite as fast as the ARM ones either.  If AVR32 has some analogue
+> of "stmia r1!, {r3 - r6}" for burst 16 byte stores, it's not using
+> it right now.  (What was the bug you found in its readsb?)
 
-Operating a CPU with a bogus GDT is very fragile.  You can fix all the
-current issues with the secondary CPUs, but it gives a critical section
-within which none of the per_cpu operations will work.  It only takes
-one patch violating this rule and we have a very subtle bug introduced.
+Note that I'm talking about the __raw_ versions of those, which are a
+bit more optimized than the non-raw versions. They do
 
-It looks to me like the better fix might be just to initialise the gdt
-completely and properly in do_boot_cpu and just have the single switch
-in head_32.S be the correct one.  That way there's no problem critical
-region.
+1:	ldins.b	r8:t, r12[0]
+	ldins.b	r8:u, r12[0]
+	ldins.b	r8:l, r12[0]
+	ldins.b r8:b, r12[0]
+	st.w	r11++, r8
+	sub	r10, 4
+	brge	1b
 
-James
+I don't think we have an instruction that can store multiple registers
+to the same address...it would of course be acceptable to store to
+incrementing addresses when dealing with NAND flash, but I don't think
+it's a good idea in a general __raw_readsb implementation.
 
+Here's the bug I found, btw:
 
+--- a/arch/avr32/lib/io-readsb.S
++++ b/arch/avr32/lib/io-readsb.S
+@@ -41,7 +41,7 @@ __raw_readsb:
+ 2:     sub     r10, -4
+        reteq   r12
+ 
+-3:     ld.uh   r8, r12[0]
++3:     ld.ub   r8, r12[0]
+        sub     r10, 1
+        st.b    r11++, r8
+        brne    3b
+
+Not sure how easy it is to trigger since that code is only executed for
+odd sizes.
+
+> Yes, I'd think the win would be most visible with hardware ECC, since
+> without it you've still got a second manual scan of each block.  (And
+> I see you observed this too, after applying a workaround for an ECC
+> erratum you just learned about...)  My numbers for one pair of trials
+> (the "16%" was an average of 6 runs) had a *lot* less system time.
+> Which oddly enough went *up* after the switch to readsb/writesb:
+> 
+> Before:
+> real    0m24.199s
+> user    0m0.000s
+> sys     0m5.630s
+> 
+> After:
+> real    0m20.226s
+> user    0m0.010s
+> sys     0m6.000s
+
+Hmm, that's odd. What's the CPU doing during the remaining 14 seconds?
+It can't possibly be sleeping?
+
+Ah, it's I/O wait, isn't it? Because you're going through the block
+layer?
+
+> However, the fact that you got a win even with soft ECC (and, I'm
+> guessing, slower RAM and slower readsb) suggests that this speedup
+> should be pretty generally applicable!
+
+Yes, I would think so...although I've seen gcc generate somewhat crappy
+code for the I/O accessors, and we do some address mangling in the
+non-raw I/O accessors on avr32 which might explain some of the
+difference.
+
+> > though I can't 
+> > seem to get it to work properly. Is there anything I need to do besides
+> > flash_eraseall when changing the ECC layout?
+> 
+> I wouldn't know.  Just be sure not to lose all your badblocks data
+> when you convert ...
+
+Seems like flash_eraseall skips the bad blocks as it should.
+
+> > Also, I wonder if we can use the DMA engine framework to get rid of all
+> > that "sys" time...?
+> 
+> It's another one of those cases where the framework overhead has to be
+> low enough to make that practical.  Last time I looked, the overhead to
+> set up and wait for a DMA of a couple KBytes was a significant chunk of
+> the cost to readsb()/writesb() the same data ... and that's even before
+> the data starts transferring.
+
+Right. I guess we should take a look at how to reduce that overhead at
+some point...
+
+> Plus, the MTD layer currently assumes DMA is never used.  Some of the
+> buffers it passes are not suitable for dma_map_single() since they
+> come from vmalloc.
+
+Aw...the MTD layer uses vmalloc() all over the place :-(
+
+> Sounds fair to me.  Thanks; this has been sitting in my tree for many
+> months now, I finally made time to measure it and was pleasantly
+> surprised by the size of the win!
+
+Yeah...I'm still not sure where to send it though, since it touches
+three different subsystems. I can set up a separate tree for it like
+I've done a couple of times before...though I'm not sure if anyone ever
+pulls it.
+
+Haavard
