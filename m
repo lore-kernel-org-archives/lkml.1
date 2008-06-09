@@ -1,180 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756358AbYFIV6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757641AbYFIWAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756358AbYFIV6T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 17:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbYFIV6F
+	id S1757641AbYFIWAa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 18:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbYFIWAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 17:58:05 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54110 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752002AbYFIV6C (ORCPT
+	Mon, 9 Jun 2008 18:00:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38966 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752169AbYFIWAT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 17:58:02 -0400
-Date: Mon, 9 Jun 2008 16:58:01 -0500
-From: Russ Anderson <rja@sgi.com>
-To: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Luck <tony.luck@intel.com>, Christoph Lameter <clameter@sgi.com>,
-       Russ Anderson <rja@sgi.com>
-Subject: [PATCH 2/3] mm: Avoid putting a bad page back on the LRU v7
-Message-ID: <20080609215801.GC9039@sgi.com>
-Reply-To: Russ Anderson <rja@sgi.com>
+	Mon, 9 Jun 2008 18:00:19 -0400
+Date: Mon, 9 Jun 2008 14:59:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: zippel@linux-m68k.org, tglx@linutronix.de, a.zummo@towertech.it,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] NTP: Let update_persistent_clock() sleep
+Message-Id: <20080609145923.fe5dc86d.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.55.0806091912390.26593@cliff.in.clinika.pl>
+References: <Pine.LNX.4.55.0805281856200.29522@cliff.in.clinika.pl>
+	<20080528201612.d2641dc3.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0806091950360.6791@localhost.localdomain>
+	<Pine.LNX.4.55.0806091912390.26593@cliff.in.clinika.pl>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Prevent a page with a physical memory error from being placed back
-on the LRU.  A new page flag (PG_memerror) is added if
-CONFIG_PAGEFLAGS_EXTENDED is defined.
+On Mon, 9 Jun 2008 19:18:52 +0100 (BST)
+"Maciej W. Rozycki" <macro@linux-mips.org> wrote:
 
-Signed-off-by: Russ Anderson <rja@sgi.com>
-Reviewed-by: Christoph Lameter <clameter@sgi.com>
+> Hi,
+> 
+> > > Roman does most of the NTP work afaik.  I consider Thomas's git-hrt
+> > > tree to be the route via which NTP changes get into linux-next and
+> > > mainline.
+> > 
+> > That function is a little misplaced, we already have a driver/rtc dir, 
+> > where this should go in the long term and ntp.c only providing the 
+> > trigger, that time is stable. There it would also be possible to better 
+> > take into account any quirks needed to update the chip.
+> 
+>  I posted a separate change to implement a backend using the RTC class
+> device.  I think this is the right solution till all the platforms are
+> moved away from legacy RTC drivers.
+> 
+>  I think you are right about the long-term implications and apart from any
+> possible quirks I think the interface could get improved as there are RTC
+> chips we support nowadays that provide sub-second resolution.
+> 
 
+
+Are there any objections to the patch under discussion?
+
+Thanks.
+
+
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+
+This is a change that makes the 11-minute RTC update be run in the process
+context.  This is so that update_persistent_clock() can sleep, which may
+be required for certain types of RTC hardware -- most notably I2C devices.
+
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Roman Zippel <zippel@linux-m68k.org>
+Cc: Rik van Riel <riel@redhat.com>
+Cc: Alessandro Zummo <a.zummo@towertech.it>
+Cc: David Brownell <david-b@pacbell.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- include/linux/page-flags.h |   18 ++++++++++++++++--
- mm/migrate.c               |   31 ++++++++++++++++++++++++++++++-
- mm/page_alloc.c            |   13 ++++++++-----
- 3 files changed, 54 insertions(+), 8 deletions(-)
 
-Index: linux-next/mm/page_alloc.c
-===================================================================
---- linux-next.orig/mm/page_alloc.c	2008-06-09 16:52:13.714381779 -0500
-+++ linux-next/mm/page_alloc.c	2008-06-09 16:52:21.119299155 -0500
-@@ -602,10 +602,10 @@ static int prep_new_page(struct page *pa
- 		bad_page(page);
+ kernel/time/ntp.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff -puN kernel/time/ntp.c~ntp-let-update_persistent_clock-sleep kernel/time/ntp.c
+--- a/kernel/time/ntp.c~ntp-let-update_persistent_clock-sleep
++++ a/kernel/time/ntp.c
+@@ -10,13 +10,13 @@
  
- 	/*
--	 * For now, we report if PG_reserved was found set, but do not
--	 * clear it, and do not allocate the page: as a safety net.
-+	 * For now, we report if PG_reserved or PG_memerror was found set, but
-+	 * do not clear it, and do not allocate the page: as a safety net.
- 	 */
--	if (PageReserved(page))
-+	if (PageReserved(page) || PageMemError(page))
- 		return 1;
- 
- 	page->flags &= ~(1 << PG_uptodate | 1 << PG_error | 1 << PG_reclaim |
-@@ -2476,8 +2476,11 @@ static void setup_zone_migrate_reserve(s
- 			continue;
- 		page = pfn_to_page(pfn);
- 
--		/* Blocks with reserved pages will never free, skip them. */
--		if (PageReserved(page))
-+		/*
-+		 * Blocks with reserved pages or memory errors will never
-+		 * free, skip them.
-+		 */
-+		if (PageReserved(page) || PageMemError(page))
- 			continue;
- 
- 		block_migratetype = get_pageblock_migratetype(page);
-Index: linux-next/mm/migrate.c
-===================================================================
---- linux-next.orig/mm/migrate.c	2008-06-09 13:46:32.892124708 -0500
-+++ linux-next/mm/migrate.c	2008-06-09 16:52:21.147302624 -0500
-@@ -720,7 +720,25 @@ unlock:
-  		 * restored.
-  		 */
-  		list_del(&page->lru);
-- 		move_to_lru(page);
-+		if (PageMemError(page))
-+			if (rc == 0)
-+				/*
-+				 * A page with a memory error that has
-+				 * been migrated will not be moved to
-+				 * the LRU.
-+				 */
-+				goto move_newpage;
-+			else
-+				/*
-+				 * The page failed to migrate and will not
-+				 * be added to the bad page list.  Clearing
-+				 * the error bit will allow another attempt
-+				 * to migrate if it gets another correctable
-+				 * error.
-+				 */
-+				ClearPageMemError(page);
-+
-+		move_to_lru(page);
- 	}
- 
- move_newpage:
-@@ -790,6 +808,17 @@ int migrate_pages(struct list_head *from
- 			}
- 		}
- 	}
-+
-+	if (rc != 0)
-+		list_for_each_entry_safe(page, page2, from, lru)
-+			if (PageMemError(page))
-+				/*
-+				 * The page failed to migrate.  Clearing
-+				 * the error bit will allow another attempt
-+				 * to migrate if it gets another correctable
-+				 * error.
-+				 */
-+				ClearPageMemError(page);
- 	rc = 0;
- out:
- 	if (!swapwrite)
-Index: linux-next/include/linux/page-flags.h
-===================================================================
---- linux-next.orig/include/linux/page-flags.h	2008-06-09 16:52:13.746385743 -0500
-+++ linux-next/include/linux/page-flags.h	2008-06-09 16:52:21.171305598 -0500
-@@ -84,6 +84,7 @@ enum pageflags {
- 	PG_private,		/* If pagecache, has fs-private data */
- 	PG_writeback,		/* Page is under writeback */
- #ifdef CONFIG_PAGEFLAGS_EXTENDED
-+	PG_memerror,		/* Page has a physical memory error */
- 	PG_head,		/* A head page */
- 	PG_tail,		/* A tail page */
- #else
-@@ -132,15 +133,21 @@ static inline int TestSetPage##uname(str
- static inline int TestClearPage##uname(struct page *page)		\
- 		{ return test_and_clear_bit(PG_##lname, &page->flags); }
- 
-+#define PAGEFLAGMASK(uname, lname)					\
-+static inline int PAGEMASK_##uname(void)				\
-+		{ return (1 << PG_##lname); }
- 
- #define PAGEFLAG(uname, lname) TESTPAGEFLAG(uname, lname)		\
--	SETPAGEFLAG(uname, lname) CLEARPAGEFLAG(uname, lname)
-+	SETPAGEFLAG(uname, lname) CLEARPAGEFLAG(uname, lname)		\
-+	PAGEFLAGMASK(uname, lname)
- 
- #define __PAGEFLAG(uname, lname) TESTPAGEFLAG(uname, lname)		\
- 	__SETPAGEFLAG(uname, lname)  __CLEARPAGEFLAG(uname, lname)
- 
- #define PAGEFLAG_FALSE(uname) 						\
- static inline int Page##uname(struct page *page) 			\
-+			{ return 0; }					\
-+static inline int PAGEMASK_##uname(void)				\
- 			{ return 0; }
- 
- #define TESTSCFLAG(uname, lname)					\
-@@ -308,9 +315,16 @@ static inline void __ClearPageTail(struc
- 
- #endif /* !PAGEFLAGS_EXTENDED */
- 
-+#ifdef CONFIG_PAGEFLAGS_EXTENDED
-+PAGEFLAG(MemError, memerror)
-+#else
-+PAGEFLAG_FALSE(MemError)
-+#endif
-+
- #define PAGE_FLAGS	(1 << PG_lru   | 1 << PG_private   | 1 << PG_locked | \
- 			 1 << PG_buddy | 1 << PG_writeback | \
--			 1 << PG_slab  | 1 << PG_swapcache | 1 << PG_active)
-+			 1 << PG_slab  | 1 << PG_swapcache | 1 << PG_active) |\
-+			 PAGEMASK_MemError()
+ #include <linux/mm.h>
+ #include <linux/time.h>
+-#include <linux/timer.h>
+ #include <linux/timex.h>
+ #include <linux/jiffies.h>
+ #include <linux/hrtimer.h>
+ #include <linux/capability.h>
+ #include <linux/math64.h>
+ #include <linux/clocksource.h>
++#include <linux/workqueue.h>
+ #include <asm/timex.h>
  
  /*
-  * Flags checked in bad_page().  Pages on the free list should not have
--- 
-Russ Anderson, OS RAS/Partitioning Project Lead  
-SGI - Silicon Graphics Inc          rja@sgi.com
+@@ -218,11 +218,11 @@ void second_overflow(void)
+ /* Disable the cmos update - used by virtualization and embedded */
+ int no_sync_cmos_clock  __read_mostly;
+ 
+-static void sync_cmos_clock(unsigned long dummy);
++static void sync_cmos_clock(struct work_struct *work);
+ 
+-static DEFINE_TIMER(sync_cmos_timer, sync_cmos_clock, 0, 0);
++static DECLARE_DELAYED_WORK(sync_cmos_work, sync_cmos_clock);
+ 
+-static void sync_cmos_clock(unsigned long dummy)
++static void sync_cmos_clock(struct work_struct *work)
+ {
+ 	struct timespec now, next;
+ 	int fail = 1;
+@@ -258,13 +258,13 @@ static void sync_cmos_clock(unsigned lon
+ 		next.tv_sec++;
+ 		next.tv_nsec -= NSEC_PER_SEC;
+ 	}
+-	mod_timer(&sync_cmos_timer, jiffies + timespec_to_jiffies(&next));
++	schedule_delayed_work(&sync_cmos_work, timespec_to_jiffies(&next));
+ }
+ 
+ static void notify_cmos_timer(void)
+ {
+ 	if (!no_sync_cmos_clock)
+-		mod_timer(&sync_cmos_timer, jiffies + 1);
++		schedule_delayed_work(&sync_cmos_work, 0);
+ }
+ 
+ #else
+_
+
