@@ -1,48 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756378AbYFJOU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756258AbYFJOWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756378AbYFJOU0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 10:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYFJOUO
+	id S1756258AbYFJOWS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 10:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbYFJOWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 10:20:14 -0400
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:18135 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751634AbYFJOUM (ORCPT
+	Tue, 10 Jun 2008 10:22:09 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:46800 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754248AbYFJOWI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 10:20:12 -0400
-X-IronPort-AV: E=Sophos;i="4.27,617,1204531200"; 
-   d="scan'208";a="78071260"
-From: Roland Dreier <rdreier@cisco.com>
-To: Jack Steiner <steiner@sgi.com>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       tglx@linutronix.de, holt@sgi.com, andrea@qumranet.com
-Subject: Re: [patch 09/11] GRU Driver - /proc interfaces
-References: <20080609211028.110089743@attica.americas.sgi.com>
-	<20080609211046.935659965@attica.americas.sgi.com>
-	<adaskvm70qp.fsf@cisco.com> <20080609221105.GA20211@sgi.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 10 Jun 2008 07:20:10 -0700
-In-Reply-To: <20080609221105.GA20211@sgi.com> (Jack Steiner's message of "Mon,
-	9 Jun 2008 17:11:06 -0500")
-Message-ID: <aday75d5q3p.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Tue, 10 Jun 2008 10:22:08 -0400
+Message-ID: <484E8DD2.5050603@de.ibm.com>
+Date: Tue, 10 Jun 2008 16:21:06 +0200
+From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 10 Jun 2008 14:20:11.0090 (UTC) FILETIME=[1793DB20:01C8CB05]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: Jeff Dike <jdike@addtoit.com>, akpm@linuxfoundation.org,
+       linux-kernel@vger.kernel.org,
+       Peter Oberparleiter <oberparleiter@googlemail.com>
+Subject: Re: 2.6.26-rc5-mm1: uml link error
+References: <OF61F32674.CE1F9CB0-ONC1257464.004D17DC-C1257464.004DB50E@de.ibm.com>
+In-Reply-To: <OF61F32674.CE1F9CB0-ONC1257464.004D17DC-C1257464.004DB50E@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > AFAICT, this is not a format that is compatible with the /sys guidelines of 1 value
- > per file.
- > 
- > A system can have 1000's of GRU chiplets. Having separate collection of files for
- > each set of metrics is clumsy. What other drivers have similar issues. I'll
- > gladly copy whatever makes sense.
+Peter 1 Oberparleiter wrote:
+> Jeff Dike <jdike@addtoit.com> wrote on 10.06.2008 15:57:29:
+> 
+>> On Tue, Jun 10, 2008 at 01:19:27PM +0200, Miklos Szeredi wrote:
+>> > Hmm, uml still doesn't boot with this patch, it dies while calling the
+>> > constructors.  So maybe that SORT contruct is still needed?
+>> > 
+>> > #17 0x08049793 in do_ctors () at init/main.c:706
+>> > #18 0x080499cc in do_basic_setup () at init/main.c:789
+>> > #19 0x08049a43 in kernel_init (unused=0x0) at init/main.c:897
+>> 
+>> This doesn't look like it's in do_initcalls.  What happens with
+>> "initcall_debug"?
+> 
+> Constructor calls inside the kernel happen just before any other
+> initcall. The problem here is that constructors are called from both
+> the host run-time environment as well as from the kernel. I'm
+> working on a patch that disables kernel constructor calling for UML.
 
-I guess the closest parallel would be networking, where you might have
-1000s of routes etc.  So maybe netlink is your best bet.
+New try: should be fixed with the patch below (applies on top of
+kernel-call-constructors.patch):
 
- - R.
+--
+Subject: kernel: disable constructor calling for uml
+
+From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+
+Disable calling of constructor functions from within the kernel for uml
+as they are already called by the host run-time environment.
+
+Found-by: Miklos Szeredi <miklos@szeredi.hu>
+Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+---
+ include/asm-generic/vmlinux.lds.h |    2 ++
+ init/main.c                       |    2 ++
+ kernel/module.c                   |    2 ++
+ 3 files changed, 6 insertions(+)
+
+Index: linux-2.6.26-rc5-mm2/include/asm-generic/vmlinux.lds.h
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/include/asm-generic/vmlinux.lds.h
++++ linux-2.6.26-rc5-mm2/include/asm-generic/vmlinux.lds.h
+@@ -381,7 +381,9 @@
+ 	}								\
+ 	__per_cpu_end = .;
+ 
++#ifndef CONFIG_UML
+ #define CONSTRUCTORS							\
+ 		VMLINUX_SYMBOL(__ctor_start) = .;			\
+ 		*(.ctors)						\
+ 		VMLINUX_SYMBOL(__ctor_end) = .;
++#endif /* !CONFIG_UML */
+Index: linux-2.6.26-rc5-mm2/init/main.c
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/init/main.c
++++ linux-2.6.26-rc5-mm2/init/main.c
+@@ -699,11 +699,13 @@ asmlinkage void __init start_kernel(void
+ 
+ static void __init do_ctors(void)
+ {
++#ifndef CONFIG_UML
+ 	ctorcall_t *call;
+ 
+ 	for (call = (ctorcall_t *) __ctor_start;
+ 	     call < (ctorcall_t *) __ctor_end; call++)
+ 		(*call)();
++#endif /* !CONFIG_UML */
+ }
+ 
+ static int __initdata initcall_debug;
+Index: linux-2.6.26-rc5-mm2/kernel/module.c
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/kernel/module.c
++++ linux-2.6.26-rc5-mm2/kernel/module.c
+@@ -2194,10 +2194,12 @@ static struct module *load_module(void _
+ 
+ static void do_mod_ctors(struct module *mod)
+ {
++#ifndef CONFIG_UML
+ 	unsigned long i;
+ 
+ 	for (i = 0; i < mod->num_ctors; i++)
+ 		mod->ctors[i]();
++#endif /* !CONFIG_UML */
+ }
+ 
+ /* This is where the real work happens */
