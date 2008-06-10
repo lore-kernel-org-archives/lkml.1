@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757394AbYFJK3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753427AbYFJKcX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757394AbYFJK3S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 06:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbYFJK3K
+	id S1753427AbYFJKcX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 06:32:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbYFJKcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 06:29:10 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38131 "EHLO mx3.mail.elte.hu"
+	Tue, 10 Jun 2008 06:32:16 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36654 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753329AbYFJK3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 06:29:09 -0400
-Date: Tue, 10 Jun 2008 12:28:58 +0200
+	id S1750821AbYFJKcP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 06:32:15 -0400
+Date: Tue, 10 Jun 2008 12:31:51 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: David Rientjes <rientjes@google.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul Menage <menage@google.com>,
-       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] sched: prevent bound kthreads from changing
-	cpus_allowed
-Message-ID: <20080610102858.GE19136@elte.hu>
-References: <alpine.DEB.1.10.0806051255500.31157@chino.kir.corp.google.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Jan Beulich <jbeulich@novell.com>, Stable Kernel <stable@kernel.org>,
+       x86@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH UPDATED] x86: set PAE PHYSICAL_MASK_SHIFT to 44 bits.
+Message-ID: <20080610103151.GG19136@elte.hu>
+References: <4848046A.5060006@goop.org> <484823BD.76E4.0078.0@novell.com> <484901A3.3040401@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0806051255500.31157@chino.kir.corp.google.com>
+In-Reply-To: <484901A3.3040401@goop.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,14 +36,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* David Rientjes <rientjes@google.com> wrote:
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> Kthreads that have called kthread_bind() are bound to specific cpus, 
-> so other tasks should not be able to change their cpus_allowed from 
-> under them.  Otherwise, it is possible to move kthreads, such as the 
-> migration or software watchdog threads, so they are not allowed access 
-> to the cpu they work on.
+> When a 64-bit x86 processor runs in 32-bit PAE mode, a pte can 
+> potentially have the same number of physical address bits as the 
+> 64-bit host ("Enhanced Legacy PAE Paging").  This means, in theory, we 
+> could have up to 52 bits of physical address in a pte.
+>
+> The 32-bit kernel uses a 32-bit unsigned long to represent a pfn. This 
+> means that it can only represent physical addresses up to 32+12=44 
+> bits wide.  Rather than widening pfns everywhere, just set 2^44 as the 
+> Linux x86_32-PAE architectural limit for physical address size.
 
-applied to tip/sched-devel, thanks David.
+applied to tip/x86/cleanups - thanks Jeremy. No urgency for v2.6.26, 
+right?
 
 	Ingo
