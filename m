@@ -1,83 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758816AbYFJIhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758911AbYFJIkY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758816AbYFJIhW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 04:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754139AbYFJIhJ
+	id S1758911AbYFJIkY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 04:40:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbYFJIkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 04:37:09 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:58878 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752474AbYFJIhH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 04:37:07 -0400
-Date: Tue, 10 Jun 2008 11:36:10 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: Rob Landley <rob@landley.net>, linux-tiny <Linux-tiny@selenic.com>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: mainlining min-configs...
-Message-ID: <20080610083610.GC1987@cs181133002.pp.htv.fi>
-References: <48447615.5050806@am.sony.com> <20080604194002.GF4189@cs181133002.pp.htv.fi> <4849CCA3.7040102@am.sony.com> <200806062329.54019.rob@landley.net> <484DDAD9.2000306@am.sony.com>
+	Tue, 10 Jun 2008 04:40:10 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:24424 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752249AbYFJIkI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 04:40:08 -0400
+In-Reply-To: <20080609220149.d930d141.akpm@linux-foundation.org>
+To: linux-mm@kvack.org
+Cc: balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Andrew Morton <akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <484DDAD9.2000306@am.sony.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Subject: Re: 2.6.26-rc5-mm1
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OF18B05E59.2D95953A-ONC1257464.00296BEB-C1257464.002F94B3@de.ibm.com>
+From: Peter 1 Oberparleiter <Peter.Oberparleiter@de.ibm.com>
+Date: Tue, 10 Jun 2008 10:39:42 +0200
+X-MIMETrack: Serialize by Router on D12ML066/12/M/IBM(Release 7.0.2FP2HF322 | September
+ 26, 2007) at 10/06/2008 10:39:43,
+	Serialize complete at 10/06/2008 10:39:43
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 09, 2008 at 06:37:29PM -0700, Tim Bird wrote:
-> Rob Landley wrote:
-> > On Friday 06 June 2008 18:47:47 Tim Bird wrote:
-> >> At a minimum, it would be nice to have a few nice examples
-> >> of really, really small configs for things like qemus for different
-> >> architectures (just to give embedded developers who are working
-> >> on size a starting point).
-> > 
-> > That's more or less what I'm trying to do with my Firmware Linux project: 
-> > creating cross compilers and minimal native build environments for every qemu 
-> > target.
+Andrew Morton <akpm@linux-foundation.org> wrote on 10.06.2008 07:01:49:
+> On Tue, 10 Jun 2008 06:57:02 +0200 Mariusz Kozlowski <m.
+> kozlowski@tuxland.pl> wrote:
 > 
-> Any chance of getting your minimal configs from Firmware Linux mainlined?
+> > Witam, 
+> > 
+> > > On Mon, 9 Jun 2008 21:14:54 +0200
+> > > Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
+> > > 
+> > > > Hello Balbir,
+> > > > 
+> > > > > Andrew Morton wrote:
+> > > > > > Temporarily at
+> > > > > > 
+> > > > > >   http://userweb.kernel.org/~akpm/2.6.26-rc5-mm1/
+> > > > > > 
+> > > > > 
+> > > > > I've hit a segfault, the last few lines on my console are
+> > > > > 
+> > > > > 
+> > > > > Testing -fstack-protector-all feature
+> > > > > registered taskstats version 1
+> > > > > debug: unmapping init memory ffffffff80c03000..ffffffff80dd8000
+> > > > > init[1]: segfault at 7fff701fe880 ip 7fff701fee5e sp 
+> 7fff7006e6d0 error 7
+> > > > > 
+> > > > > With absolutely no stack trace. I'll dig deeper.
+> > > > 
+> > > > Hey, I see something similar and I actually have a stack 
+> trace. Here it goes:
+> > > > 
+> > > > bash[498] segfault at ffffffff80868b58 ip ffffffffff600412 sp 
+> 7fffa3d010f0 error 7
+> > > > init[1] segfault at ffffffff80868b58 ip ffffffffff600412 sp 
+> 7fff9e97f640 error 7
+> > > > init[1] segfault at ffffffff80868b58 ip ffffffffff600412 sp 
+> 7fff9e97eed0 error 7
+> > > > Kernel panic - not syncing: Attemted to kill init!
+> > > > Pid 1, comm: init Not tainted 2.6.26-rc5-mm1 #1
+> > > > 
+> > > > Call Trace:
+> > > > [<ffffffff80254632>] panic+0xe2/0x260
+> > > > [<ffffffff802fa8ba>] ? __slab_free+0x10a/0x630
+> > > > [<ffffffff80265a8e>] ? __sigqueue_free+0x5e/0x70
+> > > > [<ffffffff802851eb>] ? trace_hardirqs_off+0x1b/0x30
+> > > > [<ffffffff802851eb>] ? trace_hardirqs_off+0x1b/0x30
+> > > > [<ffffffff80259b54>] do_exit+0xb84/0xc30
+> > > > [<ffffffff80259c5a>] do_group_exit+0x5a/0x110
+> > > > [<ffffffff8026a3b5>] get_signal_to_deliver+0x2c5/0x620
+> > > > [<ffffffff8020bb3b>] do_notify_resume+0x11b/0xd10
+> > > > [<ffffffff8028da5b>] ? trace_hardirqs_on+0x1b/0x30
+> > > > [<ffffffff805cd0f3>] ? _spin_unlock_irqrestore+0x93/0x130
+> > > > [<ffffffff8026865c>] ? force_sig_info+0x10c/0x130
+> > > > [<ffffffff8022fb9c>] ? force_sig_info_fault+0x2c/0x40
+> > > > [<ffffffff802dd7dd>] ? print_vma_addr+0x10d/0x1d0
+> > > > [<ffffffff805cbb67>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+> > > > [<ffffffff8028d8da>] ? trace_hardirqs_on_caller+0x15a/0x2c0
+> > > > [<ffffffff8020d4c9>] retint_signal+0x46/0x8d
+> > > > 
+> > > > This was copied manually so typos are possible.
+> > > > 
+> > > 
+> > > Thanks.  Could someone send a config please?  Or a bisection result 
+;)
+> > 
+> > In my case it turns out to be gcov patches - in which I'm interested
+> > in to see (and play with) the tests coverage.
+> > 
+> > #
+> > # gcov
+> > #
+> > kernel-call-constructors.patch
+> > kernel-introduce-gcc_version_lower-macro.patch
+> > seq_file-add-function-to-write-binary-data.patch
+> > GOOD
+> > gcov-add-gcov-profiling-infrastructure.patch
+> > GOOD
+> > gcov-create-links-to-gcda-files-in-build-directory.patch
+> > gcov-architecture-specific-compile-flag-adjustments.patch
+> > BAD
+> > 
+> > I can not bisect between the last two due to build error. Config 
+> is attached.
+> > 
+> 
+> (cc Peter)
 
-It could help finding compile errors in some more "exotic" configurations
-early (but I'd question whether the Rob's current configs are really 
-both minimal and typical for embedded usage - e.g the i686 one having 
-both ext2 and ext3 enabled but no JFFS2; and enabling all IO schedulers 
-in the kernel as well as ACPI is also not a typical embedded setup).
+Thanks for the report. These look like the "known architecture problems"
+that I've hinted at in the gcov announcement post (I'm assuming this is
+x86_64 as I've seem similar reports in the past).
 
-But if you want to discover size change with minimal configs early you 
-anyway have to both:
-- constantly keep your configs in shape so that they are both minimal
-  for some set of hardware support and features and
-- investigate for any size changes what caused them
-  (experience has shown that putting information on a webpage doesn't
-   fix problems - even for compile errors).
+Possible reasons:
 
-You need both, and ideally constantly done by the same person against 
-Linus' tree, -next and -mm.
+1) initrd overwrites kernel: When kernel and initrd are loaded to static
+addresses, the oversized gcov kernel may overlap with the initrd load
+address. Solution: move initrd loading address.
 
-Where to get your minimal configs from at the start is just a small 
-thing at the beginning - don't underestimate the required manual work 
-that will have to be done each week.
+2) out-of-memory: Kernel plus profiling code may just not fit into a
+minimal memory configuration any more. Solution: add memory.
 
-> Does anyone else think this would be valuable?  If not in mainline, it
-> would be nice to collect them somewhere, to compare what options different
-> developers decide turn on or off.
+3) write-protection of kernel code: gcc keeps profiling code and data
+close together in the .text section. Solution: any mechanism that
+protects .text against writes should be disabled when running a
+profiled kernel.
 
-You already have this when you look at e.g. the ARM defconfigs in the 
-kernel
+4) as of yet undiscovered incompatibilities between arch-dependent code
+and gcc's -fprofile-arcs option. Examples would be:
 
->  -- Tim
+ * code which is run before memory access preparations were made
+ * hard coded section sizes
+ * relative address displacements which are out of range
 
-cu
-Adrian
+Unfortunately I neither have access to a machine nor the skill to debug
+4) myself, so if 1)-3) can be ruled out, I'd like to ask for more help
+on this one:
 
--- 
+First off, someone needs to track down the offending file(s). This is
+done by putting a line containing "GCOV := n" in all Makefiles below
+arch/x86_64 (or go one step further back and set
+CONFIG_GCOV_PROFILE_ALL=n). If my assumption is correct, then the
+kernel should boot fine afterwards. In that case, remove the lines
+again one-by-one, while compiling and booting after each change. If the
+problem can be narrowed down to a single Makefile, replace the single
+"GCOV := n" line with multiple "GCOV_file.o := n" lines, one for each
+generated object file. Then again, same approach as before: remove
+those lines, compile and boot until it breaks. Finally post your
+results.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+At this point we would need someone with x86_64 arch skills to look at
+the file and find out why this code is broken with "-fprofile-arcs"
+enabled (on s390 we discovered at least one actual code bug this way,
+so the analysis might just be of general use). Alternatively we can
+just keep these files from being profiled.
 
+
+Regards,
+  Peter
