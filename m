@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757978AbYFJJSG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbYFJJV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757978AbYFJJSG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 05:18:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYFJJRy
+	id S1757447AbYFJJV5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 05:21:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbYFJJVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 05:17:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38926 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751807AbYFJJRx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 05:17:53 -0400
-Date: Tue, 10 Jun 2008 02:17:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-Cc: jack@suse.cz, linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
-       sugita <yumiko.sugita.yf@hitachi.com>
-Subject: Re: - jbd-strictly-check-for-write-errors-on-data-buffers.patch
- removed from -mm tree
-Message-Id: <20080610021746.51e5cfa8.akpm@linux-foundation.org>
-In-Reply-To: <484E4097.2010204@hitachi.com>
-References: <200806092212.m59MC553010889@imap1.linux-foundation.org>
-	<484E4097.2010204@hitachi.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 10 Jun 2008 05:21:49 -0400
+Received: from ozlabs.org ([203.10.76.45]:48385 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751937AbYFJJVs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 05:21:48 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18510.18338.20232.969001@cargo.ozlabs.ibm.com>
+Date: Tue, 10 Jun 2008 19:21:38 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+Cc: Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>,
+       general@lists.openfabrics.org, "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>, TKLEIN@de.ibm.com,
+       fenkes@de.ibm.com, raisch@de.ibm.com, THEMANN@de.ibm.com
+Subject: Re: [PATCH 0/2] Prevent loss of interrupts in IB/ehca
+In-Reply-To: <200806101021.28795.ossrosch@linux.vnet.ibm.com>
+References: <200806091742.29421.ossrosch@linux.vnet.ibm.com>
+	<18509.44672.668946.207110@cargo.ozlabs.ibm.com>
+	<200806101021.28795.ossrosch@linux.vnet.ibm.com>
+X-Mailer: VM 7.19 under Emacs 22.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008 17:51:35 +0900 Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com> wrote:
+Stefan Roscher writes:
 
-> Hello Andrew,
-> 
-> akpm@linux-foundation.org wrote:
-> 
-> > The patch titled
-> >      jbd: strictly check for write errors on data buffers
-> > has been removed from the -mm tree.  Its filename was
-> >      jbd-strictly-check-for-write-errors-on-data-buffers.patch
-> > 
-> > This patch was dropped because I don't think we want to go read-only on file data write errors
-> > 
-> > The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
-> > 
-> > ------------------------------------------------------
-> > Subject: jbd: strictly check for write errors on data buffers
-> > From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-> 
-> This patch series doesn't change the behavior on file data write
-> errors as I stated before, but we found that the current behavior has
-> been made accidentally.  So yesterday I sent an additional patch(*)
-> which removes the invocation of journal_abort() and thus stop making
-> the fs read-only on file data write errors, but it seems to be late
-> for the -mm release preparation.
-> 
->   Patch(*) can be found at:
->   http://marc.info/?l=linux-kernel&m=121300618614453&w=2
-> 
-> Anyway, as this patch series was dropped from -mm, I'm going to
-> send a revised version.
-> 
-> I plan to separate these pathces into three patche set. 
-> The first patch (set) corrects the current behavior in ordered
-> writes, it means it removes the invocation of journal_abort() on file
-> data write errors.  It is the almost same as the patch(*).
-> The second patch set fixes error handlings for metadata writes and
-> checkpointing.  It should be applied independently of the first
-> patch set, and it is the same as PATCH 3/5 to 5/5.
-> The third patch set makes "abort the journal on file data write errors"
-> tunable for mission critical users.  Of course, this feature depends
-> on the first patch set.
-> 
+> The processing of events with a timer controlled polling is not the "typical"
+> way how you should handle adapter events.
 
-That sounds like a good plan, thanks.
+Do you mean it's not typical in Linux (I would have said it was), or
+it's not the way that the firmware architects and implementers thought
+the eHEA hcalls would be used?
+
+> During corner case testing, we noticed that some versions of ehca 
+> do not properly transition to interrupt done in special load situations.
+> This can be resolved by periodically triggering EOI through H_EOI, 
+> if eqes are pending.
+
+So in other words, doing the extra EOIs is a workaround for a firmware
+and/or hardware bug, then?  If that's the case then you needed to say
+that in the commit message.
+
+Given that the ehea driver does hcalls itself directly, and this is a
+workaround for a firmware/hardware bug, it may actually be cleaner
+just to have the ehea driver do the necessary H_EOI calls directly.
+
+Paul.
