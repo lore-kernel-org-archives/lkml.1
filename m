@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbYFJR7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbYFJSEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756152AbYFJR7h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 13:59:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbYFJR7a
+	id S1754837AbYFJSEU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 14:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbYFJSEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 13:59:30 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:9883 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752171AbYFJR73 (ORCPT
+	Tue, 10 Jun 2008 14:04:12 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:47187 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752218AbYFJSEL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 13:59:29 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5314"; a="3643095"
-Message-ID: <484EC121.8010806@qualcomm.com>
-Date: Tue, 10 Jun 2008 11:00:01 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       David Rientjes <rientjes@google.com>, Paul Jackson <pj@sgi.com>,
-       mingo@elte.hu, menage@google.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch] sched: prevent bound kthreads from changing	cpus_allowed
-References: <alpine.DEB.1.10.0806051255500.31157@chino.kir.corp.google.com> <20080605152953.dcfefa47.pj@sgi.com> <alpine.DEB.1.10.0806051357480.32537@chino.kir.corp.google.com> <484D99AD.4000306@qualcomm.com> <1213080240.31518.5.camel@twins> <484E9FE8.9040504@qualcomm.com> <20080610170005.GA6038@tv-sign.ru>
-In-Reply-To: <20080610170005.GA6038@tv-sign.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Jun 2008 14:04:11 -0400
+Date: Tue, 10 Jun 2008 14:01:10 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [linux-pm] [PATCH -mm 2/2] kexec jump -v11: save/restore device
+ state
+In-reply-to: <1213082106.22608.30.camel@caritas-dev.intel.com>
+X-X-Sender: lenb@localhost.localdomain
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>, linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org
+Message-id: <alpine.LFD.1.10.0806101400090.14381@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <1213082106.22608.30.camel@caritas-dev.intel.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-Oleg Nesterov wrote:
-> On 06/10, Max Krasnyansky wrote:
->> Peter Zijlstra wrote:
->>> Per cpu workqueues should stay on their cpu.
->>>
->>> What you're really looking for is a more fine grained alternative to
->>> flush_workqueue().
->> Actually I had a discussion on that with Oleg Nesterov. If you remember my
->> original solution (ie centralized cpu_isolate_map) was to completely redirect
->> work onto other cpus. Then you pointed out that it's the flush_() that really
->> makes the box stuck. So I started thinking about redoing the flush. While
->> looking at the code I realized that if I only change the flush_() then queued
->> work can get stale so to speak. ie Machine does not get stuck but some work
->> submitted on the isolated cpus will sit there for a long time. Oleg pointed
->> out exact same thing. So the simplest solution that does not require any
->> surgery to the workqueue is to just move the threads to other cpus.
+On Tue, 10 Jun 2008, Huang, Ying wrote:
+
+> This patch implements devices state save/restore before after kexec.
 > 
-> Cough... I'd like to mention that I _personally agree with Peter, cwq->thread's
-> should stay on their cpu.
-I never argued against the _should stay_ ;-). What I'm arguing against is the
-_must stay_ which is a big difference. I'll start a separate thread on this.
+> 
+> This patch together with features in kexec_jump patch can be used for
+> following:
+> 
+> - A simple hibernation implementation without ACPI support. You can
+>   kexec a hibernating kernel, save the memory image of original system
+>   and shutdown the system. When resuming, you restore the memory image
+>   of original system via ordinary kexec load then jump back.
 
-> I just meant that from the workqueue.c pov it is (afaics) OK to move cwq->thread
-> to other CPUs, in a sense that this shouldn't add races or hotplug problems, etc.
-Yep. That's what I was referring to in the explanation that I send to Peter.
+What part of ACPI's role in hibernation are you trying to avoid
+1. enabling wake devices
+2. removing power from the system
+3. something else?
 
-> But still this doesn't look right to me.
-Yeah, it's all about perceptions. We'll fix that ;-).
-
-Max
-
+thanks,
+-Len
