@@ -1,136 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757528AbYFJTM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbYFJTNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757528AbYFJTM6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 15:12:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753833AbYFJTMu
+	id S1755240AbYFJTNW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 15:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757902AbYFJTNE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 15:12:50 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:36313 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752984AbYFJTMt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 15:12:49 -0400
-Date: Tue, 10 Jun 2008 14:12:41 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Andrew G. Morgan" <morgan@kernel.org>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] bugfix: was Re: [ linus-git ] prctl(PR_SET_KEEPCAPS,
-	...) is broken for some configs, e.g. CONFIG_SECURITY_SELINUX
-Message-ID: <20080610191241.GA17311@us.ibm.com>
-References: <1212932321.4675.9.camel@earth> <484BF662.9070100@kernel.org> <20080608110630.08a45cc6.akpm@linux-foundation.org> <484C5E84.2020307@kernel.org> <20080608163926.56f1be3d.akpm@linux-foundation.org> <20080609171741.GA13403@us.ibm.com> <484E0280.2050305@kernel.org>
+	Tue, 10 Jun 2008 15:13:04 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:20358 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753256AbYFJTNC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 15:13:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=uFB4yKkOFRsUkul24Q2bUOp5r9GFpVB4QOliJ/fU2A3Dfwkec5Ph1oRmTaw9bP5ukX
+         Ex9ZhGJy/UfwiFtsz4UfFjsIYt9FwFQ1c5PMXC98tcCqLsJDLv5PIb9Ab++tfR0k2CTL
+         4eSXGMPDfKKueidwiuY0QjbnXOXuamFBODS80=
+Date: Tue, 10 Jun 2008 23:10:25 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: nmi_watchdog suspicious
+Message-ID: <20080610191025.GB7353@cvg>
+References: <20080610185759.GA7353@cvg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <484E0280.2050305@kernel.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080610185759.GA7353@cvg>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew G. Morgan (morgan@kernel.org):
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> I agree. Short term, here is a patch to add dummy support for KEEPCAPS.
->
-> Cheers
->
-> Andrew
->
-> Serge E. Hallyn wrote:
-> |>> I fear that nothing will happen, and we'll end up wasting a lot of
-> |> peoples' time sending hey-why-did-my-dhcp-break reports.
-> |
-> | If we decide to get rid of dummy long-term, then it's far less
-> | distasteful to have it lie and claim the keepcaps worked in the
-> | meantime.
-> |
-> | So for 2.6.26 we could have dummy lie, then plan to make capabilities
-> | the default for 2.6.27?
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v1.2.6 (GNU/Linux)
->
-> iD8DBQFITgKA+bHCR3gb8jsRAiQYAJ47VnlBq2GSvLQv40tymjybLhNAtQCgya8G
-> YZQN/5w1uq+X2MYv1x4T4D4=
-> =NhwX
-> -----END PGP SIGNATURE-----
+[Cyrill Gorcunov - Tue, Jun 10, 2008 at 10:57:59PM +0400]
+| Ingo, Maciej, I've a really bad suspicious about commit
+| 
+| ---
+| commit 3ed3f06295e69700fa808396f7b350bff2b69de0
+| Author: Cyrill Gorcunov <gorcunov@gmail.com>
+| Date:   Wed Jun 4 01:00:47 2008 +0400
+| 
+|     x86: nmi - consolidate nmi_watchdog_default for 32bit mode
+|     
+|     64bit mode bootstrap code does set nmi_watchdog to NMI_NONE
+|     by default and doing the same on 32bit mode is safe too.
+|     Such an action saves us from several #ifdef.
+|     
+|     Btw, my previous commit
+|     
+|     commit 19ec673ced067316b9732bc6d1c4ff4052e5f795
+|     Author: Cyrill Gorcunov <gorcunov@gmail.com>
+|     Date:   Wed May 28 23:00:47 2008 +0400
+|     
+|         x86: nmi - fix incorrect NMI watchdog used by default
+|     
+|     did not fix the problem completely, moreover it
+|     introduced additional bug - nmi_watchdog would be
+|     set to either NMI_LOCAL_APIC or NMI_IO_APIC
+|     _regardless_ to boot option if being enabled thru
+|     /proc/sys/kernel/nmi_watchdog. Sorry for that.
+|     Fix it too.
+| ---
+| 
+| actually it changed nmi behaviour much more then I thought.
+| Look, since by default nmi_watchdog now becomes NMI_NONE it
+| does mean nmi.c:touch_nmi_watchdog() will not reset apic timers
+| anymore even being requested by some other code.
+| 
+| This commit does affect 32bit mode _only_. So now I'm guessing
+| what mode was implemented in correct way originally.
+| 
+| On 64bit mode nmi_watchdog=NMI_NONE by default (in case if APIC enabled).
+| On 32bit mode nmi_watchdog=NMI_DEFAULT was by default (in any case,
+| but could be set to NMI_NONE in check_timer(), but we don't take
+| this case now).
+| 
+| So lets take a look on touch_nmi_watchdog().
+| There is the condition
+| 
+| 	if (nmi_watchdog > 0)
+| 		...tell to reset counters in nmi_watchdog_tick()
+| 
+| this condition is not taken on 64bit mode, but *was* taken on
+| 32bit mode by default! So who was right then? 64bit version or 32bit?
+| 
+| Maciej, could you take a look please? Maybe I just missing figure
+| in general - ie how nmi_watchdog _should_ work.
+| 
+| 		- Cyrill -
 
-> From be19a4716c97c5aaf4c9721eeccfab2d44897ce2 Mon Sep 17 00:00:00 2001
-> From: Andrew G. Morgan <morgan@kernel.org>
-> Date: Mon, 9 Jun 2008 21:22:18 -0700
-> Subject: [PATCH] Add (back) dummy support for KEEPCAPS.
-> 
-> See: http://bugzilla.kernel.org/show_bug.cgi?id=10748
-> 
-> Signed-off-by: Andrew G. Morgan <morgan@kernel.org>
+btw, since in general we support nmi_watchdog for two choises:
+lapic and io-apic - i think about to change this condition to
 
-Thanks, Andrew.  Just one question inline.  Nevertheless,
+	if (nmi_watchdog == NMI_LOCAL_APIC ||
+		nmi_watchdog == NMI_IO_APIC) {
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+but still in doubts...
 
-Dmitry, does this fix the problem for you?
-
-(Not sure why I'm feeling queasy about this given that
-find . -name "*.c" -exec "grep" "-Hn" "issecure" "{}" \;
-returns only hits in security/commoncap.c...)
-
-> ---
->  security/dummy.c |   24 +++++++++++++++++++++++-
->  1 files changed, 23 insertions(+), 1 deletions(-)
-> 
-> diff --git a/security/dummy.c b/security/dummy.c
-> index f50c6c3..b891688 100644
-> --- a/security/dummy.c
-> +++ b/security/dummy.c
-> @@ -27,6 +27,8 @@
->  #include <linux/hugetlb.h>
->  #include <linux/ptrace.h>
->  #include <linux/file.h>
-> +#include <linux/prctl.h>
-> +#include <linux/securebits.h>
->  
->  static int dummy_ptrace (struct task_struct *parent, struct task_struct *child)
->  {
-> @@ -607,7 +609,27 @@ static int dummy_task_kill (struct task_struct *p, struct siginfo *info,
->  static int dummy_task_prctl (int option, unsigned long arg2, unsigned long arg3,
->  			     unsigned long arg4, unsigned long arg5, long *rc_p)
->  {
-> -	return 0;
-> +	switch (option) {
-> +	case PR_CAPBSET_READ:
-> +		*rc_p = (cap_valid(arg2) ? 1 : -EINVAL);
-> +		break;
-> +	case PR_GET_KEEPCAPS:
-> +		*rc_p = issecure(SECURE_KEEP_CAPS);
-> +		break;
-> +	case PR_SET_KEEPCAPS:
-> +		if (arg2 > 1)
-> +			*rc_p = -EINVAL;
-> +		else if (arg2)
-> +			current->securebits |= issecure_mask(SECURE_KEEP_CAPS);
-> +		else
-> +			current->securebits &=
-> +				~issecure_mask(SECURE_KEEP_CAPS);
-
-In these last two conditions, don't you need to set *rc_p?
-
-Oh, or my kernel tree may be out of date, as I seem to recall a recent
-patch initializing error to 0 in sys_prctl(), so this wouldn't
-technically be a problem?  Still would seem correct...
-
-> +		break;
-> +	default:
-> +		return 0;
-> +	}
-> +
-> +	return 1;
->  }
->  
->  static void dummy_task_reparent_to_init (struct task_struct *p)
-> -- 
-> 1.5.3.7
-> 
-
+		- Cyrill -
