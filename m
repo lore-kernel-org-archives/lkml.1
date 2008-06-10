@@ -1,68 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757155AbYFJRgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbYFJRhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757155AbYFJRgE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 13:36:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbYFJRfu
+	id S1754785AbYFJRhk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 13:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbYFJRhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 13:35:50 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:48085 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753019AbYFJRft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 13:35:49 -0400
-Date: Tue, 10 Jun 2008 20:34:50 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Bryan Wu <cooloney@kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: blackfin drivers/net/smc91x.c build error
-Message-ID: <20080610173450.GC11685@cs181133002.pp.htv.fi>
-References: <20080606162212.GC2201@cs181133002.pp.htv.fi> <8bd0f97a0806061252n1cf5ee33i40ddf9f55588e242@mail.gmail.com> <20080610135349.GA30792@cs181133002.pp.htv.fi> <8bd0f97a0806101013w42b9028j5dfa38d654f3d05f@mail.gmail.com>
+	Tue, 10 Jun 2008 13:37:32 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:31628 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750737AbYFJRhb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 13:37:31 -0400
+Date: Tue, 10 Jun 2008 10:36:54 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Louis Rilling <Louis.Rilling@kerlabs.com>
+Cc: ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] deadlock between configfs_rmdir() and sys_rename() (WAS
+	Re: [RFC][PATCH 4/4] configfs: Make multiple default_group)
+	destructions lockdep friendly
+Message-ID: <20080610173654.GA23829@ca-server1.us.oracle.com>
+Mail-Followup-To: Louis Rilling <Louis.Rilling@kerlabs.com>,
+	ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org
+References: <20080522114048.265996107@kerlabs.com> <20080522114947.927196541@kerlabs.com> <4836F48A.70008@kerlabs.com> <20080602230721.GD19500@mail.oracle.com> <20080603160034.GA17308@localhost> <20080606230154.GK29740@mail.oracle.com> <20080609110353.GK18153@localhost> <20080609125443.GL18153@localhost> <20080610015800.GD14820@mail.oracle.com> <20080610101427.GA4048@localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <8bd0f97a0806101013w42b9028j5dfa38d654f3d05f@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20080610101427.GA4048@localdomain>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 01:13:52PM -0400, Mike Frysinger wrote:
-> On Tue, Jun 10, 2008 at 9:53 AM, Adrian Bunk wrote:
-> > On Fri, Jun 06, 2008 at 03:52:09PM -0400, Mike Frysinger wrote:
-> >> On Fri, Jun 6, 2008 at 12:22 PM, Adrian Bunk wrote:
-> >> > drivers/net/smc91x.c fails as follows on blackfin:
-> >> > ...
-> >> >  CC      drivers/net/smc91x.o
-> >> > ...
-> >> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/net/smc91x.c:1863:36: error: macro "SMC_GET_MAC_ADDR" passed 2 arguments, but takes just 1
-> >> > ...
-> >>
-> >> it's a known issue (been known for quite a long time actually).  Bryan
-> >> has brought this up in the past already.
-> >
-> > Is my suggestion of reverting commit 099c736a470c8080a166e7a089f1e48e15f9947c
-> > correct or how else should it be resolved?
+On Tue, Jun 10, 2008 at 12:14:27PM +0200, Louis Rilling wrote:
+> On Mon, Jun 09, 2008 at 06:58:00PM -0700, Joel Becker wrote:
+> > 	I'm not against the latter AT ALL.  I just haven't come up with
+> > it yet - we can't remove parts of the tree, it must be all or none.
+> > Hence, we lock them all speculatively.
 > 
-> Bryan is taking care of it ... it may just stay broken in favor of
-> waiting for the merge from the net tree.
-> 
-> > This issue is the only remaining problem preventing that all blackfin
-> > defconfigs will compile in 2.6.26...
-> 
-> not really true.
->...
+> I'm slowly thinking about a solution, but I don't know the VFS enough
+> yet, especially regarding dentry invalidation and locking. Would it be possible
+> to start an rmdir() by moving the group to some unreachable place? We could
+> probably use the mutex of the configfs subsystem and enlarge its scope to
+> protect against concurrent mkdir(), check for user-created items under the
+> group (and descendent default groups) to remove, invalidate all dentries and
+> actually remove the group. Do you think that something is feasible in this way?
 
-What other build errors do you get in Linus' tree?
+	Nope, because you may have live objects below you - the rmdir
+should fail, and nothing should change.  Sure, you could put it back,
+but in the middle there is a period where another process tries to look
+at the tree and gets ENOENT.  That's not right.
+	But blocking lookup another way might work.  If we keep that
+rename process out of looking up its targets (blocked on a lock we hold)
+it might work.
+	Note, btw, that the create side (populate_groups) is safe,
+because we hold the creating parent's i_mutex throughout the entire
+process.
+	Hey, can we use d_revalidate?  Here's the issue.  rename, when
+going to lookup the objects it wants to lock, is getting them out of
+cached_lookup - there dcache locking is all that protects it.  I was
+first thinking we could take the dentry locks to block this out.  But
+rather, why not fail d_revalidate and force a locked lookup?  So, when
+we go to lock one of these groups for detaching, we also set a flag on
+the configfs_dirent.  We add a configfs_d_revalidate function that
+returns based on that flag - if set, revalidation is needed.  Thus, when
+another process comes in to look at the object we've already locked, it
+blocks waiting to find it.
+	See, in do_rename, it does do_path_lookup() before actually
+calling lock_rename().  It would block there waiting for our speculative
+removal.  We'd either fail rmdir, and those lookups would succeed, or
+we'd succeed rmdir, and the lookup fails.
+	The only concern is, can the reverse happen?  We get past the
+lookups in do_rename(), and then another process comes into rmdir() -
+will they deadlock there?
 
-> -mike
-
-cu
-Adrian
+Joel
 
 -- 
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Life's Little Instruction Book #267
 
+	"Lie on your back and look at the stars."
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
