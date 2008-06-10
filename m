@@ -1,53 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758144AbYFJUzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757429AbYFJVCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758144AbYFJUzw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 16:55:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758430AbYFJUzY
+	id S1757429AbYFJVCT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 17:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbYFJVCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 16:55:24 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:2760 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759345AbYFJUzV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 16:55:21 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=LQ7IDUagNGxHF/ci3dp6cECy7yNQCHLAFnRK1JmW87mHLOglZupNrd28JhMCQBVHq
-	tCbfUay8z8sbBvuWY3h2g==
-Date: Tue, 10 Jun 2008 13:54:50 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Max Krasnyansky <maxk@qualcomm.com>
-cc: Paul Jackson <pj@sgi.com>, mingo@elte.hu,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, menage@google.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: cpusets and kthreads, inconsistent behaviour
-In-Reply-To: <484EE7BE.3000606@qualcomm.com>
-Message-ID: <alpine.DEB.1.10.0806101350110.29422@chino.kir.corp.google.com>
-References: <alpine.DEB.1.10.0806051255500.31157@chino.kir.corp.google.com> <20080605152953.dcfefa47.pj@sgi.com> <alpine.DEB.1.10.0806051357480.32537@chino.kir.corp.google.com> <484D99AD.4000306@qualcomm.com> <alpine.DEB.1.10.0806091447300.10680@chino.kir.corp.google.com>
- <484EAC2F.5020103@qualcomm.com> <alpine.DEB.1.10.0806101135050.28953@chino.kir.corp.google.com> <484EE7BE.3000606@qualcomm.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 10 Jun 2008 17:02:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38410 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752871AbYFJVCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 17:02:04 -0400
+Date: Tue, 10 Jun 2008 17:01:54 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Daniel J Blueman <daniel.blueman@gmail.com>, linux-nfs@vger.kernel.org,
+       nfsv4@linux-nfs.org, Linux Kernel <linux-kernel@vger.kernel.org>,
+       bfields@fieldses.org
+Subject: Re: [2.6.26-rc4] mount.nfsv4/memory poisoning issues...
+Message-ID: <20080610170154.68e2e6fb@tleilax.poochiereds.net>
+In-Reply-To: <1213130012.20459.58.camel@localhost>
+References: <6278d2220806041633n3bfe3dd2ke9602697697228b@mail.gmail.com>
+	<20080604203504.62730951@tleilax.poochiereds.net>
+	<1213124088.20459.16.camel@localhost>
+	<20080610151357.150b6f69@tleilax.poochiereds.net>
+	<1213127909.20459.48.camel@localhost>
+	<20080610161352.4e588653@tleilax.poochiereds.net>
+	<1213130012.20459.58.camel@localhost>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008, Max Krasnyansky wrote:
+On Tue, 10 Jun 2008 16:33:32 -0400
+Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 
-> Hmm, technically you are correct of course. But we do not have any other
-> kernel tasks besides kthreads. All the kernel tasks I have on my machines have
-> kthreadd as their parent.
-> And I'm not aware of any kernel code that changes affinity mask of a
-> user-space task without paying attention to the cpuset the task belongs to. If
-> you know of any we should fix it because it'd clearly be a bug.
+> On Tue, 2008-06-10 at 16:13 -0400, Jeff Layton wrote:
+> 
+> > We can't call nfs_callback_down() until after nfs_callback_up()
+> > returns, so we're guaranteed to have "task" set to a valid task
+> > (presuming that nfs_callback_up() doesn't return error). We also can't
+> > return from nfs_callback_down() until after the nfs_callback_svc() has
+> > exited. kthread_stop() will block until it does.
+> 
+> The code I'm alluding to is in kthread():
+> 
+>        /* OK, tell user we're spawned, wait for stop or wakeup */
+>         __set_current_state(TASK_UNINTERRUPTIBLE);
+>         complete(&create->started);
+>         schedule();
+> 
+>         if (!kthread_should_stop())
+>                 ret = threadfn(data);
+> 
+> schedule() is called _after_ the complete() call, and _before_ we
+> execute threadfn() a.k.a. nfs_callback_svc(). If nfs_alloc_client() has
+> time to call nfs_callback_down() before the above thread gets scheduled
+> back in, then threadfn() doesn't get called at all, since
+> kthread_should_stop() is true.
 > 
 
-This is why it shouldn't belong in the sched or kthread code; the 
-discrepency that you point out between p->cpus_allowed and 
-task_cs(p)->cpus_allowed is a cpuset created one.
+Hmm...this is a bigger problem than it looked at first glance. lockd
+also has a similar problem...ditto for the new nfsd code wrt module
+refcounts.
 
-So to avoid having tasks with a cpus_allowed mask that is not a subset of 
-its cpuset's set of allowable cpus, the solution would probably be to add 
-a flavor of cpuset_update_task_memory_state() for a cpus generation value.
+In practice, I think the thread generally runs immediately (at least
+with current scheduler behavior), so we're probably not terribly
+vulnerable to this race. Still, we shouldn't rely on that...
+
+For lockd and the nfs4 callback thread, we'll also need to deal with
+the fact that svc_exit_thread() doesn't get called if this happens. So
+we'll need to call svc_exit_thread from the *_down() functions too
+(I presume that's OK).
+
+nfsd is a bigger problem since it exits on a signal. For that, perhaps
+we should declare a completion variable and have svc_set_num_threads()
+wait until nfsd() has actually run before continuing.
+
+Thoughts?
+
+-- 
+Jeff Layton <jlayton@redhat.com>
