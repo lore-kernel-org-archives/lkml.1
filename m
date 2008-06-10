@@ -1,133 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759800AbYFJVoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759896AbYFJVqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759800AbYFJVoU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 17:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755699AbYFJVoD
+	id S1759896AbYFJVqT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 17:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755847AbYFJVqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 17:44:03 -0400
-Received: from mx1.suse.de ([195.135.220.2]:59190 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753186AbYFJVoB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 17:44:01 -0400
-Subject: patch usb-don-t-use-reset-resume-if-drivers-don-t-support-it.patch added to gregkh-2.6 tree
-To: torvalds@linux-foundation.org, akpm@linuxfoundation.org, gregkh@suse.de,
-       greg@kroah.com, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       oliver@neukum.org, pavel@suse.cz, rjw@sisk.pl,
-       stern@rowland.harvard.edu
-From: <gregkh@suse.de>
-Date: Tue, 10 Jun 2008 14:42:24 -0700
-In-Reply-To: <Pine.LNX.4.44L0.0806101454480.3658-100000@iolanthe.rowland.org>
-Message-ID: <12131341443712@kroah.org>
+	Tue, 10 Jun 2008 17:46:09 -0400
+Received: from mu-out-0910.google.com ([209.85.134.187]:60446 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755953AbYFJVqI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 17:46:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent:from;
+        b=jDVupv6C/n2BMLjRwlLVInrkzHVkVPUo6eacvraR7em7cZEUU/pN+qAy/b+BuJ3B7R
+         JQuIF+ZU3f+cH3ErR73LnINFekv+UyHPtp0YQsMRYQROnwwY1do8dVtekeFflrWVMKTL
+         XtYjDvbuEZ0XmMbhdQepiLwjhNE2xehj0Juj0=
+Date: Tue, 10 Jun 2008 23:45:45 +0200
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: more header fixes
+Message-ID: <20080610214544.GA14824@damson.getinternet.no>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-This is a note to let you know that I've just added the patch titled
+Summary: Add missing include guards for some x86 headers.
 
-     Subject: USB: don't use reset-resume if drivers don't support it
+This has only had the most rudimentary testing, but is hopefully obviously
+correct. (That's just doomed to generate some sort of build failure, isn't
+it?)
 
-to my gregkh-2.6 tree.  Its filename is
-
-     usb-don-t-use-reset-resume-if-drivers-don-t-support-it.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+Thanks.
 
 
->From stern@rowland.harvard.edu  Tue Jun 10 14:31:37 2008
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 10 Jun 2008 14:59:43 -0400 (EDT)
-Subject: USB: don't use reset-resume if drivers don't support it
-To: Greg KH <greg@kroah.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,  Oliver Neukum <oliver@neukum.org>, Pavel Machek <pavel@suse.cz>,  USB list <linux-usb@vger.kernel.org>,  Andrew Morton <akpm@linuxfoundation.org>,  kernel list <linux-kernel@vger.kernel.org>,  "Rafael J. Wysocki" <rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0806101454480.3658-100000@iolanthe.rowland.org>
+Vegard
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
+PS: I now have a pretty cool framework in Perl for parsing and checking
+headers. And it can be used to transform them automatically too. So if you
+want to standardize the guard format of all the headers in one go, we have
+the means to do it quickly and efficiently...
 
-This patch tries to identify which devices are able to accept
-reset-resume handling, by checking that there is at least one
-interface driver bound and that all of the drivers have a reset_resume
-method defined.  If these conditions don't hold then during resume
-processing, the device is logicall disconnected.
 
-This is only a temporary fix.  Later on we will explicitly unbind
-drivers that can't handle reset-resumes.
-
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oliver@neukum.org>
-Cc: Pavel Machek <pavel@suse.cz>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/usb/core/hub.c |   46 ++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 44 insertions(+), 2 deletions(-)
-
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -644,6 +644,48 @@ static void hub_stop(struct usb_hub *hub
+diff --git a/include/asm-x86/seccomp_64.h b/include/asm-x86/seccomp_64.h
+index 553af65..76cfe69 100644
+--- a/include/asm-x86/seccomp_64.h
++++ b/include/asm-x86/seccomp_64.h
+@@ -1,4 +1,5 @@
+ #ifndef _ASM_SECCOMP_H
++#define _ASM_SECCOMP_H
  
- #ifdef CONFIG_PM
+ #include <linux/thread_info.h>
  
-+/* Try to identify which devices need USB-PERSIST handling */
-+static int persistent_device(struct usb_device *udev)
-+{
-+	int i;
-+	int retval;
-+	struct usb_host_config *actconfig;
+diff --git a/include/asm-x86/suspend_32.h b/include/asm-x86/suspend_32.h
+index 24e1c08..8675c67 100644
+--- a/include/asm-x86/suspend_32.h
++++ b/include/asm-x86/suspend_32.h
+@@ -3,6 +3,9 @@
+  * Based on code
+  * Copyright 2001 Patrick Mochel <mochel@osdl.org>
+  */
++#ifndef __ASM_X86_32_SUSPEND_H
++#define __ASM_X86_32_SUSPEND_H
 +
-+	/* Explicitly not marked persistent? */
-+	if (!udev->persist_enabled)
-+		return 0;
+ #include <asm/desc.h>
+ #include <asm/i387.h>
+ 
+@@ -44,3 +47,5 @@ static inline void acpi_save_register_state(unsigned long return_point)
+ /* routines for saving/restoring kernel state */
+ extern int acpi_save_state_mem(void);
+ #endif
 +
-+	/* No active config? */
-+	actconfig = udev->actconfig;
-+	if (!actconfig)
-+		return 0;
++#endif /* __ASM_X86_32_SUSPEND_H */
+diff --git a/include/asm-x86/xor_32.h b/include/asm-x86/xor_32.h
+index 067b5c1..921b458 100644
+--- a/include/asm-x86/xor_32.h
++++ b/include/asm-x86/xor_32.h
+@@ -1,3 +1,6 @@
++#ifndef ASM_X86__XOR_32_H
++#define ASM_X86__XOR_32_H
 +
-+	/* FIXME! We should check whether it's open here or not! */
+ /*
+  * Optimized RAID-5 checksumming functions for MMX and SSE.
+  *
+@@ -881,3 +884,5 @@ do {							\
+    deals with a load to a line that is being prefetched.  */
+ #define XOR_SELECT_TEMPLATE(FASTEST)			\
+ 	(cpu_has_xmm ? &xor_block_pIII_sse : FASTEST)
 +
-+	/*
-+	 * Check that all the interface drivers have a
-+	 * 'reset_resume' entrypoint
-+	 */
-+	retval = 0;
-+	for (i = 0; i < actconfig->desc.bNumInterfaces; i++) {
-+		struct usb_interface *intf;
-+		struct usb_driver *driver;
++#endif /* ASM_X86__XOR_32_H */
+diff --git a/include/asm-x86/xor_64.h b/include/asm-x86/xor_64.h
+index 24957e3..2d3a18d 100644
+--- a/include/asm-x86/xor_64.h
++++ b/include/asm-x86/xor_64.h
+@@ -1,3 +1,6 @@
++#ifndef ASM_X86__XOR_64_H
++#define ASM_X86__XOR_64_H
 +
-+		intf = actconfig->interface[i];
-+		if (!intf->dev.driver)
-+			continue;
-+		driver = to_usb_driver(intf->dev.driver);
-+		if (!driver->reset_resume)
-+			return 0;
-+		/*
-+		 * We have at least one driver, and that one
-+		 * has a reset_resume method.
-+		 */
-+		retval = 1;
-+	}
-+	return retval;
-+}
+ /*
+  * Optimized RAID-5 checksumming functions for MMX and SSE.
+  *
+@@ -354,3 +357,5 @@ do {						\
+    We may also be able to load into the L1 only depending on how the cpu
+    deals with a load to a line that is being prefetched.  */
+ #define XOR_SELECT_TEMPLATE(FASTEST) (&xor_block_sse)
 +
- static void hub_restart(struct usb_hub *hub, int type)
- {
- 	struct usb_device *hdev = hub->hdev;
-@@ -689,8 +731,8 @@ static void hub_restart(struct usb_hub *
- 		 * turn off the various status changes to prevent
- 		 * khubd from disconnecting it later.
- 		 */
--		if (udev->persist_enabled && status == 0 &&
--				!(portstatus & USB_PORT_STAT_ENABLE)) {
-+		if (status == 0 && !(portstatus & USB_PORT_STAT_ENABLE) &&
-+				persistent_device(udev)) {
- 			if (portchange & USB_PORT_STAT_C_ENABLE)
- 				clear_port_feature(hub->hdev, port1,
- 						USB_PORT_FEAT_C_ENABLE);
-
-
-Patches currently in gregkh-2.6 which might be from torvalds@linux-foundation.org are
-
-usb.current/usb-don-t-use-reset-resume-if-drivers-don-t-support-it.patch
++#endif /* ASM_X86__XOR_64_H */
