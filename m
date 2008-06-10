@@ -1,110 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758731AbYFJFDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758428AbYFJFJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758731AbYFJFDk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 01:03:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbYFJFDd
+	id S1758428AbYFJFJG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 01:09:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbYFJFIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 01:03:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58647 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751450AbYFJFDc (ORCPT
+	Tue, 10 Jun 2008 01:08:54 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:9689 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751295AbYFJFIx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 01:03:32 -0400
-Date: Mon, 9 Jun 2008 22:01:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Cc: balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org,
-       Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-Subject: Re: 2.6.26-rc5-mm1
-Message-Id: <20080609220149.d930d141.akpm@linux-foundation.org>
-In-Reply-To: <200806100657.02863.m.kozlowski@tuxland.pl>
-References: <20080609053908.8021a635.akpm@linux-foundation.org>
-	<200806092114.54467.m.kozlowski@tuxland.pl>
-	<20080609144834.c6fcb625.akpm@linux-foundation.org>
-	<200806100657.02863.m.kozlowski@tuxland.pl>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 10 Jun 2008 01:08:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=vdaBpTP+4Oip1NQ7Kaiaec5ISm+r2C3aPvInEBVCjAcY3eFEtL2tX7FoRnNAN2C/5y
+         PbpGvPNuzvwEn4CRWEq8+b35oqcx2rRBgRA9v0eIFnBHwc6YSdXQ0tmgjzu16BG5T9Um
+         veggti8yXXQ7cGdVkRSrR4z3I5qEVtrLWxv6k=
+Message-ID: <86802c440806092208s338cf6b6q892f5149bbd142ca@mail.gmail.com>
+Date: Mon, 9 Jun 2008 22:08:53 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH 11/15] x86: move enabling of io_apic to prepare_cpus
+Cc: "Glauber Costa" <gcosta@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu,
+       hugh@veritas.com
+In-Reply-To: <Pine.LNX.4.55.0806100341520.31588@cliff.in.clinika.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1213021018-14159-1-git-send-email-gcosta@redhat.com>
+	 <1213021018-14159-10-git-send-email-gcosta@redhat.com>
+	 <1213021018-14159-11-git-send-email-gcosta@redhat.com>
+	 <1213021018-14159-12-git-send-email-gcosta@redhat.com>
+	 <Pine.LNX.4.55.0806091620250.26593@cliff.in.clinika.pl>
+	 <484D8813.4040807@redhat.com>
+	 <Pine.LNX.4.55.0806092058550.26593@cliff.in.clinika.pl>
+	 <86802c440806091353m240ab7adocbaf5dacd15504f7@mail.gmail.com>
+	 <Pine.LNX.4.55.0806092159350.26593@cliff.in.clinika.pl>
+	 <Pine.LNX.4.55.0806100341520.31588@cliff.in.clinika.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008 06:57:02 +0200 Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
+On Mon, Jun 9, 2008 at 7:46 PM, Maciej W. Rozycki <macro@linux-mips.org> wrote:
+> On Mon, 9 Jun 2008, Maciej W. Rozycki wrote:
+>
+>> > we need clear_IO_APIC before enable setup error vector, in case there
+>> > is wrong setting in ioapic by BIOS...
+>>
+>>  Fair enough, although it is still interesting why it would only trigger
+>> in the 64-bit mode and why shouldn't the BIOS be fixed instead.
+>
+>  Then again -- what if X86_LOCAL_APIC is set, but X86_IO_APIC is not?
 
-> Witam, 
-> 
-> > On Mon, 9 Jun 2008 21:14:54 +0200
-> > Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
-> > 
-> > > Hello Balbir,
-> > > 
-> > > > Andrew Morton wrote:
-> > > > > Temporarily at
-> > > > > 
-> > > > >   http://userweb.kernel.org/~akpm/2.6.26-rc5-mm1/
-> > > > > 
-> > > > 
-> > > > I've hit a segfault, the last few lines on my console are
-> > > > 
-> > > > 
-> > > > Testing -fstack-protector-all feature
-> > > > registered taskstats version 1
-> > > > debug: unmapping init memory ffffffff80c03000..ffffffff80dd8000
-> > > > init[1]: segfault at 7fff701fe880 ip 7fff701fee5e sp 7fff7006e6d0 error 7
-> > > > 
-> > > > With absolutely no stack trace. I'll dig deeper.
-> > > 
-> > > Hey, I see something similar and I actually have a stack trace. Here it goes:
-> > > 
-> > > bash[498] segfault at ffffffff80868b58 ip ffffffffff600412 sp 7fffa3d010f0 error 7
-> > > init[1] segfault at ffffffff80868b58 ip ffffffffff600412 sp 7fff9e97f640 error 7
-> > > init[1] segfault at ffffffff80868b58 ip ffffffffff600412 sp 7fff9e97eed0 error 7
-> > > Kernel panic - not syncing: Attemted to kill init!
-> > > Pid 1, comm: init Not tainted 2.6.26-rc5-mm1 #1
-> > > 
-> > > Call Trace:
-> > > [<ffffffff80254632>] panic+0xe2/0x260
-> > > [<ffffffff802fa8ba>] ? __slab_free+0x10a/0x630
-> > > [<ffffffff80265a8e>] ? __sigqueue_free+0x5e/0x70
-> > > [<ffffffff802851eb>] ? trace_hardirqs_off+0x1b/0x30
-> > > [<ffffffff802851eb>] ? trace_hardirqs_off+0x1b/0x30
-> > > [<ffffffff80259b54>] do_exit+0xb84/0xc30
-> > > [<ffffffff80259c5a>] do_group_exit+0x5a/0x110
-> > > [<ffffffff8026a3b5>] get_signal_to_deliver+0x2c5/0x620
-> > > [<ffffffff8020bb3b>] do_notify_resume+0x11b/0xd10
-> > > [<ffffffff8028da5b>] ? trace_hardirqs_on+0x1b/0x30
-> > > [<ffffffff805cd0f3>] ? _spin_unlock_irqrestore+0x93/0x130
-> > > [<ffffffff8026865c>] ? force_sig_info+0x10c/0x130
-> > > [<ffffffff8022fb9c>] ? force_sig_info_fault+0x2c/0x40
-> > > [<ffffffff802dd7dd>] ? print_vma_addr+0x10d/0x1d0
-> > > [<ffffffff805cbb67>] ? trace_hardirqs_on_thunk+0x3a/0x3f
-> > > [<ffffffff8028d8da>] ? trace_hardirqs_on_caller+0x15a/0x2c0
-> > > [<ffffffff8020d4c9>] retint_signal+0x46/0x8d
-> > > 
-> > > This was copied manually so typos are possible.
-> > > 
-> > 
-> > Thanks.  Could someone send a config please?  Or a bisection result ;)
-> 
-> In my case it turns out to be gcov patches - in which I'm interested
-> in to see (and play with) the tests coverage.
-> 
-> #
-> # gcov
-> #
-> kernel-call-constructors.patch
-> kernel-introduce-gcc_version_lower-macro.patch
-> seq_file-add-function-to-write-binary-data.patch
-> GOOD
-> gcov-add-gcov-profiling-infrastructure.patch
-> GOOD
-> gcov-create-links-to-gcda-files-in-build-directory.patch
-> gcov-architecture-specific-compile-flag-adjustments.patch
-> BAD
-> 
-> I can not bisect between the last two due to build error. Config is attached.
-> 
+config X86_LOCAL_APIC
+        def_bool y
+        depends on X86_64 || (X86_32 && (X86_UP_APIC || ((X86_VISWS ||
+SMP) && !X86_VOYAGER) || X86_GENERICARCH))
 
-(cc Peter)
+config X86_IO_APIC
+        def_bool y
+        depends on X86_64 || (X86_32 && (X86_UP_IOAPIC || (SMP &&
+!(X86_VISWS || X86_VOYAGER)) || X86_GENERICARCH))
+
+for 64bit, those are all set.
+
+for 32bit, may need to null stub if X86_IO_APIC is not set
+
+YH
