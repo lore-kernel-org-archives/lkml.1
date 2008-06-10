@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757459AbYFJThb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757334AbYFJTi2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757459AbYFJThb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 15:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbYFJThT
+	id S1757334AbYFJTi2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 15:38:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbYFJTiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 15:37:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60213 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753496AbYFJThS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 15:37:18 -0400
-Date: Tue, 10 Jun 2008 15:37:02 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       lee.schermerhorn@hp.com, kosaki.motohiro@jp.fujitsu.com,
-       linux-mm@kvack.org, eric.whitney@hp.com
-Subject: Re: [PATCH -mm 13/25] Noreclaim LRU Infrastructure
-Message-ID: <20080610153702.4019e042@cuia.bos.redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0806101214190.17798@schroedinger.engr.sgi.com>
-References: <20080606202838.390050172@redhat.com>
-	<20080606202859.291472052@redhat.com>
-	<20080606180506.081f686a.akpm@linux-foundation.org>
-	<20080608163413.08d46427@bree.surriel.com>
-	<20080608135704.a4b0dbe1.akpm@linux-foundation.org>
-	<20080608173244.0ac4ad9b@bree.surriel.com>
-	<20080608162208.a2683a6c.akpm@linux-foundation.org>
-	<20080608193420.2a9cc030@bree.surriel.com>
-	<20080608165434.67c87e5c.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0806101214190.17798@schroedinger.engr.sgi.com>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Jun 2008 15:38:20 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:62850 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753710AbYFJTiU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 15:38:20 -0400
+Date: Tue, 10 Jun 2008 20:36:54 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+cc: Glauber Costa <gcosta@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu,
+       hugh@veritas.com
+Subject: Re: [PATCH 11/15] x86: move enabling of io_apic to prepare_cpus
+In-Reply-To: <86802c440806101209q301bcef0ia859db7e587bd42e@mail.gmail.com>
+Message-ID: <Pine.LNX.4.55.0806102025460.1702@cliff.in.clinika.pl>
+References: <1213021018-14159-1-git-send-email-gcosta@redhat.com> 
+ <Pine.LNX.4.55.0806091620250.26593@cliff.in.clinika.pl>  <484D8813.4040807@redhat.com>
+  <Pine.LNX.4.55.0806092058550.26593@cliff.in.clinika.pl> 
+ <86802c440806091353m240ab7adocbaf5dacd15504f7@mail.gmail.com> 
+ <Pine.LNX.4.55.0806092159350.26593@cliff.in.clinika.pl> 
+ <Pine.LNX.4.55.0806100341520.31588@cliff.in.clinika.pl> 
+ <86802c440806092208s338cf6b6q892f5149bbd142ca@mail.gmail.com> 
+ <484E7B03.8000604@redhat.com>  <Pine.LNX.4.55.0806101418510.1702@cliff.in.clinika.pl>
+ <86802c440806101209q301bcef0ia859db7e587bd42e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008 12:17:23 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
+On Tue, 10 Jun 2008, Yinghai Lu wrote:
 
-> On Sun, 8 Jun 2008, Andrew Morton wrote:
-> 
-> > And it will take longer to get those problems sorted out if 32-bt
-> > machines aren't even compiing the new code in.
-> 
-> The problem is going to be less if we dependedn on 
-> CONFIG_PAGEFLAGS_EXTENDED instead of 64 bit. This means that only certain 
-> 32bit NUMA/sparsemem configs cannot do this due to lack of page flags.
-> 
-> I did the pageflags rework in part because of Rik's project.
+> kernel should not assume io apic register is set right by firmware.
 
-I think your pageflags work freed up a number of bits on 32
-bit systems, unless someone compiles a 32 bit system with
-support for 4 memory zones (2 bits ZONE_SHIFT) and 64 NUMA
-nodes (6 bits NODE_SHIFT), in which case we should still
-have 24 bits for flags.
+ What is the basis of this assumption?  Linux generally assumes the
+chipset components have been placed by the firmware into a consistent
+state.  That does not necessarily mean suitable for Linux, hence the need
+to reconfigure a bit here or there, but there should be no need to touch
+components that are not going to be used by Linux directly.  The I/O APIC
+is no different.
 
-Of course, having 64 NUMA nodes and a ZONE_SHIFT of 2 on
-a 32 bit system is probably total insanity already.  I
-suspect very few people compile 32 bit with NUMA at all,
-except if it is an architecture that uses DISCONTIGMEM
-instead of zones, in which case ZONE_SHIFT is 0, which
-will free up space too :)
+> and kernel actually doesn't trust them, and clear the io apic registers.
 
--- 
-All Rights Reversed
+ The I/O APIC registers are cleared, because this is the only way you can
+assure inconsistent configuration does not happen during reconfiguration.  
+For example two inputs using the same vector or set up into the ExtINTA
+mode.  The original intent of the code was not to paper over breakage in
+the firmware.  You are trying to change it and it can be done, but it has
+to be justified well.
+
+> that patch just move that early before enable error vector.
+
+ What I am saying repeatedly is clearing of the I/O APIC is not guaranteed
+to happen for all the possible cases of Linux configuration.  Which means
+this is a partial solution only -- please try to propose a better one or
+provide the original problem report so that someone else can have a look
+at it.  What's triggering the error interrupt for example?  Is it
+recoverable?
+
+  Maciej
