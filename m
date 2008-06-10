@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756992AbYFJHhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbYFJHkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756992AbYFJHhe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 03:37:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbYFJHh0
+	id S1756142AbYFJHkv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 03:40:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750995AbYFJHko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 03:37:26 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:35931 "EHLO
+	Tue, 10 Jun 2008 03:40:44 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:54504 "EHLO
 	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752142AbYFJHhZ (ORCPT
+	with ESMTP id S1750859AbYFJHko (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 03:37:25 -0400
-Date: Tue, 10 Jun 2008 16:37:24 +0900
+	Tue, 10 Jun 2008 03:40:44 -0400
+Date: Tue, 10 Jun 2008 16:40:42 +0900
 From: Isaku Yamahata <yamahata@valinux.co.jp>
 To: jeremy@goop.org
 Cc: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, xen-ia64-devel@lists.xensource.com
-Subject: [PATCH] xen-netfront: fix xennet_release_tx_bufs().
-Message-ID: <20080610073724.GH24381%yamahata@valinux.co.jp>
+       xen-ia64-devel@lists.xensource.com, xen-devel@lists.xensource.com
+Subject: [PATCH] xen: add xen_arch_resume()/xen_timer_resume hook for ia64 support.
+Message-ID: <20080610074042.GI24381%yamahata@valinux.co.jp>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,136 +25,94 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After restore on ia64 xen domain, kernel panics as follows.
-This patch fixes it.
-
-union skb_entry assumes sizeof(link->skb, pointer) ==
-sizeof(list->link, unsigned).
-However this isn't true on ia64. So  make link type unsigned long.
-And introduced two accesor.
-
-kernel unaligned access to 0xe0000000000000bd, ip=0xa0000001004c2ca0
-xenwatch[14]: error during unaligned kernel access
- -1 [1]
-Modules linked in:
-
-Pid: 14, CPU 0, comm:             xenwatch
-psr : 0000101008422010 ifs : 8000000000000307 ip  : [<a0000001004c2ca0>]    Not tainted (2.6.26-rc4xen-ia64-dirty)
-ip is at dev_kfree_skb_irq+0x20/0x1a0
-unat: 0000000000000000 pfs : 400000000000040b rsc : 0000000000000007
-rnat: 0000000000000000 bsps: 0000000000000000 pr  : 000000000000a941
-ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c8a70433f
-csd : 0000000000000000 ssd : 0000000000000000
-b0  : a0000001003efb70 b6  : a000000100070e40 b7  : a000000100070e40
-f6  : 1003e000000fcb75352b1 f7  : 1003e000000000014ff97
-f8  : 1003e00fcb74fc3454d80 f9  : 1003e0000000080000000
-f10 : 1003e0000000000001431 f11 : 1003e0000000000989680
-r1  : a000000100bfcf80 r2  : e0000000000000bd r3  : 000000000000308c
-r8  : 0000000000000000 r9  : e00000000fc31310 r10 : a000000100a13b28
-r11 : 0000000000000000 r12 : e00000000fd0fdf0 r13 : e00000000fd08000
-r14 : 0000000000000000 r15 : e00000000fcc8000 r16 : 0000000000000009
-r17 : e000010000104000 r18 : e000010000104000 r19 : a000000100a13b40
-r20 : a0000001009c23f0 r21 : a0000001009fd4d0 r22 : 0000000000004000
-r23 : 0000000000000000 r24 : fffffffffff04c10 r25 : 0000000000000002
-r26 : 0000000000000000 r27 : 0000000000000000 r28 : e00000000fd08bd4
-r29 : a0000001007570b8 r30 : a0000001009e5500 r31 : a0000001009e54a0
-
-Call Trace:
- [<a000000100026000>] show_stack+0x40/0xa0
-                                sp=e00000000fd0f670 bsp=e00000000fd08f68
- [<a000000100026a60>] show_regs+0x9a0/0x9e0
-                                sp=e00000000fd0f840 bsp=e00000000fd08f10
- [<a000000100037680>] die+0x260/0x3a0
-                                sp=e00000000fd0f840 bsp=e00000000fd08ec8
- [<a000000100037810>] die_if_kernel+0x50/0x80
-                                sp=e00000000fd0f840 bsp=e00000000fd08e98
- [<a00000010003eb40>] ia64_handle_unaligned+0x2ea0/0x2fc0
-                                sp=e00000000fd0f840 bsp=e00000000fd08df0
- [<a00000010001ca30>] ia64_prepare_handle_unaligned+0x30/0x60
-                                sp=e00000000fd0fa10 bsp=e00000000fd08df0
- [<a00000010005d100>] paravirt_leave_kernel+0x0/0x40
-                                sp=e00000000fd0fc20 bsp=e00000000fd08df0
- [<a0000001004c2ca0>] dev_kfree_skb_irq+0x20/0x1a0
-                                sp=e00000000fd0fdf0 bsp=e00000000fd08db8
- [<a0000001003efb70>] xennet_release_tx_bufs+0xd0/0x120
-                                sp=e00000000fd0fdf0 bsp=e00000000fd08d78
- [<a0000001003f14c0>] backend_changed+0xc40/0xf80
-                                sp=e00000000fd0fdf0 bsp=e00000000fd08d08
- [<a00000010034bd50>] otherend_changed+0x190/0x1c0
-                                sp=e00000000fd0fe00 bsp=e00000000fd08cc8
- [<a000000100349530>] xenwatch_thread+0x310/0x3c0
-                                sp=e00000000fd0fe00 bsp=e00000000fd08ca0
- [<a0000001000cb040>] kthread+0xe0/0x160
-                                sp=e00000000fd0fe30 bsp=e00000000fd08c68
- [<a000000100024450>] kernel_thread_helper+0x30/0x60
-                                sp=e00000000fd0fe30 bsp=e00000000fd08c40
- [<a00000010001a8a0>] start_kernel_thread+0x20/0x40
-                                sp=e00000000fd0fe30 bsp=e00000000fd08c40
-Kernel panic - not syncing: Aiee, killing interrupt handler!
+add xen_timer_resume() hook.
+Timer resume should be done after event channel is resumed.
+add xen_arch_resume() hook when ipi becomes usable after resume.
+After resume, some cpu specific resource must be reinitialized
+on ia64 that can't be set by another cpu.
+However available hooks is run once on only one cpu so that ipi has
+to be used.
+During stop_machine_run() ipi can't be used because interrupt is masked.
+So add another hook after stop_machine_run().
+Another approach might be use resume hook which is run by
+device_resume(). However device_resume() may be executed on
+suspend error recovery path. So it is necessary to determine
+whether it is executed on real resume path or error recovery path.
 
 Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
 ---
- drivers/net/xen-netfront.c |   19 +++++++++++++++----
- 1 files changed, 15 insertions(+), 4 deletions(-)
+ arch/x86/xen/suspend.c |    5 ++++-
+ arch/x86/xen/xen-ops.h |    1 -
+ drivers/xen/manage.c   |    6 ++++--
+ include/xen/xen-ops.h  |    3 +++
+ 4 files changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
-index d26f69b..44aed80 100644
---- a/drivers/net/xen-netfront.c
-+++ b/drivers/net/xen-netfront.c
-@@ -92,7 +92,7 @@ struct netfront_info {
- 	 */
- 	union skb_entry {
- 		struct sk_buff *skb;
--		unsigned link;
-+		unsigned long link;
- 	} tx_skbs[NET_TX_RING_SIZE];
- 	grant_ref_t gref_tx_head;
- 	grant_ref_t grant_tx_ref[NET_TX_RING_SIZE];
-@@ -125,6 +125,17 @@ struct netfront_rx_info {
- 	struct xen_netif_extra_info extras[XEN_NETIF_EXTRA_TYPE_MAX - 1];
- };
- 
-+static void skb_entry_set_link(union skb_entry *list, unsigned short id)
-+{
-+	list->link = id;
-+}
-+
-+static int skb_entry_is_link(const union skb_entry *list)
-+{
-+	BUILD_BUG_ON(sizeof(list->skb) != sizeof(list->link));
-+	return ((unsigned long)list->skb < PAGE_OFFSET);
-+}
-+
- /*
-  * Access macros for acquiring freeing slots in tx_skbs[].
-  */
-@@ -132,7 +143,7 @@ struct netfront_rx_info {
- static void add_id_to_freelist(unsigned *head, union skb_entry *list,
- 			       unsigned short id)
- {
--	list[id].link = *head;
-+	skb_entry_set_link(&list[id], *head);
- 	*head = id;
- }
- 
-@@ -993,7 +1004,7 @@ static void xennet_release_tx_bufs(struct netfront_info *np)
- 
- 	for (i = 0; i < NET_TX_RING_SIZE; i++) {
- 		/* Skip over entries which are actually freelist references */
--		if ((unsigned long)np->tx_skbs[i].skb < PAGE_OFFSET)
-+		if (skb_entry_is_link(&np->tx_skbs[i]))
- 			continue;
- 
- 		skb = np->tx_skbs[i].skb;
-@@ -1123,7 +1134,7 @@ static struct net_device * __devinit xennet_create_dev(struct xenbus_device *dev
- 	/* Initialise tx_skbs as a free chain containing every entry. */
- 	np->tx_skb_freelist = 0;
- 	for (i = 0; i < NET_TX_RING_SIZE; i++) {
--		np->tx_skbs[i].link = i+1;
-+		skb_entry_set_link(&np->tx_skbs[i], i+1);
- 		np->grant_tx_ref[i] = GRANT_INVALID_REF;
+diff --git a/arch/x86/xen/suspend.c b/arch/x86/xen/suspend.c
+index 251669a..2a234db 100644
+--- a/arch/x86/xen/suspend.c
++++ b/arch/x86/xen/suspend.c
+@@ -38,8 +38,11 @@ void xen_post_suspend(int suspend_cancelled)
+ 		xen_cpu_initialized_map = cpu_online_map;
+ #endif
+ 		xen_vcpu_restore();
+-		xen_timer_resume();
  	}
  
+ }
+ 
++void xen_arch_resume(void)
++{
++	/* nothing */
++}
+diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
+index 9a05559..a457e03 100644
+--- a/arch/x86/xen/xen-ops.h
++++ b/arch/x86/xen/xen-ops.h
+@@ -37,7 +37,6 @@ void __init xen_time_init(void);
+ unsigned long xen_get_wallclock(void);
+ int xen_set_wallclock(unsigned long time);
+ unsigned long long xen_sched_clock(void);
+-void xen_timer_resume(void);
+ 
+ irqreturn_t xen_debug_interrupt(int irq, void *dev_id);
+ 
+diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
+index db3c4bd..e8db90c 100644
+--- a/drivers/xen/manage.c
++++ b/drivers/xen/manage.c
+@@ -66,6 +66,7 @@ static int xen_suspend(void *data)
+ 	if (!*cancelled) {
+ 		xen_irq_resume();
+ 		xen_console_resume();
++		xen_timer_resume();
+ 	}
+ 
+ 	return 0;
+@@ -105,9 +106,10 @@ static void do_suspend(void)
+ 		goto out;
+ 	}
+ 
+-	if (!cancelled)
++	if (!cancelled) {
++		xen_arch_resume();
+ 		xenbus_resume();
+-	else
++	} else
+ 		xenbus_suspend_cancel();
+ 
+ 	device_resume();
+diff --git a/include/xen/xen-ops.h b/include/xen/xen-ops.h
+index a706d6a..883a21b 100644
+--- a/include/xen/xen-ops.h
++++ b/include/xen/xen-ops.h
+@@ -11,4 +11,7 @@ void xen_post_suspend(int suspend_cancelled);
+ void xen_mm_pin_all(void);
+ void xen_mm_unpin_all(void);
+ 
++void xen_timer_resume(void);
++void xen_arch_resume(void);
++
+ #endif /* INCLUDE_XEN_OPS_H */
 -- 
 1.5.3
 
