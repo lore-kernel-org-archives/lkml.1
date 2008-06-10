@@ -1,72 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457AbYFJWsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758959AbYFJWtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757457AbYFJWsV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 18:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbYFJWsN
+	id S1758959AbYFJWtp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 18:49:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754501AbYFJWtf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 18:48:13 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:44104 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751314AbYFJWsM (ORCPT
+	Tue, 10 Jun 2008 18:49:35 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54002
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753657AbYFJWtd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 18:48:12 -0400
-Message-ID: <484F04A7.1090503@zytor.com>
-Date: Tue, 10 Jun 2008 15:48:07 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: devzero@web.de
-CC: keith@karsites.net, linux-kernel@vger.kernel.org
-Subject: Re: Problems with edd
-References: <311993399@web.de>
-In-Reply-To: <311993399@web.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Tue, 10 Jun 2008 18:49:33 -0400
+Date: Tue, 10 Jun 2008 15:49:29 -0700 (PDT)
+Message-Id: <20080610.154929.168124808.davem@davemloft.net>
+To: mcmanus@ducksong.com
+Cc: mingo@elte.hu, ilpo.jarvinen@helsinki.fi, peterz@infradead.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, rjw@sisk.pl,
+       akpm@linux-foundation.org, johnpol@2ka.mipt.ru
+Subject: Re: [fixed] [patch] Re: [bug] stuck localhost TCP connections,
+ v2.6.26-rc3+
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1212782937.23706.46.camel@tng>
+References: <Pine.LNX.4.64.0806062037240.9424@wrl-59.cs.helsinki.fi>
+	<20080606183926.GB12651@elte.hu>
+	<1212782937.23706.46.camel@tng>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-devzero@web.de wrote:
->> Hi all. I have a problem with trying to boot from a Fedora 9 
->> installation CD-R. It works on another machine, so the disk 
->> is OK. I guess if anyone knows the answer then it will be 
->> found here on the kernel developers list.
->>
->> When trying to boot from a CD-R installation disk, on my 
->> Advent 6415 laptop I get the following:
->>
->> Welcome to Fedora 9! [the installer splash screen]
->>
->>  I then click on either:
->>
->>  Install or upgrade an existing system
->>  [or]
->>  Install or upgrade an existing system (text mode)
->>
->>  [both give me the same following error]
->>
->> Loading vmlinuz........................................... 
->> ..............
->>
->>  Loading initrd.img........................................ 
->> .................
->>  ...............ready.
->>  Probing EDD (edd=off to disable)... ok
->>  vmlinuz: attempted DOS system call
->>  boot:
+From: Patrick McManus <mcmanus@ducksong.com>
+Date: Fri, 06 Jun 2008 16:08:57 -0400
 
-This message means something has invoked an interrupt in the range 0x20 
-to 0x3f, which it should never have done, since that's in the operating 
-system range.
+> If we're sure of that conclusion we should just take Ilpo's DA patch as
+> that will narrow the field for finding Hakon's issue.
 
-Given the complaint about vesamenu further down the page, I'm assuming 
-the VESA BIOS is invoking a DOS interrupt(!!!!)... although it's very 
-hard to say for sure.
+While the conclusion might be accurate, Ilpo's patch adds a lock
+ordering problem that might introduce potential deadlocks (worst
+case) or at least some lockdep warnings.  Both of which are
+unacceptable.
 
-It might be possible to track down by augmenting syslinux to print the 
-CS:IP of the supposed DOS system call; if this is the VESA BIOS, it 
-would be in the range C000:xxxx.
-
-This probably would be a useful hack anyway, so I'll just implement it.
-
-	-hpa
+I personally don't see any clear solution, and because this new
+DA code moves an operation into a code block where the locking
+order pretty much has to be inverted, I don't see any real short
+term solution other than a revert of this particular DA commit.
