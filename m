@@ -1,398 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755938AbYFJTze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755398AbYFJT6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755938AbYFJTze (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 15:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbYFJTzZ
+	id S1755398AbYFJT6q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 15:58:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbYFJT6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 15:55:25 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:38063 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752870AbYFJTzW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 15:55:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:reply-to:to:subject:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:date:content-type
-         :content-transfer-encoding:message-id;
-        b=Jqj7zsS1Izlvclv1dpQEvavwcfilmbibLrRcMjHqG7fTc5B75AbH0E8iU5rzPjLXVf
-         84spyLJv0wXZnu+5OX0q0vWf4E7qz0xcfPvPbDgVAzhCG8/uMssbSa8lS0ZLm4JrIOb9
-         x5O6BRdT0XVG6v4f3TD77vLcFetxazPPi+i/k=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] x86: e820 merge parse mem/memmap
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200806031025.55026.yhlu.kernel@gmail.com> <200806031934.01198.yhlu.kernel@gmail.com> <200806031935.05202.yhlu.kernel@gmail.com>
-In-Reply-To: <200806031935.05202.yhlu.kernel@gmail.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Date: Tue, 10 Jun 2008 12:55:54 -0700
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 10 Jun 2008 15:58:36 -0400
+Received: from pat.uio.no ([129.240.10.15]:41468 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752314AbYFJT6f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 15:58:35 -0400
+Subject: Re: [2.6.26-rc4] mount.nfsv4/memory poisoning issues...
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: Daniel J Blueman <daniel.blueman@gmail.com>, linux-nfs@vger.kernel.org,
+       nfsv4@linux-nfs.org, Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080610151357.150b6f69@tleilax.poochiereds.net>
+References: <6278d2220806041633n3bfe3dd2ke9602697697228b@mail.gmail.com>
+	 <20080604203504.62730951@tleilax.poochiereds.net>
+	 <1213124088.20459.16.camel@localhost>
+	 <20080610151357.150b6f69@tleilax.poochiereds.net>
+Content-Type: text/plain
+Date: Tue, 10 Jun 2008 15:58:29 -0400
+Message-Id: <1213127909.20459.48.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200806101255.54443.yhlu.kernel@gmail.com>
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 6EC1795B4CB9D15BA4144B62A427EAEF7DF3FE2C
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 669 total 8862572 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-resend. it seems Ingo missed it.
+On Tue, 2008-06-10 at 15:13 -0400, Jeff Layton wrote:
 
-after we get 32 bit support e820_register_active_regions
+> I think you're basically correct, but it looks to me like the
+> nfs_callback_mutex actually protects nfs_callback_info.task as well.
+> 
+> If we're starting the thread, then we can't call kthread_stop on it
+> until we release the mutex. So the thread can't exit until we release
+> the mutex, and we can be guaranteed that this:
+> 
+>      nfs_callback_info.task = NULL;
+> 
+> ...can't happen until after kthread_run returns and nfs_callback_up
+> sets it.
+> 
+> If that's right, then maybe this (untested, RFC only) patch would make sense?
 
-we could merge parse mem/memmap
+Hmm... I suppose that is correct, but what if nfs_alloc_client() does
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+	nfs_callback_up();
+	<kstrdup() fails>
+	nfs_callback_down();
 
-Index: linux-2.6/arch/x86/kernel/e820.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820.c
-+++ linux-2.6/arch/x86/kernel/e820.c
-@@ -873,3 +873,89 @@ u64 __init e820_hole_size(u64 start, u64
- 	}
- 	return end - start - ((u64)ram << PAGE_SHIFT);
- }
-+
-+static void early_panic(char *msg)
-+{
-+	early_printk(msg);
-+	panic(msg);
-+}
-+
-+/* "mem=nopentium" disables the 4MB page tables. */
-+static int __init parse_memopt(char *p)
-+{
-+	u64 mem_size;
-+
-+	if (!p)
-+		return -EINVAL;
-+
-+#ifdef CONFIG_X86_32
-+	if (!strcmp(p, "nopentium")) {
-+		setup_clear_cpu_cap(X86_FEATURE_PSE);
-+		return 0;
-+	}
-+#endif
-+
-+	mem_size = memparse(p, &p);
-+	end_user_pfn = mem_size>>PAGE_SHIFT;
-+	return 0;
-+}
-+early_param("mem", parse_memopt);
-+
-+static int userdef __initdata;
-+
-+static int __init parse_memmap_opt(char *p)
-+{
-+	char *oldp;
-+	u64 start_at, mem_size;
-+
-+	if (!strcmp(p, "exactmap")) {
-+#ifdef CONFIG_CRASH_DUMP
-+		/*
-+		 * If we are doing a crash dump, we still need to know
-+		 * the real mem size before original memory map is
-+		 * reset.
-+		 */
-+		e820_register_active_regions(0, 0, -1UL);
-+		saved_max_pfn = e820_end_of_ram();
-+		remove_all_active_ranges();
-+#endif
-+		e820.nr_map = 0;
-+		userdef = 1;
-+		return 0;
-+	}
-+
-+	oldp = p;
-+	mem_size = memparse(p, &p);
-+	if (p == oldp)
-+		return -EINVAL;
-+
-+	userdef = 1;
-+	if (*p == '@') {
-+		start_at = memparse(p+1, &p);
-+		add_memory_region(start_at, mem_size, E820_RAM);
-+	} else if (*p == '#') {
-+		start_at = memparse(p+1, &p);
-+		add_memory_region(start_at, mem_size, E820_ACPI);
-+	} else if (*p == '$') {
-+		start_at = memparse(p+1, &p);
-+		add_memory_region(start_at, mem_size, E820_RESERVED);
-+	} else {
-+		end_user_pfn = (mem_size >> PAGE_SHIFT);
-+	}
-+	return *p == '\0' ? 0 : -EINVAL;
-+}
-+early_param("memmap", parse_memmap_opt);
-+
-+void __init finish_e820_parsing(void)
-+{
-+	if (userdef) {
-+		int nr = e820.nr_map;
-+
-+		if (sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &nr) < 0)
-+			early_panic("Invalid user supplied memory map");
-+		e820.nr_map = nr;
-+
-+		printk(KERN_INFO "user-defined physical RAM map:\n");
-+		e820_print_map("user");
-+	}
-+}
-Index: linux-2.6/arch/x86/kernel/e820_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820_32.c
-+++ linux-2.6/arch/x86/kernel/e820_32.c
-@@ -207,36 +207,6 @@ void __init init_iomem_resources(struct 
- 	}
- }
- 
--void __init limit_regions(unsigned long long size)
--{
--	unsigned long long current_addr;
--	int i;
--
--	e820_print_map("limit_regions start");
--	for (i = 0; i < e820.nr_map; i++) {
--		current_addr = e820.map[i].addr + e820.map[i].size;
--		if (current_addr < size)
--			continue;
--
--		if (e820.map[i].type != E820_RAM)
--			continue;
--
--		if (e820.map[i].addr >= size) {
--			/*
--			 * This region starts past the end of the
--			 * requested size, skip it completely.
--			 */
--			e820.nr_map = i;
--		} else {
--			e820.nr_map = i + 1;
--			e820.map[i].size -= current_addr - size;
--		}
--		e820_print_map("limit_regions endfor");
--		return;
--	}
--	e820_print_map("limit_regions endfunc");
--}
--
- /* Overridden in paravirt.c if CONFIG_PARAVIRT */
- char * __init __attribute__((weak)) memory_setup(void)
- {
-@@ -249,93 +219,3 @@ void __init setup_memory_map(void)
- 	e820_print_map(memory_setup());
- }
- 
--static int __initdata user_defined_memmap;
--
--/*
-- * "mem=nopentium" disables the 4MB page tables.
-- * "mem=XXX[kKmM]" defines a memory region from HIGH_MEM
-- * to <mem>, overriding the bios size.
-- * "memmap=XXX[KkmM]@XXX[KkmM]" defines a memory region from
-- * <start> to <start>+<mem>, overriding the bios size.
-- *
-- * HPA tells me bootloaders need to parse mem=, so no new
-- * option should be mem=  [also see Documentation/i386/boot.txt]
-- */
--static int __init parse_mem(char *arg)
--{
--	if (!arg)
--		return -EINVAL;
--
--	if (strcmp(arg, "nopentium") == 0) {
--		setup_clear_cpu_cap(X86_FEATURE_PSE);
--	} else {
--		/* If the user specifies memory size, we
--		 * limit the BIOS-provided memory map to
--		 * that size. exactmap can be used to specify
--		 * the exact map. mem=number can be used to
--		 * trim the existing memory map.
--		 */
--		unsigned long long mem_size;
--
--		mem_size = memparse(arg, &arg);
--		limit_regions(mem_size);
--		user_defined_memmap = 1;
--	}
--	return 0;
--}
--early_param("mem", parse_mem);
--
--static int __init parse_memmap(char *arg)
--{
--	if (!arg)
--		return -EINVAL;
--
--	if (strcmp(arg, "exactmap") == 0) {
--#ifdef CONFIG_CRASH_DUMP
--		/* If we are doing a crash dump, we
--		 * still need to know the real mem
--		 * size before original memory map is
--		 * reset.
--		 */
--		e820_register_active_regions(0, 0, -1UL);
--		saved_max_pfn = e820_end_of_ram();
--		remove_all_active_ranges();
--#endif
--		e820.nr_map = 0;
--		user_defined_memmap = 1;
--	} else {
--		/* If the user specifies memory size, we
--		 * limit the BIOS-provided memory map to
--		 * that size. exactmap can be used to specify
--		 * the exact map. mem=number can be used to
--		 * trim the existing memory map.
--		 */
--		unsigned long long start_at, mem_size;
--
--		mem_size = memparse(arg, &arg);
--		if (*arg == '@') {
--			start_at = memparse(arg+1, &arg);
--			add_memory_region(start_at, mem_size, E820_RAM);
--		} else if (*arg == '#') {
--			start_at = memparse(arg+1, &arg);
--			add_memory_region(start_at, mem_size, E820_ACPI);
--		} else if (*arg == '$') {
--			start_at = memparse(arg+1, &arg);
--			add_memory_region(start_at, mem_size, E820_RESERVED);
--		} else {
--			limit_regions(mem_size);
--			user_defined_memmap = 1;
--		}
--	}
--	return 0;
--}
--early_param("memmap", parse_memmap);
--
--void __init finish_e820_parsing(void)
--{
--	if (user_defined_memmap) {
--		printk(KERN_INFO "user-defined physical RAM map:\n");
--		e820_print_map("user");
--	}
--}
--
-Index: linux-2.6/arch/x86/kernel/e820_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820_64.c
-+++ linux-2.6/arch/x86/kernel/e820_64.c
-@@ -96,75 +96,6 @@ char *__init machine_specific_memory_set
- 	return who;
- }
- 
--static int __init parse_memopt(char *p)
--{
--	if (!p)
--		return -EINVAL;
--	end_user_pfn = memparse(p, &p);
--	end_user_pfn >>= PAGE_SHIFT;
--	return 0;
--}
--early_param("mem", parse_memopt);
--
--static int userdef __initdata;
--
--static int __init parse_memmap_opt(char *p)
--{
--	char *oldp;
--	unsigned long long start_at, mem_size;
--
--	if (!strcmp(p, "exactmap")) {
--#ifdef CONFIG_CRASH_DUMP
--		/*
--		 * If we are doing a crash dump, we still need to know
--		 * the real mem size before original memory map is
--		 * reset.
--		 */
--		e820_register_active_regions(0, 0, -1UL);
--		saved_max_pfn = e820_end_of_ram();
--		remove_all_active_ranges();
--#endif
--		e820.nr_map = 0;
--		userdef = 1;
--		return 0;
--	}
--
--	oldp = p;
--	mem_size = memparse(p, &p);
--	if (p == oldp)
--		return -EINVAL;
--
--	userdef = 1;
--	if (*p == '@') {
--		start_at = memparse(p+1, &p);
--		add_memory_region(start_at, mem_size, E820_RAM);
--	} else if (*p == '#') {
--		start_at = memparse(p+1, &p);
--		add_memory_region(start_at, mem_size, E820_ACPI);
--	} else if (*p == '$') {
--		start_at = memparse(p+1, &p);
--		add_memory_region(start_at, mem_size, E820_RESERVED);
--	} else {
--		end_user_pfn = (mem_size >> PAGE_SHIFT);
--	}
--	return *p == '\0' ? 0 : -EINVAL;
--}
--early_param("memmap", parse_memmap_opt);
--
--void __init finish_e820_parsing(void)
--{
--	if (userdef) {
--		int nr = e820.nr_map;
--
--		if (sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &nr) < 0)
--			early_panic("Invalid user supplied memory map");
--		e820.nr_map = nr;
--
--		printk(KERN_INFO "user-defined physical RAM map:\n");
--		e820_print_map("user");
--	}
--}
--
- int __init arch_get_ram_range(int slot, u64 *addr, u64 *size)
- {
- 	int i;
-Index: linux-2.6/include/asm-x86/e820.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/e820.h
-+++ linux-2.6/include/asm-x86/e820.h
-@@ -97,6 +97,8 @@ extern int e820_find_active_region(const
- extern void e820_register_active_regions(int nid, unsigned long start_pfn,
- 					 unsigned long end_pfn);
- extern u64 e820_hole_size(u64 start, u64 end);
-+extern void finish_e820_parsing(void);
-+
- #endif /* __ASSEMBLY__ */
- 
- #define ISA_START_ADDRESS	0xa0000
-Index: linux-2.6/include/asm-x86/e820_32.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/e820_32.h
-+++ linux-2.6/include/asm-x86/e820_32.h
-@@ -19,9 +19,7 @@
- #ifndef __ASSEMBLY__
- 
- extern void setup_memory_map(void);
--extern void finish_e820_parsing(void);
- 
--extern void limit_regions(unsigned long long size);
- extern void init_iomem_resources(struct resource *code_resource,
- 				 struct resource *data_resource,
- 				 struct resource *bss_resource);
-Index: linux-2.6/include/asm-x86/e820_64.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/e820_64.h
-+++ linux-2.6/include/asm-x86/e820_64.h
-@@ -22,8 +22,6 @@ extern int is_memory_any_valid(unsigned 
- extern int e820_all_non_reserved(unsigned long start, unsigned long end);
- extern int is_memory_all_valid(unsigned long start, unsigned long end);
- 
--extern void finish_e820_parsing(void);
--
- #endif/*!__ASSEMBLY__*/
- 
- #endif/*__E820_HEADER*/
+AFAICS, if nfs_callback_down() gets called before the kthread() function
+gets scheduled back in, then you can get left with a value of
+nfs_callback_info.task != NULL, since nfs_callback_svc() will never be
+called.
+
+Wouldn't it therefore make more sense to clear nfs_callback_info.task in
+nfs_callback_down()?
+
+Cheers
+  Trond
+
