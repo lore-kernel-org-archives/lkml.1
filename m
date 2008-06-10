@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757641AbYFJCyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757577AbYFJC4z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757641AbYFJCyR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 22:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbYFJCyF
+	id S1757577AbYFJC4z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 22:56:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbYFJC4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 22:54:05 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:51591 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753762AbYFJCyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 22:54:04 -0400
-Message-ID: <484DEC71.7090607@cn.fujitsu.com>
-Date: Tue, 10 Jun 2008 10:52:33 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 9 Jun 2008 22:56:47 -0400
+Received: from ozlabs.org ([203.10.76.45]:43668 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753266AbYFJC4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 22:56:46 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch 04/41] cpu ops: Core piece for generic atomic per cpu operations
+Date: Tue, 10 Jun 2008 12:56:31 +1000
+User-Agent: KMail/1.9.9
+Cc: Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
+       Peter Zijlstra <peterz@infradead.org>
+References: <20080530035620.587204923@sgi.com> <200806100927.48597.rusty@rustcorp.com.au> <Pine.LNX.4.64.0806091651390.9749@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0806091651390.9749@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Rik Van Riel <riel@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re:  [PATCH -mm 23/25] Noreclaim LRU scan sysctl
-References: <484DEA23.50707@cn.fujitsu.com>
-In-Reply-To: <484DEA23.50707@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806101256.31615.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +static void show_page_path(struct page *page)
-> +{
-> +	char buf[256];
-> +	if (page_file_cache(page)) {
-> +		struct address_space *mapping = page->mapping;
-> +		struct dentry *dentry;
-> +		pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
-> +
-> +		spin_lock(&mapping->i_mmap_lock);
-> +		dentry = d_find_alias(mapping->host);
-> +		printk(KERN_INFO "rescued: %s %lu\n",
-> +		       dentry_path(dentry, buf, 256), pgoff);
-> +		spin_unlock(&mapping->i_mmap_lock);
-> +	} else {
-> +		struct anon_vma *anon_vma;
-> +		struct vm_area_struct *vma;
-> +
-> +		anon_vma = page_lock_anon_vma(page);
-> +		if (!anon_vma)
-> +			return;
-> +
-> +		list_for_each_entry(vma, &anon_vma->head, anon_vma_node) {
-> +			printk(KERN_INFO "rescued: anon %s\n",
-> +			       vma->vm_mm->owner->comm);
+On Tuesday 10 June 2008 09:54:09 Christoph Lameter wrote:
+> On Tue, 10 Jun 2008, Rusty Russell wrote:
+> > > > Yes, this should be fixed.  I thought i386 had optimized versions
+> > > > pre-merge, but I was wrong (%gs for per-cpu came later, and noone
+> > > > cleaned up these naive versions).  Did you want me to write them?
+> > >
+> > > How can that be fixed? You have no atomic instruction that calculates
+> > > the per cpu address in one go.
+> >
+> > Huh?  "incl %fs:varname" does exactly this.
+>
+> Right that is what the cpu alloc patches do. So you could implement
+> cpu_local_inc on top of some of the cpu alloc patches.
 
-This would cause compile failure if !CONFIG_MM_OWNER.
+Or you could just implement it today as a standalone patch.
 
-> +			break;
-> +		}
-> +		page_unlock_anon_vma(anon_vma);
-> +	}
-> +}
+> > > And as long as that is the case you need to
+> > > disable preempt. Otherwise you may increment the per cpu variable of
+> > > another processor because the process was rescheduled after the address
+> > > was calculated but before the increment was done.
+> >
+> > But of course, that is not a problem.  You make local_t an atomic_t, and
+> > then it doesn't matter which CPU you incremented.
+>
+> But then the whole point of local_t is gone. Why not use atomic_t in the
+> first place?
+
+Because some archs can do better.
+
+> > By definition if the caller cared, they would have had premption
+> > disabled.
+>
+> There are numerous instances where the caller does not care about
+> preemption. Its just important that one per cpu counter is increment in
+> the least intrusive way. See f.e. the VM event counters.
+
+Yes, and that's exactly the point.  The VM event counters are exactly a case 
+where you should have used cpu_local_inc.
+
+Rusty.
