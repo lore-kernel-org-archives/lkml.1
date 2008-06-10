@@ -1,60 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757612AbYFJWCu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbYFJWE0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757612AbYFJWCu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 18:02:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbYFJWCm
+	id S1756841AbYFJWE0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 18:04:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754684AbYFJWES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 18:02:42 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:45429 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752887AbYFJWCm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 18:02:42 -0400
-Date: Wed, 11 Jun 2008 00:02:40 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Maxim Shchetynin <maxim@linux.vnet.ibm.com>
-cc: Matthew Wilcox <matthew@wil.cx>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: AZFS file system proposal
-In-Reply-To: <20080610104919.504b9826@mercedes-benz.boeblingen.de.ibm.com>
-Message-ID: <alpine.LNX.1.10.0806110000560.20733@fbirervta.pbzchgretzou.qr>
-References: <20080609104650.4f220492@mercedes-benz.boeblingen.de.ibm.com> <20080609125530.GF30405@parisc-linux.org> <20080610104919.504b9826@mercedes-benz.boeblingen.de.ibm.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 10 Jun 2008 18:04:18 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54828 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753616AbYFJWER (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 18:04:17 -0400
+Date: Tue, 10 Jun 2008 18:04:09 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>, bfields@fieldses.org
+Subject: Re: [2.6.26-rc4] mount.nfsv4/memory poisoning issues...
+Message-ID: <20080610180409.018bf8ae@tleilax.poochiereds.net>
+In-Reply-To: <1213133876.20459.91.camel@localhost>
+References: <6278d2220806041633n3bfe3dd2ke9602697697228b@mail.gmail.com>
+	<20080604203504.62730951@tleilax.poochiereds.net>
+	<1213124088.20459.16.camel@localhost>
+	<20080610151357.150b6f69@tleilax.poochiereds.net>
+	<1213127909.20459.48.camel@localhost>
+	<20080610161352.4e588653@tleilax.poochiereds.net>
+	<1213130012.20459.58.camel@localhost>
+	<20080610170154.68e2e6fb@tleilax.poochiereds.net>
+	<1213133876.20459.91.camel@localhost>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 10 Jun 2008 17:37:56 -0400
+Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 
-On Tuesday 2008-06-10 10:49, Maxim Shchetynin wrote:
->
->What do you think about the following - shorter description and a better place for it (moved to "Pseudo filesystems"):
->
->--- linux-2.6.26-rc5/fs/Kconfig 2008-06-05 05:10:44.000000000 +0200
->+++ linux-2.6.26-rc5-azfs/fs/Kconfig    2008-06-10 10:43:24.326686538 +0200
->@@ -1017,6 +1017,19 @@
-> config HUGETLB_PAGE
->        def_bool HUGETLBFS
->
->+config AZ_FS
->+       tristate "AZFS filesystem support"
+> On Tue, 2008-06-10 at 17:01 -0400, Jeff Layton wrote:
+> 
+> > In practice, I think the thread generally runs immediately (at least
+> > with current scheduler behavior), so we're probably not terribly
+> > vulnerable to this race. Still, we shouldn't rely on that...
+> 
+> In the code I showed you, the 'kthread' task is put to sleep, then
+> kthread_run() calls wake_up_process() on it, but the current task isn't
+> scheduled out. Rather, it continues to run, so in almost all UP cases,
+> the race is not only possible, it is actually rather likely if
+> nfs_alloc_client() fails.
+> 
 
-This is slightly redundant, it should probably be
-	tristate "AZ filesystem support"
+Ok, makes sense. It looks like with the kernel_thread interface, that
+the function always runs, so we're not vulnerable to this race with
+that.
 
->+       help
->+         azfs is a file system for I/O attached memory backing. It requires
->+         a block device with direct_access capability, e.g. axonram.
+> > For lockd and the nfs4 callback thread, we'll also need to deal with
+> > the fact that svc_exit_thread() doesn't get called if this happens. So
+> > we'll need to call svc_exit_thread from the *_down() functions too
+> > (I presume that's OK).
+> 
+> These *_up()/*_down() functions are getting very complex. Any chance we
+> could hide some of this complexity in some helpers? Looking at the NFSv4
+> callback code and lockd, it seems that there might be a couple of
+> opportunities for merging code.
+> 
 
-(a) What is axonram?
-(b) why is axonram direct_access, and my other devices (including
-standard PC RAM) not?
+Possibly. I may start by just closing the races and then look and see what
+can be consolidated.
 
->+         Mounting such device with azfs gives memory mapped access to the
->+         underlying memory to user space.
+> > nfsd is a bigger problem since it exits on a signal. For that, perhaps
+> > we should declare a completion variable and have svc_set_num_threads()
+> > wait until nfsd() has actually run before continuing.
+> 
+> nfsd doesn't use kthreads, does it?
+> 
 
-Can't I just mmap(/dev/theblockdevice), why would I need to go through 
-azfs?
+Bruce just took a patchset to make it use kthreads too. I'm thinking
+2.6.27 for that, presuming that we get all of these issues worked out.
 
+I think the only thing we can reasonably do there is make sure that
+the thread actually starts before allowing svc_set_num_threads to
+continue.
 
+-- 
+Jeff Layton <jlayton@redhat.com>
