@@ -1,119 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbYFJIMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757916AbYFJIQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756882AbYFJIMi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 04:12:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbYFJIMU
+	id S1757916AbYFJIQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 04:16:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbYFJIQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 04:12:20 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:35756 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753284AbYFJIMQ (ORCPT
+	Tue, 10 Jun 2008 04:16:09 -0400
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:37508 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753358AbYFJIQD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 04:12:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ngzY2akFyNO4SzznXvBDv8BR44ihBK0UOy42aH0i/ZrfLCRN/Ns3FwEMMRLq/ARcRp
-         Vs490alQ9O7zhVOqX3gWJildeHiSOIGpHnxFeZD180niExTaQPERy+zGa6oO2Y4wM0yD
-         iF2B9F+6JcfAklmYs3Mu/SlP1CI03hG3tKqYE=
-Message-ID: <43e72e890806100112u72b3706dte2fb777bacba39a3@mail.gmail.com>
-Date: Tue, 10 Jun 2008 01:12:15 -0700
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: "Johannes Berg" <johannes@sipsolutions.net>
-Subject: Re: Is configfs the right solution for configuration based fs?
-Cc: "Ben Nizette" <bn@niasdigital.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       "linux kernel" <linux-kernel@vger.kernel.org>,
-       "Greg KH" <greg@kroah.com>, "Joel Becker" <joel.becker@oracle.com>,
-       "Satyam Sharma" <ssatyam@cse.iitk.ac.in>,
-       "Felix Fietkau" <nbd@openwrt.org>, "Al Viro" <viro@ftp.linux.org.uk>,
-       "H. Peter Anvin" <hpa@kernel.org>
-In-Reply-To: <1213084880.22220.29.camel@johannes.berg>
+	Tue, 10 Jun 2008 04:16:03 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ampOq7kgAKdOGOXR2oUVYblZkV9Dj9XXHlXYmTBDM/qtssDp8Edxl56hWAda0wm0M5eTD4HdEsD15FHKTCQHH4qBCYFLI6hYKaVIggvM3ZtaKZsC4bPb94ETpuSfXIa6jMv+oT8GfUCtByhjOVApAwsSJyIKvhdwn7iBYrb5tWs=  ;
+X-YMail-OSG: 87htxq8VM1lLFfLtqr.cyMf8ANgNcoCUWPHXVNEqIQCcxHaz_jdrLH9HJK8_9im5EqJndDI5W_nlZAE41YHXIaSGXcmHnio0u.csXG8wkR9ZZQ0F_JurnrhBL5S77T7UkJw-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH] xen: Use wmb instead of rmb in xen_evtchn_do_upcall().
+Date: Tue, 10 Jun 2008 18:15:53 +1000
+User-Agent: KMail/1.9.5
+Cc: Isaku Yamahata <yamahata@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org,
+       xen-ia64-devel@lists.xensource.com,
+       Samuel Thibault <samuel.thibault@eu.citrix.com>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>
+References: <20080610073532.GG24381%yamahata@valinux.co.jp> <200806101741.39871.nickpiggin@yahoo.com.au> <484E33F1.5000503@goop.org>
+In-Reply-To: <484E33F1.5000503@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <43e72e890806081425h4e785800nc618fc1985f9809f@mail.gmail.com>
-	 <1213002187.698.62.camel@johannes.berg>
-	 <1213056772.4089.42.camel@moss.renham>
-	 <1213084880.22220.29.camel@johannes.berg>
+Message-Id: <200806101815.53729.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 1:01 AM, Johannes Berg
-<johannes@sipsolutions.net> wrote:
-> On Tue, 2008-06-10 at 10:12 +1000, Ben Nizette wrote:
->> On Mon, 2008-06-09 at 11:03 +0200, Johannes Berg wrote:
->>
->> > Personally, I have a few issues with this:
->> >  1) why bother with a second configuration interface that we have to
->> >     maintain, adjust, ...? if we need scriptable access, then make a
->> >     good userspace tool that is scriptable.
->>
->> What's the first one, sysfs..?  ioctl (eww..)?
+On Tuesday 10 June 2008 17:57, Jeremy Fitzhardinge wrote:
+> Nick Piggin wrote:
+> > On Tuesday 10 June 2008 17:35, Isaku Yamahata wrote:
+> >> This patch is ported one from 534:77db69c38249 of linux-2.6.18-xen.hg.
+> >> Use wmb instead of rmb to enforce ordering between
+> >> evtchn_upcall_pending and evtchn_pending_sel stores
+> >> in xen_evtchn_do_upcall().
+> >
+> > There are a whole load of places in the kernel that should be using
+> > smp_ variants of memory barriers. This seemed to me like one of them,
+> > but I could be wrong.
 >
-> netlink.
+> No, it needs to be an unconditional barrier.  This is synchronizing with
+> the hypervisor - even if the kernel is compiled UP, the SMP hypervisor
+> may be testing/setting the events pending bits from another (physical) cpu.
+
+OK. What you *really* want is smp_*mb_even_if_compiled_for_UP() ;)
+That is, a small set of primitives that are compiled with CONFIG_SMP
+(and given some xxx_ prefix to distinguish).
+
+IO barriers are probably the best thing you can use for the moment.
+
+
+> > Also, if you do that can you get rid of the ifdef? If it really *really*
+> > mattered, we could introduce smp_mb before/after xchg... but if you
+> > use smp_wmb anyway then it definitely does not matter because that is a
+> > noop on x86.
 >
->> >  2) string-based stuff is often messy, especially the varying attributes
->> >     like MAC addresses etc. Unless we just use binary files again, which
->> >     is not very useful again. Take, for example, the monitor flags. If
->> >     we use the same flags then nobody really knows what's up
->> >     (echo 0x3 > mntr_flags?) and if we use strings then we cannot easily
->> >     ever rename the flag while keeping ABI/API compatibility.
->>
->> Not sure I see the argument here, why would you want to change the flag
->> name?  If you decide the old name is stupid then can't you just alias
->> the old name to the new one?
+> Yes, I'd like to lose the #ifdef.  Unfortunately I think putting a
+> "lock; addl $0,0(%%esp)" style barrier had a measurable negative
+> performance impact, but I may be thinking of something else.  I don't
+> know how expensive sfence is.
 >
-> Sure can do, but it just adds a lot of complexity to the kernel. I don't
-> see the point, it's not like you need a lot of code to build netlink
-> messages. Heck, I've done it by _hand_ and used just netlink sockets.
-> It's not a lot of code.
+> The alternative is to make ia64's xchg a barrier (or to add a barrier
+> variant of it).  It seems like a wart to have a cross-architecture
+> function like xchg(), but then have different architectures differ in
+> important details like barrier-ness.
 
-I actually agree with Johannes here, its not only complexity but also
-a burden, not to mention more bloat. We get away with some flag
-hackery in ath5k debug.[ch] for example to let you even use the name
-of flags but to assume none of this will change over time and to leave
-it to us to manage for an actual subsystem seems plainly overkill and
-abuse.
+Well, no you have to be careful. Because even if we did ask for ia64's
+xchg to be a full barrier, you wouldn't get the right behaviour on UP
+because it would be free to optimise that away -- those kinds of barriers
+referred to in all those primitives are defined for cacheable memory and
+CPU-to-CPU only...
 
->> String handling is always a bit iffy, though it has to be done
->> somewhere, either in kernel or in your "good userspace tool which is
->> scriptable".  I'd prefer to have it done once, well, in the kernel and
->> not have to ship more software than necessary.
->
-> I personally prefer to put it into userspace.
-
-This is of course subjective, I actually think your point about
-leaving the complexity of string manipulation and burden on userspace
-is perhaps the best argument to avoid a *complete* subsystem interface
-through a configuration file system.
-
->> >  3) afaik configfs doesn't actually support the mkdir, ... stuff yet
->> >     that you want for virtual interfaces.
->>
->> It has all the  mkdir stuff I can think of, can you elaborate?  It
->> doesn't have the commitable object support but I just have an 'enabled'
->> attribute in there to switch the thing on and off.
->
-> I don't remember the specifics, it's been a while, I guess I could be
-> thinking of the commitable object support; mostly we'd want to configure
-> many things in one go, even on a live object. Without disabling that
-> object first, obviously.
-
-OK we could use a fs *only* for retrieval and setting of a few
-wireless configuration data then which *is tunable* without *much
-complexity*. I'm thinking *standard tunable values* and *standard
-stats* like those currently exported via debugfs. This could simply be
-optional as well, just as debugfs is. Not even sure if configfs would
-be the ideal candidate for this. Alternatively we could just not have
-one too, and I'm fine with that too, but we'll just have to make great
-userspace tools.
-
-Just wanted to get an idea of what people thought and through their
-experience what is best.
-
-  Luis
+I guess under the circumstances, leaving the ifdef there is probably
+reasonable.
