@@ -1,76 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758861AbYFJVet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759424AbYFJVfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758861AbYFJVet (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 17:34:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754172AbYFJVel
+	id S1759424AbYFJVfX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 17:35:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756543AbYFJVfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 17:34:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57870 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753812AbYFJVej (ORCPT
+	Tue, 10 Jun 2008 17:35:06 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:44026 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754146AbYFJVfF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 17:34:39 -0400
-Date: Tue, 10 Jun 2008 14:33:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: clameter@sgi.com, linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
-       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org, eric.whitney@hp.com,
-       Paul Mundt <lethal@linux-sh.org>, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH -mm 13/25] Noreclaim LRU Infrastructure
-Message-Id: <20080610143334.c53d7d8a.akpm@linux-foundation.org>
-In-Reply-To: <20080610153702.4019e042@cuia.bos.redhat.com>
-References: <20080606202838.390050172@redhat.com>
-	<20080606202859.291472052@redhat.com>
-	<20080606180506.081f686a.akpm@linux-foundation.org>
-	<20080608163413.08d46427@bree.surriel.com>
-	<20080608135704.a4b0dbe1.akpm@linux-foundation.org>
-	<20080608173244.0ac4ad9b@bree.surriel.com>
-	<20080608162208.a2683a6c.akpm@linux-foundation.org>
-	<20080608193420.2a9cc030@bree.surriel.com>
-	<20080608165434.67c87e5c.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0806101214190.17798@schroedinger.engr.sgi.com>
-	<20080610153702.4019e042@cuia.bos.redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Jun 2008 17:35:05 -0400
+Date: Tue, 10 Jun 2008 14:28:59 -0700
+From: Greg KH <greg@kroah.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] always enable FW_LOADER unless EMBEDDED=y
+Message-ID: <20080610212859.GB26249@kroah.com>
+References: <20080610160408.GB11685@cs181133002.pp.htv.fi> <20080610162450.GB13538@kroah.com> <20080610181206.GF11685@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080610181206.GF11685@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008 15:37:02 -0400
-Rik van Riel <riel@redhat.com> wrote:
-
-> On Tue, 10 Jun 2008 12:17:23 -0700 (PDT)
-> Christoph Lameter <clameter@sgi.com> wrote:
-> 
-> > On Sun, 8 Jun 2008, Andrew Morton wrote:
+On Tue, Jun 10, 2008 at 09:12:06PM +0300, Adrian Bunk wrote:
+> On Tue, Jun 10, 2008 at 09:24:50AM -0700, Greg KH wrote:
+> > On Tue, Jun 10, 2008 at 07:04:08PM +0300, Adrian Bunk wrote:
+> > > James Bottomley recently discovered that we have 
+> > > {request,release}_firmware() dummies for the case of the actual 
+> > > functions not being available and has a fix for the bug that was 
+> > > actually causing build errors for built-in users with 
+> > > CONFIG_FW_LOADER=m.
+> > > 
+> > > But now missing selects on FW_LOADER are no longer visible at 
+> > > compile-time at all and can become runtime problems.
+> > > 
+> > > FW_LOADER is infrastructure with relatively small codesize we can 
+> > > safely enable for everyone, and only for people who really need small 
+> > > kernels (and can be expected to know what they are doing) it matters 
+> > > being able to disable it.
+> > > 
+> > > This patch therefore always sets FW_LOADER=y and allows users only to 
+> > > disable it with EMBEDDED=y.
+> > > 
+> > > As a bonus, we can then get rid of all "select FW_LOADER" plus the due 
+> > > to it required "depends on HOTPLUG" which removes some complexity from 
+> > > our Kconfig files.
 > > 
-> > > And it will take longer to get those problems sorted out if 32-bt
-> > > machines aren't even compiing the new code in.
-> > 
-> > The problem is going to be less if we dependedn on 
-> > CONFIG_PAGEFLAGS_EXTENDED instead of 64 bit. This means that only certain 
-> > 32bit NUMA/sparsemem configs cannot do this due to lack of page flags.
-> > 
-> > I did the pageflags rework in part because of Rik's project.
+> > Well, we can't get rid of that if EMBEDDED is set, right?
 > 
-> I think your pageflags work freed up a number of bits on 32
-> bit systems, unless someone compiles a 32 bit system with
-> support for 4 memory zones (2 bits ZONE_SHIFT) and 64 NUMA
-> nodes (6 bits NODE_SHIFT), in which case we should still
-> have 24 bits for flags.
+> No, if EMBEDDED is set and HOTPLUG is not set you will not be able to
+> enable FW_LOADER (the "depends on HOTPLUG" for FW_LOADER has to stay, 
+> but all the options that currently select FW_LOADER no longer need the 
+> dependency).
+
+Ok, but what about the point that the options that are wanting FW_LOADER
+in that situation?  I know EMBEDDED is tough to get right as you can
+shoot yourself in the foot very easily, but this seems like we are going
+to make it even harder to use properly.
+
+> > You sent this as an RFC before, I thought people said to just fix up all
+> > of the dependancies with drivers that needed FW_LOADER to be enabled,
+> > that would be easier, right?
 > 
-> Of course, having 64 NUMA nodes and a ZONE_SHIFT of 2 on
-> a 32 bit system is probably total insanity already.  I
-> suspect very few people compile 32 bit with NUMA at all,
-> except if it is an architecture that uses DISCONTIGMEM
-> instead of zones, in which case ZONE_SHIFT is 0, which
-> will free up space too :)
+> As far as I know there were zero answers to my RFC.
+> 
+> What are you referring to?
 
-Maybe it's time to bite the bullet and kill i386 NUMA support.  afaik
-it's just NUMAQ and a 2-node NUMAish machine which IBM made (as400?)
+Sorry, I thought that was sent to the RFC, I think it was to a thread
+even before that.
 
-arch/sh uses NUMA for 32-bit, I believe. But I don't know what its
-maximum node count is.  The default for sh NODES_SHIFT is 3.  
+I don't like this change for the above reason at this point.
+
+thanks,
+
+greg k-h
