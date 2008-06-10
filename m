@@ -1,57 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759498AbYFJDPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758962AbYFJDSf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759498AbYFJDPg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 23:15:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752935AbYFJDP2
+	id S1758962AbYFJDSf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 23:18:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbYFJDS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 23:15:28 -0400
-Received: from mx1.suse.de ([195.135.220.2]:52328 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753789AbYFJDP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 23:15:27 -0400
-Date: Tue, 10 Jun 2008 05:15:26 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: torvalds@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
-       paulus@samba.org
-Subject: Re: [patch 7/7] powerpc: lockless get_user_pages_fast
-Message-ID: <20080610031526.GH19404@wotan.suse.de>
-References: <20080605094300.295184000@nick.local0.net> <20080605094826.128415000@nick.local0.net> <20080609013204.7c291b68.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080609013204.7c291b68.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+	Mon, 9 Jun 2008 23:18:27 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:33570 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753940AbYFJDS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 23:18:26 -0400
+Date: Mon, 9 Jun 2008 20:18:25 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [patch 04/41] cpu ops: Core piece for generic atomic per cpu
+ operations
+In-Reply-To: <200806101256.31615.rusty@rustcorp.com.au>
+Message-ID: <Pine.LNX.4.64.0806092012240.13024@schroedinger.engr.sgi.com>
+References: <20080530035620.587204923@sgi.com> <200806100927.48597.rusty@rustcorp.com.au>
+ <Pine.LNX.4.64.0806091651390.9749@schroedinger.engr.sgi.com>
+ <200806101256.31615.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 09, 2008 at 01:32:04AM -0700, Andrew Morton wrote:
-> On Thu, 05 Jun 2008 19:43:07 +1000 npiggin@suse.de wrote:
-> 
-> > Implement lockless get_user_pages_fast for powerpc. Page table existence is
-> > guaranteed with RCU, and speculative page references are used to take a
-> > reference to the pages without having a prior existence guarantee on them.
-> > 
-> 
-> arch/powerpc/mm/gup.c: In function `get_user_pages_fast':
-> arch/powerpc/mm/gup.c:156: error: `SLICE_LOW_TOP' undeclared (first use in this function)
-> arch/powerpc/mm/gup.c:156: error: (Each undeclared identifier is reported only once
-> arch/powerpc/mm/gup.c:156: error: for each function it appears in.)
-> arch/powerpc/mm/gup.c:178: error: implicit declaration of function `get_slice_psize'
-> arch/powerpc/mm/gup.c:178: error: `mmu_huge_psize' undeclared (first use in this function)
-> arch/powerpc/mm/gup.c:182: error: implicit declaration of function `huge_pte_offset'
-> arch/powerpc/mm/gup.c:182: warning: assignment makes pointer from integer without a cast
-> 
-> with
-> 
-> http://userweb.kernel.org/~akpm/config-g5.txt
-> 
-> I don't immediately know why - adding asm/page.h to gup.c doesn't help.
-> I'm suspecting a recursive include problem somewhere.
-> 
-> I'll drop it, sorry - too much other stuff to fix over here.
+On Tue, 10 Jun 2008, Rusty Russell wrote:
 
-No problem. Likely a clash with the hugepage patches.
+> > Right that is what the cpu alloc patches do. So you could implement
+> > cpu_local_inc on top of some of the cpu alloc patches.
+> 
+> Or you could just implement it today as a standalone patch.
+
+You need at least the zero basing to enable the use of the segment 
+register on x86_64.
+
+> > But then the whole point of local_t is gone. Why not use atomic_t in the
+> > first place?
+> 
+> Because some archs can do better.
+
+The argument does not make any sense. First you want to use atomic_t then 
+not?
+
+> > > By definition if the caller cared, they would have had premption
+> > > disabled.
+> >
+> > There are numerous instances where the caller does not care about
+> > preemption. Its just important that one per cpu counter is increment in
+> > the least intrusive way. See f.e. the VM event counters.
+> 
+> Yes, and that's exactly the point.  The VM event counters are exactly a case 
+> where you should have used cpu_local_inc.
+
+I tried it and did not give any benefit except first failing due to bugs 
+because local_t did not disable preempt6... This led to Andi fixing 
+local_t.
+
+But with the preempt disabling I could not discern what the benefit 
+would be.
+
+CPU_INC does not require disabling of preempt and the cpu alloc patches 
+shorten the code sequence to increment a VM counter significantly.
+
+Here is the header from the patch. How would cpu_local_inc be able to do 
+better unless you adopt this patchset and add a shim layer?
+
+Subject: VM statistics: Use CPU ops
+
+The use of CPU ops here avoids the offset calculations that we used to 
+have to do with per cpu operations. The result of this patch is that event 
+counters are coded with a single instruction the following way:
+
+        incq   %gs:offset(%rip)
+
+Without these patches this was:
+
+        mov    %gs:0x8,%rdx
+        mov    %eax,0x38(%rsp)
+        mov    xxx(%rip),%eax
+        mov    %eax,0x48(%rsp)
+        mov    varoffset,%rax
+        incq   0x110(%rax,%rdx,1)
+
 
