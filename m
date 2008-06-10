@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183AbYFJOxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756681AbYFJOxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756183AbYFJOxR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 10:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbYFJOw7
+	id S1756681AbYFJOxn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 10:53:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbYFJOxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 10:52:59 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:28492 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751685AbYFJOw7 (ORCPT
+	Tue, 10 Jun 2008 10:53:32 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:53516 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754033AbYFJOxb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 10:52:59 -0400
-X-IronPort-AV: E=Sophos;i="4.27,618,1204531200"; 
-   d="scan'208";a="40027124"
-From: Roland Dreier <rdreier@cisco.com>
-To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-Cc: Roland Dreier <rolandd@cisco.com>, Paul Mackerras <paulus@samba.org>,
-       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-EWG" <ewg@lists.openfabrics.org>, general@lists.openfabrics.org,
-       fenkes@de.ibm.com, raisch@de.ibm.com, hnguyen@de.ibm.com,
-       TKLEIN@de.ibm.com, THEMANN@de.ibm.com
-Subject: Re: [PATCH REPOST] IB/ehca: In case of lost interrupts, trigger EOI to reenable interrupts
-References: <200806101644.34693.ossrosch@linux.vnet.ibm.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 10 Jun 2008 07:52:57 -0700
-In-Reply-To: <200806101644.34693.ossrosch@linux.vnet.ibm.com> (Stefan
-	Roscher's message of "Tue, 10 Jun 2008 16:44:31 +0200")
-Message-ID: <adatzg15ol2.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Tue, 10 Jun 2008 10:53:31 -0400
+X-Sasl-enc: pQtsbIfJwdFSz/D03LRcVvMT/rnMWCLMBO6vMru8lST8 1213109609
+Date: Tue, 10 Jun 2008 11:53:25 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Re: Linux 2.6.25.6
+Message-ID: <20080610145325.GC23351@khazad-dum.debian.net>
+References: <20080609194924.GL30402@sequoia.sous-sol.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 10 Jun 2008 14:52:57.0719 (UTC) FILETIME=[ABC7A070:01C8CB09]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <20080609194924.GL30402@sequoia.sous-sol.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > During corner case testing, we noticed that some versions of ehca 
- > do not properly transition to interrupt done in special load situations.
- > This can be resolved by periodically triggering EOI through H_EOI, 
- > if eqes are pending.
+On Mon, 09 Jun 2008, Chris Wright wrote:
+> We (the -stable team) are announcing the release of the 2.6.25.6 kernel.
+> 
+> It contains a number of assorted bugfixes all over the tree.  Users are
+> encouraged to update.
 
-So just to be clear: this is a workaround for a hardware/firmware bug?
+It also contains at least one security bugfix, as some were quick to point
+out in not-so-kind words:
 
- - R.
+http://lwn.net/Articles/285438/
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
