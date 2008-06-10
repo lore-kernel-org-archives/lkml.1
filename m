@@ -1,115 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbYFJJNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbYFJJPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756038AbYFJJNX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 05:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbYFJJNP
+	id S1757478AbYFJJPs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 05:15:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbYFJJPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 05:13:15 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:40641 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751176AbYFJJNN (ORCPT
+	Tue, 10 Jun 2008 05:15:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59360 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751715AbYFJJPk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 05:13:13 -0400
-X-Sasl-enc: 55Kd306istUocnWykrV2RzS8EajEPrxiK9u7sB7RZuNG 1213089191
-Subject: Re: Linux 2.6.26-rc4
-From: Ian Kent <raven@themaw.net>
-To: Jesper Krogh <jesper@krogh.cc>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, Jeff Moyer <jmoyer@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <1213080010.3024.42.camel@raven.themaw.net>
-References: <20080603105258.GV28946@ZenIV.linux.org.uk>
-	 <1212499623.3025.46.camel@raven.themaw.net>
-	 <alpine.LFD.1.10.0806030751040.3473@woody.linux-foundation.org>
-	 <1212509263.3025.66.camel@raven.themaw.net>
-	 <alpine.LFD.1.10.0806030926330.3473@woody.linux-foundation.org>
-	 <1212513189.3025.101.camel@raven.themaw.net>
-	 <20080603173029.GD28946@ZenIV.linux.org.uk>
-	 <x49ej7ejtry.fsf@segfault.boston.devel.redhat.com>
-	 <20080603191859.GG28946@ZenIV.linux.org.uk>
-	 <x49abi2jnwf.fsf@segfault.boston.devel.redhat.com>
-	 <20080603230026.GH28946@ZenIV.linux.org.uk>
-	 <1212547323.3146.45.camel@raven.themaw.net>
-	 <1213073861.3024.34.camel@raven.themaw.net>  <484E1F20.4060804@krogh.cc>
-	 <1213080010.3024.42.camel@raven.themaw.net>
-Content-Type: text/plain
-Date: Tue, 10 Jun 2008 17:09:43 +0800
-Message-Id: <1213088983.3024.49.camel@raven.themaw.net>
+	Tue, 10 Jun 2008 05:15:40 -0400
+Date: Tue, 10 Jun 2008 02:15:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       linux-mm@kvack.org, Rik van Riel <riel@redhat.com>
+Subject: Re: 2.6.26-rc5-mm2
+Message-Id: <20080610021519.52af66f5.akpm@linux-foundation.org>
+In-Reply-To: <200806101848.22237.nickpiggin@yahoo.com.au>
+References: <20080609223145.5c9a2878.akpm@linux-foundation.org>
+	<200806101728.27486.nickpiggin@yahoo.com.au>
+	<20080610013427.aa20a29b.akpm@linux-foundation.org>
+	<200806101848.22237.nickpiggin@yahoo.com.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 10 Jun 2008 18:48:21 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-On Tue, 2008-06-10 at 14:40 +0800, Ian Kent wrote:
-> On Tue, 2008-06-10 at 08:28 +0200, Jesper Krogh wrote:
-> > Ian Kent wrote:
-> > > On Wed, 2008-06-04 at 10:42 +0800, Ian Kent wrote:
-> > >> On Wed, 2008-06-04 at 00:00 +0100, Al Viro wrote:
-> > >>> On Tue, Jun 03, 2008 at 03:53:36PM -0400, Jeff Moyer wrote:
-> > >>>
-> > >>>> autofs4_lookup is called on behalf a process trying to walk into an
-> > >>>> automounted directory.  That dentry's d_flags is set to
-> > >>>> DCACHE_AUTOFS_PENDING but not hashed.  A waitqueue entry is created,
-> > >>>> indexed off of the name of the dentry.  A callout is made to the
-> > >>>> automount daemon (via autofs4_wait).
-> > >>>>
-> > >>>> The daemon looks up the directory name in its configuration.  If it
-> > >>>> finds a valid map entry, it will then create the directory using
-> > >>>> sys_mkdir.  The autofs4_lookup call on behalf of the daemon (oz_mode ==
-> > >>>> 1) will return NULL, and then the mkdir call will be made.  The
-> > >>>> autofs4_mkdir function then instantiates the dentry which, by the way,
-> > >>>> is different from the original dentry passed to autofs4_lookup.  (This
-> > >>>> dentry also does not get the PENDING flag set, which is a bug addressed
-> > >>>> by a patch set that Ian and I have been working on;  specifically, the
-> > >>>> idea is to reuse the dentry from the original lookup, but I digress).
-> > >>>>
-> > >>>> The daemon then mounts the share on the given directory and issues an
-> > >>>> ioctl to wakeup the waiter.  When awakened, the waiter clears the
-> > >>>> DCACHE_AUTOFS_PENDING flag, does another lookup of the name in the
-> > >>>> dcache and returns that dentry if found.
-> > >>>> Later, the dentry gets expired via another ioctl.  That path sets
-> > >>>> the AUTOFS_INF_EXPIRING flag in the d_fsdata associated with the dentry.
-> > >>>> It then calls out to the daemon to perform the unmount and rmdir.  The
-> > >>>> rmdir unhashes the dentry (and places it on the rehash list).
-> > >>>>
-> > >>>> The dentry is removed from the rehash list if there was a racing expire
-> > >>>> and mount or if the dentry is released.
-> > >>>>
-> > >>>> This description is valid for the tree as it stands today.  Ian and I
-> > >>>> have been working on fixing some other race conditions which will change
-> > >>>> the dentry life cycle (for the better, I hope).
-> > >>> So what happens if new lookup hits between umount and rmdir?
-> > >> It will wait for the expire to complete and then wait for a mount
-> > >> request to the daemon.
-> > > 
-> > > Actually, that explanation is a bit simple minded.
-> > > 
-> > > It should wait for the expire in ->revalidate().
-> > > Following the expire completion d_invalidate() should return 0, since
-> > > the dentry is now unhashed, which causes ->revalidate() to return 0.
-> > > do_lookup() should see this and call a ->lookup().
-> > > 
-> > > But maybe I've missed something as I'm seeing a problem now.
-> > 
-> > Ok. Ive been running on the patch for a few days now .. and didn't see
-> > any problems. But that being said, I also turned off the --ghost option
-> > to autofs so if it actually is the patch or the different codepaths
-> > being used, I dont know. Since this is a production system, I'm a bit
-> > reluctant to just change a working setup to test it out.
-> 
-> No need to change anything.
+> Is the plan to merge all reclaim changes in a big hit, rather than
+> slowly trickle in the different independent changes?
 
-Mmmm .. that comment might not be accurate either.
+It's going to take a lot of work to get such extensive reclaim changes
+landed.
 
-It's beginning to look like my original approach, a post from back in
-Feb 2007, to fix a deadlock bug, wasn't right at all. But we don't
-really have time to determine that for sure now as it can take several
-days for the bug to trigger.
+We need to convince ourselves that these changes are the right way to
+fix <whatever they fix>.  We need to review and test the crap out of
+them.  The 64-bit-only thing is a concern.  I wonder about whether
+we've "fixed" anon pages but didn't do anything about file-backed
+mapped pages.  Plus all the other stuff, plus stuff we haven't thought
+of yet.
 
-Ian
-
-
+It's huge.
