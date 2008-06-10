@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760136AbYFJWwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758808AbYFJWzr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760136AbYFJWwm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 18:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbYFJWwd
+	id S1758808AbYFJWzr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 18:55:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754521AbYFJWzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 18:52:33 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:50147 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752444AbYFJWwc (ORCPT
+	Tue, 10 Jun 2008 18:55:40 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:40423 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753880AbYFJWzj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 18:52:32 -0400
-Date: Tue, 10 Jun 2008 18:52:22 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [ANNOUNCE] linux-staging tree created
-Message-ID: <20080610225222.GG8397@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Greg KH <greg@kroah.com>,
-	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-	Stephen Rothwell <sfr@canb.auug.org.au>
-References: <20080610190540.GA25066@kroah.com>
+	Tue, 10 Jun 2008 18:55:39 -0400
+Message-ID: <484F065B.2050002@keyaccess.nl>
+Date: Wed, 11 Jun 2008 00:55:23 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080610190540.GA25066@kroah.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [PATCH 2/5] x86: PAT: fix ambiguous paranoia check in pat_init()
+References: <20080610140518.GF5024@alberich.amd.com>
+In-Reply-To: <20080610140518.GF5024@alberich.amd.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -0.5 (/)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 12:05:40PM -0700, Greg KH wrote:
-> PURPOSE
+On 10-06-08 16:05, Andreas Herrmann wrote:
+
+> Starting with commit 8d4a4300854f3971502e81dacd930704cb88f606 (x86:
+> cleanup PAT cpu validation) the PAT CPU feature flag is not cleared
+> anymore. Now the error message
 > 
-> The linux-staging tree was created to hold drivers and filesystems and
-> other semi-major additions to the Linux kernel that are not ready to be
-> merged at this point in time.  It is here for companies and authors to
-> get a wider range of testing, and to allow for other members of the
-> community to help with the development of these features for the
-> eventual inclusion into the main kernel tree.
+>   "PAT enabled, but CPU feature cleared"
 > 
-> This tree will be included in the daily linux-next builds, and will get
-> testing by all users of that tree.
+> in pat_init() is misleading.
 
-Does this mean that the nature of linux-next is changing?  I thought
-the whole point of linux-next was only to have what would be pushed to
-Linus in the near future, so we could check for patch compatibility
-issues.  For that reason, for example, I don't push the unstable set
-of patches in the ext4 tree to linux-next, since they aren't ready for
-merging yet in their current form.  
+No, it's correct. This is to be read as "The PAT feature is enabled in 
+the kernel but the CPU claims to not have PAT". The message is not a 
+leftover from the old flag-clearing setup or anything; it was introduced 
+in the patch that disabled that.
 
-But if linux-staging is going to be pushed to linux-next, doesn't that
-violate the ground rules of Linux-next?  Or are we allowing in this
-case because these are filesystems and/or device drivers that don't
-exist at all in the mainline tree yet?
+> Furthermore the current code does not check for existence of the PAT
+> CPU feature flag if a CPU is whitelisted in validate_pat_support.
 
-						- Ted
+Which is okay-ish, or at least by design it seems. The paranoia check in 
+pat.c will catch this case.
 
+The current setup is okay really. The only thing it still wants is a 
+commandline whitelist switch but that needs a somewhat different setup 
+as validate_pat_support() is too early for __setup() or early_param().
+
+Rene.
