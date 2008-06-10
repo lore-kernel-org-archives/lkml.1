@@ -1,61 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbYFJCvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbYFJCxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756402AbYFJCvm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 22:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbYFJCvd
+	id S1756833AbYFJCxX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 22:53:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbYFJCxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 22:51:33 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:25982 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750959AbYFJCvc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 22:51:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=ApxKlbIsR+6fyvJARZ+qJBeM/hSeZteTSKc3Ukp6W6icJbUUydXfgC/O1VVoqTSJdX
-         xrExUTESsDDpUUCzuLJNFSMOWyh0g+XL7JCyPV9csQFv7/CAH+xmBb/nll0PJ/Ijn1vD
-         GM9iGV+mfAiWg/hY9Jc78RQLtRzR6LQvrN06o=
-Message-ID: <484DEC2C.2090207@gmail.com>
-Date: Tue, 10 Jun 2008 11:51:24 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] expand link_power_management_policy definition
-References: <20080603172307.1b963aac@appleyard> <4845E761.2090604@garzik.org>
-In-Reply-To: <4845E761.2090604@garzik.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Jun 2008 22:53:15 -0400
+Received: from mail.suse.de ([195.135.220.2]:51037 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753014AbYFJCxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 22:53:14 -0400
+Date: Tue, 10 Jun 2008 04:53:12 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc][patch] mm: vmap rewrite
+Message-ID: <20080610025312.GC19404@wotan.suse.de>
+References: <20080605102015.GA11366@wotan.suse.de> <484AC779.1070803@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <484AC779.1070803@goop.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Kristen Carlson Accardi wrote:
->> I think I mentioned on the list a couple weeks ago that I favor just
->> expanding the definition of link power management to include
->> the notion of simply powering the entire port off rather
->> than adding new knobs to sysfs.  I wrote this completely untested and
->> very incomplete patch to give you a better idea of what I am proposing.
->> This patch adds a new valid value of "power_off" for the existing
->> link_power_management_policy sysfs entry:
+On Sat, Jun 07, 2008 at 06:38:01PM +0100, Jeremy Fitzhardinge wrote:
+> Nick Piggin wrote:
+> >Hi. RFC.
+> >
+> >Rewrite the vmap allocator to use rbtrees and lazy tlb flushing, and 
+> >provide a
+> >fast, scalable percpu frontend for small vmaps.
+> >
+> >XEN and PAT and such do not like deferred TLB flushing. They just need to 
+> >call
+> >vm_unmap_aliases() in order to flush any deferred mappings.  That call is 
+> >very
+> >expensive (well, actually not a lot more expensive than a single vunmap 
+> >under
+> >the old scheme), however it should be OK if not called too often.
+> >  
 > 
-> Looks fine to me...  that would work nicely.
-> 
-> I think your patch is missing code to handle the transition from
-> power_off to <something else>, though, right?
-> 
-> I'm quite happy with this approach.
+> What are the performance characteristics?
 
-I agree this is the right place to implement the control.
+Basically it goes through the lazy mappings, and does a global kernel TLB
+flush and discards them if there were any. So in the case there was just
+a single lazy mapping there, it will be about as expensive as the current
+scheme (the TLB flush being the dominating cost), maybe a little more due
+to extra logic involved. If you have multiple lazy mappings, it should
+still be a win.
 
-Thanks.
 
--- 
-tejun
+>  Can it be fast-pathed if 
+> there are no outstanding aliases?
+
+The TLB flush can be avoided. But I suspect what you really ask for is
+whether a given page has outstanding aliases...
+
+ 
+> For Xen, I'd need to do the alias unmap each time it allocates a page 
+> for use in a pagetable.  For initial process construction that could be 
+> deferred, but creating mappings on a live process could get fairly 
+> expensive as a result.  The ideal interface for me would be a way of 
+> testing if a given page has vmap aliases, so that we need only do the 
+> unmap if really necessary.  I'm guessing that goes into "need a new page 
+> flag" territory though...
+
+It's harder than that even, because we don't own the page flags, so then
+clearing the PG_kalias bit would require that we make all page flags ops
+atomic in all parts of the kernel. Obviously not going to happen.
+
+The other thing we could do is have vmap layer keep some p->v translations
+around (actually it doesn't even need to go all the way to v, just a single
+bit would suffice) So I guess this would be like another page flag, but
+without the atomicity problem and without me getting angry at using another
+flag ;) Still, I'd rather not do this and slow everything else down.
+
+It could be switched on at runtime if Xen is running perhaps. Or the other
+thing Xen could do is keep a cache of unaliased page table pages. You
+could fill it up N pages at a time, and just do a single unmap_aliases call
+to sanitize them all; also, clean pages returned from pagetables could be
+reused. Like the quicklists things.
+
+Or: doesn't the host have to do its own alias check anyway? In case of an
+AWOL guest? Why not just reuse that and trap back into the guest to fix it
+up?
+
