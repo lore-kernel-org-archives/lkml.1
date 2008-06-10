@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754361AbYFJDNi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759369AbYFJDNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754361AbYFJDNi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 23:13:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYFJDNV
+	id S1759369AbYFJDNv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 23:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758447AbYFJDN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 23:13:21 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43652 "EHLO mx2.suse.de"
+	Mon, 9 Jun 2008 23:13:26 -0400
+Received: from ns1.suse.de ([195.135.220.2]:52129 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754687AbYFJDNU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 23:13:20 -0400
-Date: Mon, 9 Jun 2008 20:09:59 -0700
+	id S1758001AbYFJDNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 23:13:25 -0400
+Date: Mon, 9 Jun 2008 20:11:09 -0700
 From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Adrian Bunk <bunk@kernel.org>,
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Vegard Nossum <vegard.nossum@gmail.com>,
+       Adrian Bunk <bunk@kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
@@ -22,82 +23,55 @@ Cc: Ingo Molnar <mingo@elte.hu>, Cornelia Huck <cornelia.huck@de.ibm.com>,
        Dave Young <hidave.darkstar@gmail.com>
 Subject: Re: [bug, 2.6.26-rc4/rc5] sporadic bootup crashes in
 	blk_lookup_devt()/prepare_namespace()
-Message-ID: <20080610030959.GD6796@suse.de>
-References: <20080609080312.GA32458@elte.hu> <20080609020623.b6727f2b.akpm@linux-foundation.org> <19f34abd0806090209l541d93c6jaba2704314b34418@mail.gmail.com> <20080609133426.GB20194@cs181133002.pp.htv.fi> <19f34abd0806090658v54f3a912n2ed30ad6cc20d00@mail.gmail.com> <19f34abd0806090728s3b3fdbeq7dd3d31d02c8f28e@mail.gmail.com> <20080609165757.184724ff@gondolin.boeblingen.de.ibm.com> <alpine.LFD.1.10.0806090819410.3473@woody.linux-foundation.org> <20080609153856.GA5149@elte.hu> <alpine.LFD.1.10.0806090858310.3473@woody.linux-foundation.org>
+Message-ID: <20080610031109.GE6796@suse.de>
+References: <20080609020623.b6727f2b.akpm@linux-foundation.org> <19f34abd0806090209l541d93c6jaba2704314b34418@mail.gmail.com> <20080609133426.GB20194@cs181133002.pp.htv.fi> <19f34abd0806090658v54f3a912n2ed30ad6cc20d00@mail.gmail.com> <19f34abd0806090728s3b3fdbeq7dd3d31d02c8f28e@mail.gmail.com> <20080609165757.184724ff@gondolin.boeblingen.de.ibm.com> <alpine.LFD.1.10.0806090819410.3473@woody.linux-foundation.org> <20080609153856.GA5149@elte.hu> <alpine.LFD.1.10.0806090858310.3473@woody.linux-foundation.org> <20080609191521.1a56b6a6@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0806090858310.3473@woody.linux-foundation.org>
+In-Reply-To: <20080609191521.1a56b6a6@gondolin.boeblingen.de.ibm.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 09, 2008 at 09:15:40AM -0700, Linus Torvalds wrote:
+On Mon, Jun 09, 2008 at 07:15:21PM +0200, Cornelia Huck wrote:
+> On Mon, 9 Jun 2008 09:15:40 -0700 (PDT),
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> 
-> On Mon, 9 Jun 2008, Ingo Molnar wrote:
+> > And this is all still ignoring the locking issue, of course. It would be 
+> > trivial to just remove the block_class_lock, and change
 > > 
-> > ah. I suspect that explains the sporadic nature as well: normally there 
-> > is 'some' object at the list address, just with an invalid type.
+> > 	mutex_[un]lock(&block_class_lock);
+> > 
+> > into
+> > 
+> > 	down|up(&block_class.sem);
+> > 
+> > except for _one_ case, which is
+> > 
+> > 	bdev_map = kobj_map_init(base_probe, &block_class_lock);
+> > 
+> > which really wants a mutex, not a sempahore.
+> > 
+> > So to fix that, we'd need to make the class->sem be a mutex, and pass that 
+> > in. Which is probably a good change too, but makes the whole thing much 
+> > bigger.
 > 
-> Yes. It could cause two kinds of problems:
+> The driver core changes in -next convert class->sem to
+> class->p->class_mutex, which makes it non-accessible to drivers.
+> Most of the locking is easily done through converting to the class
+> iterator functions, but there are some cases where this is not going to
+> work:
 > 
->  - it might end up returning the wrong 'dev_t'. This is unlikely, since we 
->    only have two cases: the working whole-disk case, and the case where we 
->    find a partition.
+> - The {register,unregister}_blkdev() functions, which don't directly
+> involve the class.
+> - The iterators for /proc/partitions, which take the lock in
+> part_start() and give it up again in part_stop().
 > 
->    But if we find a partition, we'd still get the right dev_t *most* of 
->    the time, because we'd first get called with "part=0", and then we have 
-> 
-> 	if (part < disk->minors)
-> 		devt = MKDEV(MAJOR(dev->devt),
-> 			MINOR(dev->devt) + part);
-> 	break;
-> 
->    where we would only fail if that conditional statement would be untrue 
->    (and then we'd incorrectly return MKDEV(0,0)). Otherwise, 'devt' ends 
->    up being correct anyway.
-> 
->    So one effect of this bug would be that it would use the random 
->    "disk->minors" value to either return the right devt, or return one 
->    that is all zeroes. But if we return the all-zeroes case, then 
->    init/do_mounts.c will just try again, this time with the numbers 
->    removed, and now it wouldn't hit the "strcmp()" on any partition, and 
->    the next time around it would find a disk and work again.
-> 
->    So this is a bug, but it's one that essentially is hidden by the 
->    caller.
-> 
->  - The other alternative is that the bogus "disk->minors" thing would 
->    cause a page fault. This would only happen if the partition allocation 
->    was the first thing in a page, and the previous page was unused, and 
->    you had DEBUG_PAGEALLOC enabled.
-> 
->    This is obviously the case you saw.
-> 
-> My trivial fix makes it ignore partitions entirely.
-> 
-> We *could* (and perhaps should) do something slightly more involved 
-> instead, which actually uses a partition if it's there). Like this. That 
-> would avoid my one nagging worry (that some clever usage makes partitions 
-> with a different numbering or without a base block device).
-> 
-> And this is all still ignoring the locking issue, of course. It would be 
-> trivial to just remove the block_class_lock, and change
-> 
-> 	mutex_[un]lock(&block_class_lock);
-> 
-> into
-> 
-> 	down|up(&block_class.sem);
+> Maybe we need a possibilty for a driver to lock a class from outside?
 
-The locking for struct class has turned into a mutex in the -next tree
-already, but I have left the block_class_lock alone for the moment.
-
-Now that I have also cleaned up the places in the /proc files where we
-grabbed it, I think it might be safe to remove, I'll poke at that
-tomorrow.
+Why would that be needed?  We protect walking the class lists internally
+with the lock, that should be sufficient, right?
 
 thanks,
 
