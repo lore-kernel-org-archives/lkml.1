@@ -1,90 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbYFJS60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757603AbYFJS7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757283AbYFJS60 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 14:58:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbYFJS6S
+	id S1757603AbYFJS7x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 14:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbYFJS7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 14:58:18 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:61773 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752658AbYFJS6R (ORCPT
+	Tue, 10 Jun 2008 14:59:45 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:55597 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753254AbYFJS7o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 14:58:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=XsyLoI1pLUiUeGAyhSdaNpahYRxZpk8oldnNR7AeyTo9jyC+MFWzaO57U1JN3vgAZH
-         YEF46BEWDLui2fxk9h0jdPIuBW+Vq3GHI/qBfAoQjgtgSMKBgr8XDtvMTgSImW56nRVB
-         vhRzU2JVoBHo7gfhsSx/x/U7PU27XMKXk2sRw=
-Date: Tue, 10 Jun 2008 22:57:59 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: nmi_watchdog suspicious
-Message-ID: <20080610185759.GA7353@cvg>
+	Tue, 10 Jun 2008 14:59:44 -0400
+Date: Tue, 10 Jun 2008 14:59:43 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <greg@kroah.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Oliver Neukum <oliver@neukum.org>, Pavel Machek <pavel@suse.cz>,
+       USB list <linux-usb@vger.kernel.org>,
+       Andrew Morton <akpm@linuxfoundation.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] USB: don't use reset-resume if drivers don't support it
+In-Reply-To: <alpine.LFD.1.10.0806100933060.3101@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.44L0.0806101454480.3658-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo, Maciej, I've a really bad suspicious about commit
+From: Linus Torvalds <torvalds@linux-foundation.org>
+
+This patch tries to identify which devices are able to accept
+reset-resume handling, by checking that there is at least one
+interface driver bound and that all of the drivers have a reset_resume
+method defined.  If these conditions don't hold then during resume
+processing, the device is logicall disconnected.
+
+This is only a temporary fix.  Later on we will explicitly unbind
+drivers that can't handle reset-resumes.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
 ---
-commit 3ed3f06295e69700fa808396f7b350bff2b69de0
-Author: Cyrill Gorcunov <gorcunov@gmail.com>
-Date:   Wed Jun 4 01:00:47 2008 +0400
 
-    x86: nmi - consolidate nmi_watchdog_default for 32bit mode
-    
-    64bit mode bootstrap code does set nmi_watchdog to NMI_NONE
-    by default and doing the same on 32bit mode is safe too.
-    Such an action saves us from several #ifdef.
-    
-    Btw, my previous commit
-    
-    commit 19ec673ced067316b9732bc6d1c4ff4052e5f795
-    Author: Cyrill Gorcunov <gorcunov@gmail.com>
-    Date:   Wed May 28 23:00:47 2008 +0400
-    
-        x86: nmi - fix incorrect NMI watchdog used by default
-    
-    did not fix the problem completely, moreover it
-    introduced additional bug - nmi_watchdog would be
-    set to either NMI_LOCAL_APIC or NMI_IO_APIC
-    _regardless_ to boot option if being enabled thru
-    /proc/sys/kernel/nmi_watchdog. Sorry for that.
-    Fix it too.
----
+Greg:
 
-actually it changed nmi behaviour much more then I thought.
-Look, since by default nmi_watchdog now becomes NMI_NONE it
-does mean nmi.c:touch_nmi_watchdog() will not reset apic timers
-anymore even being requested by some other code.
+This patch really is a temporary fix meant only for 2.6.26.  There
+already are changes in the gregkh development tree which clash with
+this, and I intend to submit separately a real fix for the problem
+(i.e., unbind drivers that don't have suspend, resume, reset_resume,
+pre_reset, or post_reset methods, as needed).
 
-This commit does affect 32bit mode _only_. So now I'm guessing
-what mode was implemented in correct way originally.
+Is there any way this can be added to 2.6.26-rc while leaving it out of 
+the gregkh tree?
 
-On 64bit mode nmi_watchdog=NMI_NONE by default (in case if APIC enabled).
-On 32bit mode nmi_watchdog=NMI_DEFAULT was by default (in any case,
-but could be set to NMI_NONE in check_timer(), but we don't take
-this case now).
+Alan Stern
 
-So lets take a look on touch_nmi_watchdog().
-There is the condition
 
-	if (nmi_watchdog > 0)
-		...tell to reset counters in nmi_watchdog_tick()
 
-this condition is not taken on 64bit mode, but *was* taken on
-32bit mode by default! So who was right then? 64bit version or 32bit?
+Index: 2.6.26-rc5/drivers/usb/core/hub.c
+===================================================================
+--- 2.6.26-rc5.orig/drivers/usb/core/hub.c
++++ 2.6.26-rc5/drivers/usb/core/hub.c
+@@ -644,6 +644,48 @@ static void hub_stop(struct usb_hub *hub
+ 
+ #ifdef CONFIG_PM
+ 
++/* Try to identify which devices need USB-PERSIST handling */
++static int persistent_device(struct usb_device *udev)
++{
++	int i;
++	int retval;
++	struct usb_host_config *actconfig;
++
++	/* Explicitly not marked persistent? */
++	if (!udev->persist_enabled)
++		return 0;
++
++	/* No active config? */
++	actconfig = udev->actconfig;
++	if (!actconfig)
++		return 0;
++
++	/* FIXME! We should check whether it's open here or not! */
++
++	/*
++	 * Check that all the interface drivers have a
++	 * 'reset_resume' entrypoint
++	 */
++	retval = 0;
++	for (i = 0; i < actconfig->desc.bNumInterfaces; i++) {
++		struct usb_interface *intf;
++		struct usb_driver *driver;
++
++		intf = actconfig->interface[i];
++		if (!intf->dev.driver)
++			continue;
++		driver = to_usb_driver(intf->dev.driver);
++		if (!driver->reset_resume)
++			return 0;
++		/*
++		 * We have at least one driver, and that one
++		 * has a reset_resume method.
++		 */
++		retval = 1;
++	}
++	return retval;
++}
++
+ static void hub_restart(struct usb_hub *hub, int type)
+ {
+ 	struct usb_device *hdev = hub->hdev;
+@@ -689,8 +731,8 @@ static void hub_restart(struct usb_hub *
+ 		 * turn off the various status changes to prevent
+ 		 * khubd from disconnecting it later.
+ 		 */
+-		if (udev->persist_enabled && status == 0 &&
+-				!(portstatus & USB_PORT_STAT_ENABLE)) {
++		if (status == 0 && !(portstatus & USB_PORT_STAT_ENABLE) &&
++				persistent_device(udev)) {
+ 			if (portchange & USB_PORT_STAT_C_ENABLE)
+ 				clear_port_feature(hub->hdev, port1,
+ 						USB_PORT_FEAT_C_ENABLE);
 
-Maciej, could you take a look please? Maybe I just missing figure
-in general - ie how nmi_watchdog _should_ work.
-
-		- Cyrill -
