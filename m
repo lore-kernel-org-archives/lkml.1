@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757602AbYFJUOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756242AbYFJUTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757602AbYFJUOV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 16:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754144AbYFJUOM
+	id S1756242AbYFJUTS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 16:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbYFJUTI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 16:14:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36169 "EHLO mx1.redhat.com"
+	Tue, 10 Jun 2008 16:19:08 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:50932 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751257AbYFJUOK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 16:14:10 -0400
-Date: Tue, 10 Jun 2008 16:13:52 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Daniel J Blueman <daniel.blueman@gmail.com>, linux-nfs@vger.kernel.org,
-       nfsv4@linux-nfs.org, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6.26-rc4] mount.nfsv4/memory poisoning issues...
-Message-ID: <20080610161352.4e588653@tleilax.poochiereds.net>
-In-Reply-To: <1213127909.20459.48.camel@localhost>
-References: <6278d2220806041633n3bfe3dd2ke9602697697228b@mail.gmail.com>
-	<20080604203504.62730951@tleilax.poochiereds.net>
-	<1213124088.20459.16.camel@localhost>
-	<20080610151357.150b6f69@tleilax.poochiereds.net>
-	<1213127909.20459.48.camel@localhost>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-redhat-linux-gnu)
+	id S1751702AbYFJUTG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 16:19:06 -0400
+Subject: Re: [2.6 patch] jfs: remove DIRENTSIZ
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: jfs-discussion@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <20080609222729.GA1987@cs181133002.pp.htv.fi>
+References: <20080609222729.GA1987@cs181133002.pp.htv.fi>
+Content-Type: text/plain
+Date: Tue, 10 Jun 2008 15:19:03 -0500
+Message-Id: <1213129143.6435.6.camel@norville.austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008 15:58:29 -0400
-Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+Ack.
 
-> On Tue, 2008-06-10 at 15:13 -0400, Jeff Layton wrote:
-> 
-> > I think you're basically correct, but it looks to me like the
-> > nfs_callback_mutex actually protects nfs_callback_info.task as well.
-> > 
-> > If we're starting the thread, then we can't call kthread_stop on it
-> > until we release the mutex. So the thread can't exit until we release
-> > the mutex, and we can be guaranteed that this:
-> > 
-> >      nfs_callback_info.task = NULL;
-> > 
-> > ...can't happen until after kthread_run returns and nfs_callback_up
-> > sets it.
-> > 
-> > If that's right, then maybe this (untested, RFC only) patch would make sense?
-> 
-> Hmm... I suppose that is correct, but what if nfs_alloc_client() does
-> 
-> 	nfs_callback_up();
-> 	<kstrdup() fails>
-> 	nfs_callback_down();
-> 
-> AFAICS, if nfs_callback_down() gets called before the kthread() function
-> gets scheduled back in, then you can get left with a value of
-> nfs_callback_info.task != NULL, since nfs_callback_svc() will never be
-> called.
-> 
-
-I don't see this race.
-
-We can't call nfs_callback_down() until after nfs_callback_up()
-returns, so we're guaranteed to have "task" set to a valid task
-(presuming that nfs_callback_up() doesn't return error). We also can't
-return from nfs_callback_down() until after the nfs_callback_svc() has
-exited. kthread_stop() will block until it does.
-
-> Wouldn't it therefore make more sense to clear nfs_callback_info.task in
-> nfs_callback_down()?
-> 
-
-I suppose that makes just as much sense. It also seems more symmetrical
-given that we also set the var in nfs_callback_up(). I'll roll that into
-the BKL removal patch, and give it some testing. Look for it in a day
-or two...
+Added to the jfs git tree.  As this is an unused macro, removing the
+definition of struct dirent shouldn't depend on this patch.  Expect it
+to make the 2.6.27 merge window.
 
 Thanks,
+Shaggy
+
+On Tue, 2008-06-10 at 01:27 +0300, Adrian Bunk wrote:
+> After fat gets fixed the unused DIRENTSIZ macro was the last user of
+> struct dirent we should get rid of since the kernel and userspace 
+> versions differed.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> 89432c9b7ff2cd2e29fc5f2edde120dc38a89f46 diff --git a/fs/jfs/jfs_dtree.h b/fs/jfs/jfs_dtree.h
+> index cdac2d5..2545bb3 100644
+> --- a/fs/jfs/jfs_dtree.h
+> +++ b/fs/jfs/jfs_dtree.h
+> @@ -243,9 +243,6 @@ typedef union {
+>  #define JFS_REMOVE 3
+>  #define JFS_RENAME 4
+>  
+> -#define DIRENTSIZ(namlen) \
+> -    ( (sizeof(struct dirent) - 2*(JFS_NAME_MAX+1) + 2*((namlen)+1) + 3) &~ 3 )
+> -
+>  /*
+>   * Maximum file offset for directories.
+>   */
+> 
 -- 
-Jeff Layton <jlayton@redhat.com>
+David Kleikamp
+IBM Linux Technology Center
+
