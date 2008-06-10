@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755611AbYFJNZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755348AbYFJNdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755611AbYFJNZv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 09:25:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbYFJNZi
+	id S1755348AbYFJNdN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 09:33:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753166AbYFJNc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 09:25:38 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:52157 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753458AbYFJNZd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 09:25:33 -0400
-Date: Tue, 10 Jun 2008 16:24:36 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Randy Dunlap <rdunlap@xenotime.net>,
-       Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: build issue #503 for v2.6.26-rc2-433-gf26a398 :  undefined
-	reference to `request_firmware'
-Message-ID: <20080610132436.GB16149@cs181133002.pp.htv.fi>
-References: <20080517141749.GD3284@cs181133002.pp.htv.fi> <1211453544.3956.33.camel@localhost.localdomain> <20080523105412.cc13647d.rdunlap@xenotime.net> <1211565551.11477.26.camel@localhost.localdomain> <20080523110457.de353625.rdunlap@xenotime.net> <1211574780.11477.44.camel@localhost.localdomain> <20080523144849.3773cac3.rdunlap@xenotime.net> <1211580030.11477.50.camel@localhost.localdomain> <20080523153924.af48e95e.rdunlap@xenotime.net> <1211583164.11477.52.camel@localhost.localdomain>
+	Tue, 10 Jun 2008 09:32:57 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:62241 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752989AbYFJNc4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 09:32:56 -0400
+Date: Tue, 10 Jun 2008 14:30:47 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Glauber Costa <gcosta@redhat.com>
+cc: Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu,
+       hugh@veritas.com
+Subject: Re: [PATCH 11/15] x86: move enabling of io_apic to prepare_cpus
+In-Reply-To: <484E7B03.8000604@redhat.com>
+Message-ID: <Pine.LNX.4.55.0806101418510.1702@cliff.in.clinika.pl>
+References: <1213021018-14159-1-git-send-email-gcosta@redhat.com> 
+ <1213021018-14159-10-git-send-email-gcosta@redhat.com> 
+ <1213021018-14159-11-git-send-email-gcosta@redhat.com> 
+ <1213021018-14159-12-git-send-email-gcosta@redhat.com> 
+ <Pine.LNX.4.55.0806091620250.26593@cliff.in.clinika.pl>  <484D8813.4040807@redhat.com>
+  <Pine.LNX.4.55.0806092058550.26593@cliff.in.clinika.pl> 
+ <86802c440806091353m240ab7adocbaf5dacd15504f7@mail.gmail.com> 
+ <Pine.LNX.4.55.0806092159350.26593@cliff.in.clinika.pl> 
+ <Pine.LNX.4.55.0806100341520.31588@cliff.in.clinika.pl>
+ <86802c440806092208s338cf6b6q892f5149bbd142ca@mail.gmail.com>
+ <484E7B03.8000604@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1211583164.11477.52.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 23, 2008 at 05:52:44PM -0500, James Bottomley wrote:
-> On Fri, 2008-05-23 at 15:39 -0700, Randy Dunlap wrote:
-> > On Fri, 23 May 2008 17:00:30 -0500 James Bottomley wrote:
-> > >      1. No stubs and simply select FW_LOADER for everything
-> > >      2. Stubs that actually work in all situations.
-> > > 
-> > > My patch does 2.  I can see an argument for 1. but since we have the
-> > > stubs, making them work in all cases seems like the smaller change to
-> > > functionality.
+On Tue, 10 Jun 2008, Glauber Costa wrote:
+
+> >>  Then again -- what if X86_LOCAL_APIC is set, but X86_IO_APIC is not?
 > > 
-> > Oh, I'm for the stubs approach.
+> > config X86_LOCAL_APIC
+> >         def_bool y
+> >         depends on X86_64 || (X86_32 && (X86_UP_APIC || ((X86_VISWS ||
+> > SMP) && !X86_VOYAGER) || X86_GENERICARCH))
 > > 
-> > So with SCSI_SAS_LIBSAS=y and FW_LOADER=m, you would want/expect
-> > request_firmware() to return -EINVAL all of the time?
-> 
-> If you want stubs, yes
->...
+> > config X86_IO_APIC
+> >         def_bool y
+> >         depends on X86_64 || (X86_32 && (X86_UP_IOAPIC || (SMP &&
+> > !(X86_VISWS || X86_VOYAGER)) || X86_GENERICARCH))
+> > 
+> > for 64bit, those are all set.
+> > 
+> > for 32bit, may need to null stub if X86_IO_APIC is not set
+> > 
+> > YH
+> Fair Enough.
 
-I think I was the only one who had doubts about this patch.
+ That does not answer the question what to do with a 32-bit kernel run on
+a system that requires the fixup in the 64-bit mode.  Papering over such
+firmware bugs in the kernel encourages hardware vendors to maintain the
+breakage.
 
-And I've turned into a fan of your patch (plus my
-"always enable FW_LOADER unless EMBEDDED=y" patch).
+ Note that the I/O APIC comes out of reset with all the redirection
+entries masked out, so if any error conditions are triggered before Linux
+configures the chip, they are a result of a deliberate misprogramming done
+to the chip by the firmware.
 
-Can you (re)submit your patch so that it gets into 2.6.26?
+ Does anyone have a reference to the original problem report which lead to
+this workaround having been put in place?
 
-> James
-
-Thanks
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+  Maciej
