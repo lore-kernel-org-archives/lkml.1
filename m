@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbYFJRPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756679AbYFJRST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756576AbYFJRPK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 13:15:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756679AbYFJROm
+	id S1756679AbYFJRST (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 13:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbYFJRSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 13:14:42 -0400
-Received: from outbound-mail-129.bluehost.com ([67.222.38.29]:40990 "HELO
-	outbound-mail-129.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756638AbYFJROk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 13:14:40 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] 2.6.26-rc: x86: pci-dma.c: use __GFP_NO_OOM instead of __GFP_NORETRY
-Date: Tue, 10 Jun 2008 10:14:24 -0700
-User-Agent: KMail/1.9.9
-Cc: Miquel van Smoorenburg <mikevs@xs4all.net>, linux-kernel@vger.kernel.org
-References: <20080526234940.GA1376@xs4all.net> <1212682484.4332.7.camel@n2o.xs4all.nl> <20080610102347.GC19136@elte.hu>
-In-Reply-To: <20080610102347.GC19136@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Jun 2008 13:18:08 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:40815 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751014AbYFJRSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 13:18:07 -0400
+Date: Tue, 10 Jun 2008 21:19:57 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Question about task_struct::state
+Message-ID: <20080610171957.GB6038@tv-sign.ru>
+References: <20080610155055.GC4345@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806101014.25089.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
+In-Reply-To: <20080610155055.GC4345@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, June 10, 2008 3:23 am Ingo Molnar wrote:
-> * Miquel van Smoorenburg <mikevs@xs4all.net> wrote:
-> > On Mon, 2008-06-02 at 12:15 +0200, Ingo Molnar wrote:
-> > > * Miquel van Smoorenburg <mikevs@xs4all.net> wrote:
-> > > > Okay, so how about this then ?
-> > >
-> > > applied to tip/pci-for-jesse for more testing. Thanks,
-> >
-> > I've thought about it a bit more, and I think the actual patch that
-> > really does what everybody wants is this one instead:
->
-> applied a delta patch version of the one below to tip/pci-for-jesse.
+On 06/10, Dhaval Giani wrote:
+> 
+> sched.h has a comment in task_struct
+> 
+>         volatile long state;    /* -1 unrunnable, 0 runnable, >0 stopped */
+> 
+> After some searching, I've not been able to figure out how state can
+> become -1 (or unrunnable). Can you let me know how that happens?
+> 
+> If it cannot reach that state, then maybe this patch is needed.
+> 
+> Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> 
+> Index: linux-2.6/include/linux/sched.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/sched.h	2008-06-10 21:13:02.000000000 +0530
+> +++ linux-2.6/include/linux/sched.h	2008-06-10 21:14:44.000000000 +0530
+> @@ -1024,7 +1024,7 @@ struct sched_rt_entity {
+>  };
+>  
+>  struct task_struct {
+> -	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
+> +	volatile long state;	/* 0 runnable, >0 stopped */
 
-Speaking of that branch, how do you want to handle it?  Is it intended for my 
-linux-next branch or are some of the fixes important to get upstream now?  
-Which branch should I diff/log against to see the changes (last time I looked 
-it appeared neither master nor tip were the correct ones...)
+I think you are right, the comment is wrong (obsolete?).
 
-Thanks,
-Jesse
+Perhaps it is better to just remove it, or add a note about TASK_RUNNING/etc
+above. ">0 stopped" looks a bit confusing too.
+
+I'd suggest you to change the subject and send the patch to Andrew.
+
+Oleg.
+
