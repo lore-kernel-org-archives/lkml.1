@@ -1,128 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759040AbYFJV1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759346AbYFJV1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759040AbYFJV1T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 17:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbYFJV1F
+	id S1759346AbYFJV1t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 17:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756770AbYFJV1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 17:27:05 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:34725 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754432AbYFJV1D convert rfc822-to-8bit (ORCPT
+	Tue, 10 Jun 2008 17:27:40 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:5883 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755479AbYFJV1j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 17:27:03 -0400
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "Patterson, Andrew D (Linux R&D)" <andrew.patterson@hp.com>,
-       "Chen, Justin" <justin.chen@hp.com>
-Date: Tue, 10 Jun 2008 21:26:15 +0000
-Subject: RE: [PATCH 2/2] cciss: bump version to .20 to reflect new HW support
-Thread-Topic: [PATCH 2/2] cciss: bump version to .20 to reflect new HW
- support
-Thread-Index: AcjLP4G302ePuMmyRa+xJHlSbzMC4AAAQwBA
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A77881F2C8283A1@GVW0547EXC.americas.hpqcorp.net>
-References: <20080610161404.GB6808@roadking.ldev.net>
- <20080610135026.f17a2d3a.akpm@linux-foundation.org>
- <0F5B06BAB751E047AB5C87D1F77A77881F2C828381@GVW0547EXC.americas.hpqcorp.net>
- <20080610211810.GN20851@kernel.dk>
-In-Reply-To: <20080610211810.GN20851@kernel.dk>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 10 Jun 2008 17:27:39 -0400
+Date: Tue, 10 Jun 2008 15:27:37 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>, greg@kroah.com,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>, kristen.c.accardi@intel.com,
+       lenb@kernel.org, pbadari@us.ibm.com, linux-pci@vger.kernel.org,
+       pcihpd-discuss@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/3] Construct one fakephp slot per PCI slot
+Message-ID: <20080610212737.GK25295@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>, greg@kroah.com,
+	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Matthew Wilcox <matthew@wil.cx>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	kristen.c.accardi@intel.com, lenb@kernel.org, pbadari@us.ibm.com,
+	linux-pci@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
+References: <20080610212520.GJ25295@ldl.fc.hp.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080610212520.GJ25295@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Register one slot per slot, rather than one slot per function.  Change the
+name of the slot to fake%d instead of the pci address.
 
+Signed-off-by: Alex Chiang <achiang@hp.com>
+Signed-off-by: Matthew Wilcox <matthew@wil.cx>
+Cc: Greg KH <greg@kroah.com>
+Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: Len Brown <lenb@kernel.org>
+Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+ drivers/pci/hotplug/fakephp.c |   84 ++++++++++++++---------------------------
+ 1 files changed, 29 insertions(+), 55 deletions(-)
 
-> -----Original Message-----
-> From: Jens Axboe [mailto:jens.axboe@oracle.com]
-> Sent: Tuesday, June 10, 2008 4:18 PM
-> To: Miller, Mike (OS Dev)
-> Cc: Andrew Morton; linux-kernel@vger.kernel.org;
-> linux-scsi@vger.kernel.org; Patterson, Andrew D (Linux R&D);
-> Chen, Justin
-> Subject: Re: [PATCH 2/2] cciss: bump version to .20 to
-> reflect new HW support
->
-> On Tue, Jun 10 2008, Miller, Mike (OS Dev) wrote:
-> >
-> >
-> > > -----Original Message-----
-> > > From: Andrew Morton [mailto:akpm@linux-foundation.org]
-> > > Sent: Tuesday, June 10, 2008 3:50 PM
-> > > To: Miller, Mike (OS Dev)
-> > > Cc: jens.axboe@oracle.com; linux-kernel@vger.kernel.org;
-> > > linux-scsi@vger.kernel.org; Patterson, Andrew D (Linux
-> R&D); Chen,
-> > > Justin
-> > > Subject: Re: [PATCH 2/2] cciss: bump version to .20 to
-> reflect new
-> > > HW support
-> > >
-> > > On Tue, 10 Jun 2008 11:14:04 -0500
-> > > Mike Miller <mike.miller@hp.com> wrote:
-> > >
-> > > > PATCH 2/2
-> > > > This patch bumps the driver version to 3.6.20 to
-> reflect the new
-> > > > hardware support from patch 1 of this set. Please consider
-> > > this for inclusion.
-> > > >
-> > > > Signed-off-by: Mike Miller <mike.miller@hp.com>
-> > > >
-> > > > diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c index
-> > > > ced904d..c21a5a9 100644
-> > > > --- a/drivers/block/cciss.c
-> > > > +++ b/drivers/block/cciss.c
-> > > > @@ -53,16 +53,16 @@
-> > > >  #include <linux/scatterlist.h>
-> > > >
-> > > >  #define CCISS_DRIVER_VERSION(maj,min,submin)
-> > > > ((maj<<16)|(min<<8)|(submin)) -#define DRIVER_NAME "HP CISS
-> > > Driver (v 3.6.14)"
-> > > > -#define DRIVER_VERSION CCISS_DRIVER_VERSION(3,6,14)
-> > > > +#define DRIVER_NAME "HP CISS Driver (v 3.6.20)"
-> > > > +#define DRIVER_VERSION CCISS_DRIVER_VERSION(3, 6, 20)
-> > > >
-> > > >  /* Embedded module documentation macros - see modules.h */
-> > > > MODULE_AUTHOR("Hewlett-Packard Company");
-> > > -MODULE_DESCRIPTION("Driver
-> > > > for HP Controller SA5xxx SA6xxx version 3.6.14");
-> > > > +MODULE_DESCRIPTION("Driver for HP Smart Array Controllers");
-> > > >  MODULE_SUPPORTED_DEVICE("HP SA5i SA5i+ SA532 SA5300 SA5312
-> > > SA641 SA642 SA6400"
-> > > >                       " SA6i P600 P800 P400 P400i E200
-> > > E200i E500 P700m"
-> > > >                       " Smart Array G2 Series SAS/SATA
-> > > Controllers");
-> > > > -MODULE_VERSION("3.6.14");
-> > > > +MODULE_VERSION("3.6.20");
-> > > >  MODULE_LICENSE("GPL");
-> > > >
-> > > >  #include "cciss_cmd.h"
-> > >
-> > > I think it would be more logical to fold these two
-> patches together.
-> >
-> > Jens at one time suggested I keep the version patch separate, IIRC.
->
-> Did I? For a series of patches implementing various things,
-> bumping the version at the end makes sense since it's tied to
-> the series and not a specific patch. For a single patch, I'm
-> fine with including the version change in there.
+diff --git a/drivers/pci/hotplug/fakephp.c b/drivers/pci/hotplug/fakephp.c
+index 7e9a827..b57223f 100644
+--- a/drivers/pci/hotplug/fakephp.c
++++ b/drivers/pci/hotplug/fakephp.c
+@@ -66,6 +66,7 @@ struct dummy_slot {
+ 	struct pci_dev *dev;
+ 	struct work_struct remove_work;
+ 	unsigned long removed;
++	char name[8];
+ };
+ 
+ static int debug;
+@@ -100,6 +101,7 @@ static int add_slot(struct pci_dev *dev)
+ 	struct dummy_slot *dslot;
+ 	struct hotplug_slot *slot;
+ 	int retval = -ENOMEM;
++	static int count = 1;
+ 
+ 	slot = kzalloc(sizeof(struct hotplug_slot), GFP_KERNEL);
+ 	if (!slot)
+@@ -113,13 +115,13 @@ static int add_slot(struct pci_dev *dev)
+ 	slot->info->max_bus_speed = PCI_SPEED_UNKNOWN;
+ 	slot->info->cur_bus_speed = PCI_SPEED_UNKNOWN;
+ 
+-	slot->name = &dev->dev.bus_id[0];
+-	dbg("slot->name = %s\n", slot->name);
+-
+ 	dslot = kzalloc(sizeof(struct dummy_slot), GFP_KERNEL);
+ 	if (!dslot)
+ 		goto error_info;
+ 
++	slot->name = dslot->name;
++	snprintf(slot->name, sizeof(dslot->name), "fake%d", count++);
++	dbg("slot->name = %s\n", slot->name);
+ 	slot->ops = &dummy_hotplug_slot_ops;
+ 	slot->release = &dummy_release;
+ 	slot->private = dslot;
+@@ -148,17 +150,17 @@ error:
+ static int __init pci_scan_buses(void)
+ {
+ 	struct pci_dev *dev = NULL;
+-	int retval = 0;
++	int lastslot = 0;
+ 
+ 	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
+-		retval = add_slot(dev);
+-		if (retval) {
+-			pci_dev_put(dev);
+-			break;
+-		}
++		if (PCI_FUNC(dev->devfn) > 0 &&
++				lastslot == PCI_SLOT(dev->devfn))
++			continue;
++		lastslot = PCI_SLOT(dev->devfn);
++		add_slot(dev);
+ 	}
+ 
+-	return retval;
++	return 0;
+ }
+ 
+ static void remove_slot(struct dummy_slot *dslot)
+@@ -296,23 +298,9 @@ static int enable_slot(struct hotplug_slot *hotplug_slot)
+ 	return 0;
+ }
+ 
+-/* find the hotplug_slot for the pci_dev */
+-static struct hotplug_slot *get_slot_from_dev(struct pci_dev *dev)
+-{
+-	struct dummy_slot *dslot;
+-
+-	list_for_each_entry(dslot, &slot_list, node) {
+-		if (dslot->dev == dev)
+-			return dslot->slot;
+-	}
+-	return NULL;
+-}
+-
+-
+ static int disable_slot(struct hotplug_slot *slot)
+ {
+ 	struct dummy_slot *dslot;
+-	struct hotplug_slot *hslot;
+ 	struct pci_dev *dev;
+ 	int func;
+ 
+@@ -322,41 +310,27 @@ static int disable_slot(struct hotplug_slot *slot)
+ 
+ 	dbg("%s - physical_slot = %s\n", __func__, slot->name);
+ 
+-	/* don't disable bridged devices just yet, we can't handle them easily... */
+-	if (dslot->dev->subordinate) {
+-		err("Can't remove PCI devices with other PCI devices behind it yet.\n");
+-		return -ENODEV;
+-	}
+-	if (test_and_set_bit(0, &dslot->removed)) {
+-		dbg("Slot already scheduled for removal\n");
+-		return -ENODEV;
+-	}
+-	/* search for subfunctions and disable them first */
+-	if (!(dslot->dev->devfn & 7)) {
+-		for (func = 1; func < 8; func++) {
+-			dev = pci_get_slot(dslot->dev->bus,
+-					dslot->dev->devfn + func);
+-			if (dev) {
+-				hslot = get_slot_from_dev(dev);
+-				if (hslot)
+-					disable_slot(hslot);
+-				else {
+-					err("Hotplug slot not found for subfunction of PCI device\n");
+-					return -ENODEV;
+-				}
+-				pci_dev_put(dev);
+-			} else
+-				dbg("No device in slot found\n");
++	for (func = 7; func >= 0; func--) {
++		dev = pci_get_slot(dslot->dev->bus, dslot->dev->devfn + func);
++		if (!dev)
++			continue;
++
++		if (test_and_set_bit(0, &dslot->removed)) {
++			dbg("Slot already scheduled for removal\n");
++			return -ENODEV;
+ 		}
+-	}
+ 
+-	/* remove the device from the pci core */
+-	pci_remove_bus_device(dslot->dev);
++		/* queue work item to blow away this sysfs entry and other
++		 * parts.
++		 */
++		INIT_WORK(&dslot->remove_work, remove_slot_worker);
++		queue_work(dummyphp_wq, &dslot->remove_work);
+ 
+-	/* queue work item to blow away this sysfs entry and other parts. */
+-	INIT_WORK(&dslot->remove_work, remove_slot_worker);
+-	queue_work(dummyphp_wq, &dslot->remove_work);
++		/* blow away this sysfs entry and other parts. */
++		remove_slot(dslot);
+ 
++		pci_dev_put(dev);
++	}
+ 	return 0;
+ }
+ 
+-- 
+1.5.3.1.1.g1e61
 
-OK, thanks.
-
->
-> --
-> Jens Axboe
->
->
