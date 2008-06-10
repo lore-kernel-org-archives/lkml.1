@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbYFJBLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755413AbYFJBja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756154AbYFJBLj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 21:11:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759342AbYFJBL3
+	id S1755413AbYFJBja (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 21:39:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbYFJBjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 21:11:29 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:44694 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755336AbYFJBL2 (ORCPT
+	Mon, 9 Jun 2008 21:39:20 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:22614 "EHLO
+	VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752006AbYFJBjT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 21:11:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=feNCN3bStgasO7pptNQI4dOZkOKuqMvSi3aE1j/MGdpjO/blVVkJ2WNZSzMDmEss39
-         JMyTw62mPN0VHWpwGJu7HgARj47dJPIzp2t6Hzpi8zjgxPgwFh5vpS/brJKs52zCzJCW
-         KbhAg5nmVt/NhRZNwENf+5xm6yFEgTSE3rcjY=
-Message-ID: <dd18b0c30806091811h241db314w5b95e08ca77b77d5@mail.gmail.com>
-Date: Tue, 10 Jun 2008 01:11:27 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Jiri Kosina" <jkosina@suse.cz>
-Subject: Re: [Bug #10825] appletouch after wakeup
-Cc: "Oliver Neukum" <oliver@neukum.org>,
-       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
-       "Greg KH" <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0806100205340.10085@jikos.suse.cz>
+	Mon, 9 Jun 2008 21:39:19 -0400
+X-BigFish: VPS-37(z1fc9iz1432R98dR7efV1805Mzz10d3izzz2fh6bh62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 7,
+Message-ID: <484DDAD9.2000306@am.sony.com>
+Date: Mon, 9 Jun 2008 18:37:29 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Rob Landley <rob@landley.net>
+CC: Adrian Bunk <adrian.bunk@movial.fi>, linux-tiny <Linux-tiny@selenic.com>,
+       linux-embedded <linux-embedded@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: mainlining min-configs...
+References: <48447615.5050806@am.sony.com> <20080604194002.GF4189@cs181133002.pp.htv.fi> <4849CCA3.7040102@am.sony.com> <200806062329.54019.rob@landley.net>
+In-Reply-To: <200806062329.54019.rob@landley.net>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <GIilET9wkhI.A.JzB.81vSIB@albercik>
-	 <dd18b0c30806091504u43e0e901jb786e57f5cbf47cd@mail.gmail.com>
-	 <dd18b0c30806091536s724ba33cmfdd9ccb49b0cbd53@mail.gmail.com>
-	 <200806100040.34377.oliver@neukum.org>
-	 <dd18b0c30806091703s1e21d204m3991f6c51b578450@mail.gmail.com>
-	 <Pine.LNX.4.64.0806100205340.10085@jikos.suse.cz>
+X-OriginalArrivalTime: 10 Jun 2008 01:39:06.0580 (UTC) FILETIME=[C5689940:01C8CA9A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 12:06 AM, Jiri Kosina <jkosina@suse.cz> wrote:
-> On Tue, 10 Jun 2008, Justin Mattock wrote:
->
->> Please ignore the two finger scroll part(even though it seems to work),
->> I have been ignoring my xorg.conf for sometime and need to configure it
->> so I can have all functionality back, and then I'll let you know what
->> the status is. regards;
->
-> You can easily test with 'evtest' utility to see the data that are really
-> comming out of a kernel for your particular device, to filter out any
-> mangling that X does on these events.
->
-> --
-> Jiri Kosina
-> SUSE Labs
->
+Rob Landley wrote:
+> On Friday 06 June 2008 18:47:47 Tim Bird wrote:
+>> At a minimum, it would be nice to have a few nice examples
+>> of really, really small configs for things like qemus for different
+>> architectures (just to give embedded developers who are working
+>> on size a starting point).
+> 
+> That's more or less what I'm trying to do with my Firmware Linux project: 
+> creating cross compilers and minimal native build environments for every qemu 
+> target.
 
-Cool; Thanks for the help.
+Any chance of getting your minimal configs from Firmware Linux mainlined?
 
--- 
-Justin P. Mattock
+Does anyone else think this would be valuable?  If not in mainline, it
+would be nice to collect them somewhere, to compare what options different
+developers decide turn on or off.
+ -- Tim
+
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
+
