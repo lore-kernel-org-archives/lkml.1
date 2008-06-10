@@ -1,37 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757882AbYFJRXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbYFJRaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757882AbYFJRXT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 13:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757676AbYFJRXE
+	id S1756105AbYFJRaw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 13:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbYFJRam
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 13:23:04 -0400
-Received: from ufisa.uninett.no ([158.38.152.126]:53167 "EHLO ufisa.uninett.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757329AbYFJRXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 13:23:03 -0400
-X-Greylist: delayed 2064 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Jun 2008 13:23:03 EDT
-Date: Tue, 10 Jun 2008 18:48:34 +0200 (CEST)
-From: =?UTF-8?Q?Kolbj=C3=B8rn_Barmen?= <linux-m68k@kolla.no>
-X-X-Sender: kolla@halbrend.uninett.no
-To: Adrian Bunk <bunk@kernel.org>
-cc: geert@linux-m68k.org, zippel@linux-m68k.org, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: m68k: could the Apollo support possibly work?
-In-Reply-To: <20080608190513.GE4048@cs181133002.pp.htv.fi>
-Message-ID: <alpine.LNX.1.10.0806101847490.26475@halbrend.uninett.no>
-References: <20080608190513.GE4048@cs181133002.pp.htv.fi>
-User-Agent: Alpine 1.10 (LNX 1032 2008-04-11)
+	Tue, 10 Jun 2008 13:30:42 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50720 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751903AbYFJRal (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 13:30:41 -0400
+Date: Tue, 10 Jun 2008 10:30:36 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Paul Mundt <lethal@linux-sh.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Howells <dhowells@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, cooloney@kernel.org,
+       mpm@selenic.com
+Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB, v2.
+In-Reply-To: <20080602072706.GB28268@linux-sh.org>
+Message-ID: <Pine.LNX.4.64.0806101027220.17093@schroedinger.engr.sgi.com>
+References: <20080602072706.GB28268@linux-sh.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 8 Jun 2008, Adrian Bunk wrote:
+On Mon, 2 Jun 2008, Paul Mundt wrote:
 
-> Does anyone still have this hardware and tried booting it in recent years?
+> +	page = virt_to_head_page(objp);
+> +	if (!page)
+> +		return 0;
 
-I think I might borrow one from some NetBSD people, if I ask really really
-nicely :)
+virt_to_head_page cannot return NULL. virt_to_page also does not return 
+NULL. pfn_valid() needs to be used to figure out if a page is valid. 
+Otherwise the page struct reference that was returned may have 
+PageReserved() set to indicate that it is not a valid page.
 
--- kolla
+> +	 * The ksize() function is only guaranteed to work for pointers
+> +	 * returned by kmalloc(). So handle arbitrary pointers, that we expect
+> +	 * always to be compound pages, here.
+> +	 */
+> +	if (PageCompound(page))
+> +		order = compound_order(page);
+
+compund order returns 0 if you use compound_order() on a 
+non compound page. No need for the PageCompound test.
+
