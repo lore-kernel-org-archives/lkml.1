@@ -1,75 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442AbYFJUoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753022AbYFJUsi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753442AbYFJUoX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 16:44:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbYFJUoP
+	id S1753022AbYFJUsi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 16:48:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbYFJUs2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 16:44:15 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:38450 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752795AbYFJUoN (ORCPT
+	Tue, 10 Jun 2008 16:48:28 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:60235 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751880AbYFJUs1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 16:44:13 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5314"; a="3648909"
-Message-ID: <484EE7BE.3000606@qualcomm.com>
-Date: Tue, 10 Jun 2008 13:44:46 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 10 Jun 2008 16:48:27 -0400
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 0 of 7] Block/SCSI Data Integrity Support
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <patchbomb.1212814533@sermon.lab.mkp.net>
+	<x491w35bbdi.fsf@segfault.boston.devel.redhat.com>
+	<yq1iqwhia2m.fsf@sermon.lab.mkp.net>
+	<x49mylt9lbn.fsf@segfault.boston.devel.redhat.com>
+Date: Tue, 10 Jun 2008 16:47:52 -0400
+In-Reply-To: <x49mylt9lbn.fsf@segfault.boston.devel.redhat.com> (Jeff Moyer's message of "Tue\, 10 Jun 2008 14\:49\:48 -0400")
+Message-ID: <yq1abhtnhjb.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Paul Jackson <pj@sgi.com>, mingo@elte.hu,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, menage@google.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: cpusets and kthreads, inconsistent behaviour
-References: <alpine.DEB.1.10.0806051255500.31157@chino.kir.corp.google.com> <20080605152953.dcfefa47.pj@sgi.com> <alpine.DEB.1.10.0806051357480.32537@chino.kir.corp.google.com> <484D99AD.4000306@qualcomm.com> <alpine.DEB.1.10.0806091447300.10680@chino.kir.corp.google.com> <484EAC2F.5020103@qualcomm.com> <alpine.DEB.1.10.0806101135050.28953@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.1.10.0806101135050.28953@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>>>> "Jeff" == Jeff Moyer <jmoyer@redhat.com> writes:
+
+Jeff> So, is it safe to say that the library routines for
+Jeff> integrity-aware file systems have not been tested at all?
+Jeff> Specifically, I'm talking about: bio_integrity_tag_size
+Jeff> bio_integrity_set_tag bio_integrity_get_tag
+
+I have not tried using them from within a filesystem, if that's what
+you mean.  But I have attached random strings to bios and read them
+back later.
 
 
-David Rientjes wrote:
-> On Tue, 10 Jun 2008, Max Krasnyansky wrote:
-> 
->> Basically the issue is that current behaviour of the cpusets is inconsistent
->> with regards to kthreads. Kthreads inherit cpuset from a parent properly but
->> they simply ignore cpuset.cpus when their cpu affinity is set/updated.
->> I think the behaviour must be consistent across the board. cpuset.cpus must
->> apply to _all_ the tasks in the set, not just some of the tasks. If kthread
->> must run on the cpus other than current_cpuset.cpus then it should detach from
->> the cpuset.
->>
-> 
-> I disagree that a cpuset's set of allowable cpus should apply to all tasks 
-> attached to that cpuset.  It's certainly beneficial to be able to further 
-> constrict the set of allowed cpus for a task using sched_setaffinity().
-> 
-> It makes more sense to argue that for each task p, p->cpus_allowed is a 
-> subset of task_cs(p)->cpus_allowed.
-Yes that's exactly what I meant :). Sorry for not being clear. I did not mean
-that each task in a cpuset must have the same affinity mask. So we're on the
-same page here.
+Jeff> gcc (GCC) 4.1.2 20071124 (Red Hat 4.1.2-41)
 
->> To give you an example kthreads like scsi_eh, kswapd, kacpid, pdflush,
->> kseriod, etc are all started with cpus_allows=ALL_CPUS even though they
->> inherit a cpuset from kthreadd. Yes they can moved manually (with
->> sched_setaffinity) but the behaviour is not consistent, and for no good
->> reason. kthreads can be stopped/started at any time (module load for example)
->> which means that the user will have to keep moving them.
->>
-> 
-> This doesn't seem to be purely a kthread issue.  Tasks can be moved to a 
-> disjoint set of cpus by any caller to set_cpus_allowed_ptr() in the 
-> kernel.
-Hmm, technically you are correct of course. But we do not have any other
-kernel tasks besides kthreads. All the kernel tasks I have on my machines have
-kthreadd as their parent.
-And I'm not aware of any kernel code that changes affinity mask of a
-user-space task without paying attention to the cpuset the task belongs to. If
-you know of any we should fix it because it'd clearly be a bug.
+Ok, I'm trying to chase down a 5.2 box to figure out what the problem
+is.  Maybe I'll just move that function to the header file.
 
-Thanx
-Max
+
+Jeff> I did a new clone (just to be sure I got your change) and I get
+Jeff> the same problem.  I also can't see the changeset in the log, so
+Jeff> are you sure you pushed it?
+
+Yup, it's there.
+
+
+Jeff> I got rid of the inline in the definition in bio.h.  The .c file
+Jeff> didn't define the function as inline, so I didn't have to change
+Jeff> it.  It seems to be building now.
+
+The problem is that your gcc is unhappy about the fact that the
+inlined function is defined elsewhere.  The gcc info page said only
+declare it inline in the header and not the declaration.  The change I
+pushed removed inline from the .c file.  But that didn't help.
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
+
