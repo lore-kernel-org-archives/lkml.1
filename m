@@ -1,61 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757045AbYFJSuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757370AbYFJSvO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757045AbYFJSuw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 14:50:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbYFJSum
+	id S1757370AbYFJSvO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 14:51:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755995AbYFJSut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 14:50:42 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:52695 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751955AbYFJSul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 14:50:41 -0400
-Date: Tue, 10 Jun 2008 20:51:23 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Tim Bird <tim.bird@am.sony.com>, Rob Landley <rob@landley.net>,
-       linux-tiny <Linux-tiny@selenic.com>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: mainlining min-configs...
-Message-ID: <20080610185123.GA15838@uranus.ravnborg.org>
-References: <48447615.5050806@am.sony.com> <20080604194002.GF4189@cs181133002.pp.htv.fi> <4849CCA3.7040102@am.sony.com> <200806062329.54019.rob@landley.net> <484DDAD9.2000306@am.sony.com> <20080610083610.GC1987@cs181133002.pp.htv.fi> <484EC576.5080302@am.sony.com> <20080610183004.GG11685@cs181133002.pp.htv.fi>
+	Tue, 10 Jun 2008 14:50:49 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:43742 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754157AbYFJSus (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 14:50:48 -0400
+Date: Tue, 10 Jun 2008 13:50:46 -0500
+From: Mike Miller <mike.miller@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       LKML-scsi <linux-scsi@vger.kernel.org>, andrew.patterson@hp.com,
+       justin.chen@hp.com
+Subject: [PATCH 1/2] cciss: resubmit add new hardware support
+Message-ID: <20080610185046.GA6449@roadking.ldev.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080610183004.GG11685@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 09:30:04PM +0300, Adrian Bunk wrote:
-> On Tue, Jun 10, 2008 at 11:18:30AM -0700, Tim Bird wrote:
-> > Adrian Bunk wrote:
-> >...
-> > > You need both, and ideally constantly done by the same person against 
-> > > Linus' tree, -next and -mm.
-> > > 
-> > > Where to get your minimal configs from at the start is just a small 
-> > > thing at the beginning - don't underestimate the required manual work 
-> > > that will have to be done each week.
-> > 
-> > This is probably why I haven't signed up for this myself previously.
-> > I'd be interested in finding out the rate at which defconfigs
-> > bitrot in mainline.  My experience is that usually a 'make oldconfig'
-> > will produce something usable.  But maybe that wouldn't be as
-> > effective with a minconfig?
-> >...
-> 
-> Someone has to run the 'make oldconfig' for all configs...
-> 
-> And no, you cannot get that completely automated.
+PATCH 1/2
+Patch supercedes the previous 1/2. Busted, didn't compile test the previous
+patch. :(
 
-When I get my kconfig patchset polished you will be able to do:
+This patch adds support for the next generation of HP Smart Array SAS/SATA
+controllers. Shipping date is late Fall 2008. Please consider this for
+inclusion.
 
-make K=my_mini_config allnoconfig
+Signed-off-by: Mike Miller <mike.miller@hp.com>
 
-Thus selecting 'no' for all new symbols in an automated fashion.
-I know that in a few cases 'no' is the wrong answer but in the
-99% of the cases 'no' is perfectly valid.
-
-	Sam
+diff --git a/Documentation/cciss.txt b/Documentation/cciss.txt
+index e65736c..63e59b8 100644
+--- a/Documentation/cciss.txt
++++ b/Documentation/cciss.txt
+@@ -21,6 +21,11 @@ This driver is known to work with the following cards:
+ 	* SA E200
+ 	* SA E200i
+ 	* SA E500
++	* SA P212
++	* SA P410
++	* SA P410i
++	* SA P411
++	* SA P812
+ 
+ Detecting drive failures:
+ -------------------------
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index e336b05..ced904d 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -60,7 +60,8 @@
+ MODULE_AUTHOR("Hewlett-Packard Company");
+ MODULE_DESCRIPTION("Driver for HP Controller SA5xxx SA6xxx version 3.6.14");
+ MODULE_SUPPORTED_DEVICE("HP SA5i SA5i+ SA532 SA5300 SA5312 SA641 SA642 SA6400"
+-			" SA6i P600 P800 P400 P400i E200 E200i E500");
++			" SA6i P600 P800 P400 P400i E200 E200i E500 P700m"
++			" Smart Array G2 Series SAS/SATA Controllers");
+ MODULE_VERSION("3.6.14");
+ MODULE_LICENSE("GPL");
+ 
+@@ -90,6 +91,11 @@ static const struct pci_device_id cciss_pci_device_id[] = {
+ 	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSD,     0x103C, 0x3215},
+ 	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSC,     0x103C, 0x3237},
+ 	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSC,     0x103C, 0x323D},
++	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSE,     0x103C, 0x3241},
++	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSE,     0x103C, 0x3243},
++	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSE,     0x103C, 0x3245},
++	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSE,     0x103C, 0x3247},
++	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSE,     0x103C, 0x3249},
+ 	{PCI_VENDOR_ID_HP,     PCI_ANY_ID,	PCI_ANY_ID, PCI_ANY_ID,
+ 		PCI_CLASS_STORAGE_RAID << 8, 0xffff << 8, 0},
+ 	{0,}
+@@ -123,6 +129,11 @@ static struct board_type products[] = {
+ 	{0x3215103C, "Smart Array E200i", &SA5_access, 120},
+ 	{0x3237103C, "Smart Array E500", &SA5_access, 512},
+ 	{0x323D103C, "Smart Array P700m", &SA5_access, 512},
++	{0x3241103C, "Smart Array P212", &SA5_access, 384},
++	{0x3243103C, "Smart Array P410", &SA5_access, 384},
++	{0x3245103C, "Smart Array P410i", &SA5_access, 384},
++	{0x3247103C, "Smart Array P411", &SA5_access, 384},
++	{0x3249103C, "Smart Array P812", &SA5_access, 384},
+ 	{0xFFFF103C, "Unknown Smart Array", &SA5_access, 120},
+ };
+ 
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index 9b940e6..eafc9d6 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -716,6 +716,7 @@
+ #define PCI_DEVICE_ID_HP_CISSA		0x3220
+ #define PCI_DEVICE_ID_HP_CISSC		0x3230
+ #define PCI_DEVICE_ID_HP_CISSD		0x3238
++#define PCI_DEVICE_ID_HP_CISSE		0x323a
+ #define PCI_DEVICE_ID_HP_ZX2_IOC	0x4031
+ 
+ #define PCI_VENDOR_ID_PCTECH		0x1042
