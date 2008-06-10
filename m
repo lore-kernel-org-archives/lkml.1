@@ -1,68 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755786AbYFJFOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbYFJFVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755786AbYFJFOy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 01:14:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbYFJFOr
+	id S1753196AbYFJFVu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 01:21:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751096AbYFJFVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 01:14:47 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:44156 "EHLO
-	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751096AbYFJFOq (ORCPT
+	Tue, 10 Jun 2008 01:21:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57744 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750811AbYFJFVo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 01:14:46 -0400
-Message-ID: <484E0DB4.4070508@linux.vnet.ibm.com>
-Date: Tue, 10 Jun 2008 10:44:28 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Andrea Righi <righi.andrea@gmail.com>
-CC: menage@google.com, matt@bluehost.com, roberto@unbit.it,
-       randy.dunlap@oracle.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] cgroup: block device i/o bandwidth controller (v2)
-References: <> <1212791250-32320-1-git-send-email-righi.andrea@gmail.com>
-In-Reply-To: <1212791250-32320-1-git-send-email-righi.andrea@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 10 Jun 2008 01:21:44 -0400
+Date: Mon, 9 Jun 2008 22:21:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Andrew G. Morgan" <morgan@kernel.org>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] bugfix: was Re: [ linus-git ] prctl(PR_SET_KEEPCAPS,
+ ...) is broken for some configs, e.g. CONFIG_SECURITY_SELINUX
+Message-Id: <20080609222114.7312650a.akpm@linux-foundation.org>
+In-Reply-To: <484E0280.2050305@kernel.org>
+References: <1212932321.4675.9.camel@earth>
+	<484BF662.9070100@kernel.org>
+	<20080608110630.08a45cc6.akpm@linux-foundation.org>
+	<484C5E84.2020307@kernel.org>
+	<20080608163926.56f1be3d.akpm@linux-foundation.org>
+	<20080609171741.GA13403@us.ibm.com>
+	<484E0280.2050305@kernel.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Righi wrote:
-> The goal of the i/o bandwidth controller is to improve i/o performance
-> predictability and provide better QoS for different cgroups sharing the same
-> block devices.
-> 
-> Respect to other priority/weight-based solutions the approach used by this
-> controller is to explicitly choke applications' requests that directly (or
-> indirectly) generate i/o activity in the system.
-> 
-> The direct bandwidth limiting method has the advantage of improving the
-> performance predictability at the cost of reducing, in general, the overall
-> performance of the system (in terms of throughput).
-> 
-> Detailed informations about design, its goal and usage are described in the
-> documentation.
-> 
+On Mon, 09 Jun 2008 21:26:40 -0700 "Andrew G. Morgan" <morgan@kernel.org> wrote:
 
-I'll read through the documentation and comment.
+> See: http://bugzilla.kernel.org/show_bug.cgi?id=10748
 
-> Tested against latest git (2.6.26-rc5).
-> 
-> The all-in-one patch can be found at:
-> http://download.systemimager.org/~arighi/linux/patches/io-throttle/
-> 
-
-Cool! thanks for doing this, it's useful.
-
-> Previous version and test report can be found here:
-> http://lkml.org/lkml/2008/5/24/97
-
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+mutter.  Could we have a real changelog please?
