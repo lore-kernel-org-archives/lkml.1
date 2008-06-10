@@ -1,93 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758271AbYFJTDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757880AbYFJTGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758271AbYFJTDw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 15:03:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758018AbYFJTDX
+	id S1757880AbYFJTGP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 15:06:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbYFJTF6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 15:03:23 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:51827 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758004AbYFJTDV (ORCPT
+	Tue, 10 Jun 2008 15:05:58 -0400
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:44562 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753580AbYFJTF5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 15:03:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=kOVyB+dv4WMcdyXYpshxH/SNYEE4J6aybAcuDPzDLNgggv6aW6j1MSz52jy8Mpe2Hn
-         KvSvUqrebQ+S9bNEtsbCzYezFBiMZuSPGnz2KP2YnjffeZ/hhTjyvClvXvvCxaoifaYM
-         oZrr3udcpacJSzEx5FpMfVMusAnply5yHhPXs=
-From: Chris Clayton <chris2553@googlemail.com>
-Reply-To: chris2553@googlemail.com
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: 2,6.26-rc4-git2 - long pause during boot
-Date: Tue, 10 Jun 2008 19:00:43 +0000
-User-Agent: KMail/1.9.9
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Hannes Reinecke <hare@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux1394-devel@lists.sourceforge.net
-References: <Pine.LNX.4.44L0.0806091040440.2943-100000@iolanthe.rowland.org> <484D8019.3090900@s5r6.in-berlin.de>
-In-Reply-To: <484D8019.3090900@s5r6.in-berlin.de>
+	Tue, 10 Jun 2008 15:05:57 -0400
+X-IronPort-AV: E=Sophos;i="4.27,618,1204531200"; 
+   d="scan'208";a="55467301"
+From: Roland Dreier <rdreier@cisco.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>, Trent Piepho <tpiepho@freescale.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
+       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: MMIO and gcc re-ordering issue
+References: <1211852026.3286.36.camel@pasglop>
+	<alpine.LFD.1.10.0806031153360.3473@woody.linux-foundation.org>
+	<200806101656.51211.nickpiggin@yahoo.com.au>
+	<200806101041.28829.jbarnes@virtuousgeek.org>
+	<1213121426.8536.7.camel@localhost.localdomain>
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 10 Jun 2008 12:05:55 -0700
+In-Reply-To: <1213121426.8536.7.camel@localhost.localdomain> (James
+	Bottomley's message of "Tue, 10 Jun 2008 13:10:26 -0500")
+Message-ID: <adaskvl3yb0.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806101900.43572.chris2553@googlemail.com>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 10 Jun 2008 19:05:55.0433 (UTC) FILETIME=[0266FD90:01C8CB2D]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 June 2008, Stefan Richter wrote:
-> Alan Stern wrote:
-> > In fact the log shows that the 30-second delay occurs in the middle of
-> > ohci1394 (Firewire) initialization, not USB initialization:
-> >
-> > Jun  8 05:26:35 upstairs kernel: ohci1394: fw-host0: OHCI-1394 1.1 (PCI):
-> > IRQ=[22]  MMIO=[fbfff000-fbfff7ff]  Max Packet=[2048]  IR/IT
-> > contexts=[4/8] Jun  8 05:26:35 upstairs kernel: ohci_hcd 0000:02:0a.0:
-> > urb f71cb680 path 2 ep1in 5e160000 cc 5 --> status -62 Jun  8 05:26:35
-> > upstairs kernel: hub 1-2:1.0: transfer --> -62
-> > Jun  8 05:27:08 upstairs kernel: driver: '0000:02:0b.0': driver_bound:
-> > bound to device 'ohci1394' Jun  8 05:27:08 upstairs kernel: bus: 'pci':
-> > really_probe: bound device 0000:02:0b.0 to driver ohci1394
->
-> The log at http://lkml.org/lkml/2008/6/6/317 shows two pauses.  One in
-> the middle of USB related messages with no FireWire stuff around
-> (17:25:19 to 17:25:44).  The other with parport, ieee1394, USB messages
-> around it (17:25:44 to 17:26:31).
->
->  From there, the last 17:25:44 message is strange:  The device
-> 00110666000013cc which is the controller is reported as being removed.
-> Chris, did you do something at this point?
+ > me too.  That's the whole basis for readX_relaxed() and its cohorts: we
+ > make our weirdest machines (like altix) conform to the x86 norm.  Then
+ > where it really kills us we introduce additional semantics to selected
+ > drivers that enable us to recover I/O speed on the abnormal platforms.
 
-Ah sorry, that's a legacy of when I had considerably less ram than 2GB. I only 
-use firewire on the rare occasion that I want to grab some video from my camera 
-and I use the parallel port even less frequently. So one of the last things 
-that happens in my rc.local init script is that I unload the related drivers.
+Except as I pointed out before, Altix doesn't conform to the norm and
+many (most?) drivers are missing mmiowb()s that are needed for Altix.
+Just no one has plugged most devices into an Altix (or haven't stressed
+the driver in a way that exposes problems of IO ordering between CPUs).
 
->
-> Also, in http://lkml.org/lkml/2008/6/1/2 you reported a patch which
-> changes the SCSI core's interaction with the driver core as first bad
-> commit.  Did you check that going before this commit removes _all_ the
-> pauses, even those around USB or FireWire messages?  Or did you only
-> check whether disk drives appear quickly?
+It would be a great thing to use the powerpc trick of setting a flag
+that is tested by spin_unlock()/mutex_unlock() and automatically doing
+the mmiowb() if needed, and then killing off mmiowb() entirely.
 
-When I was bisecting, I assessed good or bad based on whether I experienced the 
-long pause during boot up. You may have seen my reply to James a short while 
-ago that I have bisected again and arrived at the same patch.
-
-Thanks,
-
-Chris
-
-
-
--- 
-Beauty is in the eye of the beerholder.
+ - R.
