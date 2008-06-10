@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756764AbYFJSry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756879AbYFJStS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756764AbYFJSry (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 14:47:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbYFJSrq
+	id S1756879AbYFJStS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 14:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbYFJStD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 14:47:46 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:47364 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752658AbYFJSrp (ORCPT
+	Tue, 10 Jun 2008 14:49:03 -0400
+Received: from ik-out-1112.google.com ([66.249.90.176]:59973 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752658AbYFJStA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 14:47:45 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=yeK0JQ4t2xytsEgY0ikR0mJuGu7RTlNK1Nwf+s97CsdAaUqqFoV7oxJyY0ZTkVyvt
-	+TDLpHBmhhnZGn8LT484w==
-Date: Tue, 10 Jun 2008 11:47:05 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Max Krasnyansky <maxk@qualcomm.com>
-cc: Paul Jackson <pj@sgi.com>, mingo@elte.hu,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, menage@google.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: cpusets and kthreads, inconsistent behaviour
-In-Reply-To: <484EAC2F.5020103@qualcomm.com>
-Message-ID: <alpine.DEB.1.10.0806101135050.28953@chino.kir.corp.google.com>
-References: <alpine.DEB.1.10.0806051255500.31157@chino.kir.corp.google.com> <20080605152953.dcfefa47.pj@sgi.com> <alpine.DEB.1.10.0806051357480.32537@chino.kir.corp.google.com> <484D99AD.4000306@qualcomm.com> <alpine.DEB.1.10.0806091447300.10680@chino.kir.corp.google.com>
- <484EAC2F.5020103@qualcomm.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 10 Jun 2008 14:49:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=JOmEOYJz2gehs7y23IJBax6ARlS//YXca34o4r85fnFsvQWwPiIRv2k/e99cRBrddo
+         MO4XGeJAK1JDFzFdhJ1Yo8qqoyU5SNF8fevGiAKl4uwynFNFgpj/nZXnT1Sp3a9AToOK
+         MICwwpzN9js2fnSwDJPwKwavzbE/IIyUJkgdU=
+From: Chris Clayton <chris2553@googlemail.com>
+Reply-To: chris2553@googlemail.com
+To: "Grant Grundler" <grundler@google.com>
+Subject: Re: 2,6.26-rc4-git2 - long pause during boot
+Date: Tue, 10 Jun 2008 18:46:24 +0000
+User-Agent: KMail/1.9.9
+Cc: "James Bottomley" <James.Bottomley@hansenpartnership.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       "Hannes Reinecke" <hare@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <200806010415.05290.chris2553@googlemail.com> <200806061735.35268.chris2553@googlemail.com> <da824cf30806082151n12898443p1a780a431e99712f@mail.gmail.com>
+In-Reply-To: <da824cf30806082151n12898443p1a780a431e99712f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806101846.24650.chris2553@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008, Max Krasnyansky wrote:
+On Monday 09 June 2008, Grant Grundler wrote:
+> On Fri, Jun 6, 2008 at 10:35 AM, Chris Clayton <chris2553@googlemail.com> 
+wrote:
+> >...
+> > Yes, I still get the boot pause and the delay in desktop icons appearing
+> > when a usb-storage device is plugged in with -rc5. A boot log is
+> > attached. Is there some sort of verbose scsi boot messaging that I can
+> > switch on? I've looked but I'm damned if I can find anything in 'make
+> > menuconfig'.
+>
+> SCSI_CONSTANTS and SCSI_LOGGING might help.
+> Both live in the SCSI options menu. Read the Kconfig help on how
+> to use SCSI_LOGGING.
+>
+> Can you please also enable CONFIG_PRINTK_TIME ?
 
-> Basically the issue is that current behaviour of the cpusets is inconsistent
-> with regards to kthreads. Kthreads inherit cpuset from a parent properly but
-> they simply ignore cpuset.cpus when their cpu affinity is set/updated.
-> I think the behaviour must be consistent across the board. cpuset.cpus must
-> apply to _all_ the tasks in the set, not just some of the tasks. If kthread
-> must run on the cpus other than current_cpuset.cpus then it should detach from
-> the cpuset.
-> 
+I've enabled CONFIG_PRINTK_TIME and will look into the SCSI options.
 
-I disagree that a cpuset's set of allowable cpus should apply to all tasks 
-attached to that cpuset.  It's certainly beneficial to be able to further 
-constrict the set of allowed cpus for a task using sched_setaffinity().
+Thanks
+>
+> Using the timestamps in /var/log/messages is ok but not the most
+> reliable place to get somewhat accurate time stamps of events.
+>
+> hth,
+> grant
 
-It makes more sense to argue that for each task p, p->cpus_allowed is a 
-subset of task_cs(p)->cpus_allowed.
 
-> To give you an example kthreads like scsi_eh, kswapd, kacpid, pdflush,
-> kseriod, etc are all started with cpus_allows=ALL_CPUS even though they
-> inherit a cpuset from kthreadd. Yes they can moved manually (with
-> sched_setaffinity) but the behaviour is not consistent, and for no good
-> reason. kthreads can be stopped/started at any time (module load for example)
-> which means that the user will have to keep moving them.
-> 
 
-This doesn't seem to be purely a kthread issue.  Tasks can be moved to a 
-disjoint set of cpus by any caller to set_cpus_allowed_ptr() in the 
-kernel.
-
-		David
+-- 
+Beauty is in the eye of the beerholder.
