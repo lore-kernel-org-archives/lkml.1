@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759378AbYFJUzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758144AbYFJUzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759378AbYFJUzf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 16:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758567AbYFJUyJ
+	id S1758144AbYFJUzw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 16:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758430AbYFJUzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 16:54:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44120 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758342AbYFJUyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 16:54:07 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 0 of 7] Block/SCSI Data Integrity Support
-References: <patchbomb.1212814533@sermon.lab.mkp.net>
-	<x491w35bbdi.fsf@segfault.boston.devel.redhat.com>
-	<yq1iqwhia2m.fsf@sermon.lab.mkp.net>
-	<x49mylt9lbn.fsf@segfault.boston.devel.redhat.com>
-	<yq1abhtnhjb.fsf@sermon.lab.mkp.net>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Tue, 10 Jun 2008 16:53:52 -0400
-In-Reply-To: <yq1abhtnhjb.fsf@sermon.lab.mkp.net> (Martin K. Petersen's
-	message of "Tue, 10 Jun 2008 16:47:52 -0400")
-Message-ID: <x49wskx810f.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Tue, 10 Jun 2008 16:55:24 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:2760 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759345AbYFJUzV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 16:55:21 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:user-agent:mime-version:content-type;
+	b=LQ7IDUagNGxHF/ci3dp6cECy7yNQCHLAFnRK1JmW87mHLOglZupNrd28JhMCQBVHq
+	tCbfUay8z8sbBvuWY3h2g==
+Date: Tue, 10 Jun 2008 13:54:50 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Max Krasnyansky <maxk@qualcomm.com>
+cc: Paul Jackson <pj@sgi.com>, mingo@elte.hu,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, menage@google.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: cpusets and kthreads, inconsistent behaviour
+In-Reply-To: <484EE7BE.3000606@qualcomm.com>
+Message-ID: <alpine.DEB.1.10.0806101350110.29422@chino.kir.corp.google.com>
+References: <alpine.DEB.1.10.0806051255500.31157@chino.kir.corp.google.com> <20080605152953.dcfefa47.pj@sgi.com> <alpine.DEB.1.10.0806051357480.32537@chino.kir.corp.google.com> <484D99AD.4000306@qualcomm.com> <alpine.DEB.1.10.0806091447300.10680@chino.kir.corp.google.com>
+ <484EAC2F.5020103@qualcomm.com> <alpine.DEB.1.10.0806101135050.28953@chino.kir.corp.google.com> <484EE7BE.3000606@qualcomm.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Martin K. Petersen" <martin.petersen@oracle.com> writes:
+On Tue, 10 Jun 2008, Max Krasnyansky wrote:
 
->>>>>> "Jeff" == Jeff Moyer <jmoyer@redhat.com> writes:
->
-> Jeff> So, is it safe to say that the library routines for
-> Jeff> integrity-aware file systems have not been tested at all?
-> Jeff> Specifically, I'm talking about: bio_integrity_tag_size
-> Jeff> bio_integrity_set_tag bio_integrity_get_tag
->
-> I have not tried using them from within a filesystem, if that's what
-> you mean.  But I have attached random strings to bios and read them
-> back later.
+> Hmm, technically you are correct of course. But we do not have any other
+> kernel tasks besides kthreads. All the kernel tasks I have on my machines have
+> kthreadd as their parent.
+> And I'm not aware of any kernel code that changes affinity mask of a
+> user-space task without paying attention to the cpuset the task belongs to. If
+> you know of any we should fix it because it'd clearly be a bug.
+> 
 
-I was checking to see if you had exercised the code at all, and you
-have.  Great!
+This is why it shouldn't belong in the sched or kthread code; the 
+discrepency that you point out between p->cpus_allowed and 
+task_cs(p)->cpus_allowed is a cpuset created one.
 
-Cheers,
-
-Jeff
+So to avoid having tasks with a cpus_allowed mask that is not a subset of 
+its cpuset's set of allowable cpus, the solution would probably be to add 
+a flavor of cpuset_update_task_memory_state() for a cpus generation value.
