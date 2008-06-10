@@ -1,91 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758962AbYFJDSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758921AbYFJDWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758962AbYFJDSf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 23:18:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbYFJDS1
+	id S1758921AbYFJDWS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 23:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753501AbYFJDWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 23:18:27 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:33570 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753940AbYFJDS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 23:18:26 -0400
-Date: Mon, 9 Jun 2008 20:18:25 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [patch 04/41] cpu ops: Core piece for generic atomic per cpu
- operations
-In-Reply-To: <200806101256.31615.rusty@rustcorp.com.au>
-Message-ID: <Pine.LNX.4.64.0806092012240.13024@schroedinger.engr.sgi.com>
-References: <20080530035620.587204923@sgi.com> <200806100927.48597.rusty@rustcorp.com.au>
- <Pine.LNX.4.64.0806091651390.9749@schroedinger.engr.sgi.com>
- <200806101256.31615.rusty@rustcorp.com.au>
+	Mon, 9 Jun 2008 23:22:07 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46207 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753266AbYFJDWG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 23:22:06 -0400
+Message-ID: <484DF11A.7000306@jp.fujitsu.com>
+Date: Tue, 10 Jun 2008 12:12:26 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alex Chiang <achiang@hp.com>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       jbarnes@virtuousgeek.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>, kristen.c.accardi@intel.com,
+       greg@kroah.com, lenb@kernel.org, pbadari@us.ibm.com,
+       linux-pci@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4, v14] PCI, ACPI: Physical PCI slot objects
+References: <20080604200829.GC379@ldl.fc.hp.com> <484CE515.4030205@jp.fujitsu.com> <20080609221108.GA16588@ldl.fc.hp.com> <484DEF46.7080106@jp.fujitsu.com>
+In-Reply-To: <484DEF46.7080106@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008, Rusty Russell wrote:
+Kenji Kaneshige wrote:
+> Alex Chiang wrote:
+>> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
 
-> > Right that is what the cpu alloc patches do. So you could implement
-> > cpu_local_inc on top of some of the cpu alloc patches.
+(snip.)
+
+> Thank you for explanation. I understood.
 > 
-> Or you could just implement it today as a standalone patch.
-
-You need at least the zero basing to enable the use of the segment 
-register on x86_64.
-
-> > But then the whole point of local_t is gone. Why not use atomic_t in the
-> > first place?
+> But I have one concern about the behavior when pci slot driver is not
+> loaded. My patch (a86161b3134465f) prevents the kernel trace dump
+> because of duplicate kobject add that would happen in the following two
+> cases, though (b) is not described in the header of the patch (sorry).
 > 
-> Because some archs can do better.
-
-The argument does not make any sense. First you want to use atomic_t then 
-not?
-
-> > > By definition if the caller cared, they would have had premption
-> > > disabled.
-> >
-> > There are numerous instances where the caller does not care about
-> > preemption. Its just important that one per cpu counter is increment in
-> > the least intrusive way. See f.e. the VM event counters.
+>   (a) multiple driver attempt to handle the same slot.
 > 
-> Yes, and that's exactly the point.  The VM event counters are exactly a case 
-> where you should have used cpu_local_inc.
+>   (b) one or more driver attempt to register multiple slots with the
+>       same name (This can happen if broken platform assigns the same
+>       slot number to multiple hotplug slots, for example).
+> 
+> With your patch, duplicate kobject add in case (b) is not prevented.
+> That is my concern.
+> 
+> I made a below patch to prevent (b), please take a look. And could you
+> please consider merging it to "[PATCH 2/3] Introduce pci_slot" in your
+> latest series.
+> 
+> Thanks,
+> Kenji Kaneshige
+> 
+> 
+> ---
+>  drivers/pci/hotplug/pci_hotplug_core.c |   16 ++++++++++++++++
+>  1 file changed, 16 insertions(+)
+> 
+> Index: 20080610/drivers/pci/hotplug/pci_hotplug_core.c
+> ===================================================================
+> --- 20080610.orig/drivers/pci/hotplug/pci_hotplug_core.c
+> +++ 20080610/drivers/pci/hotplug/pci_hotplug_core.c
+> @@ -555,6 +555,7 @@ int pci_hp_register(struct hotplug_slot 
+>  {
+>  	int result;
+>  	struct pci_slot *pci_slot;
+> +	struct hotplug_slot *tmp;
+>  
+>  	if (slot == NULL)
+>  		return -ENODEV;
+> @@ -567,6 +568,21 @@ int pci_hp_register(struct hotplug_slot 
+>  	}
+>  
+>  	/*
+> +	 * Prevent registering multiple hotplug slots with the same name.
+> +	 */
+> +	spin_lock(&pci_hotplug_slot_list_lock);
+> +	list_for_each_entry(tmp, &pci_hotplug_slot_list, slot_list) {
+> +		pci_slot = tmp->pci_slot;
+> +		if (pci_slot->bus == bus && pci_slot->number == slot_nr)
+> +			continue;
+> +		if (!strcmp(tmp->name, slot->name)) {
+> +			spin_unlock(&pci_hotplug_slot_list_lock);
+> +			return -EEXIST;
+> +		}
+> +	}
+> +	spin_unlock(&pci_hotplug_slot_list_lock);
+> +
+> +	/*
+>  	 * No problems if we call this interface from both ACPI_PCI_SLOT
+>  	 * driver and call it here again. If we've already created the
+>  	 * pci_slot, the interface will simply bump the refcount.
+> 
+>
 
-I tried it and did not give any benefit except first failing due to bugs 
-because local_t did not disable preempt6... This led to Andi fixing 
-local_t.
+Please note that I made this patch against linux-next with your
+latest three patches applied.
 
-But with the preempt disabling I could not discern what the benefit 
-would be.
-
-CPU_INC does not require disabling of preempt and the cpu alloc patches 
-shorten the code sequence to increment a VM counter significantly.
-
-Here is the header from the patch. How would cpu_local_inc be able to do 
-better unless you adopt this patchset and add a shim layer?
-
-Subject: VM statistics: Use CPU ops
-
-The use of CPU ops here avoids the offset calculations that we used to 
-have to do with per cpu operations. The result of this patch is that event 
-counters are coded with a single instruction the following way:
-
-        incq   %gs:offset(%rip)
-
-Without these patches this was:
-
-        mov    %gs:0x8,%rdx
-        mov    %eax,0x38(%rsp)
-        mov    xxx(%rip),%eax
-        mov    %eax,0x48(%rsp)
-        mov    varoffset,%rax
-        incq   0x110(%rax,%rdx,1)
+Thanks,
+Kenji Kaneshige
 
 
