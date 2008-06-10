@@ -1,62 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757473AbYFJWj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbYFJWlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757473AbYFJWj5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 18:39:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbYFJWjn
+	id S1757596AbYFJWlm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 18:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbYFJWlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 18:39:43 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:40370 "EHLO mail.dvmed.net"
+	Tue, 10 Jun 2008 18:41:35 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:51801 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753375AbYFJWjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 18:39:42 -0400
-Message-ID: <484F02A0.7010009@garzik.org>
-Date: Tue, 10 Jun 2008 18:39:28 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1752102AbYFJWle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 18:41:34 -0400
+Date: Tue, 10 Jun 2008 17:41:12 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Benjamin Thery <benjamin.thery@bull.net>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Biederman <ebiederm@xmission.com>, Serge Hallyn <serue@us.ibm.com>,
+       linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH 11/11] sysfs: user namespaces: fix bug with
+	clone(CLONE_NEWUSER) with fairsched
+Message-ID: <20080610224112.GA22478@us.ibm.com>
+References: <20080606154654.356185262@theryb.frec.bull.fr> <20080606154655.983737793@theryb.frec.bull.fr>
 MIME-Version: 1.0
-To: Jay Vosburgh <fubar@us.ibm.com>
-CC: Nicolas 2P <nicolas.2p.debian@free.fr>, David Miller <davem@davemloft.net>,
-       bonding-devel@lists.sourceforge.net, linux-net@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [patch] bondig - arp_interval with low value => Oops.
-References: <482C9E73.2040202@free.fr> <484EFDFC.3040206@garzik.org> <8135.1213137006@death>
-In-Reply-To: <8135.1213137006@death>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080606154655.983737793@theryb.frec.bull.fr>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jay Vosburgh wrote:
-> Jeff Garzik <jeff@garzik.org> wrote:
+Quoting Benjamin Thery (benjamin.thery@bull.net):
+> Mark the /sys/kernel/uids directory to be tagged so that processes in
+> different user namespaces can remount /sys and see their own uid
+> listings.
 > 
->> Nicolas 2P wrote:
->>> When setting arp_interval parameter to a very low value, delta_in_ticks
->>> for next arp might become 0, causing an infinite loop.
->>>
->>> See http://bugzilla.kernel.org/show_bug.cgi?id=10680
->>>
->>> Same problem for miimon parameter already fixed, but fix might be
->>> enhanced, by using msecs_to_jiffies() function.
->>>
->>> Signed-off-by: Nicolas de Pesloüan <nicolas.2p.debian@free.fr>
->> I don't see an ACK from Jay in my mbox?
->>
->> Certainly looks nicer than adding "? : 1" to each of the remaining two
->> cases.
+> Without this patch, having CONFIG_FAIR_SCHED=y makes user namespaces
+> unusable, because when you 
+>   clone(CLONE_NEWUSER)
+> it will auto-create the root userid and try to create
+> /sys/kernel/uids/0.  Since that already exists from the parent user
+> namespace, the create fails, and the clone misleadingly ends up
+> returning -ENOMEM.
 > 
-> 	This was accepted a couple of weeks ago; I had to fix a bug in
-> the patch, so I'd guess you didn't connect them:
+> This patch fixes the issue by allowing each user namespace to remount
+> /sys, and having /sys filter the /sys/kernel/uid/ entries by user
+> namespace.
 > 
-> commit 5ce0da8f0386b62345312ec8fed31303732f4220
-> Author: Jay Vosburgh <fubar@us.ibm.com>
-> Date:   Sat May 17 21:10:07 2008 -0700
+> Signed-off-by: Serge Hallyn <serue@us.ibm.com>
+> Signed-off-by: Benjamin Thery <benjamin.thery@bull.net>
+> ---
+>  fs/sysfs/mount.c               |    3 +++
+>  include/linux/sched.h          |    1 +
+>  include/linux/sysfs.h          |    2 ++
+>  include/linux/user_namespace.h |    1 +
+>  kernel/user.c                  |   21 +++++++++++++++++++++
+>  kernel/user_namespace.c        |   13 ++++++++++++-
+>  6 files changed, 40 insertions(+), 1 deletion(-)
 > 
->     bonding: Use msecs_to_jiffies, eliminate panic
+> Index: linux-mm/fs/sysfs/mount.c
+> ===================================================================
+> --- linux-mm.orig/fs/sysfs/mount.c
+> +++ linux-mm/fs/sysfs/mount.c
+> @@ -81,6 +81,7 @@ static int sysfs_fill_super(struct super
+>  	sb->s_root = root;
+>  	sb->s_fs_info = info;
+>  	info->tag.net_ns = hold_net(current->nsproxy->net_ns);
+> +	info->tag.user_ns = current->nsproxy->user_ns;
+>  	return 0;
+> 
+>  out_err:
+> @@ -100,6 +101,8 @@ static int sysfs_test_super(struct super
+> 
+>  	if (task->nsproxy->net_ns != info->tag.net_ns)
+>  		found = 0;
+> +	if (task->nsproxy->user_ns != info->tag.user_ns)
+> +		found = 0;
+> 
+>  	return found;
+>  }
+> Index: linux-mm/include/linux/sched.h
+> ===================================================================
+> --- linux-mm.orig/include/linux/sched.h
+> +++ linux-mm/include/linux/sched.h
+> @@ -600,6 +600,7 @@ struct user_struct {
+>  	/* Hash table maintenance information */
+>  	struct hlist_node uidhash_node;
+>  	uid_t uid;
+> +	struct user_namespace *user_ns;
+> 
+>  #ifdef CONFIG_USER_SCHED
+>  	struct task_group *tg;
+> Index: linux-mm/include/linux/sysfs.h
+> ===================================================================
+> --- linux-mm.orig/include/linux/sysfs.h
+> +++ linux-mm/include/linux/sysfs.h
+> @@ -20,6 +20,7 @@
+>  struct kobject;
+>  struct module;
+>  struct net;
+> +struct user_namespace;
+> 
+>  /* FIXME
+>   * The *owner field is no longer used, but leave around
+> @@ -81,6 +82,7 @@ struct sysfs_ops {
+> 
+>  struct sysfs_tag_info {
+>  	struct net *net_ns;
+> +	struct user_namespace *user_ns;
+>  };
+> 
+>  struct sysfs_tagged_dir_operations {
+> Index: linux-mm/include/linux/user_namespace.h
+> ===================================================================
+> --- linux-mm.orig/include/linux/user_namespace.h
+> +++ linux-mm/include/linux/user_namespace.h
+> @@ -12,6 +12,7 @@
+>  struct user_namespace {
+>  	struct kref		kref;
+>  	struct hlist_head	uidhash_table[UIDHASH_SZ];
+> +	struct kset		*kset;
 
-Great, thanks!
+Hmm, funky.  I don't know where this came from - or actually, I think it
+survived from the second of 4 or 5 quick attempts to figure out where
+to do the tagging for userns...
 
+I don't think the kset should be here :)
 
+Otherwise, looks good, thanks Benjamin.
+
+-serge
+
+>  	struct user_struct	*root_user;
+>  };
+> 
+> Index: linux-mm/kernel/user.c
+> ===================================================================
+> --- linux-mm.orig/kernel/user.c
+> +++ linux-mm/kernel/user.c
+> @@ -53,6 +53,7 @@ struct user_struct root_user = {
+>  	.files		= ATOMIC_INIT(0),
+>  	.sigpending	= ATOMIC_INIT(0),
+>  	.locked_shm     = 0,
+> +	.user_ns	= &init_user_ns,
+>  #ifdef CONFIG_USER_SCHED
+>  	.tg		= &init_task_group,
+>  #endif
+> @@ -236,6 +237,23 @@ static void uids_release(struct kobject 
+>  	return;
+>  }
+> 
+> +static const void *userns_sb_tag(struct sysfs_tag_info *info)
+> +{
+> +	return info->user_ns;
+> +}
+> +
+> +static const void *userns_kobject_tag(struct kobject *kobj)
+> +{
+> +	struct user_struct *up;
+> +	up = container_of(kobj, struct user_struct, kobj);
+> +	return up->user_ns;
+> +}
+> +
+> +static struct sysfs_tagged_dir_operations userns_tagged_dir_operations = {
+> +	.sb_tag = userns_sb_tag,
+> +	.kobject_tag = userns_kobject_tag,
+> +};
+> +
+>  static struct kobj_type uids_ktype = {
+>  	.sysfs_ops = &kobj_sysfs_ops,
+>  	.default_attrs = uids_attributes,
+> @@ -272,6 +290,8 @@ int __init uids_sysfs_init(void)
+>  	if (!uids_kset)
+>  		return -ENOMEM;
+> 
+> +	sysfs_enable_tagging(&uids_kset->kobj, &userns_tagged_dir_operations);
+> +
+>  	return uids_user_create(&root_user);
+>  }
+> 
+> @@ -404,6 +424,7 @@ struct user_struct *alloc_uid(struct use
+>  			goto out_unlock;
+> 
+>  		new->uid = uid;
+> +		new->user_ns = ns;
+>  		atomic_set(&new->__count, 1);
+> 
+>  		if (sched_create_user(new) < 0)
+> Index: linux-mm/kernel/user_namespace.c
+> ===================================================================
+> --- linux-mm.orig/kernel/user_namespace.c
+> +++ linux-mm/kernel/user_namespace.c
+> @@ -22,7 +22,7 @@ static struct user_namespace *clone_user
+>  	struct user_struct *new_user;
+>  	int n;
+> 
+> -	ns = kmalloc(sizeof(struct user_namespace), GFP_KERNEL);
+> +	ns = kzalloc(sizeof(struct user_namespace), GFP_KERNEL);
+>  	if (!ns)
+>  		return ERR_PTR(-ENOMEM);
+> 
+> @@ -66,11 +66,22 @@ struct user_namespace * copy_user_ns(int
+>  	return new_ns;
+>  }
+> 
+> +/* clear sysfs tag when user namespace exits */
+> +static void sysfs_userns_exit(struct sysfs_tag_info *tag_info, void *data)
+> +{
+> +	struct user_namespace *ns = (struct user_namespace *)data;
+> +
+> +	if (tag_info->user_ns != ns)
+> +		return;
+> +	tag_info->user_ns = NULL;
+> +}
+> +
+>  void free_user_ns(struct kref *kref)
+>  {
+>  	struct user_namespace *ns;
+> 
+>  	ns = container_of(kref, struct user_namespace, kref);
+> +	sysfs_ns_exit(sysfs_userns_exit, ns);
+>  	release_uids(ns);
+>  	kfree(ns);
+>  }
+> 
+> -- 
