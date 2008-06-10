@@ -1,77 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757517AbYFJSv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757425AbYFJSwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757517AbYFJSv2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 14:51:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757343AbYFJSvD
+	id S1757425AbYFJSwb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 14:52:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753506AbYFJSwU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 14:51:03 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33050 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757331AbYFJSvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 14:51:00 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 0 of 7] Block/SCSI Data Integrity Support
-References: <patchbomb.1212814533@sermon.lab.mkp.net>
-	<x491w35bbdi.fsf@segfault.boston.devel.redhat.com>
-	<yq1iqwhia2m.fsf@sermon.lab.mkp.net>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Tue, 10 Jun 2008 14:49:48 -0400
-In-Reply-To: <yq1iqwhia2m.fsf@sermon.lab.mkp.net> (Martin K. Petersen's
-	message of "Tue, 10 Jun 2008 11:28:01 -0400")
-Message-ID: <x49mylt9lbn.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Tue, 10 Jun 2008 14:52:20 -0400
+Received: from ik-out-1112.google.com ([66.249.90.180]:62363 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753341AbYFJSwU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 14:52:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=hosBdx47Xn4QKk4Kl+TDhO87MF2uO3RFOLOr2PGMN01C5ofJnQR8cvegIwax/IxtiT
+         duLRgCWh1wZLX6vIqVoxT5ByRlgfCbfMUpk/xkAflYkYS2TcIu2le9uwufczlbEOf6Ce
+         ycym21LzXAVsbNX/S8TrUxarLEw2InW79JqGc=
+From: Chris Clayton <chris2553@googlemail.com>
+Reply-To: chris2553@googlemail.com
+To: Greg KH <greg@kroah.com>
+Subject: Re: 2,6.26-rc4-git2 - long pause during boot
+Date: Tue, 10 Jun 2008 18:49:12 +0000
+User-Agent: KMail/1.9.9
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       Hannes Reinecke <hare@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-usb@vger.kernel.org
+References: <200806010415.05290.chris2553@googlemail.com> <1212950276.3574.7.camel@localhost.localdomain> <20080609230747.GD23391@kroah.com>
+In-Reply-To: <20080609230747.GD23391@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806101849.12637.chris2553@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Martin K. Petersen" <martin.petersen@oracle.com> writes:
-
->>>>>> "Jeff" == Jeff Moyer <jmoyer@redhat.com> writes:
-> Jeff> Thanks for all of the great documentation.  It would be good to
-> Jeff> include some instructions on how one would test this, and what
-> Jeff> testing you performed.
+On Monday 09 June 2008, Greg KH wrote:
+> On Sun, Jun 08, 2008 at 01:37:56PM -0500, James Bottomley wrote:
+> > > Because of this oddity, I've also built 2.6.26-rc5-git2 with verbose
+> > > USB debugging on. A boot log from that kernel is attached. You will see
+> > > lots of ETIME errors from usb. A log from a similarly verbose 2.6.25.5
+> > > kernel does not show these errors. usb-devel added to cc list.
+> >
+> > I'm starting to think this might be a distribution problem.  I tried
+> > booting my laptop on your config (only system I have with ata_piix)
+> > without an initrd (bit painful for fedora 9) and I didn't see any slow
+> > downs (in fact it was a lot faster than previously; makes note to file
+> > bug with redhat about their initramfs).
 >
-> modprobe scsi_debug dix=199 dif=1 guard=1 dev_size_mb=1024 num_parts=1
+> What distro is this being seen on?  I know that openSUSE 11.0 betas did
+> have a bug in their init scripts that was causing a long delay, much
+> like this one.  But it has been fixed in the later releases
+> (hopefully...)
 >
-> I'm testing with XFS and btrfs.  Generally doing kernel builds, etc.
-> ext2/3 are still problematic because they modify pages in flight.
 
-So, is it safe to say that the library routines for integrity-aware file
-systems have not been tested at all?  Specifically, I'm talking about:
-bio_integrity_tag_size
-bio_integrity_set_tag
-bio_integrity_get_tag
+As I repied to James a few minutes ago, my desktop system was originally (the 
+now lapsed) Peanut Linux, which was a Slackware derivative. But I've been 
+running it for 3 or 4 years, upgrading and adding packages along the way. My 
+udev setup is based on that in a fairly recent Slackware, although I can't now 
+recall precisely which version.
 
-> Jeff> block/blk-core.c: In function 'generic_make_request':
-> Jeff> include/linux/bio.h:469: sorry, unimplemented: inlining failed
-> Jeff> in call to 'bio_i ntegrity_enabled': function body not available
-> Jeff> block/blk-core.c:1388: sorry, unimplemented: called from here
-> Jeff> make[1]: *** [block/blk-core.o] Error 1 make: *** [block] Error
-> Jeff> 2
+Thanks
+
+Chris
+
+> thanks,
 >
-> Odd.  Which compiler are you using?  Compiles just fine for me on both
-> EL5 and FC9.
+> greg k-h
 
-gcc (GCC) 4.1.2 20071124 (Red Hat 4.1.2-41)
 
-> Judging from the error I'm guessing it's objecting to the inlining.
-> Tried to work around it.  Please pull, update and let me know whether
-> that did the trick.
 
-I did a new clone (just to be sure I got your change) and I get the same
-problem.  I also can't see the changeset in the log, so are you sure you
-pushed it?
-
-I got rid of the inline in the definition in bio.h.  The .c file didn't
-define the function as inline, so I didn't have to change it.  It seems
-to be building now.
-
-Cheers,
-
-Jeff
+-- 
+Beauty is in the eye of the beerholder.
