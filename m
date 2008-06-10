@@ -1,66 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758169AbYFJIaw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbYFJIff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758169AbYFJIaw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 04:30:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbYFJIao
+	id S1758683AbYFJIff (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 04:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754139AbYFJIf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 04:30:44 -0400
-Received: from as1.cineca.com ([130.186.84.213]:45041 "EHLO as1.cineca.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750728AbYFJIan (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 04:30:43 -0400
-Message-ID: <484E3BA4.3000606@gmail.com>
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070604 Thunderbird/1.5.0.12 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: Pavel Emelyanov <xemul@openvz.org>, balbir@linux.vnet.ibm.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: menage@google.com, kosaki.motohiro@jp.fujitsu.com,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: [RFC PATCH 0/5] memcg: VM overcommit accounting and handling
-References: <1213054383-18137-1-git-send-email-righi.andrea@gmail.com> <20080610091439.04061da9.kamezawa.hiroyu@jp.fujitsu.com> <484E0D73.6010609@linux.vnet.ibm.com> <484E32B9.4020606@openvz.org>
-In-Reply-To: <484E32B9.4020606@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 10 Jun 2008 04:35:28 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55576 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754109AbYFJIf0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 04:35:26 -0400
+Date: Tue, 10 Jun 2008 01:34:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       linux-mm@kvack.org, Rik van Riel <riel@redhat.com>
+Subject: Re: 2.6.26-rc5-mm2
+Message-Id: <20080610013427.aa20a29b.akpm@linux-foundation.org>
+In-Reply-To: <200806101728.27486.nickpiggin@yahoo.com.au>
+References: <20080609223145.5c9a2878.akpm@linux-foundation.org>
+	<200806101728.27486.nickpiggin@yahoo.com.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Tue, 10 Jun 2008 10:30:29 +0200 (MEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelyanov wrote:
-> Balbir Singh wrote:
->> KAMEZAWA Hiroyuki wrote:
->>> On Tue, 10 Jun 2008 01:32:58 +0200
->>> Andrea Righi <righi.andrea@gmail.com> wrote:
->>>
->>>> Provide distinct cgroup VM overcommit accounting and handling using the memory
->>>> resource controller.
->>>>
->>> Could you explain the benefits of this even when we have memrlimit controller ?
->>> (If unsure, see 2.6.26-rc5-mm1 and search memrlimit controller.)
->>>
->>> And this kind of virtual-address-handling things should be implemented on
->>> memrlimit controller (means not on memory-resource-controller.).
->>> It seems this patch doesn't need to handle page_group.
->>>
->>> Considering hierarchy, putting several kinds of features on one controller is
->>> not good, I think. Balbir, how do you think ?
->>>
->> I would tend to agree. With the memrlimit controller, can't we do this in user
->> space now? Figure out the overcommit value and based on that setup the memrlimit?
+On Tue, 10 Jun 2008 17:28:27 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+
+> On Tuesday 10 June 2008 15:31, Andrew Morton wrote:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc5/2.
+> >6.26-rc5-mm2/
+> >
 > 
-> I also agree with Balbir and Kamezawa. Separate controller for VM (i.e. vma-s
-> lengths) is more preferable, rather than yet another fancy feature on top of 
-> the existing rss one.
+> BTW. would be trying to test this more myself, but last mm I based the
+> lockless patches on didn't boot, and this one dies pretty quickly when
+> you try to get into reclaim:
 > 
+> ------------[ cut here ]------------
+> kernel BUG at mm/swap_state.c:77!
+> invalid opcode: 0000 [1] SMP DEBUG_PAGEALLOC
+> last sysfs file: /sys/devices/system/cpu/cpu7/cache/index2/shared_cpu_map
+> CPU 7
+> Modules linked in:
+> Pid: 13550, comm: sh Not tainted 2.6.26-rc5-mm2-dirty #412
+> RIP: 0010:[<ffffffff80288689>]  [<ffffffff80288689>] 
+> add_to_swap_cache+0xd9/0x120
+> RSP: 0018:ffff81010c62d8a8  EFLAGS: 00010246
+> RAX: 2000000000020009 RBX: ffffe2000107da88 RCX: c000000000000000
+> RDX: 0000000000000020 RSI: 000000000000eea2 RDI: ffffe2000107da88
+> RBP: ffff81010c62d8c8 R08: fffffffffa48016e R09: 0000000000000000
+> R10: ffffffff80857fa0 R11: 2222222222222222 R12: ffff81012e126520
+> R13: 000000000000eea2 R14: ffff8100727bea20 R15: ffff81010c62d9b8
+> FS:  00002b5b33cafdc0(0000) GS:ffff81012ff07800(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> CR2: 000000000175e280 CR3: 000000012e292000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process sh (pid: 13550, threadinfo ffff81010c62c000, task ffff810116b01110)
+> Stack:  ffff81010c62d8c8 ffffe2000107da88 ffff81012e126520 ffff81012e126400
+>  ffff81010c62d908 ffffffff80292851 000000000000eea2 ffff81012e126708
+>  ffffe2000107da88 ffffffff80701420 ffff81010c62db68 ffff81010c62dc88
+> Call Trace:
+>  [<ffffffff80292851>] shmem_writepage+0x121/0x200
+>  [<ffffffff80277479>] shrink_page_list+0x559/0x6b0
+>  [<ffffffff802777ec>] shrink_list+0x21c/0x520
+>  [<ffffffff80273365>] ? determine_dirtyable_memory+0x15/0x30
+>  [<ffffffff802733a2>] ? get_dirty_limits+0x22/0x2a0
+>  [<ffffffff80277d31>] shrink_zone+0x241/0x330
+>  [<ffffffff80278207>] try_to_free_pages+0x237/0x3a0
+>  [<ffffffff80276530>] ? isolate_pages_global+0x0/0x270
+>  [<ffffffff80272546>] __alloc_pages_internal+0x206/0x4b0
+>  [<ffffffff8028dfd7>] alloc_pages_current+0x87/0xd0
+>  [<ffffffff802714fe>] __get_free_pages+0xe/0x60
+>  [<ffffffff802343ca>] copy_process+0xba/0x1240
+>  [<ffffffff80235682>] do_fork+0x82/0x2a0
+>  [<ffffffff8025a03d>] ? trace_hardirqs_on+0xd/0x10
+>  [<ffffffff805177ab>] ? _spin_unlock_irq+0x2b/0x40
+>  [<ffffffff8051703f>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+>  [<ffffffff8020b6cb>] ? system_call_after_swapgs+0x7b/0x80
+>  [<ffffffff80209853>] sys_clone+0x23/0x30
+> 
+> The tmpfs PageSwapBacked stuff seems rather broken. For
+> them write_begin/write_end path, it is filemap.c, not shmem.c,
+> which allocates the page, so its no wonder it goes bug. Will
+> try to do more testing without shmem.
 
-Yep! it seems I totally miss the memrlimit controller. I was trying to
-implement pretty the same functionalities, using a different approach.
-However, I agree that a separate controller seems to be a better
-solution.
+rikstuff.  Could be that the merge caused a problem?
 
-Thank you all for pointing in the right direction. I'll test memrlimit
-controller and give a feedback.
+> Also, just noticed
+> mm/memory.c:do_wp_page
+> //TODO:  is this safe?  do_anonymous_page() does it this way.
+> 
+> That's a bit disheartening. Surely a question like that has to
+> be answered definitively?
 
--Andrea
+I asked that too.
+
+> (hopefully whatever is doing the
+> asking won't get merged until answered)
+
+It would be good if you could find a day to look through those changes
+please.  It's pretty important.
+
