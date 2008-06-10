@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758226AbYFJUvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757659AbYFJUvn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758226AbYFJUvZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 16:51:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757297AbYFJUuH
+	id S1757659AbYFJUvn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 16:51:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756690AbYFJUuR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 16:50:07 -0400
-Received: from gv-out-0910.google.com ([216.239.58.184]:29680 "EHLO
+	Tue, 10 Jun 2008 16:50:17 -0400
+Received: from gv-out-0910.google.com ([216.239.58.191]:27835 "EHLO
 	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754416AbYFJUuE (ORCPT
+	with ESMTP id S1754356AbYFJUuP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 16:50:04 -0400
+	Tue, 10 Jun 2008 16:50:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=PmgzHsLcYQyup+Ih0YUOP8wOZlKoEpN05iCTATAsRGqSRnuKLLv609k4OYCpv1dX0r
-         1L2oJYKGIR5vzKmuNvI06GHi3vmBmJGaWyg/dNSKCtvEwlh5dbhvFmipct+rFXj8I2sv
-         K3pa3A23HId/haJUXZoPxPi38gcu6vklae7h0=
+        b=lJ4gkG3hJAVt53xlWBsciEFLYH2LgDqjf4YGyT6LS+8S8PmFCmeKv5QkdpUmwaS6zH
+         y0nclTX3v6V2bgpN8iXS9WkLmkD74xrt3hHDzvRWSSlJxe0wLmtki/jcY16eD4D3uGmU
+         AbIKea6n3RRuQUCcsDA90hwpx3oayuWLJQy6Q=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Tue, 10 Jun 2008 22:51:40 +0200
-Message-Id: <20080610205140.18469.72633.sendpatchset@localhost.localdomain>
+Date: Tue, 10 Jun 2008 22:51:49 +0200
+Message-Id: <20080610205149.18469.97463.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080610205059.18469.44856.sendpatchset@localhost.localdomain>
 References: <20080610205059.18469.44856.sendpatchset@localhost.localdomain>
-Subject: [PATCH 05/14] ide-h8300: use struct ide_port_info
+Subject: [PATCH 06/14] ide_platform: use struct ide_port_info
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,35 +35,45 @@ There should be no functional changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/h8300/ide-h8300.c |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/ide/legacy/ide_platform.c |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-Index: b/drivers/ide/h8300/ide-h8300.c
+Index: b/drivers/ide/legacy/ide_platform.c
 ===================================================================
---- a/drivers/ide/h8300/ide-h8300.c
-+++ b/drivers/ide/h8300/ide-h8300.c
-@@ -176,6 +176,10 @@ static inline void hwif_setup(ide_hwif_t
- 	hwif->output_data = h8300_output_data;
+--- a/drivers/ide/legacy/ide_platform.c
++++ b/drivers/ide/legacy/ide_platform.c
+@@ -44,6 +44,10 @@ static void __devinit plat_ide_setup_por
+ 	hw->chipset = ide_generic;
  }
  
-+static const struct ide_port_info h8300_port_info = {
-+	.host_flags		= IDE_HFLAG_NO_IO_32BIT | IDE_HFLAG_NO_DMA,
++static const struct ide_port_info platform_ide_port_info = {
++	.host_flags		= IDE_HFLAG_NO_DMA,
 +};
 +
- static int __init h8300_ide_init(void)
+ static int __devinit plat_ide_probe(struct platform_device *pdev)
  {
+ 	struct resource *res_base, *res_alt, *res_irq;
+@@ -54,6 +58,7 @@ static int __devinit plat_ide_probe(stru
+ 	int ret = 0;
+ 	int mmio = 0;
  	hw_regs_t hw;
-@@ -201,12 +205,11 @@ static int __init h8300_ide_init(void)
- 	index = hwif->index;
- 	ide_init_port_hw(hwif, &hw);
- 	hwif_setup(hwif);
--	hwif->host_flags = IDE_HFLAG_NO_IO_32BIT;
- 	printk(KERN_INFO "ide%d: H8/300 generic IDE interface\n", index);
++	struct ide_port_info d = platform_ide_port_info;
  
- 	idx[0] = index;
+ 	pdata = pdev->dev.platform_data;
+ 
+@@ -102,13 +107,13 @@ static int __devinit plat_ide_probe(stru
+ 	ide_init_port_hw(hwif, &hw);
+ 
+ 	if (mmio) {
+-		hwif->host_flags = IDE_HFLAG_MMIO;
++		d.host_flags |= IDE_HFLAG_MMIO;
+ 		default_hwif_mmiops(hwif);
+ 	}
+ 
+ 	idx[0] = hwif->index;
  
 -	ide_device_add(idx, NULL);
-+	ide_device_add(idx, &h8300_port_info);
++	ide_device_add(idx, &d);
  
- 	return 0;
+ 	platform_set_drvdata(pdev, hwif);
  
