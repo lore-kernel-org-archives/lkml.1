@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760312AbYFJKEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759630AbYFJKGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760312AbYFJKEp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 06:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900AbYFJKEh
+	id S1759630AbYFJKGs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 06:06:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbYFJKGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 06:04:37 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45902 "EHLO mx3.mail.elte.hu"
+	Tue, 10 Jun 2008 06:06:40 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35584 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752682AbYFJKEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 06:04:36 -0400
-Date: Tue, 10 Jun 2008 12:04:11 +0200
+	id S1751246AbYFJKGj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 06:06:39 -0400
+Date: Tue, 10 Jun 2008 12:06:10 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Mike Travis <travis@sgi.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Christoph Lameter <clameter@sgi.com>,
        David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
        Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] x86: Extend percpu ops to 64 bit
-Message-ID: <20080610100411.GJ27706@elte.hu>
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.299510000@polaris-admin.engr.sgi.com>
+Subject: Re: [PATCH 1/4] Zero based percpu: Infrastructure to rebase the
+	per cpu area to zero
+Message-ID: <20080610100610.GK27706@elte.hu>
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.084427000@polaris-admin.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080604003019.299510000@polaris-admin.engr.sgi.com>
+In-Reply-To: <20080604003019.084427000@polaris-admin.engr.sgi.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,21 +40,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Mike Travis <travis@sgi.com> wrote:
 
->   * x86 percpu ops now will work on 64 bit too, so add the missing 8 byte cases.
+>     * Support an option
 > 
->   * Add a few atomic ops that will be useful in the future:
+> 	CONFIG_HAVE_ZERO_BASED_PER_CPU
 > 
-> 	x86_xchg_percpu()
-> 	x86_cmpxchg_percpu().
+>       to make offsets for per cpu variables to start at zero.
 > 
-> 	x86_inc_percpu() - Increment by one can generate more efficient
-> 	x86_dec_percpu()   instructions and inc/dec will be supported by
-> 			   cpu ops later.
+>       If a percpu area starts at zero then:
 > 
->   * Use per_cpu_var() instead of per_cpu__##xxx.
+> 	-  We do not need RELOC_HIDE anymore
+> 
+> 	-  Provides for the future capability of architectures providing
+> 	   a per cpu allocator that returns offsets instead of pointers.
+> 	   The offsets would be independent of the processor so that
+> 	   address calculations can be done in a processor independent way.
+> 	   Per cpu instructions can then add the processor specific offset
+> 	   at the last minute possibly in an atomic instruction.
+> 
+>       The data the linker provides is different for zero based percpu segments:
+> 
+> 	__per_cpu_load	-> The address at which the percpu area was loaded
+> 	__per_cpu_size	-> The length of the per cpu area
+> 
+>     * Removes the &__per_cpu_x in lockdep. The __per_cpu_x are already
+>       pointers. There is no need to take the address.
+> 
+>     * Updates kernel/module.c to be able to deal with a percpu area that
+>       is loaded at __per_cpu_load but is accessed at __per_cpu_start.
 > 
 > Based on linux-2.6.tip
 
-applied to tip/cpus4096, thanks Mike.
+applied to tip/core/percpu, thanks.
 
 	Ingo
