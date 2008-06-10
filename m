@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760179AbYFJWZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760217AbYFJW01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760179AbYFJWZq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 18:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754407AbYFJWZb
+	id S1760217AbYFJW01 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 18:26:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756525AbYFJW0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 18:25:31 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:4721 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754044AbYFJWZa (ORCPT
+	Tue, 10 Jun 2008 18:26:16 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:42065 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756347AbYFJW0P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 18:25:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=SvZqQyQhDkob50YeNvGKNtwdzv9O4UYZ48NUfCmLHXnsRol8Ll7GD9TCCUcm9sdmOn
-         XC+jrJD+ovo7Cb8eChOBZ7T6PgKcuMM0rKtw4+c0eVhxa2w52jZJemAmVLVB6S+aAuu+
-         I7LuX9aK13VthSfoSDvVTHdyKalB0kRdoPpHg=
-Message-ID: <484EFD1A.5040307@gmail.com>
-Date: Wed, 11 Jun 2008 00:15:54 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Tue, 10 Jun 2008 18:26:15 -0400
+Date: Wed, 11 Jun 2008 00:26:13 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Tim Bird <tim.bird@am.sony.com>
+cc: Sam Ravnborg <sam@ravnborg.org>,
+       =?UTF-8?Q?J=C3=B6rn_Engel?= <joern@logfs.org>,
+       linux-embedded <linux-embedded@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: execute bit on scripts (was Re: [PATCH] add diffconfig
+ utility)
+In-Reply-To: <484EF323.7000809@am.sony.com>
+Message-ID: <alpine.LNX.1.10.0806110025220.20733@fbirervta.pbzchgretzou.qr>
+References: <484ED902.9040000@am.sony.com> <20080610210217.GA2432@logfs.org> <20080610211841.GA23855@uranus.ravnborg.org> <484EF323.7000809@am.sony.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-To: Philippe De Muyter <phdm@macqel.be>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] driver/video/cirrusfb : Fix RAM address printk
-References: <20080610214255.GA27749@frolo.macqel> <484EF759.3030806@gmail.com> <20080610221427.GA28607@frolo.macqel>
-In-Reply-To: <20080610221427.GA28607@frolo.macqel>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/11/2008 12:14 AM, Philippe De Muyter wrote:
-> On Tue, Jun 10, 2008 at 11:51:21PM +0200, Jiri Slaby wrote:
->> On 06/10/2008 11:42 PM, Philippe De Muyter wrote:
->>> Hello everybody,
->>> In the cirrusfb driver, the RAM address printk has a superfluous 'x'
->>> that could be interpreted as "don't care", while it is actually a typo.
->>> Fix that.
->>> Signed-off-by: Philippe De Muyter <phdm@macqel.be>
->>> diff -r 184e1bb486cf drivers/video/cirrusfb.c
->>> --- a/drivers/video/cirrusfb.c	Mon Jun  9 19:30:13 2008 -0700
->>> +++ b/drivers/video/cirrusfb.c	Tue Jun 10 13:25:22 2008 +0200
->>> @@ -2432,7 +2432,7 @@ static int cirrusfb_pci_register(struct  
->>> 	info->screen_size = board_size;
->>>  	cinfo->unmap = cirrusfb_pci_unmap;
->>>  -	printk(KERN_INFO " RAM (%lu kB) at 0xx%lx, ",
->>> +	printk(KERN_INFO " RAM (%lu kB) at 0x%lx, ",
->>>  		info->screen_size >> 10, board_addr);
->> Hmm, is there \n missing too?
->>
-> 
-> No that would make the RAM adress orphan, but we must also remove KERN_INFO
-> in the printk below.
 
-No please. This makes logs non-atomic. Make one printk from the two.
+On Tuesday 2008-06-10 23:33, Tim Bird wrote:
+>
+>> I take most of the random scripts in scripts/ via kbuild.git.
+>
+>OK - sounds like you're the right person to ask a question
+>that has been nagging me.
+>
+>Is there a proper way to get the execute bit set in the git tree
+>on  patches that contain scripts?  I think patches
+>produced by git have something that sets the file permissions?
 
->>>  	printk(KERN_INFO "Cirrus Logic chipset on PCI bus\n");
->>>  	pci_set_drvdata(pdev, info);
+If the patch was produced with git it should have a line like
+	new file mode 100755
+
