@@ -1,67 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753669AbYFJGq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbYFJGzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753669AbYFJGq5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 02:46:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751624AbYFJGqt
+	id S1754884AbYFJGzp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 02:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbYFJGze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 02:46:49 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50790 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750946AbYFJGqt (ORCPT
+	Tue, 10 Jun 2008 02:55:34 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:38172 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751607AbYFJGzd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 02:46:49 -0400
-Subject: Re: [patch] sched: prevent bound kthreads from changing
-	cpus_allowed
-From: Peter Zijlstra <peterz@infradead.org>
-To: Max Krasnyanskiy <maxk@qualcomm.com>
-Cc: David Rientjes <rientjes@google.com>, Paul Jackson <pj@sgi.com>,
-       mingo@elte.hu, menage@google.com, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@tv-sign.ru>
-In-Reply-To: <484D99AD.4000306@qualcomm.com>
-References: <alpine.DEB.1.10.0806051255500.31157@chino.kir.corp.google.com>
-	 <20080605152953.dcfefa47.pj@sgi.com>
-	 <alpine.DEB.1.10.0806051357480.32537@chino.kir.corp.google.com>
-	 <484D99AD.4000306@qualcomm.com>
-Content-Type: text/plain
-Date: Tue, 10 Jun 2008 08:44:00 +0200
-Message-Id: <1213080240.31518.5.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Tue, 10 Jun 2008 02:55:33 -0400
+Message-ID: <484E258F.4090103@bull.net>
+Date: Tue, 10 Jun 2008 08:56:15 +0200
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Solofo.Ramangalahy@bull.net
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC -mm 0/6] sysv ipc: scale msgmnb with the number of cpus
+References: <20080606060955.317871352@bull.net>
+In-Reply-To: <20080606060955.317871352@bull.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-06-09 at 13:59 -0700, Max Krasnyanskiy wrote:
-> David Rientjes wrote:
-> >>  2) Sometimes calls to kthread_bind are binding to any online cpu, such as in:
-> >>
-> >> 	drivers/infiniband/hw/ehca/ehca_irq.c:	kthread_bind(cct->task, any_online_cpu(cpu_online_map));
-> >>
-> >>     In such cases, the PF_THREAD_BOUND seems inappropriate.  The caller of
-> >>     kthread_bind() really doesn't seem to care where that thread is bound;
-> >>     they just want it on a CPU that is still online.
-> >>
-> > 
-> > This particular case is simply moving the thread to any online cpu so that 
-> > it survives long enough for the subsequent kthread_stop() in 
-> > destroy_comp_task().  So I don't see a problem with this instance.
-> > 
-> > A caller to kthread_bind() can always remove PF_THREAD_BOUND itself upon 
-> > return, but I haven't found any cases in the tree where that is currently 
-> > necessary.  And doing that would defeat the semantics of kthread_bind() 
-> > where these threads are supposed to be bound to a specific cpu and not 
-> > allowed to run on others.
+Solofo.Ramangalahy@bull.net wrote:
+> The size in bytes of a SysV IPC message queue, msgmnb, is too small
+> for large machines, but we don't want to bloat small machines
 > 
-> Actually I have another use case here. Above example in particular may be ok 
-> but it does demonstrate the issue nicely. Which is that in some cases kthreads 
-> are bound to a CPU but do not have a strict "must run here" requirement and 
-> could be moved if needed.
-> For example I need an ability to move workqueue threads. Workqueue threads do 
-> kthread_bind().
+> Several methods are used already to modify (mainly increase) msgmnb:
+> . distribution specific patch
+> . system wide sysctl.conf
+> . application specific tuning via /proc/sys/kernel/msgmnb
+> 
+> Integrating this series would:
+> . reflect hardware and software evolutions and diversity,
+> . reduce configuration/tuning for the applications.
+> 
+> Here is the timeline of the evolution of MSG* #defines:
+> Year             1994         1999         1999          2008
+> Version           1.0       2.3.27       2.3.30        2.6.24
+> #define MSGMNI    128          128           16            16
+> #define MSGMAX   4056         8192         8192          8192
+> #define MSGMNB  16384        16384        16384         16384
+> 
+> This patch series scales msgmnb, with respect to the number of
+> cpus/cores for larger machines. For uniprocessor machines the value
+> does not increase.
+> 
+> This series is similar to (and depends on) the series which scales
+> msgmni, the number of IPC message queue identifiers, to the amount of
+> low memory.
+> While Nadia's previous series scaled msgmni along the memory axis,
+> hence the message pool (msgmni x msgmnb), this series uses a second
+> axis: the number of online CPUs.
+> As well as covering the (cpu,memory) space of machines size, this
+> reflects the parallelism allowed by lockless send/receive for
+> in-flight messages in queues (msgmnb / msgmax messages).
+> 
+> The initial scaling is done at initialization of the ipc namespace.
+> Furthermore, the value becomes dynamic with respect to cpu hotplug.
+> 
+> The msgmni and msgmnb values become dependent, as the value of msgmni
+> is computed with respect to the value of msgmnb.
+> 
+> The series is as follows:
+> . patch 1 introduces the scaling function 
+> . patch 2 deals with cpu hotplug
+> . patch 3 allows user space to disable the scaling mechanism
+> . patch 4 allows user space to reenable the scaling mechanism
+> . patch 5 finer grain disabling/reenabling scaling mechanism
+>           (disconnect msgmnb and msgmni)
+> . patch 6 adds documentation
+> 
 
-Per cpu workqueues should stay on their cpu.
+Solofo,
 
-What you're really looking for is a more fine grained alternative to
-flush_workqueue().
+Patches 3 and 4 are useless imho. If you really really want to keep 
+them, you should at least merge them.
 
+Regards,
+Nadia
