@@ -1,121 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755657AbYFJMYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754238AbYFJMdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755657AbYFJMYY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 08:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbYFJMYO
+	id S1754238AbYFJMdR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 08:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752790AbYFJMdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 08:24:14 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:53795 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752831AbYFJMYN (ORCPT
+	Tue, 10 Jun 2008 08:33:05 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:44781 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752775AbYFJMdE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 08:24:13 -0400
-Message-ID: <484E725B.6070309@linux.vnet.ibm.com>
-Date: Tue, 10 Jun 2008 17:53:55 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080505)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, apw@shadowen.org, linux-pci@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [BUG] 2.6.26-rc5-mm1- kernel BUG at arch/x86/kernel/io_apic_64.c:355!
-References: <20080609053908.8021a635.akpm@linux-foundation.org> <484D68F8.9090807@linux.vnet.ibm.com> <20080609145504.6cdfc886.akpm@linux-foundation.org>
-In-Reply-To: <20080609145504.6cdfc886.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Jun 2008 08:33:04 -0400
+Message-Id: <20080610111832.815975131@chello.nl>
+References: <20080610111259.766940257@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Tue, 10 Jun 2008 13:13:02 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Clark Williams <williams@redhat.com>,
+       Gregory Haskins <ghaskins@novell.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH -rt 3/5] cpu-hotplug: cpu_up vs preempt-rt
+Content-Disposition: inline; filename=hotplug-smp-bootstrap.patch
+X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 09 Jun 2008 23:01:36 +0530
-> Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-> 
->> Hi Andrew,
->>
->> The 2.6.26-rc5-mm1 kernel panics while bootup on 32 way, x86_64 machine.
->> passing noapic as the command line parameter, boots up
->> the machine fine.
->>
->> kernel BUG at arch/x86/kernel/io_apic_64.c:355!
->> invalid opcode: 0000 [1] SMP 
->> last sysfs file: 
->> CPU 24 
->> Modules linked in:
->> Pid: 1, comm: swapper Not tainted 2.6.26-rc5-mm1-autotest #1
->> RIP: 0010:[<ffffffff8021b9da>]  [<ffffffff8021b9da>] add_pin_to_irq+0x7a/0x90
->> RSP: 0018:ffff81061e4cbb60  EFLAGS: 00010216
->> RAX: 00000000000000f0 RBX: 00000000000000f0 RCX: 0000000000000001
->> RDX: 0000000000000018 RSI: 0000000000000006 RDI: 00000000000000f0
->> RBP: 0000000000000006 R08: 0000000000000018 R09: 0000000000000006
->> R10: 0000000000000008 R11: ffffffff803948e6 R12: 0000000000000001
->> R13: 0000000000000001 R14: 0000000000000018 R15: ffff81061e4cbc04
->> FS:  0000000000000000(0000) GS:ffff810bfe7be5c0(0000) knlGS:0000000000000000
->> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
->> CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
->> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->> Process swapper (pid: 1, threadinfo ffff81061e4ca000, task ffff81032e4b96d0)
->> Stack:  0000000000000006 ffffffff8021ba6e 00000000000000f0 0000000000000001
->>  0000000000000000 0000000000000000 ffff81061e4cbc00 ffffffff80218991
->>  00000000000000f0 0000000000000000 0000000000000001 ffffffff80218a1a
->> Call Trace:
->>  [<ffffffff8021ba6e>] io_apic_set_pci_routing+0x7e/0xb0
->>  [<ffffffff80218991>] mp_register_gsi+0xb1/0xd0
->>  [<ffffffff80218a1a>] acpi_register_gsi+0x6a/0x70
->>  [<ffffffff80394b20>] acpi_pci_irq_enable+0x14f/0x220
->>  [<ffffffff803948e6>] acpi_pci_allocate_irq+0x0/0x4c
->>  [<ffffffff8036e14a>] do_pci_enable_device+0x4a/0x70
->>  [<ffffffff8036e1c1>] __pci_enable_device_flags+0x51/0x60
->>  [<ffffffff804f1608>] tg3_init_one+0x58/0x1640
->>  [<ffffffff80229790>] default_wake_function+0x0/0x10
->>  [<ffffffff8022e942>] set_cpus_allowed_ptr+0xc2/0xf0
->>  [<ffffffff803703b7>] pci_device_probe+0xe7/0x130
->>  [<ffffffff803c38b6>] driver_probe_device+0x96/0x1a0
->>  [<ffffffff803c3a49>] __driver_attach+0x89/0x90
->>  [<ffffffff803c39c0>] __driver_attach+0x0/0x90
->>  [<ffffffff803c2dbd>] bus_for_each_dev+0x4d/0x80
->>  [<ffffffff8028f708>] kmem_cache_alloc+0xc8/0xf0
->>  [<ffffffff803c341e>] bus_add_driver+0xae/0x220
->>  [<ffffffff803c3cd6>] driver_register+0x56/0x130
->>  [<ffffffff80370678>] __pci_register_driver+0x68/0xb0
->>  [<ffffffff806e5060>] tg3_init+0x0/0x20
->>  [<ffffffff806c8a63>] kernel_init+0x153/0x320
->>  [<ffffffff8020c378>] child_rip+0xa/0x12
->>  [<ffffffff806c8910>] kernel_init+0x0/0x320
->>  [<ffffffff8020c36e>] child_rip+0x0/0x12
->>
->>
->> Code: 89 05 27 88 43 00 7f 29 48 0f bf c1 48 8d 14 00 48 c1 e0 03 48 29 d0 48 8d 90 00 44 74 80 66 89 32 66 44 89 42 02 48 83 c4 08 c3 <0f> 0b eb fe 66 90 48 c7 c7 08 7d 5e 80 31 c0 e8 72 7b 01 00 66 
->> RIP  [<ffffffff8021b9da>] add_pin_to_irq+0x7a/0x90
->>  RSP <ffff81061e4cbb60>
->> ---[ end trace 5a53b6247c28d358 ]---
-> 
-> Here:
-> 
-> static void add_pin_to_irq(unsigned int irq, int apic, int pin)
-> {
-> 	static int first_free_entry = NR_IRQS;
-> 	struct irq_pin_list *entry = irq_2_pin + irq;
-> 
-> 	BUG_ON(irq >= NR_IRQS);
-> 
-> 
-> There are massive changes to tg3, massive changes in the relevant x86
-> ACPI code and massive changes everywhere else.
-> 
-> So I don't have a clue who broke it, but it wasn't me!
-> 
-> You're testing linux-next, aren't you.  Did you test the June 6 tree,
-> upon which 2.6.26-rc5-mm1 was based?
-> 
+On PREEMPT_RT the allocators use preemptible locks, cpu bootstrap must have IRQs
+disabled because there are no IRQ/exception stacks yet, these we allocate 
+atomically, which is not possible on -rt.
 
-This panic was seen in linux-next tree of may 19/20/21/22/23 kernels
-and was reported (http://lkml.org/lkml/2008/5/21/285). It was not visible
-in any June linux-next kernels. I will try and bisect the panic.
+Solve this by allocating these stacks on the boot cpu (which already has its
+stacks).
+
+This also allows cpu-up to fail instead of panic on OOM scenarios.
+
+I suspect it also fixes a memory leak, as I cannot find the place where 
+cpu_down frees these cpu stacks, but each cpu_up used to allocate new ones.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ arch/x86/kernel/setup64.c      |   31 ++--------------------
+ arch/x86/kernel/smpboot_64.c   |   57 +++++++++++++++++++++++++++++++++++++++++
+ include/asm-x86/processor_64.h |    4 ++
+ 3 files changed, 65 insertions(+), 27 deletions(-)
+
+Index: linux-2.6.24.7.noarch/arch/x86/kernel/setup64.c
+===================================================================
+--- linux-2.6.24.7.noarch.orig/arch/x86/kernel/setup64.c
++++ linux-2.6.24.7.noarch/arch/x86/kernel/setup64.c
+@@ -137,19 +137,12 @@ void pda_init(int cpu)
+ 		pda->pcurrent = &init_task;
+ 		pda->irqstackptr = boot_cpu_stack; 
+ 	} else {
+-		pda->irqstackptr = (char *)
+-			__get_free_pages(GFP_ATOMIC, IRQSTACK_ORDER);
+-		if (!pda->irqstackptr)
+-			panic("cannot allocate irqstack for cpu %d", cpu); 
++		pda->irqstackptr = (char *)per_cpu(init_tss, cpu).irqstack;
+ 	}
+ 
+-
+ 	pda->irqstackptr += IRQSTACKSIZE-64;
+ } 
+ 
+-char boot_exception_stacks[(N_EXCEPTION_STACKS - 1) * EXCEPTION_STKSZ + DEBUG_STKSZ]
+-__attribute__((section(".bss.page_aligned")));
+-
+ extern asmlinkage void ignore_sysret(void);
+ 
+ /* May not be marked __init: used by software suspend */
+@@ -203,15 +196,13 @@ void __cpuinit cpu_init (void)
+ 	struct tss_struct *t = &per_cpu(init_tss, cpu);
+ 	struct orig_ist *orig_ist = &per_cpu(orig_ist, cpu);
+ 	unsigned long v; 
+-	char *estacks = NULL; 
+ 	struct task_struct *me;
+ 	int i;
+ 
+ 	/* CPU 0 is initialised in head64.c */
+ 	if (cpu != 0) {
+ 		pda_init(cpu);
+-	} else 
+-		estacks = boot_exception_stacks; 
++	}
+ 
+ 	me = current;
+ 
+@@ -245,22 +236,8 @@ void __cpuinit cpu_init (void)
+ 	/*
+ 	 * set up and load the per-CPU TSS
+ 	 */
+-	for (v = 0; v < N_EXCEPTION_STACKS; v++) {
+-		static const unsigned int order[N_EXCEPTION_STACKS] = {
+-			[0 ... N_EXCEPTION_STACKS - 1] = EXCEPTION_STACK_ORDER,
+-#if DEBUG_STACK > 0
+-			[DEBUG_STACK - 1] = DEBUG_STACK_ORDER
+-#endif
+-		};
+-		if (cpu) {
+-			estacks = (char *)__get_free_pages(GFP_ATOMIC, order[v]);
+-			if (!estacks)
+-				panic("Cannot allocate exception stack %ld %d\n",
+-				      v, cpu); 
+-		}
+-		estacks += PAGE_SIZE << order[v];
+-		orig_ist->ist[v] = t->ist[v] = (unsigned long)estacks;
+-	}
++	for (v = 0; v < N_EXCEPTION_STACKS; v++)
++		orig_ist->ist[v] = t->ist[v] = (unsigned long)t->estacks[v];
+ 
+ 	t->io_bitmap_base = offsetof(struct tss_struct, io_bitmap);
+ 	/*
+Index: linux-2.6.24.7.noarch/arch/x86/kernel/smpboot_64.c
+===================================================================
+--- linux-2.6.24.7.noarch.orig/arch/x86/kernel/smpboot_64.c
++++ linux-2.6.24.7.noarch/arch/x86/kernel/smpboot_64.c
+@@ -535,6 +535,60 @@ static void __cpuinit do_fork_idle(struc
+ 	complete(&c_idle->done);
+ }
+ 
++static char boot_exception_stacks[(N_EXCEPTION_STACKS - 1) * EXCEPTION_STKSZ + DEBUG_STKSZ]
++__attribute__((section(".bss.page_aligned")));
++
++static int __cpuinit allocate_stacks(int cpu)
++{
++	static const unsigned int order[N_EXCEPTION_STACKS] = {
++		[0 ... N_EXCEPTION_STACKS - 1] = EXCEPTION_STACK_ORDER,
++#if DEBUG_STACK > 0
++		[DEBUG_STACK - 1] = DEBUG_STACK_ORDER
++#endif
++	};
++	struct tss_struct *t = &per_cpu(init_tss, cpu);
++	int node = cpu_to_node(cpu);
++	struct page *page;
++	char *estack;
++	int v;
++
++	if (cpu && !t->irqstack) {
++		page = alloc_pages_node(node, GFP_KERNEL,
++				IRQSTACK_ORDER);
++		if (!page)
++			goto fail_oom;
++		t->irqstack = page_address(page);
++	}
++
++	if (!cpu)
++		estack = boot_exception_stacks;
++
++	for (v = 0; v < N_EXCEPTION_STACKS; v++) {
++		if (t->estacks[v])
++			continue;
++
++		if (cpu) {
++			page = alloc_pages_node(node, GFP_KERNEL, order[v]);
++			if (!page)
++				goto fail_oom;
++			estack = page_address(page);
++		}
++		estack += PAGE_SIZE << order[v];
++		/*
++		 * XXX: can we set t->isr[v] here directly, or will that be
++		 * modified later? - the existance of orig_ist seems to suggest
++		 * it _can_ be modified, which would imply we'd need to reset
++		 * it.
++		 */
++		t->estacks[v] = estack;
++	}
++
++	return 0;
++
++fail_oom:
++	return -ENOMEM;
++}
++
+ /*
+  * Boot one CPU.
+  */
+@@ -605,6 +659,9 @@ static int __cpuinit do_boot_cpu(int cpu
+ 		return PTR_ERR(c_idle.idle);
+ 	}
+ 
++	if (allocate_stacks(cpu))
++		return -ENOMEM;
++
+ 	set_idle_for_cpu(cpu, c_idle.idle);
+ 
+ do_rest:
+Index: linux-2.6.24.7.noarch/include/asm-x86/processor_64.h
+===================================================================
+--- linux-2.6.24.7.noarch.orig/include/asm-x86/processor_64.h
++++ linux-2.6.24.7.noarch/include/asm-x86/processor_64.h
+@@ -197,6 +197,10 @@ struct tss_struct {
+ 	 * 8 bytes, for an extra "long" of ~0UL
+ 	 */
+ 	unsigned long io_bitmap[IO_BITMAP_LONGS + 1];
++
++	void *irqstack;
++	void *estacks[N_EXCEPTION_STACKS];
++
+ } __attribute__((packed)) ____cacheline_aligned;
+ 
+ 
 
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+
