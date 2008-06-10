@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756892AbYFJUc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757335AbYFJUdr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756892AbYFJUc2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 16:32:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbYFJUcV
+	id S1757335AbYFJUdr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 16:33:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbYFJUdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 16:32:21 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:27365 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752871AbYFJUcU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 16:32:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=Uh2YlCDsDgLJQobm99e3u5KGKBxa5BxWnnQBhKHLzt/Vb/VL1iUt6/UjKnQq+xzJT5
-         7JgZTVuF+smFHpfllxgoC9g4WluyeFtDlg8LTUzkjEByRYaJb5WWCDAbpncOQ66wBaBo
-         7nMNrE2/ZQbXlT3ZRUivADFIqXPmAIErDhrlQ=
-Message-ID: <484EE490.4060509@gmail.com>
-Date: Tue, 10 Jun 2008 22:31:12 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: mm-commits@vger.kernel.org, akpm@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com, lee.schermerhorn@hp.com,
-       riel@redhat.com
-Subject: Re: + mm-only-vmscan-noreclaim-lru-scan-sysctl-fix.patch added to
- -mm tree
-References: <200806101837.m5AIbmiO023529@imap1.linux-foundation.org>
-In-Reply-To: <200806101837.m5AIbmiO023529@imap1.linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+	Tue, 10 Jun 2008 16:33:40 -0400
+Received: from pat.uio.no ([129.240.10.15]:43031 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752314AbYFJUdi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 16:33:38 -0400
+Subject: Re: [2.6.26-rc4] mount.nfsv4/memory poisoning issues...
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: Daniel J Blueman <daniel.blueman@gmail.com>, linux-nfs@vger.kernel.org,
+       nfsv4@linux-nfs.org, Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080610161352.4e588653@tleilax.poochiereds.net>
+References: <6278d2220806041633n3bfe3dd2ke9602697697228b@mail.gmail.com>
+	 <20080604203504.62730951@tleilax.poochiereds.net>
+	 <1213124088.20459.16.camel@localhost>
+	 <20080610151357.150b6f69@tleilax.poochiereds.net>
+	 <1213127909.20459.48.camel@localhost>
+	 <20080610161352.4e588653@tleilax.poochiereds.net>
+Content-Type: text/plain
+Date: Tue, 10 Jun 2008 16:33:32 -0400
+Message-Id: <1213130012.20459.58.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 7ACD1453E4A2A476A50DB7F2E8418891CCC454B2
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 425 total 8863020 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/10/2008 08:37 PM, akpm@linux-foundation.org wrote:
-> Subject: mm-only-vmscan-noreclaim-lru-scan-sysctl-fix
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> build fix
-> 
-> Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Cc: Lee Schermerhorn <lee.schermerhorn@hp.com>
-> Cc: Rik van Riel <riel@redhat.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  mm/vmscan.c |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff -puN mm/vmscan.c~mm-only-vmscan-noreclaim-lru-scan-sysctl-fix mm/vmscan.c
-> --- a/mm/vmscan.c~mm-only-vmscan-noreclaim-lru-scan-sysctl-fix
-> +++ a/mm/vmscan.c
-> @@ -2400,6 +2400,7 @@ static void show_page_path(struct page *
->  		       dentry_path(dentry, buf, 256), pgoff);
->  		spin_unlock(&mapping->i_mmap_lock);
->  	} else {
-> +#ifdef CONFG_MM_OWNER
+On Tue, 2008-06-10 at 16:13 -0400, Jeff Layton wrote:
 
-s/CONFG/CONFIG/
+> We can't call nfs_callback_down() until after nfs_callback_up()
+> returns, so we're guaranteed to have "task" set to a valid task
+> (presuming that nfs_callback_up() doesn't return error). We also can't
+> return from nfs_callback_down() until after the nfs_callback_svc() has
+> exited. kthread_stop() will block until it does.
 
->  		struct anon_vma *anon_vma;
->  		struct vm_area_struct *vma;
->  
+The code I'm alluding to is in kthread():
+
+       /* OK, tell user we're spawned, wait for stop or wakeup */
+        __set_current_state(TASK_UNINTERRUPTIBLE);
+        complete(&create->started);
+        schedule();
+
+        if (!kthread_should_stop())
+                ret = threadfn(data);
+
+schedule() is called _after_ the complete() call, and _before_ we
+execute threadfn() a.k.a. nfs_callback_svc(). If nfs_alloc_client() has
+time to call nfs_callback_down() before the above thread gets scheduled
+back in, then threadfn() doesn't get called at all, since
+kthread_should_stop() is true.
+
+Cheers
+  Trond
 
