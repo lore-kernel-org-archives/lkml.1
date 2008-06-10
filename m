@@ -1,55 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbYFJTCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758029AbYFJTDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755339AbYFJTCw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 15:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbYFJTCh
+	id S1758029AbYFJTDY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 15:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbYFJTDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 15:02:37 -0400
-Received: from outbound-mail-115.bluehost.com ([69.89.24.5]:55497 "HELO
-	outbound-mail-115.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756764AbYFJTCf convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 15:02:35 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: Re: [PATCH] Unhide the SMBus on the Compaq Deskpro EN
-Date: Tue, 10 Jun 2008 12:02:19 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       lm-sensors@lm-sensors.org, khali@linux-fr.org, rh1985@wp.pl
-References: <20080608134702.401b9fb5.krzysztof.h1@wp.pl>
-In-Reply-To: <20080608134702.401b9fb5.krzysztof.h1@wp.pl>
+	Tue, 10 Jun 2008 15:03:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42970 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754410AbYFJTDD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 15:03:03 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 3 of 7] block: Find bio sector offset given idx and offset
+References: <318fa71e735d25003f9c.1212814536@sermon.lab.mkp.net>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Tue, 10 Jun 2008 15:02:51 -0400
+In-Reply-To: <318fa71e735d25003f9c.1212814536@sermon.lab.mkp.net> (Martin
+	K. Petersen's message of "Sat, 07 Jun 2008 00:55:36 -0400")
+Message-ID: <x49ej759kpw.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200806101202.20257.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, June 08, 2008 4:47 am Krzysztof Helt wrote:
-> From: Krzysztof Helt <krzysztof.h1@wp.pl>
->
-> This patch unhides the SMBus on Compaq Deskpro EN
-> SFF P667 with the Intel 815E chipset. Unhiding it reveals
-> a THMC51 hardware monitoring chip.
->
-> Jean Delvare has checked that this machine has no ACPI
-> magic touching the SMBus nor the hardware monitoring chip,
-> so this should be safe.
->
-> The patch was tested on Fedora Core 9 with 2.6.25.4 kernel.
->
-> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-> Tested-by: Rafa³ Ha³aduda <rh1985@wp.pl>
-> CC: Jean Delvare <khali@linux-fr.org>
+"Martin K. Petersen" <martin.petersen@oracle.com> writes:
 
-Thanks Krzysztof; applied to linux-next.  I had to fix up a conflict by hand 
-though, would be good if you could double check it.
+> 2 files changed, 26 insertions(+)
+> fs/bio.c            |   24 ++++++++++++++++++++++++
+> include/linux/bio.h |    2 ++
+>
+>
+> Helper function to find the sector offset in a bio given bvec index
+> and page offset.
+>
+> Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
 
-Thanks,
-Jesse
+Reviewed-by: Jeff Moyer <jmoyer@redhat.com>
