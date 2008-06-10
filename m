@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760743AbYFJKP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760841AbYFJKQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760743AbYFJKP0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 06:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756376AbYFJKPM
+	id S1760841AbYFJKQR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 06:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756406AbYFJKQD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 06:15:12 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:56499 "EHLO smtps.tip.net.au"
+	Tue, 10 Jun 2008 06:16:03 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:38390 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753513AbYFJKPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 06:15:12 -0400
-Date: Tue, 10 Jun 2008 20:15:01 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jesper Nilsson <Jesper.Nilsson@axis.com>
-Cc: Adrian Bunk <bunk@kernel.org>,
-       "Hinko Ko??evar" <hinko.kocevar@cetrtapot.si>,
-       Mikael Starvik <mikael.starvik@axis.com>,
-       <linux-kernel@vger.kernel.org>, dev-etrax <dev-etrax@axis.com>
-Subject: Re: [PATCH 2.6.26-rc5 0/2] cris: compile fixes for 2.6.26-rc5
-Message-Id: <20080610201501.2c724456.sfr@canb.auug.org.au>
-In-Reply-To: <20080610094937.GC4081@axis.com>
-References: <4849213A.4080001@cetrtapot.si>
-	<20080606183222.GE2201@cs181133002.pp.htv.fi>
-	<20080610094937.GC4081@axis.com>
-X-Mailer: Sylpheed 2.5.0rc (GTK+ 2.12.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__10_Jun_2008_20_15_01_+1000_cO=4fa4+j.feCnTI"
+	id S1753974AbYFJKQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 06:16:01 -0400
+Date: Tue, 10 Jun 2008 13:15:04 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Mirco Tischler <mt-ml@gmx.de>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG: 2.6.26-rc3] ERROR: "____ilog2_NaN" undefined
+Message-ID: <20080610101504.GA17556@cs181133002.pp.htv.fi>
+References: <20080525181118.GG1791@cs181133002.pp.htv.fi> <1211742202.14556.25.camel@mtlp.tischlernetz> <20080525201807.GK1791@cs181133002.pp.htv.fi> <1211749036.16921.16.camel@mtlp.tischlernetz> <20080525210329.GN1791@cs181133002.pp.htv.fi> <1211752151.16921.25.camel@mtlp.tischlernetz> <1211836606.10718.18.camel@mtlp.tischlernetz> <20080527235619.GI11310@cs181133002.pp.htv.fi> <20080608144112.1d623ed4@mtlp.tischlernetz> <20080609221440.GA22227@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080609221440.GA22227@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__10_Jun_2008_20_15_01_+1000_cO=4fa4+j.feCnTI
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Jun 09, 2008 at 03:14:41PM -0700, Greg KH wrote:
+> On Sun, Jun 08, 2008 at 02:41:12PM +0200, Mirco Tischler wrote:
+> > Here's an update:
+> > I've contacted the gcc folks. Here is the bugzilla entry:
+> > http://gcc.gnu.org/bugzilla/show_bug.cgi?id=36359
+> > We were able to trace the error down to usb_submit_urb() in
+> > drivers/usb/core/urb.c which calls ilog2() and the gcc falsely assumes its
+> > argument (urb->interval) to be zero. But as I understood they say it's the
+> > kernel's fault because the code depends on correct optimization what seems a
+> > little weird for me as incorrect optimization is a gcc bug IMHO. But I am not
+> > an expert and maybe I've just understood something wrong because I'm not a
+> > native speaker.
+> 
+> I'm confused how the kernel code could be at fault here.
+> 
+> How could it be fixed to not be at fault?
 
-Hi Jasper,
+I'm quite sure this is (or was) a bug in gcc.
 
-On Tue, 10 Jun 2008 11:49:37 +0200 Jesper Nilsson <Jesper.Nilsson@axis.com>=
- wrote:
->
-> Have I understood correctly that a tree exported for -next can be rebased
-> without causing any problems? I've hesitated a bit to create a -next tree
-> to avoid problems with later merges.
+I'll update the gcc bug.
 
-Yes, rebases are OK (but not encouraged :-)).  The rules are that stuff in
-the tree for -next must have been posted somewhere appropriate, reviewed,
-and unit tested as much as possible and be reasonably expected to be in
-the next merge window.
+> thanks,
+> 
+> greg k-h
 
-I also merge trees containing fixes for Linus' current tree.
+cu
+Adrian
 
-Also, I accept git trees or quilt series.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+-- 
 
---Signature=_Tue__10_Jun_2008_20_15_01_+1000_cO=4fa4+j.feCnTI
-Content-Type: application/pgp-signature
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEUEARECAAYFAkhOVCUACgkQTgG2atn1QN/tqACY5Oj79/5BHbcerXM8cmgpZMP1
-rQCgjFTOBD8S3xXfpy1nkJA/6uWCvHA=
-=bWyq
------END PGP SIGNATURE-----
-
---Signature=_Tue__10_Jun_2008_20_15_01_+1000_cO=4fa4+j.feCnTI--
