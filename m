@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760211AbYFJXCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757783AbYFJXG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760211AbYFJXCU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 19:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758690AbYFJXCF
+	id S1757783AbYFJXG4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 19:06:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754554AbYFJXGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 19:02:05 -0400
-Received: from casper.infradead.org ([85.118.1.10]:33397 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754485AbYFJXCE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 19:02:04 -0400
-Date: Tue, 10 Jun 2008 16:02:02 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Tim Bird <tim.bird@am.sony.com>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] add diffconfig utility
-Message-ID: <20080610160202.3bb9d07f@infradead.org>
-In-Reply-To: <1213135624.2534.99.camel@shinybook.infradead.org>
-References: <484ED902.9040000@am.sony.com>
-	<1213135624.2534.99.camel@shinybook.infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 10 Jun 2008 19:06:46 -0400
+Received: from ns2.suse.de ([195.135.220.15]:37084 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753755AbYFJXGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 19:06:46 -0400
+Date: Tue, 10 Jun 2008 16:00:58 -0700
+From: Greg KH <gregkh@suse.de>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Benjamin Thery <benjamin.thery@bull.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Biederman <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
+       Tejun Heo <htejun@gmail.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH 00/11] sysfs tagged directories V5
+Message-ID: <20080610230058.GA25072@suse.de>
+References: <20080606154654.356185262@theryb.frec.bull.fr> <20080610225024.GB22478@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080610225024.GB22478@us.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008 23:07:04 +0100
-David Woodhouse <dwmw2@infradead.org> wrote:
-
-> On Tue, 2008-06-10 at 12:41 -0700, Tim Bird wrote:
-> > +# Added and removed items are shown with a leading plus or minus,
-> > +# respectively.  Changed items show the old and new values on a
-> > +# single line.
+On Tue, Jun 10, 2008 at 05:50:24PM -0500, Serge E. Hallyn wrote:
+> Quoting Benjamin Thery (benjamin.thery@bull.net):
+> > Greg,
+> > 
+> > Here is an updated version of the sysfs tagged directories that improves
+> > a bit the situation over the previous one. 
+> > 
+> > I've modified the patch 09 ("Enable tagging for net_class directories in 
+> > sysfs") to be a bit less intrusive in sysfs core. I removed the #ifdef'd
+> > parts you didn't like in fs/sysfs/mount.c, and replaced it by a generic 
+> > routine sysfs_ns_exit() that is called, if needed, by the namespace when
+> > it exits. This routine goes through every sysfs super blocks and calls 
+> > the callback passed by the namespace to clean its tag.
+> > 
+> > The patch is now splitted in two: 
+> > * 09/11: the generic routine,
+> > * 10/11: the remaining network parts.
+> > 
+> > The generic part can be merge with patch 05 ("sysfs: Implement sysfs 
+> > tagged directory support.") but I left it separate for now to ease 
+> > reviews.
 > 
-> It'd be really nice if it could give its output in the same form as
-> the .config file itself -- so it'd look something like:
+> Thanks.  Not nearly as radical as I'd feared.
 > 
-> # CONFIG_FOO is not set
-> CONFIG_BAR=y
-> 
-> That can be used with this kind of tool too...
-> 
+> Greg, does this address your concern?  It stops the need to put any
+> non-braindead code (i.e. the _exit notifier stuff) in fs/sysfs/mount.c for
+> any new namespaces needing sysfs tagging, leaving only simple
+> comparison/assignments.
 
-the person who wrote that tool also wrote a similar diff tool ;)
-but it's horrible perl I suspect.
+Sorry, I've been swamped with other things this week and haven't gotten
+a chance to look this over.  Hopefully by the end of the week...  It's
+in my queue though, don't worry it will not get lost.
 
+thanks,
 
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+greg k-h
