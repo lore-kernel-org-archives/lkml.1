@@ -1,92 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757367AbYFJOIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757856AbYFJOJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757367AbYFJOIq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 10:08:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754070AbYFJOIi
+	id S1757856AbYFJOJU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 10:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754428AbYFJOJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 10:08:38 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:26658 "EHLO
-	WA4EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754090AbYFJOIh (ORCPT
+	Tue, 10 Jun 2008 10:09:07 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:54559 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754070AbYFJOJG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 10:08:37 -0400
-X-BigFish: VPS2(zzzz10d3izzz32i6bh62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0K293A0-01-IWE-01
-Date: Tue, 10 Jun 2008 16:07:55 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-CC: linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>
-Subject: [PATCH 5/5] x86: PAT: make pat_x_mtrr_type() more readable
-Message-ID: <20080610140755.GI5024@alberich.amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 10 Jun 2008 14:07:48.0961 (UTC) FILETIME=[5D3BF510:01C8CB03]
+	Tue, 10 Jun 2008 10:09:06 -0400
+To: jdike@addtoit.com
+CC: miklos@szeredi.hu, peter.oberparleiter@de.ibm.com,
+       akpm@linuxfoundation.org, linux-kernel@vger.kernel.org,
+       oberparleiter@googlemail.com
+In-reply-to: <20080610135729.GA6087@c2.user-mode-linux.org> (message from Jeff
+	Dike on Tue, 10 Jun 2008 09:57:29 -0400)
+Subject: Re: 2.6.26-rc5-mm1: uml link error
+References: <E1K5oBn-0006v4-KJ@pomaz-ex.szeredi.hu> <484E5CBB.2040203@de.ibm.com> <E1K61st-0008JT-9e@pomaz-ex.szeredi.hu> <20080610135729.GA6087@c2.user-mode-linux.org>
+Message-Id: <E1K64Wj-0000Bj-Fu@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 10 Jun 2008 16:08:45 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've found it inconvenient to review pat_x_mtrr_type().
-Thus I slightly changed it and added some comment to make it more
-readable.
-I've also added BUG statements for (some) unused/unhandled PAT/MTRR types.
+> > Hmm, uml still doesn't boot with this patch, it dies while calling the
+> > constructors.  So maybe that SORT contruct is still needed?
+> > 
+> > #17 0x08049793 in do_ctors () at init/main.c:706
+> > #18 0x080499cc in do_basic_setup () at init/main.c:789
+> > #19 0x08049a43 in kernel_init (unused=0x0) at init/main.c:897
+> 
+> This doesn't look like it's in do_initcalls.  What happens with
+> "initcall_debug"?
 
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
- arch/x86/mm/pat.c |   30 +++++++++++++++++++++---------
- 1 files changed, 21 insertions(+), 9 deletions(-)
+Same output:
 
-diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-index 2f6c33d..fc0a397 100644
---- a/arch/x86/mm/pat.c
-+++ b/arch/x86/mm/pat.c
-@@ -185,18 +185,30 @@ static int pat_x_mtrr_type(u64 start, u64 end, unsigned long prot,
- 	prot &= (~_PAGE_CACHE_MASK);
- 
- 	/* Currently doing intersection by hand. Optimize it later. */
--	if (pat_type == _PAGE_CACHE_WC) {
-+	/*    effective type		        ret_prot
-+	  pat \ mtrr  WB WC UC		pat \ mtrr  WB  WC  UC
-+	  WC          WC WC WC		WC          WC  WC  WC
-+	  UC-         UC WC UC		UC-         UC- UC- UC-
-+	  UC          UC UC UC		UC          UC  UC  UC
-+	  WB          WB WC UC		WB          WB  WC  UC
-+	 */
-+	if (pat_type == _PAGE_CACHE_WC)
- 		*ret_prot = prot | _PAGE_CACHE_WC;
--	} else if (pat_type == _PAGE_CACHE_UC_MINUS) {
-+	else if (pat_type == _PAGE_CACHE_UC_MINUS)
- 		*ret_prot = prot | _PAGE_CACHE_UC_MINUS;
--	} else if (pat_type == _PAGE_CACHE_UC ||
--		   mtrr_type == MTRR_TYPE_UNCACHABLE) {
-+	else if (pat_type == _PAGE_CACHE_UC)
- 		*ret_prot = prot | _PAGE_CACHE_UC;
--	} else if (mtrr_type == MTRR_TYPE_WRCOMB) {
--		*ret_prot = prot | _PAGE_CACHE_WC;
--	} else {
--		*ret_prot = prot | _PAGE_CACHE_WB;
--	}
-+	else if (pat_type == _PAGE_CACHE_WB) {
-+		if (mtrr_type == MTRR_TYPE_WRBACK)
-+			*ret_prot = prot | _PAGE_CACHE_WB;
-+		else if (mtrr_type == MTRR_TYPE_WRCOMB)
-+			*ret_prot = prot | _PAGE_CACHE_WC;
-+		else if (mtrr_type == MTRR_TYPE_UNCACHABLE)
-+			*ret_prot = prot | _PAGE_CACHE_UC;
-+		else
-+			BUG();
-+	} else
-+		  BUG();
- 
- 	return 0;
- }
--- 
-1.5.5.3
-
-
-
+mszeredi@tucsk:/store/uml> /store/quilt/linux/linux initcall_debug umid=uml
+Locating the bottom of the address space ... 0x0
+Locating the top of the address space ... 0xffffd000
+Core dump limits :
+        soft - NONE
+        hard - NONE
+Checking that ptrace can change system call numbers...OK
+Checking syscall emulation patch for ptrace...missing
+Checking for tmpfs mount on /dev/shm...nothing mounted on /dev/shm
+Checking PROT_EXEC mmap in /tmp/...OK
+Checking for the skas3 patch in the host:
+  - /proc/mm...not found: No such file or directory
+  - PTRACE_FAULTINFO...not found
+  - PTRACE_LDT...not found
+UML running in SKAS0 mode
+Adding 19943424 bytes to physical memory to account for exec-shield gap
+Aborted (core dumped)
