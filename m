@@ -1,61 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757880AbYFJTGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbYFJTGm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757880AbYFJTGP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 15:06:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbYFJTF6
+	id S1758107AbYFJTGm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 15:06:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754971AbYFJTGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 15:05:58 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:44562 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753580AbYFJTF5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 15:05:57 -0400
-X-IronPort-AV: E=Sophos;i="4.27,618,1204531200"; 
-   d="scan'208";a="55467301"
-From: Roland Dreier <rdreier@cisco.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>, Trent Piepho <tpiepho@freescale.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: MMIO and gcc re-ordering issue
-References: <1211852026.3286.36.camel@pasglop>
-	<alpine.LFD.1.10.0806031153360.3473@woody.linux-foundation.org>
-	<200806101656.51211.nickpiggin@yahoo.com.au>
-	<200806101041.28829.jbarnes@virtuousgeek.org>
-	<1213121426.8536.7.camel@localhost.localdomain>
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 10 Jun 2008 12:05:55 -0700
-In-Reply-To: <1213121426.8536.7.camel@localhost.localdomain> (James
-	Bottomley's message of "Tue, 10 Jun 2008 13:10:26 -0500")
-Message-ID: <adaskvl3yb0.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Tue, 10 Jun 2008 15:06:30 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:54027 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753603AbYFJTG3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 15:06:29 -0400
+Date: Tue, 10 Jun 2008 22:05:30 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Tim Bird <tim.bird@am.sony.com>, Rob Landley <rob@landley.net>,
+       linux-tiny <Linux-tiny@selenic.com>,
+       linux-embedded <linux-embedded@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: mainlining min-configs...
+Message-ID: <20080610190530.GH11685@cs181133002.pp.htv.fi>
+References: <48447615.5050806@am.sony.com> <20080604194002.GF4189@cs181133002.pp.htv.fi> <4849CCA3.7040102@am.sony.com> <200806062329.54019.rob@landley.net> <484DDAD9.2000306@am.sony.com> <20080610083610.GC1987@cs181133002.pp.htv.fi> <484EC576.5080302@am.sony.com> <20080610183004.GG11685@cs181133002.pp.htv.fi> <20080610185123.GA15838@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 10 Jun 2008 19:05:55.0433 (UTC) FILETIME=[0266FD90:01C8CB2D]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080610185123.GA15838@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > me too.  That's the whole basis for readX_relaxed() and its cohorts: we
- > make our weirdest machines (like altix) conform to the x86 norm.  Then
- > where it really kills us we introduce additional semantics to selected
- > drivers that enable us to recover I/O speed on the abnormal platforms.
+On Tue, Jun 10, 2008 at 08:51:23PM +0200, Sam Ravnborg wrote:
+> On Tue, Jun 10, 2008 at 09:30:04PM +0300, Adrian Bunk wrote:
+> > On Tue, Jun 10, 2008 at 11:18:30AM -0700, Tim Bird wrote:
+> > > Adrian Bunk wrote:
+> > >...
+> > > > You need both, and ideally constantly done by the same person against 
+> > > > Linus' tree, -next and -mm.
+> > > > 
+> > > > Where to get your minimal configs from at the start is just a small 
+> > > > thing at the beginning - don't underestimate the required manual work 
+> > > > that will have to be done each week.
+> > > 
+> > > This is probably why I haven't signed up for this myself previously.
+> > > I'd be interested in finding out the rate at which defconfigs
+> > > bitrot in mainline.  My experience is that usually a 'make oldconfig'
+> > > will produce something usable.  But maybe that wouldn't be as
+> > > effective with a minconfig?
+> > >...
+> > 
+> > Someone has to run the 'make oldconfig' for all configs...
+> > 
+> > And no, you cannot get that completely automated.
+> 
+> When I get my kconfig patchset polished you will be able to do:
+> 
+> make K=my_mini_config allnoconfig
 
-Except as I pointed out before, Altix doesn't conform to the norm and
-many (most?) drivers are missing mmiowb()s that are needed for Altix.
-Just no one has plugged most devices into an Altix (or haven't stressed
-the driver in a way that exposes problems of IO ordering between CPUs).
+  make KCONFIG_ALLCONFIG=my_mini_config allnoconfig
 
-It would be a great thing to use the powerpc trick of setting a flag
-that is tested by spin_unlock()/mutex_unlock() and automatically doing
-the mmiowb() if needed, and then killing off mmiowb() entirely.
+already does the same.
 
- - R.
+> Thus selecting 'no' for all new symbols in an automated fashion.
+> I know that in a few cases 'no' is the wrong answer but in the
+> 99% of the cases 'no' is perfectly valid.
+
+The 1% contain cases like e.g. a kconfig variable you need getting
+a new dependency.
+
+> 	Sam
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
