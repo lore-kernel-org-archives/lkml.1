@@ -1,60 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759262AbYFJUys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758904AbYFJUzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759262AbYFJUys (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 16:54:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758446AbYFJUvp
+	id S1758904AbYFJUzK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 16:55:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758327AbYFJUwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 16:51:45 -0400
-Received: from mu-out-0910.google.com ([209.85.134.184]:24509 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757632AbYFJUvo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 16:51:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=c9DB0FdveaMo8J1Af9fd11wl9Mcw+TetEoOE1yrjvW0stwCPAl5BZHor/HD9vfzcZk
-         K7wd8mRlTdIm1sN8sxFb8ykpZqBRzSmvhqPnm9fSsMeI1T1w5Fl7hiyKppv+FAl91V7v
-         JE+vLEg2tSoi+DEsim4UaHm2evNZChw1YssvI=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org
-Date: Tue, 10 Jun 2008 22:53:15 +0200
-Message-Id: <20080610205315.18469.27468.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080610205059.18469.44856.sendpatchset@localhost.localdomain>
-References: <20080610205059.18469.44856.sendpatchset@localhost.localdomain>
-Subject: [PATCH 14/14] ide: remove needless includes from setup-pci.c
+	Tue, 10 Jun 2008 16:52:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56717 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758662AbYFJUwa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 16:52:30 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 4 of 7] block: bio data integrity support
+References: <f2ae9d5bce4c33e12083.1212814537@sermon.lab.mkp.net>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Tue, 10 Jun 2008 16:52:20 -0400
+In-Reply-To: <f2ae9d5bce4c33e12083.1212814537@sermon.lab.mkp.net> (Martin
+	K. Petersen's message of "Sat, 07 Jun 2008 00:55:37 -0400")
+Message-ID: <x491w359fne.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/setup-pci.c |    5 -----
- 1 file changed, 5 deletions(-)
+"Martin K. Petersen" <martin.petersen@oracle.com> writes:
 
-Index: b/drivers/ide/setup-pci.c
-===================================================================
---- a/drivers/ide/setup-pci.c
-+++ b/drivers/ide/setup-pci.c
-@@ -6,19 +6,14 @@
-  *  May be copied or modified under the terms of the GNU General Public License
-  */
- 
--#include <linux/module.h>
- #include <linux/types.h>
- #include <linux/kernel.h>
- #include <linux/pci.h>
- #include <linux/init.h>
--#include <linux/timer.h>
--#include <linux/mm.h>
- #include <linux/interrupt.h>
- #include <linux/ide.h>
--#include <linux/dma-mapping.h>
- 
- #include <asm/io.h>
--#include <asm/irq.h>
- 
- /**
-  *	ide_setup_pci_baseregs	-	place a PCI IDE controller native
+Comments inlined below.
+
+> +struct bip *bio_integrity_alloc_bioset(struct bio *bio, gfp_t gfp_mask, unsigned int nr_vecs, struct bio_set *bs)
+> +{
+> +	struct bip *bip;
+> +	struct bio_vec *bv;
+> +	unsigned long idx;
+> +
+> +	BUG_ON(bio == NULL);
+> +
+> +	bip = mempool_alloc(bs->bio_integrity_pool, gfp_mask);
+> +	if (unlikely(bip == NULL)) {
+> +		printk(KERN_ERR "%s: could not alloc bip\n", __func__);
+> +		return NULL;
+> +	}
+> +
+> +	memset(bip, 0, sizeof(*bip));
+> +	idx = 0;
+
+That assignment isn't necessary.
+
+> +int bio_integrity_set_tag(struct bio *bio, void *tag_buf, unsigned int len)
+> +{
+> +	struct bip *bip = bio->bi_integrity;
+> +	struct blk_integrity *bi = bdev_get_integrity(bio->bi_bdev);
+> +	unsigned int nr_sectors;
+> +
+> +	BUG_ON(bip->bip_buf == NULL);
+> +	BUG_ON(bio_data_dir(bio) != WRITE);
+> +
+> +	if (bi->tag_size == 0)
+> +		return -1;
+> +
+> +	nr_sectors = len / bi->tag_size;
+> +
+> +	if (len % 2)
+> +		nr_sectors++;
+
+I see you've changed this to:
+
+        nr_sectors = (len + bi->tag_size - 1) / bi->tag_size;
+
+why not simply use DIV_ROUND_UP?
+
+> +
+> +	if (bi->sector_size == 4096)
+> +		nr_sectors >>= 3;
+> +
+> +	if (nr_sectors * bi->tuple_size > bip->bip_size) {
+> +		printk(KERN_ERR "%s: tag too big for bio: %u > %u\n",
+> +		       __func__, nr_sectors * bi->tuple_size, bip->bip_size);
+> +		return -1;
+> +	}
+> +
+> +	bi->set_tag_fn(bip->bip_buf, tag_buf, nr_sectors);
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL(bio_integrity_set_tag);
+> +
+> +/**
+> + * bio_integrity_get_tag - Retrieve a tag buffer from a bio
+> + * @bio:	bio to retrieve buffer from
+> + * @tag_buf:	Pointer to a buffer for the tag data
+> + * @len:	Length of the target buffer
+> + *
+> + * Description: Use this function to retrieve the tag buffer from a
+> + * completed I/O. The size of the integrity buffer must be <= to the
+> + * size reported by bio_integrity_tag_size().
+> + */
+> +int bio_integrity_get_tag(struct bio *bio, void *tag_buf, unsigned int len)
+> +{
+> +	struct bip *bip = bio->bi_integrity;
+> +	struct blk_integrity *bi = bdev_get_integrity(bio->bi_bdev);
+> +	unsigned int nr_sectors;
+> +
+> +	BUG_ON(bip->bip_buf == NULL);
+> +	BUG_ON(bio_data_dir(bio) != READ);
+> +
+> +	if (bi->tag_size == 0)
+> +		return -1;
+> +
+> +	nr_sectors = len / bi->tag_size;
+> +
+> +	if (len % 2)
+> +		nr_sectors++;
+> +
+> +	if (bi->sector_size == 4096)
+> +		nr_sectors >>= 3;
+> +
+> +	if (nr_sectors * bi->tuple_size > bip->bip_size) {
+> +		printk(KERN_ERR "%s: tag too big for bio: %u > %u\n",
+> +		       __func__, nr_sectors * bi->tuple_size, bip->bip_size);
+> +		return -1;
+> +	}
+> +
+> +	bi->get_tag_fn(bip->bip_buf, tag_buf, nr_sectors);
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL(bio_integrity_get_tag);
+
+set_tag and get_tag are almost identical.  Any chance you want to factor
+out that code?
+
+> +/**
+> + * bio_integrity_generate - Generate integrity metadata for a bio
+> + * @bio:	bio to generate integrity metadata for
+> + *
+> + * Description: Generates integrity metadata for a bio by calling the
+> + * block device's generation callback function.	 The bio must have a
+> + * bip attached with enough room to accomodate the generated integrity
+                                       ^^^^^^^^^^
+accommodate
+
+> + * metadata.
+> + */
+> +static void bio_integrity_generate(struct bio *bio)
+> +{
+> +	struct blk_integrity *bi = bdev_get_integrity(bio->bi_bdev);
+
+Hmm, up until this point you use bi to mean bio_integrity, but now
+it means blk_integrity.  Confusion will ensue.  ;)
+
+> +	struct blk_integrity_exchg bix;
+
+struct blk_integrity_exchg is not yet defined in your patch set, so this
+will likely break git bisect.
+
+> +int bio_integrity_prep(struct bio *bio)
+> +{
+...
+> +	buf = kzalloc(len, GFP_NOIO | q->bounce_gfp);
+
+Does this actually need to be zeroed?
+
+> +void bio_integrity_advance(struct bio *bio, unsigned int bytes_done)
+...
+> +	bip_for_each_vec(iv, bip, i) {
+> +		if (skip == 0) {
+> +			bip->bip_idx = i;
+> +			return;
+> +		} else if (skip >= iv->bv_len) {
+> +			skip -= iv->bv_len;
+> +		} else { /* skip < iv->bv_len) */
+> +			iv->bv_offset += skip;
+> +			iv->bv_len -= skip;
+> +			bip->bip_idx = i;
+> +			return;
+> +		}
+> +	}
+> +}
+
+> +void bio_integrity_trim(struct bio *bio, unsigned int offset, unsigned int sectors)
+> +{
+...
+> +	/* Mark head */
+> +	bip_for_each_vec(iv, bip, i) {
+> +		if (skip == 0) {
+> +			bip->bip_idx = i;
+> +			break;
+> +		} else if (skip >= iv->bv_len) {
+> +			skip -= iv->bv_len;
+> +		} else { /* skip < iv->bv_len) */
+> +			iv->bv_offset += skip;
+> +			iv->bv_len -= skip;
+> +			bip->bip_idx = i;
+> +			break;
+> +		}
+> +	}
+
+The above two loops look pretty much the same to me.  Can you factor
+that out to a helper?
+
+Cheers,
+
+Jeff
