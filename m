@@ -1,44 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403AbYFJN7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755678AbYFJOEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755403AbYFJN7s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 09:59:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753887AbYFJN7l
+	id S1755678AbYFJOEY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 10:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbYFJOER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 09:59:41 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:34091 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753792AbYFJN7k (ORCPT
+	Tue, 10 Jun 2008 10:04:17 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:59175 "EHLO
+	VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750904AbYFJOEQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 09:59:40 -0400
-Date: Tue, 10 Jun 2008 09:57:29 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: peter.oberparleiter@de.ibm.com, akpm@linuxfoundation.org,
-       linux-kernel@vger.kernel.org, oberparleiter@googlemail.com
-Subject: Re: 2.6.26-rc5-mm1: uml link error
-Message-ID: <20080610135729.GA6087@c2.user-mode-linux.org>
-References: <E1K5oBn-0006v4-KJ@pomaz-ex.szeredi.hu> <484E5CBB.2040203@de.ibm.com> <E1K61st-0008JT-9e@pomaz-ex.szeredi.hu>
+	Tue, 10 Jun 2008 10:04:16 -0400
+X-BigFish: VPS2(zzzz10d3izzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0K2932R-01-IMA-01
+Date: Tue, 10 Jun 2008 16:04:11 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+CC: linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>
+Subject: [PATCH 0/5] x86: minor PAT adaptations
+Message-ID: <20080610140411.GD5024@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <E1K61st-0008JT-9e@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 10 Jun 2008 14:04:06.0000 (UTC) FILETIME=[D856CF00:01C8CB02]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 01:19:27PM +0200, Miklos Szeredi wrote:
-> Hmm, uml still doesn't boot with this patch, it dies while calling the
-> constructors.  So maybe that SORT contruct is still needed?
-> 
-> #17 0x08049793 in do_ctors () at init/main.c:706
-> #18 0x080499cc in do_basic_setup () at init/main.c:789
-> #19 0x08049a43 in kernel_init (unused=0x0) at init/main.c:897
+Following some patches to slightly adapt the PAT code.
 
-This doesn't look like it's in do_initcalls.  What happens with
-"initcall_debug"?
+patch 1 - enable PAT for all AMD CPUs that have the PAT feature flag set
+patch 2 - fix up paranoia check in pat_init and fix the logic to
+          enable/disable PAT (IMHO the current code enables PAT on all
+          Transmeta and Centaur CPUs even if no PAT feature flag is set) 
+          (I admit I should have changed the sequence of patches 1 and 2.)
+patch 3 - fix some checkpatch errors
+patch 4 - variable renaming
+patch 5 - slightly changing the code that is doing the intersection of
+          pat_type and mtrr_type to be more readable (from my point of view)
 
-				Jeff
+Patches are against x86/pat (as of version v2.6.26-rc3-6-g46dd98a).
 
--- 
-Work email - jdike at linux dot intel dot com
+Please apply (at least patches 1 and 2).
+Patches 3-5 are more a cleanup kind of thing.
+
+
+Thanks.
+
+Andreas
+
+
