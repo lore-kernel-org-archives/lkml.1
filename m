@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758142AbYFJXxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758309AbYFJX5I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758142AbYFJXxb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 19:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754199AbYFJXxX
+	id S1758309AbYFJX5I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 19:57:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbYFJX44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 19:53:23 -0400
-Received: from mail-dub.bigfish.com ([213.199.154.10]:64063 "EHLO
-	mail113-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754136AbYFJXxW (ORCPT
+	Tue, 10 Jun 2008 19:56:56 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:15185 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753624AbYFJX4z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 19:53:22 -0400
-X-Greylist: delayed 1190 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Jun 2008 19:53:21 EDT
-X-BigFish: VPS-36(zz1432R98dR7efV1805M69jzz10d3izzz2fh6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
-Message-ID: <484F0122.6080700@am.sony.com>
-Date: Tue, 10 Jun 2008 15:33:06 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 10 Jun 2008 19:56:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=QulpJUotSQ2VJPDeVh+m2tYPhG2hMlSypGubz1HLKJeUkOjQqGLRi39TWcVraE/Ut2
+         9ke9F2p8aQNWkLnPjKtpxL8TJrFBnoYPJ/STp2c4G5QQNYyY7woiapIMOoLCSyBtnm9B
+         S3aTr829x2jFRNOLWA4yJvIGRkimTj3APxai0=
+Message-ID: <484F14B5.4090204@gmail.com>
+Date: Tue, 10 Jun 2008 20:56:37 -0300
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] add diffconfig utility
-References: <484ED902.9040000@am.sony.com> <1213135624.2534.99.camel@shinybook.infradead.org>
-In-Reply-To: <1213135624.2534.99.camel@shinybook.infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Jun 2008 22:34:55.0474 (UTC) FILETIME=[34D96520:01C8CB4A]
+To: Larry Finger <Larry.Finger@lwfinger.net>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Warning when compiling arch/x86/mm/init_64.c on x86_64
+References: <484EED06.8060301@lwfinger.net>
+In-Reply-To: <484EED06.8060301@lwfinger.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> On Tue, 2008-06-10 at 12:41 -0700, Tim Bird wrote:
->> +# Added and removed items are shown with a leading plus or minus,
->> +# respectively.  Changed items show the old and new values on a
->> +# single line.
+Larry Finger wrote:
+> Since commit 511631011d39706ac81ee5e4c9084d61e5b4fd34, entitled
+> "x86: fix pointer type warning in arch/x86/mm/init_64.c:early_memtest", the 
+> following warning is produced for x86_64:
 > 
-> It'd be really nice if it could give its output in the same form as
-> the .config file itself -- so it'd look something like:
+> arch/x86/mm/init_64.c: In function ‘early_memtest’:
+> arch/x86/mm/init_64.c:520: warning: passing argument 2 of 
+> ‘find_e820_area_size’ from incompatible pointer type
 > 
-> # CONFIG_FOO is not set
-> CONFIG_BAR=y
+> Before this commit, the compilation of this routine on my system was clean. I 
+> use gcc version 4.2.1. Was this the warning for i386 before the patch? I 
+> tried simple changes in the definition of find_e820_area_size, but only 
+> managed to push the warning on to the call to bad_addr_size. At that point I 
+> decided to let the experts find a proper fix. Note that the warning does no 
+> harm - I just get nervous about incompatible pointer warnings as it usually 
+> means that I have screwed something up.
+> 
 
-Would an option for that style of output be OK?
+The patch was against linux-next, which seems to have changed 
+find_e820_area_size() - against mainline it introduced the warning 
+instead of fixing it.
 
-The tool currently produces something similar
-to a diff (but with changed lines compressed to
-a single line for conciseness).  It should be easy
-to produce something that can be used with another
-tool to transform one config into another.
-
-It's unclear what to do with variables that are
-supposed to be removed from the config (as opposed
-to be set to "CONFIG_FOO is not set"  Does merge.pl
-handle this, or is this left to something like
-'make oldconfig'?
- -- Tim
-
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
+-- 
+Kevin Winchester
 
