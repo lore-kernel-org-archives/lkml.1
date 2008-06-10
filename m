@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755957AbYFJNMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757468AbYFJNMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755957AbYFJNMS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 09:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbYFJNMG
+	id S1757468AbYFJNMd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 09:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbYFJNMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 09:12:06 -0400
-Received: from casper.infradead.org ([85.118.1.10]:51068 "EHLO
+	Tue, 10 Jun 2008 09:12:09 -0400
+Received: from casper.infradead.org ([85.118.1.10]:51074 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753630AbYFJNME (ORCPT
+	with ESMTP id S1753878AbYFJNMI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 09:12:04 -0400
-X-Greylist: delayed 2326 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Jun 2008 09:12:03 EDT
-Message-Id: <20080610111832.669094278@chello.nl>
+	Tue, 10 Jun 2008 09:12:08 -0400
+Message-Id: <20080610111832.969119014@chello.nl>
 References: <20080610111259.766940257@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Tue, 10 Jun 2008 13:13:00 +0200
+Date: Tue, 10 Jun 2008 13:13:04 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
@@ -26,373 +25,140 @@ Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH -rt 1/5] cpu-hotplug: vs slab
-Content-Disposition: inline; filename=hotplug-slab.patch
+Subject: [PATCH -rt 5/5] cpu-hotplug: cpu_down vs preempt-rt
+Content-Disposition: inline; filename=hotplug-idle_task_exit.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix up the slab allocator to be cpu-hotplug safe (again, pure -rt regression).
+idle_task_exit() calls mmdrop() from the idle thread, but in PREEMPT_RT all the
+allocator locks are sleeping locks - for obvious reasons scheduling away the
+idle thread gives some curious problems.
 
-On -rt we protect per-cpu state by locks instead of disabling preemption/irqs.
-This keeps all the code preemptible at the cost of possible remote memory
-access.
+Solve this by pushing the mmdrop() into an RCU callback, however we can't use
+RCU because the CPU is already down and all the local RCU state has been
+destroyed.
 
-The race was that cpu-hotplug - which assumes to be cpu local and non-
-preemptible, didn't take the per-cpu lock.
-
-This also means that the normal lock acquire needs to be aware of cpus getting
-off-lined while its waiting.
-
-Clean up some of the macro mess while we're there.
+Therefore create a new call_rcu() variant that enqueues the callback on an
+online cpu.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- mm/slab.c |  170 ++++++++++++++++++++++++++++++++++++++++++++------------------
- 1 file changed, 122 insertions(+), 48 deletions(-)
+ include/linux/mm_types.h   |    5 +++++
+ include/linux/rcupreempt.h |    2 ++
+ kernel/rcupreempt.c        |   29 +++++++++++++++++++++++++++++
+ kernel/sched.c             |   13 +++++++++++++
+ 4 files changed, 49 insertions(+)
 
-Index: linux-2.6.24.7.noarch/mm/slab.c
+Index: linux-2.6.24.7.noarch/include/linux/mm_types.h
 ===================================================================
---- linux-2.6.24.7.noarch.orig/mm/slab.c
-+++ linux-2.6.24.7.noarch/mm/slab.c
-@@ -125,43 +125,116 @@
-  * the CPU number of the lock there.
-  */
- #ifndef CONFIG_PREEMPT_RT
+--- linux-2.6.24.7.noarch.orig/include/linux/mm_types.h
++++ linux-2.6.24.7.noarch/include/linux/mm_types.h
+@@ -10,6 +10,7 @@
+ #include <linux/rbtree.h>
+ #include <linux/rwsem.h>
+ #include <linux/completion.h>
++#include <linux/rcupdate.h>
+ #include <asm/page.h>
+ #include <asm/mmu.h>
+ 
+@@ -222,6 +223,10 @@ struct mm_struct {
+ 	/* aio bits */
+ 	rwlock_t		ioctx_list_lock;
+ 	struct kioctx		*ioctx_list;
 +
- # define slab_irq_disable(cpu) \
- 	do { local_irq_disable(); (cpu) = smp_processor_id(); } while (0)
- # define slab_irq_enable(cpu)		local_irq_enable()
-+
-+static inline void slab_irq_disable_this_rt(int cpu)
++#ifdef CONFIG_PREEMPT_RT
++	struct rcu_head rcu_head;
++#endif
+ };
+ 
+ #endif /* _LINUX_MM_TYPES_H */
+Index: linux-2.6.24.7.noarch/include/linux/rcupreempt.h
+===================================================================
+--- linux-2.6.24.7.noarch.orig/include/linux/rcupreempt.h
++++ linux-2.6.24.7.noarch/include/linux/rcupreempt.h
+@@ -83,6 +83,8 @@ extern void FASTCALL(call_rcu_classic(st
+ 		     void (*func)(struct rcu_head *head)));
+ extern void FASTCALL(call_rcu_preempt(struct rcu_head *head,
+ 		     void (*func)(struct rcu_head *head)));
++extern void FASTCALL(call_rcu_preempt_online(struct rcu_head *head,
++		     void (*func)(struct rcu_head *head)));
+ extern void __rcu_read_lock(void);
+ extern void __rcu_read_unlock(void);
+ extern void __synchronize_sched(void);
+Index: linux-2.6.24.7.noarch/kernel/rcupreempt.c
+===================================================================
+--- linux-2.6.24.7.noarch.orig/kernel/rcupreempt.c
++++ linux-2.6.24.7.noarch/kernel/rcupreempt.c
+@@ -916,6 +916,35 @@ void fastcall call_rcu_preempt(struct rc
+ }
+ EXPORT_SYMBOL_GPL(call_rcu_preempt);
+ 
++void fastcall call_rcu_preempt_online(struct rcu_head *head,
++		void (*func)(struct rcu_head *rcu))
 +{
-+}
++	struct rcu_data *rdp;
++	unsigned long flags;
++	int cpu;
 +
-+static inline void slab_irq_enable_rt(int cpu)
-+{
-+}
-+
- # define slab_irq_save(flags, cpu) \
- 	do { local_irq_save(flags); (cpu) = smp_processor_id(); } while (0)
- # define slab_irq_restore(flags, cpu)	local_irq_restore(flags)
-+
- /*
-  * In the __GFP_WAIT case we enable/disable interrupts on !PREEMPT_RT,
-  * which has no per-CPU locking effect since we are holding the cache
-  * lock in that case already.
-- *
-- * (On PREEMPT_RT, these are NOPs, but we have to drop/get the irq locks.)
-  */
--# define slab_irq_disable_nort(cpu)	slab_irq_disable(cpu)
--# define slab_irq_enable_nort(cpu)	slab_irq_enable(cpu)
--# define slab_irq_disable_rt(flags)	do { (void)(flags); } while (0)
--# define slab_irq_enable_rt(flags)	do { (void)(flags); } while (0)
-+static void slab_irq_enable_GFP_WAIT(gfp_t flags, int *cpu)
-+{
-+	if (flags & __GFP_WAIT)
-+		local_irq_enable();
-+}
-+
-+static void slab_irq_disable_GFP_WAIT(gfp_t flags, int *cpu)
-+{
-+	if (flags & __GFP_WAIT)
-+		local_irq_disable();
-+}
-+
- # define slab_spin_lock_irq(lock, cpu) \
- 	do { spin_lock_irq(lock); (cpu) = smp_processor_id(); } while (0)
--# define slab_spin_unlock_irq(lock, cpu) \
--					spin_unlock_irq(lock)
-+# define slab_spin_unlock_irq(lock, cpu) spin_unlock_irq(lock)
-+
- # define slab_spin_lock_irqsave(lock, flags, cpu) \
- 	do { spin_lock_irqsave(lock, flags); (cpu) = smp_processor_id(); } while (0)
- # define slab_spin_unlock_irqrestore(lock, flags, cpu) \
- 	do { spin_unlock_irqrestore(lock, flags); } while (0)
--#else
-+
-+#else /* CONFIG_PREEMPT_RT */
-+
-+/*
-+ * Instead of serializing the per-cpu state by disabling interrupts we do so
-+ * by a lock. This keeps the code preemptable - albeit at the cost of remote
-+ * memory access when the task does get migrated away.
-+ */
- DEFINE_PER_CPU_LOCKED(int, slab_irq_locks) = { 0, };
--# define slab_irq_disable(cpu)		(void)get_cpu_var_locked(slab_irq_locks, &(cpu))
--# define slab_irq_enable(cpu)		put_cpu_var_locked(slab_irq_locks, cpu)
-+
-+static void _slab_irq_disable(int *cpu)
-+{
-+	int this_cpu;
-+	spinlock_t *lock;
-+
++	head->func = func;
++	head->next = NULL;
 +again:
-+	this_cpu = raw_smp_processor_id();
-+	lock = &__get_cpu_lock(slab_irq_locks, this_cpu);
++	cpu = first_cpu(cpu_online_map);
++	rdp = RCU_DATA_CPU(cpu);
 +
-+	spin_lock(lock);
-+	if (unlikely(!cpu_online(this_cpu))) {
++	spin_lock_irqsave(&rdp->lock, flags);
++	if (unlikely(!cpu_online(cpu))) {
 +		/*
-+		 * Bail - the cpu got hot-unplugged while we were waiting
-+		 * for the lock.
++		 * cpu is removed from the online map before rcu_offline_cpu
++		 * is called.
 +		 */
-+		spin_unlock(lock);
++		spin_unlock_irqrestore(&rdp->lock, flags);
 +		goto again;
 +	}
 +
-+	*cpu = this_cpu;
++	*rdp->nexttail = head;
++	rdp->nexttail = &head->next;
++	spin_unlock_irqrestore(&rdp->lock, flags);
++
 +}
 +
-+#define slab_irq_disable(cpu) _slab_irq_disable(&(cpu))
-+
-+static inline void slab_irq_enable(int cpu)
-+{
-+	spin_unlock(&__get_cpu_lock(slab_irq_locks, cpu));
-+}
-+
-+static inline void slab_irq_disable_this_rt(int cpu)
-+{
-+	spin_lock(&__get_cpu_lock(slab_irq_locks, cpu));
-+}
-+
-+static inline void slab_irq_enable_rt(int cpu)
-+{
-+	spin_unlock(&__get_cpu_lock(slab_irq_locks, cpu));
-+}
-+
- # define slab_irq_save(flags, cpu) \
- 	do { slab_irq_disable(cpu); (void) (flags); } while (0)
- # define slab_irq_restore(flags, cpu) \
- 	do { slab_irq_enable(cpu); (void) (flags); } while (0)
--# define slab_irq_disable_rt(cpu)	slab_irq_disable(cpu)
--# define slab_irq_enable_rt(cpu)	slab_irq_enable(cpu)
--# define slab_irq_disable_nort(cpu)	do { } while (0)
--# define slab_irq_enable_nort(cpu)	do { } while (0)
-+
-+/*
-+ * On PREEMPT_RT we have to drop the locks unconditionally to avoid lock
-+ * recursion on the cache_grow()->alloc_slabmgmt() path.
-+ */
-+static void slab_irq_enable_GFP_WAIT(gfp_t flags, int *cpu)
-+{
-+	slab_irq_enable(*cpu);
-+}
-+
-+static void slab_irq_disable_GFP_WAIT(gfp_t flags, int *cpu)
-+{
-+	slab_irq_disable(*cpu);
-+}
-+
- # define slab_spin_lock_irq(lock, cpu) \
- 		do { slab_irq_disable(cpu); spin_lock(lock); } while (0)
- # define slab_spin_unlock_irq(lock, cpu) \
-@@ -170,7 +243,8 @@ DEFINE_PER_CPU_LOCKED(int, slab_irq_lock
- 	do { slab_irq_disable(cpu); spin_lock_irqsave(lock, flags); } while (0)
- # define slab_spin_unlock_irqrestore(lock, flags, cpu) \
- 	do { spin_unlock_irqrestore(lock, flags); slab_irq_enable(cpu); } while (0)
--#endif
-+
-+#endif /* CONFIG_PREEMPT_RT */
- 
  /*
-  * DEBUG	- 1 for kmem_cache_create() to honour; SLAB_RED_ZONE & SLAB_POISON.
-@@ -1221,7 +1295,7 @@ cache_free_alien(struct kmem_cache *cach
- }
- #endif
- 
--static void __cpuinit cpuup_canceled(long cpu)
-+static void __cpuinit cpuup_canceled(int cpu)
- {
- 	struct kmem_cache *cachep;
- 	struct kmem_list3 *l3 = NULL;
-@@ -1231,7 +1305,7 @@ static void __cpuinit cpuup_canceled(lon
- 		struct array_cache *nc;
- 		struct array_cache *shared;
- 		struct array_cache **alien;
--		int this_cpu;
-+		int orig_cpu = cpu;
- 		cpumask_t mask;
- 
- 		mask = node_to_cpumask(node);
-@@ -1243,31 +1317,30 @@ static void __cpuinit cpuup_canceled(lon
- 		if (!l3)
- 			goto free_array_cache;
- 
--		slab_spin_lock_irq(&l3->list_lock, this_cpu);
-+		spin_lock_irq(&l3->list_lock);
- 
- 		/* Free limit for this kmem_list3 */
- 		l3->free_limit -= cachep->batchcount;
- 		if (nc)
- 			free_block(cachep, nc->entry, nc->avail, node,
--				   &this_cpu);
-+				   &cpu);
- 
- 		if (!cpus_empty(mask)) {
--			slab_spin_unlock_irq(&l3->list_lock,
--					     this_cpu);
-+			spin_unlock_irq(&l3->list_lock);
- 			goto free_array_cache;
- 		}
- 
- 		shared = l3->shared;
- 		if (shared) {
- 			free_block(cachep, shared->entry,
--				   shared->avail, node, &this_cpu);
-+				   shared->avail, node, &cpu);
- 			l3->shared = NULL;
- 		}
- 
- 		alien = l3->alien;
- 		l3->alien = NULL;
- 
--		slab_spin_unlock_irq(&l3->list_lock, this_cpu);
-+		spin_unlock_irq(&l3->list_lock);
- 
- 		kfree(shared);
- 		if (alien) {
-@@ -1276,6 +1349,7 @@ static void __cpuinit cpuup_canceled(lon
- 		}
- free_array_cache:
- 		kfree(nc);
-+		BUG_ON(cpu != orig_cpu);
- 	}
- 	/*
- 	 * In the previous loop, all the objects were freed to
-@@ -1290,13 +1364,12 @@ free_array_cache:
- 	}
+  * Check to see if any future RCU-related work will need to be done
+  * by the current CPU, even if none need be done immediately, returning
+Index: linux-2.6.24.7.noarch/kernel/sched.c
+===================================================================
+--- linux-2.6.24.7.noarch.orig/kernel/sched.c
++++ linux-2.6.24.7.noarch/kernel/sched.c
+@@ -5888,6 +5888,15 @@ void sched_idle_next(void)
+ 	spin_unlock_irqrestore(&rq->lock, flags);
  }
  
--static int __cpuinit cpuup_prepare(long cpu)
-+static int __cpuinit cpuup_prepare(int cpu)
- {
- 	struct kmem_cache *cachep;
- 	struct kmem_list3 *l3 = NULL;
- 	int node = cpu_to_node(cpu);
- 	const int memsize = sizeof(struct kmem_list3);
--	int this_cpu;
++#ifdef CONFIG_PREEMPT_RT
++void mmdrop_rcu(struct rcu_head *head)
++{
++	struct mm_struct *mm = container_of(head, struct mm_struct, rcu_head);
++
++	mmdrop(mm);
++}
++#endif
++
+ /*
+  * Ensures that the idle task is using init_mm right before its cpu goes
+  * offline.
+@@ -5900,7 +5909,11 @@ void idle_task_exit(void)
  
- 	/*
- 	 * We need to do this right in the beginning since
-@@ -1327,11 +1400,11 @@ static int __cpuinit cpuup_prepare(long 
- 			cachep->nodelists[node] = l3;
- 		}
- 
--		slab_spin_lock_irq(&cachep->nodelists[node]->list_lock, this_cpu);
-+		spin_lock_irq(&cachep->nodelists[node]->list_lock);
- 		cachep->nodelists[node]->free_limit =
- 			(1 + nr_cpus_node(node)) *
- 			cachep->batchcount + cachep->num;
--		slab_spin_unlock_irq(&cachep->nodelists[node]->list_lock, this_cpu);
-+		spin_unlock_irq(&cachep->nodelists[node]->list_lock);
- 	}
- 
- 	/*
-@@ -1368,7 +1441,7 @@ static int __cpuinit cpuup_prepare(long 
- 		l3 = cachep->nodelists[node];
- 		BUG_ON(!l3);
- 
--		slab_spin_lock_irq(&l3->list_lock, this_cpu);
-+		spin_lock_irq(&l3->list_lock);
- 		if (!l3->shared) {
- 			/*
- 			 * We are serialised from CPU_DEAD or
-@@ -1383,7 +1456,7 @@ static int __cpuinit cpuup_prepare(long 
- 			alien = NULL;
- 		}
- #endif
--		slab_spin_unlock_irq(&l3->list_lock, this_cpu);
-+		spin_unlock_irq(&l3->list_lock);
- 		kfree(shared);
- 		free_alien_cache(alien);
- 	}
-@@ -1402,7 +1475,18 @@ static int __cpuinit cpuup_callback(stru
- 	switch (action) {
- 	case CPU_LOCK_ACQUIRE:
- 		mutex_lock(&cache_chain_mutex);
-+		return NOTIFY_OK;
-+	case CPU_LOCK_RELEASE:
-+		mutex_unlock(&cache_chain_mutex);
-+		return NOTIFY_OK;
-+
-+	default:
- 		break;
-+	}
-+
-+	slab_irq_disable_this_rt(cpu);
-+
-+	switch (action) {
- 	case CPU_UP_PREPARE:
- 	case CPU_UP_PREPARE_FROZEN:
- 		err = cpuup_prepare(cpu);
-@@ -1444,10 +1528,10 @@ static int __cpuinit cpuup_callback(stru
- 	case CPU_UP_CANCELED_FROZEN:
- 		cpuup_canceled(cpu);
- 		break;
--	case CPU_LOCK_RELEASE:
--		mutex_unlock(&cache_chain_mutex);
--		break;
- 	}
-+
-+	slab_irq_enable_rt(cpu);
-+
- 	return err ? NOTIFY_BAD : NOTIFY_OK;
+ 	if (mm != &init_mm)
+ 		switch_mm(mm, &init_mm, current);
++#ifdef CONFIG_PREEMPT_RT
++	call_rcu_preempt_online(&mm->rcu_head, mmdrop_rcu);
++#else
+ 	mmdrop(mm);
++#endif
  }
  
-@@ -2898,9 +2982,7 @@ static int cache_grow(struct kmem_cache 
- 
- 	offset *= cachep->colour_off;
- 
--	if (local_flags & __GFP_WAIT)
--		slab_irq_enable_nort(*this_cpu);
--	slab_irq_enable_rt(*this_cpu);
-+	slab_irq_enable_GFP_WAIT(local_flags, this_cpu);
- 
- 	/*
- 	 * The test for missing atomic flag is performed here, rather than
-@@ -2930,9 +3012,7 @@ static int cache_grow(struct kmem_cache 
- 
- 	cache_init_objs(cachep, slabp);
- 
--	slab_irq_disable_rt(*this_cpu);
--	if (local_flags & __GFP_WAIT)
--		slab_irq_disable_nort(*this_cpu);
-+	slab_irq_disable_GFP_WAIT(local_flags, this_cpu);
- 
- 	check_irq_off();
- 	spin_lock(&l3->list_lock);
-@@ -2946,9 +3026,7 @@ static int cache_grow(struct kmem_cache 
- opps1:
- 	kmem_freepages(cachep, objp);
- failed:
--	slab_irq_disable_rt(*this_cpu);
--	if (local_flags & __GFP_WAIT)
--		slab_irq_disable_nort(*this_cpu);
-+	slab_irq_disable_GFP_WAIT(local_flags, this_cpu);
- 	return 0;
- }
- 
-@@ -3395,16 +3473,12 @@ retry:
- 		 * We may trigger various forms of reclaim on the allowed
- 		 * set and go into memory reserves if necessary.
- 		 */
--		if (local_flags & __GFP_WAIT)
--			slab_irq_enable_nort(*this_cpu);
--		slab_irq_enable_rt(*this_cpu);
-+		slab_irq_enable_GFP_WAIT(local_flags, this_cpu);
- 
- 		kmem_flagcheck(cache, flags);
- 		obj = kmem_getpages(cache, flags, -1);
- 
--		slab_irq_disable_rt(*this_cpu);
--		if (local_flags & __GFP_WAIT)
--			slab_irq_disable_nort(*this_cpu);
-+		slab_irq_disable_GFP_WAIT(local_flags, this_cpu);
- 
- 		if (obj) {
- 			/*
+ /* called under rq->lock with disabled interrupts */
 
 -- 
 
