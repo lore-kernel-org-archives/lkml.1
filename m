@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748AbYFJRmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757205AbYFJRmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753748AbYFJRmf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 13:42:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756134AbYFJRmS
+	id S1757205AbYFJRmx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 13:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756782AbYFJRmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 13:42:18 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:36890 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755911AbYFJRmQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 13:42:16 -0400
-Date: Tue, 10 Jun 2008 10:42:15 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Peter Zijlstra <peterz@infradead.org>, Mike Travis <travis@sgi.com>
-Subject: Re: [patch 04/41] cpu ops: Core piece for generic atomic per cpu
- operations
-In-Reply-To: <200806021200.41652.rusty@rustcorp.com.au>
-Message-ID: <Pine.LNX.4.64.0806101034480.17131@schroedinger.engr.sgi.com>
-References: <20080530035620.587204923@sgi.com> <200805301708.51284.rusty@rustcorp.com.au>
- <Pine.LNX.4.64.0805301055270.14564@schroedinger.engr.sgi.com>
- <200806021200.41652.rusty@rustcorp.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 10 Jun 2008 13:42:32 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:55960 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756746AbYFJRmb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 13:42:31 -0400
+Subject: Re: [RFC PATCH 3/5] mgmcg VM overcommit interface
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       kosaki.motohiro@jp.fujitsu.com, containers@lists.osdl.org,
+       menage@google.com, xemul@openvz.org
+In-Reply-To: <1213054383-18137-4-git-send-email-righi.andrea@gmail.com>
+References: <>  <1213054383-18137-4-git-send-email-righi.andrea@gmail.com>
+Content-Type: text/plain
+Date: Tue, 10 Jun 2008 10:42:26 -0700
+Message-Id: <1213119746.13882.15.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Jun 2008, Rusty Russell wrote:
-
-> > Believe me I have tried to use local_t repeatedly for vm statistics etc.
-> > It always fails on that issue.
+On Tue, 2008-06-10 at 01:33 +0200, Andrea Righi wrote:
 > 
-> Frankly, I am finding it increasingly easy to believe that you failed.  But 
-> you are blaming the wrong thing.
-> 
-> There are three implementations of local_t which are obvious.  The best is for 
-> architectures which can locate and increment a per-cpu var in one instruction 
-> (eg. x86).  Otherwise, using atomic_t/atomic64_t for local_t provides a 
-> general solution.  The other general solution would involve 
-> local_irq_disable()/increment/local_irq_enable().
-> 
-> My (fading) hope is that this idiocy is an abberation,
+> +       cgroup_unlock();
+> +
+> +       count = sprintf(page, "CommitLimit:  %8lu kB\n"
+> +                             "Committed_AS: %8lu kB\n",
+> +                             K(allowed), K(committed));
+> +       ret = simple_read_from_buffer(userbuf, nbytes, ppos, page, count);
+> +out:
+> +       free_page((unsigned long)page);
+> +       return ret;
+> +}
 
-1. The x86 implementation does not exist because the segment register has 
-   so far not been available on x86_64. So you could not do the solution.
-   You need the zero basing. Then you can use per_xxx_add in cpu_inc.
+I know you're trying to make this look like meminfo, but it does butcher
+the sysfs rules a bit.  How about breaking it out into a couple of
+files?
 
-2. The general solution created overhead that is often not needed. If we
-   would have done vm event counters with local_t then we would have
-   atomic overhead for each increment on f.e. IA64. That was not
-   acceptable. cpu_alloc never falls back to atomic operations.
+-- Dave
 
-3. local_t is based on the atomic logic. But percpu handling is 
-   fundamentally different in that accesses without the special macros
-   are okay provided you are in a non preemptible or irq context!
-   A local_t declaration makes such accesses impossible.
-
-4. The modeling of local_t on atomic_t limits it to 32bit! There is no
-   way to use this with pointers or 64 bit entities. Adding that would 
-   duplicate the API for each type added.
