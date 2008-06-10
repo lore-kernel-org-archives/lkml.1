@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758428AbYFJFJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbYFJFNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758428AbYFJFJG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 01:09:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbYFJFIy
+	id S1754196AbYFJFNv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 01:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbYFJFNo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 01:08:54 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:9689 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751295AbYFJFIx (ORCPT
+	Tue, 10 Jun 2008 01:13:44 -0400
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:60091 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750811AbYFJFNn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 01:08:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=vdaBpTP+4Oip1NQ7Kaiaec5ISm+r2C3aPvInEBVCjAcY3eFEtL2tX7FoRnNAN2C/5y
-         PbpGvPNuzvwEn4CRWEq8+b35oqcx2rRBgRA9v0eIFnBHwc6YSdXQ0tmgjzu16BG5T9Um
-         veggti8yXXQ7cGdVkRSrR4z3I5qEVtrLWxv6k=
-Message-ID: <86802c440806092208s338cf6b6q892f5149bbd142ca@mail.gmail.com>
-Date: Mon, 9 Jun 2008 22:08:53 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH 11/15] x86: move enabling of io_apic to prepare_cpus
-Cc: "Glauber Costa" <gcosta@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu,
-       hugh@veritas.com
-In-Reply-To: <Pine.LNX.4.55.0806100341520.31588@cliff.in.clinika.pl>
+	Tue, 10 Jun 2008 01:13:43 -0400
+Message-ID: <484E0D73.6010609@linux.vnet.ibm.com>
+Date: Tue, 10 Jun 2008 10:43:23 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Andrea Righi <righi.andrea@gmail.com>, menage@google.com,
+       kosaki.motohiro@jp.fujitsu.com, xemul@openvz.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+Subject: Re: [RFC PATCH 0/5] memcg: VM overcommit accounting and handling
+References: <1213054383-18137-1-git-send-email-righi.andrea@gmail.com> <20080610091439.04061da9.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080610091439.04061da9.kamezawa.hiroyu@jp.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1213021018-14159-1-git-send-email-gcosta@redhat.com>
-	 <1213021018-14159-10-git-send-email-gcosta@redhat.com>
-	 <1213021018-14159-11-git-send-email-gcosta@redhat.com>
-	 <1213021018-14159-12-git-send-email-gcosta@redhat.com>
-	 <Pine.LNX.4.55.0806091620250.26593@cliff.in.clinika.pl>
-	 <484D8813.4040807@redhat.com>
-	 <Pine.LNX.4.55.0806092058550.26593@cliff.in.clinika.pl>
-	 <86802c440806091353m240ab7adocbaf5dacd15504f7@mail.gmail.com>
-	 <Pine.LNX.4.55.0806092159350.26593@cliff.in.clinika.pl>
-	 <Pine.LNX.4.55.0806100341520.31588@cliff.in.clinika.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 9, 2008 at 7:46 PM, Maciej W. Rozycki <macro@linux-mips.org> wrote:
-> On Mon, 9 Jun 2008, Maciej W. Rozycki wrote:
->
->> > we need clear_IO_APIC before enable setup error vector, in case there
->> > is wrong setting in ioapic by BIOS...
+KAMEZAWA Hiroyuki wrote:
+> On Tue, 10 Jun 2008 01:32:58 +0200
+> Andrea Righi <righi.andrea@gmail.com> wrote:
+> 
+>> Provide distinct cgroup VM overcommit accounting and handling using the memory
+>> resource controller.
 >>
->>  Fair enough, although it is still interesting why it would only trigger
->> in the 64-bit mode and why shouldn't the BIOS be fixed instead.
->
->  Then again -- what if X86_LOCAL_APIC is set, but X86_IO_APIC is not?
+> 
+> Could you explain the benefits of this even when we have memrlimit controller ?
+> (If unsure, see 2.6.26-rc5-mm1 and search memrlimit controller.)
+> 
+> And this kind of virtual-address-handling things should be implemented on
+> memrlimit controller (means not on memory-resource-controller.).
+> It seems this patch doesn't need to handle page_group.
+> 
+> Considering hierarchy, putting several kinds of features on one controller is
+> not good, I think. Balbir, how do you think ?
+> 
 
-config X86_LOCAL_APIC
-        def_bool y
-        depends on X86_64 || (X86_32 && (X86_UP_APIC || ((X86_VISWS ||
-SMP) && !X86_VOYAGER) || X86_GENERICARCH))
+I would tend to agree. With the memrlimit controller, can't we do this in user
+space now? Figure out the overcommit value and based on that setup the memrlimit?
 
-config X86_IO_APIC
-        def_bool y
-        depends on X86_64 || (X86_32 && (X86_UP_IOAPIC || (SMP &&
-!(X86_VISWS || X86_VOYAGER)) || X86_GENERICARCH))
 
-for 64bit, those are all set.
-
-for 32bit, may need to null stub if X86_IO_APIC is not set
-
-YH
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
