@@ -1,68 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754550AbYFJG0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754876AbYFJG3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754550AbYFJG0R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 02:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbYFJG0H
+	id S1754876AbYFJG3Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 02:29:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbYFJG27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 02:26:07 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:18753 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751450AbYFJG0G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 02:26:06 -0400
-Date: Tue, 10 Jun 2008 08:25:27 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Uli Luckas <u.luckas@road.de>
-Cc: linux-kernel@vger.kernel.org, adaplas@gmail.com,
-       Linux I2C <i2c@lm-sensors.org>
-Subject: Re: Frame buffers and early i2c
-Message-ID: <20080610082527.0e6d643a@hyperion.delvare>
-In-Reply-To: <200806092359.36080.u.luckas@road.de>
-References: <200806091647.42757.u.luckas@road.de>
-	<20080609205212.4b0f1ba6@hyperion.delvare>
-	<200806092359.36080.u.luckas@road.de>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 10 Jun 2008 02:28:59 -0400
+Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:40408 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750827AbYFJG26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 02:28:58 -0400
+Message-ID: <484E1F20.4060804@krogh.cc>
+Date: Tue, 10 Jun 2008 08:28:48 +0200
+From: Jesper Krogh <jesper@krogh.cc>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+MIME-Version: 1.0
+To: Ian Kent <raven@themaw.net>
+CC: Al Viro <viro@ZenIV.linux.org.uk>, Jeff Moyer <jmoyer@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Linux 2.6.26-rc4
+References: <20080603105258.GV28946@ZenIV.linux.org.uk>	 <1212499623.3025.46.camel@raven.themaw.net>	 <alpine.LFD.1.10.0806030751040.3473@woody.linux-foundation.org>	 <1212509263.3025.66.camel@raven.themaw.net>	 <alpine.LFD.1.10.0806030926330.3473@woody.linux-foundation.org>	 <1212513189.3025.101.camel@raven.themaw.net>	 <20080603173029.GD28946@ZenIV.linux.org.uk>	 <x49ej7ejtry.fsf@segfault.boston.devel.redhat.com>	 <20080603191859.GG28946@ZenIV.linux.org.uk>	 <x49abi2jnwf.fsf@segfault.boston.devel.redhat.com>	 <20080603230026.GH28946@ZenIV.linux.org.uk>	 <1212547323.3146.45.camel@raven.themaw.net> <1213073861.3024.34.camel@raven.themaw.net>
+In-Reply-To: <1213073861.3024.34.camel@raven.themaw.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Uli,
-
-On Mon, 9 Jun 2008 23:59:35 +0200, Uli Luckas wrote:
-> On Monday 09 June 2008, Jean Delvare wrote:
-> > Why don't you ask on the i2c mailing list? Cc added.
->
-> I wanted to get i2c developers plus frame buffer and other i2c client 
-> developers involved. Crossposting to more then 2 lists seemed wrong.
-
-So you prefer to post to one random list than the two lists where your
-target audience is? Interesting approach. If you really don't want to
-post to two lists at once, just send two separate posts?
-
-> > Interestingly enough, they appear to do fine, despite the linking
-> > order. Maybe because i2c_init is a subsys_initcall() while framebuffer
-> > drivers are initialized with module_init()? Then I'm not sure why your
-> > own driver has a problem there.
-> >
-> Well, this is only very partially true. Try:
-> rgrep -l subsys_initcall drivers/i2c/
-> rgrep -l module_init drivers/i2c/
+Ian Kent wrote:
+> On Wed, 2008-06-04 at 10:42 +0800, Ian Kent wrote:
+>> On Wed, 2008-06-04 at 00:00 +0100, Al Viro wrote:
+>>> On Tue, Jun 03, 2008 at 03:53:36PM -0400, Jeff Moyer wrote:
+>>>
+>>>> autofs4_lookup is called on behalf a process trying to walk into an
+>>>> automounted directory.  That dentry's d_flags is set to
+>>>> DCACHE_AUTOFS_PENDING but not hashed.  A waitqueue entry is created,
+>>>> indexed off of the name of the dentry.  A callout is made to the
+>>>> automount daemon (via autofs4_wait).
+>>>>
+>>>> The daemon looks up the directory name in its configuration.  If it
+>>>> finds a valid map entry, it will then create the directory using
+>>>> sys_mkdir.  The autofs4_lookup call on behalf of the daemon (oz_mode ==
+>>>> 1) will return NULL, and then the mkdir call will be made.  The
+>>>> autofs4_mkdir function then instantiates the dentry which, by the way,
+>>>> is different from the original dentry passed to autofs4_lookup.  (This
+>>>> dentry also does not get the PENDING flag set, which is a bug addressed
+>>>> by a patch set that Ian and I have been working on;  specifically, the
+>>>> idea is to reuse the dentry from the original lookup, but I digress).
+>>>>
+>>>> The daemon then mounts the share on the given directory and issues an
+>>>> ioctl to wakeup the waiter.  When awakened, the waiter clears the
+>>>> DCACHE_AUTOFS_PENDING flag, does another lookup of the name in the
+>>>> dcache and returns that dentry if found.
+>>>> Later, the dentry gets expired via another ioctl.  That path sets
+>>>> the AUTOFS_INF_EXPIRING flag in the d_fsdata associated with the dentry.
+>>>> It then calls out to the daemon to perform the unmount and rmdir.  The
+>>>> rmdir unhashes the dentry (and places it on the rehash list).
+>>>>
+>>>> The dentry is removed from the rehash list if there was a racing expire
+>>>> and mount or if the dentry is released.
+>>>>
+>>>> This description is valid for the tree as it stands today.  Ian and I
+>>>> have been working on fixing some other race conditions which will change
+>>>> the dentry life cycle (for the better, I hope).
+>>> So what happens if new lookup hits between umount and rmdir?
+>> It will wait for the expire to complete and then wait for a mount
+>> request to the daemon.
 > 
-> The last of which gives drivers/i2c/busses/i2c-pxa.c for example.
+> Actually, that explanation is a bit simple minded.
+> 
+> It should wait for the expire in ->revalidate().
+> Following the expire completion d_invalidate() should return 0, since
+> the dentry is now unhashed, which causes ->revalidate() to return 0.
+> do_lookup() should see this and call a ->lookup().
+> 
+> But maybe I've missed something as I'm seeing a problem now.
 
-Sorry, I didn't understand what you wanted originally. I thought you
-only wanted the i2c-core up before pxafb (which is in fact already the
-case) while what you actually want it i2c-pxa up before pxafb (which
-isn't yet the case.)
+Ok. Ive been running on the patch for a few days now .. and didn't see
+any problems. But that being said, I also turned off the --ghost option
+to autofs so if it actually is the patch or the different codepaths
+being used, I dont know. Since this is a production system, I'm a bit
+reluctant to just change a working setup to test it out.
 
-> I'll change the pxa i2c driver to subsys_initcall and try if that works when I 
-> get back to my desk tomorrow.
-
-I expect it to work, as apparently other platforms are doing exactly
-that already.
-
+Jesper
 -- 
-Jean Delvare
+Jesper
