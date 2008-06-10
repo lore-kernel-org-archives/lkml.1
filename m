@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbYFJJPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757978AbYFJJSG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757478AbYFJJPs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 05:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbYFJJPl
+	id S1757978AbYFJJSG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 05:18:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYFJJRy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 05:15:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59360 "EHLO
+	Tue, 10 Jun 2008 05:17:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38926 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751715AbYFJJPk (ORCPT
+	by vger.kernel.org with ESMTP id S1751807AbYFJJRx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 05:15:40 -0400
-Date: Tue, 10 Jun 2008 02:15:19 -0700
+	Tue, 10 Jun 2008 05:17:53 -0400
+Date: Tue, 10 Jun 2008 02:17:46 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       linux-mm@kvack.org, Rik van Riel <riel@redhat.com>
-Subject: Re: 2.6.26-rc5-mm2
-Message-Id: <20080610021519.52af66f5.akpm@linux-foundation.org>
-In-Reply-To: <200806101848.22237.nickpiggin@yahoo.com.au>
-References: <20080609223145.5c9a2878.akpm@linux-foundation.org>
-	<200806101728.27486.nickpiggin@yahoo.com.au>
-	<20080610013427.aa20a29b.akpm@linux-foundation.org>
-	<200806101848.22237.nickpiggin@yahoo.com.au>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: jack@suse.cz, linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>
+Subject: Re: - jbd-strictly-check-for-write-errors-on-data-buffers.patch
+ removed from -mm tree
+Message-Id: <20080610021746.51e5cfa8.akpm@linux-foundation.org>
+In-Reply-To: <484E4097.2010204@hitachi.com>
+References: <200806092212.m59MC553010889@imap1.linux-foundation.org>
+	<484E4097.2010204@hitachi.com>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,19 +30,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008 18:48:21 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+On Tue, 10 Jun 2008 17:51:35 +0900 Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com> wrote:
 
-> Is the plan to merge all reclaim changes in a big hit, rather than
-> slowly trickle in the different independent changes?
+> Hello Andrew,
+> 
+> akpm@linux-foundation.org wrote:
+> 
+> > The patch titled
+> >      jbd: strictly check for write errors on data buffers
+> > has been removed from the -mm tree.  Its filename was
+> >      jbd-strictly-check-for-write-errors-on-data-buffers.patch
+> > 
+> > This patch was dropped because I don't think we want to go read-only on file data write errors
+> > 
+> > The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
+> > 
+> > ------------------------------------------------------
+> > Subject: jbd: strictly check for write errors on data buffers
+> > From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+> 
+> This patch series doesn't change the behavior on file data write
+> errors as I stated before, but we found that the current behavior has
+> been made accidentally.  So yesterday I sent an additional patch(*)
+> which removes the invocation of journal_abort() and thus stop making
+> the fs read-only on file data write errors, but it seems to be late
+> for the -mm release preparation.
+> 
+>   Patch(*) can be found at:
+>   http://marc.info/?l=linux-kernel&m=121300618614453&w=2
+> 
+> Anyway, as this patch series was dropped from -mm, I'm going to
+> send a revised version.
+> 
+> I plan to separate these pathces into three patche set. 
+> The first patch (set) corrects the current behavior in ordered
+> writes, it means it removes the invocation of journal_abort() on file
+> data write errors.  It is the almost same as the patch(*).
+> The second patch set fixes error handlings for metadata writes and
+> checkpointing.  It should be applied independently of the first
+> patch set, and it is the same as PATCH 3/5 to 5/5.
+> The third patch set makes "abort the journal on file data write errors"
+> tunable for mission critical users.  Of course, this feature depends
+> on the first patch set.
+> 
 
-It's going to take a lot of work to get such extensive reclaim changes
-landed.
-
-We need to convince ourselves that these changes are the right way to
-fix <whatever they fix>.  We need to review and test the crap out of
-them.  The 64-bit-only thing is a concern.  I wonder about whether
-we've "fixed" anon pages but didn't do anything about file-backed
-mapped pages.  Plus all the other stuff, plus stuff we haven't thought
-of yet.
-
-It's huge.
+That sounds like a good plan, thanks.
