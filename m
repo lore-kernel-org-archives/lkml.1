@@ -1,58 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758808AbYFJWzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759341AbYFJW5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758808AbYFJWzr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 18:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754521AbYFJWzk
+	id S1759341AbYFJW5i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 18:57:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754501AbYFJW5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 18:55:40 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:40423 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753880AbYFJWzj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 18:55:39 -0400
-Message-ID: <484F065B.2050002@keyaccess.nl>
-Date: Wed, 11 Jun 2008 00:55:23 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Tue, 10 Jun 2008 18:57:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52774 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752651AbYFJW5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 18:57:30 -0400
+Message-ID: <484F0343.70105@redhat.com>
+Date: Tue, 10 Jun 2008 18:42:11 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [PATCH 2/5] x86: PAT: fix ambiguous paranoia check in pat_init()
-References: <20080610140518.GF5024@alberich.amd.com>
-In-Reply-To: <20080610140518.GF5024@alberich.amd.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, David Miller <davem@davemloft.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: [PATCH][BUGFIX] kprobes: fix error checking of batch registration
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -0.5 (/)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10-06-08 16:05, Andreas Herrmann wrote:
+Fix error checking routine to catch an error which occurs in
+first __register_*porbe().
 
-> Starting with commit 8d4a4300854f3971502e81dacd930704cb88f606 (x86:
-> cleanup PAT cpu validation) the PAT CPU feature flag is not cleared
-> anymore. Now the error message
-> 
->   "PAT enabled, but CPU feature cleared"
-> 
-> in pat_init() is misleading.
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+CC: Jim Keniston <jkenisto@us.ibm.com>
+CC: David Miller <davem@davemloft.net>
+---
+I found this bug when fixing batch-registration test program.
+This patch can be apply to both of 2.6.26-rc2-mm1 and 2.6.26-rc5.
 
-No, it's correct. This is to be read as "The PAT feature is enabled in 
-the kernel but the CPU claims to not have PAT". The message is not a 
-leftover from the old flag-clearing setup or anything; it was introduced 
-in the patch that disabled that.
+ kernel/kprobes.c |   15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
 
-> Furthermore the current code does not check for existence of the PAT
-> CPU feature flag if a CPU is whitelisted in validate_pat_support.
+Index: 2.6.26-rc2-mm1/kernel/kprobes.c
+===================================================================
+--- 2.6.26-rc2-mm1.orig/kernel/kprobes.c
++++ 2.6.26-rc2-mm1/kernel/kprobes.c
+@@ -699,8 +699,9 @@ static int __register_kprobes(struct kpr
+ 		return -EINVAL;
+ 	for (i = 0; i < num; i++) {
+ 		ret = __register_kprobe(kps[i], called_from);
+-		if (ret < 0 && i > 0) {
+-			unregister_kprobes(kps, i);
++		if (ret < 0) {
++			if (i > 0)
++				unregister_kprobes(kps, i);
+ 			break;
+ 		}
+ 	}
+@@ -776,8 +777,9 @@ static int __register_jprobes(struct jpr
+ 			jp->kp.break_handler = longjmp_break_handler;
+ 			ret = __register_kprobe(&jp->kp, called_from);
+ 		}
+-		if (ret < 0 && i > 0) {
+-			unregister_jprobes(jps, i);
++		if (ret < 0) {
++			if (i > 0)
++				unregister_jprobes(jps, i);
+ 			break;
+ 		}
+ 	}
+@@ -920,8 +922,9 @@ static int __register_kretprobes(struct
+ 		return -EINVAL;
+ 	for (i = 0; i < num; i++) {
+ 		ret = __register_kretprobe(rps[i], called_from);
+-		if (ret < 0 && i > 0) {
+-			unregister_kretprobes(rps, i);
++		if (ret < 0) {
++			if (i > 0)
++				unregister_kretprobes(rps, i);
+ 			break;
+ 		}
+ 	}
+-- 
+Masami Hiramatsu
 
-Which is okay-ish, or at least by design it seems. The paranoia check in 
-pat.c will catch this case.
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
-The current setup is okay really. The only thing it still wants is a 
-commandline whitelist switch but that needs a somewhat different setup 
-as validate_pat_support() is too early for __setup() or early_param().
+e-mail: mhiramat@redhat.com
 
-Rene.
+
