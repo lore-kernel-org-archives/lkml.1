@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754371AbYFJP7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754375AbYFJQFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754371AbYFJP7U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 11:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbYFJP7I
+	id S1754375AbYFJQFU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 12:05:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbYFJQFH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 11:59:08 -0400
-Received: from smtp2.riverbed.com ([206.169.144.7]:19170 "EHLO
-	smtp2.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752737AbYFJP7H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 11:59:07 -0400
-Date: Tue, 10 Jun 2008 08:58:50 -0700
-From: Arthur Jones <ajones@riverbed.com>
-To: Greg KH <greg@kroah.com>
-CC: linux-kernel@vger.kernel.org, Doug Thompson <norsk5@yahoo.com>,
-       bluesmoke-devel@lists.sourceforge.net
-Subject: on static kobjects and double frees...
-Message-ID: <20080610155848.GS26334@ajones-laptop.nbttech.com>
+	Tue, 10 Jun 2008 12:05:07 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:50138 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752171AbYFJQFG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 12:05:06 -0400
+Date: Tue, 10 Jun 2008 19:04:08 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
+Subject: [2.6 patch] always enable FW_LOADER unless EMBEDDED=y
+Message-ID: <20080610160408.GB11685@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,  The edac pci sysfs generic layer uses a static
-kobject as a placeholder parent where edac pci drivers
-are inserted.  An atomic count is used to know when
-to kobject_init_add_add or kobject_put the static kobject.
-The issue with this is that the name gets double freed
-on the second module load as edac does not clear it, and
-kobject_cleanup does not clear it.
+James Bottomley recently discovered that we have 
+{request,release}_firmware() dummies for the case of the actual 
+functions not being available and has a fix for the bug that was 
+actually causing build errors for built-in users with 
+CONFIG_FW_LOADER=m.
 
-The quick fix was to clear the static kobj name before
-calling kobject_init, but that seems a bit fragile as it
-involves knowing the internals of kobject_put.  Perhaps
-the name should be cleared before calling the kobject
-release method?  Something like this (not even compile
-tested):
+But now missing selects on FW_LOADER are no longer visible at 
+compile-time at all and can become runtime problems.
 
-diff --git a/lib/kobject.c b/lib/kobject.c
-index 718e510..7dfe906 100644
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -552,6 +552,9 @@ static void kobject_cleanup(struct kobject *kobj)
- 	if (t && t->release) {
- 		pr_debug("kobject: '%s' (%p): calling ktype release\n",
- 			 kobject_name(kobj), kobj);
-+
-+		/* avoid double free with static kobjects... */
-+		kobj->name = NULL;
- 		t->release(kobj);
- 	}
+FW_LOADER is infrastructure with relatively small codesize we can 
+safely enable for everyone, and only for people who really need small 
+kernels (and can be expected to know what they are doing) it matters 
+being able to disable it.
+
+This patch therefore always sets FW_LOADER=y and allows users only to 
+disable it with EMBEDDED=y.
+
+As a bonus, we can then get rid of all "select FW_LOADER" plus the due 
+to it required "depends on HOTPLUG" which removes some complexity from 
+our Kconfig files.
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+
+This patch has been sent on:
+- 2 Jun 2008
+
+462ee1ceb263f523b6f4e3bd30a0f63810f05c67 diff --git a/drivers/base/Kconfig b/drivers/base/Kconfig
+index d7da109..629e255 100644
+--- a/drivers/base/Kconfig
++++ b/drivers/base/Kconfig
+@@ -27,8 +27,9 @@ config PREVENT_FIRMWARE_BUILD
+ 	  If unsure say Y here.
  
-What do you think?  I'm happy to implement and test whatever
-you think is best...
+ config FW_LOADER
+-	tristate "Userspace firmware loading support"
++	tristate "Userspace firmware loading support" if EMBEDDED
+ 	depends on HOTPLUG
++	default y
+ 	---help---
+ 	  This option is provided for the case where no in-kernel-tree modules
+ 	  require userspace firmware loading support, but a module built outside
 
-The edac code in question is drivers/edac/edac_pci_sysfs.c,
-the static kobject is called edac_pci_top_main_kobj...
-
-Arthur
