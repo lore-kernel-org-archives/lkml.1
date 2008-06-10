@@ -1,88 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756755AbYFJTZO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758235AbYFJTZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756755AbYFJTZO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 15:25:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbYFJTY6
+	id S1758235AbYFJTZi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 15:25:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756723AbYFJTZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 15:24:58 -0400
-Received: from outbound-mail-11.bluehost.com ([69.89.18.111]:33387 "HELO
-	outbound-mail-11.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753215AbYFJTY5 (ORCPT
+	Tue, 10 Jun 2008 15:25:14 -0400
+Received: from mail51.messagelabs.com ([216.82.244.179]:2813 "EHLO
+	mail51.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756577AbYFJTZM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 15:24:57 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Subject: Re: [PATCH 0/4, v14] PCI, ACPI: Physical PCI slot objects
-Date: Tue, 10 Jun 2008 12:24:18 -0700
-User-Agent: KMail/1.9.9
-Cc: Alex Chiang <achiang@hp.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>, kristen.c.accardi@intel.com,
-       greg@kroah.com, lenb@kernel.org, pbadari@us.ibm.com,
-       linux-pci@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-References: <20080604200829.GC379@ldl.fc.hp.com> <484DEF46.7080106@jp.fujitsu.com> <484DF11A.7000306@jp.fujitsu.com>
-In-Reply-To: <484DF11A.7000306@jp.fujitsu.com>
+	Tue, 10 Jun 2008 15:25:12 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-10.tower-51.messagelabs.com!1213125910!2929156!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.14]
+Date: Tue, 10 Jun 2008 21:24:12 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: Paul Mundt <lethal@linux-sh.org>, Magnus Damm <magnus.damm@gmail.com>,
+       "Hans J. Koch" <hjk@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>
+Subject: Re: [PATCH] uio_pdrv: Unique IRQ Mode
+Message-ID: <20080610192412.GA3065@digi.com>
+References: <20080605112744.GB3198@local> <aec7e5c30806080319y7b9b6a89icacbfa67b117fb2b@mail.gmail.com> <20080608205455.GA3191@local> <aec7e5c30806081812m532882e0p7ad3ef9a74f53337@mail.gmail.com> <20080609084411.GA3223@local> <20080609090123.GA12080@linux-sh.org> <20080609123406.GB27803@digi.com> <aec7e5c30806092140s21cc8cbdtbaf69f864dd2bda7@mail.gmail.com> <20080610071032.GB22814@digi.com> <20080610173253.GA21204@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-2022-jp"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-Message-Id: <200806101224.19455.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080610173253.GA21204@linux-sh.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 10 Jun 2008 19:24:15.0992 (UTC) FILETIME=[9262F780:01C8CB2F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, June 09, 2008 8:12 pm Kenji Kaneshige wrote:
-> >  drivers/pci/hotplug/pci_hotplug_core.c |   16 ++++++++++++++++
-> >  1 file changed, 16 insertions(+)
-> >
-> > Index: 20080610/drivers/pci/hotplug/pci_hotplug_core.c
-> > ===================================================================
-> > --- 20080610.orig/drivers/pci/hotplug/pci_hotplug_core.c
-> > +++ 20080610/drivers/pci/hotplug/pci_hotplug_core.c
-> > @@ -555,6 +555,7 @@ int pci_hp_register(struct hotplug_slot
-> >  {
-> >  	int result;
-> >  	struct pci_slot *pci_slot;
-> > +	struct hotplug_slot *tmp;
-> >
-> >  	if (slot == NULL)
-> >  		return -ENODEV;
-> > @@ -567,6 +568,21 @@ int pci_hp_register(struct hotplug_slot
-> >  	}
-> >
-> >  	/*
-> > +	 * Prevent registering multiple hotplug slots with the same name.
-> > +	 */
-> > +	spin_lock(&pci_hotplug_slot_list_lock);
-> > +	list_for_each_entry(tmp, &pci_hotplug_slot_list, slot_list) {
-> > +		pci_slot = tmp->pci_slot;
-> > +		if (pci_slot->bus == bus && pci_slot->number == slot_nr)
-> > +			continue;
-> > +		if (!strcmp(tmp->name, slot->name)) {
-> > +			spin_unlock(&pci_hotplug_slot_list_lock);
-> > +			return -EEXIST;
-> > +		}
-> > +	}
-> > +	spin_unlock(&pci_hotplug_slot_list_lock);
+Hello Paul,
+
+> > diff --git a/include/linux/uio_driver.h b/include/linux/uio_driver.h
+> > index cdf338d..671a7a8 100644
+> > --- a/include/linux/uio_driver.h
+> > +++ b/include/linux/uio_driver.h
+> > @@ -63,6 +63,7 @@ struct uio_info {
+> >       long                    irq;
+> >       unsigned long           irq_flags;
+> >       void                    *priv;
+> > +     unsigned int            flags;
+> >       irqreturn_t (*handler)(int irq, struct uio_info *dev_info);
+> >       int (*mmap)(struct uio_info *info, struct vm_area_struct *vma);
+> >       int (*open)(struct uio_info *info, struct inode *inode);
+> 
+> This should be unsigned long.
+Is this only because test_and_set_bit takes an unsigned long?  Or is a
+long type preferable in general?
+
+> > +static inline irqreturn_t uio_userirq_handler(int irq,
+> > +             struct uio_info *dev_info)
+> > +{
+> > +     int ret;
 > > +
-> > +	/*
-> >  	 * No problems if we call this interface from both ACPI_PCI_SLOT
-> >  	 * driver and call it here again. If we've already created the
-> >  	 * pci_slot, the interface will simply bump the refcount.
->
-> Please note that I made this patch against linux-next with your
-> latest three patches applied.
+> > +     if (likely(dev_info->irqcontrol)) {
+> > +             ret = dev_info->irqcontrol(dev_info, 0);
+> > +             if (ret) {
+> > +                     pr_warning("%s: failed to disable irq\n", __func__);
+> > +                     return IRQ_NONE;
+> > +             } else
+> > +                     return IRQ_HANDLED;
+> > +     } else
+> > +             return IRQ_NONE;
+> > +}
+> > +
+> You can simplify this by just using IRQ_RETVAL() on
+> dev_info->irqcontrol(...). The printk() shouldn't be necessary, as the
+> other layers should already catch that.
+Right, we can make this:
 
-I looked this over and it seems like it's already handled in Alex's latest 
-patchset (v15); can you take a look and make sure, Kenji-san (see Alex's 
-latest mail to you too).
+	static inline irqreturn_t uio_userirq_handler(int irq,
+			struct uio_info *dev_info)
+	{
+		int ret = -1;
 
-I just need acks from you and Kristen before pushing this...
+		if (likely(dev_info->irqcontrol))
+			ret = dev_info->irqcontrol(dev_info, 0);
 
-Thanks,
-Jesse
+		return IRQ_RETVAL(ret == 0);
+	}
+
+Best regards
+Uwe
+
+-- 
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
