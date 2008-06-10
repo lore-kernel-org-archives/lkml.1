@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757285AbYFJUaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756892AbYFJUc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757285AbYFJUaa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 16:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbYFJUaO
+	id S1756892AbYFJUc2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 16:32:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbYFJUcV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 16:30:14 -0400
-Received: from vms173003pub.verizon.net ([206.46.173.3]:37584 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752078AbYFJUaM (ORCPT
+	Tue, 10 Jun 2008 16:32:21 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:27365 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752871AbYFJUcU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 16:30:12 -0400
-Date: Tue, 10 Jun 2008 16:29:30 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: acpi problem
-In-reply-to: <200805292156.08963.rjw@sisk.pl>
-X-X-Sender: lenb@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: De Martino Pasquale <paco.dmp@gmail.com>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Message-id: <alpine.LFD.1.10.0806101623491.14381@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <20080529173315.GA7420@guevara.dmp> <200805292156.08963.rjw@sisk.pl>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 10 Jun 2008 16:32:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=Uh2YlCDsDgLJQobm99e3u5KGKBxa5BxWnnQBhKHLzt/Vb/VL1iUt6/UjKnQq+xzJT5
+         7JgZTVuF+smFHpfllxgoC9g4WluyeFtDlg8LTUzkjEByRYaJb5WWCDAbpncOQ66wBaBo
+         7nMNrE2/ZQbXlT3ZRUivADFIqXPmAIErDhrlQ=
+Message-ID: <484EE490.4060509@gmail.com>
+Date: Tue, 10 Jun 2008 22:31:12 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: mm-commits@vger.kernel.org, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com, lee.schermerhorn@hp.com,
+       riel@redhat.com
+Subject: Re: + mm-only-vmscan-noreclaim-lru-scan-sysctl-fix.patch added to
+ -mm tree
+References: <200806101837.m5AIbmiO023529@imap1.linux-foundation.org>
+In-Reply-To: <200806101837.m5AIbmiO023529@imap1.linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 06/10/2008 08:37 PM, akpm@linux-foundation.org wrote:
+> Subject: mm-only-vmscan-noreclaim-lru-scan-sysctl-fix
+> From: Andrew Morton <akpm@linux-foundation.org>
+> 
+> build fix
+> 
+> Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Cc: Lee Schermerhorn <lee.schermerhorn@hp.com>
+> Cc: Rik van Riel <riel@redhat.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  mm/vmscan.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff -puN mm/vmscan.c~mm-only-vmscan-noreclaim-lru-scan-sysctl-fix mm/vmscan.c
+> --- a/mm/vmscan.c~mm-only-vmscan-noreclaim-lru-scan-sysctl-fix
+> +++ a/mm/vmscan.c
+> @@ -2400,6 +2400,7 @@ static void show_page_path(struct page *
+>  		       dentry_path(dentry, buf, 256), pgoff);
+>  		spin_unlock(&mapping->i_mmap_lock);
+>  	} else {
+> +#ifdef CONFG_MM_OWNER
 
-> > with kernel 2.6.25 my acpi does not work whereas with version <= 2.6.24 all works fine.
-> > 
-> > Full description:
-> > when i run acpi -a this is my output:
-> > No support for device type: battery
-> > No support for device type: ac_adapter
+s/CONFG/CONFIG/
 
-what do CONFIG_ACPI_BATTERY and CONFIG_ACPI_AC say in your 2.6.24 and 
-2.6.25 .config files?
+>  		struct anon_vma *anon_vma;
+>  		struct vm_area_struct *vma;
+>  
 
-> > "lsmod | grep acpi" says that the acpi module is not loaded so i've tried
-> > "modprobe acpi" but the output is:
-
-there is no such thing as the "acpi module", so this is normal
-
-> > FATAL: Error inserting acpi_cpufreq
-> > (/lib/modules/2.6.25-2-amd64/kernel/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.ko):
-> > Device or resource busy
-
-that's normal, since you've got powernow_k8 loaded
-
-> > I've also tried to pass acpi=on option when kernel boots
-
-there is no such option as "acpi=on", so this is also normal.
-
-"dmesg -s64000 |grep -i acpi" will tell you more about what you
-just booted, but since you're running the fan and thermal modules,
-it is surely on already.
-
--Len
