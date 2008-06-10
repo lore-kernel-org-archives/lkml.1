@@ -1,118 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbYFJHkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbYFJHl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756142AbYFJHkv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 03:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750995AbYFJHko
+	id S1757447AbYFJHl4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 03:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbYFJHlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 03:40:44 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:54504 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750859AbYFJHko (ORCPT
+	Tue, 10 Jun 2008 03:41:49 -0400
+Received: from smtp116.mail.mud.yahoo.com ([209.191.84.165]:42972 "HELO
+	smtp116.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750859AbYFJHls (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 03:40:44 -0400
-Date: Tue, 10 Jun 2008 16:40:42 +0900
-From: Isaku Yamahata <yamahata@valinux.co.jp>
-To: jeremy@goop.org
-Cc: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       xen-ia64-devel@lists.xensource.com, xen-devel@lists.xensource.com
-Subject: [PATCH] xen: add xen_arch_resume()/xen_timer_resume hook for ia64 support.
-Message-ID: <20080610074042.GI24381%yamahata@valinux.co.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 10 Jun 2008 03:41:48 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=b/lvNqfsVWjcVge4PG57RN3hyubCO69ZMVhJpbK+Ki5GM0HQ138r5vbATzqoCNUiQHIxBSkJOBZ+VRJ556WNrBKvIYJS3NALXoKBbV49xv9VDW9tv1i7T9SK6ds2imBzdm68jcBERqOoQQ1NVfmIKrm9Cdd9QvLOryRTvCiqW6I=  ;
+X-YMail-OSG: P5YbiVEVM1lNbx.p5.TA82LYdgbhsJ6YspnWBq1kTV0OGmxC5qzOfvjtvUm9.VvKUghTS3ER92mitaVez49_mzBO6tCJK1xn7xAaYYJtmcfakIgIyQi5IsPTUHuqephRV.4-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Isaku Yamahata <yamahata@valinux.co.jp>
+Subject: Re: [PATCH] xen: Use wmb instead of rmb in xen_evtchn_do_upcall().
+Date: Tue, 10 Jun 2008 17:41:39 +1000
+User-Agent: KMail/1.9.5
+Cc: jeremy@goop.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org,
+       xen-ia64-devel@lists.xensource.com,
+       Samuel Thibault <samuel.thibault@eu.citrix.com>
+References: <20080610073532.GG24381%yamahata@valinux.co.jp>
+In-Reply-To: <20080610073532.GG24381%yamahata@valinux.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.6i
+Message-Id: <200806101741.39871.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-add xen_timer_resume() hook.
-Timer resume should be done after event channel is resumed.
-add xen_arch_resume() hook when ipi becomes usable after resume.
-After resume, some cpu specific resource must be reinitialized
-on ia64 that can't be set by another cpu.
-However available hooks is run once on only one cpu so that ipi has
-to be used.
-During stop_machine_run() ipi can't be used because interrupt is masked.
-So add another hook after stop_machine_run().
-Another approach might be use resume hook which is run by
-device_resume(). However device_resume() may be executed on
-suspend error recovery path. So it is necessary to determine
-whether it is executed on real resume path or error recovery path.
+On Tuesday 10 June 2008 17:35, Isaku Yamahata wrote:
+> This patch is ported one from 534:77db69c38249 of linux-2.6.18-xen.hg.
+> Use wmb instead of rmb to enforce ordering between
+> evtchn_upcall_pending and evtchn_pending_sel stores
+> in xen_evtchn_do_upcall().
 
-Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
----
- arch/x86/xen/suspend.c |    5 ++++-
- arch/x86/xen/xen-ops.h |    1 -
- drivers/xen/manage.c   |    6 ++++--
- include/xen/xen-ops.h  |    3 +++
- 4 files changed, 11 insertions(+), 4 deletions(-)
+There are a whole load of places in the kernel that should be using
+smp_ variants of memory barriers. This seemed to me like one of them,
+but I could be wrong.
 
-diff --git a/arch/x86/xen/suspend.c b/arch/x86/xen/suspend.c
-index 251669a..2a234db 100644
---- a/arch/x86/xen/suspend.c
-+++ b/arch/x86/xen/suspend.c
-@@ -38,8 +38,11 @@ void xen_post_suspend(int suspend_cancelled)
- 		xen_cpu_initialized_map = cpu_online_map;
- #endif
- 		xen_vcpu_restore();
--		xen_timer_resume();
- 	}
- 
- }
- 
-+void xen_arch_resume(void)
-+{
-+	/* nothing */
-+}
-diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
-index 9a05559..a457e03 100644
---- a/arch/x86/xen/xen-ops.h
-+++ b/arch/x86/xen/xen-ops.h
-@@ -37,7 +37,6 @@ void __init xen_time_init(void);
- unsigned long xen_get_wallclock(void);
- int xen_set_wallclock(unsigned long time);
- unsigned long long xen_sched_clock(void);
--void xen_timer_resume(void);
- 
- irqreturn_t xen_debug_interrupt(int irq, void *dev_id);
- 
-diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
-index db3c4bd..e8db90c 100644
---- a/drivers/xen/manage.c
-+++ b/drivers/xen/manage.c
-@@ -66,6 +66,7 @@ static int xen_suspend(void *data)
- 	if (!*cancelled) {
- 		xen_irq_resume();
- 		xen_console_resume();
-+		xen_timer_resume();
- 	}
- 
- 	return 0;
-@@ -105,9 +106,10 @@ static void do_suspend(void)
- 		goto out;
- 	}
- 
--	if (!cancelled)
-+	if (!cancelled) {
-+		xen_arch_resume();
- 		xenbus_resume();
--	else
-+	} else
- 		xenbus_suspend_cancel();
- 
- 	device_resume();
-diff --git a/include/xen/xen-ops.h b/include/xen/xen-ops.h
-index a706d6a..883a21b 100644
---- a/include/xen/xen-ops.h
-+++ b/include/xen/xen-ops.h
-@@ -11,4 +11,7 @@ void xen_post_suspend(int suspend_cancelled);
- void xen_mm_pin_all(void);
- void xen_mm_unpin_all(void);
- 
-+void xen_timer_resume(void);
-+void xen_arch_resume(void);
-+
- #endif /* INCLUDE_XEN_OPS_H */
--- 
-1.5.3
+Also, if you do that can you get rid of the ifdef? If it really *really*
+mattered, we could introduce smp_mb before/after xchg... but if you
+use smp_wmb anyway then it definitely does not matter because that is a
+noop on x86.
 
+Thanks,
+Nick
+
+>
+ Cc: Samuel Thibault <samuel.thibault@eu.citrix.com>
+> Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
+> ---
+>  drivers/xen/events.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/xen/events.c b/drivers/xen/events.c
+> index 73d78dc..332dd63 100644
+> --- a/drivers/xen/events.c
+> +++ b/drivers/xen/events.c
+> @@ -529,7 +529,7 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
+>
+>  #ifndef CONFIG_X86 /* No need for a barrier -- XCHG is a barrier on x86.
+> */ /* Clear master flag /before/ clearing selector flag. */
+> -		rmb();
+> +		wmb();
+>  #endif
+>  		pending_words = xchg(&vcpu_info->evtchn_pending_sel, 0);
+>  		while (pending_words != 0) {
