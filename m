@@ -1,63 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755222AbYFJOnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbYFJOos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755222AbYFJOnf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 10:43:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756762AbYFJOm6
+	id S1755939AbYFJOos (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 10:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbYFJOoj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 10:42:58 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47440 "EHLO mx1.redhat.com"
+	Tue, 10 Jun 2008 10:44:39 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:54195 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756666AbYFJOm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 10:42:56 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 0 of 7] Block/SCSI Data Integrity Support
-References: <patchbomb.1212814533@sermon.lab.mkp.net>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Tue, 10 Jun 2008 10:41:45 -0400
-In-Reply-To: <patchbomb.1212814533@sermon.lab.mkp.net> (Martin K. Petersen's
-	message of "Sat, 07 Jun 2008 00:55:33 -0400")
-Message-ID: <x491w35bbdi.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	id S1752646AbYFJOoi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 10:44:38 -0400
+From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+To: Roland Dreier <rolandd@cisco.com>, Paul Mackerras <paulus@samba.org>,
+       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-EWG" <ewg@lists.openfabrics.org>, general@lists.openfabrics.org
+Subject: [PATCH REPOST] IB/ehca: In case of lost interrupts, trigger EOI to reenable interrupts
+Date: Tue, 10 Jun 2008 16:44:31 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: fenkes@de.ibm.com, raisch@de.ibm.com, hnguyen@de.ibm.com,
+       TKLEIN@de.ibm.com, THEMANN@de.ibm.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806101644.34693.ossrosch@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Martin K. Petersen" <martin.petersen@oracle.com> writes:
+During corner case testing, we noticed that some versions of ehca 
+do not properly transition to interrupt done in special load situations.
+This can be resolved by periodically triggering EOI through H_EOI, 
+if eqes are pending.
 
-> Another post of my block I/O data integrity patches.  This kit goes on
-> top of the scsi_data_buffer and sd.h cleanups I posted earlier today.
+Signed-off-by: Stefan Roscher <stefan.roscher@de.ibm.com>
 
-Pointers to archives would have been appreciated.  I can't, for the life
-of me, find these.
+---
+This patch replaces my previous patch-set.
+As Paul suggested, this version of the patch calls H_EOI directly and doesn't need
+any ibmebus changes.
+ 
+ drivers/infiniband/hw/ehca/ehca_main.c |   11 +++++++++--
+ drivers/infiniband/hw/ehca/hcp_if.c    |   11 +++++++++++
+ drivers/infiniband/hw/ehca/hcp_if.h    |    1 +
+ 3 files changed, 21 insertions(+), 2 deletions(-)
 
-> There has been no changes to the block layer code since my last
-> submission.
->
-> Within SCSI, the changes are cleanups based on comments from Christoph
-> as well as working support for Type 3 and 4KB sectors.
+diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
+index 482103e..add4ff4 100644
+--- a/drivers/infiniband/hw/ehca/ehca_main.c
++++ b/drivers/infiniband/hw/ehca/ehca_main.c
+@@ -937,6 +937,7 @@ static struct of_platform_driver ehca_driver = {
+ void ehca_poll_eqs(unsigned long data)
+ {
+ 	struct ehca_shca *shca;
++	u64 ret;
+ 
+ 	spin_lock(&shca_list_lock);
+ 	list_for_each_entry(shca, &shca_list, shca_list) {
+@@ -955,8 +956,14 @@ void ehca_poll_eqs(unsigned long data)
+ 				spin_unlock_irqrestore(&eq->spinlock, flags);
+ 				max--;
+ 			} while (q_ofs == q_ofs2 && max > 0);
+-			if (q_ofs == q_ofs2)
+-				ehca_process_eq(shca, 0);
++			if (q_ofs == q_ofs2) {
++				ret = hipz_h_eoi(eq->ist);
++				if (ret != H_SUCCESS)
++					ehca_err(&shca->ib_device,
++						 "bad return code EOI -"
++						 "rc = %ld\n", ret);
++				tasklet_hi_schedule(&shca->eq.interrupt_task);
++			}
+ 		}
+ 	}
+ 	mod_timer(&poll_eqs_timer, round_jiffies(jiffies + HZ));
+diff --git a/drivers/infiniband/hw/ehca/hcp_if.c b/drivers/infiniband/hw/ehca/hcp_if.c
+index 5245e13..7084efd 100644
+--- a/drivers/infiniband/hw/ehca/hcp_if.c
++++ b/drivers/infiniband/hw/ehca/hcp_if.c
+@@ -933,3 +933,14 @@ u64 hipz_h_error_data(const struct ipz_adapter_handle adapter_handle,
+ 				       r_cb,
+ 				       0, 0, 0, 0);
+ }
++
++u64 hipz_h_eoi(int irq)
++{
++	int value;
++	unsigned long xirr;
++
++	iosync();
++	value = (0xff << 24) | irq;
++	xirr = value & 0xffffffff;
++	return plpar_hcall_norets(H_EOI, xirr);
++}
+diff --git a/drivers/infiniband/hw/ehca/hcp_if.h b/drivers/infiniband/hw/ehca/hcp_if.h
+index 60ce02b..2c3c6e0 100644
+--- a/drivers/infiniband/hw/ehca/hcp_if.h
++++ b/drivers/infiniband/hw/ehca/hcp_if.h
+@@ -260,5 +260,6 @@ u64 hipz_h_error_data(const struct ipz_adapter_handle adapter_handle,
+ 		      const u64 ressource_handle,
+ 		      void *rblock,
+ 		      unsigned long *byte_count);
++u64 hipz_h_eoi(int irq);
+ 
+ #endif /* __HCP_IF_H__ */
+-- 
+1.5.5
 
-Thanks for all of the great documentation.  It would be good to include
-some instructions on how one would test this, and what testing you
-performed.  Also, please use the '-p' switch to diff, as it makes
-reviewing patches much easier.
-
-I set out to try your changes, but ran into some problems.  First, this
-patch set didn't apply cleanly to a git checkout.  So, I grabbed your
-mercurial repository, but got a build failure:
-
-block/blk-core.c: In function 'generic_make_request':
-include/linux/bio.h:469: sorry, unimplemented: inlining failed in call to 'bio_i
-ntegrity_enabled': function body not available
-block/blk-core.c:1388: sorry, unimplemented: called from here
-make[1]: *** [block/blk-core.o] Error 1
-make: *** [block] Error 2
-
-Cheers,
-
-Jeff
