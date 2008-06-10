@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758029AbYFJTDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758143AbYFJTDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758029AbYFJTDY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 15:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbYFJTDE
+	id S1758143AbYFJTDi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 15:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756375AbYFJTDL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 15:03:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42970 "EHLO mx1.redhat.com"
+	Tue, 10 Jun 2008 15:03:11 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:42270 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754410AbYFJTDD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 15:03:03 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 3 of 7] block: Find bio sector offset given idx and offset
-References: <318fa71e735d25003f9c.1212814536@sermon.lab.mkp.net>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Tue, 10 Jun 2008 15:02:51 -0400
-In-Reply-To: <318fa71e735d25003f9c.1212814536@sermon.lab.mkp.net> (Martin
-	K. Petersen's message of "Sat, 07 Jun 2008 00:55:36 -0400")
-Message-ID: <x49ej759kpw.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
+	id S1756267AbYFJTDJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 15:03:09 -0400
+Date: Tue, 10 Jun 2008 21:03:51 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>
+Subject: Re: linux-next: kbuild-current build failure
+Message-ID: <20080610190351.GB15983@uranus.ravnborg.org>
+References: <20080610110842.30c90c61.sfr@canb.auug.org.au>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080610110842.30c90c61.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Martin K. Petersen" <martin.petersen@oracle.com> writes:
+On Tue, Jun 10, 2008 at 11:08:42AM +1000, Stephen Rothwell wrote:
+> Hi Sam,
+> 
+> Today's linux-next build (powerpc ppc64_deconfig) failed like this:
+> 
+>   LD      vmlinux.o
+> /scratch/sfr/next/scripts/Makefile.modpost:44: scripts/Kbuild.include: No such file or directory
+> /scratch/sfr/next/scripts/Makefile.modpost:58: scripts/Makefile.lib: No such file or directory
+> make[2]: *** No rule to make target `scripts/Makefile.lib'.  Stop.
+> make[1]: *** [vmlinux] Error 2
+> make: *** [sub-make] Error 2
+> 
+> This is Linus' tree with just the net-current, arm-current and
+> kbuild-current trees merged i.e. just bug fixes queued for Linus' current
+> tree.  The build was done with "O=../powerpc_ppc64_defconfig -j24 -s"
+> i.e. separate object tree and parallel.
+> 
+> Reverting commit 68e9b79c8dad5245f28ab4f3527481b730dbdb61 ("kbuild:
+> simplify vmlinux link stage") makes the build work again.
 
-> 2 files changed, 26 insertions(+)
-> fs/bio.c            |   24 ++++++++++++++++++++++++
-> include/linux/bio.h |    2 ++
->
->
-> Helper function to find the sector offset in a bio given bvec index
-> and page offset.
->
-> Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+Updated kbuild-next.git pushed out with this bug fixed.
+Thanks for reporting/testing it.
 
-Reviewed-by: Jeff Moyer <jmoyer@redhat.com>
+	Sam
