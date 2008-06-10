@@ -1,99 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759488AbYFJVb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759579AbYFJVbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759488AbYFJVb1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 17:31:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755270AbYFJVbS
+	id S1759579AbYFJVbn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 17:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759437AbYFJVbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 17:31:18 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:50763 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753659AbYFJVbQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 17:31:16 -0400
-Message-ID: <484EF29C.7080100@sgi.com>
-Date: Tue, 10 Jun 2008 14:31:08 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 10 Jun 2008 17:31:24 -0400
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:24915 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759423AbYFJVbX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 17:31:23 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=mPIc0a+k37qkgZRnlzE+U5zlyXYQXZjxYK4OH6fNlKX6WMzHvdb+FqM2IF1ht0mmF8dXa5QjwQW0pLQhLGxRkaY76IJrR2f0dNDMUr2KUR1R4R3v8uLnxkxD/qE3ZpCWnLEfeXaBQyxGom73iaueuO/wWty2sAft3CdVBIUIYik=  ;
+X-YMail-OSG: ZLmkXmMVM1l.rasd294SmdkYROMwat.paWrgu9WvBMz8fbn.gyU74H7K59_B.Ej6fNYDYSSGPY6RGgy2XP59wUxnWzZFegauws4B_V12w7.aS4UZQc61UkoOE2Dcf4FIVRg-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [patch 2.6.26-rc5] make HPET_RTC_IRQ track HPET_EMULATE_RTC
+Date: Tue, 10 Jun 2008 14:31:21 -0700
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <200806052241.44713.david-b@pacbell.net> <200806061644.23449.maximlevitsky@gmail.com>
+In-Reply-To: <200806061644.23449.maximlevitsky@gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.509483000@polaris-admin.engr.sgi.com> <20080605102222.GA21319@elte.hu>
-In-Reply-To: <20080605102222.GA21319@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806101431.21402.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
-> 
->>   * Declare the pda as a per cpu variable.
->>
->>   * Make the x86_64 per cpu area start at zero.
->>
->>   * Since the pda is now the first element of the per_cpu area, cpu_pda()
->>     is no longer needed and per_cpu() can be used instead.  This also makes
->>     the _cpu_pda[] table obsolete.
->>
->>   * Since %gs is pointing to the pda, it will then also point to the per cpu
->>     variables and can be accessed thusly:
->>
->> 	%gs:[&per_cpu_xxxx - __per_cpu_start]
->>
->> Based on linux-2.6.tip
-> 
-> -tip testing found an instantaneous reboot crash on 64-bit x86, with 
-> this config:
-> 
->   http://redhat.com/~mingo/misc/config-Thu_Jun__5_11_43_51_CEST_2008.bad
+On Friday 06 June 2008, Maxim Levitsky wrote:
 
-I'm still stuck on this one.  One new development is that the current -tip
-branch without the patches boots to the kernel prompt then hangs after a few
-moments and then reboots.  It seems you can tickle it using ^C to abort a
-process.
+> Remember long ago I had a discussion with you about HPET that
+> steals RTC irq in 'legacy replacement' mode, and rtc driver thus
+> implements rtc on 'top' of hpet.
+> 
+> New rtc-cmos driver doesn't do this emulation, thus it isn't compatible
+> with hpet driver.
 
--Mike
+That was fixed in 9d8af78b07976d4d84e0df491abd4e9db848d0ad (February)
+by Bernhard Walle <bwalle@suse.de> ... if you look at the bug report
+associated with this patch, you'll see that rtc-cmos was working OK
+with HPET, it's just the legacy RTC driver which got confused after
+the recent updates to clock handling.
 
-> 
-> there is no boot log as the instantaneous reboot happens before anything 
-> is printed to the (early-) serial console. I have bisected it down to:
-> 
-> | 7670dc09e89a2b151a1cf49eccebc07c41c2ce9f is first bad commit
-> | commit 7670dc09e89a2b151a1cf49eccebc07c41c2ce9f
-> | Author: Mike Travis <travis@sgi.com>
-> | Date:   Tue Jun 3 17:30:21 2008 -0700
-> |
-> |     x86_64: Fold pda into per cpu area
-> 
-> the big problem is not just this crash, but that the patch is _way_ too 
-> big:
-> 
->  arch/x86/Kconfig                 |    3 +
->  arch/x86/kernel/head64.c         |   34 ++++++--------
->  arch/x86/kernel/irq_64.c         |   36 ++++++++-------
->  arch/x86/kernel/setup.c          |   90 ++++++++++++---------------------------
->  arch/x86/kernel/setup64.c        |    5 --
->  arch/x86/kernel/smpboot.c        |   51 ----------------------
->  arch/x86/kernel/traps_64.c       |   11 +++-
->  arch/x86/kernel/vmlinux_64.lds.S |    1 
->  include/asm-x86/percpu.h         |   48 ++++++--------------
->  9 files changed, 89 insertions(+), 190 deletions(-)
-> 
-> considering the danger involved, this is just way too large, and there's 
-> no reasonable debugging i can do in the bisection to narrow it down any 
-> further.
-> 
-> Please resubmit with the bug fixed and with a proper splitup, the more 
-> patches you manage to create, the better. For a dangerous code area like 
-> this, with a track record of frequent breakages in the past, i would not 
-> mind a "one line of code changed per patch" splitup either. (Feel free 
-> to send a git tree link for us to try as well.)
-> 
-> 	Ingo
 
+> But there is a solution,  I didn't agree with firstly, but then I did, and
+> I do agree now, and that to put hpet in normal mode.
+> 
+> What happened with patches that put hpet in normal independent mode?
+
+The story from either Ingo or Thomas (I forget who) was that this is
+another case where we have to cope with BIOS braindamage.  Not enough
+BIOS vendors expose the relevant IRQ routing that Linux could default
+to using HPET in what I'd call "sane" mode.
+
+Now, that still kind of implies there could be an option to use sane
+HPET IRQ configuration (doesn't hijack RTC and other IRQs, and there
+could be a per-CPU HPET) on at least the systems where that IRQ routing
+is available.  Over time I'd hope that systems like that could become
+the common case.  But ... someone else would have to do that work.  :)
+
+- Dave
