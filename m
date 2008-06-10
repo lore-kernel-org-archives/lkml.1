@@ -1,122 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbYFJPvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbYFJPvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754157AbYFJPvT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 11:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbYFJPvG
+	id S1755196AbYFJPvh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 11:51:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbYFJPvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 11:51:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36686 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750878AbYFJPvF (ORCPT
+	Tue, 10 Jun 2008 11:51:24 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:5389 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754450AbYFJPvX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 11:51:05 -0400
-Date: Tue, 10 Jun 2008 08:50:05 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Oliver Neukum <oliver@neukum.org>
-cc: Pavel Machek <pavel@suse.cz>, linux-usb@vger.kernel.org,
-       Greg KH <gregkh@suse.de>, Alan Stern <stern@rowland.harvard.edu>,
-       Linus Torvalds <torvalds@linuxfoundation.org>,
-       Andrew Morton <akpm@linuxfoundation.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.25-rc6: CONFIG_USB_PERSIST forced on
-In-Reply-To: <200806101055.14539.oliver@neukum.org>
-Message-ID: <alpine.LFD.1.10.0806100842420.3101@woody.linux-foundation.org>
-References: <200806091712.46869.oliver@neukum.org> <alpine.LFD.1.10.0806091435120.3218@woody.linux-foundation.org> <20080609215651.GF21429@elf.ucw.cz> <200806101055.14539.oliver@neukum.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 10 Jun 2008 11:51:23 -0400
+Subject: Re: [PATCH -rt 5/5] cpu-hotplug: cpu_down vs preempt-rt
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: paulmck@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Clark Williams <williams@redhat.com>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+In-Reply-To: <20080610153301.GD15481@linux.vnet.ibm.com>
+References: <20080610111259.766940257@chello.nl>
+	 <20080610111832.969119014@chello.nl>
+	 <20080610153301.GD15481@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Tue, 10 Jun 2008 17:51:18 +0200
+Message-Id: <1213113078.31518.16.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 10 Jun 2008, Oliver Neukum wrote:
+On Tue, 2008-06-10 at 08:33 -0700, Paul E. McKenney wrote:
+> On Tue, Jun 10, 2008 at 01:13:04PM +0200, Peter Zijlstra wrote:
+> > idle_task_exit() calls mmdrop() from the idle thread, but in PREEMPT_RT all the
+> > allocator locks are sleeping locks - for obvious reasons scheduling away the
+> > idle thread gives some curious problems.
+> > 
+> > Solve this by pushing the mmdrop() into an RCU callback, however we can't use
+> > RCU because the CPU is already down and all the local RCU state has been
+> > destroyed.
+> > 
+> > Therefore create a new call_rcu() variant that enqueues the callback on an
+> > online cpu.
 > 
-> If a hotfix it must be, here's my take. It works for me, but it isn't
-> tested well.
-> Alan, what do you think?
+> I am a bit nervous about the non-determinism, but on the other hand
+> CPU online/offline events can only happen so often due to the locking.
+> 
+> So...
+> 
+> Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Hmm. I hate making functions more complex. Especially if it's an area 
-where we'd expect it to change in the future (ie I think we should aim for 
-taking into account whether a device is actually open or not). So here's a 
-cleaned-up alternative of your approach with the whole "is it persistent" 
-logic separated out into a function of its own.
+Thanks!
 
-Then, some day, if we get back-pointers to open devices, or we get drievr 
-hooks to say "am I mounted" or something, we have a logical place to do 
-those things.
+Yesterday you suggested using rcu_cpu_online_map and fliplock to avoid
+the loop here:
 
-Is there perhaps already a way to know whether a driver is actually 
-*active* or not (ie not just registered, but somebody has then opened it)? 
-I guess there isn't. Oh, well.
+> > +void fastcall call_rcu_preempt_online(struct rcu_head *head,
+> > +		void (*func)(struct rcu_head *rcu))
+> > +{
+> > +	struct rcu_data *rdp;
+> > +	unsigned long flags;
+> > +	int cpu;
+> > +
+> > +	head->func = func;
+> > +	head->next = NULL;
+> > +again:
+> > +	cpu = first_cpu(cpu_online_map);
+> > +	rdp = RCU_DATA_CPU(cpu);
+> > +
+> > +	spin_lock_irqsave(&rdp->lock, flags);
+> > +	if (unlikely(!cpu_online(cpu))) {
+> > +		/*
+> > +		 * cpu is removed from the online map before rcu_offline_cpu
+> > +		 * is called.
+> > +		 */
+> > +		spin_unlock_irqrestore(&rdp->lock, flags);
+> > +		goto again;
+> > +	}
+> > +
+> > +	*rdp->nexttail = head;
+> > +	rdp->nexttail = &head->next;
+> > +	spin_unlock_irqrestore(&rdp->lock, flags);
+> > +
+> > +}
 
-		Linus
+But then the code would look like:
 
----
- drivers/usb/core/hub.c |   44 ++++++++++++++++++++++++++++++++++++++++++--
- 1 files changed, 42 insertions(+), 2 deletions(-)
+  spin_lock_irqsave(&rcu_ctrlblk.fliplock, flags);
+  cpu = first_cpu(rcu_cpu_online_map);
+  rdp = RCU_DATA_CPU(cpu);
+  spin_lock(&rdp->lock);
 
-diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index 8eb4da3..3b0b58e 100644
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -644,6 +644,46 @@ static void hub_stop(struct usb_hub *hub)
- 
- #ifdef CONFIG_PM
- 
-+static int persistent_device(struct usb_device *udev)
-+{
-+	int i, retval;
-+	struct usb_host_config *actconfig;
-+
-+	/* Explicitly not marked persistent? */
-+	if (!udev->persist_enabled)
-+		return 0;
-+
-+	/* No active config? */
-+	actconfig = udev->actconfig;
-+	if (!actconfig)
-+		return 0;
-+
-+	/* FIXME! We should check whether it's open here or not! */
-+
-+	/*
-+	 * Check that all drivers on the active interface have a
-+	 * 'reset_resume' entrypoint
-+	 */
-+	retval = 0;
-+	for (i = 0; i < actconfig->desc.bNumInterfaces; i++) {
-+		struct usb_interface *intf;
-+		struct usb_driver *driver;
-+
-+		intf = actconfig->interface[i];
-+		driver = to_usb_driver(intf->dev.driver);
-+		if (!driver)
-+			continue;
-+		if (!driver->reset_resume)
-+			return 0;
-+		/*
-+		 * We have at least one driver, and that one
-+		 * supports 'reset_resume'
-+		 */
-+		retval = 1;
-+	}
-+	return retval;
-+}
-+
- static void hub_restart(struct usb_hub *hub, int type)
- {
- 	struct usb_device *hdev = hub->hdev;
-@@ -689,8 +729,8 @@ static void hub_restart(struct usb_hub *hub, int type)
- 		 * turn off the various status changes to prevent
- 		 * khubd from disconnecting it later.
- 		 */
--		if (udev->persist_enabled && status == 0 &&
--				!(portstatus & USB_PORT_STAT_ENABLE)) {
-+		if (status == 0 && !(portstatus & USB_PORT_STAT_ENABLE) &&
-+		    persistent_device(udev)) {
- 			if (portchange & USB_PORT_STAT_C_ENABLE)
- 				clear_port_feature(hub->hdev, port1,
- 						USB_PORT_FEAT_C_ENABLE);
+creating a nesting between these two locks, where I could not find one.
+
+Do you still prefer I look into changing it into such a form, or are you
+sufficiently non-caring that the current code can stand? :-)
+
