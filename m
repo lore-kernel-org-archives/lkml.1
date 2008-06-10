@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbYFJVjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758079AbYFJVki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759301AbYFJVjk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 17:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755258AbYFJVjd
+	id S1758079AbYFJVki (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 17:40:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756619AbYFJVka
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 17:39:33 -0400
-Received: from smtp1.riverbed.com ([206.169.144.12]:30877 "EHLO
-	smtp1.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754010AbYFJVjc (ORCPT
+	Tue, 10 Jun 2008 17:40:30 -0400
+Received: from outbound-mail-131.bluehost.com ([67.222.39.21]:48612 "HELO
+	outbound-mail-131.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755854AbYFJVk3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 17:39:32 -0400
-Date: Tue, 10 Jun 2008 14:39:16 -0700
-From: Arthur Jones <ajones@riverbed.com>
-To: Doug Thompson <norsk5@yahoo.com>
-CC: Greg KH <greg@kroah.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "bluesmoke-devel@lists.sourceforge.net" 
-	<bluesmoke-devel@lists.sourceforge.net>
-Subject: Re: on static kobjects and double frees...
-Message-ID: <20080610213916.GC28572@ajones-laptop.nbttech.com>
-References: <20080610163800.GA28572@ajones-laptop.nbttech.com> <879085.21951.qm@web50106.mail.re2.yahoo.com>
+	Tue, 10 Jun 2008 17:40:29 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Alex Chiang <achiang@hp.com>
+Subject: Re: [PATCH 0/3, v16] PCI, ACPI: Physical PCI slot objects
+Date: Tue, 10 Jun 2008 14:39:50 -0700
+User-Agent: KMail/1.9.9
+Cc: greg@kroah.com, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>, kristen.c.accardi@intel.com,
+       lenb@kernel.org, pbadari@us.ibm.com, linux-pci@vger.kernel.org,
+       pcihpd-discuss@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <20080610212520.GJ25295@ldl.fc.hp.com>
+In-Reply-To: <20080610212520.GJ25295@ldl.fc.hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <879085.21951.qm@web50106.mail.re2.yahoo.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200806101439.51174.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Doug, ...
+On Tuesday, June 10, 2008 2:25 pm Alex Chiang wrote:
+> Hi Greg, Jesse,
+>
+> This is v16 of the physical PCI slot series.
+>
+> It is based off of Jesse's linux-next branch in his PCI tree.
+>
+> Greg, Jesse, there might be an issue with
+> 372fa8fa0a77c47c7bcfae0ccd14e0c5f97d17fe, which is in Stephen
+> Rothwell's linux-next tree, but not in Jesse's. The correct fix
+> would be for Greg to entirely drop the hunk that touches
+> drivers/pci/hotplug/fakephp.c.
+>
+> Jesse said he'd like to see final ACKs from Kenji-san and
+> Kristen, and then we'll be good to go for 2.6.27.
 
-On Tue, Jun 10, 2008 at 02:14:30PM -0700, Doug Thompson wrote:
-> [...]
-> Arthur, thanks for tracking that down and reviewing it. All the memory controller kobjects are all
-> dynamic. [...]
+Ok, pushed these to my linux-next tree.  As usual, testing & more review 
+appreciated.
 
-You're welcome, I learned a lot about kobjects
-that I should have already known...
-
-AFAICS, mc is not quite clean yet, though, as
-mc_kset is static and I don't think that is right.
-It does, however, look like less work than edac_pci_sysfs.c...
-
-> [...] The edac PCI code needed to be refactored and it looks like you did it.
-
-I only did the bare minimum, there's a lot of kobject
-stuff in there that looks suspect to me, e.g.:
-
-* the "pci" object should be a kset rather than a kobject?
-* if the "pci" object is a kset, can the whole global list
-  thing in edac_pci just go away?
-* do we really need the atomic_inc counter, wouldn't a mutex
-  be clearer?
-* can we initialize "pci" at init time thereby removing the
-  need even for a mutex on the "pci" initializer?  This does
-  change the sysfs semantics slightly, though, as the "pci"
-  object would no longer be created lazily.  I'm not sure if
-  that's a problem.
-
-and other minor things.  It looks to me like it could
-use a thorough scrubbing.  The good news is that I don't
-think the API would change much if at all.  I can have a
-closer look if you are interested...
-
-Arthur
+Thanks,
+Jesse
