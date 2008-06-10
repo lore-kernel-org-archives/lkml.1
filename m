@@ -1,76 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758211AbYFJO3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757888AbYFJOay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758211AbYFJO3r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 10:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755678AbYFJO3W
+	id S1757888AbYFJOay (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 10:30:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbYFJOap
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 10:29:22 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:2157 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755179AbYFJO3S (ORCPT
+	Tue, 10 Jun 2008 10:30:45 -0400
+Received: from mail-dub.bigfish.com ([213.199.154.10]:22290 "EHLO
+	mail17-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751652AbYFJOao (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 10:29:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Dcw45cdIWHsRVgRWQbx9P1WOmuEkoZUJElwHm5B8E0NN9t3bRRsAYifh6vZyw+XJZ/
-         imQm1WbeRDj1jq7Xc7SJG1kdrx+q5VVu4OThdJG18mP2/7AyxM7pzak+M53N7ozmuPi1
-         NVXT6iNccegVrerU/CL5gc1yImMY4f9C8IC2I=
-Message-ID: <19f34abd0806100729h7a060012h91e81248c9c7cdca@mail.gmail.com>
-Date: Tue, 10 Jun 2008 16:29:17 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Michael Buesch" <mb@bu3sch.de>
-Subject: Re: BUG: NULL pointer dereference at 00000000 -- IP: [<f8e783d5>] :b43:b43_dma_mapping_error+0x16/0x155
-Cc: "Miles Lane" <miles.lane@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-In-Reply-To: <200806101623.34082.mb@bu3sch.de>
+	Tue, 10 Jun 2008 10:30:44 -0400
+X-Greylist: delayed 1559 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Jun 2008 10:30:44 EDT
+X-BigFish: VPS2(zzzz10d3izzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
+X-WSS-ID: 0K2933A-01-IN0-01
+Date: Tue, 10 Jun 2008 16:04:30 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/5] x86: unconditionally enable PAT for AMD CPUs
+Message-ID: <20080610140430.GE5024@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <a44ae5cd0806100709rf4602f2x587631852502c0b5@mail.gmail.com>
-	 <200806101623.34082.mb@bu3sch.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 10 Jun 2008 14:04:25.0016 (UTC) FILETIME=[E3AC6B80:01C8CB02]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 4:23 PM, Michael Buesch <mb@bu3sch.de> wrote:
-> On Tuesday 10 June 2008 16:09:37 Miles Lane wrote:
->> BUG: unable to handle kernel NULL pointer dereference at 00000000
->> IP: [<f8e783d5>] :b43:b43_dma_mapping_error+0x16/0x155
->
->
-> It seems to crash at
->  60 extern const struct dma_mapping_ops *dma_ops;
->  61
->  62 static inline int dma_mapping_error(dma_addr_t dma_addr)
->  63 {
->  64         if (dma_ops->mapping_error)
->  65                 return dma_ops->mapping_error(dma_addr);
->  66
->  67         return (dma_addr == bad_dma_address);
->  68 }
+If PAT support is advertised it should just work. No errata known.
 
-No, this is wrong.
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ arch/x86/kernel/cpu/addon_cpuid_features.c |    5 +----
+ 1 files changed, 1 insertions(+), 4 deletions(-)
 
-/* Check if a DMA mapping address is invalid. */
-static bool b43_dma_mapping_error(struct b43_dmaring *ring,
-                                  dma_addr_t addr,
-                                  size_t buffersize, bool dma_to_device)
-{
-        if (unlikely(dma_mapping_error(ring->dev->dev->dma_dev, addr)))
-
-It crashes on this line ---^
-
-
-Vegard
-
+diff --git a/arch/x86/kernel/cpu/addon_cpuid_features.c b/arch/x86/kernel/cpu/addon_cpuid_features.c
+index d8b3e4a..0fbd062 100644
+--- a/arch/x86/kernel/cpu/addon_cpuid_features.c
++++ b/arch/x86/kernel/cpu/addon_cpuid_features.c
+@@ -54,14 +54,11 @@ void __cpuinit init_scattered_cpuid_features(struct cpuinfo_x86 *c)
+ void __cpuinit validate_pat_support(struct cpuinfo_x86 *c)
+ {
+ 	switch (c->x86_vendor) {
+-	case X86_VENDOR_AMD:
+-		if (c->x86 >= 0xf && c->x86 <= 0x11)
+-			return;
+-		break;
+ 	case X86_VENDOR_INTEL:
+ 		if (c->x86 == 0xF || (c->x86 == 6 && c->x86_model >= 15))
+ 			return;
+ 		break;
++	case X86_VENDOR_AMD:
+ 	case X86_VENDOR_CENTAUR:
+ 	case X86_VENDOR_TRANSMETA:
+ 		return;
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+1.5.5.3
+
+
+
