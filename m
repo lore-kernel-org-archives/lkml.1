@@ -1,148 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbYFJPP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbYFJPWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754728AbYFJPP7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 11:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYFJPPw
+	id S1754834AbYFJPWa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 11:22:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbYFJPWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 11:15:52 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:38476 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752592AbYFJPPv (ORCPT
+	Tue, 10 Jun 2008 11:22:19 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:33568 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752689AbYFJPWS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 11:15:51 -0400
-Date: Tue, 10 Jun 2008 08:15:44 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Clark Williams <williams@redhat.com>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [PATCH -rt 4/5] rcu: backport RCU cpu hotplug support
-Message-ID: <20080610151544.GC15481@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080610111259.766940257@chello.nl> <20080610111832.882895861@chello.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080610111832.882895861@chello.nl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 10 Jun 2008 11:22:18 -0400
+X-Greylist: delayed 1496 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Jun 2008 11:22:18 EDT
+Subject: Re: [PATCH 1/10] Add generic helpers for arch IPI function calls
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, npiggin@suse.de,
+       linux-arch@vger.kernel.org, jeremy@goop.org, mingo@elte.hu,
+       paulmck@linux.vnet.ibm.com, Russell King <rmk+lkml@arm.linux.org.uk>
+In-Reply-To: <1212051504-12561-2-git-send-email-jens.axboe@oracle.com>
+References: <1212051504-12561-1-git-send-email-jens.axboe@oracle.com>
+	 <1212051504-12561-2-git-send-email-jens.axboe@oracle.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Tue, 10 Jun 2008 15:51:25 +0100
+Message-Id: <1213109485.24701.107.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Jun 2008 14:51:26.0053 (UTC) FILETIME=[75248150:01C8CB09]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 01:13:03PM +0200, Peter Zijlstra wrote:
-> backport the RCU cpu-hotplug support from .26-rc to .24-rt
+Hi,
 
-Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  kernel/rcupreempt.c |   58 +++++++++++++++++++++++++++++++++++++++++++++++++---
->  1 file changed, 55 insertions(+), 3 deletions(-)
-> 
-> Index: linux-2.6.24.7.noarch/kernel/rcupreempt.c
-> ===================================================================
-> --- linux-2.6.24.7.noarch.orig/kernel/rcupreempt.c
-> +++ linux-2.6.24.7.noarch/kernel/rcupreempt.c
-> @@ -820,6 +820,13 @@ void rcu_offline_cpu_rt(int cpu)
->  		smp_mb();  /* Subsequent RCU read-side critical sections */
->  			   /*  seen -after- acknowledgement. */
->  	}
-> +
-> +	__get_cpu_var(rcu_flipctr)[0] += per_cpu(rcu_flipctr, cpu)[0];
-> +	__get_cpu_var(rcu_flipctr)[1] += per_cpu(rcu_flipctr, cpu)[1];
-> +
-> +	per_cpu(rcu_flipctr, cpu)[0] = 0;
-> +	per_cpu(rcu_flipctr, cpu)[1] = 0;
-> +
->  	cpu_clear(cpu, rcu_cpu_online_map);
->  	spin_unlock_irqrestore(&rcu_ctrlblk.fliplock, oldirq);
-> 
-> @@ -833,8 +840,9 @@ void rcu_offline_cpu_rt(int cpu)
->  	 * fix.
->  	 */
-> 
-> +	local_irq_save(oldirq);
->  	rdp = RCU_DATA_ME();
-> -	spin_lock_irqsave(&rdp->lock, oldirq);
-> +	spin_lock(&rdp->lock);
->  	*rdp->nexttail = list;
->  	if (list)
->  		rdp->nexttail = tail;
-> @@ -866,9 +874,11 @@ void rcu_process_callbacks_rt(struct sof
->  {
->  	unsigned long flags;
->  	struct rcu_head *next, *list;
-> -	struct rcu_data *rdp = RCU_DATA_ME();
-> +	struct rcu_data *rdp;
-> 
-> -	spin_lock_irqsave(&rdp->lock, flags);
-> +	local_irq_save(flags);
-> +	rdp = RCU_DATA_ME();
-> +	spin_lock(&rdp->lock);
->  	list = rdp->donelist;
->  	if (list == NULL) {
->  		spin_unlock_irqrestore(&rdp->lock, flags);
-> @@ -951,6 +961,32 @@ int rcu_pending_rt(int cpu)
->  	return 0;
->  }
-> 
-> +static int __cpuinit rcu_cpu_notify(struct notifier_block *self,
-> +                                unsigned long action, void *hcpu)
+On Thu, 2008-05-29 at 10:58 +0200, Jens Axboe wrote:
+> This adds kernel/smp.c which contains helpers for IPI function calls. In
+> addition to supporting the existing smp_call_function() in a more efficient
+> manner, it also adds a more scalable variant called smp_call_function_single()
+> for calling a given function on a single CPU only.
+[...]
+> + * You must not call this function with disabled interrupts or from a
+> + * hardware interrupt handler or from a bottom half handler.
+> + */
+> +int smp_call_function_mask(cpumask_t mask, void (*func)(void *), void *info,
+> +			   int wait)
 > +{
-> +        long cpu = (long)hcpu;
+> +	struct call_function_data d;
+> +	struct call_function_data *data = NULL;
+> +	cpumask_t allbutself;
+> +	unsigned long flags;
+> +	int cpu, num_cpus;
 > +
-> +        switch (action) {
-> +        case CPU_UP_PREPARE:
-> +        case CPU_UP_PREPARE_FROZEN:
-> +                rcu_online_cpu_rt(cpu);
-> +                break;
-> +        case CPU_UP_CANCELED:
-> +        case CPU_UP_CANCELED_FROZEN:
-> +        case CPU_DEAD:
-> +        case CPU_DEAD_FROZEN:
-> +                rcu_offline_cpu_rt(cpu);
-> +                break;
-> +        default:
-> +                break;
-> +        }
-> +        return NOTIFY_OK;
-> +}
-> +
-> +static struct notifier_block __cpuinitdata rcu_nb = {
-> +        .notifier_call = rcu_cpu_notify,
-> +};
-> +
->  void __init rcu_init_rt(void)
->  {
->  	int cpu;
-> @@ -972,6 +1008,22 @@ void __init rcu_init_rt(void)
->  		rdp->donetail = &rdp->donelist;
->  	}
->  	rcu_preempt_boost_init();
-> +	register_cpu_notifier(&rcu_nb);
-> +
-> +	/*
-> +         * We don't need protection against CPU-Hotplug here
-> +         * since
-> +         * a) If a CPU comes online while we are iterating over the
-> +         *    cpu_online_map below, we would only end up making a
-> +         *    duplicate call to rcu_online_cpu() which sets the corresponding
-> +         *    CPU's mask in the rcu_cpu_online_map.
-> +         *
-> +         * b) A CPU cannot go offline at this point in time since the user
-> +         *    does not have access to the sysfs interface, nor do we
-> +         *    suspend the system.
-> +         */
-> +        for_each_online_cpu(cpu)
-> +                rcu_cpu_notify(&rcu_nb, CPU_UP_PREPARE, (void *)(long) cpu);
->  }
-> 
->  /*
-> 
-> -- 
-> 
+> +	/* Can deadlock when called with interrupts disabled */
+> +	WARN_ON(irqs_disabled());
+
+I was thinking whether this condition can be removed and allow the
+smp_call_function*() to be called with IRQs disabled. At a quick look,
+it seems to be possible if the csd_flag_wait() function calls the IPI
+handlers directly when the IRQs are disabled (see the patch below).
+
+This would be useful on ARM11MPCore based systems where the cache
+maintenance operations are not detected by the snoop control unit and
+this affects the DMA calls like dma_map_single(). There doesn't seem to
+be any restriction on calls to dma_map_single() and hence we cannot
+broadcast the cache operation to the other CPUs. I could implement this
+in the ARM specific code using spin_try_lock (on an IPI-specific lock
+held during the cross-call) and polling for an IPI if a lock cannot be
+acquired (meaning that a different CPU is issuing an IPI) but I was
+wondering whether this would be possible in a more generic way.
+
+Please let me know what you think or whether deadlocks are still
+possible (or any other solution apart from hardware fixes :-)). Thanks.
+
+diff --git a/kernel/smp.c b/kernel/smp.c
+index ef6de3d..2c63e81 100644
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -54,6 +54,10 @@ static void csd_flag_wait(struct call_single_data *data)
+ 		smp_mb();
+ 		if (!(data->flags & CSD_FLAG_WAIT))
+ 			break;
++		if (irqs_disabled()) {
++			generic_smp_call_function_single_interrupt();
++			generic_smp_call_function_interrupt();
++		}
+ 		cpu_relax();
+ 	} while (1);
+ }
+@@ -208,9 +212,6 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+ 	/* prevent preemption and reschedule on another processor */
+ 	int me = get_cpu();
+ 
+-	/* Can deadlock when called with interrupts disabled */
+-	WARN_ON(irqs_disabled());
+-
+ 	if (cpu == me) {
+ 		local_irq_save(flags);
+ 		func(info);
+@@ -250,9 +251,6 @@ EXPORT_SYMBOL(smp_call_function_single);
+  */
+ void __smp_call_function_single(int cpu, struct call_single_data *data)
+ {
+-	/* Can deadlock when called with interrupts disabled */
+-	WARN_ON((data->flags & CSD_FLAG_WAIT) && irqs_disabled());
+-
+ 	generic_exec_single(cpu, data);
+ }
+ 
+@@ -279,9 +277,6 @@ int smp_call_function_mask(cpumask_t mask, void (*func)(void *), void *info,
+ 	unsigned long flags;
+ 	int cpu, num_cpus;
+ 
+-	/* Can deadlock when called with interrupts disabled */
+-	WARN_ON(irqs_disabled());
+-
+ 	cpu = smp_processor_id();
+ 	allbutself = cpu_online_map;
+ 	cpu_clear(cpu, allbutself);
+
+
+-- 
+Catalin
+
