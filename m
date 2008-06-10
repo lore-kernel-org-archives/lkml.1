@@ -1,41 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756563AbYFJXgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757506AbYFJXjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756563AbYFJXgF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 19:36:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbYFJXfx
+	id S1757506AbYFJXjf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 19:39:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200AbYFJXj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 19:35:53 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49424
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753341AbYFJXfw (ORCPT
+	Tue, 10 Jun 2008 19:39:27 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:38151 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754010AbYFJXj0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 19:35:52 -0400
-Date: Tue, 10 Jun 2008 16:35:52 -0700 (PDT)
-Message-Id: <20080610.163552.95396357.davem@davemloft.net>
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [git patches] net driver fixes
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080610231922.GA17011@havoc.gtf.org>
-References: <20080610231922.GA17011@havoc.gtf.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 10 Jun 2008 19:39:26 -0400
+Message-ID: <484F10A9.4030606@zytor.com>
+Date: Tue, 10 Jun 2008 16:39:21 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: devzero@web.de
+CC: keith@karsites.net, linux-kernel@vger.kernel.org
+Subject: Re: Problems with edd
+References: <311993399@web.de>
+In-Reply-To: <311993399@web.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Tue, 10 Jun 2008 19:19:22 -0400
+devzero@web.de wrote:
+>>
+>> Loading vmlinuz........................................... 
+>> ..............
+>>
+>>  Loading initrd.img........................................ 
+>> .................
+>>  ...............ready.
+>>  Probing EDD (edd=off to disable)... ok
+>>  vmlinuz: attempted DOS system call
+>>  boot:
+>>
+>>  If I hit return now, the machine goes back to the 'Welcome 
+>> to Fedora 9!' splash screen.
+>>
 
-> 
-> This is for 2.6.26.  The 2.6.27 stuff, including the 8390 fix for
-> net-next, is coming late tonight.
-> 
-> Please pull from 'davem-fixes' branch of
-> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git davem-fixes
-> 
-> to receive the following updates:
+I have put in syslinux 3.70-pre16 code to print the source of this 
+message.  You may want to try to grab isolinux from this release and 
+update your CD image to get some useful debugging info out of this.
 
-Pulled and pushed back out to net-2.6, thanks Jeff!
+	-hpa
