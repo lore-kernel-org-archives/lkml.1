@@ -1,59 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758725AbYFJVZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759040AbYFJV1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758725AbYFJVZb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 17:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbYFJVZX
+	id S1759040AbYFJV1T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 17:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbYFJV1F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 17:25:23 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:1361 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754485AbYFJVZW (ORCPT
+	Tue, 10 Jun 2008 17:27:05 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:34725 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754432AbYFJV1D convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 17:25:22 -0400
-Date: Tue, 10 Jun 2008 15:25:20 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>, greg@kroah.com
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>, kristen.c.accardi@intel.com,
-       lenb@kernel.org, pbadari@us.ibm.com, linux-pci@vger.kernel.org,
-       pcihpd-discuss@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/3, v16] PCI, ACPI: Physical PCI slot objects
-Message-ID: <20080610212520.GJ25295@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>, greg@kroah.com,
-	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Matthew Wilcox <matthew@wil.cx>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	kristen.c.accardi@intel.com, lenb@kernel.org, pbadari@us.ibm.com,
-	linux-pci@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org
+	Tue, 10 Jun 2008 17:27:03 -0400
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "Patterson, Andrew D (Linux R&D)" <andrew.patterson@hp.com>,
+       "Chen, Justin" <justin.chen@hp.com>
+Date: Tue, 10 Jun 2008 21:26:15 +0000
+Subject: RE: [PATCH 2/2] cciss: bump version to .20 to reflect new HW support
+Thread-Topic: [PATCH 2/2] cciss: bump version to .20 to reflect new HW
+ support
+Thread-Index: AcjLP4G302ePuMmyRa+xJHlSbzMC4AAAQwBA
+Message-ID: <0F5B06BAB751E047AB5C87D1F77A77881F2C8283A1@GVW0547EXC.americas.hpqcorp.net>
+References: <20080610161404.GB6808@roadking.ldev.net>
+ <20080610135026.f17a2d3a.akpm@linux-foundation.org>
+ <0F5B06BAB751E047AB5C87D1F77A77881F2C828381@GVW0547EXC.americas.hpqcorp.net>
+ <20080610211810.GN20851@kernel.dk>
+In-Reply-To: <20080610211810.GN20851@kernel.dk>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg, Jesse,
 
-This is v16 of the physical PCI slot series.
 
-It is based off of Jesse's linux-next branch in his PCI tree.
+> -----Original Message-----
+> From: Jens Axboe [mailto:jens.axboe@oracle.com]
+> Sent: Tuesday, June 10, 2008 4:18 PM
+> To: Miller, Mike (OS Dev)
+> Cc: Andrew Morton; linux-kernel@vger.kernel.org;
+> linux-scsi@vger.kernel.org; Patterson, Andrew D (Linux R&D);
+> Chen, Justin
+> Subject: Re: [PATCH 2/2] cciss: bump version to .20 to
+> reflect new HW support
+>
+> On Tue, Jun 10 2008, Miller, Mike (OS Dev) wrote:
+> >
+> >
+> > > -----Original Message-----
+> > > From: Andrew Morton [mailto:akpm@linux-foundation.org]
+> > > Sent: Tuesday, June 10, 2008 3:50 PM
+> > > To: Miller, Mike (OS Dev)
+> > > Cc: jens.axboe@oracle.com; linux-kernel@vger.kernel.org;
+> > > linux-scsi@vger.kernel.org; Patterson, Andrew D (Linux
+> R&D); Chen,
+> > > Justin
+> > > Subject: Re: [PATCH 2/2] cciss: bump version to .20 to
+> reflect new
+> > > HW support
+> > >
+> > > On Tue, 10 Jun 2008 11:14:04 -0500
+> > > Mike Miller <mike.miller@hp.com> wrote:
+> > >
+> > > > PATCH 2/2
+> > > > This patch bumps the driver version to 3.6.20 to
+> reflect the new
+> > > > hardware support from patch 1 of this set. Please consider
+> > > this for inclusion.
+> > > >
+> > > > Signed-off-by: Mike Miller <mike.miller@hp.com>
+> > > >
+> > > > diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c index
+> > > > ced904d..c21a5a9 100644
+> > > > --- a/drivers/block/cciss.c
+> > > > +++ b/drivers/block/cciss.c
+> > > > @@ -53,16 +53,16 @@
+> > > >  #include <linux/scatterlist.h>
+> > > >
+> > > >  #define CCISS_DRIVER_VERSION(maj,min,submin)
+> > > > ((maj<<16)|(min<<8)|(submin)) -#define DRIVER_NAME "HP CISS
+> > > Driver (v 3.6.14)"
+> > > > -#define DRIVER_VERSION CCISS_DRIVER_VERSION(3,6,14)
+> > > > +#define DRIVER_NAME "HP CISS Driver (v 3.6.20)"
+> > > > +#define DRIVER_VERSION CCISS_DRIVER_VERSION(3, 6, 20)
+> > > >
+> > > >  /* Embedded module documentation macros - see modules.h */
+> > > > MODULE_AUTHOR("Hewlett-Packard Company");
+> > > -MODULE_DESCRIPTION("Driver
+> > > > for HP Controller SA5xxx SA6xxx version 3.6.14");
+> > > > +MODULE_DESCRIPTION("Driver for HP Smart Array Controllers");
+> > > >  MODULE_SUPPORTED_DEVICE("HP SA5i SA5i+ SA532 SA5300 SA5312
+> > > SA641 SA642 SA6400"
+> > > >                       " SA6i P600 P800 P400 P400i E200
+> > > E200i E500 P700m"
+> > > >                       " Smart Array G2 Series SAS/SATA
+> > > Controllers");
+> > > > -MODULE_VERSION("3.6.14");
+> > > > +MODULE_VERSION("3.6.20");
+> > > >  MODULE_LICENSE("GPL");
+> > > >
+> > > >  #include "cciss_cmd.h"
+> > >
+> > > I think it would be more logical to fold these two
+> patches together.
+> >
+> > Jens at one time suggested I keep the version patch separate, IIRC.
+>
+> Did I? For a series of patches implementing various things,
+> bumping the version at the end makes sense since it's tied to
+> the series and not a specific patch. For a single patch, I'm
+> fine with including the version change in there.
 
-Greg, Jesse, there might be an issue with
-372fa8fa0a77c47c7bcfae0ccd14e0c5f97d17fe, which is in Stephen
-Rothwell's linux-next tree, but not in Jesse's. The correct fix
-would be for Greg to entirely drop the hunk that touches
-drivers/pci/hotplug/fakephp.c.
+OK, thanks.
 
-Jesse said he'd like to see final ACKs from Kenji-san and
-Kristen, and then we'll be good to go for 2.6.27.
-
-Thanks,
-
-/ac
-
+>
+> --
+> Jens Axboe
+>
+>
