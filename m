@@ -1,56 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758510AbYFJTRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758406AbYFJTSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758510AbYFJTRd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 15:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754172AbYFJTRZ
+	id S1758406AbYFJTSp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 15:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbYFJTSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 15:17:25 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:49984 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753970AbYFJTRY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 15:17:24 -0400
-Date: Tue, 10 Jun 2008 12:17:23 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       lee.schermerhorn@hp.com, kosaki.motohiro@jp.fujitsu.com,
-       linux-mm@kvack.org, eric.whitney@hp.com
-Subject: Re: [PATCH -mm 13/25] Noreclaim LRU Infrastructure
-In-Reply-To: <20080608165434.67c87e5c.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0806101214190.17798@schroedinger.engr.sgi.com>
-References: <20080606202838.390050172@redhat.com> <20080606202859.291472052@redhat.com>
- <20080606180506.081f686a.akpm@linux-foundation.org> <20080608163413.08d46427@bree.surriel.com>
- <20080608135704.a4b0dbe1.akpm@linux-foundation.org> <20080608173244.0ac4ad9b@bree.surriel.com>
- <20080608162208.a2683a6c.akpm@linux-foundation.org> <20080608193420.2a9cc030@bree.surriel.com>
- <20080608165434.67c87e5c.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 10 Jun 2008 15:18:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34622 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752984AbYFJTSf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 15:18:35 -0400
+Date: Tue, 10 Jun 2008 15:18:29 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Daniel J Blueman <daniel.blueman@gmail.com>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, nfsv4@linux-nfs.org,
+       linux-nfs@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [2.6.26-rc4] mount.nfsv4/memory poisoning issues...
+Message-ID: <20080610151829.3c4d6c1e@tleilax.poochiereds.net>
+In-Reply-To: <20080610151357.150b6f69@tleilax.poochiereds.net>
+References: <6278d2220806041633n3bfe3dd2ke9602697697228b@mail.gmail.com>
+	<20080604203504.62730951@tleilax.poochiereds.net>
+	<1213124088.20459.16.camel@localhost>
+	<20080610151357.150b6f69@tleilax.poochiereds.net>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 8 Jun 2008, Andrew Morton wrote:
+On Tue, 10 Jun 2008 15:13:57 -0400
+Jeff Layton <jlayton@redhat.com> wrote:
 
-> And it will take longer to get those problems sorted out if 32-bt
-> machines aren't even compiing the new code in.
+> On Tue, 10 Jun 2008 14:54:48 -0400
+> Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> 
+> > On Wed, 2008-06-04 at 20:35 -0400, Jeff Layton wrote:
+> > > On Thu, 5 Jun 2008 00:33:54 +0100
+> > > "Daniel J Blueman" <daniel.blueman@gmail.com> wrote:
+> > > 
+> > > > Having experienced 'mount.nfs4: internal error' when mounting nfsv4 in
+> > > > the past, I have a minimal test-case I sometimes run:
+> > > > 
+> > > > $ while :; do mount -t nfs4 filer:/store /store; umount /store; done
+> > > > 
+> > > > After ~100 iterations, I saw the 'mount.nfs4: internal error',
+> > > > followed by symptoms of memory corruption [1], a locking issue with
+> > > > the reporting [2] and another (related?) memory-corruption issue
+> > > > (off-by-1?) [3]. A little analysis shows memory being overwritten by
+> > > > (likely) a poison value, which gets complicated if it's not
+> > > > use-after-free...
+> > > > 
+> > > > Anyone dare confirm this issue? NFSv4 server is x86-64 Ubuntu 8.04
+> > > > 2.6.24-18, client U8.04 2.6.26-rc4; batteries included [4].
+> > > > 
+> > > > I'm happy to decode addresses, test patches etc.
+> > > > 
+> > > > Daniel
+> > > > 
+> > > 
+> > > Looks like it fell down while trying to take down the kthread during a
+> > > failed mount attempt. I have to wonder if I might have introduced a
+> > > race when I changed nfs4 callback thread to kthread API. I think we may
+> > > need the BKL around the last 2 statements in the main callback thread
+> > > function. If you can easily reproduce this, could you test the
+> > > following patch and let me know if it helps?
+> > > 
+> > > Note that this patch is entirely untested, so test it someplace
+> > > non-critical ;-).
+> > > 
+> > > Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> > > 
+> > > 
+> > > diff --git a/fs/nfs/callback.c b/fs/nfs/callback.c
+> > > index c1e7c83..a3e83f9 100644
+> > > --- a/fs/nfs/callback.c
+> > > +++ b/fs/nfs/callback.c
+> > > @@ -90,9 +90,9 @@ nfs_callback_svc(void *vrqstp)
+> > >  		preverr = err;
+> > >  		svc_process(rqstp);
+> > >  	}
+> > > -	unlock_kernel();
+> > >  	nfs_callback_info.task = NULL;
+> > >  	svc_exit_thread(rqstp);
+> > > +	unlock_kernel();
+> > >  	return 0;
+> > >  }
+> > 
+> > We certainly need to protect nfs_callback_info.task (and I believe I
+> > explained this earlier), but why do we need to protect svc_exit_thread?
+> > 
+> > Also, looking at the general use of the BKL in that code, I thought we
+> > agreed that there was no need to hold the BKL while taking the
+> > nfs_callback_mutex?
+> > 
+> 
+> Hmm, I don't remember that discussion, but I'll take your word for it...
+> 
+> I think you're basically correct, but it looks to me like the
+> nfs_callback_mutex actually protects nfs_callback_info.task as well.
+> 
+> If we're starting the thread, then we can't call kthread_stop on it
+> until we release the mutex. So the thread can't exit until we release
+> the mutex, and we can be guaranteed that this:
+> 
+>      nfs_callback_info.task = NULL;
+> 
+> ...can't happen until after kthread_run returns and nfs_callback_up
+> sets it.
+> 
+> If that's right, then maybe this (untested, RFC only) patch would make sense?
+> 
 
-The problem is going to be less if we dependedn on 
-CONFIG_PAGEFLAGS_EXTENDED instead of 64 bit. This means that only certain 
-32bit NUMA/sparsemem configs cannot do this due to lack of page flags.
+To clarify for Dan...
 
-I did the pageflags rework in part because of Rik's project.
+I don't think that this patch will help the problem you're having. This
+is essentially a cleanup patch to remove some locking that doesn't
+appear to be needed.
 
-> ho hum.  Can you remind us what problems this patchset actually
-> addresses?  Preferably in order of seriousness?  (The [0/n] description
-> told us about the implementation but forgot to tell us anything about
-> what it was fixing).  Because I guess we should have a think about
-> alternative approaches.
+The original patch that Trond commented on above is also probably
+unnecessary (assuming I'm right about the locking here).
 
-It solves the livelock while reclaiming issues that we see more and more.
-
-There are loads that have lots of unreclaimable pages. These are 
-frequently and uselessly scanned under memory pressure.
-
-The larger the memory the more problems.
-
+-- 
+Jeff Layton <jlayton@redhat.com>
