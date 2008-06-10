@@ -1,87 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbYFJESi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbYFJEXF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754187AbYFJESi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 00:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750756AbYFJES2
+	id S1754831AbYFJEXF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 00:23:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750772AbYFJEWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 00:18:28 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:44049 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750745AbYFJES0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 00:18:26 -0400
-Date: Tue, 10 Jun 2008 13:16:05 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Ben Nizette <bn@niasdigital.com>
-Cc: Tim Bird <tim.bird@am.sony.com>, Rob Landley <rob@landley.net>,
-       Adrian Bunk <adrian.bunk@movial.fi>,
-       linux-tiny <Linux-tiny@selenic.com>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: mainlining min-configs...
-Message-ID: <20080610041605.GA19247@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Ben Nizette <bn@niasdigital.com>, Tim Bird <tim.bird@am.sony.com>,
-	Rob Landley <rob@landley.net>, Adrian Bunk <adrian.bunk@movial.fi>,
-	linux-tiny <Linux-tiny@selenic.com>,
-	linux-embedded <linux-embedded@vger.kernel.org>,
-	linux kernel <linux-kernel@vger.kernel.org>
-References: <48447615.5050806@am.sony.com> <20080604194002.GF4189@cs181133002.pp.htv.fi> <4849CCA3.7040102@am.sony.com> <200806062329.54019.rob@landley.net> <484DDAD9.2000306@am.sony.com> <1213067676.3213.27.camel@moss.renham>
+	Tue, 10 Jun 2008 00:22:55 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:46441 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750745AbYFJEWy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 00:22:54 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5313"; a="3627749"
+Message-ID: <484E01B8.7000907@qualcomm.com>
+Date: Mon, 09 Jun 2008 21:23:20 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1213067676.3213.27.camel@moss.renham>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: David Rientjes <rientjes@google.com>
+CC: Paul Jackson <pj@sgi.com>, mingo@elte.hu, peterz@infradead.org,
+       menage@google.com, linux-kernel@vger.kernel.org,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [patch] sched: prevent bound kthreads from changing cpus_allowed
+References: <alpine.DEB.1.10.0806051255500.31157@chino.kir.corp.google.com> <20080605152953.dcfefa47.pj@sgi.com> <alpine.DEB.1.10.0806051357480.32537@chino.kir.corp.google.com> <484D99AD.4000306@qualcomm.com> <alpine.DEB.1.10.0806091447300.10680@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.1.10.0806091447300.10680@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 01:14:36PM +1000, Ben Nizette wrote:
-> On Mon, 2008-06-09 at 18:37 -0700, Tim Bird wrote:
-> > Rob Landley wrote:
-> > > On Friday 06 June 2008 18:47:47 Tim Bird wrote:
-> > >> At a minimum, it would be nice to have a few nice examples
-> > >> of really, really small configs for things like qemus for different
-> > >> architectures (just to give embedded developers who are working
-> > >> on size a starting point).
-> > > 
-> > > That's more or less what I'm trying to do with my Firmware Linux project: 
-> > > creating cross compilers and minimal native build environments for every qemu 
-> > > target.
-> > 
-> > Any chance of getting your minimal configs from Firmware Linux mainlined?
+David Rientjes wrote:
+>> For example I need an ability to move workqueue threads.
 > 
-> allnoconfig? ;-)
-> 
-It's a bit counter-intuitive, given the inverted logic employed by many
-Kconfig options (enable vs disable and so on), default choices, select
-abuse, etc. If your platform happens to select EMBEDDED it's a pretty
-close approximation, though.
+> Let's elaborate a little on that: you're moving workqueue threads from 
+> their originating cpu to another cpu (hopefully on the same NUMA node) 
+> using cpusets or sched_setaffinity()?
+Yes.
 
-> > Does anyone else think this would be valuable?  If not in mainline, it
-> > would be nice to collect them somewhere, to compare what options different
-> > developers decide turn on or off.
-> 
-> Seriously though I maintain a bunch of AVR32 minimal configs.  I keep
-> them as a smallest-working-config baseline to build on; I'm sure others
-> would get value from having easy access to that kind of thing.
-> 
-> IMO It'd be nice to wire them to an automagic bloat-o-meter as well, but
-> I suspect no-one would really take notice anyway.
-> 
-Most people are not opposed to taking additional defconfigs if there's
-someone intends to use them and generally look after them. Many configs
-are already included in linux-next and similar for nightly builds, but
-that's more about making sure things keep working rather than size
-measurements. On the other hand, it would be useful to extend that sort
-of infrastructure to account for size changes, also, and there's
-certainly no reason why minimal configs can't be rolled in, too.
+> But, to me, the semantics of kthread_bind() are pretty clear.  I think 
+> it's dangerous to move kthreads such as watchdog or migration threads out 
+> from under them and that is easily shown if you try to do it.  There are 
+> perhaps exceptions to the rule where existing kthread_bind() calls could 
+> be converted to set_cpus_allowed_ptr(), but I think we should enumerate 
+> those cases and discuss the hazards that could be associated with changing 
+> their cpu affinity.
+I think what can and cannot be moved is a separate question. As far as cpu
+affinity API for kthreads goes it makes sense to support both scenarios.
+See below.
 
-For testing things like allmodconfig/allyesconfig and especially
-randconfigs tend to be the most useful, but it's fairly difficult to
-extract meaningful size statistics out of any of those. Likewise, a
-minimal config tends to be pointless to the extent that it's not actually
-useful for anything. Observing the growth in size on configurations that
-people are using in the real world is far more useful. Measuring
-arbitrary growth in a configuration that's not even usable isn't really
-much of an indicator of anything, except that someone might have too much
-free time on their hands.
+> I'd also like to hear why you choose to move your workqueue threads off 
+> their originating cpu.
+CPU isolation. ie To avoid kernel activity on certain CPUs.
+
+>> On the related note (this seems like the right crowd :). What do people think
+>> about kthreads and cpusets in general. We currently have a bit of a disconnect
+>> in the logic.
+>> 1. kthreads can be put into a cpuset at which point their cpus_allowed mask is
+>> updated properly
+>> 2. kthread's cpus_allowed mask is updated properly when cpuset setup changes
+>> (cpus added, removed, etc).
+>> 3. kthreads inherit cpuset from a parent (kthreadd for example) _but_  they
+>> either do kthread_bind() or set_cpus_allowed() and both of those simply ignore
+>> inherited cpusets.
+>>
+> With my patch, this is slightly different.  Kthreads that have called 
+> kthread_bind() can have a different cpu affinity than the cpus_allowed of 
+> their cpuset.  This happens when such a kthread is attached to a cpuset 
+> and its 'cpus' file subsequently changes.  Cpusets is written correctly to 
+> use set_cpus_allowed_ptr() so that this change in affinity is now rejected 
+> for PF_THREAD_BOUND tasks, yet the kthread is still a member of the 
+> cpuset.
+That would be inconsistent and confusing, I think. If a task is in the cpuset
+X all constraints of the cpuset X must apply. If some constraints cannot be
+satisfied then that task should not be in the cpuset X.
+
+> It's debatable whether the kthread should still remain as a member of the 
+> cpuset, but there are significant advantages: cpusets offers more than 
+> just a simple way to do sched_setaffinity() over an aggregate of tasks.  
+Yes cpusets are not only about cpu affinity. But again the behaviour should be
+consistent across the board. cpuset.cpus must apply to all the task in the
+set, not just some of the tasks.
+
+Also I think you missed my other point/suggestion. Yes your patch fixes one
+problem, which is kthreads that must not move will not move. Although like I
+said the behaviour with regards to the cpuset is not consistent and confusing.
+The other thing that I pointed out is that kthreads that _can_ move do not
+honor cpuset constrains.
+Let me give another example. Forget the workqueues for a second. Kthreads like
+scsi_eh, kswapd, kacpid, etc, etc are all started with cpus_allows=ALL_CPUS
+even though they inherit a cpuset from kthreadd. Yes I can move them manually
+but the behaviour is not consistent, and for no good reason. kthreads can be
+stopped/started at any time (module load for example) which means that I'd
+have to keep moving them.
+
+To sum it up here is what I'm suggesting:
+kthread_bind(task, cpu)
+{
+   // Set PF_THREAD_BOUND
+   // Move into root cpuset
+   // Bind to the cpu
+}
+
+kthread_setaffinity(task, cpumask)
+{
+   // Enforce cpuset.cpus_allowed
+   // Updated affinity mask and migrate kthread (if needed)
+}
+
+Instead of calling set_cpus_allowed_ptr() kthreads that do not need strict cpu
+binding will be calling kthread_setaffinity().
+That way the behaviour is consistent across the board.
+
+Makes sense ?
+
+Max
