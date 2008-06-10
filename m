@@ -1,132 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183AbYFJPrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbYFJPvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756183AbYFJPrd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 11:47:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbYFJPrZ
+	id S1754157AbYFJPvT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 11:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbYFJPvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 11:47:25 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:35614 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753346AbYFJPrY (ORCPT
+	Tue, 10 Jun 2008 11:51:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36686 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750878AbYFJPvF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 11:47:24 -0400
-Date: Tue, 10 Jun 2008 08:47:16 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       peterz@infradead.org, npiggin@suse.de, linux-arch@vger.kernel.org,
-       jeremy@goop.org, mingo@elte.hu,
-       Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [PATCH 1/10] Add generic helpers for arch IPI function calls
-Message-ID: <20080610154716.GF15481@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1212051504-12561-1-git-send-email-jens.axboe@oracle.com> <1212051504-12561-2-git-send-email-jens.axboe@oracle.com> <1213109485.24701.107.camel@pc1117.cambridge.arm.com>
+	Tue, 10 Jun 2008 11:51:05 -0400
+Date: Tue, 10 Jun 2008 08:50:05 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Oliver Neukum <oliver@neukum.org>
+cc: Pavel Machek <pavel@suse.cz>, linux-usb@vger.kernel.org,
+       Greg KH <gregkh@suse.de>, Alan Stern <stern@rowland.harvard.edu>,
+       Linus Torvalds <torvalds@linuxfoundation.org>,
+       Andrew Morton <akpm@linuxfoundation.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.25-rc6: CONFIG_USB_PERSIST forced on
+In-Reply-To: <200806101055.14539.oliver@neukum.org>
+Message-ID: <alpine.LFD.1.10.0806100842420.3101@woody.linux-foundation.org>
+References: <200806091712.46869.oliver@neukum.org> <alpine.LFD.1.10.0806091435120.3218@woody.linux-foundation.org> <20080609215651.GF21429@elf.ucw.cz> <200806101055.14539.oliver@neukum.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1213109485.24701.107.camel@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 03:51:25PM +0100, Catalin Marinas wrote:
-> Hi,
-> 
-> On Thu, 2008-05-29 at 10:58 +0200, Jens Axboe wrote:
-> > This adds kernel/smp.c which contains helpers for IPI function calls. In
-> > addition to supporting the existing smp_call_function() in a more efficient
-> > manner, it also adds a more scalable variant called smp_call_function_single()
-> > for calling a given function on a single CPU only.
-> [...]
-> > + * You must not call this function with disabled interrupts or from a
-> > + * hardware interrupt handler or from a bottom half handler.
-> > + */
-> > +int smp_call_function_mask(cpumask_t mask, void (*func)(void *), void *info,
-> > +			   int wait)
-> > +{
-> > +	struct call_function_data d;
-> > +	struct call_function_data *data = NULL;
-> > +	cpumask_t allbutself;
-> > +	unsigned long flags;
-> > +	int cpu, num_cpus;
-> > +
-> > +	/* Can deadlock when called with interrupts disabled */
-> > +	WARN_ON(irqs_disabled());
-> 
-> I was thinking whether this condition can be removed and allow the
-> smp_call_function*() to be called with IRQs disabled. At a quick look,
-> it seems to be possible if the csd_flag_wait() function calls the IPI
-> handlers directly when the IRQs are disabled (see the patch below).
-> 
-> This would be useful on ARM11MPCore based systems where the cache
-> maintenance operations are not detected by the snoop control unit and
-> this affects the DMA calls like dma_map_single(). There doesn't seem to
-> be any restriction on calls to dma_map_single() and hence we cannot
-> broadcast the cache operation to the other CPUs. I could implement this
-> in the ARM specific code using spin_try_lock (on an IPI-specific lock
-> held during the cross-call) and polling for an IPI if a lock cannot be
-> acquired (meaning that a different CPU is issuing an IPI) but I was
-> wondering whether this would be possible in a more generic way.
-> 
-> Please let me know what you think or whether deadlocks are still
-> possible (or any other solution apart from hardware fixes :-)). Thanks.
 
-There were objections last month:  http://lkml.org/lkml/2008/5/3/167
 
-The issue was that this permits some interrupts to arrive despite
-interrupts being disabled.  There seemed to be less resistance to
-doing this in the wait==1 case, however.
+On Tue, 10 Jun 2008, Oliver Neukum wrote:
+> 
+> If a hotfix it must be, here's my take. It works for me, but it isn't
+> tested well.
+> Alan, what do you think?
 
-						Thanx, Paul
+Hmm. I hate making functions more complex. Especially if it's an area 
+where we'd expect it to change in the future (ie I think we should aim for 
+taking into account whether a device is actually open or not). So here's a 
+cleaned-up alternative of your approach with the whole "is it persistent" 
+logic separated out into a function of its own.
 
-> diff --git a/kernel/smp.c b/kernel/smp.c
-> index ef6de3d..2c63e81 100644
-> --- a/kernel/smp.c
-> +++ b/kernel/smp.c
-> @@ -54,6 +54,10 @@ static void csd_flag_wait(struct call_single_data *data)
->  		smp_mb();
->  		if (!(data->flags & CSD_FLAG_WAIT))
->  			break;
-> +		if (irqs_disabled()) {
-> +			generic_smp_call_function_single_interrupt();
-> +			generic_smp_call_function_interrupt();
-> +		}
->  		cpu_relax();
->  	} while (1);
->  }
-> @@ -208,9 +212,6 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
->  	/* prevent preemption and reschedule on another processor */
->  	int me = get_cpu();
-> 
-> -	/* Can deadlock when called with interrupts disabled */
-> -	WARN_ON(irqs_disabled());
-> -
->  	if (cpu == me) {
->  		local_irq_save(flags);
->  		func(info);
-> @@ -250,9 +251,6 @@ EXPORT_SYMBOL(smp_call_function_single);
->   */
->  void __smp_call_function_single(int cpu, struct call_single_data *data)
->  {
-> -	/* Can deadlock when called with interrupts disabled */
-> -	WARN_ON((data->flags & CSD_FLAG_WAIT) && irqs_disabled());
-> -
->  	generic_exec_single(cpu, data);
->  }
-> 
-> @@ -279,9 +277,6 @@ int smp_call_function_mask(cpumask_t mask, void (*func)(void *), void *info,
->  	unsigned long flags;
->  	int cpu, num_cpus;
-> 
-> -	/* Can deadlock when called with interrupts disabled */
-> -	WARN_ON(irqs_disabled());
-> -
->  	cpu = smp_processor_id();
->  	allbutself = cpu_online_map;
->  	cpu_clear(cpu, allbutself);
-> 
-> 
-> -- 
-> Catalin
-> 
+Then, some day, if we get back-pointers to open devices, or we get drievr 
+hooks to say "am I mounted" or something, we have a logical place to do 
+those things.
+
+Is there perhaps already a way to know whether a driver is actually 
+*active* or not (ie not just registered, but somebody has then opened it)? 
+I guess there isn't. Oh, well.
+
+		Linus
+
+---
+ drivers/usb/core/hub.c |   44 ++++++++++++++++++++++++++++++++++++++++++--
+ 1 files changed, 42 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
+index 8eb4da3..3b0b58e 100644
+--- a/drivers/usb/core/hub.c
++++ b/drivers/usb/core/hub.c
+@@ -644,6 +644,46 @@ static void hub_stop(struct usb_hub *hub)
+ 
+ #ifdef CONFIG_PM
+ 
++static int persistent_device(struct usb_device *udev)
++{
++	int i, retval;
++	struct usb_host_config *actconfig;
++
++	/* Explicitly not marked persistent? */
++	if (!udev->persist_enabled)
++		return 0;
++
++	/* No active config? */
++	actconfig = udev->actconfig;
++	if (!actconfig)
++		return 0;
++
++	/* FIXME! We should check whether it's open here or not! */
++
++	/*
++	 * Check that all drivers on the active interface have a
++	 * 'reset_resume' entrypoint
++	 */
++	retval = 0;
++	for (i = 0; i < actconfig->desc.bNumInterfaces; i++) {
++		struct usb_interface *intf;
++		struct usb_driver *driver;
++
++		intf = actconfig->interface[i];
++		driver = to_usb_driver(intf->dev.driver);
++		if (!driver)
++			continue;
++		if (!driver->reset_resume)
++			return 0;
++		/*
++		 * We have at least one driver, and that one
++		 * supports 'reset_resume'
++		 */
++		retval = 1;
++	}
++	return retval;
++}
++
+ static void hub_restart(struct usb_hub *hub, int type)
+ {
+ 	struct usb_device *hdev = hub->hdev;
+@@ -689,8 +729,8 @@ static void hub_restart(struct usb_hub *hub, int type)
+ 		 * turn off the various status changes to prevent
+ 		 * khubd from disconnecting it later.
+ 		 */
+-		if (udev->persist_enabled && status == 0 &&
+-				!(portstatus & USB_PORT_STAT_ENABLE)) {
++		if (status == 0 && !(portstatus & USB_PORT_STAT_ENABLE) &&
++		    persistent_device(udev)) {
+ 			if (portchange & USB_PORT_STAT_C_ENABLE)
+ 				clear_port_feature(hub->hdev, port1,
+ 						USB_PORT_FEAT_C_ENABLE);
