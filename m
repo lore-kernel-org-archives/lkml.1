@@ -1,104 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759218AbYFJVUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758657AbYFJVV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759218AbYFJVUB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 17:20:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757308AbYFJVTv
+	id S1758657AbYFJVV0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 17:21:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753657AbYFJVVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 17:19:51 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:19772 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754420AbYFJVTu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 17:19:50 -0400
-Date: Tue, 10 Jun 2008 15:19:47 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>, kristen.c.accardi@intel.com,
-       greg@kroah.com, lenb@kernel.org, pbadari@us.ibm.com,
-       linux-pci@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4, v14] PCI, ACPI: Physical PCI slot objects
-Message-ID: <20080610211947.GI25295@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Matthew Wilcox <matthew@wil.cx>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	kristen.c.accardi@intel.com, greg@kroah.com, lenb@kernel.org,
-	pbadari@us.ibm.com, linux-pci@vger.kernel.org,
-	pcihpd-discuss@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <20080604200829.GC379@ldl.fc.hp.com> <484DEF46.7080106@jp.fujitsu.com> <484DF11A.7000306@jp.fujitsu.com> <200806101224.19455.jbarnes@virtuousgeek.org>
-MIME-Version: 1.0
+	Tue, 10 Jun 2008 17:21:17 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:43531 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753446AbYFJVVQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 17:21:16 -0400
+Date: Tue, 10 Jun 2008 23:21:58 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: linux-embedded <linux-embedded@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] add diffconfig utility
+Message-ID: <20080610212158.GB23855@uranus.ravnborg.org>
+References: <484ED902.9040000@am.sony.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200806101224.19455.jbarnes@virtuousgeek.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <484ED902.9040000@am.sony.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jesse Barnes <jbarnes@virtuousgeek.org>:
-> On Monday, June 09, 2008 8:12 pm Kenji Kaneshige wrote:
-> > >  drivers/pci/hotplug/pci_hotplug_core.c |   16 ++++++++++++++++
-> > >  1 file changed, 16 insertions(+)
-> > >
-> > > Index: 20080610/drivers/pci/hotplug/pci_hotplug_core.c
-> > > ===================================================================
-> > > --- 20080610.orig/drivers/pci/hotplug/pci_hotplug_core.c
-> > > +++ 20080610/drivers/pci/hotplug/pci_hotplug_core.c
-> > > @@ -555,6 +555,7 @@ int pci_hp_register(struct hotplug_slot
-> > >  {
-> > >  	int result;
-> > >  	struct pci_slot *pci_slot;
-> > > +	struct hotplug_slot *tmp;
-> > >
-> > >  	if (slot == NULL)
-> > >  		return -ENODEV;
-> > > @@ -567,6 +568,21 @@ int pci_hp_register(struct hotplug_slot
-> > >  	}
-> > >
-> > >  	/*
-> > > +	 * Prevent registering multiple hotplug slots with the same name.
-> > > +	 */
-> > > +	spin_lock(&pci_hotplug_slot_list_lock);
-> > > +	list_for_each_entry(tmp, &pci_hotplug_slot_list, slot_list) {
-> > > +		pci_slot = tmp->pci_slot;
-> > > +		if (pci_slot->bus == bus && pci_slot->number == slot_nr)
-> > > +			continue;
-> > > +		if (!strcmp(tmp->name, slot->name)) {
-> > > +			spin_unlock(&pci_hotplug_slot_list_lock);
-> > > +			return -EEXIST;
-> > > +		}
-> > > +	}
-> > > +	spin_unlock(&pci_hotplug_slot_list_lock);
-> > > +
-> > > +	/*
-> > >  	 * No problems if we call this interface from both ACPI_PCI_SLOT
-> > >  	 * driver and call it here again. If we've already created the
-> > >  	 * pci_slot, the interface will simply bump the refcount.
-> >
-> > Please note that I made this patch against linux-next with your
-> > latest three patches applied.
+On Tue, Jun 10, 2008 at 12:41:54PM -0700, Tim Bird wrote:
+> diffconfig is a simple utility for comparing two .config files.
+> Using standard diff to compare .config files often includes
+> extraneous and distracting information.  This utility produces
+> sorted output with only the changes in configuration values
+> between the two files.
 > 
-> I looked this over and it seems like it's already handled in Alex's latest 
-> patchset (v15); can you take a look and make sure, Kenji-san (see Alex's 
-> latest mail to you too).
-
-I am about to send out a v16, which is based off of Jesse's
-pci-2.6 tree, linux-next branch.
-
-It would be good to verify that latest patchset.
-
-Thanks,
-
-/ac
-
-> I just need acks from you and Kristen before pushing this...
+> I have found this handy for use in testing to
+> detect when option dependencies unexpectedly affect
+> other options.
 > 
-> Thanks,
-> Jesse
+> To use, apply the patch and 'chmod a+x scripts/diffconfig'
 > 
+> Signed-off-by: Tim Bird <tim.bird@am.sony.com>
+> 
+>  diffconfig |   90 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 90 insertions(+)
+> 
+> --- linux-2.6.24.orig/scripts/diffconfig	1969-12-31 16:00:00.000000000 -0800
+> +++ test-linux/scripts/diffconfig	2008-06-10 12:11:14.000000000 -0700
+> @@ -0,0 +1,90 @@
+> +#!/usr/bin/python
+> +#
+> +# diffconfig - a tool to compare .config files.
+> +#
+> +# originally written in 2006 by Matt Mackall
+> +#  (at least, this was in his bloatwatch source code)
+> +#
+> +# diffconfig is a simple utility for comparing two .config files.
+> +# Using standard diff to compare .config files often includes
+> +# extraneous and distracting information.  This utility produces
+> +# sorted output with only the changes in configuration values
+> +# between the two files.
+> +#
+> +# Added and removed items are shown with a leading plus or minus,
+> +# respectively.  Changed items show the old and new values on a
+> +# single line.
+> +#
+> +# Example usage:
+> +# $ diffconfig .config config-test-nfs-off
+> +# -LOCKD  y
+> +# -LOCKD_V4  y
+> +# -NFS_COMMON  y
+> +# -NFS_DIRECTIO  n
+> +# -NFS_V3  y
+> +# -NFS_V3_ACL  n
+> +# -NFS_V4  n
+> +# -ROOT_NFS  y
+> +# -RPCSEC_GSS_KRB5  n
+> +# -RPCSEC_GSS_SPKM3  n
+> +# -SUNRPC  y
+> +# -SUNRPC_BIND34  n
+> +#  NFS_FS  y -> n
+> +
+> +import sys, os
+> +
+> +if len(sys.argv) < 3:
+> +	print "Usage: diffconfig <config1> <config2>"
+> +	sys.exit(0)
+
+I know this is unix style to be very short in usage - but then they 
+have man pages.
+Could we add a bit more from the nice description above to usage?
+
+
+> +
+> +# returns a dictionary of name/value pairs for config items in the file
+> +def readconfig(config_file):
+> +    d = {}
+> +    for line in config_file:
+> +        line = line[:-1]
+> +        if line[:7] == "CONFIG_":
+> +            name, val = line[7:].split("=", 1)
+> +            d[name] = val
+> +        if line[-11:] == " is not set":
+> +            d[line[9:-11]] = "n"
+> +    return d
+> +
+> +a = readconfig(file(sys.argv[1]))
+> +b = readconfig(file(sys.argv[2]))
+> +
+> +# print items in a but not b (accumulate, sort and print)
+> +old = []
+> +for config in a:
+> +    if config not in b:
+> +        old.append(config)
+> +
+> +old.sort()
+> +
+> +for config in old:
+> +    print "-%s  %s" % (config, a[config])
+> +    del a[config]
+> +
+> +# print items that changed (accumulate, sort, and print)
+> +changed = []
+> +for config in a:
+> +    if a[config] != b[config]:
+> +        changed.append(config)
+> +    else:
+> +        del b[config]
+> +
+> +changed.sort()
+> +
+> +for config in changed:
+> +    print " %s  %s -> %s" % (config, a[config], b[config])
+> +    del b[config]
+> +
+> +# now print items in b but not in a
+> +
+> +# the items from b that were in a (either the same or that changed) were removed
+> +# the only items left were not in a
+> +new = b.keys()
+> +
+> +new.sort()
+> +
+> +for config in new:
+> +    print "+%s  %s" % (config, b[config])
+
+No feedback on the implmentation - I do not speak phython.
+
+	Sam
