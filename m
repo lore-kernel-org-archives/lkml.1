@@ -1,99 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757962AbYFJVEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbYFJVGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757962AbYFJVEh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 17:04:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754144AbYFJVEa
+	id S1758263AbYFJVGz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 17:06:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754420AbYFJVGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 17:04:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60836 "EHLO mx1.redhat.com"
+	Tue, 10 Jun 2008 17:06:47 -0400
+Received: from mail.macqel.be ([194.78.208.39]:28965 "EHLO mail.macqel.be"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753749AbYFJVE3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 17:04:29 -0400
-Date: Tue, 10 Jun 2008 17:03:48 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
-       kosaki.motohiro@jp.fujitsu.com
-Subject: Re: [PATCH -mm 16/25] SHM_LOCKED pages are non-reclaimable
-Message-ID: <20080610170348.5750491c@cuia.bos.redhat.com>
-In-Reply-To: <20080606180514.93f620ff.akpm@linux-foundation.org>
-References: <20080606202838.390050172@redhat.com>
-	<20080606202859.466929557@redhat.com>
-	<20080606180514.93f620ff.akpm@linux-foundation.org>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753446AbYFJVGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 17:06:46 -0400
+Date: Tue, 10 Jun 2008 23:06:42 +0200
+From: Philippe De Muyter <phdm@macqel.be>
+To: linux-kernel@vger.kernel.org, uclinux-dev@uclinux.org
+Subject: [PATCH] m68knommu: init coldfire timer TRR with n - 1, not n
+Message-ID: <20080610210642.GA23486@frolo.macqel>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Jun 2008 18:05:14 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Hello everybody,
 
-> > While working with Nick Piggin's mlock patches,
-> 
-> Change log refers to information which its reader has not got a hope
-> of actually locating.
+The coldfire timer must be initialised to n - 1 if we want it to count
+n cycles between each tick interrupt.  This was already fixed, but has been
+lost with the conversion to GENERIC_TIMER.
 
-Fixed that, and renamed everything to "unevictable".
+Signed-off-by: Philippe De Muyter <phdm@macqel.be>
 
-> > Use the AS_NORECLAIM flag to mark address_space of SHM_LOCKed
-> > shared memory regions as non-reclaimable.  Then these pages
-> > will be culled off the normal LRU lists during vmscan.
-> 
-> So I guess there's more justification for handling these pages in this
-> manner, because someone could come along later and unlock them.  But
-> that isn't true of /dev/ram0 pages and ramfs pages, etc.
-
-Bingo.  Ramdisk and ramfs pages will never become evictable again,
-while the pages in an SHM_LOCKED segment might.
+diff -r 184e1bb486cf arch/m68knommu/platform/coldfire/timers.c
+--- a/arch/m68knommu/platform/coldfire/timers.c	Mon Jun  9 19:30:13 2008 -0700
++++ b/arch/m68knommu/platform/coldfire/timers.c	Tue Jun 10 13:25:22 2008 +0200
+@@ -111,7 +111,13 @@ void hw_timer_init(void)
  
-> > +static void check_move_noreclaim_page(struct page *page, struct zone *zone)
-> > +{
-> > +
-> > +	ClearPageNoreclaim(page); /* for page_reclaimable() */
-> 
-> Confused.  Didn't we just lose track of our NR_NORECLAIM accounting?
-> 
-> > +	if (page_reclaimable(page, NULL)) {
-> > +		enum lru_list l = LRU_INACTIVE_ANON + page_file_cache(page);
-> > +		__dec_zone_state(zone, NR_NORECLAIM);
-
-No, we decrement the zone count here if the page is indeed
-unevictable.
-
-> > +		list_move(&page->lru, &zone->list[l]);
-> > +		__inc_zone_state(zone, NR_INACTIVE_ANON + l);
-> > +	} else {
-> > +		/*
-> > +		 * rotate noreclaim list
-> > +		 */
-> > +		SetPageNoreclaim(page);
-> > +		list_move(&page->lru, &zone->list[LRU_NORECLAIM]);
-> > +	}
-> > +}
-
-Or mark it unevictable again if it still is.
-
-> > + * scan_mapping_noreclaim_pages - scan an address space for reclaimable pages
-> > + * @mapping: struct address_space to scan for reclaimable pages
-> > + *
-> > + * Scan all pages in mapping.  Check non-reclaimable pages for
-> > + * reclaimability and move them to the appropriate zone lru list.
-> > + */
-> > +void scan_mapping_noreclaim_pages(struct address_space *mapping)
-> > +{
-
-> This function can spend fantastically large amounts of time under
-> spin_lock_irq().
-
-I'll leave it up to Lee and Kosaki-san to fix this, once
-you have the cleaned up versions.
-
-Fixing this now would just delay my other janitorial work on
-this patch series...
-
--- 
-All Rights Reversed
+ 	__raw_writew(MCFTIMER_TMR_DISABLE, TA(MCFTIMER_TMR));
+ 	mcftmr_cycles_per_jiffy = FREQ / HZ;
+-	__raw_writetrr(mcftmr_cycles_per_jiffy, TA(MCFTIMER_TRR));
++	/*
++	 *	The coldfire timer runs from 0 to TRR included, then 0
++	 *	again and so on.  It counts thus actually TRR + 1 steps
++	 *	for 1 tick, not TRR.  So if you want n cycles,
++	 *	initialize TRR with n - 1.
++	 */
++	__raw_writetrr(mcftmr_cycles_per_jiffy - 1, TA(MCFTIMER_TRR));
+ 	__raw_writew(MCFTIMER_TMR_ENORI | MCFTIMER_TMR_CLK16 |
+ 		MCFTIMER_TMR_RESTART | MCFTIMER_TMR_ENABLE, TA(MCFTIMER_TMR));
+ 
