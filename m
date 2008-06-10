@@ -1,120 +1,272 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbYFJLT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753681AbYFJLoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753792AbYFJLT7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 07:19:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbYFJLTu
+	id S1753681AbYFJLoY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 07:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbYFJLoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 07:19:50 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:43051 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751817AbYFJLTt (ORCPT
+	Tue, 10 Jun 2008 07:44:15 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54113 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751937AbYFJLoO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 07:19:49 -0400
-To: peter.oberparleiter@de.ibm.com
-CC: miklos@szeredi.hu, akpm@linuxfoundation.org, jdike@addtoit.com,
-       linux-kernel@vger.kernel.org, oberparleiter@googlemail.com
-In-reply-to: <484E5CBB.2040203@de.ibm.com> (message from Peter Oberparleiter
-	on Tue, 10 Jun 2008 12:51:39 +0200)
-Subject: Re: 2.6.26-rc5-mm1: uml link error
-References: <E1K5oBn-0006v4-KJ@pomaz-ex.szeredi.hu> <484E5CBB.2040203@de.ibm.com>
-Message-Id: <E1K61st-0008JT-9e@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 10 Jun 2008 13:19:27 +0200
+	Tue, 10 Jun 2008 07:44:14 -0400
+Date: Tue, 10 Jun 2008 12:27:32 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Stefan Hellermann <stefan@the2masters.de>
+Cc: linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>
+Subject: Re: GPIO-Ports on VIA EPIA-SN
+Message-ID: <20080610122732.1fabdf05@core>
+In-Reply-To: <1213034405.2592.22.camel@hel-stefan.lan>
+References: <1213034405.2592.22.camel@hel-stefan.lan>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+> Can anybody help me writing a small kernel-driver for this? I heard of
+> the GPIO-framework, but I have no clue where to start with. I simply
+> want to switch these ports to 0 or 1 :).
 > 
-> Fix for linker error on UML:
-> 
-> /usr/lib64/gcc/x86_64-suse-linux/4.2.1/../../../../x86_64-suse-linux/bin/ld:arch/um/kernel/vmlinux.lds:267: syntax error
-> 
-> The error is triggered by the use of SORT(CONSTRUCTORS) in the UML
-> linker script which conflicts with the kernel-call-constructors patch.
-> Here is what the ld info page says about sorting constructors:
-> 
->      If you are using the GNU C++ support for initialization priority,
->      which provides some control over the order in which global
->      constructors are run, you must sort the constructors at link time
->      to ensure that they are executed in the correct order.
-> 
-> As there's no C++ code inside the kernel it should be safe to remove
-> the SORT construct.
+> I don't know under what license this documentation is, I simply got
+> these 6 pages with sample source code.
 
-Hmm, uml still doesn't boot with this patch, it dies while calling the
-constructors.  So maybe that SORT contruct is still needed?
+This is a 5 minute hack on the Nat Semi Geode GPIO driver so you might
+need to debug it a bit as its untested.
 
-Miklos
+epiapd_gpio:  driver for EPIA-PD
+
+From: Alan Cox <alan@redhat.com>
+
+This is a simple driver for the EPIA-PD GPIO lines
+---
+
+ drivers/char/Kconfig       |    6 +
+ drivers/char/Makefile      |    1 
+ drivers/char/epiapd_gpio.c |  182 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 189 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/char/epiapd_gpio.c
 
 
-
-mszeredi@tucsk:/store/uml> /store/quilt/linux/linux umid=uml
-Locating the bottom of the address space ... 0x0
-Locating the top of the address space ... 0xffffd000
-Core dump limits :
-        soft - NONE
-        hard - NONE
-Checking that ptrace can change system call numbers...OK
-Checking syscall emulation patch for ptrace...missing
-Checking for tmpfs mount on /dev/shm...nothing mounted on /dev/shm
-Checking PROT_EXEC mmap in /tmp/...OK
-Checking for the skas3 patch in the host:
-  - /proc/mm...not found: No such file or directory
-  - PTRACE_FAULTINFO...not found
-  - PTRACE_LDT...not found
-UML running in SKAS0 mode
-Adding 15208448 bytes to physical memory to account for exec-shield gap
-Aborted (core dumped)
-mszeredi@tucsk:/store/uml> gdb /store/quilt/linux/linux core
-GNU gdb 6.6.50.20070726-cvs
-Copyright (C) 2007 Free Software Foundation, Inc.
-GDB is free software, covered by the GNU General Public License, and you are
-welcome to change it and/or distribute copies of it under certain conditions.
-Type "show copying" to see the conditions.
-There is absolutely no warranty for GDB.  Type "show warranty" for details.
-This GDB was configured as "x86_64-suse-linux"...
-Using host libthread_db library "/lib64/libthread_db.so.1".
-
-warning: Can't read pathname for load map: Input/output error.
-Reading symbols from /lib/libutil.so.1...done.
-Loaded symbols for /lib/libutil.so.1
-Reading symbols from /lib/libc.so.6...done.
-Loaded symbols for /lib/libc.so.6
-Reading symbols from /lib/ld-linux.so.2...done.
-Loaded symbols for /lib/ld-linux.so.2
-Core was generated by `/store/quilt/linux/linux umid=uml'.
-Program terminated with signal 6, Aborted.
-#0  0xffffe430 in __kernel_vsyscall ()
-(gdb) bt
-#0  0xffffe430 in __kernel_vsyscall ()
-#1  0xf7e598f5 in raise () from /lib/libc.so.6
-#2  0xf7e5b1e1 in abort () from /lib/libc.so.6
-#3  0x0807173d in os_dump_core () at arch/um/os-Linux/util.c:119
-#4  0x08061d07 in panic_exit (self=0x8451594, unused1=0, unused2=0x8471f20) at arch/um/kernel/um_arch.c:233
-#5  0x0809a2ea in notifier_call_chain (nl=0x84594ec, val=0, v=0x8471f20, nr_to_call=-1, nr_calls=0x0)
-    at kernel/notifier.c:85
-#6  0x0809a3e0 in __atomic_notifier_call_chain (nh=0x84594dc, val=0, v=0x8471f20, nr_to_call=-1, nr_calls=0x0)
-    at kernel/notifier.c:174
-#7  0x0809a41f in atomic_notifier_call_chain (nh=0x84594dc, val=0, v=0x8471f20) at kernel/notifier.c:183
-#8  0x0807e88a in panic (fmt=0x83dd7be "Segfault with no mm") at kernel/panic.c:104
-#9  0x08061922 in segv (fi={error_code = 21, cr2 = 4294967295, trap_no = 14}, ip=4294967295, is_user=0,
-    regs=0x844fc70) at arch/um/kernel/trap.c:176
-#10 0x080616c7 in segv_handler (sig=11, regs=0x6) at arch/um/kernel/trap.c:152
-#11 0x0806ff00 in sig_handler_common (sig=11, sc=0x844fd24) at arch/um/os-Linux/signal.c:49
-#12 0x0806ff87 in sig_handler (sig=11, sc=0x844fd24) at arch/um/os-Linux/signal.c:81
-#13 0x0807011d in handle_signal (sig=2894, sc=0x844fd24) at arch/um/os-Linux/signal.c:158
-#14 0x08071fb8 in hard_handler (sig=11) at arch/um/os-Linux/sys-i386/signal.c:12
-#15 <signal handler called>
-#16 0xffffffff in ?? ()
-#17 0x08049793 in do_ctors () at init/main.c:706
-#18 0x080499cc in do_basic_setup () at init/main.c:789
-#19 0x08049a43 in kernel_init (unused=0x0) at init/main.c:897
-#20 0x0806f241 in run_kernel_thread (fn=0x8049a10 <kernel_init>, arg=0x0, jmp_ptr=0xa860b50)
-    at arch/um/os-Linux/process.c:267
-#21 0x0805ed02 in new_thread_handler () at arch/um/kernel/process.c:151
-#22 0x00000000 in ?? ()
-(gdb) 
-
-
-Miklos
+diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+index 595a925..c308e15 100644
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -932,6 +932,12 @@ config GPIO_TB0219
+ 	depends on TANBAC_TB022X
+ 	select GPIO_VR41XX
+ 
++config GPIO_EPIAPD
++	tristate "EPIA-PD VT8251 GPIO support"
++	---help---
++	  This driver provides access to the GPI/GPO pins on the VT8251
++	  EPIA-PD board.
++
+ source "drivers/char/pcmcia/Kconfig"
+ 
+ config MWAVE
+diff --git a/drivers/char/Makefile b/drivers/char/Makefile
+index 4c1c584..237ebfc 100644
+--- a/drivers/char/Makefile
++++ b/drivers/char/Makefile
+@@ -96,6 +96,7 @@ obj-$(CONFIG_PC8736x_GPIO)	+= pc8736x_gpio.o
+ obj-$(CONFIG_NSC_GPIO)		+= nsc_gpio.o
+ obj-$(CONFIG_CS5535_GPIO)	+= cs5535_gpio.o
+ obj-$(CONFIG_GPIO_VR41XX)	+= vr41xx_giu.o
++obj-$(CONFIG_GPIO_EPIAPD)	+= epiapd_gpio.o
+ obj-$(CONFIG_GPIO_TB0219)	+= tb0219.o
+ obj-$(CONFIG_TELCLOCK)		+= tlclk.o
+ 
+diff --git a/drivers/char/epiapd_gpio.c b/drivers/char/epiapd_gpio.c
+new file mode 100644
+index 0000000..eedb4ae
+--- /dev/null
++++ b/drivers/char/epiapd_gpio.c
+@@ -0,0 +1,182 @@
++/* linux/drivers/char/epiapd_gpio.c
++
++   EPIA-PD GPIO driver.  Allows a user space process to play with the GPIO pins.
++
++   based on the Nat Semi GPIO driver
++   Copyright (c) 2001,2002 Christer Weinigel <wingel@nano-system.com> 
++*/
++
++#include <linux/device.h>
++#include <linux/fs.h>
++#include <linux/module.h>
++#include <linux/errno.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/uaccess.h>
++#include <linux/io.h>
++#include <linux/pci.h>
++#include <linux/types.h>
++#include <linux/cdev.h>
++
++#define DRVNAME "epiapd_gpio"
++
++MODULE_AUTHOR("Alan Cox <alan@redhat.com>");
++MODULE_DESCRIPTION("EPIA PD VIA VT8251 GPIO Pin Driver");
++MODULE_LICENSE("GPL");
++
++static int major = 0;		/* default to dynamic major */
++module_param(major, int, 0);
++MODULE_PARM_DESC(major, "Major device number");
++
++#define MAX_PINS 8
++
++static unsigned long pmio;
++
++static void epiapd_gpio_set(int m, int v)
++{
++	u8 r = inb(pmio + 0x4C);
++	r &= ~ (1 << m);
++	r |= (v << m);
++	outb(r, pmio + 0x4C);
++}
++
++ssize_t epiapd_gpio_write(struct file *file, const char __user *data,
++		       size_t len, loff_t *ppos)
++{
++	unsigned m = iminor(file->f_path.dentry->d_inode);
++	size_t i;
++	int err = 0;
++
++	for (i = 0; i < len; ++i) {
++		char c;
++		if (get_user(c, data + i)) {
++			err = -EFAULT;
++			break;
++		}
++		switch (c) {
++		case '0':
++			epiapd_gpio_set(m, 0);
++			break;
++		case '1':
++			epiapd_gpio_set(m, 1);
++			break;
++		case '\n':
++			/* end of settings string, do nothing */
++			break;
++		default:
++			err = -EINVAL;
++			break;
++		}
++	}
++	if (err) {
++		if(i == 0)
++			return err;
++		else
++			return i;
++	}
++	return len;
++}
++
++ssize_t epiapd_gpio_read(struct file *file, char __user * buf,
++		      size_t len, loff_t * ppos)
++{
++	unsigned m = iminor(file->f_path.dentry->d_inode);
++	u8 r;
++	u8 c = '0';
++	
++	r = inb(pmio + 0x47) & 7;
++	r |= (inb(pmio + 0x49) & 1) << 3;
++	
++	if (r & (1 << m))
++		c = '1';
++
++	if (put_user(c, buf))
++		return -EFAULT;
++	return 1;
++}
++
++static int epiapd_gpio_open(struct inode *inode, struct file *file)
++{
++	unsigned m = iminor(inode);
++	if (m >= MAX_PINS)
++		return -EINVAL;
++	return nonseekable_open(inode, file);
++}
++
++static int epiapd_gpio_release(struct inode *inode, struct file *file)
++{
++	return 0;
++}
++
++static const struct file_operations epiapd_gpio_fileops = {
++	.owner   = THIS_MODULE,
++	.write   = epiapd_gpio_write,
++	.read    = epiapd_gpio_read,
++	.open    = epiapd_gpio_open,
++	.release = epiapd_gpio_release,
++};
++
++static struct cdev epiapd_gpio_cdev;  /* use 1 cdev for all pins */
++
++static int __init epiapd_gpio_configure(void)
++{
++	struct pci_dev *pdev = pci_get_device(PCI_VENDOR_ID_VIA, 
++					PCI_DEVICE_ID_VIA_8251, NULL);
++	u32 v;
++	u8 r;
++	if (pdev == NULL)
++		return -ENODEV;
++	pci_read_config_dword(pdev, 0x8B, &v);
++	v &= 0xFFFE;
++	if (v == 0)
++		return -ENODEV;
++	pmio = v;
++	
++	/* Program the GPIO direction bits */
++	pci_read_config_byte(pdev, 0xE4, &r);
++	r &= 0x08;
++	pci_write_config_byte(pdev, 0xE4, r);
++	pci_read_config_byte(pdev, 0x95, &r);
++	r |= 0x02;
++	pci_write_config_byte(pdev, 0x95, r);
++	pci_read_config_byte(pdev, 0xE4, &r);
++	r |= 0x06;
++	pci_write_config_byte(pdev, 0xE4, r);
++	
++	pci_dev_put(pdev);
++	return 0;
++}
++
++static int __init epiapd_gpio_init(void)
++{
++	int rc;
++	dev_t devid;
++
++	if (epiapd_gpio_configure() < 0) {
++		printk(KERN_ERR DRVNAME ": no VT8251 gpio present\n");
++		return -ENODEV;
++	}
++	
++	if (major) {
++		devid = MKDEV(major, 0);
++		rc = register_chrdev_region(devid, MAX_PINS, "epiapd_gpio");
++	} else {
++		rc = alloc_chrdev_region(&devid, 0, MAX_PINS, "epiapd_gpio");
++		major = MAJOR(devid);
++	}
++	if (rc < 0)
++		return rc;
++	cdev_init(&epiapd_gpio_cdev, &epiapd_gpio_fileops);
++	cdev_add(&epiapd_gpio_cdev, devid, MAX_PINS);
++ 	return 0; /* succeed */
++}
++
++static void __exit epiapd_gpio_cleanup(void)
++{
++	cdev_del(&epiapd_gpio_cdev);
++	/* cdev_put(&epiapd_gpio_cdev); */
++	unregister_chrdev_region(MKDEV(major, 0), MAX_PINS);
++}
++
++module_init(epiapd_gpio_init);
++module_exit(epiapd_gpio_cleanup);
