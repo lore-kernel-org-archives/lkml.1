@@ -1,107 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbYFJIff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758816AbYFJIhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758683AbYFJIff (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 04:35:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754139AbYFJIf2
+	id S1758816AbYFJIhW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 04:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754139AbYFJIhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 04:35:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55576 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754109AbYFJIf0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 04:35:26 -0400
-Date: Tue, 10 Jun 2008 01:34:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       linux-mm@kvack.org, Rik van Riel <riel@redhat.com>
-Subject: Re: 2.6.26-rc5-mm2
-Message-Id: <20080610013427.aa20a29b.akpm@linux-foundation.org>
-In-Reply-To: <200806101728.27486.nickpiggin@yahoo.com.au>
-References: <20080609223145.5c9a2878.akpm@linux-foundation.org>
-	<200806101728.27486.nickpiggin@yahoo.com.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Jun 2008 04:37:09 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:58878 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752474AbYFJIhH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 04:37:07 -0400
+Date: Tue, 10 Jun 2008 11:36:10 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: Rob Landley <rob@landley.net>, linux-tiny <Linux-tiny@selenic.com>,
+       linux-embedded <linux-embedded@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: mainlining min-configs...
+Message-ID: <20080610083610.GC1987@cs181133002.pp.htv.fi>
+References: <48447615.5050806@am.sony.com> <20080604194002.GF4189@cs181133002.pp.htv.fi> <4849CCA3.7040102@am.sony.com> <200806062329.54019.rob@landley.net> <484DDAD9.2000306@am.sony.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <484DDAD9.2000306@am.sony.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008 17:28:27 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-
-> On Tuesday 10 June 2008 15:31, Andrew Morton wrote:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc5/2.
-> >6.26-rc5-mm2/
-> >
+On Mon, Jun 09, 2008 at 06:37:29PM -0700, Tim Bird wrote:
+> Rob Landley wrote:
+> > On Friday 06 June 2008 18:47:47 Tim Bird wrote:
+> >> At a minimum, it would be nice to have a few nice examples
+> >> of really, really small configs for things like qemus for different
+> >> architectures (just to give embedded developers who are working
+> >> on size a starting point).
+> > 
+> > That's more or less what I'm trying to do with my Firmware Linux project: 
+> > creating cross compilers and minimal native build environments for every qemu 
+> > target.
 > 
-> BTW. would be trying to test this more myself, but last mm I based the
-> lockless patches on didn't boot, and this one dies pretty quickly when
-> you try to get into reclaim:
-> 
-> ------------[ cut here ]------------
-> kernel BUG at mm/swap_state.c:77!
-> invalid opcode: 0000 [1] SMP DEBUG_PAGEALLOC
-> last sysfs file: /sys/devices/system/cpu/cpu7/cache/index2/shared_cpu_map
-> CPU 7
-> Modules linked in:
-> Pid: 13550, comm: sh Not tainted 2.6.26-rc5-mm2-dirty #412
-> RIP: 0010:[<ffffffff80288689>]  [<ffffffff80288689>] 
-> add_to_swap_cache+0xd9/0x120
-> RSP: 0018:ffff81010c62d8a8  EFLAGS: 00010246
-> RAX: 2000000000020009 RBX: ffffe2000107da88 RCX: c000000000000000
-> RDX: 0000000000000020 RSI: 000000000000eea2 RDI: ffffe2000107da88
-> RBP: ffff81010c62d8c8 R08: fffffffffa48016e R09: 0000000000000000
-> R10: ffffffff80857fa0 R11: 2222222222222222 R12: ffff81012e126520
-> R13: 000000000000eea2 R14: ffff8100727bea20 R15: ffff81010c62d9b8
-> FS:  00002b5b33cafdc0(0000) GS:ffff81012ff07800(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> CR2: 000000000175e280 CR3: 000000012e292000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process sh (pid: 13550, threadinfo ffff81010c62c000, task ffff810116b01110)
-> Stack:  ffff81010c62d8c8 ffffe2000107da88 ffff81012e126520 ffff81012e126400
->  ffff81010c62d908 ffffffff80292851 000000000000eea2 ffff81012e126708
->  ffffe2000107da88 ffffffff80701420 ffff81010c62db68 ffff81010c62dc88
-> Call Trace:
->  [<ffffffff80292851>] shmem_writepage+0x121/0x200
->  [<ffffffff80277479>] shrink_page_list+0x559/0x6b0
->  [<ffffffff802777ec>] shrink_list+0x21c/0x520
->  [<ffffffff80273365>] ? determine_dirtyable_memory+0x15/0x30
->  [<ffffffff802733a2>] ? get_dirty_limits+0x22/0x2a0
->  [<ffffffff80277d31>] shrink_zone+0x241/0x330
->  [<ffffffff80278207>] try_to_free_pages+0x237/0x3a0
->  [<ffffffff80276530>] ? isolate_pages_global+0x0/0x270
->  [<ffffffff80272546>] __alloc_pages_internal+0x206/0x4b0
->  [<ffffffff8028dfd7>] alloc_pages_current+0x87/0xd0
->  [<ffffffff802714fe>] __get_free_pages+0xe/0x60
->  [<ffffffff802343ca>] copy_process+0xba/0x1240
->  [<ffffffff80235682>] do_fork+0x82/0x2a0
->  [<ffffffff8025a03d>] ? trace_hardirqs_on+0xd/0x10
->  [<ffffffff805177ab>] ? _spin_unlock_irq+0x2b/0x40
->  [<ffffffff8051703f>] ? trace_hardirqs_on_thunk+0x3a/0x3f
->  [<ffffffff8020b6cb>] ? system_call_after_swapgs+0x7b/0x80
->  [<ffffffff80209853>] sys_clone+0x23/0x30
-> 
-> The tmpfs PageSwapBacked stuff seems rather broken. For
-> them write_begin/write_end path, it is filemap.c, not shmem.c,
-> which allocates the page, so its no wonder it goes bug. Will
-> try to do more testing without shmem.
+> Any chance of getting your minimal configs from Firmware Linux mainlined?
 
-rikstuff.  Could be that the merge caused a problem?
+It could help finding compile errors in some more "exotic" configurations
+early (but I'd question whether the Rob's current configs are really 
+both minimal and typical for embedded usage - e.g the i686 one having 
+both ext2 and ext3 enabled but no JFFS2; and enabling all IO schedulers 
+in the kernel as well as ACPI is also not a typical embedded setup).
 
-> Also, just noticed
-> mm/memory.c:do_wp_page
-> //TODO:  is this safe?  do_anonymous_page() does it this way.
-> 
-> That's a bit disheartening. Surely a question like that has to
-> be answered definitively?
+But if you want to discover size change with minimal configs early you 
+anyway have to both:
+- constantly keep your configs in shape so that they are both minimal
+  for some set of hardware support and features and
+- investigate for any size changes what caused them
+  (experience has shown that putting information on a webpage doesn't
+   fix problems - even for compile errors).
 
-I asked that too.
+You need both, and ideally constantly done by the same person against 
+Linus' tree, -next and -mm.
 
-> (hopefully whatever is doing the
-> asking won't get merged until answered)
+Where to get your minimal configs from at the start is just a small 
+thing at the beginning - don't underestimate the required manual work 
+that will have to be done each week.
 
-It would be good if you could find a day to look through those changes
-please.  It's pretty important.
+> Does anyone else think this would be valuable?  If not in mainline, it
+> would be nice to collect them somewhere, to compare what options different
+> developers decide turn on or off.
+
+You already have this when you look at e.g. the ARM defconfigs in the 
+kernel
+
+>  -- Tim
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
