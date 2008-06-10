@@ -1,208 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757305AbYFJUtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754298AbYFJUuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757305AbYFJUtp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 16:49:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbYFJUth
+	id S1754298AbYFJUuH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 16:50:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757259AbYFJUto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 16:49:37 -0400
+	Tue, 10 Jun 2008 16:49:44 -0400
 Received: from gv-out-0910.google.com ([216.239.58.184]:29680 "EHLO
 	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752871AbYFJUtg (ORCPT
+	with ESMTP id S1756428AbYFJUtn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 16:49:36 -0400
+	Tue, 10 Jun 2008 16:49:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=tefsXEJiy8VYUEbY5K6P3n4MTFoLWzQOiqFHdlFPJpPR+KlE3057QNrYZXniyZhbxN
-         eePtqHtuoOJGHrlgjuG4uki6HorND/FFQp0NkIHN97yTsb1tK99SUCOiqpb8Da+F/O2l
-         OcQhU/BCHVXR/aMPZXgAI+tglg+exuhUPwq6U=
+        b=QiRlWE7vJroC2QJwnwhTkVT6k2L1x9YvDLurjz5J5VPws4k+A+0jTm+tAIPefKuwNB
+         DoYM7NmV21Ay2j/tt3lMhQYgMmV+HXF0+CL72POudf3wqdEKQErK+5iqTCVvFDh7Bvvx
+         GQk+eAoolGD8VWVZ6khntq8PWlz4iiYLiU4yk=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Tue, 10 Jun 2008 22:51:09 +0200
-Message-Id: <20080610205109.18469.82083.sendpatchset@localhost.localdomain>
+Date: Tue, 10 Jun 2008 22:51:19 +0200
+Message-Id: <20080610205119.18469.44635.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080610205059.18469.44856.sendpatchset@localhost.localdomain>
 References: <20080610205059.18469.44856.sendpatchset@localhost.localdomain>
-Subject: [PATCH 02/14] ide: ->port_init_devs -> ->init_dev
+Subject: [PATCH 03/14] cmd640: add ->init_dev method
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change ->port_init_devs method to take 'ide_drive_t *' as an argument
-instead of 'ide_hwif_t *' and rename it to ->init_dev.
+Convert the driver to use ->init_dev method instead of open-coding devices
+init in cmd640x_init().
 
-There should be no functional changes caused by this patch.
+While at it:
+
+- fix printk()-s to use KERN_INFO level instead of the default KERN_ERR
+
+- use DRV_NAME define in printk()-s
+
+- set proper ->pio_mask also for CONFIG_BLK_DEV_CMD640_ENHANCED=n
+
+There should be no functional changes caused by this patch
+(except fixing printk()-s levels).
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-probe.c          |    6 +++---
- drivers/ide/legacy/ht6560b.c     |    8 ++++----
- drivers/ide/legacy/ide-4drives.c |   10 ++++------
- drivers/ide/legacy/qd65xx.c      |   16 ++++++++--------
- drivers/ide/pci/opti621.c        |    7 +++----
- include/linux/ide.h              |    4 ++--
- 6 files changed, 24 insertions(+), 27 deletions(-)
+ drivers/ide/pci/cmd640.c |   72 +++++++++++++++++++----------------------------
+ 1 file changed, 30 insertions(+), 42 deletions(-)
 
-Index: b/drivers/ide/ide-probe.c
+Index: b/drivers/ide/pci/cmd640.c
 ===================================================================
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -1326,10 +1326,10 @@ static void ide_port_init_devices(ide_hw
- 			drive->unmask = 1;
- 		if (hwif->host_flags & IDE_HFLAG_NO_UNMASK_IRQS)
- 			drive->no_unmask = 1;
--	}
+--- a/drivers/ide/pci/cmd640.c
++++ b/drivers/ide/pci/cmd640.c
+@@ -611,11 +611,40 @@ static void cmd640_set_pio_mode(ide_driv
  
--	if (port_ops && port_ops->port_init_devs)
--		port_ops->port_init_devs(hwif);
-+		if (port_ops && port_ops->init_dev)
-+			port_ops->init_dev(drive);
-+	}
+ 	display_clocks(index);
  }
++#endif /* CONFIG_BLK_DEV_CMD640_ENHANCED */
++
++static void cmd640_init_dev(ide_drive_t *drive)
++{
++	unsigned int i = drive->hwif->channel * 2 + drive->select.b.unit;
++
++#ifdef CONFIG_BLK_DEV_CMD640_ENHANCED
++	/*
++	 * Reset timing to the slowest speed and turn off prefetch.
++	 * This way, the drive identify code has a better chance.
++	 */
++	setup_counts[i]    =  4;	/* max possible */
++	active_counts[i]   = 16;	/* max possible */
++	recovery_counts[i] = 16;	/* max possible */
++	program_drive_counts(drive, i);
++	set_prefetch_mode(drive, i, 0);
++	printk(KERN_INFO DRV_NAME ": drive%d timings/prefetch cleared\n", i);
++#else
++	/*
++	 * Set the drive unmask flags to match the prefetch setting.
++	 */
++	check_prefetch(drive, i);
++	printk(KERN_INFO DRV_NAME ": drive%d timings/prefetch(%s) preserved\n",
++				  i, drive->no_io_32bit ? "off" : "on");
++#endif /* CONFIG_BLK_DEV_CMD640_ENHANCED */
++}
++
  
- static void ide_init_port(ide_hwif_t *hwif, unsigned int port,
-Index: b/drivers/ide/legacy/ht6560b.c
-===================================================================
---- a/drivers/ide/legacy/ht6560b.c
-+++ b/drivers/ide/legacy/ht6560b.c
-@@ -310,16 +310,16 @@ static void ht6560b_set_pio_mode(ide_dri
+ static const struct ide_port_ops cmd640_port_ops = {
++	.init_dev		= cmd640_init_dev,
++#ifdef CONFIG_BLK_DEV_CMD640_ENHANCED
+ 	.set_pio_mode		= cmd640_set_pio_mode,
++#endif
+ };
+-#endif /* CONFIG_BLK_DEV_CMD640_ENHANCED */
+ 
+ static int pci_conf1(void)
+ {
+@@ -658,10 +687,8 @@ static const struct ide_port_info cmd640
+ 				  IDE_HFLAG_NO_DMA |
+ 				  IDE_HFLAG_ABUSE_PREFETCH |
+ 				  IDE_HFLAG_ABUSE_FAST_DEVSEL,
+-#ifdef CONFIG_BLK_DEV_CMD640_ENHANCED
+ 	.port_ops		= &cmd640_port_ops,
+ 	.pio_mask		= ATA_PIO5,
+-#endif
+ };
+ 
+ static int cmd640x_init_one(unsigned long base, unsigned long ctl)
+@@ -689,7 +716,6 @@ static int __init cmd640x_init(void)
+ {
+ 	int second_port_cmd640 = 0, rc;
+ 	const char *bus_type, *port2;
+-	unsigned int index;
+ 	u8 b, cfr;
+ 	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
+ 	hw_regs_t hw[2];
+@@ -813,44 +839,6 @@ static int __init cmd640x_init(void)
+ 	printk(KERN_INFO "cmd640: %sserialized, secondary interface %s\n",
+ 			 second_port_cmd640 ? "" : "not ", port2);
+ 
+-	/*
+-	 * Establish initial timings/prefetch for all drives.
+-	 * Do not unnecessarily disturb any prior BIOS setup of these.
+-	 */
+-	for (index = 0; index < (2 + (second_port_cmd640 << 1)); index++) {
+-		ide_drive_t *drive;
+-
+-		if (index > 1) {
+-			if (cmd_hwif1 == NULL)
+-				continue;
+-			drive = &cmd_hwif1->drives[index & 1];
+-		} else  {
+-			if (cmd_hwif0 == NULL)
+-				continue;
+-			drive = &cmd_hwif0->drives[index & 1];
+-		}
+-
+-#ifdef CONFIG_BLK_DEV_CMD640_ENHANCED
+-		/*
+-		 * Reset timing to the slowest speed and turn off prefetch.
+-		 * This way, the drive identify code has a better chance.
+-		 */
+-		setup_counts    [index] = 4;	/* max possible */
+-		active_counts   [index] = 16;	/* max possible */
+-		recovery_counts [index] = 16;	/* max possible */
+-		program_drive_counts(drive, index);
+-		set_prefetch_mode(drive, index, 0);
+-		printk("cmd640: drive%d timings/prefetch cleared\n", index);
+-#else
+-		/*
+-		 * Set the drive unmask flags to match the prefetch setting
+-		 */
+-		check_prefetch(drive, index);
+-		printk("cmd640: drive%d timings/prefetch(%s) preserved\n",
+-			index, drive->no_io_32bit ? "off" : "on");
+-#endif /* CONFIG_BLK_DEV_CMD640_ENHANCED */
+-	}
+-
+ #ifdef CMD640_DUMP_REGS
+ 	cmd640_dump_regs();
  #endif
- }
- 
--static void __init ht6560b_port_init_devs(ide_hwif_t *hwif)
-+static void __init ht6560b_init_dev(ide_drive_t *drive)
- {
-+	ide_hwif_t *hwif = drive->hwif;
- 	/* Setting default configurations for drives. */
- 	int t = (HT_CONFIG_DEFAULT << 8) | HT_TIMING_DEFAULT;
- 
- 	if (hwif->channel)
- 		t |= (HT_SECONDARY_IF << 8);
- 
--	hwif->drives[0].drive_data = t;
--	hwif->drives[1].drive_data = t;
-+	drive->drive_data = t;
- }
- 
- static int probe_ht6560b;
-@@ -328,7 +328,7 @@ module_param_named(probe, probe_ht6560b,
- MODULE_PARM_DESC(probe, "probe for HT6560B chipset");
- 
- static const struct ide_port_ops ht6560b_port_ops = {
--	.port_init_devs		= ht6560b_port_init_devs,
-+	.init_dev		= ht6560b_init_dev,
- 	.set_pio_mode		= ht6560b_set_pio_mode,
- 	.selectproc		= ht6560b_selectproc,
- };
-Index: b/drivers/ide/legacy/ide-4drives.c
-===================================================================
---- a/drivers/ide/legacy/ide-4drives.c
-+++ b/drivers/ide/legacy/ide-4drives.c
-@@ -11,16 +11,14 @@ static int probe_4drives;
- module_param_named(probe, probe_4drives, bool, 0);
- MODULE_PARM_DESC(probe, "probe for generic IDE chipset with 4 drives/port");
- 
--static void ide_4drives_port_init_devs(ide_hwif_t *hwif)
-+static void ide_4drives_init_dev(ide_drive_t *drive)
- {
--	if (hwif->channel) {
--		hwif->drives[0].select.all ^= 0x20;
--		hwif->drives[1].select.all ^= 0x20;
--	}
-+	if (drive->hwif->channel)
-+		drive->select.all ^= 0x20;
- }
- 
- static const struct ide_port_ops ide_4drives_port_ops = {
--	.port_init_devs		= ide_4drives_port_init_devs,
-+	.init_dev		= ide_4drives_init_dev,
- };
- 
- static const struct ide_port_info ide_4drives_port_info = {
-Index: b/drivers/ide/legacy/qd65xx.c
-===================================================================
---- a/drivers/ide/legacy/qd65xx.c
-+++ b/drivers/ide/legacy/qd65xx.c
-@@ -282,17 +282,18 @@ static int __init qd_testreg(int port)
- 	return (readreg != QD_TESTVAL);
- }
- 
--static void __init qd6500_port_init_devs(ide_hwif_t *hwif)
-+static void __init qd6500_init_dev(ide_drive_t *drive)
- {
-+	ide_hwif_t *hwif = drive->hwif;
- 	u8 base = (hwif->config_data & 0xff00) >> 8;
- 	u8 config = QD_CONFIG(hwif);
- 
--	hwif->drives[0].drive_data = QD6500_DEF_DATA;
--	hwif->drives[1].drive_data = QD6500_DEF_DATA;
-+	drive->drive_data = QD6500_DEF_DATA;
- }
- 
--static void __init qd6580_port_init_devs(ide_hwif_t *hwif)
-+static void __init qd6580_init_dev(ide_drive_t *drive)
- {
-+	ide_hwif_t *hwif = drive->hwif;
- 	u16 t1, t2;
- 	u8 base = (hwif->config_data & 0xff00) >> 8;
- 	u8 config = QD_CONFIG(hwif);
-@@ -303,18 +304,17 @@ static void __init qd6580_port_init_devs
- 	} else
- 		t2 = t1 = hwif->channel ? QD6580_DEF_DATA2 : QD6580_DEF_DATA;
- 
--	hwif->drives[0].drive_data = t1;
--	hwif->drives[1].drive_data = t2;
-+	drive->drive_data = drive->select.b.unit ? t2 : t1;
- }
- 
- static const struct ide_port_ops qd6500_port_ops = {
--	.port_init_devs		= qd6500_port_init_devs,
-+	.init_dev		= qd6500_init_dev,
- 	.set_pio_mode		= qd6500_set_pio_mode,
- 	.selectproc		= qd65xx_select,
- };
- 
- static const struct ide_port_ops qd6580_port_ops = {
--	.port_init_devs		= qd6580_port_init_devs,
-+	.init_dev		= qd6580_init_dev,
- 	.set_pio_mode		= qd6580_set_pio_mode,
- 	.selectproc		= qd65xx_select,
- };
-Index: b/drivers/ide/pci/opti621.c
-===================================================================
---- a/drivers/ide/pci/opti621.c
-+++ b/drivers/ide/pci/opti621.c
-@@ -319,14 +319,13 @@ static void opti621_set_pio_mode(ide_dri
- 	spin_unlock_irqrestore(&opti621_lock, flags);
- }
- 
--static void __devinit opti621_port_init_devs(ide_hwif_t *hwif)
-+static void __devinit opti621_init_dev(ide_drive_t *drive)
- {
--	hwif->drives[0].drive_data = PIO_DONT_KNOW;
--	hwif->drives[1].drive_data = PIO_DONT_KNOW;
-+	drive->drive_data = PIO_DONT_KNOW;
- }
- 
- static const struct ide_port_ops opti621_port_ops = {
--	.port_init_devs		= opti621_port_init_devs,
-+	.init_dev		= opti621_init_dev,
- 	.set_pio_mode		= opti621_set_pio_mode,
- };
- 
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -390,8 +390,8 @@ typedef struct ide_drive_s {
- struct ide_port_info;
- 
- struct ide_port_ops {
--	/* host specific initialization of devices on a port */
--	void	(*port_init_devs)(struct hwif_s *);
-+	/* host specific initialization of a device */
-+	void	(*init_dev)(ide_drive_t *);
- 	/* routine to program host for PIO mode */
- 	void	(*set_pio_mode)(ide_drive_t *, const u8);
- 	/* routine to program host for DMA mode */
