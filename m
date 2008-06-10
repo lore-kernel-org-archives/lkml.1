@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759619AbYFJWQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758760AbYFJWTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759619AbYFJWQl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 18:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755376AbYFJWQc
+	id S1758760AbYFJWTo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 18:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbYFJWTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 18:16:32 -0400
-Received: from vs166246.vserver.de ([62.75.166.246]:50538 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754923AbYFJWQb (ORCPT
+	Tue, 10 Jun 2008 18:19:34 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:4463 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754545AbYFJWTd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 18:16:31 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: "Miles Lane" <miles.lane@gmail.com>
-Subject: Re: BUG: NULL pointer dereference at 00000000 -- IP: [<f8e783d5>] :b43:b43_dma_mapping_error+0x16/0x155
-Date: Wed, 11 Jun 2008 00:15:58 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: "Vegard Nossum" <vegard.nossum@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>
-References: <a44ae5cd0806100709rf4602f2x587631852502c0b5@mail.gmail.com> <200806101650.27180.mb@bu3sch.de> <a44ae5cd0806101509x5e2d5c19y10101ea0e72f8cba@mail.gmail.com>
-In-Reply-To: <a44ae5cd0806101509x5e2d5c19y10101ea0e72f8cba@mail.gmail.com>
+	Tue, 10 Jun 2008 18:19:33 -0400
+Date: Tue, 10 Jun 2008 18:19:32 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Chris Clayton <chris2553@googlemail.com>
+cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
+       Hannes Reinecke <hare@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       <linux-usb@vger.kernel.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: 2,6.26-rc4-git2 - long pause during boot
+In-Reply-To: <200806102206.26818.chris2553@googlemail.com>
+Message-ID: <Pine.LNX.4.44L0.0806101816290.20539-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806110015.59285.mb@bu3sch.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 June 2008 00:09:27 Miles Lane wrote:
-> I got a slightly different BUG with this patch applied:
-> 
-> BUG: unable to handle kernel NULL pointer dereference at 00000000
-> IP: [<f89e3d41>] :b43:b43_dma_mapping_error+0x16/0x97
+On Tue, 10 Jun 2008, Chris Clayton wrote:
 
-So can you please debug this? This is trivial. Just add a few printks
-to see which pointer is NULL.
-As I said I don't have this tree and really like to avoid fetching
-and building yet another tree.
+> What this has shown is that, when I plug in a usb-storage device, there seems 
+> to be a delay between the usb/scsi/usb-storage drivers setting up the device 
+> and my icon-showing script being run. Here is the snippet from the kernel log 
+> file:
 
--- 
-Greetings Michael.
+...
+> Jun 10 20:27:45 upstairs kernel: [ 3200.815772] usb-storage: waiting for device 
+> to settle before scanning
+> Jun 10 20:27:50 upstairs kernel: [ 3205.817115] scsi 10:0:0:0: Direct-Access              
+> USB Flash Memory 5.00 PQ: 0 ANSI: 0 CCS
+...
+
+You can eliminate this 5-second delay by adding
+
+	options usb-storage delay_use=0
+
+to /etc/modprobe.conf.  Of course, this will make the other delays just 
+stand out that much more sharply...
+
+Alan Stern
+
