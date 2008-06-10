@@ -1,70 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbYFJO72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755695AbYFJPCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755446AbYFJO72 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 10:59:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbYFJO7U
+	id S1755695AbYFJPCR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 11:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbYFJPCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 10:59:20 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:46445 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753745AbYFJO7T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 10:59:19 -0400
-Date: Tue, 10 Jun 2008 10:59:18 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Oliver Neukum <oliver@neukum.org>
-cc: Pavel Machek <pavel@suse.cz>, <linux-usb@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@linuxfoundation.org>,
-       Andrew Morton <akpm@linuxfoundation.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.25-rc6: CONFIG_USB_PERSIST forced on
-In-Reply-To: <200806101055.14539.oliver@neukum.org>
-Message-ID: <Pine.LNX.4.44L0.0806101057500.2709-100000@iolanthe.rowland.org>
+	Tue, 10 Jun 2008 11:02:04 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:49091 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753998AbYFJPCC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 11:02:02 -0400
+From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: [PATCH REPOST] IB/ehca: In case of lost interrupts, trigger EOI to reenable interrupts
+Date: Tue, 10 Jun 2008 17:01:45 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Roland Dreier <rolandd@cisco.com>, Paul Mackerras <paulus@samba.org>,
+       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-EWG" <ewg@lists.openfabrics.org>, general@lists.openfabrics.org,
+       fenkes@de.ibm.com, raisch@de.ibm.com, hnguyen@de.ibm.com,
+       TKLEIN@de.ibm.com, THEMANN@de.ibm.com
+References: <200806101644.34693.ossrosch@linux.vnet.ibm.com> <adatzg15ol2.fsf@cisco.com>
+In-Reply-To: <adatzg15ol2.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806101701.47090.ossrosch@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008, Oliver Neukum wrote:
-
-> Am Montag 09 Juni 2008 23:56:51 schrieb Pavel Machek:
-> > On Mon 2008-06-09 14:39:10, Linus Torvalds wrote:
-> > > 
-> > > 
-> > > On Mon, 9 Jun 2008, Pavel Machek wrote:
-> > > > 
-> > > > I believe we should just revert the "CONFIG_USB_PERSIST force on"
-> > > > patch, and solve this properly in 2.6.27.
-> > > 
-> > > Why?
-> > > 
-> > > The code would _still_ be buggy with that revert in place. You have to 
-> > > enable CONFIG_USB_PERSIST just to get even the _possibility_ of the sane 
-> > > behavior. 
-> > > 
-> > > If there is a problem with usblp, it just needs to be fixed. 
-> > 
-> > With USB_PERSIST on, you have problem on all drivers but usb-storage,
-> > AFAICT... because usb-storage seems to be the only driver implementing
-> > reset_resume.
-> > 
-> > I guess it is possible to do something like "if reset_resume() is
-> > unavailable, try plain resume()" in usb/driver.c, but I'd really
-> > changes to the suspend/resume callback to go in -rc1 so that they are
-> > tested properly, and not hot-patch it now.
+On Tuesday 10 June 2008 16:52:57 Roland Dreier wrote:
+>  > During corner case testing, we noticed that some versions of ehca 
+>  > do not properly transition to interrupt done in special load situations.
+>  > This can be resolved by periodically triggering EOI through H_EOI, 
+>  > if eqes are pending.
 > 
-> If a hotfix it must be, here's my take. It works for me, but it isn't
-> tested well.
-> Alan, what do you think?
+> So just to be clear: this is a workaround for a hardware/firmware bug?
+> 
+>  - R.
+> 
 
-I don't have time right now to check it; will do so later today.  At 
-first glance it seems okay -- it doesn't cover absolutely all the 
-cases, but it does cover system sleep transitions.  And it's clearly 
-better than what Linus proposed.
-
-Alan Stern
-
+Yes it is.
+regards Stefan
