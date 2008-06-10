@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758758AbYFJViS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbYFJVjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758758AbYFJViS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 17:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059AbYFJViE
+	id S1759301AbYFJVjk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 17:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755258AbYFJVjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 17:38:04 -0400
-Received: from pat.uio.no ([129.240.10.15]:38249 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751869AbYFJViD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 17:38:03 -0400
-Subject: Re: [2.6.26-rc4] mount.nfsv4/memory poisoning issues...
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: Daniel J Blueman <daniel.blueman@gmail.com>, linux-nfs@vger.kernel.org,
-       nfsv4@linux-nfs.org, Linux Kernel <linux-kernel@vger.kernel.org>,
-       bfields@fieldses.org
-In-Reply-To: <20080610170154.68e2e6fb@tleilax.poochiereds.net>
-References: <6278d2220806041633n3bfe3dd2ke9602697697228b@mail.gmail.com>
-	 <20080604203504.62730951@tleilax.poochiereds.net>
-	 <1213124088.20459.16.camel@localhost>
-	 <20080610151357.150b6f69@tleilax.poochiereds.net>
-	 <1213127909.20459.48.camel@localhost>
-	 <20080610161352.4e588653@tleilax.poochiereds.net>
-	 <1213130012.20459.58.camel@localhost>
-	 <20080610170154.68e2e6fb@tleilax.poochiereds.net>
-Content-Type: text/plain
-Date: Tue, 10 Jun 2008 17:37:56 -0400
-Message-Id: <1213133876.20459.91.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: F751ED416952000528945D857F25A1C027A10973
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 433 total 8863781 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	Tue, 10 Jun 2008 17:39:33 -0400
+Received: from smtp1.riverbed.com ([206.169.144.12]:30877 "EHLO
+	smtp1.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754010AbYFJVjc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 17:39:32 -0400
+Date: Tue, 10 Jun 2008 14:39:16 -0700
+From: Arthur Jones <ajones@riverbed.com>
+To: Doug Thompson <norsk5@yahoo.com>
+CC: Greg KH <greg@kroah.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "bluesmoke-devel@lists.sourceforge.net" 
+	<bluesmoke-devel@lists.sourceforge.net>
+Subject: Re: on static kobjects and double frees...
+Message-ID: <20080610213916.GC28572@ajones-laptop.nbttech.com>
+References: <20080610163800.GA28572@ajones-laptop.nbttech.com> <879085.21951.qm@web50106.mail.re2.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <879085.21951.qm@web50106.mail.re2.yahoo.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-06-10 at 17:01 -0400, Jeff Layton wrote:
+Hi Doug, ...
 
-> In practice, I think the thread generally runs immediately (at least
-> with current scheduler behavior), so we're probably not terribly
-> vulnerable to this race. Still, we shouldn't rely on that...
+On Tue, Jun 10, 2008 at 02:14:30PM -0700, Doug Thompson wrote:
+> [...]
+> Arthur, thanks for tracking that down and reviewing it. All the memory controller kobjects are all
+> dynamic. [...]
 
-In the code I showed you, the 'kthread' task is put to sleep, then
-kthread_run() calls wake_up_process() on it, but the current task isn't
-scheduled out. Rather, it continues to run, so in almost all UP cases,
-the race is not only possible, it is actually rather likely if
-nfs_alloc_client() fails.
+You're welcome, I learned a lot about kobjects
+that I should have already known...
 
-> For lockd and the nfs4 callback thread, we'll also need to deal with
-> the fact that svc_exit_thread() doesn't get called if this happens. So
-> we'll need to call svc_exit_thread from the *_down() functions too
-> (I presume that's OK).
+AFAICS, mc is not quite clean yet, though, as
+mc_kset is static and I don't think that is right.
+It does, however, look like less work than edac_pci_sysfs.c...
 
-These *_up()/*_down() functions are getting very complex. Any chance we
-could hide some of this complexity in some helpers? Looking at the NFSv4
-callback code and lockd, it seems that there might be a couple of
-opportunities for merging code.
+> [...] The edac PCI code needed to be refactored and it looks like you did it.
 
-> nfsd is a bigger problem since it exits on a signal. For that, perhaps
-> we should declare a completion variable and have svc_set_num_threads()
-> wait until nfsd() has actually run before continuing.
+I only did the bare minimum, there's a lot of kobject
+stuff in there that looks suspect to me, e.g.:
 
-nfsd doesn't use kthreads, does it?
+* the "pci" object should be a kset rather than a kobject?
+* if the "pci" object is a kset, can the whole global list
+  thing in edac_pci just go away?
+* do we really need the atomic_inc counter, wouldn't a mutex
+  be clearer?
+* can we initialize "pci" at init time thereby removing the
+  need even for a mutex on the "pci" initializer?  This does
+  change the sysfs semantics slightly, though, as the "pci"
+  object would no longer be created lazily.  I'm not sure if
+  that's a problem.
 
+and other minor things.  It looks to me like it could
+use a thorough scrubbing.  The good news is that I don't
+think the API would change much if at all.  I can have a
+closer look if you are interested...
 
-
+Arthur
