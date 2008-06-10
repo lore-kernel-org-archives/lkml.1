@@ -1,106 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756463AbYFJG5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbYFJHFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756463AbYFJG5y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 02:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbYFJG5p
+	id S1754846AbYFJHFR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 03:05:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbYFJHFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 02:57:45 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:15113 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751752AbYFJG5o (ORCPT
+	Tue, 10 Jun 2008 03:05:05 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:41960 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751708AbYFJHFE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 02:57:44 -0400
-Date: Tue, 10 Jun 2008 08:57:08 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Ryan Mallon <ryan@bluewatersys.com>
-Cc: David Brownell <david-b@pacbell.net>, Uli Luckas <u.luckas@road.de>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>, i2c@lm-sensors.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RFC] Earlier I2C initialization
-Message-ID: <20080610085708.12c2d2a2@hyperion.delvare>
-In-Reply-To: <484DA046.4010804@bluewatersys.com>
-References: <200806091541.43899.u.luckas@road.de>
-	<20080609135739.GE30971@flint.arm.linux.org.uk>
-	<484D947D.1090900@bluewatersys.com>
-	<200806091359.12791.david-b@pacbell.net>
-	<484DA046.4010804@bluewatersys.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 10 Jun 2008 03:05:04 -0400
+Message-ID: <484E27C9.6030106@bull.net>
+Date: Tue, 10 Jun 2008 09:05:45 +0200
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Solofo.Ramangalahy@bull.net
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC -mm 5/6] sysv ipc: deconnect msgmnb and msgmni deactivation
+ and reactivation
+References: <20080606060955.317871352@bull.net> <20080606060958.710882773@bull.net>
+In-Reply-To: <20080606060958.710882773@bull.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008 09:27:34 +1200, Ryan Mallon wrote:
-> David Brownell wrote:
-> > On Monday 09 June 2008, Ryan Mallon wrote:
-> >   
-> >>> Talk to i2c and framebuffer people about changing the link order.
-> >>>
-> >>> i2c should really be initialised before framebuffer devices because
-> >>> framebuffer devices tend to want to read DDC from monitors, which is
-> >>> basically a I2C EEPROM in the monitor.
-
-This is already the case. i2c-core is initialized with
-subsys_initcall(), so it's available to all drivers initialized with
-module_init().
-
-> >>> ... but there's probably some reason why it's done the way it is today,
-> >>> and changing it could well cause stuff to break.
-> >>>       
-> >> We have made i2c the first driver subsystem to come up in our 2.6.20
-> >> kernel since we use i2c io expanders for power domain control. All we
-> >> did was change drivers/Makefile so that obj-$(CONFIG_I2C) += i2c/ is at
-> >> the very top of the file. We didn't have any problems with doing this.
-> >> YMMV of course.
-
-Why don't you simply initialize the drivers in question with
-subsys_initcall()? That's what i2c-pnx, i2c-omap, i2c-davinci and
-tps65010 are doing at the moment.
-
-> > OMAP does much the same thing, for the same reason, and the I2C
-> > adapter gets initialized earlier too (so power management chips
-> > will be fully usable before driver_initcall code runs).
-> >
-> > Unless there's a downside on x86, I'd just suggest someone submit
-> > a patch moving I2C init "early" so it merges in 2.6.27 ... cc to
-> > LKML to scare out more potential problems, but I have a hard time
-> > imagining there'd really be any.
->
-> Okay, heres the patch. Is untested though (other than our experience 
-> under 2.6.20), so it probably needs some people to test. I'm not 
-> subscribed to LKML, so can people CC me if necessary.
+Solofo.Ramangalahy@bull.net wrote:
+> From: Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>
 > 
-> Signed-off-by: Ryan Mallon <ryan@bluewatersys.com>
+> The msgmnb and msgmni values are coupled for deactivation and
+> reactivation of value computation.
 > 
-> diff --git a/drivers/Makefile b/drivers/Makefile
-> index f65deda..9eaf236 100644
-> --- a/drivers/Makefile
-> +++ b/drivers/Makefile
-> @@ -5,6 +5,7 @@
->  # Rewritten to use lists instead of if-statements.
->  #
+> The uncoupling of msgmn{b,i} for deactivation/reactivation of
+> recomputation adds flexibility and testability.
+> 
+> . Flexibility was discussed during the msgmni series development and
+>   ended up with reactivation by negative value on /proc.
+> 
+> . Testability allows to experiment with the automatic computation of
+>   msgmn{b,i} values. For example, if current algorithm does not fit
+>   application needs.
+> 
+> 
+> Signed-off-by: Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>
+> 
+> ---
+>  include/linux/ipc_namespace.h |    3 +-
+>  ipc/ipc_sysctl.c              |   45 ++++++++++++++++++++++++++++++++----------
+>  ipc/ipcns_notifier.c          |    9 --------
+>  ipc/msg.c                     |    6 +++++
+>  4 files changed, 43 insertions(+), 20 deletions(-)
+> 
+> Index: b/include/linux/ipc_namespace.h
+> ===================================================================
+> --- a/include/linux/ipc_namespace.h
+> +++ b/include/linux/ipc_namespace.h
+> @@ -34,7 +34,9 @@ struct ipc_namespace {
 >  
-> +obj-y				+= i2c/
->  obj-$(CONFIG_HAVE_GPIO_LIB)	+= gpio/
+>  	int		msg_ctlmax;
+>  	int		msg_ctlmnb;
+> +	bool		msg_ctlmnb_activated; /* recompute_msgmnb activation */
+>  	int		msg_ctlmni;
+> +	bool		msg_ctlmni_activated; /* recompute_msgmni activation */
+>  	atomic_t	msg_bytes;
+>  	atomic_t	msg_hdrs;
+>  
+> @@ -53,7 +55,6 @@ extern atomic_t nr_ipc_ns;
+>  #define INIT_IPC_NS(ns)		.ns		= &init_ipc_ns,
+>  
+>  extern int register_ipcns_notifier(struct ipc_namespace *);
+> -extern int cond_register_ipcns_notifier(struct ipc_namespace *);
+>  extern int unregister_ipcns_notifier(struct ipc_namespace *);
+>  extern int ipcns_notify(unsigned long);
+>  
+> Index: b/ipc/msg.c
+> ===================================================================
+> --- a/ipc/msg.c
+> +++ b/ipc/msg.c
+> @@ -91,6 +91,8 @@ void recompute_msgmni(struct ipc_namespa
+>  	unsigned long allowed;
+>  	int nb_ns;
+>  
+> +	if (!ns->msg_ctlmni_activated)
+> +		return;
+>  	si_meminfo(&i);
+>  	allowed = (((i.totalram - i.totalhigh) / MSG_MEM_SCALE) * i.mem_unit)
+>  		/ ns->msg_ctlmnb;
+> @@ -116,6 +118,8 @@ void recompute_msgmni(struct ipc_namespa
+>   */
+>  void recompute_msgmnb(struct ipc_namespace *ns)
+>  {
+> +	if (!ns->msg_ctlmnb_activated)
+> +		return;
+>  	ns->msg_ctlmnb =
+>  		min(MSGMNB * num_online_cpus(), MSGMNB * MSG_CPU_SCALE);
+>  }
+> @@ -123,6 +127,8 @@ void recompute_msgmnb(struct ipc_namespa
+>  void msg_init_ns(struct ipc_namespace *ns)
+>  {
+>  	ns->msg_ctlmax = MSGMAX;
+> +	ns->msg_ctlmnb_activated = true;
+> +	ns->msg_ctlmni_activated = true;
+>  	recompute_msgmnb(ns);
+>  
+>  	recompute_msgmni(ns);
+> Index: b/ipc/ipc_sysctl.c
+> ===================================================================
+> --- a/ipc/ipc_sysctl.c
+> +++ b/ipc/ipc_sysctl.c
+> @@ -33,18 +33,42 @@ static void *get_ipc(ctl_table *table)
+>   * add/remove or ipc namespace creation/removal.
+>   * They can come back to a recomputable state by being set to a <0 value.
+>   */
+> -static void tunable_set_callback(int val)
+> +static void tunable_set_callback(int val, ctl_table *table)
+>  {
+> -	if (val >= 0)
+> -		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
+> -	else {
+> +	int tunable = table->ctl_name;
+> +
+> +	if (val >= 0) {
+> +		switch (tunable) {
+> +		case KERN_MSGMNB:
+> +			current->nsproxy->ipc_ns->msg_ctlmnb_activated = false;
+> +			break;
+> +		case KERN_MSGMNI:
+> +			current->nsproxy->ipc_ns->msg_ctlmni_activated = false;
+> +			break;
+> +		default:
+> +			printk(KERN_ERR "ipc: unexpected value %s\n",
+> +			       table->procname);
+> +			break;
+> +		}
+> +	} else {
+>  		/*
+>  		 * Re-enable automatic recomputing only if not already
+>  		 * enabled.
+>  		 */
+> -		recompute_msgmnb(current->nsproxy->ipc_ns);
+> -		recompute_msgmni(current->nsproxy->ipc_ns);
+> -		cond_register_ipcns_notifier(current->nsproxy->ipc_ns);
+> +		switch (tunable) {
+> +		case KERN_MSGMNB:
+> +			current->nsproxy->ipc_ns->msg_ctlmnb_activated = true;
+> +			recompute_msgmnb(current->nsproxy->ipc_ns);
+> +							/* fall through */
 
-Some i2c bus drivers bit-bang GPIO pins...
+You shouldn't be falling through here: if you do that, re-enablng msgmnb 
+will re-enable msgmni too.
 
->  obj-$(CONFIG_PCI)		+= pci/
+> +		case KERN_MSGMNI:
+> +			current->nsproxy->ipc_ns->msg_ctlmni_activated = true;
+> +			recompute_msgmni(current->nsproxy->ipc_ns);
+> +			break;
+> +		default:
+> +			printk(KERN_ERR "ipc: unexpected value %s\n",
+> +			       table->procname);
+> +			break;
+> +		}
+>  	}
+>  }
+>  
+> @@ -72,7 +96,8 @@ static int proc_ipc_callback_dointvec(ct
+>  	rc = proc_dointvec(&ipc_table, write, filp, buffer, lenp, ppos);
+>  
+>  	if (write && !rc && lenp_bef == *lenp)
+> -		tunable_set_callback(*((int *)(ipc_table.data)));
+> +		BUG_ON(table == NULL);
+> +		tunable_set_callback(*((int *)(ipc_table.data)), table);
+>  
+>  	return rc;
+>  }
+> @@ -148,8 +173,8 @@ static int sysctl_ipc_registered_data(ct
+>  		 * Tunable has successfully been changed from userland
+>  		 */
+>  		int *data = get_ipc(table);
+> -
+> -		tunable_set_callback(*data);
+> +		BUG_ON(table == NULL);
+> +		tunable_set_callback(*data, table);
+>  	}
+>  
+>  	return rc;
+> Index: b/ipc/ipcns_notifier.c
+> ===================================================================
+> --- a/ipc/ipcns_notifier.c
+> +++ b/ipc/ipcns_notifier.c
+> @@ -65,15 +65,6 @@ int register_ipcns_notifier(struct ipc_n
+>  	return blocking_notifier_chain_register(&ipcns_chain, &ns->ipcns_nb);
+>  }
+>  
+> -int cond_register_ipcns_notifier(struct ipc_namespace *ns)
+> -{
+> -	memset(&ns->ipcns_nb, 0, sizeof(ns->ipcns_nb));
+> -	ns->ipcns_nb.notifier_call = ipcns_callback;
+> -	ns->ipcns_nb.priority = IPCNS_CALLBACK_PRI;
+> -	return blocking_notifier_chain_cond_register(&ipcns_chain,
+> -							&ns->ipcns_nb);
+> -}
+> -
+>  int unregister_ipcns_notifier(struct ipc_namespace *ns)
+>  {
+>  	return blocking_notifier_chain_unregister(&ipcns_chain,
+> 
 
-... and many are PCI devices, so will this work OK?
+Doing this, we are completly loosing the benefits of the notification 
+chains: since the the notifier blocks remain registered + we are 
+unconditionally adding a test at the top of each recompute routine. But 
+the other choice would hve been to define another notifier chain 
+dedicated to msgmnb. I'm not convinced about what is the best solution?
 
->  obj-$(CONFIG_PARISC)		+= parisc/
-> @@ -61,7 +62,6 @@ obj-$(CONFIG_GAMEPORT)		+= input/gameport/
->  obj-$(CONFIG_INPUT)		+= input/
->  obj-$(CONFIG_I2O)		+= message/
->  obj-$(CONFIG_RTC_LIB)		+= rtc/
-> -obj-y				+= i2c/
->  obj-$(CONFIG_W1)		+= w1/
->  obj-$(CONFIG_POWER_SUPPLY)	+= power/
->  obj-$(CONFIG_HWMON)		+= hwmon/
+Regards,
+Nadia
 
-
--- 
-Jean Delvare
