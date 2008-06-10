@@ -1,70 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755875AbYFJSFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754154AbYFJSGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755875AbYFJSFo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 14:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbYFJSFg
+	id S1754154AbYFJSGi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 14:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbYFJSGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 14:05:36 -0400
-Received: from smtp28.orange.fr ([80.12.242.99]:44498 "EHLO smtp28.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751129AbYFJSFf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 14:05:35 -0400
-X-ME-UUID: 20080610180533355.56E23800008A@mwinf2802.orange.fr
-Message-ID: <484EC25E.4070209@cosmosbay.com>
-Date: Tue, 10 Jun 2008 20:05:18 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Tue, 10 Jun 2008 14:06:30 -0400
+Received: from outbound-mail-114.bluehost.com ([69.89.24.4]:34662 "HELO
+	outbound-mail-114.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752218AbYFJSG3 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 14:06:29 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Romano Giannetti <romanol@upcomillas.es>
+Subject: Re: [regression?] Sometime (often) X come out blank (black screen) on cold boot - Intel chipset
+Date: Tue, 10 Jun 2008 11:06:23 -0700
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Justin Madru <jdm64@gawab.com>
+References: <1213101501.21041.9.camel@pern>
+In-Reply-To: <1213101501.21041.9.camel@pern>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Mike Travis <travis@sgi.com>, akpm@linux-foundation.org,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [patch 02/41] cpu alloc: The allocator
-References: <20080530035620.587204923@sgi.com> <20080530040011.084909898@sgi.com> <483F8AF7.9000309@cosmosbay.com> <Pine.LNX.4.64.0805292219220.12107@schroedinger.engr.sgi.com> <4846AD84.2090800@sgi.com> <Pine.LNX.4.64.0806101032550.17131@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0806101032550.17131@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200806101106.23899.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter a écrit :
-> On Wed, 4 Jun 2008, Mike Travis wrote:
-> 
->> I'm a bit confused.  Why is DEFINE_PER_CPU_SHARED_ALIGNED() conditioned on
->> ifdef MODULE?
->>
->>         #ifdef MODULE
->>         #define SHARED_ALIGNED_SECTION ".data.percpu"
->>         #else
->>         #define SHARED_ALIGNED_SECTION ".data.percpu.shared_aligned"
->>         #endif
->>
->>         #define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)                       \
->>                 __attribute__((__section__(SHARED_ALIGNED_SECTION)))            \
->>                 PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name             \
->>                 ____cacheline_aligned_in_smp
-> 
-> Looks wrong to me. There can be shared objects even without modules.
-> 
-> 
+On Tuesday, June 10, 2008 5:38 am Romano Giannetti wrote:
+> I just opened this: http://bugzilla.kernel.org/show_bug.cgi?id=10892 . I
+> think itÅ› a regression, but (read the description) I am not so sure, so
+> I checked regression but I have not blocked Rafael's metabug.
+>
+> Latest working kernel version: 2.6.25
+> Earliest failing kernel version: After 2.6.25, exatcly don't know, probably
+> 2.6.26-rc3
+> Distribution:Ubuntu 8.04 Hardy
+> Hardware Environment: toshiba U305 intel-based laptop, see
+> http://bugzilla.kernel.org/attachment.cgi?id=16067&action=view
+> Software Environment:xserver-xorg-video-intel  2:2.2.1-1ubuntu12, see also
+> http://bugzilla.kernel.org/attachment.cgi?id=16066&action=view
+> Problem Description:
+>
+> Sometime, on cold boot (after the laptop has been shut off), when the
+> screen switch from the Ubuntu startup to gdm, the screen goes blank.
+> Forever. Rebooting (warm) with the same kernel cures it, sometime. If I
+> reboot 2.6.25 it cures it everytime.
+>
+> Otherwise, the system seems to be working.
+>
+> It was difficult to see because I almost never do a cold boot, the laptop
+> is either sleeping (s2ram) or on, or (warm) rebooted when I test a new
+> kernel.
+>
+> Helps / tricks to gather more data when it happens are welcome.
 
-Well, MODULE is not CONFIG_MODULES :)
+This sounds like a DUP; I remember Justin Madru had a similar issue (with 
+Ubuntu & gdm even iirc).
 
-If compiling an object that is going to be statically linked to kernel, 
-MODULE is not defined, so we have shared objects.
+Is there any way you could run the latest git bits of the Intel X driver?  
+I've added some debugging that could catch at least one of the common reasons 
+why the display would blank like that...
 
-When compiling a module, we cannot *yet* use .data.percpu.shared_aligned 
-section, since module loader wont handle this section.
-
-Alternative is to change modules linking for all arches to merge 
-.data.percpu{*} subsections correctly, or tell module loader to take 
-into account all .data.percpu sections.
-
-AFAIK no module uses DEFINE_PER_CPU_SHARED_ALIGNED() yet...
-
-
-
+Thanks,
+Jesse
