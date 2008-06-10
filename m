@@ -1,45 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759143AbYFJDOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755543AbYFJDOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759143AbYFJDOh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 23:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbYFJDO2
+	id S1755543AbYFJDOx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 23:14:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759255AbYFJDOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 23:14:28 -0400
-Received: from ns.suse.de ([195.135.220.2]:52233 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753555AbYFJDO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 23:14:27 -0400
-Date: Mon, 9 Jun 2008 20:12:25 -0700
-From: Greg KH <gregkh@suse.de>
-To: Uwe Kleine-K?nig <Uwe.Kleine-Koenig@digi.com>
-Cc: Paul Mundt <lethal@linux-sh.org>, "Hans J. Koch" <hjk@linutronix.de>,
-       Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, tglx@linutronix.de
-Subject: Re: [PATCH] uio_pdrv: Unique IRQ Mode
-Message-ID: <20080610031225.GF6796@suse.de>
-References: <aec7e5c30806041825o4c6c859fp8380063e9384622@mail.gmail.com> <20080605090916.GA3198@local> <aec7e5c30806050246t248abc39vbc1e71d4475a0a0d@mail.gmail.com> <20080605112744.GB3198@local> <aec7e5c30806080319y7b9b6a89icacbfa67b117fb2b@mail.gmail.com> <20080608205455.GA3191@local> <aec7e5c30806081812m532882e0p7ad3ef9a74f53337@mail.gmail.com> <20080609084411.GA3223@local> <20080609090123.GA12080@linux-sh.org> <20080609123406.GB27803@digi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080609123406.GB27803@digi.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 9 Jun 2008 23:14:41 -0400
+Received: from outbound.icp-qv1-irony-out2.iinet.net.au ([203.59.1.107]:40188
+	"EHLO outbound.icp-qv1-irony-out2.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759206AbYFJDOk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Jun 2008 23:14:40 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AmcBAH91TUh8qNvt/2dsb2JhbAAIsCs
+X-IronPort-AV: E=Sophos;i="4.27,615,1204470000"; 
+   d="scan'208";a="327639973"
+Subject: Re: mainlining min-configs...
+From: Ben Nizette <bn@niasdigital.com>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: Rob Landley <rob@landley.net>, Adrian Bunk <adrian.bunk@movial.fi>,
+       linux-tiny <Linux-tiny@selenic.com>,
+       linux-embedded <linux-embedded@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <484DDAD9.2000306@am.sony.com>
+References: <48447615.5050806@am.sony.com>
+	 <20080604194002.GF4189@cs181133002.pp.htv.fi>
+	 <4849CCA3.7040102@am.sony.com> <200806062329.54019.rob@landley.net>
+	 <484DDAD9.2000306@am.sony.com>
+Content-Type: text/plain
+Organization: Nias Digital
+Date: Tue, 10 Jun 2008 13:14:36 +1000
+Message-Id: <1213067676.3213.27.camel@moss.renham>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 09, 2008 at 02:34:06PM +0200, Uwe Kleine-K?nig wrote:
-> Hello Paul,
+
+On Mon, 2008-06-09 at 18:37 -0700, Tim Bird wrote:
+> Rob Landley wrote:
+> > On Friday 06 June 2008 18:47:47 Tim Bird wrote:
+> >> At a minimum, it would be nice to have a few nice examples
+> >> of really, really small configs for things like qemus for different
+> >> architectures (just to give embedded developers who are working
+> >> on size a starting point).
+> > 
+> > That's more or less what I'm trying to do with my Firmware Linux project: 
+> > creating cross compilers and minimal native build environments for every qemu 
+> > target.
 > 
-> Paul Mundt wrote:
-> >                                   [...] the constructive way forward
-> > seems to be to follow Uwe's suggestions and respin the patch.
-> Just to let you know: I'm willing to look on a new version.  And I like
-> "User IRQ Mode".
+> Any chance of getting your minimal configs from Firmware Linux mainlined?
 
+allnoconfig? ;-)
 
-Yes, please, someone respin the patch as I am totally confused as to
-what everyone is arguing about :)
+> 
+> Does anyone else think this would be valuable?  If not in mainline, it
+> would be nice to collect them somewhere, to compare what options different
+> developers decide turn on or off.
 
-thanks,
+Seriously though I maintain a bunch of AVR32 minimal configs.  I keep
+them as a smallest-working-config baseline to build on; I'm sure others
+would get value from having easy access to that kind of thing.
 
-greg k-h
+IMO It'd be nice to wire them to an automagic bloat-o-meter as well, but
+I suspect no-one would really take notice anyway.
+
+	--Ben.
