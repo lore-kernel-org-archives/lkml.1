@@ -1,86 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbYFJWE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759536AbYFJWEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756841AbYFJWE0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 18:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754684AbYFJWES
+	id S1759536AbYFJWEp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 18:04:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758940AbYFJWEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 18:04:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54828 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753616AbYFJWER (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 18:04:17 -0400
-Date: Tue, 10 Jun 2008 18:04:09 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>, bfields@fieldses.org
-Subject: Re: [2.6.26-rc4] mount.nfsv4/memory poisoning issues...
-Message-ID: <20080610180409.018bf8ae@tleilax.poochiereds.net>
-In-Reply-To: <1213133876.20459.91.camel@localhost>
-References: <6278d2220806041633n3bfe3dd2ke9602697697228b@mail.gmail.com>
-	<20080604203504.62730951@tleilax.poochiereds.net>
-	<1213124088.20459.16.camel@localhost>
-	<20080610151357.150b6f69@tleilax.poochiereds.net>
-	<1213127909.20459.48.camel@localhost>
-	<20080610161352.4e588653@tleilax.poochiereds.net>
-	<1213130012.20459.58.camel@localhost>
-	<20080610170154.68e2e6fb@tleilax.poochiereds.net>
-	<1213133876.20459.91.camel@localhost>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 10 Jun 2008 18:04:33 -0400
+Received: from mail-sin.bigfish.com ([207.46.51.74]:53960 "EHLO
+	mail75-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758914AbYFJWEc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 18:04:32 -0400
+X-Greylist: delayed 1737 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Jun 2008 18:04:31 EDT
+X-BigFish: VPS-9(zz98dRzz10d3izzz2fh6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
+Message-ID: <484EF323.7000809@am.sony.com>
+Date: Tue, 10 Jun 2008 14:33:23 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>,
+       linux-embedded <linux-embedded@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: execute bit on scripts (was Re: [PATCH] add diffconfig utility)
+References: <484ED902.9040000@am.sony.com> <20080610210217.GA2432@logfs.org> <20080610211841.GA23855@uranus.ravnborg.org>
+In-Reply-To: <20080610211841.GA23855@uranus.ravnborg.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Jun 2008 21:35:12.0420 (UTC) FILETIME=[DD2EBE40:01C8CB41]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008 17:37:56 -0400
-Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+Sam Ravnborg wrote:
+> I will merge it if the feedabck is positive and eventual feedback
+> is dealt with. (And Tim reminds me to do so in a week or so).
 
-> On Tue, 2008-06-10 at 17:01 -0400, Jeff Layton wrote:
-> 
-> > In practice, I think the thread generally runs immediately (at least
-> > with current scheduler behavior), so we're probably not terribly
-> > vulnerable to this race. Still, we shouldn't rely on that...
-> 
-> In the code I showed you, the 'kthread' task is put to sleep, then
-> kthread_run() calls wake_up_process() on it, but the current task isn't
-> scheduled out. Rather, it continues to run, so in almost all UP cases,
-> the race is not only possible, it is actually rather likely if
-> nfs_alloc_client() fails.
-> 
+Thanks.
 
-Ok, makes sense. It looks like with the kernel_thread interface, that
-the function always runs, so we're not vulnerable to this race with
-that.
+> I take most of the random scripts in scripts/ via kbuild.git.
 
-> > For lockd and the nfs4 callback thread, we'll also need to deal with
-> > the fact that svc_exit_thread() doesn't get called if this happens. So
-> > we'll need to call svc_exit_thread from the *_down() functions too
-> > (I presume that's OK).
-> 
-> These *_up()/*_down() functions are getting very complex. Any chance we
-> could hide some of this complexity in some helpers? Looking at the NFSv4
-> callback code and lockd, it seems that there might be a couple of
-> opportunities for merging code.
-> 
+OK - sounds like you're the right person to ask a question
+that has been nagging me.
 
-Possibly. I may start by just closing the races and then look and see what
-can be consolidated.
+Is there a proper way to get the execute bit set in the git tree
+on  patches that contain scripts?  I think patches
+produced by git have something that sets the file permissions?
+Is this something that can (or should) be hand-added to
+a non-git patch? (I use quilt).
 
-> > nfsd is a bigger problem since it exits on a signal. For that, perhaps
-> > we should declare a completion variable and have svc_set_num_threads()
-> > wait until nfsd() has actually run before continuing.
-> 
-> nfsd doesn't use kthreads, does it?
-> 
+I put that blurb in the patch description about doing a
+'chmod a+x', but that doesn't seem reliable.
+ -- Tim
 
-Bruce just took a patchset to make it use kthreads too. I'm thinking
-2.6.27 for that, presuming that we get all of these issues worked out.
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
-I think the only thing we can reasonably do there is make sure that
-the thread actually starts before allowing svc_set_num_threads to
-continue.
-
--- 
-Jeff Layton <jlayton@redhat.com>
