@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbYFJSa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757028AbYFJSbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756453AbYFJSa3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 14:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbYFJSaV
+	id S1757028AbYFJSbT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 14:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbYFJSbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 14:30:21 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:37666 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752934AbYFJSaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 14:30:20 -0400
-Date: Tue, 10 Jun 2008 11:30:19 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Vegard Nossum <vegard.nossum@gmail.com>
-cc: Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Howells <dhowells@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, cooloney@kernel.org,
-       mpm@selenic.com
-Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB, v2.
-In-Reply-To: <19f34abd0806101118r5edbc065t8a19b69abf9aea5c@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0806101128450.17349@schroedinger.engr.sgi.com>
-References: <20080602072706.GB28268@linux-sh.org> 
- <Pine.LNX.4.64.0806101027220.17093@schroedinger.engr.sgi.com>
- <19f34abd0806101118r5edbc065t8a19b69abf9aea5c@mail.gmail.com>
+	Tue, 10 Jun 2008 14:31:04 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:43621 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752725AbYFJSbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 14:31:03 -0400
+Date: Tue, 10 Jun 2008 21:30:04 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: Rob Landley <rob@landley.net>, linux-tiny <Linux-tiny@selenic.com>,
+       linux-embedded <linux-embedded@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: mainlining min-configs...
+Message-ID: <20080610183004.GG11685@cs181133002.pp.htv.fi>
+References: <48447615.5050806@am.sony.com> <20080604194002.GF4189@cs181133002.pp.htv.fi> <4849CCA3.7040102@am.sony.com> <200806062329.54019.rob@landley.net> <484DDAD9.2000306@am.sony.com> <20080610083610.GC1987@cs181133002.pp.htv.fi> <484EC576.5080302@am.sony.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <484EC576.5080302@am.sony.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008, Vegard Nossum wrote:
+On Tue, Jun 10, 2008 at 11:18:30AM -0700, Tim Bird wrote:
+> Adrian Bunk wrote:
+>...
+> > You need both, and ideally constantly done by the same person against 
+> > Linus' tree, -next and -mm.
+> > 
+> > Where to get your minimal configs from at the start is just a small 
+> > thing at the beginning - don't underestimate the required manual work 
+> > that will have to be done each week.
+> 
+> This is probably why I haven't signed up for this myself previously.
+> I'd be interested in finding out the rate at which defconfigs
+> bitrot in mainline.  My experience is that usually a 'make oldconfig'
+> will produce something usable.  But maybe that wouldn't be as
+> effective with a minconfig?
+>...
 
-> Are you sure it shouldn't be virt_addr_valid()? If yes, can you please
-> explain the difference? Thanks :-)
+Someone has to run the 'make oldconfig' for all configs...
 
-from include/asm-x86/page.h
+And no, you cannot get that completely automated.
 
-#define virt_addr_valid(kaddr) pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
+>  -- Tim
 
-#define virt_to_page(kaddr)     pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
+cu
+Adrian
 
+-- 
 
-Yes virt_addr_valid is better to use. I was thinking too much using the 
-basic ops.
-
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
