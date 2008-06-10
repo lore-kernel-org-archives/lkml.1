@@ -1,66 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757783AbYFJXG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759129AbYFJXHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757783AbYFJXG4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 19:06:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754554AbYFJXGq
+	id S1759129AbYFJXHZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 19:07:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755685AbYFJXGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 19:06:46 -0400
-Received: from ns2.suse.de ([195.135.220.15]:37084 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753755AbYFJXGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 19:06:46 -0400
-Date: Tue, 10 Jun 2008 16:00:58 -0700
-From: Greg KH <gregkh@suse.de>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Benjamin Thery <benjamin.thery@bull.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Biederman <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
-       Tejun Heo <htejun@gmail.com>, Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH 00/11] sysfs tagged directories V5
-Message-ID: <20080610230058.GA25072@suse.de>
-References: <20080606154654.356185262@theryb.frec.bull.fr> <20080610225024.GB22478@us.ibm.com>
+	Tue, 10 Jun 2008 19:06:49 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48920 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754923AbYFJXGr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 19:06:47 -0400
+Date: Tue, 10 Jun 2008 16:05:22 -0700
+From: Greg KH <greg@kroah.com>
+To: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [ANNOUNCE] linux-staging tree created
+Message-ID: <20080610230522.GA25100@kroah.com>
+References: <20080610190540.GA25066@kroah.com> <20080610225222.GG8397@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080610225024.GB22478@us.ibm.com>
+In-Reply-To: <20080610225222.GG8397@mit.edu>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 05:50:24PM -0500, Serge E. Hallyn wrote:
-> Quoting Benjamin Thery (benjamin.thery@bull.net):
-> > Greg,
+On Tue, Jun 10, 2008 at 06:52:22PM -0400, Theodore Tso wrote:
+> On Tue, Jun 10, 2008 at 12:05:40PM -0700, Greg KH wrote:
+> > PURPOSE
 > > 
-> > Here is an updated version of the sysfs tagged directories that improves
-> > a bit the situation over the previous one. 
+> > The linux-staging tree was created to hold drivers and filesystems and
+> > other semi-major additions to the Linux kernel that are not ready to be
+> > merged at this point in time.  It is here for companies and authors to
+> > get a wider range of testing, and to allow for other members of the
+> > community to help with the development of these features for the
+> > eventual inclusion into the main kernel tree.
 > > 
-> > I've modified the patch 09 ("Enable tagging for net_class directories in 
-> > sysfs") to be a bit less intrusive in sysfs core. I removed the #ifdef'd
-> > parts you didn't like in fs/sysfs/mount.c, and replaced it by a generic 
-> > routine sysfs_ns_exit() that is called, if needed, by the namespace when
-> > it exits. This routine goes through every sysfs super blocks and calls 
-> > the callback passed by the namespace to clean its tag.
-> > 
-> > The patch is now splitted in two: 
-> > * 09/11: the generic routine,
-> > * 10/11: the remaining network parts.
-> > 
-> > The generic part can be merge with patch 05 ("sysfs: Implement sysfs 
-> > tagged directory support.") but I left it separate for now to ease 
-> > reviews.
+> > This tree will be included in the daily linux-next builds, and will get
+> > testing by all users of that tree.
 > 
-> Thanks.  Not nearly as radical as I'd feared.
+> Does this mean that the nature of linux-next is changing?  I thought
+> the whole point of linux-next was only to have what would be pushed to
+> Linus in the near future, so we could check for patch compatibility
+> issues.  For that reason, for example, I don't push the unstable set
+> of patches in the ext4 tree to linux-next, since they aren't ready for
+> merging yet in their current form.  
 > 
-> Greg, does this address your concern?  It stops the need to put any
-> non-braindead code (i.e. the _exit notifier stuff) in fs/sysfs/mount.c for
-> any new namespaces needing sysfs tagging, leaving only simple
-> comparison/assignments.
+> But if linux-staging is going to be pushed to linux-next, doesn't that
+> violate the ground rules of Linux-next?  Or are we allowing in this
+> case because these are filesystems and/or device drivers that don't
+> exist at all in the mainline tree yet?
 
-Sorry, I've been swamped with other things this week and haven't gotten
-a chance to look this over.  Hopefully by the end of the week...  It's
-in my queue though, don't worry it will not get lost.
+I'm asking for the rule to be bent for this tree, not that the whole
+nature of linux-next is changing.
+
+-staging is for only whole new drivers/filesystems, not changes/features
+to existing code that is not yet ready for merging.  The main reason
+these drivers are not in mainline is usually:
+	- coding style issues
+	- sparse cleanups needed
+	- ioctl 32/64 cleanups
+	- locking review
+	- direct access to hardware through memory pointers (only works
+	  on x86)
+
+If you look at what I currently have, there's nothing earth-shattering
+there, but there is stuff that users can use to get hardware to work
+that currently is not supported on kernel.org kernels at all.
+
+It would be nice if distros also pick it up if they want to support
+these devices and give me some feedback.  There are 2 big network
+drivers in there that support a wide range of devices that some people
+would like to see working :)
 
 thanks,
 
