@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757669AbYFJOMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756378AbYFJOU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757669AbYFJOMt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 10:12:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbYFJOMl
+	id S1756378AbYFJOU0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 10:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYFJOUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 10:12:41 -0400
-Received: from mu-out-0910.google.com ([209.85.134.186]:24843 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753649AbYFJOMk (ORCPT
+	Tue, 10 Jun 2008 10:20:14 -0400
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:18135 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751634AbYFJOUM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 10:12:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=Vy5veWkRBqd/ol+/fDs/ZvKK0LaUlnb/6kBt32IRLPLUxHgA5TONOvUK2Eg3BLWFPd
-         BblOAyh/rPa9AvKLyB8SzeyDCekaR35GrcfYBF6kw4zlig9eJs+4/Rcp7X4IhspQHXxP
-         fzBdzU5DR97YPo3kod92IeZmQmN8dGLlQbb/U=
-Message-ID: <fb6f288a0806100712o63b35c25i3e20a33016d3b760@mail.gmail.com>
-Date: Tue, 10 Jun 2008 17:12:37 +0300
-From: "Eric Silverstein" <silverstein.eric@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: memory mapping of memory allocated by alloc_bootmem_pages
+	Tue, 10 Jun 2008 10:20:12 -0400
+X-IronPort-AV: E=Sophos;i="4.27,617,1204531200"; 
+   d="scan'208";a="78071260"
+From: Roland Dreier <rdreier@cisco.com>
+To: Jack Steiner <steiner@sgi.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       tglx@linutronix.de, holt@sgi.com, andrea@qumranet.com
+Subject: Re: [patch 09/11] GRU Driver - /proc interfaces
+References: <20080609211028.110089743@attica.americas.sgi.com>
+	<20080609211046.935659965@attica.americas.sgi.com>
+	<adaskvm70qp.fsf@cisco.com> <20080609221105.GA20211@sgi.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 10 Jun 2008 07:20:10 -0700
+In-Reply-To: <20080609221105.GA20211@sgi.com> (Jack Steiner's message of "Mon,
+	9 Jun 2008 17:11:06 -0500")
+Message-ID: <aday75d5q3p.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 10 Jun 2008 14:20:11.0090 (UTC) FILETIME=[1793DB20:01C8CB05]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+ > AFAICT, this is not a format that is compatible with the /sys guidelines of 1 value
+ > per file.
+ > 
+ > A system can have 1000's of GRU chiplets. Having separate collection of files for
+ > each set of metrics is clumsy. What other drivers have similar issues. I'll
+ > gladly copy whatever makes sense.
 
-I just want to make sure that I didn't miss any limitation about
-memory mapping: I would like to allocate a huge amount of contiguous
-physical memory for a userspace application. I was thinking about
-using something like alloc_bootmem_pages and mmap it, so I can use it
-from userland. Should this work?
+I guess the closest parallel would be networking, where you might have
+1000s of routes etc.  So maybe netlink is your best bet.
 
-Thanks,
-Eric
+ - R.
