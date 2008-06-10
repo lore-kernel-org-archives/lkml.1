@@ -1,194 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756709AbYFJST1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756826AbYFJSUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756709AbYFJST1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 14:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbYFJSTR
+	id S1756826AbYFJSUl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 14:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbYFJSUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 14:19:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43156 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752538AbYFJSTQ (ORCPT
+	Tue, 10 Jun 2008 14:20:31 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:57435 "EHLO
+	VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752314AbYFJSUa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 14:19:16 -0400
-Date: Tue, 10 Jun 2008 11:18:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Grant Coady <gcoady.lk@gmail.com>
-Cc: Grant Coady <grant_lkml@dodo.com.au>, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, linux-mm@kvack.org,
-       Keith Packard <keithp@keithp.com>
-Subject: Re: 2.6.26-rc5-mm2 lockup up on Intel G33+ICH9R+Core2Duo, -mm1 okay
-Message-Id: <20080610111832.736519d2.akpm@linux-foundation.org>
-In-Reply-To: <73ls44tntnv8ro57chp1on2crsqkoilmkj@4ax.com>
-References: <20080609223145.5c9a2878.akpm@linux-foundation.org>
-	<73ls44tntnv8ro57chp1on2crsqkoilmkj@4ax.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 10 Jun 2008 14:20:30 -0400
+X-BigFish: VPS-23(z1fc9iz1432R98dR1805Mzz10d3izzz2fh6bh62h)
+X-Spam-TCS-SCL: 1:0
+Message-ID: <484EC576.5080302@am.sony.com>
+Date: Tue, 10 Jun 2008 11:18:30 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: Rob Landley <rob@landley.net>, linux-tiny <Linux-tiny@selenic.com>,
+       linux-embedded <linux-embedded@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: mainlining min-configs...
+References: <48447615.5050806@am.sony.com> <20080604194002.GF4189@cs181133002.pp.htv.fi> <4849CCA3.7040102@am.sony.com> <200806062329.54019.rob@landley.net> <484DDAD9.2000306@am.sony.com> <20080610083610.GC1987@cs181133002.pp.htv.fi>
+In-Reply-To: <20080610083610.GC1987@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Jun 2008 18:20:17.0216 (UTC) FILETIME=[A24C3C00:01C8CB26]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008 20:20:09 +1000 Grant Coady <grant_lkml@dodo.com.au> wrote:
+Adrian Bunk wrote:
+> But if you want to discover size change with minimal configs early you 
+> anyway have to both:
+> - constantly keep your configs in shape so that they are both minimal
+>   for some set of hardware support and features and
+> - investigate for any size changes what caused them
+>   (experience has shown that putting information on a webpage doesn't
+>    fix problems - even for compile errors).
+Amen to that last point!
 
-> On Mon, 9 Jun 2008 22:31:45 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> >
-> >ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc5/2.6.26-rc5-mm2/
-> >
-> >- This is a bugfixed version of 2.6.26-rc5-mm1 - mainly to repair a
-> >  vmscan.c bug which would have prevented testing of the other vmscan.c
-> >  bugs^Wchanges.
+> You need both, and ideally constantly done by the same person against 
+> Linus' tree, -next and -mm.
 > 
-> No it's not :)
-> 
-> -mm1 worked fine here but -mm2 locks up just after saying:
-> agpgart: Detected 7164K stolen memory.
-> 
-> Nothing in logs (session not recorded - hit reset to restart).
-> 
-> config and dmseg for -mm1 at (same .config for mm2):
-> 
->   http://bugsplatter.mine.nu/test/boxen/pooh/config-2.6.26-rc5-mm1a.gz
->   http://bugsplatter.mine.nu/test/boxen/pooh/dmesg-2.6.26-rc5-mm1a.gz
-> 
-> Grant.
+> Where to get your minimal configs from at the start is just a small 
+> thing at the beginning - don't underestimate the required manual work 
+> that will have to be done each week.
 
-hm, intel-agp gtt stuff.
+This is probably why I haven't signed up for this myself previously.
+I'd be interested in finding out the rate at which defconfigs
+bitrot in mainline.  My experience is that usually a 'make oldconfig'
+will produce something usable.  But maybe that wouldn't be as
+effective with a minconfig?
 
-Can you please see whether reverting Keith's stuff fixes it?
+Maybe I'll collect some minconfigs, and try maintaining them
+in my own tree for a few releases to see how onerous it is...
+The problem is that I can only reasonably do this for boards
+I have, so there'd only be a few.  But maybe that'd be enough.
+They would really only be meant as examples.
+ -- Tim
 
- drivers/char/agp/agp.h       |    3 ---
- drivers/char/agp/backend.c   |    2 --
- drivers/char/agp/generic.c   |   28 ----------------------------
- drivers/char/agp/intel-agp.c |    5 -----
- include/linux/agp_backend.h  |    5 -----
- 5 files changed, 43 deletions(-)
 
-diff -puN drivers/char/agp/agp.h~revert-intel-agp-rewrite-gtt-on-resume drivers/char/agp/agp.h
---- a/drivers/char/agp/agp.h~revert-intel-agp-rewrite-gtt-on-resume
-+++ a/drivers/char/agp/agp.h
-@@ -148,9 +148,6 @@ struct agp_bridge_data {
- 	char minor_version;
- 	struct list_head list;
- 	u32 apbase_config;
--	/* list of agp_memory mapped to the aperture */
--	struct list_head mapped_list;
--	spinlock_t mapped_lock;
- };
- 
- #define KB(x)	((x) * 1024)
-diff -puN drivers/char/agp/backend.c~revert-intel-agp-rewrite-gtt-on-resume drivers/char/agp/backend.c
---- a/drivers/char/agp/backend.c~revert-intel-agp-rewrite-gtt-on-resume
-+++ a/drivers/char/agp/backend.c
-@@ -183,8 +183,6 @@ static int agp_backend_initialize(struct
- 		rc = -EINVAL;
- 		goto err_out;
- 	}
--	INIT_LIST_HEAD(&bridge->mapped_list);
--	spin_lock_init(&bridge->mapped_lock);
- 
- 	return 0;
- 
-diff -puN drivers/char/agp/generic.c~revert-intel-agp-rewrite-gtt-on-resume drivers/char/agp/generic.c
---- a/drivers/char/agp/generic.c~revert-intel-agp-rewrite-gtt-on-resume
-+++ a/drivers/char/agp/generic.c
-@@ -426,10 +426,6 @@ int agp_bind_memory(struct agp_memory *c
- 
- 	curr->is_bound = TRUE;
- 	curr->pg_start = pg_start;
--	spin_lock(&agp_bridge->mapped_lock);
--	list_add(&curr->mapped_list, &agp_bridge->mapped_list);
--	spin_unlock(&agp_bridge->mapped_lock);
--
- 	return 0;
- }
- EXPORT_SYMBOL(agp_bind_memory);
-@@ -462,34 +458,10 @@ int agp_unbind_memory(struct agp_memory 
- 
- 	curr->is_bound = FALSE;
- 	curr->pg_start = 0;
--	spin_lock(&curr->bridge->mapped_lock);
--	list_del(&curr->mapped_list);
--	spin_unlock(&curr->bridge->mapped_lock);
- 	return 0;
- }
- EXPORT_SYMBOL(agp_unbind_memory);
- 
--/**
-- *	agp_rebind_emmory  -  Rewrite the entire GATT, useful on resume
-- */
--int agp_rebind_memory(void)
--{
--	struct agp_memory *curr;
--	int ret_val = 0;
--
--	spin_lock(&agp_bridge->mapped_lock);
--	list_for_each_entry(curr, &agp_bridge->mapped_list, mapped_list) {
--		ret_val = curr->bridge->driver->insert_memory(curr,
--							      curr->pg_start,
--							      curr->type);
--		if (ret_val != 0)
--			break;
--	}
--	spin_unlock(&agp_bridge->mapped_lock);
--	return ret_val;
--}
--EXPORT_SYMBOL(agp_rebind_memory);
--
- /* End - Routines for handling swapping of agp_memory into the GATT */
- 
- 
-diff -puN drivers/char/agp/intel-agp.c~revert-intel-agp-rewrite-gtt-on-resume drivers/char/agp/intel-agp.c
---- a/drivers/char/agp/intel-agp.c~revert-intel-agp-rewrite-gtt-on-resume
-+++ a/drivers/char/agp/intel-agp.c
-@@ -2176,7 +2176,6 @@ static void __devexit agp_intel_remove(s
- static int agp_intel_resume(struct pci_dev *pdev)
- {
- 	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
--	int ret_val;
- 
- 	pci_restore_state(pdev);
- 
-@@ -2204,10 +2203,6 @@ static int agp_intel_resume(struct pci_d
- 	else if (bridge->driver == &intel_i965_driver)
- 		intel_i915_configure();
- 
--	ret_val = agp_rebind_memory();
--	if (ret_val != 0)
--		return ret_val;
--
- 	return 0;
- }
- #endif
-diff -puN include/linux/agp_backend.h~revert-intel-agp-rewrite-gtt-on-resume include/linux/agp_backend.h
---- a/include/linux/agp_backend.h~revert-intel-agp-rewrite-gtt-on-resume
-+++ a/include/linux/agp_backend.h
-@@ -30,8 +30,6 @@
- #ifndef _AGP_BACKEND_H
- #define _AGP_BACKEND_H 1
- 
--#include <linux/list.h>
--
- #ifndef TRUE
- #define TRUE 1
- #endif
-@@ -88,8 +86,6 @@ struct agp_memory {
- 	u8 is_bound;
- 	u8 is_flushed;
-         u8 vmalloc_flag;
--	/* list of agp_memory mapped to the aperture */
--	struct list_head mapped_list;
- };
- 
- #define AGP_NORMAL_MEMORY 0
-@@ -108,7 +104,6 @@ extern struct agp_memory *agp_allocate_m
- extern int agp_copy_info(struct agp_bridge_data *, struct agp_kern_info *);
- extern int agp_bind_memory(struct agp_memory *, off_t);
- extern int agp_unbind_memory(struct agp_memory *);
--extern int agp_rebind_memory(void);
- extern void agp_enable(struct agp_bridge_data *, u32);
- extern struct agp_bridge_data *agp_backend_acquire(struct pci_dev *);
- extern void agp_backend_release(struct agp_bridge_data *);
-_
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
