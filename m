@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759536AbYFJWEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbYFJWFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759536AbYFJWEp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 18:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758940AbYFJWEd
+	id S1755267AbYFJWFt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 18:05:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbYFJWFl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 18:04:33 -0400
-Received: from mail-sin.bigfish.com ([207.46.51.74]:53960 "EHLO
-	mail75-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758914AbYFJWEc (ORCPT
+	Tue, 10 Jun 2008 18:05:41 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:55310 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754534AbYFJWFk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 18:04:32 -0400
-X-Greylist: delayed 1737 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Jun 2008 18:04:31 EDT
-X-BigFish: VPS-9(zz98dRzz10d3izzz2fh6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
-Message-ID: <484EF323.7000809@am.sony.com>
-Date: Tue, 10 Jun 2008 14:33:23 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: execute bit on scripts (was Re: [PATCH] add diffconfig utility)
-References: <484ED902.9040000@am.sony.com> <20080610210217.GA2432@logfs.org> <20080610211841.GA23855@uranus.ravnborg.org>
-In-Reply-To: <20080610211841.GA23855@uranus.ravnborg.org>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 10 Jun 2008 18:05:40 -0400
+Subject: Re: [PATCH -mm 13/25] Noreclaim LRU Infrastructure
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Rik van Riel <riel@redhat.com>, clameter@sgi.com,
+       linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
+       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org, eric.whitney@hp.com,
+       Paul Mundt <lethal@linux-sh.org>, Andi Kleen <andi@firstfloor.org>,
+       Ingo Molnar <mingo@elte.hu>, Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <20080610143334.c53d7d8a.akpm@linux-foundation.org>
+References: <20080606202838.390050172@redhat.com>
+	 <20080606202859.291472052@redhat.com>
+	 <20080606180506.081f686a.akpm@linux-foundation.org>
+	 <20080608163413.08d46427@bree.surriel.com>
+	 <20080608135704.a4b0dbe1.akpm@linux-foundation.org>
+	 <20080608173244.0ac4ad9b@bree.surriel.com>
+	 <20080608162208.a2683a6c.akpm@linux-foundation.org>
+	 <20080608193420.2a9cc030@bree.surriel.com>
+	 <20080608165434.67c87e5c.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0806101214190.17798@schroedinger.engr.sgi.com>
+	 <20080610153702.4019e042@cuia.bos.redhat.com>
+	 <20080610143334.c53d7d8a.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 10 Jun 2008 15:05:35 -0700
+Message-Id: <1213135535.7261.10.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Jun 2008 21:35:12.0420 (UTC) FILETIME=[DD2EBE40:01C8CB41]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> I will merge it if the feedabck is positive and eventual feedback
-> is dealt with. (And Tim reminds me to do so in a week or so).
+On Tue, 2008-06-10 at 14:33 -0700, Andrew Morton wrote:
+> Maybe it's time to bite the bullet and kill i386 NUMA support.  afaik
+> it's just NUMAQ and a 2-node NUMAish machine which IBM made (as400?)
 
-Thanks.
+Yeah, IBM sold a couple of these "interesting" 32-bit NUMA machines:
 
-> I take most of the random scripts in scripts/ via kbuild.git.
+https://www.redbooks.ibm.com/Redbooks.nsf/RedbookAbstracts/tips0267.html?Open
 
-OK - sounds like you're the right person to ask a question
-that has been nagging me.
+I think those maxed out at 8 nodes, ever.  But, no distro ever turned
+NUMA on for i386, so no one actually depends on it working.  We do have
+a bunch of systems that we use for testing and so forth.  It'd be a
+shame to make these suck *too* much.  The NUMA-Q is probably also so
+intertwined with CONFIG_NUMA that we'd likely never get it running
+again.
 
-Is there a proper way to get the execute bit set in the git tree
-on  patches that contain scripts?  I think patches
-produced by git have something that sets the file permissions?
-Is this something that can (or should) be hand-added to
-a non-git patch? (I use quilt).
+I'd rather just bloat page->flags on these platforms or move the
+sparsemem/zone/node bits elsewhere than kill NUMA support.  
 
-I put that blurb in the patch description about doing a
-'chmod a+x', but that doesn't seem reliable.
- -- Tim
-
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
+-- Dave
 
