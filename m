@@ -1,125 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758903AbYFJWHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759633AbYFJWIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758903AbYFJWHb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 18:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbYFJWHW
+	id S1759633AbYFJWIS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 18:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbYFJWIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 18:07:22 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:52035 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753050AbYFJWHV (ORCPT
+	Tue, 10 Jun 2008 18:08:10 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:54627 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753891AbYFJWII (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 18:07:21 -0400
-Subject: Re: [PATCH] add diffconfig utility
-From: David Woodhouse <dwmw2@infradead.org>
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <484ED902.9040000@am.sony.com>
-References: <484ED902.9040000@am.sony.com>
-Content-Type: multipart/mixed; boundary="=-39QbbmDbwuETDCfNZ8W2"
-Date: Tue, 10 Jun 2008 23:07:04 +0100
-Message-Id: <1213135624.2534.99.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 10 Jun 2008 18:08:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=TUiGMsAp5ycUjWtoYPWxpV4QEuEBAfSwh/zSkIC/pH3cRiZCPIxcaRi91IA649Rp+B
+         wCA03BzOTg9FJfzaKC1OeFIQuCGIvXeBOpmL2cjOzE9AjN0MbI71yahKzzZwXYs/jyzl
+         o5os/RcT3Jb7oliPX/H30Gj3tEtx+YeiOX6do=
+Message-ID: <524f69650806101508q130fae6aqa4dc933b5d5a7c28@mail.gmail.com>
+Date: Tue, 10 Jun 2008 17:08:05 -0500
+From: "Steve French" <smfrench@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: [GIT] CIFS Fixes
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Jeff Layton" <jlayton@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The following changes since commit cbff290491cd97bcd449b14f672d98992ddad5cb:
+  Linus Torvalds (1):
+        Merge branch 'merge' of git://git.kernel.org/.../paulus/powerpc
 
---=-39QbbmDbwuETDCfNZ8W2
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+are available in the git repository at:
 
-On Tue, 2008-06-10 at 12:41 -0700, Tim Bird wrote:
-> +# Added and removed items are shown with a leading plus or minus,
-> +# respectively.  Changed items show the old and new values on a
-> +# single line.
+  git://git.kernel.org/pub/scm/linux/kernel/git/sfrench/cifs-2.6.git master
 
-It'd be really nice if it could give its output in the same form as
-the .config file itself -- so it'd look something like:
+Jeff Layton (4):
+      on non-posix shares, clear write bits in mode when ATTR_READONLY is set
+      when creating new inodes, use file_mode/dir_mode exclusively on
+mount without unix extensions
+      silently ignore ownership changes unless unix extensions are
+enabled or we're faking uid changes
+      disable most mode changes on non-unix/non-cifsacl mounts
 
-# CONFIG_FOO is not set
-CONFIG_BAR=y
+Steve French (6):
+      [CIFS] remove unused variables
+      [CIFS] remove trailing whitespace
+      [CIFS] warn if both dynperm and cifsacl mount options specified
+      [CIFS] Correct incorrect obscure open flag
+      [CIFS] Fix hang in mount when negprot causes server to kill tcp session
+      [CIFS] cifs: fix oops on mount when CONFIG_CIFS_DFS_UPCALL is enabled
 
-That can be used with this kind of tool too...
+ fs/cifs/CHANGES    |    5 ++
+ fs/cifs/cifsfs.c   |   21 ++++----
+ fs/cifs/cifsglob.h |    3 +-
+ fs/cifs/cifspdu.h  |   23 ++++++--
+ fs/cifs/cifssmb.c  |    6 +--
+ fs/cifs/connect.c  |    5 ++
+ fs/cifs/dir.c      |    4 +-
+ fs/cifs/file.c     |    7 ---
+ fs/cifs/inode.c    |  148 ++++++++++++++++++++++++++++++---------------------
+ fs/cifs/misc.c     |    3 +-
+ fs/cifs/readdir.c  |   77 ++++++++++++++-------------
+ 11 files changed, 172 insertions(+), 130 deletions(-)
+
 
 -- 
-dwmw2
+Thanks,
 
---=-39QbbmDbwuETDCfNZ8W2
-Content-Disposition: inline; filename=merge.pl
-Content-Type: application/x-perl; name=merge.pl
-Content-Transfer-Encoding: 7bit
-
-#! /usr/bin/perl
-
-my @args=@ARGV;
-my %configvalues;
-my @configoptions;
-my $configcounter = 0;
-
-# optionally print out the architecture as the first line of our output
-my $arch = $args[2];
-if (defined $arch) {
-	print "# $arch\n";
-}
-
-# first, read the override file
-
-open (FILE,"$args[0]") || die "Could not open $args[0]";
-while (<FILE>) {
-	my $str = $_;
-	my $configname;
-
-	if (/\# ([\w]+) is not set/) {
-		$configname = $1;
-	} elsif (/([\w]+)=/) {
-		$configname = $1;
-	}
-
-	if (defined($configname) && !exists($configvalues{$configname})) {
-		$configvalues{$configname} = $str;
-		$configoptions[$configcounter] = $configname;
-		$configcounter ++;
-	}
-};
-
-# now, read and output the entire configfile, except for the overridden
-# parts... for those the new value is printed.
-
-open (FILE2,"$args[1]") || die "Could not open $args[1]";
-while (<FILE2>) {
-	my $configname;
-
-	if (/\# ([\w]+) is not set/) {
-		$configname = $1;
-	} elsif (/([\w]+)=/) {
-		$configname  = $1;
-	}
-
-	if (defined($configname) && exists($configvalues{$configname})) {
-		print "$configvalues{$configname}";
-		delete($configvalues{$configname});
-	} else {
-		print "$_";
-	}
-}
-
-# now print the new values from the overridden configfile
-my $counter = 0;
-
-while ($counter < $configcounter) {
-	my $configname = $configoptions[$counter];
-	if (exists($configvalues{$configname})) {
-		print "$configvalues{$configname}";
-	}
-	$counter++;
-}
-
-1;
-
---=-39QbbmDbwuETDCfNZ8W2--
-
+Steve
