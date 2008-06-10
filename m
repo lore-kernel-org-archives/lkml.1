@@ -1,83 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758946AbYFJBLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbYFJBLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758946AbYFJBLT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Jun 2008 21:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbYFJBLK
+	id S1756154AbYFJBLj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Jun 2008 21:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759342AbYFJBL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Jun 2008 21:11:10 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:39911 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755015AbYFJBLJ (ORCPT
+	Mon, 9 Jun 2008 21:11:29 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:44694 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755336AbYFJBL2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Jun 2008 21:11:09 -0400
+	Mon, 9 Jun 2008 21:11:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=jsaJTz0+70QRuzHEBibHb/dIRoO97PODB5mZClPHBEhDzheh5zpG/9YSA6Njv273V4
-         gQExqZ2lcfwDkNergqlIiXhl5OaA3yX85o77uFCbGbyR+FOuyXVKN90MYLkPfuKSOsOR
-         ZMfOMWseMfxNnAbsXDCfqIrIeufW0qoIKvACw=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] x86: make generic arch support NUMAQ - fix #2
-Date: Mon, 9 Jun 2008 18:11:36 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200806050309.11197.yhlu.kernel@gmail.com> <200806070031.35322.yhlu.kernel@gmail.com> <200806081831.54869.yhlu.kernel@gmail.com>
-In-Reply-To: <200806081831.54869.yhlu.kernel@gmail.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=feNCN3bStgasO7pptNQI4dOZkOKuqMvSi3aE1j/MGdpjO/blVVkJ2WNZSzMDmEss39
+         JMyTw62mPN0VHWpwGJu7HgARj47dJPIzp2t6Hzpi8zjgxPgwFh5vpS/brJKs52zCzJCW
+         KbhAg5nmVt/NhRZNwENf+5xm6yFEgTSE3rcjY=
+Message-ID: <dd18b0c30806091811h241db314w5b95e08ca77b77d5@mail.gmail.com>
+Date: Tue, 10 Jun 2008 01:11:27 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Jiri Kosina" <jkosina@suse.cz>
+Subject: Re: [Bug #10825] appletouch after wakeup
+Cc: "Oliver Neukum" <oliver@neukum.org>,
+       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+       "Greg KH" <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0806100205340.10085@jikos.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806091811.36836.yhlu.kernel@gmail.com>
+References: <GIilET9wkhI.A.JzB.81vSIB@albercik>
+	 <dd18b0c30806091504u43e0e901jb786e57f5cbf47cd@mail.gmail.com>
+	 <dd18b0c30806091536s724ba33cmfdd9ccb49b0cbd53@mail.gmail.com>
+	 <200806100040.34377.oliver@neukum.org>
+	 <dd18b0c30806091703s1e21d204m3991f6c51b578450@mail.gmail.com>
+	 <Pine.LNX.4.64.0806100205340.10085@jikos.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jun 10, 2008 at 12:06 AM, Jiri Kosina <jkosina@suse.cz> wrote:
+> On Tue, 10 Jun 2008, Justin Mattock wrote:
+>
+>> Please ignore the two finger scroll part(even though it seems to work),
+>> I have been ignoring my xorg.conf for sometime and need to configure it
+>> so I can have all functionality back, and then I'll let you know what
+>> the status is. regards;
+>
+> You can easily test with 'evtest' utility to see the data that are really
+> comming out of a kernel for your particular device, to filter out any
+> mangling that X does on these events.
+>
+> --
+> Jiri Kosina
+> SUSE Labs
+>
 
-do not need reserve if it early scan smp table
+Cool; Thanks for the help.
 
-we are checking mptable early for numaq, so don't need to reserve_bootmem for
-it.  bootmem is not there yet.
-
-do the samething like 64 bit.
-
-find it on 64g above system from 64 bit kernel kexec to 32 bit kernel with
-numaq support
-
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-
-diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
-index 6ae6090..7ac1b68 100644
---- a/arch/x86/kernel/mpparse.c
-+++ b/arch/x86/kernel/mpparse.c
-@@ -853,9 +853,13 @@ static int __init smp_scan_config(unsigned long base, unsigned long length,
- 			smp_found_config = 1;
- #endif
- 			mpf_found = mpf;
--#ifdef CONFIG_X86_32
-+
- 			printk(KERN_INFO "found SMP MP-table at [%p] %08lx\n",
- 			       mpf, virt_to_phys(mpf));
-+
-+			if (!reserve)
-+				return 1;
-+#ifdef CONFIG_X86_32
- 			reserve_bootmem(virt_to_phys(mpf), PAGE_SIZE,
- 					BOOTMEM_DEFAULT);
- 			if (mpf->mpf_physptr) {
-@@ -877,9 +881,6 @@ static int __init smp_scan_config(unsigned long base, unsigned long length,
- 			}
- 
- #else
--			if (!reserve)
--				return 1;
--
- 			reserve_bootmem_generic(virt_to_phys(mpf), PAGE_SIZE,
- 				BOOTMEM_DEFAULT);
- 			if (mpf->mpf_physptr)
+-- 
+Justin P. Mattock
