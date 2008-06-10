@@ -1,78 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756335AbYFJKwD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754083AbYFJK57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756335AbYFJKwD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 06:52:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbYFJKvy
+	id S1754083AbYFJK57 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 06:57:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbYFJK5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 06:51:54 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:14584 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752066AbYFJKvx (ORCPT
+	Tue, 10 Jun 2008 06:57:49 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:23192 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750821AbYFJK5t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 06:51:53 -0400
-Message-ID: <484E5CBB.2040203@de.ibm.com>
-Date: Tue, 10 Jun 2008 12:51:39 +0200
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
-MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: akpm@linuxfoundation.org, jdike@addtoit.com, linux-kernel@vger.kernel.org,
-       Peter Oberparleiter <oberparleiter@googlemail.com>
-Subject: Re: 2.6.26-rc5-mm1: uml link error
-References: <E1K5oBn-0006v4-KJ@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1K5oBn-0006v4-KJ@pomaz-ex.szeredi.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 10 Jun 2008 06:57:49 -0400
+Date: Tue, 10 Jun 2008 12:57:37 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Uli Luckas <u.luckas@road.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, adaplas@gmail.com,
+       Linux I2C <i2c@lm-sensors.org>, Ryan Mallon <ryan@bluewatersys.com>,
+       David Brownell <david-b@pacbell.net>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Eric Miao <eric.y.miao@gmail.com>
+Subject: Re: Frame buffers and early i2c
+Message-ID: <20080610125737.0622da44@hyperion.delvare>
+In-Reply-To: <200806101131.19763.u.luckas@road.de>
+References: <200806091647.42757.u.luckas@road.de>
+	<200806092359.36080.u.luckas@road.de>
+	<20080610082527.0e6d643a@hyperion.delvare>
+	<200806101131.19763.u.luckas@road.de>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi wrote:
-> I get this error on linking uml:
+On Tue, 10 Jun 2008 11:31:19 +0200, Uli Luckas wrote:
+> On Tuesday, 10. June 2008, Jean Delvare wrote:
+> > So you prefer to post to one random list than the two lists where your
+> > target audience is? Interesting approach. If you really don't want to
+> > post to two lists at once, just send two separate posts?
+> >
+> And have two seperate threads of communication??? lfml is where they all are 
+> and avery maintainer has different preferences. Anyway, I got your point and 
+> will come to the i2c list in the future if you prefere.
+
+If you believe that every kernel developer reads LKML, you're seriously
+mistaken. We have a hundred of dedicated mailing lists for a reason. I
+would have missed your post if you hadn't Cc'd directly.
+
+> Just changing the initcall to subsys really did the trick. I thought, this was 
+> the first thing I tried and I thought it crashed my device. But obviousely I 
+> had some other problem.
+> If Russell gives his Ack, could this be pushed upstream through i2c?
+> (...)
+> Initialize the pxa i2c bus during subsystem initialization to make it
+> available during driver initialization (e.g. display powerup for pxafb).
 > 
-> /usr/lib64/gcc/x86_64-suse-linux/4.2.1/../../../../x86_64-suse-linux/bin/ld:arch/um/kernel/vmlinux.lds:267: syntax error
+> Signed-off-by: Uli Luckas <u.luckas@road.de>
+> ---
+>  drivers/i2c/busses/i2c-pxa.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> Reverting 'kernel-call-constructors.patch' fixes it.
+> diff --git a/drivers/i2c/busses/i2c-pxa.c b/drivers/i2c/busses/i2c-pxa.c
+> index eb69fba..78c0fc4 100644
+> --- a/drivers/i2c/busses/i2c-pxa.c
+> +++ b/drivers/i2c/busses/i2c-pxa.c
+> @@ -1134,5 +1134,5 @@ static void __exit i2c_adap_pxa_exit(void)
+>  MODULE_LICENSE("GPL");
+>  MODULE_ALIAS("platform:pxa2xx-i2c");
+>  
+> -module_init(i2c_adap_pxa_init);
+> +subsys_initcall(i2c_adap_pxa_init);
+>  module_exit(i2c_adap_pxa_exit);
 
-Should be fixed with the patch below (applies on top of
-kernel-call-constructors.patch):
+That's fine with me.
 
---
-
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-
-Fix for linker error on UML:
-
-/usr/lib64/gcc/x86_64-suse-linux/4.2.1/../../../../x86_64-suse-linux/bin/ld:arch/um/kernel/vmlinux.lds:267: syntax error
-
-The error is triggered by the use of SORT(CONSTRUCTORS) in the UML
-linker script which conflicts with the kernel-call-constructors patch.
-Here is what the ld info page says about sorting constructors:
-
-     If you are using the GNU C++ support for initialization priority,
-     which provides some control over the order in which global
-     constructors are run, you must sort the constructors at link time
-     to ensure that they are executed in the correct order.
-
-As there's no C++ code inside the kernel it should be safe to remove
-the SORT construct.
-
-Found-by: Miklos Szeredi <miklos@szeredi.hu>
-Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
----
- arch/um/kernel/dyn.lds.S |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6.26-rc5-mm2/arch/um/kernel/dyn.lds.S
-===================================================================
---- linux-2.6.26-rc5-mm2.orig/arch/um/kernel/dyn.lds.S
-+++ linux-2.6.26-rc5-mm2/arch/um/kernel/dyn.lds.S
-@@ -102,7 +102,7 @@ SECTIONS
-     *(.data.init_irqstack)
-     DATA_DATA
-     *(.data.* .gnu.linkonce.d.*)
--    SORT(CONSTRUCTORS)
-+    CONSTRUCTORS
-   }
-   .data1          : { *(.data1) }
-   .tdata	  : { *(.tdata .tdata.* .gnu.linkonce.td.*) }
+-- 
+Jean Delvare
