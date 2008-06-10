@@ -1,67 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbYFJJIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756387AbYFJJJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755454AbYFJJIT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 05:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbYFJJIH
+	id S1756387AbYFJJJj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 05:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbYFJJJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 05:08:07 -0400
-Received: from www.tglx.de ([62.245.132.106]:53471 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751176AbYFJJIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 05:08:04 -0400
-Date: Tue, 10 Jun 2008 11:07:56 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
-Cc: "Hans J. Koch" <hjk@linutronix.de>, linux-kernel@vger.kernel.org,
-       Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH] UIO: minor style and comment fixes
-Message-ID: <20080610090755.GD4611@local>
-References: <20080610071032.GB22814@digi.com> <1213082088-24294-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1213082088-24294-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 10 Jun 2008 05:09:28 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:26037 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752682AbYFJJJ0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 05:09:26 -0400
+Date: Tue, 10 Jun 2008 11:09:08 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Greg KH <greg@kroah.com>, David Miller <davem@davemloft.net>,
+       shemminger@vyatta.com, fubar@us.ibm.com, netdev@vger.kernel.org,
+       bonding-devel@lists.sourceforge.net
+Subject: Re: [PATCH] driver core: Suppress sysfs warnings for
+ device_rename().
+Message-ID: <20080610110908.46b2ade4@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20080521100556.3352c5b7@gondolin.boeblingen.de.ibm.com>
+References: <20080515095246.3b6a0d1d@gondolin.boeblingen.de.ibm.com>
+	<20080515.010139.219194657.davem@davemloft.net>
+	<20080515113131.2cea2bce@gondolin.boeblingen.de.ibm.com>
+	<20080515.030054.247673168.davem@davemloft.net>
+	<20080515120619.6c867bfb@gondolin.boeblingen.de.ibm.com>
+	<20080520125913.777ed67d@gondolin.boeblingen.de.ibm.com>
+	<20080520225244.GG15912@kroah.com>
+	<20080521100556.3352c5b7@gondolin.boeblingen.de.ibm.com>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 09:14:48AM +0200, Uwe Kleine-König wrote:
-> Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
+On Wed, 21 May 2008 10:05:56 +0200,
+Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
 
-Signed-off-by: Hans J. Koch <hjk@linutronix.de>
+Just digging through my backlog: Is there any further interest in this
+patch?
 
-> ---
->  include/linux/uio_driver.h |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
+> On Tue, 20 May 2008 15:52:44 -0700,
+> Greg KH <greg@kroah.com> wrote:
 > 
-> diff --git a/include/linux/uio_driver.h b/include/linux/uio_driver.h
-> index cf65e96..cdf338d 100644
-> --- a/include/linux/uio_driver.h
-> +++ b/include/linux/uio_driver.h
-> @@ -36,7 +36,7 @@ struct uio_mem {
->  	struct uio_map		*map;
->  };
+> > On Tue, May 20, 2008 at 12:59:13PM +0200, Cornelia Huck wrote:
+> > > OK, here is an actually-compiled patch with proper description and
+> > > s-o-b. Comments?
+> > 
+> > Looks good to me, feel free to add an:
+> > 	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > 
+> > to it.
+> > 
+> > David, are you going to take this through your tree?
+> 
+> Here it is again, respun against today's git:
+> 
+> 
+> driver core: Suppress sysfs warnings for device_rename().
+> 
+> Renaming network devices to an already existing name is not
+> something we want sysfs to print a scary warning for, since the
+> callers can deal with this correctly. So let's introduce
+> sysfs_create_link_nowarn() which gets rid of the common warning.
+> 
+> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+> 
+> ---
+>  drivers/base/core.c   |    9 +++++----
+>  fs/sysfs/dir.c        |   37 +++++++++++++++++++++++++++++++++++--
+>  fs/sysfs/symlink.c    |   41 +++++++++++++++++++++++++++++++++--------
+>  fs/sysfs/sysfs.h      |    1 +
+>  include/linux/sysfs.h |   10 ++++++++++
+>  5 files changed, 84 insertions(+), 14 deletions(-)
+> 
+> --- linux-2.6.orig/drivers/base/core.c
+> +++ linux-2.6/drivers/base/core.c
+> @@ -1282,8 +1282,9 @@ int device_rename(struct device *dev, ch
+>  	if (old_class_name) {
+>  		new_class_name = make_class_name(dev->class->name, &dev->kobj);
+>  		if (new_class_name) {
+> -			error = sysfs_create_link(&dev->parent->kobj,
+> -						  &dev->kobj, new_class_name);
+> +			error = sysfs_create_link_nowarn(&dev->parent->kobj,
+> +							 &dev->kobj,
+> +							 new_class_name);
+>  			if (error)
+>  				goto out;
+>  			sysfs_remove_link(&dev->parent->kobj, old_class_name);
+> @@ -1291,8 +1292,8 @@ int device_rename(struct device *dev, ch
+>  	}
+>  #else
+>  	if (dev->class) {
+> -		error = sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
+> -					  dev->bus_id);
+> +		error = sysfs_create_link_nowarn(&dev->class->subsys.kobj,
+> +						 &dev->kobj, dev->bus_id);
+>  		if (error)
+>  			goto out;
+>  		sysfs_remove_link(&dev->class->subsys.kobj, old_device_name);
+> --- linux-2.6.orig/fs/sysfs/dir.c
+> +++ linux-2.6/fs/sysfs/dir.c
+> @@ -398,7 +398,7 @@ void sysfs_addrm_start(struct sysfs_addr
+>  }
 >  
-> -#define MAX_UIO_MAPS 	5
-> +#define MAX_UIO_MAPS	5
+>  /**
+> - *	sysfs_add_one - add sysfs_dirent to parent
+> + *	__sysfs_add_one - add sysfs_dirent to parent without warning
+>   *	@acxt: addrm context to use
+>   *	@sd: sysfs_dirent to be added
+>   *
+> @@ -417,7 +417,7 @@ void sysfs_addrm_start(struct sysfs_addr
+>   *	0 on success, -EEXIST if entry with the given name already
+>   *	exists.
+>   */
+> -int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+> +int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+>  {
+>  	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name))
+>  		return -EEXIST;
+> @@ -435,6 +435,39 @@ int sysfs_add_one(struct sysfs_addrm_cxt
+>  }
 >  
->  struct uio_device;
+>  /**
+> + *	sysfs_add_one - add sysfs_dirent to parent
+> + *	@acxt: addrm context to use
+> + *	@sd: sysfs_dirent to be added
+> + *
+> + *	Get @acxt->parent_sd and set sd->s_parent to it and increment
+> + *	nlink of parent inode if @sd is a directory and link into the
+> + *	children list of the parent.
+> + *
+> + *	This function should be called between calls to
+> + *	sysfs_addrm_start() and sysfs_addrm_finish() and should be
+> + *	passed the same @acxt as passed to sysfs_addrm_start().
+> + *
+> + *	LOCKING:
+> + *	Determined by sysfs_addrm_start().
+> + *
+> + *	RETURNS:
+> + *	0 on success, -EEXIST if entry with the given name already
+> + *	exists.
+> + */
+> +int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+> +{
+> +	int ret;
+> +
+> +	ret = __sysfs_add_one(acxt, sd);
+> +	if (ret == -EEXIST) {
+> +		printk(KERN_WARNING "sysfs: duplicate filename '%s' "
+> +		       "can not be created\n", sd->s_name);
+> +		WARN_ON(1);
+> +	}
+> +	return ret;
+> +}
+> +
+> +/**
+>   *	sysfs_remove_one - remove sysfs_dirent from parent
+>   *	@acxt: addrm context to use
+>   *	@sd: sysfs_dirent to be removed
+> --- linux-2.6.orig/fs/sysfs/symlink.c
+> +++ linux-2.6/fs/sysfs/symlink.c
+> @@ -19,13 +19,8 @@
 >  
-> @@ -82,11 +82,11 @@ static inline int __must_check
->  extern void uio_unregister_device(struct uio_info *info);
->  extern void uio_event_notify(struct uio_info *info);
+>  #include "sysfs.h"
 >  
-> -/* defines for uio_device->irq */
-> +/* defines for uio_info->irq */
->  #define UIO_IRQ_CUSTOM	-1
->  #define UIO_IRQ_NONE	-2
+> -/**
+> - *	sysfs_create_link - create symlink between two objects.
+> - *	@kobj:	object whose directory we're creating the link in.
+> - *	@target:	object we're pointing to.
+> - *	@name:		name of the symlink.
+> - */
+> -int sysfs_create_link(struct kobject * kobj, struct kobject * target, const char * name)
+> +static int sysfs_do_create_link(struct kobject *kobj, struct kobject *target,
+> +				const char *name, int warn)
+>  {
+>  	struct sysfs_dirent *parent_sd = NULL;
+>  	struct sysfs_dirent *target_sd = NULL;
+> @@ -65,7 +60,10 @@ int sysfs_create_link(struct kobject * k
+>  	target_sd = NULL;	/* reference is now owned by the symlink */
 >  
-> -/* defines for uio_device->memtype */
-> +/* defines for uio_mem->memtype */
->  #define UIO_MEM_NONE	0
->  #define UIO_MEM_PHYS	1
->  #define UIO_MEM_LOGICAL	2
-> -- 
-> 1.5.5.3
+>  	sysfs_addrm_start(&acxt, parent_sd);
+> -	error = sysfs_add_one(&acxt, sd);
+> +	if (warn)
+> +		error = sysfs_add_one(&acxt, sd);
+> +	else
+> +		error = __sysfs_add_one(&acxt, sd);
+>  	sysfs_addrm_finish(&acxt);
+>  
+>  	if (error)
+> @@ -80,6 +78,33 @@ int sysfs_create_link(struct kobject * k
+>  }
+>  
+>  /**
+> + *	sysfs_create_link - create symlink between two objects.
+> + *	@kobj:	object whose directory we're creating the link in.
+> + *	@target:	object we're pointing to.
+> + *	@name:		name of the symlink.
+> + */
+> +int sysfs_create_link(struct kobject *kobj, struct kobject *target,
+> +		      const char *name)
+> +{
+> +	return sysfs_do_create_link(kobj, target, name, 1);
+> +}
+> +
+> +/**
+> + *	sysfs_create_link_nowarn - create symlink between two objects.
+> + *	@kobj:	object whose directory we're creating the link in.
+> + *	@target:	object we're pointing to.
+> + *	@name:		name of the symlink.
+> + *
+> + *	This function does the same as sysf_create_link(), but it
+> + *	doesn't warn if the link already exists.
+> + */
+> +int sysfs_create_link_nowarn(struct kobject *kobj, struct kobject *target,
+> +			     const char *name)
+> +{
+> +	return sysfs_do_create_link(kobj, target, name, 0);
+> +}
+> +
+> +/**
+>   *	sysfs_remove_link - remove symlink in object's directory.
+>   *	@kobj:	object we're acting for.
+>   *	@name:	name of the symlink to remove.
+> --- linux-2.6.orig/fs/sysfs/sysfs.h
+> +++ linux-2.6/fs/sysfs/sysfs.h
+> @@ -107,6 +107,7 @@ struct sysfs_dirent *sysfs_get_active_tw
+>  void sysfs_put_active_two(struct sysfs_dirent *sd);
+>  void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
+>  		       struct sysfs_dirent *parent_sd);
+> +int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
+>  int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
+>  void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
+>  void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt);
+> --- linux-2.6.orig/include/linux/sysfs.h
+> +++ linux-2.6/include/linux/sysfs.h
+> @@ -101,6 +101,9 @@ void sysfs_remove_bin_file(struct kobjec
+>  
+>  int __must_check sysfs_create_link(struct kobject *kobj, struct kobject *target,
+>  				   const char *name);
+> +int __must_check sysfs_create_link_nowarn(struct kobject *kobj,
+> +					  struct kobject *target,
+> +					  const char *name);
+>  void sysfs_remove_link(struct kobject *kobj, const char *name);
+>  
+>  int __must_check sysfs_create_group(struct kobject *kobj,
+> @@ -180,6 +183,13 @@ static inline int sysfs_create_link(stru
+>  	return 0;
+>  }
+>  
+> +static inline int sysfs_create_link_nowarn(struct kobject *kobj,
+> +					   struct kobject *target,
+> +					   const char *name)
+> +{
+> +	return 0;
+> +}
+> +
+>  static inline void sysfs_remove_link(struct kobject *kobj, const char *name)
+>  {
+>  }
