@@ -1,103 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758040AbYFJVNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758488AbYFJVOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758040AbYFJVNY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 17:13:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754304AbYFJVNP
+	id S1758488AbYFJVOl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 17:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512AbYFJVOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 17:13:15 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:40319 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754187AbYFJVNO convert rfc822-to-8bit (ORCPT
+	Tue, 10 Jun 2008 17:14:32 -0400
+Received: from web50106.mail.re2.yahoo.com ([206.190.38.34]:45761 "HELO
+	web50106.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754304AbYFJVOc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 17:13:14 -0400
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "Patterson, Andrew D (Linux R&D)" <andrew.patterson@hp.com>,
-       "Chen, Justin" <justin.chen@hp.com>
-Date: Tue, 10 Jun 2008 21:12:49 +0000
-Subject: RE: [PATCH 2/2] cciss: bump version to .20 to reflect new HW support
-Thread-Topic: [PATCH 2/2] cciss: bump version to .20 to reflect new HW
- support
-Thread-Index: AcjLO6HdnDWRGG+kSpONFK0aHQqZQwAAtlqQ
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A77881F2C828381@GVW0547EXC.americas.hpqcorp.net>
-References: <20080610161404.GB6808@roadking.ldev.net>
- <20080610135026.f17a2d3a.akpm@linux-foundation.org>
-In-Reply-To: <20080610135026.f17a2d3a.akpm@linux-foundation.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 10 Jun 2008 17:14:32 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=bgBPI7ujTfM9yPmKROfQa4gtpBNtfLStCgWpm2mFQNrP2AO3Yq4glQkzoyEayT8RnWtXkL61pGIdPGjeObb+Umz5KV68ISlE4b2G2oZS34IFKx6Mtyjt3yyDV8WVzhRhhNYTUMxalladYkj4uE8yPz40paLgocH10ruvFZEuyJY=;
+X-YMail-OSG: Es.YuBUVM1mqMPsST6oPXQY6nHDCl80QW8gCPo7ELTtIlJ7wuBXPsrfcDQobVDL7gfX9JIew9Es5goJRAvr_l0_C1zbiTLUI
+Date: Tue, 10 Jun 2008 14:14:30 -0700 (PDT)
+From: Doug Thompson <norsk5@yahoo.com>
+Subject: Re: on static kobjects and double frees...
+To: Arthur Jones <ajones@riverbed.com>, Greg KH <greg@kroah.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Doug Thompson <norsk5@yahoo.com>,
+       "bluesmoke-devel@lists.sourceforge.net" 
+	<bluesmoke-devel@lists.sourceforge.net>
+In-Reply-To: <20080610163800.GA28572@ajones-laptop.nbttech.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <879085.21951.qm@web50106.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--- Arthur Jones <ajones@riverbed.com> wrote:
 
-> -----Original Message-----
-> From: Andrew Morton [mailto:akpm@linux-foundation.org]
-> Sent: Tuesday, June 10, 2008 3:50 PM
-> To: Miller, Mike (OS Dev)
-> Cc: jens.axboe@oracle.com; linux-kernel@vger.kernel.org;
-> linux-scsi@vger.kernel.org; Patterson, Andrew D (Linux R&D);
-> Chen, Justin
-> Subject: Re: [PATCH 2/2] cciss: bump version to .20 to
-> reflect new HW support
->
-> On Tue, 10 Jun 2008 11:14:04 -0500
-> Mike Miller <mike.miller@hp.com> wrote:
->
-> > PATCH 2/2
-> > This patch bumps the driver version to 3.6.20 to reflect the new
-> > hardware support from patch 1 of this set. Please consider
-> this for inclusion.
-> >
-> > Signed-off-by: Mike Miller <mike.miller@hp.com>
-> >
-> > diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c index
-> > ced904d..c21a5a9 100644
-> > --- a/drivers/block/cciss.c
-> > +++ b/drivers/block/cciss.c
-> > @@ -53,16 +53,16 @@
-> >  #include <linux/scatterlist.h>
-> >
-> >  #define CCISS_DRIVER_VERSION(maj,min,submin)
-> > ((maj<<16)|(min<<8)|(submin)) -#define DRIVER_NAME "HP CISS
-> Driver (v 3.6.14)"
-> > -#define DRIVER_VERSION CCISS_DRIVER_VERSION(3,6,14)
-> > +#define DRIVER_NAME "HP CISS Driver (v 3.6.20)"
-> > +#define DRIVER_VERSION CCISS_DRIVER_VERSION(3, 6, 20)
-> >
-> >  /* Embedded module documentation macros - see modules.h */
-> > MODULE_AUTHOR("Hewlett-Packard Company");
-> -MODULE_DESCRIPTION("Driver
-> > for HP Controller SA5xxx SA6xxx version 3.6.14");
-> > +MODULE_DESCRIPTION("Driver for HP Smart Array Controllers");
-> >  MODULE_SUPPORTED_DEVICE("HP SA5i SA5i+ SA532 SA5300 SA5312
-> SA641 SA642 SA6400"
-> >                       " SA6i P600 P800 P400 P400i E200
-> E200i E500 P700m"
-> >                       " Smart Array G2 Series SAS/SATA
-> Controllers");
-> > -MODULE_VERSION("3.6.14");
-> > +MODULE_VERSION("3.6.20");
-> >  MODULE_LICENSE("GPL");
-> >
-> >  #include "cciss_cmd.h"
->
-> I think it would be more logical to fold these two patches together.
+> Hi Greg, ...
+> 
+> On Tue, Jun 10, 2008 at 09:23:41AM -0700, Greg KH wrote:
+> > On Tue, Jun 10, 2008 at 08:58:50AM -0700, Arthur Jones wrote:
+> > > Hi Greg,  The edac pci sysfs generic layer uses a static
+> > > kobject as a placeholder parent where edac pci drivers
+> > > are inserted.
+> > 
+> > Hm, stop right there.
+> > 
+> > kobjects are not supposed to be static, bad things happen if you do that
+> > (including the kernel itself will warn you about them, unless you gave
+> > it an empty release function, and if so, then see
+> > Documentation/kobject.txt and prepare to be mocked...)
 
-Jens at one time suggested I keep the version patch separate, IIRC.
->
-> I believe we should include this new device support in 2.6.25.x, yes?
+The edac_pci was my first coding with kobjects sometime ago and I have not reviewed them for quite
+awhile, since I have been working more on memory controllers. Thus it was my bad.
 
-Yes, I'd like to see the support in 2.6.25.x.
+Arthur, thanks for tracking that down and reviewing it. All the memory controller kobjects are all
+dynamic. The edac PCI code needed to be refactored and it looks like you did it.
 
--- mikem
->
+thanks again
+
+doug t
+
+
+For the patch:
+
+Acked-by:    doug thompson <dougthompson@xmission.com>
+
+
+
+
+W1DUG
