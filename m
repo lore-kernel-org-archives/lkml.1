@@ -1,116 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759896AbYFJVqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759310AbYFJVsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759896AbYFJVqT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 17:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755847AbYFJVqJ
+	id S1759310AbYFJVsr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 17:48:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbYFJVsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 17:46:09 -0400
-Received: from mu-out-0910.google.com ([209.85.134.187]:60446 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755953AbYFJVqI (ORCPT
+	Tue, 10 Jun 2008 17:48:40 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:52851 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753050AbYFJVsj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 17:46:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:from;
-        b=jDVupv6C/n2BMLjRwlLVInrkzHVkVPUo6eacvraR7em7cZEUU/pN+qAy/b+BuJ3B7R
-         JQuIF+ZU3f+cH3ErR73LnINFekv+UyHPtp0YQsMRYQROnwwY1do8dVtekeFflrWVMKTL
-         XtYjDvbuEZ0XmMbhdQepiLwjhNE2xehj0Juj0=
-Date: Tue, 10 Jun 2008 23:45:45 +0200
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: more header fixes
-Message-ID: <20080610214544.GA14824@damson.getinternet.no>
+	Tue, 10 Jun 2008 17:48:39 -0400
+Message-ID: <484EF6B2.8010508@firstfloor.org>
+Date: Tue, 10 Jun 2008 23:48:34 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Rik van Riel <riel@redhat.com>, clameter@sgi.com,
+       linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
+       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org, eric.whitney@hp.com,
+       Paul Mundt <lethal@linux-sh.org>, Ingo Molnar <mingo@elte.hu>,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [PATCH -mm 13/25] Noreclaim LRU Infrastructure
+References: <20080606202838.390050172@redhat.com>	<20080606202859.291472052@redhat.com>	<20080606180506.081f686a.akpm@linux-foundation.org>	<20080608163413.08d46427@bree.surriel.com>	<20080608135704.a4b0dbe1.akpm@linux-foundation.org>	<20080608173244.0ac4ad9b@bree.surriel.com>	<20080608162208.a2683a6c.akpm@linux-foundation.org>	<20080608193420.2a9cc030@bree.surriel.com>	<20080608165434.67c87e5c.akpm@linux-foundation.org>	<Pine.LNX.4.64.0806101214190.17798@schroedinger.engr.sgi.com>	<20080610153702.4019e042@cuia.bos.redhat.com> <20080610143334.c53d7d8a.akpm@linux-foundation.org>
+In-Reply-To: <20080610143334.c53d7d8a.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Summary: Add missing include guards for some x86 headers.
+> 
+> Maybe it's time to bite the bullet and kill i386 NUMA support.  afaik
+> it's just NUMAQ and a 2-node NUMAish machine which IBM made (as400?)
 
-This has only had the most rudimentary testing, but is hopefully obviously
-correct. (That's just doomed to generate some sort of build failure, isn't
-it?)
+Actually much more (most 64bit NUMA systems can run 32bit too), it just
+doesn't work well because the code is not very good, undertested, many
+bugs, weird design and in general 32bit NUMA has a lot of limitations
+that don't make it a good idea.
 
-Thanks.
+But you don't need to kill it only for this (although imho there are
+lots of other good reasons) Just use a different way to look up the
+node. Encoding it into the flags is just an optimization.
+But a separate hash or similar would also work. It seemed like a good
+idea back then.
 
+In fact there's already a hash for this (the pa->node hash) that
+can do it. It' just some more instructions and one cache line
+more accessed, but since i386 NUMA is a fringe application
+that doesn't seem like a big issue.
 
-Vegard
+-Andi
 
-PS: I now have a pretty cool framework in Perl for parsing and checking
-headers. And it can be used to transform them automatically too. So if you
-want to standardize the guard format of all the headers in one go, we have
-the means to do it quickly and efficiently...
-
-
-diff --git a/include/asm-x86/seccomp_64.h b/include/asm-x86/seccomp_64.h
-index 553af65..76cfe69 100644
---- a/include/asm-x86/seccomp_64.h
-+++ b/include/asm-x86/seccomp_64.h
-@@ -1,4 +1,5 @@
- #ifndef _ASM_SECCOMP_H
-+#define _ASM_SECCOMP_H
- 
- #include <linux/thread_info.h>
- 
-diff --git a/include/asm-x86/suspend_32.h b/include/asm-x86/suspend_32.h
-index 24e1c08..8675c67 100644
---- a/include/asm-x86/suspend_32.h
-+++ b/include/asm-x86/suspend_32.h
-@@ -3,6 +3,9 @@
-  * Based on code
-  * Copyright 2001 Patrick Mochel <mochel@osdl.org>
-  */
-+#ifndef __ASM_X86_32_SUSPEND_H
-+#define __ASM_X86_32_SUSPEND_H
-+
- #include <asm/desc.h>
- #include <asm/i387.h>
- 
-@@ -44,3 +47,5 @@ static inline void acpi_save_register_state(unsigned long return_point)
- /* routines for saving/restoring kernel state */
- extern int acpi_save_state_mem(void);
- #endif
-+
-+#endif /* __ASM_X86_32_SUSPEND_H */
-diff --git a/include/asm-x86/xor_32.h b/include/asm-x86/xor_32.h
-index 067b5c1..921b458 100644
---- a/include/asm-x86/xor_32.h
-+++ b/include/asm-x86/xor_32.h
-@@ -1,3 +1,6 @@
-+#ifndef ASM_X86__XOR_32_H
-+#define ASM_X86__XOR_32_H
-+
- /*
-  * Optimized RAID-5 checksumming functions for MMX and SSE.
-  *
-@@ -881,3 +884,5 @@ do {							\
-    deals with a load to a line that is being prefetched.  */
- #define XOR_SELECT_TEMPLATE(FASTEST)			\
- 	(cpu_has_xmm ? &xor_block_pIII_sse : FASTEST)
-+
-+#endif /* ASM_X86__XOR_32_H */
-diff --git a/include/asm-x86/xor_64.h b/include/asm-x86/xor_64.h
-index 24957e3..2d3a18d 100644
---- a/include/asm-x86/xor_64.h
-+++ b/include/asm-x86/xor_64.h
-@@ -1,3 +1,6 @@
-+#ifndef ASM_X86__XOR_64_H
-+#define ASM_X86__XOR_64_H
-+
- /*
-  * Optimized RAID-5 checksumming functions for MMX and SSE.
-  *
-@@ -354,3 +357,5 @@ do {						\
-    We may also be able to load into the L1 only depending on how the cpu
-    deals with a load to a line that is being prefetched.  */
- #define XOR_SELECT_TEMPLATE(FASTEST) (&xor_block_sse)
-+
-+#endif /* ASM_X86__XOR_64_H */
