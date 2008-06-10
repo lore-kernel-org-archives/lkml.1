@@ -1,57 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756762AbYFJH4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756890AbYFJH62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756762AbYFJH4S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 03:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753008AbYFJH4J
+	id S1756890AbYFJH62 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 03:58:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbYFJH6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 03:56:09 -0400
-Received: from sacred.ru ([62.205.161.221]:59228 "EHLO sacred.ru"
+	Tue, 10 Jun 2008 03:58:20 -0400
+Received: from gw.goop.org ([64.81.55.164]:59165 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751246AbYFJH4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 03:56:08 -0400
-Message-ID: <484E32B9.4020606@openvz.org>
-Date: Tue, 10 Jun 2008 11:52:25 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	id S1751234AbYFJH6T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 03:58:19 -0400
+Message-ID: <484E33F1.5000503@goop.org>
+Date: Tue, 10 Jun 2008 08:57:37 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Andrea Righi <righi.andrea@gmail.com>
-CC: balbir@linux.vnet.ibm.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, menage@google.com,
-       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org
-Subject: Re: [RFC PATCH 0/5] memcg: VM overcommit accounting and handling
-References: <1213054383-18137-1-git-send-email-righi.andrea@gmail.com> <20080610091439.04061da9.kamezawa.hiroyu@jp.fujitsu.com> <484E0D73.6010609@linux.vnet.ibm.com>
-In-Reply-To: <484E0D73.6010609@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Isaku Yamahata <yamahata@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org,
+       xen-ia64-devel@lists.xensource.com,
+       Samuel Thibault <samuel.thibault@eu.citrix.com>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>
+Subject: Re: [PATCH] xen: Use wmb instead of rmb in xen_evtchn_do_upcall().
+References: <20080610073532.GG24381%yamahata@valinux.co.jp> <200806101741.39871.nickpiggin@yahoo.com.au>
+In-Reply-To: <200806101741.39871.nickpiggin@yahoo.com.au>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Tue, 10 Jun 2008 11:54:43 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> KAMEZAWA Hiroyuki wrote:
->> On Tue, 10 Jun 2008 01:32:58 +0200
->> Andrea Righi <righi.andrea@gmail.com> wrote:
->>
->>> Provide distinct cgroup VM overcommit accounting and handling using the memory
->>> resource controller.
->>>
->> Could you explain the benefits of this even when we have memrlimit controller ?
->> (If unsure, see 2.6.26-rc5-mm1 and search memrlimit controller.)
->>
->> And this kind of virtual-address-handling things should be implemented on
->> memrlimit controller (means not on memory-resource-controller.).
->> It seems this patch doesn't need to handle page_group.
->>
->> Considering hierarchy, putting several kinds of features on one controller is
->> not good, I think. Balbir, how do you think ?
->>
-> 
-> I would tend to agree. With the memrlimit controller, can't we do this in user
-> space now? Figure out the overcommit value and based on that setup the memrlimit?
+Nick Piggin wrote:
+> On Tuesday 10 June 2008 17:35, Isaku Yamahata wrote:
+>   
+>> This patch is ported one from 534:77db69c38249 of linux-2.6.18-xen.hg.
+>> Use wmb instead of rmb to enforce ordering between
+>> evtchn_upcall_pending and evtchn_pending_sel stores
+>> in xen_evtchn_do_upcall().
+>>     
+>
+> There are a whole load of places in the kernel that should be using
+> smp_ variants of memory barriers. This seemed to me like one of them,
+> but I could be wrong.
+>   
 
-I also agree with Balbir and Kamezawa. Separate controller for VM (i.e. vma-s
-lengths) is more preferable, rather than yet another fancy feature on top of 
-the existing rss one.
+No, it needs to be an unconditional barrier.  This is synchronizing with 
+the hypervisor - even if the kernel is compiled UP, the SMP hypervisor 
+may be testing/setting the events pending bits from another (physical) cpu.
+
+> Also, if you do that can you get rid of the ifdef? If it really *really*
+> mattered, we could introduce smp_mb before/after xchg... but if you
+> use smp_wmb anyway then it definitely does not matter because that is a
+> noop on x86.
+>   
+
+Yes, I'd like to lose the #ifdef.  Unfortunately I think putting a 
+"lock; addl $0,0(%%esp)" style barrier had a measurable negative 
+performance impact, but I may be thinking of something else.  I don't 
+know how expensive sfence is.
+
+The alternative is to make ia64's xchg a barrier (or to add a barrier 
+variant of it).  It seems like a wart to have a cross-architecture 
+function like xchg(), but then have different architectures differ in 
+important details like barrier-ness.
+
+    J
+
+> Thanks,
+> Nick
+>
+>   
+>  Cc: Samuel Thibault <samuel.thibault@eu.citrix.com>
+>   
+>> Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
+>> ---
+>>  drivers/xen/events.c |    2 +-
+>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/drivers/xen/events.c b/drivers/xen/events.c
+>> index 73d78dc..332dd63 100644
+>> --- a/drivers/xen/events.c
+>> +++ b/drivers/xen/events.c
+>> @@ -529,7 +529,7 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
+>>
+>>  #ifndef CONFIG_X86 /* No need for a barrier -- XCHG is a barrier on x86.
+>> */ /* Clear master flag /before/ clearing selector flag. */
+>> -		rmb();
+>> +		wmb();
+>>  #endif
+>>  		pending_words = xchg(&vcpu_info->evtchn_pending_sel, 0);
+>>  		while (pending_words != 0) {
+>>     
 
