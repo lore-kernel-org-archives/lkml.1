@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754774AbYFJNvB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755285AbYFJNy6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754774AbYFJNvB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 09:51:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbYFJNuu
+	id S1755285AbYFJNy6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 09:54:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbYFJNys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 09:50:50 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:64971 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753529AbYFJNut convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 09:50:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=U49S4/4sy525SO1ht/ye2KTd5GgJ6PrX8xiyt1rJsxmy5TFt7ElNfMzUQ2Zj38RwRr
-         mTV8nyyGhqmx8HYJ2PQWH1MOS9eYo/0LSRVe8f4qNfLZ7NA9lOyUcoq2oOvhpt2vg+Bl
-         9tXZCy216G+tP5g3AbIgF5/pGm7A8s97XLCXE=
-Message-ID: <aec7e5c30806100650m41089e1p4b487837b6271471@mail.gmail.com>
-Date: Tue, 10 Jun 2008 22:50:46 +0900
-From: "Magnus Damm" <magnus.damm@gmail.com>
-To: "=?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?=" <Uwe.Kleine-Koenig@digi.com>
-Subject: Re: [PATCH] uio_pdrv: Unique IRQ Mode
-Cc: "Paul Mundt" <lethal@linux-sh.org>, "Hans J. Koch" <hjk@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>
-In-Reply-To: <20080610071032.GB22814@digi.com>
+	Tue, 10 Jun 2008 09:54:48 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:53871 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753745AbYFJNyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 09:54:47 -0400
+Date: Tue, 10 Jun 2008 16:53:49 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Bryan Wu <cooloney@kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: blackfin drivers/net/smc91x.c build error
+Message-ID: <20080610135349.GA30792@cs181133002.pp.htv.fi>
+References: <20080606162212.GC2201@cs181133002.pp.htv.fi> <8bd0f97a0806061252n1cf5ee33i40ddf9f55588e242@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <20080605090916.GA3198@local> <20080605112744.GB3198@local>
-	 <aec7e5c30806080319y7b9b6a89icacbfa67b117fb2b@mail.gmail.com>
-	 <20080608205455.GA3191@local>
-	 <aec7e5c30806081812m532882e0p7ad3ef9a74f53337@mail.gmail.com>
-	 <20080609084411.GA3223@local> <20080609090123.GA12080@linux-sh.org>
-	 <20080609123406.GB27803@digi.com>
-	 <aec7e5c30806092140s21cc8cbdtbaf69f864dd2bda7@mail.gmail.com>
-	 <20080610071032.GB22814@digi.com>
+In-Reply-To: <8bd0f97a0806061252n1cf5ee33i40ddf9f55588e242@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 4:10 PM, Uwe Kleine-König
-<Uwe.Kleine-Koenig@digi.com> wrote:
-> I think you can implement the handler and irqcontrol functions static
-> inline.  Then the need to statically compile uio goes away.  And if all
-> uio_pdrv devices are registered in the same .c file you don't even have
-> a (binary) size penalty.
+On Fri, Jun 06, 2008 at 03:52:09PM -0400, Mike Frysinger wrote:
+> On Fri, Jun 6, 2008 at 12:22 PM, Adrian Bunk <bunk@kernel.org> wrote:
+> > drivers/net/smc91x.c fails as follows on blackfin:
+> > ...
+> >  CC      drivers/net/smc91x.o
+> > ...
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/net/smc91x.c:1863:36: error: macro "SMC_GET_MAC_ADDR" passed 2 arguments, but takes just 1
+> > ...
+> 
+> it's a known issue (been known for quite a long time actually).  Bryan
+> has brought this up in the past already.
 
-Good idea, that's nice and clean.
+Is my suggestion of reverting commit 099c736a470c8080a166e7a089f1e48e15f9947c
+correct or how else should it be resolved?
 
->> Let me know what you want and I'll respin the patch. Thanks!
-> ... I started describing in detail my suggestion, but actually it's
-> easier to do the patch myself.  So here it comes.  Note it's not even
-> compile tested, but you should be able to get my intentions.
+This issue is the only remaining problem preventing that all blackfin 
+defconfigs will compile in 2.6.26...
 
-Excellent! I wrote some code to export the VEU in sh7722 on top of
-your patch and things work just fine. Slightly more structure members
-to fill in with this approach, but that's fine. This less automatic
-approach hopefully causes less confusion. =)
+> -mike
 
-> From: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
-> Date: Tue, 10 Jun 2008 09:06:24 +0200
-> Subject: [PATCH] UIO: wip
->
-> Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
+cu
+Adrian
 
-Acked-by: Magnus Damm <damm@igel.co.jp>
+-- 
 
-Thanks for your help!
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-/ magnus
