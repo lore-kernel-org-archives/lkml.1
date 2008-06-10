@@ -1,84 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759242AbYFJIv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759162AbYFJIzP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759242AbYFJIv7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 04:51:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYFJIvu
+	id S1759162AbYFJIzP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 04:55:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYFJIzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 04:51:50 -0400
-Received: from mail9.hitachi.co.jp ([133.145.228.44]:51413 "EHLO
-	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751385AbYFJIvt (ORCPT
+	Tue, 10 Jun 2008 04:55:00 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:33019 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750953AbYFJIy7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 04:51:49 -0400
-X-AuditID: 0ac90650-aa889ba0000062df-b6-484e40a33547
-Message-ID: <484E4097.2010204@hitachi.com>
-Date: Tue, 10 Jun 2008 17:51:35 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
+	Tue, 10 Jun 2008 04:54:59 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: NOvell
+To: Pavel Machek <pavel@suse.cz>, linux-usb@vger.kernel.org
+Subject: Re: 2.6.25-rc6: CONFIG_USB_PERSIST forced on
+Date: Tue, 10 Jun 2008 10:55:13 +0200
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <gregkh@suse.de>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Linus Torvalds <torvalds@linuxfoundation.org>,
+       Andrew Morton <akpm@linuxfoundation.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <200806091712.46869.oliver@neukum.org> <alpine.LFD.1.10.0806091435120.3218@woody.linux-foundation.org> <20080609215651.GF21429@elf.ucw.cz>
+In-Reply-To: <20080609215651.GF21429@elf.ucw.cz>
 MIME-Version: 1.0
-To: akpm@linux-foundation.org
-Cc: jack@suse.cz, linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
-       sugita <yumiko.sugita.yf@hitachi.com>
-Subject: Re: - jbd-strictly-check-for-write-errors-on-data-buffers.patch
-    removed from -mm tree
-References: <200806092212.m59MC553010889@imap1.linux-foundation.org>
-In-Reply-To: <200806092212.m59MC553010889@imap1.linux-foundation.org>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
+Content-Disposition: inline
+Message-Id: <200806101055.14539.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Andrew,
-
-akpm@linux-foundation.org wrote:
-
-> The patch titled
->      jbd: strictly check for write errors on data buffers
-> has been removed from the -mm tree.  Its filename was
->      jbd-strictly-check-for-write-errors-on-data-buffers.patch
+Am Montag 09 Juni 2008 23:56:51 schrieb Pavel Machek:
+> On Mon 2008-06-09 14:39:10, Linus Torvalds wrote:
+> > 
+> > 
+> > On Mon, 9 Jun 2008, Pavel Machek wrote:
+> > > 
+> > > I believe we should just revert the "CONFIG_USB_PERSIST force on"
+> > > patch, and solve this properly in 2.6.27.
+> > 
+> > Why?
+> > 
+> > The code would _still_ be buggy with that revert in place. You have to 
+> > enable CONFIG_USB_PERSIST just to get even the _possibility_ of the sane 
+> > behavior. 
+> > 
+> > If there is a problem with usblp, it just needs to be fixed. 
 > 
-> This patch was dropped because I don't think we want to go read-only on file data write errors
+> With USB_PERSIST on, you have problem on all drivers but usb-storage,
+> AFAICT... because usb-storage seems to be the only driver implementing
+> reset_resume.
 > 
-> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
-> 
-> ------------------------------------------------------
-> Subject: jbd: strictly check for write errors on data buffers
-> From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+> I guess it is possible to do something like "if reset_resume() is
+> unavailable, try plain resume()" in usb/driver.c, but I'd really
+> changes to the suspend/resume callback to go in -rc1 so that they are
+> tested properly, and not hot-patch it now.
 
-This patch series doesn't change the behavior on file data write
-errors as I stated before, but we found that the current behavior has
-been made accidentally.  So yesterday I sent an additional patch(*)
-which removes the invocation of journal_abort() and thus stop making
-the fs read-only on file data write errors, but it seems to be late
-for the -mm release preparation.
+If a hotfix it must be, here's my take. It works for me, but it isn't
+tested well.
+Alan, what do you think?
 
-  Patch(*) can be found at:
-  http://marc.info/?l=linux-kernel&m=121300618614453&w=2
+	Regards
+		Oliver
 
-Anyway, as this patch series was dropped from -mm, I'm going to
-send a revised version.
+Signed-off-by: Oliver Neukum <oneukum@suse.de>
 
-I plan to separate these pathces into three patche set. 
-The first patch (set) corrects the current behavior in ordered
-writes, it means it removes the invocation of journal_abort() on file
-data write errors.  It is the almost same as the patch(*).
-The second patch set fixes error handlings for metadata writes and
-checkpointing.  It should be applied independently of the first
-patch set, and it is the same as PATCH 3/5 to 5/5.
-The third patch set makes "abort the journal on file data write errors"
-tunable for mission critical users.  Of course, this feature depends
-on the first patch set.
+---
 
-Any comments?
-
-Regards,
--- 
-Hidehiro Kawai
-Hitachi, Systems Development Laboratory
-Linux Technology Center
-
+--- linux-2.6.25/drivers/usb/core/hub.c	2008-06-09 15:15:13.105058000 +0200
++++ alt/drivers/usb/core/hub.c	2008-06-09 15:43:29.964503000 +0200
+@@ -648,7 +648,9 @@ static void hub_stop(struct usb_hub *hub
+ static void hub_restart(struct usb_hub *hub, int type)
+ {
+ 	struct usb_device *hdev = hub->hdev;
+-	int port1;
++	struct usb_interface *intf;
++	struct usb_driver *driver;
++	int port1, i;
+ 
+ 	/* Check each of the children to see if they require
+ 	 * USB-PERSIST handling or disconnection.  Also check
+@@ -692,6 +694,14 @@ static void hub_restart(struct usb_hub *
+ 		 */
+ 		if (udev->persist_enabled && status == 0 &&
+ 				!(portstatus & USB_PORT_STAT_ENABLE)) {
++
++			/* check for devices not supporting reset_resume */
++			for (i = 0; i < udev->actconfig->desc.bNumInterfaces; i++) {
++				intf = udev->actconfig->interface[i];
++				driver = to_usb_driver(intf->dev.driver);
++				if (!driver || !driver->reset_resume)
++					goto skip_reset_resume;
++			}
+ 			if (portchange & USB_PORT_STAT_C_ENABLE)
+ 				clear_port_feature(hub->hdev, port1,
+ 						USB_PORT_FEAT_C_ENABLE);
+@@ -705,8 +715,11 @@ static void hub_restart(struct usb_hub *
+ 		 * but as we may not lock the child device here
+ 		 * we have to do a "logical" disconnect.
+ 		 */
+-		else if (type == HUB_RESET_RESUME)
+-			hub_port_logical_disconnect(hub, port1);
++		else {
++skip_reset_resume:
++			if (type == HUB_RESET_RESUME)
++				hub_port_logical_disconnect(hub, port1);
++		}
+ 	}
+ 
+ 	hub_activate(hub);
