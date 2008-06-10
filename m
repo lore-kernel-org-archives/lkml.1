@@ -1,103 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759531AbYFJV67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757612AbYFJWCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759531AbYFJV67 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 17:58:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbYFJV6t
+	id S1757612AbYFJWCu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 18:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbYFJWCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 17:58:49 -0400
-Received: from fmmailgate05.web.de ([217.72.192.243]:49082 "EHLO
-	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757981AbYFJV6s (ORCPT
+	Tue, 10 Jun 2008 18:02:42 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:45429 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752887AbYFJWCm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 17:58:48 -0400
-Date: Tue, 10 Jun 2008 23:58:46 +0200
-Message-Id: <311993399@web.de>
+	Tue, 10 Jun 2008 18:02:42 -0400
+Date: Wed, 11 Jun 2008 00:02:40 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Maxim Shchetynin <maxim@linux.vnet.ibm.com>
+cc: Matthew Wilcox <matthew@wil.cx>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: AZFS file system proposal
+In-Reply-To: <20080610104919.504b9826@mercedes-benz.boeblingen.de.ibm.com>
+Message-ID: <alpine.LNX.1.10.0806110000560.20733@fbirervta.pbzchgretzou.qr>
+References: <20080609104650.4f220492@mercedes-benz.boeblingen.de.ibm.com> <20080609125530.GF30405@parisc-linux.org> <20080610104919.504b9826@mercedes-benz.boeblingen.de.ibm.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-From: devzero@web.de
-To: keith@karsites.net
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: Problems with edd
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX18ZOq9YDb8n8tKzVaZB5UfJ12U99q75EKI/pnpvAv6ceLJ4W
- eGSfPIncYVEHnxZLJ3svM22UWGdt0wrj/W8145yrtop9uXzIEo=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Hi all. I have a problem with trying to boot from a Fedora 9 
->installation CD-R. It works on another machine, so the disk 
->is OK. I guess if anyone knows the answer then it will be 
->found here on the kernel developers list.
->
->When trying to boot from a CD-R installation disk, on my 
->Advent 6415 laptop I get the following:
->
->Welcome to Fedora 9! [the installer splash screen]
->
->  I then click on either:
->
->  Install or upgrade an existing system
->  [or]
->  Install or upgrade an existing system (text mode)
->
->  [both give me the same following error]
->
-> Loading vmlinuz........................................... 
->..............
->
->  Loading initrd.img........................................ 
->.................
->  ...............ready.
->  Probing EDD (edd=off to disable)... ok
->  vmlinuz: attempted DOS system call
->  boot:
->
->  If I hit return now, the machine goes back to the 'Welcome 
->to Fedora 9!' splash screen.
->
->I have edited the kernel parameters at the spalsh screen and 
->tried:
->
->edd=skipmbr edd=off
->
->All that does is not display the line:
->  Probing EDD (edd=off to disable)... ok
 
-as you can see "ok" , then this is no edd problem
-it would have been an edd problem if you could only see
-the message before "ok".
-
->The installation still hangs at the boot: prompt.
+On Tuesday 2008-06-10 10:49, Maxim Shchetynin wrote:
 >
->Has anyone come across the behaviour before please?
+>What do you think about the following - shorter description and a better place for it (moved to "Pseudo filesystems"):
 >
+>--- linux-2.6.26-rc5/fs/Kconfig 2008-06-05 05:10:44.000000000 +0200
+>+++ linux-2.6.26-rc5-azfs/fs/Kconfig    2008-06-10 10:43:24.326686538 +0200
+>@@ -1017,6 +1017,19 @@
+> config HUGETLB_PAGE
+>        def_bool HUGETLBFS
+>
+>+config AZ_FS
+>+       tristate "AZFS filesystem support"
 
-no, but i`m sure that this is not related to edd.
+This is slightly redundant, it should probably be
+	tristate "AZ filesystem support"
 
-not sure if this is fedora specific, but it seems so - see for example:
+>+       help
+>+         azfs is a file system for I/O attached memory backing. It requires
+>+         a block device with direct_access capability, e.g. axonram.
 
-http://blogs.gnome.org/diegoe/2008/04/10/vesamenuc32-attempted-dos-system-call/
+(a) What is axonram?
+(b) why is axonram direct_access, and my other devices (including
+standard PC RAM) not?
 
-maybe some issue with the vesa bios probe for getting video mode information or switching to appropriate mode.
+>+         Mounting such device with azfs gives memory mapped access to the
+>+         underlying memory to user space.
 
-cc`ing hpa - maybe he as a clue.....
+Can't I just mmap(/dev/theblockdevice), why would I need to go through 
+azfs?
 
->Is there any way I can get my laptop to boot from this 
->media, maybe by passing some undocumented kernel parameters?
-
-see that link. try booting with "linux" or "linux0".
-
-i think it`s good to report to the fedora people - maybe the have added stuff which doesn`t work reliable...
-
->Kind Regards,
->Keith Roberts
-
-regards
-roland
-
-_____________________________________________________________________
-Der WEB.DE SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen!
-http://smartsurfer.web.de/?mc=100071&distributionid=000000000066
 
