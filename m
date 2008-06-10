@@ -1,103 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbYFJTNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758204AbYFJTOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755240AbYFJTNW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 15:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757902AbYFJTNE
+	id S1758204AbYFJTOT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 15:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755338AbYFJTOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 15:13:04 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:20358 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753256AbYFJTNC (ORCPT
+	Tue, 10 Jun 2008 15:14:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33963 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754025AbYFJTOI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 15:13:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=uFB4yKkOFRsUkul24Q2bUOp5r9GFpVB4QOliJ/fU2A3Dfwkec5Ph1oRmTaw9bP5ukX
-         Ex9ZhGJy/UfwiFtsz4UfFjsIYt9FwFQ1c5PMXC98tcCqLsJDLv5PIb9Ab++tfR0k2CTL
-         4eSXGMPDfKKueidwiuY0QjbnXOXuamFBODS80=
-Date: Tue, 10 Jun 2008 23:10:25 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: nmi_watchdog suspicious
-Message-ID: <20080610191025.GB7353@cvg>
-References: <20080610185759.GA7353@cvg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080610185759.GA7353@cvg>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 10 Jun 2008 15:14:08 -0400
+Date: Tue, 10 Jun 2008 15:13:57 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Daniel J Blueman <daniel.blueman@gmail.com>, linux-nfs@vger.kernel.org,
+       nfsv4@linux-nfs.org, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [2.6.26-rc4] mount.nfsv4/memory poisoning issues...
+Message-ID: <20080610151357.150b6f69@tleilax.poochiereds.net>
+In-Reply-To: <1213124088.20459.16.camel@localhost>
+References: <6278d2220806041633n3bfe3dd2ke9602697697228b@mail.gmail.com>
+	<20080604203504.62730951@tleilax.poochiereds.net>
+	<1213124088.20459.16.camel@localhost>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Tue, Jun 10, 2008 at 10:57:59PM +0400]
-| Ingo, Maciej, I've a really bad suspicious about commit
-| 
-| ---
-| commit 3ed3f06295e69700fa808396f7b350bff2b69de0
-| Author: Cyrill Gorcunov <gorcunov@gmail.com>
-| Date:   Wed Jun 4 01:00:47 2008 +0400
-| 
-|     x86: nmi - consolidate nmi_watchdog_default for 32bit mode
-|     
-|     64bit mode bootstrap code does set nmi_watchdog to NMI_NONE
-|     by default and doing the same on 32bit mode is safe too.
-|     Such an action saves us from several #ifdef.
-|     
-|     Btw, my previous commit
-|     
-|     commit 19ec673ced067316b9732bc6d1c4ff4052e5f795
-|     Author: Cyrill Gorcunov <gorcunov@gmail.com>
-|     Date:   Wed May 28 23:00:47 2008 +0400
-|     
-|         x86: nmi - fix incorrect NMI watchdog used by default
-|     
-|     did not fix the problem completely, moreover it
-|     introduced additional bug - nmi_watchdog would be
-|     set to either NMI_LOCAL_APIC or NMI_IO_APIC
-|     _regardless_ to boot option if being enabled thru
-|     /proc/sys/kernel/nmi_watchdog. Sorry for that.
-|     Fix it too.
-| ---
-| 
-| actually it changed nmi behaviour much more then I thought.
-| Look, since by default nmi_watchdog now becomes NMI_NONE it
-| does mean nmi.c:touch_nmi_watchdog() will not reset apic timers
-| anymore even being requested by some other code.
-| 
-| This commit does affect 32bit mode _only_. So now I'm guessing
-| what mode was implemented in correct way originally.
-| 
-| On 64bit mode nmi_watchdog=NMI_NONE by default (in case if APIC enabled).
-| On 32bit mode nmi_watchdog=NMI_DEFAULT was by default (in any case,
-| but could be set to NMI_NONE in check_timer(), but we don't take
-| this case now).
-| 
-| So lets take a look on touch_nmi_watchdog().
-| There is the condition
-| 
-| 	if (nmi_watchdog > 0)
-| 		...tell to reset counters in nmi_watchdog_tick()
-| 
-| this condition is not taken on 64bit mode, but *was* taken on
-| 32bit mode by default! So who was right then? 64bit version or 32bit?
-| 
-| Maciej, could you take a look please? Maybe I just missing figure
-| in general - ie how nmi_watchdog _should_ work.
-| 
-| 		- Cyrill -
+On Tue, 10 Jun 2008 14:54:48 -0400
+Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 
-btw, since in general we support nmi_watchdog for two choises:
-lapic and io-apic - i think about to change this condition to
+> On Wed, 2008-06-04 at 20:35 -0400, Jeff Layton wrote:
+> > On Thu, 5 Jun 2008 00:33:54 +0100
+> > "Daniel J Blueman" <daniel.blueman@gmail.com> wrote:
+> > 
+> > > Having experienced 'mount.nfs4: internal error' when mounting nfsv4 in
+> > > the past, I have a minimal test-case I sometimes run:
+> > > 
+> > > $ while :; do mount -t nfs4 filer:/store /store; umount /store; done
+> > > 
+> > > After ~100 iterations, I saw the 'mount.nfs4: internal error',
+> > > followed by symptoms of memory corruption [1], a locking issue with
+> > > the reporting [2] and another (related?) memory-corruption issue
+> > > (off-by-1?) [3]. A little analysis shows memory being overwritten by
+> > > (likely) a poison value, which gets complicated if it's not
+> > > use-after-free...
+> > > 
+> > > Anyone dare confirm this issue? NFSv4 server is x86-64 Ubuntu 8.04
+> > > 2.6.24-18, client U8.04 2.6.26-rc4; batteries included [4].
+> > > 
+> > > I'm happy to decode addresses, test patches etc.
+> > > 
+> > > Daniel
+> > > 
+> > 
+> > Looks like it fell down while trying to take down the kthread during a
+> > failed mount attempt. I have to wonder if I might have introduced a
+> > race when I changed nfs4 callback thread to kthread API. I think we may
+> > need the BKL around the last 2 statements in the main callback thread
+> > function. If you can easily reproduce this, could you test the
+> > following patch and let me know if it helps?
+> > 
+> > Note that this patch is entirely untested, so test it someplace
+> > non-critical ;-).
+> > 
+> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> > 
+> > 
+> > diff --git a/fs/nfs/callback.c b/fs/nfs/callback.c
+> > index c1e7c83..a3e83f9 100644
+> > --- a/fs/nfs/callback.c
+> > +++ b/fs/nfs/callback.c
+> > @@ -90,9 +90,9 @@ nfs_callback_svc(void *vrqstp)
+> >  		preverr = err;
+> >  		svc_process(rqstp);
+> >  	}
+> > -	unlock_kernel();
+> >  	nfs_callback_info.task = NULL;
+> >  	svc_exit_thread(rqstp);
+> > +	unlock_kernel();
+> >  	return 0;
+> >  }
+> 
+> We certainly need to protect nfs_callback_info.task (and I believe I
+> explained this earlier), but why do we need to protect svc_exit_thread?
+> 
+> Also, looking at the general use of the BKL in that code, I thought we
+> agreed that there was no need to hold the BKL while taking the
+> nfs_callback_mutex?
+> 
 
-	if (nmi_watchdog == NMI_LOCAL_APIC ||
-		nmi_watchdog == NMI_IO_APIC) {
+Hmm, I don't remember that discussion, but I'll take your word for it...
 
-but still in doubts...
+I think you're basically correct, but it looks to me like the
+nfs_callback_mutex actually protects nfs_callback_info.task as well.
 
-		- Cyrill -
+If we're starting the thread, then we can't call kthread_stop on it
+until we release the mutex. So the thread can't exit until we release
+the mutex, and we can be guaranteed that this:
+
+     nfs_callback_info.task = NULL;
+
+...can't happen until after kthread_run returns and nfs_callback_up
+sets it.
+
+If that's right, then maybe this (untested, RFC only) patch would make sense?
+
+----------[snip]------------
+
+>From cd0ce86919ede3f1abda1ba7522b72283bb94d7e Mon Sep 17 00:00:00 2001
+From: Jeff Layton <jlayton@redhat.com>
+Date: Tue, 10 Jun 2008 15:12:16 -0400
+Subject: [PATCH] nfs4: remove BKL from nfs_callback_up and nfs_callback_down
+
+The nfs_callback_mutex is sufficient protection. We don't need the
+BKL here.
+
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+---
+ fs/nfs/callback.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
+
+diff --git a/fs/nfs/callback.c b/fs/nfs/callback.c
+index c1e7c83..9e713d2 100644
+--- a/fs/nfs/callback.c
++++ b/fs/nfs/callback.c
+@@ -105,7 +105,6 @@ int nfs_callback_up(void)
+ 	struct svc_rqst *rqstp;
+ 	int ret = 0;
+ 
+-	lock_kernel();
+ 	mutex_lock(&nfs_callback_mutex);
+ 	if (nfs_callback_info.users++ || nfs_callback_info.task != NULL)
+ 		goto out;
+@@ -149,7 +148,6 @@ out:
+ 	if (serv)
+ 		svc_destroy(serv);
+ 	mutex_unlock(&nfs_callback_mutex);
+-	unlock_kernel();
+ 	return ret;
+ out_err:
+ 	dprintk("Couldn't create callback socket or server thread; err = %d\n",
+@@ -163,13 +161,11 @@ out_err:
+  */
+ void nfs_callback_down(void)
+ {
+-	lock_kernel();
+ 	mutex_lock(&nfs_callback_mutex);
+ 	nfs_callback_info.users--;
+ 	if (nfs_callback_info.users == 0 && nfs_callback_info.task != NULL)
+ 		kthread_stop(nfs_callback_info.task);
+ 	mutex_unlock(&nfs_callback_mutex);
+-	unlock_kernel();
+ }
+ 
+ static int nfs_callback_authenticate(struct svc_rqst *rqstp)
+-- 
+1.5.3.6
+
