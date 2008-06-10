@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756765AbYFJUaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757285AbYFJUaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756765AbYFJUaA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 16:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbYFJU3w
+	id S1757285AbYFJUaa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 16:30:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbYFJUaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 16:29:52 -0400
-Received: from server009.webpack.hosteurope.de ([80.237.130.17]:49690 "EHLO
-	server009.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752078AbYFJU3v (ORCPT
+	Tue, 10 Jun 2008 16:30:14 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:37584 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752078AbYFJUaM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 16:29:51 -0400
-From: Daniel Exner <dex@dragonslave.de>
-Reply-To: webmaster@dragonslave.de
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: linux-next Regression: Unable to locate IOAPIC
-Date: Tue, 10 Jun 2008 22:29:10 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-References: <200806051100.12885.dex@dragonslave.de> <200806061930.29046.dex@dragonslave.de> <20080606115024.387b5f80.akpm@linux-foundation.org>
-In-Reply-To: <20080606115024.387b5f80.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806102229.10512.dex@dragonslave.de>
-X-bounce-key: webpack.hosteurope.de;dex@dragonslave.de;1213129790;68fa08e7;
+	Tue, 10 Jun 2008 16:30:12 -0400
+Date: Tue, 10 Jun 2008 16:29:30 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: acpi problem
+In-reply-to: <200805292156.08963.rjw@sisk.pl>
+X-X-Sender: lenb@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: De Martino Pasquale <paco.dmp@gmail.com>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Message-id: <alpine.LFD.1.10.0806101623491.14381@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <20080529173315.GA7420@guevara.dmp> <200805292156.08963.rjw@sisk.pl>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Andrew Morton wrote:
-> On Fri, 6 Jun 2008 19:30:28 +0200 Daniel Exner <dex@dragonslave.de> wrote:
-> > Andrew Morton wrote:
-> > > (cc linux-acpi)
-> > >
-> > > On Thu, 5 Jun 2008 11:00:12 +0200 Daniel Exner <dex@dragonslave.de> 
-wrote:
-> > > > Hi!
-> > > >
-> > > > (Added myself to CC, because I'm not subscribed)
-> > > >
-> > > > with linux-next snapshot 20080604 my Laptop morphes into sitting duck
-> > > > and I think this is due to this:
-> > >
-> > > I assume 2.6.26-rc5 is OK?
-> >
-> > Indeed.. just tried it with (nearly) the same config: no unable to locate
-> > IOAPIC
-> >
-> > Will try todays next snapshot above -rc5 now.
->
-> OK, thanks.
->
-> It would be great if you could test 2.6.26-rc5 plus
-> http://userweb.kernel.org/~akpm/git-acpi.patch.  That'll allow us to
-> confirm that the regression is due to changes in the acpi tree.
-Sorry for the delay.. real-life you know ;)
+> > with kernel 2.6.25 my acpi does not work whereas with version <= 2.6.24 all works fine.
+> > 
+> > Full description:
+> > when i run acpi -a this is my output:
+> > No support for device type: battery
+> > No support for device type: ac_adapter
 
-I guess you'd expect me to confirm the behavior on rc5 with this patch aplied, 
-but .. well this Kernel works!
+what do CONFIG_ACPI_BATTERY and CONFIG_ACPI_AC say in your 2.6.24 and 
+2.6.25 .config files?
 
-So I think the regression is NOT in the acpi tree. Perhaps pci subsystem?
-If I find time I'll try bisecting it..
+> > "lsmod | grep acpi" says that the acpi module is not loaded so i've tried
+> > "modprobe acpi" but the output is:
 
-Greetings
-Daniel Exner
+there is no such thing as the "acpi module", so this is normal
+
+> > FATAL: Error inserting acpi_cpufreq
+> > (/lib/modules/2.6.25-2-amd64/kernel/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.ko):
+> > Device or resource busy
+
+that's normal, since you've got powernow_k8 loaded
+
+> > I've also tried to pass acpi=on option when kernel boots
+
+there is no such option as "acpi=on", so this is also normal.
+
+"dmesg -s64000 |grep -i acpi" will tell you more about what you
+just booted, but since you're running the fan and thermal modules,
+it is surely on already.
+
+-Len
