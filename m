@@ -1,319 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758695AbYFJVzH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759823AbYFJVz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758695AbYFJVzH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 17:55:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYFJVy4
+	id S1759823AbYFJVz2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 17:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758299AbYFJVzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 17:54:56 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34958 "EHLO mx1.redhat.com"
+	Tue, 10 Jun 2008 17:55:04 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:32807 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753186AbYFJVyz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 17:54:55 -0400
-Message-ID: <484EF796.3000708@redhat.com>
-Date: Tue, 10 Jun 2008 17:52:22 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1758078AbYFJVzB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 17:55:01 -0400
+Date: Tue, 10 Jun 2008 14:52:18 -0700
+From: Greg KH <gregkh@suse.de>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Vegard Nossum <vegard.nossum@gmail.com>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kay Sievers <kay.sievers@vrfy.org>, Neil Brown <neilb@suse.de>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+       Dave Young <hidave.darkstar@gmail.com>
+Subject: Re: [bug, 2.6.26-rc4/rc5] sporadic bootup crashes in
+	blk_lookup_devt()/prepare_namespace()
+Message-ID: <20080610215218.GC16256@suse.de>
+References: <20080609133426.GB20194@cs181133002.pp.htv.fi> <19f34abd0806090658v54f3a912n2ed30ad6cc20d00@mail.gmail.com> <19f34abd0806090728s3b3fdbeq7dd3d31d02c8f28e@mail.gmail.com> <20080609165757.184724ff@gondolin.boeblingen.de.ibm.com> <alpine.LFD.1.10.0806090819410.3473@woody.linux-foundation.org> <20080609153856.GA5149@elte.hu> <alpine.LFD.1.10.0806090858310.3473@woody.linux-foundation.org> <20080609191521.1a56b6a6@gondolin.boeblingen.de.ibm.com> <20080610031109.GE6796@suse.de> <20080610095122.37c41276@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-To: Jim Keniston <jkenisto@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       David Miller <davem@davemloft.net>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -mm 2/2] kprobes: add tests for register_kprobes
-References: <484944CA.902@redhat.com> <1212798986.4088.23.camel@dyn9047018139.beaverton.ibm.com>
-In-Reply-To: <1212798986.4088.23.camel@dyn9047018139.beaverton.ibm.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080610095122.37c41276@gondolin.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jim,
-
-Thank you for pointing it.
-
-Jim Keniston wrote:
-> preh_val and posth_val are being reused after test_kprobe(), which sets
-> them to non-zero values.  Seems like you want to reinitialize them here
-> as well as below.
-
-Indeed, it should be initialized.
-And kp.addr also have to be reinitialized, because
-if both kp.addr and kp.symbol are set, kprobes returns
-an error.
-
-> Ditto jph_val for jprobes and krph_val for kretprobes.
+On Tue, Jun 10, 2008 at 09:51:22AM +0200, Cornelia Huck wrote:
+> On Mon, 9 Jun 2008 20:11:09 -0700,
+> Greg KH <gregkh@suse.de> wrote:
 > 
-> Ack otherwise.
+> > On Mon, Jun 09, 2008 at 07:15:21PM +0200, Cornelia Huck wrote:
+> > > The driver core changes in -next convert class->sem to
+> > > class->p->class_mutex, which makes it non-accessible to drivers.
+> > > Most of the locking is easily done through converting to the class
+> > > iterator functions, but there are some cases where this is not going to
+> > > work:
+> > > 
+> > > - The {register,unregister}_blkdev() functions, which don't directly
+> > > involve the class.
+> > > - The iterators for /proc/partitions, which take the lock in
+> > > part_start() and give it up again in part_stop().
+> > > 
+> > > Maybe we need a possibilty for a driver to lock a class from outside?
+> > 
+> > Why would that be needed?  We protect walking the class lists internally
+> > with the lock, that should be sufficient, right?
+> 
+> What about the two functions I cited above? Don't we want them
+> protected by the same lock?
 
-Thanks again,
+For register/unregister, yes, we still need to protect the list of
+major/minor numbers.
 
+But for the proc/partitions list, I don't think we still need it
+anymore, but I might be missing something here.  :)
 
-Add testcases for *probe batch registration (register_kprobes)
-to kprobes sanity tests.
+thanks,
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-CC: Jim Keniston <jkenisto@us.ibm.com>
-CC: David Miller <davem@davemloft.net>
----
- tests/test_kprobes.c |  189 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 189 insertions(+)
-
-Index: 2.6-mm/tests/test_kprobes.c
-===================================================================
---- 2.6-mm.orig/tests/test_kprobes.c
-+++ 2.6-mm/tests/test_kprobes.c
-@@ -23,6 +23,7 @@
- static u32 rand1, preh_val, posth_val, jph_val;
- static int errors, handler_errors, num_tests;
- static u32 (*target)(u32 value);
-+static u32 (*target2)(u32 value);
-
- static noinline u32 kprobe_target(u32 value)
- {
-@@ -81,6 +82,84 @@ static int test_kprobe(void)
- 	return 0;
- }
-
-+static noinline u32 kprobe_target2(u32 value)
-+{
-+	return (value / div_factor) + 1;
-+}
-+
-+static int kp_pre_handler2(struct kprobe *p, struct pt_regs *regs)
-+{
-+	preh_val = (rand1 / div_factor) + 1;
-+	return 0;
-+}
-+
-+static void kp_post_handler2(struct kprobe *p, struct pt_regs *regs,
-+		unsigned long flags)
-+{
-+	if (preh_val != (rand1 / div_factor) + 1) {
-+		handler_errors++;
-+		printk(KERN_ERR "Kprobe smoke test failed: "
-+				"incorrect value in post_handler2\n");
-+	}
-+	posth_val = preh_val + div_factor;
-+}
-+
-+static struct kprobe kp2 = {
-+	.symbol_name = "kprobe_target2",
-+	.pre_handler = kp_pre_handler2,
-+	.post_handler = kp_post_handler2
-+};
-+
-+static int test_kprobes(void)
-+{
-+	int ret;
-+	struct kprobe *kps[2] = {&kp, &kp2};
-+
-+	kp.addr = 0; /* addr should be cleard for reusing kprobe. */
-+	ret = register_kprobes(kps, 2);
-+	if (ret < 0) {
-+		printk(KERN_ERR "Kprobe smoke test failed: "
-+				"register_kprobes returned %d\n", ret);
-+		return ret;
-+	}
-+
-+	preh_val = 0;
-+	posth_val = 0;
-+	ret = target(rand1);
-+
-+	if (preh_val == 0) {
-+		printk(KERN_ERR "Kprobe smoke test failed: "
-+				"kprobe pre_handler not called\n");
-+		handler_errors++;
-+	}
-+
-+	if (posth_val == 0) {
-+		printk(KERN_ERR "Kprobe smoke test failed: "
-+				"kprobe post_handler not called\n");
-+		handler_errors++;
-+	}
-+
-+	preh_val = 0;
-+	posth_val = 0;
-+	ret = target2(rand1);
-+
-+	if (preh_val == 0) {
-+		printk(KERN_ERR "Kprobe smoke test failed: "
-+				"kprobe pre_handler2 not called\n");
-+		handler_errors++;
-+	}
-+
-+	if (posth_val == 0) {
-+		printk(KERN_ERR "Kprobe smoke test failed: "
-+				"kprobe post_handler2 not called\n");
-+		handler_errors++;
-+	}
-+
-+	unregister_kprobes(kps, 2);
-+	return 0;
-+
-+}
-+
- static u32 j_kprobe_target(u32 value)
- {
- 	if (value != rand1) {
-@@ -121,6 +200,43 @@ static int test_jprobe(void)
- 	return 0;
- }
-
-+static struct jprobe jp2 = {
-+	.entry          = j_kprobe_target,
-+	.kp.symbol_name = "kprobe_target2"
-+};
-+
-+static int test_jprobes(void)
-+{
-+	int ret;
-+	struct jprobe *jps[2] = {&jp, &jp2};
-+
-+	jp.kp.addr = 0; /* addr should be cleard for reusing kprobe. */
-+	ret = register_jprobes(jps, 2);
-+	if (ret < 0) {
-+		printk(KERN_ERR "Kprobe smoke test failed: "
-+				"register_jprobes returned %d\n", ret);
-+		return ret;
-+	}
-+
-+	jph_val = 0;
-+	ret = target(rand1);
-+	if (jph_val == 0) {
-+		printk(KERN_ERR "Kprobe smoke test failed: "
-+				"jprobe handler not called\n");
-+		handler_errors++;
-+	}
-+
-+	jph_val = 0;
-+	ret = target2(rand1);
-+	if (jph_val == 0) {
-+		printk(KERN_ERR "Kprobe smoke test failed: "
-+				"jprobe handler2 not called\n");
-+		handler_errors++;
-+	}
-+	unregister_jprobes(jps, 2);
-+
-+	return 0;
-+}
- #ifdef CONFIG_KRETPROBES
- static u32 krph_val;
-
-@@ -176,6 +292,63 @@ static int test_kretprobe(void)
-
- 	return 0;
- }
-+
-+static int return_handler2(struct kretprobe_instance *ri, struct pt_regs *regs)
-+{
-+	unsigned long ret = regs_return_value(regs);
-+
-+	if (ret != (rand1 / div_factor) + 1) {
-+		handler_errors++;
-+		printk(KERN_ERR "Kprobe smoke test failed: "
-+				"incorrect value in kretprobe handler2\n");
-+	}
-+	if (krph_val == 0) {
-+		handler_errors++;
-+		printk(KERN_ERR "Kprobe smoke test failed: "
-+				"call to kretprobe entry handler failed\n");
-+	}
-+
-+	krph_val = rand1;
-+	return 0;
-+}
-+
-+static struct kretprobe rp2 = {
-+	.handler	= return_handler2,
-+	.entry_handler  = entry_handler,
-+	.kp.symbol_name = "kprobe_target2"
-+};
-+
-+static int test_kretprobes(void)
-+{
-+	int ret;
-+	struct kretprobe *rps[2] = {&rp, &rp2};
-+
-+	rp.kp.addr = 0; /* addr should be cleard for reusing kprobe. */
-+	ret = register_kretprobes(rps, 2);
-+	if (ret < 0) {
-+		printk(KERN_ERR "Kprobe smoke test failed: "
-+				"register_kretprobe returned %d\n", ret);
-+		return ret;
-+	}
-+
-+	krph_val = 0;
-+	ret = target(rand1);
-+	if (krph_val != rand1) {
-+		printk(KERN_ERR "Kprobe smoke test failed: "
-+				"kretprobe handler not called\n");
-+		handler_errors++;
-+	}
-+
-+	krph_val = 0;
-+	ret = target2(rand1);
-+	if (krph_val != rand1) {
-+		printk(KERN_ERR "Kprobe smoke test failed: "
-+				"kretprobe handler2 not called\n");
-+		handler_errors++;
-+	}
-+	unregister_kretprobes(rps, 2);
-+	return 0;
-+}
- #endif /* CONFIG_KRETPROBES */
-
- int init_test_probes(void)
-@@ -183,6 +356,7 @@ int init_test_probes(void)
- 	int ret;
-
- 	target = kprobe_target;
-+	target2 = kprobe_target2;
-
- 	do {
- 		rand1 = random32();
-@@ -195,15 +369,30 @@ int init_test_probes(void)
- 		errors++;
-
- 	num_tests++;
-+	ret = test_kprobes();
-+	if (ret < 0)
-+		errors++;
-+
-+	num_tests++;
- 	ret = test_jprobe();
- 	if (ret < 0)
- 		errors++;
-
-+	num_tests++;
-+	ret = test_jprobes();
-+	if (ret < 0)
-+		errors++;
-+
- #ifdef CONFIG_KRETPROBES
- 	num_tests++;
- 	ret = test_kretprobe();
- 	if (ret < 0)
- 		errors++;
-+
-+	num_tests++;
-+	ret = test_kretprobes();
-+	if (ret < 0)
-+		errors++;
- #endif /* CONFIG_KRETPROBES */
-
- 	if (errors)
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
-
-
+greg k-h
