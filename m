@@ -1,126 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758794AbYFJXWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757265AbYFJX07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758794AbYFJXWR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 19:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753501AbYFJXWD
+	id S1757265AbYFJX07 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 19:26:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbYFJX0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 19:22:03 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:49136 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753341AbYFJXWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 19:22:01 -0400
-Subject: Re: [PATCH] Version 3: Reworked Cell OProfile: SPU mutex lock fix
-From: Carl Love <cel@us.ibm.com>
-To: cbe-oss-dev@ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>,
-       Arnd Bergmann <arnd@arndb.de>, acjohnso <acjohnso@us.ibm.com>
-Content-Type: text/plain
-Date: Tue, 10 Jun 2008 16:19:14 -0700
-Message-Id: <1213139954.6763.244.camel@carll-linux-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Jun 2008 19:26:46 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:54026 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752083AbYFJX0p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 19:26:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=dO8wJ52c4B9bgq04NFHGPDOCxEVYrknW5/nXoNVEzHXN80hsISkOitEhKJa5PpLxed
+         IlTPSMtKrzBZs+EqVo79t3bEOwYA7qem/ZNkdjeNb4OugMSkV3Dqy3DXEyzyUe3Nqy2/
+         v7MeNgjBnfZS/Q0OwNnuB9m7FqQl54CeBqYKQ=
+Message-ID: <a01a16b50806101626i2942ebam462410ad26050829@mail.gmail.com>
+Date: Wed, 11 Jun 2008 01:26:44 +0200
+From: "=?UTF-8?Q?H=C3=A5kon_L=C3=B8vdal?=" <hlovdal@gmail.com>
+To: "=?UTF-8?Q?Ilpo_J=C3=A4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
+Cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0806091422180.16829@wrl-59.cs.helsinki.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+References: <20080526115628.GA31316@elte.hu>
+	 <Pine.LNX.4.64.0805312119270.2672@wrl-59.cs.helsinki.fi>
+	 <a01a16b50805311325w7f58ca69h93d02af9bc28d2ea@mail.gmail.com>
+	 <Pine.LNX.4.64.0805312332270.2760@wrl-59.cs.helsinki.fi>
+	 <a01a16b50806031710u54b9297bkf1fad9c4f8fd581f@mail.gmail.com>
+	 <Pine.LNX.4.64.0806041402211.16829@wrl-59.cs.helsinki.fi>
+	 <a01a16b50806040700h1efce63cq2a27b087df0d25be@mail.gmail.com>
+	 <Pine.LNX.4.64.0806041802360.2580@wrl-59.cs.helsinki.fi>
+	 <a01a16b50806060232u1eff3867u24fecc539fda1d14@mail.gmail.com>
+	 <Pine.LNX.4.64.0806091422180.16829@wrl-59.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m5ANRGHl012801
 
-Arnd and company:
-
-There are issues with using the cpu buffers for storing the SPU data.  I
-agree with you on some of your comments about the high complexity of the
-per cpu patch.  It seemed like a good idea at the start but in the end I
-am not all that happy with it.
-
-I have another approach to solving this bug.  I will layout the approach
-and then try to give the pros/cons of the proposed approach.  Hopefully
-everyone will help out with the design so we can come up with something
-that will address the issues that we have seen with the previous
-approaches.  I think we are getting closer to an acceptable solution.
-Maybe the fourth try will the the one.  :-)
-
-New approach, call it Single system wide buffer.
-
-In arch/powerpc/oprofile/cell/spu_profiler.c,
-- Create a function to return the per cpu buffer size.
-
-- Create a single system wide buffer (call it SPU_BUFFER) to store the
-SPU context switch and SPU PC data.  The buffer would be an array of
-unsigned longs.  Currently the cpu buffer is a struct containing two
-unsigned longs.  The function would be called in function
-start_spu_profiling() as part of starting an SPU profiling session. The
-size of the buffer would be based on the size of the per cpu buffers * a
-scale factor for handling all of the spu data.
-
-- Create a function in arch/powerpc/oprofile/cell/spu_profiler.c that
-would be periodically called via a delayed workqueue call to flush
-SPU_BUFFER to the kernel buffer.  It would have to call the routine to
-get the kernel buffer mutex.  Grab the lock protecting writes to the
-SPU_BUFFER, flush the data to the kernel buffer and then release the
-locks. 
-
-- Create a function to store data into the SPU_BUFFER.  It will be
-managed by a lock to ensure atomic access.  If the buffer fills, data
-will be dropped on the floor as is currently done when the per cpu
-buffer fills.  The cpu_buf->sample_lost_overflow stats would be
-incremented, as if we were using them, so the user would know that the
-buffer was not big enough.  We would keep the fact that we really are
-not using per cpu buffers transparent to the user.  The idea is the
-buffer size management would all look the same to the user.
-
-In the driver/oprofile/buffer_sync.c function
--Create a function to obtain the kernel buffer mutex lock.  
-- Create a second function to release the kernel buffer mutex lock.  
-- Make these two functions visible to the architecture specific code by
-exporting them in include/linux/oprofile.h.
-
-
-
-Pros single system wide buffer
-1) It would not require changing existing architecture independent code
-to add the special data to a CPU buffer, move the special data to the
-kernel buffer, remove the code that was added so that the SPU profiling
-code does not enable the creation of the per cpu buffers.  Summary,
-minimal changing of architecture independent code
-
-2) The SPU_BUFFER size would be managed using the same user controls and
-feedback as the per cpu buffers.  The goal would be to make management
-look like we actually used cpu buffers.
-
-3) I think the overall kernel data storage space would be less.
-Currently, I have to increase the size of the cpu buffers, done in user
-land, by 8 times to handle the SPU data.  Since each entry in the
-SPU_BUFFER would be one unsigned long instead of two unsigned longs for
-cpu buffer we would save 2x here.  We would not have to have and escape
-sequence entry before each data sample that would save an additional 2x
-in space.
-
-4) Do not have to manage mapping of SPUs to CPU buffers.  We don't care
-what the cpu or spu numbers are.
-
-5) I think the memory storage could be adjusted better for SPU event
-profiling that I am working on.  
-
-Cons
-1) Currently OProfile does not support CPU hotplug.  Not sure how easy
-it would be or what issues there may be in supporting CPU hot plug with
-this approach.  Can't really say if it would be easier/harder then with
-per cpu buffers.
-
-2) I think the cpu_buf stats are allocated when the module loads.  I
-think it is just the per cpu buffer allocation that is done dynamically
-when the daemon starts/shutdown.  I have not investigated this enough to
-say for sure.  If this is not the case, then we may need to tweek the
-generic oprofile code a bit more.
-
-3) There is probably some other gotcha out there I have not thought of
-yet.  
-
-
-Any additional ideas, comments, concerns???  It would be nice if we
-could flush out as many issues as possible now.
-
-Thanks for your time and thought on this.
-
-               Carl Love
-
-
+2008/6/9 Ilpo J√§rvinen <ilpo.jarvinen@helsinki.fi>:> On Fri, 6 Jun 2008, H√•kon L√∏vdal wrote:>> I have now set up a server on my machine and made all logs available.>> I will follow up with the adress in private email to those that already>> have posted in this thread. For others, please ask to receive it.>> Can you please explain this:>> ijjarvin@wrl-59:~/tmp$ bunzip2 -t copytest003.capture.bz2> bunzip2: copytest003.capture.bz2: data integrity (CRC) error in data>> You can use the `bzip2recover' program to attempt to recover> data from undamaged sections of corrupted files.>> ijjarvin@wrl-59:~/tmp$ ls -al copytest003.capture.bz2> -rw-r----- 1 ijjarvin tkol 275441620  9. kes√É¬§√Ç √Ç  16:39> copytest003.capture.bz2> ijjarvin@wrl-59:~/tmp$ md5sum copytest003.capture.bz2> 4bbf801cf1fbd52399322b088c1a2058  copytest003.capture.bz2> ijjarvin@wrl-59:~/tmp$>> ...also the one from allfiles.zip is similarily damaged.>> ...If you don't have an explanation, them it might be time to check> your hardware....
+I do not have any good explanation (bad memory?). When checking thecopytest003.capture.bz2 file in the http server storage directoryI get the same results as you. However I also have the original filestored still and comparing them with cmp -l gives 20558656 124 104so obviously a bit has been flipped. I have now replaced theerroneous file with a good copy, so you should be able to download again.
+BR H√•kon L√∏vdal
+Btw, I got a "traditional" hang now on my first attempt to copycopytest003.capture.bz2 from old_pc to new_pc just using scp.ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
