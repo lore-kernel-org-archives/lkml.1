@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755795AbYFJPvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754371AbYFJP7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755795AbYFJPvu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 11:51:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbYFJPv0
+	id S1754371AbYFJP7U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 11:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbYFJP7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 11:51:26 -0400
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:42156 "EHLO
-	e28esmtp03.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753745AbYFJPvZ (ORCPT
+	Tue, 10 Jun 2008 11:59:08 -0400
+Received: from smtp2.riverbed.com ([206.169.144.7]:19170 "EHLO
+	smtp2.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752737AbYFJP7H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 11:51:25 -0400
-Date: Tue, 10 Jun 2008 21:20:55 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Question about task_struct::state
-Message-ID: <20080610155055.GC4345@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+	Tue, 10 Jun 2008 11:59:07 -0400
+Date: Tue, 10 Jun 2008 08:58:50 -0700
+From: Arthur Jones <ajones@riverbed.com>
+To: Greg KH <greg@kroah.com>
+CC: linux-kernel@vger.kernel.org, Doug Thompson <norsk5@yahoo.com>,
+       bluesmoke-devel@lists.sourceforge.net
+Subject: on static kobjects and double frees...
+Message-ID: <20080610155848.GS26334@ajones-laptop.nbttech.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo, Oleg,
+Hi Greg,  The edac pci sysfs generic layer uses a static
+kobject as a placeholder parent where edac pci drivers
+are inserted.  An atomic count is used to know when
+to kobject_init_add_add or kobject_put the static kobject.
+The issue with this is that the name gets double freed
+on the second module load as edac does not clear it, and
+kobject_cleanup does not clear it.
 
-sched.h has a comment in task_struct
+The quick fix was to clear the static kobj name before
+calling kobject_init, but that seems a bit fragile as it
+involves knowing the internals of kobject_put.  Perhaps
+the name should be cleared before calling the kobject
+release method?  Something like this (not even compile
+tested):
 
-        volatile long state;    /* -1 unrunnable, 0 runnable, >0 stopped */
-
-After some searching, I've not been able to figure out how state can
-become -1 (or unrunnable). Can you let me know how that happens?
-
-If it cannot reach that state, then maybe this patch is needed.
-
-Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-
-Index: linux-2.6/include/linux/sched.h
-===================================================================
---- linux-2.6.orig/include/linux/sched.h	2008-06-10 21:13:02.000000000 +0530
-+++ linux-2.6/include/linux/sched.h	2008-06-10 21:14:44.000000000 +0530
-@@ -1024,7 +1024,7 @@ struct sched_rt_entity {
- };
+diff --git a/lib/kobject.c b/lib/kobject.c
+index 718e510..7dfe906 100644
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -552,6 +552,9 @@ static void kobject_cleanup(struct kobject *kobj)
+ 	if (t && t->release) {
+ 		pr_debug("kobject: '%s' (%p): calling ktype release\n",
+ 			 kobject_name(kobj), kobj);
++
++		/* avoid double free with static kobjects... */
++		kobj->name = NULL;
+ 		t->release(kobj);
+ 	}
  
- struct task_struct {
--	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
-+	volatile long state;	/* 0 runnable, >0 stopped */
- 	void *stack;
- 	atomic_t usage;
- 	unsigned int flags;	/* per process flags, defined below */
+What do you think?  I'm happy to implement and test whatever
+you think is best...
 
--- 
-regards,
-Dhaval
+The edac code in question is drivers/edac/edac_pci_sysfs.c,
+the static kobject is called edac_pci_top_main_kobj...
+
+Arthur
