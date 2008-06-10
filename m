@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760274AbYFJKDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760312AbYFJKEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760274AbYFJKDS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 06:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbYFJKDE
+	id S1760312AbYFJKEp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 06:04:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900AbYFJKEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 06:03:04 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:52031 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753483AbYFJKDD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 06:03:03 -0400
-Date: Tue, 10 Jun 2008 11:02:50 +0100
-From: Ben Dooks <ben@fluff.org>
-To: Uli Luckas <u.luckas@road.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>, adaplas@gmail.com,
-       David Brownell <david-b@pacbell.net>, Linux I2C <i2c@lm-sensors.org>
-Subject: Re: [i2c] Frame buffers and early i2c
-Message-ID: <20080610100249.GA30539@fluff.org.uk>
-References: <200806091647.42757.u.luckas@road.de> <200806092359.36080.u.luckas@road.de> <20080610082527.0e6d643a@hyperion.delvare> <200806101131.19763.u.luckas@road.de>
+	Tue, 10 Jun 2008 06:04:37 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45902 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752682AbYFJKEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 06:04:36 -0400
+Date: Tue, 10 Jun 2008 12:04:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Travis <travis@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] x86: Extend percpu ops to 64 bit
+Message-ID: <20080610100411.GJ27706@elte.hu>
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.299510000@polaris-admin.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200806101131.19763.u.luckas@road.de>
-X-Disclaimer: These are my own opinions, so there!
+In-Reply-To: <20080604003019.299510000@polaris-admin.engr.sgi.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 11:31:19AM +0200, Uli Luckas wrote:
-> On Tuesday, 10. June 2008, Jean Delvare wrote:
-> > Hi Uli,
-> >
-> > On Mon, 9 Jun 2008 23:59:35 +0200, Uli Luckas wrote:
-> > > On Monday 09 June 2008, Jean Delvare wrote:
-> > > > Why don't you ask on the i2c mailing list? Cc added.
-> > >
-> > > I wanted to get i2c developers plus frame buffer and other i2c client
-> > > developers involved. Crossposting to more then 2 lists seemed wrong.
-> >
-> > So you prefer to post to one random list than the two lists where your
-> > target audience is? Interesting approach. If you really don't want to
-> > post to two lists at once, just send two separate posts?
-> >
-> And have two seperate threads of communication??? lfml is where they all are 
-> and avery maintainer has different preferences. Anyway, I got your point and 
-> will come to the i2c list in the future if you prefere.
+
+* Mike Travis <travis@sgi.com> wrote:
+
+>   * x86 percpu ops now will work on 64 bit too, so add the missing 8 byte cases.
 > 
-> > > I'll change the pxa i2c driver to subsys_initcall and try if that works
-> > > when I get back to my desk tomorrow.
-> >
-> > I expect it to work, as apparently other platforms are doing exactly
-> > that already.
-> >
-> Just changing the initcall to subsys really did the trick. I thought, this was 
-> the first thing I tried and I thought it crashed my device. But obviousely I 
-> had some other problem.
-> If Russell gives his Ack, could this be pushed upstream through i2c?
+>   * Add a few atomic ops that will be useful in the future:
+> 
+> 	x86_xchg_percpu()
+> 	x86_cmpxchg_percpu().
+> 
+> 	x86_inc_percpu() - Increment by one can generate more efficient
+> 	x86_dec_percpu()   instructions and inc/dec will be supported by
+> 			   cpu ops later.
+> 
+>   * Use per_cpu_var() instead of per_cpu__##xxx.
+> 
+> Based on linux-2.6.tip
 
-Does this work if the code is built as a module? 
+applied to tip/cpus4096, thanks Mike.
 
-BTW, if people do have these sort of dependencies, then modules
-are another way of sorting out the load order, unless you have
-the module autoload enabled.
-
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
+	Ingo
