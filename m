@@ -1,53 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760066AbYFJKZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760373AbYFJK0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760066AbYFJKZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 06:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbYFJKZP
+	id S1760373AbYFJK0b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 06:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbYFJK0W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 06:25:15 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46378 "EHLO mx3.mail.elte.hu"
+	Tue, 10 Jun 2008 06:26:22 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:50200 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753344AbYFJKZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 06:25:14 -0400
-Date: Tue, 10 Jun 2008 12:24:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Randy.Dunlap" <rdunlap@xenotime.net>
-Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH -next] x86: fix longstanding setup.c printk format
-	warning
-Message-ID: <20080610102452.GD19136@elte.hu>
-References: <Pine.LNX.4.64.0806051107200.702@shark.he.net>
+	id S1752682AbYFJK0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 06:26:20 -0400
+Date: Tue, 10 Jun 2008 13:25:23 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: sam@ravnborg.org
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: modpost error message with -j builds
+Message-ID: <20080610102523.GB17556@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0806051107200.702@shark.he.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I just say the following with a -j 2 build:
 
-* Randy.Dunlap <rdunlap@xenotime.net> wrote:
+<--  snip  -->
 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Note: for -next only, not mainline.
-> 
-> Fix setup.c printk format warning:
-> 
-> linux-next-20080605/arch/x86/kernel/setup.c: In function 'setup_per_cpu_areas':
-> linux-next-20080605/arch/x86/kernel/setup.c:173: warning: format '%lu' expects type 'long unsigned int', but argument 2 has type 'ssize_t'
+...
+  CHECK   include/linux/version.h
+  LD      vmlinux
+  SYSMAP  System.map
+  SYSMAP  .tmp_System.map
+  Building modules, stage 2.
+  MODPOST 222 modules
+  CC      arch/x86/boot/a20.o
+  CC      arch/x86/boot/cmdline.o
+  AS      arch/x86/boot/copy.o
+  HOSTCC  arch/x86/boot/mkcpustr
+  CC      arch/x86/boot/cpucheck.o
+  CC      arch/x86/boot/edd.o
+  AS      arch/x86/boot/compressed/head_64.o
+  CC      arch/x86/boot/compressed/misc.o
+ERROR: "____ilog2_NaN" [drivers/usb/core/usbcore.ko] undefined!
+make[1]: *** [__modpost] Error 1
+make: *** [modules] Error 2
+make: *** Waiting for unfinished jobs....
+  CC      arch/x86/boot/main.o
+  CC      arch/x86/boot/mca.o
+  CC      arch/x86/boot/memory.o
+  CC      arch/x86/boot/pm.o
+  AS      arch/x86/boot/pmjump.o
+  CC      arch/x86/boot/printf.o
+  CC      arch/x86/boot/string.o
+  OBJCOPY arch/x86/boot/compressed/vmlinux.bin
+  CC      arch/x86/boot/tty.o
+  GZIP    arch/x86/boot/compressed/vmlinux.bin.gz
+  CC      arch/x86/boot/video.o
+  CC      arch/x86/boot/video-mode.o
+  CC      arch/x86/boot/version.o
+  CC      arch/x86/boot/video-vga.o
+  CC      arch/x86/boot/video-vesa.o
+  CC      arch/x86/boot/video-bios.o
+  HOSTCC  arch/x86/boot/tools/build
+  CPUSTR  arch/x86/boot/cpustr.h
+  CC      arch/x86/boot/cpu.o
+  LD      arch/x86/boot/compressed/piggy.o
+  LD      arch/x86/boot/compressed/vmlinux
+  OFFSETS arch/x86/boot/offsets.h
+  OBJCOPY arch/x86/boot/vmlinux.bin
+  AS      arch/x86/boot/header.o
+  LD      arch/x86/boot/setup.elf
+  OBJCOPY arch/x86/boot/setup.bin
+  BUILD   arch/x86/boot/bzImage
+Root device is (8, 1)
+Setup is 12252 bytes (padded to 12288 bytes).
+System is 2498 kB
+CRC ee7ee55
+Kernel: arch/x86/boot/bzImage is ready  (#1)
 
-applied to tip/x86/numa - thanks Randy.
+<--  snip  -->
 
-	Ingo
+It would be good if there was a last line "ERROR: ..." when the build 
+finished with a non-zero return value.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
