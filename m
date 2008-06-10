@@ -1,30 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757856AbYFJOJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758332AbYFJOJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757856AbYFJOJU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 10:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754428AbYFJOJH
+	id S1758332AbYFJOJg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 10:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756085AbYFJOJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 10:09:07 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:54559 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754070AbYFJOJG (ORCPT
+	Tue, 10 Jun 2008 10:09:26 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:41336 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754423AbYFJOJZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 10:09:06 -0400
-To: jdike@addtoit.com
-CC: miklos@szeredi.hu, peter.oberparleiter@de.ibm.com,
-       akpm@linuxfoundation.org, linux-kernel@vger.kernel.org,
-       oberparleiter@googlemail.com
-In-reply-to: <20080610135729.GA6087@c2.user-mode-linux.org> (message from Jeff
-	Dike on Tue, 10 Jun 2008 09:57:29 -0400)
+	Tue, 10 Jun 2008 10:09:25 -0400
+In-Reply-To: <20080610135729.GA6087@c2.user-mode-linux.org>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: akpm@linuxfoundation.org, linux-kernel@vger.kernel.org,
+       Miklos Szeredi <miklos@szeredi.hu>, oberparleiter@googlemail.com
+MIME-Version: 1.0
 Subject: Re: 2.6.26-rc5-mm1: uml link error
-References: <E1K5oBn-0006v4-KJ@pomaz-ex.szeredi.hu> <484E5CBB.2040203@de.ibm.com> <E1K61st-0008JT-9e@pomaz-ex.szeredi.hu> <20080610135729.GA6087@c2.user-mode-linux.org>
-Message-Id: <E1K64Wj-0000Bj-Fu@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 10 Jun 2008 16:08:45 +0200
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OF61F32674.CE1F9CB0-ONC1257464.004D17DC-C1257464.004DB50E@de.ibm.com>
+From: Peter 1 Oberparleiter <Peter.Oberparleiter@de.ibm.com>
+Date: Tue, 10 Jun 2008 16:08:51 +0200
+X-MIMETrack: Serialize by Router on D12ML066/12/M/IBM(Release 7.0.2FP2HF322 | September
+ 26, 2007) at 10/06/2008 16:09:07,
+	Serialize complete at 10/06/2008 16:09:07
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeff Dike <jdike@addtoit.com> wrote on 10.06.2008 15:57:29:
+
+> On Tue, Jun 10, 2008 at 01:19:27PM +0200, Miklos Szeredi wrote:
 > > Hmm, uml still doesn't boot with this patch, it dies while calling the
 > > constructors.  So maybe that SORT contruct is still needed?
 > > 
@@ -35,22 +41,11 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 > This doesn't look like it's in do_initcalls.  What happens with
 > "initcall_debug"?
 
-Same output:
+Constructor calls inside the kernel happen just before any other
+initcall. The problem here is that constructors are called from both
+the host run-time environment as well as from the kernel. I'm
+working on a patch that disables kernel constructor calling for UML.
 
-mszeredi@tucsk:/store/uml> /store/quilt/linux/linux initcall_debug umid=uml
-Locating the bottom of the address space ... 0x0
-Locating the top of the address space ... 0xffffd000
-Core dump limits :
-        soft - NONE
-        hard - NONE
-Checking that ptrace can change system call numbers...OK
-Checking syscall emulation patch for ptrace...missing
-Checking for tmpfs mount on /dev/shm...nothing mounted on /dev/shm
-Checking PROT_EXEC mmap in /tmp/...OK
-Checking for the skas3 patch in the host:
-  - /proc/mm...not found: No such file or directory
-  - PTRACE_FAULTINFO...not found
-  - PTRACE_LDT...not found
-UML running in SKAS0 mode
-Adding 19943424 bytes to physical memory to account for exec-shield gap
-Aborted (core dumped)
+
+Regards,
+  Peter
