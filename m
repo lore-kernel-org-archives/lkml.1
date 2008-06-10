@@ -1,44 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758787AbYFJVHN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756418AbYFJUno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758787AbYFJVHN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 17:07:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758197AbYFJVGz
+	id S1756418AbYFJUno (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 16:43:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYFJUnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 17:06:55 -0400
-Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:64592 "EHLO
-	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757670AbYFJVGy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 17:06:54 -0400
-Message-ID: <484EED06.8060301@lwfinger.net>
-Date: Tue, 10 Jun 2008 16:07:18 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 10 Jun 2008 16:43:37 -0400
+Received: from mga09.intel.com ([134.134.136.24]:60473 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752450AbYFJUng (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 16:43:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,619,1204531200"; 
+   d="scan'208";a="290867510"
+Message-ID: <484EE71A.40002@intel.com>
+Date: Tue, 10 Jun 2008 13:42:02 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080417)
 MIME-Version: 1.0
-To: Kevin Winchester <kjwinchester@gmail.com>, Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Warning when compiling arch/x86/mm/init_64.c on x86_64
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Arjan van de Ven <arjan@infradead.org>
+CC: "solsTiCe d'Hiver" <solstice.dhiver@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: no cpu MHz in /proc/cpuinfo on 2.6.25.4-rt6
+References: <200806102152.23286.solstice.dhiver@gmail.com> <20080610131314.5f7069e6@infradead.org>
+In-Reply-To: <20080610131314.5f7069e6@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Jun 2008 20:43:06.0692 (UTC) FILETIME=[961A8040:01C8CB3A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since commit 511631011d39706ac81ee5e4c9084d61e5b4fd34, entitled
-"x86: fix pointer type warning in arch/x86/mm/init_64.c:early_memtest", the 
-following warning is produced for x86_64:
+Arjan van de Ven wrote:
+> On Tue, 10 Jun 2008 21:52:23 +0200
+> solsTiCe d'Hiver <solstice.dhiver@gmail.com> wrote:
+> 
+>> hi,
+>>
+>> i am running a 2.6.25.5-rt6 kernel.
+>> i know there is no such thing as 2.6.25.5-rt6 yet. so i have checked
+>> with a 2.6.25.4-rt6 kernel and i have the same issue.
+>>
+>> when i try to run jackd (0.109.2) i get that strange error:
+>> FATAL: cannot locate cpu MHz in /proc/cpuinfo
+>>
+>> and it appears that /proc/cpuinfo lack the line 
+>> cpu MHz:
+> 
+> 
+> btw this is scary; the Mhz line in /proc/cpuinfo doesn't have much
+> meaning really, so applications using it and depending on it is a
+> rather big disaster ;-(
+> 
+> Does anyone know why jackd wants to use this?
 
-arch/x86/mm/init_64.c: In function ‘early_memtest’:
-arch/x86/mm/init_64.c:520: warning: passing argument 2 of 
-‘find_e820_area_size’ from incompatible pointer type
+I just poked into Jackd and it seems to be using fallback code to calculate timing
+intervals from the cpu MHz value (config/os/gnu-linux/time.c).
 
-Before this commit, the compilation of this routine on my system was clean. I 
-use gcc version 4.2.1. Was this the warning for i386 before the patch? I 
-tried simple changes in the definition of find_e820_area_size, but only 
-managed to push the warning on to the call to bad_addr_size. At that point I 
-decided to let the experts find a proper fix. Note that the warning does no 
-harm - I just get nervous about incompatible pointer warnings as it usually 
-means that I have screwed something up.
+the code itself is self-addmittedly a kludge:
 
-Larry
+
+122 /*
+123  * This is another kludge.  It looks CPU-dependent, but actually it
+124  * reflects the lack of standards for the Linux kernel formatting of
+125  * /proc/cpuinfo.
+126  */
+127
+128 jack_time_t
+129 jack_get_mhz (void)
+130 {
+131         FILE *f = fopen("/proc/cpuinfo", "r");
+
+one kludge building on another :)
+
+
+Auke
 
