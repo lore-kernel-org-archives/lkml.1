@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbYFJFNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755786AbYFJFOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754196AbYFJFNv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 01:13:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbYFJFNo
+	id S1755786AbYFJFOy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 01:14:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbYFJFOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 01:13:44 -0400
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:60091 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750811AbYFJFNn (ORCPT
+	Tue, 10 Jun 2008 01:14:47 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:44156 "EHLO
+	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751096AbYFJFOq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 01:13:43 -0400
-Message-ID: <484E0D73.6010609@linux.vnet.ibm.com>
-Date: Tue, 10 Jun 2008 10:43:23 +0530
+	Tue, 10 Jun 2008 01:14:46 -0400
+Message-ID: <484E0DB4.4070508@linux.vnet.ibm.com>
+Date: Tue, 10 Jun 2008 10:44:28 +0530
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 Reply-To: balbir@linux.vnet.ibm.com
 Organization: IBM
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Andrea Righi <righi.andrea@gmail.com>, menage@google.com,
-       kosaki.motohiro@jp.fujitsu.com, xemul@openvz.org,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: [RFC PATCH 0/5] memcg: VM overcommit accounting and handling
-References: <1213054383-18137-1-git-send-email-righi.andrea@gmail.com> <20080610091439.04061da9.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080610091439.04061da9.kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrea Righi <righi.andrea@gmail.com>
+CC: menage@google.com, matt@bluehost.com, roberto@unbit.it,
+       randy.dunlap@oracle.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] cgroup: block device i/o bandwidth controller (v2)
+References: <> <1212791250-32320-1-git-send-email-righi.andrea@gmail.com>
+In-Reply-To: <1212791250-32320-1-git-send-email-righi.andrea@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Tue, 10 Jun 2008 01:32:58 +0200
-> Andrea Righi <righi.andrea@gmail.com> wrote:
+Andrea Righi wrote:
+> The goal of the i/o bandwidth controller is to improve i/o performance
+> predictability and provide better QoS for different cgroups sharing the same
+> block devices.
 > 
->> Provide distinct cgroup VM overcommit accounting and handling using the memory
->> resource controller.
->>
+> Respect to other priority/weight-based solutions the approach used by this
+> controller is to explicitly choke applications' requests that directly (or
+> indirectly) generate i/o activity in the system.
 > 
-> Could you explain the benefits of this even when we have memrlimit controller ?
-> (If unsure, see 2.6.26-rc5-mm1 and search memrlimit controller.)
+> The direct bandwidth limiting method has the advantage of improving the
+> performance predictability at the cost of reducing, in general, the overall
+> performance of the system (in terms of throughput).
 > 
-> And this kind of virtual-address-handling things should be implemented on
-> memrlimit controller (means not on memory-resource-controller.).
-> It seems this patch doesn't need to handle page_group.
-> 
-> Considering hierarchy, putting several kinds of features on one controller is
-> not good, I think. Balbir, how do you think ?
+> Detailed informations about design, its goal and usage are described in the
+> documentation.
 > 
 
-I would tend to agree. With the memrlimit controller, can't we do this in user
-space now? Figure out the overcommit value and based on that setup the memrlimit?
+I'll read through the documentation and comment.
+
+> Tested against latest git (2.6.26-rc5).
+> 
+> The all-in-one patch can be found at:
+> http://download.systemimager.org/~arighi/linux/patches/io-throttle/
+> 
+
+Cool! thanks for doing this, it's useful.
+
+> Previous version and test report can be found here:
+> http://lkml.org/lkml/2008/5/24/97
 
 
 -- 
