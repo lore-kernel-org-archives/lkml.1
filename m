@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755168AbYFJMul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756391AbYFJMvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755168AbYFJMul (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 08:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbYFJMub
+	id S1756391AbYFJMvv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 08:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbYFJMvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 08:50:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44551 "EHLO mx1.redhat.com"
+	Tue, 10 Jun 2008 08:51:43 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50609 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753046AbYFJMua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 08:50:30 -0400
-Date: Tue, 10 Jun 2008 08:50:11 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       lee.schermerhorn@hp.com, kosaki.motohiro@jp.fujitsu.com,
-       linux-mm@kvack.org, eric.whitney@hp.com
-Subject: Re: [PATCH -mm 17/25] Mlocked Pages are non-reclaimable
-Message-ID: <20080610085011.15bd481e@bree.surriel.com>
-In-Reply-To: <20080610033130.GK19404@wotan.suse.de>
-References: <20080606202838.390050172@redhat.com>
-	<20080606202859.522708682@redhat.com>
-	<20080606180746.6c2b5288.akpm@linux-foundation.org>
-	<20080610033130.GK19404@wotan.suse.de>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751264AbYFJMvm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 08:51:42 -0400
+Date: Tue, 10 Jun 2008 14:51:29 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sched: Kill off dead cfs_rq_set_shares().
+Message-ID: <20080610125129.GA26585@elte.hu>
+References: <20080609081224.GA11751@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080609081224.GA11751@linux-sh.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0255]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008 05:31:30 +0200
-Nick Piggin <npiggin@suse.de> wrote:
 
-> It should definitely be enabled for 32-bit machines, and enabled by default.
-> The argument is that 32 bit machines won't have much memory so it won't
-> be a problem, but a) it also has to work well on other machines without
-> much memory, and b) it is a nightmare to have significant behaviour changes
-> like this. For kernel development as well as kernel running.
+* Paul Mundt <lethal@linux-sh.org> wrote:
+
+> Building with CONFIG_FAIR_GROUP_SCHED=y on UP results in an unused 
+> cfs_rq_set_shares() reference. As nothing is using this dummy function 
+> in the first place, just kill it off.
 > 
-> If we eventually run out of page flags on 32 bit, then sure this might be
-> one we could look at geting rid of. Once the code has proven itself.
+> Against current git, but still seems to be relevant to 'sched-devel' 
+> in -tip.
 
-Alternatively, we tell the 32 bit people not to compile their kernel
-with support for 64 NUMA nodes :)
+applied, thanks Paul.
 
-The number of page flags on 32 bits is (32 - ZONE_SHIFT - NODE_SHIFT)
-after Christoph's cleanup and no longer a fixed number.
-
-Does anyone compile a 32 bit kernel with a large (ZONE_SHIFT + NODE_SHIFT)?
-
--- 
-All rights reversed.
+	Ingo
