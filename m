@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759579AbYFJVbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758861AbYFJVet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759579AbYFJVbn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 17:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759437AbYFJVbY
+	id S1758861AbYFJVet (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 17:34:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754172AbYFJVel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 17:31:24 -0400
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:24915 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759423AbYFJVbX (ORCPT
+	Tue, 10 Jun 2008 17:34:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57870 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753812AbYFJVej (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 17:31:23 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=mPIc0a+k37qkgZRnlzE+U5zlyXYQXZjxYK4OH6fNlKX6WMzHvdb+FqM2IF1ht0mmF8dXa5QjwQW0pLQhLGxRkaY76IJrR2f0dNDMUr2KUR1R4R3v8uLnxkxD/qE3ZpCWnLEfeXaBQyxGom73iaueuO/wWty2sAft3CdVBIUIYik=  ;
-X-YMail-OSG: ZLmkXmMVM1l.rasd294SmdkYROMwat.paWrgu9WvBMz8fbn.gyU74H7K59_B.Ej6fNYDYSSGPY6RGgy2XP59wUxnWzZFegauws4B_V12w7.aS4UZQc61UkoOE2Dcf4FIVRg-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [patch 2.6.26-rc5] make HPET_RTC_IRQ track HPET_EMULATE_RTC
-Date: Tue, 10 Jun 2008 14:31:21 -0700
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <200806052241.44713.david-b@pacbell.net> <200806061644.23449.maximlevitsky@gmail.com>
-In-Reply-To: <200806061644.23449.maximlevitsky@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 10 Jun 2008 17:34:39 -0400
+Date: Tue, 10 Jun 2008 14:33:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: clameter@sgi.com, linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
+       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org, eric.whitney@hp.com,
+       Paul Mundt <lethal@linux-sh.org>, Andi Kleen <andi@firstfloor.org>,
+       Ingo Molnar <mingo@elte.hu>, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [PATCH -mm 13/25] Noreclaim LRU Infrastructure
+Message-Id: <20080610143334.c53d7d8a.akpm@linux-foundation.org>
+In-Reply-To: <20080610153702.4019e042@cuia.bos.redhat.com>
+References: <20080606202838.390050172@redhat.com>
+	<20080606202859.291472052@redhat.com>
+	<20080606180506.081f686a.akpm@linux-foundation.org>
+	<20080608163413.08d46427@bree.surriel.com>
+	<20080608135704.a4b0dbe1.akpm@linux-foundation.org>
+	<20080608173244.0ac4ad9b@bree.surriel.com>
+	<20080608162208.a2683a6c.akpm@linux-foundation.org>
+	<20080608193420.2a9cc030@bree.surriel.com>
+	<20080608165434.67c87e5c.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0806101214190.17798@schroedinger.engr.sgi.com>
+	<20080610153702.4019e042@cuia.bos.redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806101431.21402.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 06 June 2008, Maxim Levitsky wrote:
+On Tue, 10 Jun 2008 15:37:02 -0400
+Rik van Riel <riel@redhat.com> wrote:
 
-> Remember long ago I had a discussion with you about HPET that
-> steals RTC irq in 'legacy replacement' mode, and rtc driver thus
-> implements rtc on 'top' of hpet.
+> On Tue, 10 Jun 2008 12:17:23 -0700 (PDT)
+> Christoph Lameter <clameter@sgi.com> wrote:
 > 
-> New rtc-cmos driver doesn't do this emulation, thus it isn't compatible
-> with hpet driver.
-
-That was fixed in 9d8af78b07976d4d84e0df491abd4e9db848d0ad (February)
-by Bernhard Walle <bwalle@suse.de> ... if you look at the bug report
-associated with this patch, you'll see that rtc-cmos was working OK
-with HPET, it's just the legacy RTC driver which got confused after
-the recent updates to clock handling.
-
-
-> But there is a solution,  I didn't agree with firstly, but then I did, and
-> I do agree now, and that to put hpet in normal mode.
+> > On Sun, 8 Jun 2008, Andrew Morton wrote:
+> > 
+> > > And it will take longer to get those problems sorted out if 32-bt
+> > > machines aren't even compiing the new code in.
+> > 
+> > The problem is going to be less if we dependedn on 
+> > CONFIG_PAGEFLAGS_EXTENDED instead of 64 bit. This means that only certain 
+> > 32bit NUMA/sparsemem configs cannot do this due to lack of page flags.
+> > 
+> > I did the pageflags rework in part because of Rik's project.
 > 
-> What happened with patches that put hpet in normal independent mode?
+> I think your pageflags work freed up a number of bits on 32
+> bit systems, unless someone compiles a 32 bit system with
+> support for 4 memory zones (2 bits ZONE_SHIFT) and 64 NUMA
+> nodes (6 bits NODE_SHIFT), in which case we should still
+> have 24 bits for flags.
+> 
+> Of course, having 64 NUMA nodes and a ZONE_SHIFT of 2 on
+> a 32 bit system is probably total insanity already.  I
+> suspect very few people compile 32 bit with NUMA at all,
+> except if it is an architecture that uses DISCONTIGMEM
+> instead of zones, in which case ZONE_SHIFT is 0, which
+> will free up space too :)
 
-The story from either Ingo or Thomas (I forget who) was that this is
-another case where we have to cope with BIOS braindamage.  Not enough
-BIOS vendors expose the relevant IRQ routing that Linux could default
-to using HPET in what I'd call "sane" mode.
+Maybe it's time to bite the bullet and kill i386 NUMA support.  afaik
+it's just NUMAQ and a 2-node NUMAish machine which IBM made (as400?)
 
-Now, that still kind of implies there could be an option to use sane
-HPET IRQ configuration (doesn't hijack RTC and other IRQs, and there
-could be a per-CPU HPET) on at least the systems where that IRQ routing
-is available.  Over time I'd hope that systems like that could become
-the common case.  But ... someone else would have to do that work.  :)
-
-- Dave
+arch/sh uses NUMA for 32-bit, I believe. But I don't know what its
+maximum node count is.  The default for sh NODES_SHIFT is 3.  
