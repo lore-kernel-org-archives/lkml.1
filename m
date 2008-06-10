@@ -1,115 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759162AbYFJIzP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757979AbYFJJCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759162AbYFJIzP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 04:55:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYFJIzA
+	id S1757979AbYFJJCa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 05:02:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbYFJJCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 04:55:00 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:33019 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750953AbYFJIy7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 04:54:59 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: Pavel Machek <pavel@suse.cz>, linux-usb@vger.kernel.org
-Subject: Re: 2.6.25-rc6: CONFIG_USB_PERSIST forced on
-Date: Tue, 10 Jun 2008 10:55:13 +0200
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Linus Torvalds <torvalds@linuxfoundation.org>,
-       Andrew Morton <akpm@linuxfoundation.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <200806091712.46869.oliver@neukum.org> <alpine.LFD.1.10.0806091435120.3218@woody.linux-foundation.org> <20080609215651.GF21429@elf.ucw.cz>
-In-Reply-To: <20080609215651.GF21429@elf.ucw.cz>
+	Tue, 10 Jun 2008 05:02:20 -0400
+Received: from www.tglx.de ([62.245.132.106]:46018 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751176AbYFJJCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 05:02:19 -0400
+Date: Tue, 10 Jun 2008 11:01:59 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Magnus Damm <magnus.damm@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "lethal@linux-sh.org" <lethal@linux-sh.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>
+Subject: Re: [PATCH] uio_pdrv: Unique IRQ Mode
+Message-ID: <20080610090158.GC4611@local>
+References: <20080605090916.GA3198@local> <aec7e5c30806050246t248abc39vbc1e71d4475a0a0d@mail.gmail.com> <20080605112744.GB3198@local> <aec7e5c30806080319y7b9b6a89icacbfa67b117fb2b@mail.gmail.com> <20080608205455.GA3191@local> <20080609075701.GA20656@digi.com> <20080609095408.GB3223@local> <20080609123204.GA27803@digi.com> <20080609142007.GH3223@local> <20080610061121.GA22814@digi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200806101055.14539.oliver@neukum.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080610061121.GA22814@digi.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag 09 Juni 2008 23:56:51 schrieb Pavel Machek:
-> On Mon 2008-06-09 14:39:10, Linus Torvalds wrote:
+On Tue, Jun 10, 2008 at 08:11:21AM +0200, Uwe Kleine-König wrote:
+> > >
+> > > IMHO it should be asserted that irqs are on before waiting for the irq
+> > > in poll and read.  So I suggest to call irqcontrol(ON) before doing so.
+> > > This should allow to work with that kind of hardware, right?
 > > 
-> > 
-> > On Mon, 9 Jun 2008, Pavel Machek wrote:
-> > > 
-> > > I believe we should just revert the "CONFIG_USB_PERSIST force on"
-> > > patch, and solve this properly in 2.6.27.
-> > 
-> > Why?
-> > 
-> > The code would _still_ be buggy with that revert in place. You have to 
-> > enable CONFIG_USB_PERSIST just to get even the _possibility_ of the sane 
-> > behavior. 
-> > 
-> > If there is a problem with usblp, it just needs to be fixed. 
-> 
-> With USB_PERSIST on, you have problem on all drivers but usb-storage,
-> AFAICT... because usb-storage seems to be the only driver implementing
-> reset_resume.
-> 
-> I guess it is possible to do something like "if reset_resume() is
-> unavailable, try plain resume()" in usb/driver.c, but I'd really
-> changes to the suspend/resume callback to go in -rc1 so that they are
-> tested properly, and not hot-patch it now.
+> > Yes. But userspace can simply write() a 1 to /dev/uioX to achieve the
+> > same result. This would clearly show what's happening. Remember, this is
+> > only needed for certain (broken) hardware. If we hide some automagic irq
+> > enabling in the kernel, it'll become less obvious and might even have
+> > some bad side effects. I want to avoid this kind of trickery, especially
+> > as it is not needed. Userspace should use write() to control irqs. It's
+> > like this with any normal UIO driver, and we shouldn't have a different
+> > handling in uio_pdrv.
+> > Think of a chip that's directly connected to the bus on some embedded
+> > board. You use uio_pdrv to handle it. Then the very same chip appears on
+> > a PCI card in a normal PC. You write a normal UIO driver for it. The
+> > userspace part of both drivers could be exactly the same. But if
+> > uio_pdrv automagically reenabled the irq, we would need different
+> > handling in userspace, without reasons obvious to the user.
 
-If a hotfix it must be, here's my take. It works for me, but it isn't
-tested well.
-Alan, what do you think?
+> Note that my intention is to enable irqs in uio.c, not uio_pdrv.c.
 
-	Regards
-		Oliver
+Forget it. We won't have some crap that automagically enables irqs in
+read() and poll(), neither with irq_enable() nor with irqcontrol(). It's
+not a clean solution. We now have a clean solution how userspace can
+enable interrupts by using write(), and this (together with uio_pdrv)
+can handle all cases we were talking about.
 
-Signed-off-by: Oliver Neukum <oneukum@suse.de>
+You keep arguing about code that neither introduces new features nor
+offers any other advantages. I'm really tired of that.
 
----
+Thanks,
+Hans
 
---- linux-2.6.25/drivers/usb/core/hub.c	2008-06-09 15:15:13.105058000 +0200
-+++ alt/drivers/usb/core/hub.c	2008-06-09 15:43:29.964503000 +0200
-@@ -648,7 +648,9 @@ static void hub_stop(struct usb_hub *hub
- static void hub_restart(struct usb_hub *hub, int type)
- {
- 	struct usb_device *hdev = hub->hdev;
--	int port1;
-+	struct usb_interface *intf;
-+	struct usb_driver *driver;
-+	int port1, i;
- 
- 	/* Check each of the children to see if they require
- 	 * USB-PERSIST handling or disconnection.  Also check
-@@ -692,6 +694,14 @@ static void hub_restart(struct usb_hub *
- 		 */
- 		if (udev->persist_enabled && status == 0 &&
- 				!(portstatus & USB_PORT_STAT_ENABLE)) {
-+
-+			/* check for devices not supporting reset_resume */
-+			for (i = 0; i < udev->actconfig->desc.bNumInterfaces; i++) {
-+				intf = udev->actconfig->interface[i];
-+				driver = to_usb_driver(intf->dev.driver);
-+				if (!driver || !driver->reset_resume)
-+					goto skip_reset_resume;
-+			}
- 			if (portchange & USB_PORT_STAT_C_ENABLE)
- 				clear_port_feature(hub->hdev, port1,
- 						USB_PORT_FEAT_C_ENABLE);
-@@ -705,8 +715,11 @@ static void hub_restart(struct usb_hub *
- 		 * but as we may not lock the child device here
- 		 * we have to do a "logical" disconnect.
- 		 */
--		else if (type == HUB_RESET_RESUME)
--			hub_port_logical_disconnect(hub, port1);
-+		else {
-+skip_reset_resume:
-+			if (type == HUB_RESET_RESUME)
-+				hub_port_logical_disconnect(hub, port1);
-+		}
- 	}
- 
- 	hub_activate(hub);
