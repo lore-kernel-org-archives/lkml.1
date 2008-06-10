@@ -1,79 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759129AbYFJXHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756378AbYFJXHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759129AbYFJXHZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 19:07:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755685AbYFJXGt
+	id S1756378AbYFJXHo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 19:07:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756413AbYFJXGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 19:06:49 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48920 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754923AbYFJXGr (ORCPT
+	Tue, 10 Jun 2008 19:06:53 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:46300 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756235AbYFJXGw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 19:06:47 -0400
-Date: Tue, 10 Jun 2008 16:05:22 -0700
-From: Greg KH <greg@kroah.com>
-To: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [ANNOUNCE] linux-staging tree created
-Message-ID: <20080610230522.GA25100@kroah.com>
-References: <20080610190540.GA25066@kroah.com> <20080610225222.GG8397@mit.edu>
+	Tue, 10 Jun 2008 19:06:52 -0400
+X-Sasl-enc: iAhOs7SgYeAMCEJ+DGeTSVyD6GXKVsUHgXI0RG+a1T1P 1213139210
+Date: Tue, 10 Jun 2008 20:06:45 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.25.6
+Message-ID: <20080610230645.GA16711@khazad-dum.debian.net>
+References: <20080609194924.GL30402@sequoia.sous-sol.org> <20080610145325.GC23351@khazad-dum.debian.net> <20080610191726.GB4218@tatooine.rebelbase.local> <20080610195747.GA18926@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080610225222.GG8397@mit.edu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080610195747.GA18926@martell.zuzino.mipt.ru>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 06:52:22PM -0400, Theodore Tso wrote:
-> On Tue, Jun 10, 2008 at 12:05:40PM -0700, Greg KH wrote:
-> > PURPOSE
-> > 
-> > The linux-staging tree was created to hold drivers and filesystems and
-> > other semi-major additions to the Linux kernel that are not ready to be
-> > merged at this point in time.  It is here for companies and authors to
-> > get a wider range of testing, and to allow for other members of the
-> > community to help with the development of these features for the
-> > eventual inclusion into the main kernel tree.
-> > 
-> > This tree will be included in the daily linux-next builds, and will get
-> > testing by all users of that tree.
-> 
-> Does this mean that the nature of linux-next is changing?  I thought
-> the whole point of linux-next was only to have what would be pushed to
-> Linus in the near future, so we could check for patch compatibility
-> issues.  For that reason, for example, I don't push the unstable set
-> of patches in the ext4 tree to linux-next, since they aren't ready for
-> merging yet in their current form.  
-> 
-> But if linux-staging is going to be pushed to linux-next, doesn't that
-> violate the ground rules of Linux-next?  Or are we allowing in this
-> case because these are filesystems and/or device drivers that don't
-> exist at all in the mainline tree yet?
+On Tue, 10 Jun 2008, Alexey Dobriyan wrote:
+> Person fixing a bug may not realize he fixes security-sensitive bug.
 
-I'm asking for the rule to be bent for this tree, not that the whole
-nature of linux-next is changing.
+That is a valid reason, I am pretty sure everyone here (including me) has
+been guilty of that one.  Which doesn't mean we can't do better to educate
+ourselves on the patterns for the most common issues.  The "fix for a
+null-dereference to anything that has a function pointer in it" is such a
+pattern.
 
--staging is for only whole new drivers/filesystems, not changes/features
-to existing code that is not yet ready for merging.  The main reason
-these drivers are not in mainline is usually:
-	- coding style issues
-	- sparse cleanups needed
-	- ioctl 32/64 cleanups
-	- locking review
-	- direct access to hardware through memory pointers (only works
-	  on x86)
+> Or simply doesn't care because there are 5 more to fix for today.
 
-If you look at what I currently have, there's nothing earth-shattering
-there, but there is stuff that users can use to get hardware to work
-that currently is not supported on kernel.org kernels at all.
+THAT, however, is unacceptable IMO.  If one can't be bothered, or one
+doesn't have the time (or the skill, whatever) to access the severity of a
+fix, he should ask for someone to do that on the commit message.  One extra
+short sentence at the end of the commit message [asking for that help] is
+DEFINATELY not too much to ask.
 
-It would be nice if distros also pick it up if they want to support
-these devices and give me some feedback.  There are 2 big network
-drivers in there that support a wide range of devices that some people
-would like to see working :)
-
-thanks,
-
-greg k-h
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
