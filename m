@@ -1,67 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbYFJUmL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442AbYFJUoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756027AbYFJUmL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 16:42:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbYFJUmA
+	id S1753442AbYFJUoX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 16:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbYFJUoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 16:42:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47270 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752909AbYFJUlz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 16:41:55 -0400
-Date: Tue, 10 Jun 2008 16:41:47 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Daniel J Blueman <daniel.blueman@gmail.com>, linux-nfs@vger.kernel.org,
-       nfsv4@linux-nfs.org, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6.26-rc4] mount.nfsv4/memory poisoning issues...
-Message-ID: <20080610164147.671e2cc3@tleilax.poochiereds.net>
-In-Reply-To: <1213130012.20459.58.camel@localhost>
-References: <6278d2220806041633n3bfe3dd2ke9602697697228b@mail.gmail.com>
-	<20080604203504.62730951@tleilax.poochiereds.net>
-	<1213124088.20459.16.camel@localhost>
-	<20080610151357.150b6f69@tleilax.poochiereds.net>
-	<1213127909.20459.48.camel@localhost>
-	<20080610161352.4e588653@tleilax.poochiereds.net>
-	<1213130012.20459.58.camel@localhost>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 10 Jun 2008 16:44:15 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:38450 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752795AbYFJUoN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 16:44:13 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5314"; a="3648909"
+Message-ID: <484EE7BE.3000606@qualcomm.com>
+Date: Tue, 10 Jun 2008 13:44:46 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: David Rientjes <rientjes@google.com>
+CC: Paul Jackson <pj@sgi.com>, mingo@elte.hu,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, menage@google.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: cpusets and kthreads, inconsistent behaviour
+References: <alpine.DEB.1.10.0806051255500.31157@chino.kir.corp.google.com> <20080605152953.dcfefa47.pj@sgi.com> <alpine.DEB.1.10.0806051357480.32537@chino.kir.corp.google.com> <484D99AD.4000306@qualcomm.com> <alpine.DEB.1.10.0806091447300.10680@chino.kir.corp.google.com> <484EAC2F.5020103@qualcomm.com> <alpine.DEB.1.10.0806101135050.28953@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.1.10.0806101135050.28953@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008 16:33:32 -0400
-Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 
-> On Tue, 2008-06-10 at 16:13 -0400, Jeff Layton wrote:
-> 
-> > We can't call nfs_callback_down() until after nfs_callback_up()
-> > returns, so we're guaranteed to have "task" set to a valid task
-> > (presuming that nfs_callback_up() doesn't return error). We also can't
-> > return from nfs_callback_down() until after the nfs_callback_svc() has
-> > exited. kthread_stop() will block until it does.
-> 
-> The code I'm alluding to is in kthread():
-> 
->        /* OK, tell user we're spawned, wait for stop or wakeup */
->         __set_current_state(TASK_UNINTERRUPTIBLE);
->         complete(&create->started);
->         schedule();
-> 
->         if (!kthread_should_stop())
->                 ret = threadfn(data);
-> 
-> schedule() is called _after_ the complete() call, and _before_ we
-> execute threadfn() a.k.a. nfs_callback_svc(). If nfs_alloc_client() has
-> time to call nfs_callback_down() before the above thread gets scheduled
-> back in, then threadfn() doesn't get called at all, since
-> kthread_should_stop() is true.
-> 
 
-That makes total sense. Thanks for clearing it up.
+David Rientjes wrote:
+> On Tue, 10 Jun 2008, Max Krasnyansky wrote:
+> 
+>> Basically the issue is that current behaviour of the cpusets is inconsistent
+>> with regards to kthreads. Kthreads inherit cpuset from a parent properly but
+>> they simply ignore cpuset.cpus when their cpu affinity is set/updated.
+>> I think the behaviour must be consistent across the board. cpuset.cpus must
+>> apply to _all_ the tasks in the set, not just some of the tasks. If kthread
+>> must run on the cpus other than current_cpuset.cpus then it should detach from
+>> the cpuset.
+>>
+> 
+> I disagree that a cpuset's set of allowable cpus should apply to all tasks 
+> attached to that cpuset.  It's certainly beneficial to be able to further 
+> constrict the set of allowed cpus for a task using sched_setaffinity().
+> 
+> It makes more sense to argue that for each task p, p->cpus_allowed is a 
+> subset of task_cs(p)->cpus_allowed.
+Yes that's exactly what I meant :). Sorry for not being clear. I did not mean
+that each task in a cpuset must have the same affinity mask. So we're on the
+same page here.
 
-Cheers,
--- 
-Jeff Layton <jlayton@redhat.com>
+>> To give you an example kthreads like scsi_eh, kswapd, kacpid, pdflush,
+>> kseriod, etc are all started with cpus_allows=ALL_CPUS even though they
+>> inherit a cpuset from kthreadd. Yes they can moved manually (with
+>> sched_setaffinity) but the behaviour is not consistent, and for no good
+>> reason. kthreads can be stopped/started at any time (module load for example)
+>> which means that the user will have to keep moving them.
+>>
+> 
+> This doesn't seem to be purely a kthread issue.  Tasks can be moved to a 
+> disjoint set of cpus by any caller to set_cpus_allowed_ptr() in the 
+> kernel.
+Hmm, technically you are correct of course. But we do not have any other
+kernel tasks besides kthreads. All the kernel tasks I have on my machines have
+kthreadd as their parent.
+And I'm not aware of any kernel code that changes affinity mask of a
+user-space task without paying attention to the cpuset the task belongs to. If
+you know of any we should fix it because it'd clearly be a bug.
+
+Thanx
+Max
