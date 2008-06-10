@@ -1,60 +1,241 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757239AbYFJIWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758432AbYFJIXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757239AbYFJIWM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 04:22:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbYFJIVz
+	id S1758432AbYFJIXN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 04:23:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbYFJIWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 04:21:55 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:35831 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752709AbYFJIVy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 04:21:54 -0400
-From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>, Roland Dreier <rolandd@cisco.com>
-Subject: Re: [PATCH 0/2] Prevent loss of interrupts in IB/ehca
-Date: Tue, 10 Jun 2008 10:21:26 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "OF-EWG" <ewg@lists.openfabrics.org>, general@lists.openfabrics.org,
-       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>, TKLEIN@de.ibm.com,
-       fenkes@de.ibm.com, raisch@de.ibm.com, THEMANN@de.ibm.com
-References: <200806091742.29421.ossrosch@linux.vnet.ibm.com> <18509.44672.668946.207110@cargo.ozlabs.ibm.com>
-In-Reply-To: <18509.44672.668946.207110@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 10 Jun 2008 04:22:55 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:6643 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751445AbYFJIWx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 04:22:53 -0400
+Subject: Please pull git390 'for-linus' branch
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Tue, 10 Jun 2008 10:21:56 +0200
+Message-Id: <1213086116.396.0.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806101021.28795.ossrosch@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 10 June 2008 00:28:16 Paul Mackerras wrote:
-> Stefan Roscher writes:
-> 
-> > This patchset contains two changes for IB/ehca and ibmebus.
-> > 
-> > The first patch enables ibmebus_request_irq() to optionally return the 
-> > IRQ number, which is used by the second patch to trigger EOI in case of 
-> > lost interrupts.
-> 
-> At first sight it seems like a very bad idea for a driver to be poking
-> into the internals of the interrupt subsystem like this.  Under what
-> circumstances do interrupts get lost, and why does doing an extra EOI
-> like this fix the problem?
-> 
-> Paul.
-> 
+Please pull from 'for-linus' branch of
 
-The processing of events with a timer controlled polling is not the "typical"
-way how you should handle adapter events.
-During corner case testing, we noticed that some versions of ehca 
-do not properly transition to interrupt done in special load situations.
-This can be resolved by periodically triggering EOI through H_EOI, 
-if eqes are pending.
-Hope this clarifys the backround of the patch.
+	git://git390.osdl.marist.edu/pub/scm/linux-2.6.git for-linus
 
-Is there a better way to initiate this type of EOI in a non-irq case?
+to receive the following updates:
 
-regards Stefan R. and Christoph R.
+ arch/s390/Kconfig              |    1 +
+ arch/s390/kernel/smp.c         |    2 +-
+ arch/s390/mm/vmem.c            |    2 +-
+ drivers/s390/char/sclp_vt220.c |    1 +
+ drivers/s390/char/tape_3590.c  |    2 +-
+ drivers/s390/cio/blacklist.c   |    6 +++---
+ drivers/s390/cio/cio.c         |   20 +++++++++++---------
+ include/asm-s390/system.h      |    8 ++++----
+ 8 files changed, 23 insertions(+), 19 deletions(-)
+
+Carsten Otte (1):
+      [S390] vt220 console, initialize list head before use
+
+Cornelia Huck (2):
+      [S390] cio: Fix sparse warnings in blacklist.c.
+      [S390] cio: Fix inverted isc priorities.
+
+Heiko Carstens (2):
+      [S390] sparsemem: use SPARSEMEM_STATIC if !64BIT.
+      [S390] vmemmap: fix off-by-one bug.
+
+Julia Lawall (1):
+      [S390] tape_3590.c: introduce missing kfree
+
+Martin Schwidefsky (1):
+      [S390] Fix __ctl_load/__ctl_store inline assembly constraints
+
+Segher Boessenkool (1):
+      [S390] Fix build failure in __cpu_up()
+
+diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+index 93acb3c..107e492 100644
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -304,6 +304,7 @@ config ARCH_SPARSEMEM_ENABLE
+ 	def_bool y
+ 	select SPARSEMEM_VMEMMAP_ENABLE
+ 	select SPARSEMEM_VMEMMAP
++	select SPARSEMEM_STATIC if !64BIT
+ 
+ config ARCH_SPARSEMEM_DEFAULT
+ 	def_bool y
+diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
+index 42b1d12..5d4fa4b 100644
+--- a/arch/s390/kernel/smp.c
++++ b/arch/s390/kernel/smp.c
+@@ -711,7 +711,7 @@ int __cpuinit __cpu_up(unsigned int cpu)
+ 	memset(sf, 0, sizeof(struct stack_frame));
+ 	sf->gprs[9] = (unsigned long) sf;
+ 	cpu_lowcore->save_area[15] = (unsigned long) sf;
+-	__ctl_store(cpu_lowcore->cregs_save_area[0], 0, 15);
++	__ctl_store(cpu_lowcore->cregs_save_area, 0, 15);
+ 	asm volatile(
+ 		"	stam	0,15,0(%0)"
+ 		: : "a" (&cpu_lowcore->access_regs_save_area) : "memory");
+diff --git a/arch/s390/mm/vmem.c b/arch/s390/mm/vmem.c
+index f591188..e4868bf 100644
+--- a/arch/s390/mm/vmem.c
++++ b/arch/s390/mm/vmem.c
+@@ -236,7 +236,7 @@ static int insert_memory_segment(struct memory_segment *seg)
+ {
+ 	struct memory_segment *tmp;
+ 
+-	if (seg->start + seg->size >= VMEM_MAX_PHYS ||
++	if (seg->start + seg->size > VMEM_MAX_PHYS ||
+ 	    seg->start + seg->size < seg->start)
+ 		return -ERANGE;
+ 
+diff --git a/drivers/s390/char/sclp_vt220.c b/drivers/s390/char/sclp_vt220.c
+index 62576af..3e577f6 100644
+--- a/drivers/s390/char/sclp_vt220.c
++++ b/drivers/s390/char/sclp_vt220.c
+@@ -773,6 +773,7 @@ sclp_vt220_con_init(void)
+ {
+ 	int rc;
+ 
++	INIT_LIST_HEAD(&sclp_vt220_register.list);
+ 	if (!CONSOLE_IS_SCLP)
+ 		return 0;
+ 	rc = __sclp_vt220_init();
+diff --git a/drivers/s390/char/tape_3590.c b/drivers/s390/char/tape_3590.c
+index 8246ef3..42ce791 100644
+--- a/drivers/s390/char/tape_3590.c
++++ b/drivers/s390/char/tape_3590.c
+@@ -1598,7 +1598,7 @@ tape_3590_setup_device(struct tape_device *device)
+ 	rc = tape_3590_read_dev_chars(device, rdc_data);
+ 	if (rc) {
+ 		DBF_LH(3, "Read device characteristics failed!\n");
+-		goto fail_kmalloc;
++		goto fail_rdc_data;
+ 	}
+ 	rc = tape_std_assign(device);
+ 	if (rc)
+diff --git a/drivers/s390/cio/blacklist.c b/drivers/s390/cio/blacklist.c
+index a4a5f2e..0bfcbbe 100644
+--- a/drivers/s390/cio/blacklist.c
++++ b/drivers/s390/cio/blacklist.c
+@@ -97,8 +97,8 @@ static int pure_hex(char **cp, unsigned int *val, int min_digit,
+ 	return 0;
+ }
+ 
+-static int parse_busid(char *str, int *cssid, int *ssid, int *devno,
+-		       int msgtrigger)
++static int parse_busid(char *str, unsigned int *cssid, unsigned int *ssid,
++		       unsigned int *devno, int msgtrigger)
+ {
+ 	char *str_work;
+ 	int val, rc, ret;
+@@ -148,7 +148,7 @@ out:
+ static int blacklist_parse_parameters(char *str, range_action action,
+ 				      int msgtrigger)
+ {
+-	int from_cssid, to_cssid, from_ssid, to_ssid, from, to;
++	unsigned int from_cssid, to_cssid, from_ssid, to_ssid, from, to;
+ 	int rc, totalrc;
+ 	char *parm;
+ 	range_action ra;
+diff --git a/drivers/s390/cio/cio.c b/drivers/s390/cio/cio.c
+index 82c6a2d..b32d7eb 100644
+--- a/drivers/s390/cio/cio.c
++++ b/drivers/s390/cio/cio.c
+@@ -576,12 +576,14 @@ cio_validate_subchannel (struct subchannel *sch, struct subchannel_id schid)
+ 		err = -ENODEV;
+ 		goto out;
+ 	}
+-	if (cio_is_console(sch->schid))
++	if (cio_is_console(sch->schid)) {
+ 		sch->opm = 0xff;
+-	else
++		sch->isc = 1;
++	} else {
+ 		sch->opm = chp_get_sch_opm(sch);
++		sch->isc = 3;
++	}
+ 	sch->lpm = sch->schib.pmcw.pam & sch->opm;
+-	sch->isc = 3;
+ 
+ 	CIO_MSG_EVENT(6, "Detected device %04x on subchannel 0.%x.%04X "
+ 		      "- PIM = %02X, PAM = %02X, POM = %02X\n",
+@@ -704,9 +706,9 @@ void wait_cons_dev(void)
+ 	if (!console_subchannel_in_use)
+ 		return;
+ 
+-	/* disable all but isc 7 (console device) */
++	/* disable all but isc 1 (console device) */
+ 	__ctl_store (save_cr6, 6, 6);
+-	cr6 = 0x01000000;
++	cr6 = 0x40000000;
+ 	__ctl_load (cr6, 6, 6);
+ 
+ 	do {
+@@ -788,11 +790,11 @@ cio_probe_console(void)
+ 	}
+ 
+ 	/*
+-	 * enable console I/O-interrupt subclass 7
++	 * enable console I/O-interrupt subclass 1
+ 	 */
+-	ctl_set_bit(6, 24);
+-	console_subchannel.isc = 7;
+-	console_subchannel.schib.pmcw.isc = 7;
++	ctl_set_bit(6, 30);
++	console_subchannel.isc = 1;
++	console_subchannel.schib.pmcw.isc = 1;
+ 	console_subchannel.schib.pmcw.intparm =
+ 		(u32)(addr_t)&console_subchannel;
+ 	ret = cio_modify(&console_subchannel);
+diff --git a/include/asm-s390/system.h b/include/asm-s390/system.h
+index e0d4500..819e7d9 100644
+--- a/include/asm-s390/system.h
++++ b/include/asm-s390/system.h
+@@ -315,14 +315,14 @@ __cmpxchg(volatile void *ptr, unsigned long old, unsigned long new, int size)
+ 	asm volatile(						\
+ 		"	lctlg	%1,%2,0(%0)\n"			\
+ 		: : "a" (&array), "i" (low), "i" (high),	\
+-		    "m" (*(addrtype *)(array)));		\
++		    "m" (*(addrtype *)(&array)));		\
+ 	})
+ 
+ #define __ctl_store(array, low, high) ({			\
+ 	typedef struct { char _[sizeof(array)]; } addrtype;	\
+ 	asm volatile(						\
+ 		"	stctg	%2,%3,0(%1)\n"			\
+-		: "=m" (*(addrtype *)(array))			\
++		: "=m" (*(addrtype *)(&array))			\
+ 		: "a" (&array), "i" (low), "i" (high));		\
+ 	})
+ 
+@@ -333,14 +333,14 @@ __cmpxchg(volatile void *ptr, unsigned long old, unsigned long new, int size)
+ 	asm volatile(						\
+ 		"	lctl	%1,%2,0(%0)\n"			\
+ 		: : "a" (&array), "i" (low), "i" (high),	\
+-		    "m" (*(addrtype *)(array)));		\
++		    "m" (*(addrtype *)(&array)));		\
+ })
+ 
+ #define __ctl_store(array, low, high) ({			\
+ 	typedef struct { char _[sizeof(array)]; } addrtype;	\
+ 	asm volatile(						\
+ 		"	stctl	%2,%3,0(%1)\n"			\
+-		: "=m" (*(addrtype *)(array))			\
++		: "=m" (*(addrtype *)(&array))			\
+ 		: "a" (&array), "i" (low), "i" (high));		\
+ 	})
+ 
+
+
