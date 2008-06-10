@@ -1,110 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbYFJOos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbYFJOwJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755939AbYFJOos (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 10:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbYFJOoj
+	id S1754839AbYFJOwJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 10:52:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbYFJOvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 10:44:39 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:54195 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752646AbYFJOoi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 10:44:38 -0400
-From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-To: Roland Dreier <rolandd@cisco.com>, Paul Mackerras <paulus@samba.org>,
-       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-EWG" <ewg@lists.openfabrics.org>, general@lists.openfabrics.org
-Subject: [PATCH REPOST] IB/ehca: In case of lost interrupts, trigger EOI to reenable interrupts
-Date: Tue, 10 Jun 2008 16:44:31 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: fenkes@de.ibm.com, raisch@de.ibm.com, hnguyen@de.ibm.com,
-       TKLEIN@de.ibm.com, THEMANN@de.ibm.com
+	Tue, 10 Jun 2008 10:51:53 -0400
+Received: from vs166246.vserver.de ([62.75.166.246]:59944 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753115AbYFJOvw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 10:51:52 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: "Vegard Nossum" <vegard.nossum@gmail.com>
+Subject: Re: BUG: NULL pointer dereference at 00000000 -- IP: [<f8e783d5>] :b43:b43_dma_mapping_error+0x16/0x155
+Date: Tue, 10 Jun 2008 16:50:26 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: "Miles Lane" <miles.lane@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>
+References: <a44ae5cd0806100709rf4602f2x587631852502c0b5@mail.gmail.com> <200806101637.11473.mb@bu3sch.de> <19f34abd0806100742v176f50e8se463d2e70df44332@mail.gmail.com>
+In-Reply-To: <19f34abd0806100742v176f50e8se463d2e70df44332@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806101644.34693.ossrosch@linux.vnet.ibm.com>
+Message-Id: <200806101650.27180.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-During corner case testing, we noticed that some versions of ehca 
-do not properly transition to interrupt done in special load situations.
-This can be resolved by periodically triggering EOI through H_EOI, 
-if eqes are pending.
+On Tuesday 10 June 2008 16:42:41 Vegard Nossum wrote:
+> This change comes from
+> 
+> commit 353c409463ecba63c3a41a992d3f5fba935eada9
+> Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Date:   Fri May 23 19:02:30 2008 +0000
 
-Signed-off-by: Stefan Roscher <stefan.roscher@de.ibm.com>
 
----
-This patch replaces my previous patch-set.
-As Paul suggested, this version of the patch calls H_EOI directly and doesn't need
-any ibmebus changes.
+Ok, FUJITA Tomonori, please make sure a patch like the following goes
+into the same trees that you submitted commit 353c409 to.
+Also make sure to check b43legacy. I _guess_ you might have added
+the same bug there.
+
+Index: wireless-testing/drivers/net/wireless/b43/dma.c
+===================================================================
+--- wireless-testing.orig/drivers/net/wireless/b43/dma.c	2008-06-10 13:58:22.000000000 +0200
++++ wireless-testing/drivers/net/wireless/b43/dma.c	2008-06-10 16:48:53.000000000 +0200
+@@ -802,6 +802,7 @@ struct b43_dmaring *b43_setup_dmaring(st
+ 	if (!ring)
+ 		goto out;
+ 	ring->type = type;
++	ring->dev = dev;
  
- drivers/infiniband/hw/ehca/ehca_main.c |   11 +++++++++--
- drivers/infiniband/hw/ehca/hcp_if.c    |   11 +++++++++++
- drivers/infiniband/hw/ehca/hcp_if.h    |    1 +
- 3 files changed, 21 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
-index 482103e..add4ff4 100644
---- a/drivers/infiniband/hw/ehca/ehca_main.c
-+++ b/drivers/infiniband/hw/ehca/ehca_main.c
-@@ -937,6 +937,7 @@ static struct of_platform_driver ehca_driver = {
- void ehca_poll_eqs(unsigned long data)
- {
- 	struct ehca_shca *shca;
-+	u64 ret;
- 
- 	spin_lock(&shca_list_lock);
- 	list_for_each_entry(shca, &shca_list, shca_list) {
-@@ -955,8 +956,14 @@ void ehca_poll_eqs(unsigned long data)
- 				spin_unlock_irqrestore(&eq->spinlock, flags);
- 				max--;
- 			} while (q_ofs == q_ofs2 && max > 0);
--			if (q_ofs == q_ofs2)
--				ehca_process_eq(shca, 0);
-+			if (q_ofs == q_ofs2) {
-+				ret = hipz_h_eoi(eq->ist);
-+				if (ret != H_SUCCESS)
-+					ehca_err(&shca->ib_device,
-+						 "bad return code EOI -"
-+						 "rc = %ld\n", ret);
-+				tasklet_hi_schedule(&shca->eq.interrupt_task);
-+			}
- 		}
+ 	nr_slots = B43_RXRING_SLOTS;
+ 	if (for_tx)
+@@ -853,7 +854,6 @@ struct b43_dmaring *b43_setup_dmaring(st
+ 				 DMA_TO_DEVICE);
  	}
- 	mod_timer(&poll_eqs_timer, round_jiffies(jiffies + HZ));
-diff --git a/drivers/infiniband/hw/ehca/hcp_if.c b/drivers/infiniband/hw/ehca/hcp_if.c
-index 5245e13..7084efd 100644
---- a/drivers/infiniband/hw/ehca/hcp_if.c
-+++ b/drivers/infiniband/hw/ehca/hcp_if.c
-@@ -933,3 +933,14 @@ u64 hipz_h_error_data(const struct ipz_adapter_handle adapter_handle,
- 				       r_cb,
- 				       0, 0, 0, 0);
- }
-+
-+u64 hipz_h_eoi(int irq)
-+{
-+	int value;
-+	unsigned long xirr;
-+
-+	iosync();
-+	value = (0xff << 24) | irq;
-+	xirr = value & 0xffffffff;
-+	return plpar_hcall_norets(H_EOI, xirr);
-+}
-diff --git a/drivers/infiniband/hw/ehca/hcp_if.h b/drivers/infiniband/hw/ehca/hcp_if.h
-index 60ce02b..2c3c6e0 100644
---- a/drivers/infiniband/hw/ehca/hcp_if.h
-+++ b/drivers/infiniband/hw/ehca/hcp_if.h
-@@ -260,5 +260,6 @@ u64 hipz_h_error_data(const struct ipz_adapter_handle adapter_handle,
- 		      const u64 ressource_handle,
- 		      void *rblock,
- 		      unsigned long *byte_count);
-+u64 hipz_h_eoi(int irq);
  
- #endif /* __HCP_IF_H__ */
--- 
-1.5.5
+-	ring->dev = dev;
+ 	ring->nr_slots = nr_slots;
+ 	ring->mmio_base = b43_dmacontroller_base(type, controller_index);
+ 	ring->index = controller_index;
 
+
+>     dma-mapping-add-the-device-argument-to-dma_mapping_error
+> 
+>     Add per-device dma_mapping_ops support for CONFIG_X86_64 as POWER
+>     architecture does:
+> 
+>     This enables us to cleanly fix the Calgary IOMMU issue that some devices
+>     are not behind the IOMMU (http://lkml.org/lkml/2008/5/8/423).
+> 
+>     I think that per-device dma_mapping_ops support would be also helpful for
+>     KVM people to support PCI passthrough but Andi thinks that this makes it
+>     difficult to support the PCI passthrough (see the above thread).  So I
+>     CC'ed this to KVM camp.  Comments are appreciated.
+> 
+>     A pointer to dma_mapping_ops to struct dev_archdata is added.  If the
+>     pointer is non NULL, DMA operations in asm/dma-mapping.h use it.  If it's
+>     NULL, the system-wide dma_ops pointer is used as before.
+> 
+>     If it's useful for KVM people, I plan to implement a mechanism to register
+>     a hook called when a new pci (or dma capable) device is created (it works
+>     with hot plugging).  It enables IOMMUs to set up an appropriate
+>     dma_mapping_ops per device.
+> 
+>     The major obstacle is that dma_mapping_error doesn't take a pointer to the
+>     device unlike other DMA operations.  So x86 can't have dma_mapping_ops per
+>     device.  Note all the POWER IOMMUs use the same dma_mapping_error function
+>     so this is not a problem for POWER but x86 IOMMUs use different
+>     dma_mapping_error functions.
+> 
+>     The first patch adds the device argument to dma_mapping_error.  The patch
+>     is trivial but large since it touches lots of drivers and dma-mapping.h in
+>     all the architecture.
+> 
+> (Added to Cc.)
+> 
+> 
+> Vegard
+> 
+
+
+
+-- 
+Greetings Michael.
