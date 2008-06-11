@@ -1,88 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbYFKICx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbYFKIEF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756020AbYFKICx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 04:02:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbYFKICf
+	id S1754741AbYFKIEF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 04:04:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbYFKIDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 04:02:35 -0400
-Received: from dwdmx4.dwd.de ([141.38.3.230]:59448 "EHLO dwdmx4.dwd.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753244AbYFKICe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 04:02:34 -0400
-Date: Wed, 11 Jun 2008 08:02:32 +0000 (GMT)
-From: Holger Kiehl <Holger.Kiehl@dwd.de>
-X-X-Sender: kiehl@diagnostix.dwd.de
-To: linux-ext4@vger.kernel.org
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Performance of ext4
-Message-ID: <Pine.LNX.4.64.0806110801370.19793@diagnostix.dwd.de>
+	Wed, 11 Jun 2008 04:03:43 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:48299 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753317AbYFKIDk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 04:03:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=M6AHsPS7ALIplf+JVdiL5t2iQdRGZPVZFEYArzHu19LPg4H/kQzJG+SwsGX24C0UXB
+         QU3pxSFBPWWxrNCsWYuRQHKXcsbkVS+Ut+K+jgXbeDF2fMNnNC2avne0eIzKg4tHlZNp
+         OEMehUonrQwxjnEhecVHIPK6JS7oDCWtQmVTo=
+Message-ID: <484F86D4.8050907@gmail.com>
+Date: Wed, 11 Jun 2008 17:03:32 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Prevent busy looping
+References: <20080416151305.8788.63912.stgit@denkblock.local>	<20080416163152.GK12774@kernel.dk>	<87r6d5l9pb.fsf@denkblock.local>	<20080417071335.GR12774@kernel.dk>	<87ve2gc1bn.fsf@denkblock.local>	<484F7A8D.1040809@gmail.com> <20080611080502.4aa43980@core>
+In-Reply-To: <20080611080502.4aa43980@core>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
+Alan Cox wrote:
+>> Elias's synthetic test case triggered infinite loop because it wasn't
+>> a proper ->qc_defer().  ->qc_defer() should never defer commands when
+>> the target is idle.
+> 
+> Target or host ? We *do* defer commands in the case of an idle channel
+> when dealing with certain simplex controllers that can only issue one
+> command per host not one per cable (and in fact in the general case we
+> can defer commands due to activity on the other drive on the cable).
 
-Doing some performance test between ext3 and ext4 I noticed that ext4
-is not much faster or in some cases slower then ext3. Two years ago when
-I tested ext4 it was a lot faster then ext3 (see my mail:
-http://lkml.org/lkml/2006/6/6/65). Doing some simple tests with bonnie++
-I got the following results:
+The term was confusing.  I used target to mean both device
+(ATA_DEFER_LINK) and host (ATA_DEFER_PORT).  Hmmm... in simplex case,
+yeah, blocked counters need to be > 1.  We'll need to increase blocked
+counts after all.  I'll test blocked counts of 2 w/ PMP and make sure it
+doesn't incur unnecessary delays and post the patch.
 
-Version  1.03        ------Sequential Output------ --Sequential Input- --Random-
-                      -Per Chr- --Block-- -Rewrite- -Per Chr- --Block-- --Seeks--
-Machine         Size K/sec %CP K/sec %CP K/sec %CP K/sec %CP K/sec %CP  /sec %CP
-ext3(2 years ago)16G 38621  98 194816 94 87776  49 37921  92 239128 54  1402   5
-                  16G 47000  99 194276 94 89232  49 38628  92 240539 55  1399   5
-                  16G 45873  98 178195 90 89726  50 38482  92 240490 55  1381   4
+Thanks.
 
-ext3 (now)       16G 51501  97 210601 91 100479 32 55528  98 301589 44  1198   5
-                  16G 52702  98 215540 94 99339  32 55376  97 300933 44  1159   4
-                  16G 52426  99 212584 94 99091  31 55656  98 301669 44  1160   4
-
-ext4(2 years ago)16G 59223  91 264155 45 111459 36 57313  99 317944 63  1478   7
-                  16G 58814  92 276803 47 110418 36 57105  99 317534 65  1525   5
-                  16G 58299  92 274523 48 110290 36 56723  99 318839 65  1502   4
-
-ext4 (now)       16G 52965  98 224199 89 108440 32 56389  99 303792 42  1526   4
-                  16G 52792  98 223980 92 107685 32 56350  98 303066 42  1532   4
-                  16G 52994  98 222354 92 107802 32 56386  99 303727 41  1455   4
-
-For this system the write performance is the most important factor and one
-can see today ext4 is marginally faster then ext3. But 2 years ago ext4 was
-a lot faster (~270MB against ~223MB).
-
-Using my own benchmark afdbench where many process copy thousands of small
-files around the results are as follows:
-
-   For ext3: 5449.76 files per second 15.58 MiB/s
-   For ext4: 5162.16 files per second 15.48 MiB/s
-
-So in this test ext4 is a bit slower then ext3. Since afdbench has seen
-considerable changes, one cannot compare these results with those 2 years
-ago. But 2 years ago ext4 was 12% faster then ext3.
-
-Test where done with kernel 2.6.25.4 and file system where created as follows:
-
-    ext3: mke2fs -b 4096 -m 0 -O dir_index,large_file,filetype,has_journal,sparse_super -j /dev/md7
-    ext4: mke2fs -b 4096 -E test_fs -m 0 -O dir_index,large_file,filetype,has_journal,sparse_super -j /dev/md7
-
-And both where mounted with the following options:
-
-    noatime,nodiratime,commit=15
-
-2 years ago I used 2.6.16.8 but the hardware is still the same. So what has
-happened with the performance of ext4? I noticed that 2 years ago I could
-use extents+mballoc+delalloc, now there is only extents+mballoc in the
-current kernels. Could delalloc make the big difference? I saw that
-in Andrew Morton mm tree delalloc is included. Unfortunately when I tried using
-2.6.26-rc2-mm1 a sync would never return and there where lot of other
-odd things, so I could not do any tests with delalloc.
-
-So any idea what I am doing wrong or what I could do to improve those numbers?
-Please CC me since I am not subscribed to the list.
-
-Thanks,
-Holger
-
+-- 
+tejun
