@@ -1,93 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758362AbYFKWv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758218AbYFKWym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758362AbYFKWv6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 18:51:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbYFKWvu
+	id S1758218AbYFKWym (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 18:54:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbYFKWye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 18:51:50 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:15773 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753380AbYFKWvt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 18:51:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=sfK8bhEjNHcQxxebQESTDplApEtOfaJ0bWHBuPrFjnM4jc7QVgeb5QQWv+7sbvF7Ia
-         uXkDTgdxTv3BMQK51CM9zwwch1YUdJSIiUE2T2Weui2I1a09ajPy8/iPjz/VO/IsSY3X
-         EFBiyAIJxXYJX21nZ7HpsO2x2C5+1iOg1CEr0=
-Message-ID: <4850570D.3060808@gmail.com>
-Date: Thu, 12 Jun 2008 00:51:57 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Swiftdove 2.0.0.14 (X11/20080505)
+	Wed, 11 Jun 2008 18:54:34 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:46908 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753325AbYFKWyd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 18:54:33 -0400
+Date: Wed, 11 Jun 2008 18:54:31 -0400
+To: "Weathers, Norman R." <Norman.R.Weathers@conocophillips.com>
+Cc: Jeff Layton <jlayton@poochiereds.net>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+Subject: Re: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
+Message-ID: <20080611225431.GD25194@fieldses.org>
+References: <0122F800A3B64C449565A9E8C2977010155587@hoexmb9.conoco.net> <20080609185355.GF28584@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75D9F@hoexmb9.conoco.net> <20080610171602.GG20184@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DA3@hoexmb9.conoco.net> <20080611184613.GM15380@fieldses.org> <20080611195222.GP15380@fieldses.org> <20080611160947.5f08fb16@tleilax.poochiereds.net> <20080611205749.GA25194@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DAA@hoexmb9.conoco.net>
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: balbir@linux.vnet.ibm.com, menage@google.com, matt@bluehost.com,
-       roberto@unbit.it, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] i/o bandwidth controller documentation
-References: <1212791250-32320-2-git-send-email-righi.andrea@gmail.com> <20080611154228.ef269ff2.randy.dunlap@oracle.com>
-In-Reply-To: <20080611154228.ef269ff2.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <0122F800A3B64C449565A9E8C297701002D75DAA@hoexmb9.conoco.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Sat,  7 Jun 2008 00:27:28 +0200 Andrea Righi wrote:
-> 
->> Documentation of the block device I/O bandwidth controller: description, usage,
->> advantages and design.
->>
->> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
->> ---
->>  Documentation/controllers/io-throttle.txt |  150 +++++++++++++++++++++++++++++
->>  1 files changed, 150 insertions(+), 0 deletions(-)
->>  create mode 100644 Documentation/controllers/io-throttle.txt
->>
->> diff --git a/Documentation/controllers/io-throttle.txt b/Documentation/controllers/io-throttle.txt
->> new file mode 100644
->> index 0000000..5373fa8
->> --- /dev/null
->> +++ b/Documentation/controllers/io-throttle.txt
->> @@ -0,0 +1,150 @@
->> +
->> +               Block device I/O bandwidth controller
->> +
->> +1. Description
->> +
->> +This controller allows to limit the I/O bandwidth of specific block devices for
->> +specific process containers (cgroups) imposing additional delays on I/O
->> +requests for those processes that exceed the limits defined in the control
->> +group filesystem.
->> +
->> +Bandwidth limiting rules offer better control over QoS with respect to priority
->> +or weight-based solutions that only give information about applications'
->> +relative performance requirements.
->> +
->> +The goal of the I/O bandwidth controller is to improve performance
->> +predictability and QoS of the different control groups sharing the same block
->> +devices.
->> +
->> +NOTE: if you're looking for a way to improve the overall throughput of the
->> +system probably you should use a different solution.
->> +
->> +2. User Interface
->> +
->> +A new I/O bandwidth limitation rule is described using the file
->> +blockio.bandwidth.
->> +
->> +The same file can be used to set multiple rules for different block devices
->> +relatively to the same cgroup.
-> 
->    relative
-> 
+On Wed, Jun 11, 2008 at 05:46:13PM -0500, Weathers, Norman R. wrote:
+> I will try and get it patched and retested, but it may be a day or two
+> before I can get back the information due to production jobs now
+> running.  Once they finish up, I will get back with the info.
 
-I will fix it in the next version.
+Understood.
 
-Thanks again Randy.
+> Thanks everyone for looking at this, by the way!
 
--Andrea
+And thanks for your persistence.
+
+--b.
+
+> 
+> > 
+> > 
+> > diff --git a/mm/slab.c b/mm/slab.c
+> > index 06236e4..b379e31 100644
+> > --- a/mm/slab.c
+> > +++ b/mm/slab.c
+> > @@ -2202,7 +2202,7 @@ kmem_cache_create (const char *name, 
+> > size_t size, size_t align,
+> >  	 * above the next power of two: caches with object 
+> > sizes just above a
+> >  	 * power of two have a significant amount of internal 
+> > fragmentation.
+> >  	 */
+> > -	if (size < 4096 || fls(size - 1) == fls(size-1 + REDZONE_ALIGN +
+> > +	if (size < 8192 || fls(size - 1) == fls(size-1 + REDZONE_ALIGN +
+> >  						2 * 
+> > sizeof(unsigned long long)))
+> >  		flags |= SLAB_RED_ZONE | SLAB_STORE_USER;
+> >  	if (!(flags & SLAB_DESTROY_BY_RCU))
+> > 
+> 
+> 
+> Norman Weathers
