@@ -1,73 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755825AbYFKGvL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbYFKGyB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755825AbYFKGvL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 02:51:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbYFKGu5
+	id S1755119AbYFKGyB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 02:54:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbYFKGxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 02:50:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60579 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752920AbYFKGu5 (ORCPT
+	Wed, 11 Jun 2008 02:53:54 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:14939 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752658AbYFKGxx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 02:50:57 -0400
-Date: Tue, 10 Jun 2008 23:50:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Christoph Lameter <clameter@sgi.com>, torvalds@linux-foundation.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       benh@kernel.crashing.org, paulus@samba.org
-Subject: Re: [patch 7/7] powerpc: lockless get_user_pages_fast
-Message-Id: <20080610235017.bf9cca1c.akpm@linux-foundation.org>
-In-Reply-To: <20080611062404.GC11545@wotan.suse.de>
-References: <20080605094300.295184000@nick.local0.net>
-	<20080605094826.128415000@nick.local0.net>
-	<Pine.LNX.4.64.0806101159110.17798@schroedinger.engr.sgi.com>
-	<20080611031822.GA8228@wotan.suse.de>
-	<Pine.LNX.4.64.0806102138380.19967@schroedinger.engr.sgi.com>
-	<Pine.LNX.4.64.0806102141010.19967@schroedinger.engr.sgi.com>
-	<20080611044902.GB11545@wotan.suse.de>
-	<20080610230622.abed7b55.akpm@linux-foundation.org>
-	<20080611062404.GC11545@wotan.suse.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 11 Jun 2008 02:53:53 -0400
+X-SourceIP: 80.56.237.116
+Subject: Re: [PATCH -rt 6/5] cpu-hotplug: cpu_down vs preempt-rt
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Clark Williams <williams@redhat.com>,
+       Gregory Haskins <ghaskins@novell.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+In-Reply-To: <20080610111832.969119014@chello.nl>
+References: <20080610111259.766940257@chello.nl>
+	 <20080610111832.969119014@chello.nl>
+Content-Type: text/plain
+Date: Wed, 11 Jun 2008 08:53:45 +0200
+Message-Id: <1213167225.31518.64.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jun 2008 08:24:04 +0200 Nick Piggin <npiggin@suse.de> wrote:
+Because 5/5 has a horrible bug...
 
-> On Tue, Jun 10, 2008 at 11:06:22PM -0700, Andrew Morton wrote:
-> > On Wed, 11 Jun 2008 06:49:02 +0200 Nick Piggin <npiggin@suse.de> wrote:
-> > 
-> > > Can memory management patches go though mm/? I dislike the cowboy
->                                             ^^^
-> That should read -mm, of course.
-> 
+We should only do __mmdrop() from rcu, not mmdrop().
 
--mm is looking awfully peripheral nowadays.  I really need to get my
-linux-next act together.  Instead I'll be taking all next week off. 
-nyer nyer.  
+---
+Index: linux-2.6.24.7.noarch/include/linux/sched.h
+===================================================================
+--- linux-2.6.24.7.noarch.orig/include/linux/sched.h
++++ linux-2.6.24.7.noarch/include/linux/sched.h
+@@ -1832,6 +1832,7 @@ extern struct mm_struct * mm_alloc(void)
+ /* mmdrop drops the mm and the page tables */
+ extern void FASTCALL(__mmdrop(struct mm_struct *));
+ extern void FASTCALL(__mmdrop_delayed(struct mm_struct *));
++extern void FASTCALL(__mmdrop_rcu(struct mm_struct *));
+ 
+ static inline void mmdrop(struct mm_struct * mm)
+ {
+@@ -1845,6 +1846,12 @@ static inline void mmdrop_delayed(struct
+ 		__mmdrop_delayed(mm);
+ }
+ 
++static inline void mmdrop_rcu(struct mm_struct * mm)
++{
++	if (atomic_dec_and_test(&mm->mm_count))
++		__mmdrop_rcu(mm);
++}
++
+ /* mmput gets rid of the mappings and all user-space */
+ extern void mmput(struct mm_struct *);
+ /* Grab a reference to a task's mm, if it is not already going away */
+Index: linux-2.6.24.7.noarch/kernel/fork.c
+===================================================================
+--- linux-2.6.24.7.noarch.orig/kernel/fork.c
++++ linux-2.6.24.7.noarch/kernel/fork.c
+@@ -431,6 +431,18 @@ void fastcall __mmdrop(struct mm_struct 
+ 	free_mm(mm);
+ }
+ 
++#ifdef CONFIG_PREEMPT_RT
++static void ___mmdrop_rcu(struct rcu_head *head)
++{
++	__mmdrop(container_of(head, struct mm_struct, rcu_head));
++}
++
++void fastcall __mmdrop_rcu(struct mm_struct *mm)
++{
++	call_rcu_preempt_online(&mm->rcu_head, ___mmdrop_rcu);
++}
++#endif
++
+ /*
+  * Decrement the use count and release all resources for an mm.
+  */
+Index: linux-2.6.24.7.noarch/kernel/sched.c
+===================================================================
+--- linux-2.6.24.7.noarch.orig/kernel/sched.c
++++ linux-2.6.24.7.noarch/kernel/sched.c
+@@ -5888,15 +5888,6 @@ void sched_idle_next(void)
+ 	spin_unlock_irqrestore(&rq->lock, flags);
+ }
+ 
+-#ifdef CONFIG_PREEMPT_RT
+-void mmdrop_rcu(struct rcu_head *head)
+-{
+-	struct mm_struct *mm = container_of(head, struct mm_struct, rcu_head);
+-
+-	mmdrop(mm);
+-}
+-#endif
+-
+ /*
+  * Ensures that the idle task is using init_mm right before its cpu goes
+  * offline.
+@@ -5910,7 +5901,7 @@ void idle_task_exit(void)
+ 	if (mm != &init_mm)
+ 		switch_mm(mm, &init_mm, current);
+ #ifdef CONFIG_PREEMPT_RT
+-	call_rcu_preempt_online(&mm->rcu_head, mmdrop_rcu);
++	mmdrop_rcu(mm);
+ #else
+ 	mmdrop(mm);
+ #endif
 
-> 
-> > > method of merging things that some other subsystems have adopted :)
-> > 
-> > I think I'd prefer that.  I may be a bit slow, but we're shoving at
-> > least 100 MM patches through each kernel release and I think I review
-> > things more closely than others choose to.  At least, I find problems
-> > and I've seen some pretty wild acked-bys...
-> 
-> I wouldn't say you're too slow. You're as close to mm and mm/fs 
-> maintainer as we're likely to get and I think it would be much worse
-> to have things merged out-of-band. Even the more peripheral parts like
-> slab or hugetlb.
-
-Sigh.  I feel guilty when spending time merging (for example)
-random-usb-patches-in-case-greg-misses-them, but such is life.  Some
-help reviewing things would be nice.
-
-A lot of my review is now of the "how the heck is anyone to understand
-this in a year's time if I can't understand it now" variety, but I hope
-that's useful...
 
