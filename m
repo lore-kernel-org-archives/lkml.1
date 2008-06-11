@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355AbYFKNkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753491AbYFKNoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753355AbYFKNkT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 09:40:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbYFKNkE
+	id S1753491AbYFKNoZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 09:44:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842AbYFKNoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 09:40:04 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:33866 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750699AbYFKNkB (ORCPT
+	Wed, 11 Jun 2008 09:44:18 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:42844 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750784AbYFKNoR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 09:40:01 -0400
-Date: Wed, 11 Jun 2008 16:39:57 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: "=?UTF-8?Q?H=C3=A5kon_L=C3=B8vdal?=" <hlovdal@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
-In-Reply-To: <a01a16b50806101626i2942ebam462410ad26050829@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0806111636330.16829@wrl-59.cs.helsinki.fi>
-References: <20080526115628.GA31316@elte.hu>  <Pine.LNX.4.64.0805312119270.2672@wrl-59.cs.helsinki.fi>
-  <a01a16b50805311325w7f58ca69h93d02af9bc28d2ea@mail.gmail.com> 
- <Pine.LNX.4.64.0805312332270.2760@wrl-59.cs.helsinki.fi> 
- <a01a16b50806031710u54b9297bkf1fad9c4f8fd581f@mail.gmail.com> 
- <Pine.LNX.4.64.0806041402211.16829@wrl-59.cs.helsinki.fi> 
- <a01a16b50806040700h1efce63cq2a27b087df0d25be@mail.gmail.com> 
- <Pine.LNX.4.64.0806041802360.2580@wrl-59.cs.helsinki.fi> 
- <a01a16b50806060232u1eff3867u24fecc539fda1d14@mail.gmail.com> 
- <Pine.LNX.4.64.0806091422180.16829@wrl-59.cs.helsinki.fi>
- <a01a16b50806101626i2942ebam462410ad26050829@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-292146203-1213191597=:16829"
+	Wed, 11 Jun 2008 09:44:17 -0400
+X-Sasl-enc: 1jyUwjgMwjoJelrGLstRZTsUcbTe4Y+s8hGZ37bpMQl8 1213191855
+Subject: Re: [PATCH] autofs4: fix 32-bit userspace vs
+	64-bit	kernel	communications
+From: Ian Kent <raven@themaw.net>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: autofs mailing list <autofs@linux.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Konstantin Khlebnikov <khlebnikov@openvz.org>
+In-Reply-To: <484FD233.20602@openvz.org>
+References: <484FA0B8.2000002@openvz.org>
+	 <1213187579.4994.25.camel@raven.themaw.net>  <484FC94E.1000209@openvz.org>
+	 <1213190100.4994.54.camel@raven.themaw.net>  <484FD233.20602@openvz.org>
+Content-Type: text/plain
+Date: Wed, 11 Jun 2008 21:40:29 +0800
+Message-Id: <1213191629.4994.61.camel@raven.themaw.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----696208474-292146203-1213191597=:16829
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+On Wed, 2008-06-11 at 17:25 +0400, Pavel Emelyanov wrote:
+> > Does the test_thread_flag(TIF_IA32) macro only return true for a 32-bit
+> > user-space process running within a 64-bit user space environment
+> > (perhaps I can do away with the check in the autofs daemon, perhaps it
+> > doesn't quite work correctly)?
+> 
+> Hm... If we fix it in the user level that would also be OK, I
+> suppose...
+> 
+> > Oh .. so maybe the answer to my question is yes?
+> 
+> It is - we check *only* for the process, that is to receive the 
+> packet.
 
-On Wed, 11 Jun 2008, Håkon Løvdal wrote:
+Right, since the send is done in user context.
 
-> 2008/6/9 Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>:
-> > ...also the one from allfiles.zip is similarily damaged.
-> >
-> > ...If you don't have an explanation, them it might be time to check
-> > your hardware....
->
-> I do not have any good explanation (bad memory?). When checking the
-> copytest003.capture.bz2 file in the http server storage directory
-> I get the same results as you. However I also have the original file
-> stored still and comparing them with cmp -l gives
->  20558656 124 104
-> so obviously a bit has been flipped.
+> 
+> > What about other arches offer 32-bit within a 64-bit environment (has
+> > this been the case on sparc64 at some point)?
+> > What about the compiler padding on these?
+> 
+> We have no technical ability to check this. First I wanted to
+> get your opinion about this particular fix for x86 machines.
+> 
+> As far as sparc(64) and other 32-to-64 are concerned - I can
+> start talking to their users/maintainers to check.
 
-...Yeah, which is a bad thing because now we don't know if that same error 
-causes the TCP stops too.
+I investigated only x86_64 and sparc64 but that was a quite a while ago
+now. My sparc machine doesn't even have a Linux install atm.
 
-> I have now replaced the erroneous file with a good copy, so you should 
-> be able to download again.
+If we can find a general and consistent solution I'm happy to remove the
+check from the daemon and cope with the bit of pain it might cause.
 
-I'll have a look if there's some common denominator but this whole issue 
-might well be due to hw failure.
+> 
+> > Don't get me wrong, I'm not against fixing this, in fact I'd like to,
+> > but I'm concerned it may end up a bit of a can of worms.
 
-
--- 
- i.
----696208474-292146203-1213191597=:16829--
