@@ -1,72 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758445AbYFKU4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758728AbYFKU45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758445AbYFKU4m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 16:56:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756597AbYFKUzr
+	id S1758728AbYFKU45 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 16:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757545AbYFKUzz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 16:55:47 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36986 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757494AbYFKUzp (ORCPT
+	Wed, 11 Jun 2008 16:55:55 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:7844 "EHLO
+	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752227AbYFKUzx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 16:55:45 -0400
-Date: Wed, 11 Jun 2008 13:55:32 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: markh@compro.net
-Cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       Jan Engelhardt <jengelh@medozas.de>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       "solsTiCe d'Hiver" <solstice.dhiver@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: no cpu MHz in /proc/cpuinfo on 2.6.25.4-rt6
-Message-ID: <20080611135532.651fb5ae@infradead.org>
-In-Reply-To: <48503792.50003@compro.net>
-References: <200806102152.23286.solstice.dhiver@gmail.com>
-	<20080610131314.5f7069e6@infradead.org>
-	<484EE71A.40002@intel.com>
-	<alpine.LNX.1.10.0806111440480.20733@fbirervta.pbzchgretzou.qr>
-	<20080611063639.5e1eea5b@infradead.org>
-	<alpine.LNX.1.10.0806111552090.20733@fbirervta.pbzchgretzou.qr>
-	<20080611065816.6cff290d@infradead.org>
-	<Pine.LNX.4.61.0806111006560.23096@chaos.analogic.com>
-	<20080611083644.32afc823@infradead.org>
-	<4850046C.4070602@compro.net>
-	<20080611104446.3b0ce2d9@infradead.org>
-	<48501159.4050908@compro.net>
-	<48503792.50003@compro.net>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 11 Jun 2008 16:55:53 -0400
+Message-Id: <20080611204917.396070661@mvista.com>
+References: <20080611204916.271608740@mvista.com>
+User-Agent: quilt/0.46-1
+Date: Wed, 11 Jun 2008 13:49:20 -0700
+Subject: [PATCH 4/5] rtmutex: add generic blocked_on usage
+From: Daniel Walker <dwalker@mvista.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ulrich Drepper <drepper@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+Content-Disposition: inline; filename=blocked_on-rtmutex.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jun 2008 16:37:38 -0400
-> > Mark 
-> > 
-> 
-> Ok, what would one use besides the tsc to take a fast high-res time
-> stamp in a kernel module that could also be used in user land (same
-> time source) to for instance calculate  the the time between an event
-> in the kernel to an event in user land?
-> 
-> do_gettimeofday / gettimeofday are not really acceptable.
+Modify the rtmutex to use the generic blocked_on field.
 
+Signed-off-by: Daniel Walker <dwalker@mvista.com>
 
-why not? both of these (they're teh same) are the best the kernel can
-do. If there was a better way to do it, gettimeofday() would use it.
-It's not even a system call if we can get away with it
-(although system calls are pretty cheap)
+---
+ include/linux/sched.h |    4 ++--
+ kernel/fork.c         |    1 -
+ kernel/rtmutex.c      |   35 ++++++++++++++++++++++++-----------
+ 3 files changed, 26 insertions(+), 14 deletions(-)
 
-really, think about it. if there was a better way, gettimeofday() would
-use it.
-
+Index: linux-2.6.25/include/linux/sched.h
+===================================================================
+--- linux-2.6.25.orig/include/linux/sched.h
++++ linux-2.6.25/include/linux/sched.h
+@@ -1026,12 +1026,14 @@ struct sched_rt_entity {
+ 
+ enum lock_waiter_type {
+ 	MUTEX_WAITER = 1,
++	RT_MUTEX_WAITER,
+ };
+ 
+ struct lock_waiter_state {
+ 	enum lock_waiter_type lock_type;
+ 	union {
+ 		struct mutex_waiter *mutex_blocked_on;
++		struct rt_mutex_waiter *rt_blocked_on;
+ 	};
+ };
+ 
+@@ -1218,8 +1220,6 @@ struct task_struct {
+ #ifdef CONFIG_RT_MUTEXES
+ 	/* PI waiters blocked on a rt_mutex held by this task */
+ 	struct plist_head pi_waiters;
+-	/* Deadlock detection and priority inheritance handling */
+-	struct rt_mutex_waiter *pi_blocked_on;
+ #endif
+ 
+ 	/*
+Index: linux-2.6.25/kernel/fork.c
+===================================================================
+--- linux-2.6.25.orig/kernel/fork.c
++++ linux-2.6.25/kernel/fork.c
+@@ -850,7 +850,6 @@ static void rt_mutex_init_task(struct ta
+ 	spin_lock_init(&p->pi_lock);
+ #ifdef CONFIG_RT_MUTEXES
+ 	plist_head_init(&p->pi_waiters, &p->pi_lock);
+-	p->pi_blocked_on = NULL;
+ #endif
+ }
+ 
+Index: linux-2.6.25/kernel/rtmutex.c
+===================================================================
+--- linux-2.6.25.orig/kernel/rtmutex.c
++++ linux-2.6.25/kernel/rtmutex.c
+@@ -74,6 +74,14 @@ static void fixup_rt_mutex_waiters(struc
+ 		clear_rt_mutex_waiters(lock);
+ }
+ 
++static
++struct rt_mutex_waiter *rt_mutex_get_waiter(struct task_struct *task)
++{
++	if (task->blocked_on && task->blocked_on->lock_type == RT_MUTEX_WAITER)
++		return task->blocked_on->rt_blocked_on;
++	return NULL;
++}
++
+ /*
+  * We can speed up the acquire/release, if the architecture
+  * supports cmpxchg and if there's no debugging state to be set up
+@@ -197,7 +205,7 @@ static int rt_mutex_adjust_prio_chain(st
+ 	 */
+ 	spin_lock_irqsave(&task->pi_lock, flags);
+ 
+-	waiter = task->pi_blocked_on;
++	waiter = rt_mutex_get_waiter(task);
+ 	/*
+ 	 * Check whether the end of the boosting chain has been
+ 	 * reached or the state of the chain has changed while we
+@@ -411,6 +419,7 @@ static int try_to_take_rt_mutex(struct r
+  */
+ static int task_blocks_on_rt_mutex(struct rt_mutex *lock,
+ 				   struct rt_mutex_waiter *waiter,
++				   struct lock_waiter_state *lock_waiter,
+ 				   int detect_deadlock)
+ {
+ 	struct task_struct *owner = rt_mutex_owner(lock);
+@@ -430,7 +439,7 @@ static int task_blocks_on_rt_mutex(struc
+ 		top_waiter = rt_mutex_top_waiter(lock);
+ 	plist_add(&waiter->list_entry, &lock->wait_list);
+ 
+-	current->pi_blocked_on = waiter;
++	current->blocked_on = lock_waiter;
+ 
+ 	spin_unlock_irqrestore(&current->pi_lock, flags);
+ 
+@@ -440,7 +449,7 @@ static int task_blocks_on_rt_mutex(struc
+ 		plist_add(&waiter->pi_list_entry, &owner->pi_waiters);
+ 
+ 		__rt_mutex_adjust_prio(owner);
+-		if (owner->pi_blocked_on)
++		if (rt_mutex_get_waiter(owner))
+ 			chain_walk = 1;
+ 		spin_unlock_irqrestore(&owner->pi_lock, flags);
+ 	}
+@@ -501,7 +510,7 @@ static void wakeup_next_waiter(struct rt
+ 	spin_unlock_irqrestore(&current->pi_lock, flags);
+ 
+ 	/*
+-	 * Clear the pi_blocked_on variable and enqueue a possible
++	 * Clear the blocked_on variable and enqueue a possible
+ 	 * waiter into the pi_waiters list of the pending owner. This
+ 	 * prevents that in case the pending owner gets unboosted a
+ 	 * waiter with higher priority than pending-owner->normal_prio
+@@ -509,11 +518,12 @@ static void wakeup_next_waiter(struct rt
+ 	 */
+ 	spin_lock_irqsave(&pendowner->pi_lock, flags);
+ 
+-	WARN_ON(!pendowner->pi_blocked_on);
+-	WARN_ON(pendowner->pi_blocked_on != waiter);
+-	WARN_ON(pendowner->pi_blocked_on->lock != lock);
++	WARN_ON(!pendowner->blocked_on);
++	WARN_ON(pendowner->blocked_on->lock_type != RT_MUTEX_WAITER);
++	WARN_ON(pendowner->blocked_on->rt_blocked_on != waiter);
++	WARN_ON(pendowner->blocked_on->rt_blocked_on->lock != lock);
+ 
+-	pendowner->pi_blocked_on = NULL;
++	pendowner->blocked_on = NULL;
+ 
+ 	if (rt_mutex_has_waiters(lock)) {
+ 		struct rt_mutex_waiter *next;
+@@ -542,7 +552,7 @@ static void remove_waiter(struct rt_mute
+ 	spin_lock_irqsave(&current->pi_lock, flags);
+ 	plist_del(&waiter->list_entry, &lock->wait_list);
+ 	waiter->task = NULL;
+-	current->pi_blocked_on = NULL;
++	current->blocked_on = NULL;
+ 	spin_unlock_irqrestore(&current->pi_lock, flags);
+ 
+ 	if (first && owner != current) {
+@@ -559,7 +569,7 @@ static void remove_waiter(struct rt_mute
+ 		}
+ 		__rt_mutex_adjust_prio(owner);
+ 
+-		if (owner->pi_blocked_on)
++		if (rt_mutex_get_waiter(owner))
+ 			chain_walk = 1;
+ 
+ 		spin_unlock_irqrestore(&owner->pi_lock, flags);
+@@ -592,7 +602,7 @@ void rt_mutex_adjust_pi(struct task_stru
+ 
+ 	spin_lock_irqsave(&task->pi_lock, flags);
+ 
+-	waiter = task->pi_blocked_on;
++	waiter = rt_mutex_get_waiter(task);
+ 	if (!waiter || waiter->list_entry.prio == task->prio) {
+ 		spin_unlock_irqrestore(&task->pi_lock, flags);
+ 		return;
+@@ -614,6 +624,8 @@ rt_mutex_slowlock(struct rt_mutex *lock,
+ 		  int detect_deadlock)
+ {
+ 	struct rt_mutex_waiter waiter;
++	struct lock_waiter_state lock_waiter = {
++		.lock_type = RT_MUTEX_WAITER, { .rt_blocked_on = &waiter} };
+ 	int ret = 0;
+ 
+ 	debug_rt_mutex_init_waiter(&waiter);
+@@ -663,6 +675,7 @@ rt_mutex_slowlock(struct rt_mutex *lock,
+ 		 */
+ 		if (!waiter.task) {
+ 			ret = task_blocks_on_rt_mutex(lock, &waiter,
++						      &lock_waiter,
+ 						      detect_deadlock);
+ 			/*
+ 			 * If we got woken up by the owner then start loop
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
