@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbYFKSYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754974AbYFKS2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755606AbYFKSYR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 14:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbYFKSYD
+	id S1754974AbYFKS2m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 14:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbYFKS2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 14:24:03 -0400
-Received: from mta-out.inet.fi ([195.156.147.13]:36526 "EHLO
-	jenni2.rokki.sonera.fi" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751309AbYFKSYB (ORCPT
+	Wed, 11 Jun 2008 14:28:34 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:52806 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751236AbYFKS2c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 14:24:01 -0400
-Message-ID: <4850183B.90609@gmail.com>
-Date: Wed, 11 Jun 2008 21:23:55 +0300
-From: Anssi Hannula <anssi.hannula@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080504)
-MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: Jiri Slaby <jirislaby@gmail.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@vger.kernel.org, marcel@holtmann.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 06/10] HID: move logitech report quirks
-References: <1210931362-18422-1-git-send-email-jirislaby@gmail.com> <1210931362-18422-2-git-send-email-jirislaby@gmail.com> <1210931362-18422-3-git-send-email-jirislaby@gmail.com> <1210931362-18422-4-git-send-email-jirislaby@gmail.com> <1210931362-18422-5-git-send-email-jirislaby@gmail.com> <1210931362-18422-6-git-send-email-jirislaby@gmail.com> <Pine.LNX.4.64.0806041520140.10085@jikos.suse.cz> <484D070E.9050707@gmail.com> <Pine.LNX.4.64.0806111611540.10085@jikos.suse.cz>
-In-Reply-To: <Pine.LNX.4.64.0806111611540.10085@jikos.suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jun 2008 14:28:32 -0400
+Subject: Re: [BUG] 2.6.26-rc5-mm2 - kernel BUG at
+	arch/x86/kernel/setup.c:388!
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, linux-mm@kvack.org,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>, Mike Travis <travis@sgi.com>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <485011DF.9050606@linux.vnet.ibm.com>
+References: <20080609223145.5c9a2878.akpm@linux-foundation.org>
+	 <485011DF.9050606@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 11 Jun 2008 11:28:17 -0700
+Message-Id: <1213208897.20475.19.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina wrote:
-> On Mon, 9 Jun 2008, Jiri Slaby wrote:
+On Wed, 2008-06-11 at 23:26 +0530, Kamalesh Babulal wrote:
+> Hi Andrew,
 > 
->>>> static const struct hid_device_id hid_blacklist[] = {
->>>> +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH,
->>>> USB_DEVICE_ID_MX3000_RECEIVER) },
->>>> +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_S510_RECEIVER)
->>>> },
->>>> +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH,
->>>> USB_DEVICE_ID_S510_RECEIVER_2) },
->>>>  	{ }
->>>>  };
->>> This shouldn't be needed as soon as the userspace supports the proper module
->>> autoloading, right?
->> This is needed to tell generic drivers not to bind these, its' generic
->> blacklist. I have no idea how this could be done better with current
->> drivers/base/.
-> 
-> Hmm ... but if we make sure that the order in `modules.order' puts all the 
-> specialized drivers before the generic one, the binding should be done 
-> correctly even without blacklist, right?
+> The 2.6.26-rc5-mm2 kernel panic's, while booting up on the x86_64
+> box with the attached .config file.
 
-A little off-topic, but is there a module-init-tools repository with
-modules.order handling somewhere, or does it (still) only exist as
-not-yet-integrated patches?
+Just to save everyone the trouble, it looks like this is a new BUG_ON().
+﻿
+http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc5/2.6.26-rc5-mm2/broken-out/fix-x86_64-splat.patch
 
--- 
-Anssi Hannula
+The machine in question is a single-node machine, but with
+CONFIG_NUMA=y.
+
+
+
+
+
+
