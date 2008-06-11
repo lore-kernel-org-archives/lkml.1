@@ -1,72 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753491AbYFKNoZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbYFKNos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753491AbYFKNoZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 09:44:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842AbYFKNoS
+	id S1753902AbYFKNos (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 09:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbYFKNoj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 09:44:18 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:42844 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750784AbYFKNoR (ORCPT
+	Wed, 11 Jun 2008 09:44:39 -0400
+Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:30519 "HELO
+	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751447AbYFKNoh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 09:44:17 -0400
-X-Sasl-enc: 1jyUwjgMwjoJelrGLstRZTsUcbTe4Y+s8hGZ37bpMQl8 1213191855
-Subject: Re: [PATCH] autofs4: fix 32-bit userspace vs
-	64-bit	kernel	communications
-From: Ian Kent <raven@themaw.net>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: autofs mailing list <autofs@linux.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Konstantin Khlebnikov <khlebnikov@openvz.org>
-In-Reply-To: <484FD233.20602@openvz.org>
-References: <484FA0B8.2000002@openvz.org>
-	 <1213187579.4994.25.camel@raven.themaw.net>  <484FC94E.1000209@openvz.org>
-	 <1213190100.4994.54.camel@raven.themaw.net>  <484FD233.20602@openvz.org>
-Content-Type: text/plain
-Date: Wed, 11 Jun 2008 21:40:29 +0800
-Message-Id: <1213191629.4994.61.camel@raven.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jun 2008 09:44:37 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Message-Id;
+  b=lTurt8HLD6AvQKEbMEnJesTLLMXPVp5CoZp6S/D5T6zuGa5tD3ctbPhy+WsR/FxaADzifcIGYsEfwy90EwYj0CoJNBxoRtrCbEne8bZKjTDNx5MKIsJaxJpgCkGaxJnZ4hi5YelI4/MEPIBB0mh7rkh4WiNGOJe9AYGxO3ExS6g=  ;
+X-YMail-OSG: jJkcpnIVM1mWo7jhrYNXBBWOfwnFevjy8JUfaEx2feVCCjhmBroAcgyYfKVUksKP59jv5rUIOb5NqQbf9fU1lJ33kcL7cC.lPiZF9r5eyhHxOd36PV8NByd3kyUL5KhBnEI-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Rik van Riel <riel@redhat.com>
+Subject: Re: 2.6.26-rc5-mm2: OOM with 1G free swap
+Date: Wed, 11 Jun 2008 23:44:17 +1000
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, linux-mm@kvack.org
+References: <20080609223145.5c9a2878.akpm@linux-foundation.org> <20080610232705.3aaf5c06.akpm@linux-foundation.org> <20080611085724.1c18164f@bree.surriel.com>
+In-Reply-To: <20080611085724.1c18164f@bree.surriel.com>
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_xa9TItkcit2Pj1U"
+Message-Id: <200806112344.17627.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Boundary-00=_xa9TItkcit2Pj1U
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Wed, 2008-06-11 at 17:25 +0400, Pavel Emelyanov wrote:
-> > Does the test_thread_flag(TIF_IA32) macro only return true for a 32-bit
-> > user-space process running within a 64-bit user space environment
-> > (perhaps I can do away with the check in the autofs daemon, perhaps it
-> > doesn't quite work correctly)?
-> 
-> Hm... If we fix it in the user level that would also be OK, I
-> suppose...
-> 
-> > Oh .. so maybe the answer to my question is yes?
-> 
-> It is - we check *only* for the process, that is to receive the 
-> packet.
+On Wednesday 11 June 2008 22:57, Rik van Riel wrote:
+> On Tue, 10 Jun 2008 23:27:05 -0700
+>
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> > Well I assume that Rik ran LTP.  Perhaps a merge problem.
+> >
+> > Zero pages on active_anon and inactive_anon.  I suspect we lost those
+> > pages.
+>
+> Known problem.  I fixed this one in the updates I sent you last night.
 
-Right, since the send is done in user context.
+Oh good. Yeah I was just running some tests, and got as far as verifying
+that the upstream kernel + lockless pagecache patches reclaims file pages
+like a dream, but -mm2 sucks very badly at it.
 
-> 
-> > What about other arches offer 32-bit within a 64-bit environment (has
-> > this been the case on sparc64 at some point)?
-> > What about the compiler padding on these?
-> 
-> We have no technical ability to check this. First I wanted to
-> get your opinion about this particular fix for x86 machines.
-> 
-> As far as sparc(64) and other 32-to-64 are concerned - I can
-> start talking to their users/maintainers to check.
+During which, I also did find by inspection a little problem with my
+speculative references patch. Andrew please apply this fix.
 
-I investigated only x86_64 and sparc64 but that was a quite a while ago
-now. My sparc machine doesn't even have a Linux install atm.
 
-If we can find a general and consistent solution I'm happy to remove the
-check from the daemon and cope with the bit of pain it might cause.
+--Boundary-00=_xa9TItkcit2Pj1U
+Content-Type: text/x-diff;
+  charset="iso-8859-1";
+  name="mm-speculative-page-references-hugh-fix3.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="mm-speculative-page-references-hugh-fix3.patch"
 
-> 
-> > Don't get me wrong, I'm not against fixing this, in fact I'd like to,
-> > but I'm concerned it may end up a bit of a can of worms.
+Fix the VM_BUG_ON assertion check to actually do what I want, noted by
+Christoph.
 
+Also, fix an error-path-leak type issue with frozen refcount not being
+unfrozen. Found by review. In practice, this check is very rare to hit
+because a page dirtier is likely to hold the refcount elevated for much
+longer than it takes to check and non-racy-recheck. So it doesn't pose
+a big problem for users of -mm, but of course needs fixing.
+
+---
+Index: linux-2.6/mm/vmscan.c
+===================================================================
+--- linux-2.6.orig/mm/vmscan.c	2008-06-11 23:36:07.000000000 +1000
++++ linux-2.6/mm/vmscan.c	2008-06-11 23:36:18.000000000 +1000
+@@ -415,8 +415,10 @@ static int __remove_mapping(struct addre
+ 	if (!page_freeze_refs(page, 2))
+ 		goto cannot_free;
+ 	/* note: atomic_cmpxchg in page_freeze_refs provides the smp_rmb */
+-	if (unlikely(PageDirty(page)))
++	if (unlikely(PageDirty(page))) {
++		page_unfreeze_refs(page, 2);
+ 		goto cannot_free;
++	}
+ 
+ 	if (PageSwapCache(page)) {
+ 		swp_entry_t swap = { .val = page_private(page) };
+Index: linux-2.6/include/linux/pagemap.h
+===================================================================
+--- linux-2.6.orig/include/linux/pagemap.h	2008-06-11 23:36:07.000000000 +1000
++++ linux-2.6/include/linux/pagemap.h	2008-06-11 23:36:18.000000000 +1000
+@@ -165,7 +165,7 @@ static inline int page_cache_get_specula
+ 		return 0;
+ 	}
+ #endif
+-	VM_BUG_ON(PageCompound(page) && (struct page *)page_private(page) != page);
++	VM_BUG_ON(PageTail(page));
+ 
+ 	return 1;
+ }
+
+--Boundary-00=_xa9TItkcit2Pj1U--
