@@ -1,96 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbYFKIkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756322AbYFKIuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756073AbYFKIkz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 04:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbYFKIkp
+	id S1756322AbYFKIuT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 04:50:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbYFKIuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 04:40:45 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:53701 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751856AbYFKIko (ORCPT
+	Wed, 11 Jun 2008 04:50:05 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4082 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753244AbYFKIuE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 04:40:44 -0400
-Message-ID: <484F8F7C.8040009@linux.vnet.ibm.com>
-Date: Wed, 11 Jun 2008 14:10:28 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 11 Jun 2008 04:50:04 -0400
+Date: Wed, 11 Jun 2008 09:49:53 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Greg KH <greg@kroah.com>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-usb@vger.kernel.org
+Subject: Re: update checkpatch.pl to version 0.19
+Message-ID: <20080611084953.GG6701@shadowen.org>
+References: <200806061922.m56JMJuq025990@hera.kernel.org> <20080606233037.GA8548@kroah.com> <20080606230239.c1a8c002.akpm@linux-foundation.org> <20080607173436.GA17603@kroah.com> <20080609083301.GA6701@shadowen.org> <1213009781.32207.615.camel@pmac.infradead.org> <20080609225843.GA23391@kroah.com>
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Balaji Rao <balajirrao@gmail.com>, containers@lists.osdl.org,
-       vatsa@linux.vnet.ibm.com, a.p.zijlstra@chello.nl
-Subject: Re: [-mm] CPU controller statistics (v5)
-References: <20080603200515.GA25753@balbir.in.ibm.com> <6599ad830806110132j1b3f899bx57fd3c894fd0c1c6@mail.gmail.com>
-In-Reply-To: <6599ad830806110132j1b3f899bx57fd3c894fd0c1c6@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080609225843.GA23391@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Tue, Jun 3, 2008 at 1:05 PM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->> diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
->> index e155aa7..60a25cb 100644
->> --- a/include/linux/cgroup.h
->> +++ b/include/linux/cgroup.h
->> @@ -293,6 +293,7 @@ int cgroup_is_descendant(const struct cgroup *cgrp);
->>  struct cgroup_subsys {
->>        struct cgroup_subsys_state *(*create)(struct cgroup_subsys *ss,
->>                                                  struct cgroup *cgrp);
->> +       void (*initialize)(int early);
->>        void (*pre_destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
->>        void (*destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
->>        int (*can_attach)(struct cgroup_subsys *ss,
->> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
->> index 15ac0e1..77569d7 100644
->> --- a/kernel/cgroup.c
->> +++ b/kernel/cgroup.c
->> @@ -2553,6 +2553,9 @@ int __init cgroup_init_early(void)
->>
->>                if (ss->early_init)
->>                        cgroup_init_subsys(ss);
->> +
->> +               if (ss->initialize)
->> +                       ss->initialize(1);
->>        }
->>        return 0;
->>  }
->> @@ -2577,6 +2580,9 @@ int __init cgroup_init(void)
->>                struct cgroup_subsys *ss = subsys[i];
->>                if (!ss->early_init)
->>                        cgroup_init_subsys(ss);
->> +
->> +               if (ss->initialize)
->> +                       ss->initialize(0);
->>        }
+On Mon, Jun 09, 2008 at 03:58:43PM -0700, Greg KH wrote:
+> On Mon, Jun 09, 2008 at 12:09:41PM +0100, David Woodhouse wrote:
+> > On Mon, 2008-06-09 at 09:33 +0100, Andy Whitcroft wrote:
+> > > The issue I have is I have a comprehensive test suite which is kept in
+> > > lock step with checkpatch itself, all in my own tree.  Now that is
+> > > just noise for mainline.  What I want to be able to do is keep that in
+> > > lock step with developments in my tree, but not merge it upstream.  So
+> > > far I've not found a workable solution with git for that.
+> > 
+> > Why not make a tree which automatically tracks Linus' tree but only
+> > includes checkpatch.pl. Then pull from that into your own tree before
+> > you push your changes back.
 > 
-> This seems a little weird - even if the subsystem didn't want early
-> initialization, we call its initialize() during early setup?
+> Or just use quilt.  Or git.  Or something that takes into account that
+> your file will change in the mainline tree.
 > 
-> I assume the idea is to move away from the current model where the
-> subsystem is expected to initialize itself during the first call to
-> its create() method, when it gets passed a cgroup with a NULL parent?
-> I agree that was a bit icky. How about we call ss->initialize() from
-> cgroup_init_subsys()? Then we wouldn't need the "early" parameter,
-> since it would be implicit based on whether the subsystem wanted early
-> initialization or not.
-> 
+> Keeping code outside the kernel tree and then blindly doing a diff to
+> generate a patch for submission is never considered a good idea, and
+> causes real problems, as seen here.
 
-The motivation was to ensure that kmalloc* calls are available at the time of
-ss_initialize
+Indeed, and I am using git.  It is the fact that the surrounding test
+suite is not submitted that means I need to work in a separate tree.  I
+have since this incident looked back over the history and yours was the
+only change that did not come through me and so the problem has been
+restricted to that one change.
 
-> Also, if you're adding a new subsystem method, you should document it
-> in Documentation/cgroups.txt
+But to prevent it occuring again I have rejigged my tree so that I can
+simply maintain a real git branch for just the checkpatch changes, in
+parallel to the version with the tests.  This then allows me to merge
+mainline and handle things correctly.
 
-Thanks for the comments. There were some more things that are wrong with this
-patch and Andrew pointed them out. We'll work on a newer vesion.
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+-apw
