@@ -1,79 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764424AbYFKRAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764605AbYFKREU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764424AbYFKRAy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 13:00:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbYFKRAq
+	id S1764605AbYFKREU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 13:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761866AbYFKREN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 13:00:46 -0400
-Received: from mx2.compro.net ([216.54.166.4]:2441 "EHLO mx2.compro.net"
+	Wed, 11 Jun 2008 13:04:13 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3915 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751186AbYFKRAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 13:00:45 -0400
-X-IronPort-AV: E=Sophos;i="4.27,625,1204520400"; 
-   d="scan'208";a="2333408"
-Message-ID: <4850046C.4070602@compro.net>
-Date: Wed, 11 Jun 2008 12:59:24 -0400
-From: Mark Hounschell <markh@compro.net>
-Reply-To: markh@compro.net
-Organization: Compro Computer Svcs.
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	id S1751765AbYFKREM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 13:04:12 -0400
+Date: Wed, 11 Jun 2008 13:03:21 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH] shm: Remove silly double assignment
+Message-ID: <20080611170321.GA23507@hmsreliant.think-freely.org>
+References: <20080610125338.GB3165@hmsreliant.think-freely.org> <20080611034506.05ad07ae.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       Jan Engelhardt <jengelh@medozas.de>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       "solsTiCe d'Hiver" <solstice.dhiver@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: no cpu MHz in /proc/cpuinfo on 2.6.25.4-rt6
-References: <200806102152.23286.solstice.dhiver@gmail.com>	<20080610131314.5f7069e6@infradead.org>	<484EE71A.40002@intel.com>	<alpine.LNX.1.10.0806111440480.20733@fbirervta.pbzchgretzou.qr>	<20080611063639.5e1eea5b@infradead.org>	<alpine.LNX.1.10.0806111552090.20733@fbirervta.pbzchgretzou.qr>	<20080611065816.6cff290d@infradead.org>	<Pine.LNX.4.61.0806111006560.23096@chaos.analogic.com> <20080611083644.32afc823@infradead.org>
-In-Reply-To: <20080611083644.32afc823@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080611034506.05ad07ae.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Wed, 11 Jun 2008 10:14:50 -0400
-> "linux-os (Dick Johnson)" <linux-os@analogic.com> wrote:
+On Wed, Jun 11, 2008 at 03:45:06AM -0700, Andrew Morton wrote:
+> On Tue, 10 Jun 2008 08:53:39 -0400 Neil Horman <nhorman@tuxdriver.com> wrote:
 > 
->> I use CPU frequency to scale the output of rdtsc when timing
->> routines being optimized.
+> >     Found a silly double assignment of err is do_shmat.  Silly, but good to clean up
+> >     the useless code.
+> >     
+> >     Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> > 
+> > diff --git a/ipc/shm.c b/ipc/shm.c
+> > index 554429a..d05f6b5 100644
+> > --- a/ipc/shm.c
+> > +++ b/ipc/shm.c
+> > @@ -894,8 +894,6 @@ long do_shmat(int shmid, char __user *shmaddr, int shmflg, ulong *raddr)
+> >  	if (!sfd)
+> >  		goto out_put_dentry;
+> >  
+> > -	err = -ENOMEM;
+> > -
+> >  	file = alloc_file(path.mnt, path.dentry, f_mode, &shm_file_operations);
+> >  	if (!file)
+> >  		goto out_free;
 > 
-> Ok this is broken in various really bad ways.
+> Not silly, really.  Look:
 > 
-> 1) CPU frequency is very fluctuating, it changes in principle every
-> millisecond or more
+> 	err = -ENOMEM;
+> 	if (expr1)
+> 		goto out;
+> 
+> 	err = -ENOMEM;
+> 	if (expr2)
+> 		goto out;
+> 
+> each of these two units is a separate, self-contained clause.  Removing
+> the second assignment to `err' breaks that separation and will make one
+> clause undesirably dependent upon the other.
+yes, I see that keeping the second assignment lets you insert code in the middle
+without having up to update afterwards.  I just don't think the redundant
+assignment is worth keeping just for that purpose.
 
-I'm curious. What do you mean by "in principle"? And why will it change?
-
-> 2) the rdtsc "frequency" is conceptually unrelated to cpu frequency. In
-> fact, you'll be hard-pressed to buy a system today where this
-> relationship works....
-> 
-
-And what do you mean by "conceptually unrelated to cpu frequency"?
-Is it not the clock freq that is driving the cpu and the freq at which
-the tsc is incremented?
 
 > 
->> If CPU frequency goes away, I'll
->> have to add calibration routines to a lot of code. I don't
->> think one should just dispose of something that has been
->> useful for many years because they don't understand its
->> utility.
+> Example: if someone later comes up and does
 > 
-> clearly you don't understand it either ;-)
+> 	err = -ENOMEM;
+> 	if (expr1)
+> 		goto out;
 > 
+> +	er = -EINVAL;
+> +	if (expr3)
+> +		goto out;
+> 
+> 	if (expr2)
+> 		goto out;
+> 
+> then whoops, it broke.
+> 
+Yes, but that would be the fault of the subsequent patch, and if they couldn't
+see that problem, I fear that a double assignment isn't going to help them much.
 
-Could you explain what we don't understand about this please?
+> The compiler should optimise away the second assignment anyway.
+Agreed, its really not a big deal.  If its not worth it, its fine with me.  I
+was just being janitorial, and thought this looked rather redundant.
 
-> I'm not arguing for removing it, at all. I'm just arguing that any user
-> of it (being human or program) has some problems in how they use the
-> data.
-> 
-> 
-> 
+Best
+Neil
 
-Regards
-Mark
+-- 
+/****************************************************
+ * Neil Horman <nhorman@tuxdriver.com>
+ * Software Engineer, Red Hat
+ ****************************************************/
