@@ -1,58 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756430AbYFKIXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbYFKIYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756430AbYFKIXa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 04:23:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbYFKIXR
+	id S1756897AbYFKIYh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 04:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbYFKIYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 04:23:17 -0400
-Received: from 203-96-159-182.paradise.net.nz ([203.96.159.182]:41054 "EHLO
-	hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753195AbYFKIXQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 04:23:16 -0400
-Message-ID: <48503432.6010105@bluewatersys.com>
-Date: Thu, 12 Jun 2008 08:23:14 +1200
-From: Ryan Mallon <ryan@bluewatersys.com>
-User-Agent: Thunderbird 1.5.0.13 (X11/20070824)
+	Wed, 11 Jun 2008 04:24:25 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:56838 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753244AbYFKIYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 04:24:22 -0400
+Date: Wed, 11 Jun 2008 11:23:20 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] always enable FW_LOADER unless EMBEDDED=y
+Message-ID: <20080611082320.GM11685@cs181133002.pp.htv.fi>
+References: <20080610160408.GB11685@cs181133002.pp.htv.fi> <20080610162450.GB13538@kroah.com> <20080610181206.GF11685@cs181133002.pp.htv.fi> <20080610212859.GB26249@kroah.com>
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: David Brownell <david-b@pacbell.net>, Uli Luckas <u.luckas@road.de>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>, i2c@lm-sensors.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RFC] Earlier I2C initialization
-References: <200806091541.43899.u.luckas@road.de>	<484DA046.4010804@bluewatersys.com>	<20080610085708.12c2d2a2@hyperion.delvare>	<200806101355.07792.david-b@pacbell.net> <20080611101130.1a667abe@hyperion.delvare>
-In-Reply-To: <20080611101130.1a667abe@hyperion.delvare>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080610212859.GB26249@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean Delvare wrote:
->
-> That's easier to get right if you restrict yourself to a single
-> platform. For the vanilla kernel, the order of the dependencies is way
-> more difficult to figure out and get right. There are some hints in
-> drivers/Makefile but most dependencies aren't spelled out.
->
-> My feeling is that we won't be able to solve this without first moving
-> the different type of i2c bus drivers (and possibly chip drivers) to
-> separate directories. For example, moving external I2C bus drivers
-> (i2c-parport-light, i2c-parport, i2c-taos-evm and i2c-tiny-usb) to a
-> separate directory that is always initialized late, would remove the
-> dependencies on parport, serio and USB for the "must initialize i2c
-> early" problem.
->
-> I've already attempted a categorization of the i2c bus drivers:
-> http://lists.lm-sensors.org/pipermail/i2c/2008-May/003713.html
-> http://khali.linux-fr.org/devel/linux-2.6/jdelvare-i2c/i2c-group-bus-drivers.patch
-> I would welcome comments on this, and suggestions for further
-> categorization of group "other".
->   
-I like this idea. Is it possible to move (or mark as subsys_initcall) the
-i2c busses which are likely to be needed early: pxa, omap, gpio, etc and
-leave the PC/external busses alone. Then having the i2c chip drivers in
-the correct place (ie drivers/gpio) would effectively fix the problem.
+On Tue, Jun 10, 2008 at 02:28:59PM -0700, Greg KH wrote:
+> On Tue, Jun 10, 2008 at 09:12:06PM +0300, Adrian Bunk wrote:
+> > On Tue, Jun 10, 2008 at 09:24:50AM -0700, Greg KH wrote:
+> > > On Tue, Jun 10, 2008 at 07:04:08PM +0300, Adrian Bunk wrote:
+> > > > James Bottomley recently discovered that we have 
+> > > > {request,release}_firmware() dummies for the case of the actual 
+> > > > functions not being available and has a fix for the bug that was 
+> > > > actually causing build errors for built-in users with 
+> > > > CONFIG_FW_LOADER=m.
+> > > > 
+> > > > But now missing selects on FW_LOADER are no longer visible at 
+> > > > compile-time at all and can become runtime problems.
+> > > > 
+> > > > FW_LOADER is infrastructure with relatively small codesize we can 
+> > > > safely enable for everyone, and only for people who really need small 
+> > > > kernels (and can be expected to know what they are doing) it matters 
+> > > > being able to disable it.
+> > > > 
+> > > > This patch therefore always sets FW_LOADER=y and allows users only to 
+> > > > disable it with EMBEDDED=y.
+> > > > 
+> > > > As a bonus, we can then get rid of all "select FW_LOADER" plus the due 
+> > > > to it required "depends on HOTPLUG" which removes some complexity from 
+> > > > our Kconfig files.
+> > > 
+> > > Well, we can't get rid of that if EMBEDDED is set, right?
+> > 
+> > No, if EMBEDDED is set and HOTPLUG is not set you will not be able to
+> > enable FW_LOADER (the "depends on HOTPLUG" for FW_LOADER has to stay, 
+> > but all the options that currently select FW_LOADER no longer need the 
+> > dependency).
+> 
+> Ok, but what about the point that the options that are wanting FW_LOADER
+> in that situation?  I know EMBEDDED is tough to get right as you can
+> shoot yourself in the foot very easily, but this seems like we are going
+> to make it even harder to use properly.
 
-~Ryan
+Currently missing selects can result in a build error.
+
+After James' patch to fix the dummy functions (that should have worked 
+from day 1) it will instead become a runtime problem.
+
+And when the select gets added the dependency on HOTPLUG often gets 
+forgotten.
+
+If you worry about "EMBEDDED is tough to get right" a bigger problem 
+would be the linux-tiny patches to add new config options - each might 
+save a few kB when disabled but also offers a new way to shoot yourself 
+into the foot.
+
+I do care more about:
+- that users for the common CONFIG_EMBEDDED=n case don't run into 
+  unexpected problems (due to a missing select on FW_LOADER) and
+- that we remove complexity from our kconfig dependencies so that
+  they break less often.
+
+I'm counting 6 commits that fix bugs in this area introduced since
+2.6.25 (sic) under drivers/media/ alone.
+
+And Davids firmware patches offer even more opportunities for people to 
+forget the dependency on HOTPLUG (which will break only in the 
+CONFIG_EMBEDDED=y case...). [1]
+
+> > > You sent this as an RFC before, I thought people said to just fix up all
+> > > of the dependancies with drivers that needed FW_LOADER to be enabled,
+> > > that would be easier, right?
+> > 
+> > As far as I know there were zero answers to my RFC.
+> > 
+> > What are you referring to?
+> 
+> Sorry, I thought that was sent to the RFC, I think it was to a thread
+> even before that.
+>...
+
+If it was in the "build issue #503 ..." thread it was even me who
+said it - before I had the idea of hiding FW_LOADER behind EMBEDDED.
+
+> thanks,
+> 
+> greg k-h
+
+cu
+Adrian
+
+[1] and before anyone restarts the "kconfig is broken - select should 
+    follow dependencies" FUD: I've seen much talk and zero code for
+    this, and in my opinion the problem is much more difficult than
+    it appears at first sight
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
