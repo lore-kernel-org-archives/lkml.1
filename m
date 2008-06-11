@@ -1,118 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755408AbYFKHgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755694AbYFKHig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755408AbYFKHgS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 03:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbYFKHgG
+	id S1755694AbYFKHig (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 03:38:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbYFKHi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 03:36:06 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:36823 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752932AbYFKHgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 03:36:05 -0400
-Date: Wed, 11 Jun 2008 16:33:30 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Howells <dhowells@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, cooloney@kernel.org,
-       mpm@selenic.com
-Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB, v2.
-Message-ID: <20080611073330.GB30983@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Christoph Lameter <clameter@sgi.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Pekka Enberg <penberg@cs.helsinki.fi>,
-	David Howells <dhowells@redhat.com>,
-	LKML <linux-kernel@vger.kernel.org>, cooloney@kernel.org,
-	mpm@selenic.com
-References: <20080602072706.GB28268@linux-sh.org> <Pine.LNX.4.64.0806101027220.17093@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0806101027220.17093@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 11 Jun 2008 03:38:28 -0400
+Received: from antispam.upcomillas.es ([130.206.70.245]:59824 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752018AbYFKHi1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 03:38:27 -0400
+Subject: Re: [regression?] Sometime (often) X come out blank (black screen)
+	on cold boot - Intel chipset
+From: Romano Giannetti <romanol@upcomillas.es>
+To: Justin Madru <jdm64@gawab.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       lkml <linux-kernel@vger.kernel.org>,
+       =?ISO-8859-1?Q?Sa=EFvann?= Carignan <oxmosys@gmail.com>
+In-Reply-To: <484F5582.5000805@gawab.com>
+References: <1213101501.21041.9.camel@pern>  <484F5582.5000805@gawab.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: Wed, 11 Jun 2008 09:38:25 +0200
+Message-Id: <1213169905.9453.19.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 10:30:36AM -0700, Christoph Lameter wrote:
-> On Mon, 2 Jun 2008, Paul Mundt wrote:
+
+On Tue, 2008-06-10 at 21:33 -0700, Justin Madru wrote:
 > 
-> > +	page = virt_to_head_page(objp);
-> > +	if (!page)
-> > +		return 0;
-> 
-> virt_to_head_page cannot return NULL. virt_to_page also does not return 
-> NULL. pfn_valid() needs to be used to figure out if a page is valid. 
-> Otherwise the page struct reference that was returned may have 
-> PageReserved() set to indicate that it is not a valid page.
-> 
-> > +	 * The ksize() function is only guaranteed to work for pointers
-> > +	 * returned by kmalloc(). So handle arbitrary pointers, that we expect
-> > +	 * always to be compound pages, here.
-> > +	 */
-> > +	if (PageCompound(page))
-> > +		order = compound_order(page);
-> 
-> compund order returns 0 if you use compound_order() on a 
-> non compound page. No need for the PageCompound test.
+> Can you confirm, so Rafael Wysocki can mark your report 
+> http://bugzilla.kernel.org/show_bug.cgi?id=10892 as a dup of 
+> http://bugzilla.kernel.org/show_bug.cgi?id=10235.
 > 
 
-Thanks for the review. Using virt_addr_valid() we can also get rid of
-blackfin's idiotic > memory_end test for its DMA addresses, as the same
-logic is encapsulated there. How does this look?
+Dunno. It happens to me ONLY on cold boot, and never otherwise. I had a
+similar bug after resume, but it was fixed by the vblank revert patch.
 
----
+> Does disabling the boot splash fix the problem? You could also try 
+> disabling gdm and starting X manually. When I disable usplash it
+> fixes 
+> the problem.
 
- mm/nommu.c |   21 +++------------------
- 1 file changed, 3 insertions(+), 18 deletions(-)
+Will try. But it's quite rare for me, so triggering it is not so easy.
+For the same reason, a bisect is difficult...
 
-diff --git a/mm/nommu.c b/mm/nommu.c
-index 3abd084..4462b6a 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -104,21 +104,15 @@ EXPORT_SYMBOL(vmtruncate);
- unsigned int kobjsize(const void *objp)
- {
- 	struct page *page;
--	int order = 0;
- 
- 	/*
- 	 * If the object we have should not have ksize performed on it,
- 	 * return size of 0
- 	 */
--	if (!objp)
--		return 0;
--
--	if ((unsigned long)objp >= memory_end)
-+	if (!objp || !virt_addr_valid(objp))
- 		return 0;
- 
- 	page = virt_to_head_page(objp);
--	if (!page)
--		return 0;
- 
- 	/*
- 	 * If the allocator sets PageSlab, we know the pointer came from
-@@ -129,18 +123,9 @@ unsigned int kobjsize(const void *objp)
- 
- 	/*
- 	 * The ksize() function is only guaranteed to work for pointers
--	 * returned by kmalloc(). So handle arbitrary pointers, that we expect
--	 * always to be compound pages, here.
--	 */
--	if (PageCompound(page))
--		order = compound_order(page);
--
--	/*
--	 * Finally, handle arbitrary pointers that don't set PageSlab.
--	 * Default to 0-order in the case when we're unable to ksize()
--	 * the object.
-+	 * returned by kmalloc(). So handle arbitrary pointers here.
- 	 */
--	return PAGE_SIZE << order;
-+	return PAGE_SIZE << compound_order(page);
- }
- 
- /*
+Romano
+
+-- 
+Sorry for the disclaimer --- ¡I cannot stop it!
+
+
+
+--
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
