@@ -1,89 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbYFKMTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbYFKMXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755349AbYFKMTl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 08:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbYFKMTa
+	id S1754033AbYFKMXZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 08:23:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbYFKMXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 08:19:30 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:8926 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754049AbYFKMTW (ORCPT
+	Wed, 11 Jun 2008 08:23:16 -0400
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:36880 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751056AbYFKMXP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 08:19:22 -0400
-Date: Wed, 11 Jun 2008 14:18:52 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Ryan Mallon <ryan@bluewatersys.com>
-Cc: David Brownell <david-b@pacbell.net>, Uli Luckas <u.luckas@road.de>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>, i2c@lm-sensors.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RFC] Earlier I2C initialization
-Message-ID: <20080611141852.3ccd89ea@hyperion.delvare>
-In-Reply-To: <485031D5.3020606@bluewatersys.com>
-References: <200806091541.43899.u.luckas@road.de>
-	<20080609135739.GE30971@flint.arm.linux.org.uk>
-	<484D947D.1090900@bluewatersys.com>
-	<200806091359.12791.david-b@pacbell.net>
-	<484DA046.4010804@bluewatersys.com>
-	<20080610085708.12c2d2a2@hyperion.delvare>
-	<484F42AC.9030709@bluewatersys.com>
-	<20080611094039.287ac136@hyperion.delvare>
-	<485031D5.3020606@bluewatersys.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 11 Jun 2008 08:23:15 -0400
+Message-ID: <484FC3C4.3070800@lwfinger.net>
+Date: Wed, 11 Jun 2008 07:23:32 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Michael Buesch <mb@bu3sch.de>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, vegard.nossum@gmail.com,
+       miles.lane@gmail.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: Re: BUG: NULL pointer dereference at 00000000 -- IP: [<f8e783d5>]
+ :b43:b43_dma_mapping_error+0x16/0x155
+References: <200806101637.11473.mb@bu3sch.de> <200806101650.27180.mb@bu3sch.de> <20080611095844J.fujita.tomonori@lab.ntt.co.jp> <200806111205.10433.mb@bu3sch.de>
+In-Reply-To: <200806111205.10433.mb@bu3sch.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jun 2008 08:13:09 +1200, Ryan Mallon wrote:
-> Jean Delvare wrote:
-> > Which problem are you trying to solve? Is there any actual drawback to
-> > abusing subsys_initcall() for the handful of i2c bus drivers which may
-> > need to come up early?
->
-> On many embedded devices there is a need for i2c to be early since it is
-> often used for core functionality. It seems at the moment, that the 
-> answer to this is to juggle a few of the drivers which people need to
-> get this to work. There are the drivers in drivers/i2c which use 
-> subsys_initcall. It does work, but it feels a bit untidy. Some of the i2c
-> IO expander drivers are now in drivers/gpio since that comes up early.
-> This can lead to confusion (see drivers/gpio/pca953x.c and 
-> drivers/i2c/chips/pca9539.c).
+Michael Buesch wrote:
+> On Wednesday 11 June 2008 02:58:44 FUJITA Tomonori wrote:
+>> On Tue, 10 Jun 2008 16:50:26 +0200
+>> Michael Buesch <mb@bu3sch.de> wrote:
+>>
+>>> On Tuesday 10 June 2008 16:42:41 Vegard Nossum wrote:
+>>>> This change comes from
+>>>>
+>>>> commit 353c409463ecba63c3a41a992d3f5fba935eada9
+>>>> Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+>>>> Date:   Fri May 23 19:02:30 2008 +0000
+>>>
+>>> Ok, FUJITA Tomonori, please make sure a patch like the following goes
+>>> into the same trees that you submitted commit 353c409 to.
+>>> Also make sure to check b43legacy. I _guess_ you might have added
+>>> the same bug there.
+>> Ah, sorry about the bug.
+>>
+>> From a quick look, mainline needs the same fix too?
+>>
+>> b43_dma_mapping_error calls unmap_descbuffer() on the failure, which
+>> assumes that ring->dev is set up properly.
+> 
+> Yeah ok. That's an unlikely error path.
+> The new bug is in the main path which will always trigger.
+> 
+> Next time please send _any_ patch for review to me and to the wireless list.
+> Please tell me which trees this bug has been merged to. Is it already in
+> Linus' tree?
 
-The GPIO drivers under drivers/i2c/chips are deprecated and tagged for
-removal. We only need a user-space interface for the new GPIO drivers
-(I think we do by now) and a way to instantiate these new GPIO devices
-from user-space (not done yet) before the deprecated drivers can be
-removed. The only remaining users for these deprecated drivers are
-electronics enthusiasts controlling GPIO chips over the PC parallel
-port. In the context of embedded platforms, there's no room for
-confusion here.
+The equivalent line in Linus's tree is "if 
+(unlikely(dma_mapping_error(addr)))", thus the error has not reached 
+mainline (yet?).
 
->                               As David suggested, if i2c is needed early
-> in enough cases, why not just move it early in the link order? My patch
-> was just an alternative approach which mimics the current behaviour, but
-> makes it possible to get any i2c driver early. Why not just mark all of
-> the drivers/busses that get used on embedded devices as subsys_initcall,
-> just in case somebody needs them early?
+Larry
 
-Because this is an abuse of subsys_initcall? I guess that was
-acceptable when only a couple drivers were doing that, but making it
-official sounds bad.
-
-> (...)
-> I just ran a sed script over the drivers/i2c directory. The intent was to
-> mark the entire subsystem to come up early if CONFIG_I2C_EARLY is set,
-> and use i2c_module_init every where since it makes it more consistent, and
-> doesn't cost anything on setups where CONFIG_I2C_EARLY isn't defined.
-
-It costs readability and build time.
-
-> The idea was basically that a board could clearly say: I want i2c early,
-> and have any busses and devices drivers it has configured as builtins
-> automatically be present early on.
-
-I get the idea, but I don't buy the implementation.
-
--- 
-Jean Delvare
