@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761319AbYFKPXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761415AbYFKPYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761319AbYFKPXe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 11:23:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756626AbYFKPX1
+	id S1761415AbYFKPYT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 11:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756295AbYFKPYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 11:23:27 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:43749 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752932AbYFKPX0 (ORCPT
+	Wed, 11 Jun 2008 11:24:06 -0400
+Received: from smtp.ctxuk.citrix.com ([62.200.22.115]:4625 "EHLO
+	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753629AbYFKPYF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 11:23:26 -0400
-Date: Wed, 11 Jun 2008 11:23:18 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kbuild breaks um - fails to find util when linking
-Message-ID: <20080611152318.GA8099@c2.user-mode-linux.org>
-References: <20080610190307.GA15983@uranus.ravnborg.org>
+	Wed, 11 Jun 2008 11:24:05 -0400
+X-IronPort-AV: E=Sophos;i="4.27,624,1204520400"; 
+   d="scan'208";a="559621"
+Date: Wed, 11 Jun 2008 16:23:59 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Jiri Bohac <jbohac@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] console keyboard mapping broken by 04c71976
+Message-ID: <20080611152359.GQ4244@implementation.uk.xensource.com>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Jiri Bohac <jbohac@suse.cz>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	lkml <linux-kernel@vger.kernel.org>
+References: <20080611134837.GA11462@midget.suse.cz> <20080611140304.GM4244@implementation.uk.xensource.com> <20080611151028.GB11462@midget.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20080610190307.GA15983@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080611151028.GB11462@midget.suse.cz>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-OriginalArrivalTime: 11 Jun 2008 15:23:58.0912 (UTC) FILETIME=[2B8CE400:01C8CBD7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 09:03:07PM +0200, Sam Ravnborg wrote:
-> Hi Jeff.
-> 
-> In an attempt to make the final link of vmlinux
-> readable/hackable I have broken um build.
-> 
-> um used a special rule so it could use gcc as linker.
-> With my changes we need to use ld to link vmlinux and
-> ld now fails to locate util.
-> 
-> I hope you have a clue why. I tried various things but
-> did not find out why ld cannot locate util.
+Jiri Bohac, le Wed 11 Jun 2008 17:10:28 +0200, a écrit :
+> 	...
+> 	type = KTYP(keysym);		// 0xfb
+> 	...
+> 	type -= 0xf0;			// 0xb
+>         if (type == KT_LETTER) {	// true
+>                 type = KT_LATIN;	// 0
+>  
+> 	...
+>         (*k_handler[type])(vc, keysym & 0xff, !down); 
+> 		// calls k_self, note there is really no space for a 
+> 		// full unicode representation ;-)
 
-This little patch fixes the -lutil problem linking vmlinux.o, but on
-the final link, I get what appears to be every libc symbol
-undefined...
+Ah, right, my too-quick look mistook your case with the (type < 0xf0)
+case, which does have room for unicode.
 
-Index: linux-2.6-git/arch/um/Makefile
-===================================================================
---- linux-2.6-git.orig/arch/um/Makefile	2008-06-11 10:46:03.000000000 -0400
-+++ linux-2.6-git/arch/um/Makefile	2008-06-11 11:19:05.000000000 -0400
-@@ -104,7 +104,7 @@ archprepare: $(ARCH_SYMLINKS) $(ARCH_DIR
- prepare: $(ARCH_DIR)/include/kern_constants.h
- 
- LINK-$(CONFIG_LD_SCRIPT_STATIC) += -static
--LINK-$(CONFIG_LD_SCRIPT_DYN) += -rpath /lib -rpath /usr/lib
-+LINK-$(CONFIG_LD_SCRIPT_DYN) += -L/lib -L/usr/lib
- 
- CFLAGS_NO_HARDENING := $(call cc-option, -fno-PIC,) $(call cc-option, -fno-pic,) \
- 	$(call cc-option, -fno-stack-protector,) \
+Well, in my tests it _was_ working with latin2.  I'll dig more this
+evening.
 
-	       		  	Jeff
-
--- 
-Work email - jdike at linux dot intel dot com
+Samuel
