@@ -1,96 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757849AbYFKOQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757925AbYFKOV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757849AbYFKOQf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 10:16:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbYFKOQ1
+	id S1757925AbYFKOV2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 10:21:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbYFKOVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 10:16:27 -0400
-Received: from odyssey.analogic.com ([204.178.40.5]:4190 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752156AbYFKOQ0 convert rfc822-to-8bit (ORCPT
+	Wed, 11 Jun 2008 10:21:19 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:43847 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750956AbYFKOVT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 10:16:26 -0400
+	Wed, 11 Jun 2008 10:21:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ZBcZl9l8tFpXAvywudmQLyudI9035FCb6t2Tj1Zt3zBOx6LShQkUZLyM71GP8K/XwL
+         RXNxT3634jLDOokKiQPv7tsIUt0eOwGTQ65q+VtBNo2pfr6ICw0tUaqR6h0Ye4I6yBT5
+         HfXfj6k1fLR+pxvdWbv7rnpMZN+OcqoMCoS04=
+Message-ID: <b647ffbd0806110721v187d2aadxf0e4395ea977f1af@mail.gmail.com>
+Date: Wed, 11 Jun 2008 16:21:17 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Andrew G. Morgan" <morgan@kernel.org>
+Subject: Re: [PATCH] bugfix: was Re: [ linus-git ] prctl(PR_SET_KEEPCAPS, ...) is broken for some configs, e.g. CONFIG_SECURITY_SELINUX
+Cc: "Chris Wright" <chrisw@sous-sol.org>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <484F1E63.8070408@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 11 Jun 2008 14:14:56.0406 (UTC) FILETIME=[866CA360:01C8CBCD]
-Content-class: urn:content-classes:message
-Subject: Re: PROBLEM: no cpu MHz in /proc/cpuinfo on 2.6.25.4-rt6
-Date: Wed, 11 Jun 2008 10:14:50 -0400
-Message-ID: <Pine.LNX.4.61.0806111006560.23096@chaos.analogic.com>
-In-Reply-To: <20080611065816.6cff290d@infradead.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: PROBLEM: no cpu MHz in /proc/cpuinfo on 2.6.25.4-rt6
-thread-index: AcjLzYZ2A1rEJsrvSmOxsC7M0nQVDA==
-References: <200806102152.23286.solstice.dhiver@gmail.com><20080610131314.5f7069e6@infradead.org><484EE71A.40002@intel.com><alpine.LNX.1.10.0806111440480.20733@fbirervta.pbzchgretzou.qr><20080611063639.5e1eea5b@infradead.org><alpine.LNX.1.10.0806111552090.20733@fbirervta.pbzchgretzou.qr> <20080611065816.6cff290d@infradead.org>
-From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Cc: "Jan Engelhardt" <jengelh@medozas.de>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       "solsTiCe d'Hiver" <solstice.dhiver@gmail.com>,
-       <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-X-TM-AS-Product-Ver: SMEX-8.0.0.1259-5.500.1027-15964.007
-X-TM-AS-Result: No--15.866000-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1212932321.4675.9.camel@earth> <484BF662.9070100@kernel.org>
+	 <20080608110630.08a45cc6.akpm@linux-foundation.org>
+	 <484C5E84.2020307@kernel.org>
+	 <20080608163926.56f1be3d.akpm@linux-foundation.org>
+	 <20080609171741.GA13403@us.ibm.com> <484E0280.2050305@kernel.org>
+	 <20080610191451.GL4018@sequoia.sous-sol.org>
+	 <484F1E63.8070408@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 11 Jun 2008, Arjan van de Ven wrote:
-
-> On Wed, 11 Jun 2008 15:52:57 +0200 (CEST)
-> Jan Engelhardt <jengelh@medozas.de> wrote:
+2008/6/11 Andrew G. Morgan <morgan@kernel.org>:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 >
->>
->> On Wednesday 2008-06-11 15:36, Arjan van de Ven wrote:
->>>>>> btw this is scary; the Mhz line in /proc/cpuinfo doesn't have
->>>>>> much meaning really, so applications using it and depending on
->>>>>> it is a rather big disaster ;-(
->>>>>>
->>>>>> Does anyone know why jackd wants to use this?
->>>>
->>>> It would be nice to have a /sys file where the CPU frequency is in,
->>>
->>> may I ask why? What would you do with it?
->>
->> Off the top off the head, just for reporting to the user. Desklets
->> and stuff.
+> Chris Wright wrote:
+> |> +    switch (option) {
+> |> +    case PR_CAPBSET_READ:
+> |> +            *rc_p = (cap_valid(arg2) ? 1 : -EINVAL);
+> |> +            break;
+> |
+> | Do we need this one?  It's new to 2.6.25, so I think we could not
+> | worry about emulating it here.
 >
-> even then it doesn't mean much ;-(
+> We're talking about 'fixing' 2.6.26 no? I'd rather not open up the
+> possibility that I have to 'fix' it again because of dropping a feature
+> of 2.6.25... (Forgive me if I sound like I'm climbing out of a septic
+> tank here.)
 >
->>> CPU frequency is...
->>> 1) not something that is fixed; it changes all the time
->>> 2) not a good indication for performance; remember the 3.4Ghz
->>> pentium4, a 2Ghz Core2Duo outperforms it
->>> 3) something which the cpu itself barely honors (the clock stops
->>> during idle etc etc)
+> Dmitry: please verify this change addresses your problem...
+
+well, I fixed it on my side with another approach before sending a
+report for this "problem".
+
+It was not immediatelly clear to me that the concept of "process
+capabilities" (as described in "man prctl" as follows
+"Set  the state of the process's "keep capabilities" flag...")
+is not applicable to all possible configuration, meaning that each
+configuration have to support it in some way or another.
+
+Moreover, according to commit's description the changes were supposed
+to be 'nop' for all configs besides when one freshly ntroduced is
+enabled.
+
+Should it have been explicitly specified that thanks to this commit
+prctl(KEEPCAPS, ...) turns into "a good citizen" (i.e. stops lying to
+userspace about its support of capabilities -- if that's what is
+desired), it'd change a further flow of events :-)
+
+ok, anyway, I don't have access to my machine at the moment and can't
+guarantee that I'll be able to do a test today.
+You may try it with one of the configs I mentioened + a program doing
+prctl(KEEPCAPS, 1, ...).
+
+>From what I see, yes, it should address this issue.
+
+btw., if I recall right capget() is still "lying" now. capset() did
+give an error but Ubuntu's dhclient is somewhat inconsistent as it
+checks for a return value of prctl() but not capset().
+
+
 >
+> Cheers
 >
-
-I use CPU frequency to scale the output of rdtsc when timing
-routines being optimized. If CPU frequency goes away, I'll
-have to add calibration routines to a lot of code. I don't
-think one should just dispose of something that has been
-useful for many years because they don't understand its
-utility. The fact that __some__ machines dynamically adjust
-clock-speeds is not a valid reason to remove something useful
-that impacts only boot time. Following this trend, soon there
-won't be any floppy-drive code because "nobody" uses them
-anymore. Please don't keep throwing good stuff away.
-
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
+> Andrew
 
 
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
+-- 
+Best regards,
+Dmitry Adamushko
