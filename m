@@ -1,232 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbYFKKHE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbYFKKPM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757142AbYFKKHE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 06:07:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbYFKKGx
+	id S1754866AbYFKKPM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 06:15:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYFKKO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 06:06:53 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:56950 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750995AbYFKKGw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 06:06:52 -0400
-Date: Wed, 11 Jun 2008 11:06:47 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: rui.zhang@intel.com
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Clean up thermal API
-Message-ID: <20080611100647.GA20013@srcf.ucam.org>
+	Wed, 11 Jun 2008 06:14:58 -0400
+Received: from lucidpixels.com ([75.144.35.66]:33674 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751176AbYFKKO4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 06:14:56 -0400
+Date: Wed, 11 Jun 2008 06:14:55 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org
+cc: linux-raid@vger.kernel.org
+Subject: What do these SATA errors mean / kernel 2.6.25.6 (DRDY ERR/ICRC
+ ABRT)
+Message-ID: <alpine.DEB.1.10.0806110608080.7726@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The thermal layer passes temperatures around as strings. This is fine 
-for sysfs, but makes it hard to use them for other purposes in-kernel. 
-Change them to longs and do the string conversion in the sysfs-specific 
-code.
+Never had a single error so far, powered down my host, powered it back up,
+and now with kernel 2.6.25.6:
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
+Jun 11 05:23:24 p34 kernel: [   67.118632] mtrr: no more MTRRs available
+Jun 11 05:46:23 p34 kernel: [ 1445.288619] ata12.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
+Jun 11 05:46:23 p34 kernel: [ 1445.288626] ata12.00: irq_stat 0x00060002, device error via D2H FIS
+Jun 11 05:46:23 p34 kernel: [ 1445.288632] ata12.00: cmd 35/00:f8:47:dc:35/00:03:02:00:00/e0 tag 0 dma 520192 out
+Jun 11 05:46:23 p34 kernel: [ 1445.288634]          res 51/84:f8:47:dc:35/00:03:02:00:00/e0 Emask 0x10 (ATA bus error)
+Jun 11 05:46:23 p34 kernel: [ 1445.288637] ata12.00: status: { DRDY ERR }
+Jun 11 05:46:23 p34 kernel: [ 1445.288639] ata12.00: error: { ICRC ABRT }
+Jun 11 05:46:23 p34 kernel: [ 1445.288649] ata12: hard resetting link
+Jun 11 05:46:25 p34 kernel: [ 1447.419983] ata12: SATA link up 3.0 Gbps (SStatus 123 SControl 0)
+Jun 11 05:46:25 p34 kernel: [ 1447.429612] ata12.00: configured for UDMA/100
+Jun 11 05:46:25 p34 kernel: [ 1447.429628] ata12: EH complete
+Jun 11 05:46:25 p34 kernel: [ 1447.813910] sd 11:0:0:0: [sdl] Write Protect is off
+Jun 11 05:46:25 p34 kernel: [ 1447.813912] sd 11:0:0:0: [sdl] Mode Sense: 00 3a 00 00
+Jun 11 05:46:25 p34 kernel: [ 1447.813928] sd 11:0:0:0: [sdl] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+Jun 11 06:00:32 p34 kernel: [ 2293.491350] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+Jun 11 06:00:32 p34 kernel: [ 2293.491360] ata1.00: cmd 35/00:02:43:90:7d/00:00:12:00:00/e0 tag 0 dma 1024 out
+Jun 11 06:00:32 p34 kernel: [ 2293.491362]          res 40/00:ff:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+Jun 11 06:00:32 p34 kernel: [ 2293.491365] ata1.00: status: { DRDY }
+Jun 11 06:00:32 p34 kernel: [ 2293.794295] ata1: soft resetting link
+Jun 11 06:00:32 p34 kernel: [ 2293.947277] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+Jun 11 06:00:32 p34 kernel: [ 2294.614206] ata1.00: configured for UDMA/133
+Jun 11 06:00:32 p34 kernel: [ 2294.614227] ata1: EH complete
+Jun 11 06:00:32 p34 kernel: [ 2294.335647] sd 0:0:0:0: [sda] Write Protect is off
+Jun 11 06:00:32 p34 kernel: [ 2294.335650] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+Jun 11 06:00:32 p34 kernel: [ 2294.348472] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
 
----
+Nothing was broken in any of the arrays and all seems to be functioning 
+now but albeit at lower speeds as you see above UDMA/100 and UDMA/133. 
+Could there be a bug with the new Veliciraptors and the drivers in the 
+kernel?  I never saw this happen/occur with my old raptor 150s or 74s. 
+Also, I stress tested all of these drives for 8hours+ and they never had a 
+problem before so it makes the problem rather peculiar.
 
-diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-index 504385b..28b3782 100644
---- a/drivers/acpi/thermal.c
-+++ b/drivers/acpi/thermal.c
-@@ -886,7 +886,8 @@ static void acpi_thermal_check(void *data)
- /* sys I/F for generic thermal sysfs support */
- #define KELVIN_TO_MILLICELSIUS(t) (t * 100 - 273200)
- 
--static int thermal_get_temp(struct thermal_zone_device *thermal, char *buf)
-+static int thermal_get_temp(struct thermal_zone_device *thermal, 
-+			    unsigned long *temp)
- {
- 	struct acpi_thermal *tz = thermal->devdata;
- 	int result;
-@@ -898,7 +899,8 @@ static int thermal_get_temp(struct thermal_zone_device *thermal, char *buf)
- 	if (result)
- 		return result;
- 
--	return sprintf(buf, "%ld\n", KELVIN_TO_MILLICELSIUS(tz->temperature));
-+	*temp = KELVIN_TO_MILLICELSIUS(tz->temperature);
-+	return 0;
- }
- 
- static const char enabled[] = "kernel";
-@@ -982,7 +984,7 @@ static int thermal_get_trip_type(struct thermal_zone_device *thermal,
- }
- 
- static int thermal_get_trip_temp(struct thermal_zone_device *thermal,
--				 int trip, char *buf)
-+				 int trip, unsigned long *temp)
- {
- 	struct acpi_thermal *tz = thermal->devdata;
- 	int i;
-@@ -991,31 +993,40 @@ static int thermal_get_trip_temp(struct thermal_zone_device *thermal,
- 		return -EINVAL;
- 
- 	if (tz->trips.critical.flags.valid) {
--		if (!trip)
--			return sprintf(buf, "%ld\n", KELVIN_TO_MILLICELSIUS(
--				tz->trips.critical.temperature));
-+		if (!trip) {
-+			*temp = KELVIN_TO_MILLICELSIUS(
-+				tz->trips.critical.temperature);
-+			return 0;
-+		}
-+		
- 		trip--;
- 	}
- 
- 	if (tz->trips.hot.flags.valid) {
--		if (!trip)
--			return sprintf(buf, "%ld\n", KELVIN_TO_MILLICELSIUS(
--					tz->trips.hot.temperature));
-+		if (!trip) {
-+			*temp = KELVIN_TO_MILLICELSIUS(
-+				tz->trips.hot.temperature);
-+			return 0;
-+		}
- 		trip--;
- 	}
- 
- 	if (tz->trips.passive.flags.valid) {
--		if (!trip)
--			return sprintf(buf, "%ld\n", KELVIN_TO_MILLICELSIUS(
--					tz->trips.passive.temperature));
-+		if (!trip) {
-+			*temp = KELVIN_TO_MILLICELSIUS(
-+				tz->trips.passive.temperature);
-+			return 0;
-+		}
- 		trip--;
- 	}
- 
- 	for (i = 0; i < ACPI_THERMAL_MAX_ACTIVE &&
- 		tz->trips.active[i].flags.valid; i++) {
--		if (!trip)
--			return sprintf(buf, "%ld\n", KELVIN_TO_MILLICELSIUS(
--					tz->trips.active[i].temperature));
-+		if (!trip) {
-+			*temp = KELVIN_TO_MILLICELSIUS(
-+				tz->trips.active[i].temperature);
-+			return 0;
-+		}
- 		trip--;
- 	}
- 
-diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-index 6098787..c537a5b 100644
---- a/drivers/thermal/thermal_sys.c
-+++ b/drivers/thermal/thermal_sys.c
-@@ -104,11 +104,18 @@ static ssize_t
- temp_show(struct device *dev, struct device_attribute *attr, char *buf)
- {
- 	struct thermal_zone_device *tz = to_thermal_zone(dev);
-+	long temperature;
-+	int ret;
- 
- 	if (!tz->ops->get_temp)
- 		return -EPERM;
- 
--	return tz->ops->get_temp(tz, buf);
-+	ret = tz->ops->get_temp(tz,&temperature);
-+
-+	if (ret)
-+		return ret;
-+
-+	return sprintf(buf,"%ld\n",temperature);
- }
- 
- static ssize_t
-@@ -160,7 +167,8 @@ trip_point_temp_show(struct device *dev, struct device_attribute *attr,
- 		     char *buf)
- {
- 	struct thermal_zone_device *tz = to_thermal_zone(dev);
--	int trip;
-+	int trip, ret;
-+	long temperature;
- 
- 	if (!tz->ops->get_trip_temp)
- 		return -EPERM;
-@@ -168,7 +176,12 @@ trip_point_temp_show(struct device *dev, struct device_attribute *attr,
- 	if (!sscanf(attr->attr.name, "trip_point_%d_temp", &trip))
- 		return -EINVAL;
- 
--	return tz->ops->get_trip_temp(tz, trip, buf);
-+	ret = tz->ops->get_trip_temp(tz, trip, &temperature);
-+
-+	if (ret)
-+		return ret;
-+
-+	return sprintf (buf, "%ld\n", temperature);
- }
- 
- static DEVICE_ATTR(type, 0444, type_show, NULL);
-@@ -312,13 +325,20 @@ static DEVICE_ATTR(name, 0444, name_show, NULL);
- static ssize_t
- temp_input_show(struct device *dev, struct device_attribute *attr, char *buf)
- {
-+	long temperature;
-+	int ret;
- 	struct thermal_hwmon_attr *hwmon_attr
- 			= container_of(attr, struct thermal_hwmon_attr, attr);
- 	struct thermal_zone_device *tz
- 			= container_of(hwmon_attr, struct thermal_zone_device,
- 				       temp_input);
- 
--	return tz->ops->get_temp(tz, buf);
-+	ret = tz->ops->get_temp(tz, &temperature);
-+
-+	if (ret)
-+		return ret;
-+
-+	return sprintf(buf, "%ld\n", temperature);
- }
- 
- static ssize_t
-@@ -330,8 +350,14 @@ temp_crit_show(struct device *dev, struct device_attribute *attr,
- 	struct thermal_zone_device *tz
- 			= container_of(hwmon_attr, struct thermal_zone_device,
- 				       temp_crit);
-+	long temperature;
-+	int ret;
-+
-+	ret = tz->ops->get_trip_temp(tz, 0, &temperature);
-+	if (ret)
-+		return ret;
- 
--	return tz->ops->get_trip_temp(tz, 0, buf);
-+	return sprintf(buf, "%ld\n", temperature);
- }
- 
- 
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 06d3e6e..63e6619 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -36,11 +36,12 @@ struct thermal_zone_device_ops {
- 		     struct thermal_cooling_device *);
- 	int (*unbind) (struct thermal_zone_device *,
- 		       struct thermal_cooling_device *);
--	int (*get_temp) (struct thermal_zone_device *, char *);
-+	int (*get_temp) (struct thermal_zone_device *, unsigned long *);
- 	int (*get_mode) (struct thermal_zone_device *, char *);
- 	int (*set_mode) (struct thermal_zone_device *, const char *);
- 	int (*get_trip_type) (struct thermal_zone_device *, int, char *);
--	int (*get_trip_temp) (struct thermal_zone_device *, int, char *);
-+	int (*get_trip_temp) (struct thermal_zone_device *, int, 
-+			      unsigned long *);
- 	int (*get_crit_temp) (struct thermal_zone_device *, unsigned long *);
- };
- 
+# cat /proc/mdstat 
+Personalities : [raid0] [raid1] [raid6] [raid5] [raid4] 
+md1 : active raid1 sdb2[1] sda2[0]
+       136448 blocks [2/2] [UU]
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+md2 : active raid1 sdb3[1] sda3[0]
+       276109056 blocks [2/2] [UU]
+
+md3 : active raid5 sdl1[9] sdk1[8] sdj1[7] sdi1[6] sdh1[5] sdg1[4] sdf1[3] sde1[2] sdd1[1] sdc1[0]
+       2637296640 blocks level 5, 1024k chunk, algorithm 2 [10/10] [UUUUUUUUUU]
+
+md0 : active raid1 sdb1[1] sda1[0]
+       16787776 blocks [2/2] [UU]
+
+unused devices: <none>
+
+I am using the same cables/configuration, just new disks.  The smart tests
+also show as good, is this a kernel problem?
+
+/dev/sda:
+
+SMART Self-test log structure revision number 1
+Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA_of_first_error
+# 1  Short offline       Completed without error       00%       108         -
+# 2  Short offline       Completed without error       00%       103         -
+# 3  Short offline       Completed without error       00%        79         -
+# 4  Short offline       Completed without error       00%        56         -
+# 5  Extended offline    Completed without error       00%        32         -
+# 6  Short offline       Completed without error       00%         8         -
+
+SMART Error Log Version: 1
+No Errors Logged
+
+/dev/sdl:
+
+SMART Error Log Version: 1
+No Errors Logged
+
+SMART Self-test log structure revision number 1
+Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA_of_first_error
+# 1  Short offline       Completed without error       00%       111         -
+# 2  Short offline       Completed without error       00%       107         -
+# 3  Short offline       Completed without error       00%        83         -
+# 4  Short offline       Completed without error       00%        59         -
+# 5  Extended offline    Completed without error       00%        36         -
+# 6  Short offline       Completed without error       00%        11         -
+
+Does/the kernel handle the ATA v8 protocol properly?
+ATA Version is:   8
+
+Justin.
