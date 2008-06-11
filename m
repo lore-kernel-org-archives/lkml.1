@@ -1,390 +1,234 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758757AbYFKSsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759412AbYFKSt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758757AbYFKSsf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 14:48:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757864AbYFKSrP
+	id S1759412AbYFKSt1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 14:49:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757886AbYFKSrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 14:47:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47890 "EHLO mx1.redhat.com"
+	Wed, 11 Jun 2008 14:47:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47903 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757830AbYFKSrN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 14:47:13 -0400
-Message-Id: <20080611184340.245727738@redhat.com>
+	id S1757895AbYFKSrS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 14:47:18 -0400
+Message-Id: <20080611184340.032624781@redhat.com>
 References: <20080611184214.605110868@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 11 Jun 2008 14:42:36 -0400
+Date: Wed, 11 Jun 2008 14:42:33 -0400
 From: Rik van Riel <riel@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
-       Eric Whitney <eric.whitney@hp.com>
-Subject: [PATCH -mm 22/24] vmscan: unevictable LRU scan sysctl
-Content-Disposition: inline; filename=mm-only-vmscan-noreclaim-lru-scan-sysctl.patch
+       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>
+Subject: [PATCH -mm 19/24] vmstat: mlocked pages statistics
+Content-Disposition: inline; filename=vmscan-mlocked-pages-statistics.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Lee Schermerhorn <lee.schermerhorn@hp.com>
+From: Nick Piggin <npiggin@suse.de>
 
-This patch adds a function to scan individual or all zones' unevictable
-lists and move any pages that have become evictable onto the respective
-zone's inactive list, where shrink_inactive_list() will deal with them.
+Add NR_MLOCK zone page state, which provides a (conservative) count of
+mlocked pages (actually, the number of mlocked pages moved off the LRU).
 
-Adds sysctl to scan all nodes, and per node attributes to individual
-nodes' zones.
+Reworked by lts to fit in with the modified mlock page support in the
+Reclaim Scalability series.
 
-Kosaki:
-If evictable page found in unevictable lru when write
-/proc/sys/vm/scan_unevictable_pages, print filename and file offset of
-these pages.
-
----
-TODO:  DEBUGGING ONLY: NOT FOR UPSTREAM MERGE
-
-V6:
-+ moved to end of series as optional debug patch
-
-V2 -> V3:
-+ rebase to 23-mm1 atop RvR's split LRU series
-
-New in V2
-
+Signed-off-by: Nick Piggin <npiggin@suse.de>
 Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
 Signed-off-by: Rik van Riel <riel@redhat.com>
 Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
+---
 
- drivers/base/node.c  |    5 +
- include/linux/rmap.h |    3 
- include/linux/swap.h |   15 ++++
- kernel/sysctl.c      |   10 +++
- mm/rmap.c            |    4 -
- mm/vmscan.c          |  163 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 6 files changed, 198 insertions(+), 2 deletions(-)
+V2 -> V3:
++ rebase to 23-mm1 atop RvR's split lru series
++ fix definitions of NR_MLOCK to fix build errors when not configured.
 
-Index: linux-2.6.26-rc5-mm2/include/linux/swap.h
-===================================================================
---- linux-2.6.26-rc5-mm2.orig/include/linux/swap.h	2008-06-10 22:38:56.000000000 -0400
-+++ linux-2.6.26-rc5-mm2/include/linux/swap.h	2008-06-10 22:38:58.000000000 -0400
-@@ -7,6 +7,7 @@
- #include <linux/list.h>
- #include <linux/memcontrol.h>
- #include <linux/sched.h>
-+#include <linux/node.h>
- 
- #include <asm/atomic.h>
- #include <asm/page.h>
-@@ -235,15 +236,29 @@ static inline int zone_reclaim(struct zo
- #ifdef CONFIG_UNEVICTABLE_LRU
- extern int page_evictable(struct page *page, struct vm_area_struct *vma);
- extern void scan_mapping_unevictable_pages(struct address_space *);
-+
-+extern unsigned long scan_unevictable_pages;
-+extern int scan_unevictable_handler(struct ctl_table *, int, struct file *,
-+					void __user *, size_t *, loff_t *);
-+extern int scan_unevictable_register_node(struct node *node);
-+extern void scan_unevictable_unregister_node(struct node *node);
- #else
- static inline int page_evictable(struct page *page,
- 						struct vm_area_struct *vma)
- {
- 	return 1;
- }
-+
- static inline void scan_mapping_unevictable_pages(struct address_space *mapping)
- {
- }
-+
-+static inline int scan_unevictable_register_node(struct node *node)
-+{
-+	return 0;
-+}
-+
-+static inline void scan_unevictable_unregister_node(struct node *node) { }
- #endif
- 
- extern int kswapd_run(int nid);
-Index: linux-2.6.26-rc5-mm2/mm/vmscan.c
-===================================================================
---- linux-2.6.26-rc5-mm2.orig/mm/vmscan.c	2008-06-10 22:38:57.000000000 -0400
-+++ linux-2.6.26-rc5-mm2/mm/vmscan.c	2008-06-10 23:02:07.000000000 -0400
-@@ -39,6 +39,7 @@
- #include <linux/freezer.h>
- #include <linux/memcontrol.h>
- #include <linux/delayacct.h>
-+#include <linux/sysctl.h>
- 
- #include <asm/tlbflush.h>
- #include <asm/div64.h>
-@@ -2362,6 +2363,39 @@ int page_evictable(struct page *page, st
- 	return 1;
- }
- 
-+static void show_page_path(struct page *page)
-+{
-+	char buf[256];
-+	if (page_is_file_cache(page)) {
-+		struct address_space *mapping = page->mapping;
-+		struct dentry *dentry;
-+		pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
-+
-+		spin_lock(&mapping->i_mmap_lock);
-+		dentry = d_find_alias(mapping->host);
-+		printk(KERN_INFO "rescued: %s %lu\n",
-+		       dentry_path(dentry, buf, 256), pgoff);
-+		spin_unlock(&mapping->i_mmap_lock);
-+	} else {
-+#ifdef CONFIG_MM_OWNER
-+		struct anon_vma *anon_vma;
-+		struct vm_area_struct *vma;
-+
-+		anon_vma = page_lock_anon_vma(page);
-+		if (!anon_vma)
-+			return;
-+
-+		list_for_each_entry(vma, &anon_vma->head, anon_vma_node) {
-+			printk(KERN_INFO "rescued: anon %s\n",
-+			       vma->vm_mm->owner->comm);
-+			break;
-+		}
-+		page_unlock_anon_vma(anon_vma);
-+#endif
-+	}
-+}
-+
-+
- /**
-  * check_move_unevictable_page - check page for evictability and move to appropriate zone lru list
-  * @page: page to check evictability and move to appropriate lru list
-@@ -2379,6 +2413,9 @@ static void check_move_unevictable_page(
- 	ClearPageUnevictable(page); /* for page_evictable() */
- 	if (page_evictable(page, NULL)) {
- 		enum lru_list l = LRU_INACTIVE_ANON + page_is_file_cache(page);
-+
-+		show_page_path(page);
-+
- 		__dec_zone_state(zone, NR_UNEVICTABLE);
- 		list_move(&page->lru, &zone->lru[l].list);
- 		__inc_zone_state(zone, NR_INACTIVE_ANON + l);
-@@ -2459,4 +2496,130 @@ void scan_mapping_unevictable_pages(stru
- 	}
- 
- }
-+
-+/**
-+ * scan_zone_unevictable_pages - check unevictable list for evictable pages
-+ * @zone - zone of which to scan the unevictable list
-+ *
-+ * Scan @zone's unevictable LRU lists to check for pages that have become
-+ * evictable.  Move those that have to @zone's inactive list where they
-+ * become candidates for reclaim, unless shrink_inactive_zone() decides
-+ * to reactivate them.  Pages that are still unevictable are rotated
-+ * back onto @zone's unevictable list.
-+ */
-+#define SCAN_UNEVICTABLE_BATCH_SIZE 16UL /* arbitrary lock hold batch size */
-+void scan_zone_unevictable_pages(struct zone *zone)
-+{
-+	struct list_head *l_unevictable = &zone->lru[LRU_UNEVICTABLE].list;
-+	unsigned long scan;
-+	unsigned long nr_to_scan = zone_page_state(zone, NR_UNEVICTABLE);
-+
-+	while (nr_to_scan > 0) {
-+		unsigned long batch_size = min(nr_to_scan,
-+						SCAN_UNEVICTABLE_BATCH_SIZE);
-+
-+		spin_lock_irq(&zone->lru_lock);
-+		for (scan = 0;  scan < batch_size; scan++) {
-+			struct page *page = lru_to_page(l_unevictable);
-+
-+			if (TestSetPageLocked(page))
-+				continue;
-+
-+			prefetchw_prev_lru_page(page, l_unevictable, flags);
-+
-+			if (likely(PageLRU(page) && PageUnevictable(page)))
-+				check_move_unevictable_page(page, zone);
-+
-+			unlock_page(page);
-+		}
-+		spin_unlock_irq(&zone->lru_lock);
-+
-+		nr_to_scan -= batch_size;
-+	}
-+}
-+
-+
-+/**
-+ * scan_all_zones_unevictable_pages - scan all unevictable lists for evictable pages
-+ *
-+ * A really big hammer:  scan all zones' unevictable LRU lists to check for
-+ * pages that have become evictable.  Move those back to the zones'
-+ * inactive list where they become candidates for reclaim.
-+ * This occurs when, e.g., we have unswappable pages on the unevictable lists,
-+ * and we add swap to the system.  As such, it runs in the context of a task
-+ * that has possibly/probably made some previously unevictable pages
-+ * evictable.
-+ */
-+void scan_all_zones_unevictable_pages(void)
-+{
-+	struct zone *zone;
-+
-+	for_each_zone(zone) {
-+		scan_zone_unevictable_pages(zone);
-+	}
-+}
-+
-+/*
-+ * scan_unevictable_pages [vm] sysctl handler.  On demand re-scan of
-+ * all nodes' unevictable lists for evictable pages
-+ */
-+unsigned long scan_unevictable_pages;
-+
-+int scan_unevictable_handler(struct ctl_table *table, int write,
-+			   struct file *file, void __user *buffer,
-+			   size_t *length, loff_t *ppos)
-+{
-+	proc_doulongvec_minmax(table, write, file, buffer, length, ppos);
-+
-+	if (write && *(unsigned long *)table->data)
-+		scan_all_zones_unevictable_pages();
-+
-+	scan_unevictable_pages = 0;
-+	return 0;
-+}
-+
-+/*
-+ * per node 'scan_unevictable_pages' attribute.  On demand re-scan of
-+ * a specified node's per zone unevictable lists for evictable pages.
-+ */
-+
-+static ssize_t read_scan_unevictable_node(struct sys_device *dev, char *buf)
-+{
-+	return sprintf(buf, "0\n");	/* always zero; should fit... */
-+}
-+
-+static ssize_t write_scan_unevictable_node(struct sys_device *dev,
-+					const char *buf, size_t count)
-+{
-+	struct zone *node_zones = NODE_DATA(dev->id)->node_zones;
-+	struct zone *zone;
-+	unsigned long res;
-+	unsigned long req = strict_strtoul(buf, 10, &res);
-+
-+	if (!req)
-+		return 1;	/* zero is no-op */
-+
-+	for (zone = node_zones; zone - node_zones < MAX_NR_ZONES; ++zone) {
-+		if (!populated_zone(zone))
-+			continue;
-+		scan_zone_unevictable_pages(zone);
-+	}
-+	return 1;
-+}
-+
-+
-+static SYSDEV_ATTR(scan_unevictable_pages, S_IRUGO | S_IWUSR,
-+			read_scan_unevictable_node,
-+			write_scan_unevictable_node);
-+
-+int scan_unevictable_register_node(struct node *node)
-+{
-+	return sysdev_create_file(&node->sysdev, &attr_scan_unevictable_pages);
-+}
-+
-+void scan_unevictable_unregister_node(struct node *node)
-+{
-+	sysdev_remove_file(&node->sysdev, &attr_scan_unevictable_pages);
-+}
-+
- #endif
-Index: linux-2.6.26-rc5-mm2/kernel/sysctl.c
-===================================================================
---- linux-2.6.26-rc5-mm2.orig/kernel/sysctl.c	2008-06-10 22:36:48.000000000 -0400
-+++ linux-2.6.26-rc5-mm2/kernel/sysctl.c	2008-06-10 22:38:58.000000000 -0400
-@@ -1141,6 +1141,16 @@ static struct ctl_table vm_table[] = {
- 		.extra2		= &one,
- 	},
- #endif
-+#ifdef CONFIG_UNEVICTABLE_LRU
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "scan_unevictable_pages",
-+		.data		= &scan_unevictable_pages,
-+		.maxlen		= sizeof(scan_unevictable_pages),
-+		.mode		= 0644,
-+		.proc_handler	= &scan_unevictable_handler,
-+	},
-+#endif
- /*
-  * NOTE: do not add new entries to this table unless you have read
-  * Documentation/sysctl/ctl_unnumbered.txt
+V1 -> V2:
++  new in V2 -- pulled in & reworked from Nick's previous series
+
+
+ drivers/base/node.c    |   22 ++++++++++++----------
+ fs/proc/proc_misc.c    |    2 ++
+ include/linux/mmzone.h |    2 ++
+ mm/internal.h          |   14 +++++++++++---
+ mm/mlock.c             |   24 +++++++++++++++++++-----
+ mm/vmstat.c            |    1 +
+ 6 files changed, 47 insertions(+), 18 deletions(-)
+
 Index: linux-2.6.26-rc5-mm2/drivers/base/node.c
 ===================================================================
---- linux-2.6.26-rc5-mm2.orig/drivers/base/node.c	2008-06-10 22:38:44.000000000 -0400
-+++ linux-2.6.26-rc5-mm2/drivers/base/node.c	2008-06-10 22:38:58.000000000 -0400
-@@ -13,6 +13,7 @@
- #include <linux/nodemask.h>
- #include <linux/cpu.h>
- #include <linux/device.h>
-+#include <linux/swap.h>
- 
- static struct sysdev_class node_class = {
- 	.name = "node",
-@@ -186,6 +187,8 @@ int register_node(struct node *node, int
- 		sysdev_create_file(&node->sysdev, &attr_meminfo);
- 		sysdev_create_file(&node->sysdev, &attr_numastat);
- 		sysdev_create_file(&node->sysdev, &attr_distance);
-+
-+		scan_unevictable_register_node(node);
- 	}
- 	return error;
- }
-@@ -205,6 +208,8 @@ void unregister_node(struct node *node)
- 	sysdev_remove_file(&node->sysdev, &attr_numastat);
- 	sysdev_remove_file(&node->sysdev, &attr_distance);
- 
-+	scan_unevictable_unregister_node(node);
-+
- 	sysdev_unregister(&node->sysdev);
- }
- 
-Index: linux-2.6.26-rc5-mm2/include/linux/rmap.h
+--- linux-2.6.26-rc5-mm2.orig/drivers/base/node.c	2008-06-10 22:37:14.000000000 -0400
++++ linux-2.6.26-rc5-mm2/drivers/base/node.c	2008-06-10 22:38:44.000000000 -0400
+@@ -68,7 +68,8 @@ static ssize_t node_read_meminfo(struct 
+ 		       "Node %d Active(file):   %8lu kB\n"
+ 		       "Node %d Inactive(file): %8lu kB\n"
+ #ifdef CONFIG_UNEVICTABLE_LRU
+-		       "Node %d Noreclaim:      %8lu kB\n"
++		       "Node %d Unevictable:    %8lu kB\n"
++		       "Node %d Mlocked:        %8lu kB\n"
+ #endif
+ #ifdef CONFIG_HIGHMEM
+ 		       "Node %d HighTotal:      %8lu kB\n"
+@@ -91,16 +92,17 @@ static ssize_t node_read_meminfo(struct 
+ 		       nid, K(i.totalram),
+ 		       nid, K(i.freeram),
+ 		       nid, K(i.totalram - i.freeram),
+-		       nid, node_page_state(nid, NR_ACTIVE_ANON) +
+-				node_page_state(nid, NR_ACTIVE_FILE),
+-		       nid, node_page_state(nid, NR_INACTIVE_ANON) +
+-				node_page_state(nid, NR_INACTIVE_FILE),
+-		       nid, node_page_state(nid, NR_ACTIVE_ANON),
+-		       nid, node_page_state(nid, NR_INACTIVE_ANON),
+-		       nid, node_page_state(nid, NR_ACTIVE_FILE),
+-		       nid, node_page_state(nid, NR_INACTIVE_FILE),
++		       nid, K(node_page_state(nid, NR_ACTIVE_ANON) +
++				node_page_state(nid, NR_ACTIVE_FILE)),
++		       nid, K(node_page_state(nid, NR_INACTIVE_ANON) +
++				node_page_state(nid, NR_INACTIVE_FILE)),
++		       nid, K(node_page_state(nid, NR_ACTIVE_ANON)),
++		       nid, K(node_page_state(nid, NR_INACTIVE_ANON)),
++		       nid, K(node_page_state(nid, NR_ACTIVE_FILE)),
++		       nid, K(node_page_state(nid, NR_INACTIVE_FILE)),
+ #ifdef CONFIG_UNEVICTABLE_LRU
+-		       nid, node_page_state(nid, NR_UNEVICTABLE),
++		       nid, K(node_page_state(nid, NR_UNEVICTABLE)),
++		       nid, K(node_page_state(nid, NR_MLOCK)),
+ #endif
+ #ifdef CONFIG_HIGHMEM
+ 		       nid, K(i.totalhigh),
+Index: linux-2.6.26-rc5-mm2/fs/proc/proc_misc.c
 ===================================================================
---- linux-2.6.26-rc5-mm2.orig/include/linux/rmap.h	2008-06-10 22:37:26.000000000 -0400
-+++ linux-2.6.26-rc5-mm2/include/linux/rmap.h	2008-06-10 22:38:58.000000000 -0400
-@@ -67,6 +67,9 @@ void anon_vma_unlink(struct vm_area_stru
- void anon_vma_link(struct vm_area_struct *);
- void __anon_vma_link(struct vm_area_struct *);
+--- linux-2.6.26-rc5-mm2.orig/fs/proc/proc_misc.c	2008-06-10 22:36:56.000000000 -0400
++++ linux-2.6.26-rc5-mm2/fs/proc/proc_misc.c	2008-06-10 22:37:34.000000000 -0400
+@@ -177,6 +177,7 @@ static int meminfo_read_proc(char *page,
+ 		"Inactive(file): %8lu kB\n"
+ #ifdef CONFIG_UNEVICTABLE_LRU
+ 		"Unevictable:    %8lu kB\n"
++		"Mlocked:        %8lu kB\n"
+ #endif
+ #ifdef CONFIG_HIGHMEM
+ 		"HighTotal:      %8lu kB\n"
+@@ -215,6 +216,7 @@ static int meminfo_read_proc(char *page,
+ 		K(pages[LRU_INACTIVE_FILE]),
+ #ifdef CONFIG_UNEVICTABLE_LRU
+ 		K(pages[LRU_UNEVICTABLE]),
++		K(pages[NR_MLOCK]),
+ #endif
+ #ifdef CONFIG_HIGHMEM
+ 		K(i.totalhigh),
+Index: linux-2.6.26-rc5-mm2/include/linux/mmzone.h
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/include/linux/mmzone.h	2008-06-10 22:36:56.000000000 -0400
++++ linux-2.6.26-rc5-mm2/include/linux/mmzone.h	2008-06-10 22:37:34.000000000 -0400
+@@ -88,8 +88,10 @@ enum zone_stat_item {
+ 	NR_ACTIVE_FILE,		/*  "     "     "   "       "         */
+ #ifdef CONFIG_UNEVICTABLE_LRU
+ 	NR_UNEVICTABLE,		/*  "     "     "   "       "         */
++	NR_MLOCK,		/* mlock()ed pages found and moved off LRU */
+ #else
+ 	NR_UNEVICTABLE = NR_ACTIVE_FILE, /* avoid compiler errors in dead code */
++	NR_MLOCK = NR_ACTIVE_FILE,
+ #endif
+ 	NR_ANON_PAGES,	/* Mapped anonymous pages */
+ 	NR_FILE_MAPPED,	/* pagecache pages mapped into pagetables.
+Index: linux-2.6.26-rc5-mm2/mm/mlock.c
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/mm/mlock.c	2008-06-10 22:37:26.000000000 -0400
++++ linux-2.6.26-rc5-mm2/mm/mlock.c	2008-06-10 22:37:34.000000000 -0400
+@@ -56,6 +56,7 @@ void __clear_page_mlock(struct page *pag
+ {
+ 	VM_BUG_ON(!PageLocked(page));	/* for LRU isolate/putback */
  
-+extern struct anon_vma *page_lock_anon_vma(struct page *page);
-+extern void page_unlock_anon_vma(struct anon_vma *anon_vma);
-+
++	dec_zone_page_state(page, NR_MLOCK);
+ 	if (!isolate_lru_page(page)) {
+ 		putback_lru_page(page);
+ 	} else {
+@@ -76,8 +77,11 @@ void mlock_vma_page(struct page *page)
+ {
+ 	BUG_ON(!PageLocked(page));
+ 
+-	if (!TestSetPageMlocked(page) && !isolate_lru_page(page))
+-		putback_lru_page(page);
++	if (!TestSetPageMlocked(page)) {
++		inc_zone_page_state(page, NR_MLOCK);
++		if (!isolate_lru_page(page))
++			putback_lru_page(page);
++	}
+ }
+ 
  /*
-  * rmap interfaces called when adding or removing pte of page
-  */
-Index: linux-2.6.26-rc5-mm2/mm/rmap.c
-===================================================================
---- linux-2.6.26-rc5-mm2.orig/mm/rmap.c	2008-06-10 22:37:26.000000000 -0400
-+++ linux-2.6.26-rc5-mm2/mm/rmap.c	2008-06-10 22:38:58.000000000 -0400
-@@ -158,7 +158,7 @@ void __init anon_vma_init(void)
-  * Getting a lock on a stable anon_vma from a page off the LRU is
-  * tricky: page_lock_anon_vma rely on RCU to guard against the races.
-  */
--static struct anon_vma *page_lock_anon_vma(struct page *page)
-+struct anon_vma *page_lock_anon_vma(struct page *page)
+@@ -102,9 +106,19 @@ static void munlock_vma_page(struct page
  {
- 	struct anon_vma *anon_vma;
- 	unsigned long anon_mapping;
-@@ -178,7 +178,7 @@ out:
- 	return NULL;
+ 	BUG_ON(!PageLocked(page));
+ 
+-	if (TestClearPageMlocked(page) && !isolate_lru_page(page)) {
+-		try_to_munlock(page);
+-		putback_lru_page(page);
++	if (TestClearPageMlocked(page)) {
++		dec_zone_page_state(page, NR_MLOCK);
++		if (!isolate_lru_page(page)) {
++			try_to_munlock(page);	/* maybe relock the page */
++			putback_lru_page(page);
++		}
++		/*
++		 * Else we lost the race.  let try_to_unmap() deal with it.
++		 * At least we get the page state and mlock stats right.
++		 * However, page is still on the noreclaim list.  We'll fix
++		 * that up when the page is eventually freed or we scan the
++		 * noreclaim list.
++		 */
+ 	}
  }
  
--static void page_unlock_anon_vma(struct anon_vma *anon_vma)
-+void page_unlock_anon_vma(struct anon_vma *anon_vma)
+Index: linux-2.6.26-rc5-mm2/mm/vmstat.c
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/mm/vmstat.c	2008-06-10 22:36:56.000000000 -0400
++++ linux-2.6.26-rc5-mm2/mm/vmstat.c	2008-06-10 22:37:34.000000000 -0400
+@@ -608,6 +608,7 @@ static const char * const vmstat_text[] 
+ 	"nr_active_file",
+ #ifdef CONFIG_UNEVICTABLE_LRU
+ 	"nr_unevictable",
++	"nr_mlock",
+ #endif
+ 	"nr_anon_pages",
+ 	"nr_mapped",
+Index: linux-2.6.26-rc5-mm2/mm/internal.h
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/mm/internal.h	2008-06-10 22:37:26.000000000 -0400
++++ linux-2.6.26-rc5-mm2/mm/internal.h	2008-06-10 22:37:34.000000000 -0400
+@@ -101,7 +101,8 @@ static inline int is_mlocked_vma(struct 
+ 	if (likely((vma->vm_flags & (VM_LOCKED | VM_SPECIAL)) != VM_LOCKED))
+ 		return 0;
+ 
+-	SetPageMlocked(page);
++	if (!TestSetPageMlocked(page))
++		inc_zone_page_state(page, NR_MLOCK);
+ 	return 1;
+ }
+ 
+@@ -128,12 +129,19 @@ static inline void clear_page_mlock(stru
+ 
+ /*
+  * mlock_migrate_page - called only from migrate_page_copy() to
+- * migrate the Mlocked page flag
++ * migrate the Mlocked page flag; update statistics.
+  */
+ static inline void mlock_migrate_page(struct page *newpage, struct page *page)
  {
- 	spin_unlock(&anon_vma->lock);
- 	rcu_read_unlock();
+-	if (TestClearPageMlocked(page))
++	if (TestClearPageMlocked(page)) {
++		unsigned long flags;
++
++		local_irq_save(flags);
++		__dec_zone_page_state(page, NR_MLOCK);
+ 		SetPageMlocked(newpage);
++		__inc_zone_page_state(newpage, NR_MLOCK);
++		local_irq_restore(flags);
++	}
+ }
+ 
+ 
 
 -- 
 All Rights Reversed
