@@ -1,161 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762466AbYFKTEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762481AbYFKTEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762466AbYFKTEU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 15:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755008AbYFKTEH
+	id S1762481AbYFKTEe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 15:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761922AbYFKTEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 15:04:07 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:19666 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754984AbYFKTEF (ORCPT
+	Wed, 11 Jun 2008 15:04:15 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2758 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761473AbYFKTEO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 15:04:05 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: pnp changes -> suspend oops [Was: 2.6.26-rc5-mm2]
-Date: Wed, 11 Jun 2008 13:03:38 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org
-References: <20080609223145.5c9a2878.akpm@linux-foundation.org> <485014B5.7080305@gmail.com>
-In-Reply-To: <485014B5.7080305@gmail.com>
+	Wed, 11 Jun 2008 15:04:14 -0400
+Date: Wed, 11 Jun 2008 20:03:11 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Rik van Riel <riel@redhat.com>, clameter@sgi.com,
+       linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
+       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org, eric.whitney@hp.com,
+       Paul Mundt <lethal@linux-sh.org>, Andi Kleen <andi@firstfloor.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH -mm 13/25] Noreclaim LRU Infrastructure
+Message-ID: <20080611190311.GA30958@shadowen.org>
+References: <20080606180506.081f686a.akpm@linux-foundation.org> <20080608163413.08d46427@bree.surriel.com> <20080608135704.a4b0dbe1.akpm@linux-foundation.org> <20080608173244.0ac4ad9b@bree.surriel.com> <20080608162208.a2683a6c.akpm@linux-foundation.org> <20080608193420.2a9cc030@bree.surriel.com> <20080608165434.67c87e5c.akpm@linux-foundation.org> <Pine.LNX.4.64.0806101214190.17798@schroedinger.engr.sgi.com> <20080610153702.4019e042@cuia.bos.redhat.com> <20080610143334.c53d7d8a.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806111303.39267.bjorn.helgaas@hp.com>
+In-Reply-To: <20080610143334.c53d7d8a.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 June 2008 12:08:53 pm Jiri Slaby wrote:
-> On 06/10/2008 07:31 AM, Andrew Morton wrote:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc5/2.6.26-rc5-mm2/
+On Tue, Jun 10, 2008 at 02:33:34PM -0700, Andrew Morton wrote:
+> On Tue, 10 Jun 2008 15:37:02 -0400
+> Rik van Riel <riel@redhat.com> wrote:
 > 
-> I face problems after some of the pnp changes. If this is not known, I may 
-> bisect it, it's 100% reproducible. I have no real logs, It panics prior to 
-> network is woken up to see something on netconsole, I just captured a function 
-> name and an offset of place where it oopses.
+> > On Tue, 10 Jun 2008 12:17:23 -0700 (PDT)
+> > Christoph Lameter <clameter@sgi.com> wrote:
+> > 
+> > > On Sun, 8 Jun 2008, Andrew Morton wrote:
+> > > 
+> > > > And it will take longer to get those problems sorted out if 32-bt
+> > > > machines aren't even compiing the new code in.
+> > > 
+> > > The problem is going to be less if we dependedn on 
+> > > CONFIG_PAGEFLAGS_EXTENDED instead of 64 bit. This means that only certain 
+> > > 32bit NUMA/sparsemem configs cannot do this due to lack of page flags.
+> > > 
+> > > I did the pageflags rework in part because of Rik's project.
+> > 
+> > I think your pageflags work freed up a number of bits on 32
+> > bit systems, unless someone compiles a 32 bit system with
+> > support for 4 memory zones (2 bits ZONE_SHIFT) and 64 NUMA
+> > nodes (6 bits NODE_SHIFT), in which case we should still
+> > have 24 bits for flags.
+> > 
+> > Of course, having 64 NUMA nodes and a ZONE_SHIFT of 2 on
+> > a 32 bit system is probably total insanity already.  I
+> > suspect very few people compile 32 bit with NUMA at all,
+> > except if it is an architecture that uses DISCONTIGMEM
+> > instead of zones, in which case ZONE_SHIFT is 0, which
+> > will free up space too :)
 > 
-> pnpacpi_encode_resources, ACPI_RESOURCE_TYPE_DMA case, pnp_get_resource(dev, 
-> IORESOURCE_DMA, dma) returns NULL, which is dereferenced at pnpacpi_encode_dma 
-> at p->flags.
+> Maybe it's time to bite the bullet and kill i386 NUMA support.  afaik
+> it's just NUMAQ and a 2-node NUMAish machine which IBM made (as400?)
 > 
-> It happens on resume after mem > /sys/power/state.
+> arch/sh uses NUMA for 32-bit, I believe. But I don't know what its
+> maximum node count is.  The default for sh NODES_SHIFT is 3.  
 
-Thanks for the report, I hadn't heard about this.
+I think we can say that although NUMAQ can have up to 64 NUMA nodes, in
+fact I don't think we have any more with more than 4 nodes left.  From
+the other discussion it sounds like we have a maximum if 8 nodes on
+other sub-arches.  So it would not be unreasonable to reduce the shift
+to 3.  Which might allow us to reduce the size of the reserve.
 
-We used to always have a resource from the static table to encode
-(assuming the table was big enough), even if that resource was
-disabled or unassigned.  But now we don't keep those around, so
-we can end up with null pointers like you're seeing.
+The problem will come with SPARSEMEM as that stores the section number
+in the reserved field.  Which can mean we need the whole reserve, and
+there is currently no simple way to remove that.
 
-Before you go to all the trouble of bisecting it, can you turn on
-CONFIG_PNP_DEBUG and try the following debug patch?  I think this
-will prevent the oops, but it's just papering over the real problem,
-so please capture the complete dmesg log.
+I have been wondering whether we could make more use of the dynamic
+nature of the page bits.  As bits only need to exist when used, whether
+we could consider letting the page flags grow to 64 bits if necessary.
+However, at a quick count we are still only using about 19 bits, and if
+memory serves we have 23/24 after the reserve on 32 bit.
 
-Bjorn
-
-
-Index: work10/drivers/pnp/pnpacpi/rsparser.c
-===================================================================
---- work10.orig/drivers/pnp/pnpacpi/rsparser.c	2008-06-11 12:46:28.000000000 -0600
-+++ work10/drivers/pnp/pnpacpi/rsparser.c	2008-06-11 12:59:43.000000000 -0600
-@@ -749,6 +749,11 @@ static void pnpacpi_encode_irq(struct pn
- 	struct acpi_resource_irq *irq = &resource->data.irq;
- 	int triggering, polarity, shareable;
- 
-+	if (!p) {
-+		dev_err(&dev->dev, "  no irq resource to encode!\n");
-+		return;
-+	}
-+
- 	decode_irq_flags(dev, p->flags, &triggering, &polarity, &shareable);
- 	irq->triggering = triggering;
- 	irq->polarity = polarity;
-@@ -771,6 +776,11 @@ static void pnpacpi_encode_ext_irq(struc
- 	struct acpi_resource_extended_irq *extended_irq = &resource->data.extended_irq;
- 	int triggering, polarity, shareable;
- 
-+	if (!p) {
-+		dev_err(&dev->dev, "  no extended irq resource to encode!\n");
-+		return;
-+	}
-+
- 	decode_irq_flags(dev, p->flags, &triggering, &polarity, &shareable);
- 	extended_irq->producer_consumer = ACPI_CONSUMER;
- 	extended_irq->triggering = triggering;
-@@ -791,6 +801,11 @@ static void pnpacpi_encode_dma(struct pn
- {
- 	struct acpi_resource_dma *dma = &resource->data.dma;
- 
-+	if (!p) {
-+		dev_err(&dev->dev, "  no dma resource to encode!\n");
-+		return;
-+	}
-+
- 	/* Note: pnp_assign_dma will copy pnp_dma->flags into p->flags */
- 	switch (p->flags & IORESOURCE_DMA_SPEED_MASK) {
- 	case IORESOURCE_DMA_TYPEA:
-@@ -832,6 +847,11 @@ static void pnpacpi_encode_io(struct pnp
- {
- 	struct acpi_resource_io *io = &resource->data.io;
- 
-+	if (!p) {
-+		dev_err(&dev->dev, "  no io resource to encode!\n");
-+		return;
-+	}
-+
- 	/* Note: pnp_assign_port will copy pnp_port->flags into p->flags */
- 	io->io_decode = (p->flags & IORESOURCE_IO_16BIT_ADDR) ?
- 	    ACPI_DECODE_16 : ACPI_DECODE_10;
-@@ -851,6 +871,11 @@ static void pnpacpi_encode_fixed_io(stru
- {
- 	struct acpi_resource_fixed_io *fixed_io = &resource->data.fixed_io;
- 
-+	if (!p) {
-+		dev_err(&dev->dev, "  no fixed io resource to encode!\n");
-+		return;
-+	}
-+
- 	fixed_io->address = p->start;
- 	fixed_io->address_length = p->end - p->start + 1;
- 
-@@ -864,6 +889,11 @@ static void pnpacpi_encode_mem24(struct 
- {
- 	struct acpi_resource_memory24 *memory24 = &resource->data.memory24;
- 
-+	if (!p) {
-+		dev_err(&dev->dev, "  no mem24 resource to encode!\n");
-+		return;
-+	}
-+
- 	/* Note: pnp_assign_mem will copy pnp_mem->flags into p->flags */
- 	memory24->write_protect =
- 	    (p->flags & IORESOURCE_MEM_WRITEABLE) ?
-@@ -884,6 +914,11 @@ static void pnpacpi_encode_mem32(struct 
- {
- 	struct acpi_resource_memory32 *memory32 = &resource->data.memory32;
- 
-+	if (!p) {
-+		dev_err(&dev->dev, "  no mem32 resource to encode!\n");
-+		return;
-+	}
-+
- 	memory32->write_protect =
- 	    (p->flags & IORESOURCE_MEM_WRITEABLE) ?
- 	    ACPI_READ_WRITE_MEMORY : ACPI_READ_ONLY_MEMORY;
-@@ -903,6 +938,11 @@ static void pnpacpi_encode_fixed_mem32(s
- {
- 	struct acpi_resource_fixed_memory32 *fixed_memory32 = &resource->data.fixed_memory32;
- 
-+	if (!p) {
-+		dev_err(&dev->dev, "  no fixed_mem32 resource to encode!\n");
-+		return;
-+	}
-+
- 	fixed_memory32->write_protect =
- 	    (p->flags & IORESOURCE_MEM_WRITEABLE) ?
- 	    ACPI_READ_WRITE_MEMORY : ACPI_READ_ONLY_MEMORY;
+-apw
