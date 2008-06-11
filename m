@@ -1,53 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754513AbYFKNxO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754696AbYFKNzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754513AbYFKNxO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 09:53:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbYFKNw7
+	id S1754696AbYFKNzK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 09:55:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbYFKNy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 09:52:59 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:39689 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750953AbYFKNw7 (ORCPT
+	Wed, 11 Jun 2008 09:54:58 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:57245 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750859AbYFKNy5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 09:52:59 -0400
-Date: Wed, 11 Jun 2008 15:52:57 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Arjan van de Ven <arjan@infradead.org>
-cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       "solsTiCe d'Hiver" <solstice.dhiver@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: no cpu MHz in /proc/cpuinfo on 2.6.25.4-rt6
-In-Reply-To: <20080611063639.5e1eea5b@infradead.org>
-Message-ID: <alpine.LNX.1.10.0806111552090.20733@fbirervta.pbzchgretzou.qr>
-References: <200806102152.23286.solstice.dhiver@gmail.com> <20080610131314.5f7069e6@infradead.org> <484EE71A.40002@intel.com> <alpine.LNX.1.10.0806111440480.20733@fbirervta.pbzchgretzou.qr> <20080611063639.5e1eea5b@infradead.org>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 11 Jun 2008 09:54:57 -0400
+Date: Wed, 11 Jun 2008 09:54:43 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Holger Kiehl <Holger.Kiehl@dwd.de>
+Cc: linux-ext4@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Performance of ext4
+Message-ID: <20080611135443.GK8397@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Holger Kiehl <Holger.Kiehl@dwd.de>, linux-ext4@vger.kernel.org,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0806110801370.19793@diagnostix.dwd.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0806110801370.19793@diagnostix.dwd.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wednesday 2008-06-11 15:36, Arjan van de Ven wrote:
->> >> btw this is scary; the Mhz line in /proc/cpuinfo doesn't have much
->> >> meaning really, so applications using it and depending on it is a
->> >> rather big disaster ;-(
->> >> 
->> >> Does anyone know why jackd wants to use this?
->> 
->> It would be nice to have a /sys file where the CPU frequency is in,
+On Wed, Jun 11, 2008 at 08:02:32AM +0000, Holger Kiehl wrote:
 >
->may I ask why? What would you do with it?
+> Doing some performance test between ext3 and ext4 I noticed that ext4
+> is not much faster or in some cases slower then ext3. Two years ago when
+> I tested ext4 it was a lot faster then ext3 (see my mail:
+> http://lkml.org/lkml/2006/6/6/65). Doing some simple tests with bonnie++
+> I got the following results:
 
-Off the top off the head, just for reporting to the user. Desklets and stuff.
+Hi Holger,
 
->If it says 100Mhz, what would you conclude? That you have a slow cpu?
->Or that you have a really fast CPU that currently runs at a low
->frequency because you're mostly idle and are saving power?
->
->CPU frequency is...
->1) not something that is fixed; it changes all the time
->2) not a good indication for performance; remember the 3.4Ghz pentium4,
->a 2Ghz Core2Duo outperforms it
->3) something which the cpu itself barely honors (the clock stops during
->idle etc etc)
+You didn't say exactly which version of the kernel/ext4 you were
+testing, but a recent change which we made to ext4, but which hasn't
+been made to ext3 yet is that barrier support has been enabled to
+improve filesystem safety; unfortunately this does imply with it a
+slight performance slowdown, which would be more pronounced on
+benchmarks with small filesystems.  So when you mount the filesystem
+for ext3 and ext4 for benchmarking purposes, you should consistently
+use a mount options of barrier=1 or barrier=0.  With ext4, you can use
+the mount option "barrier=1,journal_async_commit" which should
+ameliorate part of the performance decrease.  The reason why it is not
+yet the default is it requires support from e2fsprogs that has not
+been released except in development git branches; but as long as you
+don't require running e2fsck on uncleanly shutdown systems (probably
+not necessary if you are just benchmarking), you can use
+journal_async_commit in good health.
+
+Another change which might help out the bonnie benchmark, but which
+again requires the latest version of e2fsprogs is to create the
+filesystem with flex_bg filesystem feature.  In fact, for
+convenience's sake, if you are using the latest development version of
+e2fsprogs, you can just use the command "mke2fs -t ext4dev /dev/hdXX"
+and it will set up the filesystem with the correct filesystem features
+for ext4.  (The "ext4dev" sets the test_fs feature, and is basically
+there so it's clear we are still trying to finish up ext4 support.)
+
+> 2 years ago I used 2.6.16.8 but the hardware is still the same. So what has
+> happened with the performance of ext4? I noticed that 2 years ago I could
+> use extents+mballoc+delalloc, now there is only extents+mballoc in the
+> current kernels. Could delalloc make the big difference? I saw that
+> in Andrew Morton mm tree delalloc is included. Unfortunately when I tried 
+> using
+> 2.6.26-rc2-mm1 a sync would never return and there where lot of other
+> odd things, so I could not do any tests with delalloc.
+
+As Aneesh has mentioned, there were some bugs in version of ext4's
+delalloc caused by insufficient testing of the ext4 patch queue some
+changes to our locking strategy went in.  That's been fixed in the
+latest patch queue, and we're in the process of cleaning up delalloc
+before merging it into the mainline kernel.  (When you tested ext4 two
+years ago, none of this was yet in mainline, so it's not a matter of
+things delalloc "disappearing", but rather that we've been slow
+getting to the point where it was ready for merging.
+
+	       	     	      	  - Ted
