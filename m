@@ -1,76 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762606AbYFKQBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762674AbYFKQGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762606AbYFKQBR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 12:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751502AbYFKQBD
+	id S1762674AbYFKQGn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 12:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760830AbYFKQGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 12:01:03 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:3892 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751047AbYFKQBC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 12:01:02 -0400
-Subject: Re: [PATCH -mm 17/25] Mlocked Pages are non-reclaimable
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: riel@redhat.com, npiggin@suse.de, linux-kernel@vger.kernel.org,
-       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org, eric.whitney@hp.com
-In-Reply-To: <20080610145706.4a921cfa.akpm@linux-foundation.org>
-References: <20080606202838.390050172@redhat.com>
-	 <20080606202859.522708682@redhat.com>
-	 <20080606180746.6c2b5288.akpm@linux-foundation.org>
-	 <20080610033130.GK19404@wotan.suse.de>
-	 <20080610171400.149886cf@cuia.bos.redhat.com>
-	 <1213134197.6872.49.camel@lts-notebook>
-	 <20080610145706.4a921cfa.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Wed, 11 Jun 2008 12:01:24 -0400
-Message-Id: <1213200084.6436.31.camel@lts-notebook>
+	Wed, 11 Jun 2008 12:06:34 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:39939 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754668AbYFKQGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 12:06:33 -0400
+Date: Wed, 11 Jun 2008 20:08:15 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, mingo@elte.hu,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Paul Jackson <pj@sgi.com>,
+       menage@google.com, linux-kernel@vger.kernel.org,
+       Mark Hounschell <dmarkh@cfl.rr.com>
+Subject: Re: workqueue cpu affinity
+Message-ID: <20080611160815.GA150@tv-sign.ru>
+References: <alpine.DEB.1.10.0806051255500.31157@chino.kir.corp.google.com> <20080605152953.dcfefa47.pj@sgi.com> <alpine.DEB.1.10.0806051357480.32537@chino.kir.corp.google.com> <484D99AD.4000306@qualcomm.com> <1213080240.31518.5.camel@twins> <484E9FE8.9040504@qualcomm.com> <20080610170005.GA6038@tv-sign.ru> <1213118386.19005.9.camel@lappy.programming.kicks-ass.net> <484EE303.9070007@qualcomm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <484EE303.9070007@qualcomm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-06-10 at 14:57 -0700, Andrew Morton wrote:
-> On Tue, 10 Jun 2008 17:43:17 -0400
-> Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
-> 
-> > Couple of related items:
-> > 
-> > + 26-rc5-mm1 + a small fix to the double unlock_page() in
-> > shrink_page_list() has been running for a couple of hours on my 32G,
-> > 16cpu ia64 numa platform w/o error.  Seems to have survived the merge
-> > into -mm, despite the issues Andrew has raised.
-> 
-> oh goody, thanks.  
+On 06/10, Max Krasnyansky wrote:
+>
+> Here is some backgound on this. Full cpu isolation requires some tweaks to the
+> workqueue handling. Either the workqueue threads need to be moved (which is my
+> current approach), or work needs to be redirected when it's submitted.
 
-I should have mentioned that it's running a fairly heavy stress load to
-exercise the vm scalability changes.  Lots of IO, page cache activity,
-swapping, mlocking and shmlocking various sized regions, up to 16GB on
-32GB machine, migrating of mlocked/shmlocked segments between
-nodes,  ...   So far today, the load has been up for ~19.5 hours with no
-errors, no softlockups, no oom-kills or such.  
+_IF_ we have to do this, I think it is much better to move cwq->thread.
 
-> Johannes's bootmem rewrite is holding up
-> surprisingly well.
+> Peter Zijlstra wrote:
+> > The advantage of creating a more flexible or fine-grained flush is that
+> > large machine also profit from it.
+> I agree, our current workqueue flush scheme is expensive because it has to
+> schedule on each online cpu. So yes improving flush makes sense in general.
 
-Well, I am seeing a lot of "potential offnode page_structs" messages for
-our funky cache-line interleaved pseudo-node.  I had to limit the prints
-to boot at all.  Still investigating.  Looks like slub can't allocate
-its initial per node data on that node either.
+Yes, it is easy to implement flush_work(struct work_struct *work) which
+only waits for that work, so it can't hang unless it was enqueued on the
+isolated cpu.
 
-> 
-> gee test.kernel.org takes a long time.
-> 
-> > + on same platform, Mel Gorman's mminit debug code is reporting that
-> > we're using 22 page flags with Noreclaim, Mlock and PAGEFLAGS_EXTENDED
-> > configured.
-> 
-> what is "Mel Gorman's mminit debug code"?
+But in most cases it is enough to just do
 
-mminit_loglevel={0|1|2}  [I use 3 :)]  shows page flag layout, zone
-lists, ...
+	if (cancel_work_sync(work))
+		work->func(work);
+
+Or we can add flush_workqueue_cpus(struct workqueue_struct *wq, cpumask_t *cpu_map).
+
+But I don't think we should change the behaviour of flush_workqueue().
+
+> This will require a bit of surgery across the entire tree. There is a lot of
+> code that calls flush_scheduled_work()
+
+Almost all of them should be changed to use cancel_work_sync().
+
+Oleg.
 
