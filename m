@@ -1,354 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758769AbYFKXJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758900AbYFKXK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758769AbYFKXJq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 19:09:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbYFKXJi
+	id S1758900AbYFKXK2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 19:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753506AbYFKXKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 19:09:38 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:37684 "EHLO e4.ny.us.ibm.com"
+	Wed, 11 Jun 2008 19:10:14 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:36797 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753215AbYFKXJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 19:09:37 -0400
-Subject: Re: [tpmdd-devel] [PATCH] tpm:increase size of internal TPM
-	response buffers
-From: Debora Velarde <debora@linux.vnet.ibm.com>
-To: Marcin Obara <marcin_obara@users.sourceforge.net>
-Cc: tpmdd-devel@lists.sourceforge.net, Marcel Selhorst <tpm@selhorst.net>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.0.99.0806052220040.8295@ip-195-3-221-75.vnet.pl>
-References: <alpine.DEB.0.99.0806052220040.8295@ip-195-3-221-75.vnet.pl>
-Content-Type: text/plain
-Organization: IBM
-Date: Wed, 11 Jun 2008 16:09:32 -0700
-Message-Id: <1213225772.18858.7.camel@squee.beaverton.ibm.com>
+	id S1753452AbYFKXKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 19:10:12 -0400
+Date: Thu, 12 Jun 2008 09:10:03 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 11 - on ia64
+Message-Id: <20080612091003.775bc671.sfr@canb.auug.org.au>
+In-Reply-To: <484FE1EE.9020201@linux.vnet.ibm.com>
+References: <20080611193840.08a35b14.sfr@canb.auug.org.au>
+	<484FE1EE.9020201@linux.vnet.ibm.com>
+X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.10; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__12_Jun_2008_09_10_03_+1000_qTA4nMRA2oeAkxDd"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marcin,
+--Signature=_Thu__12_Jun_2008_09_10_03_+1000_qTA4nMRA2oeAkxDd
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for the patches.  I'll try to post them upstream next week.
+Hi Sam,
 
--debbie
+One for you?
 
-On Thu, 2008-06-05 at 22:23 +0200, Marcin Obara wrote:
-> This patch increases size of driver internal response buffers.
-> Some TPM responses defined in TCG TPM Specification Version 1.2 Revision 103
-> have increased size and do not fit previously defined buffers.
-> Some TPM responses do not have fixed size, so bigger response buffers
-> have to be allocated. 200B buffers should be enough.
-> 
-> Signed-off-by: Marcin Obara <marcin_obara@users.sourceforge.net>
-> 
-> --- linux/drivers/char/tpm/tpm.c	2008-06-05 22:12:47.000000000 +0200
-> +++ linux_tpm/drivers/char/tpm/tpm.c	2008-06-05 22:10:59.000000000 +0200
-> @@ -579,91 +579,133 @@ void tpm_continue_selftest(struct tpm_ch
->  }
->  EXPORT_SYMBOL_GPL(tpm_continue_selftest);
-> 
-> +#define  TPM_INTERNAL_RESULT_SIZE 200
-> +
->  ssize_t tpm_show_enabled(struct device * dev, struct device_attribute * attr,
->  			char *buf)
->  {
-> -	u8 data[max_t(int, ARRAY_SIZE(tpm_cap), 35)];
-> +	u8 *data;
->  	ssize_t rc;
-> 
->  	struct tpm_chip *chip = dev_get_drvdata(dev);
->  	if (chip == NULL)
->  		return -ENODEV;
-> 
-> +	data = kzalloc(TPM_INTERNAL_RESULT_SIZE, GFP_KERNEL);
-> +	if (!data)
-> +		return -ENOMEM;
-> +
->  	memcpy(data, tpm_cap, sizeof(tpm_cap));
->  	data[TPM_CAP_IDX] = TPM_CAP_FLAG;
->  	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_FLAG_PERM;
-> 
-> -	rc = transmit_cmd(chip, data, sizeof(data),
-> -			"attemtping to determine the permanent state");
-> -	if (rc)
-> +	rc = transmit_cmd(chip, data, TPM_INTERNAL_RESULT_SIZE,
-> +			"attemtping to determine the permanent enabled state");
-> +	if (rc) {
-> +		kfree(data);
->  		return 0;
-> -	return sprintf(buf, "%d\n", !data[TPM_GET_CAP_PERM_DISABLE_IDX]);
-> +	}
-> +
-> +	rc = sprintf(buf, "%d\n", !data[TPM_GET_CAP_PERM_DISABLE_IDX]);
-> +
-> +	kfree(data);
-> +	return rc;
->  }
->  EXPORT_SYMBOL_GPL(tpm_show_enabled);
-> 
->  ssize_t tpm_show_active(struct device * dev, struct device_attribute * attr,
->  			char *buf)
->  {
-> -	u8 data[max_t(int, ARRAY_SIZE(tpm_cap), 35)];
-> +	u8 *data;
->  	ssize_t rc;
-> 
->  	struct tpm_chip *chip = dev_get_drvdata(dev);
->  	if (chip == NULL)
->  		return -ENODEV;
-> 
-> +	data = kzalloc(TPM_INTERNAL_RESULT_SIZE, GFP_KERNEL);
-> +	if (!data)
-> +		return -ENOMEM;
-> +
->  	memcpy(data, tpm_cap, sizeof(tpm_cap));
->  	data[TPM_CAP_IDX] = TPM_CAP_FLAG;
->  	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_FLAG_PERM;
-> 
-> -	rc = transmit_cmd(chip, data, sizeof(data),
-> -			"attemtping to determine the permanent state");
-> -	if (rc)
-> +	rc = transmit_cmd(chip, data, TPM_INTERNAL_RESULT_SIZE,
-> +			"attemtping to determine the permanent active state");
-> +	if (rc) {
-> +		kfree(data);
->  		return 0;
-> -	return sprintf(buf, "%d\n", !data[TPM_GET_CAP_PERM_INACTIVE_IDX]);
-> +	}
-> +
-> +	rc = sprintf(buf, "%d\n", !data[TPM_GET_CAP_PERM_INACTIVE_IDX]);
-> +
-> +	kfree(data);
-> +	return rc;
->  }
->  EXPORT_SYMBOL_GPL(tpm_show_active);
-> 
->  ssize_t tpm_show_owned(struct device * dev, struct device_attribute * attr,
->  			char *buf)
->  {
-> -	u8 data[sizeof(tpm_cap)];
-> +	u8 *data;
->  	ssize_t rc;
-> 
->  	struct tpm_chip *chip = dev_get_drvdata(dev);
->  	if (chip == NULL)
->  		return -ENODEV;
-> 
-> +	data = kzalloc(TPM_INTERNAL_RESULT_SIZE, GFP_KERNEL);
-> +	if (!data)
-> +		return -ENOMEM;
-> +
->  	memcpy(data, tpm_cap, sizeof(tpm_cap));
->  	data[TPM_CAP_IDX] = TPM_CAP_PROP;
->  	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_PROP_OWNER;
-> 
-> -	rc = transmit_cmd(chip, data, sizeof(data),
-> +	rc = transmit_cmd(chip, data, TPM_INTERNAL_RESULT_SIZE,
->  			"attempting to determine the owner state");
-> -	if (rc)
-> +	if (rc) {
-> +		kfree(data);
->  		return 0;
-> -	return sprintf(buf, "%d\n", data[TPM_GET_CAP_RET_BOOL_1_IDX]);
-> +	}
-> +
-> +	rc = sprintf(buf, "%d\n", data[TPM_GET_CAP_RET_BOOL_1_IDX]);
-> +
-> +	kfree(data);
-> +	return rc;
->  }
->  EXPORT_SYMBOL_GPL(tpm_show_owned);
-> 
->  ssize_t tpm_show_temp_deactivated(struct device * dev,
->  				struct device_attribute * attr, char *buf)
->  {
-> -	u8 data[sizeof(tpm_cap)];
-> +	u8 *data;
->  	ssize_t rc;
-> 
->  	struct tpm_chip *chip = dev_get_drvdata(dev);
->  	if (chip == NULL)
->  		return -ENODEV;
-> 
-> +	data = kzalloc(TPM_INTERNAL_RESULT_SIZE, GFP_KERNEL);
-> +	if (!data)
-> +		return -ENOMEM;
-> +
->  	memcpy(data, tpm_cap, sizeof(tpm_cap));
->  	data[TPM_CAP_IDX] = TPM_CAP_FLAG;
->  	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_FLAG_VOL;
-> 
-> -	rc = transmit_cmd(chip, data, sizeof(data),
-> +	rc = transmit_cmd(chip, data, TPM_INTERNAL_RESULT_SIZE,
->  			"attempting to determine the temporary state");
-> -	if (rc)
-> +	if (rc) {
-> +		kfree(data);
->  		return 0;
-> -	return sprintf(buf, "%d\n", data[TPM_GET_CAP_TEMP_INACTIVE_IDX]);
-> +	}
-> +
-> +	rc = sprintf(buf, "%d\n", data[TPM_GET_CAP_TEMP_INACTIVE_IDX]);
-> +
-> +	kfree(data);
-> +	return rc;
->  }
->  EXPORT_SYMBOL_GPL(tpm_show_temp_deactivated);
-> 
-> @@ -677,7 +719,7 @@ static const u8 pcrread[] = {
->  ssize_t tpm_show_pcrs(struct device *dev, struct device_attribute *attr,
->  		      char *buf)
->  {
-> -	u8 data[max_t(int, max(ARRAY_SIZE(tpm_cap), ARRAY_SIZE(pcrread)), 30)];
-> +	u8 *data;
->  	ssize_t rc;
->  	int i, j, num_pcrs;
->  	__be32 index;
-> @@ -687,21 +729,27 @@ ssize_t tpm_show_pcrs(struct device *dev
->  	if (chip == NULL)
->  		return -ENODEV;
-> 
-> +	data = kzalloc(TPM_INTERNAL_RESULT_SIZE, GFP_KERNEL);
-> +	if (!data)
-> +		return -ENOMEM;
-> +
->  	memcpy(data, tpm_cap, sizeof(tpm_cap));
->  	data[TPM_CAP_IDX] = TPM_CAP_PROP;
->  	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_PROP_PCR;
-> 
-> -	rc = transmit_cmd(chip, data, sizeof(data),
-> +	rc = transmit_cmd(chip, data, TPM_INTERNAL_RESULT_SIZE,
->  			"attempting to determine the number of PCRS");
-> -	if (rc)
-> +	if (rc) {
-> +		kfree(data);
->  		return 0;
-> +	}
-> 
->  	num_pcrs = be32_to_cpu(*((__be32 *) (data + 14)));
->  	for (i = 0; i < num_pcrs; i++) {
->  		memcpy(data, pcrread, sizeof(pcrread));
->  		index = cpu_to_be32(i);
->  		memcpy(data + 10, &index, 4);
-> -		rc = transmit_cmd(chip, data, sizeof(data),
-> +		rc = transmit_cmd(chip, data, TPM_INTERNAL_RESULT_SIZE,
->  				"attempting to read a PCR");
->  		if (rc)
->  			goto out;
-> @@ -711,6 +759,7 @@ ssize_t tpm_show_pcrs(struct device *dev
->  		str += sprintf(str, "\n");
->  	}
->  out:
-> +	kfree(data);
->  	return str - buf;
->  }
->  EXPORT_SYMBOL_GPL(tpm_show_pcrs);
-> @@ -794,7 +843,7 @@ static const u8 cap_version[] = {
->  ssize_t tpm_show_caps(struct device *dev, struct device_attribute *attr,
->  		      char *buf)
->  {
-> -	u8 data[max_t(int, max(ARRAY_SIZE(tpm_cap), ARRAY_SIZE(cap_version)), 30)];
-> +	u8 *data;
->  	ssize_t rc;
->  	char *str = buf;
-> 
-> @@ -802,21 +851,27 @@ ssize_t tpm_show_caps(struct device *dev
->  	if (chip == NULL)
->  		return -ENODEV;
-> 
-> +	data = kzalloc(TPM_INTERNAL_RESULT_SIZE, GFP_KERNEL);
-> +	if (!data)
-> +		return -ENOMEM;
-> +
->  	memcpy(data, tpm_cap, sizeof(tpm_cap));
->  	data[TPM_CAP_IDX] = TPM_CAP_PROP;
->  	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_PROP_MANUFACTURER;
-> 
-> -	rc = transmit_cmd(chip, data, sizeof(data),
-> +	rc = transmit_cmd(chip, data, TPM_INTERNAL_RESULT_SIZE,
->  			"attempting to determine the manufacturer");
-> -	if (rc)
-> +	if (rc) {
-> +		kfree(data);
->  		return 0;
-> +	}
-> 
->  	str += sprintf(str, "Manufacturer: 0x%x\n",
->  		       be32_to_cpu(*((__be32 *) (data + TPM_GET_CAP_RET_UINT32_1_IDX))));
-> 
->  	memcpy(data, cap_version, sizeof(cap_version));
->  	data[CAP_VERSION_IDX] = CAP_VERSION_1_1;
-> -	rc = transmit_cmd(chip, data, sizeof(data),
-> +	rc = transmit_cmd(chip, data, TPM_INTERNAL_RESULT_SIZE,
->  			"attempting to determine the 1.1 version");
->  	if (rc)
->  		goto out;
-> @@ -827,6 +882,7 @@ ssize_t tpm_show_caps(struct device *dev
->  		       (int) data[17]);
-> 
->  out:
-> +	kfree(data);
->  	return str - buf;
->  }
->  EXPORT_SYMBOL_GPL(tpm_show_caps);
-> @@ -834,7 +890,7 @@ EXPORT_SYMBOL_GPL(tpm_show_caps);
->  ssize_t tpm_show_caps_1_2(struct device * dev,
->  			  struct device_attribute * attr, char *buf)
->  {
-> -	u8 data[max_t(int, max(ARRAY_SIZE(tpm_cap), ARRAY_SIZE(cap_version)), 30)];
-> +	u8 *data;
->  	ssize_t len;
->  	char *str = buf;
-> 
-> @@ -842,15 +898,20 @@ ssize_t tpm_show_caps_1_2(struct device 
->  	if (chip == NULL)
->  		return -ENODEV;
-> 
-> +	data = kzalloc(TPM_INTERNAL_RESULT_SIZE, GFP_KERNEL);
-> +	if (!data)
-> +		return -ENOMEM;
-> +
->  	memcpy(data, tpm_cap, sizeof(tpm_cap));
->  	data[TPM_CAP_IDX] = TPM_CAP_PROP;
->  	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_PROP_MANUFACTURER;
-> 
-> -	if ((len = tpm_transmit(chip, data, sizeof(data))) <=
-> +	if ((len = tpm_transmit(chip, data, TPM_INTERNAL_RESULT_SIZE)) <=
->  	    TPM_ERROR_SIZE) {
->  		dev_dbg(chip->dev, "A TPM error (%d) occurred "
->  			"attempting to determine the manufacturer\n",
->  			be32_to_cpu(*((__be32 *) (data + TPM_RET_CODE_IDX))));
-> +		kfree(data);
->  		return 0;
->  	}
-> 
-> @@ -860,7 +921,7 @@ ssize_t tpm_show_caps_1_2(struct device 
->  	memcpy(data, cap_version, sizeof(cap_version));
->  	data[CAP_VERSION_IDX] = CAP_VERSION_1_2;
-> 
-> -	if ((len = tpm_transmit(chip, data, sizeof(data))) <=
-> +	if ((len = tpm_transmit(chip, data, TPM_INTERNAL_RESULT_SIZE)) <=
->  	    TPM_ERROR_SIZE) {
->  		dev_err(chip->dev, "A TPM error (%d) occurred "
->  			"attempting to determine the 1.2 version\n",
-> @@ -873,6 +934,7 @@ ssize_t tpm_show_caps_1_2(struct device 
->  		       (int) data[19]);
-> 
->  out:
-> +	kfree(data);
->  	return str - buf;
->  }
->  EXPORT_SYMBOL_GPL(tpm_show_caps_1_2);
-> 
-> -------------------------------------------------------------------------
-> Check out the new SourceForge.net Marketplace.
-> It's the best place to buy or sell services for
-> just about anything Open Source.
-> http://sourceforge.net/services/buy/index.php
-> _______________________________________________
-> tpmdd-devel mailing list
-> tpmdd-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/tpmdd-devel
+On Wed, 11 Jun 2008 20:02:14 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ib=
+m.com> wrote:
+>
+> The next-20080611 kernel build fails on ia64 machine
+>=20
+>   AR      arch/ia64/lib/lib.a
+>   LD      vmlinux.o
+>   MODPOST vmlinux.o
+>   GEN     .version
+>   CHK     include/linux/compile.h
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux
+>   LD      vmlinux
+> ld: .tmp_kallsyms.o: linking constant-gp files with non-constant-gp files
+> ld: failed to merge target specific data of file .tmp_kallsyms.o
+> make: *** [vmlinux] Error 1
+>=20
+> --=20
+> Thanks & Regards,
+> Kamalesh Babulal,
+> Linux Technology Center,
+> IBM, ISTL.
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__12_Jun_2008_09_10_03_+1000_qTA4nMRA2oeAkxDd
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhQW0sACgkQTgG2atn1QN8gsQCfWLhWhcbULR7y7qW850v7dMzZ
+jeYAnA00FEZEMT0vMX5xFXUVrgXZwYnJ
+=Tttp
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__12_Jun_2008_09_10_03_+1000_qTA4nMRA2oeAkxDd--
