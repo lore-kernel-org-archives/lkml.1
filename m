@@ -1,126 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbYFKIYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756765AbYFKI2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756897AbYFKIYh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 04:24:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbYFKIYZ
+	id S1756765AbYFKI2g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 04:28:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbYFKI23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 04:24:25 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:56838 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753244AbYFKIYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 04:24:22 -0400
-Date: Wed, 11 Jun 2008 11:23:20 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [2.6 patch] always enable FW_LOADER unless EMBEDDED=y
-Message-ID: <20080611082320.GM11685@cs181133002.pp.htv.fi>
-References: <20080610160408.GB11685@cs181133002.pp.htv.fi> <20080610162450.GB13538@kroah.com> <20080610181206.GF11685@cs181133002.pp.htv.fi> <20080610212859.GB26249@kroah.com>
+	Wed, 11 Jun 2008 04:28:29 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:6348 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752082AbYFKI21 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 04:28:27 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=UN1mB3mHp/n9T757iDJp6edP4WM8Jg2lBHo0dvMulnC5I8sA1PProicZXCezr18i3
+	zi0yCAENw/wYNLINPguCg==
+Message-ID: <6599ad830806110128y24c9d222t44102e032198582c@mail.gmail.com>
+Date: Wed, 11 Jun 2008 01:28:20 -0700
+From: "Paul Menage" <menage@google.com>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: [-mm] CPU controller statistics (v5)
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, dhaval@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, balajirrao@gmail.com,
+       containers@lists.osdl.org, vatsa@linux.vnet.ibm.com,
+       a.p.zijlstra@chello.nl
+In-Reply-To: <4847B3CB.5020700@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080610212859.GB26249@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <20080603200515.GA25753@balbir.in.ibm.com>
+	 <20080604144408.be680056.akpm@linux-foundation.org>
+	 <4847B3CB.5020700@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 02:28:59PM -0700, Greg KH wrote:
-> On Tue, Jun 10, 2008 at 09:12:06PM +0300, Adrian Bunk wrote:
-> > On Tue, Jun 10, 2008 at 09:24:50AM -0700, Greg KH wrote:
-> > > On Tue, Jun 10, 2008 at 07:04:08PM +0300, Adrian Bunk wrote:
-> > > > James Bottomley recently discovered that we have 
-> > > > {request,release}_firmware() dummies for the case of the actual 
-> > > > functions not being available and has a fix for the bug that was 
-> > > > actually causing build errors for built-in users with 
-> > > > CONFIG_FW_LOADER=m.
-> > > > 
-> > > > But now missing selects on FW_LOADER are no longer visible at 
-> > > > compile-time at all and can become runtime problems.
-> > > > 
-> > > > FW_LOADER is infrastructure with relatively small codesize we can 
-> > > > safely enable for everyone, and only for people who really need small 
-> > > > kernels (and can be expected to know what they are doing) it matters 
-> > > > being able to disable it.
-> > > > 
-> > > > This patch therefore always sets FW_LOADER=y and allows users only to 
-> > > > disable it with EMBEDDED=y.
-> > > > 
-> > > > As a bonus, we can then get rid of all "select FW_LOADER" plus the due 
-> > > > to it required "depends on HOTPLUG" which removes some complexity from 
-> > > > our Kconfig files.
-> > > 
-> > > Well, we can't get rid of that if EMBEDDED is set, right?
-> > 
-> > No, if EMBEDDED is set and HOTPLUG is not set you will not be able to
-> > enable FW_LOADER (the "depends on HOTPLUG" for FW_LOADER has to stay, 
-> > but all the options that currently select FW_LOADER no longer need the 
-> > dependency).
-> 
-> Ok, but what about the point that the options that are wanting FW_LOADER
-> in that situation?  I know EMBEDDED is tough to get right as you can
-> shoot yourself in the foot very easily, but this seems like we are going
-> to make it even harder to use properly.
+On Thu, Jun 5, 2008 at 2:37 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>>
+>> Can we avoid these tests?  By requiring that cgroup_subsys.initialize()
+>> always be non-zero?  It might make sense, and it might not...
+>>
+>
+> They are really hard to avoid, otherwise we might be taking away the flexibility
+> we have.
 
-Currently missing selects can result in a build error.
+And this is something that only gets called at startup.
 
-After James' patch to fix the dummy functions (that should have worked 
-from day 1) it will instead become a runtime problem.
+>
+>> Also, if this code is likely to be executed with any frequency then the
+>> test of `early' could be inlined:
+>>
+>> static inline void cpu_cgroup_initialize(int early)
+>> {
+>>       if (unlikely(!early))
+>>               __cpu_cgroup_initialize();
+>> }
+>>
+>> yes?
+>>
+>
+> Definitely
 
-And when the select gets added the dependency on HOTPLUG often gets 
-forgotten.
+Er, no. It gets called twice at system boot (once with early=true and
+once with early=false) via a vtable. So there's nothing to optimize
+for, and making the function inline won't help since the compiler
+needs to take its address.
 
-If you worry about "EMBEDDED is tough to get right" a bigger problem 
-would be the linux-tiny patches to add new config options - each might 
-save a few kB when disabled but also offers a new way to shoot yourself 
-into the foot.
-
-I do care more about:
-- that users for the common CONFIG_EMBEDDED=n case don't run into 
-  unexpected problems (due to a missing select on FW_LOADER) and
-- that we remove complexity from our kconfig dependencies so that
-  they break less often.
-
-I'm counting 6 commits that fix bugs in this area introduced since
-2.6.25 (sic) under drivers/media/ alone.
-
-And Davids firmware patches offer even more opportunities for people to 
-forget the dependency on HOTPLUG (which will break only in the 
-CONFIG_EMBEDDED=y case...). [1]
-
-> > > You sent this as an RFC before, I thought people said to just fix up all
-> > > of the dependancies with drivers that needed FW_LOADER to be enabled,
-> > > that would be easier, right?
-> > 
-> > As far as I know there were zero answers to my RFC.
-> > 
-> > What are you referring to?
-> 
-> Sorry, I thought that was sent to the RFC, I think it was to a thread
-> even before that.
->...
-
-If it was in the "build issue #503 ..." thread it was even me who
-said it - before I had the idea of hiding FW_LOADER behind EMBEDDED.
-
-> thanks,
-> 
-> greg k-h
-
-cu
-Adrian
-
-[1] and before anyone restarts the "kconfig is broken - select should 
-    follow dependencies" FUD: I've seen much talk and zero code for
-    this, and in my opinion the problem is much more difficult than
-    it appears at first sight
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Paul
