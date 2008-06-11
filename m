@@ -1,73 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbYFKJOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757419AbYFKJQG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755593AbYFKJOt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 05:14:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753512AbYFKJOk
+	id S1757419AbYFKJQG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 05:16:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbYFKJPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 05:14:40 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:47928 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753498AbYFKJOj (ORCPT
+	Wed, 11 Jun 2008 05:15:54 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:36208 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753228AbYFKJPw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 05:14:39 -0400
-Date: Wed, 11 Jun 2008 11:14:15 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: David Brownell <david-b@pacbell.net>, Ryan Mallon <ryan@bluewatersys.com>,
-       Uli Luckas <u.luckas@road.de>, i2c@lm-sensors.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RFC] Earlier I2C initialization
-Message-ID: <20080611111415.2a677a10@hyperion.delvare>
-In-Reply-To: <20080611090016.GA5338@flint.arm.linux.org.uk>
-References: <200806091541.43899.u.luckas@road.de>
-	<484DA046.4010804@bluewatersys.com>
-	<20080610085708.12c2d2a2@hyperion.delvare>
-	<200806101355.07792.david-b@pacbell.net>
-	<20080611101130.1a667abe@hyperion.delvare>
-	<20080611090016.GA5338@flint.arm.linux.org.uk>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jun 2008 05:15:52 -0400
+Date: Wed, 11 Jun 2008 02:04:08 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Satyam Sharma <ssatyam@cse.iitk.ac.in>, Felix Fietkau <nbd@openwrt.org>,
+       Al Viro <viro@ftp.linux.org.uk>, "H. Peter Anvin" <hpa@kernel.org>
+Subject: Re: Is configfs the right solution for configuration based fs?
+Message-ID: <20080611090407.GA17466@mail.oracle.com>
+Mail-Followup-To: "Luis R. Rodriguez" <mcgrof@gmail.com>,
+	linux-wireless <linux-wireless@vger.kernel.org>,
+	linux kernel <linux-kernel@vger.kernel.org>,
+	Greg KH <greg@kroah.com>, Satyam Sharma <ssatyam@cse.iitk.ac.in>,
+	Felix Fietkau <nbd@openwrt.org>, Al Viro <viro@ftp.linux.org.uk>,
+	"H. Peter Anvin" <hpa@kernel.org>
+References: <43e72e890806081425h4e785800nc618fc1985f9809f@mail.gmail.com> <20080609022821.GL29740@mail.oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080609022821.GL29740@mail.oracle.com>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Russell,
-
-On Wed, 11 Jun 2008 10:00:16 +0100, Russell King - ARM Linux wrote:
-> On Wed, Jun 11, 2008 at 10:11:30AM +0200, Jean Delvare wrote:
-> > Hi David,
-> > 
-> > On Tue, 10 Jun 2008 13:55:07 -0700, David Brownell wrote:
-> > > > Why don't you simply initialize the drivers in question with
-> > > > subsys_initcall()? That's what i2c-pnx, i2c-omap, i2c-davinci and
-> > > > tps65010 are doing at the moment.
-> > > 
-> > > If they happen to sit outside the I2C tree and *before* it in
-> > > link order, things will misbehave.
-> > 
-> > Well, i2c system bus drivers shouldn't sit outside of the I2C tree, so
-> > that's not a problem. If you start accepting that drivers live at
-> > random places in the source tree, then there's simply no way to get
-> > things right.
+On Sun, Jun 08, 2008 at 07:28:21PM -0700, Joel Becker wrote:
+> On Sun, Jun 08, 2008 at 02:25:36PM -0700, Luis R. Rodriguez wrote:
+> > I was really interested in looking to start a filesystem based
+> > approach for configuration of wireless a while back, an alternative to
+> > nl80211 if you will, but I stopped after I was told about some major
+> > issues with configfs. I forget the issues raised clearly so I'd like
 > 
-> That's simply not a realistic view.  As I've already pointed out,
-> framebuffer devices have I2C busses for reading the DDC information
-> from monitors.  These I2C bus drivers live in drivers/video.
-> 
-> Video grabbers have I2C busses for controlling, eg, tuners and video
-> decoders.  These live in drivers/media.
-> 
-> If I follow your argument, would you like cyber2000fb.c to be moved
-> entirely from drivers/video into drivers/i2c/busses because it contains
-> an i2c bus driver?  Clearly not.
+> 	I'd love to hear about the issues as well. 
 
-Please read what I wrote again. I said: I2C SYSTEM BUS drivers should
-live under drivers/i2c. DDC channels on graphics adapters and I2C buses
-on multimedia adapters definitely do not qualify as system buses (and
-don't need to be initialized early, either.)
+	Here's a list of "known" issues I hear about with configfs.
+These are requests/complaints/etc I have gotten since it was merged.
 
-Thanks,
+1) configfs should be sysfs
+
+	The argument is that sysfs should somehow support the
+user-directed mkdir(2)/rmdir(2) lifecycle of configfs in addition to its
+usual functions.  This, unfortunately, doesn't work.  I sent a pretty
+detailed discussion of this to lkml the last time it came up, but here's
+a short summary.  Number one, I tried this first.  It got ugly fast.
+Number two, a goal of configfs is a simpler lifecycle than sysfs
+(understanding the lifetimes of config items).  Adding an additional
+mode to the already complicated lifecycle of kobjects directly opposes
+this
+
+2) There needs to be a way to pin a config item
+
+	configfs's ->drop_item() operation returns void - if it is
+called, your item must deactivate.  This is in line with configfs'
+user-directed paradigm.  However, sometimes another kernel subsystem is
+depending on that item - it will crash if the item goes away.
+	After getting this beaten over my head a few times by good
+friends, I realized they were right.  configfs now has
+configfs_depend_item() to allow subsystems to pin config items when
+necessary.
+
+3) configfs should support large attributes
+
+	A configfs attribute can be a maximum of 4k in size.  This fits
+the simple show/store methods cribbed from sysfs.  However, more than
+one person has given a good reason for larger attributes, often lists of
+things.
+	This isn't implemented yet, because I haven't come up with a
+good way to do it.  seq_file works pretty well for the show side, but
+there is no seq_write() to match on the store side.  I'd love to come up
+with a sane semantic and make it work.  Consider it a TODO.
+
+Finally, this thread has presented 
+4) easier definition of items, perhaps with macros like DEFINE_ATTR
+
+	I think I have a __CONFIGFS_ATTR() macro, but it's nowhere near
+as nice as what sysfs has.  This definitely could use some work, making
+configfs easier to use.
+
+	That's what I have.  I don't know if any of these issues were
+what you were worried about, Luis.
+
+Joel
+
 -- 
-Jean Delvare
+
+"In the long run...we'll all be dead."
+                                        -Unknown
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
