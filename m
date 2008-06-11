@@ -1,77 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757769AbYFKTyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbYFKT7L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757769AbYFKTyA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 15:54:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757394AbYFKTxt
+	id S1757938AbYFKT7L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 15:59:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbYFKT64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 15:53:49 -0400
-Received: from ik-out-1112.google.com ([66.249.90.177]:36667 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755553AbYFKTxq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 15:53:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=hgN5v3psMzFrqLvCVO4loaaKUM+Sz+/oXIIMLX7rCXC4ZyPIaOidpaoPnSVXKnitNH
-         cH46BAKYnzIAYUCo+86wiJ4yTiEKF8y/9cWdonbeBdfqyJORvaKIn09t3QorswJUW5cq
-         NOYlJP38cQk5/MXFs5MK9DkSVUHj0EZYoC0+U=
-From: Chris Clayton <chris2553@googlemail.com>
-Reply-To: chris2553@googlemail.com
-To: Greg KH <greg@kroah.com>
-Subject: Re: 2,6.26-rc4-git2 - long pause during boot
-Date: Wed, 11 Jun 2008 19:51:09 +0000
-User-Agent: KMail/1.9.9
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       Hannes Reinecke <hare@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-usb@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>
-References: <200806010415.05290.chris2553@googlemail.com> <200806111858.05114.chris2553@googlemail.com> <20080611191533.GA6189@kroah.com>
-In-Reply-To: <20080611191533.GA6189@kroah.com>
+	Wed, 11 Jun 2008 15:58:56 -0400
+Received: from dwdmx4.dwd.de ([141.38.3.230]:35033 "EHLO dwdmx4.dwd.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750977AbYFKT6z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 15:58:55 -0400
+Date: Wed, 11 Jun 2008 19:58:53 +0000 (GMT)
+From: Holger Kiehl <Holger.Kiehl@dwd.de>
+X-X-Sender: kiehl@diagnostix.dwd.de
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: linux-ext4@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Performance of ext4
+In-Reply-To: <20080611105945.GB9008@skywalker>
+Message-ID: <Pine.LNX.4.64.0806111937460.3720@diagnostix.dwd.de>
+References: <Pine.LNX.4.64.0806110801370.19793@diagnostix.dwd.de>
+ <20080611105945.GB9008@skywalker>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806111951.09275.chris2553@googlemail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 June 2008, Greg KH wrote:
-> On Wed, Jun 11, 2008 at 06:58:05PM +0000, Chris Clayton wrote:
-> > Jun 11 17:48:13 upstairs udevd-event[1457]: wait_for_sysfs: wait for
-> > '/sys/devices/pci0000:00/0000:00:1e.0/0000:02:0a.2/usb11/11-2/11-2:1.0/ho
-> >st4/ioerr_cnt' for 20 mseconds Jun 11 17:48:18 upstairs last message
-> > repeated 236 times
->
-> This doesn't look good.  It looks like a udev rule in your system is
-> looking for a file that will never show up.  That's a short way to a
-> long delay time :)
->
-> Try commenting out the rule that does this and see if things are fixed.
->
+On Wed, 11 Jun 2008, Aneesh Kumar K.V wrote:
 
-Yes, that's it. It's this rule, which appears as the second rule in the 
-slackware rules file that's distributed with udev (and it's been there since 
-udev-97 in August 2006):
+> On Wed, Jun 11, 2008 at 08:02:32AM +0000, Holger Kiehl wrote:
+>>
+>> 2 years ago I used 2.6.16.8 but the hardware is still the same. So what has
+>> happened with the performance of ext4? I noticed that 2 years ago I could
+>> use extents+mballoc+delalloc, now there is only extents+mballoc in the
+>> current kernels. Could delalloc make the big difference? I saw that
+>> in Andrew Morton mm tree delalloc is included. Unfortunately when I tried using
+>> 2.6.26-rc2-mm1 a sync would never return and there where lot of other
+>> odd things, so I could not do any tests with delalloc.
+>
+>
+> The sync and other related hangs should be fix with the latest patches
+> vailable at http://repo.or.cz/w/ext4-patch-queue.git. Using mballoc have
+> an impact on CPU utilization because we try to build an in-memory extent
+> map of free blocks available in the group. The cold cache run (the first
+> run) would take more time because of the time needed to build the extent
+> map. So repeating the same test and looking at the numbers would help us
+> understand the impact of in-memory extent building code.
+>
+Not sure if I understand this. I first formated the file system and run the
+test three times.
 
-ACTION=="add", SUBSYSTEM=="scsi", WAIT_FOR_SYSFS="ioerr_cnt"
-
-Commenting that rule out eliminates the pause in the boot and in the appearance 
-of icons on my desktop.
+>>
+>> So any idea what I am doing wrong or what I could do to improve those numbers?
+>> Please CC me since I am not subscribed to the list.
+>>
+>
+> You should be able to apply the patches in the patchqueue mentioned above  to 2.6.26-rc5
+> Can you test with the same and get the numbers. ? Also delalloc enabled
+> by default with changes from patchqueue force writeback mode for
+> journal. So you may want to enable writeback for ext3.
+>
+Against a clean 2.6.26-rc5 the patchqueue does not apply. Lots of rejects.
+The patchqueue also contains changes for defrag that are not in 2.6.26-rc5.
+Or did you mean to apply those against the mm tree?
 
 Thanks,
+Holger
 
-Chris
-
-> thanks,
->
-> greg k-h
-
-
--- 
-Beauty is in the eye of the beerholder.
