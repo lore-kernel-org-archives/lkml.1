@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbYFKJsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbYFKJvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754855AbYFKJsS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 05:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbYFKJsH
+	id S1755970AbYFKJvd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 05:51:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbYFKJvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 05:48:07 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:6699 "EHLO
-	IE1EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751011AbYFKJsF (ORCPT
+	Wed, 11 Jun 2008 05:51:24 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:29733 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752330AbYFKJvX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 05:48:05 -0400
-X-BigFish: VPS-29(z34a4nz1432R98dR7efV1805Mzz10d3izzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K2ALVR-01-KG4-01
-Date: Wed, 11 Jun 2008 11:47:30 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Rene Herman <rene.herman@keyaccess.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [PATCH 2/5] x86: PAT: fix ambiguous paranoia check in
-	pat_init()
-Message-ID: <20080611094730.GB5889@alberich.amd.com>
-References: <20080610140518.GF5024@alberich.amd.com> <484F065B.2050002@keyaccess.nl> <484F0F5D.8010507@zytor.com>
+	Wed, 11 Jun 2008 05:51:23 -0400
+Message-ID: <484F9FEA.7000407@panasas.com>
+Date: Wed, 11 Jun 2008 12:50:34 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <484F0F5D.8010507@zytor.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 11 Jun 2008 09:47:31.0738 (UTC) FILETIME=[2B0E97A0:01C8CBA8]
+To: Benny Halevy <bhalevy@panasas.com>
+CC: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       devel@driverdev.osuosl.org, kernel-janitors@vger.kernel.org,
+       linux-next@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [ANNOUNCE] linux-staging tree created
+References: <20080610190540.GA25066@kroah.com> <484F9A7B.4080004@panasas.com>
+In-Reply-To: <484F9A7B.4080004@panasas.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Jun 2008 09:50:38.0219 (UTC) FILETIME=[9A3555B0:01C8CBA8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 04:33:49PM -0700, H. Peter Anvin wrote:
-> Rene Herman wrote:
->> The current setup is okay really. The only thing it still wants is a 
->> commandline whitelist switch but that needs a somewhat different setup as 
->> validate_pat_support() is too early for __setup() or early_param().
->
-> Actually, I think it's time to nuke the whitelist.  I don't think it has 
-> any CPUs on it that have the PAT flag enabled, still.
+Benny Halevy wrote:
+> Greg,
+> 
+> The OSD initiator (see
+> http://git.open-osd.org/gitweb.cgi?p=open-osd.git;a=summary)
+> looks in principle like a great fit for linux-staging.
+> 
 
-For Intel all family 0xf CPUs, and family 6 CPUs starting with model
-15 are whitelisted.
+The patches are not yet there, Benny. They are currently 
+out-of-tree here:
+http://git.open-osd.org/gitweb.cgi?p=osd-lib.git;a=summary
 
-There seem to be other Intel CPUs that advertise PAT support.
-See cpuinfo output at http://gentoo-wiki.com/Safe_Cflags
-E.g. Pentium M (model 13), Celeron (model 6), Pentium III (model 8).
-(Not sure how correct this information is, though)
+It will take me until end of next week to separate them into
+a consumable patchset. Which will also move them in-tree.
+ 
+> What would be the mechanics of including it?
+> 
 
-Turn the white- into a blacklist for those remaining CPUs until they
-are verified?
+I want to send them to linux-scsi-ml and also To: Greg KH
+Requesting to be included in "linux-staging tree". Is that
+sufficient?
 
+> Benny
+> 
 
-Andreas
+Boaz
 
+> On Jun. 10, 2008, 22:05 +0300, Greg KH <greg@kroah.com> wrote:
+>> Oh great, not yet-another-kernel-tree, just what the world needs...
+>>
+>> Yes, this is an announcement of a new kernel tree, linux-staging.  It is
+>> a quilt series of patches that can be found at:
+>> 	git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/staging.git
+>>
+>>
+<snip>
 
