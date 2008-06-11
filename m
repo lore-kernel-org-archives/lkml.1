@@ -1,68 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbYFKT7L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758169AbYFKUCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757938AbYFKT7L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 15:59:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbYFKT64
+	id S1758169AbYFKUCT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 16:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757759AbYFKUCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 15:58:56 -0400
-Received: from dwdmx4.dwd.de ([141.38.3.230]:35033 "EHLO dwdmx4.dwd.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750977AbYFKT6z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 15:58:55 -0400
-Date: Wed, 11 Jun 2008 19:58:53 +0000 (GMT)
-From: Holger Kiehl <Holger.Kiehl@dwd.de>
-X-X-Sender: kiehl@diagnostix.dwd.de
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: linux-ext4@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Performance of ext4
-In-Reply-To: <20080611105945.GB9008@skywalker>
-Message-ID: <Pine.LNX.4.64.0806111937460.3720@diagnostix.dwd.de>
-References: <Pine.LNX.4.64.0806110801370.19793@diagnostix.dwd.de>
- <20080611105945.GB9008@skywalker>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 11 Jun 2008 16:02:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39802 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756726AbYFKUCG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 16:02:06 -0400
+Date: Wed, 11 Jun 2008 13:01:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
+       kosaki.motohiro@jp.fujitsu.com, Lee.Schermerhorn@hp.com
+Subject: Re: [PATCH -mm 11/24] pageflag helpers for configed-out flags
+Message-Id: <20080611130145.2a202339.akpm@linux-foundation.org>
+In-Reply-To: <20080611184339.493423475@redhat.com>
+References: <20080611184214.605110868@redhat.com>
+	<20080611184339.493423475@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jun 2008, Aneesh Kumar K.V wrote:
+On Wed, 11 Jun 2008 14:42:25 -0400
+Rik van Riel <riel@redhat.com> wrote:
 
-> On Wed, Jun 11, 2008 at 08:02:32AM +0000, Holger Kiehl wrote:
->>
->> 2 years ago I used 2.6.16.8 but the hardware is still the same. So what has
->> happened with the performance of ext4? I noticed that 2 years ago I could
->> use extents+mballoc+delalloc, now there is only extents+mballoc in the
->> current kernels. Could delalloc make the big difference? I saw that
->> in Andrew Morton mm tree delalloc is included. Unfortunately when I tried using
->> 2.6.26-rc2-mm1 a sync would never return and there where lot of other
->> odd things, so I could not do any tests with delalloc.
->
->
-> The sync and other related hangs should be fix with the latest patches
-> vailable at http://repo.or.cz/w/ext4-patch-queue.git. Using mballoc have
-> an impact on CPU utilization because we try to build an in-memory extent
-> map of free blocks available in the group. The cold cache run (the first
-> run) would take more time because of the time needed to build the extent
-> map. So repeating the same test and looking at the numbers would help us
-> understand the impact of in-memory extent building code.
->
-Not sure if I understand this. I first formated the file system and run the
-test three times.
+> Define proper false/noop inline functions for noreclaim page
+> flags when !defined(CONFIG_NORECLAIM_LRU)
 
->>
->> So any idea what I am doing wrong or what I could do to improve those numbers?
->> Please CC me since I am not subscribed to the list.
->>
->
-> You should be able to apply the patches in the patchqueue mentioned above  to 2.6.26-rc5
-> Can you test with the same and get the numbers. ? Also delalloc enabled
-> by default with changes from patchqueue force writeback mode for
-> journal. So you may want to enable writeback for ext3.
->
-Against a clean 2.6.26-rc5 the patchqueue does not apply. Lots of rejects.
-The patchqueue also contains changes for defrag that are not in 2.6.26-rc5.
-Or did you mean to apply those against the mm tree?
+I changed that to CONFIG_UNEVICTABLE_LRU.
 
-Thanks,
-Holger
-
+Did we agree that the presence of this config variable is undesirable? 
+If so, what's involved in making it go away?
