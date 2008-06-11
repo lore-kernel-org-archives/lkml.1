@@ -1,82 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbYFKGb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754944AbYFKGdO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755309AbYFKGb6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 02:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbYFKGbt
+	id S1754944AbYFKGdO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 02:33:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbYFKGc7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 02:31:49 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:31274 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752478AbYFKGbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 02:31:48 -0400
-Date: Wed, 11 Jun 2008 15:29:22 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Rik van Riel <riel@redhat.com>, clameter@sgi.com,
-       linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
-       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org, eric.whitney@hp.com,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH -mm 13/25] Noreclaim LRU Infrastructure
-Message-ID: <20080611062922.GA30983@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Rik van Riel <riel@redhat.com>, clameter@sgi.com,
-	linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
-	kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-	eric.whitney@hp.com, Andi Kleen <andi@firstfloor.org>,
-	Ingo Molnar <mingo@elte.hu>, Andy Whitcroft <apw@shadowen.org>
-References: <20080608135704.a4b0dbe1.akpm@linux-foundation.org> <20080608173244.0ac4ad9b@bree.surriel.com> <20080608162208.a2683a6c.akpm@linux-foundation.org> <20080608193420.2a9cc030@bree.surriel.com> <20080608165434.67c87e5c.akpm@linux-foundation.org> <Pine.LNX.4.64.0806101214190.17798@schroedinger.engr.sgi.com> <20080610153702.4019e042@cuia.bos.redhat.com> <20080610143334.c53d7d8a.akpm@linux-foundation.org> <20080611050914.GA27488@linux-sh.org> <20080610231642.6b4b5a53.akpm@linux-foundation.org>
+	Wed, 11 Jun 2008 02:32:59 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:7017 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752780AbYFKGc6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 02:32:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=CbsmZteeSB2aIflqme/bafFXlVohZOIIHCwTwUrUUyWYX5HQJPq/A49ZDkLIajT1V8
+         XRzbK6iDOy9G0A02VH2mS0USsYPteYPuvh3wANJl9aU02AXEz978NWP/LoY86miUkasc
+         4Om6uBzbsVdr0fCQ5o1EpB9j1aofqwvEssqgM=
+Date: Wed, 11 Jun 2008 10:28:56 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.25.6
+Message-ID: <20080611062856.GB5011@martell.zuzino.mipt.ru>
+References: <20080609194924.GL30402@sequoia.sous-sol.org> <20080610145325.GC23351@khazad-dum.debian.net> <20080610191726.GB4218@tatooine.rebelbase.local> <20080610195747.GA18926@martell.zuzino.mipt.ru> <20080610230645.GA16711@khazad-dum.debian.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080610231642.6b4b5a53.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080610230645.GA16711@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 11:16:42PM -0700, Andrew Morton wrote:
-> On Wed, 11 Jun 2008 14:09:15 +0900 Paul Mundt <lethal@linux-sh.org> wrote:
-> > On Tue, Jun 10, 2008 at 02:33:34PM -0700, Andrew Morton wrote:
-> > > Maybe it's time to bite the bullet and kill i386 NUMA support.  afaik
-> > > it's just NUMAQ and a 2-node NUMAish machine which IBM made (as400?)
-> > > 
-> > > arch/sh uses NUMA for 32-bit, I believe. But I don't know what its
-> > > maximum node count is.  The default for sh NODES_SHIFT is 3.  
-> > 
-> > In terms of memory nodes, systems vary from 2 up to 16 or so. It gets
-> > gradually more complex in the SMP cases where we are 3-4 levels deep in
-> > various types of memories that we expose as nodes (ie, 4-8 CPUs with a
-> > dozen different memories or so at various interconnect levels).
+On Tue, Jun 10, 2008 at 08:06:45PM -0300, Henrique de Moraes Holschuh wrote:
+> On Tue, 10 Jun 2008, Alexey Dobriyan wrote:
+> > Person fixing a bug may not realize he fixes security-sensitive bug.
 > 
-> Thanks.
-> 
-> Andi has suggested that we can remove the node-ID encoding from
-> page.flags on x86 because that info is available elsewhere, although a
-> bit more slowly.
-> 
-> <looks at page_zone(), wonders whether we care about performance anyway>
-> 
-> There wouldn't be much point in doing that unless we did it for all
-> 32-bit architectures.  How much trouble would it cause sh?
-> 
-At first glance I don't think that should be too bad. We only do NUMA
-through sparsemem anyways, and we have pretty much no overlap in any of
-the ranges, so simply setting NODE_NOT_IN_PAGE_FLAGS should be ok there.
-Given the relatively small number of pages we have, the added cost of
-page_to_nid() referencing section_to_node_table should still be
-tolerable. I'll give it a go and see what the numbers look like.
+> That is a valid reason, I am pretty sure everyone here (including me) has
+> been guilty of that one.  Which doesn't mean we can't do better to educate
+> ourselves on the patterns for the most common issues.  The "fix for a
+> null-dereference to anything that has a function pointer in it" is such a
+> pattern.
 
-> > As far as testing goes, it's part of the regular build and regression
-> > testing for a number of boards, which we verify on a daily basis
-> > (although admittedly -mm gets far less testing, even though that's where
-> > most of the churn in this area tends to be).
+Sure.
+
+> > Or simply doesn't care because there are 5 more to fix for today.
 > 
-> Oh well, that's what -rc is for :(
-> 
-> It would be good if someone over there could start testing linux-next. 
-> Once I get my act together that will include most-of-mm anyway.
-> 
-Agreed. This is something we're attempting to add in to our automated
-testing at present.
+> THAT, however, is unacceptable IMO. If one can't be bothered, or one
+> doesn't have the time (or the skill, whatever) to access the severity of a
+> fix, he should ask for someone to do that on the commit message.  One extra
+> short sentence at the end of the commit message [asking for that help] is
+> DEFINATELY not too much to ask.
+
+I just realized crapload of NULL dereferences were fixed in /proc and
+near last couple of releases.
+
+They were never proposed for any -stable.
+
+And, in retrospective, they wouldn't have been marked as security
+sensitive.
+
+Do you read OpenBSD commit logs?
+
