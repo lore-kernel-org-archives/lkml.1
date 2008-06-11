@@ -1,117 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753745AbYFKMgM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755154AbYFKMgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753745AbYFKMgM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 08:36:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbYFKMgA
+	id S1755154AbYFKMgz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 08:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754144AbYFKMgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 08:36:00 -0400
-Received: from styx.suse.cz ([82.119.242.94]:46768 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750850AbYFKMf7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 08:35:59 -0400
-Date: Wed, 11 Jun 2008 14:35:57 +0200
-From: Jan Kara <jack@suse.cz>
-To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-Cc: Andreas Dilger <adilger@sun.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       Jan Kara <jack@suse.cz>, sct@redhat.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, jbacik@redhat.com, cmm@us.ibm.com,
-       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
-Subject: Re: [PATCH 1/5] jbd: strictly check for write errors on data
-	buffers
-Message-ID: <20080611123556.GA8121@duck.suse.cz>
-References: <20080604111911.c1fe09c6.akpm@linux-foundation.org> <20080604212202.GA8727@mit.edu> <20080604145848.e3da6f20.akpm@linux-foundation.org> <20080604225155.GB8727@mit.edu> <20080605093536.GE27370@duck.suse.cz> <4847CF07.1020904@hitachi.com> <20080605142948.GA25477@mit.edu> <20080605092006.ba7dceef.akpm@linux-foundation.org> <20080605184941.GX2961@webber.adilger.int> <484D0155.4040701@hitachi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <484D0155.4040701@hitachi.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 11 Jun 2008 08:36:46 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:35452 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754129AbYFKMgp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 08:36:45 -0400
+X-Sasl-enc: qyrjdvu1Ebh3flsPOczof8jijyHlgSpxi5ZkpA6PbKOM 1213187803
+Subject: Re: [PATCH] autofs4: fix 32-bit userspace vs 64-bit kernel
+	communications
+From: Ian Kent <raven@themaw.net>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: autofs mailing list <autofs@linux.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Konstantin Khlebnikov <khlebnikov@openvz.org>
+In-Reply-To: <484FA0B8.2000002@openvz.org>
+References: <484FA0B8.2000002@openvz.org>
+Content-Type: text/plain
+Date: Wed, 11 Jun 2008 20:32:59 +0800
+Message-Id: <1213187579.4994.25.camel@raven.themaw.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 09-06-08 19:09:25, Hidehiro Kawai wrote:
-> Andreas Dilger wrote:
-> > On Jun 05, 2008  09:20 -0700, Andrew Morton wrote:
+
+On Wed, 2008-06-11 at 13:54 +0400, Pavel Emelyanov wrote:
+> From: Konstantin Khlebnikov <khlebnikov@openvz.org>
 > 
-> >>I guess we need to undo this.  And yes, propagating errors into AS_EIO
-> >>is the way.  I guess that's safe without holding lock_page(), as long
-> >>as the bh is pinned.
-> > 
-> > Something like the following instead if -EIO and journal abort:
-> > 
-> > 		if (!buffer_uptodate(bh)) {
-> > 			set_bit(AS_EIO, &bh->b_page->mapping->flags);
-> > 			SetPageError(bh->b_page);
-> > 		}
-> > 
-> > It seems end_buffer_async_write() does this already, but
-> > journal_do_submit_data() uses end_buffer_write_sync() and it does not
-> > do either of those operations.
+> The struct autofs_v5_packet has only one difference between
+> 32-bit and 64-bit versions - on 64-bit gcc aligns its size and
+> it is 4 bytes larger that it is on 32-bit kernel. This confuses
+> 32-bit user-space daemon, when talking to 64-bit kernel.
+
+No, I don't think that's quite right.
+
+As far as I know this issue arises when a user space program, compiled
+as a 32-bit application is executed within 64-bit user space.
+
 > 
-> Thank you for your suggestion.  I wrote an additional patch to do
-> that below.  Please apply it as the 6th patch of this patch series.
+> This is very critical for containerized setups, when containers
+> with <different>-bit tolls are used.
+
+Have you tested different situations with this change?
+Will this affect the existing check and adjustment the version 5
+automount daemon does now?
+
 > 
-> BTW, I'm developing a patch which makes "abort the journal if a file
-> data buffer has an error" tunable.  I'll send it in another thread
-> because it's not a bug fix patch.
+> Signed-off-by: Konstantin Khlebnikov <khlebnikov@openvz.org>
+> Acked-by: Pavel Emelyanov <xemul@openvz.org>
 > 
-> -- 
-> Hidehiro Kawai
-> Hitachi, Systems Development Laboratory
-> Linux Technology Center
-> 
-> 
-> Subject: JBD: don't abort if flushing file data failed
-> 
-> In ordered mode, it is not appropriate behavior to abort the journal
-> when we failed to write file data.  This patch calls printk()
-> instead of aborting the journal.  Additionally, set AS_EIO into
-> the address_space object of the buffer which is written out by
-> journal_do_submit_data() and failed so that fsync() can get -EIO.
-> 
-> Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
 > ---
->  fs/jbd/commit.c |   12 +++++++++---
->  1 file changed, 9 insertions(+), 3 deletions(-)
 > 
-> Index: linux-2.6.26-rc4/fs/jbd/commit.c
-> ===================================================================
-> --- linux-2.6.26-rc4.orig/fs/jbd/commit.c
-> +++ linux-2.6.26-rc4/fs/jbd/commit.c
-> @@ -432,8 +432,11 @@ void journal_commit_transaction(journal_
->  			wait_on_buffer(bh);
->  			spin_lock(&journal->j_list_lock);
->  		}
-> -		if (unlikely(!buffer_uptodate(bh)))
-> +		if (unlikely(!buffer_uptodate(bh))) {
-> +			set_bit(AS_EIO, &bh->b_page->mapping->flags);
-> +			SetPageError(bh->b_page);
->  			err = -EIO;
-> +		}
-  Actually, you should be more careful here because if the data buffer has
-been truncated in the currently running transaction, it can happen that
-b_page->mapping is NULL. It is a question how to safely access
-page->mapping - probably you'll need page lock for that...
-
->  		if (!inverted_lock(journal, bh)) {
->  			put_bh(bh);
->  			spin_lock(&journal->j_list_lock);
-> @@ -452,8 +455,11 @@ void journal_commit_transaction(journal_
->  	}
->  	spin_unlock(&journal->j_list_lock);
+> diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
+> index 1e4a539..9855b6e 100644
+> --- a/fs/autofs4/waitq.c
+> +++ b/fs/autofs4/waitq.c
+> @@ -132,6 +132,14 @@ static void autofs4_notify_daemon(struct autofs_sb_info *sbi,
+>  		struct autofs_v5_packet *packet = &pkt.v5_pkt.v5_packet;
 >  
-> -	if (err)
-> -		journal_abort(journal, err);
-> +	if (err) {
-> +		printk(KERN_WARNING
-> +		       "JBD: Detected IO errors during flushing file data\n");
-> +		err = 0;
-> +	}
+>  		pktsz = sizeof(*packet);
+> +#if defined(CONFIG_X86_64) && defined(CONFIG_IA32_EMULATION)
+> +		/*
+> +		 * On x86_64 autofs_v5_packet struct is padded with 4 bytes
+> +		 * which breaks 32-bit autofs daemon.
+> +		 */
+> +		if (test_thread_flag(TIF_IA32))
+> +			pktsz -= 4;
+> +#endif
 >  
->  	journal_write_revoke_records(journal, commit_transaction);
+>  		packet->wait_queue_token = wq->wait_queue_token;
+>  		packet->len = wq->len;
+> 
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
