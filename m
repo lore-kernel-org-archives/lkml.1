@@ -1,63 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbYFKFvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753793AbYFKFw4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755471AbYFKFvy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 01:51:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbYFKFvp
+	id S1753793AbYFKFw4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 01:52:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbYFKFwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 01:51:45 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:50189
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752077AbYFKFvp (ORCPT
+	Wed, 11 Jun 2008 01:52:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58448 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751485AbYFKFws (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 01:51:45 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Tim Bird <tim.bird@am.sony.com>
-Subject: Re: mainlining min-configs...
-Date: Wed, 11 Jun 2008 00:51:34 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Adrian Bunk <bunk@kernel.org>, linux-tiny <Linux-tiny@selenic.com>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-References: <48447615.5050806@am.sony.com> <20080610083610.GC1987@cs181133002.pp.htv.fi> <484EC576.5080302@am.sony.com>
-In-Reply-To: <484EC576.5080302@am.sony.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Wed, 11 Jun 2008 01:52:48 -0400
+Date: Tue, 10 Jun 2008 22:52:36 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de
+Subject: Re: [PATCH -mm] add a helper function to test if an object is on
+ the stack
+Message-Id: <20080610225236.5d698871.akpm@linux-foundation.org>
+In-Reply-To: <1213150485-25584-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1213150485-25584-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806110051.34919.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 10 June 2008 13:18:30 Tim Bird wrote:
-> bitrot in mainline.  My experience is that usually a 'make oldconfig'
-> will produce something usable.  But maybe that wouldn't be as
-> effective with a minconfig?
+On Wed, 11 Jun 2008 11:14:45 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-I'm probably going to have to start breaking down and patching the kconfig 
-infrastructure.  (Today, I drove allnoconfig into an endless loop.  Go me.)
+> lib/debugobjects.c has a function to test if an object is on the
+> stack. The block layer and ide needs it (they need to avoid DMA
+> from/to stack buffers). This patch moves the function to
+> include/linux/sched.h so that everyone can use it.
+> 
+> lib/debugobjects.c uses current->stack but this patch uses a
+> task_stack_page() accessor, which is a preferable way to access to
+> stack.
+> 
 
-So far the only "gotcha" I've found is added guard symbols, and it's 
-semantically pretty clear what a miniconfig should do there: force open the 
-menu that contains a symbol you're setting, rather than _ignore_ that symbol.
+Seems reasonable.
 
-> Maybe I'll collect some minconfigs, and try maintaining them
-> in my own tree for a few releases to see how onerous it is...
+> ---
+>  include/linux/sched.h |    7 +++++++
+>  lib/debugobjects.c    |    4 +---
+>  2 files changed, 8 insertions(+), 3 deletions(-)
+> 
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 4efb39b..799bbdd 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -1978,6 +1978,13 @@ static inline unsigned long *end_of_stack(struct task_struct *p)
+>  
+>  #endif
+>  
+> +static inline int object_is_on_stack(void *obj)
+> +{
+> +	void *stack = task_stack_page(current);
 
-The thing about my .configs is that I boot test them each new kernel release, 
-using qemu.  This is 100% scriptable, actually, which you can seldom say 
-about real hardware.
+Are we sure that this will work if !defined __HAVE_THREAD_FUNCTIONS?
 
-> The problem is that I can only reasonably do this for boards
-> I have, so there'd only be a few.  But maybe that'd be enough.
-> They would really only be meant as examples.
+> +	return (obj >= stack) && (obj < (stack + THREAD_SIZE));
+> +}
+> +
+>  extern void thread_info_cache_init(void);
+>  
+>  #ifdef CONFIG_DEBUG_STACK_USAGE
+> diff --git a/lib/debugobjects.c b/lib/debugobjects.c
+> index a76a5e1..2afddde 100644
+> --- a/lib/debugobjects.c
+> +++ b/lib/debugobjects.c
+> @@ -231,15 +231,13 @@ debug_object_fixup(int (*fixup)(void *addr, enum debug_obj_state state),
+>  
+>  static void debug_object_is_on_stack(void *addr, int onstack)
+>  {
+> -	void *stack = current->stack;
+>  	int is_on_stack;
+>  	static int limit;
+>  
+>  	if (limit > 4)
+>  		return;
+>  
+> -	is_on_stack = (addr >= stack && addr < (stack + THREAD_SIZE));
+> -
+> +	is_on_stack = object_is_on_stack(addr);
+>  	if (is_on_stack == onstack)
+>  		return;
 
-Start with qemu and work your way out?  That's what I'm doing.  (Any platform 
-that isn't emulated by qemu is almost by definition not very interesting...)
-
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
