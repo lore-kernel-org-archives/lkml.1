@@ -1,86 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbYFKU6J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758204AbYFKU6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757551AbYFKU6J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 16:58:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbYFKU5x
+	id S1758204AbYFKU6n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 16:58:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbYFKU6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 16:57:53 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:41850 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752683AbYFKU5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 16:57:52 -0400
-Date: Wed, 11 Jun 2008 16:57:50 -0400
-To: Jeff Layton <jlayton@poochiereds.net>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       "Weathers, Norman R." <Norman.R.Weathers@conocophillips.com>
-Subject: Re: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
-Message-ID: <20080611205749.GA25194@fieldses.org>
-References: <1212519001.24900.14.camel@hololw58> <20080606160922.GG30863@fieldses.org> <0122F800A3B64C449565A9E8C2977010155587@hoexmb9.conoco.net> <20080609185355.GF28584@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75D9F@hoexmb9.conoco.net> <20080610171602.GG20184@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DA3@hoexmb9.conoco.net> <20080611184613.GM15380@fieldses.org> <20080611195222.GP15380@fieldses.org> <20080611160947.5f08fb16@tleilax.poochiereds.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080611160947.5f08fb16@tleilax.poochiereds.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	Wed, 11 Jun 2008 16:58:34 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54499 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752488AbYFKU6d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 16:58:33 -0400
+Date: Wed, 11 Jun 2008 13:58:28 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: markh@compro.net
+Cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       Jan Engelhardt <jengelh@medozas.de>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       "solsTiCe d'Hiver" <solstice.dhiver@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: no cpu MHz in /proc/cpuinfo on 2.6.25.4-rt6
+Message-ID: <20080611135828.29f6a7d7@infradead.org>
+In-Reply-To: <48503792.50003@compro.net>
+References: <200806102152.23286.solstice.dhiver@gmail.com>
+	<20080610131314.5f7069e6@infradead.org>
+	<484EE71A.40002@intel.com>
+	<alpine.LNX.1.10.0806111440480.20733@fbirervta.pbzchgretzou.qr>
+	<20080611063639.5e1eea5b@infradead.org>
+	<alpine.LNX.1.10.0806111552090.20733@fbirervta.pbzchgretzou.qr>
+	<20080611065816.6cff290d@infradead.org>
+	<Pine.LNX.4.61.0806111006560.23096@chaos.analogic.com>
+	<20080611083644.32afc823@infradead.org>
+	<4850046C.4070602@compro.net>
+	<20080611104446.3b0ce2d9@infradead.org>
+	<48501159.4050908@compro.net>
+	<48503792.50003@compro.net>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 11, 2008 at 04:09:47PM -0400, Jeff Layton wrote:
-> On Wed, 11 Jun 2008 15:52:22 -0400
-> "J. Bruce Fields" <bfields@fieldses.org> wrote:
-> 
-> > I'm probably missing something fundamental--why doesn't
-> > /proc/slab_allocators show any results for size-x where x >= 4096?
-> > 
-> > Someone's seeing a performance problem with the linux nfs server.  One
-> > of the symptoms is the "size-4096" slab cache seems to be out of
-> > control.  I assumed that meant that memory allocated by kmalloc() might
-> > be leaking, so figured it might be interesting to turn on
-> > CONFIG_DEBUG_SLAB_LEAK.  As far as I can tell what that does is list
-> > kmalloc() callers in /proc/slab_allocators.  But that doesn't seem to be
-> > showing any results for size-4096.  Can anyone provide a clue?
-> > Thanks!
-> > 
-> > --b.
+On Wed, 11 Jun 2008 16:37:38 -0400
+Mark Hounschell <markh@compro.net> wrote:
+
+> > Mark 
 > > 
 > 
+> Ok, what would one use besides the tsc to take a fast high-res time
+> stamp in a kernel module that could also be used in user land (same
+> time source) to for instance calculate  the the time between an event
+> in the kernel to an event in user land?
 > 
-> Hmm...I've never used this, but in kmem_cache_alloc():
-> 
->         /*
->          * Enable redzoning and last user accounting, except for caches with
->          * large objects, if the increased size would increase the object size
->          * above the next power of two: caches with object sizes just above a
->          * power of two have a significant amount of internal fragmentation.
->          */
->         if (size < 4096 || fls(size - 1) == fls(size-1 + REDZONE_ALIGN +
->                                                 2 * sizeof(unsigned long long)))
->                 flags |= SLAB_RED_ZONE | SLAB_STORE_USER;
-> 
-> 
-> ...looks like it specifically excludes some caches.
-
-Ah, I missed that!  I'm a little confused as to how those flags behavior
-affect the collection of the leak debugging data, but I can verify that
-the below does result in size-4096 showing up in /proc/slab_allocators;
-hopefully there's no more negative result than the performance penalty.
-
-Norman, do you think you could try applying this and then trying again?
-
---b.
+> do_gettimeofday / gettimeofday are not really acceptable.
 
 
-diff --git a/mm/slab.c b/mm/slab.c
-index 06236e4..b379e31 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -2202,7 +2202,7 @@ kmem_cache_create (const char *name, size_t size, size_t align,
- 	 * above the next power of two: caches with object sizes just above a
- 	 * power of two have a significant amount of internal fragmentation.
- 	 */
--	if (size < 4096 || fls(size - 1) == fls(size-1 + REDZONE_ALIGN +
-+	if (size < 8192 || fls(size - 1) == fls(size-1 + REDZONE_ALIGN +
- 						2 * sizeof(unsigned long long)))
- 		flags |= SLAB_RED_ZONE | SLAB_STORE_USER;
- 	if (!(flags & SLAB_DESTROY_BY_RCU))
+btw you also changed the problem from "what is the cpu frequency" to
+"how usable is rdtsc for time". My entire point was that these weren't
+related...
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
