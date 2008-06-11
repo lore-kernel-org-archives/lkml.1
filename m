@@ -1,107 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbYFKNAE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756249AbYFKNA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756005AbYFKNAE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 09:00:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750744AbYFKM7w
+	id S1756249AbYFKNA3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 09:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750744AbYFKNAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 08:59:52 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:63008 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751111AbYFKM7v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 08:59:51 -0400
-Date: Wed, 11 Jun 2008 13:57:44 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-cc: Glauber Costa <gcosta@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu,
-       hugh@veritas.com
-Subject: Re: [PATCH 11/15] x86: move enabling of io_apic to prepare_cpus
-In-Reply-To: <86802c440806101932s1bde646at322df320d02bfdb@mail.gmail.com>
-Message-ID: <Pine.LNX.4.55.0806111325060.14077@cliff.in.clinika.pl>
-References: <1213021018-14159-1-git-send-email-gcosta@redhat.com> 
- <Pine.LNX.4.55.0806092159350.26593@cliff.in.clinika.pl> 
- <Pine.LNX.4.55.0806100341520.31588@cliff.in.clinika.pl> 
- <86802c440806092208s338cf6b6q892f5149bbd142ca@mail.gmail.com> 
- <484E7B03.8000604@redhat.com>  <Pine.LNX.4.55.0806101418510.1702@cliff.in.clinika.pl>
-  <86802c440806101209q301bcef0ia859db7e587bd42e@mail.gmail.com> 
- <Pine.LNX.4.55.0806102025460.1702@cliff.in.clinika.pl> 
- <86802c440806101249i3650aa59u1090110a803c3384@mail.gmail.com> 
- <Pine.LNX.4.55.0806110122580.1702@cliff.in.clinika.pl>
- <86802c440806101932s1bde646at322df320d02bfdb@mail.gmail.com>
+	Wed, 11 Jun 2008 09:00:12 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:18989 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753223AbYFKNAL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 09:00:11 -0400
+Message-ID: <484FCC4A.1010605@de.ibm.com>
+Date: Wed, 11 Jun 2008 14:59:54 +0200
+From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Peter Oberparleiter <oberparleiter@googlemail.com>,
+       linux-kernel@vger.kernel.org, ltp-coverage@lists.sourceforge.net,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH 0/6] gcov kernel support
+References: <4843F6BF.9070409@de.ibm.com>	<20080609002509.7782442e.akpm@linux-foundation.org>	<484D34DC.40401@de.ibm.com> <20080609120954.7d41a5bf.akpm@linux-foundation.org>
+In-Reply-To: <20080609120954.7d41a5bf.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008, Yinghai Lu wrote:
-
-> >  Thanks for the info.  Let me understand the situation better: local APIC
-> > IDs are preassigned by the firmware based on their "socket address" and
-> > the socket where the lowest numbered quad would be is empty.
-> > Nevertheless the firmware sets the destination ID of the ExtINTA interrupt
-> > in the I/O APIC to 0 rather than the ID of the bootstrap CPU.  Is that
-> > correct?
+Andrew Morton wrote:
+> On Mon, 09 Jun 2008 15:49:16 +0200 Peter Oberparleiter <peter.oberparleiter@de.ibm.com> wrote:
 > 
-> Yes
+>> Andrew Morton wrote:
+>> > On Mon, 02 Jun 2008 15:33:51 +0200 Peter Oberparleiter <peter.oberparleiter@de.ibm.com> wrote:
+>> > 
+>> >> This is version #3 of the gcov kernel support patch set 
+>> > 
+>> > My build tree is now filled with dead symlinks, like
+>> > 
+>> > lrwxrwxrwx 1 akpm akpm 64 Jun  9 00:06 security/selinux/nlmsgtab.gcda -> /sys/kernel/debug/gcov/usr/src/25/security/selinux/nlmsgtab.gcda
+>> 
+>> Unfortunately a necessary evil of this approach: symlinks are created
+>> for all compiled source files while link targets are only available when
+>> the corresponding code is executed. In other words: those links will be
+>> dead for source files which don't compile to actual code and for modules
+>> as long as they are not loaded.
 > 
-> after I asked bios engineer to change the dest apic id to 4, the error
-> is gone.
+> It doesn't seem awfully useful.  I don't run kernels on my build
+> machines and I'm sure many are in the same situation.  So gcov is going
+> to need a way of locating these files on the *target* machine.  And
+> once that is available, there is no need to add all these symlinks into
+> the build directory.
 
- Thanks for the clarification.
+I don't see any other feasibly way to do it if we want the kernel to
+work out-of-the-box with gcov. If the kernel was a user-space
+application, gcc/libgcov would create the .gcda files in exactly the
+same place where the symbolic links are now.
 
-> >  But it would mean the Virtual Wire interrupt delivery would not work, or
-> > is the I/O APIC setup redundant and the local APIC of the bootstrap CPU is
-> > set up for ExtINTA delivery as well?
+If we removed those symlinks, users would have to manually copy files
+from /sys on the test machine to the correct position in /objtree on the
+build machine before being able to get any kind of result. This would
+IMO reduce the usefulness of the gcov kernel infrastructure noticeably
+(though gcov-wrappers such as lcov could be modified to hide the
+additional effort).
+
+How about a CONFIG_GCOV_PROFILE_SYMLINKS configuration option?
+
+>> > Which causes (at least)
+>> > 
+>> > ctags: Warning: cannot open source file "security/selinux/ss/conditional.gcda" : No such file or directory
+>> > ctags: Warning: cannot open source file "security/selinux/netlink.gcda" : No such file or directory
+>> > ctags: Warning: cannot open source file "security/selinux/netlabel.gcda" : No such file or directory
+>> 
+>> > and probably other thing which I haven't discovered yet.
+
+I would argue that any mechanism that tries to access all files in
+/objtree regardless of filename extension is brave at best, if not
+broken.
+
+>> I'm sure there's some kind of 'find' magic that can be used to work
+>> around dead links. I'll see how this can be applied to the ctags case -
+>> though neither 'make tags' nor 'make TAGS' seem to produce any warnings
+>> on my system..
 > 
-> it doesn't need to virtual wire for timer (ExtInt), timer is hpet and
-> routed to ioapic pin2.
+> I use
+> 
+> 	ctags -R --excmd=pattern --format=1
 
- That's not what I asked about -- the timer does not matter here.  The 
-Virtual Wire mode is a configuration, where one input of one APIC in the 
-system is set up for the ExtINTA mode and acts transparently with the 
-system software having no need to know about it.  Instead a pair of 
-legacy 8259A chips is used to deliver interrupts, including claiming the 
-INTA cycles, providing vectors and prioritising sources, as defined in the 
-PC/AT architecture.
+ctags -R --excmd=pattern --format=1 --exclude=\*.gcda
 
- Many pieces of software rely on the 8259A PICs, either because they 
-predate the APIC or because they have no means to make use of 
-multiprocessor features anyway.  They include various versions of DOS 
-together with software run in that environment (as DOS programs quite 
-frequently drive hardware at the low level), many versions of the 
-Microsoft Windows system as well as other software.  For these a legacy 
-mode, either the Virtual Wire mode, or a mode where 8259A interrupts are 
-delivered directly to one processor's INT line has to be implemented as 
-mandated both by the Multiprocessor Specification and the Advanced 
-Configuration and Power Interface Specification.
+:)
 
- Coming back to my question -- how is such a mode implemented in the 
-affected system?  Clearly the route through the I/O APIC is not going to 
-work and moreover, the chip clutters the system with broken interrupt 
-messages each time the 8259A signals an interrupt.
 
- Please note Linux can use the Virtual Wire mode in the APIC/SMP mode too,
-if requested by specifying the "noapic" command-line option -- have you 
-verified the option works correctly with the affected system?
-
-> Just know at first BIOS engineer refused to change that to 4, because
-> other os is not happy.
-
- Well, this is just a confirmation my attitude is correct -- such problems 
-should not be papered over, because vendors will deny their existence 
-then.  At least a complaint message should be printed so that users have 
-an opportunity to see it and ask their hardware supplier for an 
-explanation.
-
- In this case, a workaround for the 64-bit mode happens to be quite cheap,
-but it should be extended to cover the 32-bit mode as well.  The only
-solution for the 32-bit mode I have in mind would lead to a waste of
-resources for many users of good hardware.  And this because of somebody's
-sloppiness -- as I have written -- this better be well justified.
-
- Unless you have precise means to identify this system -- in that case I
-think reconfiguring the bootstrap processor's local APIC ID to 0 would be
-the right approach.  Have you tried it?
-
-  Maciej
+Regards,
+  Peter
