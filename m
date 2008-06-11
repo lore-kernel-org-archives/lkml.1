@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757830AbYFKSrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758053AbYFKSrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757830AbYFKSrP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 14:47:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbYFKSrB
+	id S1758053AbYFKSrf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 14:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756746AbYFKSrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 14:47:01 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47828 "EHLO mx1.redhat.com"
+	Wed, 11 Jun 2008 14:47:05 -0400
+Received: from gw.goop.org ([64.81.55.164]:54066 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752268AbYFKSrA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 14:47:00 -0400
-Message-Id: <20080611184339.364358765@redhat.com>
-References: <20080611184214.605110868@redhat.com>
-User-Agent: quilt/0.46-1
-Date: Wed, 11 Jun 2008 14:42:23 -0400
-From: Rik van Riel <riel@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: [PATCH -mm 09/24] vmscan: add newly swapped in pages to the inactive list
-Content-Disposition: inline; filename=vmscan-add-newly-swapped-in-pages-to-the-inactive-list.patch
+	id S1754813AbYFKSrD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 14:47:03 -0400
+Message-ID: <48501D7C.5050600@goop.org>
+Date: Wed, 11 Jun 2008 19:46:20 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Nick Piggin <npiggin@suse.de>
+CC: Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc][patch] mm: vmap rewrite
+References: <20080605102015.GA11366@wotan.suse.de> <484AC779.1070803@goop.org> <20080610025312.GC19404@wotan.suse.de>
+In-Reply-To: <20080610025312.GC19404@wotan.suse.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rik van Riel <riel@redhat.com>
+Nick Piggin wrote:
+> It's harder than that even, because we don't own the page flags, so then
+> clearing the PG_kalias bit would require that we make all page flags ops
+> atomic in all parts of the kernel. Obviously not going to happen.
+>
+> The other thing we could do is have vmap layer keep some p->v translations
+> around (actually it doesn't even need to go all the way to v, just a single
+> bit would suffice) So I guess this would be like another page flag, but
+> without the atomicity problem and without me getting angry at using another
+> flag ;) Still, I'd rather not do this and slow everything else down.
+>   
 
-Swapin_readahead can read in a lot of data that the processes in
-memory never need.  Adding swap cache pages to the inactive list
-prevents them from putting too much pressure on the working set.
+Yeah.  It's a bit awkward to maintain a secondary structure just to deal 
+with the confluence of two edge cases (running Xen + reusing an aliased 
+page in a pagetable).
 
-This has the potential to help the programs that are already in
-memory, but it could also be a disadvantage to processes that
-are trying to get swapped in.
+> It could be switched on at runtime if Xen is running perhaps. Or the other
+> thing Xen could do is keep a cache of unaliased page table pages. You
+> could fill it up N pages at a time, and just do a single unmap_aliases call
+> to sanitize them all; also, clean pages returned from pagetables could be
+> reused. Like the quicklists things.
+>   
 
-Signed-off-by: Rik van Riel <riel@redhat.com>
+Hm, that wouldn't be too bad (so long as it doesn't end up hiding 
+gigabytes of memory away from the rest of the system ;).
 
----
- mm/swap_state.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> Or: doesn't the host have to do its own alias check anyway? In case of an
+> AWOL guest? Why not just reuse that and trap back into the guest to fix it
+> up?
 
-Index: linux-2.6.26-rc5-mm2/mm/swap_state.c
-===================================================================
---- linux-2.6.26-rc5-mm2.orig/mm/swap_state.c	2008-06-10 13:35:23.000000000 -0400
-+++ linux-2.6.26-rc5-mm2/mm/swap_state.c	2008-06-10 13:40:46.000000000 -0400
-@@ -303,7 +303,7 @@ struct page *read_swap_cache_async(swp_e
- 			/*
- 			 * Initiate read into locked page and return.
- 			 */
--			lru_cache_add_active_anon(new_page);
-+			lru_cache_add_anon(new_page);
- 			swap_readpage(NULL, new_page);
- 			return new_page;
- 		}
+That's possible, but awkward.  In many cases these updates will be 
+batched, so it would become a matter of issuing a batch, then picking 
+through the results to see what worked and what failed.  I suppose I 
+could just do the simple flush and then if that turns out too expensive, 
+do the submit-and-retry approach.
 
--- 
-All Rights Reversed
-
+    J
