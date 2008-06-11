@@ -1,129 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754373AbYFKKxI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754071AbYFKLFS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754373AbYFKKxI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 06:53:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbYFKKw4
+	id S1754071AbYFKLFS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 07:05:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbYFKLFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 06:52:56 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:36838 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752558AbYFKKwz (ORCPT
+	Wed, 11 Jun 2008 07:05:04 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:46019 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750754AbYFKLFD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 06:52:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ac+skZHkKTtDfsyk17iMMHHt10xRHvF9P3YrAjpN6i2kjMzoJZxrh6dp64IrmX4Vvu
-         Df1XmXncHqvJq4SqP99ZI0RKr9fZtkZv7M+qAUJcT41ObkDJq2Dif5jG4pMxbyF79hmM
-         y4V0MCGZnE3+qkeILFYVJsQMDlFrWOLLpQezA=
-Message-ID: <19f34abd0806110352s53628c2bi634028b954ee6cde@mail.gmail.com>
-Date: Wed, 11 Jun 2008 12:52:54 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Walter Franzini" <walter.franzini@gmail.com>
-Subject: Re: Oops: 0000 [#1] PREEMPT SMP
-Cc: linux-kernel@vger.kernel.org, "Christoph Lameter" <clameter@sgi.com>,
-       "Heiko Carstens" <heiko.carstens@de.ibm.com>
-In-Reply-To: <863ank6zmd.fsf@acer.nord-com.it>
+	Wed, 11 Jun 2008 07:05:03 -0400
+Date: Wed, 11 Jun 2008 16:29:45 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Holger Kiehl <Holger.Kiehl@dwd.de>
+Cc: linux-ext4@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Performance of ext4
+Message-ID: <20080611105945.GB9008@skywalker>
+References: <Pine.LNX.4.64.0806110801370.19793@diagnostix.dwd.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <863ank6zmd.fsf@acer.nord-com.it>
+In-Reply-To: <Pine.LNX.4.64.0806110801370.19793@diagnostix.dwd.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On 6/11/08, Walter Franzini <walter.franzini@gmail.com> wrote:
-> With 2.6.25.6 I've got the following oops while running aegis.
-
-Thanks for reporting.
-
->  ------------------------------------------------------------------------
->  Oops: 0000 [#1] PREEMPT SMP
-
-Is this the first line of the report that you have? Looks like there
-could be more useful information just before this.
-
->  Modules linked in: appletalk ipx p8023 cpufreq_ondemand xt_tcpudp nf_conntrack_ipv4 xt_state nf_conntrack iptable_filter ip_tables x_tables tun ppdev lp fuse sbp2 acpi_cpufreq freq_table joydev arc4 ecb crypto_blkcipher pcmcia snd_hda_intel iwl3945 snd_pcm_oss snd_mixer_oss snd_pcm firmware_class iTCO_wdt mac80211 yenta_socket pcspkr snd_timer container rsrc_nonstatic pcmcia_core serio_raw cfg80211 i2c_i801 bay ac wmi i2c_core irda snd battery soundcore snd_page_alloc psmouse button evdev intel_agp agpgart sg crc_ccitt parport_pc parport sr_mod cdrom rtc ext3 jbd mbcache dm_mirror dm_snapshot dm_mod sd_mod usbhid hid ata_piix ohci1394 ieee1394 ata_generic libata ehci_hcd uhci_hcd scsi_mod usbcore e1000 dock thermal processor fan
+On Wed, Jun 11, 2008 at 08:02:32AM +0000, Holger Kiehl wrote:
+> Hello
 >
->  Pid: 20443, comm: aegis Not tainted (2.6.25.6-0 #1)
->  EIP: 0060:[<c014d949>] EFLAGS: 00210016 CPU: 1
->  EIP is at get_page_from_freelist+0x171/0x397
->  EAX: c033560c EBX: 001200d2 ECX: 7c30302e EDX: 00000002
->  ESI: c0335600 EDI: 00200202 EBP: 7c303016 ESP: f48e9ce8
->   DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
->  Process aegis (pid: 20443, ti=f48e8000 task=f4871640 task.ti=f48e8000)
->  Stack: c3c85e28 00000002 00000000 001200d2 c0336050 c0335580 00000002 00000000
->        00000000 00200292 001200d2 001200d2 c0336048 00000000 c014dcef 00000044
->        001200d2 00000010 f7106e10 f4871640 00001000 c033604c c02a582c 001200d2
->  Call Trace:
->   [<c014dcef>] __alloc_pages+0x5f/0x2b4
->   [<c02a582c>] _read_unlock_irq+0xe/0x21
->   [<c014987b>] __grab_cache_page+0x56/0x86
->   [<f89d2932>] ext3_write_begin+0x51/0x16d [ext3]
->   [<c014a253>] generic_file_buffered_write+0xf8/0x56f
->   [<c011590f>] update_curr+0x3d/0x52
->   [<c014ab1a>] __generic_file_aio_write_nolock+0x450/0x4b2
->   [<c0149326>] file_read_actor+0x7d/0xcc
->   [<c014abce>] generic_file_aio_write+0x52/0xa9
->   [<f89cf1d1>] ext3_file_write+0x19/0x83 [ext3]
->   [<c0164194>] do_sync_write+0xbf/0x100
->   [<c012e3c0>] autoremove_wake_function+0x0/0x2d
->   [<c0134c0a>] clockevents_program_event+0xc4/0xd2
->   [<c02a5555>] _spin_lock_irq+0xe/0x24
->   [<c01a7adc>] security_file_permission+0xc/0xd
->   [<c01640d5>] do_sync_write+0x0/0x100
->   [<c016489b>] vfs_write+0x83/0xf6
->   [<c0164dd1>] sys_write+0x3c/0x63
->   [<c01047ae>] sysenter_past_esp+0x5f/0x85
->   =======================
->  Code: 3b 8d 69 e8 8b 4d 1c 0f 18 01 90 8d 55 18 8d 46 0c 39 c2 75 e3 eb 25 8b 6e 0c 83 ed 18 eb 0c 8b 54 24 18 39 55 0c 74 14 8d 69 e8 <8b> 4d 18 0f 18 01 90 8d 55 18 8d 46 0c 39 c2 75 e3 8d 55 18 8d
->  EIP: [<c014d949>] get_page_from_freelist+0x171/0x397 SS:ESP 0068:f48e9ce8
->  ---[ end trace abef59c84226d498 ]---
->  note: aegis[20443] exited with preempt_count 1
->  ------------------------------------------------------------------------
-
-For me, this is:
-
-$ addr2line -e mm/page_alloc.o -i 1a37
-mm/page_alloc.c:1078
-mm/page_alloc.c:1436
-
-(sources are v2.6.25.6.)
-
-The first line is in function buffered_rmqueue (inlined by gcc):
-        list_for_each_entry_reverse(page, &pcp->list, lru)
-
-Last modified in
-
-commit 3dfa5721f12c3d5a441448086bee156887daa961
-Author: Christoph Lameter <clameter@sgi.com>
-Date:   Mon Feb 4 22:29:19 2008 -0800
-
-    Page allocator: get rid of the list of cold pages
-
-I'm also seeing an LRU-related commit that looks very interesting:
-
-commit 06c9630008899ee40df90c5ff248c2165fda54fd
-Author: Heiko Carstens <heiko.carstens@de.ibm.com>
-Date:   Thu May 15 02:45:16 2008 +0000
-
-It has, for example, this text, which seems highly relevant here:
-
-    in __free_one_page() tries to do a list_add to something that isn't even
-    necessarily a list.
-
-Adding to Cc.
+> Doing some performance test between ext3 and ext4 I noticed that ext4
+> is not much faster or in some cases slower then ext3. Two years ago when
+> I tested ext4 it was a lot faster then ext3 (see my mail:
+> http://lkml.org/lkml/2006/6/6/65). Doing some simple tests with bonnie++
+> I got the following results:
+>
+> Version  1.03        ------Sequential Output------ --Sequential Input- --Random-
+>                      -Per Chr- --Block-- -Rewrite- -Per Chr- --Block-- --Seeks--
+> Machine         Size K/sec %CP K/sec %CP K/sec %CP K/sec %CP K/sec %CP  /sec %CP
+> ext3(2 years ago)16G 38621  98 194816 94 87776  49 37921  92 239128 54  1402   5
+>                  16G 47000  99 194276 94 89232  49 38628  92 240539 55  1399   5
+>                  16G 45873  98 178195 90 89726  50 38482  92 240490 55  1381   4
+>
+> ext3 (now)       16G 51501  97 210601 91 100479 32 55528  98 301589 44  1198   5
+>                  16G 52702  98 215540 94 99339  32 55376  97 300933 44  1159   4
+>                  16G 52426  99 212584 94 99091  31 55656  98 301669 44  1160   4
+>
+> ext4(2 years ago)16G 59223  91 264155 45 111459 36 57313  99 317944 63  1478   7
+>                  16G 58814  92 276803 47 110418 36 57105  99 317534 65  1525   5
+>                  16G 58299  92 274523 48 110290 36 56723  99 318839 65  1502   4
+>
+> ext4 (now)       16G 52965  98 224199 89 108440 32 56389  99 303792 42  1526   4
+>                  16G 52792  98 223980 92 107685 32 56350  98 303066 42  1532   4
+>                  16G 52994  98 222354 92 107802 32 56386  99 303727 41  1455   4
+>
+> For this system the write performance is the most important factor and one
+> can see today ext4 is marginally faster then ext3. But 2 years ago ext4 was
+> a lot faster (~270MB against ~223MB).
+>
+> Using my own benchmark afdbench where many process copy thousands of small
+> files around the results are as follows:
+>
+>   For ext3: 5449.76 files per second 15.58 MiB/s
+>   For ext4: 5162.16 files per second 15.48 MiB/s
+>
+> So in this test ext4 is a bit slower then ext3. Since afdbench has seen
+> considerable changes, one cannot compare these results with those 2 years
+> ago. But 2 years ago ext4 was 12% faster then ext3.
+>
+> Test where done with kernel 2.6.25.4 and file system where created as follows:
+>
+>    ext3: mke2fs -b 4096 -m 0 -O dir_index,large_file,filetype,has_journal,sparse_super -j /dev/md7
+>    ext4: mke2fs -b 4096 -E test_fs -m 0 -O dir_index,large_file,filetype,has_journal,sparse_super -j /dev/md7
+>
+> And both where mounted with the following options:
+>
+>    noatime,nodiratime,commit=15
+>
+> 2 years ago I used 2.6.16.8 but the hardware is still the same. So what has
+> happened with the performance of ext4? I noticed that 2 years ago I could
+> use extents+mballoc+delalloc, now there is only extents+mballoc in the
+> current kernels. Could delalloc make the big difference? I saw that
+> in Andrew Morton mm tree delalloc is included. Unfortunately when I tried using
+> 2.6.26-rc2-mm1 a sync would never return and there where lot of other
+> odd things, so I could not do any tests with delalloc.
 
 
-Vegard
+The sync and other related hangs should be fix with the latest patches
+vailable at http://repo.or.cz/w/ext4-patch-queue.git. Using mballoc have
+an impact on CPU utilization because we try to build an in-memory extent
+map of free blocks available in the group. The cold cache run (the first
+run) would take more time because of the time needed to build the extent
+map. So repeating the same test and looking at the numbers would help us
+understand the impact of in-memory extent building code.
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+>
+> So any idea what I am doing wrong or what I could do to improve those numbers?
+> Please CC me since I am not subscribed to the list.
+>
+
+You should be able to apply the patches in the patchqueue mentioned above  to 2.6.26-rc5
+Can you test with the same and get the numbers. ? Also delalloc enabled
+by default with changes from patchqueue force writeback mode for
+journal. So you may want to enable writeback for ext3.
+
+-aneesh
