@@ -1,202 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758728AbYFKU45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbYFKU6J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758728AbYFKU45 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 16:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757545AbYFKUzz
+	id S1757551AbYFKU6J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 16:58:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbYFKU5x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 16:55:55 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:7844 "EHLO
-	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752227AbYFKUzx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 16:55:53 -0400
-Message-Id: <20080611204917.396070661@mvista.com>
-References: <20080611204916.271608740@mvista.com>
-User-Agent: quilt/0.46-1
-Date: Wed, 11 Jun 2008 13:49:20 -0700
-Subject: [PATCH 4/5] rtmutex: add generic blocked_on usage
-From: Daniel Walker <dwalker@mvista.com>
-To: linux-kernel@vger.kernel.org
-Cc: Ulrich Drepper <drepper@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-Content-Disposition: inline; filename=blocked_on-rtmutex.patch
+	Wed, 11 Jun 2008 16:57:53 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:41850 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752683AbYFKU5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 16:57:52 -0400
+Date: Wed, 11 Jun 2008 16:57:50 -0400
+To: Jeff Layton <jlayton@poochiereds.net>
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       "Weathers, Norman R." <Norman.R.Weathers@conocophillips.com>
+Subject: Re: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
+Message-ID: <20080611205749.GA25194@fieldses.org>
+References: <1212519001.24900.14.camel@hololw58> <20080606160922.GG30863@fieldses.org> <0122F800A3B64C449565A9E8C2977010155587@hoexmb9.conoco.net> <20080609185355.GF28584@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75D9F@hoexmb9.conoco.net> <20080610171602.GG20184@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DA3@hoexmb9.conoco.net> <20080611184613.GM15380@fieldses.org> <20080611195222.GP15380@fieldses.org> <20080611160947.5f08fb16@tleilax.poochiereds.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080611160947.5f08fb16@tleilax.poochiereds.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Modify the rtmutex to use the generic blocked_on field.
+On Wed, Jun 11, 2008 at 04:09:47PM -0400, Jeff Layton wrote:
+> On Wed, 11 Jun 2008 15:52:22 -0400
+> "J. Bruce Fields" <bfields@fieldses.org> wrote:
+> 
+> > I'm probably missing something fundamental--why doesn't
+> > /proc/slab_allocators show any results for size-x where x >= 4096?
+> > 
+> > Someone's seeing a performance problem with the linux nfs server.  One
+> > of the symptoms is the "size-4096" slab cache seems to be out of
+> > control.  I assumed that meant that memory allocated by kmalloc() might
+> > be leaking, so figured it might be interesting to turn on
+> > CONFIG_DEBUG_SLAB_LEAK.  As far as I can tell what that does is list
+> > kmalloc() callers in /proc/slab_allocators.  But that doesn't seem to be
+> > showing any results for size-4096.  Can anyone provide a clue?
+> > Thanks!
+> > 
+> > --b.
+> > 
+> 
+> 
+> Hmm...I've never used this, but in kmem_cache_alloc():
+> 
+>         /*
+>          * Enable redzoning and last user accounting, except for caches with
+>          * large objects, if the increased size would increase the object size
+>          * above the next power of two: caches with object sizes just above a
+>          * power of two have a significant amount of internal fragmentation.
+>          */
+>         if (size < 4096 || fls(size - 1) == fls(size-1 + REDZONE_ALIGN +
+>                                                 2 * sizeof(unsigned long long)))
+>                 flags |= SLAB_RED_ZONE | SLAB_STORE_USER;
+> 
+> 
+> ...looks like it specifically excludes some caches.
 
-Signed-off-by: Daniel Walker <dwalker@mvista.com>
+Ah, I missed that!  I'm a little confused as to how those flags behavior
+affect the collection of the leak debugging data, but I can verify that
+the below does result in size-4096 showing up in /proc/slab_allocators;
+hopefully there's no more negative result than the performance penalty.
 
----
- include/linux/sched.h |    4 ++--
- kernel/fork.c         |    1 -
- kernel/rtmutex.c      |   35 ++++++++++++++++++++++++-----------
- 3 files changed, 26 insertions(+), 14 deletions(-)
+Norman, do you think you could try applying this and then trying again?
 
-Index: linux-2.6.25/include/linux/sched.h
-===================================================================
---- linux-2.6.25.orig/include/linux/sched.h
-+++ linux-2.6.25/include/linux/sched.h
-@@ -1026,12 +1026,14 @@ struct sched_rt_entity {
- 
- enum lock_waiter_type {
- 	MUTEX_WAITER = 1,
-+	RT_MUTEX_WAITER,
- };
- 
- struct lock_waiter_state {
- 	enum lock_waiter_type lock_type;
- 	union {
- 		struct mutex_waiter *mutex_blocked_on;
-+		struct rt_mutex_waiter *rt_blocked_on;
- 	};
- };
- 
-@@ -1218,8 +1220,6 @@ struct task_struct {
- #ifdef CONFIG_RT_MUTEXES
- 	/* PI waiters blocked on a rt_mutex held by this task */
- 	struct plist_head pi_waiters;
--	/* Deadlock detection and priority inheritance handling */
--	struct rt_mutex_waiter *pi_blocked_on;
- #endif
- 
- 	/*
-Index: linux-2.6.25/kernel/fork.c
-===================================================================
---- linux-2.6.25.orig/kernel/fork.c
-+++ linux-2.6.25/kernel/fork.c
-@@ -850,7 +850,6 @@ static void rt_mutex_init_task(struct ta
- 	spin_lock_init(&p->pi_lock);
- #ifdef CONFIG_RT_MUTEXES
- 	plist_head_init(&p->pi_waiters, &p->pi_lock);
--	p->pi_blocked_on = NULL;
- #endif
- }
- 
-Index: linux-2.6.25/kernel/rtmutex.c
-===================================================================
---- linux-2.6.25.orig/kernel/rtmutex.c
-+++ linux-2.6.25/kernel/rtmutex.c
-@@ -74,6 +74,14 @@ static void fixup_rt_mutex_waiters(struc
- 		clear_rt_mutex_waiters(lock);
- }
- 
-+static
-+struct rt_mutex_waiter *rt_mutex_get_waiter(struct task_struct *task)
-+{
-+	if (task->blocked_on && task->blocked_on->lock_type == RT_MUTEX_WAITER)
-+		return task->blocked_on->rt_blocked_on;
-+	return NULL;
-+}
-+
- /*
-  * We can speed up the acquire/release, if the architecture
-  * supports cmpxchg and if there's no debugging state to be set up
-@@ -197,7 +205,7 @@ static int rt_mutex_adjust_prio_chain(st
+--b.
+
+
+diff --git a/mm/slab.c b/mm/slab.c
+index 06236e4..b379e31 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -2202,7 +2202,7 @@ kmem_cache_create (const char *name, size_t size, size_t align,
+ 	 * above the next power of two: caches with object sizes just above a
+ 	 * power of two have a significant amount of internal fragmentation.
  	 */
- 	spin_lock_irqsave(&task->pi_lock, flags);
- 
--	waiter = task->pi_blocked_on;
-+	waiter = rt_mutex_get_waiter(task);
- 	/*
- 	 * Check whether the end of the boosting chain has been
- 	 * reached or the state of the chain has changed while we
-@@ -411,6 +419,7 @@ static int try_to_take_rt_mutex(struct r
-  */
- static int task_blocks_on_rt_mutex(struct rt_mutex *lock,
- 				   struct rt_mutex_waiter *waiter,
-+				   struct lock_waiter_state *lock_waiter,
- 				   int detect_deadlock)
- {
- 	struct task_struct *owner = rt_mutex_owner(lock);
-@@ -430,7 +439,7 @@ static int task_blocks_on_rt_mutex(struc
- 		top_waiter = rt_mutex_top_waiter(lock);
- 	plist_add(&waiter->list_entry, &lock->wait_list);
- 
--	current->pi_blocked_on = waiter;
-+	current->blocked_on = lock_waiter;
- 
- 	spin_unlock_irqrestore(&current->pi_lock, flags);
- 
-@@ -440,7 +449,7 @@ static int task_blocks_on_rt_mutex(struc
- 		plist_add(&waiter->pi_list_entry, &owner->pi_waiters);
- 
- 		__rt_mutex_adjust_prio(owner);
--		if (owner->pi_blocked_on)
-+		if (rt_mutex_get_waiter(owner))
- 			chain_walk = 1;
- 		spin_unlock_irqrestore(&owner->pi_lock, flags);
- 	}
-@@ -501,7 +510,7 @@ static void wakeup_next_waiter(struct rt
- 	spin_unlock_irqrestore(&current->pi_lock, flags);
- 
- 	/*
--	 * Clear the pi_blocked_on variable and enqueue a possible
-+	 * Clear the blocked_on variable and enqueue a possible
- 	 * waiter into the pi_waiters list of the pending owner. This
- 	 * prevents that in case the pending owner gets unboosted a
- 	 * waiter with higher priority than pending-owner->normal_prio
-@@ -509,11 +518,12 @@ static void wakeup_next_waiter(struct rt
- 	 */
- 	spin_lock_irqsave(&pendowner->pi_lock, flags);
- 
--	WARN_ON(!pendowner->pi_blocked_on);
--	WARN_ON(pendowner->pi_blocked_on != waiter);
--	WARN_ON(pendowner->pi_blocked_on->lock != lock);
-+	WARN_ON(!pendowner->blocked_on);
-+	WARN_ON(pendowner->blocked_on->lock_type != RT_MUTEX_WAITER);
-+	WARN_ON(pendowner->blocked_on->rt_blocked_on != waiter);
-+	WARN_ON(pendowner->blocked_on->rt_blocked_on->lock != lock);
- 
--	pendowner->pi_blocked_on = NULL;
-+	pendowner->blocked_on = NULL;
- 
- 	if (rt_mutex_has_waiters(lock)) {
- 		struct rt_mutex_waiter *next;
-@@ -542,7 +552,7 @@ static void remove_waiter(struct rt_mute
- 	spin_lock_irqsave(&current->pi_lock, flags);
- 	plist_del(&waiter->list_entry, &lock->wait_list);
- 	waiter->task = NULL;
--	current->pi_blocked_on = NULL;
-+	current->blocked_on = NULL;
- 	spin_unlock_irqrestore(&current->pi_lock, flags);
- 
- 	if (first && owner != current) {
-@@ -559,7 +569,7 @@ static void remove_waiter(struct rt_mute
- 		}
- 		__rt_mutex_adjust_prio(owner);
- 
--		if (owner->pi_blocked_on)
-+		if (rt_mutex_get_waiter(owner))
- 			chain_walk = 1;
- 
- 		spin_unlock_irqrestore(&owner->pi_lock, flags);
-@@ -592,7 +602,7 @@ void rt_mutex_adjust_pi(struct task_stru
- 
- 	spin_lock_irqsave(&task->pi_lock, flags);
- 
--	waiter = task->pi_blocked_on;
-+	waiter = rt_mutex_get_waiter(task);
- 	if (!waiter || waiter->list_entry.prio == task->prio) {
- 		spin_unlock_irqrestore(&task->pi_lock, flags);
- 		return;
-@@ -614,6 +624,8 @@ rt_mutex_slowlock(struct rt_mutex *lock,
- 		  int detect_deadlock)
- {
- 	struct rt_mutex_waiter waiter;
-+	struct lock_waiter_state lock_waiter = {
-+		.lock_type = RT_MUTEX_WAITER, { .rt_blocked_on = &waiter} };
- 	int ret = 0;
- 
- 	debug_rt_mutex_init_waiter(&waiter);
-@@ -663,6 +675,7 @@ rt_mutex_slowlock(struct rt_mutex *lock,
- 		 */
- 		if (!waiter.task) {
- 			ret = task_blocks_on_rt_mutex(lock, &waiter,
-+						      &lock_waiter,
- 						      detect_deadlock);
- 			/*
- 			 * If we got woken up by the owner then start loop
-
--- 
+-	if (size < 4096 || fls(size - 1) == fls(size-1 + REDZONE_ALIGN +
++	if (size < 8192 || fls(size - 1) == fls(size-1 + REDZONE_ALIGN +
+ 						2 * sizeof(unsigned long long)))
+ 		flags |= SLAB_RED_ZONE | SLAB_STORE_USER;
+ 	if (!(flags & SLAB_DESTROY_BY_RCU))
