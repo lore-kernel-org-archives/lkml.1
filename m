@@ -1,95 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761479AbYFKP2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761567AbYFKPff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761479AbYFKP2z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 11:28:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbYFKP2r
+	id S1761567AbYFKPff (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 11:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754843AbYFKPf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 11:28:47 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:15622 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753076AbYFKP2q (ORCPT
+	Wed, 11 Jun 2008 11:35:27 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:39027 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754146AbYFKPf0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 11:28:46 -0400
-Subject: Re: [PATCH -mm 17/25] Mlocked Pages are non-reclaimable
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Nick Piggin <npiggin@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, kosaki.motohiro@jp.fujitsu.com,
-       linux-mm@kvack.org, eric.whitney@hp.com
-In-Reply-To: <20080610194858.695cd7ce@bree.surriel.com>
-References: <20080606202838.390050172@redhat.com>
-	 <20080606202859.522708682@redhat.com>
-	 <20080606180746.6c2b5288.akpm@linux-foundation.org>
-	 <20080610033130.GK19404@wotan.suse.de>
-	 <20080610171400.149886cf@cuia.bos.redhat.com>
-	 <1213134197.6872.49.camel@lts-notebook>
-	 <20080610194858.695cd7ce@bree.surriel.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Wed, 11 Jun 2008 11:29:10 -0400
-Message-Id: <1213198150.6436.26.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Wed, 11 Jun 2008 11:35:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:references:in-reply-to:x-face:cc
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=RcSTuI1PKRv6VhQ/Uiqw8w5dOk1QGibwVrhek5P4IzXgpa5GmMGH2mUKO9/vIl0Koi
+         LQaWM72SSrZ0TV3nBRupDLhMZku199SvSqv2KHirIlh66F+7k9rDQeK7zuD0kmj15CYE
+         4odpmEGuXQLkM1B5fPoYwdOZmS3dHkDZ1YgKQ=
+From: "solsTiCe d'Hiver" <solstice.dhiver@gmail.com>
+To: Jan Engelhardt <jengelh@medozas.de>
+Subject: Re: PROBLEM: no cpu MHz in /proc/cpuinfo on 2.6.25.4-rt6
+Date: Wed, 11 Jun 2008 17:35:19 +0200
+User-Agent: KMail/1.9.9
+References: <200806102152.23286.solstice.dhiver@gmail.com> <200806111615.11997.solstice.dhiver@gmail.com> <alpine.LNX.1.10.0806111636460.20733@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <alpine.LNX.1.10.0806111636460.20733@fbirervta.pbzchgretzou.qr>
+X-Face: i>^wU`a5]X{;$5ES3H1eQT1&yA%vQ<5`86sMzPN6/-61({uZALpE4Oe-6<=?utf-8?q?=60DNbFz=3D/UJ7r=0A=09v=23KV2Y=5Ew=23Sg?="1kfpw3e<f_"VS?tx&ZXn*-Npn4(l\73LF*1?wwveK$~1ys@=?utf-8?q?CTT=276=24fWx=24W=0A=09?=)0!v7wC(KkkO[+j.Etu
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806111735.19935.solstice.dhiver@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-06-10 at 19:48 -0400, Rik van Riel wrote:
-> On Tue, 10 Jun 2008 17:43:17 -0400
-> Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
-> 
-> > On Tue, 2008-06-10 at 17:14 -0400, Rik van Riel wrote:
-> > > On Tue, 10 Jun 2008 05:31:30 +0200
-> > > Nick Piggin <npiggin@suse.de> wrote:
-> > > 
-> > > > If we eventually run out of page flags on 32 bit, then sure this might be
-> > > > one we could look at geting rid of. Once the code has proven itself.
-> > > 
-> > > Yes, after the code has proven stable, we can probably get
-> > > rid of the PG_mlocked bit and use only PG_unevictable to mark
-> > > these pages.
-> > > 
-> > > Lee, Kosaki-san, do you see any problem with that approach?
-> > > Is the PG_mlocked bit really necessary for non-debugging
-> > > purposes?
-> > 
-> > Well, it does speed up the check for mlocked pages in page_reclaimable()
-> > [now page_evictable()?] as we don't have to walk the reverse map to
-> > determine that a page is mlocked.   In many places where we currently
-> > test page_reclaimable(), we really don't want to and maybe can't walk
-> > the reverse map.
-> 
-> There are a few places:
-> 1) the pageout code, which calls page_referenced() anyway; we can
->    change page_referenced() to return PAGE_MLOCKED and do the right
->    thing from there
+> says who? http://rt.et.redhat.com/download/older/patch-2.6.25.4-rt5.bz2
+oops.
 
-In vmscan, true.  try_to_unmap() will catch it too.  By then, we'll have
-let the page ride through the active list to the inactive list and won't
-catch it until shrink_page_list().  But, this only happens once per page
-and then it's hidden on the nor^H^H^Hunevictable list.
+so i have tested 2.6.25.4-rt {3,4,5}
+and all the 3 have the same issue (no cpu MHz in /proc/cpuinfo here)
 
-We might want to kill the "cull in fault path" patch, tho'.
-
-> 2) when the page is moved from a per-cpu pagevec onto an LRU list,
->    we may be able to simply skip the check there on the theory that
->    the pagevecs are small and the pageout code will eventually catch
->    these (few?) pages - actually, setting PG_noreclaim on a page
->    that is in a pagevec but not on an LRU list might catch that
-> 
-> Does that seem reasonable/possible?
-
-Not sure.  The most recent patches that I posted do not use the pagevec
-for the noreclaim/unevictable list.  They put nonreclaimable/unevictable
-pages directly onto the noreclaim/unevictable list to avoid race
-conditions that could strand a page.  Kosaki-san and I spent a lot of
-time analyzing and testing the current code for potential page leaks
-onto the noreclaim/unevictable list.  It currently depends on the atomic
-TestSet/TestClear of the PG_mlocked bit, along with page lock and lru
-isolation/putback to resolve all of the potential races.  I attempted to
-describe this aspect in the doc.  Have to rethink all of that.
-
-
-> 
+my hardware is a dell inspiron 531 (with bios 1.0.9) with Athlon 64 x2 4400+ 
+as you already know, a motherboard with MCP61 chipset. 
 
