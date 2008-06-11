@@ -1,234 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760436AbYFKSvJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760634AbYFKSv2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760436AbYFKSvJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 14:51:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758095AbYFKSrh
+	id S1760634AbYFKSv2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 14:51:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758116AbYFKSri
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 14:47:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47916 "EHLO mx1.redhat.com"
+	Wed, 11 Jun 2008 14:47:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47917 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758055AbYFKSra (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 14:47:30 -0400
-Message-Id: <20080611184339.080925920@redhat.com>
+	id S1758058AbYFKSrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 14:47:31 -0400
+Message-Id: <20080611184339.628665744@redhat.com>
 References: <20080611184214.605110868@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 11 Jun 2008 14:42:19 -0400
+Date: Wed, 11 Jun 2008 14:42:27 -0400
 From: Rik van Riel <riel@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       MinChan Kim <minchan.kim@gmail.com>
-Subject: [PATCH -mm 05/24] define page_file_cache() function
-Content-Disposition: inline; filename=vmscan-define-page_file_cache-function.patch
+       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: [PATCH -mm 13/24] Unevictable LRU Page Statistics
+Content-Disposition: inline; filename=vmscan-noreclaim-lru-page-statistics.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rik van Riel <riel@redhat.com>
 
-Define page_file_cache() function to answer the question:
-	is page backed by a file?
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
 
-Originally part of Rik van Riel's split-lru patch.  Extracted
-to make available for other, independent reclaim patches.
+Report unevictable pages per zone and system wide.
 
-Moved inline function to linux/mm_inline.h where it will
-be needed by subsequent "split LRU" and "noreclaim" patches.  
+Kosaki Motohiro added support for memory controller unevictable
+statistics.
 
-Unfortunately this needs to use a page flag, since the
-PG_swapbacked state needs to be preserved all the way
-to the point where the page is last removed from the
-LRU.  Trying to derive the status from other info in
-the page resulted in wrong VM statistics in earlier
-split VM patchsets.
-
-The total number of page flags in use on a 32 bit
-machine after this patch is 19.
-
-Signed-off-by: Rik van Riel <riel@redhat.com>
 Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
-Signed-off-by: MinChan Kim <minchan.kim@gmail.com>
+Signed-off-by: Rik van Riel <riel@redhat.com>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
 ---
- include/linux/mm_inline.h  |   27 +++++++++++++++++++++++++++
- include/linux/page-flags.h |    2 ++
- mm/memory.c                |    3 +++
- mm/migrate.c               |    2 ++
- mm/page_alloc.c            |    4 ++++
- mm/shmem.c                 |    1 +
- mm/swap_state.c            |    3 +++
- 7 files changed, 42 insertions(+)
 
-Index: linux-2.6.26-rc5-mm2/include/linux/mm_inline.h
-===================================================================
---- linux-2.6.26-rc5-mm2.orig/include/linux/mm_inline.h	2008-06-10 13:18:26.000000000 -0400
-+++ linux-2.6.26-rc5-mm2/include/linux/mm_inline.h	2008-06-10 13:34:48.000000000 -0400
-@@ -1,3 +1,28 @@
-+#ifndef LINUX_MM_INLINE_H
-+#define LINUX_MM_INLINE_H
-+
-+/**
-+ * page_is_file_cache - should the page be on a file LRU or anon LRU?
-+ * @page: the page to test
-+ *
-+ * Returns !0 if @page is page cache page backed by a regular filesystem,
-+ * or 0 if @page is anonymous, tmpfs or otherwise ram or swap backed.
-+ * Used by functions that manipulate the LRU lists, to sort a page
-+ * onto the right LRU list.
-+ *
-+ * We would like to get this info without a page flag, but the state
-+ * needs to survive until the page is last deleted from the LRU, which
-+ * could be as far down as __page_cache_release.
-+ */
-+static inline int page_is_file_cache(struct page *page)
-+{
-+	if (PageSwapBacked(page))
-+		return 0;
-+
-+	/* The page is page cache backed by a normal filesystem. */
-+	return 1;
-+}
-+
- static inline void
- add_page_to_lru_list(struct zone *zone, struct page *page, enum lru_list l)
- {
-@@ -65,3 +90,5 @@ static inline enum lru_list page_lru(str
- 
- 	return lru;
- }
-+
-+#endif
-Index: linux-2.6.26-rc5-mm2/mm/shmem.c
-===================================================================
---- linux-2.6.26-rc5-mm2.orig/mm/shmem.c	2008-06-10 10:46:29.000000000 -0400
-+++ linux-2.6.26-rc5-mm2/mm/shmem.c	2008-06-10 13:34:48.000000000 -0400
-@@ -1387,6 +1387,7 @@ repeat:
- 				goto failed;
- 			}
- 
-+			SetPageSwapBacked(filepage);
- 			spin_lock(&info->lock);
- 			entry = shmem_swp_alloc(info, idx, sgp);
- 			if (IS_ERR(entry))
-Index: linux-2.6.26-rc5-mm2/include/linux/page-flags.h
-===================================================================
---- linux-2.6.26-rc5-mm2.orig/include/linux/page-flags.h	2008-06-10 10:46:23.000000000 -0400
-+++ linux-2.6.26-rc5-mm2/include/linux/page-flags.h	2008-06-10 13:34:48.000000000 -0400
-@@ -93,6 +93,7 @@ enum pageflags {
- 	PG_mappedtodisk,	/* Has blocks allocated on-disk */
- 	PG_reclaim,		/* To be reclaimed asap */
- 	PG_buddy,		/* Page is free, on buddy lists */
-+	PG_swapbacked,		/* Page is backed by RAM/swap */
- #ifdef CONFIG_IA64_UNCACHED_ALLOCATOR
- 	PG_uncached,		/* Page has been mapped as uncached */
- #endif
-@@ -176,6 +177,7 @@ PAGEFLAG(SavePinned, savepinned);			/* X
- PAGEFLAG(Reserved, reserved) __CLEARPAGEFLAG(Reserved, reserved)
- PAGEFLAG(Private, private) __CLEARPAGEFLAG(Private, private)
- 	__SETPAGEFLAG(Private, private)
-+PAGEFLAG(SwapBacked, swapbacked) __CLEARPAGEFLAG(SwapBacked, swapbacked)
- 
- __PAGEFLAG(SlobPage, slob_page)
- __PAGEFLAG(SlobFree, slob_free)
-Index: linux-2.6.26-rc5-mm2/mm/memory.c
-===================================================================
---- linux-2.6.26-rc5-mm2.orig/mm/memory.c	2008-06-10 10:46:25.000000000 -0400
-+++ linux-2.6.26-rc5-mm2/mm/memory.c	2008-06-10 13:34:48.000000000 -0400
-@@ -1804,6 +1804,7 @@ gotten:
- 		ptep_clear_flush(vma, address, page_table);
- 		set_pte_at(mm, address, page_table, entry);
- 		update_mmu_cache(vma, address, entry);
-+		SetPageSwapBacked(new_page);
- 		lru_cache_add_active(new_page);
- 		page_add_new_anon_rmap(new_page, vma, address);
- 
-@@ -2272,6 +2273,7 @@ static int do_anonymous_page(struct mm_s
- 	if (!pte_none(*page_table))
- 		goto release;
- 	inc_mm_counter(mm, anon_rss);
-+	SetPageSwapBacked(page);
- 	lru_cache_add_active(page);
- 	page_add_new_anon_rmap(page, vma, address);
- 	set_pte_at(mm, address, page_table, entry);
-@@ -2413,6 +2415,7 @@ static int __do_fault(struct mm_struct *
- 		set_pte_at(mm, address, page_table, entry);
- 		if (anon) {
-                         inc_mm_counter(mm, anon_rss);
-+			SetPageSwapBacked(page);
-                         lru_cache_add_active(page);
-                         page_add_new_anon_rmap(page, vma, address);
- 		} else {
-Index: linux-2.6.26-rc5-mm2/mm/swap_state.c
-===================================================================
---- linux-2.6.26-rc5-mm2.orig/mm/swap_state.c	2008-06-10 10:46:29.000000000 -0400
-+++ linux-2.6.26-rc5-mm2/mm/swap_state.c	2008-06-10 13:34:48.000000000 -0400
-@@ -74,6 +74,7 @@ int add_to_swap_cache(struct page *page,
- 	BUG_ON(!PageLocked(page));
- 	BUG_ON(PageSwapCache(page));
- 	BUG_ON(PagePrivate(page));
-+	BUG_ON(!PageSwapBacked(page));
- 	error = radix_tree_preload(gfp_mask);
- 	if (!error) {
- 		write_lock_irq(&swapper_space.tree_lock);
-@@ -296,6 +297,7 @@ struct page *read_swap_cache_async(swp_e
- 		 * May fail (-ENOMEM) if radix-tree node allocation failed.
- 		 */
- 		SetPageLocked(new_page);
-+		SetPageSwapBacked(new_page);
- 		err = add_to_swap_cache(new_page, entry, gfp_mask & GFP_KERNEL);
- 		if (!err) {
- 			/*
-@@ -305,6 +307,7 @@ struct page *read_swap_cache_async(swp_e
- 			swap_readpage(NULL, new_page);
- 			return new_page;
- 		}
-+		ClearPageSwapBacked(new_page);
- 		ClearPageLocked(new_page);
- 		swap_free(entry);
- 	} while (err != -ENOMEM);
-Index: linux-2.6.26-rc5-mm2/mm/migrate.c
-===================================================================
---- linux-2.6.26-rc5-mm2.orig/mm/migrate.c	2008-06-10 13:18:58.000000000 -0400
-+++ linux-2.6.26-rc5-mm2/mm/migrate.c	2008-06-10 13:34:48.000000000 -0400
-@@ -564,6 +564,8 @@ static int move_to_new_page(struct page 
- 	/* Prepare mapping for the new page.*/
- 	newpage->index = page->index;
- 	newpage->mapping = page->mapping;
-+	if (PageSwapBacked(page))
-+		SetPageSwapBacked(newpage);
- 
- 	mapping = page_mapping(page);
- 	if (!mapping)
+ drivers/base/node.c |    6 ++++++
+ fs/proc/proc_misc.c |    6 ++++++
+ mm/memcontrol.c     |    6 ++++++
+ mm/page_alloc.c     |   16 +++++++++++++++-
+ mm/vmstat.c         |    3 +++
+ 5 files changed, 36 insertions(+), 1 deletion(-)
+
 Index: linux-2.6.26-rc5-mm2/mm/page_alloc.c
 ===================================================================
---- linux-2.6.26-rc5-mm2.orig/mm/page_alloc.c	2008-06-10 13:18:26.000000000 -0400
-+++ linux-2.6.26-rc5-mm2/mm/page_alloc.c	2008-06-10 13:34:48.000000000 -0400
-@@ -246,6 +246,7 @@ static void bad_page(struct page *page)
- 			1 << PG_slab    |
- 			1 << PG_swapcache |
- 			1 << PG_writeback |
-+			1 << PG_swapbacked |
- 			1 << PG_buddy );
- 	set_page_count(page, 0);
- 	reset_page_mapcount(page);
-@@ -477,6 +478,8 @@ static inline int free_pages_check(struc
- 		bad_page(page);
- 	if (PageDirty(page))
- 		__ClearPageDirty(page);
-+	if (PageSwapBacked(page))
-+		__ClearPageSwapBacked(page);
- 	/*
- 	 * For now, we report if PG_reserved was found set, but do not
- 	 * clear it, and do not free the page.  But we shall soon need
-@@ -627,6 +630,7 @@ static int prep_new_page(struct page *pa
- 			1 << PG_swapcache |
- 			1 << PG_writeback |
- 			1 << PG_reserved |
-+			1 << PG_swapbacked |
- 			1 << PG_buddy ))))
- 		bad_page(page);
+--- linux-2.6.26-rc5-mm2.orig/mm/page_alloc.c	2008-06-10 22:13:37.000000000 -0400
++++ linux-2.6.26-rc5-mm2/mm/page_alloc.c	2008-06-10 22:36:56.000000000 -0400
+@@ -1844,12 +1844,20 @@ void show_free_areas(void)
+ 	}
  
+ 	printk("Active_anon:%lu active_file:%lu inactive_anon%lu\n"
+-		" inactive_file:%lu dirty:%lu writeback:%lu unstable:%lu\n"
++		" inactive_file:%lu"
++//TODO:  check/adjust line lengths
++#ifdef CONFIG_UNEVICTABLE_LRU
++		" unevictable:%lu"
++#endif
++		" dirty:%lu writeback:%lu unstable:%lu\n"
+ 		" free:%lu slab:%lu mapped:%lu pagetables:%lu bounce:%lu\n",
+ 		global_page_state(NR_ACTIVE_ANON),
+ 		global_page_state(NR_ACTIVE_FILE),
+ 		global_page_state(NR_INACTIVE_ANON),
+ 		global_page_state(NR_INACTIVE_FILE),
++#ifdef CONFIG_UNEVICTABLE_LRU
++		global_page_state(NR_UNEVICTABLE),
++#endif
+ 		global_page_state(NR_FILE_DIRTY),
+ 		global_page_state(NR_WRITEBACK),
+ 		global_page_state(NR_UNSTABLE_NFS),
+@@ -1876,6 +1884,9 @@ void show_free_areas(void)
+ 			" inactive_anon:%lukB"
+ 			" active_file:%lukB"
+ 			" inactive_file:%lukB"
++#ifdef CONFIG_UNEVICTABLE_LRU
++			" unevictable:%lukB"
++#endif
+ 			" present:%lukB"
+ 			" pages_scanned:%lu"
+ 			" all_unreclaimable? %s"
+@@ -1889,6 +1900,9 @@ void show_free_areas(void)
+ 			K(zone_page_state(zone, NR_INACTIVE_ANON)),
+ 			K(zone_page_state(zone, NR_ACTIVE_FILE)),
+ 			K(zone_page_state(zone, NR_INACTIVE_FILE)),
++#ifdef CONFIG_UNEVICTABLE_LRU
++			K(zone_page_state(zone, NR_UNEVICTABLE)),
++#endif
+ 			K(zone->present_pages),
+ 			zone->pages_scanned,
+ 			(zone_is_all_unreclaimable(zone) ? "yes" : "no")
+Index: linux-2.6.26-rc5-mm2/mm/vmstat.c
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/mm/vmstat.c	2008-06-10 22:13:33.000000000 -0400
++++ linux-2.6.26-rc5-mm2/mm/vmstat.c	2008-06-10 22:36:56.000000000 -0400
+@@ -606,6 +606,9 @@ static const char * const vmstat_text[] 
+ 	"nr_active_anon",
+ 	"nr_inactive_file",
+ 	"nr_active_file",
++#ifdef CONFIG_UNEVICTABLE_LRU
++	"nr_unevictable",
++#endif
+ 	"nr_anon_pages",
+ 	"nr_mapped",
+ 	"nr_file_pages",
+Index: linux-2.6.26-rc5-mm2/drivers/base/node.c
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/drivers/base/node.c	2008-06-10 22:13:33.000000000 -0400
++++ linux-2.6.26-rc5-mm2/drivers/base/node.c	2008-06-10 22:37:14.000000000 -0400
+@@ -67,6 +67,9 @@ static ssize_t node_read_meminfo(struct 
+ 		       "Node %d Inactive(anon): %8lu kB\n"
+ 		       "Node %d Active(file):   %8lu kB\n"
+ 		       "Node %d Inactive(file): %8lu kB\n"
++#ifdef CONFIG_UNEVICTABLE_LRU
++		       "Node %d Noreclaim:      %8lu kB\n"
++#endif
+ #ifdef CONFIG_HIGHMEM
+ 		       "Node %d HighTotal:      %8lu kB\n"
+ 		       "Node %d HighFree:       %8lu kB\n"
+@@ -96,6 +99,9 @@ static ssize_t node_read_meminfo(struct 
+ 		       nid, node_page_state(nid, NR_INACTIVE_ANON),
+ 		       nid, node_page_state(nid, NR_ACTIVE_FILE),
+ 		       nid, node_page_state(nid, NR_INACTIVE_FILE),
++#ifdef CONFIG_UNEVICTABLE_LRU
++		       nid, node_page_state(nid, NR_UNEVICTABLE),
++#endif
+ #ifdef CONFIG_HIGHMEM
+ 		       nid, K(i.totalhigh),
+ 		       nid, K(i.freehigh),
+Index: linux-2.6.26-rc5-mm2/fs/proc/proc_misc.c
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/fs/proc/proc_misc.c	2008-06-10 22:13:33.000000000 -0400
++++ linux-2.6.26-rc5-mm2/fs/proc/proc_misc.c	2008-06-10 22:36:56.000000000 -0400
+@@ -175,6 +175,9 @@ static int meminfo_read_proc(char *page,
+ 		"Inactive(anon): %8lu kB\n"
+ 		"Active(file):   %8lu kB\n"
+ 		"Inactive(file): %8lu kB\n"
++#ifdef CONFIG_UNEVICTABLE_LRU
++		"Unevictable:    %8lu kB\n"
++#endif
+ #ifdef CONFIG_HIGHMEM
+ 		"HighTotal:      %8lu kB\n"
+ 		"HighFree:       %8lu kB\n"
+@@ -210,6 +213,9 @@ static int meminfo_read_proc(char *page,
+ 		K(pages[LRU_INACTIVE_ANON]),
+ 		K(pages[LRU_ACTIVE_FILE]),
+ 		K(pages[LRU_INACTIVE_FILE]),
++#ifdef CONFIG_UNEVICTABLE_LRU
++		K(pages[LRU_UNEVICTABLE]),
++#endif
+ #ifdef CONFIG_HIGHMEM
+ 		K(i.totalhigh),
+ 		K(i.freehigh),
+Index: linux-2.6.26-rc5-mm2/mm/memcontrol.c
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/mm/memcontrol.c	2008-06-10 22:13:37.000000000 -0400
++++ linux-2.6.26-rc5-mm2/mm/memcontrol.c	2008-06-10 22:13:38.000000000 -0400
+@@ -930,6 +930,7 @@ static int mem_control_stat_show(struct 
+ 	{
+ 		unsigned long active_anon, inactive_anon;
+ 		unsigned long active_file, inactive_file;
++		unsigned long unevictable;
+ 
+ 		inactive_anon = mem_cgroup_get_all_zonestat(mem_cont,
+ 						LRU_INACTIVE_ANON);
+@@ -939,10 +940,15 @@ static int mem_control_stat_show(struct 
+ 						LRU_INACTIVE_FILE);
+ 		active_file = mem_cgroup_get_all_zonestat(mem_cont,
+ 						LRU_ACTIVE_FILE);
++		unevictable = mem_cgroup_get_all_zonestat(mem_cont,
++							LRU_UNEVICTABLE);
++
+ 		cb->fill(cb, "active_anon", (active_anon) * PAGE_SIZE);
+ 		cb->fill(cb, "inactive_anon", (inactive_anon) * PAGE_SIZE);
+ 		cb->fill(cb, "active_file", (active_file) * PAGE_SIZE);
+ 		cb->fill(cb, "inactive_file", (inactive_file) * PAGE_SIZE);
++		cb->fill(cb, "unevictable", unevictable * PAGE_SIZE);
++
+ 	}
+ 	return 0;
+ }
 
 -- 
 All Rights Reversed
