@@ -1,89 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbYFKWrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758160AbYFKWu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758051AbYFKWrb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 18:47:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbYFKWrW
+	id S1758160AbYFKWu4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 18:50:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260AbYFKWus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 18:47:22 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:7370 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753117AbYFKWrV (ORCPT
+	Wed, 11 Jun 2008 18:50:48 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:46008 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750737AbYFKWus (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 18:47:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=N1atSZ4jVgxfQ3E42g79nCxSfvIKMqt12IsK7Mjv2n8/52AF9TDmLFpvVIpolEA+xG
-         fdawu85d35hH/7VaZIhMO70Oab3JRfmkrFa7KLArSOI0Og0JLWUs/HOapmUWDKdSguaF
-         Evyv8emnDG3TX/hDzkL2mJFRtm0JxmfzadWVs=
-Message-ID: <485055FF.9020500@gmail.com>
-Date: Thu, 12 Jun 2008 00:47:27 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Swiftdove 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: balbir@linux.vnet.ibm.com, linux-mm@kvack.org, skumar@linux.vnet.ibm.com,
-       yamamoto@valinux.co.jp, menage@google.com, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, xemul@openvz.org,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [-mm][PATCH 2/4] Setup the memrlimit controller (v5)
-References: <20080521152921.15001.65968.sendpatchset@localhost.localdomain>	<20080521152948.15001.39361.sendpatchset@localhost.localdomain>	<4850070F.6060305@gmail.com>	<20080611121510.d91841a3.akpm@linux-foundation.org>	<485032C8.4010001@gmail.com> <20080611134323.936063d3.akpm@linux-foundation.org>
-In-Reply-To: <20080611134323.936063d3.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+	Wed, 11 Jun 2008 18:50:48 -0400
+Date: Wed, 11 Jun 2008 15:42:28 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: balbir@linux.vnet.ibm.com, menage@google.com, matt@bluehost.com,
+       roberto@unbit.it, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] i/o bandwidth controller documentation
+Message-Id: <20080611154228.ef269ff2.randy.dunlap@oracle.com>
+In-Reply-To: <1212791250-32320-2-git-send-email-righi.andrea@gmail.com>
+References: <1212791250-32320-2-git-send-email-righi.andrea@gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->> At least we could add something like:
->>
->> #ifdef CONFIG_32BIT
->> #define PAGE_ALIGN64(addr) (((((addr)+PAGE_SIZE-1))>>PAGE_SHIFT)<<PAGE_SHIFT)
->> #else
->> #define PAGE_ALIGN64(addr) PAGE_ALIGN(addr)
->> #endif
->>
->> But IMHO the single PAGE_ALIGN64() implementation is more clear.
+On Sat,  7 Jun 2008 00:27:28 +0200 Andrea Righi wrote:
+
+> Documentation of the block device I/O bandwidth controller: description, usage,
+> advantages and design.
 > 
-> No, we should just fix PAGE_ALIGN.  It should work correctly when
-> passed a long-long.  Otherwse it's just a timebomb.
+> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+> ---
+>  Documentation/controllers/io-throttle.txt |  150 +++++++++++++++++++++++++++++
+>  1 files changed, 150 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/controllers/io-throttle.txt
 > 
-> This:
-> 
-> #define PAGE_ALIGN(addr) ({				\
-> 	typeof(addr) __size = PAGE_SIZE;		\
-> 	typeof(addr) __mask = PAGE_MASK;		\
-> 	(addr + __size - 1) & __mask;			\
-> })
-> 
-> (with a suitable comment) does what we want.  I didn't check to see
-> whether this causes the compiler to generate larger code, but it
-> shouldn't.
-> 
+> diff --git a/Documentation/controllers/io-throttle.txt b/Documentation/controllers/io-throttle.txt
+> new file mode 100644
+> index 0000000..5373fa8
+> --- /dev/null
+> +++ b/Documentation/controllers/io-throttle.txt
+> @@ -0,0 +1,150 @@
+> +
+> +               Block device I/O bandwidth controller
+> +
+> +1. Description
+> +
+> +This controller allows to limit the I/O bandwidth of specific block devices for
+> +specific process containers (cgroups) imposing additional delays on I/O
+> +requests for those processes that exceed the limits defined in the control
+> +group filesystem.
+> +
+> +Bandwidth limiting rules offer better control over QoS with respect to priority
+> +or weight-based solutions that only give information about applications'
+> +relative performance requirements.
+> +
+> +The goal of the I/O bandwidth controller is to improve performance
+> +predictability and QoS of the different control groups sharing the same block
+> +devices.
+> +
+> +NOTE: if you're looking for a way to improve the overall throughput of the
+> +system probably you should use a different solution.
+> +
+> +2. User Interface
+> +
+> +A new I/O bandwidth limitation rule is described using the file
+> +blockio.bandwidth.
+> +
+> +The same file can be used to set multiple rules for different block devices
+> +relatively to the same cgroup.
 
-No, it doesn't work. The problem seems to be in the PAGE_MASK definition
-(from include/asm-x86/page.h for example):
+   relative
 
-/* PAGE_SHIFT determines the page size */
-#define PAGE_SHIFT      12
-#define PAGE_SIZE       (_AC(1,UL) << PAGE_SHIFT)
-#define PAGE_MASK       (~(PAGE_SIZE-1))
+> +
+> +The syntax is the following:
+> +# /bin/echo DEVICE:BANDWIDTH > CGROUP/blockio.bandwidth
+> +
+> +- DEVICE is the name of the device the limiting rule is applied to,
+> +- BANDWIDTH is the maximum I/O bandwidth on DEVICE allowed by CGROUP,
+> +- CGROUP is the name of the limited process container.
 
-The "~" is performed on a 32-bit value, so everything in "and" with
-PAGE_MASK greater than 4GB will be truncated to the 32-bit boundary.
 
-What do you think about the following?
 
-#define PAGE_SIZE64 (1ULL << PAGE_SHIFT)
-#define PAGE_MASK64 (~(PAGE_SIZE64 - 1))
-
-#define PAGE_ALIGN(addr) ({					\
-	typeof(addr) __size = PAGE_SIZE;			\
-	typeof(addr) __ret = (addr) + __size - 1;		\
-	__ret > -1UL ? __ret & PAGE_MASK64 : __ret & PAGE_MASK;	\
-})
-
--Andrea
+Thanks.
+---
+~Randy
+"'Daemon' is an old piece of jargon from the UNIX operating system,
+where it referred to a piece of low-level utility software, a
+fundamental part of the operating system."
