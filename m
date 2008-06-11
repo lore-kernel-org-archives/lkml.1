@@ -1,67 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbYFKMXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753745AbYFKMgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754033AbYFKMXZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 08:23:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbYFKMXQ
+	id S1753745AbYFKMgM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 08:36:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbYFKMgA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 08:23:16 -0400
-Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:36880 "EHLO
-	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751056AbYFKMXP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 08:23:15 -0400
-Message-ID: <484FC3C4.3070800@lwfinger.net>
-Date: Wed, 11 Jun 2008 07:23:32 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Wed, 11 Jun 2008 08:36:00 -0400
+Received: from styx.suse.cz ([82.119.242.94]:46768 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750850AbYFKMf7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 08:35:59 -0400
+Date: Wed, 11 Jun 2008 14:35:57 +0200
+From: Jan Kara <jack@suse.cz>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: Andreas Dilger <adilger@sun.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       Jan Kara <jack@suse.cz>, sct@redhat.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jbacik@redhat.com, cmm@us.ibm.com,
+       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
+Subject: Re: [PATCH 1/5] jbd: strictly check for write errors on data
+	buffers
+Message-ID: <20080611123556.GA8121@duck.suse.cz>
+References: <20080604111911.c1fe09c6.akpm@linux-foundation.org> <20080604212202.GA8727@mit.edu> <20080604145848.e3da6f20.akpm@linux-foundation.org> <20080604225155.GB8727@mit.edu> <20080605093536.GE27370@duck.suse.cz> <4847CF07.1020904@hitachi.com> <20080605142948.GA25477@mit.edu> <20080605092006.ba7dceef.akpm@linux-foundation.org> <20080605184941.GX2961@webber.adilger.int> <484D0155.4040701@hitachi.com>
 MIME-Version: 1.0
-To: Michael Buesch <mb@bu3sch.de>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, vegard.nossum@gmail.com,
-       miles.lane@gmail.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: Re: BUG: NULL pointer dereference at 00000000 -- IP: [<f8e783d5>]
- :b43:b43_dma_mapping_error+0x16/0x155
-References: <200806101637.11473.mb@bu3sch.de> <200806101650.27180.mb@bu3sch.de> <20080611095844J.fujita.tomonori@lab.ntt.co.jp> <200806111205.10433.mb@bu3sch.de>
-In-Reply-To: <200806111205.10433.mb@bu3sch.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <484D0155.4040701@hitachi.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Buesch wrote:
-> On Wednesday 11 June 2008 02:58:44 FUJITA Tomonori wrote:
->> On Tue, 10 Jun 2008 16:50:26 +0200
->> Michael Buesch <mb@bu3sch.de> wrote:
->>
->>> On Tuesday 10 June 2008 16:42:41 Vegard Nossum wrote:
->>>> This change comes from
->>>>
->>>> commit 353c409463ecba63c3a41a992d3f5fba935eada9
->>>> Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
->>>> Date:   Fri May 23 19:02:30 2008 +0000
->>>
->>> Ok, FUJITA Tomonori, please make sure a patch like the following goes
->>> into the same trees that you submitted commit 353c409 to.
->>> Also make sure to check b43legacy. I _guess_ you might have added
->>> the same bug there.
->> Ah, sorry about the bug.
->>
->> From a quick look, mainline needs the same fix too?
->>
->> b43_dma_mapping_error calls unmap_descbuffer() on the failure, which
->> assumes that ring->dev is set up properly.
+On Mon 09-06-08 19:09:25, Hidehiro Kawai wrote:
+> Andreas Dilger wrote:
+> > On Jun 05, 2008  09:20 -0700, Andrew Morton wrote:
 > 
-> Yeah ok. That's an unlikely error path.
-> The new bug is in the main path which will always trigger.
+> >>I guess we need to undo this.  And yes, propagating errors into AS_EIO
+> >>is the way.  I guess that's safe without holding lock_page(), as long
+> >>as the bh is pinned.
+> > 
+> > Something like the following instead if -EIO and journal abort:
+> > 
+> > 		if (!buffer_uptodate(bh)) {
+> > 			set_bit(AS_EIO, &bh->b_page->mapping->flags);
+> > 			SetPageError(bh->b_page);
+> > 		}
+> > 
+> > It seems end_buffer_async_write() does this already, but
+> > journal_do_submit_data() uses end_buffer_write_sync() and it does not
+> > do either of those operations.
 > 
-> Next time please send _any_ patch for review to me and to the wireless list.
-> Please tell me which trees this bug has been merged to. Is it already in
-> Linus' tree?
+> Thank you for your suggestion.  I wrote an additional patch to do
+> that below.  Please apply it as the 6th patch of this patch series.
+> 
+> BTW, I'm developing a patch which makes "abort the journal if a file
+> data buffer has an error" tunable.  I'll send it in another thread
+> because it's not a bug fix patch.
+> 
+> -- 
+> Hidehiro Kawai
+> Hitachi, Systems Development Laboratory
+> Linux Technology Center
+> 
+> 
+> Subject: JBD: don't abort if flushing file data failed
+> 
+> In ordered mode, it is not appropriate behavior to abort the journal
+> when we failed to write file data.  This patch calls printk()
+> instead of aborting the journal.  Additionally, set AS_EIO into
+> the address_space object of the buffer which is written out by
+> journal_do_submit_data() and failed so that fsync() can get -EIO.
+> 
+> Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+> ---
+>  fs/jbd/commit.c |   12 +++++++++---
+>  1 file changed, 9 insertions(+), 3 deletions(-)
+> 
+> Index: linux-2.6.26-rc4/fs/jbd/commit.c
+> ===================================================================
+> --- linux-2.6.26-rc4.orig/fs/jbd/commit.c
+> +++ linux-2.6.26-rc4/fs/jbd/commit.c
+> @@ -432,8 +432,11 @@ void journal_commit_transaction(journal_
+>  			wait_on_buffer(bh);
+>  			spin_lock(&journal->j_list_lock);
+>  		}
+> -		if (unlikely(!buffer_uptodate(bh)))
+> +		if (unlikely(!buffer_uptodate(bh))) {
+> +			set_bit(AS_EIO, &bh->b_page->mapping->flags);
+> +			SetPageError(bh->b_page);
+>  			err = -EIO;
+> +		}
+  Actually, you should be more careful here because if the data buffer has
+been truncated in the currently running transaction, it can happen that
+b_page->mapping is NULL. It is a question how to safely access
+page->mapping - probably you'll need page lock for that...
 
-The equivalent line in Linus's tree is "if 
-(unlikely(dma_mapping_error(addr)))", thus the error has not reached 
-mainline (yet?).
+>  		if (!inverted_lock(journal, bh)) {
+>  			put_bh(bh);
+>  			spin_lock(&journal->j_list_lock);
+> @@ -452,8 +455,11 @@ void journal_commit_transaction(journal_
+>  	}
+>  	spin_unlock(&journal->j_list_lock);
+>  
+> -	if (err)
+> -		journal_abort(journal, err);
+> +	if (err) {
+> +		printk(KERN_WARNING
+> +		       "JBD: Detected IO errors during flushing file data\n");
+> +		err = 0;
+> +	}
+>  
+>  	journal_write_revoke_records(journal, commit_transaction);
 
-Larry
-
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
