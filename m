@@ -1,48 +1,39 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754545AbYFKKhW (ORCPT <rfc822;ralf@linux-mips.org>);
-	Wed, 11 Jun 2008 06:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbYFKKhE
+	id S1755260AbYFKLYg (ORCPT <rfc822;ralf@linux-mips.org>);
+	Wed, 11 Jun 2008 07:24:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbYFKLYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 06:37:04 -0400
-Received: from ip189.mtgcontacts.com ([76.164.237.189]:34165 "HELO
-	ip189.mtgcontacts.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752020AbYFKKhD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 06:37:03 -0400
-Date: Wed, 11 Jun 2008 03:34:05 -0700
-From: "Elizabeth Bailey" <elizbailey25@mtgcontacts.com>
-To: linux-kernel@vger.kernel.org
-Subject: 6/20/08 event 
+	Wed, 11 Jun 2008 07:24:23 -0400
+Received: from tomts33.bellnexxia.net ([209.226.175.107]:33098 "EHLO
+	tomts33-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750904AbYFKLYX convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 07:24:23 -0400
+Message-Id: <6t0pti$1fdh2t@toip35-bus.srvr.bell.ca>
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgpbAK9QT0jR4q+H/2dsb2JhbACKEQGHAJpZgRg
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [201.91.135.204]
+From: <upshall-george@nf.sympatico.ca>
+Reply-To: mrcollinspowell@gmail.co
+To: <info@winner.com>
+Subject: File You Claim
+Date: Wed, 11 Jun 2008 7:24:20 -0400
 MIME-Version: 1.0
-X-Mailer: ais v8.3.3.1000.5359131
-Reply-To: r.389.5359131@mtgcontacts.com
-Message-Id: <20080611040002.nakmkmiqot@mtgcontacts.com>
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754545AbYFKKhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755260AbYFKLYg@vger.kernel.org>
 
-Brokers, LOs, Realtors agents, Investors and Lenders are welcome, this is not for the general public.
-
-please go:
-
-http://industryconference20th.com/
-
-
-or call today: 858 736 7788 
-
-
-to be taken of our list please: 
-http://industryconference20th.com/uns/ or, send us a letter to: 
-PBMSII, 5451 Weuery Ave., La JoIIa, CA 92037
-
-
---------------------------------------------
-. 
-
-
-
-
-
+You won =A31,000,000 GBP.Get back to us via return email with your Name=
+,and Address\Country and your Phone Number for more information on how =
+you won and the delivery of your won prize Email:mr.collinspowell@yahoo=
+.co.uk
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
