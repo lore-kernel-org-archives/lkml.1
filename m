@@ -1,42 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764922AbYFKRoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765011AbYFKRpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764922AbYFKRoz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 13:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763656AbYFKRop
+	id S1765011AbYFKRpV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 13:45:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763883AbYFKRpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 13:44:45 -0400
-Received: from vigor.karmaclothing.net ([217.169.26.28]:42318 "EHLO
-	vigor.karmaclothing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753797AbYFKRoo (ORCPT
+	Wed, 11 Jun 2008 13:45:04 -0400
+Received: from casper.infradead.org ([85.118.1.10]:46272 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763656AbYFKRpB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 13:44:44 -0400
-Date: Wed, 11 Jun 2008 18:44:15 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] [MIPS] The tickcount per-cpu variable can become
-	static
-Message-ID: <20080611174415.GE30400@linux-mips.org>
-References: <12120730323761-git-send-email-dmitri.vorobiev@movial.fi> <12120730321843-git-send-email-dmitri.vorobiev@movial.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <12120730321843-git-send-email-dmitri.vorobiev@movial.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 11 Jun 2008 13:45:01 -0400
+Date: Wed, 11 Jun 2008 10:44:46 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: markh@compro.net
+Cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       Jan Engelhardt <jengelh@medozas.de>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       "solsTiCe d'Hiver" <solstice.dhiver@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: no cpu MHz in /proc/cpuinfo on 2.6.25.4-rt6
+Message-ID: <20080611104446.3b0ce2d9@infradead.org>
+In-Reply-To: <4850046C.4070602@compro.net>
+References: <200806102152.23286.solstice.dhiver@gmail.com>
+	<20080610131314.5f7069e6@infradead.org>
+	<484EE71A.40002@intel.com>
+	<alpine.LNX.1.10.0806111440480.20733@fbirervta.pbzchgretzou.qr>
+	<20080611063639.5e1eea5b@infradead.org>
+	<alpine.LNX.1.10.0806111552090.20733@fbirervta.pbzchgretzou.qr>
+	<20080611065816.6cff290d@infradead.org>
+	<Pine.LNX.4.61.0806111006560.23096@chaos.analogic.com>
+	<20080611083644.32afc823@infradead.org>
+	<4850046C.4070602@compro.net>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 29, 2008 at 05:57:12PM +0300, Dmitri Vorobiev wrote:
+On Wed, 11 Jun 2008 12:59:24 -0400
+Mark Hounschell <markh@compro.net> wrote:
 
-> In arch/mips/mips-boards/generic/time.c, the `tickcount' per-cpu
-> variable is needlessly defined global, and this patch makes it
-> static.
+> Arjan van de Ven wrote:
+> > On Wed, 11 Jun 2008 10:14:50 -0400
+> > "linux-os (Dick Johnson)" <linux-os@analogic.com> wrote:
+> > 
+> >> I use CPU frequency to scale the output of rdtsc when timing
+> >> routines being optimized.
+> > 
+> > Ok this is broken in various really bad ways.
+> > 
+> > 1) CPU frequency is very fluctuating, it changes in principle every
+> > millisecond or more
 > 
-> Noticed by sparse. Tested by booting a Qemu-emulated Malta board
-> up to the shell prompt.
+> I'm curious. What do you mean by "in principle"? And why will it
+> change?
 
-Patch is ok - except it tries to fix a piece of code which I've already
-removed so I'll drop this one.
+ondemand governor will change the cpu frequency dynamically all the
+time.
+the cpu itself has a dynamic range in which it operates (at least on
+cpus that support Intel Dynamic Acceleration technology, IDA)
 
-  Ralf
+> 
+> > 2) the rdtsc "frequency" is conceptually unrelated to cpu
+> > frequency. In fact, you'll be hard-pressed to buy a system today
+> > where this relationship works....
+> > 
+> 
+> And what do you mean by "conceptually unrelated to cpu frequency"?
+> Is it not the clock freq that is driving the cpu and the freq at which
+> the tsc is incremented?
+
+no it is not that... at all.
+the tsc comes from an entirely different clock, and on anything you can
+buy today from AMD or Intel (or the last year for that matter), it's
+fixed frequency (except in idle) irrespective of the frequency the CPU
+is operating at!
+it's a "time stamp counter" not a "cpu cycle counter". You can run
+instructions faster than the tsc increment or slower. Or sometimes at
+the same rate.
+Which it is depends on what cpufreq/ondemand are doing and how active
+IDA is.
+
+
+
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
