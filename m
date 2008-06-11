@@ -1,64 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757455AbYFKKF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbYFKKHE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757455AbYFKKF4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 06:05:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbYFKKFq
+	id S1757142AbYFKKHE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 06:07:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbYFKKGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 06:05:46 -0400
-Received: from vs166246.vserver.de ([62.75.166.246]:58425 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751199AbYFKKFp (ORCPT
+	Wed, 11 Jun 2008 06:06:53 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:56950 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750995AbYFKKGw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 06:05:45 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: BUG: NULL pointer dereference at 00000000 -- IP: [<f8e783d5>] :b43:b43_dma_mapping_error+0x16/0x155
-Date: Wed, 11 Jun 2008 12:05:10 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: vegard.nossum@gmail.com, miles.lane@gmail.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-References: <200806101637.11473.mb@bu3sch.de> <200806101650.27180.mb@bu3sch.de> <20080611095844J.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080611095844J.fujita.tomonori@lab.ntt.co.jp>
+	Wed, 11 Jun 2008 06:06:52 -0400
+Date: Wed, 11 Jun 2008 11:06:47 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: rui.zhang@intel.com
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] Clean up thermal API
+Message-ID: <20080611100647.GA20013@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806111205.10433.mb@bu3sch.de>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 June 2008 02:58:44 FUJITA Tomonori wrote:
-> On Tue, 10 Jun 2008 16:50:26 +0200
-> Michael Buesch <mb@bu3sch.de> wrote:
-> 
-> > On Tuesday 10 June 2008 16:42:41 Vegard Nossum wrote:
-> > > This change comes from
-> > > 
-> > > commit 353c409463ecba63c3a41a992d3f5fba935eada9
-> > > Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > > Date:   Fri May 23 19:02:30 2008 +0000
-> > 
-> > 
-> > Ok, FUJITA Tomonori, please make sure a patch like the following goes
-> > into the same trees that you submitted commit 353c409 to.
-> > Also make sure to check b43legacy. I _guess_ you might have added
-> > the same bug there.
-> 
-> Ah, sorry about the bug.
-> 
-> From a quick look, mainline needs the same fix too?
-> 
-> b43_dma_mapping_error calls unmap_descbuffer() on the failure, which
-> assumes that ring->dev is set up properly.
+The thermal layer passes temperatures around as strings. This is fine 
+for sysfs, but makes it hard to use them for other purposes in-kernel. 
+Change them to longs and do the string conversion in the sysfs-specific 
+code.
 
-Yeah ok. That's an unlikely error path.
-The new bug is in the main path which will always trigger.
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
 
-Next time please send _any_ patch for review to me and to the wireless list.
-Please tell me which trees this bug has been merged to. Is it already in
-Linus' tree?
+---
+
+diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+index 504385b..28b3782 100644
+--- a/drivers/acpi/thermal.c
++++ b/drivers/acpi/thermal.c
+@@ -886,7 +886,8 @@ static void acpi_thermal_check(void *data)
+ /* sys I/F for generic thermal sysfs support */
+ #define KELVIN_TO_MILLICELSIUS(t) (t * 100 - 273200)
+ 
+-static int thermal_get_temp(struct thermal_zone_device *thermal, char *buf)
++static int thermal_get_temp(struct thermal_zone_device *thermal, 
++			    unsigned long *temp)
+ {
+ 	struct acpi_thermal *tz = thermal->devdata;
+ 	int result;
+@@ -898,7 +899,8 @@ static int thermal_get_temp(struct thermal_zone_device *thermal, char *buf)
+ 	if (result)
+ 		return result;
+ 
+-	return sprintf(buf, "%ld\n", KELVIN_TO_MILLICELSIUS(tz->temperature));
++	*temp = KELVIN_TO_MILLICELSIUS(tz->temperature);
++	return 0;
+ }
+ 
+ static const char enabled[] = "kernel";
+@@ -982,7 +984,7 @@ static int thermal_get_trip_type(struct thermal_zone_device *thermal,
+ }
+ 
+ static int thermal_get_trip_temp(struct thermal_zone_device *thermal,
+-				 int trip, char *buf)
++				 int trip, unsigned long *temp)
+ {
+ 	struct acpi_thermal *tz = thermal->devdata;
+ 	int i;
+@@ -991,31 +993,40 @@ static int thermal_get_trip_temp(struct thermal_zone_device *thermal,
+ 		return -EINVAL;
+ 
+ 	if (tz->trips.critical.flags.valid) {
+-		if (!trip)
+-			return sprintf(buf, "%ld\n", KELVIN_TO_MILLICELSIUS(
+-				tz->trips.critical.temperature));
++		if (!trip) {
++			*temp = KELVIN_TO_MILLICELSIUS(
++				tz->trips.critical.temperature);
++			return 0;
++		}
++		
+ 		trip--;
+ 	}
+ 
+ 	if (tz->trips.hot.flags.valid) {
+-		if (!trip)
+-			return sprintf(buf, "%ld\n", KELVIN_TO_MILLICELSIUS(
+-					tz->trips.hot.temperature));
++		if (!trip) {
++			*temp = KELVIN_TO_MILLICELSIUS(
++				tz->trips.hot.temperature);
++			return 0;
++		}
+ 		trip--;
+ 	}
+ 
+ 	if (tz->trips.passive.flags.valid) {
+-		if (!trip)
+-			return sprintf(buf, "%ld\n", KELVIN_TO_MILLICELSIUS(
+-					tz->trips.passive.temperature));
++		if (!trip) {
++			*temp = KELVIN_TO_MILLICELSIUS(
++				tz->trips.passive.temperature);
++			return 0;
++		}
+ 		trip--;
+ 	}
+ 
+ 	for (i = 0; i < ACPI_THERMAL_MAX_ACTIVE &&
+ 		tz->trips.active[i].flags.valid; i++) {
+-		if (!trip)
+-			return sprintf(buf, "%ld\n", KELVIN_TO_MILLICELSIUS(
+-					tz->trips.active[i].temperature));
++		if (!trip) {
++			*temp = KELVIN_TO_MILLICELSIUS(
++				tz->trips.active[i].temperature);
++			return 0;
++		}
+ 		trip--;
+ 	}
+ 
+diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+index 6098787..c537a5b 100644
+--- a/drivers/thermal/thermal_sys.c
++++ b/drivers/thermal/thermal_sys.c
+@@ -104,11 +104,18 @@ static ssize_t
+ temp_show(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+ 	struct thermal_zone_device *tz = to_thermal_zone(dev);
++	long temperature;
++	int ret;
+ 
+ 	if (!tz->ops->get_temp)
+ 		return -EPERM;
+ 
+-	return tz->ops->get_temp(tz, buf);
++	ret = tz->ops->get_temp(tz,&temperature);
++
++	if (ret)
++		return ret;
++
++	return sprintf(buf,"%ld\n",temperature);
+ }
+ 
+ static ssize_t
+@@ -160,7 +167,8 @@ trip_point_temp_show(struct device *dev, struct device_attribute *attr,
+ 		     char *buf)
+ {
+ 	struct thermal_zone_device *tz = to_thermal_zone(dev);
+-	int trip;
++	int trip, ret;
++	long temperature;
+ 
+ 	if (!tz->ops->get_trip_temp)
+ 		return -EPERM;
+@@ -168,7 +176,12 @@ trip_point_temp_show(struct device *dev, struct device_attribute *attr,
+ 	if (!sscanf(attr->attr.name, "trip_point_%d_temp", &trip))
+ 		return -EINVAL;
+ 
+-	return tz->ops->get_trip_temp(tz, trip, buf);
++	ret = tz->ops->get_trip_temp(tz, trip, &temperature);
++
++	if (ret)
++		return ret;
++
++	return sprintf (buf, "%ld\n", temperature);
+ }
+ 
+ static DEVICE_ATTR(type, 0444, type_show, NULL);
+@@ -312,13 +325,20 @@ static DEVICE_ATTR(name, 0444, name_show, NULL);
+ static ssize_t
+ temp_input_show(struct device *dev, struct device_attribute *attr, char *buf)
+ {
++	long temperature;
++	int ret;
+ 	struct thermal_hwmon_attr *hwmon_attr
+ 			= container_of(attr, struct thermal_hwmon_attr, attr);
+ 	struct thermal_zone_device *tz
+ 			= container_of(hwmon_attr, struct thermal_zone_device,
+ 				       temp_input);
+ 
+-	return tz->ops->get_temp(tz, buf);
++	ret = tz->ops->get_temp(tz, &temperature);
++
++	if (ret)
++		return ret;
++
++	return sprintf(buf, "%ld\n", temperature);
+ }
+ 
+ static ssize_t
+@@ -330,8 +350,14 @@ temp_crit_show(struct device *dev, struct device_attribute *attr,
+ 	struct thermal_zone_device *tz
+ 			= container_of(hwmon_attr, struct thermal_zone_device,
+ 				       temp_crit);
++	long temperature;
++	int ret;
++
++	ret = tz->ops->get_trip_temp(tz, 0, &temperature);
++	if (ret)
++		return ret;
+ 
+-	return tz->ops->get_trip_temp(tz, 0, buf);
++	return sprintf(buf, "%ld\n", temperature);
+ }
+ 
+ 
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 06d3e6e..63e6619 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -36,11 +36,12 @@ struct thermal_zone_device_ops {
+ 		     struct thermal_cooling_device *);
+ 	int (*unbind) (struct thermal_zone_device *,
+ 		       struct thermal_cooling_device *);
+-	int (*get_temp) (struct thermal_zone_device *, char *);
++	int (*get_temp) (struct thermal_zone_device *, unsigned long *);
+ 	int (*get_mode) (struct thermal_zone_device *, char *);
+ 	int (*set_mode) (struct thermal_zone_device *, const char *);
+ 	int (*get_trip_type) (struct thermal_zone_device *, int, char *);
+-	int (*get_trip_temp) (struct thermal_zone_device *, int, char *);
++	int (*get_trip_temp) (struct thermal_zone_device *, int, 
++			      unsigned long *);
+ 	int (*get_crit_temp) (struct thermal_zone_device *, unsigned long *);
+ };
+ 
 
 -- 
-Greetings Michael.
+Matthew Garrett | mjg59@srcf.ucam.org
