@@ -1,26 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757861AbYFKWQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbYFKWUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757861AbYFKWQi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 18:16:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753037AbYFKWQa
+	id S1756020AbYFKWUs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 18:20:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbYFKWUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 18:16:30 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:38771 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752336AbYFKWQ2 (ORCPT
+	Wed, 11 Jun 2008 18:20:38 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:37703 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751155AbYFKWUh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 18:16:28 -0400
-Date: Wed, 11 Jun 2008 15:05:03 -0700
+	Wed, 11 Jun 2008 18:20:37 -0400
+Date: Wed, 11 Jun 2008 15:20:21 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org
-Subject: Re: x86_64 boot hang when CONFIG_NUMA=n
-Message-Id: <20080611150503.858641f8.randy.dunlap@oracle.com>
-In-Reply-To: <86802c440806062055j3431ef7cn72a92f2e0264d6ac@mail.gmail.com>
-References: <15271334.1212702611270.JavaMail.oracle@acsmt304.oracle.com>
-	<86802c440806052241q90bb2dcmef9e98f2e24291e8@mail.gmail.com>
-	<20080606084217.d725fe04.randy.dunlap@oracle.com>
-	<86802c440806062055j3431ef7cn72a92f2e0264d6ac@mail.gmail.com>
+To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Cc: jeff@garzick.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, e1000-dev@lists.sourceforge.net
+Subject: Re: [PATCH 1/2] [UPDATED] ixgbe: add LRO support
+Message-Id: <20080611152021.1f6515cb.randy.dunlap@oracle.com>
+In-Reply-To: <20080611221110.10978.82097.stgit@localhost.localdomain>
+References: <20080611221110.10978.82097.stgit@localhost.localdomain>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -34,81 +32,324 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Jun 2008 20:55:29 -0700 Yinghai Lu wrote:
+On Wed, 11 Jun 2008 15:14:17 -0700 Jeff Kirsher wrote:
 
-> On Fri, Jun 6, 2008 at 8:42 AM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > On Thu, 5 Jun 2008 22:41:01 -0700 Yinghai Lu wrote:
-> >
-> >> On Thu, Jun 5, 2008 at 2:50 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> >> > On 2.6.26-rc[2345], I am seeing a hang during boot with CONFIG_NUMA=n, but changing
-> >> > to CONFIG_NUMA=y allows successful boot.
-> >> >
-> >> > This is on a 4-way AMD64 (HP) server with 8 GB RAM.
-> >> >
-> >> > Using initcall_debug, the last output on a hang is from arch/x86/pci/k8-bus_64.c:
-> >> >
-> >> > calling  early_fill_mp_bus_info+0x0/0x7b2
-> >> > node 0 link 1: io port [1000, 3fff]
-> >> > node 1 link 2: io port [4000, ffff]
-> >> > TOM: 0000000080000000 aka 2048M
-> >> > node 0 link 1: mmio [e8000000, fddfffff]
-> >> > node 1 link 2: mmio [fde00000, fdffffff]
-> >> > node 0 link 1: mmio [80000000, 83ffffff]
-> >> > node 1 link 2: mmio [84000000, 8fffffff]
-> >> > node 0 link 1: mmio [a0000, bffff]
-> >> > TOM2: 0000000280000000 aka 10240M
-> >> > bus: [00,3f] on node 0 link 1
-> >> > bus: 00 index 0 io port: [0, 3fff]
-> >> > bus: 00 index 1 mmio: [90000000, fddfffff]
-> >> > bus: 00 index 2 mmio: [80000000, 83ffffff]
-> >> > bus: 00 index 3 mmio: [a0000, bffff]
-> >> > bus: 00 index 4 mmio: [fe000000, ffffffff]
-> >> > bus: 00 index 5 mmio: [280000000, fcffffffff]
-> >> > bus: [40,ff] on node 1 link 2
-> >> > bus: 40 index 0 io port: [4000, ffff]
-> >> > bus: 40 index 1 mmio: [fde00000, fdffffff]
-> >> >
-> >> >
-> >> > There should be an index 2 line printed next, like this slightly modifed for debug
-> >> > version does (with CONFIG_NUMA=y), or maybe the following line(s) just aren't
-> >> > making it to the (net)console log and some other initcall function is actually
-> >> > hanging:  (??)
-> >> >
-> >> > bus: [40,ff] on node 1 link 2
-> >> > bus: 40 index 0/3 io port: [4000, ffff]
-> >> > bus: 40 index 1/3 mmio: [fde00000, fdffffff]
-> >> > bus: 40 index 2/3 mmio: [84000000, 8fffffff]
-> >> > early_fill_mp_bus_info: done
-> >> >
-> >> >
-> >> > Has anyone seen something like this?  Any patches to test?
-> >> >
-> >> > The next initcall functions (on a working boot) are:
-> >> >
-> >> > calling  arch_kdebugfs_init+0x0/0x8
-> >> > initcall arch_kdebugfs_init+0x0/0x8 returned 0 after 0 msecs
-> >> > calling  mtrr_if_init+0x0/0x77
-> >> > initcall mtrr_if_init+0x0/0x77 returned 0 after 0 msecs
-> >> > calling  ffh_cstate_init+0x0/0x31
-> >> > initcall ffh_cstate_init+0x0/0x31 returned -1 after 0 msecs
-> >> > initcall ffh_cstate_init+0x0/0x31 returned with error code -1
-> >> > calling  acpi_pci_init+0x0/0x4a
-> >> > ACPI: bus type pci registered
-> >> > initcall acpi_pci_init+0x0/0x4a returned 0 after 0 msecs
-> >>
-> >> can you send out your config?
-> >
-> > Yes, sorry about omitting that.  Bad (not working) and good/working
-> > are attached.
-> >
 > 
-> can you check latest tip/master?
+> Support for in-kernel LRO with the ability to enable/disable via ethtool
+> based on comments from Ben Hutchings.
+> 
+> Signed-off-by: Mallikarjuna R Chilakala <mallikarjuna.chilakala@intel.com>
+> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> Signed-off-by: PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>
+> ---
+> 
+>  drivers/net/ixgbe/ixgbe.h         |    9 +++
+>  drivers/net/ixgbe/ixgbe_ethtool.c |   11 ++++
+>  drivers/net/ixgbe/ixgbe_main.c    |  111 ++++++++++++++++++++++++++++++-------
+>  3 files changed, 110 insertions(+), 21 deletions(-)
 
-It still hangs for me.
+Is there also a patch to drivers/net/Kconfig that makes IXGBE depend on INET?
+You can't just assume that the lro_* functions are always there....
 
-> I tried that with your bad config on server test servers. all work well.
 
-Can (or did) you try 2.6.26-rc5?
+> diff --git a/drivers/net/ixgbe/ixgbe.h b/drivers/net/ixgbe/ixgbe.h
+> index d981134..956914a 100644
+> --- a/drivers/net/ixgbe/ixgbe.h
+> +++ b/drivers/net/ixgbe/ixgbe.h
+> @@ -32,6 +32,7 @@
+>  #include <linux/types.h>
+>  #include <linux/pci.h>
+>  #include <linux/netdevice.h>
+> +#include <linux/inet_lro.h>
+>  
+>  #include "ixgbe_type.h"
+>  #include "ixgbe_common.h"
+> @@ -100,6 +101,9 @@
+>  #define IXGBE_TX_FLAGS_VLAN_MASK	0xffff0000
+>  #define IXGBE_TX_FLAGS_VLAN_SHIFT	16
+>  
+> +#define IXGBE_MAX_LRO_DESCRIPTORS       8
+> +#define IXGBE_MAX_LRO_AGGREGATE         32
+> +
+>  /* wrapper around a pointer to a socket buffer,
+>   * so a DMA handle can be stored along with the buffer */
+>  struct ixgbe_tx_buffer {
+> @@ -150,6 +154,8 @@ struct ixgbe_ring {
+>  	/* cpu for tx queue */
+>  	int cpu;
+>  #endif
+> +	struct net_lro_mgr lro_mgr;
+> +	bool lro_used;
+>  	struct ixgbe_queue_stats stats;
+>  	u8 v_idx; /* maps directly to the index for this ring in the hardware
+>  		   * vector array, can also be used for finding the bit in EICR
+> @@ -287,6 +293,9 @@ struct ixgbe_adapter {
+>  
+>  	unsigned long state;
+>  	u64 tx_busy;
+> +	u64 lro_aggregated;
+> +	u64 lro_flushed;
+> +	u64 lro_no_desc;
+>  };
+>  
+>  enum ixbge_state_t {
+> diff --git a/drivers/net/ixgbe/ixgbe_ethtool.c b/drivers/net/ixgbe/ixgbe_ethtool.c
+> index 4e46377..12990b1 100644
+> --- a/drivers/net/ixgbe/ixgbe_ethtool.c
+> +++ b/drivers/net/ixgbe/ixgbe_ethtool.c
+> @@ -90,6 +90,8 @@ static struct ixgbe_stats ixgbe_gstrings_stats[] = {
+>  	{"rx_header_split", IXGBE_STAT(rx_hdr_split)},
+>  	{"alloc_rx_page_failed", IXGBE_STAT(alloc_rx_page_failed)},
+>  	{"alloc_rx_buff_failed", IXGBE_STAT(alloc_rx_buff_failed)},
+> +	{"lro_aggregated", IXGBE_STAT(lro_aggregated)},
+> +	{"lro_flushed", IXGBE_STAT(lro_flushed)},
+>  };
+>  
+>  #define IXGBE_QUEUE_STATS_LEN \
+> @@ -787,6 +789,7 @@ static void ixgbe_get_ethtool_stats(struct net_device *netdev,
+>  	int stat_count = sizeof(struct ixgbe_queue_stats) / sizeof(u64);
+>  	int j, k;
+>  	int i;
+> +	u64 aggregated = 0, flushed = 0, no_desc = 0;
+>  
+>  	ixgbe_update_stats(adapter);
+>  	for (i = 0; i < IXGBE_GLOBAL_STATS_LEN; i++) {
+> @@ -801,11 +804,17 @@ static void ixgbe_get_ethtool_stats(struct net_device *netdev,
+>  		i += k;
+>  	}
+>  	for (j = 0; j < adapter->num_rx_queues; j++) {
+> +		aggregated += adapter->rx_ring[j].lro_mgr.stats.aggregated;
+> +		flushed += adapter->rx_ring[j].lro_mgr.stats.flushed;
+> +		no_desc += adapter->rx_ring[j].lro_mgr.stats.no_desc;
+>  		queue_stat = (u64 *)&adapter->rx_ring[j].stats;
+>  		for (k = 0; k < stat_count; k++)
+>  			data[i + k] = queue_stat[k];
+>  		i += k;
+>  	}
+> +	adapter->lro_aggregated = aggregated;
+> +	adapter->lro_flushed = flushed;
+> +	adapter->lro_no_desc = no_desc;
+>  }
+>  
+>  static void ixgbe_get_strings(struct net_device *netdev, u32 stringset,
+> @@ -973,6 +982,8 @@ static struct ethtool_ops ixgbe_ethtool_ops = {
+>  	.get_ethtool_stats      = ixgbe_get_ethtool_stats,
+>  	.get_coalesce           = ixgbe_get_coalesce,
+>  	.set_coalesce           = ixgbe_set_coalesce,
+> +	.get_flags              = ethtool_op_get_flags,
+> +	.set_flags              = ethtool_op_set_flags,
+>  };
+>  
+>  void ixgbe_set_ethtool_ops(struct net_device *netdev)
+> diff --git a/drivers/net/ixgbe/ixgbe_main.c b/drivers/net/ixgbe/ixgbe_main.c
+> index 7b85922..04c6482 100644
+> --- a/drivers/net/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ixgbe/ixgbe_main.c
+> @@ -389,24 +389,39 @@ static int __ixgbe_notify_dca(struct device *dev, void *data)
+>   * ixgbe_receive_skb - Send a completed packet up the stack
+>   * @adapter: board private structure
+>   * @skb: packet to send up
+> - * @is_vlan: packet has a VLAN tag
+> - * @tag: VLAN tag from descriptor
+> + * @status: hardware indication of status of receive
+> + * @rx_ring: rx descriptor ring (for a specific queue) to setup
+> + * @rx_desc: rx descriptor
+>   **/
+>  static void ixgbe_receive_skb(struct ixgbe_adapter *adapter,
+> -			      struct sk_buff *skb, bool is_vlan,
+> -			      u16 tag)
+> +			      struct sk_buff *skb, u8 status,
+> +			      struct ixgbe_ring *ring,
+> +                              union ixgbe_adv_rx_desc *rx_desc)
+>  {
+> -	if (!(adapter->flags & IXGBE_FLAG_IN_NETPOLL)) {
+> -		if (adapter->vlgrp && is_vlan)
+> -			vlan_hwaccel_receive_skb(skb, adapter->vlgrp, tag);
+> -		else
+> -			netif_receive_skb(skb);
+> -	} else {
+> +	bool is_vlan = (status & IXGBE_RXD_STAT_VP);
+> +	u16 tag = le16_to_cpu(rx_desc->wb.upper.vlan);
+>  
+> +	if (adapter->netdev->features & NETIF_F_LRO &&
+> +	    skb->ip_summed == CHECKSUM_UNNECESSARY) {
+>  		if (adapter->vlgrp && is_vlan)
+> -			vlan_hwaccel_rx(skb, adapter->vlgrp, tag);
+> +			lro_vlan_hwaccel_receive_skb(&ring->lro_mgr, skb,
+> +			                             adapter->vlgrp, tag,
+> +			                             rx_desc);
+>  		else
+> -			netif_rx(skb);
+> +			lro_receive_skb(&ring->lro_mgr, skb, rx_desc);
+> +		ring->lro_used = true;
+> +	} else {
+> +		if (!(adapter->flags & IXGBE_FLAG_IN_NETPOLL)) {
+> +			if (adapter->vlgrp && is_vlan)
+> +				vlan_nw_accel_receive_skb(skb, adapter->vlgrp, tag);
+> +			else
+> +				netif_receive_skb(skb);
+> +		} else {
+> +			if (adapter->vlgrp && is_vlan)
+> +				vlan_hwaccel_rx(skb, adapter->vlgrp, tag);
+> +			else
+> +				netif_rx(skb);
+> +		}
+>  	}
+>  }
+>  
+> @@ -546,8 +561,8 @@ static bool ixgbe_clean_rx_irq(struct ixgbe_adapter *adapter,
+>  	struct sk_buff *skb;
+>  	unsigned int i;
+>  	u32 upper_len, len, staterr;
+> -	u16 hdr_info, vlan_tag;
+> -	bool is_vlan, cleaned = false;
+> +	u16 hdr_info;
+> +	bool cleaned = false;
+>  	int cleaned_count = 0;
+>  	unsigned int total_rx_bytes = 0, total_rx_packets = 0;
+>  
+> @@ -556,8 +571,6 @@ static bool ixgbe_clean_rx_irq(struct ixgbe_adapter *adapter,
+>  	rx_desc = IXGBE_RX_DESC_ADV(*rx_ring, i);
+>  	staterr = le32_to_cpu(rx_desc->wb.upper.status_error);
+>  	rx_buffer_info = &rx_ring->rx_buffer_info[i];
+> -	is_vlan = (staterr & IXGBE_RXD_STAT_VP);
+> -	vlan_tag = le16_to_cpu(rx_desc->wb.upper.vlan);
+>  
+>  	while (staterr & IXGBE_RXD_STAT_DD) {
+>  		if (*work_done >= work_to_do)
+> @@ -635,7 +648,7 @@ static bool ixgbe_clean_rx_irq(struct ixgbe_adapter *adapter,
+>  		total_rx_packets++;
+>  
+>  		skb->protocol = eth_type_trans(skb, netdev);
+> -		ixgbe_receive_skb(adapter, skb, is_vlan, vlan_tag);
+> +		ixgbe_receive_skb(adapter, skb, staterr, rx_ring, rx_desc);
+>  		netdev->last_rx = jiffies;
+>  
+>  next_desc:
+> @@ -652,8 +665,11 @@ next_desc:
+>  		rx_buffer_info = next_buffer;
+>  
+>  		staterr = le32_to_cpu(rx_desc->wb.upper.status_error);
+> -		is_vlan = (staterr & IXGBE_RXD_STAT_VP);
+> -		vlan_tag = le16_to_cpu(rx_desc->wb.upper.vlan);
+> +	}
+> +
+> +	if (rx_ring->lro_used) {
+> +		lro_flush_all(&rx_ring->lro_mgr);
+> +		rx_ring->lro_used = false;
+>  	}
+>  
+>  	rx_ring->next_to_clean = i;
+> @@ -1382,6 +1398,33 @@ static void ixgbe_configure_tx(struct ixgbe_adapter *adapter)
+>  
+>  #define IXGBE_SRRCTL_BSIZEHDRSIZE_SHIFT			2
+>  /**
+> + * ixgbe_get_skb_hdr - helper function for LRO header processing
+> + * @skb: pointer to sk_buff to be added to LRO packet
+> + * @iphdr: pointer to tcp header structure
+> + * @tcph: pointer to tcp header structure
+> + * @hdr_flags: pointer to header flags
+> + * @priv: private data
+> + **/
+> +static int ixgbe_get_skb_hdr(struct sk_buff *skb, void **iphdr, void **tcph,
+> +                             u64 *hdr_flags, void *priv)
+> +{
+> +	union ixgbe_adv_rx_desc *rx_desc = priv;
+> +
+> +	/* Verify that this is a valid IPv4 TCP packet */
+> +	if (!(rx_desc->wb.lower.lo_dword.pkt_info &
+> +	    (IXGBE_RXDADV_PKTTYPE_IPV4 | IXGBE_RXDADV_PKTTYPE_TCP)))
+> +		return -1;
+> +
+> +	/* Set network headers */
+> +	skb_reset_network_header(skb);
+> +	skb_set_transport_header(skb, ip_hdrlen(skb));
+> +	*iphdr = ip_hdr(skb);
+> +	*tcph = tcp_hdr(skb);
+> +	*hdr_flags = LRO_IPV4 | LRO_TCP;
+> +	return 0;
+> +}
+> +
+> +/**
+>   * ixgbe_configure_rx - Configure 8254x Receive Unit after Reset
+>   * @adapter: board private structure
+>   *
+> @@ -1470,6 +1513,17 @@ static void ixgbe_configure_rx(struct ixgbe_adapter *adapter)
+>  		adapter->rx_ring[i].tail = IXGBE_RDT(i);
+>  	}
+>  
+> +	/* Intitial LRO Settings */
+> +	adapter->rx_ring[i].lro_mgr.max_aggr = IXGBE_MAX_LRO_AGGREGATE;
+> +	adapter->rx_ring[i].lro_mgr.max_desc = IXGBE_MAX_LRO_DESCRIPTORS;
+> +	adapter->rx_ring[i].lro_mgr.get_skb_header = ixgbe_get_skb_hdr;
+> +	adapter->rx_ring[i].lro_mgr.features = LRO_F_EXTRACT_VLAN_ID;
+> +	if (!(adapter->flags & IXGBE_FLAG_IN_NETPOLL))
+> +		adapter->rx_ring[i].lro_mgr.features |= LRO_F_NAPI;
+> +	adapter->rx_ring[i].lro_mgr.dev = adapter->netdev;
+> +	adapter->rx_ring[i].lro_mgr.ip_summed = CHECKSUM_UNNECESSARY;
+> +	adapter->rx_ring[i].lro_mgr.ip_summed_aggr = CHECKSUM_UNNECESSARY;
+> +
+>  	if (adapter->flags & IXGBE_FLAG_RSS_ENABLED) {
+>  		/* Fill out redirection table */
+>  		for (i = 0, j = 0; i < 128; i++, j++) {
+> @@ -2489,12 +2543,18 @@ int ixgbe_setup_rx_resources(struct ixgbe_adapter *adapter,
+>  	struct pci_dev *pdev = adapter->pdev;
+>  	int size;
+>  
+> +	size = sizeof(struct net_lro_desc) * IXGBE_MAX_LRO_DESCRIPTORS;
+> +	rxdr->lro_mgr.lro_arr = vmalloc(size);
+> +	if (!rxdr->lro_mgr.lro_arr)
+> +		return -ENOMEM;
+> +	memset(rxdr->lro_mgr.lro_arr, 0, size);
+> +
+>  	size = sizeof(struct ixgbe_rx_buffer) * rxdr->count;
+>  	rxdr->rx_buffer_info = vmalloc(size);
+>  	if (!rxdr->rx_buffer_info) {
+>  		DPRINTK(PROBE, ERR,
+>  			"vmalloc allocation failed for the rx desc ring\n");
+> -		return -ENOMEM;
+> +		goto alloc_failed;
+>  	}
+>  	memset(rxdr->rx_buffer_info, 0, size);
+>  
+> @@ -2508,13 +2568,18 @@ int ixgbe_setup_rx_resources(struct ixgbe_adapter *adapter,
+>  		DPRINTK(PROBE, ERR,
+>  			"Memory allocation failed for the rx desc ring\n");
+>  		vfree(rxdr->rx_buffer_info);
+> -		return -ENOMEM;
+> +		goto alloc_failed;
+>  	}
+>  
+>  	rxdr->next_to_clean = 0;
+>  	rxdr->next_to_use = 0;
+>  
+>  	return 0;
+> +
+> +alloc_failed:
+> +	vfree(rxdr->lro_mgr.lro_arr);
+> +	rxdr->lro_mgr.lro_arr = NULL;
+> +	return -ENOMEM;
+>  }
+>  
+>  /**
+> @@ -2565,6 +2630,9 @@ static void ixgbe_free_rx_resources(struct ixgbe_adapter *adapter,
+>  {
+>  	struct pci_dev *pdev = adapter->pdev;
+>  
+> +	vfree(rx_ring->lro_mgr.lro_arr);
+> +	rx_ring->lro_mgr.lro_arr = NULL;
+> +
+>  	ixgbe_clean_rx_ring(adapter, rx_ring);
+>  
+>  	vfree(rx_ring->rx_buffer_info);
+> @@ -3517,6 +3585,7 @@ static int __devinit ixgbe_probe(struct pci_dev *pdev,
+>  			   NETIF_F_HW_VLAN_RX |
+>  			   NETIF_F_HW_VLAN_FILTER;
+>  
+> +	netdev->features |= NETIF_F_LRO;
+>  	netdev->features |= NETIF_F_TSO;
+>  
+>  	netdev->features |= NETIF_F_TSO6;
 
 ---
 ~Randy
