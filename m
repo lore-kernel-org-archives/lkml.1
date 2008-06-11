@@ -1,34 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbYFKUzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757901AbYFKU4G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756628AbYFKUzr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 16:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756246AbYFKUyT
+	id S1757901AbYFKU4G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 16:56:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756744AbYFKUyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 16:54:19 -0400
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.122]:60946 "EHLO
-	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756174AbYFKUyL (ORCPT
+	Wed, 11 Jun 2008 16:54:46 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:34301 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756479AbYFKUyg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 16:54:11 -0400
-X-Greylist: delayed 2660 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Jun 2008 16:54:11 EDT
-Date: Wed, 11 Jun 2008 16:09:47 -0400
-From: Jeff Layton <jlayton@poochiereds.net>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       "Weathers, Norman R." <Norman.R.Weathers@conocophillips.com>
-Subject: Re: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
-Message-ID: <20080611160947.5f08fb16@tleilax.poochiereds.net>
-In-Reply-To: <20080611195222.GP15380@fieldses.org>
-References: <1212519001.24900.14.camel@hololw58>
-	<20080606160922.GG30863@fieldses.org>
-	<0122F800A3B64C449565A9E8C2977010155587@hoexmb9.conoco.net>
-	<20080609185355.GF28584@fieldses.org>
-	<0122F800A3B64C449565A9E8C297701002D75D9F@hoexmb9.conoco.net>
-	<20080610171602.GG20184@fieldses.org>
-	<0122F800A3B64C449565A9E8C297701002D75DA3@hoexmb9.conoco.net>
-	<20080611184613.GM15380@fieldses.org>
-	<20080611195222.GP15380@fieldses.org>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-redhat-linux-gnu)
+	Wed, 11 Jun 2008 16:54:36 -0400
+Date: Wed, 11 Jun 2008 22:54:16 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: Ryan Mallon <ryan@bluewatersys.com>, Uli Luckas <u.luckas@road.de>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>, i2c@lm-sensors.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RFC] Earlier I2C initialization
+Message-ID: <20080611225416.169574a0@hyperion.delvare>
+In-Reply-To: <200806111327.09298.david-b@pacbell.net>
+References: <200806091541.43899.u.luckas@road.de>
+	<485031D5.3020606@bluewatersys.com>
+	<20080611141852.3ccd89ea@hyperion.delvare>
+	<200806111327.09298.david-b@pacbell.net>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -36,150 +31,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jun 2008 15:52:22 -0400
-"J. Bruce Fields" <bfields@fieldses.org> wrote:
-
-> I'm probably missing something fundamental--why doesn't
-> /proc/slab_allocators show any results for size-x where x >= 4096?
+On Wed, 11 Jun 2008 13:27:09 -0700, David Brownell wrote:
+> On Wednesday 11 June 2008, Jean Delvare wrote:
+> > On Thu, 12 Jun 2008 08:13:09 +1200, Ryan Mallon wrote:
+> > >                               As David suggested, if i2c is needed early
+> > > in enough cases, why not just move it early in the link order? My patch
+> > > was just an alternative approach which mimics the current behaviour, but
+> > > makes it possible to get any i2c driver early. Why not just mark all of
+> > > the drivers/busses that get used on embedded devices as subsys_initcall,
+> > > just in case somebody needs them early?
+> > 
+> > Because this is an abuse of subsys_initcall? I guess that was
+> > acceptable when only a couple drivers were doing that, but making it
+> > official sounds bad.
 > 
-> Someone's seeing a performance problem with the linux nfs server.  One
-> of the symptoms is the "size-4096" slab cache seems to be out of
-> control.  I assumed that meant that memory allocated by kmalloc() might
-> be leaking, so figured it might be interesting to turn on
-> CONFIG_DEBUG_SLAB_LEAK.  As far as I can tell what that does is list
-> kmalloc() callers in /proc/slab_allocators.  But that doesn't seem to be
-> showing any results for size-4096.  Can anyone provide a clue?
-> Thanks!
-> 
-> --b.
-> 
+> How would it be an abuse?  On those systems, I2C is a "system bus"
+> and needs to be initialized early for the same reasons PCI gets set
+> up very early on PC hardware.
 
+But the pci subsystem doesn't make use of subsys_initcall(). Instead,
+it is simply placed early in the link order.
 
-Hmm...I've never used this, but in kmem_cache_alloc():
+That being said, I'm not sure if the comparison with the PCI subsystem
+holds... I am under the impression that PCI bus handling doesn't
+require dedicated drivers? At least I can't see any under drivers/pci.
 
-        /*
-         * Enable redzoning and last user accounting, except for caches with
-         * large objects, if the increased size would increase the object size
-         * above the next power of two: caches with object sizes just above a
-         * power of two have a significant amount of internal fragmentation.
-         */
-        if (size < 4096 || fls(size - 1) == fls(size-1 + REDZONE_ALIGN +
-                                                2 * sizeof(unsigned long long)))
-                flags |= SLAB_RED_ZONE | SLAB_STORE_USER;
+> There's no rule saying that subsystem initialization may not include
+> the essential drivers -- in this case, i2c_adapter drivers.  PCI hubs
+> and bridges are certainly initialized very early, before module_init
+> code runs...
 
+Care to point me to actual code to backup this "certainly"?
 
-...looks like it specifically excludes some caches.
+> And in fact it seems a bit odd to think that initializing any bus
+> subsystem shouldn't be allowed to include its bus adapters.  It's
+> not as if the subsystem has completed initializiation until those
+> adapters are usable!!
 
+I think it makes a lot of sense to initialize the core of a subsystem
+early, so that all devices and drivers can be registered. This doesn't
+imply registering the hardware bus drivers too, even though in some
+cases it is also needed. I doubt that whoever designed subsys_initcall
+meant it to be used for all bus drivers, otherwise he/she would have
+named it, say, busdrv_initcall.
 
-> On Wed, Jun 11, 2008 at 02:46:13PM -0400, bfields wrote:
-> > On Tue, Jun 10, 2008 at 05:12:31PM -0500, Weathers, Norman R. wrote:
-> > >  
-> > > 
-> > > > -----Original Message-----
-> > > > From: J. Bruce Fields [mailto:bfields@fieldses.org] 
-> > > > Sent: Tuesday, June 10, 2008 12:16 PM
-> > > > To: Weathers, Norman R.
-> > > > Cc: linux-nfs@vger.kernel.org
-> > > > Subject: Re: Problems with large number of clients and reads
-> > > > 
-> > > > On Tue, Jun 10, 2008 at 09:30:18AM -0500, Weathers, Norman R. wrote:
-> > > > > Unfortunately, I cannot stop the clients (middle of long running
-> > > > > jobs).  I might be able to test this soon.  If I have the number of
-> > > > > threads high, yes I can reduce the number of threads and it 
-> > > > appears to
-> > > > > lower some of the memory, but even with as little as three threads,
-> > > > > the memory usage climbs very high, just not as high as if there are
-> > > > > say 8 threads.  When the memory usage climbs high, it can cause the
-> > > > > box to not respond over the network (ssh, rsh), and even be very
-> > > > > sluggish when I am connected over our serial console to the 
-> > > > server(s).
-> > > > > This same scenario has been happening with kernels that I have tried
-> > > > > from 2.6.22.x on to the 2.6.25 series.  The 2.6.25 series is
-> > > > > interesting in that I can push the same load from a box with the
-> > > > > 2.6.25 kernel and not have a load over .3 (with 3 threads), but with
-> > > > > the 2.6.22.x kernel, I have a load of over 3 when I hit the same
-> > > > > conditions.
-> > > > 
-> > > > OK, I think what we want to do is turn on 
-> > > > CONFIG_DEBUG_SLAB_LEAK.  I've
-> > > > never used it before, but it looks like it will report which functions
-> > > > are allocating from each slab cache, which may be exactly what we need
-> > > > to know.  So:
-> > > > 
-> > > > 	1. Install a kernel with both CONFIG_DEBUG_SLAB ("Debug slab
-> > > > 	memory allocations") and CONFIG_DEBUG_SLAB_LEAK ("Memory leak
-> > > > 	debugging") turned on.  They're both under the "kernel hacking"
-> > > > 	section of the kernel config.  (If you have a file
-> > > > 	/proc/slab_allocators, then you already have these turned on and
-> > > > 	you can skip this step.)
-> > > > 
-> > > > 	2. Do whatever you need to do to reproduce the problem.
-> > > > 
-> > > > 	3. Get a copy of /proc/slabinfo and /proc/slab_allocators.
-> > > > 
-> > > > Then we can take a look at that and see if it sheds any light.
-> > > 
-> > > 
-> > > I have taken several snapshots of the /proc/slab_allocators and
-> > > /proc/slabinfo as requested, but since there is a lot of info in them,
-> > > and I didn't think anyone wanted to go cross-eyed reading the data in an
-> > > email, I have them up on a website:
-> > > 
-> > > http://shashi-weathers.net/linux/cluster/NFS/
-> > 
-> > Excellent.
-> > 
-> > > 
-> > > The order of data collection is:
-> > > 
-> > > slab_allocators_bad1.txt and corresponding slabinfo
-> > > slab_allocators_after_bad1.txt and corresponding slabinfo
-> > > slab_allocators_16_threads.txt and corresponding slabinfo
-> > > slab_allocators_16_threads_1.txt and corresponding slabinfo
-> > > slab_allocators_32_threads.txt and corresponding slabinfo
-> > > slab_allocators_really_bad.txt and corresponding slabinfo.
-> > > 
-> > > 
-> > > You will have to forgive my ignorance at this point, but I was looking
-> > > through the slabinfo and slab_allocators, and noticed that size-4096
-> > > does not show up in slab_allocators... I hope that is by design.  You
-> > > can see it growing into the gigabytes in the slabinfo files....
-> > 
-> > Argh. OK, I don't understand well enough how this works.  Time to ask
-> > someone, I guess....
-> > 
-> > --b.
-> > 
-> > > 
-> > > 
-> > > 
-> > > > 
-> > > > I think that debugging will hurt the server performance, so you won't
-> > > > want to keep it turned on all the time.
-> > > > 
-> > > > > 
-> > > > > Also, this is all with the SLAB cache option.  SLUB crashes 
-> > > > everytime
-> > > > > I use it under heavy load.
-> > > > 
-> > > > Have you reported the SLUB bugs to lkml?
-> > > 
-> > > No, I haven't yet.  I didn't know for sure if I was doing something
-> > > wrong, or if SLUB was the problem there.  Since the failures, I had gone
-> > > back to using SLAB anyway, so ....  I probably should...
-> > > 
-> > > > 
-> > > > --b.
-> > > > 
-> > > 
-> > > 
-> > > Norman Weathers
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-
+But don't get me wrong: if subsys_initcall is the way to go, that's
+alright with me, that's way less work than having to move drivers to
+different directories and fixing the link order.
 
 -- 
-Jeff Layton <jlayton@poochiereds.net>
+Jean Delvare
