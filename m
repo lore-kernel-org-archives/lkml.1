@@ -1,134 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754434AbYFKKXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbYFKKZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754434AbYFKKXW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 06:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbYFKKXM
+	id S1755291AbYFKKZY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 06:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbYFKKZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 06:23:12 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:56629 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751808AbYFKKXL convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 06:23:11 -0400
-Subject: Re: [PATCH 1/10] Add generic helpers for arch IPI function calls
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: paulmck@linux.vnet.ibm.com, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, peterz@infradead.org,
-       linux-arch@vger.kernel.org, jeremy@goop.org, mingo@elte.hu,
-       Russell King <rmk+lkml@arm.linux.org.uk>
-In-Reply-To: <20080611032531.GC8228@wotan.suse.de>
-References: <1212051504-12561-1-git-send-email-jens.axboe@oracle.com>
-	 <1212051504-12561-2-git-send-email-jens.axboe@oracle.com>
-	 <1213109485.24701.107.camel@pc1117.cambridge.arm.com>
-	 <20080610154716.GF15481@linux.vnet.ibm.com>
-	 <1213116788.24701.133.camel@pc1117.cambridge.arm.com>
-	 <20080611032531.GC8228@wotan.suse.de>
-Content-Type: text/plain; charset=utf-8
-Organization: ARM Ltd
-Date: Wed, 11 Jun 2008 11:13:35 +0100
-Message-Id: <1213179215.19224.61.camel@pc1117.cambridge.arm.com>
+	Wed, 11 Jun 2008 06:25:12 -0400
+Received: from main.gmane.org ([80.91.229.2]:52120 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751176AbYFKKZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 06:25:10 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Walter Franzini <walter.franzini@gmail.com>
+Subject: Oops: 0000 [#1] PREEMPT SMP
+Date: Wed, 11 Jun 2008 12:21:30 +0200
+Message-ID: <863ank6zmd.fsf@acer.nord-com.it>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 11 Jun 2008 10:13:36.0083 (UTC) FILETIME=[CF7AB230:01C8CBAB]
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 217.141.18.130
+X-Archive: encrypt
+Mail-Copy-To: never
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+Cancel-Lock: sha1:9hgdQfkyDlXtXBb0U6b7I1W0uI0=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-06-11 at 05:25 +0200, Nick Piggin wrote:
-> On Tue, Jun 10, 2008 at 05:53:08PM +0100, Catalin Marinas wrote:
-> > On Tue, 2008-06-10 at 08:47 -0700, Paul E. McKenney wrote:
-> > > On Tue, Jun 10, 2008 at 03:51:25PM +0100, Catalin Marinas wrote:
-> > > > I was thinking whether this condition can be removed and allow the
-> > > > smp_call_function*() to be called with IRQs disabled. At a quick look,
-> > > > it seems to be possible if the csd_flag_wait() function calls the IPI
-> > > > handlers directly when the IRQs are disabled (see the patch below).
-> > [...]
-> > > There were objections last month:  http://lkml.org/lkml/2008/5/3/167
-> > 
-> > Thanks, I missed this discussion.
-> > 
-> > > The issue was that this permits some interrupts to arrive despite
-> > > interrupts being disabled.  There seemed to be less resistance to
-> > > doing this in the wait==1 case, however.
-> > 
-> > The "(wait == 1) && irqs_disabled()" case is what I would be interested
-> > in. In the patch you proposed, this doesn't seem to be allowed (at least
-> > from the use of WARN_ON). However, from your post in May:
-> > 
-> > > 5.	If you call smp_call_function() with irqs disabled, then you
-> > > 	are guaranteed that no other CPU's smp_call_function() handler
-> > > 	will be invoked while smp_call_function() is executing.
-> > 
-> > this would be possible but no one need this functionality yet.
-> > 
-> > Would one use-case (ARM SMP and DMA cache maintenance) be enough to
-> > implement this or I should add it to the ARM-specific code?
-> 
-> How will you implement it? You have to be able to wait *somewhere*
-> (either before or after the smp_call_function call) with interrupts
-> enabled. It is not enough just to eg. use a spinlock around
-> smp_call_function, because other CPUs might also be trying to call
-> down the same path also with interrupts disabled, and they'll wait
-> forever on the spinlock.
+--=-=-=
 
-With the generic IPI patches, I think it is just a matter of polling for
-incoming IPIs in the csd_flag_wait() if interrupts are disabled since no
-spinlock is held when issuing the IPI (smp_call_function can be called
-concurrently).
+With 2.6.25.6 I've got the following oops while running aegis.
 
-If I do it in the ARM-specific code, I would duplicate the
-smp_call_function (but avoid the call_single_queue, maybe just like the
-current ARM implementation) and use a spinlock around the IPI
-invocation. If interrupts are allowed to be disabled, the spin_lock()
-would actually be a spin_trylock() (or spin_trylock_irqsave()),
-something like below (untested). It can be improved for the IRQs-enabled
-case to reduce the latency.
+Not sure it matters but:
 
-smp_call_function(...)
-{
-	...
-	/*
-	 * disable IRQs so that we can call this function from
-	 * ﻿interrupt context
-	 */
-	local_irq_save(flags)
-	while (!spin_trylock(&call_function_lock)) {
-		/* other CPU is sending an IPI, just poll for it */
-		smp_call_function_interrupt();
-	}
-	/* acquired the lock, do the IPI stuff */
-	...
+* the program is setuid root
+* after getting the oops the program seems to be still in execution
+  and cannot be killed even by kill -9.  So I'm going to reboot :-(
 
-	/* 
-	 * wait for the other CPUs to complete the IPI. No other CPU 
-	 * is waiting for completion because of the call_function_lock
-	 */
-	...
+------------------------------------------------------------------------
+Oops: 0000 [#1] PREEMPT SMP
+Modules linked in: appletalk ipx p8023 cpufreq_ondemand xt_tcpudp nf_conntrack_ipv4 xt_state nf_conntrack iptable_filter ip_tables x_tables tun ppdev lp fuse sbp2 acpi_cpufreq freq_table joydev arc4 ecb crypto_blkcipher pcmcia snd_hda_intel iwl3945 snd_pcm_oss snd_mixer_oss snd_pcm firmware_class iTCO_wdt mac80211 yenta_socket pcspkr snd_timer container rsrc_nonstatic pcmcia_core serio_raw cfg80211 i2c_i801 bay ac wmi i2c_core irda snd battery soundcore snd_page_alloc psmouse button evdev intel_agp agpgart sg crc_ccitt parport_pc parport sr_mod cdrom rtc ext3 jbd mbcache dm_mirror dm_snapshot dm_mod sd_mod usbhid hid ata_piix ohci1394 ieee1394 ata_generic libata ehci_hcd uhci_hcd scsi_mod usbcore e1000 dock thermal processor fan
 
-	spin_unlock(﻿&call_function_lock);
-	local_irq_restore(flags);
-}
+Pid: 20443, comm: aegis Not tainted (2.6.25.6-0 #1)
+EIP: 0060:[<c014d949>] EFLAGS: 00210016 CPU: 1
+EIP is at get_page_from_freelist+0x171/0x397
+EAX: c033560c EBX: 001200d2 ECX: 7c30302e EDX: 00000002
+ESI: c0335600 EDI: 00200202 EBP: 7c303016 ESP: f48e9ce8
+ DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+Process aegis (pid: 20443, ti=f48e8000 task=f4871640 task.ti=f48e8000)
+Stack: c3c85e28 00000002 00000000 001200d2 c0336050 c0335580 00000002 00000000
+       00000000 00200292 001200d2 001200d2 c0336048 00000000 c014dcef 00000044
+       001200d2 00000010 f7106e10 f4871640 00001000 c033604c c02a582c 001200d2
+Call Trace:
+ [<c014dcef>] __alloc_pages+0x5f/0x2b4
+ [<c02a582c>] _read_unlock_irq+0xe/0x21
+ [<c014987b>] __grab_cache_page+0x56/0x86
+ [<f89d2932>] ext3_write_begin+0x51/0x16d [ext3]
+ [<c014a253>] generic_file_buffered_write+0xf8/0x56f
+ [<c011590f>] update_curr+0x3d/0x52
+ [<c014ab1a>] __generic_file_aio_write_nolock+0x450/0x4b2
+ [<c0149326>] file_read_actor+0x7d/0xcc
+ [<c014abce>] generic_file_aio_write+0x52/0xa9
+ [<f89cf1d1>] ext3_file_write+0x19/0x83 [ext3]
+ [<c0164194>] do_sync_write+0xbf/0x100
+ [<c012e3c0>] autoremove_wake_function+0x0/0x2d
+ [<c0134c0a>] clockevents_program_event+0xc4/0xd2
+ [<c02a5555>] _spin_lock_irq+0xe/0x24
+ [<c01a7adc>] security_file_permission+0xc/0xd
+ [<c01640d5>] do_sync_write+0x0/0x100
+ [<c016489b>] vfs_write+0x83/0xf6
+ [<c0164dd1>] sys_write+0x3c/0x63
+ [<c01047ae>] sysenter_past_esp+0x5f/0x85
+ =======================
+Code: 3b 8d 69 e8 8b 4d 1c 0f 18 01 90 8d 55 18 8d 46 0c 39 c2 75 e3 eb 25 8b 6e 0c 83 ed 18 eb 0c 8b 54 24 18 39 55 0c 74 14 8d 69 e8 <8b> 4d 18 0f 18 01 90 8d 55 18 8d 46 0c 39 c2 75 e3 8d 55 18 8d
+EIP: [<c014d949>] get_page_from_freelist+0x171/0x397 SS:ESP 0068:f48e9ce8
+---[ end trace abef59c84226d498 ]---
+note: aegis[20443] exited with preempt_count 1
+------------------------------------------------------------------------
+--
+Walter Franzini
+http://aegis.stepbuild.org/
 
-One issue I saw raised with the polling loop is that it calls an
-interrupt handler outside an interrupt context and with IRQs disabled.
-There shouldn't be any issue with the existing code since
-smp_call_function assumes interrupts enabled anyway. Whoever needs this
-functionality should take greater care with IRQs disabled (in my case,
-only calling some cache maintenance operations is OK).
+PGP Public key ID: 1024D/CB3FEB43
+Key fingerprint  : FA26 C33B CAFF 7848 EFEB  7327 96AA 2D57 CB3F EB43
+Key server       : http://www.keyserver.net
 
-Regarding the interrupt latency, it would be higher since the IPI is not
-that cheap but (in ARM SMP case) calling dma_map_single/sg (especially
-with TO_DEVICE) with interrupts disabled I think is pretty bad already
-as it involves flushing the caches for that range and time-consuming.
+--=-=-=
+Content-Type: application/pgp-signature
 
-If dma_map_single/sg would be disallowed with interrupts disabled or
-from interrupt context, we would no longer need the above workarounds
-for smp_call_function on ARM.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Regards.
-
--- 
-Catalin
+iD8DBQFIT6c0lqotV8s/60MRAujwAKDFluwEERdGIrJH3SUMNJo9XqmeOwCfRi+e
+guNel+nvIKIXR44WyZDPXcQ=
+=Vqsg
+-----END PGP SIGNATURE-----
+--=-=-=--
 
