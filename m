@@ -1,84 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758645AbYFKDhX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758717AbYFKDlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758645AbYFKDhX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 23:37:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbYFKDhJ
+	id S1758717AbYFKDlj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 23:41:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755373AbYFKDlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 23:37:09 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:62351 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755272AbYFKDhH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 23:37:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=ODoHgqTXEaa9d1p1ggwVMqQ3H5JCzMke0u0rJbBySCXbjkpjLs32pEEZ1GJ96nRaCM
-         SNOPB1D4Ds/BldhJzaQaU7QmQPbzouv+0yNUDfzzXdVLtxb5UuVcts8NkM1K/DLAjbXB
-         s116Bx8sam+B0Mur6wIWQWqpSzUOlX+99tGJY=
-Message-ID: <386072610806102037u39ec18e6ye26ef184d6a9516e@mail.gmail.com>
-Date: Wed, 11 Jun 2008 11:37:03 +0800
-From: "Bryan Wu" <cooloney@kernel.org>
-To: "Adrian Bunk" <bunk@kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: blackfin drivers/net/smc91x.c build error
-Cc: "Mike Frysinger" <vapier.adi@gmail.com>, "Jeff Garzik" <jeff@garzik.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080610173450.GC11685@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 10 Jun 2008 23:41:31 -0400
+Received: from gate.crashing.org ([63.228.1.57]:59317 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754922AbYFKDla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 23:41:30 -0400
+Subject: Re: MMIO and gcc re-ordering issue
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-arch@vger.kernel.org,
+       Roland Dreier <rdreier@cisco.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>, Trent Piepho <tpiepho@freescale.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       David Miller <davem@davemloft.net>, scottwood@freescale.com,
+       linuxppc-dev@ozlabs.org, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200806111329.35894.nickpiggin@yahoo.com.au>
+References: <1211852026.3286.36.camel@pasglop> <adaskvl3yb0.fsf@cisco.com>
+	 <200806101219.34995.jbarnes@virtuousgeek.org>
+	 <200806111329.35894.nickpiggin@yahoo.com.au>
+Content-Type: text/plain
+Date: Wed, 11 Jun 2008 13:40:44 +1000
+Message-Id: <1213155644.25745.60.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080606162212.GC2201@cs181133002.pp.htv.fi>
-	 <8bd0f97a0806061252n1cf5ee33i40ddf9f55588e242@mail.gmail.com>
-	 <20080610135349.GA30792@cs181133002.pp.htv.fi>
-	 <8bd0f97a0806101013w42b9028j5dfa38d654f3d05f@mail.gmail.com>
-	 <20080610173450.GC11685@cs181133002.pp.htv.fi>
-X-Google-Sender-Auth: 949a485adc9dc10a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 11, 2008 at 1:34 AM, Adrian Bunk <bunk@kernel.org> wrote:
-> On Tue, Jun 10, 2008 at 01:13:52PM -0400, Mike Frysinger wrote:
->> On Tue, Jun 10, 2008 at 9:53 AM, Adrian Bunk wrote:
->> > On Fri, Jun 06, 2008 at 03:52:09PM -0400, Mike Frysinger wrote:
->> >> On Fri, Jun 6, 2008 at 12:22 PM, Adrian Bunk wrote:
->> >> > drivers/net/smc91x.c fails as follows on blackfin:
->> >> > ...
->> >> >  CC      drivers/net/smc91x.o
->> >> > ...
->> >> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/net/smc91x.c:1863:36: error: macro "SMC_GET_MAC_ADDR" passed 2 arguments, but takes just 1
->> >> > ...
->> >>
->> >> it's a known issue (been known for quite a long time actually).  Bryan
->> >> has brought this up in the past already.
->> >
->> > Is my suggestion of reverting commit 099c736a470c8080a166e7a089f1e48e15f9947c
->> > correct or how else should it be resolved?
->>
->> Bryan is taking care of it ... it may just stay broken in favor of
->> waiting for the merge from the net tree.
->>
->> > This issue is the only remaining problem preventing that all blackfin
->> > defconfigs will compile in 2.6.26...
->>
->> not really true.
->>...
->
-> What other build errors do you get in Linus' tree?
->
+On Wed, 2008-06-11 at 13:29 +1000, Nick Piggin wrote:
+> 
+> Exactly, yes. I guess everybody has had good intentions here, but
+> as noticed, what is lacking is coordination and documentation.
+> 
+> You mention strong ordering WRT spin_unlock, which suggests that
+> you would prefer to take option #2 (the current powerpc one): io/io
+> is ordered and io is contained inside spinlocks, but io/cacheable
+> in general is not ordered.
 
-Sorry for jumping in later. I reported this issue 2 months ago.
-http://lkml.org/lkml/2008/4/7/38
+IO/cacheable -is- ordered on powepc in what we believe is the direction
+that matter: IO reads are fully ordered vs. anything and IO writes are
+ordered vs. previous cacheable stores. The only "relaxed" situation is
+IO writes followed by cacheable stores, which I believe shouldn't be
+a problem. (except for spinlocks for which we use the flag trick)
 
-And Adrian is right, we need to revert this patch.
+> I *would* prefer that io/cacheable actually is strongly ordered with
+> the default accessors. Because if you have that, then the driver
+> writer never has to care about memory ordering, provided they use
+> correct locking for SMP issues. Same as x86. With option 2, there
+> are still windows where you could possibly have issues.
+> 
+> For any high performance drivers that are well maintained (ie. the
+> ones where slowdown might be noticed), everyone should have a pretty
+> good handle on memory ordering requirements, so it shouldn't take
+> long to go through and convert them to relaxed accessors.
 
-Linus, could you please revert it?
-099c736a470c8080a166e7a089f1e48e15f9947c
-Or I send a patch out to revert it?
+Ben.
 
-Thanks
--Bryan
+
