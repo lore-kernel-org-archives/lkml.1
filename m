@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759298AbYFKUat@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759584AbYFKUbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759298AbYFKUat (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 16:30:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757190AbYFKU1p
+	id S1759584AbYFKUbc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 16:31:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758816AbYFKUaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 16:27:45 -0400
-Received: from mail.tmr.com ([64.65.253.246]:59373 "EHLO gaimboi.tmr.com"
+	Wed, 11 Jun 2008 16:30:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53253 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757111AbYFKU1o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 16:27:44 -0400
-Message-ID: <4850354A.8090503@tmr.com>
-Date: Wed, 11 Jun 2008 16:27:54 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
-       Alan Piszcz <ap@solarrain.com>
-Subject: Re: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte Veliciraptors
-References: <alpine.DEB.1.10.0806071015110.23323@p34.internal.lan>
-In-Reply-To: <alpine.DEB.1.10.0806071015110.23323@p34.internal.lan>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+	id S1759061AbYFKUaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 16:30:20 -0400
+Date: Wed, 11 Jun 2008 16:30:07 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       kosaki.motohiro@jp.fujitsu.com
+Subject: Re: [PATCH -mm 11/24] pageflag helpers for configed-out flags
+Message-ID: <20080611163007.4eae7f16@bree.surriel.com>
+In-Reply-To: <1213215827.6436.61.camel@lts-notebook>
+References: <20080611184214.605110868@redhat.com>
+	<20080611184339.493423475@redhat.com>
+	<20080611130145.2a202339.akpm@linux-foundation.org>
+	<20080611160814.5374467d@bree.surriel.com>
+	<1213215827.6436.61.camel@lts-notebook>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
-> First, the original benchmarks with 6-SATA drives with fixed 
-> formatting, using
-> right justification and the same decimal point precision throughout:
-> http://home.comcast.net/~jpiszcz/20080607/raid-benchmarks-decimal-fix-and-right-justified/disks.html 
->
->
-> Now for for veliciraptors! Ever wonder what kind of speed is possible 
-> with
-> 3 disk, 4,5,6,7,8,9,10-disk RAID5s? I ran a loop to find out, each run is
-> executed three times and the average is taken of all three runs per 
-> each RAID5 disk set.
->
-> In short? The 965 no longer does justice with faster drives, a new 
-> chipset
-> and motherboard are needed. After reading or writing to 4-5 veliciraptors
-> it saturates the bus/965 chipset.
+On Wed, 11 Jun 2008 16:23:47 -0400
+Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
+> On Wed, 2008-06-11 at 16:08 -0400, Rik van Riel wrote:
+> > On Wed, 11 Jun 2008 13:01:45 -0700
+> > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > On Wed, 11 Jun 2008 14:42:25 -0400
+> > > Rik van Riel <riel@redhat.com> wrote:
+> > > 
+> > > > Define proper false/noop inline functions for noreclaim page
+> > > > flags when !defined(CONFIG_NORECLAIM_LRU)
+> > > 
+> > > I changed that to CONFIG_UNEVICTABLE_LRU.
+> > > 
+> > > Did we agree that the presence of this config variable is undesirable? 
+> > > If so, what's involved in making it go away?
+> > 
+> > We agreed that having CONFIG_NORELAIM_SWAP was bad, that one went away.
+> 
+> That was CONFIG_NORELAIM_MLOCK, right?
 
-This is very interesting, but a 16GB chunk size bears no relationship to 
-anything I would run in the real world, and I suspect most people are in 
-the same category.
+You're right.
+
+> Which reminds me:  we'll need to change the description of
+> CONFIG_UNEVICTABLE_LRU to state that it uses 2 page flags if, indeed, we
+> want to say anything about page flag usage in the Kconfig help text.
+> Not sure that's helpful.
+
+True, we might as well remove that comment.
 
 -- 
-Bill Davidsen <davidsen@tmr.com>
-  "Woe unto the statesman who makes war without a reason that will still
-  be valid when the war is over..." Otto von Bismark 
-
-
+All rights reversed.
