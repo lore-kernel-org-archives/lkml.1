@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755247AbYFKLGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbYFKLLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755247AbYFKLGZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 07:06:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754753AbYFKLFk
+	id S1754751AbYFKLLT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 07:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbYFKLLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 07:05:40 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1889 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754633AbYFKLFf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 07:05:35 -0400
-Date: Wed, 11 Jun 2008 12:53:45 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Barry Kasindorf <barry.kasindorf@amd.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] AMD Family10h+ IBS support for oProfile driver: buffer management
-Message-ID: <20080611105345.GF5612@ucw.cz>
-References: <20080609175030.2844.77365.sendpatchset@localhost.localdomain> <20080609175052.2844.12167.sendpatchset@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 11 Jun 2008 07:11:10 -0400
+Received: from ozlabs.org ([203.10.76.45]:34911 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750754AbYFKLLJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 07:11:09 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch 04/41] cpu ops: Core piece for generic atomic per cpu operations
+Date: Wed, 11 Jun 2008 21:10:56 +1000
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Peter Zijlstra <peterz@infradead.org>, Mike Travis <travis@sgi.com>
+References: <20080530035620.587204923@sgi.com> <200806021200.41652.rusty@rustcorp.com.au> <Pine.LNX.4.64.0806101034480.17131@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0806101034480.17131@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080609175052.2844.12167.sendpatchset@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200806112110.56805.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 11 June 2008 03:42:15 Christoph Lameter wrote:
+> 1. The x86 implementation does not exist because the segment register has
+>    so far not been available on x86_64. So you could not do the solution.
+>    You need the zero basing. Then you can use per_xxx_add in cpu_inc.
 
+Yes: for 64 bit x86, getting rid of the PDA or zero-basing is required.
 
-On Mon 2008-06-09 13:50:48, Barry Kasindorf wrote:
-> Signed-off-by: Barry Kasindorf <barry.kasindorf@amd.com>
-> 
+> 2. The general solution created overhead that is often not needed. If we
+>    would have done vm event counters with local_t then we would have
+>    atomic overhead for each increment on f.e. IA64. That was not
+>    acceptable. cpu_alloc never falls back to atomic operations.
 
-missing changelog, lots of strange whitespace changes.
+You can implement it either way.  I've said that three times now.  The current 
+generic one uses atomics, but preempt disable/enable is possible.
 
-> @@ -33,7 +34,7 @@
->  #include "event_buffer.h"
->  #include "cpu_buffer.h"
->  #include "buffer_sync.h"
-> -
-> +
->  static LIST_HEAD(dying_tasks);
->  static LIST_HEAD(dead_tasks);
->  static cpumask_t marked_cpus = CPU_MASK_NONE;
+> 3. local_t is based on the atomic logic. But percpu handling is
+>    fundamentally different in that accesses without the special macros
+>    are okay provided you are in a non preemptible or irq context!
+>    A local_t declaration makes such accesses impossible.
 
-I actually do not see the difference here. What is going on?
+Again, untrue.  The interface is already there.  So feel free to implement 
+__cpu_local_inc et al in terms of preempt enable and disable so it doesn't 
+need to use atomics.  
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> 4. The modeling of local_t on atomic_t limits it to 32bit!
+
+Again wrong.  And adding an exclamation mark doesn't make it true.
+
+Rusty.
