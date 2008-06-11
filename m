@@ -1,218 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764107AbYFKQms@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764157AbYFKQqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764107AbYFKQms (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 12:42:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755138AbYFKQmc
+	id S1764157AbYFKQqc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 12:46:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbYFKQqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 12:42:32 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:54414 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753835AbYFKQmb (ORCPT
+	Wed, 11 Jun 2008 12:46:25 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:39539 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751510AbYFKQqY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 12:42:31 -0400
-Date: Wed, 11 Jun 2008 17:42:26 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: rui.zhang@intel.com
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] More cleanup of the thermal API
-Message-ID: <20080611164226.GA27437@srcf.ucam.org>
-References: <20080611100647.GA20013@srcf.ucam.org>
+	Wed, 11 Jun 2008 12:46:24 -0400
+Message-ID: <485000E7.80408@zytor.com>
+Date: Wed, 11 Jun 2008 09:44:23 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080611100647.GA20013@srcf.ucam.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+CC: Rene Herman <rene.herman@keyaccess.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH] x86: enable PAT on (almost) all CPUs that advertise it
+References: <20080610140518.GF5024@alberich.amd.com> <484F065B.2050002@keyaccess.nl> <484F0F5D.8010507@zytor.com> <20080611094730.GB5889@alberich.amd.com> <20080611150507.GD5170@alberich.amd.com>
+In-Reply-To: <20080611150507.GD5170@alberich.amd.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The state management functions in the thermal API also pass strings 
-around. Change them to ints and do the conversion at the sysfs point.
+Andreas Herrmann wrote:
+> 
+> I just kept the "whitelist" for Intel CPUs. It is similar to what was
+> submitted by Venkatesh in the first place.
+> See pat_known_cpu() in commit 2e5d9c857d4e6c9e7b7d8c8c86a68a7842d213d6
+> (x86: PAT infrastructure patch).
+> 
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
+Yes, but the "whitelist" for Intel CPUs cover all CPUs which ever 
+flagged the PAT bit, so it should be nuked, too.
 
----
-
-diff --git a/drivers/acpi/fan.c b/drivers/acpi/fan.c
-index 6cf10cb..f3db49e 100644
---- a/drivers/acpi/fan.c
-+++ b/drivers/acpi/fan.c
-@@ -69,27 +69,30 @@ static struct acpi_driver acpi_fan_driver = {
- };
- 
- /* thermal cooling device callbacks */
--static int fan_get_max_state(struct thermal_cooling_device *cdev, char *buf)
-+static int fan_get_max_state(struct thermal_cooling_device *cdev, unsigned int
-+			     *state)
- {
- 	/* ACPI fan device only support two states: ON/OFF */
--	return sprintf(buf, "1\n");
-+	*state = 1;
-+	return 0;
- }
- 
--static int fan_get_cur_state(struct thermal_cooling_device *cdev, char *buf)
-+static int fan_get_cur_state(struct thermal_cooling_device *cdev, unsigned int
-+			     *state)
- {
- 	struct acpi_device *device = cdev->devdata;
--	int state;
- 	int result;
- 
- 	if (!device)
- 		return -EINVAL;
- 
--	result = acpi_bus_get_power(device->handle, &state);
-+	result = acpi_bus_get_power(device->handle, state);
- 	if (result)
- 		return result;
- 
--	return sprintf(buf, "%s\n", state == ACPI_STATE_D3 ? "0" :
--			 (state == ACPI_STATE_D0 ? "1" : "unknown"));
-+	*state = (*state == ACPI_STATE_D3 ? 0 : 
-+		 (*state == ACPI_STATE_D0 ? 1 : -1));
-+	return 0;
- }
- 
- static int
-diff --git a/drivers/acpi/processor_thermal.c b/drivers/acpi/processor_thermal.c
-index ef34b18..2a3721d 100644
---- a/drivers/acpi/processor_thermal.c
-+++ b/drivers/acpi/processor_thermal.c
-@@ -374,7 +374,8 @@ static int acpi_processor_max_state(struct acpi_processor *pr)
- 	return max_state;
- }
- static int
--processor_get_max_state(struct thermal_cooling_device *cdev, char *buf)
-+processor_get_max_state(struct thermal_cooling_device *cdev, unsigned int 
-+			*state)
- {
- 	struct acpi_device *device = cdev->devdata;
- 	struct acpi_processor *pr = acpi_driver_data(device);
-@@ -382,24 +383,24 @@ processor_get_max_state(struct thermal_cooling_device *cdev, char *buf)
- 	if (!device || !pr)
- 		return -EINVAL;
- 
--	return sprintf(buf, "%d\n", acpi_processor_max_state(pr));
-+	*state = acpi_processor_max_state(pr);
-+	return 0;
- }
- 
- static int
--processor_get_cur_state(struct thermal_cooling_device *cdev, char *buf)
-+processor_get_cur_state(struct thermal_cooling_device *cdev, unsigned int 
-+			*cur_state)
- {
- 	struct acpi_device *device = cdev->devdata;
- 	struct acpi_processor *pr = acpi_driver_data(device);
--	int cur_state;
- 
- 	if (!device || !pr)
- 		return -EINVAL;
- 
--	cur_state = cpufreq_get_cur_state(pr->id);
-+	*cur_state = cpufreq_get_cur_state(pr->id);
- 	if (pr->flags.throttling)
--		cur_state += pr->throttling.state;
--
--	return sprintf(buf, "%d\n", cur_state);
-+		*cur_state += pr->throttling.state;
-+	return 0;
- }
- 
- static int
-diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
-index 5e5dda3..d8d7596 100644
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -358,26 +358,30 @@ static struct output_properties acpi_output_properties = {
- 
- 
- /* thermal cooling device callbacks */
--static int video_get_max_state(struct thermal_cooling_device *cdev, char *buf)
-+static int video_get_max_state(struct thermal_cooling_device *cdev, unsigned
-+			       int *state)
- {
- 	struct acpi_device *device = cdev->devdata;
- 	struct acpi_video_device *video = acpi_driver_data(device);
- 
--	return sprintf(buf, "%d\n", video->brightness->count - 3);
-+	*state = video->brightness->count - 3;
-+	return 0;
- }
- 
--static int video_get_cur_state(struct thermal_cooling_device *cdev, char *buf)
-+static int video_get_cur_state(struct thermal_cooling_device *cdev, unsigned
-+			       int *state)
- {
- 	struct acpi_device *device = cdev->devdata;
- 	struct acpi_video_device *video = acpi_driver_data(device);
- 	unsigned long level;
--	int state;
-+	int offset;
- 
- 	acpi_video_device_lcd_get_level_current(video, &level);
--	for (state = 2; state < video->brightness->count; state++)
--		if (level == video->brightness->levels[state])
--			return sprintf(buf, "%d\n",
--				       video->brightness->count - state - 1);
-+	for (offset = 2; offset < video->brightness->count; offset++)
-+		if (level == video->brightness->levels[offset]) {
-+			*state = video->brightness->count - offset - 1;
-+			return 0;
-+		}
- 
- 	return -EINVAL;
- }
-diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-index c537a5b..02abaf0 100644
---- a/drivers/thermal/thermal_sys.c
-+++ b/drivers/thermal/thermal_sys.c
-@@ -249,8 +249,12 @@ thermal_cooling_device_max_state_show(struct device *dev,
- 				      struct device_attribute *attr, char *buf)
- {
- 	struct thermal_cooling_device *cdev = to_cooling_device(dev);
-+	int state, ret;
- 
--	return cdev->ops->get_max_state(cdev, buf);
-+	ret = cdev->ops->get_max_state(cdev, &state);
-+	if (ret)
-+		return ret;
-+	return sprintf(buf, "%d\n", state);
- }
- 
- static ssize_t
-@@ -258,8 +262,12 @@ thermal_cooling_device_cur_state_show(struct device *dev,
- 				      struct device_attribute *attr, char *buf)
- {
- 	struct thermal_cooling_device *cdev = to_cooling_device(dev);
-+	int state, ret;
- 
--	return cdev->ops->get_cur_state(cdev, buf);
-+	ret = cdev->ops->get_cur_state(cdev, &state);
-+	if (ret)
-+		return ret;
-+	return sprintf(buf, "%d\n", state);
- }
- 
- static ssize_t
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 63e6619..5ddbd4f 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -46,8 +46,8 @@ struct thermal_zone_device_ops {
- };
- 
- struct thermal_cooling_device_ops {
--	int (*get_max_state) (struct thermal_cooling_device *, char *);
--	int (*get_cur_state) (struct thermal_cooling_device *, char *);
-+	int (*get_max_state) (struct thermal_cooling_device *, unsigned int *);
-+	int (*get_cur_state) (struct thermal_cooling_device *, unsigned int *);
- 	int (*set_cur_state) (struct thermal_cooling_device *, unsigned int);
- };
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+	-hpa
