@@ -1,110 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbYFKNos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754155AbYFKNsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753902AbYFKNos (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 09:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbYFKNoj
+	id S1754155AbYFKNsq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 09:48:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbYFKNsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 09:44:39 -0400
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:30519 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751447AbYFKNoh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 09:44:37 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Message-Id;
-  b=lTurt8HLD6AvQKEbMEnJesTLLMXPVp5CoZp6S/D5T6zuGa5tD3ctbPhy+WsR/FxaADzifcIGYsEfwy90EwYj0CoJNBxoRtrCbEne8bZKjTDNx5MKIsJaxJpgCkGaxJnZ4hi5YelI4/MEPIBB0mh7rkh4WiNGOJe9AYGxO3ExS6g=  ;
-X-YMail-OSG: jJkcpnIVM1mWo7jhrYNXBBWOfwnFevjy8JUfaEx2feVCCjhmBroAcgyYfKVUksKP59jv5rUIOb5NqQbf9fU1lJ33kcL7cC.lPiZF9r5eyhHxOd36PV8NByd3kyUL5KhBnEI-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Rik van Riel <riel@redhat.com>
-Subject: Re: 2.6.26-rc5-mm2: OOM with 1G free swap
-Date: Wed, 11 Jun 2008 23:44:17 +1000
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, linux-mm@kvack.org
-References: <20080609223145.5c9a2878.akpm@linux-foundation.org> <20080610232705.3aaf5c06.akpm@linux-foundation.org> <20080611085724.1c18164f@bree.surriel.com>
-In-Reply-To: <20080611085724.1c18164f@bree.surriel.com>
+	Wed, 11 Jun 2008 09:48:39 -0400
+Received: from styx.suse.cz ([82.119.242.94]:49627 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751359AbYFKNsj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 09:48:39 -0400
+Date: Wed, 11 Jun 2008 15:48:37 +0200
+From: Jiri Bohac <jbohac@suse.cz>
+To: samuel.thibault@ens-lyon.org, Andrew Morton <akpm@linux-foundation.org>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] console keyboard mapping broken by 04c71976
+Message-ID: <20080611134837.GA11462@midget.suse.cz>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_xa9TItkcit2Pj1U"
-Message-Id: <200806112344.17627.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_xa9TItkcit2Pj1U
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi,
 
-On Wednesday 11 June 2008 22:57, Rik van Riel wrote:
-> On Tue, 10 Jun 2008 23:27:05 -0700
->
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> > Well I assume that Rik ran LTP.  Perhaps a merge problem.
-> >
-> > Zero pages on active_anon and inactive_anon.  I suspect we lost those
-> > pages.
->
-> Known problem.  I fixed this one in the updates I sent you last night.
+the Czech (and I believe many other) console keyboard maps are
+broken since 04c71976. 
 
-Oh good. Yeah I was just running some tests, and got as far as verifying
-that the upstream kernel + lockless pagecache patches reclaims file pages
-like a dream, but -mm2 sucks very badly at it.
+To make old (non-unicode - the majority distributed with the kbd
+package) keymaps work, the keyboard mapping in the kernel uses a
+trick. It uses the translation tables loaded with the console
+font to translate the 8-bit values to unicode values.
 
-During which, I also did find by inspection a little problem with my
-speculative references patch. Andrew please apply this fix.
+So with the currently available keymaps when using unicode in
+the console you end up with:
 
+- kbd->kbdmode set to VC_UNICODE, to send UTF-8 sequences to the
+  terminal
+- most letters, icluding non-latin1, defined as type=KT_LETTER in the
+  keymap, with an 8-bit value, which only has its correct meaning
+  when translated using conv_8bit_to_uni().
 
---Boundary-00=_xa9TItkcit2Pj1U
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="mm-speculative-page-references-hugh-fix3.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="mm-speculative-page-references-hugh-fix3.patch"
+04c71976 changes k_self() to:
+static void k_self(struct vc_data *vc, unsigned char value, char up_flag)
+{
+	unsigned int uni;
+	if (kbd->kbdmode == VC_UNICODE)
+		uni = value;
+	else
+		uni = conv_8bit_to_uni(value);
+	k_unicode(vc, uni, up_flag);
+}
 
-Fix the VM_BUG_ON assertion check to actually do what I want, noted by
-Christoph.
+It wrongly assumes, that when the keyboard is in the VC_UNICODE
+mode, value is already the correct unicode value. This is only
+true for latin1.
 
-Also, fix an error-path-leak type issue with frozen refcount not being
-unfrozen. Found by review. In practice, this check is very rare to hit
-because a page dirtier is likely to hold the refcount elevated for much
-longer than it takes to check and non-racy-recheck. So it doesn't pose
-a big problem for users of -mm, but of course needs fixing.
+I think we need to always convert the value with
+conv_8bit_to_uni(), as we did before 04c71976.
 
----
-Index: linux-2.6/mm/vmscan.c
-===================================================================
---- linux-2.6.orig/mm/vmscan.c	2008-06-11 23:36:07.000000000 +1000
-+++ linux-2.6/mm/vmscan.c	2008-06-11 23:36:18.000000000 +1000
-@@ -415,8 +415,10 @@ static int __remove_mapping(struct addre
- 	if (!page_freeze_refs(page, 2))
- 		goto cannot_free;
- 	/* note: atomic_cmpxchg in page_freeze_refs provides the smp_rmb */
--	if (unlikely(PageDirty(page)))
-+	if (unlikely(PageDirty(page))) {
-+		page_unfreeze_refs(page, 2);
- 		goto cannot_free;
-+	}
- 
- 	if (PageSwapCache(page)) {
- 		swp_entry_t swap = { .val = page_private(page) };
-Index: linux-2.6/include/linux/pagemap.h
-===================================================================
---- linux-2.6.orig/include/linux/pagemap.h	2008-06-11 23:36:07.000000000 +1000
-+++ linux-2.6/include/linux/pagemap.h	2008-06-11 23:36:18.000000000 +1000
-@@ -165,7 +165,7 @@ static inline int page_cache_get_specula
- 		return 0;
- 	}
- #endif
--	VM_BUG_ON(PageCompound(page) && (struct page *)page_private(page) != page);
-+	VM_BUG_ON(PageTail(page));
- 
- 	return 1;
+The following patch fixes the problem for me: 
+
+diff --git a/drivers/char/keyboard.c b/drivers/char/keyboard.c
+index 7f7e798..16492b7 100644
+--- a/drivers/char/keyboard.c
++++ b/drivers/char/keyboard.c
+@@ -678,10 +678,7 @@ static void k_deadunicode(struct vc_data *vc, unsigned int value, char up_flag)
+ static void k_self(struct vc_data *vc, unsigned char value, char up_flag)
+ {
+ 	unsigned int uni;
+-	if (kbd->kbdmode == VC_UNICODE)
+-		uni = value;
+-	else
+-		uni = conv_8bit_to_uni(value);
++	uni = conv_8bit_to_uni(value);
+ 	k_unicode(vc, uni, up_flag);
  }
 
---Boundary-00=_xa9TItkcit2Pj1U--
+As far as I can see, it will affect latin1 users that now get
+their keymaps working even without loading the "trivial" console
+map (so the conversion will not do anything) but I think they
+needed to do that before 04c71976, so they probably still do
+without even knowing, right?
+
+Samuel, any comments?
+
+-- 
+Jiri Bohac <jbohac@suse.cz>
+SUSE Labs, SUSE CZ
+
