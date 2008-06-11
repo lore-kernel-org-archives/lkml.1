@@ -1,53 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbYFKThx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756097AbYFKTjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755506AbYFKThx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 15:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbYFKTho
+	id S1756097AbYFKTjb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 15:39:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbYFKTjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 15:37:44 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:42506 "EHLO smtp6.pp.htv.fi"
+	Wed, 11 Jun 2008 15:39:22 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:50041 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751895AbYFKThn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 15:37:43 -0400
-Date: Wed, 11 Jun 2008 22:36:39 +0300
+	id S1751981AbYFKTjV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 15:39:21 -0400
+Date: Wed, 11 Jun 2008 22:38:17 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Rob Landley <rob@landley.net>,
-       linux-tiny <Linux-tiny@selenic.com>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: mainlining min-configs...
-Message-ID: <20080611193639.GB2958@cs181133002.pp.htv.fi>
-References: <48447615.5050806@am.sony.com> <20080610183004.GG11685@cs181133002.pp.htv.fi> <20080610185123.GA15838@uranus.ravnborg.org> <200806110009.22542.rob@landley.net> <20080611063921.GA27978@uranus.ravnborg.org> <48502304.1030304@am.sony.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] always enable FW_LOADER unless EMBEDDED=y
+Message-ID: <20080611193817.GD2958@cs181133002.pp.htv.fi>
+References: <20080610160408.GB11685@cs181133002.pp.htv.fi> <20080610162450.GB13538@kroah.com> <20080610181206.GF11685@cs181133002.pp.htv.fi> <20080610212859.GB26249@kroah.com> <20080611082320.GM11685@cs181133002.pp.htv.fi> <20080611182040.GA18506@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <48502304.1030304@am.sony.com>
+In-Reply-To: <20080611182040.GA18506@kroah.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 11, 2008 at 12:09:56PM -0700, Tim Bird wrote:
-> Sam Ravnborg wrote:
-> >>> When I get my kconfig patchset polished you will be able to do:
-> >>>
-> >>> make K=my_mini_config allnoconfig
-> >> So you're renaming KCONFIG_ALLNOCONFIG then?
+On Wed, Jun 11, 2008 at 11:20:40AM -0700, Greg KH wrote:
+> On Wed, Jun 11, 2008 at 11:23:20AM +0300, Adrian Bunk wrote:
+> > On Tue, Jun 10, 2008 at 02:28:59PM -0700, Greg KH wrote:
+> > > On Tue, Jun 10, 2008 at 09:12:06PM +0300, Adrian Bunk wrote:
+> > > > On Tue, Jun 10, 2008 at 09:24:50AM -0700, Greg KH wrote:
+> > > > > On Tue, Jun 10, 2008 at 07:04:08PM +0300, Adrian Bunk wrote:
+> > > > > > James Bottomley recently discovered that we have 
+> > > > > > {request,release}_firmware() dummies for the case of the actual 
+> > > > > > functions not being available and has a fix for the bug that was 
+> > > > > > actually causing build errors for built-in users with 
+> > > > > > CONFIG_FW_LOADER=m.
+> > > > > > 
+> > > > > > But now missing selects on FW_LOADER are no longer visible at 
+> > > > > > compile-time at all and can become runtime problems.
+> > > > > > 
+> > > > > > FW_LOADER is infrastructure with relatively small codesize we can 
+> > > > > > safely enable for everyone, and only for people who really need small 
+> > > > > > kernels (and can be expected to know what they are doing) it matters 
+> > > > > > being able to disable it.
+> > > > > > 
+> > > > > > This patch therefore always sets FW_LOADER=y and allows users only to 
+> > > > > > disable it with EMBEDDED=y.
+> > > > > > 
+> > > > > > As a bonus, we can then get rid of all "select FW_LOADER" plus the due 
+> > > > > > to it required "depends on HOTPLUG" which removes some complexity from 
+> > > > > > our Kconfig files.
+> > > > > 
+> > > > > Well, we can't get rid of that if EMBEDDED is set, right?
+> > > > 
+> > > > No, if EMBEDDED is set and HOTPLUG is not set you will not be able to
+> > > > enable FW_LOADER (the "depends on HOTPLUG" for FW_LOADER has to stay, 
+> > > > but all the options that currently select FW_LOADER no longer need the 
+> > > > dependency).
+> > > 
+> > > Ok, but what about the point that the options that are wanting FW_LOADER
+> > > in that situation?  I know EMBEDDED is tough to get right as you can
+> > > shoot yourself in the foot very easily, but this seems like we are going
+> > > to make it even harder to use properly.
 > > 
-> > Somehow yes. The K= notation I hope will see more use. Only very few
-> > people know the KCONFIG_ALL*CONFIG= trick.
+> > Currently missing selects can result in a build error.
+> > 
+> > After James' patch to fix the dummy functions (that should have worked 
+> > from day 1) it will instead become a runtime problem.
 > 
-> Indeed.  I had never heard of it, but it appears to have been
-> around for at least 18 months.  It looks like Randy Dunlap tried
-> to submit some documentation for this in Oct 2006, but it didn't
-> make it in?
->...
+> Ah, yes, that should be fine then.
+> 
+> Can you bounce me the patch again?
 
-Randy's patch that documents KCONFIG_ALLCONFIG is in Linus' tree since
-April 2006.
+done
 
->  -- Tim
+> thanks,
+> 
+> greg k-h
 
 cu
 Adrian
