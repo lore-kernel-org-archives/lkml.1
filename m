@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762961AbYFKTVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763181AbYFKTVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762961AbYFKTVT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 15:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584AbYFKTVH
+	id S1763181AbYFKTVc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 15:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760828AbYFKTVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 15:21:07 -0400
+	Wed, 11 Jun 2008 15:21:12 -0400
 Received: from wolverine02.qualcomm.com ([199.106.114.251]:32424 "EHLO
 	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751634AbYFKTVG (ORCPT
+	with ESMTP id S1756941AbYFKTVL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 15:21:06 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5315"; a="3677976"
-Message-ID: <485025C3.4020409@qualcomm.com>
-Date: Wed, 11 Jun 2008 12:21:39 -0700
+	Wed, 11 Jun 2008 15:21:11 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5315"; a="3677980"
+Message-ID: <485025CB.8050505@qualcomm.com>
+Date: Wed, 11 Jun 2008 12:21:47 -0700
 From: Max Krasnyansky <maxk@qualcomm.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
@@ -54,7 +54,7 @@ Ok. btw That's what I'm doing now from user-space.
 > 
 > 	if (cancel_work_sync(work))
 > 		work->func(work);
-Cool. That would.
+Cool. That would work.
 btw Somehow I thought that you already implemented flush_work(). I do not see
 it 2.6.25 but I could've sworn that I saw a patch flying by. Must have been
 something else. Do you mind adding that ?
