@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759875AbYFKOy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbYFKPAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759875AbYFKOy1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 10:54:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759559AbYFKOx4
+	id S1753358AbYFKPAp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 11:00:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751115AbYFKPAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 10:53:56 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:12228 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759552AbYFKOxz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 10:53:55 -0400
-Date: Wed, 11 Jun 2008 16:53:52 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: AntonioLin <antonio.lin@alcormicro.com>,
-       David Vrabel <david.vrabel@csr.com>,
-       USB list <linux-usb@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [S] Re: [linux-uwb] packet size problem
-Message-ID: <20080611145349.GD20851@kernel.dk>
-References: <00b401c8cbc1$ebd48800$5108a8c0@alcormicro.com> <Pine.LNX.4.44L0.0806111032330.2459-100000@iolanthe.rowland.org>
+	Wed, 11 Jun 2008 11:00:37 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:18273 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751091AbYFKPAg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 11:00:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=ccc09CLGvMU4Vx0ll4v092JuIr2Y9d7JmBT7fEK/TU/z7kzEkLxk8LVk7PbF3mBTDP
+         7abcGlMgtxZbg+iOVdvnFkTU1Jh+6SzUXV2vGiTMFp4VDBCr0gXejaBA7iLmjuE6zBMG
+         N5ilNQj/6XPdoflrQZQPVK3IrVQky7z6zV3EM=
+Message-ID: <7c86c4470806110800w465f1c91k7e8f0bb8fba18ca3@mail.gmail.com>
+Date: Wed, 11 Jun 2008 17:00:34 +0200
+From: "stephane eranian" <eranian@googlemail.com>
+Reply-To: eranian@gmail.com
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: [patch 12/21] perfmon2 minimal: sysfs interface
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080611144955.GA20145@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0806111032330.2459-100000@iolanthe.rowland.org>
+References: <484daff1.1358560a.0808.0267@mx.google.com>
+	 <20080611144955.GA20145@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 11 2008, Alan Stern wrote:
-> On Wed, 11 Jun 2008, AntonioLin wrote:
-> 
-> > Hi All,
-> > 
-> > I checked srb->device->request_queue->dma_alignment in usb_stor_bulk_Bulk_transport() routine. , the value is 1023.
-> > 
-> > But in usb_stor_bulk_transfer_sglist, the length of first element in sg array is 3584 which is not divisible by 1024.
-> > 
-> > 
-> > Can you post your /proc/bus/usb/devices ?
-> > 
-> > I don't know how to do this, could you descript moe about it ?
-> > (Sorry,I have few experience about Linux.)
-> 
-> All you have to do is:
-> 
-> 	cat /proc/bus/usb/devices
-> 
-> Or even just tell your email client to include /proc/bus/usb/devices as
-> an attachment.  However some Linux distributions don't automatically
-> mount /proc/bus/usb.  If yours doesn't, you will have to do (as root):
-> 
-> 	mount -t usbfs none /proc/bus/usb
-> 
-> before you can access /proc/bus/usb/devices.  But in any case it
-> doesn't matter, since you have checked that the value of dma_alignment
-> really is 1023.
-> 
-> Jens, this is a question for you.  How come we're getting an SG element
-> whose lenth is 3584 when the request_queue's dma_alignment mask is set
-> to 1023?  Is dma_alignment not the right parameter to set?
+Greg,
 
-dma_alignment mask is the buffer address alignment, so they are not
-completely the same. But it does sound odd, since you would then be
-spanning two pages for that sg element. Is this before or after dma
-mapping the sg table?
+On Wed, Jun 11, 2008 at 4:49 PM, Greg KH <greg@kroah.com> wrote:
+> On Mon, Jun 09, 2008 at 03:34:25PM -0700, eranian@googlemail.com wrote:
+>> +
+>> +static struct kobject pfm_kernel_kobj;
+>
+> Eeek, no, please look at Documentation/kobject.txt that says to not ever
+> have static kobjects.
+>
+Will do.
 
--- 
-Jens Axboe
+> I think a lot of this code can be cleaned up and shrunk given the way
+> that kobjects have changed recently.  See the examples in
+> samples/kobject/ and the documentation file for more details.
+>
+If you say so. When building the series, I also wondered why there was
+so much code in there. But it was not clear to me how it could be shrunk.
+I saw some simplifications in 2.6.26 but still a lot of small functions.
 
+> If you have any questions about it, please let me know.
+>
+> Also, whenever you add a sysfs file to the kernel, please document it in
+> Documentation/ABI/ so that everyone knows what it is and how to use it.
+>
+
+I have that in my GIT tree. I simply forgot to include them in the quilt series.
+I will fix that.
