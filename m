@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbYFKA65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757912AbYFKBAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756905AbYFKA65 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 20:58:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256AbYFKA6s
+	id S1757912AbYFKBAi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 21:00:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbYFKBAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 20:58:48 -0400
-Received: from mga02.intel.com ([134.134.136.20]:36814 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752645AbYFKA6r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 20:58:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,620,1204531200"; 
-   d="scan'208";a="393337349"
-Subject: Re: [linux-pm] [PATCH -mm 2/2] kexec jump -v11: save/restore
-	device state
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Len Brown <lenb@kernel.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>, linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.1.10.0806101400090.14381@localhost.localdomain>
-References: <1213082106.22608.30.camel@caritas-dev.intel.com>
-	 <alpine.LFD.1.10.0806101400090.14381@localhost.localdomain>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 11 Jun 2008 09:01:14 +0800
-Message-Id: <1213146074.21923.10.camel@caritas-dev.intel.com>
+	Tue, 10 Jun 2008 21:00:30 -0400
+Received: from tama500.ecl.ntt.co.jp ([129.60.39.148]:36243 "EHLO
+	tama500.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754256AbYFKBA3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 21:00:29 -0400
+To: mb@bu3sch.de
+Cc: vegard.nossum@gmail.com, miles.lane@gmail.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp
+Subject: Re: BUG: NULL pointer dereference at 00000000 -- IP: [<f8e783d5>]
+ :b43:b43_dma_mapping_error+0x16/0x155
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <200806101650.27180.mb@bu3sch.de>
+References: <200806101637.11473.mb@bu3sch.de>
+	<19f34abd0806100742v176f50e8se463d2e70df44332@mail.gmail.com>
+	<200806101650.27180.mb@bu3sch.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-X-OriginalArrivalTime: 11 Jun 2008 00:58:43.0460 (UTC) FILETIME=[4B879440:01C8CB5E]
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080611095844J.fujita.tomonori@lab.ntt.co.jp>
+Date: Wed, 11 Jun 2008 09:58:44 +0900
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-06-10 at 14:01 -0400, Len Brown wrote:
-> 
-> On Tue, 10 Jun 2008, Huang, Ying wrote:
-> 
-> > This patch implements devices state save/restore before after kexec.
-> > 
-> > 
-> > This patch together with features in kexec_jump patch can be used for
-> > following:
-> > 
-> > - A simple hibernation implementation without ACPI support. You can
-> >   kexec a hibernating kernel, save the memory image of original system
-> >   and shutdown the system. When resuming, you restore the memory image
-> >   of original system via ordinary kexec load then jump back.
-> 
-> What part of ACPI's role in hibernation are you trying to avoid
-> 1. enabling wake devices
-> 2. removing power from the system
-> 3. something else?
+On Tue, 10 Jun 2008 16:50:26 +0200
+Michael Buesch <mb@bu3sch.de> wrote:
 
-ACPI S5 is used instead of S4 for this simple hibernation
-implementation. That is, before creating the hibernation image, the ACPI
-_PTS is not executed, devices are not put into low power state and wake
-devices are not enabled. After creating the hibernation image, the image
-is saved to disk and system is shutdown (go to S5). When resuming from
-hibernated image, ACPI _BFS and _WAK are not executed too.
+> On Tuesday 10 June 2008 16:42:41 Vegard Nossum wrote:
+> > This change comes from
+> > 
+> > commit 353c409463ecba63c3a41a992d3f5fba935eada9
+> > Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > Date:   Fri May 23 19:02:30 2008 +0000
+> 
+> 
+> Ok, FUJITA Tomonori, please make sure a patch like the following goes
+> into the same trees that you submitted commit 353c409 to.
+> Also make sure to check b43legacy. I _guess_ you might have added
+> the same bug there.
 
-Best Regards,
-Huang Ying
+Ah, sorry about the bug.
 
+>From a quick look, mainline needs the same fix too?
+
+b43_dma_mapping_error calls unmap_descbuffer() on the failure, which
+assumes that ring->dev is set up properly.
