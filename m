@@ -1,215 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758108AbYFKU42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758445AbYFKU4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758108AbYFKU42 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 16:56:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756915AbYFKUyw
+	id S1758445AbYFKU4m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 16:56:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756597AbYFKUzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 16:54:52 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:7527 "EHLO
-	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754229AbYFKUys (ORCPT
+	Wed, 11 Jun 2008 16:55:47 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36986 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757494AbYFKUzp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 16:54:48 -0400
-Message-Id: <20080611204917.267412694@mvista.com>
-References: <20080611204916.271608740@mvista.com>
-User-Agent: quilt/0.46-1
-Date: Wed, 11 Jun 2008 13:49:19 -0700
-Subject: [PATCH 3/5] mutex debug: add generic blocked_on usage
-From: Daniel Walker <dwalker@mvista.com>
-To: linux-kernel@vger.kernel.org
-Cc: Ulrich Drepper <drepper@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-Content-Disposition: inline; filename=blocked_on-mutex.patch
+	Wed, 11 Jun 2008 16:55:45 -0400
+Date: Wed, 11 Jun 2008 13:55:32 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: markh@compro.net
+Cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       Jan Engelhardt <jengelh@medozas.de>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       "solsTiCe d'Hiver" <solstice.dhiver@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: no cpu MHz in /proc/cpuinfo on 2.6.25.4-rt6
+Message-ID: <20080611135532.651fb5ae@infradead.org>
+In-Reply-To: <48503792.50003@compro.net>
+References: <200806102152.23286.solstice.dhiver@gmail.com>
+	<20080610131314.5f7069e6@infradead.org>
+	<484EE71A.40002@intel.com>
+	<alpine.LNX.1.10.0806111440480.20733@fbirervta.pbzchgretzou.qr>
+	<20080611063639.5e1eea5b@infradead.org>
+	<alpine.LNX.1.10.0806111552090.20733@fbirervta.pbzchgretzou.qr>
+	<20080611065816.6cff290d@infradead.org>
+	<Pine.LNX.4.61.0806111006560.23096@chaos.analogic.com>
+	<20080611083644.32afc823@infradead.org>
+	<4850046C.4070602@compro.net>
+	<20080611104446.3b0ce2d9@infradead.org>
+	<48501159.4050908@compro.net>
+	<48503792.50003@compro.net>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are a couple of blocked on type structures. One for mutexes, and one
-for rtmutexes, and we also need one for futexes.
+On Wed, 11 Jun 2008 16:37:38 -0400
+> > Mark 
+> > 
+> 
+> Ok, what would one use besides the tsc to take a fast high-res time
+> stamp in a kernel module that could also be used in user land (same
+> time source) to for instance calculate  the the time between an event
+> in the kernel to an event in user land?
+> 
+> do_gettimeofday / gettimeofday are not really acceptable.
 
-Instead of just adding another one to the task struct I combined them all into
-a union. Since a waiter can only be blocked on one of the types at any given
-time this should be safe.
 
-I also usurped the pi_lock as the lock which protects all the blocked_on types.
+why not? both of these (they're teh same) are the best the kernel can
+do. If there was a better way to do it, gettimeofday() would use it.
+It's not even a system call if we can get away with it
+(although system calls are pretty cheap)
 
-Signed-off-by: Daniel Walker <dwalker@mvista.com>
+really, think about it. if there was a better way, gettimeofday() would
+use it.
 
----
- include/linux/sched.h |   36 +++++++++++++++++++++++++++++++-----
- kernel/fork.c         |    2 --
- kernel/mutex-debug.c  |   25 ++++++++++++++++++-------
- kernel/mutex-debug.h  |    4 +++-
- kernel/mutex.c        |    6 +++++-
- 5 files changed, 57 insertions(+), 16 deletions(-)
-
-Index: linux-2.6.25/include/linux/sched.h
-===================================================================
---- linux-2.6.25.orig/include/linux/sched.h
-+++ linux-2.6.25/include/linux/sched.h
-@@ -1024,6 +1024,17 @@ struct sched_rt_entity {
- #endif
- };
- 
-+enum lock_waiter_type {
-+	MUTEX_WAITER = 1,
-+};
-+
-+struct lock_waiter_state {
-+	enum lock_waiter_type lock_type;
-+	union {
-+		struct mutex_waiter *mutex_blocked_on;
-+	};
-+};
-+
- struct task_struct {
- 	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
- 	void *stack;
-@@ -1201,7 +1212,7 @@ struct task_struct {
- /* Protection of (de-)allocation: mm, files, fs, tty, keyrings */
- 	spinlock_t alloc_lock;
- 
--	/* Protection of the PI data structures: */
-+	/* Protects blocked_on field and PI waiters list. */
- 	spinlock_t pi_lock;
- 
- #ifdef CONFIG_RT_MUTEXES
-@@ -1211,10 +1222,12 @@ struct task_struct {
- 	struct rt_mutex_waiter *pi_blocked_on;
- #endif
- 
--#ifdef CONFIG_DEBUG_MUTEXES
--	/* mutex deadlock detection */
--	struct mutex_waiter *blocked_on;
--#endif
-+	/*
-+	 * Deadlock detection and priority inheritance handling,
-+	 * and any other out of line mutex operations
-+	 */
-+	struct lock_waiter_state *blocked_on;
-+
- #ifdef CONFIG_TRACE_IRQFLAGS
- 	unsigned int irq_events;
- 	int hardirqs_enabled;
-@@ -1306,6 +1319,19 @@ struct task_struct {
- #endif
- };
- 
-+
-+/*
-+ * set_blocked_on - Set the blocked on field in the task struct.
-+ */
-+static inline void
-+set_blocked_on(struct task_struct *p, struct lock_waiter_state *blocked_on)
-+{
-+	spin_lock(&p->pi_lock);
-+	p->blocked_on = blocked_on;
-+	spin_unlock(&p->pi_lock);
-+}
-+
-+
- /*
-  * Priority of a process goes from 0..MAX_PRIO-1, valid RT
-  * priority is 0..MAX_RT_PRIO-1, and SCHED_NORMAL/SCHED_BATCH
-Index: linux-2.6.25/kernel/fork.c
-===================================================================
---- linux-2.6.25.orig/kernel/fork.c
-+++ linux-2.6.25/kernel/fork.c
-@@ -1028,9 +1028,7 @@ static struct task_struct *copy_process(
- 	p->lockdep_recursion = 0;
- #endif
- 
--#ifdef CONFIG_DEBUG_MUTEXES
- 	p->blocked_on = NULL; /* not blocked yet */
--#endif
- 
- 	/* Perform scheduler related setup. Assign this task to a CPU. */
- 	sched_fork(p, clone_flags);
-Index: linux-2.6.25/kernel/mutex-debug.c
-===================================================================
---- linux-2.6.25.orig/kernel/mutex-debug.c
-+++ linux-2.6.25/kernel/mutex-debug.c
-@@ -52,23 +52,34 @@ void debug_mutex_free_waiter(struct mute
- 	memset(waiter, MUTEX_DEBUG_FREE, sizeof(*waiter));
- }
- 
--void debug_mutex_add_waiter(struct mutex *lock, struct mutex_waiter *waiter,
--			    struct thread_info *ti)
-+void
-+debug_mutex_add_waiter(struct mutex *lock,
-+		       struct lock_waiter_state *lock_waiter,
-+		       struct thread_info *ti)
- {
-+	struct task_struct *task = ti->task;
-+
- 	SMP_DEBUG_LOCKS_WARN_ON(!spin_is_locked(&lock->wait_lock));
- 
- 	/* Mark the current thread as blocked on the lock: */
--	ti->task->blocked_on = waiter;
--	waiter->lock = lock;
-+	lock_waiter->mutex_blocked_on->lock = lock;
-+	set_blocked_on(task, lock_waiter);
- }
- 
- void mutex_remove_waiter(struct mutex *lock, struct mutex_waiter *waiter,
- 			 struct thread_info *ti)
- {
-+	struct task_struct *task = ti->task;
-+
-+	spin_lock(&task->pi_lock);
-+
- 	DEBUG_LOCKS_WARN_ON(list_empty(&waiter->list));
--	DEBUG_LOCKS_WARN_ON(waiter->task != ti->task);
--	DEBUG_LOCKS_WARN_ON(ti->task->blocked_on != waiter);
--	ti->task->blocked_on = NULL;
-+	DEBUG_LOCKS_WARN_ON(waiter->task != task);
-+	DEBUG_LOCKS_WARN_ON(task->blocked_on == NULL);
-+	DEBUG_LOCKS_WARN_ON(task->blocked_on->mutex_blocked_on != waiter);
-+
-+	task->blocked_on = NULL;
-+	spin_unlock(&task->pi_lock);
- 
- 	list_del_init(&waiter->list);
- 	waiter->task = NULL;
-Index: linux-2.6.25/kernel/mutex-debug.h
-===================================================================
---- linux-2.6.25.orig/kernel/mutex-debug.h
-+++ linux-2.6.25/kernel/mutex-debug.h
-@@ -25,10 +25,12 @@ extern void debug_mutex_lock_common(stru
- 				    struct mutex_waiter *waiter);
- extern void debug_mutex_wake_waiter(struct mutex *lock,
- 				    struct mutex_waiter *waiter);
-+
- extern void debug_mutex_free_waiter(struct mutex_waiter *waiter);
- extern void debug_mutex_add_waiter(struct mutex *lock,
--				   struct mutex_waiter *waiter,
-+				   struct lock_waiter_state *lock_waiter,
- 				   struct thread_info *ti);
-+
- extern void mutex_remove_waiter(struct mutex *lock, struct mutex_waiter *waiter,
- 				struct thread_info *ti);
- extern void debug_mutex_unlock(struct mutex *lock);
-Index: linux-2.6.25/kernel/mutex.c
-===================================================================
---- linux-2.6.25.orig/kernel/mutex.c
-+++ linux-2.6.25/kernel/mutex.c
-@@ -130,12 +130,16 @@ __mutex_lock_common(struct mutex *lock, 
- 	struct mutex_waiter waiter;
- 	unsigned int old_val;
- 	unsigned long flags;
-+#ifdef CONFIG_DEBUG_MUTEXES
-+	struct lock_waiter_state lock_waiter = {
-+		.lock_type = MUTEX_WAITER, { .mutex_blocked_on = &waiter} };
-+#endif
- 
- 	spin_lock_mutex(&lock->wait_lock, flags);
- 
- 	debug_mutex_lock_common(lock, &waiter);
- 	mutex_acquire(&lock->dep_map, subclass, 0, ip);
--	debug_mutex_add_waiter(lock, &waiter, task_thread_info(task));
-+	debug_mutex_add_waiter(lock, &lock_waiter, task_thread_info(task));
- 
- 	/* add waiting tasks to the end of the waitqueue (FIFO): */
- 	list_add_tail(&waiter.list, &lock->wait_list);
 
 -- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
