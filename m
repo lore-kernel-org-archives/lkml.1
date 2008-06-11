@@ -1,43 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761244AbYFKPVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761319AbYFKPXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761244AbYFKPVT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 11:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbYFKPVL
+	id S1761319AbYFKPXe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 11:23:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756626AbYFKPX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 11:21:11 -0400
-Received: from web52911.mail.re2.yahoo.com ([206.190.49.21]:42404 "HELO
-	web52911.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752155AbYFKPVL convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 11:21:11 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=vY9x1vhLAhIM7nYjfQM0wnQzZvMSXQqBzSgnExFRZ97OacNQfhwoJ9XxIXsSXAa56GEPC0Hy1MVB0ZBhmDXpyepmvi/xMyUB73ixLGioRJ5c/VjwgWDfng7M7r/CZ7f81DJott8KYA8Lz1fuynlFEUWnBAzf8akcCKvopMi/6xQ=;
-X-Mailer: YahooMailWebService/0.7.199
-Date: Wed, 11 Jun 2008 08:21:09 -0700 (PDT)
-From: Chris Rankin <rankincj@yahoo.com>
-Reply-To: rankincj@yahoo.com
-Subject: RE: [PATCH] sound: emu10k1 - fix system hang with Audigy2 ZS Notebook PCMCIA
-To: linux-kernel@vger.kernel.org
-Cc: alsa-devel@alsa-project.org
+	Wed, 11 Jun 2008 11:23:27 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:43749 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752932AbYFKPX0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 11:23:26 -0400
+Date: Wed, 11 Jun 2008 11:23:18 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kbuild breaks um - fails to find util when linking
+Message-ID: <20080611152318.GA8099@c2.user-mode-linux.org>
+References: <20080610190307.GA15983@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Message-ID: <839605.45533.qm@web52911.mail.re2.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080610190307.GA15983@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, Jun 10, 2008 at 09:03:07PM +0200, Sam Ravnborg wrote:
+> Hi Jeff.
+> 
+> In an attempt to make the final link of vmlinux
+> readable/hackable I have broken um build.
+> 
+> um used a special rule so it could use gcc as linker.
+> With my changes we need to use ld to link vmlinux and
+> ld now fails to locate util.
+> 
+> I hope you have a clue why. I tried various things but
+> did not find out why ld cannot locate util.
 
-I can't say whether this patch fixes the hang at boot-time with the Audigy2 ZS Notebook card, but my workstation with its Audigy 2 PCI card boots a LOT more quietly with this patch. It used to make a sound like a herd of stampeding elephants rushing past (and had done for quiet a while...), but now is far better behaved.
+This little patch fixes the -lutil problem linking vmlinux.o, but on
+the final link, I get what appears to be every libc symbol
+undefined...
 
-Cheers,
-Chris
+Index: linux-2.6-git/arch/um/Makefile
+===================================================================
+--- linux-2.6-git.orig/arch/um/Makefile	2008-06-11 10:46:03.000000000 -0400
++++ linux-2.6-git/arch/um/Makefile	2008-06-11 11:19:05.000000000 -0400
+@@ -104,7 +104,7 @@ archprepare: $(ARCH_SYMLINKS) $(ARCH_DIR
+ prepare: $(ARCH_DIR)/include/kern_constants.h
+ 
+ LINK-$(CONFIG_LD_SCRIPT_STATIC) += -static
+-LINK-$(CONFIG_LD_SCRIPT_DYN) += -rpath /lib -rpath /usr/lib
++LINK-$(CONFIG_LD_SCRIPT_DYN) += -L/lib -L/usr/lib
+ 
+ CFLAGS_NO_HARDENING := $(call cc-option, -fno-PIC,) $(call cc-option, -fno-pic,) \
+ 	$(call cc-option, -fno-stack-protector,) \
 
+	       		  	Jeff
 
-
-      __________________________________________________________
-Sent from Yahoo! Mail.
-A Smarter Email http://uk.docs.yahoo.com/nowyoucan.html
+-- 
+Work email - jdike at linux dot intel dot com
