@@ -1,128 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756233AbYFKOEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbYFKOD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756233AbYFKOEQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 10:04:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbYFKODZ
+	id S1756023AbYFKOD4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 10:03:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbYFKODX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 10:03:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50945 "EHLO mx1.redhat.com"
+	Wed, 11 Jun 2008 10:03:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50948 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751447AbYFKODU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751417AbYFKODU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 11 Jun 2008 10:03:20 -0400
 From: Jeff Layton <jlayton@redhat.com>
 To: trond.myklebust@fys.uio.no, bfields@fieldses.org
 Cc: linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] nfs4: fix potential race with rapid nfs_callback_up/down cycle
-Date: Wed, 11 Jun 2008 10:03:11 -0400
-Message-Id: <1213192992-7635-3-git-send-email-jlayton@redhat.com>
+Subject: [PATCH 3/3] lockd: close potential race with rapid lockd_up/lockd_down cycle
+Date: Wed, 11 Jun 2008 10:03:12 -0400
+Message-Id: <1213192992-7635-4-git-send-email-jlayton@redhat.com>
 X-Mailer: git-send-email 1.5.3.6
-In-Reply-To: <1213192992-7635-2-git-send-email-jlayton@redhat.com>
+In-Reply-To: <1213192992-7635-3-git-send-email-jlayton@redhat.com>
 References: <1213192992-7635-1-git-send-email-jlayton@redhat.com>
  <1213192992-7635-2-git-send-email-jlayton@redhat.com>
+ <1213192992-7635-3-git-send-email-jlayton@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the nfsv4 callback thread is rapidly brought up and down, it's
-possible that nfs_callback_svc might never get a chance to run. If
-this happens, the cleanup at thread exit might never occur, throwing
-the refcounting off and nfs_callback_info in an incorrect state.
-
-Move the clean functions into nfs_callback_down. Also change the
-nfs_callback_info struct to track the svc_rqst rather than svc_serv
-since we need to know that to call svc_exit_thread.
+If lockd_down is called very rapidly after lockd_up returns, then
+there is a slim chance that lockd() will never be called. kthread()
+will return before calling the function, so we'll end up never
+actually calling the cleanup functions for the thread.
 
 Signed-off-by: Jeff Layton <jlayton@redhat.com>
 ---
- fs/nfs/callback.c |   30 ++++++++++++++++--------------
- 1 files changed, 16 insertions(+), 14 deletions(-)
+ fs/lockd/svc.c |   33 +++++++++++++--------------------
+ 1 files changed, 13 insertions(+), 20 deletions(-)
 
-diff --git a/fs/nfs/callback.c b/fs/nfs/callback.c
-index 9e713d2..f447f4b 100644
---- a/fs/nfs/callback.c
-+++ b/fs/nfs/callback.c
-@@ -27,7 +27,7 @@
+diff --git a/fs/lockd/svc.c b/fs/lockd/svc.c
+index 2169af4..5bd9bf0 100644
+--- a/fs/lockd/svc.c
++++ b/fs/lockd/svc.c
+@@ -50,7 +50,7 @@ EXPORT_SYMBOL(nlmsvc_ops);
+ static DEFINE_MUTEX(nlmsvc_mutex);
+ static unsigned int		nlmsvc_users;
+ static struct task_struct	*nlmsvc_task;
+-static struct svc_serv		*nlmsvc_serv;
++static struct svc_rqst		*nlmsvc_rqst;
+ int				nlmsvc_grace_period;
+ unsigned long			nlmsvc_timeout;
  
- struct nfs_callback_data {
- 	unsigned int users;
--	struct svc_serv *serv;
-+	struct svc_rqst *rqst;
- 	struct task_struct *task;
- };
+@@ -194,20 +194,11 @@ lockd(void *vrqstp)
  
-@@ -91,18 +91,15 @@ nfs_callback_svc(void *vrqstp)
  		svc_process(rqstp);
  	}
+-
+ 	flush_signals(current);
+ 	if (nlmsvc_ops)
+ 		nlmsvc_invalidate_all();
+ 	nlm_shutdown_hosts();
+-
  	unlock_kernel();
--	nfs_callback_info.task = NULL;
+-
+-	nlmsvc_task = NULL;
+-	nlmsvc_serv = NULL;
+-
+-	/* Exit the RPC thread */
 -	svc_exit_thread(rqstp);
+-
  	return 0;
  }
  
- /*
-- * Bring up the server process if it is not already up.
-+ * Bring up the callback thread if it is not already up.
-  */
- int nfs_callback_up(void)
+@@ -254,16 +245,15 @@ int
+ lockd_up(int proto) /* Maybe add a 'family' option when IPv6 is supported ?? */
  {
- 	struct svc_serv *serv = NULL;
+ 	struct svc_serv *serv;
 -	struct svc_rqst *rqstp;
- 	int ret = 0;
+ 	int		error = 0;
  
- 	mutex_lock(&nfs_callback_mutex);
-@@ -120,22 +117,23 @@ int nfs_callback_up(void)
- 	nfs_callback_tcpport = ret;
- 	dprintk("Callback port = 0x%x\n", nfs_callback_tcpport);
+ 	mutex_lock(&nlmsvc_mutex);
+ 	/*
+ 	 * Check whether we're already up and running.
+ 	 */
+-	if (nlmsvc_serv) {
++	if (nlmsvc_rqst) {
+ 		if (proto)
+-			error = make_socks(nlmsvc_serv, proto);
++			error = make_socks(nlmsvc_rqst->rq_server, proto);
+ 		goto out;
+ 	}
  
+@@ -288,9 +278,10 @@ lockd_up(int proto) /* Maybe add a 'family' option when IPv6 is supported ?? */
+ 	/*
+ 	 * Create the kernel thread and wait for it to start.
+ 	 */
 -	rqstp = svc_prepare_thread(serv, &serv->sv_pools[0]);
 -	if (IS_ERR(rqstp)) {
--		ret = PTR_ERR(rqstp);
-+	nfs_callback_info.rqst = svc_prepare_thread(serv, &serv->sv_pools[0]);
-+	if (IS_ERR(nfs_callback_info.rqst)) {
-+		ret = PTR_ERR(nfs_callback_info.rqst);
-+		nfs_callback_info.rqst = NULL;
- 		goto out_err;
+-		error = PTR_ERR(rqstp);
++	nlmsvc_rqst = svc_prepare_thread(serv, &serv->sv_pools[0]);
++	if (IS_ERR(nlmsvc_rqst)) {
++		error = PTR_ERR(nlmsvc_rqst);
++		nlmsvc_rqst = NULL;
+ 		printk(KERN_WARNING
+ 			"lockd_up: svc_rqst allocation failed, error=%d\n",
+ 			error);
+@@ -298,16 +289,15 @@ lockd_up(int proto) /* Maybe add a 'family' option when IPv6 is supported ?? */
  	}
  
  	svc_sock_update_bufs(serv);
--	nfs_callback_info.serv = serv;
+-	nlmsvc_serv = rqstp->rq_server;
  
--	nfs_callback_info.task = kthread_run(nfs_callback_svc, rqstp,
-+	nfs_callback_info.task = kthread_run(nfs_callback_svc,
-+					     nfs_callback_info.rqst,
- 					     "nfsv4-svc");
- 	if (IS_ERR(nfs_callback_info.task)) {
- 		ret = PTR_ERR(nfs_callback_info.task);
--		nfs_callback_info.serv = NULL;
-+		svc_exit_thread(nfs_callback_info.rqst);
-+		nfs_callback_info.rqst = NULL;
- 		nfs_callback_info.task = NULL;
+-	nlmsvc_task = kthread_run(lockd, rqstp, serv->sv_name);
++	nlmsvc_task = kthread_run(lockd, nlmsvc_rqst, serv->sv_name);
+ 	if (IS_ERR(nlmsvc_task)) {
+ 		error = PTR_ERR(nlmsvc_task);
++		svc_exit_thread(nlmsvc_rqst);
+ 		nlmsvc_task = NULL;
+-		nlmsvc_serv = NULL;
++		nlmsvc_rqst = NULL;
+ 		printk(KERN_WARNING
+ 			"lockd_up: kthread_run failed, error=%d\n", error);
 -		svc_exit_thread(rqstp);
- 		goto out_err;
+ 		goto destroy_and_out;
  	}
+ 
+@@ -346,6 +336,9 @@ lockd_down(void)
+ 		BUG();
+ 	}
+ 	kthread_stop(nlmsvc_task);
++	svc_exit_thread(nlmsvc_rqst);
++	nlmsvc_task = NULL;
++	nlmsvc_rqst = NULL;
  out:
-@@ -157,14 +155,18 @@ out_err:
+ 	mutex_unlock(&nlmsvc_mutex);
  }
- 
- /*
-- * Kill the server process if it is not already down.
-+ * Kill the callback thread if it's no longer being used.
-  */
- void nfs_callback_down(void)
- {
- 	mutex_lock(&nfs_callback_mutex);
- 	nfs_callback_info.users--;
--	if (nfs_callback_info.users == 0 && nfs_callback_info.task != NULL)
-+	if (nfs_callback_info.users == 0 && nfs_callback_info.task != NULL) {
- 		kthread_stop(nfs_callback_info.task);
-+		svc_exit_thread(nfs_callback_info.rqst);
-+		nfs_callback_info.rqst = NULL;
-+		nfs_callback_info.task = NULL;
-+	}
- 	mutex_unlock(&nfs_callback_mutex);
- }
- 
 -- 
 1.5.3.6
 
