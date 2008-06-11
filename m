@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753762AbYFKFSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754108AbYFKFZM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753762AbYFKFSm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 01:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbYFKFSb
+	id S1754108AbYFKFZM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 01:25:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbYFKFY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 01:18:31 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:40563
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750769AbYFKFSb (ORCPT
+	Wed, 11 Jun 2008 01:24:58 -0400
+Received: from mail2.briontech.com ([66.166.78.5]:40441 "EHLO
+	mail2.briontech.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750769AbYFKFY5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 01:18:31 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: mainlining min-configs...
-Date: Wed, 11 Jun 2008 00:17:32 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Tim Bird <tim.bird@am.sony.com>, linux-tiny <Linux-tiny@selenic.com>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-References: <48447615.5050806@am.sony.com> <484EC576.5080302@am.sony.com> <20080610183004.GG11685@cs181133002.pp.htv.fi>
-In-Reply-To: <20080610183004.GG11685@cs181133002.pp.htv.fi>
+	Wed, 11 Jun 2008 01:24:57 -0400
+From: Luoqi Chen <Luoqi.Chen@brion.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>
+Date: Tue, 10 Jun 2008 22:24:49 -0700
+Subject: RE: NFS open/setuid/ftruncate problem
+Thread-Topic: NFS open/setuid/ftruncate problem
+Thread-Index: AcjLVFoK2wr78XGJQWuURu3BR4f9HQALTUPQ
+Message-ID: <0707E37B6D2E244C85660487B602C9221D9D9883@ex02.briontech.com>
+References: <0707E37B6D2E244C85660487B602C9221D9D9846@ex02.briontech.com>
+ <1213141630.20459.113.camel@localhost>
+In-Reply-To: <1213141630.20459.113.camel@localhost>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806110017.32880.rob@landley.net>
+X-OriginalArrivalTime: 11 Jun 2008 05:24:51.0548 (UTC) FILETIME=[794071C0:01C8CB83]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 10 June 2008 13:30:04 Adrian Bunk wrote:
-> On Tue, Jun 10, 2008 at 11:18:30AM -0700, Tim Bird wrote:
-> > Adrian Bunk wrote:
-> >...
-> >
-> > > You need both, and ideally constantly done by the same person against
-> > > Linus' tree, -next and -mm.
-> > >
-> > > Where to get your minimal configs from at the start is just a small
-> > > thing at the beginning - don't underestimate the required manual work
-> > > that will have to be done each week.
-> >
-> > This is probably why I haven't signed up for this myself previously.
-> > I'd be interested in finding out the rate at which defconfigs
-> > bitrot in mainline.  My experience is that usually a 'make oldconfig'
-> > will produce something usable.  But maybe that wouldn't be as
-> > effective with a minconfig?
-> >...
+> From: Trond Myklebust <Trond.Myklebust@netapp.com>
+> Date: Tue, 10 Jun 2008 19:39:41 -0400
+> NFS: Fix the ftruncate() credential problem
 >
-> Someone has to run the 'make oldconfig' for all configs...
+> ftruncate() access checking is supposed to be performed at
+> open() time,
+> just like reads and writes.
+>
+Thanks, Trond. Is there any chance this patch could be
+included in the linux kernel in the near future? For now,
+I guess I'll workaround this problem by moving the ftruncate()
+to before setuid().
 
-Running "make oldconfig" isn't necessarily enough.  If you can't build the 
-result, you don't really _know_ if it's going to work.
+-luoqi
 
-For example, in 2.6.23 new guard symbols showed up (CONFIG_BLK_DEV and 
-CONFIG_SCSI_LOWLEVEL), meaning if you had stuff under those selected but they 
-defaulted to off, everything under them would silently vanish.  (I don't 
-remember what their defaults were, but I do remember it broke miniconfig.)
+PS: I haven't tried the patch, just browsing through, and I noticed
+a typo, pointing out here to save some trouble for anyone who
+wants to give it a try (I guess gcc would issue a warning too),
 
-I need to go through and teach "make miniconfig" that when you set something 
-inside a menu, you set its menu symbol as well (all the way up to root if 
-necessary).  That would allow the resulting config to strip down to fewer 
-symbols and not get broken by the addition of guard symbols between 
-versions...
-
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+        /* Search for an existing open(O_WRITE) file */
+-       ctx = nfs_find_open_context(inode, cred, FMODE_WRITE);
+-       if (ctx != NULL)
+-               state = ctx->state;
++       if (sattr->ia_valid && ATTR_FILE) {  <=== && should be &
++               ctx = nfs_file_open_context(sattr->ia_file);
++               if (ctx != NULL)
++                       state = ctx->state;
++       }
