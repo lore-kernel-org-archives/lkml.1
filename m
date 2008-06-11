@@ -1,174 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760624AbYFKPJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760731AbYFKPKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760624AbYFKPJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 11:09:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbYFKPJr
+	id S1760731AbYFKPKi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 11:10:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbYFKPKb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 11:09:47 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:45816 "EHLO
-	e28esmtp01.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753255AbYFKPJq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 11:09:46 -0400
-Date: Wed, 11 Jun 2008 20:38:45 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: cmm@us.ibm.com, jack@suse.cz, linux-ext4@vger.kernel.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ext2: Use page_mkwrite vma_operations to get mmap
-	write notification.
-Message-ID: <20080611150845.GA21910@skywalker>
-References: <1212685513-32237-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com> <20080605123045.445e380a.akpm@linux-foundation.org>
+	Wed, 11 Jun 2008 11:10:31 -0400
+Received: from styx.suse.cz ([82.119.242.94]:53024 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760088AbYFKPKa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 11:10:30 -0400
+Date: Wed, 11 Jun 2008 17:10:28 +0200
+From: Jiri Bohac <jbohac@suse.cz>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       Jiri Bohac <jbohac@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] console keyboard mapping broken by 04c71976
+Message-ID: <20080611151028.GB11462@midget.suse.cz>
+References: <20080611134837.GA11462@midget.suse.cz> <20080611140304.GM4244@implementation.uk.xensource.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080605123045.445e380a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080611140304.GM4244@implementation.uk.xensource.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 05, 2008 at 12:30:45PM -0700, Andrew Morton wrote:
-> On Thu,  5 Jun 2008 22:35:12 +0530
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+On Wed, Jun 11, 2008 at 03:03:04PM +0100, Samuel Thibault wrote:
+> Err, at quick look it looks to me rather like a bug kbd, which doesn't
+> cope with the console being in unicode mode.  Which distribution are you
+> using?
 > 
-> > We would like to get notified when we are doing a write on mmap
-> > section.  The changes are needed to handle ENOSPC when writing to an
-> > mmap section of files with holes.
-> > 
-> 
-> Whoa.  You didn't copy anything like enough mailing lists for a change
-> of this magnitude.  I added some.
-> 
-> This is a large change in behaviour!
-> 
-> a) applications will now get a synchronous SIGBUS when modifying a
->    page over an ENOSPC filesystem.  Whereas previously they could have
->    proceeded to completion and then detected the error via an fsync().
+> In unicode mode, k_self is really meant to hold unicode values (there is
+> no other way to provide an arbitrary unicode value in keyboard maps),
+> and thus kbd should translate KT_LETTER's value from the map file's
+> encoding (set by the charset directive) to unicode.
 
-Or not detect the error at all if we don't call fsync() right ? Isn't a
-synchronous SIGBUS the right behaviour ?
+I am actually hunting down a bug this causes in openSUSE. We use
+kbd-1.12. kbd does not translate anything to unicode - there is
+no space for that in the 8 bits the keycode uses for the value.
+The kernel needs to take care for the conversion.
 
+I'll demonstrate the problem on tracing kbd_keycode() in
+drivers/char/keyboard.c when the key "2" (keycode 3) is pressed.
+The expected result is the letter letter "e" with a caron [CARON]
+accent, code 0xec in iso-8859-2 [88592].
 
-> 
->    It's going to take more than one skimpy little paragraph to
->    justify this, and to demonstrate that it is preferable, and to
->    convince us that nothing will break from this user-visible behaviour
->    change.
-> 
-> b) we're now doing fs operations (and some I/O) in the pagefault
->    code.  This has several implications:
-> 
->    - performance changes
-> 
->    - potential for deadlocks when a process takes the fault from
->      within a copy_to_user() in, say, mm/filemap.c
-> 
->    - performing additional memory allocations within that
->      copy_to_user().  Possibility that these will reenter the
->      filesystem.
-> 
-> And that's just ext2.
-> 
-> For ext3 things are even more complex, because we have the
-> journal_start/journal_end pair which is effectively another "lock" for
-> ranking/deadlock purposes.  And now we're taking i_alloc_sem and
-> lock_page and we're doing ->writepage() and its potential
-> journal_start(), all potentially within the context of a
-> copy_to_user().
+The keysym for this key in the Czech keyboard is set to 0xbec
+by a call to KDSKBENT, which stores it as 0xfbec in the map.
 
-One of the reason why we would need this in ext3/ext4 is that we cannot
-do block allocation in the writepage with the recent locking changes.
-The locking changes involve changing the locking order of journal_start
-and page_lock. With writepage we are already called with page_lock and
-we can't start new transaction needed for block allocation.
+	...
+	type = KTYP(keysym);		// 0xfb
+	...
+	type -= 0xf0;			// 0xb
+        if (type == KT_LETTER) {	// true
+                type = KT_LATIN;	// 0
+ 
+	...
+        (*k_handler[type])(vc, keysym & 0xff, !down); 
+		// calls k_self, note there is really no space for a 
+		// full unicode representation ;-)
 
-But if we agree that we should not do block allocation in page_mkwrite
-we need to add writepages and allocate blocks in writepages.
+So, we need to perform the conversion in k_self (or later).  Your
+patch removed it from k_unicode, but only does it in k_self when
+the keyboard mode is not VC_UNICODE.
 
-> 
-> Now, things become easier because copy_to_user() only happens on the
-> read() side of things, where we don't hold lock_page() and things are
-> generally simpler.
-> 
-> But still, this is a high-risk change.  I think we should require a lot
-> of convincing that issues such as the above have been suitably
-> considered and addressed, and that the change has had *intense*
-> testing.
-> 
-> > index 47d88da..cc2e106 100644
-> > --- a/fs/ext2/ext2.h
-> > +++ b/fs/ext2/ext2.h
-> > @@ -136,6 +136,7 @@ extern void ext2_get_inode_flags(struct ext2_inode_info *);
-> >  int __ext2_write_begin(struct file *file, struct address_space *mapping,
-> >  		loff_t pos, unsigned len, unsigned flags,
-> >  		struct page **pagep, void **fsdata);
-> > +extern int ext2_page_mkwrite(struct vm_area_struct *vma, struct page *page);
-> >  
-> >  /* ioctl.c */
-> >  extern long ext2_ioctl(struct file *, unsigned int, unsigned long);
-> > diff --git a/fs/ext2/file.c b/fs/ext2/file.c
-> > index 5f2fa9c..d539dcf 100644
-> > --- a/fs/ext2/file.c
-> > +++ b/fs/ext2/file.c
-> > @@ -18,6 +18,7 @@
-> >   * 	(jj@sunsite.ms.mff.cuni.cz)
-> >   */
-> >  
-> > +#include <linux/mm.h>
-> >  #include <linux/time.h>
-> >  #include "ext2.h"
-> >  #include "xattr.h"
-> > @@ -38,6 +39,24 @@ static int ext2_release_file (struct inode * inode, struct file * filp)
-> >  	return 0;
-> >  }
-> >  
-> > +static struct vm_operations_struct ext2_file_vm_ops = {
-> > +	.fault		= filemap_fault,
-> > +	.page_mkwrite   = ext2_page_mkwrite,
-> > +};
-> > +
-> > +static int ext2_file_mmap(struct file *file, struct vm_area_struct *vma)
-> > +{
-> > +	struct address_space *mapping = file->f_mapping;
-> > +
-> > +	if (!mapping->a_ops->readpage)
-> > +		return -ENOEXEC;
-> 
-> this copied-and-pasted test can now be removed.
-> 
-> > +	file_accessed(file);
-> > +	vma->vm_ops = &ext2_file_vm_ops;
-> > +	vma->vm_flags |= VM_CAN_NONLINEAR;
-> > +	return 0;
-> > +}
-> > +
-> > +
-> >  /*
-> >   * We have mostly NULL's here: the current defaults are ok for
-> >   * the ext2 filesystem.
-> > @@ -52,7 +71,7 @@ static int ext2_release_file (struct inode * inode, struct file * filp)
-> >  #ifdef CONFIG_COMPAT
-> >  	.compat_ioctl	= ext2_compat_ioctl,
-> >  #endif
-> > -	.mmap		= generic_file_mmap,
-> > +	.mmap		= ext2_file_mmap,
-> >  	.open		= generic_file_open,
-> >  	.release	= ext2_release_file,
-> >  	.fsync		= ext2_sync_file,
-> > diff --git a/fs/ext2/inode.c b/fs/ext2/inode.c
-> > index 384fc0d..d4c5c23 100644
-> > --- a/fs/ext2/inode.c
-> > +++ b/fs/ext2/inode.c
-> > @@ -1443,3 +1443,8 @@ int ext2_setattr(struct dentry *dentry, struct iattr *iattr)
-> >  		error = ext2_acl_chmod(inode);
-> >  	return error;
-> >  }
-> > +
-> > +int ext2_page_mkwrite(struct vm_area_struct *vma, struct page *page)
-> > +{
-> > +	return block_page_mkwrite(vma, page, ext2_get_block);
-> > +}
-> > -- 
+[CARON]: http://en.wikipedia.org/wiki/Caron
+[88592]: http://en.wikipedia.org/wiki/Iso-8859-2
 
--aneesh
+Regards,
+
+-- 
+Jiri Bohac <jbohac@suse.cz>
+SUSE Labs, SUSE CZ
+
