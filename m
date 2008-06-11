@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758362AbYFKDz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758946AbYFKD5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758362AbYFKDz3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 23:55:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbYFKDzP
+	id S1758946AbYFKD5T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 23:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755295AbYFKD5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 23:55:15 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:23474 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754816AbYFKDzO (ORCPT
+	Tue, 10 Jun 2008 23:57:08 -0400
+Received: from mail.tuxonice.net ([67.207.135.122]:55537 "EHLO
+	mail.tuxonice.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754827AbYFKD5H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 23:55:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=GAAgKMFxKDiOjaw8PXjOycekacoi//6zuju5/aIt+xKu6KXaJA3bSLyPRcpqszg1Gx
-         hxeeeOtU8kIPCTTVJgoif33Kj8HA16ax2Wy/KWhKwn0giV+8kY9/ZFGgv9bV6PFJy69v
-         GVRzSv2xhx48V6aifE5D6+fQuzKEWwGYOw+0c=
-Message-ID: <386072610806102055i5c119e74hfedf37cb6a7e57fb@mail.gmail.com>
-Date: Wed, 11 Jun 2008 11:55:01 +0800
-From: "Bryan Wu" <cooloney@kernel.org>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: blackfin drivers/net/smc91x.c build error
-Cc: "Adrian Bunk" <bunk@kernel.org>, "Mike Frysinger" <vapier.adi@gmail.com>,
-       "Jeff Garzik" <jeff@garzik.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.1.10.0806102046450.3101@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080606162212.GC2201@cs181133002.pp.htv.fi>
-	 <8bd0f97a0806061252n1cf5ee33i40ddf9f55588e242@mail.gmail.com>
-	 <20080610135349.GA30792@cs181133002.pp.htv.fi>
-	 <8bd0f97a0806101013w42b9028j5dfa38d654f3d05f@mail.gmail.com>
-	 <20080610173450.GC11685@cs181133002.pp.htv.fi>
-	 <386072610806102037u39ec18e6ye26ef184d6a9516e@mail.gmail.com>
-	 <alpine.LFD.1.10.0806102046450.3101@woody.linux-foundation.org>
-X-Google-Sender-Auth: bedaab7e2604145d
+	Tue, 10 Jun 2008 23:57:07 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [ANNOUNCE] linux-staging tree created
+From: Nigel Cunningham <nigel@tuxonice.net>
+Reply-To: nigel@tuxonice.net
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org,
+       kernel-janitors@vger.kernel.org, linux-next@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20080611032948.GB4483@kroah.com>
+References: <20080610190540.GA25066@kroah.com>
+	 <1213146346.16146.17.camel@nigel-laptop>  <20080611032948.GB4483@kroah.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 11 Jun 2008 14:00:12 +1000
+Message-Id: <1213156812.16146.37.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 11, 2008 at 11:47 AM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> On Wed, 11 Jun 2008, Bryan Wu wrote:
->>
->> Linus, could you please revert it?
->> 099c736a470c8080a166e7a089f1e48e15f9947c
->> Or I send a patch out to revert it?
->
-> I'd like to see a patch, since by now I'm confused by this all whether
-> it's a straight revert or if there's a fix.
->
->                        Linus
+Hi Greg.
 
-No problem, I will send a patch soon.
+On Tue, 2008-06-10 at 20:29 -0700, Greg KH wrote:
+> On Wed, Jun 11, 2008 at 11:05:46AM +1000, Nigel Cunningham wrote:
+> > Hi.
+> > 
+> > Would you consider including TuxOnIce in it?
+> > 
+> > I do still want to get it merged and would appreciate feedback.
+> 
+> Is the patch "stand-alone", only adding new code in discrete chunks like
+> a new driver or filesystem would?
 
--Bryan
+﻿The patch I distribute now does have a few parts to it that could be
+separated into distinct patches (cryptoapi LZF support, fuse freezer
+support), but the bulk of it is TuxOnIce itself, which just adds new
+files and inserts the hooks necessary to share the lowlevel code with
+[u]swsusp. I think, therefore, it would akin to adding a new driver or
+filesystem.
+
+> If not, I don't think it is relevant.  Odds are you want to be your own
+> series of patches, like we discussed years ago, right?
+
+I don't think I do want to have my own series of patches, because
+TuxOnIce doesn't remove or rework swsusp or uswsusp, but sits along side
+them. I'm not trying to mutate swsusp into TuxOnIce, because that would
+require a complete rework of swsusp from the ground up (TuxOnIce does
+everything but the atomic copy/restore ﻿and associated prep/cleanup
+differently).
+
+Regards,
+
+Nigel
+
