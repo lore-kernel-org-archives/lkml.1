@@ -1,100 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbYFKUYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752646AbYFKU0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755119AbYFKUYQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 16:24:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbYFKUYE
+	id S1752646AbYFKU0S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 16:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbYFKUZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 16:24:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47988 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751450AbYFKUYD (ORCPT
+	Wed, 11 Jun 2008 16:25:57 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:60994 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750880AbYFKUZ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 16:24:03 -0400
-Date: Wed, 11 Jun 2008 13:22:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-Cc: oberparleiter@googlemail.com, linux-kernel@vger.kernel.org,
-       ltp-coverage@lists.sourceforge.net, sam@ravnborg.org
-Subject: Re: [PATCH 0/6] gcov kernel support
-Message-Id: <20080611132227.593b13ea.akpm@linux-foundation.org>
-In-Reply-To: <484FCC4A.1010605@de.ibm.com>
-References: <4843F6BF.9070409@de.ibm.com>
-	<20080609002509.7782442e.akpm@linux-foundation.org>
-	<484D34DC.40401@de.ibm.com>
-	<20080609120954.7d41a5bf.akpm@linux-foundation.org>
-	<484FCC4A.1010605@de.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 11 Jun 2008 16:25:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=Qyw2+WlIu15Ooopzzvj4X2ADhSldC8sLplDJ8MUFXFhkgN4In4sa8M2ireOSmIedkW
+         xpXpW3nDdmTao3Tj3ImehF4fYAtHT7psXRVTQXELhydte/t3jaafCfyEXdwhJ+91yJ9p
+         W+y0BU+v3I0rRxbYlsY81+UoNkwuNtQl6BwBU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH 1/5] ide-cs: fix probing and add warm-plug support
+Date: Wed, 11 Jun 2008 21:18:48 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806112118.48980.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jun 2008 14:59:54 +0200
-Peter Oberparleiter <peter.oberparleiter@de.ibm.com> wrote:
+* Fix probing by using ide_port_scan() and moving "retry loop"
+  from ide_config() to idecs_register().
 
-> Andrew Morton wrote:
-> > On Mon, 09 Jun 2008 15:49:16 +0200 Peter Oberparleiter <peter.oberparleiter@de.ibm.com> wrote:
-> > 
-> >> Andrew Morton wrote:
-> >> > On Mon, 02 Jun 2008 15:33:51 +0200 Peter Oberparleiter <peter.oberparleiter@de.ibm.com> wrote:
-> >> > 
-> >> >> This is version #3 of the gcov kernel support patch set 
-> >> > 
-> >> > My build tree is now filled with dead symlinks, like
-> >> > 
-> >> > lrwxrwxrwx 1 akpm akpm 64 Jun  9 00:06 security/selinux/nlmsgtab.gcda -> /sys/kernel/debug/gcov/usr/src/25/security/selinux/nlmsgtab.gcda
-> >> 
-> >> Unfortunately a necessary evil of this approach: symlinks are created
-> >> for all compiled source files while link targets are only available when
-> >> the corresponding code is executed. In other words: those links will be
-> >> dead for source files which don't compile to actual code and for modules
-> >> as long as they are not loaded.
-> > 
-> > It doesn't seem awfully useful.  I don't run kernels on my build
-> > machines and I'm sure many are in the same situation.  So gcov is going
-> > to need a way of locating these files on the *target* machine.  And
-> > once that is available, there is no need to add all these symlinks into
-> > the build directory.
-> 
-> I don't see any other feasibly way to do it if we want the kernel to
-> work out-of-the-box with gcov. If the kernel was a user-space
-> application, gcc/libgcov would create the .gcda files in exactly the
-> same place where the symbolic links are now.
-> 
-> If we removed those symlinks, users would have to manually copy files
-> from /sys on the test machine to the correct position in /objtree on the
-> build machine before being able to get any kind of result. This would
-> IMO reduce the usefulness of the gcov kernel infrastructure noticeably
-> (though gcov-wrappers such as lcov could be modified to hide the
-> additional effort).
+* Don't fail probe if there are no devices attached to a port.
 
-gcov needs both the .gcda files and the source tree available to do its
-work, I assume.
+* Remove (now redundant) error message from ide_config().
 
-So a sensible scenario would be to copy the entire build tree,
-including the .gcda symlinks over to the target system, yes? 
-tar+scp+untar?
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/legacy/ide-cs.c |   37 +++++++++++++++----------------------
+ 1 file changed, 15 insertions(+), 22 deletions(-)
 
-If so, it'd be good to get that tested and documented...
-
-> How about a CONFIG_GCOV_PROFILE_SYMLINKS configuration option?
-
-What use would that be?
-
-> >> > Which causes (at least)
-> >> > 
-> >> > ctags: Warning: cannot open source file "security/selinux/ss/conditional.gcda" : No such file or directory
-> >> > ctags: Warning: cannot open source file "security/selinux/netlink.gcda" : No such file or directory
-> >> > ctags: Warning: cannot open source file "security/selinux/netlabel.gcda" : No such file or directory
-> >> 
-> >> > and probably other thing which I haven't discovered yet.
-> 
-> I would argue that any mechanism that tries to access all files in
-> /objtree regardless of filename extension is brave at best, if not
-> broken.
-
-Well, these things happen.  You'll probably need to add these to .gitignore.
-
-<does Samsummoning dance>
+Index: b/drivers/ide/legacy/ide-cs.c
+===================================================================
+--- a/drivers/ide/legacy/ide-cs.c
++++ b/drivers/ide/legacy/ide-cs.c
+@@ -186,17 +186,25 @@ static ide_hwif_t *idecs_register(unsign
+     if (hwif == NULL)
+ 	goto out_release;
+ 
+-    i = hwif->index;
+-
+     ide_init_port_hw(hwif, &hw);
+ 
+-    idx[0] = i;
++    idx[0] = hwif->index;
+ 
+     ide_device_add(idx, &idecs_port_info);
+ 
+     if (hwif->present)
+ 	return hwif;
+ 
++    /* retry registration in case device is still spinning up */
++    for (i = 0; i < 10; i++) {
++	msleep(100);
++	ide_port_scan(hwif);
++	if (hwif->present)
++	    return hwif;
++    }
++
++    return hwif;
++
+ out_release:
+     release_region(ctl, 1);
+     release_region(io, 8);
+@@ -225,7 +233,7 @@ static int ide_config(struct pcmcia_devi
+ 	cistpl_cftable_entry_t dflt;
+     } *stk = NULL;
+     cistpl_cftable_entry_t *cfg;
+-    int i, pass, last_ret = 0, last_fn = 0, is_kme = 0;
++    int pass, last_ret = 0, last_fn = 0, is_kme = 0;
+     unsigned long io_base, ctl_base;
+     ide_hwif_t *hwif;
+ 
+@@ -322,30 +330,15 @@ static int ide_config(struct pcmcia_devi
+     if (is_kme)
+ 	outb(0x81, ctl_base+1);
+ 
+-    /* retry registration in case device is still spinning up */
+-    for (i = 0; i < 10; i++) {
+-	hwif = idecs_register(io_base, ctl_base, link->irq.AssignedIRQ, link);
+-	if (hwif)
+-	    break;
+-	if (link->io.NumPorts1 == 0x20) {
++     hwif = idecs_register(io_base, ctl_base, link->irq.AssignedIRQ, link);
++     if (hwif == NULL && link->io.NumPorts1 == 0x20) {
+ 	    outb(0x02, ctl_base + 0x10);
+ 	    hwif = idecs_register(io_base + 0x10, ctl_base + 0x10,
+ 				  link->irq.AssignedIRQ, link);
+-	    if (hwif) {
+-		io_base += 0x10;
+-		ctl_base += 0x10;
+-		break;
+-	    }
+-	}
+-	msleep(100);
+     }
+ 
+-    if (hwif == NULL) {
+-	printk(KERN_NOTICE "ide-cs: ide_register() at 0x%3lx & 0x%3lx"
+-	       ", irq %u failed\n", io_base, ctl_base,
+-	       link->irq.AssignedIRQ);
++    if (hwif == NULL)
+ 	goto failed;
+-    }
+ 
+     info->ndev = 1;
+     sprintf(info->node.dev_name, "hd%c", 'a' + hwif->index * 2);
