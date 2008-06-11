@@ -1,41 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758787AbYFKXUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759018AbYFKXWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758787AbYFKXUf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 19:20:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbYFKXU0
+	id S1759018AbYFKXWr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 19:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206AbYFKXWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 19:20:26 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:55331 "EHLO relay.sgi.com"
+	Wed, 11 Jun 2008 19:22:39 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:44933 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752927AbYFKXUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 19:20:25 -0400
-Date: Wed, 11 Jun 2008 16:20:24 -0700 (PDT)
+	id S1753779AbYFKXWj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 19:22:39 -0400
+Date: Wed, 11 Jun 2008 16:22:36 -0700 (PDT)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Nick Piggin <npiggin@suse.de>, torvalds@linux-foundation.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       benh@kernel.crashing.org, paulus@samba.org
-Subject: Re: [patch 7/7] powerpc: lockless get_user_pages_fast
-In-Reply-To: <20080610230622.abed7b55.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0806111619330.23868@schroedinger.engr.sgi.com>
-References: <20080605094300.295184000@nick.local0.net>
- <20080605094826.128415000@nick.local0.net> <Pine.LNX.4.64.0806101159110.17798@schroedinger.engr.sgi.com>
- <20080611031822.GA8228@wotan.suse.de> <Pine.LNX.4.64.0806102138380.19967@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0806102141010.19967@schroedinger.engr.sgi.com>
- <20080611044902.GB11545@wotan.suse.de> <20080610230622.abed7b55.akpm@linux-foundation.org>
+To: Paul Mundt <lethal@linux-sh.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Howells <dhowells@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, cooloney@kernel.org,
+       mpm@selenic.com
+Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB, v2.
+In-Reply-To: <20080611073330.GB30983@linux-sh.org>
+Message-ID: <Pine.LNX.4.64.0806111622130.23868@schroedinger.engr.sgi.com>
+References: <20080602072706.GB28268@linux-sh.org>
+ <Pine.LNX.4.64.0806101027220.17093@schroedinger.engr.sgi.com>
+ <20080611073330.GB30983@linux-sh.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008, Andrew Morton wrote:
+On Wed, 11 Jun 2008, Paul Mundt wrote:
 
-> hasn't been made.  Carrying both versions was supposed to be a
-> short-term transitional thing :(
+> Thanks for the review. Using virt_addr_valid() we can also get rid of
+> blackfin's idiotic > memory_end test for its DMA addresses, as the same
+> logic is encapsulated there. How does this look?
 
-The whatever defrag patchset includes a patch to make SLAB
-experimental. So one step further.
-
-
+Reviewed-by: Christoph Lameter <clameter@sgi.com>
