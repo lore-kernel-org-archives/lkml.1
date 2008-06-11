@@ -1,119 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756322AbYFKHYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbYFKHbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756322AbYFKHYu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 03:24:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbYFKHYn
+	id S1754681AbYFKHbZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 03:31:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbYFKHbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 03:24:43 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:62350 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752597AbYFKHYm (ORCPT
+	Wed, 11 Jun 2008 03:31:15 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:17619 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752848AbYFKHbO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 03:24:42 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=ZQ+JXz4eMf/HxofqOwxxMyTsmZgPMLu5u6uhabXKHlQ+OFO6YQmVa6SFP4BEhzm4C
-	S2j8VwyZx16ulUr6k3/Jg==
-Message-ID: <6599ad830806110024i495c5e65u82828b7237434052@mail.gmail.com>
-Date: Wed, 11 Jun 2008 00:24:31 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: [PATCH RFC] cgroup_clone: use pid of newly created task for new cgroup
-Cc: "Dan Smith" <danms@us.ibm.com>,
-       "Linux Containers" <containers@lists.osdl.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080610212302.GA1946@us.ibm.com>
+	Wed, 11 Jun 2008 03:31:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=QOSD7/lro/1I5eN1VNcxCRTHBKAId3iuzQP5rVtlY/SZuGkSYeHfotpJGotQHr3v1e
+         Aq3KPxUhsU752gAzjv8bzwtroWnDhEmY4R4abzMxYafTVGMrlu57JHgwKWP+iwQPoKKj
+         ye647sLbYZfbTTrSLafjgF8LXVuQSHgNrViv8=
+Date: Wed, 11 Jun 2008 09:31:01 +0200
+From: Frederik Deweerdt <deweerdt@free.fr>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, linux-mm@kvack.org,
+       nickpiggin@yahoo.com.au, Rik van Riel <riel@redhat.com>
+Subject: Re: 2.6.26-rc5-mm2: OOM with 1G free swap
+Message-ID: <20080611073101.GA3591@slug>
+References: <20080611060029.GA5011@martell.zuzino.mipt.ru> <20080610232705.3aaf5c06.akpm@linux-foundation.org> <20080611153457.7882.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080610212302.GA1946@us.ibm.com>
+In-Reply-To: <20080611153457.7882.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 2:23 PM, Serge E. Hallyn <serue@us.ibm.com> wrote:
-> From faa707a44b971f5f3bf24e6a0c760ccb4ad278e6 Mon Sep 17 00:00:00 2001
-> From: Serge Hallyn <serge@us.ibm.com>
-> Date: Tue, 10 Jun 2008 15:57:32 -0500
-> Subject: [PATCH 1/1] cgroup_clone: use pid of newly created task for new cgroup
->
-> cgroup_clone creates a new cgroup with the pid of the task.  This works
-> correctly for unshare, but for clone cgroup_clone is called from
-> copy_namespaces inside copy_process, which happens before the new pid
-> is created.  As a result, the new cgroup was created with current's pid.
-> This patch:
->
->        1. Moves the call inside copy_process to after the new pid
->           is created
->        2. Passes the struct pid into ns_cgroup_clone (as it is not
->           yet attached to the task)
->        3. Passes a name from ns_cgroup_clone() into cgroup_clone()
->           so as to keep cgroup_clone() itself simpler
->        4. Uses pid_vnr() to get the process id value, so that the
->           pid used to name the new cgroup is always the pid as it
->           would be known to the task which did the cloning or
->           unsharing.  I think that is the most intuitive thing to
->           do.  This way, task t1 does clone(CLONE_NEWPID) to get
->           t2, which does clone(CLONE_NEWPID) to get t3, then the
->           cgroup for t3 will be named for the pid by which t2 knows
->           t3.
->
-> This hasn't been tested enough to request inclusion, but I'd like to
-> get feedback especially from Paul Menage on whether the semantics
-> make sense.
+Hi,
 
-Seems like a reasonable idea. It represents yet another change to the
-userspace API following the 2.6.25.x one, but I guess that again it's
-not one that anyone is seriously relying on yet (in particular since
-it's not usable more than once from the same parent currently).
+On Wed, Jun 11, 2008 at 03:36:40PM +0900, KOSAKI Motohiro wrote:
+> > > vm.overcommit_memory = 0
+> > > vm.overcommit_ratio = 50
+> > 
+> > Well I assume that Rik ran LTP.  Perhaps a merge problem.
+> 
+> at least, I ran LTP last week and its error didn't happend.
+> I'll investigate more.
+FWIW, I can reproduce it reliably:
+$ cd <ltp-dir>/testcases/bin
+$ ./growfiles -W gf15 -b -e 1 -u -r 1-49600 -I r -u -i 0 -L 120 Lgfile1
+And then wait for a few secs before the OOM triggers.
 
-> -int cgroup_clone(struct task_struct *tsk, struct cgroup_subsys *subsys)
-> +int cgroup_clone(struct task_struct *tsk, struct cgroup_subsys *subsys,
-> +                                                               char *name)
-
-You could reduce the patch churn by naming this parameter nodename.
-> -       return cgroup_clone(task, &ns_subsys);
-> +       struct pid *pid = (inpid ? inpid : task_pid(task));
-> +       char name[MAX_CGROUP_TYPE_NAMELEN];
-
-We should probably stop using MAX_CGROUP_TYPE_NAMELEN for this buffer
-length and use something that explicitly sized to fit a pid_t.
-
-
-> +
-> +       snprintf(name, MAX_CGROUP_TYPE_NAMELEN, "%d", pid_vnr(pid));
-> +       return cgroup_clone(task, &ns_subsys, name);
->  }
->
->  /*
-> diff --git a/kernel/nsproxy.c b/kernel/nsproxy.c
-> index adc7851..5ca106d 100644
-> --- a/kernel/nsproxy.c
-> +++ b/kernel/nsproxy.c
-> @@ -157,12 +157,6 @@ int copy_namespaces(unsigned long flags, struct task_struct *tsk)
->                goto out;
->        }
->
-> -       err = ns_cgroup_clone(tsk);
-> -       if (err) {
-> -               put_nsproxy(new_ns);
-> -               goto out;
-> -       }
-> -
->        tsk->nsproxy = new_ns;
->
->  out:
-> @@ -209,7 +203,7 @@ int unshare_nsproxy_namespaces(unsigned long unshare_flags,
->                goto out;
->        }
->
-> -       err = ns_cgroup_clone(current);
-> +       err = ns_cgroup_clone(current, NULL);
-
-Maybe pass task_pid(current) here rather than doing the ?: in
-ns_cgroup_clone() ?
-
-Paul
+Regards,
+Frederik
