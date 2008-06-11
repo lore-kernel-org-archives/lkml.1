@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbYFKN6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755438AbYFKODb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755345AbYFKN6a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 09:58:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755097AbYFKN6W
+	id S1755438AbYFKODb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 10:03:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYFKODV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 09:58:22 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42833 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751447AbYFKN6V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 09:58:21 -0400
-Date: Wed, 11 Jun 2008 06:58:16 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       "solsTiCe d'Hiver" <solstice.dhiver@gmail.com>,
+	Wed, 11 Jun 2008 10:03:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50944 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750996AbYFKODU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 10:03:20 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: trond.myklebust@fys.uio.no, bfields@fieldses.org
+Cc: linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org,
        linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: no cpu MHz in /proc/cpuinfo on 2.6.25.4-rt6
-Message-ID: <20080611065816.6cff290d@infradead.org>
-In-Reply-To: <alpine.LNX.1.10.0806111552090.20733@fbirervta.pbzchgretzou.qr>
-References: <200806102152.23286.solstice.dhiver@gmail.com>
-	<20080610131314.5f7069e6@infradead.org>
-	<484EE71A.40002@intel.com>
-	<alpine.LNX.1.10.0806111440480.20733@fbirervta.pbzchgretzou.qr>
-	<20080611063639.5e1eea5b@infradead.org>
-	<alpine.LNX.1.10.0806111552090.20733@fbirervta.pbzchgretzou.qr>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Subject: [PATCH 1/3] nfs4: remove BKL from nfs_callback_up and nfs_callback_down
+Date: Wed, 11 Jun 2008 10:03:10 -0400
+Message-Id: <1213192992-7635-2-git-send-email-jlayton@redhat.com>
+X-Mailer: git-send-email 1.5.3.6
+In-Reply-To: <1213192992-7635-1-git-send-email-jlayton@redhat.com>
+References: <1213192992-7635-1-git-send-email-jlayton@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jun 2008 15:52:57 +0200 (CEST)
-Jan Engelhardt <jengelh@medozas.de> wrote:
+The nfs_callback_mutex is sufficient protection.
 
-> 
-> On Wednesday 2008-06-11 15:36, Arjan van de Ven wrote:
-> >> >> btw this is scary; the Mhz line in /proc/cpuinfo doesn't have
-> >> >> much meaning really, so applications using it and depending on
-> >> >> it is a rather big disaster ;-(
-> >> >> 
-> >> >> Does anyone know why jackd wants to use this?
-> >> 
-> >> It would be nice to have a /sys file where the CPU frequency is in,
-> >
-> >may I ask why? What would you do with it?
-> 
-> Off the top off the head, just for reporting to the user. Desklets
-> and stuff.
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+---
+ fs/nfs/callback.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
-even then it doesn't mean much ;-(
-
-> >CPU frequency is...
-> >1) not something that is fixed; it changes all the time
-> >2) not a good indication for performance; remember the 3.4Ghz
-> >pentium4, a 2Ghz Core2Duo outperforms it
-> >3) something which the cpu itself barely honors (the clock stops
-> >during idle etc etc)
-
-
+diff --git a/fs/nfs/callback.c b/fs/nfs/callback.c
+index c1e7c83..9e713d2 100644
+--- a/fs/nfs/callback.c
++++ b/fs/nfs/callback.c
+@@ -105,7 +105,6 @@ int nfs_callback_up(void)
+ 	struct svc_rqst *rqstp;
+ 	int ret = 0;
+ 
+-	lock_kernel();
+ 	mutex_lock(&nfs_callback_mutex);
+ 	if (nfs_callback_info.users++ || nfs_callback_info.task != NULL)
+ 		goto out;
+@@ -149,7 +148,6 @@ out:
+ 	if (serv)
+ 		svc_destroy(serv);
+ 	mutex_unlock(&nfs_callback_mutex);
+-	unlock_kernel();
+ 	return ret;
+ out_err:
+ 	dprintk("Couldn't create callback socket or server thread; err = %d\n",
+@@ -163,13 +161,11 @@ out_err:
+  */
+ void nfs_callback_down(void)
+ {
+-	lock_kernel();
+ 	mutex_lock(&nfs_callback_mutex);
+ 	nfs_callback_info.users--;
+ 	if (nfs_callback_info.users == 0 && nfs_callback_info.task != NULL)
+ 		kthread_stop(nfs_callback_info.task);
+ 	mutex_unlock(&nfs_callback_mutex);
+-	unlock_kernel();
+ }
+ 
+ static int nfs_callback_authenticate(struct svc_rqst *rqstp)
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+1.5.3.6
+
