@@ -1,137 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbYFKOD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756537AbYFKOEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756023AbYFKOD4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 10:03:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbYFKODX
+	id S1756537AbYFKOEe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 10:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbYFKOEY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 10:03:23 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50948 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751417AbYFKODU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 10:03:20 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: trond.myklebust@fys.uio.no, bfields@fieldses.org
-Cc: linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org,
+	Wed, 11 Jun 2008 10:04:24 -0400
+Received: from shadow.wildlava.net ([67.40.138.81]:49155 "EHLO
+	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752749AbYFKOEX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 10:04:23 -0400
+Message-ID: <484FDB63.6050504@skyrush.com>
+Date: Wed, 11 Jun 2008 08:04:19 -0600
+From: Joe Peterson <joe@skyrush.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: Alan Cox <alan@redhat.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, David Newall <davidn@davidnewall.com>,
+       Willy Tarreau <w@1wt.eu>, Harald Dunkel <harald.dunkel@t-online.de>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] lockd: close potential race with rapid lockd_up/lockd_down cycle
-Date: Wed, 11 Jun 2008 10:03:12 -0400
-Message-Id: <1213192992-7635-4-git-send-email-jlayton@redhat.com>
-X-Mailer: git-send-email 1.5.3.6
-In-Reply-To: <1213192992-7635-3-git-send-email-jlayton@redhat.com>
-References: <1213192992-7635-1-git-send-email-jlayton@redhat.com>
- <1213192992-7635-2-git-send-email-jlayton@redhat.com>
- <1213192992-7635-3-git-send-email-jlayton@redhat.com>
+Subject: Re: 2.6.25.3: su gets stuck for root
+References: <48438126.3080308@t-online.de> <20080602053256.GF5609@1wt.eu> <20080602091016.571dda7c@core> <4843B6EE.8080104@davidnewall.com> <20080602102033.63e4cd18@core> <48441138.90503@skyrush.com> <20080602155133.GC933@devserv.devel.redhat.com> <4846A9F4.40003@skyrush.com> <20080604151649.GB12625@devserv.devel.redhat.com> <4846C85E.7080309@skyrush.com> <20080604171056.GB17875@devserv.devel.redhat.com> <4846FBF2.9010206@skyrush.com>
+In-Reply-To: <4846FBF2.9010206@skyrush.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If lockd_down is called very rapidly after lockd_up returns, then
-there is a slim chance that lockd() will never be called. kthread()
-will return before calling the function, so we'll end up never
-actually calling the cleanup functions for the thread.
+Joe Peterson wrote:
+> Anyway, here is more info:
+> 
+> tty_check_change: current->signal->tty = f7880800
+> tty_check_change: tty = f7880800
+> tty_check_change: tty->pgrp = f7b99e40
+>   tty->pgrp->count = 5
+>   tty->pgrp->level = 0
+>   tty->pgrp->numbers[0].nr = 6951
+> tty_check_change: task_pgrp(current) = f7b99d40
+>   task_pgrp(current)->count = 1
+>   task_pgrp(current)->level = 0
+>   task_pgrp(current)->numbers[0].nr = 6952
+> tty_check_change: kill_pgrp called; returning -ERESTARTSYS
+> set_termios: error return value (-512) from tty_check_change
+> foo       6951  0.0  0.1   2332  1096 tty1     S+   14:18   0:00 su foo
+> foo       6952  0.0  0.1   2988  1464 tty1     S    14:18   0:00 bash
+> 
+> 
+> So, looks like the tty->pgrp's process is the "su" command itself, and
+> the task_pgrp(current)'s process is "bash" - the shell started by the su.
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
- fs/lockd/svc.c |   33 +++++++++++++--------------------
- 1 files changed, 13 insertions(+), 20 deletions(-)
+If anyone has any tips for my further debugging of this, given the
+above, let me know.  I'd like to help resolve this.
 
-diff --git a/fs/lockd/svc.c b/fs/lockd/svc.c
-index 2169af4..5bd9bf0 100644
---- a/fs/lockd/svc.c
-+++ b/fs/lockd/svc.c
-@@ -50,7 +50,7 @@ EXPORT_SYMBOL(nlmsvc_ops);
- static DEFINE_MUTEX(nlmsvc_mutex);
- static unsigned int		nlmsvc_users;
- static struct task_struct	*nlmsvc_task;
--static struct svc_serv		*nlmsvc_serv;
-+static struct svc_rqst		*nlmsvc_rqst;
- int				nlmsvc_grace_period;
- unsigned long			nlmsvc_timeout;
- 
-@@ -194,20 +194,11 @@ lockd(void *vrqstp)
- 
- 		svc_process(rqstp);
- 	}
--
- 	flush_signals(current);
- 	if (nlmsvc_ops)
- 		nlmsvc_invalidate_all();
- 	nlm_shutdown_hosts();
--
- 	unlock_kernel();
--
--	nlmsvc_task = NULL;
--	nlmsvc_serv = NULL;
--
--	/* Exit the RPC thread */
--	svc_exit_thread(rqstp);
--
- 	return 0;
- }
- 
-@@ -254,16 +245,15 @@ int
- lockd_up(int proto) /* Maybe add a 'family' option when IPv6 is supported ?? */
- {
- 	struct svc_serv *serv;
--	struct svc_rqst *rqstp;
- 	int		error = 0;
- 
- 	mutex_lock(&nlmsvc_mutex);
- 	/*
- 	 * Check whether we're already up and running.
- 	 */
--	if (nlmsvc_serv) {
-+	if (nlmsvc_rqst) {
- 		if (proto)
--			error = make_socks(nlmsvc_serv, proto);
-+			error = make_socks(nlmsvc_rqst->rq_server, proto);
- 		goto out;
- 	}
- 
-@@ -288,9 +278,10 @@ lockd_up(int proto) /* Maybe add a 'family' option when IPv6 is supported ?? */
- 	/*
- 	 * Create the kernel thread and wait for it to start.
- 	 */
--	rqstp = svc_prepare_thread(serv, &serv->sv_pools[0]);
--	if (IS_ERR(rqstp)) {
--		error = PTR_ERR(rqstp);
-+	nlmsvc_rqst = svc_prepare_thread(serv, &serv->sv_pools[0]);
-+	if (IS_ERR(nlmsvc_rqst)) {
-+		error = PTR_ERR(nlmsvc_rqst);
-+		nlmsvc_rqst = NULL;
- 		printk(KERN_WARNING
- 			"lockd_up: svc_rqst allocation failed, error=%d\n",
- 			error);
-@@ -298,16 +289,15 @@ lockd_up(int proto) /* Maybe add a 'family' option when IPv6 is supported ?? */
- 	}
- 
- 	svc_sock_update_bufs(serv);
--	nlmsvc_serv = rqstp->rq_server;
- 
--	nlmsvc_task = kthread_run(lockd, rqstp, serv->sv_name);
-+	nlmsvc_task = kthread_run(lockd, nlmsvc_rqst, serv->sv_name);
- 	if (IS_ERR(nlmsvc_task)) {
- 		error = PTR_ERR(nlmsvc_task);
-+		svc_exit_thread(nlmsvc_rqst);
- 		nlmsvc_task = NULL;
--		nlmsvc_serv = NULL;
-+		nlmsvc_rqst = NULL;
- 		printk(KERN_WARNING
- 			"lockd_up: kthread_run failed, error=%d\n", error);
--		svc_exit_thread(rqstp);
- 		goto destroy_and_out;
- 	}
- 
-@@ -346,6 +336,9 @@ lockd_down(void)
- 		BUG();
- 	}
- 	kthread_stop(nlmsvc_task);
-+	svc_exit_thread(nlmsvc_rqst);
-+	nlmsvc_task = NULL;
-+	nlmsvc_rqst = NULL;
- out:
- 	mutex_unlock(&nlmsvc_mutex);
- }
--- 
-1.5.3.6
-
+					Thanks!  Joe
