@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757470AbYFKGGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbYFKGPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757470AbYFKGGm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 02:06:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbYFKGGf
+	id S1754244AbYFKGPt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 02:15:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbYFKGPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 02:06:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60774 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750964AbYFKGGe (ORCPT
+	Wed, 11 Jun 2008 02:15:38 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:26112 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752249AbYFKGPh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 02:06:34 -0400
-Date: Tue, 10 Jun 2008 23:06:22 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Christoph Lameter <clameter@sgi.com>, torvalds@linux-foundation.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       benh@kernel.crashing.org, paulus@samba.org
-Subject: Re: [patch 7/7] powerpc: lockless get_user_pages_fast
-Message-Id: <20080610230622.abed7b55.akpm@linux-foundation.org>
-In-Reply-To: <20080611044902.GB11545@wotan.suse.de>
-References: <20080605094300.295184000@nick.local0.net>
-	<20080605094826.128415000@nick.local0.net>
-	<Pine.LNX.4.64.0806101159110.17798@schroedinger.engr.sgi.com>
-	<20080611031822.GA8228@wotan.suse.de>
-	<Pine.LNX.4.64.0806102138380.19967@schroedinger.engr.sgi.com>
-	<Pine.LNX.4.64.0806102141010.19967@schroedinger.engr.sgi.com>
-	<20080611044902.GB11545@wotan.suse.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 11 Jun 2008 02:15:37 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=YseguUFEEo5ht7Qw2mInCsbfjb9BDPitVNmhN2Jy/AFeT9nnX7C+DB0tteiqctRe7oRWtuTbAA2avXWiyjtGukKrq0KzgWh9nRqe8XoXq/VZRecMFeHLxK20ZxRqIJAM/R2w+NKWQKR95pjbhOpi7cHHjfGj4O5uwx9Kvx2X3Bw=  ;
+X-YMail-OSG: hFAol0wVM1kMJ1z6FYphmM.dOiNqHp3Iqyf.niy_Ojp2JQL86VVOcBNJI2maKj18CzFySMZZgcpU8VYq_EnAKhApD2VVO6bQbRrsl6MAHwU84JYzznWKg5NJOl_RuSyYr7I-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: 2.6.26-rc5-mm2: OOM with 1G free swap
+Date: Wed, 11 Jun 2008 16:11:47 +1000
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, linux-mm@kvack.org
+References: <20080609223145.5c9a2878.akpm@linux-foundation.org> <20080611060029.GA5011@martell.zuzino.mipt.ru>
+In-Reply-To: <20080611060029.GA5011@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806111611.47402.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jun 2008 06:49:02 +0200 Nick Piggin <npiggin@suse.de> wrote:
+On Wednesday 11 June 2008 16:00, Alexey Dobriyan wrote:
+> On Mon, Jun 09, 2008 at 10:31:45PM -0700, Andrew Morton wrote:
+> > - This is a bugfixed version of 2.6.26-rc5-mm1 - mainly to repair a
+> >   vmscan.c bug which would have prevented testing of the other vmscan.c
+> >   bugs^Wchanges.
+>
+> OOM condition happened with 1G free swap.
 
-> On Tue, Jun 10, 2008 at 09:41:33PM -0700, Christoph Lameter wrote:
-> > And yes slab defrag is part of linux-next. So it would break.
-
-No, slab defreg[*] isn't in linux-next.
-
-y:/usr/src/25> diffstat patches/linux-next.patch| grep mm/slub.c
- mm/slub.c                                                    |    4 
-
-That's two spelling fixes in comments.
-
-I have git-pekka in -mm too.  Here it is:
-
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2765,6 +2765,7 @@ void kfree(const void *x)
- 
- 	page = virt_to_head_page(x);
- 	if (unlikely(!PageSlab(page))) {
-+		BUG_ON(!PageCompound(page));
- 		put_page(page);
- 		return;
- 	}
+Seems like you've got little or no anon pages left, so 1GB free swap
+is no problem (nothing left to page out).
 
 
-> Can memory management patches go though mm/? I dislike the cowboy
-> method of merging things that some other subsystems have adopted :)
+> 4G RAM, 1G swap partition, normally LTP survives during much, much higher
+> load.
 
-I think I'd prefer that.  I may be a bit slow, but we're shoving at
-least 100 MM patches through each kernel release and I think I review
-things more closely than others choose to.  At least, I find problems
-and I've seen some pretty wild acked-bys...
+I would hope it is not a memory leak (which might point to lockless
+pagecache). It doesn't look like it because there is still lots of
+inactive file pages, so that points to the page reclaim changes
+(which is not to say page reclaim changes couldn't cause a memory
+leak themselves).
 
-
-[*] It _isn't_ "slab defrag".  Or at least, it wasn't last time I saw
-it.  It's "slub defrag".  And IMO it is bad to be adding slub-only
-features because afaik slub still isn't as fast as slab on some things
-and so some people might want to run slab rather than slub.  And
-because if this the decision whether to retain slab or slub STILL
-hasn't been made.  Carrying both versions was supposed to be a
-short-term transitional thing :(
+Curious: if you kill off all the LTP tests after the OOM condition,
+what does your /proc/meminfo look like before and after running
+sync ; echo 3 > /proc/sys/vm/drop_caches
