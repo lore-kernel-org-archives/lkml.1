@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758309AbYFJX5I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757954AbYFKAEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758309AbYFJX5I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 19:57:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbYFJX44
+	id S1757954AbYFKAEV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 20:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200AbYFKAED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 19:56:56 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:15185 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753624AbYFJX4z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 19:56:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=QulpJUotSQ2VJPDeVh+m2tYPhG2hMlSypGubz1HLKJeUkOjQqGLRi39TWcVraE/Ut2
-         9ke9F2p8aQNWkLnPjKtpxL8TJrFBnoYPJ/STp2c4G5QQNYyY7woiapIMOoLCSyBtnm9B
-         S3aTr829x2jFRNOLWA4yJvIGRkimTj3APxai0=
-Message-ID: <484F14B5.4090204@gmail.com>
-Date: Tue, 10 Jun 2008 20:56:37 -0300
-From: Kevin Winchester <kjwinchester@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Tue, 10 Jun 2008 20:04:03 -0400
+Received: from ozlabs.org ([203.10.76.45]:33677 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753674AbYFKAEC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 20:04:02 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch 04/41] cpu ops: Core piece for generic atomic per cpu operations
+Date: Wed, 11 Jun 2008 10:03:36 +1000
+User-Agent: KMail/1.9.9
+Cc: Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
+       Peter Zijlstra <peterz@infradead.org>
+References: <20080530035620.587204923@sgi.com> <200806101256.31615.rusty@rustcorp.com.au> <Pine.LNX.4.64.0806092012240.13024@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0806092012240.13024@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Larry Finger <Larry.Finger@lwfinger.net>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Warning when compiling arch/x86/mm/init_64.c on x86_64
-References: <484EED06.8060301@lwfinger.net>
-In-Reply-To: <484EED06.8060301@lwfinger.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200806111003.37167.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Larry Finger wrote:
-> Since commit 511631011d39706ac81ee5e4c9084d61e5b4fd34, entitled
-> "x86: fix pointer type warning in arch/x86/mm/init_64.c:early_memtest", the 
-> following warning is produced for x86_64:
-> 
-> arch/x86/mm/init_64.c: In function ‘early_memtest’:
-> arch/x86/mm/init_64.c:520: warning: passing argument 2 of 
-> ‘find_e820_area_size’ from incompatible pointer type
-> 
-> Before this commit, the compilation of this routine on my system was clean. I 
-> use gcc version 4.2.1. Was this the warning for i386 before the patch? I 
-> tried simple changes in the definition of find_e820_area_size, but only 
-> managed to push the warning on to the call to bad_addr_size. At that point I 
-> decided to let the experts find a proper fix. Note that the warning does no 
-> harm - I just get nervous about incompatible pointer warnings as it usually 
-> means that I have screwed something up.
-> 
+On Tuesday 10 June 2008 13:18:25 Christoph Lameter wrote:
+> On Tue, 10 Jun 2008, Rusty Russell wrote:
+> > > Right that is what the cpu alloc patches do. So you could implement
+> > > cpu_local_inc on top of some of the cpu alloc patches.
+> >
+> > Or you could just implement it today as a standalone patch.
+>
+> You need at least the zero basing to enable the use of the segment
+> register on x86_64.
 
-The patch was against linux-next, which seems to have changed 
-find_e820_area_size() - against mainline it introduced the warning 
-instead of fixing it.
+Indeed.  Works for i386 as is, but 64 bit will need that patch.
 
--- 
-Kevin Winchester
+> > > But then the whole point of local_t is gone. Why not use atomic_t in
+> > > the first place?
+> >
+> > Because some archs can do better.
+>
+> The argument does not make any sense. First you want to use atomic_t then
+> not?
 
+You're being obtuse.  See previous mail about the three possible 
+implementations of local_t, and the comment in asm-generic/local.h.
+
+The paths forward are clear:
+1) Improve x86 local_t (mostly orthogonal to the others, but useful).
+2) Implement extensible per-cpu areas.
+3) Generalize per-cpu accessors.
+4) Extend or replace the module.c per-cpu allocator to alloc from the other
+   areas.
+5) Convert alloc_percpu et al. to use the new code.
+
+Hope that clarifies,
+Rusty.
