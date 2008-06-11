@@ -1,106 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753771AbYFKNS5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751445AbYFKN1F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753771AbYFKNS5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 09:18:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbYFKNSq
+	id S1751445AbYFKN1F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 09:27:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750712AbYFKN0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 09:18:46 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:33628 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751332AbYFKNSq (ORCPT
+	Wed, 11 Jun 2008 09:26:54 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:9778 "EHLO
+	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750698AbYFKN0x convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 09:18:46 -0400
-X-Sasl-enc: if8HJo127lDXr8BWvwWmu6cb5unHt9AGkD2EeZ9UQ0Qa 1213190324
-Subject: Re: [PATCH] autofs4: fix 32-bit userspace vs 64-bit
-	kernel	communications
-From: Ian Kent <raven@themaw.net>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: autofs mailing list <autofs@linux.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Konstantin Khlebnikov <khlebnikov@openvz.org>
-In-Reply-To: <484FC94E.1000209@openvz.org>
-References: <484FA0B8.2000002@openvz.org>
-	 <1213187579.4994.25.camel@raven.themaw.net>  <484FC94E.1000209@openvz.org>
-Content-Type: text/plain
-Date: Wed, 11 Jun 2008 21:15:00 +0800
-Message-Id: <1213190100.4994.54.camel@raven.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jun 2008 09:26:53 -0400
+X-BigFish: VPS-54(z6f5iz542N154dM1432R98dR7efV1805Mzzzz1157Pz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0K2AW0C-03-KFH-01
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 3/3] AMD Family10h+ IBS support for oProfile driver: buffer management
+Date: Wed, 11 Jun 2008 09:25:45 -0400
+Message-ID: <6096959DEF5C9447A6BF80BDC7EB9EDC08650A66@SBOSEXMB1.amd.com>
+In-Reply-To: <20080611105345.GF5612@ucw.cz>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 3/3] AMD Family10h+ IBS support for oProfile driver: buffer management
+Thread-Index: AcjLsxehj7vl4mueT9CoL1FkFbn8swAE1c4g
+References: <20080609175030.2844.77365.sendpatchset@localhost.localdomain> <20080609175052.2844.12167.sendpatchset@localhost.localdomain> <20080611105345.GF5612@ucw.cz>
+From: "Kasindorf, Barry" <Barry.Kasindorf@amd.com>
+To: "Pavel Machek" <pavel@suse.cz>
+CC: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 11 Jun 2008 13:25:46.0730 (UTC) FILETIME=[A847CCA0:01C8CBC6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+I can add a changelog, but this is all new and the comments at the head
+of the first patch detail the nature of the changes.
 
-On Wed, 2008-06-11 at 16:47 +0400, Pavel Emelyanov wrote:
-> Ian Kent wrote:
-> > On Wed, 2008-06-11 at 13:54 +0400, Pavel Emelyanov wrote:
-> >> From: Konstantin Khlebnikov <khlebnikov@openvz.org>
-> >>
-> >> The struct autofs_v5_packet has only one difference between
-> >> 32-bit and 64-bit versions - on 64-bit gcc aligns its size and
-> >> it is 4 bytes larger that it is on 32-bit kernel. This confuses
-> >> 32-bit user-space daemon, when talking to 64-bit kernel.
-> > 
-> > No, I don't think that's quite right.
-> > 
-> > As far as I know this issue arises when a user space program, compiled
-> > as a 32-bit application is executed within 64-bit user space.
-> 
-> What program do mean here? The problem arises right on the kernel-daemon
-> boundary - the latter refuses to accept the message with larger length.
-> No other software required.
-> 
-> >> This is very critical for containerized setups, when containers
-> >> with <different>-bit tolls are used.
-> > 
-> > Have you tested different situations with this change?
-> > Will this affect the existing check and adjustment the version 5
-> > automount daemon does now?
-> 
-> 64-bit daemons *still* work OK and 32-bit *start* to after this fix :)
-> 
-> >> Signed-off-by: Konstantin Khlebnikov <khlebnikov@openvz.org>
-> >> Acked-by: Pavel Emelyanov <xemul@openvz.org>
-> >>
-> >> ---
-> >>
-> >> diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
-> >> index 1e4a539..9855b6e 100644
-> >> --- a/fs/autofs4/waitq.c
-> >> +++ b/fs/autofs4/waitq.c
-> >> @@ -132,6 +132,14 @@ static void autofs4_notify_daemon(struct autofs_sb_info *sbi,
-> >>  		struct autofs_v5_packet *packet = &pkt.v5_pkt.v5_packet;
-> >>  
-> >>  		pktsz = sizeof(*packet);
-> >> +#if defined(CONFIG_X86_64) && defined(CONFIG_IA32_EMULATION)
+I don't know why all those white space changes happened, I did a GIT
+diff and it found them. I suspect that there is some trailing whitespace
+that got removed, I will check that.
+-Barry
 
-Oh .. so maybe the answer to my question is yes?
 
-What about other arches offer 32-bit within a 64-bit environment (has
-this been the case on sparc64 at some point)?
-What about the compiler padding on these?
+-----Original Message-----
+From: Pavel Machek [mailto:pavel@suse.cz] 
+Sent: Wednesday, June 11, 2008 6:54 AM
+To: Kasindorf, Barry
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] AMD Family10h+ IBS support for oProfile driver:
+buffer management
 
-Don't get me wrong, I'm not against fixing this, in fact I'd like to,
-but I'm concerned it may end up a bit of a can of worms.
 
-> >> +		/*
-> >> +		 * On x86_64 autofs_v5_packet struct is padded with 4 bytes
-> >> +		 * which breaks 32-bit autofs daemon.
-> >> +		 */
-> >> +		if (test_thread_flag(TIF_IA32))
-> >> +			pktsz -= 4;
-> >> +#endif
-> >>  
-> >>  		packet->wait_queue_token = wq->wait_queue_token;
-> >>  		packet->len = wq->len;
-> >>
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> > 
+
+On Mon 2008-06-09 13:50:48, Barry Kasindorf wrote:
+> Signed-off-by: Barry Kasindorf <barry.kasindorf@amd.com>
 > 
+
+missing changelog, lots of strange whitespace changes.
+
+> @@ -33,7 +34,7 @@
+>  #include "event_buffer.h"
+>  #include "cpu_buffer.h"
+>  #include "buffer_sync.h"
+> -
+> +
+>  static LIST_HEAD(dying_tasks);
+>  static LIST_HEAD(dead_tasks);
+>  static cpumask_t marked_cpus = CPU_MASK_NONE;
+
+I actually do not see the difference here. What is going on?
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures)
+http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
 
