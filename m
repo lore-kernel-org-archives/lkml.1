@@ -1,124 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932560AbYFKSMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759623AbYFKSTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932560AbYFKSMV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 14:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760726AbYFKSMJ
+	id S1759623AbYFKSTh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 14:19:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbYFKST1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 14:12:09 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:33647 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764723AbYFKSMI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 14:12:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=oBWhrrJnI4hNXLHQOlt532laWuiSCK2sso2RDvSM2+Y9XQfiAyw9gN97DUN7t++XBA
-         oHz7ZPci3NBp6HdvUQm9gIQuxYeu4tQ9QIvzeBJqqeBlYwW4wdW+H7MKFCn0fuyDrA38
-         CDezsWxwuFnZUaJs2e1FpNaERbq8AkraBAeg8=
-Message-ID: <19f34abd0806111112w5a6ed080jc098612806398828@mail.gmail.com>
-Date: Wed, 11 Jun 2008 20:12:04 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>
-Subject: [BUG] 2.6.26-rc5-mm2 - kernel BUG at arch/x86/kernel/setup.c:388!
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+	Wed, 11 Jun 2008 14:19:27 -0400
+Received: from ufisa.uninett.no ([158.38.152.126]:56522 "EHLO ufisa.uninett.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751357AbYFKST0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 14:19:26 -0400
+Date: Wed, 11 Jun 2008 20:19:20 +0200 (CEST)
+From: =?UTF-8?Q?Kolbj=C3=B8rn_Barmen?= <linux-m68k@kolla.no>
+X-X-Sender: kolla@firda.kolla.no
+To: Adrian Bunk <bunk@kernel.org>
+cc: =?UTF-8?Q?Kolbj=C3=B8rn_Barmen?= <linux-m68k@kolla.no>,
+       geert@linux-m68k.org, zippel@linux-m68k.org, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: m68k: could the Apollo support possibly work?
+In-Reply-To: <20080610174532.GD11685@cs181133002.pp.htv.fi>
+Message-ID: <alpine.LNX.1.10.0806112002520.6449@firda.kolla.no>
+References: <20080608190513.GE4048@cs181133002.pp.htv.fi> <alpine.LNX.1.10.0806101847490.26475@halbrend.uninett.no> <20080610174532.GD11685@cs181133002.pp.htv.fi>
+User-Agent: Alpine 1.10 (LNX 1032 2008-04-11)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_10409_7434633.1213207924632"
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_10409_7434633.1213207924632
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Tue, 10 Jun 2008, Adrian Bunk wrote:
 
-On 6/9/08, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-> Hi Andrew,
->
-> The 2.6.26-rc5-mm2 kernel panic's, while booting up on the x86_64
-> box with the attached .config file.
+> On Tue, Jun 10, 2008 at 06:48:34PM +0200, Kolbjørn Barmen wrote:
+> > On Sun, 8 Jun 2008, Adrian Bunk wrote:
+> > 
+> > > Does anyone still have this hardware and tried booting it in recent years?
+> > 
+> > I think I might borrow one from some NetBSD people, if I ask really really
+> > nicely :)
+> 
+> AFAIR NetBSD doesn't support the Apollos.
 
-(Please apologize for the strange way of replying to this message. It
-seems that LKML gave up delivering to my address, so I'm currently
-reading off lkml.org.)
+OK, I was (and still is) somewhat confused about the defintion of "apollo" :)
 
-This should already be fixed, but Andrew refused to apply the patch
-before releasing the -mm1 (and -mm2 apparently). I'm attaching the
-patch, can you see if it helps?
+What NetBSD does support is the so called hp300, the Apollo DNXXXXX is not
+supported, allthough there appearantly a guy "working" on it every now and
+then.  http://netbsd.pair.com/Ports/hp300/ 
 
-Thanks.
+What definition of Apollo are we talking about in Linux/m68k context?
+I thought it was http://www.tazenda.demon.co.uk/phil/linux-hp/ which
+actuall is hp300, from what I can tell.
+
+> Do you plan to work on getting the Linux support back into shape?
+
+Heh, no, I was just saying that I might try to boot one :)
 
 
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
-
-------=_Part_10409_7434633.1213207924632
-Content-Type: text/x-patch; name=sched.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fhc8lklc
-Content-Disposition: attachment; filename=sched.patch
-
-Y29tbWl0IGE5NTNlNDU5N2FiZDUxYjc0Yzk5ZTBlM2I3MDc0NTMyYTYwZmQwMzEKQXV0aG9yOiBN
-aWtlIFRyYXZpcyA8dHJhdmlzQHNnaS5jb20+CkRhdGU6ICAgTW9uIE1heSAxMiAyMToyMToxMiAy
-MDA4ICswMjAwCgogICAgc2NoZWQ6IHJlcGxhY2UgTUFYX05VTU5PREVTIHdpdGggbnJfbm9kZV9p
-ZHMgaW4ga2VybmVsL3NjaGVkLmMKICAgIAogICAgICAqIFJlcGxhY2UgdXNhZ2VzIG9mIE1BWF9O
-VU1OT0RFUyB3aXRoIG5yX25vZGVfaWRzIGluIGtlcm5lbC9zY2hlZC5jLAogICAgICAgIHdoZXJl
-IGFwcHJvcHJpYXRlLiAgVGhpcyBzYXZlcyBzb21lIGFsbG9jYXRlZCBzcGFjZSBhcyB3ZWxsIGFz
-IG1hbnkKICAgICAgICB3YXN0ZWQgY3ljbGVzIGdvaW5nIHRocm91Z2ggbm9kZSBlbnRyaWVzIHRo
-YXQgYXJlIG5vbi1leGlzdGVudC4KICAgIAogICAgRm9yIGluY2x1c2lvbiBpbnRvIHNjaGVkLWRl
-dmVsL2xhdGVzdCB0cmVlLgogICAgCiAgICBCYXNlZCBvbjoKICAgIAlnaXQ6Ly9naXQua2VybmVs
-Lm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXgtMi42LmdpdAogICAg
-ICAgICsgICBzY2hlZC1kZXZlbC9sYXRlc3QgIC4uLi9taW5nby9saW51eC0yLjYtc2NoZWQtZGV2
-ZWwuZ2l0CiAgICAKICAgIFNpZ25lZC1vZmYtYnk6IE1pa2UgVHJhdmlzIDx0cmF2aXNAc2dpLmNv
-bT4KICAgIFNpZ25lZC1vZmYtYnk6IEluZ28gTW9sbmFyIDxtaW5nb0BlbHRlLmh1PgoKZGlmZiAt
-LWdpdCBhL2tlcm5lbC9zY2hlZC5jIGIva2VybmVsL3NjaGVkLmMKaW5kZXggY2ZhMjIyYS4uMWVk
-ODAxMSAxMDA2NDQKLS0tIGEva2VybmVsL3NjaGVkLmMKKysrIGIva2VybmVsL3NjaGVkLmMKQEAg
-LTY4NzksOSArNjg3OSw5IEBAIHN0YXRpYyBpbnQgZmluZF9uZXh0X2Jlc3Rfbm9kZShpbnQgbm9k
-ZSwgbm9kZW1hc2tfdCAqdXNlZF9ub2RlcykKIAogCW1pbl92YWwgPSBJTlRfTUFYOwogCi0JZm9y
-IChpID0gMDsgaSA8IE1BWF9OVU1OT0RFUzsgaSsrKSB7CisJZm9yIChpID0gMDsgaSA8IG5yX25v
-ZGVfaWRzOyBpKyspIHsKIAkJLyogU3RhcnQgYXQgQG5vZGUgKi8KLQkJbiA9IChub2RlICsgaSkg
-JSBNQVhfTlVNTk9ERVM7CisJCW4gPSAobm9kZSArIGkpICUgbnJfbm9kZV9pZHM7CiAKIAkJaWYg
-KCFucl9jcHVzX25vZGUobikpCiAJCQljb250aW51ZTsKQEAgLTcwNzUsNyArNzA3NSw3IEBAIHN0
-YXRpYyB2b2lkIGZyZWVfc2NoZWRfZ3JvdXBzKGNvbnN0IGNwdW1hc2tfdCAqY3B1X21hcCwgY3B1
-bWFza190ICpub2RlbWFzaykKIAkJaWYgKCFzY2hlZF9ncm91cF9ub2RlcykKIAkJCWNvbnRpbnVl
-OwogCi0JCWZvciAoaSA9IDA7IGkgPCBNQVhfTlVNTk9ERVM7IGkrKykgeworCQlmb3IgKGkgPSAw
-OyBpIDwgbnJfbm9kZV9pZHM7IGkrKykgewogCQkJc3RydWN0IHNjaGVkX2dyb3VwICpvbGRzZywg
-KnNnID0gc2NoZWRfZ3JvdXBfbm9kZXNbaV07CiAKIAkJCSpub2RlbWFzayA9IG5vZGVfdG9fY3B1
-bWFzayhpKTsKQEAgLTcyNjMsNyArNzI2Myw3IEBAIHN0YXRpYyBpbnQgX19idWlsZF9zY2hlZF9k
-b21haW5zKGNvbnN0IGNwdW1hc2tfdCAqY3B1X21hcCwKIAkvKgogCSAqIEFsbG9jYXRlIHRoZSBw
-ZXItbm9kZSBsaXN0IG9mIHNjaGVkIGdyb3VwcwogCSAqLwotCXNjaGVkX2dyb3VwX25vZGVzID0g
-a2NhbGxvYyhNQVhfTlVNTk9ERVMsIHNpemVvZihzdHJ1Y3Qgc2NoZWRfZ3JvdXAgKiksCisJc2No
-ZWRfZ3JvdXBfbm9kZXMgPSBrY2FsbG9jKG5yX25vZGVfaWRzLCBzaXplb2Yoc3RydWN0IHNjaGVk
-X2dyb3VwICopLAogCQkJCSAgICBHRlBfS0VSTkVMKTsKIAlpZiAoIXNjaGVkX2dyb3VwX25vZGVz
-KSB7CiAJCXByaW50ayhLRVJOX1dBUk5JTkcgIkNhbiBub3QgYWxsb2Mgc2NoZWQgZ3JvdXAgbm9k
-ZSBsaXN0XG4iKTsKQEAgLTc0MDcsNyArNzQwNyw3IEBAIHN0YXRpYyBpbnQgX19idWlsZF9zY2hl
-ZF9kb21haW5zKGNvbnN0IGNwdW1hc2tfdCAqY3B1X21hcCwKICNlbmRpZgogCiAJLyogU2V0IHVw
-IHBoeXNpY2FsIGdyb3VwcyAqLwotCWZvciAoaSA9IDA7IGkgPCBNQVhfTlVNTk9ERVM7IGkrKykg
-eworCWZvciAoaSA9IDA7IGkgPCBucl9ub2RlX2lkczsgaSsrKSB7CiAJCVNDSEVEX0NQVU1BU0tf
-VkFSKG5vZGVtYXNrLCBhbGxtYXNrcyk7CiAJCVNDSEVEX0NQVU1BU0tfVkFSKHNlbmRfY292ZXJl
-ZCwgYWxsbWFza3MpOwogCkBAIC03NDMxLDcgKzc0MzEsNyBAQCBzdGF0aWMgaW50IF9fYnVpbGRf
-c2NoZWRfZG9tYWlucyhjb25zdCBjcHVtYXNrX3QgKmNwdV9tYXAsCiAJCQkJCXNlbmRfY292ZXJl
-ZCwgdG1wbWFzayk7CiAJfQogCi0JZm9yIChpID0gMDsgaSA8IE1BWF9OVU1OT0RFUzsgaSsrKSB7
-CisJZm9yIChpID0gMDsgaSA8IG5yX25vZGVfaWRzOyBpKyspIHsKIAkJLyogU2V0IHVwIG5vZGUg
-Z3JvdXBzICovCiAJCXN0cnVjdCBzY2hlZF9ncm91cCAqc2csICpwcmV2OwogCQlTQ0hFRF9DUFVN
-QVNLX1ZBUihub2RlbWFzaywgYWxsbWFza3MpOwpAQCAtNzQ3MCw5ICs3NDcwLDkgQEAgc3RhdGlj
-IGludCBfX2J1aWxkX3NjaGVkX2RvbWFpbnMoY29uc3QgY3B1bWFza190ICpjcHVfbWFwLAogCQlj
-cHVzX29yKCpjb3ZlcmVkLCAqY292ZXJlZCwgKm5vZGVtYXNrKTsKIAkJcHJldiA9IHNnOwogCi0J
-CWZvciAoaiA9IDA7IGogPCBNQVhfTlVNTk9ERVM7IGorKykgeworCQlmb3IgKGogPSAwOyBqIDwg
-bnJfbm9kZV9pZHM7IGorKykgewogCQkJU0NIRURfQ1BVTUFTS19WQVIobm90Y292ZXJlZCwgYWxs
-bWFza3MpOwotCQkJaW50IG4gPSAoaSArIGopICUgTUFYX05VTU5PREVTOworCQkJaW50IG4gPSAo
-aSArIGopICUgbnJfbm9kZV9pZHM7CiAJCQlub2RlX3RvX2NwdW1hc2tfcHRyKHBub2RlbWFzaywg
-bik7CiAKIAkJCWNwdXNfY29tcGxlbWVudCgqbm90Y292ZXJlZCwgKmNvdmVyZWQpOwpAQCAtNzUy
-NSw3ICs3NTI1LDcgQEAgc3RhdGljIGludCBfX2J1aWxkX3NjaGVkX2RvbWFpbnMoY29uc3QgY3B1
-bWFza190ICpjcHVfbWFwLAogCX0KIAogI2lmZGVmIENPTkZJR19OVU1BCi0JZm9yIChpID0gMDsg
-aSA8IE1BWF9OVU1OT0RFUzsgaSsrKQorCWZvciAoaSA9IDA7IGkgPCBucl9ub2RlX2lkczsgaSsr
-KQogCQlpbml0X251bWFfc2NoZWRfZ3JvdXBzX3Bvd2VyKHNjaGVkX2dyb3VwX25vZGVzW2ldKTsK
-IAogCWlmIChzZF9hbGxub2Rlcykgewo=
-------=_Part_10409_7434633.1213207924632--
+-- kolla
