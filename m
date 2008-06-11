@@ -1,81 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757976AbYFKWp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbYFKWrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757976AbYFKWp0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 18:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbYFKWpP
+	id S1758051AbYFKWrb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 18:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbYFKWrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 18:45:15 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:32162 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753042AbYFKWpN (ORCPT
+	Wed, 11 Jun 2008 18:47:22 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:7370 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753117AbYFKWrV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 18:45:13 -0400
+	Wed, 11 Jun 2008 18:47:21 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ASH83ixepplK1tyVBoB3plqEdKBC6pYIMymiK+kt0zuoxOqz8qbwgyW40dAIldjew9
-         Juo2QZoEsnLI6yONS2Iie8HnZWOZ8Mn+21VvuHLY/nPKOEYBSq6eFtPL0FMuH6NBCjmh
-         zMGs+LO3Z6bwCM8k6KV8+DNfBiHkvvMj9FMt4=
-Message-ID: <c384c5ea0806111545g6e6128bek519ce6022a301339@mail.gmail.com>
-Date: Thu, 12 Jun 2008 00:45:13 +0200
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: 7eggert@gmx.de
-Subject: Re: sched_yield() on 2.6.25
-Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Jakub Jozwicki" <jozwicki@aster.pl>, linux-kernel@vger.kernel.org,
-       "Robert Hancock" <hancockr@shaw.ca>
-In-Reply-To: <20080611152807.0682218F62@be1.lrz>
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=N1atSZ4jVgxfQ3E42g79nCxSfvIKMqt12IsK7Mjv2n8/52AF9TDmLFpvVIpolEA+xG
+         fdawu85d35hH/7VaZIhMO70Oab3JRfmkrFa7KLArSOI0Og0JLWUs/HOapmUWDKdSguaF
+         Evyv8emnDG3TX/hDzkL2mJFRtm0JxmfzadWVs=
+Message-ID: <485055FF.9020500@gmail.com>
+Date: Thu, 12 Jun 2008 00:47:27 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Swiftdove 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: balbir@linux.vnet.ibm.com, linux-mm@kvack.org, skumar@linux.vnet.ibm.com,
+       yamamoto@valinux.co.jp, menage@google.com, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, xemul@openvz.org,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [-mm][PATCH 2/4] Setup the memrlimit controller (v5)
+References: <20080521152921.15001.65968.sendpatchset@localhost.localdomain>	<20080521152948.15001.39361.sendpatchset@localhost.localdomain>	<4850070F.6060305@gmail.com>	<20080611121510.d91841a3.akpm@linux-foundation.org>	<485032C8.4010001@gmail.com> <20080611134323.936063d3.akpm@linux-foundation.org>
+In-Reply-To: <20080611134323.936063d3.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <aCBfw-3Cv-23@gated-at.bofh.it> <aCBfw-3Cv-21@gated-at.bofh.it>
-	 <aCJd6-3IF-11@gated-at.bofh.it> <aCRaM-8cM-33@gated-at.bofh.it>
-	 <20080611152807.0682218F62@be1.lrz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On Wed, Jun 11, 2008 at 5:28 PM, Bodo Eggert <7eggert@gmx.de> wrote:
-> Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
->> On Mon, 2008-06-09 at 08:37 +0200, Jakub Jozwicki wrote:
->
->>> From the man sched_yield:
->>>
->>> A  process  can  relinquish  the  processor  voluntarily without blocking by
->>> calling sched_yield().  The process will then be moved to the  end  of  the
->>> queue  for  its static priority and a new process gets to run.
->>>
->>> and also IEEE/Open Group:
->>> http://www.opengroup.org/onlinepubs/000095399/functions/sched_yield.html
+Andrew Morton wrote:
+>> At least we could add something like:
 >>
->> Yeah, except that is for Real-Time scheduling classes, SCHED_OTHER
->> doesn't have static priority queues.
+>> #ifdef CONFIG_32BIT
+>> #define PAGE_ALIGN64(addr) (((((addr)+PAGE_SIZE-1))>>PAGE_SHIFT)<<PAGE_SHIFT)
+>> #else
+>> #define PAGE_ALIGN64(addr) PAGE_ALIGN(addr)
+>> #endif
 >>
->> SCHED_OTHER doesn't have a specified implementation - so relying on it
->> to do anything specific is well outside the scope of definition.
->
-> OTOH, it's sane not to schedule exactly the thread which just tried
-> to say "I can't do any sane work, please run another thread.
->
-That's not the definition of sched_yield(). See the earlier emails,
-and the quote above.
+>> But IMHO the single PAGE_ALIGN64() implementation is more clear.
+> 
+> No, we should just fix PAGE_ALIGN.  It should work correctly when
+> passed a long-long.  Otherwse it's just a timebomb.
+> 
+> This:
+> 
+> #define PAGE_ALIGN(addr) ({				\
+> 	typeof(addr) __size = PAGE_SIZE;		\
+> 	typeof(addr) __mask = PAGE_MASK;		\
+> 	(addr + __size - 1) & __mask;			\
+> })
+> 
+> (with a suitable comment) does what we want.  I didn't check to see
+> whether this causes the compiler to generate larger code, but it
+> shouldn't.
+> 
 
-As the code after sched_yield() has to be executed the thread will be
-rescheduled soon (or even immediately) anyway.
+No, it doesn't work. The problem seems to be in the PAGE_MASK definition
+(from include/asm-x86/page.h for example):
 
-The users not understanding the limited scope where sched_yield()
-behaves deterministicly, seem to think that _yield() will yield() AND
-lower the thread's dynamic priority for SCHED_OTHER. Is downgrading
-the dynamic priority a behavioral option?
+/* PAGE_SHIFT determines the page size */
+#define PAGE_SHIFT      12
+#define PAGE_SIZE       (_AC(1,UL) << PAGE_SHIFT)
+#define PAGE_MASK       (~(PAGE_SIZE-1))
 
-On the other hand, I don't think anything should encourage the use of
-sched_yield() outside of the rare SCHED_FIFO/RR case.
+The "~" is performed on a 32-bit value, so everything in "and" with
+PAGE_MASK greater than 4GB will be truncated to the 32-bit boundary.
 
-Regards,
--- 
-Leon
+What do you think about the following?
+
+#define PAGE_SIZE64 (1ULL << PAGE_SHIFT)
+#define PAGE_MASK64 (~(PAGE_SIZE64 - 1))
+
+#define PAGE_ALIGN(addr) ({					\
+	typeof(addr) __size = PAGE_SIZE;			\
+	typeof(addr) __ret = (addr) + __size - 1;		\
+	__ret > -1UL ? __ret & PAGE_MASK64 : __ret & PAGE_MASK;	\
+})
+
+-Andrea
