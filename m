@@ -1,68 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756244AbYFKEBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbYFKEGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756244AbYFKEBT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 00:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750719AbYFKEBF
+	id S1754422AbYFKEGW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 00:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750717AbYFKEGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 00:01:05 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:60409 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750717AbYFKEBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 00:01:04 -0400
-Date: Wed, 11 Jun 2008 09:29:55 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Abhishek Sagar <sagar.abhishek@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>, akpm@linux-foundation.org
-Subject: Re: [PATCH] kprobes: remove redundant config check
-Message-ID: <20080611035955.GA19154@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <484EB61E.7050509@gmail.com>
+	Wed, 11 Jun 2008 00:06:12 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:59354 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750700AbYFKEGM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 00:06:12 -0400
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 4 of 7] block: bio data integrity support
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <f2ae9d5bce4c33e12083.1212814537@sermon.lab.mkp.net>
+	<x491w359fne.fsf@segfault.boston.devel.redhat.com>
+Date: Wed, 11 Jun 2008 00:05:29 -0400
+In-Reply-To: <x491w359fne.fsf@segfault.boston.devel.redhat.com> (Jeff Moyer's message of "Tue\, 10 Jun 2008 16\:52\:20 -0400")
+Message-ID: <yq1r6b4mx9y.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <484EB61E.7050509@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 10:43:02PM +0530, Abhishek Sagar wrote:
-> Hi,
-> 
-> I noticed that there's a CONFIG_KPROBES check inside kernel/kprobes.c,
-> which seems redundant. Can be removed?
-> 
-> Diff'd against v2.6.26-rc5.
-> 
-> 
-> Signed-off-by: Abhishek Sagar <sagar.abhishek@gmail.com>
-> ---
-> remove redundant CONFIG_KPROBES check.
-> 
-> diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-> index 1e0250c..2b2cae2 100644
-> --- a/kernel/kprobes.c
-> +++ b/kernel/kprobes.c
-> @@ -1283,13 +1283,8 @@ EXPORT_SYMBOL_GPL(register_jprobe);
->  EXPORT_SYMBOL_GPL(unregister_jprobe);
->  EXPORT_SYMBOL_GPL(register_jprobes);
->  EXPORT_SYMBOL_GPL(unregister_jprobes);
-> -#ifdef CONFIG_KPROBES
->  EXPORT_SYMBOL_GPL(jprobe_return);
-> -#endif
-> -
-> -#ifdef CONFIG_KPROBES
->  EXPORT_SYMBOL_GPL(register_kretprobe);
->  EXPORT_SYMBOL_GPL(unregister_kretprobe);
->  EXPORT_SYMBOL_GPL(register_kretprobes);
->  EXPORT_SYMBOL_GPL(unregister_kretprobes);
-> -#endif
+>>>>> "Jeff" == Jeff Moyer <jmoyer@redhat.com> writes:
 
-Abhishek,
+>> + memset(bip, 0, sizeof(*bip)); 
+>> + idx = 0;
 
-This was intentional (to take care of some gcc 4.2 issues). See commit
-cd5bfea278987ebfe60f3ff92a01696b17c4f978 (fix compilation with gcc 4.2)
-from Peter Chubb for details.
+Jeff> That assignment isn't necessary.
 
-Ananth
+Zap!
+
+
+Jeff>         nr_sectors = (len + bi->tag_size - 1) / bi->tag_size;
+
+Jeff> why not simply use DIV_ROUND_UP?
+
+Fixed.
+
+
+Jeff> set_tag and get_tag are almost identical.  Any chance you want
+Jeff> to factor out that code?
+
+Done.
+
+
+Jeff> Hmm, up until this point you use bi to mean bio_integrity, but
+Jeff> now it means blk_integrity.  Confusion will ensue.  ;)
+
+Err, uhm.  There is no bio_integrity.  There's the bio integrity
+payload which I always refer to as struct bip *bip.  And struct
+blk_integrity which is always bi.  I'm also anal about using bv for
+the data bio_vec and iv for the integrity bio_vec.  I can't see any
+place where I'm inconsistent.
+
+
+Jeff> struct blk_integrity_exchg is not yet defined in your patch set,
+Jeff> so this will likely break git bisect.
+
+bio-integrity.patch and blk-integrity.patch are artificially split up
+to ease the review process.  They are not meant to be separate
+changesets.
+
+
+>> + buf = kzalloc(len, GFP_NOIO | q->bounce_gfp);
+
+Jeff> Does this actually need to be zeroed?
+
+Nope.
+
+
+>> +void bio_integrity_advance(struct bio *bio, unsigned int
+> +void bio_integrity_trim(struct bio *bio, unsigned int offset, unsigned int sectors)
+
+Jeff> The above two loops look pretty much the same to me.  Can you
+Jeff> factor that out to a helper?
+
+I've created helpers for marking head and tail of the ivec.
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
