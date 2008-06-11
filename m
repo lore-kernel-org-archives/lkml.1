@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbYFKFzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbYFKF5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757279AbYFKFzQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 01:55:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbYFKFzD
+	id S1756209AbYFKF5l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 01:57:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbYFKF5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 01:55:03 -0400
-Received: from ic0245.upco.es ([130.206.70.245]:58373 "EHLO
-	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751912AbYFKFzB (ORCPT
+	Wed, 11 Jun 2008 01:57:32 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:46235 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752249AbYFKF5a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 01:55:01 -0400
-Subject: Re: [regression?] Sometime (often) X come out blank (black screen)
-	on cold boot - Intel chipset
-From: Romano Giannetti <romanol@upcomillas.es>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Justin Madru <jdm64@gawab.com>
-In-Reply-To: <200806101106.23899.jbarnes@virtuousgeek.org>
-References: <1213101501.21041.9.camel@pern>
-	 <200806101106.23899.jbarnes@virtuousgeek.org>
+	Wed, 11 Jun 2008 01:57:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ttjE1sQBdEGrHsKnBNUPHLnNB30GfYHv+GD3hPHowyPWGkxz0Z5BQSf0pFUL9TJAOx
+         +2+NTL/DaQCqeQhsmhqJxS+FOJ1hcCD4+tixlpRFr3m1f41A+wZbAbVdRPKbwugaboAZ
+         34kDygmwIJpjGy5wyitF1/2r54yiim4uHUmh0=
+Message-ID: <a44ae5cd0806102257x61596782tc523de8c866cb58b@mail.gmail.com>
+Date: Wed, 11 Jun 2008 01:57:30 -0400
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Larry Finger" <Larry.Finger@lwfinger.net>
+Subject: Re: BUG: NULL pointer dereference at 00000000 -- IP: [<f8e783d5>] :b43:b43_dma_mapping_error+0x16/0x155
+Cc: "Michael Buesch" <mb@bu3sch.de>, "Vegard Nossum" <vegard.nossum@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <484F5DB2.4050705@lwfinger.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Date: Wed, 11 Jun 2008 07:03:55 +0200
-Message-Id: <1213160635.9453.15.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a44ae5cd0806100709rf4602f2x587631852502c0b5@mail.gmail.com>
+	 <200806101637.11473.mb@bu3sch.de>
+	 <19f34abd0806100742v176f50e8se463d2e70df44332@mail.gmail.com>
+	 <200806101650.27180.mb@bu3sch.de>
+	 <a44ae5cd0806101509x5e2d5c19y10101ea0e72f8cba@mail.gmail.com>
+	 <484F0AF7.6060008@lwfinger.net>
+	 <a44ae5cd0806101857q54074c83w2eb470682b58a6cc@mail.gmail.com>
+	 <484F5DB2.4050705@lwfinger.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> The line that fails is
+>
+> if (unlikely(dma_mapping_error(ring->dev->dev->dma_dev, addr)))
+>
+> The value at 0x58(%eax) is zero, which corresponds to the "struct b43_wldev
+> *dev" line in struct b43_dmaring. In other words, ring->dev is NULL, which
+> causes the error. I'll leave it to FUJITA Tomonori to figure out why.
 
-On Tue, 2008-06-10 at 11:06 -0700, Jesse Barnes wrote:
-> On Tuesday, June 10, 2008 5:38 am Romano Giannetti wrote:
+Thanks all,
 
-> This sounds like a DUP; I remember Justin Madru had a similar issue (with 
-> Ubuntu & gdm even iirc).
-> 
-> Is there any way you could run the latest git bits of the Intel X driver?  
-> I've added some debugging that could catch at least one of the common reasons 
-> why the display would blank like that...
+I might have time in the morning to test one more patch, otherwise I
+will be back in about three weeks.
 
-Yes, I think I can. Please give me instructions... I have a git
-repository tracking Linus' one. 
+Best wishes,
 
-BTW, maybe I'm on dope, but thinking hard, it seems to me that the blank
-screen happens nly when I cold reboot after a crash forced me to
-poweroff abruptly the laptop. Last time happened after a battery runoff.
-It's that possible?
-
-Moreover, I see a lot of flashing on shutdown (I'm sure I've seen a
-report like that, but I am unable to dig it out now)...
-
-Thanks,
-	Romano 
-
--- 
-Sorry for the disclaimer --- ¡I cannot stop it!
-
-
-
---
-La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
-
-This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
+        Miles
