@@ -1,73 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbYFKHQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755114AbYFKHWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756230AbYFKHQA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 03:16:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbYFKHPx
+	id S1755114AbYFKHWR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 03:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbYFKHWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 03:15:53 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39021 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752932AbYFKHPw (ORCPT
+	Wed, 11 Jun 2008 03:22:05 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45267 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752848AbYFKHWE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 03:15:52 -0400
-Subject: Re: [PATCH] sched: fair group: fix divide by zero
-From: Peter Zijlstra <peterz@infradead.org>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: mingo@elte.hu, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <484F7AC5.8040206@cn.fujitsu.com>
-References: <484F7AC5.8040206@cn.fujitsu.com>
-Content-Type: text/plain
-Date: Wed, 11 Jun 2008 09:15:47 +0200
-Message-Id: <1213168547.31518.66.camel@twins>
+	Wed, 11 Jun 2008 03:22:04 -0400
+Date: Wed, 11 Jun 2008 08:05:02 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Tejun Heo <htejun@gmail.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Prevent busy looping
+Message-ID: <20080611080502.4aa43980@core>
+In-Reply-To: <484F7A8D.1040809@gmail.com>
+References: <20080416151305.8788.63912.stgit@denkblock.local>
+	<20080416163152.GK12774@kernel.dk>
+	<87r6d5l9pb.fsf@denkblock.local>
+	<20080417071335.GR12774@kernel.dk>
+	<87ve2gc1bn.fsf@denkblock.local>
+	<484F7A8D.1040809@gmail.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-06-11 at 15:12 +0800, Lai Jiangshan wrote:
-> I found a bug which can be reproduced by this way:(linux-2.6.26-rc5, x86-64)
-> (use 2^32, 2^33, ...., 2^63 as shares value)
+> Elias's synthetic test case triggered infinite loop because it wasn't
+> a proper ->qc_defer().  ->qc_defer() should never defer commands when
+> the target is idle.
 
-I think the same thing to do is limit the shares value to something
-smaller instead of using an even more expensive divide.
+Target or host ? We *do* defer commands in the case of an idle channel
+when dealing with certain simplex controllers that can only issue one
+command per host not one per cable (and in fact in the general case we
+can defer commands due to activity on the other drive on the cable).
 
-> # mkdir /dev/cpuctl
-> # mount -t cgroup -o cpu cpuctl /dev/cpuctl
-> # cd /dev/cpuctl
-> # mkdir sub
-> # echo 0x8000000000000000 > sub/cpu.shares
-> # echo $$ > sub/tasks
-> oops here! divide by zero.
-> 
-> This is because do_div() expects the 2th parameter to be 32 bits,
-> but unsigned long is 64 bits in x86_64.
-> 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
-> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-> index 08ae848..d3005b4 100644
-> --- a/kernel/sched_fair.c
-> +++ b/kernel/sched_fair.c
-> @@ -368,7 +368,7 @@ static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
->  		cfs_rq = cfs_rq_of(se);
->  
->  		slice *= se->load.weight;
-> -		do_div(slice, cfs_rq->load.weight);
-> +		slice = div64_u64(slice, cfs_rq->load.weight);
->  	}
->  
-> 
-> @@ -399,7 +399,7 @@ static u64 sched_vslice_add(struct cfs_rq *cfs_rq, struct sched_entity *se)
->  			weight += se->load.weight;
->  
->  		vslice *= NICE_0_LOAD;
-> -		do_div(vslice, weight);
-> +		vslice = div64_u64(vslice, weight);
->  	}
->  
->  	return vslice;
-> 
-> 
-
+Alan
