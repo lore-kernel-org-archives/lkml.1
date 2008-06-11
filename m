@@ -1,69 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755438AbYFKODb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755838AbYFKODm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755438AbYFKODb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 10:03:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYFKODV
+	id S1755838AbYFKODm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 10:03:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbYFKODV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 11 Jun 2008 10:03:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50944 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([66.187.233.31]:50947 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750996AbYFKODU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751373AbYFKODU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 11 Jun 2008 10:03:20 -0400
 From: Jeff Layton <jlayton@redhat.com>
 To: trond.myklebust@fys.uio.no, bfields@fieldses.org
 Cc: linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] nfs4: remove BKL from nfs_callback_up and nfs_callback_down
-Date: Wed, 11 Jun 2008 10:03:10 -0400
-Message-Id: <1213192992-7635-2-git-send-email-jlayton@redhat.com>
+Subject: [PATCH 0/3] fix potential races in lockd and nfs4-callback startup/shutdown
+Date: Wed, 11 Jun 2008 10:03:09 -0400
+Message-Id: <1213192992-7635-1-git-send-email-jlayton@redhat.com>
 X-Mailer: git-send-email 1.5.3.6
-In-Reply-To: <1213192992-7635-1-git-send-email-jlayton@redhat.com>
-References: <1213192992-7635-1-git-send-email-jlayton@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The nfs_callback_mutex is sufficient protection.
+As Trond Myklebust pointed out, the current kthread-based lockd and
+nfsv4 callback threads have a race condition if they are started and
+brought down very rapidly. If this occurs, there is a chance that the
+main thread function will never be run, and the cleanup done when the
+function exits will not occur. This patchset fixes this by moving the
+cleanup into the respective *_down functions.
+
+While Bruce has just taken in a patchset from me to change nfsd to
+kthreads, this race doesn't seem to exist there. We aren't using
+kthread_stop() to take down nfsd, only signals, so I don't think the
+kthread can be stopped before nfsd() actually runs.
+
+The set also includes a patch to remove the BKL from nfs_callback_up
+and nfs_callback_down.
 
 Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
- fs/nfs/callback.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
-
-diff --git a/fs/nfs/callback.c b/fs/nfs/callback.c
-index c1e7c83..9e713d2 100644
---- a/fs/nfs/callback.c
-+++ b/fs/nfs/callback.c
-@@ -105,7 +105,6 @@ int nfs_callback_up(void)
- 	struct svc_rqst *rqstp;
- 	int ret = 0;
- 
--	lock_kernel();
- 	mutex_lock(&nfs_callback_mutex);
- 	if (nfs_callback_info.users++ || nfs_callback_info.task != NULL)
- 		goto out;
-@@ -149,7 +148,6 @@ out:
- 	if (serv)
- 		svc_destroy(serv);
- 	mutex_unlock(&nfs_callback_mutex);
--	unlock_kernel();
- 	return ret;
- out_err:
- 	dprintk("Couldn't create callback socket or server thread; err = %d\n",
-@@ -163,13 +161,11 @@ out_err:
-  */
- void nfs_callback_down(void)
- {
--	lock_kernel();
- 	mutex_lock(&nfs_callback_mutex);
- 	nfs_callback_info.users--;
- 	if (nfs_callback_info.users == 0 && nfs_callback_info.task != NULL)
- 		kthread_stop(nfs_callback_info.task);
- 	mutex_unlock(&nfs_callback_mutex);
--	unlock_kernel();
- }
- 
- static int nfs_callback_authenticate(struct svc_rqst *rqstp)
--- 
-1.5.3.6
 
