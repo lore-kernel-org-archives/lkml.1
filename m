@@ -1,119 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756036AbYFKWCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756960AbYFKWEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756036AbYFKWCR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 18:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750904AbYFKWCF
+	id S1756960AbYFKWEU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 18:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbYFKWEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 18:02:05 -0400
-Received: from mail-wa4.bigfish.com ([216.32.181.112]:3465 "EHLO
-	mail86-wa4-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750746AbYFKWCE (ORCPT
+	Wed, 11 Jun 2008 18:04:06 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:38801 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752860AbYFKWEE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 18:02:04 -0400
-X-Greylist: delayed 1870 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Jun 2008 18:02:04 EDT
-X-BigFish: VPS-12(zz7efV11e3izz10d3izzz2fh6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
-Message-ID: <48504408.8060905@am.sony.com>
-Date: Wed, 11 Jun 2008 14:30:48 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 11 Jun 2008 18:04:04 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <48504B94.9050100@s5r6.in-berlin.de>
+Date: Thu, 12 Jun 2008 00:03:00 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>
-Subject: [announce] PS3 Linux Distributor's Starter Kit (v1.8) released
-References: <4581CA0C.20102@am.sony.com> <47A3AF1E.5040308@am.sony.com>
-In-Reply-To: <47A3AF1E.5040308@am.sony.com>
+To: chris2553@googlemail.com
+CC: Greg KH <greg@kroah.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       Hannes Reinecke <hare@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-usb@vger.kernel.org
+Subject: Re: 2,6.26-rc4-git2 - long pause during boot
+References: <200806010415.05290.chris2553@googlemail.com> <200806111858.05114.chris2553@googlemail.com> <20080611191533.GA6189@kroah.com> <200806111951.09275.chris2553@googlemail.com> <485047C1.3020200@s5r6.in-berlin.de>
+In-Reply-To: <485047C1.3020200@s5r6.in-berlin.de>
 X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 11 Jun 2008 21:30:48.0950 (UTC) FILETIME=[6A8E2960:01C8CC0A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-An updated PS3 Linux Distributor's Starter Kit (v1.8) was released.
+I wrote:
+> /etc/udev/rules.d/05-udev-early.rules:ACTION=="add", 
+> KERNEL=="[0-9]*:[0-9]*", SUBSYSTEM=="scsi", WAIT_FOR_SYSFS="ioerr_cnt"
+> 
+> Whatever this rule is good for...  Maybe the pattern should be 
+> "[0-9]+(:[0-9]+){3}" to match logical units only.
 
-The CD-ROM image CELL-Linux-CL_20080609-ADDON.iso (189 MiB) is here:
-
-  ftp://ftp.infradead.org/pub/Sony-PS3/
-  http://ftp.uk.linux.org/pub/linux/Sony-PS3/
-
-The changes list follows. 
-
--Geoff
-
-
-----------
-v1.8 (2008/06/09 version)
-
- ALL
-
-  o Following specs are changed
-
-    - Update Linux kernel version to 2.6.25.4. This kernel is build from 
-      http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.25.4.tar.bz2 and
-      additional PS3 patches. Please refer to the 'patches' directory in 
-      'src/linux-2.6.25.4-20080609.tar.bz2' for details.
-
-    - Update perfmon2 to the latest version
-
-    - Update the PS3 utilities to the latest version
-
-    - Update kexec tools to the latest version
-
-
- Kboot
-
-  o Following spec are changed
-
-    - Update Linux kernel version to 2.6.25.4
-
-    - Update the PS3 utilities and kexec tools to the latest version
-
-
- Linux Kernel
-
-  o Following specs are changed
-
-    - The wireless ethernet now serves wlan0 instead of eth1.  Both wired
-      and wireless interfaces still share one MAC address, hence do not connect
-      them to the same network segment.
-
-    - The wireless ethernet now supports precise WPA(IE) information. PS3
-      system software version 2.20 or later is required for this.
-
-    - Wake-on-LAN support has been added. PS3 system software version 2.20
-      or later is required for this.
-
-  o Known problems
-
-    - There's a bug in the CD-ROM media change code in kernel 2.6.25.
-      Please access CD/DVD/BD media within 30 seconds after the media change,
-      else I/O errors may occur.
-
-
- Library/Commands
-
-    - Commands for perfmon2 are updated to the latest version
-
-    - Kexec tools is updated to the latest version
-
-
- Documents
-
-    - Wireless extension for GbE section of Linux Kernel Overview is
-      updated
-
-    - The descriptions for ps3-dump-bootloader and ps3-rtc-init command
-      are added to Platform Specific Utilities.
-
-
-    - "Linux Kernel Overview", "How to Use Linux on PS3",
-      "Platform Specific Utilities", and "How to Enable Your Distro" have
-      been updated.
-
--EOF
-
-
-
+Actually no; looks like these are just glob(7) patterns.  Then the 
+pattern might already be OK since host devices' and target devices' 
+names don't start with decimal numbers.
+-- 
+Stefan Richter
+-=====-==--- -==- -=-==
+http://arcgraph.de/sr/
