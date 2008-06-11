@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754388AbYFKVrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756035AbYFKVuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754388AbYFKVrl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 17:47:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbYFKVr2
+	id S1756035AbYFKVuM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 17:50:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbYFKVt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 17:47:28 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:38617 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751871AbYFKVr1 (ORCPT
+	Wed, 11 Jun 2008 17:49:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51923 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752372AbYFKVtz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 17:47:27 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <485047C1.3020200@s5r6.in-berlin.de>
-Date: Wed, 11 Jun 2008 23:46:41 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
-MIME-Version: 1.0
-To: chris2553@googlemail.com
-CC: Greg KH <greg@kroah.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       Hannes Reinecke <hare@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-usb@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: 2,6.26-rc4-git2 - long pause during boot
-References: <200806010415.05290.chris2553@googlemail.com> <200806111858.05114.chris2553@googlemail.com> <20080611191533.GA6189@kroah.com> <200806111951.09275.chris2553@googlemail.com>
-In-Reply-To: <200806111951.09275.chris2553@googlemail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 11 Jun 2008 17:49:55 -0400
+Date: Wed, 11 Jun 2008 14:49:18 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: "Rafael Almeida" <almeidaraf@gmail.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] Fixed NetEm's reorder option
+Message-ID: <20080611144918.1668e3d8@extreme>
+In-Reply-To: <6de6b1650806111305m51bf2eccocbe0d0c7afee266d@mail.gmail.com>
+References: <48479f6a.e203be0a.73e1.fffff59b@mx.google.com>
+	<6de6b1650806111305m51bf2eccocbe0d0c7afee266d@mail.gmail.com>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Clayton wrote:
-> It's this rule, which appears as the second rule in the 
-> slackware rules file that's distributed with udev (and it's been there since 
-> udev-97 in August 2006):
-> 
-> ACTION=="add", SUBSYSTEM=="scsi", WAIT_FOR_SYSFS="ioerr_cnt"
-> 
-> Commenting that rule out eliminates the pause in the boot and in the appearance 
-> of icons on my desktop.
+On Wed, 11 Jun 2008 17:05:10 -0300
+"Rafael Almeida" <almeidaraf@gmail.com> wrote:
 
-FWIW, Gentoo's udev 119 has this:
-$ grep -r ioerr_cnt /etc/udev/
-/etc/udev/rules.d/05-udev-early.rules:ACTION=="add", 
-KERNEL=="[0-9]*:[0-9]*", SUBSYSTEM=="scsi", WAIT_FOR_SYSFS="ioerr_cnt"
+> I noticed no one said anything about my patch below, did I do
+> something terrible wrong? Should I just be more patient?
+> 
+> On Thu, Jun 5, 2008 at 1:34 AM, Rafael C. de Almeida
+> <almeidaraf@gmail.com> wrote:
+> > The reorder option wasn't working correctly. It would only kick in if
+> > the gap option was set. In that case it would only lower the
+> > probability of reordering packets because of how the if conditional
+> > was stated.
+> >
+> > This patch separetes the algorithm for reordering with gap from the
+> > rest, rendering the code more readable and correct.
+> >
+> > Signed-off-by: Rafael C. de Almeida <rafaelc@dcc.ufmg.br>
 
-Whatever this rule is good for...  Maybe the pattern should be 
-"[0-9]+(:[0-9]+){3}" to match logical units only.
--- 
-Stefan Richter
--=====-==--- -==- -=-==
-http://arcgraph.de/sr/
+Haven't had time to look at this in detail, and I worry about the impact
+of changing assumptions people already have in their scripts.
