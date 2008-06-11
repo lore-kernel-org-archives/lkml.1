@@ -1,92 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbYFKEGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758068AbYFKEGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754422AbYFKEGW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 00:06:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750717AbYFKEGM
+	id S1758068AbYFKEGv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 00:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751111AbYFKEGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 00:06:12 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:59354 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750700AbYFKEGM (ORCPT
+	Wed, 11 Jun 2008 00:06:42 -0400
+Received: from smtp118.mail.mud.yahoo.com ([209.191.84.167]:28007 "HELO
+	smtp118.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751108AbYFKEGk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 00:06:12 -0400
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 4 of 7] block: bio data integrity support
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <f2ae9d5bce4c33e12083.1212814537@sermon.lab.mkp.net>
-	<x491w359fne.fsf@segfault.boston.devel.redhat.com>
-Date: Wed, 11 Jun 2008 00:05:29 -0400
-In-Reply-To: <x491w359fne.fsf@segfault.boston.devel.redhat.com> (Jeff Moyer's message of "Tue\, 10 Jun 2008 16\:52\:20 -0400")
-Message-ID: <yq1r6b4mx9y.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Wed, 11 Jun 2008 00:06:40 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=mM+8A8qZ0s2UHxvlcDLmhxRySwGfUuQ15IgDm572DcKdpU4J+s/P+1ghMuM8RK1VBmw4Xh65vHvYRF4pvr0eBUSaRmOE5PdEMoopVXzcwaDgaCT4El7MB1RRImQeggbY5XVC+8IKpyWtNCzhy7VxaKFMPJ+PQKtwjKosoM1/BcU=  ;
+X-YMail-OSG: 6e4V6IQVM1kK7rl2QEUzzj90eyiteRh9j77q964WOKPNBZ1NAQmM56vS91AQCiYYtWvb9kO0At8uE0YSf298.pUpcHgPqSAd085zLb8LmgyxHcfMfGRvQqoliZ5V4mAUhCk-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: benh@kernel.crashing.org
+Subject: Re: MMIO and gcc re-ordering issue
+Date: Wed, 11 Jun 2008 14:06:27 +1000
+User-Agent: KMail/1.9.5
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-arch@vger.kernel.org,
+       Roland Dreier <rdreier@cisco.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>, Trent Piepho <tpiepho@freescale.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       David Miller <davem@davemloft.net>, scottwood@freescale.com,
+       linuxppc-dev@ozlabs.org, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+References: <1211852026.3286.36.camel@pasglop> <200806111329.35894.nickpiggin@yahoo.com.au> <1213155644.25745.60.camel@pasglop>
+In-Reply-To: <1213155644.25745.60.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806111406.28411.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Jeff" == Jeff Moyer <jmoyer@redhat.com> writes:
+On Wednesday 11 June 2008 13:40, Benjamin Herrenschmidt wrote:
+> On Wed, 2008-06-11 at 13:29 +1000, Nick Piggin wrote:
+> > Exactly, yes. I guess everybody has had good intentions here, but
+> > as noticed, what is lacking is coordination and documentation.
+> >
+> > You mention strong ordering WRT spin_unlock, which suggests that
+> > you would prefer to take option #2 (the current powerpc one): io/io
+> > is ordered and io is contained inside spinlocks, but io/cacheable
+> > in general is not ordered.
+>
+> IO/cacheable -is- ordered on powepc in what we believe is the direction
+> that matter: IO reads are fully ordered vs. anything and IO writes are
+> ordered vs. previous cacheable stores. The only "relaxed" situation is
+> IO writes followed by cacheable stores, which I believe shouldn't be
+> a problem. (except for spinlocks for which we use the flag trick)
 
->> + memset(bip, 0, sizeof(*bip)); 
->> + idx = 0;
+Spinlocks... mutexes, semaphores, rwsems, rwlocks, bit spinlocks, bit
+mutexes, open coded bit locks (of which there are a number floating
+around in drivers/).
 
-Jeff> That assignment isn't necessary.
+But even assuming you get all of that fixed up. I wonder what is such
+a big benefit to powerpc that you'll rather add the exception "cacheable
+stores are not ordered with previous io stores" than to say "any driver
+which works on x86 will work on powerpc as far as memory ordering goes"?
+(don't you also need something to order io reads with cacheable reads?
+as per my observation that your rmb is broken according to IBM docs)
 
-Zap!
+Obviously you already have a sync instruction in your writel, so 1)
+adding a second one doesn't slow it down by an order of mangnitude or
+anything, just some small factor; and 2) you obviously want to be
+converting high performance drivers to a more relaxed model anyway
+regardless of whether there is one sync or two in there.
 
-
-Jeff>         nr_sectors = (len + bi->tag_size - 1) / bi->tag_size;
-
-Jeff> why not simply use DIV_ROUND_UP?
-
-Fixed.
-
-
-Jeff> set_tag and get_tag are almost identical.  Any chance you want
-Jeff> to factor out that code?
-
-Done.
-
-
-Jeff> Hmm, up until this point you use bi to mean bio_integrity, but
-Jeff> now it means blk_integrity.  Confusion will ensue.  ;)
-
-Err, uhm.  There is no bio_integrity.  There's the bio integrity
-payload which I always refer to as struct bip *bip.  And struct
-blk_integrity which is always bi.  I'm also anal about using bv for
-the data bio_vec and iv for the integrity bio_vec.  I can't see any
-place where I'm inconsistent.
-
-
-Jeff> struct blk_integrity_exchg is not yet defined in your patch set,
-Jeff> so this will likely break git bisect.
-
-bio-integrity.patch and blk-integrity.patch are artificially split up
-to ease the review process.  They are not meant to be separate
-changesets.
-
-
->> + buf = kzalloc(len, GFP_NOIO | q->bounce_gfp);
-
-Jeff> Does this actually need to be zeroed?
-
-Nope.
-
-
->> +void bio_integrity_advance(struct bio *bio, unsigned int
-> +void bio_integrity_trim(struct bio *bio, unsigned int offset, unsigned int sectors)
-
-Jeff> The above two loops look pretty much the same to me.  Can you
-Jeff> factor that out to a helper?
-
-I've created helpers for marking head and tail of the ivec.
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Has this ever been measured or thought carefully about? Beyond the
+extent of "one sync good, two sync bad" ;)
