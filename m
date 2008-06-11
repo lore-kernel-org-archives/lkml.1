@@ -1,48 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765700AbYFKS53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761580AbYFKS5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765700AbYFKS53 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 14:57:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760471AbYFKSvO
+	id S1761580AbYFKS5J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 14:57:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759933AbYFKSuM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 14:51:14 -0400
-Received: from smtp.movial.fi ([62.236.91.34]:35105 "EHLO smtp.movial.fi"
+	Wed, 11 Jun 2008 14:50:12 -0400
+Received: from ns2.suse.de ([195.135.220.15]:59857 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760448AbYFKSvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 14:51:12 -0400
-Date: Wed, 11 Jun 2008 21:51:10 +0300
-From: Adrian Bunk <adrian.bunk@movial.fi>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Atsushi Nemoto <anemo@mba.ocn.ne.jp>, Chris Dearman <chris@mips.com>,
-       Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [Bug #10794] mips: CONF_CM_DEFAULT build error
-Message-ID: <20080611185110.GF24255@movial.fi>
-References: <GIilET9wkhI.A.JzB.81vSIB@albercik> <dCRO4tbfLzK.A.2iD.P3vSIB@albercik>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	id S1759923AbYFKSuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 14:50:09 -0400
+Date: Wed, 11 Jun 2008 11:50:03 -0700
+From: Mark Fasheh <mfasheh@suse.com>
+To: Sunil Mushran <sunil.mushran@oracle.com>
+Cc: ocfs2-devel@oss.oracle.com, mroos@linux.ee, linux-kernel@vger.kernel.org
+Subject: Re: [Ocfs2-devel] [PATCH 1/1] ocfs2/net: Silence build warnings on sparc64
+Message-ID: <20080611185003.GL28100@wotan.suse.de>
+Reply-To: Mark Fasheh <mfasheh@suse.com>
+References: <1211239417-32337-1-git-send-email-sunil.mushran@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <dCRO4tbfLzK.A.2iD.P3vSIB@albercik>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1211239417-32337-1-git-send-email-sunil.mushran@oracle.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 07, 2008 at 10:42:57PM +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.25.  Please verify if it still should be listed.
+On Mon, May 19, 2008 at 04:23:37PM -0700, Sunil Mushran wrote:
+> suseconds_t is type long on most arches except sparc64 where it is type int.
+> This patch silences the following warnings that are generated when building
+> on it.
 
-yes
+Hmm, this seems to have fallen through the cracks. It's in ocfs2.git now
+though.
+	--Mark
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10794
-> Subject		: mips: CONF_CM_DEFAULT build error
-> Submitter	: Adrian Bunk <adrian.bunk@movial.fi>
-> Date		: 2008-05-25 10:11 (14 days old)
-> References	: http://lkml.org/lkml/2008/5/25/168
-> Patch		: http://lkml.org/lkml/2008/6/1/125
-
-
-cu
-Adrian
+--
+Mark Fasheh
