@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756750AbYFKI4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757266AbYFKI7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756750AbYFKI4V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 04:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbYFKI4N
+	id S1757266AbYFKI7X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 04:59:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbYFKI7O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 04:56:13 -0400
-Received: from viefep32-int.chello.at ([62.179.121.50]:47703 "EHLO
-	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751667AbYFKI4M (ORCPT
+	Wed, 11 Jun 2008 04:59:14 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:21149 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753212AbYFKI7M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 04:56:12 -0400
-Subject: Re: [sched-devel, patch-rfc] rework of "prioritize non-migratable
-	tasks over migratable ones"
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Cc: Gregory Haskins <ghaskins@novell.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <1213138710.26530.51.camel@earth>
-References: <1213138710.26530.51.camel@earth>
-Content-Type: text/plain
-Date: Wed, 11 Jun 2008 10:53:02 +0200
-Message-Id: <1213174382.31518.69.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Wed, 11 Jun 2008 04:59:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=mufgUEDfqKExoZkIWKoPmQcOurZUX1TMzVm/3AfHXyTX87uXPTniMadL7u55HSPly7
+         k02P8HXuT15jmxAnRkLme5mcxZcIDh/wqUYZiKIYJ0U8I13bYlqbWstHEJVRCLseJ4jn
+         kLf6PNobzfs7XEjYCafSO43fQu5c0t6CDunX0=
+Message-ID: <46d6db660806110159k284b2ee9s62e118b8d09258bb@mail.gmail.com>
+Date: Wed, 11 Jun 2008 10:59:11 +0200
+From: "Christian MICHON" <christian.michon@gmail.com>
+To: "Tim Bird" <tim.bird@am.sony.com>
+Subject: Re: mainlining min-configs...
+Cc: "Rob Landley" <rob@landley.net>, linux-tiny <Linux-tiny@selenic.com>,
+       "linux kernel" <linux-kernel@vger.kernel.org>,
+       linux-embedded <linux-embedded@vger.kernel.org>,
+       "Adrian Bunk" <adrian.bunk@movial.fi>
+In-Reply-To: <484DDAD9.2000306@am.sony.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48447615.5050806@am.sony.com>
+	 <20080604194002.GF4189@cs181133002.pp.htv.fi>
+	 <4849CCA3.7040102@am.sony.com> <200806062329.54019.rob@landley.net>
+	 <484DDAD9.2000306@am.sony.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-06-11 at 00:58 +0200, Dmitry Adamushko wrote:
-> Hi Gregory,
-> 
-> 
-> regarding this commit: 45c01e824991b2dd0a332e19efc4901acb31209f
-> 
-> 
-> I think we can do it simpler. Please take a look at the patch below.
-> 
-> Instead of having 2 separate arrays (which is + ~800 bytes on x86_32 and twice so on x86_64),
-> let's add "exclusive" (the ones that are bound to this CPU) tasks to the head of the queue
-> and "shared" ones -- to the end.
-> 
-> In case of a few newly woken up "exclusive" tasks, they are 'stacked' (not queued as now), meaning that
-> a task {i+1} is being placed in front of the previously woken up task {i}. But I don't think that
-> this behavior may cause any realistic problems.
+On Tue, Jun 10, 2008 at 3:37 AM, Tim Bird <tim.bird@am.sony.com> wrote:
+> Any chance of getting your minimal configs from Firmware Linux mainlined?
+>
+> Does anyone else think this would be valuable?  If not in mainline, it
+> would be nice to collect them somewhere, to compare what options different
+> developers decide turn on or off.
+>  -- Tim
+>
 
-Doesn't this violate POSIX ?
+this is very valuable. DetaolB uses this concept. Download the latest
+iso of DetaolB, boot it and look for /proc/miniconfig.gz.
+you'll see an example for 2.6.23 there.
 
+you can find old patches there:
+http://downloads.sourceforge.net/detaolb/detaolb_v03-linux-2.6.21.patch
+
+-- 
+Christian
+--
+http://detaolb.sourceforge.net/, a linux distribution for Qemu with Git inside !
