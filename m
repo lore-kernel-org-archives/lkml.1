@@ -1,84 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761708AbYFKTQN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762602AbYFKTRM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761708AbYFKTQN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 15:16:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbYFKTP6
+	id S1762602AbYFKTRM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 15:17:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbYFKTQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 15:15:58 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48658 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752312AbYFKTP5 (ORCPT
+	Wed, 11 Jun 2008 15:16:57 -0400
+Received: from casper.infradead.org ([85.118.1.10]:58870 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751045AbYFKTQ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 15:15:57 -0400
-Date: Wed, 11 Jun 2008 12:15:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: righi.andrea@gmail.com
-Cc: balbir@linux.vnet.ibm.com, linux-mm@kvack.org, skumar@linux.vnet.ibm.com,
-       yamamoto@valinux.co.jp, menage@google.com, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, xemul@openvz.org,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [-mm][PATCH 2/4] Setup the memrlimit controller (v5)
-Message-Id: <20080611121510.d91841a3.akpm@linux-foundation.org>
-In-Reply-To: <4850070F.6060305@gmail.com>
-References: <20080521152921.15001.65968.sendpatchset@localhost.localdomain>
-	<20080521152948.15001.39361.sendpatchset@localhost.localdomain>
-	<4850070F.6060305@gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jun 2008 15:16:56 -0400
+Date: Wed, 11 Jun 2008 12:15:33 -0700
+From: Greg KH <greg@kroah.com>
+To: Chris Clayton <chris2553@googlemail.com>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       Hannes Reinecke <hare@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-usb@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: 2,6.26-rc4-git2 - long pause during boot
+Message-ID: <20080611191533.GA6189@kroah.com>
+References: <200806010415.05290.chris2553@googlemail.com> <1212950276.3574.7.camel@localhost.localdomain> <200806102206.26818.chris2553@googlemail.com> <200806111858.05114.chris2553@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200806111858.05114.chris2553@googlemail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jun 2008 19:10:40 +0200 (MEST)
-Andrea Righi <righi.andrea@gmail.com> wrote:
+On Wed, Jun 11, 2008 at 06:58:05PM +0000, Chris Clayton wrote:
+> Jun 11 17:48:13 upstairs udevd-event[1457]: wait_for_sysfs: wait for '/sys/devices/pci0000:00/0000:00:1e.0/0000:02:0a.2/usb11/11-2/11-2:1.0/host4/ioerr_cnt' for 20 mseconds 
+> Jun 11 17:48:18 upstairs last message repeated 236 times
 
-> Balbir Singh wrote:
-> > +static int memrlimit_cgroup_write_strategy(char *buf, unsigned long long *tmp)
-> > +{
-> > +	*tmp = memparse(buf, &buf);
-> > +	if (*buf != '\0')
-> > +		return -EINVAL;
-> > +
-> > +	*tmp = PAGE_ALIGN(*tmp);
-> > +	return 0;
-> > +}
-> 
-> We shouldn't use PAGE_ALIGN() here, otherwise we limit the address space
-> to 4GB on 32-bit architectures (that could be reasonable, because this
-> is a per-cgroup limit and not per-process).
-> 
-> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
-> ---
->  mm/memrlimitcgroup.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/memrlimitcgroup.c b/mm/memrlimitcgroup.c
-> index 9a03d7d..2d42ff3 100644
-> --- a/mm/memrlimitcgroup.c
-> +++ b/mm/memrlimitcgroup.c
-> @@ -29,6 +29,8 @@
->  #include <linux/res_counter.h>
->  #include <linux/memrlimitcgroup.h>
->  
-> +#define PAGE_ALIGN64(addr) (((((addr)+PAGE_SIZE-1))>>PAGE_SHIFT)<<PAGE_SHIFT)
-> +
->  struct cgroup_subsys memrlimit_cgroup_subsys;
->  
->  struct memrlimit_cgroup {
-> @@ -124,7 +126,7 @@ static int memrlimit_cgroup_write_strategy(char *buf, unsigned long long *tmp)
->  	if (*buf != '\0')
->  		return -EINVAL;
->  
-> -	*tmp = PAGE_ALIGN(*tmp);
-> +	*tmp = PAGE_ALIGN64(*tmp);
->  	return 0;
->  }
->  
+This doesn't look good.  It looks like a udev rule in your system is
+looking for a file that will never show up.  That's a short way to a
+long delay time :)
 
-I don't beleive the change is needed.
+Try commenting out the rule that does this and see if things are fixed.
 
-#define PAGE_ALIGN(addr)	(((addr)+PAGE_SIZE-1)&PAGE_MASK)
+thanks,
 
-that implementation will behaved as desired when passed a 64-bit addr?
+greg k-h
