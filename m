@@ -1,39 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbYFKUxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbYFKUxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754782AbYFKUxR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 16:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbYFKUw5
+	id S1755931AbYFKUxs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 16:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbYFKUxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 16:52:57 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:40224 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750977AbYFKUwz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 16:52:55 -0400
-Message-ID: <48503B13.5020508@firstfloor.org>
-Date: Wed, 11 Jun 2008 22:52:35 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 11 Jun 2008 16:53:19 -0400
+Received: from lucidpixels.com ([75.144.35.66]:52531 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754747AbYFKUxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 16:53:15 -0400
+Date: Wed, 11 Jun 2008 16:53:14 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Bill Davidsen <davidsen@tmr.com>
+cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte
+ Veliciraptors
+In-Reply-To: <alpine.DEB.1.10.0806111647360.18136@p34.internal.lan>
+Message-ID: <alpine.DEB.1.10.0806111652550.18136@p34.internal.lan>
+References: <alpine.DEB.1.10.0806071015110.23323@p34.internal.lan> <4850354A.8090503@tmr.com> <alpine.DEB.1.10.0806111647360.18136@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Andy Whitcroft <apw@shadowen.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       clameter@sgi.com, linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
-       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org, eric.whitney@hp.com,
-       Paul Mundt <lethal@linux-sh.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH -mm 13/25] Noreclaim LRU Infrastructure
-References: <20080606180506.081f686a.akpm@linux-foundation.org> <20080608163413.08d46427@bree.surriel.com> <20080608135704.a4b0dbe1.akpm@linux-foundation.org> <20080608173244.0ac4ad9b@bree.surriel.com> <20080608162208.a2683a6c.akpm@linux-foundation.org> <20080608193420.2a9cc030@bree.surriel.com> <20080608165434.67c87e5c.akpm@linux-foundation.org> <Pine.LNX.4.64.0806101214190.17798@schroedinger.engr.sgi.com> <20080610153702.4019e042@cuia.bos.redhat.com> <20080610143334.c53d7d8a.akpm@linux-foundation.org> <20080611190311.GA30958@shadowen.org>
-In-Reply-To: <20080611190311.GA30958@shadowen.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> The problem will come with SPARSEMEM as that stores the section number
-> in the reserved field.  Which can mean we need the whole reserve, and
-> there is currently no simple way to remove that.
 
-Why do you need that many sections on i386?
+On Wed, 11 Jun 2008, Justin Piszcz wrote:
 
--Andi
+>
+>
+> On Wed, 11 Jun 2008, Bill Davidsen wrote:
+>
+>> Justin Piszcz wrote:
+>>> First, the original benchmarks with 6-SATA drives with fixed formatting, 
+>>> using
+>>> right justification and the same decimal point precision throughout:
+>>> http://home.comcast.net/~jpiszcz/20080607/raid-benchmarks-decimal-fix-and-right-justified/disks.html 
+>>> Now for for veliciraptors! Ever wonder what kind of speed is possible with
+>>> 3 disk, 4,5,6,7,8,9,10-disk RAID5s? I ran a loop to find out, each run is
+>>> executed three times and the average is taken of all three runs per each 
+>>> RAID5 disk set.
+>>> 
+>>> In short? The 965 no longer does justice with faster drives, a new chipset
+>>> and motherboard are needed. After reading or writing to 4-5 veliciraptors
+>>> it saturates the bus/965 chipset.
+>> 
+>> This is very interesting, but a 16GB chunk size bears no relationship to 
+>> anything I would run in the real world, and I suspect most people are in 
+>> the same category.
+>
+> I based my bonnie++ test on:
+> http://everything2.org/?node_id=1479435
+>
+> So I could compare to his results.
+>
+> I use a 1024k (1MiB) with 16384 stripe, this offered the best overall 
+> read/write/rewrite performance AFAIK.
+
+1024k chunk size (raid5 chunk size)
+echo 16384 > stripe_cache_size
+
