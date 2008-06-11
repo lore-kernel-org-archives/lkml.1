@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757427AbYFKON4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757580AbYFKOP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757427AbYFKON4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 10:13:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbYFKONp
+	id S1757580AbYFKOP2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 10:15:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbYFKOPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 10:13:45 -0400
-Received: from styx.suse.cz ([82.119.242.94]:50700 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750832AbYFKONo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 10:13:44 -0400
-Date: Wed, 11 Jun 2008 16:13:43 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
-       marcel@holtmann.org, linux-kernel@vger.kernel.org,
-       anssi.hannula@gmail.com
-Subject: Re: [PATCH 06/10] HID: move logitech report quirks
-In-Reply-To: <484D070E.9050707@gmail.com>
-Message-ID: <Pine.LNX.4.64.0806111611540.10085@jikos.suse.cz>
-References: <1210931362-18422-1-git-send-email-jirislaby@gmail.com>
- <1210931362-18422-2-git-send-email-jirislaby@gmail.com>
- <1210931362-18422-3-git-send-email-jirislaby@gmail.com>
- <1210931362-18422-4-git-send-email-jirislaby@gmail.com>
- <1210931362-18422-5-git-send-email-jirislaby@gmail.com>
- <1210931362-18422-6-git-send-email-jirislaby@gmail.com>
- <Pine.LNX.4.64.0806041520140.10085@jikos.suse.cz> <484D070E.9050707@gmail.com>
+	Wed, 11 Jun 2008 10:15:19 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:25205 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750868AbYFKOPS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 10:15:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:references:in-reply-to:x-face:cc
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=HzryhnJOXoERmCSGV9oe0a3TpR7WlZ379CzanezbLPXch0krvguXdvGVED49bB9Q8k
+         Suno2MZS9dch9FTBRE/cZ8jtuhpYQA37xhCJ5VVwlsZQlVSyoLVEh1AxvrOfZxe9Xm8o
+         /KryjUWFS72bKvxlJ/2i4XgIQxIMNQsHqaLGA=
+From: "solsTiCe d'Hiver" <solstice.dhiver@gmail.com>
+To: Jan Engelhardt <jengelh@medozas.de>
+Subject: Re: PROBLEM: no cpu MHz in /proc/cpuinfo on 2.6.25.4-rt6
+Date: Wed, 11 Jun 2008 16:15:11 +0200
+User-Agent: KMail/1.9.9
+References: <200806102152.23286.solstice.dhiver@gmail.com> <alpine.LNX.1.10.0806111440080.20733@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <alpine.LNX.1.10.0806111440080.20733@fbirervta.pbzchgretzou.qr>
+X-Face: i>^wU`a5]X{;$5ES3H1eQT1&yA%vQ<5`86sMzPN6/-61({uZALpE4Oe-6<=?utf-8?q?=60DNbFz=3D/UJ7r=0A=09v=23KV2Y=5Ew=23Sg?="1kfpw3e<f_"VS?tx&ZXn*-Npn4(l\73LF*1?wwveK$~1ys@=?utf-8?q?CTT=276=24fWx=24W=0A=09?=)0!v7wC(KkkO[+j.Etu
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806111615.11997.solstice.dhiver@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Jun 2008, Jiri Slaby wrote:
+> I have 2.6.25.6-rt6 here, so:
 
-> > > static const struct hid_device_id hid_blacklist[] = {
-> > > +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH,
-> > > USB_DEVICE_ID_MX3000_RECEIVER) },
-> > > +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_S510_RECEIVER)
-> > > },
-> > > +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH,
-> > > USB_DEVICE_ID_S510_RECEIVER_2) },
-> > >  	{ }
-> > >  };
-> > This shouldn't be needed as soon as the userspace supports the proper module
-> > autoloading, right?
-> This is needed to tell generic drivers not to bind these, its' generic
-> blacklist. I have no idea how this could be done better with current
-> drivers/base/.
+> cpu MHz         : 1666.737
+>
+> it's there.
 
-Hmm ... but if we make sure that the order in `modules.order' puts all the 
-specialized drivers before the generic one, the binding should be done 
-correctly even without blacklist, right?
+if i remember well it was there too with 2.6.25.4-rt5. i mean with _rt5_ 
+patchset. 
+but i am not sure and can't test it now because rt5 patch is not available 
+anymore...
 
--- 
-Jiri Kosina
-SUSE Labs
