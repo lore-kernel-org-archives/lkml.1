@@ -1,45 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762602AbYFKTRM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762900AbYFKTR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762602AbYFKTRM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 15:17:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbYFKTQ5
+	id S1762900AbYFKTR0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 15:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762420AbYFKTRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 15:16:57 -0400
-Received: from casper.infradead.org ([85.118.1.10]:58870 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751045AbYFKTQ4 (ORCPT
+	Wed, 11 Jun 2008 15:17:09 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:56624 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762273AbYFKTRH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 15:16:56 -0400
-Date: Wed, 11 Jun 2008 12:15:33 -0700
-From: Greg KH <greg@kroah.com>
-To: Chris Clayton <chris2553@googlemail.com>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       Hannes Reinecke <hare@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-usb@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: 2,6.26-rc4-git2 - long pause during boot
-Message-ID: <20080611191533.GA6189@kroah.com>
-References: <200806010415.05290.chris2553@googlemail.com> <1212950276.3574.7.camel@localhost.localdomain> <200806102206.26818.chris2553@googlemail.com> <200806111858.05114.chris2553@googlemail.com>
+	Wed, 11 Jun 2008 15:17:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=organization:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id:from;
+        b=fuQovPFdxJOGr80sYxA3ypfohdsU/1PaD/qZNoodZsZPsMkl3cEZ3t69/+NhFObUV0
+         4B+XW2Q+zEGNMeiJvcKS9vUtim6XJKnUbi8gwtkVnqvB5R8D351P0vukBZ/hZvJ2Gr7/
+         2JbPCOZTOAvdfDXumHx1fYTOuvtn95cX/Fm+I=
+Organization: M1K0
+To: Zhu Yi <yi.zhu@intel.com>
+Subject: Re: [2.6.26-rc5] iwlwifi 4965 not working - last on 2.6.23
+Date: Wed, 11 Jun 2008 21:17:00 +0200
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+References: <200806060039.48488.m1k0@wp.pl> <20080606034738.9835782d.akpm@linux-foundation.org> <1213151464.7814.630.camel@debian.sh.intel.com>
+In-Reply-To: <1213151464.7814.630.camel@debian.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <200806111858.05114.chris2553@googlemail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200806112117.01544.Michal.Kudla@gmail.com>
+From: =?utf-8?q?Micha=C5=82_Kud=C5=82a?= <michal.kudla@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 11, 2008 at 06:58:05PM +0000, Chris Clayton wrote:
-> Jun 11 17:48:13 upstairs udevd-event[1457]: wait_for_sysfs: wait for '/sys/devices/pci0000:00/0000:00:1e.0/0000:02:0a.2/usb11/11-2/11-2:1.0/host4/ioerr_cnt' for 20 mseconds 
-> Jun 11 17:48:18 upstairs last message repeated 236 times
+Hi,
+Still don't work.
+I have tested this patch with and without RFKILL kernel settings
+Compressed result files:
+config-2.6.26-rc5-no-rfkill.txt
+config-2.6.26-rc5-rfkill.txt
+dmesg-2.6.26-rc5-no-rfkill.txt
+dmesg-2.6.26-rc5-rfkill.txt
+are in
+http://michal.kudla.googlepages.com/iwlwifi-problem-with-patch-Zhu-Yi.ta.bz2
 
-This doesn't look good.  It looks like a udev rule in your system is
-looking for a file that will never show up.  That's a short way to a
-long delay time :)
 
-Try commenting out the rule that does this and see if things are fixed.
 
-thanks,
+W liście datowanym na środa, 11 czerwca 2008, Zhu Yi pisze:
+>ZY On Fri, 2008-06-06 at 03:47 -0700, Andrew Morton wrote:
+>ZY > > ADDRCONF(NETDEV_UP): wlan0: link is not ready
+>ZY > > iwl4965: Error sending REPLY_WEPKEY: enqueue_hcmd failed: -5
+>ZY > > mac80211-phy0: failed to remove key (0, ff:ff:ff:ff:ff:ff) from
+>ZY > hardware (-5)
+>ZY > > iwl4965: Error sending REPLY_TX_PWR_TABLE_CMD: enqueue_hcmd failed:
+>ZY > -5
+>ZY > > iwl4965: WARNING: Requesting MAC access during RFKILL wakes up NIC
+>ZY > > iwl4965: WARNING: Requesting MAC access during RFKILL wakes up NIC
+>ZY
+>ZY Looks like a rfkill related problem. Can you please try this patch?
+>ZY http://www.intellinuxwireless.org/bugzilla/show_bug.cgi?id=1673
+>ZY
+>ZY Thanks,
+>ZY -yi
+>ZY
+>ZY
 
-greg k-h
+
