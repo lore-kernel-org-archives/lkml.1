@@ -1,72 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756611AbYFKTsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757021AbYFKTtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756611AbYFKTsl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 15:48:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756045AbYFKTsd
+	id S1757021AbYFKTtW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 15:49:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756601AbYFKTtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 15:48:33 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:35219 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754763AbYFKTsc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 15:48:32 -0400
-Date: Wed, 11 Jun 2008 21:49:14 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kbuild breaks um - fails to find util when linking
-Message-ID: <20080611194914.GB12794@uranus.ravnborg.org>
-References: <20080610190307.GA15983@uranus.ravnborg.org> <20080611154816.GA8167@c2.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080611154816.GA8167@c2.user-mode-linux.org>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 11 Jun 2008 15:49:13 -0400
+Received: from mail-wa4.bigfish.com ([216.32.181.115]:30984 "EHLO
+	mail213-wa4-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756191AbYFKTtM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 15:49:12 -0400
+X-BigFish: VPS-22(z1fc9iz98dR7efVzz10d3izzz2fh6bh62h)
+X-Spam-TCS-SCL: 1:0
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
+Message-ID: <48502BAF.7060209@am.sony.com>
+Date: Wed, 11 Jun 2008 12:46:55 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: Sam Ravnborg <sam@ravnborg.org>, Rob Landley <rob@landley.net>,
+       linux-tiny <Linux-tiny@selenic.com>,
+       linux-embedded <linux-embedded@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: mainlining min-configs...
+References: <48447615.5050806@am.sony.com> <20080610183004.GG11685@cs181133002.pp.htv.fi> <20080610185123.GA15838@uranus.ravnborg.org> <200806110009.22542.rob@landley.net> <20080611063921.GA27978@uranus.ravnborg.org> <48502304.1030304@am.sony.com> <20080611193639.GB2958@cs181133002.pp.htv.fi>
+In-Reply-To: <20080611193639.GB2958@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Jun 2008 19:48:57.0747 (UTC) FILETIME=[2FFE9630:01C8CBFC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 11, 2008 at 11:48:16AM -0400, Jeff Dike wrote:
-> This patch obviously isn't usable for anyone else, but UML needs a
-> hook or something to add libgcc and libc to the ld commands:
-> 
-> Index: linux-2.6-git/scripts/link-vmlinux.sh
-> ===================================================================
-> --- linux-2.6-git.orig/scripts/link-vmlinux.sh	2008-06-11 11:26:07.000000000 -0400
-> +++ linux-2.6-git/scripts/link-vmlinux.sh	2008-06-11 11:41:04.000000000 -0400
-> @@ -122,7 +122,7 @@ fi
->  # First stage of fully linked vmlinux
->  tell LD ${VMLINUX}
->  ${LD} ${LDFLAGS} ${LDFLAGS_vmlinux} -o ${VMLINUX} \
-> -      -T ${KBUILD_VMLINUX_LDS} vmlinux.o
-> +      -T ${KBUILD_VMLINUX_LDS} vmlinux.o `gcc -print-libgcc-file-name` -lc
->  
->  if [ "${CONFIG_KALLSYMS}" = "y" ]; then
->  
-> @@ -133,7 +133,8 @@ if [ "${CONFIG_KALLSYMS}" = "y" ]; then
->          # link in kalll symbols
->  	tell LD vmlinux
->          ${LD} ${LDFLAGS} ${LDFLAGS_vmlinux} -o vmlinux \
-> -         -T ${KBUILD_VMLINUX_LDS} vmlinux.o .tmp_kallsyms.o
-> +         -T ${KBUILD_VMLINUX_LDS} vmlinux.o .tmp_kallsyms.o \
-> +	    `gcc -print-libgcc-file-name` -lc
->  fi
->  
->  tell SYSMAP System.map
-> 
-> This fixes the flood of undefined symbols, but I still get this on the
-> link:
->     ld: warning: Cannot create .note.gnu.build-id section, --build-id ignored.
->     ld: warning: cannot find entry symbol _start; defaulting to 08056320
-> 
-> And when I run the result, I get this, which I don't understand at
-> all:
-> 
->     -bash: ./uml/linux: /usr/lib/libc.so.1: bad ELF interpreter: No
-> such file or directory
+Adrian Bunk wrote:
+> Randy's patch that documents KCONFIG_ALLCONFIG is in Linus' tree since
+> April 2006.
 
-Thanks Jeff.
+Well, dangit there it is!
 
-I will take an additional look tomorrow.
+The patch I googled had it going into Documentation/kbuild.  It
+somehow escaped my attention in the README.  If I was
+a little more skilled with my grep-ing I would have found it.
+Sorry for the bother!
+ -- Tim
 
-	Sam
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
+
