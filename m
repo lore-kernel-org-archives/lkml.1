@@ -1,140 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753680AbYFKMS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbYFKMTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753680AbYFKMS7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 08:18:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbYFKMSu
+	id S1755349AbYFKMTl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 08:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbYFKMTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 08:18:50 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:16761 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751111AbYFKMSt (ORCPT
+	Wed, 11 Jun 2008 08:19:30 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:8926 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754049AbYFKMTW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 08:18:49 -0400
-Message-ID: <484FC29E.6040507@de.ibm.com>
-Date: Wed, 11 Jun 2008 14:18:38 +0200
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Peter Oberparleiter <oberparleiter@googlemail.com>,
-       Miklos Szeredi <miklos@szeredi.hu>, Jeff Dike <jdike@addtoit.com>,
-       akpm@linuxfoundation.org, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: 2.6.26-rc5-mm1: uml link error
-References: <OF61F32674.CE1F9CB0-ONC1257464.004D17DC-C1257464.004DB50E@de.ibm.com> <484E8DD2.5050603@de.ibm.com> <20080610172150.GA4728@uranus.ravnborg.org>
-In-Reply-To: <20080610172150.GA4728@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 11 Jun 2008 08:19:22 -0400
+Date: Wed, 11 Jun 2008 14:18:52 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Ryan Mallon <ryan@bluewatersys.com>
+Cc: David Brownell <david-b@pacbell.net>, Uli Luckas <u.luckas@road.de>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>, i2c@lm-sensors.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RFC] Earlier I2C initialization
+Message-ID: <20080611141852.3ccd89ea@hyperion.delvare>
+In-Reply-To: <485031D5.3020606@bluewatersys.com>
+References: <200806091541.43899.u.luckas@road.de>
+	<20080609135739.GE30971@flint.arm.linux.org.uk>
+	<484D947D.1090900@bluewatersys.com>
+	<200806091359.12791.david-b@pacbell.net>
+	<484DA046.4010804@bluewatersys.com>
+	<20080610085708.12c2d2a2@hyperion.delvare>
+	<484F42AC.9030709@bluewatersys.com>
+	<20080611094039.287ac136@hyperion.delvare>
+	<485031D5.3020606@bluewatersys.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> On Tue, Jun 10, 2008 at 04:21:06PM +0200, Peter Oberparleiter wrote:
->> Peter 1 Oberparleiter wrote:
->> > Jeff Dike <jdike@addtoit.com> wrote on 10.06.2008 15:57:29:
->> > 
->> >> On Tue, Jun 10, 2008 at 01:19:27PM +0200, Miklos Szeredi wrote:
->> >> > Hmm, uml still doesn't boot with this patch, it dies while calling the
->> >> > constructors.  So maybe that SORT contruct is still needed?
->> >> > 
->> >> > #17 0x08049793 in do_ctors () at init/main.c:706
->> >> > #18 0x080499cc in do_basic_setup () at init/main.c:789
->> >> > #19 0x08049a43 in kernel_init (unused=0x0) at init/main.c:897
->> >> 
->> >> This doesn't look like it's in do_initcalls.  What happens with
->> >> "initcall_debug"?
->> > 
->> > Constructor calls inside the kernel happen just before any other
->> > initcall. The problem here is that constructors are called from both
->> > the host run-time environment as well as from the kernel. I'm
->> > working on a patch that disables kernel constructor calling for UML.
->> 
->> New try: should be fixed with the patch below (applies on top of
->> kernel-call-constructors.patch):
->> 
->> --
->> Subject: kernel: disable constructor calling for uml
->> 
->> From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
->> 
->> Disable calling of constructor functions from within the kernel for uml
->> as they are already called by the host run-time environment.
-> 
-> If this is the right fix then could we please have a less ugly patch.
-> First off there is no need for the ifdef in vmlinux.lds.h.
+On Thu, 12 Jun 2008 08:13:09 +1200, Ryan Mallon wrote:
+> Jean Delvare wrote:
+> > Which problem are you trying to solve? Is there any actual drawback to
+> > abusing subsys_initcall() for the handful of i2c bus drivers which may
+> > need to come up early?
+>
+> On many embedded devices there is a need for i2c to be early since it is
+> often used for core functionality. It seems at the moment, that the 
+> answer to this is to juggle a few of the drivers which people need to
+> get this to work. There are the drivers in drivers/i2c which use 
+> subsys_initcall. It does work, but it feels a bit untidy. Some of the i2c
+> IO expander drivers are now in drivers/gpio since that comes up early.
+> This can lead to confusion (see drivers/gpio/pca953x.c and 
+> drivers/i2c/chips/pca9539.c).
 
-Agreed. In that case the SORT(CONSTRUCTORS) statement in
-arch/um/kernel/dyn.lds.S needs to be changed as well though (see my
-previous patch in this thread) or we get the linker error detailed
-in the original post.
+The GPIO drivers under drivers/i2c/chips are deprecated and tagged for
+removal. We only need a user-space interface for the new GPIO drivers
+(I think we do by now) and a way to instantiate these new GPIO devices
+from user-space (not done yet) before the deprecated drivers can be
+removed. The only remaining users for these deprecated drivers are
+electronics enthusiasts controlling GPIO chips over the PC parallel
+port. In the context of embedded platforms, there's no room for
+confusion here.
 
-> And we could get away with some flag or something where we 
-> call the constructors.
+>                               As David suggested, if i2c is needed early
+> in enough cases, why not just move it early in the link order? My patch
+> was just an alternative approach which mimics the current behaviour, but
+> makes it possible to get any i2c driver early. Why not just mark all of
+> the drivers/busses that get used on embedded devices as subsys_initcall,
+> just in case somebody needs them early?
 
-The decision whether constructors should be called or not is made at
-configuratiom time - I don't see a variable fitting into this scheme.
-The only alternative I could imagine would be to introduce a hidden
-config symbol CONFIG_CTORS which would be auto-selected by all archs
-except for uml.
+Because this is an abuse of subsys_initcall? I guess that was
+acceptable when only a couple drivers were doing that, but making it
+official sounds bad.
 
-> And a comment explaning why UML is different is also missing.
+> (...)
+> I just ran a sed script over the drivers/i2c directory. The intent was to
+> mark the entire subsystem to come up early if CONFIG_I2C_EARLY is set,
+> and use i2c_module_init every where since it makes it more consistent, and
+> doesn't cost anything on setups where CONFIG_I2C_EARLY isn't defined.
 
-Done. Here comes the modifed patch: applies on top of
-kernel-call-constructors.patch, together with the remove-sort-
-construct patch:
+It costs readability and build time.
 
---
-kernel: disable constructor calling for uml
+> The idea was basically that a board could clearly say: I want i2c early,
+> and have any busses and devices drivers it has configured as builtins
+> automatically be present early on.
 
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+I get the idea, but I don't buy the implementation.
 
-Disable calling of constructor functions for uml as they are already
-called by the host run-time environment.
-
-Found-by: Miklos Szeredi <miklos@szeredi.hu>
-Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
----
- init/main.c     |    4 ++++
- kernel/module.c |    4 ++++
- 2 files changed, 8 insertions(+)
-
-Index: linux-2.6.26-rc5-mm2/init/main.c
-===================================================================
---- linux-2.6.26-rc5-mm2.orig/init/main.c
-+++ linux-2.6.26-rc5-mm2/init/main.c
-@@ -699,11 +699,15 @@ asmlinkage void __init start_kernel(void
- 
- static void __init do_ctors(void)
- {
-+#ifndef CONFIG_UML
-+	/* Note: constructors on UML are called by the host run-time
-+	 * environment. */
- 	ctorcall_t *call;
- 
- 	for (call = (ctorcall_t *) __ctor_start;
- 	     call < (ctorcall_t *) __ctor_end; call++)
- 		(*call)();
-+#endif /* !CONFIG_UML */
- }
- 
- static int __initdata initcall_debug;
-Index: linux-2.6.26-rc5-mm2/kernel/module.c
-===================================================================
---- linux-2.6.26-rc5-mm2.orig/kernel/module.c
-+++ linux-2.6.26-rc5-mm2/kernel/module.c
-@@ -2194,10 +2194,14 @@ static struct module *load_module(void _
- 
- static void do_mod_ctors(struct module *mod)
- {
-+#ifndef CONFIG_UML
-+	/* Note: constructors on UML are called by the host run-time
-+	 * environment. */
- 	unsigned long i;
- 
- 	for (i = 0; i < mod->num_ctors; i++)
- 		mod->ctors[i]();
-+#endif /* !CONFIG_UML */
- }
- 
- /* This is where the real work happens */
+-- 
+Jean Delvare
