@@ -1,123 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759212AbYFKE5D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758079AbYFKFAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759212AbYFKE5D (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 00:57:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbYFKE4t
+	id S1758079AbYFKFAx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 01:00:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751332AbYFKFAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 00:56:49 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:45840
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751332AbYFKE4P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 00:56:15 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: mainlining min-configs...
-Date: Tue, 10 Jun 2008 22:48:15 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Tim Bird <tim.bird@am.sony.com>, linux-tiny <Linux-tiny@selenic.com>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-References: <48447615.5050806@am.sony.com> <484DDAD9.2000306@am.sony.com> <20080610083610.GC1987@cs181133002.pp.htv.fi>
-In-Reply-To: <20080610083610.GC1987@cs181133002.pp.htv.fi>
+	Wed, 11 Jun 2008 01:00:44 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:47428 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751196AbYFKFAn convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 01:00:43 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=4On1RP4DU9if9CePld3EK8FVOCYun+xnYzA2wdWwShabK3FF2Weoct25FsmTTfoetAF7fTJhDiyfCiMfMPcCEMhk4zdfURyASH4omFv8GK29TgAwqIjxhf4GTlgn9e4gFf8px62Ce9E0Ojo7fxV8U2hJfPQ1uTmlVPP/XToY13w=  ;
+X-YMail-OSG: WJTFbqwVM1lZLP0yWhxITTqQipLJyr7Z2dMhlIw6KQPZAFjGkylFKhIR6TXkewp3aGeySHhg437uSLdGWj.pmOR49fcumCRmugG8I6r4LnU_m3pf8ZAUFEZt3.RoTsQYUok-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: MMIO and gcc re-ordering issue
+Date: Wed, 11 Jun 2008 15:00:30 +1000
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>, Trent Piepho <tpiepho@freescale.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
+       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+References: <1211852026.3286.36.camel@pasglop> <200806101656.51211.nickpiggin@yahoo.com.au> <18511.21025.978328.596571@cargo.ozlabs.ibm.com>
+In-Reply-To: <18511.21025.978328.596571@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200806102248.16595.rob@landley.net>
+Message-Id: <200806111500.30789.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 10 June 2008 03:36:10 Adrian Bunk wrote:
-> On Mon, Jun 09, 2008 at 06:37:29PM -0700, Tim Bird wrote:
-> > Rob Landley wrote:
-> > > On Friday 06 June 2008 18:47:47 Tim Bird wrote:
-> > >> At a minimum, it would be nice to have a few nice examples
-> > >> of really, really small configs for things like qemus for different
-> > >> architectures (just to give embedded developers who are working
-> > >> on size a starting point).
-> > >
-> > > That's more or less what I'm trying to do with my Firmware Linux
-> > > project: creating cross compilers and minimal native build environments
-> > > for every qemu target.
-> >
-> > Any chance of getting your minimal configs from Firmware Linux mainlined?
+On Wednesday 11 June 2008 14:18, Paul Mackerras wrote:
+> Nick Piggin writes:
+> > OK, I'm sitll not quite sure where this has ended up. I guess you are
+> > happy with x86 semantics as they are now. That is, all IO accesses are
+> > strongly ordered WRT one another and WRT cacheable memory (which includes
+> > keeping them within spinlocks),
 >
-> It could help finding compile errors in some more "exotic" configurations
-> early (but I'd question whether the Rob's current configs are really
-> both minimal and typical for embedded usage - e.g the i686 one having
-> both ext2 and ext3 enabled but no JFFS2; and enabling all IO schedulers
-> in the kernel as well as ACPI is also not a typical embedded setup).
+> My understanding was that on x86, loads could pass stores in general,
+> i.e. a later load could be performed before an earlier store.
 
-No argument there.  I just offered them as a starting point for supporting 
-each qemu target.
+Yes, this is the one reordering allowed by the ISA on cacheable memory.
+WC memory is weaker, which Linus wants to allow exception for because
+one must explicitly ask for it. UC memory (which presumably is what
+we're talking about as "IO access") I think is stronger in that it does
+not allow any reordering between one another or any cacheable access:
 
-I'm emulating a native build environment, meaning I need an emulated hard 
-drive with gibabytes of writable space; lots of embedded devices use 
-initramfs and nothing else.  I'm using distcc so I need a working network 
-card and network stack, which lots of devices won't need.  Also, some of them 
-(mips comes to mind) need to be stripped down some more.
+AMD says this:
 
-(The ext2 plus ext3 thing is because ext2 isn't happy about writable mounts 
-where the emulator gets killed out from under it and then needs fsck, but 
-ext3 isn't really happy with small read-only mounts ala initrd.  I keep 
-meaning to teach ext3 to work without a #*%&# journal, at least on read only 
-mounts, but it's about 150 entries down on my todo list...)
+c — A store (wp,wt,wb,uc,wc,wc+) may not pass a previous load 
+(wp,wt,wb,uc,wc,wc+).
+f — A load (uc) does not pass a previous store (wp,wt,wb,uc,wc,wc+).
+g — A store (wp,wt,wb,uc) does not pass a previous store (wp,wt,wb,uc).
+i — A load (wp,wt,wb,wc,wc+) does not pass a previous store (uc).
 
-I keep meaning to refactor the configs into two files, so "just enough to boot 
-this with a serial console" is a separate file from things like filesystems 
-and network stack that are common to all of 'em.  (Then concatenate the two 
-to get a miniconfig.)  I'm not _quite_ convinced the extra build complexity's 
-worth it...
+AMD does allow WC/WC+ to be weakly ordered WRT WC as well as UC, which
+Intel seemingly does not. But we're alrady treating WC as special.
 
-> But if you want to discover size change with minimal configs early you
-> anyway have to both:
-> - constantly keep your configs in shape so that they are both minimal
->   for some set of hardware support and features and
+I can't actually find the definitive statement in the Intel manuals
+saying UC is strongly ordered also WRT WB. Linus?
 
-I find miniconfig helps here.
 
-> - investigate for any size changes what caused them
->   (experience has shown that putting information on a webpage doesn't
->    fix problems - even for compile errors).
+> I guess 
+> that can't be true for uncached loads, but could a cacheable load be
+> performed before an earlier uncached store?
+> > - as strong as x86. guaranteed not to break drivers that work on x86,
+> >   but slower on some archs. To me, this is most pleasing. It is much
+> >   much easier to notice something is going a little slower and to work
+> >   out how to use weaker ordering there, than it is to debug some
+> >   once-in-a-bluemoon breakage caused by just the right architecture,
+> >   driver, etc. It totally frees up the driver writer from thinking
+> >   about barriers, provided they get the locking right.
 >
-> You need both, and ideally constantly done by the same person against
-> Linus' tree, -next and -mm.
+> I just wish we had even one actual example of things going wrong with
+> the current rules we have on powerpc to motivate changing to this
+> model.
 
-Speaking from experience, this is a huge #*%&# pain.  (I'm trying to track 
-this sort of changes for less than a dozen qemu configs.  There are hundreds 
-of defconfigs in the tree, most of which I can't boot test...)
+~/usr/src/linux-2.6> git grep test_and_set_bit drivers/ | wc -l
+506
+How sure are you that none of those forms part of a cobbled-together
+locking scheme that hopes to constrain some IO access?
 
-However, qemu can be automated and scripted.  (Especially when /dev/console 
-attaches to qemu's stdin and stdout.  That's why I need each platform to know 
-how to shut _down_, and exit the emulator.  Currently, powerpc -M prep 
-doesn't do this. :P)
+~/usr/src/linux-2.6> git grep test_and_set_bit drivers/ | grep while | wc -l
+29
+How about those?
 
-> Where to get your minimal configs from at the start is just a small
-> thing at the beginning - don't underestimate the required manual work
-> that will have to be done each week.
+~/usr/src/linux-2.6> git grep mutex_lock drivers/ | wc -l
+3138
+How sure are you that none of them is hoping to constrain IO operations
+within the lock?
 
-Eh, I'd suggest every -pre release.
+Also grep for down, down_write, write_lock, and maybe some others I've
+forgotten. And then forget completely about locking and imagine some
+of the open coded things you see around the place (or parts where drivers
+try to get creative and open code their own locking or try lockless
+things).
 
-And starting with tracking the size regressions in just _one_ platform is 
-probably best.  I'd suggest either x86 (32 bit, matches arm) or x86_64 
-(largest userbase at this point, even Via's finally switched over).
 
-> > Does anyone else think this would be valuable?  If not in mainline, it
-> > would be nice to collect them somewhere, to compare what options
-> > different developers decide turn on or off.
+> > Now that doesn't leave waker ordering architectures lumped with "slow old
+> > x86 semantics". Think of it as giving them the benefit of sharing x86
+> > development and testing :) We can then formalise the relaxed __ accessors
+> > to be more complete (ie. +/- byteswapping).
 >
-> You already have this when you look at e.g. the ARM defconfigs in the
-> kernel
+> That leaves a gulf between the extremely strongly ordered writel
+> etc. and the extremely weakly ordered __writel etc.  The current
+> powerpc scheme is fine for a lot of drivers but your proposal would
+> leave us no way to deliver it to them.
 
-I've got a script running to convert all the 2.6.25 defconfigs into 
-miniconfigs, which I find makes 'em easier to read.  I'll post the results 
-when it finishes...
+But surely you have to audit the drivers anyway to ensure they are OK
+with the current powerpc scheme. In which case, once you have audited
+them and know they are safe, you can easily convert them to the even
+_faster_ __readl/__writel, and just add the appropriate barriers.
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
