@@ -1,121 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbYFKSj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757624AbYFKSmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755494AbYFKSj7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 14:39:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYFKSjs
+	id S1757624AbYFKSmQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 14:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYFKSmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 14:39:48 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:56586 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751263AbYFKSjq (ORCPT
+	Wed, 11 Jun 2008 14:42:00 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54635 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750977AbYFKSl7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 14:39:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=WRr6RwkhlB8xUXmsPC9qVqMqDCwbVBiVUGsSJ6JrBpzSoirgrN1owMoUKcHXLt7Is+
-         t2Aif9TlQArQANWBawt1oO4mD6Ov19GhRUSe2WEtGCzQ8jtzEVSTE6QqlSv2cCs8mQqI
-         UL1EkBVjxkFIyXX+24qZ/yAO5H6zmmQMrShKE=
-Message-ID: <dd18b0c30806111139o2cb0f61m9b0bc2a1f1f4df00@mail.gmail.com>
-Date: Wed, 11 Jun 2008 18:39:45 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Alexey Starikovskiy" <aystarik@gmail.com>
-Subject: Re: ACPI: EC: GPE storm detected, disabling EC GPE
-Cc: "Pavel Machek" <pavel@suse.cz>,
-       "Alexey Starikovskiy" <astarikovskiy@suse.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-In-Reply-To: <484FA90F.3010005@gmail.com>
+	Wed, 11 Jun 2008 14:41:59 -0400
+Date: Wed, 11 Jun 2008 11:20:40 -0700
+From: Greg KH <greg@kroah.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] always enable FW_LOADER unless EMBEDDED=y
+Message-ID: <20080611182040.GA18506@kroah.com>
+References: <20080610160408.GB11685@cs181133002.pp.htv.fi> <20080610162450.GB13538@kroah.com> <20080610181206.GF11685@cs181133002.pp.htv.fi> <20080610212859.GB26249@kroah.com> <20080611082320.GM11685@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <dd18b0c30806062321x2918f6feq7c817bde52ba0c4c@mail.gmail.com>
-	 <20080606235526.783acc83.akpm@linux-foundation.org>
-	 <dd18b0c30806070847t63b8dbc0x8bfcbafc359f7031@mail.gmail.com>
-	 <484AE148.6000204@suse.de> <20080608142106.GD4739@ucw.cz>
-	 <484FA90F.3010005@gmail.com>
+In-Reply-To: <20080611082320.GM11685@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 11, 2008 at 10:29 AM, Alexey Starikovskiy
-<aystarik@gmail.com> wrote:
-> Pavel Machek wrote:
->>
->> Hi!
->>
->> On Sat 2008-06-07 23:28:08, Alexey Starikovskiy wrote:
->>
->>>
->>> Justin Mattock wrote:
->>>
->>>>
->>>> On Sat, Jun 7, 2008 at 6:55 AM, Andrew Morton
->>
->>
->>>>
->>>> This issue just recently started, 2.6.25-rc9 and below don't give me
->>>> this message.
->>>>
->>>>
->>>
->>> Yes, the problem which we are fighting here is that almost all Acer
->>> notebooks come with
->>> broken EC. It sends interrupts not regarding the fact that we already
->>> ACKed it.
->>> It comes unnoticed on almost all machines (some notice laggy keyboard,
->>> because it's the same controller after all and it's busy with sending ACPI
->>> interrupts and then providing same status byte over and over), but on some
->>> machines keystrokes become missing, which is not tolerable (#9998).
->>>
->>
->> But the acer workaround breaks other machines, right?
->>
->>
->
-> As I know, the first workaround broke your machine,
-> may be you could check if it is broken now?
->>
->> So what about
->>
->> a) use dmi blacklist for acers?
->>
->>
->
-> It is not only Acers. ASUS eeePC is known to be affected, some Apple
-> notebook too.
->>
->> or
->>
->> b) if EC storm is detected print message telling 'please pass
->> ec_polled=true if you experience keyboard problems', but do nothing
->> else?
->>
->>
->
-> There are no reports about broken machines for 2.6.26-rc5 beside #10724,
-> which has same broken controller, sending same amount of stray interrupts.
-> If there will be report from a good machine affected by this workaround then
-> I will
-> certainly go with b)
->
-> Thanks,
-> Alex.
->
->
->
+On Wed, Jun 11, 2008 at 11:23:20AM +0300, Adrian Bunk wrote:
+> On Tue, Jun 10, 2008 at 02:28:59PM -0700, Greg KH wrote:
+> > On Tue, Jun 10, 2008 at 09:12:06PM +0300, Adrian Bunk wrote:
+> > > On Tue, Jun 10, 2008 at 09:24:50AM -0700, Greg KH wrote:
+> > > > On Tue, Jun 10, 2008 at 07:04:08PM +0300, Adrian Bunk wrote:
+> > > > > James Bottomley recently discovered that we have 
+> > > > > {request,release}_firmware() dummies for the case of the actual 
+> > > > > functions not being available and has a fix for the bug that was 
+> > > > > actually causing build errors for built-in users with 
+> > > > > CONFIG_FW_LOADER=m.
+> > > > > 
+> > > > > But now missing selects on FW_LOADER are no longer visible at 
+> > > > > compile-time at all and can become runtime problems.
+> > > > > 
+> > > > > FW_LOADER is infrastructure with relatively small codesize we can 
+> > > > > safely enable for everyone, and only for people who really need small 
+> > > > > kernels (and can be expected to know what they are doing) it matters 
+> > > > > being able to disable it.
+> > > > > 
+> > > > > This patch therefore always sets FW_LOADER=y and allows users only to 
+> > > > > disable it with EMBEDDED=y.
+> > > > > 
+> > > > > As a bonus, we can then get rid of all "select FW_LOADER" plus the due 
+> > > > > to it required "depends on HOTPLUG" which removes some complexity from 
+> > > > > our Kconfig files.
+> > > > 
+> > > > Well, we can't get rid of that if EMBEDDED is set, right?
+> > > 
+> > > No, if EMBEDDED is set and HOTPLUG is not set you will not be able to
+> > > enable FW_LOADER (the "depends on HOTPLUG" for FW_LOADER has to stay, 
+> > > but all the options that currently select FW_LOADER no longer need the 
+> > > dependency).
+> > 
+> > Ok, but what about the point that the options that are wanting FW_LOADER
+> > in that situation?  I know EMBEDDED is tough to get right as you can
+> > shoot yourself in the foot very easily, but this seems like we are going
+> > to make it even harder to use properly.
+> 
+> Currently missing selects can result in a build error.
+> 
+> After James' patch to fix the dummy functions (that should have worked 
+> from day 1) it will instead become a runtime problem.
 
-FWIW: just to let you guys know over here with a Macbook Pro ATI
-chipset, as a small test removing the battery
-I did not receive this message after 5+ hours of uptime. Normally on a
-good run with the battery attached I get around an hour or so before
-this triggers.
-regards;
+Ah, yes, that should be fine then.
 
--- 
-Justin P. Mattock
+Can you bounce me the patch again?
+
+thanks,
+
+greg k-h
