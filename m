@@ -1,65 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762674AbYFKQGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762768AbYFKQIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762674AbYFKQGn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 12:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760830AbYFKQGe
+	id S1762768AbYFKQIR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 12:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760830AbYFKQII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 12:06:34 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:39939 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754668AbYFKQGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 12:06:33 -0400
-Date: Wed, 11 Jun 2008 20:08:15 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Max Krasnyansky <maxk@qualcomm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, mingo@elte.hu,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Paul Jackson <pj@sgi.com>,
-       menage@google.com, linux-kernel@vger.kernel.org,
-       Mark Hounschell <dmarkh@cfl.rr.com>
-Subject: Re: workqueue cpu affinity
-Message-ID: <20080611160815.GA150@tv-sign.ru>
-References: <alpine.DEB.1.10.0806051255500.31157@chino.kir.corp.google.com> <20080605152953.dcfefa47.pj@sgi.com> <alpine.DEB.1.10.0806051357480.32537@chino.kir.corp.google.com> <484D99AD.4000306@qualcomm.com> <1213080240.31518.5.camel@twins> <484E9FE8.9040504@qualcomm.com> <20080610170005.GA6038@tv-sign.ru> <1213118386.19005.9.camel@lappy.programming.kicks-ass.net> <484EE303.9070007@qualcomm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 11 Jun 2008 12:08:08 -0400
+Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:34547 "HELO
+	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753659AbYFKQIH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 12:08:07 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: MMIO and gcc re-ordering issue
+Date: Wed, 11 Jun 2008 09:07:11 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-arch@vger.kernel.org, Roland Dreier <rdreier@cisco.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>, Trent Piepho <tpiepho@freescale.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       David Miller <davem@davemloft.net>, scottwood@freescale.com,
+       linuxppc-dev@ozlabs.org, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+References: <1211852026.3286.36.camel@pasglop> <200806101219.34995.jbarnes@virtuousgeek.org> <200806111329.35894.nickpiggin@yahoo.com.au>
+In-Reply-To: <200806111329.35894.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <484EE303.9070007@qualcomm.com>
-User-Agent: Mutt/1.5.11
+Message-Id: <200806110907.12070.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/10, Max Krasnyansky wrote:
+On Tuesday, June 10, 2008 8:29 pm Nick Piggin wrote:
+> On Wednesday 11 June 2008 05:19, Jesse Barnes wrote:
+> > On Tuesday, June 10, 2008 12:05 pm Roland Dreier wrote:
+> > >  > me too.  That's the whole basis for readX_relaxed() and its cohorts:
+> > >  > we make our weirdest machines (like altix) conform to the x86 norm.
+> > >  > Then where it really kills us we introduce additional semantics to
+> > >  > selected drivers that enable us to recover I/O speed on the abnormal
+> > >  > platforms.
+> > >
+> > > Except as I pointed out before, Altix doesn't conform to the norm and
+> > > many (most?) drivers are missing mmiowb()s that are needed for Altix.
+> > > Just no one has plugged most devices into an Altix (or haven't stressed
+> > > the driver in a way that exposes problems of IO ordering between CPUs).
+> > >
+> > > It would be a great thing to use the powerpc trick of setting a flag
+> > > that is tested by spin_unlock()/mutex_unlock() and automatically doing
+> > > the mmiowb() if needed, and then killing off mmiowb() entirely.
+> >
+> > Yeah I think that's what Nick's guidelines would guarantee.  And Jes is
+> > already working on the spin_unlock change you mentioned, so mmiowb()
+> > should be history soon (in name only, assuming Nick also introduces the
+> > I/O barriers he talked about for ordering the looser accessors it would
+> > still be there but would be called io_wmb or something).
 >
-> Here is some backgound on this. Full cpu isolation requires some tweaks to the
-> workqueue handling. Either the workqueue threads need to be moved (which is my
-> current approach), or work needs to be redirected when it's submitted.
+> Exactly, yes. I guess everybody has had good intentions here, but
+> as noticed, what is lacking is coordination and documentation.
+>
+> You mention strong ordering WRT spin_unlock, which suggests that
+> you would prefer to take option #2 (the current powerpc one): io/io
+> is ordered and io is contained inside spinlocks, but io/cacheable
+> in general is not ordered.
 
-_IF_ we have to do this, I think it is much better to move cwq->thread.
+I was thinking it would be good for the weaker accessors, but now that I think 
+about it you could just use the new io_* barrier functions.
 
-> Peter Zijlstra wrote:
-> > The advantage of creating a more flexible or fine-grained flush is that
-> > large machine also profit from it.
-> I agree, our current workqueue flush scheme is expensive because it has to
-> schedule on each online cpu. So yes improving flush makes sense in general.
+I didn't mean to imply that I wasn't in favor of the io/cacheable ordering as 
+well.
 
-Yes, it is easy to implement flush_work(struct work_struct *work) which
-only waits for that work, so it can't hang unless it was enqueued on the
-isolated cpu.
+> For any high performance drivers that are well maintained (ie. the
+> ones where slowdown might be noticed), everyone should have a pretty
+> good handle on memory ordering requirements, so it shouldn't take
+> long to go through and convert them to relaxed accessors.
 
-But in most cases it is enough to just do
+Yep.  Thanks for working on this, Nick, it's definitely a good thing that 
+you're taking control of it. :)
 
-	if (cancel_work_sync(work))
-		work->func(work);
-
-Or we can add flush_workqueue_cpus(struct workqueue_struct *wq, cpumask_t *cpu_map).
-
-But I don't think we should change the behaviour of flush_workqueue().
-
-> This will require a bit of surgery across the entire tree. There is a lot of
-> code that calls flush_scheduled_work()
-
-Almost all of them should be changed to use cancel_work_sync().
-
-Oleg.
-
+Thanks,
+Jesse
