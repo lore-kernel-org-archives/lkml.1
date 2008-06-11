@@ -1,112 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbYFKKPM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754434AbYFKKXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754866AbYFKKPM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 06:15:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYFKKO6
+	id S1754434AbYFKKXW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 06:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbYFKKXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 06:14:58 -0400
-Received: from lucidpixels.com ([75.144.35.66]:33674 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751176AbYFKKO4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 06:14:56 -0400
-Date: Wed, 11 Jun 2008 06:14:55 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org
-cc: linux-raid@vger.kernel.org
-Subject: What do these SATA errors mean / kernel 2.6.25.6 (DRDY ERR/ICRC
- ABRT)
-Message-ID: <alpine.DEB.1.10.0806110608080.7726@p34.internal.lan>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+	Wed, 11 Jun 2008 06:23:12 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:56629 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751808AbYFKKXL convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 06:23:11 -0400
+Subject: Re: [PATCH 1/10] Add generic helpers for arch IPI function calls
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: paulmck@linux.vnet.ibm.com, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel@vger.kernel.org, peterz@infradead.org,
+       linux-arch@vger.kernel.org, jeremy@goop.org, mingo@elte.hu,
+       Russell King <rmk+lkml@arm.linux.org.uk>
+In-Reply-To: <20080611032531.GC8228@wotan.suse.de>
+References: <1212051504-12561-1-git-send-email-jens.axboe@oracle.com>
+	 <1212051504-12561-2-git-send-email-jens.axboe@oracle.com>
+	 <1213109485.24701.107.camel@pc1117.cambridge.arm.com>
+	 <20080610154716.GF15481@linux.vnet.ibm.com>
+	 <1213116788.24701.133.camel@pc1117.cambridge.arm.com>
+	 <20080611032531.GC8228@wotan.suse.de>
+Content-Type: text/plain; charset=utf-8
+Organization: ARM Ltd
+Date: Wed, 11 Jun 2008 11:13:35 +0100
+Message-Id: <1213179215.19224.61.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 11 Jun 2008 10:13:36.0083 (UTC) FILETIME=[CF7AB230:01C8CBAB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Never had a single error so far, powered down my host, powered it back up,
-and now with kernel 2.6.25.6:
+On Wed, 2008-06-11 at 05:25 +0200, Nick Piggin wrote:
+> On Tue, Jun 10, 2008 at 05:53:08PM +0100, Catalin Marinas wrote:
+> > On Tue, 2008-06-10 at 08:47 -0700, Paul E. McKenney wrote:
+> > > On Tue, Jun 10, 2008 at 03:51:25PM +0100, Catalin Marinas wrote:
+> > > > I was thinking whether this condition can be removed and allow the
+> > > > smp_call_function*() to be called with IRQs disabled. At a quick look,
+> > > > it seems to be possible if the csd_flag_wait() function calls the IPI
+> > > > handlers directly when the IRQs are disabled (see the patch below).
+> > [...]
+> > > There were objections last month:  http://lkml.org/lkml/2008/5/3/167
+> > 
+> > Thanks, I missed this discussion.
+> > 
+> > > The issue was that this permits some interrupts to arrive despite
+> > > interrupts being disabled.  There seemed to be less resistance to
+> > > doing this in the wait==1 case, however.
+> > 
+> > The "(wait == 1) && irqs_disabled()" case is what I would be interested
+> > in. In the patch you proposed, this doesn't seem to be allowed (at least
+> > from the use of WARN_ON). However, from your post in May:
+> > 
+> > > 5.	If you call smp_call_function() with irqs disabled, then you
+> > > 	are guaranteed that no other CPU's smp_call_function() handler
+> > > 	will be invoked while smp_call_function() is executing.
+> > 
+> > this would be possible but no one need this functionality yet.
+> > 
+> > Would one use-case (ARM SMP and DMA cache maintenance) be enough to
+> > implement this or I should add it to the ARM-specific code?
+> 
+> How will you implement it? You have to be able to wait *somewhere*
+> (either before or after the smp_call_function call) with interrupts
+> enabled. It is not enough just to eg. use a spinlock around
+> smp_call_function, because other CPUs might also be trying to call
+> down the same path also with interrupts disabled, and they'll wait
+> forever on the spinlock.
 
-Jun 11 05:23:24 p34 kernel: [   67.118632] mtrr: no more MTRRs available
-Jun 11 05:46:23 p34 kernel: [ 1445.288619] ata12.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
-Jun 11 05:46:23 p34 kernel: [ 1445.288626] ata12.00: irq_stat 0x00060002, device error via D2H FIS
-Jun 11 05:46:23 p34 kernel: [ 1445.288632] ata12.00: cmd 35/00:f8:47:dc:35/00:03:02:00:00/e0 tag 0 dma 520192 out
-Jun 11 05:46:23 p34 kernel: [ 1445.288634]          res 51/84:f8:47:dc:35/00:03:02:00:00/e0 Emask 0x10 (ATA bus error)
-Jun 11 05:46:23 p34 kernel: [ 1445.288637] ata12.00: status: { DRDY ERR }
-Jun 11 05:46:23 p34 kernel: [ 1445.288639] ata12.00: error: { ICRC ABRT }
-Jun 11 05:46:23 p34 kernel: [ 1445.288649] ata12: hard resetting link
-Jun 11 05:46:25 p34 kernel: [ 1447.419983] ata12: SATA link up 3.0 Gbps (SStatus 123 SControl 0)
-Jun 11 05:46:25 p34 kernel: [ 1447.429612] ata12.00: configured for UDMA/100
-Jun 11 05:46:25 p34 kernel: [ 1447.429628] ata12: EH complete
-Jun 11 05:46:25 p34 kernel: [ 1447.813910] sd 11:0:0:0: [sdl] Write Protect is off
-Jun 11 05:46:25 p34 kernel: [ 1447.813912] sd 11:0:0:0: [sdl] Mode Sense: 00 3a 00 00
-Jun 11 05:46:25 p34 kernel: [ 1447.813928] sd 11:0:0:0: [sdl] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-Jun 11 06:00:32 p34 kernel: [ 2293.491350] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
-Jun 11 06:00:32 p34 kernel: [ 2293.491360] ata1.00: cmd 35/00:02:43:90:7d/00:00:12:00:00/e0 tag 0 dma 1024 out
-Jun 11 06:00:32 p34 kernel: [ 2293.491362]          res 40/00:ff:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-Jun 11 06:00:32 p34 kernel: [ 2293.491365] ata1.00: status: { DRDY }
-Jun 11 06:00:32 p34 kernel: [ 2293.794295] ata1: soft resetting link
-Jun 11 06:00:32 p34 kernel: [ 2293.947277] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-Jun 11 06:00:32 p34 kernel: [ 2294.614206] ata1.00: configured for UDMA/133
-Jun 11 06:00:32 p34 kernel: [ 2294.614227] ata1: EH complete
-Jun 11 06:00:32 p34 kernel: [ 2294.335647] sd 0:0:0:0: [sda] Write Protect is off
-Jun 11 06:00:32 p34 kernel: [ 2294.335650] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-Jun 11 06:00:32 p34 kernel: [ 2294.348472] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+With the generic IPI patches, I think it is just a matter of polling for
+incoming IPIs in the csd_flag_wait() if interrupts are disabled since no
+spinlock is held when issuing the IPI (smp_call_function can be called
+concurrently).
 
-Nothing was broken in any of the arrays and all seems to be functioning 
-now but albeit at lower speeds as you see above UDMA/100 and UDMA/133. 
-Could there be a bug with the new Veliciraptors and the drivers in the 
-kernel?  I never saw this happen/occur with my old raptor 150s or 74s. 
-Also, I stress tested all of these drives for 8hours+ and they never had a 
-problem before so it makes the problem rather peculiar.
+If I do it in the ARM-specific code, I would duplicate the
+smp_call_function (but avoid the call_single_queue, maybe just like the
+current ARM implementation) and use a spinlock around the IPI
+invocation. If interrupts are allowed to be disabled, the spin_lock()
+would actually be a spin_trylock() (or spin_trylock_irqsave()),
+something like below (untested). It can be improved for the IRQs-enabled
+case to reduce the latency.
 
-# cat /proc/mdstat 
-Personalities : [raid0] [raid1] [raid6] [raid5] [raid4] 
-md1 : active raid1 sdb2[1] sda2[0]
-       136448 blocks [2/2] [UU]
+smp_call_function(...)
+{
+	...
+	/*
+	 * disable IRQs so that we can call this function from
+	 * ﻿interrupt context
+	 */
+	local_irq_save(flags)
+	while (!spin_trylock(&call_function_lock)) {
+		/* other CPU is sending an IPI, just poll for it */
+		smp_call_function_interrupt();
+	}
+	/* acquired the lock, do the IPI stuff */
+	...
 
-md2 : active raid1 sdb3[1] sda3[0]
-       276109056 blocks [2/2] [UU]
+	/* 
+	 * wait for the other CPUs to complete the IPI. No other CPU 
+	 * is waiting for completion because of the call_function_lock
+	 */
+	...
 
-md3 : active raid5 sdl1[9] sdk1[8] sdj1[7] sdi1[6] sdh1[5] sdg1[4] sdf1[3] sde1[2] sdd1[1] sdc1[0]
-       2637296640 blocks level 5, 1024k chunk, algorithm 2 [10/10] [UUUUUUUUUU]
+	spin_unlock(﻿&call_function_lock);
+	local_irq_restore(flags);
+}
 
-md0 : active raid1 sdb1[1] sda1[0]
-       16787776 blocks [2/2] [UU]
+One issue I saw raised with the polling loop is that it calls an
+interrupt handler outside an interrupt context and with IRQs disabled.
+There shouldn't be any issue with the existing code since
+smp_call_function assumes interrupts enabled anyway. Whoever needs this
+functionality should take greater care with IRQs disabled (in my case,
+only calling some cache maintenance operations is OK).
 
-unused devices: <none>
+Regarding the interrupt latency, it would be higher since the IPI is not
+that cheap but (in ARM SMP case) calling dma_map_single/sg (especially
+with TO_DEVICE) with interrupts disabled I think is pretty bad already
+as it involves flushing the caches for that range and time-consuming.
 
-I am using the same cables/configuration, just new disks.  The smart tests
-also show as good, is this a kernel problem?
+If dma_map_single/sg would be disallowed with interrupts disabled or
+from interrupt context, we would no longer need the above workarounds
+for smp_call_function on ARM.
 
-/dev/sda:
+Regards.
 
-SMART Self-test log structure revision number 1
-Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA_of_first_error
-# 1  Short offline       Completed without error       00%       108         -
-# 2  Short offline       Completed without error       00%       103         -
-# 3  Short offline       Completed without error       00%        79         -
-# 4  Short offline       Completed without error       00%        56         -
-# 5  Extended offline    Completed without error       00%        32         -
-# 6  Short offline       Completed without error       00%         8         -
+-- 
+Catalin
 
-SMART Error Log Version: 1
-No Errors Logged
-
-/dev/sdl:
-
-SMART Error Log Version: 1
-No Errors Logged
-
-SMART Self-test log structure revision number 1
-Num  Test_Description    Status                  Remaining  LifeTime(hours)  LBA_of_first_error
-# 1  Short offline       Completed without error       00%       111         -
-# 2  Short offline       Completed without error       00%       107         -
-# 3  Short offline       Completed without error       00%        83         -
-# 4  Short offline       Completed without error       00%        59         -
-# 5  Extended offline    Completed without error       00%        36         -
-# 6  Short offline       Completed without error       00%        11         -
-
-Does/the kernel handle the ATA v8 protocol properly?
-ATA Version is:   8
-
-Justin.
