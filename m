@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750794AbYFKTWG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbYFKTZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750794AbYFKTWG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 15:22:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757530AbYFKTVx
+	id S1754012AbYFKTZA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 15:25:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750983AbYFKTYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 15:21:53 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:55811 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752204AbYFKTVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 15:21:52 -0400
-Date: Wed, 11 Jun 2008 21:22:34 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: Rob Landley <rob@landley.net>, Adrian Bunk <bunk@kernel.org>,
-       linux-tiny <Linux-tiny@selenic.com>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: mainlining min-configs...
-Message-ID: <20080611192234.GB12525@uranus.ravnborg.org>
-References: <48447615.5050806@am.sony.com> <20080610183004.GG11685@cs181133002.pp.htv.fi> <20080610185123.GA15838@uranus.ravnborg.org> <200806110009.22542.rob@landley.net> <20080611063921.GA27978@uranus.ravnborg.org> <48502304.1030304@am.sony.com>
+	Wed, 11 Jun 2008 15:24:50 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:42543 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750794AbYFKTYt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 15:24:49 -0400
+Subject: Re: 2,6.26-rc4-git2 - long pause during boot
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Greg KH <greg@kroah.com>
+Cc: Chris Clayton <chris2553@googlemail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       Hannes Reinecke <hare@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-usb@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>
+In-Reply-To: <20080611191533.GA6189@kroah.com>
+References: <200806010415.05290.chris2553@googlemail.com>
+	 <1212950276.3574.7.camel@localhost.localdomain>
+	 <200806102206.26818.chris2553@googlemail.com>
+	 <200806111858.05114.chris2553@googlemail.com>
+	 <20080611191533.GA6189@kroah.com>
+Content-Type: text/plain
+Date: Wed, 11 Jun 2008 14:24:42 -0500
+Message-Id: <1213212282.3461.9.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48502304.1030304@am.sony.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 11, 2008 at 12:09:56PM -0700, Tim Bird wrote:
-> Sam Ravnborg wrote:
-> >>> When I get my kconfig patchset polished you will be able to do:
-> >>>
-> >>> make K=my_mini_config allnoconfig
-> >> So you're renaming KCONFIG_ALLNOCONFIG then?
-> > 
-> > Somehow yes. The K= notation I hope will see more use. Only very few
-> > people know the KCONFIG_ALL*CONFIG= trick.
+On Wed, 2008-06-11 at 12:15 -0700, Greg KH wrote:
+> On Wed, Jun 11, 2008 at 06:58:05PM +0000, Chris Clayton wrote:
+> > Jun 11 17:48:13 upstairs udevd-event[1457]: wait_for_sysfs: wait for '/sys/devices/pci0000:00/0000:00:1e.0/0000:02:0a.2/usb11/11-2/11-2:1.0/host4/ioerr_cnt' for 20 mseconds 
+> > Jun 11 17:48:18 upstairs last message repeated 236 times
 > 
-> Indeed.  I had never heard of it, but it appears to have been
-> around for at least 18 months.  It looks like Randy Dunlap tried
-> to submit some documentation for this in Oct 2006, but it didn't
-> make it in?
+> This doesn't look good.  It looks like a udev rule in your system is
+> looking for a file that will never show up.  That's a short way to a
+> long delay time :)
 > 
-> Is this feature widely used?  Should it be doc'ed now
-> or are you about to make it obsolete?
-I will most likely obsolete all except KCONFIG_ALLCONFIG
-And I'm afraid I have Randy patch somewhere.
+> Try commenting out the rule that does this and see if things are fixed.
 
-	Sam
+Actually, there's something seriously wrong here:  ioerr_cnt is a
+property of the device, not of the host (as in it will never appear
+under .../host4 but under .../host4/targetX:X:X/4:X:X:X/ioerr_cnt).
+Perhaps an investigation of why udevd-event is looking under host4/ is
+in order.
+
+James
+
+
