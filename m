@@ -1,62 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754872AbYFKVJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181AbYFKVQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754872AbYFKVJk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 17:09:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbYFKVJc
+	id S1754181AbYFKVQi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 17:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbYFKVQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 17:09:32 -0400
-Received: from mx2.compro.net ([216.54.166.4]:60028 "EHLO mx2.compro.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750977AbYFKVJb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 17:09:31 -0400
-X-IronPort-AV: E=Sophos;i="4.27,626,1204520400"; 
-   d="scan'208";a="2334484"
-Message-ID: <48503EB9.6000606@compro.net>
-Date: Wed, 11 Jun 2008 17:08:09 -0400
-From: Mark Hounschell <markh@compro.net>
-Reply-To: markh@compro.net
-Organization: Compro Computer Svcs.
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Wed, 11 Jun 2008 17:16:29 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:19632 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751933AbYFKVQ2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 17:16:28 -0400
+Date: Wed, 11 Jun 2008 14:15:23 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Louis Rilling <Louis.Rilling@kerlabs.com>
+Cc: ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] deadlock between configfs_rmdir() and sys_rename() (WAS
+	Re: [RFC][PATCH 4/4] configfs: Make multiple default_group)
+	destructions lockdep friendly
+Message-ID: <20080611211523.GB14754@mail.oracle.com>
+Mail-Followup-To: Louis Rilling <Louis.Rilling@kerlabs.com>,
+	ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org
+References: <20080602230721.GD19500@mail.oracle.com> <20080603160034.GA17308@localhost> <20080606230154.GK29740@mail.oracle.com> <20080609110353.GK18153@localhost> <20080609125443.GL18153@localhost> <20080610015800.GD14820@mail.oracle.com> <20080610101427.GA4048@localdomain> <20080610173654.GA23829@ca-server1.us.oracle.com> <20080611141010.GP18153@localhost> <20080611173047.GR18153@localhost>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       Jan Engelhardt <jengelh@medozas.de>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       "solsTiCe d'Hiver" <solstice.dhiver@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: no cpu MHz in /proc/cpuinfo on 2.6.25.4-rt6
-References: <200806102152.23286.solstice.dhiver@gmail.com>	<20080610131314.5f7069e6@infradead.org>	<484EE71A.40002@intel.com>	<alpine.LNX.1.10.0806111440480.20733@fbirervta.pbzchgretzou.qr>	<20080611063639.5e1eea5b@infradead.org>	<alpine.LNX.1.10.0806111552090.20733@fbirervta.pbzchgretzou.qr>	<20080611065816.6cff290d@infradead.org>	<Pine.LNX.4.61.0806111006560.23096@chaos.analogic.com>	<20080611083644.32afc823@infradead.org>	<4850046C.4070602@compro.net>	<20080611104446.3b0ce2d9@infradead.org>	<48501159.4050908@compro.net>	<48503792.50003@compro.net> <20080611135828.29f6a7d7@infradead.org>
-In-Reply-To: <20080611135828.29f6a7d7@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080611173047.GR18153@localhost>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Wed, 11 Jun 2008 16:37:38 -0400
-> Mark Hounschell <markh@compro.net> wrote:
-> 
->>> Mark 
->>>
->> Ok, what would one use besides the tsc to take a fast high-res time
->> stamp in a kernel module that could also be used in user land (same
->> time source) to for instance calculate  the the time between an event
->> in the kernel to an event in user land?
->>
->> do_gettimeofday / gettimeofday are not really acceptable.
-> 
-> 
-> btw you also changed the problem from "what is the cpu frequency" to
-> "how usable is rdtsc for time". My entire point was that these weren't
-> related...
-> 
-> 
+On Wed, Jun 11, 2008 at 07:30:47PM +0200, Louis Rilling wrote:
+> I've spoken too fast. Doing things in d_revalidate() (or even in
+> configfs_lookup()) is just too early: after they are called and before
+> lock_rename(), nothing can prevent rmdir() from being called.
 
-If they are not the same how do you know at what rate the tsc is counting.
+	Yeah, that's what I was saying.
 
-But back to "how usable is rdtsc for time", is there a
+> I'm afraid that we need a way to get rid of the whole tree locking in
+> configfs_detach_prep(). Imagine that we protect all calls to configfs_rmdir()
+> and configfs_mkdir() with a global mutex (say configfs_dir_mutex). Is it still
+> needed to take default group's i_mutex in configfs_detach_prep() to check for
+> the validity of the rmdir()?
 
-clock_gettime(CLOCK_MONOTONIC, &time) equivalent that can be used in the kernel?
+	That's not a bad idea.  I was basically sure we need the tree
+locking to prevent other VFS operations from happening, but the more I
+think about it, the only reason we do the prep locking is to check and
+protect the ENOTEMPTY case.  I've bounced it off Mark too, and he
+agrees.
 
-Mark
+> 	After this check, we could set a REMOVING flag in configfs_dirent of all
+> default groups (could actually be done by configfs_detach_prep(), making
+> configfs_detach_rollback() resetting the flag), release configfs_dir_mutex, and
+> then call configfs_detach_group(), with detach_groups() taking default group's
+> i_mutex right before calling configfs_detach_group() recursively (this would
+> lead to the same path locking as in populate_groups() or
+> configfs_depend_prep()).
+
+	We already set the flag - CONFIGFS_USET_DROPPING.  The only
+change is that you don't take i_mutex anymore.  For the static mutex,
+the name 'configfs_dir_mutex' is fine.
+
+> 	On mkdir() side, once configfs_dir_mutex is acquired, we first check the
+> REMOVING flag, and proceed if it is not set.
+
+	And if it is set, we return -ENOENT.
+
+> Just tell me if you think that it's feasible, and I'll send you a patch if it's
+
+	Have at!  Thanks.
+
+Joel
+
+-- 
+
+"Vote early and vote often." 
+        - Al Capone
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
