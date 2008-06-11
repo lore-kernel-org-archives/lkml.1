@@ -1,107 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754071AbYFKLFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbYFKLFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754071AbYFKLFS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 07:05:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbYFKLFE
+	id S1755404AbYFKLFs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 07:05:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbYFKLFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 07:05:04 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:46019 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750754AbYFKLFD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 07:05:03 -0400
-Date: Wed, 11 Jun 2008 16:29:45 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Holger Kiehl <Holger.Kiehl@dwd.de>
-Cc: linux-ext4@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Performance of ext4
-Message-ID: <20080611105945.GB9008@skywalker>
-References: <Pine.LNX.4.64.0806110801370.19793@diagnostix.dwd.de>
-MIME-Version: 1.0
+	Wed, 11 Jun 2008 07:05:38 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1881 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754614AbYFKLF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 07:05:27 -0400
+Date: Wed, 11 Jun 2008 12:51:51 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Barry Kasindorf <barry.kasindorf@amd.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] AMD Family10h+ IBS support for oProfile driver: Setup routines
+Message-ID: <20080611105151.GE5612@ucw.cz>
+References: <20080609175030.2844.77365.sendpatchset@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0806110801370.19793@diagnostix.dwd.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080609175030.2844.77365.sendpatchset@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 11, 2008 at 08:02:32AM +0000, Holger Kiehl wrote:
-> Hello
->
-> Doing some performance test between ext3 and ext4 I noticed that ext4
-> is not much faster or in some cases slower then ext3. Two years ago when
-> I tested ext4 it was a lot faster then ext3 (see my mail:
-> http://lkml.org/lkml/2006/6/6/65). Doing some simple tests with bonnie++
-> I got the following results:
->
-> Version  1.03        ------Sequential Output------ --Sequential Input- --Random-
->                      -Per Chr- --Block-- -Rewrite- -Per Chr- --Block-- --Seeks--
-> Machine         Size K/sec %CP K/sec %CP K/sec %CP K/sec %CP K/sec %CP  /sec %CP
-> ext3(2 years ago)16G 38621  98 194816 94 87776  49 37921  92 239128 54  1402   5
->                  16G 47000  99 194276 94 89232  49 38628  92 240539 55  1399   5
->                  16G 45873  98 178195 90 89726  50 38482  92 240490 55  1381   4
->
-> ext3 (now)       16G 51501  97 210601 91 100479 32 55528  98 301589 44  1198   5
->                  16G 52702  98 215540 94 99339  32 55376  97 300933 44  1159   4
->                  16G 52426  99 212584 94 99091  31 55656  98 301669 44  1160   4
->
-> ext4(2 years ago)16G 59223  91 264155 45 111459 36 57313  99 317944 63  1478   7
->                  16G 58814  92 276803 47 110418 36 57105  99 317534 65  1525   5
->                  16G 58299  92 274523 48 110290 36 56723  99 318839 65  1502   4
->
-> ext4 (now)       16G 52965  98 224199 89 108440 32 56389  99 303792 42  1526   4
->                  16G 52792  98 223980 92 107685 32 56350  98 303066 42  1532   4
->                  16G 52994  98 222354 92 107802 32 56386  99 303727 41  1455   4
->
-> For this system the write performance is the most important factor and one
-> can see today ext4 is marginally faster then ext3. But 2 years ago ext4 was
-> a lot faster (~270MB against ~223MB).
->
-> Using my own benchmark afdbench where many process copy thousands of small
-> files around the results are as follows:
->
->   For ext3: 5449.76 files per second 15.58 MiB/s
->   For ext4: 5162.16 files per second 15.48 MiB/s
->
-> So in this test ext4 is a bit slower then ext3. Since afdbench has seen
-> considerable changes, one cannot compare these results with those 2 years
-> ago. But 2 years ago ext4 was 12% faster then ext3.
->
-> Test where done with kernel 2.6.25.4 and file system where created as follows:
->
->    ext3: mke2fs -b 4096 -m 0 -O dir_index,large_file,filetype,has_journal,sparse_super -j /dev/md7
->    ext4: mke2fs -b 4096 -E test_fs -m 0 -O dir_index,large_file,filetype,has_journal,sparse_super -j /dev/md7
->
-> And both where mounted with the following options:
->
->    noatime,nodiratime,commit=15
->
-> 2 years ago I used 2.6.16.8 but the hardware is still the same. So what has
-> happened with the performance of ext4? I noticed that 2 years ago I could
-> use extents+mballoc+delalloc, now there is only extents+mballoc in the
-> current kernels. Could delalloc make the big difference? I saw that
-> in Andrew Morton mm tree delalloc is included. Unfortunately when I tried using
-> 2.6.26-rc2-mm1 a sync would never return and there where lot of other
-> odd things, so I could not do any tests with delalloc.
+Hi!
 
+> This patchset supports the new profiling hardware available in the latest AMD CPUs in the oProfile driver.
 
-The sync and other related hangs should be fix with the latest patches
-vailable at http://repo.or.cz/w/ext4-patch-queue.git. Using mballoc have
-an impact on CPU utilization because we try to build an in-memory extent
-map of free blocks available in the group. The cold cache run (the first
-run) would take more time because of the time needed to build the extent
-map. So repeating the same test and looking at the numbers would help us
-understand the impact of in-memory extent building code.
+> @@ -419,9 +454,15 @@ int __init op_nmi_init(struct oprofile_operations *ops)
+>  			break;
+>  		case 0x10:
+>  			model = &op_athlon_spec;
+> -			cpu_type = "x86-64/family10";
+> +			cpu_type = "x86-64/family10h";
+> +			break;
 
->
-> So any idea what I am doing wrong or what I could do to improve those numbers?
-> Please CC me since I am not subscribed to the list.
->
-
-You should be able to apply the patches in the patchqueue mentioned above  to 2.6.26-rc5
-Can you test with the same and get the numbers. ? Also delalloc enabled
-by default with changes from patchqueue force writeback mode for
-journal. So you may want to enable writeback for ext3.
-
--aneesh
+Is this string visible to userspace?
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
