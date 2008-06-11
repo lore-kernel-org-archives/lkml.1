@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761970AbYFKPjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762076AbYFKPja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761970AbYFKPjT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 11:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758274AbYFKPjI
+	id S1762076AbYFKPja (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 11:39:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761921AbYFKPjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 11:39:08 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:54188 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753952AbYFKPjG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 11:39:06 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: [PATCH 06/10] HID: move logitech report quirks
-Date: Wed, 11 Jun 2008 17:39:23 +0200
-User-Agent: KMail/1.9.9
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@vger.kernel.org, marcel@holtmann.org,
-       linux-kernel@vger.kernel.org, anssi.hannula@gmail.com
-References: <1210931362-18422-1-git-send-email-jirislaby@gmail.com> <484D070E.9050707@gmail.com> <Pine.LNX.4.64.0806111611540.10085@jikos.suse.cz>
-In-Reply-To: <Pine.LNX.4.64.0806111611540.10085@jikos.suse.cz>
+	Wed, 11 Jun 2008 11:39:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56443 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761913AbYFKPjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 11:39:14 -0400
+Date: Wed, 11 Jun 2008 11:39:01 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: kexec@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: Bernhard Walle <bwalle@suse.de>
+Subject: Re: [PATCH] Limit E820 map and /proc/iomem for mem parameter on
+	x86-64
+Message-ID: <20080611153901.GD6450@redhat.com>
+References: <20080610215325.GA20673@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806111739.24421.oliver@neukum.org>
+In-Reply-To: <20080610215325.GA20673@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch 11 Juni 2008 16:13:43 schrieb Jiri Kosina:
-> On Mon, 9 Jun 2008, Jiri Slaby wrote:
+On Tue, Jun 10, 2008 at 11:53:25PM +0200, Bernhard Walle wrote:
+> This patch tries to unify the behaviour of i386 and x86-64 when parsing
+> the memory (mem/memmap) parameter of the kernel command line:
 > 
-> > > > static const struct hid_device_id hid_blacklist[] = {
-> > > > +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH,
-> > > > USB_DEVICE_ID_MX3000_RECEIVER) },
-> > > > +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_S510_RECEIVER)
-> > > > },
-> > > > +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH,
-> > > > USB_DEVICE_ID_S510_RECEIVER_2) },
-> > > >  	{ }
-> > > >  };
-> > > This shouldn't be needed as soon as the userspace supports the proper module
-> > > autoloading, right?
-> > This is needed to tell generic drivers not to bind these, its' generic
-> > blacklist. I have no idea how this could be done better with current
-> > drivers/base/.
+> On i386, the view was limited (i.e. the actual view was presented).
+> On x86-64, the view was full (i.e. the BIOS view was presented).
 > 
-> Hmm ... but if we make sure that the order in `modules.order' puts all the 
-> specialized drivers before the generic one, the binding should be done 
-> correctly even without blacklist, right?
+> This patch moves the limit_regions() function and the print_memory_map()
+> function to a new file e820.c, shared between the two x86 flavours. Then
+> it adds calls to limit_regions() in 64 bit code.
+> 
+> I gave the patch a bit testing. However, it's not for merging, it's just
+> to get early feedback to see if that goes into the right direction.
+> 
+> 
 
-No. You might have two devices connected. The first correctly triggers
-the loading of the generic driver. The second would first load the specialised
-driver but the already loaded driver will be faster.
+I would like to have consistent behavior of /proc/iomem across i386
+and x86_64, so this sounds like right direction to me.
 
-	Regards
-		Oliver
+Also I would like to have another interface (say /proc/iomem_kernel)which
+actually gets modified based on the user specified options. So effectively we
+can have both the views. BIOS view and user defined view.
 
+As discussed on kexec mailing list, it helps kexec and kdump operation. 
+In the case of kexec, we want to know the actual resources present in 
+the system so that new kernel can see it (Irrespective of the fact
+what first kernel was actually using).
+
+In case of kdump, we want to see truncated view so that we don't end
+up capturing the contents of memory not being used by kernel.
+
+Thanks
+Vivek
