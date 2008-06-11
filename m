@@ -1,251 +1,1783 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbYFKStm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759834AbYFKSt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759586AbYFKStm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 14:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753613AbYFKSrY
+	id S1759834AbYFKSt4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 14:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757858AbYFKSrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 14:47:24 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47902 "EHLO mx1.redhat.com"
+	Wed, 11 Jun 2008 14:47:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47911 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757896AbYFKSrS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 14:47:18 -0400
-Message-Id: <20080611184340.173391769@redhat.com>
+	id S1758016AbYFKSr3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 14:47:29 -0400
+Message-Id: <20080611184339.159161465@redhat.com>
 References: <20080611184214.605110868@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 11 Jun 2008 14:42:35 -0400
+Date: Wed, 11 Jun 2008 14:42:20 -0400
 From: Rik van Riel <riel@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: [PATCH -mm 21/24] vmstat: unevictable and mlocked pages vm events
-Content-Disposition: inline; filename=vmscan-noreclaim-and-mlocked-pages-vm-events.patch
+       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Subject: [PATCH -mm 06/24] vmscan: split LRU lists into anon & file sets
+Content-Disposition: inline; filename=vmscan-split-lru-lists-into-anon-file-sets.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+From: Rik van Riel <riel@redhat.com>
 
-Add some event counters to vmstats for testing unevictable/mlock.  
-Some of these might be interesting enough to keep around.
+Split the LRU lists in two, one set for pages that are backed by
+real file systems ("file") and one for pages that are backed by
+memory and swap ("anon").  The latter includes tmpfs.
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
+The advantage of doing this is that the VM will not have to scan
+over lots of anonymous pages (which we generally do not want to
+swap out), just to find the page cache pages that it should evict.
+
+This patch has the infrastructure and a basic policy to balance
+how much we scan the anon lists and how much we scan the file
+lists. The big policy changes are in separate patches.
+
 Signed-off-by: Rik van Riel <riel@redhat.com>
+Signed-off-by: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
 
 ---
- include/linux/vmstat.h |    9 +++++++++
- mm/internal.h          |    4 +++-
- mm/mlock.c             |   33 +++++++++++++++++++++++++--------
- mm/vmscan.c            |   16 +++++++++++++++-
- mm/vmstat.c            |   10 ++++++++++
- 5 files changed, 62 insertions(+), 10 deletions(-)
+ drivers/base/node.c        |   56 +++---
+ fs/cifs/file.c             |    4 
+ fs/nfs/dir.c               |    2 
+ fs/ntfs/file.c             |    4 
+ fs/proc/proc_misc.c        |   77 ++++----
+ fs/ramfs/file-nommu.c      |    4 
+ include/linux/memcontrol.h |    2 
+ include/linux/mm_inline.h  |   50 ++++-
+ include/linux/mmzone.h     |   47 ++++-
+ include/linux/pagevec.h    |   29 ++-
+ include/linux/swap.h       |   20 +-
+ include/linux/vmstat.h     |   10 +
+ mm/filemap.c               |    9 
+ mm/memcontrol.c            |   73 ++++---
+ mm/memory.c                |    6 
+ mm/page-writeback.c        |    8 
+ mm/page_alloc.c            |   25 +-
+ mm/readahead.c             |    2 
+ mm/swap.c                  |   14 +
+ mm/swap_state.c            |    2 
+ mm/vmscan.c                |  420 +++++++++++++++++++++++----------------------
+ mm/vmstat.c                |   14 -
+ 22 files changed, 519 insertions(+), 359 deletions(-)
 
-Index: linux-2.6.26-rc5-mm2/include/linux/vmstat.h
+Index: linux-2.6.26-rc5-mm2/fs/proc/proc_misc.c
 ===================================================================
---- linux-2.6.26-rc5-mm2.orig/include/linux/vmstat.h	2008-06-10 22:23:56.000000000 -0400
-+++ linux-2.6.26-rc5-mm2/include/linux/vmstat.h	2008-06-10 22:25:48.000000000 -0400
-@@ -41,6 +41,15 @@ enum vm_event_item { PGPGIN, PGPGOUT, PS
- #ifdef CONFIG_HUGETLB_PAGE
- 		HTLB_BUDDY_PGALLOC, HTLB_BUDDY_PGALLOC_FAIL,
- #endif
-+#ifdef CONFIG_UNEVICTABLE_LRU
-+		NORECL_PGCULLED,	/* culled to noreclaim list */
-+		NORECL_PGSCANNED,	/* scanned for reclaimability */
-+		NORECL_PGRESCUED,	/* rescued from noreclaim list */
-+		NORECL_PGMLOCKED,
-+		NORECL_PGMUNLOCKED,
-+		NORECL_PGCLEARED,
-+		NORECL_PGSTRANDED,	/* unable to isolate on unlock */
+--- linux-2.6.26-rc5-mm2.orig/fs/proc/proc_misc.c	2008-06-10 10:46:23.000000000 -0400
++++ linux-2.6.26-rc5-mm2/fs/proc/proc_misc.c	2008-06-10 13:35:22.000000000 -0400
+@@ -137,6 +137,8 @@ static int meminfo_read_proc(char *page,
+ 	unsigned long allowed;
+ 	struct vmalloc_info vmi;
+ 	long cached;
++	unsigned long pages[NR_LRU_LISTS];
++	int lru;
+ 
+ /*
+  * display in kilobytes.
+@@ -155,48 +157,59 @@ static int meminfo_read_proc(char *page,
+ 
+ 	get_vmalloc_info(&vmi);
+ 
++	for (lru = LRU_BASE; lru < NR_LRU_LISTS; lru++)
++		pages[lru] = global_page_state(lru);
++
+ 	/*
+ 	 * Tagged format, for easy grepping and expansion.
+ 	 */
+ 	len = sprintf(page,
+-		"MemTotal:     %8lu kB\n"
+-		"MemFree:      %8lu kB\n"
+-		"Buffers:      %8lu kB\n"
+-		"Cached:       %8lu kB\n"
+-		"SwapCached:   %8lu kB\n"
+-		"Active:       %8lu kB\n"
+-		"Inactive:     %8lu kB\n"
++		"MemTotal:       %8lu kB\n"
++		"MemFree:        %8lu kB\n"
++		"Buffers:        %8lu kB\n"
++		"Cached:         %8lu kB\n"
++		"SwapCached:     %8lu kB\n"
++		"Active:         %8lu kB\n"
++		"Inactive:       %8lu kB\n"
++		"Active(anon):   %8lu kB\n"
++		"Inactive(anon): %8lu kB\n"
++		"Active(file):   %8lu kB\n"
++		"Inactive(file): %8lu kB\n"
+ #ifdef CONFIG_HIGHMEM
+-		"HighTotal:    %8lu kB\n"
+-		"HighFree:     %8lu kB\n"
+-		"LowTotal:     %8lu kB\n"
+-		"LowFree:      %8lu kB\n"
+-#endif
+-		"SwapTotal:    %8lu kB\n"
+-		"SwapFree:     %8lu kB\n"
+-		"Dirty:        %8lu kB\n"
+-		"Writeback:    %8lu kB\n"
+-		"AnonPages:    %8lu kB\n"
+-		"Mapped:       %8lu kB\n"
+-		"Slab:         %8lu kB\n"
+-		"SReclaimable: %8lu kB\n"
+-		"SUnreclaim:   %8lu kB\n"
+-		"PageTables:   %8lu kB\n"
+-		"NFS_Unstable: %8lu kB\n"
+-		"Bounce:       %8lu kB\n"
+-		"WritebackTmp: %8lu kB\n"
+-		"CommitLimit:  %8lu kB\n"
+-		"Committed_AS: %8lu kB\n"
+-		"VmallocTotal: %8lu kB\n"
+-		"VmallocUsed:  %8lu kB\n"
+-		"VmallocChunk: %8lu kB\n",
++		"HighTotal:      %8lu kB\n"
++		"HighFree:       %8lu kB\n"
++		"LowTotal:       %8lu kB\n"
++		"LowFree:        %8lu kB\n"
 +#endif
- 		NR_VM_EVENT_ITEMS
- };
++		"SwapTotal:      %8lu kB\n"
++		"SwapFree:       %8lu kB\n"
++		"Dirty:          %8lu kB\n"
++		"Writeback:      %8lu kB\n"
++		"AnonPages:      %8lu kB\n"
++		"Mapped:         %8lu kB\n"
++		"Slab:           %8lu kB\n"
++		"SReclaimable:   %8lu kB\n"
++		"SUnreclaim:     %8lu kB\n"
++		"PageTables:     %8lu kB\n"
++		"NFS_Unstable:   %8lu kB\n"
++		"Bounce:         %8lu kB\n"
++		"WritebackTmp:   %8lu kB\n"
++		"CommitLimit:    %8lu kB\n"
++		"Committed_AS:   %8lu kB\n"
++		"VmallocTotal:   %8lu kB\n"
++		"VmallocUsed:    %8lu kB\n"
++		"VmallocChunk:   %8lu kB\n",
+ 		K(i.totalram),
+ 		K(i.freeram),
+ 		K(i.bufferram),
+ 		K(cached),
+ 		K(total_swapcache_pages),
+-		K(global_page_state(NR_ACTIVE)),
+-		K(global_page_state(NR_INACTIVE)),
++		K(pages[LRU_ACTIVE_ANON]   + pages[LRU_ACTIVE_FILE]),
++		K(pages[LRU_INACTIVE_ANON] + pages[LRU_INACTIVE_FILE]),
++		K(pages[LRU_ACTIVE_ANON]),
++		K(pages[LRU_INACTIVE_ANON]),
++		K(pages[LRU_ACTIVE_FILE]),
++		K(pages[LRU_INACTIVE_FILE]),
+ #ifdef CONFIG_HIGHMEM
+ 		K(i.totalhigh),
+ 		K(i.freehigh),
+Index: linux-2.6.26-rc5-mm2/fs/cifs/file.c
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/fs/cifs/file.c	2008-06-10 10:46:19.000000000 -0400
++++ linux-2.6.26-rc5-mm2/fs/cifs/file.c	2008-06-10 13:35:22.000000000 -0400
+@@ -1775,7 +1775,7 @@ static void cifs_copy_cache_pages(struct
+ 		SetPageUptodate(page);
+ 		unlock_page(page);
+ 		if (!pagevec_add(plru_pvec, page))
+-			__pagevec_lru_add(plru_pvec);
++			__pagevec_lru_add_file(plru_pvec);
+ 		data += PAGE_CACHE_SIZE;
+ 	}
+ 	return;
+@@ -1909,7 +1909,7 @@ static int cifs_readpages(struct file *f
+ 		bytes_read = 0;
+ 	}
+ 
+-	pagevec_lru_add(&lru_pvec);
++	pagevec_lru_add_file(&lru_pvec);
+ 
+ /* need to free smb_read_data buf before exit */
+ 	if (smb_read_data) {
+Index: linux-2.6.26-rc5-mm2/fs/ntfs/file.c
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/fs/ntfs/file.c	2008-06-10 10:24:46.000000000 -0400
++++ linux-2.6.26-rc5-mm2/fs/ntfs/file.c	2008-06-10 13:35:22.000000000 -0400
+@@ -439,7 +439,7 @@ static inline int __ntfs_grab_cache_page
+ 			pages[nr] = *cached_page;
+ 			page_cache_get(*cached_page);
+ 			if (unlikely(!pagevec_add(lru_pvec, *cached_page)))
+-				__pagevec_lru_add(lru_pvec);
++				__pagevec_lru_add_file(lru_pvec);
+ 			*cached_page = NULL;
+ 		}
+ 		index++;
+@@ -2084,7 +2084,7 @@ err_out:
+ 						OSYNC_METADATA|OSYNC_DATA);
+ 		}
+   	}
+-	pagevec_lru_add(&lru_pvec);
++	pagevec_lru_add_file(&lru_pvec);
+ 	ntfs_debug("Done.  Returning %s (written 0x%lx, status %li).",
+ 			written ? "written" : "status", (unsigned long)written,
+ 			(long)status);
+Index: linux-2.6.26-rc5-mm2/fs/nfs/dir.c
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/fs/nfs/dir.c	2008-06-10 10:25:06.000000000 -0400
++++ linux-2.6.26-rc5-mm2/fs/nfs/dir.c	2008-06-10 13:35:22.000000000 -0400
+@@ -1524,7 +1524,7 @@ static int nfs_symlink(struct inode *dir
+ 	if (!add_to_page_cache(page, dentry->d_inode->i_mapping, 0,
+ 							GFP_KERNEL)) {
+ 		pagevec_add(&lru_pvec, page);
+-		pagevec_lru_add(&lru_pvec);
++		pagevec_lru_add_file(&lru_pvec);
+ 		SetPageUptodate(page);
+ 		unlock_page(page);
+ 	} else
+Index: linux-2.6.26-rc5-mm2/fs/ramfs/file-nommu.c
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/fs/ramfs/file-nommu.c	2008-06-10 10:24:29.000000000 -0400
++++ linux-2.6.26-rc5-mm2/fs/ramfs/file-nommu.c	2008-06-10 13:35:22.000000000 -0400
+@@ -111,12 +111,12 @@ static int ramfs_nommu_expand_for_mappin
+ 			goto add_error;
+ 
+ 		if (!pagevec_add(&lru_pvec, page))
+-			__pagevec_lru_add(&lru_pvec);
++			__pagevec_lru_add_file(&lru_pvec);
+ 
+ 		unlock_page(page);
+ 	}
+ 
+-	pagevec_lru_add(&lru_pvec);
++	pagevec_lru_add_file(&lru_pvec);
+ 	return 0;
+ 
+  fsize_exceeded:
+Index: linux-2.6.26-rc5-mm2/drivers/base/node.c
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/drivers/base/node.c	2008-06-10 10:25:05.000000000 -0400
++++ linux-2.6.26-rc5-mm2/drivers/base/node.c	2008-06-10 13:35:22.000000000 -0400
+@@ -58,34 +58,44 @@ static ssize_t node_read_meminfo(struct 
+ 	si_meminfo_node(&i, nid);
+ 
+ 	n = sprintf(buf, "\n"
+-		       "Node %d MemTotal:     %8lu kB\n"
+-		       "Node %d MemFree:      %8lu kB\n"
+-		       "Node %d MemUsed:      %8lu kB\n"
+-		       "Node %d Active:       %8lu kB\n"
+-		       "Node %d Inactive:     %8lu kB\n"
++		       "Node %d MemTotal:       %8lu kB\n"
++		       "Node %d MemFree:        %8lu kB\n"
++		       "Node %d MemUsed:        %8lu kB\n"
++		       "Node %d Active:         %8lu kB\n"
++		       "Node %d Inactive:       %8lu kB\n"
++		       "Node %d Active(anon):   %8lu kB\n"
++		       "Node %d Inactive(anon): %8lu kB\n"
++		       "Node %d Active(file):   %8lu kB\n"
++		       "Node %d Inactive(file): %8lu kB\n"
+ #ifdef CONFIG_HIGHMEM
+-		       "Node %d HighTotal:    %8lu kB\n"
+-		       "Node %d HighFree:     %8lu kB\n"
+-		       "Node %d LowTotal:     %8lu kB\n"
+-		       "Node %d LowFree:      %8lu kB\n"
++		       "Node %d HighTotal:      %8lu kB\n"
++		       "Node %d HighFree:       %8lu kB\n"
++		       "Node %d LowTotal:       %8lu kB\n"
++		       "Node %d LowFree:        %8lu kB\n"
+ #endif
+-		       "Node %d Dirty:        %8lu kB\n"
+-		       "Node %d Writeback:    %8lu kB\n"
+-		       "Node %d FilePages:    %8lu kB\n"
+-		       "Node %d Mapped:       %8lu kB\n"
+-		       "Node %d AnonPages:    %8lu kB\n"
+-		       "Node %d PageTables:   %8lu kB\n"
+-		       "Node %d NFS_Unstable: %8lu kB\n"
+-		       "Node %d Bounce:       %8lu kB\n"
+-		       "Node %d WritebackTmp: %8lu kB\n"
+-		       "Node %d Slab:         %8lu kB\n"
+-		       "Node %d SReclaimable: %8lu kB\n"
+-		       "Node %d SUnreclaim:   %8lu kB\n",
++		       "Node %d Dirty:          %8lu kB\n"
++		       "Node %d Writeback:      %8lu kB\n"
++		       "Node %d FilePages:      %8lu kB\n"
++		       "Node %d Mapped:         %8lu kB\n"
++		       "Node %d AnonPages:      %8lu kB\n"
++		       "Node %d PageTables:     %8lu kB\n"
++		       "Node %d NFS_Unstable:   %8lu kB\n"
++		       "Node %d Bounce:         %8lu kB\n"
++		       "Node %d WritebackTmp:   %8lu kB\n"
++		       "Node %d Slab:           %8lu kB\n"
++		       "Node %d SReclaimable:   %8lu kB\n"
++		       "Node %d SUnreclaim:     %8lu kB\n",
+ 		       nid, K(i.totalram),
+ 		       nid, K(i.freeram),
+ 		       nid, K(i.totalram - i.freeram),
+-		       nid, node_page_state(nid, NR_ACTIVE),
+-		       nid, node_page_state(nid, NR_INACTIVE),
++		       nid, node_page_state(nid, NR_ACTIVE_ANON) +
++				node_page_state(nid, NR_ACTIVE_FILE),
++		       nid, node_page_state(nid, NR_INACTIVE_ANON) +
++				node_page_state(nid, NR_INACTIVE_FILE),
++		       nid, node_page_state(nid, NR_ACTIVE_ANON),
++		       nid, node_page_state(nid, NR_INACTIVE_ANON),
++		       nid, node_page_state(nid, NR_ACTIVE_FILE),
++		       nid, node_page_state(nid, NR_INACTIVE_FILE),
+ #ifdef CONFIG_HIGHMEM
+ 		       nid, K(i.totalhigh),
+ 		       nid, K(i.freehigh),
+Index: linux-2.6.26-rc5-mm2/mm/memory.c
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/mm/memory.c	2008-06-10 13:34:48.000000000 -0400
++++ linux-2.6.26-rc5-mm2/mm/memory.c	2008-06-10 13:35:23.000000000 -0400
+@@ -1805,7 +1805,7 @@ gotten:
+ 		set_pte_at(mm, address, page_table, entry);
+ 		update_mmu_cache(vma, address, entry);
+ 		SetPageSwapBacked(new_page);
+-		lru_cache_add_active(new_page);
++		lru_cache_add_active_anon(new_page);
+ 		page_add_new_anon_rmap(new_page, vma, address);
+ 
+ 		/* Free the old page.. */
+@@ -2274,7 +2274,7 @@ static int do_anonymous_page(struct mm_s
+ 		goto release;
+ 	inc_mm_counter(mm, anon_rss);
+ 	SetPageSwapBacked(page);
+-	lru_cache_add_active(page);
++	lru_cache_add_active_anon(page);
+ 	page_add_new_anon_rmap(page, vma, address);
+ 	set_pte_at(mm, address, page_table, entry);
+ 
+@@ -2416,7 +2416,7 @@ static int __do_fault(struct mm_struct *
+ 		if (anon) {
+                         inc_mm_counter(mm, anon_rss);
+ 			SetPageSwapBacked(page);
+-                        lru_cache_add_active(page);
++                        lru_cache_add_active_anon(page);
+                         page_add_new_anon_rmap(page, vma, address);
+ 		} else {
+ 			inc_mm_counter(mm, file_rss);
+Index: linux-2.6.26-rc5-mm2/mm/page_alloc.c
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/mm/page_alloc.c	2008-06-10 13:34:48.000000000 -0400
++++ linux-2.6.26-rc5-mm2/mm/page_alloc.c	2008-06-10 13:35:23.000000000 -0400
+@@ -1834,10 +1834,13 @@ void show_free_areas(void)
+ 		}
+ 	}
+ 
+-	printk("Active:%lu inactive:%lu dirty:%lu writeback:%lu unstable:%lu\n"
++	printk("Active_anon:%lu active_file:%lu inactive_anon%lu\n"
++		" inactive_file:%lu dirty:%lu writeback:%lu unstable:%lu\n"
+ 		" free:%lu slab:%lu mapped:%lu pagetables:%lu bounce:%lu\n",
+-		global_page_state(NR_ACTIVE),
+-		global_page_state(NR_INACTIVE),
++		global_page_state(NR_ACTIVE_ANON),
++		global_page_state(NR_ACTIVE_FILE),
++		global_page_state(NR_INACTIVE_ANON),
++		global_page_state(NR_INACTIVE_FILE),
+ 		global_page_state(NR_FILE_DIRTY),
+ 		global_page_state(NR_WRITEBACK),
+ 		global_page_state(NR_UNSTABLE_NFS),
+@@ -1860,8 +1863,10 @@ void show_free_areas(void)
+ 			" min:%lukB"
+ 			" low:%lukB"
+ 			" high:%lukB"
+-			" active:%lukB"
+-			" inactive:%lukB"
++			" active_anon:%lukB"
++			" inactive_anon:%lukB"
++			" active_file:%lukB"
++			" inactive_file:%lukB"
+ 			" present:%lukB"
+ 			" pages_scanned:%lu"
+ 			" all_unreclaimable? %s"
+@@ -1871,8 +1876,10 @@ void show_free_areas(void)
+ 			K(zone->pages_min),
+ 			K(zone->pages_low),
+ 			K(zone->pages_high),
+-			K(zone_page_state(zone, NR_ACTIVE)),
+-			K(zone_page_state(zone, NR_INACTIVE)),
++			K(zone_page_state(zone, NR_ACTIVE_ANON)),
++			K(zone_page_state(zone, NR_INACTIVE_ANON)),
++			K(zone_page_state(zone, NR_ACTIVE_FILE)),
++			K(zone_page_state(zone, NR_INACTIVE_FILE)),
+ 			K(zone->present_pages),
+ 			zone->pages_scanned,
+ 			(zone_is_all_unreclaimable(zone) ? "yes" : "no")
+@@ -3427,6 +3434,10 @@ static void __paginginit free_area_init_
+ 			INIT_LIST_HEAD(&zone->lru[l].list);
+ 			zone->lru[l].nr_scan = 0;
+ 		}
++		zone->recent_rotated[0] = 0;
++		zone->recent_rotated[1] = 0;
++		zone->recent_scanned[0] = 0;
++		zone->recent_scanned[1] = 0;
+ 		zap_zone_vm_stats(zone);
+ 		zone->flags = 0;
+ 		if (!size)
+Index: linux-2.6.26-rc5-mm2/mm/swap.c
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/mm/swap.c	2008-06-10 13:34:07.000000000 -0400
++++ linux-2.6.26-rc5-mm2/mm/swap.c	2008-06-10 13:35:23.000000000 -0400
+@@ -116,7 +116,8 @@ static void pagevec_move_tail(struct pag
+ 			spin_lock(&zone->lru_lock);
+ 		}
+ 		if (PageLRU(page) && !PageActive(page)) {
+-			list_move_tail(&page->lru, &zone->lru[LRU_INACTIVE].list);
++			int lru = page_is_file_cache(page);
++			list_move_tail(&page->lru, &zone->lru[lru].list);
+ 			pgmoved++;
+ 		}
+ 	}
+@@ -157,11 +158,18 @@ void activate_page(struct page *page)
+ 
+ 	spin_lock_irq(&zone->lru_lock);
+ 	if (PageLRU(page) && !PageActive(page)) {
+-		del_page_from_inactive_list(zone, page);
++		int file = page_is_file_cache(page);
++		int lru = LRU_BASE + file;
++		del_page_from_lru_list(zone, page, lru);
++
+ 		SetPageActive(page);
+-		add_page_to_active_list(zone, page);
++		lru += LRU_ACTIVE;
++		add_page_to_lru_list(zone, page, lru);
+ 		__count_vm_event(PGACTIVATE);
+ 		mem_cgroup_move_lists(page, true);
++
++		zone->recent_rotated[!!file]++;
++		zone->recent_scanned[!!file]++;
+ 	}
+ 	spin_unlock_irq(&zone->lru_lock);
+ }
+Index: linux-2.6.26-rc5-mm2/mm/readahead.c
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/mm/readahead.c	2008-06-10 10:25:07.000000000 -0400
++++ linux-2.6.26-rc5-mm2/mm/readahead.c	2008-06-10 13:35:23.000000000 -0400
+@@ -229,7 +229,7 @@ int do_page_cache_readahead(struct addre
+  */
+ unsigned long max_sane_readahead(unsigned long nr)
+ {
+-	return min(nr, (node_page_state(numa_node_id(), NR_INACTIVE)
++	return min(nr, (node_page_state(numa_node_id(), NR_INACTIVE_FILE)
+ 		+ node_page_state(numa_node_id(), NR_FREE_PAGES)) / 2);
+ }
+ 
+Index: linux-2.6.26-rc5-mm2/mm/filemap.c
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/mm/filemap.c	2008-06-10 10:46:29.000000000 -0400
++++ linux-2.6.26-rc5-mm2/mm/filemap.c	2008-06-10 13:35:23.000000000 -0400
+@@ -33,6 +33,7 @@
+ #include <linux/cpuset.h>
+ #include <linux/hardirq.h> /* for BUG_ON(!in_atomic()) only */
+ #include <linux/memcontrol.h>
++#include <linux/mm_inline.h> /* for page_is_file_cache() */
+ #include "internal.h"
+ 
+ /*
+@@ -488,8 +489,12 @@ int add_to_page_cache_lru(struct page *p
+ 				pgoff_t offset, gfp_t gfp_mask)
+ {
+ 	int ret = add_to_page_cache(page, mapping, offset, gfp_mask);
+-	if (ret == 0)
+-		lru_cache_add(page);
++	if (ret == 0) {
++		if (page_is_file_cache(page))
++			lru_cache_add_file(page);
++		else
++			lru_cache_add_active_anon(page);
++	}
+ 	return ret;
+ }
+ 
+Index: linux-2.6.26-rc5-mm2/mm/vmstat.c
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/mm/vmstat.c	2008-06-10 13:18:26.000000000 -0400
++++ linux-2.6.26-rc5-mm2/mm/vmstat.c	2008-06-10 13:35:23.000000000 -0400
+@@ -602,8 +602,10 @@ const struct seq_operations pagetypeinfo
+ static const char * const vmstat_text[] = {
+ 	/* Zoned VM counters */
+ 	"nr_free_pages",
+-	"nr_inactive",
+-	"nr_active",
++	"nr_inactive_anon",
++	"nr_active_anon",
++	"nr_inactive_file",
++	"nr_active_file",
+ 	"nr_anon_pages",
+ 	"nr_mapped",
+ 	"nr_file_pages",
+@@ -671,7 +673,7 @@ static void zoneinfo_show_print(struct s
+ 		   "\n        min      %lu"
+ 		   "\n        low      %lu"
+ 		   "\n        high     %lu"
+-		   "\n        scanned  %lu (a: %lu i: %lu)"
++		   "\n        scanned  %lu (aa: %lu ia: %lu af: %lu if: %lu)"
+ 		   "\n        spanned  %lu"
+ 		   "\n        present  %lu",
+ 		   zone_page_state(zone, NR_FREE_PAGES),
+@@ -679,8 +681,10 @@ static void zoneinfo_show_print(struct s
+ 		   zone->pages_low,
+ 		   zone->pages_high,
+ 		   zone->pages_scanned,
+-		   zone->lru[LRU_ACTIVE].nr_scan,
+-		   zone->lru[LRU_INACTIVE].nr_scan,
++		   zone->lru[LRU_ACTIVE_ANON].nr_scan,
++		   zone->lru[LRU_INACTIVE_ANON].nr_scan,
++		   zone->lru[LRU_ACTIVE_FILE].nr_scan,
++		   zone->lru[LRU_INACTIVE_FILE].nr_scan,
+ 		   zone->spanned_pages,
+ 		   zone->present_pages);
  
 Index: linux-2.6.26-rc5-mm2/mm/vmscan.c
 ===================================================================
---- linux-2.6.26-rc5-mm2.orig/mm/vmscan.c	2008-06-10 22:23:56.000000000 -0400
-+++ linux-2.6.26-rc5-mm2/mm/vmscan.c	2008-06-10 22:25:49.000000000 -0400
-@@ -468,12 +468,13 @@ int putback_lru_page(struct page *page)
- {
- 	int lru;
- 	int ret = 1;
-+	int was_unevictable;
- 
- 	VM_BUG_ON(!PageLocked(page));
- 	VM_BUG_ON(PageLRU(page));
- 
- 	lru = !!TestClearPageActive(page);
--	ClearPageUnevictable(page);	/* for page_evictable() */
-+	was_unevictable = TestClearPageUnevictable(page); /* for page_evictable() */
- 
- 	if (unlikely(!page->mapping)) {
- 		/*
-@@ -493,6 +494,10 @@ int putback_lru_page(struct page *page)
- 		lru += page_is_file_cache(page);
- 		lru_cache_add_lru(page, lru);
- 		mem_cgroup_move_lists(page, lru);
-+#ifdef CONFIG_UNEVICTABLE_LRU
-+		if (was_unevictable)
-+			count_vm_event(NORECL_PGRESCUED);
-+#endif
- 	} else {
- 		/*
- 		 * Put unevictable pages directly on zone's unevictable
-@@ -500,6 +505,10 @@ int putback_lru_page(struct page *page)
- 		 */
- 		add_page_to_unevictable_list(page);
- 		mem_cgroup_move_lists(page, LRU_UNEVICTABLE);
-+#ifdef CONFIG_UNEVICTABLE_LRU
-+		if (!was_unevictable)
-+			count_vm_event(NORECL_PGCULLED);
-+#endif
- 	}
- 
- 	put_page(page);		/* drop ref from isolate */
-@@ -2373,6 +2382,7 @@ static void check_move_unevictable_page(
- 		__dec_zone_state(zone, NR_UNEVICTABLE);
- 		list_move(&page->lru, &zone->lru[l].list);
- 		__inc_zone_state(zone, NR_INACTIVE_ANON + l);
-+		__count_vm_event(NORECL_PGRESCUED);
- 	} else {
- 		/*
- 		 * rotate unevictable list
-@@ -2404,6 +2414,7 @@ void scan_mapping_unevictable_pages(stru
- 	while (next < end &&
- 		pagevec_lookup(&pvec, mapping, next, PAGEVEC_SIZE)) {
- 		int i;
-+		int pg_scanned = 0;
- 
- 		zone = NULL;
- 
-@@ -2412,6 +2423,7 @@ void scan_mapping_unevictable_pages(stru
- 			pgoff_t page_index = page->index;
- 			struct zone *pagezone = page_zone(page);
- 
-+			pg_scanned++;
- 			if (page_index > next)
- 				next = page_index;
- 			next++;
-@@ -2442,6 +2454,8 @@ void scan_mapping_unevictable_pages(stru
- 		if (zone)
- 			spin_unlock_irq(&zone->lru_lock);
- 		pagevec_release(&pvec);
-+
-+		count_vm_events(NORECL_PGSCANNED, pg_scanned);
- 	}
- 
- }
-Index: linux-2.6.26-rc5-mm2/mm/vmstat.c
-===================================================================
---- linux-2.6.26-rc5-mm2.orig/mm/vmstat.c	2008-06-10 22:23:56.000000000 -0400
-+++ linux-2.6.26-rc5-mm2/mm/vmstat.c	2008-06-10 22:25:48.000000000 -0400
-@@ -664,6 +664,16 @@ static const char * const vmstat_text[] 
- 	"htlb_buddy_alloc_success",
- 	"htlb_buddy_alloc_fail",
- #endif
-+
-+#ifdef CONFIG_UNEVICTABLE_LRU
-+	"noreclaim_pgs_culled",
-+	"noreclaim_pgs_scanned",
-+	"noreclaim_pgs_rescued",
-+	"noreclaim_pgs_mlocked",
-+	"noreclaim_pgs_munlocked",
-+	"noreclaim_pgs_cleared",
-+	"noreclaim_pgs_stranded",
-+#endif
- #endif
+--- linux-2.6.26-rc5-mm2.orig/mm/vmscan.c	2008-06-10 13:34:07.000000000 -0400
++++ linux-2.6.26-rc5-mm2/mm/vmscan.c	2008-06-10 13:35:23.000000000 -0400
+@@ -78,7 +78,7 @@ struct scan_control {
+ 	unsigned long (*isolate_pages)(unsigned long nr, struct list_head *dst,
+ 			unsigned long *scanned, int order, int mode,
+ 			struct zone *z, struct mem_cgroup *mem_cont,
+-			int active);
++			int active, int file);
  };
  
-Index: linux-2.6.26-rc5-mm2/mm/mlock.c
-===================================================================
---- linux-2.6.26-rc5-mm2.orig/mm/mlock.c	2008-06-10 22:23:56.000000000 -0400
-+++ linux-2.6.26-rc5-mm2/mm/mlock.c	2008-06-10 22:25:56.000000000 -0400
-@@ -18,6 +18,7 @@
- #include <linux/rmap.h>
- #include <linux/mmzone.h>
- #include <linux/hugetlb.h>
-+#include <linux/vmstat.h>
+ #define lru_to_page(_head) (list_entry((_head)->prev, struct page, lru))
+@@ -646,7 +646,7 @@ keep:
+  *
+  * returns 0 on success, -ve errno on failure.
+  */
+-int __isolate_lru_page(struct page *page, int mode)
++int __isolate_lru_page(struct page *page, int mode, int file)
+ {
+ 	int ret = -EINVAL;
  
- #include "internal.h"
+@@ -662,6 +662,9 @@ int __isolate_lru_page(struct page *page
+ 	if (mode != ISOLATE_BOTH && (!PageActive(page) != !mode))
+ 		return ret;
  
-@@ -57,6 +58,7 @@ void __clear_page_mlock(struct page *pag
- 	VM_BUG_ON(!PageLocked(page));	/* for LRU isolate/putback */
++	if (mode != ISOLATE_BOTH && (!page_is_file_cache(page) != !file))
++		return ret;
++
+ 	ret = -EBUSY;
+ 	if (likely(get_page_unless_zero(page))) {
+ 		/*
+@@ -692,12 +695,13 @@ int __isolate_lru_page(struct page *page
+  * @scanned:	The number of pages that were scanned.
+  * @order:	The caller's attempted allocation order
+  * @mode:	One of the LRU isolation modes
++ * @file:	True [1] if isolating file [!anon] pages
+  *
+  * returns how many pages were moved onto *@dst.
+  */
+ static unsigned long isolate_lru_pages(unsigned long nr_to_scan,
+ 		struct list_head *src, struct list_head *dst,
+-		unsigned long *scanned, int order, int mode)
++		unsigned long *scanned, int order, int mode, int file)
+ {
+ 	unsigned long nr_taken = 0;
+ 	unsigned long scan;
+@@ -714,7 +718,7 @@ static unsigned long isolate_lru_pages(u
  
- 	dec_zone_page_state(page, NR_MLOCK);
-+	count_vm_event(NORECL_PGCLEARED);
- 	if (!isolate_lru_page(page)) {
- 		putback_lru_page(page);
- 	} else {
-@@ -66,6 +68,8 @@ void __clear_page_mlock(struct page *pag
- 		lru_add_drain_all();
- 		if (!isolate_lru_page(page))
- 			putback_lru_page(page);
-+		else if (PageUnevictable(page))
-+			count_vm_event(NORECL_PGSTRANDED);
- 	}
+ 		VM_BUG_ON(!PageLRU(page));
+ 
+-		switch (__isolate_lru_page(page, mode)) {
++		switch (__isolate_lru_page(page, mode, file)) {
+ 		case 0:
+ 			list_move(&page->lru, dst);
+ 			nr_taken++;
+@@ -757,10 +761,11 @@ static unsigned long isolate_lru_pages(u
+ 				break;
+ 
+ 			cursor_page = pfn_to_page(pfn);
++
+ 			/* Check that we have not crossed a zone boundary. */
+ 			if (unlikely(page_zone_id(cursor_page) != zone_id))
+ 				continue;
+-			switch (__isolate_lru_page(cursor_page, mode)) {
++			switch (__isolate_lru_page(cursor_page, mode, file)) {
+ 			case 0:
+ 				list_move(&cursor_page->lru, dst);
+ 				nr_taken++;
+@@ -785,30 +790,37 @@ static unsigned long isolate_pages_globa
+ 					unsigned long *scanned, int order,
+ 					int mode, struct zone *z,
+ 					struct mem_cgroup *mem_cont,
+-					int active)
++					int active, int file)
+ {
++	int lru = LRU_BASE;
+ 	if (active)
+-		return isolate_lru_pages(nr, &z->lru[LRU_ACTIVE].list, dst,
+-						scanned, order, mode);
+-	else
+-		return isolate_lru_pages(nr, &z->lru[LRU_INACTIVE].list, dst,
+-						scanned, order, mode);
++		lru += LRU_ACTIVE;
++	if (file)
++		lru += LRU_FILE;
++	return isolate_lru_pages(nr, &z->lru[lru].list, dst, scanned, order,
++								mode, !!file);
  }
  
-@@ -79,6 +83,7 @@ void mlock_vma_page(struct page *page)
+ /*
+  * clear_active_flags() is a helper for shrink_active_list(), clearing
+  * any active bits from the pages in the list.
+  */
+-static unsigned long clear_active_flags(struct list_head *page_list)
++static unsigned long clear_active_flags(struct list_head *page_list,
++					unsigned int *count)
+ {
+ 	int nr_active = 0;
++	int lru;
+ 	struct page *page;
  
- 	if (!TestSetPageMlocked(page)) {
- 		inc_zone_page_state(page, NR_MLOCK);
-+		count_vm_event(NORECL_PGMLOCKED);
- 		if (!isolate_lru_page(page))
- 			putback_lru_page(page);
- 	}
-@@ -109,16 +114,28 @@ static void munlock_vma_page(struct page
- 	if (TestClearPageMlocked(page)) {
- 		dec_zone_page_state(page, NR_MLOCK);
- 		if (!isolate_lru_page(page)) {
--			try_to_munlock(page);	/* maybe relock the page */
-+			int ret = try_to_munlock(page);
-+			/*
-+			 * did try_to_unlock() succeed or punt?
-+			 */
-+			if (ret == SWAP_SUCCESS || ret == SWAP_AGAIN)
-+				count_vm_event(NORECL_PGMUNLOCKED);
+-	list_for_each_entry(page, page_list, lru)
++	list_for_each_entry(page, page_list, lru) {
++		lru = page_is_file_cache(page);
+ 		if (PageActive(page)) {
++			lru += LRU_ACTIVE;
+ 			ClearPageActive(page);
+ 			nr_active++;
+ 		}
++		count[lru]++;
++	}
+ 
+ 	return nr_active;
+ }
+@@ -846,12 +858,12 @@ int isolate_lru_page(struct page *page)
+ 
+ 		spin_lock_irq(&zone->lru_lock);
+ 		if (PageLRU(page) && get_page_unless_zero(page)) {
++			int lru = LRU_BASE;
+ 			ret = 0;
+ 			ClearPageLRU(page);
+-			if (PageActive(page))
+-				del_page_from_active_list(zone, page);
+-			else
+-				del_page_from_inactive_list(zone, page);
 +
- 			putback_lru_page(page);
++			lru += page_is_file_cache(page) + !!PageActive(page);
++			del_page_from_lru_list(zone, page, lru);
+ 		}
+ 		spin_unlock_irq(&zone->lru_lock);
+ 	}
+@@ -863,7 +875,7 @@ int isolate_lru_page(struct page *page)
+  * of reclaimed pages
+  */
+ static unsigned long shrink_inactive_list(unsigned long max_scan,
+-				struct zone *zone, struct scan_control *sc)
++			struct zone *zone, struct scan_control *sc, int file)
+ {
+ 	LIST_HEAD(page_list);
+ 	struct pagevec pvec;
+@@ -880,20 +892,32 @@ static unsigned long shrink_inactive_lis
+ 		unsigned long nr_scan;
+ 		unsigned long nr_freed;
+ 		unsigned long nr_active;
++		unsigned int count[NR_LRU_LISTS] = { 0, };
++		int mode = (sc->order > PAGE_ALLOC_COSTLY_ORDER) ?
++					ISOLATE_BOTH : ISOLATE_INACTIVE;
+ 
+ 		nr_taken = sc->isolate_pages(sc->swap_cluster_max,
+-			     &page_list, &nr_scan, sc->order,
+-			     (sc->order > PAGE_ALLOC_COSTLY_ORDER)?
+-					     ISOLATE_BOTH : ISOLATE_INACTIVE,
+-				zone, sc->mem_cgroup, 0);
+-		nr_active = clear_active_flags(&page_list);
++			     &page_list, &nr_scan, sc->order, mode,
++				zone, sc->mem_cgroup, 0, file);
++		nr_active = clear_active_flags(&page_list, count);
+ 		__count_vm_events(PGDEACTIVATE, nr_active);
+ 
+-		__mod_zone_page_state(zone, NR_ACTIVE, -nr_active);
+-		__mod_zone_page_state(zone, NR_INACTIVE,
+-						-(nr_taken - nr_active));
+-		if (scan_global_lru(sc))
++		__mod_zone_page_state(zone, NR_ACTIVE_FILE,
++						-count[LRU_ACTIVE_FILE]);
++		__mod_zone_page_state(zone, NR_INACTIVE_FILE,
++						-count[LRU_INACTIVE_FILE]);
++		__mod_zone_page_state(zone, NR_ACTIVE_ANON,
++						-count[LRU_ACTIVE_ANON]);
++		__mod_zone_page_state(zone, NR_INACTIVE_ANON,
++						-count[LRU_INACTIVE_ANON]);
++
++		if (scan_global_lru(sc)) {
+ 			zone->pages_scanned += nr_scan;
++			zone->recent_scanned[0] += count[LRU_INACTIVE_ANON];
++			zone->recent_scanned[0] += count[LRU_ACTIVE_ANON];
++			zone->recent_scanned[1] += count[LRU_INACTIVE_FILE];
++			zone->recent_scanned[1] += count[LRU_ACTIVE_FILE];
++		}
+ 		spin_unlock_irq(&zone->lru_lock);
+ 
+ 		nr_scanned += nr_scan;
+@@ -913,7 +937,7 @@ static unsigned long shrink_inactive_lis
+ 			 * The attempt at page out may have made some
+ 			 * of the pages active, mark them inactive again.
+ 			 */
+-			nr_active = clear_active_flags(&page_list);
++			nr_active = clear_active_flags(&page_list, count);
+ 			count_vm_events(PGDEACTIVATE, nr_active);
+ 
+ 			nr_freed += shrink_page_list(&page_list, sc,
+@@ -943,6 +967,10 @@ static unsigned long shrink_inactive_lis
+ 			SetPageLRU(page);
+ 			list_del(&page->lru);
+ 			add_page_to_lru_list(zone, page, page_lru(page));
++			if (PageActive(page) && scan_global_lru(sc)) {
++				int file = !!page_is_file_cache(page);
++				zone->recent_rotated[file]++;
++			}
+ 			if (!pagevec_add(&pvec, page)) {
+ 				spin_unlock_irq(&zone->lru_lock);
+ 				__pagevec_release(&pvec);
+@@ -973,115 +1001,7 @@ static inline void note_zone_scanning_pr
+ 
+ static inline int zone_is_near_oom(struct zone *zone)
+ {
+-	return zone->pages_scanned >= (zone_page_state(zone, NR_ACTIVE)
+-				+ zone_page_state(zone, NR_INACTIVE))*3;
+-}
+-
+-/*
+- * Determine we should try to reclaim mapped pages.
+- * This is called only when sc->mem_cgroup is NULL.
+- */
+-static int calc_reclaim_mapped(struct scan_control *sc, struct zone *zone,
+-				int priority)
+-{
+-	long mapped_ratio;
+-	long distress;
+-	long swap_tendency;
+-	long imbalance;
+-	int reclaim_mapped = 0;
+-	int prev_priority;
+-
+-	if (scan_global_lru(sc) && zone_is_near_oom(zone))
+-		return 1;
+-	/*
+-	 * `distress' is a measure of how much trouble we're having
+-	 * reclaiming pages.  0 -> no problems.  100 -> great trouble.
+-	 */
+-	if (scan_global_lru(sc))
+-		prev_priority = zone->prev_priority;
+-	else
+-		prev_priority = mem_cgroup_get_reclaim_priority(sc->mem_cgroup);
+-
+-	distress = 100 >> min(prev_priority, priority);
+-
+-	/*
+-	 * The point of this algorithm is to decide when to start
+-	 * reclaiming mapped memory instead of just pagecache.  Work out
+-	 * how much memory
+-	 * is mapped.
+-	 */
+-	if (scan_global_lru(sc))
+-		mapped_ratio = ((global_page_state(NR_FILE_MAPPED) +
+-				global_page_state(NR_ANON_PAGES)) * 100) /
+-					vm_total_pages;
+-	else
+-		mapped_ratio = mem_cgroup_calc_mapped_ratio(sc->mem_cgroup);
+-
+-	/*
+-	 * Now decide how much we really want to unmap some pages.  The
+-	 * mapped ratio is downgraded - just because there's a lot of
+-	 * mapped memory doesn't necessarily mean that page reclaim
+-	 * isn't succeeding.
+-	 *
+-	 * The distress ratio is important - we don't want to start
+-	 * going oom.
+-	 *
+-	 * A 100% value of vm_swappiness overrides this algorithm
+-	 * altogether.
+-	 */
+-	swap_tendency = mapped_ratio / 2 + distress + sc->swappiness;
+-
+-	/*
+-	 * If there's huge imbalance between active and inactive
+-	 * (think active 100 times larger than inactive) we should
+-	 * become more permissive, or the system will take too much
+-	 * cpu before it start swapping during memory pressure.
+-	 * Distress is about avoiding early-oom, this is about
+-	 * making swappiness graceful despite setting it to low
+-	 * values.
+-	 *
+-	 * Avoid div by zero with nr_inactive+1, and max resulting
+-	 * value is vm_total_pages.
+-	 */
+-	if (scan_global_lru(sc)) {
+-		imbalance  = zone_page_state(zone, NR_ACTIVE);
+-		imbalance /= zone_page_state(zone, NR_INACTIVE) + 1;
+-	} else
+-		imbalance = mem_cgroup_reclaim_imbalance(sc->mem_cgroup);
+-
+-	/*
+-	 * Reduce the effect of imbalance if swappiness is low,
+-	 * this means for a swappiness very low, the imbalance
+-	 * must be much higher than 100 for this logic to make
+-	 * the difference.
+-	 *
+-	 * Max temporary value is vm_total_pages*100.
+-	 */
+-	imbalance *= (vm_swappiness + 1);
+-	imbalance /= 100;
+-
+-	/*
+-	 * If not much of the ram is mapped, makes the imbalance
+-	 * less relevant, it's high priority we refill the inactive
+-	 * list with mapped pages only in presence of high ratio of
+-	 * mapped pages.
+-	 *
+-	 * Max temporary value is vm_total_pages*100.
+-	 */
+-	imbalance *= mapped_ratio;
+-	imbalance /= 100;
+-
+-	/* apply imbalance feedback to swap_tendency */
+-	swap_tendency += imbalance;
+-
+-	/*
+-	 * Now use this metric to decide whether to start moving mapped
+-	 * memory onto the inactive list.
+-	 */
+-	if (swap_tendency >= 100)
+-		reclaim_mapped = 1;
+-
+-	return reclaim_mapped;
++	return zone->pages_scanned >= (zone_lru_pages(zone) * 3);
+ }
+ 
+ /*
+@@ -1104,7 +1024,7 @@ static int calc_reclaim_mapped(struct sc
+ 
+ 
+ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
+-				struct scan_control *sc, int priority)
++			struct scan_control *sc, int priority, int file)
+ {
+ 	unsigned long pgmoved;
+ 	int pgdeactivate = 0;
+@@ -1114,46 +1034,45 @@ static void shrink_active_list(unsigned 
+ 	LIST_HEAD(l_inactive);
+ 	struct page *page;
+ 	struct pagevec pvec;
+-	int reclaim_mapped = 0;
+-
+-	if (sc->may_swap)
+-		reclaim_mapped = calc_reclaim_mapped(sc, zone, priority);
++	enum lru_list lru;
+ 
+ 	lru_add_drain();
+ 	spin_lock_irq(&zone->lru_lock);
+ 	pgmoved = sc->isolate_pages(nr_pages, &l_hold, &pgscanned, sc->order,
+ 					ISOLATE_ACTIVE, zone,
+-					sc->mem_cgroup, 1);
++					sc->mem_cgroup, 1, file);
+ 	/*
+ 	 * zone->pages_scanned is used for detect zone's oom
+ 	 * mem_cgroup remembers nr_scan by itself.
+ 	 */
+-	if (scan_global_lru(sc))
++	if (scan_global_lru(sc)) {
+ 		zone->pages_scanned += pgscanned;
++		zone->recent_scanned[!!file] += pgmoved;
++	}
+ 
+-	__mod_zone_page_state(zone, NR_ACTIVE, -pgmoved);
++	if (file)
++		__mod_zone_page_state(zone, NR_ACTIVE_FILE, -pgmoved);
++	else
++		__mod_zone_page_state(zone, NR_ACTIVE_ANON, -pgmoved);
+ 	spin_unlock_irq(&zone->lru_lock);
+ 
+ 	while (!list_empty(&l_hold)) {
+ 		cond_resched();
+ 		page = lru_to_page(&l_hold);
+ 		list_del(&page->lru);
+-		if (page_mapped(page)) {
+-			if (!reclaim_mapped ||
+-			    (total_swap_pages == 0 && PageAnon(page)) ||
+-			    page_referenced(page, 0, sc->mem_cgroup)) {
+-				list_add(&page->lru, &l_active);
+-				continue;
+-			}
+-		} else if (TestClearPageReferenced(page)) {
++		if (page_referenced(page, 0, sc->mem_cgroup))
+ 			list_add(&page->lru, &l_active);
+-			continue;
+-		}
+-		list_add(&page->lru, &l_inactive);
++		else
++			list_add(&page->lru, &l_inactive);
+ 	}
+ 
++	/*
++	 * Now put the pages back on the appropriate [file or anon] inactive
++	 * and active lists.
++	 */
+ 	pagevec_init(&pvec, 1);
+ 	pgmoved = 0;
++	lru = LRU_BASE + file * LRU_FILE;
+ 	spin_lock_irq(&zone->lru_lock);
+ 	while (!list_empty(&l_inactive)) {
+ 		page = lru_to_page(&l_inactive);
+@@ -1163,11 +1082,11 @@ static void shrink_active_list(unsigned 
+ 		VM_BUG_ON(!PageActive(page));
+ 		ClearPageActive(page);
+ 
+-		list_move(&page->lru, &zone->lru[LRU_INACTIVE].list);
++		list_move(&page->lru, &zone->lru[lru].list);
+ 		mem_cgroup_move_lists(page, false);
+ 		pgmoved++;
+ 		if (!pagevec_add(&pvec, page)) {
+-			__mod_zone_page_state(zone, NR_INACTIVE, pgmoved);
++			__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
+ 			spin_unlock_irq(&zone->lru_lock);
+ 			pgdeactivate += pgmoved;
+ 			pgmoved = 0;
+@@ -1177,7 +1096,7 @@ static void shrink_active_list(unsigned 
+ 			spin_lock_irq(&zone->lru_lock);
+ 		}
+ 	}
+-	__mod_zone_page_state(zone, NR_INACTIVE, pgmoved);
++	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
+ 	pgdeactivate += pgmoved;
+ 	if (buffer_heads_over_limit) {
+ 		spin_unlock_irq(&zone->lru_lock);
+@@ -1186,6 +1105,7 @@ static void shrink_active_list(unsigned 
+ 	}
+ 
+ 	pgmoved = 0;
++	lru = LRU_ACTIVE + file * LRU_FILE;
+ 	while (!list_empty(&l_active)) {
+ 		page = lru_to_page(&l_active);
+ 		prefetchw_prev_lru_page(page, &l_active, flags);
+@@ -1193,11 +1113,11 @@ static void shrink_active_list(unsigned 
+ 		SetPageLRU(page);
+ 		VM_BUG_ON(!PageActive(page));
+ 
+-		list_move(&page->lru, &zone->lru[LRU_ACTIVE].list);
++		list_move(&page->lru, &zone->lru[lru].list);
+ 		mem_cgroup_move_lists(page, true);
+ 		pgmoved++;
+ 		if (!pagevec_add(&pvec, page)) {
+-			__mod_zone_page_state(zone, NR_ACTIVE, pgmoved);
++			__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
+ 			pgmoved = 0;
+ 			spin_unlock_irq(&zone->lru_lock);
+ 			if (vm_swap_full())
+@@ -1206,7 +1126,8 @@ static void shrink_active_list(unsigned 
+ 			spin_lock_irq(&zone->lru_lock);
+ 		}
+ 	}
+-	__mod_zone_page_state(zone, NR_ACTIVE, pgmoved);
++	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
++	zone->recent_rotated[!!file] += pgmoved;
+ 
+ 	__count_zone_vm_events(PGREFILL, zone, pgscanned);
+ 	__count_vm_events(PGDEACTIVATE, pgdeactivate);
+@@ -1217,16 +1138,103 @@ static void shrink_active_list(unsigned 
+ 	pagevec_release(&pvec);
+ }
+ 
+-static unsigned long shrink_list(enum lru_list l, unsigned long nr_to_scan,
++static unsigned long shrink_list(enum lru_list lru, unsigned long nr_to_scan,
+ 	struct zone *zone, struct scan_control *sc, int priority)
+ {
+-	if (l == LRU_ACTIVE) {
+-		shrink_active_list(nr_to_scan, zone, sc, priority);
++	int file = is_file_lru(lru);
++
++	if (lru == LRU_ACTIVE_ANON || lru == LRU_ACTIVE_FILE) {
++		shrink_active_list(nr_to_scan, zone, sc, priority, file);
+ 		return 0;
+ 	}
+-	return shrink_inactive_list(nr_to_scan, zone, sc);
++	return shrink_inactive_list(nr_to_scan, zone, sc, file);
++}
++
++/*
++ * Determine how aggressively the anon and file LRU lists should be
++ * scanned.  The relative value of each set of LRU lists is determined
++ * by looking at the fraction of the pages scanned we did rotate back
++ * onto the active list instead of evict.
++ *
++ * percent[0] specifies how much pressure to put on ram/swap backed
++ * memory, while percent[1] determines pressure on the file LRUs.
++ */
++static void get_scan_ratio(struct zone *zone, struct scan_control * sc,
++					unsigned long *percent)
++{
++	unsigned long anon, file, free;
++	unsigned long anon_prio, file_prio;
++	unsigned long ap, fp;
++
++	anon  = zone_page_state(zone, NR_ACTIVE_ANON) +
++		zone_page_state(zone, NR_INACTIVE_ANON);
++	file  = zone_page_state(zone, NR_ACTIVE_FILE) +
++		zone_page_state(zone, NR_INACTIVE_FILE);
++	free  = zone_page_state(zone, NR_FREE_PAGES);
++
++	/* If we have no swap space, do not bother scanning anon pages. */
++	if (nr_swap_pages <= 0) {
++		percent[0] = 0;
++		percent[1] = 100;
++		return;
++	}
++
++	/* If we have very few page cache pages, force-scan anon pages. */
++	if (unlikely(file + free <= zone->pages_high)) {
++		percent[0] = 100;
++		percent[1] = 0;
++		return;
++	}
++
++	/*
++         * OK, so we have swap space and a fair amount of page cache
++         * pages.  We use the recently rotated / recently scanned
++         * ratios to determine how valuable each cache is.
++         *
++         * Because workloads change over time (and to avoid overflow)
++         * we keep these statistics as a floating average, which ends
++         * up weighing recent references more than old ones.
++         *
++         * anon in [0], file in [1]
++         */
++	if (unlikely(zone->recent_scanned[0] > anon / 4)) {
++		spin_lock_irq(&zone->lru_lock);
++		zone->recent_scanned[0] /= 2;
++		zone->recent_rotated[0] /= 2;
++		spin_unlock_irq(&zone->lru_lock);
++	}
++
++	if (unlikely(zone->recent_scanned[1] > file / 4)) {
++		spin_lock_irq(&zone->lru_lock);
++		zone->recent_scanned[1] /= 2;
++		zone->recent_rotated[1] /= 2;
++		spin_unlock_irq(&zone->lru_lock);
++	}
++
++	/*
++	 * With swappiness at 100, anonymous and file have the same priority.
++	 * This scanning priority is essentially the inverse of IO cost.
++	 */
++	anon_prio = sc->swappiness;
++	file_prio = 200 - sc->swappiness;
++
++	/*
++	 *                  anon       recent_rotated[0]
++	 * %anon = 100 * ----------- / ----------------- * IO cost
++	 *               anon + file      rotate_sum
++	 */
++	ap = (anon_prio + 1) * (zone->recent_scanned[0] + 1);
++	ap /= zone->recent_rotated[0] + 1;
++
++	fp = (file_prio + 1) * (zone->recent_scanned[1] + 1);
++	fp /= zone->recent_rotated[1] + 1;
++
++	/* Normalize to percentages */
++	percent[0] = 100 * ap / (ap + fp + 1);
++	percent[1] = 100 - percent[0];
+ }
+ 
++
+ /*
+  * This is a basic per-zone page freer.  Used by both kswapd and direct reclaim.
+  */
+@@ -1236,36 +1244,41 @@ static unsigned long shrink_zone(int pri
+ 	unsigned long nr[NR_LRU_LISTS];
+ 	unsigned long nr_to_scan;
+ 	unsigned long nr_reclaimed = 0;
++	unsigned long percent[2];	/* anon @ 0; file @ 1 */
+ 	enum lru_list l;
+ 
+-	if (scan_global_lru(sc)) {
+-		/*
+-		 * Add one to nr_to_scan just to make sure that the kernel
+-		 * will slowly sift through the active list.
+-		 */
+-		for_each_lru(l) {
+-			zone->lru[l].nr_scan += (zone_page_state(zone,
+-					NR_LRU_BASE + l)  >> priority) + 1;
++	get_scan_ratio(zone, sc, percent);
++
++	for_each_lru(l) {
++		if (scan_global_lru(sc)) {
++			int file = is_file_lru(l);
++			int scan;
++			/*
++			 * Add one to nr_to_scan just to make sure that the
++			 * kernel will slowly sift through each list.
++			 */
++			scan = zone_page_state(zone, NR_LRU_BASE + l);
++			scan >>= priority;
++			scan = (scan * percent[file]) / 100;
++			zone->lru[l].nr_scan += scan + 1;
+ 			nr[l] = zone->lru[l].nr_scan;
+ 			if (nr[l] >= sc->swap_cluster_max)
+ 				zone->lru[l].nr_scan = 0;
+ 			else
+ 				nr[l] = 0;
 +		} else {
 +			/*
-+			 * We lost the race.  let try_to_unmap() deal
-+			 * with it.  At least we get the page state and
-+			 * mlock stats right.  However, page is still on
-+			 * the noreclaim list.  We'll fix that up when
-+			 * the page is eventually freed or we scan the
-+			 * noreclaim list.
++			 * This reclaim occurs not because zone memory shortage
++			 * but because memory controller hits its limit.
++			 * Don't modify zone reclaim related data.
 +			 */
-+			if (PageUnevictable(page))
-+				count_vm_event(NORECL_PGSTRANDED);
-+			else
-+				count_vm_event(NORECL_PGMUNLOCKED);
++			nr[l] = mem_cgroup_calc_reclaim(sc->mem_cgroup, zone,
++								priority, l);
  		}
+-	} else {
 -		/*
--		 * Else we lost the race.  let try_to_unmap() deal with it.
--		 * At least we get the page state and mlock stats right.
--		 * However, page is still on the noreclaim list.  We'll fix
--		 * that up when the page is eventually freed or we scan the
--		 * noreclaim list.
+-		 * This reclaim occurs not because zone memory shortage but
+-		 * because memory controller hits its limit.
+-		 * Then, don't modify zone reclaim related data.
 -		 */
+-		nr[LRU_ACTIVE] = mem_cgroup_calc_reclaim(sc->mem_cgroup,
+-					zone, priority, LRU_ACTIVE);
+-
+-		nr[LRU_INACTIVE] = mem_cgroup_calc_reclaim(sc->mem_cgroup,
+-					zone, priority, LRU_INACTIVE);
  	}
+ 
+-	while (nr[LRU_ACTIVE] || nr[LRU_INACTIVE]) {
++	while (nr[LRU_ACTIVE_ANON] || nr[LRU_INACTIVE_ANON] ||
++			nr[LRU_ACTIVE_FILE] || nr[LRU_INACTIVE_FILE]) {
+ 		for_each_lru(l) {
+ 			if (nr[l]) {
+ 				nr_to_scan = min(nr[l],
+@@ -1338,7 +1351,7 @@ static unsigned long shrink_zones(int pr
+ 
+ 	return nr_reclaimed;
+ }
+- 
++
+ /*
+  * This is the main entry point to direct page reclaim.
+  *
+@@ -1381,8 +1394,7 @@ static unsigned long do_try_to_free_page
+ 			if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))
+ 				continue;
+ 
+-			lru_pages += zone_page_state(zone, NR_ACTIVE)
+-					+ zone_page_state(zone, NR_INACTIVE);
++			lru_pages += zone_lru_pages(zone);
+ 		}
+ 	}
+ 
+@@ -1584,8 +1596,7 @@ loop_again:
+ 		for (i = 0; i <= end_zone; i++) {
+ 			struct zone *zone = pgdat->node_zones + i;
+ 
+-			lru_pages += zone_page_state(zone, NR_ACTIVE)
+-					+ zone_page_state(zone, NR_INACTIVE);
++			lru_pages += zone_lru_pages(zone);
+ 		}
+ 
+ 		/*
+@@ -1629,8 +1640,7 @@ loop_again:
+ 			if (zone_is_all_unreclaimable(zone))
+ 				continue;
+ 			if (nr_slab == 0 && zone->pages_scanned >=
+-				(zone_page_state(zone, NR_ACTIVE)
+-				+ zone_page_state(zone, NR_INACTIVE)) * 6)
++						(zone_lru_pages(zone) * 6))
+ 					zone_set_flag(zone,
+ 						      ZONE_ALL_UNRECLAIMABLE);
+ 			/*
+@@ -1684,7 +1694,7 @@ out:
+ 
+ /*
+  * The background pageout daemon, started as a kernel thread
+- * from the init process. 
++ * from the init process.
+  *
+  * This basically trickles out pages so that we have _some_
+  * free memory available even if there is no other activity
+@@ -1778,6 +1788,14 @@ void wakeup_kswapd(struct zone *zone, in
+ 	wake_up_interruptible(&pgdat->kswapd_wait);
  }
  
-Index: linux-2.6.26-rc5-mm2/mm/internal.h
++unsigned long global_lru_pages(void)
++{
++	return global_page_state(NR_ACTIVE_ANON)
++		+ global_page_state(NR_ACTIVE_FILE)
++		+ global_page_state(NR_INACTIVE_ANON)
++		+ global_page_state(NR_INACTIVE_FILE);
++}
++
+ #ifdef CONFIG_PM
+ /*
+  * Helper function for shrink_all_memory().  Tries to reclaim 'nr_pages' pages
+@@ -1803,7 +1821,8 @@ static unsigned long shrink_all_zones(un
+ 
+ 		for_each_lru(l) {
+ 			/* For pass = 0 we don't shrink the active list */
+-			if (pass == 0 && l == LRU_ACTIVE)
++			if (pass == 0 &&
++				(l == LRU_ACTIVE || l == LRU_ACTIVE_FILE))
+ 				continue;
+ 
+ 			zone->lru[l].nr_scan +=
+@@ -1825,11 +1844,6 @@ static unsigned long shrink_all_zones(un
+ 	return ret;
+ }
+ 
+-static unsigned long count_lru_pages(void)
+-{
+-	return global_page_state(NR_ACTIVE) + global_page_state(NR_INACTIVE);
+-}
+-
+ /*
+  * Try to free `nr_pages' of memory, system-wide, and return the number of
+  * freed pages.
+@@ -1855,7 +1869,7 @@ unsigned long shrink_all_memory(unsigned
+ 
+ 	current->reclaim_state = &reclaim_state;
+ 
+-	lru_pages = count_lru_pages();
++	lru_pages = global_lru_pages();
+ 	nr_slab = global_page_state(NR_SLAB_RECLAIMABLE);
+ 	/* If slab caches are huge, it's better to hit them first */
+ 	while (nr_slab >= lru_pages) {
+@@ -1898,7 +1912,7 @@ unsigned long shrink_all_memory(unsigned
+ 
+ 			reclaim_state.reclaimed_slab = 0;
+ 			shrink_slab(sc.nr_scanned, sc.gfp_mask,
+-					count_lru_pages());
++					global_lru_pages());
+ 			ret += reclaim_state.reclaimed_slab;
+ 			if (ret >= nr_pages)
+ 				goto out;
+@@ -1915,7 +1929,7 @@ unsigned long shrink_all_memory(unsigned
+ 	if (!ret) {
+ 		do {
+ 			reclaim_state.reclaimed_slab = 0;
+-			shrink_slab(nr_pages, sc.gfp_mask, count_lru_pages());
++			shrink_slab(nr_pages, sc.gfp_mask, global_lru_pages());
+ 			ret += reclaim_state.reclaimed_slab;
+ 		} while (ret < nr_pages && reclaim_state.reclaimed_slab > 0);
+ 	}
+Index: linux-2.6.26-rc5-mm2/mm/swap_state.c
 ===================================================================
---- linux-2.6.26-rc5-mm2.orig/mm/internal.h	2008-06-10 22:23:56.000000000 -0400
-+++ linux-2.6.26-rc5-mm2/mm/internal.h	2008-06-10 22:25:48.000000000 -0400
-@@ -101,8 +101,10 @@ static inline int is_mlocked_vma(struct 
- 	if (likely((vma->vm_flags & (VM_LOCKED | VM_SPECIAL)) != VM_LOCKED))
+--- linux-2.6.26-rc5-mm2.orig/mm/swap_state.c	2008-06-10 13:34:48.000000000 -0400
++++ linux-2.6.26-rc5-mm2/mm/swap_state.c	2008-06-10 13:35:23.000000000 -0400
+@@ -303,7 +303,7 @@ struct page *read_swap_cache_async(swp_e
+ 			/*
+ 			 * Initiate read into locked page and return.
+ 			 */
+-			lru_cache_add_active(new_page);
++			lru_cache_add_active_anon(new_page);
+ 			swap_readpage(NULL, new_page);
+ 			return new_page;
+ 		}
+Index: linux-2.6.26-rc5-mm2/include/linux/mmzone.h
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/include/linux/mmzone.h	2008-06-10 13:18:26.000000000 -0400
++++ linux-2.6.26-rc5-mm2/include/linux/mmzone.h	2008-06-10 13:35:23.000000000 -0400
+@@ -82,21 +82,23 @@ enum zone_stat_item {
+ 	/* First 128 byte cacheline (assuming 64 bit words) */
+ 	NR_FREE_PAGES,
+ 	NR_LRU_BASE,
+-	NR_INACTIVE = NR_LRU_BASE, /* must match order of LRU_[IN]ACTIVE */
+-	NR_ACTIVE,	/*  "     "     "   "       "         */
++	NR_INACTIVE_ANON = NR_LRU_BASE, /* must match order of LRU_[IN]ACTIVE */
++	NR_ACTIVE_ANON,		/*  "     "     "   "       "         */
++	NR_INACTIVE_FILE,	/*  "     "     "   "       "         */
++	NR_ACTIVE_FILE,		/*  "     "     "   "       "         */
+ 	NR_ANON_PAGES,	/* Mapped anonymous pages */
+ 	NR_FILE_MAPPED,	/* pagecache pages mapped into pagetables.
+ 			   only modified from process context */
+ 	NR_FILE_PAGES,
+ 	NR_FILE_DIRTY,
+ 	NR_WRITEBACK,
+-	/* Second 128 byte cacheline */
+ 	NR_SLAB_RECLAIMABLE,
+ 	NR_SLAB_UNRECLAIMABLE,
+ 	NR_PAGETABLE,		/* used for pagetables */
+ 	NR_UNSTABLE_NFS,	/* NFS unstable pages */
+ 	NR_BOUNCE,
+ 	NR_VMSCAN_WRITE,
++	/* Second 128 byte cacheline */
+ 	NR_WRITEBACK_TEMP,	/* Writeback using temporary buffers */
+ #ifdef CONFIG_NUMA
+ 	NUMA_HIT,		/* allocated in intended node */
+@@ -108,17 +110,36 @@ enum zone_stat_item {
+ #endif
+ 	NR_VM_ZONE_STAT_ITEMS };
+ 
++/*
++ * We do arithmetic on the LRU lists in various places in the code,
++ * so it is important to keep the active lists LRU_ACTIVE higher in
++ * the array than the corresponding inactive lists, and to keep
++ * the *_FILE lists LRU_FILE higher than the corresponding _ANON lists.
++ *
++ * This has to be kept in sync with the statistics in zone_stat_item
++ * above and the descriptions in vmstat_text in mm/vmstat.c
++ */
++#define LRU_BASE 0
++#define LRU_ACTIVE 1
++#define LRU_FILE 2
++
+ enum lru_list {
+-	LRU_BASE,
+-	LRU_INACTIVE=LRU_BASE,	/* must match order of NR_[IN]ACTIVE */
+-	LRU_ACTIVE,		/*  "     "     "   "       "        */
++	LRU_INACTIVE_ANON = LRU_BASE,
++	LRU_ACTIVE_ANON = LRU_BASE + LRU_ACTIVE,
++	LRU_INACTIVE_FILE = LRU_BASE + LRU_FILE,
++	LRU_ACTIVE_FILE = LRU_BASE + LRU_FILE + LRU_ACTIVE,
+ 	NR_LRU_LISTS };
+ 
+ #define for_each_lru(l) for (l = 0; l < NR_LRU_LISTS; l++)
+ 
++static inline int is_file_lru(enum lru_list l)
++{
++	return (l == LRU_INACTIVE_FILE || l == LRU_ACTIVE_FILE);
++}
++
+ static inline int is_active_lru(enum lru_list l)
+ {
+-	return (l == LRU_ACTIVE);
++	return (l == LRU_ACTIVE_ANON || l == LRU_ACTIVE_FILE);
+ }
+ 
+ struct per_cpu_pages {
+@@ -269,6 +290,18 @@ struct zone {
+ 		struct list_head list;
+ 		unsigned long nr_scan;
+ 	} lru[NR_LRU_LISTS];
++
++	/*
++	 * The pageout code in vmscan.c keeps track of how many of the
++	 * mem/swap backed and file backed pages are refeferenced.
++	 * The higher the rotated/scanned ratio, the more valuable
++	 * that cache is.
++	 *
++	 * The anon LRU stats live in [0], file LRU stats in [1]
++	 */
++	unsigned long		recent_rotated[2];
++	unsigned long		recent_scanned[2];
++
+ 	unsigned long		pages_scanned;	   /* since last reclaim */
+ 	unsigned long		flags;		   /* zone flags, see below */
+ 
+Index: linux-2.6.26-rc5-mm2/include/linux/mm_inline.h
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/include/linux/mm_inline.h	2008-06-10 13:34:48.000000000 -0400
++++ linux-2.6.26-rc5-mm2/include/linux/mm_inline.h	2008-06-10 13:35:23.000000000 -0400
+@@ -5,7 +5,7 @@
+  * page_is_file_cache - should the page be on a file LRU or anon LRU?
+  * @page: the page to test
+  *
+- * Returns !0 if @page is page cache page backed by a regular filesystem,
++ * Returns LRU_FILE if @page is page cache page backed by a regular filesystem,
+  * or 0 if @page is anonymous, tmpfs or otherwise ram or swap backed.
+  * Used by functions that manipulate the LRU lists, to sort a page
+  * onto the right LRU list.
+@@ -20,7 +20,7 @@ static inline int page_is_file_cache(str
  		return 0;
  
--	if (!TestSetPageMlocked(page))
-+	if (!TestSetPageMlocked(page)) {
- 		inc_zone_page_state(page, NR_MLOCK);
-+		count_vm_event(NORECL_PGMLOCKED);
-+	}
- 	return 1;
+ 	/* The page is page cache backed by a normal filesystem. */
+-	return 1;
++	return LRU_FILE;
  }
  
+ static inline void
+@@ -38,39 +38,64 @@ del_page_from_lru_list(struct zone *zone
+ }
+ 
+ static inline void
+-add_page_to_active_list(struct zone *zone, struct page *page)
++add_page_to_inactive_anon_list(struct zone *zone, struct page *page)
+ {
+-	add_page_to_lru_list(zone, page, LRU_ACTIVE);
++	add_page_to_lru_list(zone, page, LRU_INACTIVE_ANON);
+ }
+ 
+ static inline void
+-add_page_to_inactive_list(struct zone *zone, struct page *page)
++add_page_to_active_anon_list(struct zone *zone, struct page *page)
+ {
+-	add_page_to_lru_list(zone, page, LRU_INACTIVE);
++	add_page_to_lru_list(zone, page, LRU_ACTIVE_ANON);
+ }
+ 
+ static inline void
+-del_page_from_active_list(struct zone *zone, struct page *page)
++add_page_to_inactive_file_list(struct zone *zone, struct page *page)
+ {
+-	del_page_from_lru_list(zone, page, LRU_ACTIVE);
++	add_page_to_lru_list(zone, page, LRU_INACTIVE_FILE);
+ }
+ 
+ static inline void
+-del_page_from_inactive_list(struct zone *zone, struct page *page)
++add_page_to_active_file_list(struct zone *zone, struct page *page)
+ {
+-	del_page_from_lru_list(zone, page, LRU_INACTIVE);
++	add_page_to_lru_list(zone, page, LRU_ACTIVE_FILE);
++}
++
++static inline void
++del_page_from_inactive_anon_list(struct zone *zone, struct page *page)
++{
++	del_page_from_lru_list(zone, page, LRU_INACTIVE_ANON);
++}
++
++static inline void
++del_page_from_active_anon_list(struct zone *zone, struct page *page)
++{
++	del_page_from_lru_list(zone, page, LRU_ACTIVE_ANON);
++}
++
++static inline void
++del_page_from_inactive_file_list(struct zone *zone, struct page *page)
++{
++	del_page_from_lru_list(zone, page, LRU_INACTIVE_FILE);
++}
++
++static inline void
++del_page_from_active_file_list(struct zone *zone, struct page *page)
++{
++	del_page_from_lru_list(zone, page, LRU_INACTIVE_FILE);
+ }
+ 
+ static inline void
+ del_page_from_lru(struct zone *zone, struct page *page)
+ {
+-	enum lru_list l = LRU_INACTIVE;
++	enum lru_list l = LRU_BASE;
+ 
+ 	list_del(&page->lru);
+ 	if (PageActive(page)) {
+ 		__ClearPageActive(page);
+-		l = LRU_ACTIVE;
++		l += LRU_ACTIVE;
+ 	}
++	l += page_is_file_cache(page);
+ 	__dec_zone_state(zone, NR_LRU_BASE + l);
+ }
+ 
+@@ -87,6 +112,7 @@ static inline enum lru_list page_lru(str
+ 
+ 	if (PageActive(page))
+ 		lru += LRU_ACTIVE;
++	lru += page_is_file_cache(page);
+ 
+ 	return lru;
+ }
+Index: linux-2.6.26-rc5-mm2/include/linux/pagevec.h
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/include/linux/pagevec.h	2008-06-10 13:34:07.000000000 -0400
++++ linux-2.6.26-rc5-mm2/include/linux/pagevec.h	2008-06-10 13:35:23.000000000 -0400
+@@ -81,20 +81,37 @@ static inline void pagevec_free(struct p
+ 		__pagevec_free(pvec);
+ }
+ 
+-static inline void __pagevec_lru_add(struct pagevec *pvec)
++static inline void __pagevec_lru_add_anon(struct pagevec *pvec)
+ {
+-	____pagevec_lru_add(pvec, LRU_INACTIVE);
++	____pagevec_lru_add(pvec, LRU_INACTIVE_ANON);
+ }
+ 
+-static inline void __pagevec_lru_add_active(struct pagevec *pvec)
++static inline void __pagevec_lru_add_active_anon(struct pagevec *pvec)
+ {
+-	____pagevec_lru_add(pvec, LRU_ACTIVE);
++	____pagevec_lru_add(pvec, LRU_ACTIVE_ANON);
+ }
+ 
+-static inline void pagevec_lru_add(struct pagevec *pvec)
++static inline void __pagevec_lru_add_file(struct pagevec *pvec)
++{
++	____pagevec_lru_add(pvec, LRU_INACTIVE_FILE);
++}
++
++static inline void __pagevec_lru_add_active_file(struct pagevec *pvec)
++{
++	____pagevec_lru_add(pvec, LRU_ACTIVE_FILE);
++}
++
++
++static inline void pagevec_lru_add_file(struct pagevec *pvec)
++{
++	if (pagevec_count(pvec))
++		__pagevec_lru_add_file(pvec);
++}
++
++static inline void pagevec_lru_add_anon(struct pagevec *pvec)
+ {
+ 	if (pagevec_count(pvec))
+-		__pagevec_lru_add(pvec);
++		__pagevec_lru_add_anon(pvec);
+ }
+ 
+ #endif /* _LINUX_PAGEVEC_H */
+Index: linux-2.6.26-rc5-mm2/include/linux/vmstat.h
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/include/linux/vmstat.h	2008-06-10 10:46:23.000000000 -0400
++++ linux-2.6.26-rc5-mm2/include/linux/vmstat.h	2008-06-10 13:35:23.000000000 -0400
+@@ -159,6 +159,16 @@ static inline unsigned long zone_page_st
+ 	return x;
+ }
+ 
++extern unsigned long global_lru_pages(void);
++
++static inline unsigned long zone_lru_pages(struct zone *zone)
++{
++	return (zone_page_state(zone, NR_ACTIVE_ANON)
++		+ zone_page_state(zone, NR_ACTIVE_FILE)
++		+ zone_page_state(zone, NR_INACTIVE_ANON)
++		+ zone_page_state(zone, NR_INACTIVE_FILE));
++}
++
+ #ifdef CONFIG_NUMA
+ /*
+  * Determine the per node value of a stat item. This function
+Index: linux-2.6.26-rc5-mm2/mm/page-writeback.c
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/mm/page-writeback.c	2008-06-10 10:46:19.000000000 -0400
++++ linux-2.6.26-rc5-mm2/mm/page-writeback.c	2008-06-10 13:35:23.000000000 -0400
+@@ -329,9 +329,7 @@ static unsigned long highmem_dirtyable_m
+ 		struct zone *z =
+ 			&NODE_DATA(node)->node_zones[ZONE_HIGHMEM];
+ 
+-		x += zone_page_state(z, NR_FREE_PAGES)
+-			+ zone_page_state(z, NR_INACTIVE)
+-			+ zone_page_state(z, NR_ACTIVE);
++		x += zone_page_state(z, NR_FREE_PAGES) + zone_lru_pages(z);
+ 	}
+ 	/*
+ 	 * Make sure that the number of highmem pages is never larger
+@@ -355,9 +353,7 @@ unsigned long determine_dirtyable_memory
+ {
+ 	unsigned long x;
+ 
+-	x = global_page_state(NR_FREE_PAGES)
+-		+ global_page_state(NR_INACTIVE)
+-		+ global_page_state(NR_ACTIVE);
++	x = global_page_state(NR_FREE_PAGES) + global_lru_pages();
+ 
+ 	if (!vm_highmem_is_dirtyable)
+ 		x -= highmem_dirtyable_memory(x);
+Index: linux-2.6.26-rc5-mm2/include/linux/swap.h
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/include/linux/swap.h	2008-06-10 13:34:07.000000000 -0400
++++ linux-2.6.26-rc5-mm2/include/linux/swap.h	2008-06-10 13:35:23.000000000 -0400
+@@ -184,14 +184,24 @@ extern void swap_setup(void);
+  * lru_cache_add: add a page to the page lists
+  * @page: the page to add
+  */
+-static inline void lru_cache_add(struct page *page)
++static inline void lru_cache_add_anon(struct page *page)
+ {
+-	__lru_cache_add(page, LRU_INACTIVE);
++	__lru_cache_add(page, LRU_INACTIVE_ANON);
+ }
+ 
+-static inline void lru_cache_add_active(struct page *page)
++static inline void lru_cache_add_active_anon(struct page *page)
+ {
+-	__lru_cache_add(page, LRU_ACTIVE);
++	__lru_cache_add(page, LRU_ACTIVE_ANON);
++}
++
++static inline void lru_cache_add_file(struct page *page)
++{
++	__lru_cache_add(page, LRU_INACTIVE_FILE);
++}
++
++static inline void lru_cache_add_active_file(struct page *page)
++{
++	__lru_cache_add(page, LRU_ACTIVE_FILE);
+ }
+ 
+ /* linux/mm/vmscan.c */
+@@ -199,7 +209,7 @@ extern unsigned long try_to_free_pages(s
+ 					gfp_t gfp_mask);
+ extern unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem,
+ 							gfp_t gfp_mask);
+-extern int __isolate_lru_page(struct page *page, int mode);
++extern int __isolate_lru_page(struct page *page, int mode, int file);
+ extern unsigned long shrink_all_memory(unsigned long nr_pages);
+ extern int vm_swappiness;
+ extern int remove_mapping(struct address_space *mapping, struct page *page);
+Index: linux-2.6.26-rc5-mm2/include/linux/memcontrol.h
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/include/linux/memcontrol.h	2008-06-10 13:18:26.000000000 -0400
++++ linux-2.6.26-rc5-mm2/include/linux/memcontrol.h	2008-06-10 13:35:23.000000000 -0400
+@@ -44,7 +44,7 @@ extern unsigned long mem_cgroup_isolate_
+ 					unsigned long *scanned, int order,
+ 					int mode, struct zone *z,
+ 					struct mem_cgroup *mem_cont,
+-					int active);
++					int active, int file);
+ extern void mem_cgroup_out_of_memory(struct mem_cgroup *mem, gfp_t gfp_mask);
+ int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem);
+ 
+Index: linux-2.6.26-rc5-mm2/mm/memcontrol.c
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/mm/memcontrol.c	2008-06-10 13:18:26.000000000 -0400
++++ linux-2.6.26-rc5-mm2/mm/memcontrol.c	2008-06-10 13:35:23.000000000 -0400
+@@ -162,6 +162,7 @@ struct page_cgroup {
+ };
+ #define PAGE_CGROUP_FLAG_CACHE	(0x1)	/* charged as cache */
+ #define PAGE_CGROUP_FLAG_ACTIVE (0x2)	/* page is active in this cgroup */
++#define PAGE_CGROUP_FLAG_FILE	(0x4)	/* page is file system backed */
+ 
+ static int page_cgroup_nid(struct page_cgroup *pc)
+ {
+@@ -280,8 +281,12 @@ static void unlock_page_cgroup(struct pa
+ static void __mem_cgroup_remove_list(struct mem_cgroup_per_zone *mz,
+ 			struct page_cgroup *pc)
+ {
+-	int from = pc->flags & PAGE_CGROUP_FLAG_ACTIVE;
+-	int lru = !!from;
++	int lru = LRU_BASE;
++
++	if (pc->flags & PAGE_CGROUP_FLAG_ACTIVE)
++		lru += LRU_ACTIVE;
++	if (pc->flags & PAGE_CGROUP_FLAG_FILE)
++		lru += LRU_FILE;
+ 
+ 	MEM_CGROUP_ZSTAT(mz, lru) -= 1;
+ 
+@@ -292,10 +297,12 @@ static void __mem_cgroup_remove_list(str
+ static void __mem_cgroup_add_list(struct mem_cgroup_per_zone *mz,
+ 				struct page_cgroup *pc)
+ {
+-	int lru = LRU_INACTIVE;
++	int lru = LRU_BASE;
+ 
+ 	if (pc->flags & PAGE_CGROUP_FLAG_ACTIVE)
+ 		lru += LRU_ACTIVE;
++	if (pc->flags & PAGE_CGROUP_FLAG_FILE)
++		lru += LRU_FILE;
+ 
+ 	MEM_CGROUP_ZSTAT(mz, lru) += 1;
+ 	list_add(&pc->lru, &mz->lists[lru]);
+@@ -306,10 +313,9 @@ static void __mem_cgroup_add_list(struct
+ static void __mem_cgroup_move_lists(struct page_cgroup *pc, bool active)
+ {
+ 	struct mem_cgroup_per_zone *mz = page_cgroup_zoneinfo(pc);
+-	int lru = LRU_INACTIVE;
+-
+-	if (pc->flags & PAGE_CGROUP_FLAG_ACTIVE)
+-		lru += LRU_ACTIVE;
++	int from = pc->flags & PAGE_CGROUP_FLAG_ACTIVE;
++	int file = pc->flags & PAGE_CGROUP_FLAG_FILE;
++	int lru = LRU_FILE * !!file + !!from;
+ 
+ 	MEM_CGROUP_ZSTAT(mz, lru) -= 1;
+ 
+@@ -318,7 +324,7 @@ static void __mem_cgroup_move_lists(stru
+ 	else
+ 		pc->flags &= ~PAGE_CGROUP_FLAG_ACTIVE;
+ 
+-	lru = !!active;
++	lru = LRU_FILE * !!file + !!active;
+ 	MEM_CGROUP_ZSTAT(mz, lru) += 1;
+ 	list_move(&pc->lru, &mz->lists[lru]);
+ }
+@@ -380,21 +386,6 @@ int mem_cgroup_calc_mapped_ratio(struct 
+ }
+ 
+ /*
+- * This function is called from vmscan.c. In page reclaiming loop. balance
+- * between active and inactive list is calculated. For memory controller
+- * page reclaiming, we should use using mem_cgroup's imbalance rather than
+- * zone's global lru imbalance.
+- */
+-long mem_cgroup_reclaim_imbalance(struct mem_cgroup *mem)
+-{
+-	unsigned long active, inactive;
+-	/* active and inactive are the number of pages. 'long' is ok.*/
+-	active = mem_cgroup_get_all_zonestat(mem, LRU_ACTIVE);
+-	inactive = mem_cgroup_get_all_zonestat(mem, LRU_INACTIVE);
+-	return (long) (active / (inactive + 1));
+-}
+-
+-/*
+  * prev_priority control...this will be used in memory reclaim path.
+  */
+ int mem_cgroup_get_reclaim_priority(struct mem_cgroup *mem)
+@@ -439,7 +430,7 @@ unsigned long mem_cgroup_isolate_pages(u
+ 					unsigned long *scanned, int order,
+ 					int mode, struct zone *z,
+ 					struct mem_cgroup *mem_cont,
+-					int active)
++					int active, int file)
+ {
+ 	unsigned long nr_taken = 0;
+ 	struct page *page;
+@@ -450,7 +441,7 @@ unsigned long mem_cgroup_isolate_pages(u
+ 	int nid = z->zone_pgdat->node_id;
+ 	int zid = zone_idx(z);
+ 	struct mem_cgroup_per_zone *mz;
+-	int lru = !!active;
++	int lru = LRU_FILE * !!file + !!active;
+ 
+ 	BUG_ON(!mem_cont);
+ 	mz = mem_cgroup_zoneinfo(mem_cont, nid, zid);
+@@ -466,6 +457,9 @@ unsigned long mem_cgroup_isolate_pages(u
+ 		if (unlikely(!PageLRU(page)))
+ 			continue;
+ 
++		/*
++		 * TODO: play better with lumpy reclaim, grabbing anything.
++		 */
+ 		if (PageActive(page) && !active) {
+ 			__mem_cgroup_move_lists(pc, true);
+ 			continue;
+@@ -478,7 +472,7 @@ unsigned long mem_cgroup_isolate_pages(u
+ 		scan++;
+ 		list_move(&pc->lru, &pc_list);
+ 
+-		if (__isolate_lru_page(page, mode) == 0) {
++		if (__isolate_lru_page(page, mode, file) == 0) {
+ 			list_move(&page->lru, dst);
+ 			nr_taken++;
+ 		}
+@@ -562,9 +556,11 @@ static int mem_cgroup_charge_common(stru
+ 	 * If a page is accounted as a page cache, insert to inactive list.
+ 	 * If anon, insert to active list.
+ 	 */
+-	if (ctype == MEM_CGROUP_CHARGE_TYPE_CACHE)
++	if (ctype == MEM_CGROUP_CHARGE_TYPE_CACHE) {
+ 		pc->flags = PAGE_CGROUP_FLAG_CACHE;
+-	else
++		if (page_is_file_cache(page))
++			pc->flags |= PAGE_CGROUP_FLAG_FILE;
++	} else
+ 		pc->flags = PAGE_CGROUP_FLAG_ACTIVE;
+ 
+ 	lock_page_cgroup(page);
+@@ -915,14 +911,21 @@ static int mem_control_stat_show(struct 
+ 	}
+ 	/* showing # of active pages */
+ 	{
+-		unsigned long active, inactive;
++		unsigned long active_anon, inactive_anon;
++		unsigned long active_file, inactive_file;
+ 
+-		inactive = mem_cgroup_get_all_zonestat(mem_cont,
+-						LRU_INACTIVE);
+-		active = mem_cgroup_get_all_zonestat(mem_cont,
+-						LRU_ACTIVE);
+-		cb->fill(cb, "active", (active) * PAGE_SIZE);
+-		cb->fill(cb, "inactive", (inactive) * PAGE_SIZE);
++		inactive_anon = mem_cgroup_get_all_zonestat(mem_cont,
++						LRU_INACTIVE_ANON);
++		active_anon = mem_cgroup_get_all_zonestat(mem_cont,
++						LRU_ACTIVE_ANON);
++		inactive_file = mem_cgroup_get_all_zonestat(mem_cont,
++						LRU_INACTIVE_FILE);
++		active_file = mem_cgroup_get_all_zonestat(mem_cont,
++						LRU_ACTIVE_FILE);
++		cb->fill(cb, "active_anon", (active_anon) * PAGE_SIZE);
++		cb->fill(cb, "inactive_anon", (inactive_anon) * PAGE_SIZE);
++		cb->fill(cb, "active_file", (active_file) * PAGE_SIZE);
++		cb->fill(cb, "inactive_file", (inactive_file) * PAGE_SIZE);
+ 	}
+ 	return 0;
+ }
 
 -- 
 All Rights Reversed
