@@ -1,66 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753924AbYFKL2x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754252AbYFKLbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753924AbYFKL2x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 07:28:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751048AbYFKL2o
+	id S1754252AbYFKLbZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 07:31:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751047AbYFKLbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 07:28:44 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:35430 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750890AbYFKL2n (ORCPT
+	Wed, 11 Jun 2008 07:31:17 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:39135 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890AbYFKLbQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 07:28:43 -0400
-Date: Wed, 11 Jun 2008 13:28:38 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Tim Bird <tim.bird@am.sony.com>
-cc: Sam Ravnborg <sam@ravnborg.org>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] add diffconfig utility
-In-Reply-To: <484F1B8F.9000804@am.sony.com>
-Message-ID: <Pine.LNX.4.64.0806111328150.13310@vixen.sonytel.be>
-References: <484ED902.9040000@am.sony.com> <20080610212158.GB23855@uranus.ravnborg.org>
- <484F1B8F.9000804@am.sony.com>
+	Wed, 11 Jun 2008 07:31:16 -0400
+Date: Wed, 11 Jun 2008 17:01:04 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Duane Griffin <duaneg@dghda.com>
+Cc: akpm@linux-foundation.org, Andreas Dilger <adilger@sun.com>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/6] ext4: tighten restrictions on inode flags
+Message-ID: <20080611113104.GC9008@skywalker>
+References: <1213142649-32685-1-git-send-email-duaneg@dghda.com> <1213142649-32685-2-git-send-email-duaneg@dghda.com> <1213142649-32685-3-git-send-email-duaneg@dghda.com> <1213142649-32685-4-git-send-email-duaneg@dghda.com> <1213142649-32685-5-git-send-email-duaneg@dghda.com> <1213142649-32685-6-git-send-email-duaneg@dghda.com> <1213142649-32685-7-git-send-email-duaneg@dghda.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-2076112589-1213183718=:13310"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1213142649-32685-7-git-send-email-duaneg@dghda.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----584349381-2076112589-1213183718=:13310
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Tue, 10 Jun 2008, Tim Bird wrote:
-> +merge_style = 0
-> +if "-m" in sys.argv:
-> +    merge_style = 1
-> +    sys.argv.remove("-m")
+On Wed, Jun 11, 2008 at 01:04:09AM +0100, Duane Griffin wrote:
+> At the moment there are few restrictions on which flags may be set on which
+> inodes. Specifically DIRSYNC may only be set on directories and IMMUTABLE
+> and APPEND may not be set on links. Tighten that to disallow TOPDIR being
+> set on non-directories and SECRM, UNRM, COMPR, SYNC, DIRTY, COMPRBLK,
+> NOCOMPR, ECOMPR, INDEX, JOURNAL_DATA, NOTAIL, HUGE_FILE, EXTENTS or
+> EXT_MIGRATE being set on anything but regular files or directories.
+> 
+> Introduce a flags masking function which masks flags based on mode and use
+> it during inode creation and when flags are set via the ioctl to facilitate
+> future consistency.
+> 
+> Signed-off-by: Duane Griffin <duaneg@dghda.com>
+> --
+> 
+> The specific flags masked out here are those suggested by Andreas, as well
+> as IMMUTABLE, which I included to match the behaviour of the existing code,
+> and EXT_MIGRATE.
+> 
+> It would be good to get some review of these.
+> 
+> ---
+>  fs/ext4/ext4.h   |   24 ++++++++++++++++++++++++
+>  fs/ext4/ialloc.c |   14 +++++---------
+>  fs/ext4/ioctl.c  |    3 +--
+>  3 files changed, 30 insertions(+), 11 deletions(-)
+> 
+> diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
+> index 1a4faa5..2aafd1b 100644
+> --- a/fs/ext4/ext4.h
+> +++ b/fs/ext4/ext4.h
+> @@ -243,6 +243,30 @@ struct ext4_group_desc
+>  			   EXT4_JOURNAL_DATA_FL | EXT4_NOTAIL_FL|\
+>  			   EXT4_DIRSYNC_FL)
+> 
+> +/* Flags that are inappropriate for regular files. */
+> +#define EXT4_REG_FLMASK (EXT4_DIRSYNC_FL | EXT4_TOPDIR_FL)
 > +
-> +if "-h" in sys.argv or len(sys.argv) < 3:
-                                        ^^^
-No checking for excess arguments?
+> +/* Flags that are inappropriate for non-directories/regular files. */
+> +#define EXT4_OTHER_FLMASK (EXT4_SECRM_FL | EXT4_UNRM_FL | EXT4_COMPR_FL |\
+> +			   EXT4_SYNC_FL | EXT4_IMMUTABLE_FL | EXT4_APPEND_FL |\
+> +			   EXT4_DIRTY_FL | EXT4_COMPRBLK_FL | EXT4_NOCOMPR_FL|\
+> +			   EXT4_ECOMPR_FL | EXT4_INDEX_FL |\
+> +			   EXT4_JOURNAL_DATA_FL | EXT4_NOTAIL_FL |\
+> +			   EXT4_DIRSYNC_FL | EXT4_TOPDIR_FL |\
+> +			   EXT4_HUGE_FILE_FL | EXT4_EXTENTS_FL |\
+> +			   EXT4_EXT_MIGRATE)
+> +
+> +/* Mask out flags that are inappropriate for the given type of inode. */
+> +static inline __le32 ext4_mask_flags(__le16 mode, __le32 flags)
+> +{
+> +	if (S_ISDIR(mode))
+> +		return flags;
+> +	else if (S_ISREG(mode))
+> +		return flags & ~EXT4_REG_FLMASK;
+> +	else
+> +		return flags & ~EXT4_OTHER_FLMASK;
+> +}
+> +
 
-With kind regards,
+why are the arguments __le32 ? They should be in host order.
 
-Geert Uytterhoeven
-Software Architect
+static inline  __u32 ext4_mask_flags(umode_t mode, __u32 flags)
 
-Sony Techsoft Centre
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-Sony Technology and Software Centre Europe
-A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
-VAT BE 0413.825.160 · RPR Brussels
-Fortis 293-0376800-10 GEBA-BE-BB
----584349381-2076112589-1213183718=:13310--
+-aneesh
