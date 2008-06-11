@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756685AbYFKW00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757631AbYFKW10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756685AbYFKW00 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 18:26:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbYFKW0S
+	id S1757631AbYFKW10 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 18:27:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753015AbYFKW1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 18:26:18 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:18909 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752746AbYFKW0R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 18:26:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=npa/g1g/CZzZuCQA0iYdPdwnPJ1eIMA7UqwvgpFCB1J/vFhwebW9o9APt+OZ1GjqD7
-         qEYTcbPxu9235bRN+EsUF4QboRFx83Fz73W3Vv2hCsnkLQhlwuaqYaXLI0UhZr1vGV7M
-         lbhsmxNJoo4WMpiGn1WPCQRjRCIhMRchgBA4I=
-Message-ID: <57e2b00806111526t145b097dmc662bef379a1730f@mail.gmail.com>
-Date: Wed, 11 Jun 2008 23:26:17 +0100
-From: "Byron Bradley" <byron.bbradley@gmail.com>
-To: "David Vrabel" <david.vrabel@csr.com>
-Subject: Re: [patch] UWB: make UWB selectable on all archs with USB support
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, "Greg KH" <greg@kroah.com>
-In-Reply-To: <484FB149.4080000@csr.com>
+	Wed, 11 Jun 2008 18:27:19 -0400
+Received: from mail.gmx.net ([213.165.64.20]:58436 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752746AbYFKW1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 18:27:18 -0400
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Thu, 12 Jun 2008 00:27:16 +0200
+From: "Malte Cornils" <Malte.Cornils@gmx.net>
+In-Reply-To: <1213221122.20453.26.camel@localhost>
+Message-ID: <20080611222716.269180@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080609053908.8021a635.akpm@linux-foundation.org>
-	 <alpine.DEB.1.00.0806092250200.31236@gamma> <484FB149.4080000@csr.com>
+References: <1213221122.20453.26.camel@localhost>
+Subject: Re: Lenovo ThinkCentre A55: parport_pc 00:0a: disabled;
+  probe of	00:0a failed with error -22
+To: linux-kernel@vger.kernel.org
+X-Authenticated: #411139
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX1+v4doY84yvcV6NkfmjvwCKuwP6YEhUOXWjwZT7rT
+ JjDFj00RbVez3gSloGBXvz/k6MttfICRbeuQ== 
+Content-Transfer-Encoding: 8bit
+X-GMX-UID: dmhjcBNdMmA6JWgqbWFnSoY5MjQ1Nx1F
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 11, 2008 at 12:04 PM, David Vrabel <david.vrabel@csr.com> wrote:
-> Byron Bradley wrote:
->> I'm getting the error below when compiling for ARM (Marvell Orion 5x) but
->> having trouble working out exacty why. It looks like it isn't selecting
->> any of the CONFIG_UWB* options which USB_WHCI_HCD should select. Config is
->> attached.
->
-> ARM (and some other architectures) don't use drivers/Kconfig.
+Hello again,
 
-Thanks David, I didn't realise that. No compilation problems now.
+I wrote (yeah, why do I always find more info after posting?) minutes ago:
+> dmesg says:
+> [   40.935843] parport_pc 00:0a: disabled
+> [   40.935850] parport_pc: probe of 00:0a failed with error -22
+> 
+> rmmod parport_pc ; modprobe parport_pc io=0x378 irq=none
+> did not work either, the detection failed and echoing some bytes to
+> the /dev/lp0 device fails, too.
 
-Cheers,
+attempting this, dmesg displays:
+[  687.741109] parport 0x378 (WARNING): CTR: wrote 0x0c, read 0xff
+[  687.741119] parport 0x378 (WARNING): DATA: wrote 0xaa, read 0xff
+[  687.741122] parport 0x378: You gave this address, but there is probably no parallel port there!
+[  687.741144] parport0: PC-style at 0x378 [PCSPP,TRISTATE]
+[  687.838463] lp0: using parport0 (polling).
 
+
+cat /sys/devices/pnp0/00:0a/resources
+shows the resource as disabled. Even after
+echo "auto" > ..resources
+this remains so. 
+
+> Something else:
+> Lenovo provides a somewhat more recent BIOS[...]
+
+Yeah - we finally were able to update the BIOS, unfortunately, it does not fix the bug.
+
+Ok that's it for now,
+again, I'd be happy for any pointers,
+Yours
+-Malte Cornils
 -- 
-Byron Bradley
+Psssst! Schon vom neuen GMX MultiMessenger gehört?
+Der kann`s mit allen: http://www.gmx.net/de/go/multimessenger
