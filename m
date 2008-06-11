@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757763AbYFKC1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbYFKCbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757763AbYFKC1q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 22:27:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbYFKC1g
+	id S1756581AbYFKCbk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 22:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754358AbYFKCba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 22:27:36 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58076 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753254AbYFKC1f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 22:27:35 -0400
-Date: Wed, 11 Jun 2008 11:26:47 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
+	Tue, 10 Jun 2008 22:31:30 -0400
+Received: from mga09.intel.com ([134.134.136.24]:29493 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754249AbYFKCb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 22:31:29 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,621,1204531200"; 
+   d="scan'208";a="290992585"
+Subject: Re: [2.6.26-rc5] iwlwifi 4965 not working - last on 2.6.23
+From: Zhu Yi <yi.zhu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.26-rc5-mm2 (compile error in mm/memory_hotplug.c)
-Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       linux-mm@kvack.org, Nick Piggin <npiggin@suse.de>
-In-Reply-To: <20080609223145.5c9a2878.akpm@linux-foundation.org>
-References: <20080609223145.5c9a2878.akpm@linux-foundation.org>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080611112111.C7BE.E1E9C6FF@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Cc: =?UTF-8?Q?Micha=C5=82_Kud=C5=82a?= <michal.kudla@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+In-Reply-To: <20080606034738.9835782d.akpm@linux-foundation.org>
+References: <200806060039.48488.m1k0@wp.pl>
+	 <20080606034738.9835782d.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: Intel Corp.
+Date: Wed, 11 Jun 2008 10:31:04 +0800
+Message-Id: <1213151464.7814.630.camel@debian.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2008-06-06 at 03:47 -0700, Andrew Morton wrote:
+> > ADDRCONF(NETDEV_UP): wlan0: link is not ready
+> > iwl4965: Error sending REPLY_WEPKEY: enqueue_hcmd failed: -5
+> > mac80211-phy0: failed to remove key (0, ff:ff:ff:ff:ff:ff) from
+> hardware (-5)
+> > iwl4965: Error sending REPLY_TX_PWR_TABLE_CMD: enqueue_hcmd failed:
+> -5
+> > iwl4965: WARNING: Requesting MAC access during RFKILL wakes up NIC
+> > iwl4965: WARNING: Requesting MAC access during RFKILL wakes up NIC
 
-> lockess pagecache
->
-> +vmscan-move-isolate_lru_page-to-vmscanc.patch
->   :
+Looks like a rfkill related problem. Can you please try this patch?
+http://www.intellinuxwireless.org/bugzilla/show_bug.cgi?id=1673
 
-This patch is cause of compile error in mm/memory_hotplug.c.
-Obviously, just here is old against changing interface of
-isolate_lru_page(). :-(
-
-Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-
-
----
- mm/memory_hotplug.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: current/mm/memory_hotplug.c
-===================================================================
---- current.orig/mm/memory_hotplug.c
-+++ current/mm/memory_hotplug.c
-@@ -595,8 +595,9 @@ do_migrate_range(unsigned long start_pfn
- 		 * We can skip free pages. And we can only deal with pages on
- 		 * LRU.
- 		 */
--		ret = isolate_lru_page(page, &source);
-+		ret = isolate_lru_page(page);
- 		if (!ret) { /* Success */
-+			list_add_tail(&page->lru, &source);
- 			move_pages--;
- 		} else {
- 			/* Becasue we don't have big zone->lock. we should
-
--- 
-Yasunori Goto 
-
+Thanks,
+-yi
 
