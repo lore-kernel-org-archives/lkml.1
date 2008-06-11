@@ -1,80 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758241AbYFKCNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757763AbYFKC1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758241AbYFKCNP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 22:13:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755235AbYFKCM7
+	id S1757763AbYFKC1q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 22:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbYFKC1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 22:12:59 -0400
-Received: from sh.osrg.net ([192.16.179.4]:42305 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755272AbYFKCM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 22:12:56 -0400
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH -mm] add a helper function to test if an object is on the stack
-Date: Wed, 11 Jun 2008 11:14:45 +0900
-Message-Id: <1213150485-25584-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-X-Mailer: git-send-email 1.5.5.GIT
+	Tue, 10 Jun 2008 22:27:36 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58076 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753254AbYFKC1f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 22:27:35 -0400
+Date: Wed, 11 Jun 2008 11:26:47 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.26-rc5-mm2 (compile error in mm/memory_hotplug.c)
+Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       linux-mm@kvack.org, Nick Piggin <npiggin@suse.de>
+In-Reply-To: <20080609223145.5c9a2878.akpm@linux-foundation.org>
+References: <20080609223145.5c9a2878.akpm@linux-foundation.org>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080611112111.C7BE.E1E9C6FF@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-lib/debugobjects.c has a function to test if an object is on the
-stack. The block layer and ide needs it (they need to avoid DMA
-from/to stack buffers). This patch moves the function to
-include/linux/sched.h so that everyone can use it.
 
-lib/debugobjects.c uses current->stack but this patch uses a
-task_stack_page() accessor, which is a preferable way to access to
-stack.
+> lockess pagecache
+>
+> +vmscan-move-isolate_lru_page-to-vmscanc.patch
+>   :
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+This patch is cause of compile error in mm/memory_hotplug.c.
+Obviously, just here is old against changing interface of
+isolate_lru_page(). :-(
+
+Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+
+
 ---
- include/linux/sched.h |    7 +++++++
- lib/debugobjects.c    |    4 +---
- 2 files changed, 8 insertions(+), 3 deletions(-)
+ mm/memory_hotplug.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 4efb39b..799bbdd 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1978,6 +1978,13 @@ static inline unsigned long *end_of_stack(struct task_struct *p)
- 
- #endif
- 
-+static inline int object_is_on_stack(void *obj)
-+{
-+	void *stack = task_stack_page(current);
-+
-+	return (obj >= stack) && (obj < (stack + THREAD_SIZE));
-+}
-+
- extern void thread_info_cache_init(void);
- 
- #ifdef CONFIG_DEBUG_STACK_USAGE
-diff --git a/lib/debugobjects.c b/lib/debugobjects.c
-index a76a5e1..2afddde 100644
---- a/lib/debugobjects.c
-+++ b/lib/debugobjects.c
-@@ -231,15 +231,13 @@ debug_object_fixup(int (*fixup)(void *addr, enum debug_obj_state state),
- 
- static void debug_object_is_on_stack(void *addr, int onstack)
- {
--	void *stack = current->stack;
- 	int is_on_stack;
- 	static int limit;
- 
- 	if (limit > 4)
- 		return;
- 
--	is_on_stack = (addr >= stack && addr < (stack + THREAD_SIZE));
--
-+	is_on_stack = object_is_on_stack(addr);
- 	if (is_on_stack == onstack)
- 		return;
- 
+Index: current/mm/memory_hotplug.c
+===================================================================
+--- current.orig/mm/memory_hotplug.c
++++ current/mm/memory_hotplug.c
+@@ -595,8 +595,9 @@ do_migrate_range(unsigned long start_pfn
+ 		 * We can skip free pages. And we can only deal with pages on
+ 		 * LRU.
+ 		 */
+-		ret = isolate_lru_page(page, &source);
++		ret = isolate_lru_page(page);
+ 		if (!ret) { /* Success */
++			list_add_tail(&page->lru, &source);
+ 			move_pages--;
+ 		} else {
+ 			/* Becasue we don't have big zone->lock. we should
+
 -- 
-1.5.5.GIT
+Yasunori Goto 
+
 
