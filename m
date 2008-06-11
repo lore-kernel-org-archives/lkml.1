@@ -1,66 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbYFKSJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761310AbYFKSJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754836AbYFKSJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 14:09:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbYFKSJM
+	id S1761310AbYFKSJs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 14:09:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbYFKSJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 14:09:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43131 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751149AbYFKSJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 14:09:11 -0400
-Date: Wed, 11 Jun 2008 14:09:02 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: 2.6.26-rc5-mm2
-Message-ID: <20080611140902.544e59ec@bree.surriel.com>
-In-Reply-To: <200806101848.22237.nickpiggin@yahoo.com.au>
-References: <20080609223145.5c9a2878.akpm@linux-foundation.org>
-	<200806101728.27486.nickpiggin@yahoo.com.au>
-	<20080610013427.aa20a29b.akpm@linux-foundation.org>
-	<200806101848.22237.nickpiggin@yahoo.com.au>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 11 Jun 2008 14:09:39 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:6395 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755178AbYFKSJi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 14:09:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=MAkGpZ35RUzcGzhcb9v/ffnI4tL1MSwxxf9QHTV6zvjPjr1Uau7KPst42jLgpwjfDL
+         qC22ijZfesKSEZlDSd62SDoy+3LxUAO+pIFalSIvm1lUuOCU8DEc94ZsGyz/sB2nzTbq
+         jyKob3utMXcQlWpkOlItbY4pWXmMv4iIst2Xo=
+From: arjenpool@gmail.com
+To: linux-kernel@vger.kernel.org
+Subject: Cant compile 2.6.26-rc5-mm2 kernel
+Date: Wed, 11 Jun 2008 20:08:56 +0200
+User-Agent: KMail/1.9.9
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806112008.56478.arjenpool@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008 18:48:21 +1000
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+For whom it concerns:
 
-> > > The tmpfs PageSwapBacked stuff seems rather broken. For
-> > > them write_begin/write_end path, it is filemap.c, not shmem.c,
-> > > which allocates the page, so its no wonder it goes bug. Will
-> > > try to do more testing without shmem.
+Hello!
 
-Fun, so what does shmem_alloc_page do?
+Today i`ve tried to compile a linux-2.6.26-rc5-mm2 kernel obtained with the 
+Ketchup tool.
+ 
+It got halfway interupted with the following error messages:
 
-> > rikstuff.  Could be that the merge caused a problem?
-> 
-> Doesn't look like it, but I hadn't followed the changes too closely:
-> rather they just need to test loopback over tmpfs.
+CC [M] fs/xfs/support/debug.o
+ CC [M] fs/xfs/support/uuid.o
+ LD [M] fs/xfs/xfs.o
+ CC fs/quota.o
+fs/quota.c: In function 'quota_sync_sb':
+fs/quota.c:174: error: implicit declaration of function 'sb_dqopt'
+fs/quota.c:174: error: invalid type argument of '->'
+fs/quota.c:180: error: invalid type argument of '->'
+fs/quota.c:181: error: invalid type argument of '->'
+fs/quota.c:182: error: invalid type argument of '->'
+fs/quota.c:184: error: invalid type argument of '->'
+fs/quota.c: In function 'sync_dquots':
+fs/quota.c:206: error: invalid type argument of '->'
+fs/quota.c:207: error: invalid type argument of '->'
+fs/quota.c: In function 'do_quotactl':
+fs/quota.c:247: error: invalid type argument of '->'
+fs/quota.c:249: error: invalid type argument of '->'
+fs/quota.c:252: error: invalid type argument of '->'
+fs/quota.c:253: error: invalid type argument of '->'
+make[1]: *** [fs/quota.o] Error 1
+make: *** [fs] Error 2
 
-Does loopback over tmpfs use a different allocation path?
+I have made 5 attempts to recompile the source with the same result.
 
-> Is the plan to merge all reclaim changes in a big hit, rather than
-> slowly trickle in the different independent changes?
+Here is the output of the ver_linux script as i understand it may be helpfull:
 
-My original plan was to merge them incrementally, but Andrew is
-right that we should give the whole set as much testing as
-possible.
+Linux raptor 2.6.24-gentoo-r8 #2 SMP PREEMPT Thu Jun 5 16:16:17 CEST 2008 i686 
+Genuine Intel(R) CPU T2080 @ 1.73GHz GenuineIntel GNU/Linux
+Gnu C 4.1.2
+Gnu make 3.81
+binutils 2.18
+util-linux 2.13.1.1
+mount 2.13.1.1
+module-init-tools 3.4
+e2fsprogs 1.40.9
+reiserfsprogs 3.6.19
+pcmciautils 014
+Linux C Library 2.6.1
+Dynamic linker (ldd) 2.6.1
+Procps 3.2.7
+Net-tools 1.60
+Kbd 1.13
+Sh-utils 6.10
+udev 119
+wireless-tools 29
+Modules Loaded ipv6 af_packet snd_pcm_oss snd_mixer_oss snd_seq_dummy 
+snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device usbmouse pcmcia usbhid 
+hid joydev arc4 ecb pcspkr psmouse blkcipher yenta_socket serio_raw sdhci 
+rsrc_nonstatic mmc_core ehci_hcd uhci_hcd pcmcia_core i2c_i801 ath5k usbcore 
+mac80211 cfg80211 snd_hda_intel snd_pcm snd_timer snd video battery container 
+ac thermal output nvidia soundcore processor button snd_page_alloc intel_agp 
+agpgart i2c_core evdev
 
-I have done all the cleanups Andrew asked and fixed the bugs
-that I found after that merge/cleanup.  Your bug is the one
-I still need to fix before giving Andrew a whole new set of
-split LRU patches to merge.
+I hope this is enough information to work with. 
+if there is more, im happy to provde it.
 
-(afterwards, I will go incremental fixes only - the cleanups
-he asked for were just too big to do as incrementals)
+Arjen Pool
 
--- 
-All rights reversed.
+arjenpool@gmail.com
