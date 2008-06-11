@@ -1,80 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763181AbYFKTVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750794AbYFKTWG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763181AbYFKTVc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 15:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760828AbYFKTVM
+	id S1750794AbYFKTWG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 15:22:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757530AbYFKTVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 15:21:12 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:32424 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756941AbYFKTVL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 15:21:11 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5315"; a="3677980"
-Message-ID: <485025CB.8050505@qualcomm.com>
-Date: Wed, 11 Jun 2008 12:21:47 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>
-CC: Peter Zijlstra <peterz@infradead.org>, mingo@elte.hu,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Paul Jackson <pj@sgi.com>,
-       menage@google.com, linux-kernel@vger.kernel.org,
-       Mark Hounschell <dmarkh@cfl.rr.com>
-Subject: Re: workqueue cpu affinity
-References: <alpine.DEB.1.10.0806051255500.31157@chino.kir.corp.google.com> <20080605152953.dcfefa47.pj@sgi.com> <alpine.DEB.1.10.0806051357480.32537@chino.kir.corp.google.com> <484D99AD.4000306@qualcomm.com> <1213080240.31518.5.camel@twins> <484E9FE8.9040504@qualcomm.com> <20080610170005.GA6038@tv-sign.ru> <1213118386.19005.9.camel@lappy.programming.kicks-ass.net> <484EE303.9070007@qualcomm.com> <20080611160815.GA150@tv-sign.ru>
-In-Reply-To: <20080611160815.GA150@tv-sign.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jun 2008 15:21:53 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:55811 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752204AbYFKTVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 15:21:52 -0400
+Date: Wed, 11 Jun 2008 21:22:34 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: Rob Landley <rob@landley.net>, Adrian Bunk <bunk@kernel.org>,
+       linux-tiny <Linux-tiny@selenic.com>,
+       linux-embedded <linux-embedded@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: mainlining min-configs...
+Message-ID: <20080611192234.GB12525@uranus.ravnborg.org>
+References: <48447615.5050806@am.sony.com> <20080610183004.GG11685@cs181133002.pp.htv.fi> <20080610185123.GA15838@uranus.ravnborg.org> <200806110009.22542.rob@landley.net> <20080611063921.GA27978@uranus.ravnborg.org> <48502304.1030304@am.sony.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48502304.1030304@am.sony.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> On 06/10, Max Krasnyansky wrote:
->> Here is some backgound on this. Full cpu isolation requires some tweaks to the
->> workqueue handling. Either the workqueue threads need to be moved (which is my
->> current approach), or work needs to be redirected when it's submitted.
+On Wed, Jun 11, 2008 at 12:09:56PM -0700, Tim Bird wrote:
+> Sam Ravnborg wrote:
+> >>> When I get my kconfig patchset polished you will be able to do:
+> >>>
+> >>> make K=my_mini_config allnoconfig
+> >> So you're renaming KCONFIG_ALLNOCONFIG then?
+> > 
+> > Somehow yes. The K= notation I hope will see more use. Only very few
+> > people know the KCONFIG_ALL*CONFIG= trick.
 > 
-> _IF_ we have to do this, I think it is much better to move cwq->thread.
-Ok. btw That's what I'm doing now from user-space.
-
->> Peter Zijlstra wrote:
->>> The advantage of creating a more flexible or fine-grained flush is that
->>> large machine also profit from it.
->> I agree, our current workqueue flush scheme is expensive because it has to
->> schedule on each online cpu. So yes improving flush makes sense in general.
+> Indeed.  I had never heard of it, but it appears to have been
+> around for at least 18 months.  It looks like Randy Dunlap tried
+> to submit some documentation for this in Oct 2006, but it didn't
+> make it in?
 > 
-> Yes, it is easy to implement flush_work(struct work_struct *work) which
-> only waits for that work, so it can't hang unless it was enqueued on the
-> isolated cpu.
-> 
-> But in most cases it is enough to just do
-> 
-> 	if (cancel_work_sync(work))
-> 		work->func(work);
-Cool. That would work.
-btw Somehow I thought that you already implemented flush_work(). I do not see
-it 2.6.25 but I could've sworn that I saw a patch flying by. Must have been
-something else. Do you mind adding that ?
+> Is this feature widely used?  Should it be doc'ed now
+> or are you about to make it obsolete?
+I will most likely obsolete all except KCONFIG_ALLCONFIG
+And I'm afraid I have Randy patch somewhere.
 
-> Or we can add flush_workqueue_cpus(struct workqueue_struct *wq, cpumask_t *cpu_map).
-That'd be special casing. I mean something will have to know what cpus cannot
-be flushed. I liked your proposal above much better.
-
-> But I don't think we should change the behaviour of flush_workqueue().
-> 
->> This will require a bit of surgery across the entire tree. There is a lot of
->> code that calls flush_scheduled_work()
-> 
-> Almost all of them should be changed to use cancel_work_sync().
-
-That'd be a lot of changes.
-
-git grep flush_scheduled_work | wc
-    154     376    8674
-
-Hmm, I guess maybe not that bad. I might actually do that :-).
-
-Max
+	Sam
