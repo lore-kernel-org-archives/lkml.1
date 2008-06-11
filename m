@@ -1,123 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbYFKLvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753961AbYFKMGM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754830AbYFKLvm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 07:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbYFKLvf
+	id S1753961AbYFKMGM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 08:06:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbYFKMGA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 07:51:35 -0400
-Received: from cluster-g.mailcontrol.com ([208.87.233.190]:37125 "EHLO
-	cluster-g.mailcontrol.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751047AbYFKLve (ORCPT
+	Wed, 11 Jun 2008 08:06:00 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:21239 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752231AbYFKMGA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 07:51:34 -0400
-X-Greylist: delayed 2771 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Jun 2008 07:51:34 EDT
-Message-ID: <484FB149.4080000@csr.com>
-Date: Wed, 11 Jun 2008 12:04:41 +0100
-From: David Vrabel <david.vrabel@csr.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: Byron Bradley <byron.bbradley@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Greg KH <greg@kroah.com>
-Subject: [patch] UWB: make UWB selectable on all archs with USB support
-References: <20080609053908.8021a635.akpm@linux-foundation.org> <alpine.DEB.1.00.0806092250200.31236@gamma>
-In-Reply-To: <alpine.DEB.1.00.0806092250200.31236@gamma>
-Content-Type: multipart/mixed;
- boundary="------------070500000603020600010402"
-X-OriginalArrivalTime: 11 Jun 2008 11:04:41.0584 (UTC) FILETIME=[F2A90700:01C8CBB2]
+	Wed, 11 Jun 2008 08:06:00 -0400
+Date: Wed, 11 Jun 2008 14:05:15 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Ryan Mallon <ryan@bluewatersys.com>
+Cc: David Brownell <david-b@pacbell.net>, Uli Luckas <u.luckas@road.de>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>, i2c@lm-sensors.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RFC] Earlier I2C initialization
+Message-ID: <20080611140515.3b464e52@hyperion.delvare>
+In-Reply-To: <48503432.6010105@bluewatersys.com>
+References: <200806091541.43899.u.luckas@road.de>
+	<484DA046.4010804@bluewatersys.com>
+	<20080610085708.12c2d2a2@hyperion.delvare>
+	<200806101355.07792.david-b@pacbell.net>
+	<20080611101130.1a667abe@hyperion.delvare>
+	<48503432.6010105@bluewatersys.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070500000603020600010402
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Thu, 12 Jun 2008 08:23:14 +1200, Ryan Mallon wrote:
+> Jean Delvare wrote:
+> >
+> > That's easier to get right if you restrict yourself to a single
+> > platform. For the vanilla kernel, the order of the dependencies is way
+> > more difficult to figure out and get right. There are some hints in
+> > drivers/Makefile but most dependencies aren't spelled out.
+> >
+> > My feeling is that we won't be able to solve this without first moving
+> > the different type of i2c bus drivers (and possibly chip drivers) to
+> > separate directories. For example, moving external I2C bus drivers
+> > (i2c-parport-light, i2c-parport, i2c-taos-evm and i2c-tiny-usb) to a
+> > separate directory that is always initialized late, would remove the
+> > dependencies on parport, serio and USB for the "must initialize i2c
+> > early" problem.
+> >
+> > I've already attempted a categorization of the i2c bus drivers:
+> > http://lists.lm-sensors.org/pipermail/i2c/2008-May/003713.html
+> > http://khali.linux-fr.org/devel/linux-2.6/jdelvare-i2c/i2c-group-bus-drivers.patch
+> > I would welcome comments on this, and suggestions for further
+> > categorization of group "other".
+>
+> I like this idea. Is it possible to move (or mark as subsys_initcall) the
+> i2c busses which are likely to be needed early: pxa, omap, gpio, etc and
+> leave the PC/external busses alone. Then having the i2c chip drivers in
+> the correct place (ie drivers/gpio) would effectively fix the problem.
 
-Byron Bradley wrote:
-> I'm getting the error below when compiling for ARM (Marvell Orion 5x) but 
-> having trouble working out exacty why. It looks like it isn't selecting 
-> any of the CONFIG_UWB* options which USB_WHCI_HCD should select. Config is 
-> attached.
+That's certainly possible to move them, the only problem is: how do we
+select the drivers which need it? As you can see from the categories I
+made, there's a fairly large list of "other" drivers are the moment.
+All drivers you mentioned, and the ones already using
+subsys_initcall(), are there. They fall under the "embedded" category
+but I suspect that many drivers in the group "other" are not. So first
+of all I think we need to refine my original grouping. If we can't make
+a definitive list right away, maybe we can make an "embedded" group and
+each developer or maintainer moves the drivers they know are embedded
+there.
 
-ARM (and some other architectures) don't use drivers/Kconfig.  This
-patch enables UWB on all these architectures that have USB support.
+But that's only one side of the problem. The other side is that is is
+entirely possible that some embedded platforms don't need the early i2c
+initialization, and non-embedded platforms do. I have no example at the
+moment but obviously it could happen. So, while moving the external bus
+adapter drivers to a separate directory is fine (they just can't be
+initialized early), for the rest it's mainly a per-driver attribute, so
+maybe we just want an "early" directory with drivers that must be
+initialized early, regardless of their platform type.
 
-David
+If we want a general solution to the problem, then I think that's the
+way to go. If you only want to fix the problem at hand, just use
+subsys_initcall() in your bus driver for now.
+
 -- 
-David Vrabel, Senior Software Engineer, Drivers
-CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
-Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
-
---------------070500000603020600010402
-Content-Type: text/x-diff;
- name="uwb-arch-source-drivers-uwb-Kconfig.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="uwb-arch-source-drivers-uwb-Kconfig.patch"
-
-UWB: make UWB selectable on all archs with USB support
-
-Signed-off-by: David Vrabel <david.vrabel@csr.com>
-
----
- arch/arm/Kconfig   |    2 ++
- arch/cris/Kconfig  |    2 ++
- arch/h8300/Kconfig |    2 ++
- arch/v850/Kconfig  |    2 ++
- 4 files changed, 8 insertions(+)
-
-Index: linux-2.6-working/arch/arm/Kconfig
-===================================================================
---- linux-2.6-working.orig/arch/arm/Kconfig	2008-06-11 11:55:37.000000000 +0100
-+++ linux-2.6-working/arch/arm/Kconfig	2008-06-11 11:56:29.000000000 +0100
-@@ -1169,6 +1169,8 @@
- 
- source "drivers/usb/Kconfig"
- 
-+source "drivers/uwb/Kconfig"
-+
- source "drivers/mmc/Kconfig"
- 
- source "drivers/leds/Kconfig"
-Index: linux-2.6-working/arch/cris/Kconfig
-===================================================================
---- linux-2.6-working.orig/arch/cris/Kconfig	2008-06-11 11:55:37.000000000 +0100
-+++ linux-2.6-working/arch/cris/Kconfig	2008-06-11 11:56:11.000000000 +0100
-@@ -677,6 +677,8 @@
- 
- source "drivers/usb/Kconfig"
- 
-+source "drivers/uwb/Kconfig"
-+
- source "arch/cris/Kconfig.debug"
- 
- source "security/Kconfig"
-Index: linux-2.6-working/arch/h8300/Kconfig
-===================================================================
---- linux-2.6-working.orig/arch/h8300/Kconfig	2008-06-11 11:55:37.000000000 +0100
-+++ linux-2.6-working/arch/h8300/Kconfig	2008-06-11 11:56:11.000000000 +0100
-@@ -227,6 +227,8 @@
- 
- source "drivers/usb/Kconfig"
- 
-+source "drivers/uwb/Kconfig"
-+
- endmenu
- 
- source "fs/Kconfig"
-Index: linux-2.6-working/arch/v850/Kconfig
-===================================================================
---- linux-2.6-working.orig/arch/v850/Kconfig	2008-06-11 11:55:38.000000000 +0100
-+++ linux-2.6-working/arch/v850/Kconfig	2008-06-11 11:56:11.000000000 +0100
-@@ -342,6 +342,8 @@
- 
- source "drivers/usb/Kconfig"
- 
-+source "drivers/uwb/Kconfig"
-+
- source "arch/v850/Kconfig.debug"
- 
- source "security/Kconfig"
-
---------------070500000603020600010402--
+Jean Delvare
