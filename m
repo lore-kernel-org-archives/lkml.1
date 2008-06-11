@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758542AbYFKAjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbYFKA65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758542AbYFKAjq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Jun 2008 20:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754521AbYFKAji
+	id S1756905AbYFKA65 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Jun 2008 20:58:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256AbYFKA6s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Jun 2008 20:39:38 -0400
-Received: from twinlark.arctic.org ([208.69.40.136]:53526 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753983AbYFKAji (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Jun 2008 20:39:38 -0400
-Message-ID: <484F1EC4.5050906@kernel.org>
-Date: Tue, 10 Jun 2008 17:39:32 -0700
-From: "Andrew G. Morgan" <morgan@kernel.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] bugfix: was Re: [ linus-git ] prctl(PR_SET_KEEPCAPS,
- ...) is broken for some configs, e.g. CONFIG_SECURITY_SELINUX
-References: <1212932321.4675.9.camel@earth> <484BF662.9070100@kernel.org> <20080608110630.08a45cc6.akpm@linux-foundation.org> <484C5E84.2020307@kernel.org> <20080608163926.56f1be3d.akpm@linux-foundation.org> <20080609171741.GA13403@us.ibm.com> <484E0280.2050305@kernel.org> <20080610191241.GA17311@us.ibm.com>
-In-Reply-To: <20080610191241.GA17311@us.ibm.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 10 Jun 2008 20:58:48 -0400
+Received: from mga02.intel.com ([134.134.136.20]:36814 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752645AbYFKA6r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Jun 2008 20:58:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,620,1204531200"; 
+   d="scan'208";a="393337349"
+Subject: Re: [linux-pm] [PATCH -mm 2/2] kexec jump -v11: save/restore
+	device state
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Len Brown <lenb@kernel.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>, linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.1.10.0806101400090.14381@localhost.localdomain>
+References: <1213082106.22608.30.camel@caritas-dev.intel.com>
+	 <alpine.LFD.1.10.0806101400090.14381@localhost.localdomain>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Wed, 11 Jun 2008 09:01:14 +0800
+Message-Id: <1213146074.21923.10.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+X-OriginalArrivalTime: 11 Jun 2008 00:58:43.0460 (UTC) FILETIME=[4B879440:01C8CB5E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Tue, 2008-06-10 at 14:01 -0400, Len Brown wrote:
+> 
+> On Tue, 10 Jun 2008, Huang, Ying wrote:
+> 
+> > This patch implements devices state save/restore before after kexec.
+> > 
+> > 
+> > This patch together with features in kexec_jump patch can be used for
+> > following:
+> > 
+> > - A simple hibernation implementation without ACPI support. You can
+> >   kexec a hibernating kernel, save the memory image of original system
+> >   and shutdown the system. When resuming, you restore the memory image
+> >   of original system via ordinary kexec load then jump back.
+> 
+> What part of ACPI's role in hibernation are you trying to avoid
+> 1. enabling wake devices
+> 2. removing power from the system
+> 3. something else?
 
-Serge E. Hallyn wrote:
-+		else
-+			current->securebits &=
-+				~issecure_mask(SECURE_KEEP_CAPS);
+ACPI S5 is used instead of S4 for this simple hibernation
+implementation. That is, before creating the hibernation image, the ACPI
+_PTS is not executed, devices are not put into low power state and wake
+devices are not enabled. After creating the hibernation image, the image
+is saved to disk and system is shutdown (go to S5). When resuming from
+hibernated image, ACPI _BFS and _WAK are not executed too.
 
-| In these last two conditions, don't you need to set *rc_p?
+Best Regards,
+Huang Ying
 
-| Oh, or my kernel tree may be out of date, as I seem to recall a recent
-| patch initializing error to 0 in sys_prctl(), so this wouldn't
-| technically be a problem?  Still would seem correct...
-
-Yes, update your kernel and you will find this defaults to zero. I
-thought about redundantly forcing it, but decided that it wasn't worth
-the pain of working around the 80-column challenged extra indenting. :-(
-
-Cheers
-
-Andrew
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.6 (GNU/Linux)
-
-iD8DBQFITx7E+bHCR3gb8jsRAulwAJ0U6TwsWMZRs6epQNNWs+f27UuUfgCdEGut
-4x/mUDuIX6TvCVnip5sZWVk=
-=1PdZ
------END PGP SIGNATURE-----
