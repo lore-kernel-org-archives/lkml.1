@@ -1,53 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932363AbYFKSKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932560AbYFKSMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932363AbYFKSKY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 14:10:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764731AbYFKSKJ
+	id S932560AbYFKSMV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 14:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760726AbYFKSMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 14:10:09 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:55808 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932328AbYFKSKE (ORCPT
+	Wed, 11 Jun 2008 14:12:09 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:33647 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764723AbYFKSMI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 14:10:04 -0400
+	Wed, 11 Jun 2008 14:12:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=GL5wjNX9aJLcSMR04fKY6Rr5u8pJQdB0/RZ8h+HnM6TgNb45jhKzaISmfc1UvmQymA
-         +J3encSxGqfH2wWQu+KtFmblWJRf6qxKuzz3oy6XR5oXIVBu+CTv95ztnvHCcxJTOIOz
-         r8OkL4CO6Y7kXOkwKVZTJzCtPIUQOPoIme42U=
-Message-ID: <485014B5.7080305@gmail.com>
-Date: Wed, 11 Jun 2008 20:08:53 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+        h=message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=oBWhrrJnI4hNXLHQOlt532laWuiSCK2sso2RDvSM2+Y9XQfiAyw9gN97DUN7t++XBA
+         oHz7ZPci3NBp6HdvUQm9gIQuxYeu4tQ9QIvzeBJqqeBlYwW4wdW+H7MKFCn0fuyDrA38
+         CDezsWxwuFnZUaJs2e1FpNaERbq8AkraBAeg8=
+Message-ID: <19f34abd0806111112w5a6ed080jc098612806398828@mail.gmail.com>
+Date: Wed, 11 Jun 2008 20:12:04 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>
+Subject: [BUG] 2.6.26-rc5-mm2 - kernel BUG at arch/x86/kernel/setup.c:388!
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: pnp changes -> suspend oops [Was: 2.6.26-rc5-mm2]
-References: <20080609223145.5c9a2878.akpm@linux-foundation.org>
-In-Reply-To: <20080609223145.5c9a2878.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_10409_7434633.1213207924632"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/10/2008 07:31 AM, Andrew Morton wrote:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc5/2.6.26-rc5-mm2/
+------=_Part_10409_7434633.1213207924632
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Hi,
+On 6/9/08, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> Hi Andrew,
+>
+> The 2.6.26-rc5-mm2 kernel panic's, while booting up on the x86_64
+> box with the attached .config file.
 
-I face problems after some of the pnp changes. If this is not known, I may 
-bisect it, it's 100% reproducible. I have no real logs, It panics prior to 
-network is woken up to see something on netconsole, I just captured a function 
-name and an offset of place where it oopses.
+(Please apologize for the strange way of replying to this message. It
+seems that LKML gave up delivering to my address, so I'm currently
+reading off lkml.org.)
 
-pnpacpi_encode_resources, ACPI_RESOURCE_TYPE_DMA case, pnp_get_resource(dev, 
-IORESOURCE_DMA, dma) returns NULL, which is dereferenced at pnpacpi_encode_dma 
-at p->flags.
+This should already be fixed, but Andrew refused to apply the patch
+before releasing the -mm1 (and -mm2 apparently). I'm attaching the
+patch, can you see if it helps?
 
-It happens on resume after mem > /sys/power/state.
+Thanks.
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
+
+------=_Part_10409_7434633.1213207924632
+Content-Type: text/x-patch; name=sched.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fhc8lklc
+Content-Disposition: attachment; filename=sched.patch
+
+Y29tbWl0IGE5NTNlNDU5N2FiZDUxYjc0Yzk5ZTBlM2I3MDc0NTMyYTYwZmQwMzEKQXV0aG9yOiBN
+aWtlIFRyYXZpcyA8dHJhdmlzQHNnaS5jb20+CkRhdGU6ICAgTW9uIE1heSAxMiAyMToyMToxMiAy
+MDA4ICswMjAwCgogICAgc2NoZWQ6IHJlcGxhY2UgTUFYX05VTU5PREVTIHdpdGggbnJfbm9kZV9p
+ZHMgaW4ga2VybmVsL3NjaGVkLmMKICAgIAogICAgICAqIFJlcGxhY2UgdXNhZ2VzIG9mIE1BWF9O
+VU1OT0RFUyB3aXRoIG5yX25vZGVfaWRzIGluIGtlcm5lbC9zY2hlZC5jLAogICAgICAgIHdoZXJl
+IGFwcHJvcHJpYXRlLiAgVGhpcyBzYXZlcyBzb21lIGFsbG9jYXRlZCBzcGFjZSBhcyB3ZWxsIGFz
+IG1hbnkKICAgICAgICB3YXN0ZWQgY3ljbGVzIGdvaW5nIHRocm91Z2ggbm9kZSBlbnRyaWVzIHRo
+YXQgYXJlIG5vbi1leGlzdGVudC4KICAgIAogICAgRm9yIGluY2x1c2lvbiBpbnRvIHNjaGVkLWRl
+dmVsL2xhdGVzdCB0cmVlLgogICAgCiAgICBCYXNlZCBvbjoKICAgIAlnaXQ6Ly9naXQua2VybmVs
+Lm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXgtMi42LmdpdAogICAg
+ICAgICsgICBzY2hlZC1kZXZlbC9sYXRlc3QgIC4uLi9taW5nby9saW51eC0yLjYtc2NoZWQtZGV2
+ZWwuZ2l0CiAgICAKICAgIFNpZ25lZC1vZmYtYnk6IE1pa2UgVHJhdmlzIDx0cmF2aXNAc2dpLmNv
+bT4KICAgIFNpZ25lZC1vZmYtYnk6IEluZ28gTW9sbmFyIDxtaW5nb0BlbHRlLmh1PgoKZGlmZiAt
+LWdpdCBhL2tlcm5lbC9zY2hlZC5jIGIva2VybmVsL3NjaGVkLmMKaW5kZXggY2ZhMjIyYS4uMWVk
+ODAxMSAxMDA2NDQKLS0tIGEva2VybmVsL3NjaGVkLmMKKysrIGIva2VybmVsL3NjaGVkLmMKQEAg
+LTY4NzksOSArNjg3OSw5IEBAIHN0YXRpYyBpbnQgZmluZF9uZXh0X2Jlc3Rfbm9kZShpbnQgbm9k
+ZSwgbm9kZW1hc2tfdCAqdXNlZF9ub2RlcykKIAogCW1pbl92YWwgPSBJTlRfTUFYOwogCi0JZm9y
+IChpID0gMDsgaSA8IE1BWF9OVU1OT0RFUzsgaSsrKSB7CisJZm9yIChpID0gMDsgaSA8IG5yX25v
+ZGVfaWRzOyBpKyspIHsKIAkJLyogU3RhcnQgYXQgQG5vZGUgKi8KLQkJbiA9IChub2RlICsgaSkg
+JSBNQVhfTlVNTk9ERVM7CisJCW4gPSAobm9kZSArIGkpICUgbnJfbm9kZV9pZHM7CiAKIAkJaWYg
+KCFucl9jcHVzX25vZGUobikpCiAJCQljb250aW51ZTsKQEAgLTcwNzUsNyArNzA3NSw3IEBAIHN0
+YXRpYyB2b2lkIGZyZWVfc2NoZWRfZ3JvdXBzKGNvbnN0IGNwdW1hc2tfdCAqY3B1X21hcCwgY3B1
+bWFza190ICpub2RlbWFzaykKIAkJaWYgKCFzY2hlZF9ncm91cF9ub2RlcykKIAkJCWNvbnRpbnVl
+OwogCi0JCWZvciAoaSA9IDA7IGkgPCBNQVhfTlVNTk9ERVM7IGkrKykgeworCQlmb3IgKGkgPSAw
+OyBpIDwgbnJfbm9kZV9pZHM7IGkrKykgewogCQkJc3RydWN0IHNjaGVkX2dyb3VwICpvbGRzZywg
+KnNnID0gc2NoZWRfZ3JvdXBfbm9kZXNbaV07CiAKIAkJCSpub2RlbWFzayA9IG5vZGVfdG9fY3B1
+bWFzayhpKTsKQEAgLTcyNjMsNyArNzI2Myw3IEBAIHN0YXRpYyBpbnQgX19idWlsZF9zY2hlZF9k
+b21haW5zKGNvbnN0IGNwdW1hc2tfdCAqY3B1X21hcCwKIAkvKgogCSAqIEFsbG9jYXRlIHRoZSBw
+ZXItbm9kZSBsaXN0IG9mIHNjaGVkIGdyb3VwcwogCSAqLwotCXNjaGVkX2dyb3VwX25vZGVzID0g
+a2NhbGxvYyhNQVhfTlVNTk9ERVMsIHNpemVvZihzdHJ1Y3Qgc2NoZWRfZ3JvdXAgKiksCisJc2No
+ZWRfZ3JvdXBfbm9kZXMgPSBrY2FsbG9jKG5yX25vZGVfaWRzLCBzaXplb2Yoc3RydWN0IHNjaGVk
+X2dyb3VwICopLAogCQkJCSAgICBHRlBfS0VSTkVMKTsKIAlpZiAoIXNjaGVkX2dyb3VwX25vZGVz
+KSB7CiAJCXByaW50ayhLRVJOX1dBUk5JTkcgIkNhbiBub3QgYWxsb2Mgc2NoZWQgZ3JvdXAgbm9k
+ZSBsaXN0XG4iKTsKQEAgLTc0MDcsNyArNzQwNyw3IEBAIHN0YXRpYyBpbnQgX19idWlsZF9zY2hl
+ZF9kb21haW5zKGNvbnN0IGNwdW1hc2tfdCAqY3B1X21hcCwKICNlbmRpZgogCiAJLyogU2V0IHVw
+IHBoeXNpY2FsIGdyb3VwcyAqLwotCWZvciAoaSA9IDA7IGkgPCBNQVhfTlVNTk9ERVM7IGkrKykg
+eworCWZvciAoaSA9IDA7IGkgPCBucl9ub2RlX2lkczsgaSsrKSB7CiAJCVNDSEVEX0NQVU1BU0tf
+VkFSKG5vZGVtYXNrLCBhbGxtYXNrcyk7CiAJCVNDSEVEX0NQVU1BU0tfVkFSKHNlbmRfY292ZXJl
+ZCwgYWxsbWFza3MpOwogCkBAIC03NDMxLDcgKzc0MzEsNyBAQCBzdGF0aWMgaW50IF9fYnVpbGRf
+c2NoZWRfZG9tYWlucyhjb25zdCBjcHVtYXNrX3QgKmNwdV9tYXAsCiAJCQkJCXNlbmRfY292ZXJl
+ZCwgdG1wbWFzayk7CiAJfQogCi0JZm9yIChpID0gMDsgaSA8IE1BWF9OVU1OT0RFUzsgaSsrKSB7
+CisJZm9yIChpID0gMDsgaSA8IG5yX25vZGVfaWRzOyBpKyspIHsKIAkJLyogU2V0IHVwIG5vZGUg
+Z3JvdXBzICovCiAJCXN0cnVjdCBzY2hlZF9ncm91cCAqc2csICpwcmV2OwogCQlTQ0hFRF9DUFVN
+QVNLX1ZBUihub2RlbWFzaywgYWxsbWFza3MpOwpAQCAtNzQ3MCw5ICs3NDcwLDkgQEAgc3RhdGlj
+IGludCBfX2J1aWxkX3NjaGVkX2RvbWFpbnMoY29uc3QgY3B1bWFza190ICpjcHVfbWFwLAogCQlj
+cHVzX29yKCpjb3ZlcmVkLCAqY292ZXJlZCwgKm5vZGVtYXNrKTsKIAkJcHJldiA9IHNnOwogCi0J
+CWZvciAoaiA9IDA7IGogPCBNQVhfTlVNTk9ERVM7IGorKykgeworCQlmb3IgKGogPSAwOyBqIDwg
+bnJfbm9kZV9pZHM7IGorKykgewogCQkJU0NIRURfQ1BVTUFTS19WQVIobm90Y292ZXJlZCwgYWxs
+bWFza3MpOwotCQkJaW50IG4gPSAoaSArIGopICUgTUFYX05VTU5PREVTOworCQkJaW50IG4gPSAo
+aSArIGopICUgbnJfbm9kZV9pZHM7CiAJCQlub2RlX3RvX2NwdW1hc2tfcHRyKHBub2RlbWFzaywg
+bik7CiAKIAkJCWNwdXNfY29tcGxlbWVudCgqbm90Y292ZXJlZCwgKmNvdmVyZWQpOwpAQCAtNzUy
+NSw3ICs3NTI1LDcgQEAgc3RhdGljIGludCBfX2J1aWxkX3NjaGVkX2RvbWFpbnMoY29uc3QgY3B1
+bWFza190ICpjcHVfbWFwLAogCX0KIAogI2lmZGVmIENPTkZJR19OVU1BCi0JZm9yIChpID0gMDsg
+aSA8IE1BWF9OVU1OT0RFUzsgaSsrKQorCWZvciAoaSA9IDA7IGkgPCBucl9ub2RlX2lkczsgaSsr
+KQogCQlpbml0X251bWFfc2NoZWRfZ3JvdXBzX3Bvd2VyKHNjaGVkX2dyb3VwX25vZGVzW2ldKTsK
+IAogCWlmIChzZF9hbGxub2Rlcykgewo=
+------=_Part_10409_7434633.1213207924632--
