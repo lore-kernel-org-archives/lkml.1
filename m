@@ -1,73 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756097AbYFKV25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbYFKV3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756097AbYFKV25 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 17:28:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbYFKV2t
+	id S1756667AbYFKV3o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 17:29:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbYFKV3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 17:28:49 -0400
-Received: from casper.infradead.org ([85.118.1.10]:37619 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752695AbYFKV2t (ORCPT
+	Wed, 11 Jun 2008 17:29:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50347 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752701AbYFKV3e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 17:28:49 -0400
-Date: Wed, 11 Jun 2008 14:28:40 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: markh@compro.net
-Cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       Jan Engelhardt <jengelh@medozas.de>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       "solsTiCe d'Hiver" <solstice.dhiver@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: no cpu MHz in /proc/cpuinfo on 2.6.25.4-rt6
-Message-ID: <20080611142840.47d65782@infradead.org>
-In-Reply-To: <48503EB9.6000606@compro.net>
-References: <200806102152.23286.solstice.dhiver@gmail.com>
-	<20080610131314.5f7069e6@infradead.org>
-	<484EE71A.40002@intel.com>
-	<alpine.LNX.1.10.0806111440480.20733@fbirervta.pbzchgretzou.qr>
-	<20080611063639.5e1eea5b@infradead.org>
-	<alpine.LNX.1.10.0806111552090.20733@fbirervta.pbzchgretzou.qr>
-	<20080611065816.6cff290d@infradead.org>
-	<Pine.LNX.4.61.0806111006560.23096@chaos.analogic.com>
-	<20080611083644.32afc823@infradead.org>
-	<4850046C.4070602@compro.net>
-	<20080611104446.3b0ce2d9@infradead.org>
-	<48501159.4050908@compro.net>
-	<48503792.50003@compro.net>
-	<20080611135828.29f6a7d7@infradead.org>
-	<48503EB9.6000606@compro.net>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
+	Wed, 11 Jun 2008 17:29:34 -0400
+Date: Wed, 11 Jun 2008 14:29:09 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: joakim.tjernlund@transmode.se
+Cc: adobriyan@parallels.com, akpm@linuxfoundation.org, viro@ftp.linux.org.uk,
+       linux-kernel@vger.kernel.org, busybox@busybox.net
+Subject: Re: [PATCH] seq_file: make seq_lseek accept SEEK_END
+Message-Id: <20080611142909.2e18f2b1.akpm@linux-foundation.org>
+In-Reply-To: <1213012375.16530.9.camel@gentoo-jocke.transmode.se>
+References: <200806091501.13170.adobriyan@parallels.com>
+	<1213012375.16530.9.camel@gentoo-jocke.transmode.se>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jun 2008 17:08:09 -0400
-Mark Hounschell <markh@compro.net> wrote:
+On Mon, 09 Jun 2008 13:52:55 +0200
+Joakim Tjernlund <joakim.tjernlund@transmode.se> wrote:
 
-> > 
-> > btw you also changed the problem from "what is the cpu frequency" to
-> > "how usable is rdtsc for time". My entire point was that these
-> > weren't related...
-> > 
-> > 
+> busybox has been fixed, at least in trunk, not to do 
+> xlseek(fd, 0, SEEK_END) anymore to address this problem.
+> Perhaps there are other apps out there that needs this too, but I don't
+> know of any. Older busyboxes needs this change though.
+> I have moved on and don't have a setup handy where I can test this.
+> Perhaps someone at the bb list has, CC:ing bb list.
 > 
-> If they are not the same how do you know at what rate the tsc is
-> counting.
 
-it's not ticking at the cpu frequency as general rule.
-For current cpus, your best bet is to calibrate against some external
-time source... it'll stay constant after that, unless you go to idle,
-then it may or may not stop (or both). For older cpus it'll change with
-frequency changes.
+Nevertheless it'd be nice to fix old versions.
+
+To some extent that depends on when we broke it.  See below.
+
+> 
+> On Mon, 2008-06-09 at 15:01 +0400, Alexey Dobriyan wrote:
+> > Apologies for delay, such simple thing should have been sent long ago.
+> > Joakim, please, confirm.
+> > -------------------------------------------
+> > [PATCH] seq_file: make seq_lseek accept SEEK_END
+> > 
+> > and pretend seq_files have zero length. This should be enough
+> > to fix busybox start-stop-daemon:
+> > http://marc.info/?t=120836691600002&r=1&w=2
+> > 
+> > It does xlseek(fd, 0, SEEK_END) to estimate amount of memory to malloc
+> > but satisfied with 0. Sudden -EINVAL from lseek(2) breaks it.
+> > 
+> > X-Introduced-By: f16278c679aa72e28288435b313ba2d4494d6be5
+> > Signed-off-by: Alexey Dobriyan <adobriyan@parallels.com>
+> > ---
+> > 
+> >  fs/seq_file.c |    2 ++
+> >  1 file changed, 2 insertions(+)
+> > 
+> > --- a/fs/seq_file.c
+> > +++ b/fs/seq_file.c
+> > @@ -254,6 +254,8 @@ loff_t seq_lseek(struct file *file, loff_t offset, int origin)
+> >  	switch (origin) {
+> >  		case 1:
+> >  			offset += file->f_pos;
+> > +		case 2:
+> > +			/* pretend it's zero length */
+> >  		case 0:
+> >  			if (offset < 0)
+> >  				break;
+> > 
+> > 
+
+Is returning zero logical, given what we do with SEEK_SET?
+
+afait we _could_ just do
+
+	offset = <largenum>
+	/* fall through */
+
+and let the SEEK_SET code do its thing.  But I might have misread it. 
+But still, it looks like it'd be possible to return a true(ish) value
+from SEEK_END?
 
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+> > X-Introduced-By: f16278c679aa72e28288435b313ba2d4494d6be5
+
+Please don't do that.  Instead, quote the commit ID _and_ the first few
+lines of the commit itself, like:
+
+commit f16278c679aa72e28288435b313ba2d4494d6be5
+Author: Hans Rosenfeld <hans.rosenfeld@amd.com>
+Date:   Fri Mar 21 18:46:59 2008 -0500
+
+    Change pagemap output format to allow for future reporting of huge pages
+
+And here we see one reason: that commit cannot be the one which
+introduced this problem. 
