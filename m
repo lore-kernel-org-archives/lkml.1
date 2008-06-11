@@ -1,71 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755771AbYFKETD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbYFKEd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755771AbYFKETD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 00:19:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbYFKESw
+	id S1754631AbYFKEd1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 00:33:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751111AbYFKEdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 00:18:52 -0400
-Received: from ozlabs.org ([203.10.76.45]:43828 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750775AbYFKESv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 00:18:51 -0400
+	Wed, 11 Jun 2008 00:33:17 -0400
+Received: from mail9.dslextreme.com ([66.51.199.94]:35882 "HELO
+	mail9.dslextreme.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750991AbYFKEdR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 00:33:17 -0400
+Message-ID: <484F5582.5000805@gawab.com>
+Date: Tue, 10 Jun 2008 21:33:06 -0700
+From: Justin Madru <jdm64@gawab.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080522)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18511.21025.978328.596571@cargo.ozlabs.ibm.com>
-Date: Wed, 11 Jun 2008 14:18:41 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>, Trent Piepho <tpiepho@freescale.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: MMIO and gcc re-ordering issue
-In-Reply-To: <200806101656.51211.nickpiggin@yahoo.com.au>
-References: <1211852026.3286.36.camel@pasglop>
-	<Pine.LNX.4.64.0806031130130.3242@t2.domain.actdsltmp>
-	<alpine.LFD.1.10.0806031153360.3473@woody.linux-foundation.org>
-	<200806101656.51211.nickpiggin@yahoo.com.au>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+To: Romano Giannetti <romanol@upcomillas.es>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       lkml <linux-kernel@vger.kernel.org>,
+       =?UTF-8?B?U2HDr3Zhbm4gQ2FyaWduYW4=?= <oxmosys@gmail.com>
+Subject: Re: [regression?] Sometime (often) X come out blank (black screen)
+ on cold boot - Intel chipset
+References: <1213101501.21041.9.camel@pern>
+In-Reply-To: <1213101501.21041.9.camel@pern>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin writes:
+Romano Giannetti wrote:
+> I just opened this: http://bugzilla.kernel.org/show_bug.cgi?id=10892 . I
+> think itś a regression, but (read the description) I am not so sure, so
+> I checked regression but I have not blocked Rafael's metabug. 
+>
+> Latest working kernel version: 2.6.25
+> Earliest failing kernel version: After 2.6.25, exatcly don't know, probably
+> 2.6.26-rc3
+> Distribution:Ubuntu 8.04 Hardy
+> Hardware Environment: toshiba U305 intel-based laptop, see
+> http://bugzilla.kernel.org/attachment.cgi?id=16067&action=view
+> Software Environment:xserver-xorg-video-intel  2:2.2.1-1ubuntu12, see also
+> http://bugzilla.kernel.org/attachment.cgi?id=16066&action=view
+> Problem Description:
+>
+> Sometime, on cold boot (after the laptop has been shut off), when the screen
+> switch from the Ubuntu startup to gdm, the screen goes blank. Forever.
+> Rebooting (warm) with the same kernel cures it, sometime. If I reboot 2.6.25 it
+> cures it everytime. 
+>
+> Otherwise, the system seems to be working.
+>
+> It was difficult to see because I almost never do a cold boot, the laptop is
+> either sleeping (s2ram) or on, or (warm) rebooted when I test a new kernel. 
+>
+> Helps / tricks to gather more data when it happens are welcome.
+>
+>   
+Seems like the same bug I reported:
+https://bugs.freedesktop.org/show_bug.cgi?id=15602
 
-> OK, I'm sitll not quite sure where this has ended up. I guess you are happy
-> with x86 semantics as they are now. That is, all IO accesses are strongly
-> ordered WRT one another and WRT cacheable memory (which includes keeping
-> them within spinlocks),
+Can you confirm, so Rafael Wysocki can mark your report 
+http://bugzilla.kernel.org/show_bug.cgi?id=10892 as a dup of 
+http://bugzilla.kernel.org/show_bug.cgi?id=10235.
 
-My understanding was that on x86, loads could pass stores in general,
-i.e. a later load could be performed before an earlier store.  I guess
-that can't be true for uncached loads, but could a cacheable load be
-performed before an earlier uncached store?
+Does disabling the boot splash fix the problem? You could also try 
+disabling gdm and starting X manually. When I disable usplash it fixes 
+the problem.
 
-> - as strong as x86. guaranteed not to break drivers that work on x86,
->   but slower on some archs. To me, this is most pleasing. It is much
->   much easier to notice something is going a little slower and to work
->   out how to use weaker ordering there, than it is to debug some
->   once-in-a-bluemoon breakage caused by just the right architecture,
->   driver, etc. It totally frees up the driver writer from thinking
->   about barriers, provided they get the locking right.
+Are you sure kernel 2.6.25 doesn't also have the problem? Because I 
+first saw the issue in 2.6.25-rc1. I tried doing a git bisect and came 
+up with 8f4d37ec073c17e2d4aa8851df5837d798606d6f as the first bad.
+> sched: high-res preemption tick
+> Use HR-timers (when available) to deliver an accurate preemption tick.
+You could try git bisecting the bug, but you might run into problems. 
+When I got down to the last ~80 commits the compiled kernel corrupted my 
+real time clock! So, I'm not 100% sure the the commit that git reported 
+was the _exact_ first bad, but fairly close (that, and the blank screen 
+doesn't happen all the time). But if your git bisect returns the same or 
+similar commit we might be able to narrow down the possibilities.
 
-I just wish we had even one actual example of things going wrong with
-the current rules we have on powerpc to motivate changing to this
-model.
+Jesse,
+    It seems the problem might be related to usplash. In each reported 
+case Ubuntu and usplash were used, and disabling usplash (at least for 
+me) seems to fix the problem. Could there be some timing feature that 
+usplash uses that isn't guaranteed/changed with some optimizations of 
+CFS (or HR-timers) that went into 2.6.25? I've cc'ed Saïvann Carignan, 
+who seems to be the most active contributer to usplash.
 
-> Now that doesn't leave waker ordering architectures lumped with "slow old
-> x86 semantics". Think of it as giving them the benefit of sharing x86
-> development and testing :) We can then formalise the relaxed __ accessors
-> to be more complete (ie. +/- byteswapping).
+Justin Madru
 
-That leaves a gulf between the extremely strongly ordered writel
-etc. and the extremely weakly ordered __writel etc.  The current
-powerpc scheme is fine for a lot of drivers but your proposal would
-leave us no way to deliver it to them.
-
-Paul.
