@@ -1,152 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763985AbYFKQeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764064AbYFKQhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763985AbYFKQeQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 12:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137AbYFKQeJ
+	id S1764064AbYFKQhv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 12:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbYFKQhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 12:34:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38423 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750745AbYFKQeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 12:34:08 -0400
-Date: Wed, 11 Jun 2008 12:30:26 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATCH -mm 2/2] kexec jump -v11: save/restore device state
-Message-ID: <20080611163026.GG6450@redhat.com>
-References: <1213082106.22608.30.camel@caritas-dev.intel.com>
+	Wed, 11 Jun 2008 12:37:43 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:7272 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750733AbYFKQhm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 12:37:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=PjtkWfG7hvY0H8b3ema1Q0nsdjqvavIu+gqV854TzVSW/4XSk+txu7O6f7cV3kCGKY
+         6ocRoGPbiQjTZxgY9eQLYK+Cz5gnvSzn79FSXnWk5tzW0cZhXgyI/Q05s9AP3RjlkyLH
+         GsX9cvOPwnd8FYeqdvKxy1vVmmMkWZ4paV+Ho=
+Message-ID: <484FFF4E.9020007@gmail.com>
+Date: Wed, 11 Jun 2008 19:37:34 +0300
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1213082106.22608.30.camel@caritas-dev.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: David Brownell <david-b@pacbell.net>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 2.6.26-rc5] make HPET_RTC_IRQ track HPET_EMULATE_RTC
+References: <200806052241.44713.david-b@pacbell.net> <200806061644.23449.maximlevitsky@gmail.com> <200806101431.21402.david-b@pacbell.net>
+In-Reply-To: <200806101431.21402.david-b@pacbell.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 03:15:06PM +0800, Huang, Ying wrote:
-> This patch implements devices state save/restore before after kexec.
+David Brownell wrote:
+> On Friday 06 June 2008, Maxim Levitsky wrote:
+> 
+>> Remember long ago I had a discussion with you about HPET that
+>> steals RTC irq in 'legacy replacement' mode, and rtc driver thus
+>> implements rtc on 'top' of hpet.
+>>
+>> New rtc-cmos driver doesn't do this emulation, thus it isn't compatible
+>> with hpet driver.
+> 
+> That was fixed in 9d8af78b07976d4d84e0df491abd4e9db848d0ad (February)
+> by Bernhard Walle <bwalle@suse.de> ... if you look at the bug report
+> associated with this patch, you'll see that rtc-cmos was working OK
+> with HPET, it's just the legacy RTC driver which got confused after
+> the recent updates to clock handling.
 > 
 > 
-> This patch together with features in kexec_jump patch can be used for
-> following:
+>> But there is a solution,  I didn't agree with firstly, but then I did, and
+>> I do agree now, and that to put hpet in normal mode.
+>>
+>> What happened with patches that put hpet in normal independent mode?
 > 
-> - A simple hibernation implementation without ACPI support. You can
->   kexec a hibernating kernel, save the memory image of original system
->   and shutdown the system. When resuming, you restore the memory image
->   of original system via ordinary kexec load then jump back.
+> The story from either Ingo or Thomas (I forget who) was that this is
+> another case where we have to cope with BIOS braindamage.  Not enough
+> BIOS vendors expose the relevant IRQ routing that Linux could default
+> to using HPET in what I'd call "sane" mode.
 > 
-> - Kernel/system debug through making system snapshot. You can make
->   system snapshot, jump back, do some thing and make another system
->   snapshot.
+> Now, that still kind of implies there could be an option to use sane
+> HPET IRQ configuration (doesn't hijack RTC and other IRQs, and there
+> could be a per-CPU HPET) on at least the systems where that IRQ routing
+> is available.  Over time I'd hope that systems like that could become
+> the common case.  But ... someone else would have to do that work.  :)
 > 
-> - Cooperative multi-kernel/system. With kexec jump, you can switch
->   between several kernels/systems quickly without boot process except
->   the first time. This appears like swap a whole kernel/system out/in.
-> 
-> - A general method to call program in physical mode (paging turning
->   off). This can be used to invoke BIOS code under Linux.
-> 
-> 
-> The following user-space tools can be used with kexec jump:
-> 
-> - kexec-tools needs to be patched to support kexec jump. The patches
->   and the precompiled kexec can be download from the following URL:
->        source: http://khibernation.sourceforge.net/download/release_v10/kexec-tools/kexec-tools-src_git_kh10.tar.bz2
->        patches: http://khibernation.sourceforge.net/download/release_v10/kexec-tools/kexec-tools-patches_git_kh10.tar.bz2
->        binary: http://khibernation.sourceforge.net/download/release_v10/kexec-tools/kexec_git_kh10
-> 
-> - makedumpfile with patches are used as memory image saving tool, it
->   can exclude free pages from original kernel memory image file. The
->   patches and the precompiled makedumpfile can be download from the
->   following URL:
->        source: http://khibernation.sourceforge.net/download/release_v10/makedumpfile/makedumpfile-src_cvs_kh10.tar.bz2
->        patches: http://khibernation.sourceforge.net/download/release_v10/makedumpfile/makedumpfile-patches_cvs_kh10.tar.bz2
->        binary: http://khibernation.sourceforge.net/download/release_v10/makedumpfile/makedumpfile_cvs_kh10
-> 
-> - An initramfs image can be used as the root file system of kexeced
->   kernel. An initramfs image built with "BuildRoot" can be downloaded
->   from the following URL:
->        initramfs image: http://khibernation.sourceforge.net/download/release_v10/initramfs/rootfs_cvs_kh10.gz
->   All user space tools above are included in the initramfs image.
-> 
-> 
-> Usage example of simple hibernation:
-> 
-> 1. Compile and install patched kernel with following options selected:
-> 
-> CONFIG_X86_32=y
-> CONFIG_RELOCATABLE=y
-> CONFIG_KEXEC=y
-> CONFIG_CRASH_DUMP=y
-> CONFIG_PM=y
-> 
-> 2. Build an initramfs image contains kexec-tool and makedumpfile, or
->    download the pre-built initramfs image, called rootfs.gz in
->    following text.
-> 
-> 3. Prepare a partition to save memory image of original kernel, called
->    hibernating partition in following text.
-> 
-> 4. Boot kernel compiled in step 1 (kernel A).
-> 
-> 5. In the kernel A, load kernel compiled in step 1 (kernel B) with
->    /sbin/kexec. The shell command line can be as follow:
-> 
->    /sbin/kexec --load-preserve-context /boot/bzImage --mem-min=0x100000
->      --mem-max=0xffffff --initrd=rootfs.gz
-> 
-> 6. Boot the kernel B with following shell command line:
-> 
->    /sbin/kexec -e
-> 
-> 7. The kernel B will boot as normal kexec. In kernel B the memory
->    image of kernel A can be saved into hibernating partition as
->    follow:
-> 
->    jump_back_entry=`cat /proc/cmdline | tr ' ' '\n' | grep kexec_jump_back_entry | cut -d '='`
->    echo $jump_back_entry > kexec_jump_back_entry
->    cp /proc/vmcore dump.elf
-> 
->    Then you can shutdown the machine as normal.
-> 
-> 8. Boot kernel compiled in step 1 (kernel C). Use the rootfs.gz as
->    root file system.
-> 
+> - Dave
 
-One of the concerns raised by hibernation people in the past was to use
-single boot loader entry to boot normally as well while resuming a kernel.
+Thanks a lot, next time I compile the kernel, I will enable hpet
 
-So in this case a user either needs to maintain two boot-loader entries
-or modify it on the fly. I wished there was a better way to handle that.
+Best regards,
+	Maxim Levitsky
 
-I am more interested in ability to have multiple kernel loaded in RAM
-and capability to switch between them. Allows me to take non-disruptive
-core dumps and somebody wanted to snapshots the kernels. That should
-still work.
+PS:
+
+This is a question to ubuntu devs, I need to ask them, when
+they will switch to new rtc driver....
+
+Old driver has some bugs, including no support for suspend/resume, some
+troubles with alarm (it sets the alarm when writing to /proc/acpi/alarm, 
+but it can be cleared by even just reading the time. New driver 
+correctly sets the alarm at actual suspend time)
+Even hpet emulation has some bugs, I even wrote some patches to fix this
+and add suspend/resume, but I guess that newer driver is way better, so 
+no need to fix old one.
 
 
-[..]
-> --- a/arch/x86/kernel/machine_kexec_32.c
-> +++ b/arch/x86/kernel/machine_kexec_32.c
-> @@ -125,6 +125,12 @@ void machine_kexec(struct kimage *image)
->  	/* Interrupts aren't acceptable while we reboot */
->  	local_irq_disable();
->  
-> +	if (image->preserve_context) {
-> +#ifdef CONFIG_X86_IO_APIC
-> +		disable_IO_APIC();
-> +#endif
 
-I think it would be a good idea to put some kind of comment here. We
-need to put APICs in legacy mode so that we can get timer interrupts
-in second kernel. kexec/kdump paths already have calls to
-disable_IO_APIC() in one form or other. kexec jump path also needs one.
-
-Thanks
-Vivek
