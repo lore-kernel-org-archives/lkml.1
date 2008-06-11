@@ -1,45 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764157AbYFKQqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764259AbYFKQqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764157AbYFKQqc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 12:46:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbYFKQqZ
+	id S1764259AbYFKQqr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 12:46:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764182AbYFKQqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 12:46:25 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:39539 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751510AbYFKQqY (ORCPT
+	Wed, 11 Jun 2008 12:46:36 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:43634 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764163AbYFKQqe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 12:46:24 -0400
-Message-ID: <485000E7.80408@zytor.com>
-Date: Wed, 11 Jun 2008 09:44:23 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 11 Jun 2008 12:46:34 -0400
+Message-ID: <48500162.3060604@linux.vnet.ibm.com>
+Date: Wed, 11 Jun 2008 22:16:26 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080505)
 MIME-Version: 1.0
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-CC: Rene Herman <rene.herman@keyaccess.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] x86: enable PAT on (almost) all CPUs that advertise it
-References: <20080610140518.GF5024@alberich.amd.com> <484F065B.2050002@keyaccess.nl> <484F0F5D.8010507@zytor.com> <20080611094730.GB5889@alberich.amd.com> <20080611150507.GD5170@alberich.amd.com>
-In-Reply-To: <20080611150507.GD5170@alberich.amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 11 - on ia64
+References: <20080611193840.08a35b14.sfr@canb.auug.org.au> <484FE1EE.9020201@linux.vnet.ibm.com> <20080611145057.GA10487@uranus.ravnborg.org>
+In-Reply-To: <20080611145057.GA10487@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Herrmann wrote:
+Sam Ravnborg wrote:
+> On Wed, Jun 11, 2008 at 08:02:14PM +0530, Kamalesh Babulal wrote:
+>> Hi Stephen,
+>>
+>> The next-20080611 kernel build fails on ia64 machine
+>>
+>>   AR      arch/ia64/lib/lib.a
+>>   LD      vmlinux.o
+>>   MODPOST vmlinux.o
+>>   GEN     .version
+>>   CHK     include/linux/compile.h
+>>   UPD     include/linux/compile.h
+>>   CC      init/version.o
+>>   LD      init/built-in.o
+>>   LD      .tmp_vmlinux
+>>   LD      vmlinux
+>> ld: .tmp_kallsyms.o: linking constant-gp files with non-constant-gp files
+>> ld: failed to merge target specific data of file .tmp_kallsyms.o
+>> make: *** [vmlinux] Error 1
 > 
-> I just kept the "whitelist" for Intel CPUs. It is similar to what was
-> submitted by Venkatesh in the first place.
-> See pat_known_cpu() in commit 2e5d9c857d4e6c9e7b7d8c8c86a68a7842d213d6
-> (x86: PAT infrastructure patch).
+> A kbuild bug..
+> We do a local build of .tmp_kallsyms.o and we do not pass -mconstant-gp
 > 
+> Can you please try if the following patch fixes it.
+> 
+> 	Sam
 
-Yes, but the "whitelist" for Intel CPUs cover all CPUs which ever 
-flagged the PAT bit, so it should be nuked, too.
+Hi Sam,
 
-	-hpa
+Thanks, the patch fixes the build failure.
+
+Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> 
+> diff --git a/scripts/link-vmlinux.sh b/scripts/link-vmlinux.sh
+> index b9ecff5..b335700 100644
+> --- a/scripts/link-vmlinux.sh
+> +++ b/scripts/link-vmlinux.sh
+> @@ -128,7 +128,7 @@ if [ "${CONFIG_KALLSYMS}" = "y" ]; then
+> 
+>  	# Do an extra pass to link in kallsyms data
+>  	${NM} -n .tmp_vmlinux | scripts/kallsyms > .tmp_kallsyms.S
+> -        ${CC} ${KBUILD_AFLAGS} ${KBUILD_CPPFLAGS} -c -o .tmp_kallsyms.o \
+> +        ${CC} ${KBUILD_AFLAGS} ${AFLAGS_KERNEL} ${KBUILD_CPPFLAGS} -c -o .tmp_kallsyms.o \
+>  	      .tmp_kallsyms.S
+>          # link in kalll symbols
+>  	tell LD vmlinux
+> --
+
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
