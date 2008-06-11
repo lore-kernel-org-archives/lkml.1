@@ -1,69 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761164AbYFKS6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765828AbYFKS5p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761164AbYFKS6b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 14:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761625AbYFKSyu
+	id S1765828AbYFKS5p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 14:57:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760875AbYFKSwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 14:54:50 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:64157 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765306AbYFKSyr (ORCPT
+	Wed, 11 Jun 2008 14:52:10 -0400
+Received: from mail-wa4.bigfish.com ([216.32.181.113]:33496 "EHLO
+	mail148-wa4-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1760866AbYFKSwH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 14:54:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=lZADxBZUey1hLFXhjPqEVoqYG7pEf3VQmhMdeih8cEehL79EgmUbIzc9goZ454peud
-         kv4JBgB65LhZyXUoXJjgUqCRuxmn1MEVzq5MaaKDtsLmCCc4qepVhCKM+F+5ghKeeVu7
-         sk2nvDr1OmGKDMxFLTMm2JE5cpO7R4f38pQ/E=
-Message-ID: <19f34abd0806111154q77739a2m8dcff24e2f9a3922@mail.gmail.com>
-Date: Wed, 11 Jun 2008 20:54:46 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: [PATCH] modules: Take a shortcut for checking if an address is in a module
-Cc: "Rusty Russell" <rusty@rustcorp.com.au>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080611081847.0b22079c@infradead.org>
+	Wed, 11 Jun 2008 14:52:07 -0400
+X-Greylist: delayed 1561 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Jun 2008 14:52:07 EDT
+X-BigFish: VPS-9(zz98dRzz10d3izzz2fh6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
+Message-ID: <48501836.10900@am.sony.com>
+Date: Wed, 11 Jun 2008 11:23:50 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+CC: Sam Ravnborg <sam@ravnborg.org>,
+       linux-embedded <linux-embedded@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Holger Schurig <hs4233@mail.mn-solutions.de>
+Subject: Re: [PATCH] add diffconfig utility
+References: <484ED902.9040000@am.sony.com> <20080610212158.GB23855@uranus.ravnborg.org> <484F1B8F.9000804@am.sony.com> <Pine.LNX.4.64.0806111328150.13310@vixen.sonytel.be>
+In-Reply-To: <Pine.LNX.4.64.0806111328150.13310@vixen.sonytel.be>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080610130519.21bc66f3@infradead.org>
-	 <200806112112.08623.rusty@rustcorp.com.au>
-	 <20080611081847.0b22079c@infradead.org>
+X-OriginalArrivalTime: 11 Jun 2008 18:25:51.0684 (UTC) FILETIME=[9411C040:01C8CBF0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6/11/08, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Wed, 11 Jun 2008 21:12:08 +1000
->  Rusty Russell <rusty@rustcorp.com.au> wrote:
->
->  > On Wednesday 11 June 2008 06:05:19 Arjan van de Ven wrote:
->  > > From: Arjan van de Ven <arjan@linux.intel.com>
->  > > Subject: [PATCH] modules: Take a shortcut for checking if an
->  > > address is in a module
->  > >
->  > > Various pieces of the kernel (lockdep, latencytop, etc) tend to
->  > > store backtraces, sometimes at a relatively high frequency. In
->  > > itself this isn't a big performance deal (after all you're using
->  > > diagnostics features), but there have been some complaints from
->  > > people who have over 100 modules loaded that this is a tad too slow.
+Geert Uytterhoeven wrote:
+> No checking for excess arguments?
 
-Would it be overkill to simply drop the module addresses in an rbtree
-and use that instead of a linear search over all the modules?
+Holger Schurig wrote:
+> Would it be helpful to compare .config.old to .config if you
+> don't provide any command line arguments?
 
-It would probably take a fair number of lines in C, and with a little
-memory overhead, but the speed-up should be great. Should I give it a
-try? (It would be arch-independent too.)
+Both good ideas.  These are implemented in the latest version.
+Note that I check for and use KBUILD_OUTPUT.  (I always put
+my build output outside the source directory, since
+I usually build for multiple arches from a single tree.)
 
+The program is also now better structured, IMHO.
+ -- Tim
 
-Vegard
+Diffconfig is a simple utility for comparing two .config files.
+See usage in the script for more info.
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Signed-off-by: Tim Bird <tim.bird@am.sony.com>
+
+ scripts/diffconfig |  128 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 128 insertions(+)
+ create mode 100755 scripts/diffconfig
+
+diff --git a/scripts/diffconfig b/scripts/diffconfig
+new file mode 100755
+index 0000000..aa6cfe1
+--- /dev/null
++++ b/scripts/diffconfig
+@@ -0,0 +1,128 @@
++#!/usr/bin/python
++#
++# diffconfig - a tool to compare .config files.
++#
++# originally written in 2006 by Matt Mackall
++#  (at least, this was in his bloatwatch source code)
++# last worked on 2008 by Tim Bird
++#
++
++import sys, os
++
++def usage():
++    print "Usage: diffconfig [-h] [-m] [<config1> <config2>]\n"
++    print """Diffconfig is a simple utility for comparing two .config files.
++Using standard diff to compare .config files often includes extraneous and
++distracting information.  This utility produces sorted output with only the
++changes in configuration values between the two files.
++
++Added and removed items are shown with a leading plus or minus, respectively.
++Changed items show the old and new values on a single line.
++
++If -m is specified, then output will be in "merge" style, which has the changed
++and new values in kernel config option format.
++
++If no config files are specified, .config and .config.old are used.
++
++Example usage:
++ $ diffconfig .config config-with-some-changes
++-EXT2_FS_XATTR  n
++-EXT2_FS_XIP  n
++ CRAMFS  n -> y
++ EXT2_FS  y -> n
++ LOG_BUF_SHIFT  14 -> 16
++ PRINTK_TIME  n -> y
++"""
++    sys.exit(0)
++
++# returns a dictionary of name/value pairs for config items in the file
++def readconfig(config_file):
++    d = {}
++    for line in config_file:
++        line = line[:-1]
++        if line[:7] == "CONFIG_":
++            name, val = line[7:].split("=", 1)
++            d[name] = val
++        if line[-11:] == " is not set":
++            d[line[9:-11]] = "n"
++    return d
++
++def print_config(op, config, value, new_value):
++    global merge_style
++
++    if merge_style:
++        if new_value:
++            if new_value=="n":
++                print "# CONFIG_%s is not set" % config
++            else:
++                print "CONFIG_%s=%s" % (config, new_value)
++    else:
++        if op=="-":
++            print "-%s %s" % (config, value)
++        elif op=="+":
++            print "+%s %s" % (config, new_value)
++        else:
++            print " %s %s -> %s" % (config, value, new_value)
++
++def main():
++    global merge_style
++
++    # parse command line args
++    if ("-h" in sys.argv or "--help" in sys.argv):
++	usage()
++
++    merge_style = 0
++    if "-m" in sys.argv:
++        merge_style = 1
++        sys.argv.remove("-m")
++
++    argc = len(sys.argv)
++    if not (argc==1 or argc == 3):
++        print "Error: incorrect number of arguments or unrecognized option"
++        usage()
++
++    if argc == 1:
++        # if no filenames given, assume .config and .config.old
++        build_dir=""
++        if os.environ.has_key("KBUILD_OUTPUT"):
++            build_dir = os.environ["KBUILD_OUTPUT"]+"/"
++
++        configa_filename = build_dir + ".config.old"
++        configb_filename = build_dir + ".config"
++    else:
++        configa_filename = sys.argv[1]
++        configb_filename = sys.argv[2]
++
++    a = readconfig(file(configa_filename))
++    b = readconfig(file(configb_filename))
++
++    # print items in a but not b (accumulate, sort and print)
++    old = []
++    for config in a:
++        if config not in b:
++            old.append(config)
++    old.sort()
++    for config in old:
++        print_config("-", config, a[config], None)
++        del a[config]
++
++    # print items that changed (accumulate, sort, and print)
++    changed = []
++    for config in a:
++        if a[config] != b[config]:
++            changed.append(config)
++        else:
++            del b[config]
++    changed.sort()
++    for config in changed:
++        print_config("->", config, a[config], b[config])
++        del b[config]
++
++    # now print items in b but not in a
++    # (items from b that were in a were removed above)
++    new = b.keys()
++    new.sort()
++    for config in new:
++        print_config("+", config, None, b[config])
++
++main()
+
