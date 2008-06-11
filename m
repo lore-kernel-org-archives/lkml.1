@@ -1,97 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbYFKXww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbYFKXxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758094AbYFKXww (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 19:52:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbYFKXwn
+	id S1759337AbYFKXxT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 19:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756352AbYFKXw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 19:52:43 -0400
-Received: from smtpout.karoo.kcom.com ([212.50.160.34]:46525 "EHLO
-	smtpout.karoo.kcom.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751875AbYFKXwm (ORCPT
+	Wed, 11 Jun 2008 19:52:58 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48483
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758936AbYFKXwz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 19:52:42 -0400
-X-IronPort-AV: E=Sophos;i="4.27,626,1204502400"; 
-   d="scan'208";a="2021695"
-Date: Thu, 12 Jun 2008 00:52:40 +0100 (BST)
-From: Keith Roberts <keith@karsites.net>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Problems with edd
-In-Reply-To: <485031FA.6070303@zytor.com>
-Message-ID: <alpine.LFD.1.10.0806120029040.23296@www.karsites.net>
-References: <311993399@web.de> <484F10A9.4030606@zytor.com> <alpine.LFD.1.10.0806112102350.18067@www.karsites.net> <485031FA.6070303@zytor.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 11 Jun 2008 19:52:55 -0400
+Date: Wed, 11 Jun 2008 16:52:55 -0700 (PDT)
+Message-Id: <20080611.165255.242691774.davem@davemloft.net>
+To: kuznet@ms2.inr.ac.ru
+Cc: vgusev@openvz.org, mcmanus@ducksong.com, xemul@openvz.org,
+       netdev@vger.kernel.org, ilpo.jarvinen@helsinki.fi, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [TCP]: TCP_DEFER_ACCEPT causes leak sockets
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080611135718.GA26914@ms2.inr.ac.ru>
+References: <200806111658.41182.vgusev@openvz.org>
+	<20080611135718.GA26914@ms2.inr.ac.ru>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jun 2008, H. Peter Anvin wrote:
+From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
+Date: Wed, 11 Jun 2008 17:57:18 +0400
 
-> To: Keith Roberts <keith@karsites.net>
-> From: H. Peter Anvin <hpa@zytor.com>
-> Subject: Re: Problems with edd
+> Major issue is that tcp_defer_accept_check() manipulates with not locked
+> listening socket. And from all that I know it is impossible to take
+> the lock in this context.
 > 
-> Keith Roberts wrote:
->>> 
->>> I have put in syslinux 3.70-pre16 code to print the source of this 
->>> message.  You may want to try to grab isolinux from this release and 
->>> update your CD image to get some useful debugging info out of this.
->>>
->>>     -hpa
->> 
->> Not being a kernel guru, I'm not sure how to do that hpa?
->> 
->> Where do I get isolinux from please?
->> 
->
-> ftp://ftp.kernel.org/pub/linux/utils/boot/syslinux/Testing/syslinux-3.70-pre16.tar.bz2
->
->> how do I update my CD image?
->
-> You will need to run mkisofs with the same options used to generate the 
-> image.
+> Also I see no accounting for those sockets. With this patch any server, which
+> set deferred accept, can be flooded with sockets until memory exhausts.
+> I did not test and would be glad to be mistaken.
+> 
+> 
+> Issue with locking can be solved by adding a separate spinlock for
+> manipulations with accept_queue. Apparently, accounting and killing
+> sockets, which become stale after closing listening socket and
+> are going to be alive for up to 65535 seconds, also goes under this lock.
+> 
+> Frankly, cost looks too high for this feature.
+> 
+> Hiding from accept() sockets with only out-of-order data only
+> is the only thing which is impossible with old approach. Is this really
+> so valuable? My opinion: no, this is nothing but a new loophole
+> to consume memory without control.
 
-OK - thankyou for that, hpa
+Yes, we discussed the locking issue over past few days.  See
+the thread: "stuck localhost TCP connections, v2.6.26-rc3+"
 
-> In a pinch, if you can point me to the original ISO I could try to doctor 
-> it.
-
-I originally got mine from:
-
-http://mirror.switch.ch/ftp/mirror/fedora/linux/releases/9/Fedora/i386/iso/Fedora-9-i386-netinst.iso
-
-The sha1sum is:
-
-3b1df20ece05d64c34dd9c64400975b74eded0f2  Fedora-9-i386-netinst.iso
-
-I have also put it on my website, just in case it gets 
-updated on the mirrors:
-
-http://www.karsites.net/fedora/9/Fedora-9-i386-netinst.iso
-
-obviously same sha1sum ;)
-
-The Fedora guys are following this thread now. I have put 
-the link to your patch on my Fedora bug report:
-
-https://bugzilla.redhat.com/show_bug.cgi?id=450678
-
-I have never built an iso file before, but I'll read up on 
-it. My plan was to copy the files from the F9 net-installer 
-CD to my hard drive, update them with your patch, and then 
-re-make the iso file and burn that back to CD-R. Would that 
-work?
-
->> I'm willing to give this a try if it will sort out the problem.
->
-> That would be useful.  This is potentially a previously unreported BIOS 
-> issue which might have a straightforward workaround, so I'm eager to get 
-> the data.
->
-> 	-hpa
-
-Regards
-
-Keith
+More and more, the arguments are mounting to completely revert the
+established code path changes, and frankly that is likely what I am
+going to do by the end of today.
