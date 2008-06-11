@@ -1,145 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757394AbYFKTwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757769AbYFKTyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757394AbYFKTwd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 15:52:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbYFKTwZ
+	id S1757769AbYFKTyA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 15:54:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757394AbYFKTxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 15:52:25 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:53835 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750771AbYFKTwY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 15:52:24 -0400
-Date: Wed, 11 Jun 2008 15:52:22 -0400
-To: linux-kernel@vger.kernel.org
-Cc: linux-nfs@vger.kernel.org,
-       "Weathers, Norman R." <Norman.R.Weathers@conocophillips.com>
-Subject: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
-Message-ID: <20080611195222.GP15380@fieldses.org>
-References: <1212519001.24900.14.camel@hololw58> <20080606160922.GG30863@fieldses.org> <0122F800A3B64C449565A9E8C2977010155587@hoexmb9.conoco.net> <20080609185355.GF28584@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75D9F@hoexmb9.conoco.net> <20080610171602.GG20184@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DA3@hoexmb9.conoco.net> <20080611184613.GM15380@fieldses.org>
+	Wed, 11 Jun 2008 15:53:49 -0400
+Received: from ik-out-1112.google.com ([66.249.90.177]:36667 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755553AbYFKTxq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 15:53:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=hgN5v3psMzFrqLvCVO4loaaKUM+Sz+/oXIIMLX7rCXC4ZyPIaOidpaoPnSVXKnitNH
+         cH46BAKYnzIAYUCo+86wiJ4yTiEKF8y/9cWdonbeBdfqyJORvaKIn09t3QorswJUW5cq
+         NOYlJP38cQk5/MXFs5MK9DkSVUHj0EZYoC0+U=
+From: Chris Clayton <chris2553@googlemail.com>
+Reply-To: chris2553@googlemail.com
+To: Greg KH <greg@kroah.com>
+Subject: Re: 2,6.26-rc4-git2 - long pause during boot
+Date: Wed, 11 Jun 2008 19:51:09 +0000
+User-Agent: KMail/1.9.9
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       Hannes Reinecke <hare@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-usb@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>
+References: <200806010415.05290.chris2553@googlemail.com> <200806111858.05114.chris2553@googlemail.com> <20080611191533.GA6189@kroah.com>
+In-Reply-To: <20080611191533.GA6189@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080611184613.GM15380@fieldses.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Message-Id: <200806111951.09275.chris2553@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm probably missing something fundamental--why doesn't
-/proc/slab_allocators show any results for size-x where x >= 4096?
+On Wednesday 11 June 2008, Greg KH wrote:
+> On Wed, Jun 11, 2008 at 06:58:05PM +0000, Chris Clayton wrote:
+> > Jun 11 17:48:13 upstairs udevd-event[1457]: wait_for_sysfs: wait for
+> > '/sys/devices/pci0000:00/0000:00:1e.0/0000:02:0a.2/usb11/11-2/11-2:1.0/ho
+> >st4/ioerr_cnt' for 20 mseconds Jun 11 17:48:18 upstairs last message
+> > repeated 236 times
+>
+> This doesn't look good.  It looks like a udev rule in your system is
+> looking for a file that will never show up.  That's a short way to a
+> long delay time :)
+>
+> Try commenting out the rule that does this and see if things are fixed.
+>
 
-Someone's seeing a performance problem with the linux nfs server.  One
-of the symptoms is the "size-4096" slab cache seems to be out of
-control.  I assumed that meant that memory allocated by kmalloc() might
-be leaking, so figured it might be interesting to turn on
-CONFIG_DEBUG_SLAB_LEAK.  As far as I can tell what that does is list
-kmalloc() callers in /proc/slab_allocators.  But that doesn't seem to be
-showing any results for size-4096.  Can anyone provide a clue?
-Thanks!
+Yes, that's it. It's this rule, which appears as the second rule in the 
+slackware rules file that's distributed with udev (and it's been there since 
+udev-97 in August 2006):
 
---b.
+ACTION=="add", SUBSYSTEM=="scsi", WAIT_FOR_SYSFS="ioerr_cnt"
 
-On Wed, Jun 11, 2008 at 02:46:13PM -0400, bfields wrote:
-> On Tue, Jun 10, 2008 at 05:12:31PM -0500, Weathers, Norman R. wrote:
-> >  
-> > 
-> > > -----Original Message-----
-> > > From: J. Bruce Fields [mailto:bfields@fieldses.org] 
-> > > Sent: Tuesday, June 10, 2008 12:16 PM
-> > > To: Weathers, Norman R.
-> > > Cc: linux-nfs@vger.kernel.org
-> > > Subject: Re: Problems with large number of clients and reads
-> > > 
-> > > On Tue, Jun 10, 2008 at 09:30:18AM -0500, Weathers, Norman R. wrote:
-> > > > Unfortunately, I cannot stop the clients (middle of long running
-> > > > jobs).  I might be able to test this soon.  If I have the number of
-> > > > threads high, yes I can reduce the number of threads and it 
-> > > appears to
-> > > > lower some of the memory, but even with as little as three threads,
-> > > > the memory usage climbs very high, just not as high as if there are
-> > > > say 8 threads.  When the memory usage climbs high, it can cause the
-> > > > box to not respond over the network (ssh, rsh), and even be very
-> > > > sluggish when I am connected over our serial console to the 
-> > > server(s).
-> > > > This same scenario has been happening with kernels that I have tried
-> > > > from 2.6.22.x on to the 2.6.25 series.  The 2.6.25 series is
-> > > > interesting in that I can push the same load from a box with the
-> > > > 2.6.25 kernel and not have a load over .3 (with 3 threads), but with
-> > > > the 2.6.22.x kernel, I have a load of over 3 when I hit the same
-> > > > conditions.
-> > > 
-> > > OK, I think what we want to do is turn on 
-> > > CONFIG_DEBUG_SLAB_LEAK.  I've
-> > > never used it before, but it looks like it will report which functions
-> > > are allocating from each slab cache, which may be exactly what we need
-> > > to know.  So:
-> > > 
-> > > 	1. Install a kernel with both CONFIG_DEBUG_SLAB ("Debug slab
-> > > 	memory allocations") and CONFIG_DEBUG_SLAB_LEAK ("Memory leak
-> > > 	debugging") turned on.  They're both under the "kernel hacking"
-> > > 	section of the kernel config.  (If you have a file
-> > > 	/proc/slab_allocators, then you already have these turned on and
-> > > 	you can skip this step.)
-> > > 
-> > > 	2. Do whatever you need to do to reproduce the problem.
-> > > 
-> > > 	3. Get a copy of /proc/slabinfo and /proc/slab_allocators.
-> > > 
-> > > Then we can take a look at that and see if it sheds any light.
-> > 
-> > 
-> > I have taken several snapshots of the /proc/slab_allocators and
-> > /proc/slabinfo as requested, but since there is a lot of info in them,
-> > and I didn't think anyone wanted to go cross-eyed reading the data in an
-> > email, I have them up on a website:
-> > 
-> > http://shashi-weathers.net/linux/cluster/NFS/
-> 
-> Excellent.
-> 
-> > 
-> > The order of data collection is:
-> > 
-> > slab_allocators_bad1.txt and corresponding slabinfo
-> > slab_allocators_after_bad1.txt and corresponding slabinfo
-> > slab_allocators_16_threads.txt and corresponding slabinfo
-> > slab_allocators_16_threads_1.txt and corresponding slabinfo
-> > slab_allocators_32_threads.txt and corresponding slabinfo
-> > slab_allocators_really_bad.txt and corresponding slabinfo.
-> > 
-> > 
-> > You will have to forgive my ignorance at this point, but I was looking
-> > through the slabinfo and slab_allocators, and noticed that size-4096
-> > does not show up in slab_allocators... I hope that is by design.  You
-> > can see it growing into the gigabytes in the slabinfo files....
-> 
-> Argh. OK, I don't understand well enough how this works.  Time to ask
-> someone, I guess....
-> 
-> --b.
-> 
-> > 
-> > 
-> > 
-> > > 
-> > > I think that debugging will hurt the server performance, so you won't
-> > > want to keep it turned on all the time.
-> > > 
-> > > > 
-> > > > Also, this is all with the SLAB cache option.  SLUB crashes 
-> > > everytime
-> > > > I use it under heavy load.
-> > > 
-> > > Have you reported the SLUB bugs to lkml?
-> > 
-> > No, I haven't yet.  I didn't know for sure if I was doing something
-> > wrong, or if SLUB was the problem there.  Since the failures, I had gone
-> > back to using SLAB anyway, so ....  I probably should...
-> > 
-> > > 
-> > > --b.
-> > > 
-> > 
-> > 
-> > Norman Weathers
+Commenting that rule out eliminates the pause in the boot and in the appearance 
+of icons on my desktop.
+
+Thanks,
+
+Chris
+
+> thanks,
+>
+> greg k-h
+
+
+-- 
+Beauty is in the eye of the beerholder.
