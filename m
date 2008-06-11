@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbYFKONM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757427AbYFKON4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757363AbYFKONM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 10:13:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbYFKOM6
+	id S1757427AbYFKON4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 10:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbYFKONp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 10:12:58 -0400
-Received: from smtp.eu.citrix.com ([62.200.22.115]:52113 "EHLO
-	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751472AbYFKOM6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 10:12:58 -0400
-X-Greylist: delayed 592 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Jun 2008 10:12:57 EDT
-X-IronPort-AV: E=Sophos;i="4.27,624,1204520400"; 
-   d="scan'208";a="557447"
-Date: Wed, 11 Jun 2008 15:03:04 +0100
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Jiri Bohac <jbohac@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] console keyboard mapping broken by 04c71976
-Message-ID: <20080611140304.GM4244@implementation.uk.xensource.com>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Jiri Bohac <jbohac@suse.cz>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	lkml <linux-kernel@vger.kernel.org>
-References: <20080611134837.GA11462@midget.suse.cz>
+	Wed, 11 Jun 2008 10:13:45 -0400
+Received: from styx.suse.cz ([82.119.242.94]:50700 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750832AbYFKONo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 10:13:44 -0400
+Date: Wed, 11 Jun 2008 16:13:43 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
+       marcel@holtmann.org, linux-kernel@vger.kernel.org,
+       anssi.hannula@gmail.com
+Subject: Re: [PATCH 06/10] HID: move logitech report quirks
+In-Reply-To: <484D070E.9050707@gmail.com>
+Message-ID: <Pine.LNX.4.64.0806111611540.10085@jikos.suse.cz>
+References: <1210931362-18422-1-git-send-email-jirislaby@gmail.com>
+ <1210931362-18422-2-git-send-email-jirislaby@gmail.com>
+ <1210931362-18422-3-git-send-email-jirislaby@gmail.com>
+ <1210931362-18422-4-git-send-email-jirislaby@gmail.com>
+ <1210931362-18422-5-git-send-email-jirislaby@gmail.com>
+ <1210931362-18422-6-git-send-email-jirislaby@gmail.com>
+ <Pine.LNX.4.64.0806041520140.10085@jikos.suse.cz> <484D070E.9050707@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080611134837.GA11462@midget.suse.cz>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-OriginalArrivalTime: 11 Jun 2008 14:03:03.0879 (UTC) FILETIME=[DDB9A570:01C8CBCB]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Err, at quick look it looks to me rather like a bug kbd, which doesn't
-cope with the console being in unicode mode.  Which distribution are you
-using?
+On Mon, 9 Jun 2008, Jiri Slaby wrote:
 
-In unicode mode, k_self is really meant to hold unicode values (there is
-no other way to provide an arbitrary unicode value in keyboard maps),
-and thus kbd should translate KT_LETTER's value from the map file's
-encoding (set by the charset directive) to unicode.
+> > > static const struct hid_device_id hid_blacklist[] = {
+> > > +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH,
+> > > USB_DEVICE_ID_MX3000_RECEIVER) },
+> > > +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_S510_RECEIVER)
+> > > },
+> > > +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH,
+> > > USB_DEVICE_ID_S510_RECEIVER_2) },
+> > >  	{ }
+> > >  };
+> > This shouldn't be needed as soon as the userspace supports the proper module
+> > autoloading, right?
+> This is needed to tell generic drivers not to bind these, its' generic
+> blacklist. I have no idea how this could be done better with current
+> drivers/base/.
 
-Samuel
+Hmm ... but if we make sure that the order in `modules.order' puts all the 
+specialized drivers before the generic one, the binding should be done 
+correctly even without blacklist, right?
+
+-- 
+Jiri Kosina
+SUSE Labs
