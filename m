@@ -1,92 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754155AbYFKNsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754513AbYFKNxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754155AbYFKNsq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 09:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbYFKNsj
+	id S1754513AbYFKNxO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 09:53:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbYFKNw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 09:48:39 -0400
-Received: from styx.suse.cz ([82.119.242.94]:49627 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751359AbYFKNsj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 09:48:39 -0400
-Date: Wed, 11 Jun 2008 15:48:37 +0200
-From: Jiri Bohac <jbohac@suse.cz>
-To: samuel.thibault@ens-lyon.org, Andrew Morton <akpm@linux-foundation.org>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] console keyboard mapping broken by 04c71976
-Message-ID: <20080611134837.GA11462@midget.suse.cz>
+	Wed, 11 Jun 2008 09:52:59 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:39689 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750953AbYFKNw7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 09:52:59 -0400
+Date: Wed, 11 Jun 2008 15:52:57 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Arjan van de Ven <arjan@infradead.org>
+cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       "solsTiCe d'Hiver" <solstice.dhiver@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: no cpu MHz in /proc/cpuinfo on 2.6.25.4-rt6
+In-Reply-To: <20080611063639.5e1eea5b@infradead.org>
+Message-ID: <alpine.LNX.1.10.0806111552090.20733@fbirervta.pbzchgretzou.qr>
+References: <200806102152.23286.solstice.dhiver@gmail.com> <20080610131314.5f7069e6@infradead.org> <484EE71A.40002@intel.com> <alpine.LNX.1.10.0806111440480.20733@fbirervta.pbzchgretzou.qr> <20080611063639.5e1eea5b@infradead.org>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-the Czech (and I believe many other) console keyboard maps are
-broken since 04c71976. 
+On Wednesday 2008-06-11 15:36, Arjan van de Ven wrote:
+>> >> btw this is scary; the Mhz line in /proc/cpuinfo doesn't have much
+>> >> meaning really, so applications using it and depending on it is a
+>> >> rather big disaster ;-(
+>> >> 
+>> >> Does anyone know why jackd wants to use this?
+>> 
+>> It would be nice to have a /sys file where the CPU frequency is in,
+>
+>may I ask why? What would you do with it?
 
-To make old (non-unicode - the majority distributed with the kbd
-package) keymaps work, the keyboard mapping in the kernel uses a
-trick. It uses the translation tables loaded with the console
-font to translate the 8-bit values to unicode values.
+Off the top off the head, just for reporting to the user. Desklets and stuff.
 
-So with the currently available keymaps when using unicode in
-the console you end up with:
-
-- kbd->kbdmode set to VC_UNICODE, to send UTF-8 sequences to the
-  terminal
-- most letters, icluding non-latin1, defined as type=KT_LETTER in the
-  keymap, with an 8-bit value, which only has its correct meaning
-  when translated using conv_8bit_to_uni().
-
-04c71976 changes k_self() to:
-static void k_self(struct vc_data *vc, unsigned char value, char up_flag)
-{
-	unsigned int uni;
-	if (kbd->kbdmode == VC_UNICODE)
-		uni = value;
-	else
-		uni = conv_8bit_to_uni(value);
-	k_unicode(vc, uni, up_flag);
-}
-
-It wrongly assumes, that when the keyboard is in the VC_UNICODE
-mode, value is already the correct unicode value. This is only
-true for latin1.
-
-I think we need to always convert the value with
-conv_8bit_to_uni(), as we did before 04c71976.
-
-The following patch fixes the problem for me: 
-
-diff --git a/drivers/char/keyboard.c b/drivers/char/keyboard.c
-index 7f7e798..16492b7 100644
---- a/drivers/char/keyboard.c
-+++ b/drivers/char/keyboard.c
-@@ -678,10 +678,7 @@ static void k_deadunicode(struct vc_data *vc, unsigned int value, char up_flag)
- static void k_self(struct vc_data *vc, unsigned char value, char up_flag)
- {
- 	unsigned int uni;
--	if (kbd->kbdmode == VC_UNICODE)
--		uni = value;
--	else
--		uni = conv_8bit_to_uni(value);
-+	uni = conv_8bit_to_uni(value);
- 	k_unicode(vc, uni, up_flag);
- }
-
-As far as I can see, it will affect latin1 users that now get
-their keymaps working even without loading the "trivial" console
-map (so the conversion will not do anything) but I think they
-needed to do that before 04c71976, so they probably still do
-without even knowing, right?
-
-Samuel, any comments?
-
--- 
-Jiri Bohac <jbohac@suse.cz>
-SUSE Labs, SUSE CZ
-
+>If it says 100Mhz, what would you conclude? That you have a slow cpu?
+>Or that you have a really fast CPU that currently runs at a low
+>frequency because you're mostly idle and are saving power?
+>
+>CPU frequency is...
+>1) not something that is fixed; it changes all the time
+>2) not a good indication for performance; remember the 3.4Ghz pentium4,
+>a 2Ghz Core2Duo outperforms it
+>3) something which the cpu itself barely honors (the clock stops during
+>idle etc etc)
