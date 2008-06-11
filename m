@@ -1,94 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754252AbYFKLbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754902AbYFKLdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754252AbYFKLbZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 07:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751047AbYFKLbR
+	id S1754902AbYFKLdS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 07:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbYFKLdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 07:31:17 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:39135 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750890AbYFKLbQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 07:31:16 -0400
-Date: Wed, 11 Jun 2008 17:01:04 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Duane Griffin <duaneg@dghda.com>
-Cc: akpm@linux-foundation.org, Andreas Dilger <adilger@sun.com>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/6] ext4: tighten restrictions on inode flags
-Message-ID: <20080611113104.GC9008@skywalker>
-References: <1213142649-32685-1-git-send-email-duaneg@dghda.com> <1213142649-32685-2-git-send-email-duaneg@dghda.com> <1213142649-32685-3-git-send-email-duaneg@dghda.com> <1213142649-32685-4-git-send-email-duaneg@dghda.com> <1213142649-32685-5-git-send-email-duaneg@dghda.com> <1213142649-32685-6-git-send-email-duaneg@dghda.com> <1213142649-32685-7-git-send-email-duaneg@dghda.com>
+	Wed, 11 Jun 2008 07:33:05 -0400
+Received: from lucidpixels.com ([75.144.35.66]:42120 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751163AbYFKLdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 07:33:04 -0400
+Date: Wed, 11 Jun 2008 07:33:03 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org
+cc: linux-raid@vger.kernel.org
+Subject: Re: What do these SATA errors mean / kernel 2.6.25.6 (DRDY ERR/ICRC
+ ABRT)
+In-Reply-To: <alpine.DEB.1.10.0806110608080.7726@p34.internal.lan>
+Message-ID: <alpine.DEB.1.10.0806110732330.15676@p34.internal.lan>
+References: <alpine.DEB.1.10.0806110608080.7726@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1213142649-32685-7-git-send-email-duaneg@dghda.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 11, 2008 at 01:04:09AM +0100, Duane Griffin wrote:
-> At the moment there are few restrictions on which flags may be set on which
-> inodes. Specifically DIRSYNC may only be set on directories and IMMUTABLE
-> and APPEND may not be set on links. Tighten that to disallow TOPDIR being
-> set on non-directories and SECRM, UNRM, COMPR, SYNC, DIRTY, COMPRBLK,
-> NOCOMPR, ECOMPR, INDEX, JOURNAL_DATA, NOTAIL, HUGE_FILE, EXTENTS or
-> EXT_MIGRATE being set on anything but regular files or directories.
-> 
-> Introduce a flags masking function which masks flags based on mode and use
-> it during inode creation and when flags are set via the ioctl to facilitate
-> future consistency.
-> 
-> Signed-off-by: Duane Griffin <duaneg@dghda.com>
-> --
-> 
-> The specific flags masked out here are those suggested by Andreas, as well
-> as IMMUTABLE, which I included to match the behaviour of the existing code,
-> and EXT_MIGRATE.
-> 
-> It would be good to get some review of these.
-> 
-> ---
->  fs/ext4/ext4.h   |   24 ++++++++++++++++++++++++
->  fs/ext4/ialloc.c |   14 +++++---------
->  fs/ext4/ioctl.c  |    3 +--
->  3 files changed, 30 insertions(+), 11 deletions(-)
-> 
-> diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
-> index 1a4faa5..2aafd1b 100644
-> --- a/fs/ext4/ext4.h
-> +++ b/fs/ext4/ext4.h
-> @@ -243,6 +243,30 @@ struct ext4_group_desc
->  			   EXT4_JOURNAL_DATA_FL | EXT4_NOTAIL_FL|\
->  			   EXT4_DIRSYNC_FL)
-> 
-> +/* Flags that are inappropriate for regular files. */
-> +#define EXT4_REG_FLMASK (EXT4_DIRSYNC_FL | EXT4_TOPDIR_FL)
-> +
-> +/* Flags that are inappropriate for non-directories/regular files. */
-> +#define EXT4_OTHER_FLMASK (EXT4_SECRM_FL | EXT4_UNRM_FL | EXT4_COMPR_FL |\
-> +			   EXT4_SYNC_FL | EXT4_IMMUTABLE_FL | EXT4_APPEND_FL |\
-> +			   EXT4_DIRTY_FL | EXT4_COMPRBLK_FL | EXT4_NOCOMPR_FL|\
-> +			   EXT4_ECOMPR_FL | EXT4_INDEX_FL |\
-> +			   EXT4_JOURNAL_DATA_FL | EXT4_NOTAIL_FL |\
-> +			   EXT4_DIRSYNC_FL | EXT4_TOPDIR_FL |\
-> +			   EXT4_HUGE_FILE_FL | EXT4_EXTENTS_FL |\
-> +			   EXT4_EXT_MIGRATE)
-> +
-> +/* Mask out flags that are inappropriate for the given type of inode. */
-> +static inline __le32 ext4_mask_flags(__le16 mode, __le32 flags)
-> +{
-> +	if (S_ISDIR(mode))
-> +		return flags;
-> +	else if (S_ISREG(mode))
-> +		return flags & ~EXT4_REG_FLMASK;
-> +	else
-> +		return flags & ~EXT4_OTHER_FLMASK;
-> +}
-> +
 
-why are the arguments __le32 ? They should be in host order.
 
-static inline  __u32 ext4_mask_flags(umode_t mode, __u32 flags)
+On Wed, 11 Jun 2008, Justin Piszcz wrote:
 
--aneesh
+> Never had a single error so far, powered down my host, powered it back up,
+> and now with kernel 2.6.25.6:
+>
+
+Will replace/re-connect/check cables/connectors, a long test on each disk
+just passed fine as well but there was a single (1) CRC error, could be the
+cables/connectors/will verify later today.
+
+Justin.
+
