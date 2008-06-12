@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760939AbYFLXOa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761156AbYFLXQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760939AbYFLXOa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 19:14:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755576AbYFLXOT
+	id S1761156AbYFLXQS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 19:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbYFLXQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 19:14:19 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54396
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753400AbYFLXOT (ORCPT
+	Thu, 12 Jun 2008 19:16:08 -0400
+Received: from [194.117.236.238] ([194.117.236.238]:47230 "EHLO
+	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754693AbYFLXQH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 19:14:19 -0400
-Date: Thu, 12 Jun 2008 16:14:16 -0700 (PDT)
-Message-Id: <20080612.161416.82163498.davem@davemloft.net>
-To: jeff@garzik.org
-Cc: sfr@canb.auug.org.au, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [git patches] net driver updates for .27
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4851A695.7050706@garzik.org>
-References: <48519E57.3030906@garzik.org>
-	<20080612.152214.21877307.davem@davemloft.net>
-	<4851A695.7050706@garzik.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 12 Jun 2008 19:16:07 -0400
+Date: Fri, 13 Jun 2008 02:15:42 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: righi.andrea@gmail.com
+Cc: tzanussi@gmail.com, penberg@cs.helsinki.fi, akpm@linux-foundation.org,
+       compudj@krystal.dyndns.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] relay: Fix race condition which occurs when reading
+ across CPUs.
+Message-ID: <20080613021542.6ca9e6b5@linux360.ro>
+In-Reply-To: <4851A9FA.1000104@gmail.com>
+References: <20080612232618.647f5cda@linux360.ro>
+	<4851A9FA.1000104@gmail.com>
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Thu, 12 Jun 2008 18:43:33 -0400
+On Fri, 13 Jun 2008 00:58:01 +0200 (MEST)
+Andrea Righi <righi.andrea@gmail.com> wrote:
 
-> David Miller wrote:
-> > "Author" is always who wrote the patch, and I think it's important to
-> > be consistent in that area.
+> If you just break here buf->rw_lock will be unlocked twice. Maybe a
+> better way is:
+> 		if (desc->error < 0)
+> 			goto out;
+> 		...
+>   	} while (desc->count && ret);
+> 	spin_unlock_irqrestore(&buf->rw_lock, flags);
+> out:
+>   	mutex_unlock(&filp->f_path.dentry->d_inode->i_mutex);
 > 
-> "always"?  There are /plenty/ of occasions, usually at big corps, where 
-> the Author is not the person who wrote the patch, but rather the person 
-> who sent the patch.
-> 
-> And you'll note that all Linus's tools capture that -- author is patch 
-> sender -- albeit with optional From parsing from patch commit description.
+>   	return desc->written;
 
-I guess that's a compelling enough argument.  I'll pull your
-original tree, thanks Jeff.
+Thanks, I did not notice. Will fix and resubmit.
+
+
+	Eduard
