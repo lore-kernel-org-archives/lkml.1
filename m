@@ -1,52 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbYFLFTh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756295AbYFLFTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755922AbYFLFTh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 01:19:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbYFLFTQ
+	id S1756295AbYFLFTw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 01:19:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbYFLFTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 01:19:16 -0400
-Received: from sh.osrg.net ([192.16.179.4]:45597 "EHLO sh.osrg.net"
+	Thu, 12 Jun 2008 01:19:22 -0400
+Received: from sh.osrg.net ([192.16.179.4]:45600 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751873AbYFLFTP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 01:19:15 -0400
-Date: Thu, 12 Jun 2008 14:18:30 +0900
-To: miles.lane@gmail.com
-Cc: Larry.Finger@lwfinger.net, mb@bu3sch.de, vegard.nossum@gmail.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
-Subject: Re: BUG: NULL pointer dereference at 00000000 -- IP: [<f8e783d5>]
- :b43:b43_dma_mapping_error+0x16/0x155
+	id S1753165AbYFLFTU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 01:19:20 -0400
+Date: Thu, 12 Jun 2008 14:18:28 +0900
+To: akpm@linux-foundation.org
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de
+Subject: Re: [PATCH -mm] add a helper function to test if an object is on
+ the stack
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <a44ae5cd0806102257x61596782tc523de8c866cb58b@mail.gmail.com>
-References: <a44ae5cd0806101857q54074c83w2eb470682b58a6cc@mail.gmail.com>
-	<484F5DB2.4050705@lwfinger.net>
-	<a44ae5cd0806102257x61596782tc523de8c866cb58b@mail.gmail.com>
+In-Reply-To: <20080610225236.5d698871.akpm@linux-foundation.org>
+References: <1213150485-25584-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<20080610225236.5d698871.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080612142014T.fujita.tomonori@lab.ntt.co.jp>
+Message-Id: <20080612141311O.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jun 2008 01:57:30 -0400
-"Miles Lane" <miles.lane@gmail.com> wrote:
+On Tue, 10 Jun 2008 22:52:36 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> > The line that fails is
-> >
-> > if (unlikely(dma_mapping_error(ring->dev->dev->dma_dev, addr)))
-> >
-> > The value at 0x58(%eax) is zero, which corresponds to the "struct b43_wldev
-> > *dev" line in struct b43_dmaring. In other words, ring->dev is NULL, which
-> > causes the error. I'll leave it to FUJITA Tomonori to figure out why.
+> On Wed, 11 Jun 2008 11:14:45 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 > 
-> Thanks all,
+> > lib/debugobjects.c has a function to test if an object is on the
+> > stack. The block layer and ide needs it (they need to avoid DMA
+> > from/to stack buffers). This patch moves the function to
+> > include/linux/sched.h so that everyone can use it.
+> > 
+> > lib/debugobjects.c uses current->stack but this patch uses a
+> > task_stack_page() accessor, which is a preferable way to access to
+> > stack.
+> > 
 > 
-> I might have time in the morning to test one more patch, otherwise I
-> will be back in about three weeks.
+> Seems reasonable.
+> 
+> > ---
+> >  include/linux/sched.h |    7 +++++++
+> >  lib/debugobjects.c    |    4 +---
+> >  2 files changed, 8 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/include/linux/sched.h b/include/linux/sched.h
+> > index 4efb39b..799bbdd 100644
+> > --- a/include/linux/sched.h
+> > +++ b/include/linux/sched.h
+> > @@ -1978,6 +1978,13 @@ static inline unsigned long *end_of_stack(struct task_struct *p)
+> >  
+> >  #endif
+> >  
+> > +static inline int object_is_on_stack(void *obj)
+> > +{
+> > +	void *stack = task_stack_page(current);
+> 
+> Are we sure that this will work if !defined __HAVE_THREAD_FUNCTIONS?
 
-I think that Michael's patch should fix this bug, which is already in mmotm:
+If !defined __HAVE_THREAD_FUNCTIONS, we use the following macro in
+sched.h:
 
-http://userweb.kernel.org/~akpm/mmotm/broken-out/dma-mapping-add-the-device-argument-to-dma_mapping_error-b34-fix.patch
+#define task_stack_page(task)	((task)->stack)
 
-Miles, are you sure that you use a kernel including the patch?
+So it works.
