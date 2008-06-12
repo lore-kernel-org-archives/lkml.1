@@ -1,82 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761821AbYFLNTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761929AbYFLNUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761821AbYFLNTU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 09:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761267AbYFLNS6
+	id S1761929AbYFLNUO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 09:20:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759965AbYFLNT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 09:18:58 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:48030 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1761102AbYFLNS5 (ORCPT
+	Thu, 12 Jun 2008 09:19:56 -0400
+Received: from mail7.hitachi.co.jp ([133.145.228.42]:44365 "EHLO
+	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759827AbYFLNTy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 09:18:57 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=OhOsVvhBNd1m/ZLpOWNQhKaxdMU35QEG9TUaDAjRayTRRvgM+CCUH+ZjLhOJCJUoyZ0d9sTZebK6sYlNtONBSStnJv4QqiHBzYWW0/OGP/d1wBsNYKFBclbOiP3Fl5DcAUH8EvFWW8wihuxCNQYzXXy+unqBHAWbcR3G31Vv4hA=  ;
-X-YMail-OSG: z.pxqIIVM1nx0QU8Vje3wKVtq4AXtquZOcXof75RxYKt2bNdzvQSSna5mApMJe0KD81SJXpyhcWJVXjfwMEo_ykuRIoJY4VRG.EHpVRR4Bn0vABLX18BlRD6odD.49TBEkw-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Cliff Wickman <cpw@sgi.com>
-Subject: Re: [PATCHv4] SGI UV: TLB shootdown using broadcast assist unit
-Date: Thu, 12 Jun 2008 23:18:45 +1000
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-References: <E1K6lqI-0006pX-JQ@eag09.americas.sgi.com> <200806122235.29888.nickpiggin@yahoo.com.au> <20080612125605.GA26760@sgi.com>
-In-Reply-To: <20080612125605.GA26760@sgi.com>
+	Thu, 12 Jun 2008 09:19:54 -0400
+X-AuditID: 0ac90647-abd22ba000004aeb-86-48512278e9fd
+Message-ID: <48512269.70504@hitachi.com>
+Date: Thu, 12 Jun 2008 22:19:37 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jan Kara <jack@suse.cz>
+Cc: Andreas Dilger <adilger@sun.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       sct@redhat.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jbacik@redhat.com, cmm@us.ibm.com,
+       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
+Subject: Re: [PATCH 1/5] jbd: strictly check for write errors on data	buffers
+References: <20080604111911.c1fe09c6.akpm@linux-foundation.org> 
+    <20080604212202.GA8727@mit.edu> 
+    <20080604145848.e3da6f20.akpm@linux-foundation.org> 
+    <20080604225155.GB8727@mit.edu> <20080605093536.GE27370@duck.suse.cz> 
+    <4847CF07.1020904@hitachi.com> <20080605142948.GA25477@mit.edu> 
+    <20080605092006.ba7dceef.akpm@linux-foundation.org> 
+    <20080605184941.GX2961@webber.adilger.int> <484D0155.4040701@hitachi.com> 
+    <20080611123556.GA8121@duck.suse.cz>
+In-Reply-To: <20080611123556.GA8121@duck.suse.cz>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806122318.45397.nickpiggin@yahoo.com.au>
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 June 2008 22:56, Cliff Wickman wrote:
-> Hi Nick,
->
-> On Thu, Jun 12, 2008 at 10:35:29PM +1000, Nick Piggin wrote:
-> > On Thursday 12 June 2008 22:23, Cliff Wickman wrote:
+Hi,
 
-> > For someone not too familiar with low level x86 (or UV) code, can
-> > you explain why you are hooking at this point? I mean, what it
-> > looks like is either a performance improvement, or for some reason
-> > UV does not support send_IPI_mask out to CPUs "not on the local node".
->
-> Yes, a performance improvement.  The UV machine has hardware for
-> broadcasting messages to a set of nodes (represented in a bit mask).  The
-> messages will raise interrupts at each of the target nodes and provide
-> the message - all in one step.
-> (IPI is supported.  In fact this patch falls back to the IPI method
->  if all the cpus on the remote nodes do not respond.)
+Jan Kara wrote:
 
-Thanks, that makes it perfectly clear to me now (the intent, not
-the details of the code :))
+> On Mon 09-06-08 19:09:25, Hidehiro Kawai wrote:
 
-So long as this raises a maskable interrupt on each target CPU, it
-doesn't break x86's lockless get_user_pages :)
+>>Index: linux-2.6.26-rc4/fs/jbd/commit.c
+>>===================================================================
+>>--- linux-2.6.26-rc4.orig/fs/jbd/commit.c
+>>+++ linux-2.6.26-rc4/fs/jbd/commit.c
+>>@@ -432,8 +432,11 @@ void journal_commit_transaction(journal_
+>> 			wait_on_buffer(bh);
+>> 			spin_lock(&journal->j_list_lock);
+>> 		}
+>>-		if (unlikely(!buffer_uptodate(bh)))
+>>+		if (unlikely(!buffer_uptodate(bh))) {
+>>+			set_bit(AS_EIO, &bh->b_page->mapping->flags);
+>>+			SetPageError(bh->b_page);
+>> 			err = -EIO;
+>>+		}
+> 
+>   Actually, you should be more careful here because if the data buffer has
+> been truncated in the currently running transaction, it can happen that
+> b_page->mapping is NULL. It is a question how to safely access
+> page->mapping - probably you'll need page lock for that...
 
+Thank you for pointing out this problem.  I confirmed that
+b_page->mapping can be NULL.  I'm making sure that the locking page
+approach works out well.
 
-> > If the former, what sort of improvement to you expect / see?
->
-> Good question.  The hardware does not exist yet.  But using IPI there
-> would be one set of packets exchanged to deliver the interrupts and
-> another set to pull over the flush address, just to start the operation.
-> I expect the improvement to be significant.
+Thanks,
+-- 
+Hidehiro Kawai
+Hitachi, Systems Development Laboratory
+Linux Technology Center
 
-Ah, so you can send a small message with the IPI, and that can be
-decoded and used by the target without invoking the cc protocol.
-Seems like pretty sweet functionality.
-
-I guess TLB flushing is an obvious candidate, but it could be
-quite useful for other operations as well. I wonder if it couldn't
-be used to create a slightly more advanced API (than send_IPI)
-which other platforms can just implement using cache coherency for
-the payload...
-
-For example, some classes of smp_call_function could use this too.
-
-But for now I don't see anything wrong with getting this patch
-upstream and looking to generalise it later.
