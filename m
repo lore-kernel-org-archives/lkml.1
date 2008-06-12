@@ -1,85 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752700AbYFLEPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754461AbYFLEQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752700AbYFLEPq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 00:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbYFLEPg
+	id S1754461AbYFLEQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 00:16:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753438AbYFLEQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 00:15:36 -0400
-Received: from smtps.uol.com.br ([200.221.4.131]:42986 "EHLO smtp.uol.com.br"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750794AbYFLEPf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 00:15:35 -0400
-Date: Thu, 12 Jun 2008 01:15:30 -0300
-From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Ivo van Doorn <ivdoorn@gmail.com>, linux-kernel@vger.kernel.org,
-       rbrito@ime.usp.br
-Subject: Re: [2.6.26-rc4] Problems with rt2x00 USB interface on powerpc
-Message-ID: <20080612041530.GA19980@ime.usp.br>
-References: <20080601193000.GA3056@ime.usp.br> <200806081242.54896.IvDoorn@gmail.com> <20080608213513.GA30499@ime.usp.br> <200806090002.17938.IvDoorn@gmail.com> <20080609001540.GA19072@ime.usp.br> <20080611093605.GA13557@ime.usp.br> <20080611134323.GA7149@tuxdriver.com>
+	Thu, 12 Jun 2008 00:16:09 -0400
+Received: from ti-out-0910.google.com ([209.85.142.189]:65133 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753369AbYFLEP7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 00:15:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=GaXtHt778mzxgQBZIZb9ZWJcPwmVIfgMNmuuAt+jwlWrxggJ63rK1IhkaeaPFWWtBj
+         FpsphFMl+VGiuufHYChljDYAJx+Usm0ZdtDoBJCAnxhbSNP7XLzWO897rmkCcpwO0YGI
+         Rw0rlXgbSnv3wDmDah+Yr7jxwQQk6npMO1jfc=
+Message-ID: <4850A2F8.3050404@gmail.com>
+Date: Thu, 12 Jun 2008 13:15:52 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080611134323.GA7149@tuxdriver.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SIG5: b3ef07dee8442ec3539d7bff0ab3d83f
+To: Justin Mattock <justinmattock@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: macbook pro dvd playback after suspend Buffer I/O error
+References: <dd18b0c30804032207u36bd1f43l358e9949f0c94f79@mail.gmail.com>	 <20080404012147.abf8a598.akpm@linux-foundation.org>	 <484F31B8.8030001@gmail.com>	 <dd18b0c30806110045s6d19a034yd89b892441bd1621@mail.gmail.com>	 <dd18b0c30806111131gc1b506cva12f577ebb4afdf9@mail.gmail.com>	 <485048EC.2080608@gmail.com>	 <dd18b0c30806111527x22fa895em230ceade4712f073@mail.gmail.com>	 <4850794F.3000200@gmail.com>	 <dd18b0c30806111910j4b127c32rbd546f885731e18c@mail.gmail.com> <dd18b0c30806111913gf505c05j479a6a682c2cdd28@mail.gmail.com>
+In-Reply-To: <dd18b0c30806111913gf505c05j479a6a682c2cdd28@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/mixed;
+ boundary="------------020908080006080203010206"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Ivo and John.
+This is a multi-part message in MIME format.
+--------------020908080006080203010206
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-On Jun 11 2008, John W. Linville wrote:
-> On Wed, Jun 11, 2008 at 06:36:05AM -0300, Rogério Brito wrote:
-> > I don't know if you received my earlier message.
-> > 
-> > On Jun 08 2008, Rogério Brito wrote:
-> > > Correction here: I just went to the ia32 notebook again and, now,
-> > > running Ubuntu's hardy kernel (which is a patched 2.6.24 kernel,
-> > > AFAIK---yes, it is; just checked it) I could make the D-Link stick
-> > > work fine.
-> > 
-> > The only problem that I had is that I had to reissue the command
-> > "iwconfig wlan0 ap any" or, otherwise, the connection with the AP
-> > would be dropped (I can get a log for you to peruse, if you wish).
+Hello,
 
-Let me be a bit more detailed here: when I connected the D-Link stick on
-the ia32 notebook with Ubuntu's 2.6.24 kernel, if I *didn't* issue the
-command "iwconfig wlan0 ap any" *periodically* (say, with
-     # while true; iwconfig wlan0 ap any; sleep 10; done
-), then the connection would die: the dmesg logs would indicate that the
-AP lost connection with the stick.
+Please do the followings.
 
-By the way, I see this exactly same behaviour with the rt61pci driver on
-the same machine (with the only difference being that the interface name
-is ra0 instead of wlan0): I even put a cron job to issue the command
-every minute, so that my parents (which are using a PCMCIA card that
-uses the rt61pci) don't have to learn about the nasty things of
-networking.
+1. apply the attached patch
+2. turn on device drivers -> SCSI -> SCSI verbose logging
+3. rebuild the kernel and boot the new kernel.
+4. run "sysctl -w dev.scsi.logging_level=1"
+5. run the suspend/resume test w/ dd and report the result.
 
-Anyway, I would be happy to get the D-Link USB stick getting a lease
-from the AP as a first step. This way, I think that I could help you
-both much more than what I can now, and I would be a step closer into
-the direction of ditching MacOS X.
+Thanks.
 
-> What does "iwconfig wlan0" show _before_ doing the "iwconfig wlan0 ap any"?
-
-Actually, it shows the output that I listed before in the mail that had
-the script "levanta.sh" attached (which was blocked by many people's
-e-mail servers): both interfaces up and configured with the same AP (but
-the ra0 one with the DHCP daemon disabled).
-
-(In that message, I mentioned something along the lines: notice that the
-Signal Strength is reported to be higher on the ra0 interface than on
-the wlan0, despite both working on ia32).
-
-
-Regards, Rogério Brito.
-
-P.S.: Sorry for an e-mail not more detailed. I'm not with physical
-access to my parent's notebook.
 -- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+tejun
+
+--------------020908080006080203010206
+Content-Type: text/plain;
+ name="debug"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="debug"
+
+---
+ drivers/ata/libata-eh.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
+Index: work/drivers/ata/libata-eh.c
+===================================================================
+--- work.orig/drivers/ata/libata-eh.c
++++ work/drivers/ata/libata-eh.c
+@@ -2507,6 +2507,9 @@ static int atapi_eh_clear_ua(struct ata_
+ 			return -EIO;
+ 		}
+ 
++		ata_dev_printk(dev, KERN_WARNING, "XXX: TUR err_mask=0x%x sense_key=0x%x\n",
++			       err_mask, sense_key);
++
+ 		if (!err_mask || sense_key != UNIT_ATTENTION)
+ 			return 0;
+ 
+@@ -2516,6 +2519,9 @@ static int atapi_eh_clear_ua(struct ata_
+ 				"UNIT ATTENTION (err_mask=0x%x)\n", err_mask);
+ 			return -EIO;
+ 		}
++
++		ata_dev_printk(dev, KERN_WARNING, "XXX: REQUEST SENSE err_mask=0x%x ASC=0x%x ASCQ=0x%x\n",
++			       err_mask, sense_buffer[12], sense_buffer[13]);
+ 	}
+ 
+ 	ata_dev_printk(dev, KERN_WARNING,
+
+--------------020908080006080203010206--
