@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758557AbYFLBfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759094AbYFLBga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758557AbYFLBfZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 21:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbYFLBfO
+	id S1759094AbYFLBga (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 21:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbYFLBgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 21:35:14 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:35321 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754377AbYFLBfN (ORCPT
+	Wed, 11 Jun 2008 21:36:23 -0400
+Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:25009 "EHLO
+	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750977AbYFLBgW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 21:35:13 -0400
-Date: Wed, 11 Jun 2008 21:35:09 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Holger Kiehl <Holger.Kiehl@dwd.de>
-Cc: linux-ext4@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Performance of ext4
-Message-ID: <20080612013509.GS8397@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Holger Kiehl <Holger.Kiehl@dwd.de>, linux-ext4@vger.kernel.org,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.64.0806110801370.19793@diagnostix.dwd.de> <20080611135443.GK8397@mit.edu> <Pine.LNX.4.64.0806111959270.3720@diagnostix.dwd.de>
+	Wed, 11 Jun 2008 21:36:22 -0400
+Date: Thu, 12 Jun 2008 02:36:11 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jiri Bohac <jbohac@suse.cz>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] console keyboard mapping broken by 04c71976
+Message-ID: <20080612013611.GP4718@implementation>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Jiri Bohac <jbohac@suse.cz>, lkml <linux-kernel@vger.kernel.org>
+References: <20080611134837.GA11462@midget.suse.cz> <20080612011832.GM4718@implementation> <20080611182706.f8e2cc8c.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0806111959270.3720@diagnostix.dwd.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080611182706.f8e2cc8c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 11, 2008 at 08:21:50PM +0000, Holger Kiehl wrote:
-> I think you mean 'small files'? 
+Andrew Morton, le Wed 11 Jun 2008 18:27:06 -0700, a écrit :
+> Is this ready to be applied?  If so, please send a changelog.
 
-Yes, sorry, I meant "small files".
+Ah, right, there was no changelog.
 
-> The test where done with a plain 2.6.25.4,
-> does that already have barriers enabled? While I did some test I hit this 
-> bug:
 
-No, 2.6.25.4 does not have barriers enabled.  It's in the latest
-post-2.6.25.5 git repository (which also has the fix so that
-barriers=1 doesn't cause an OOPS if you are doing the test on a LVM
-device which doesn't support barriers).  Sorry, I wasnt sure if you
-were using any of the ext4 patches, and I didn't know whether you were
-testing on a raw device or an LVM device.
 
-							 - Ted
+From: Jiri Bohac <jbohac@suse.cz>
+
+Several console keyboard maps are broken since 04c71976, because that
+changeset made k_self consider the value as a latin1 character when in
+Unicode mode, which is wrong; k_self should still take the console map
+into account.
+
+Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+
+diff --git a/drivers/char/keyboard.c b/drivers/char/keyboard.c
+index 7f7e798..16492b7 100644
+--- a/drivers/char/keyboard.c
++++ b/drivers/char/keyboard.c
+@@ -678,10 +678,5 @@
+ static void k_self(struct vc_data *vc, unsigned char value, char up_flag)
+ {
+-	unsigned int uni;
+-	if (kbd->kbdmode == VC_UNICODE)
+-		uni = value;
+-	else
+-		uni = conv_8bit_to_uni(value);
+-	k_unicode(vc, uni, up_flag);
++	k_unicode(vc, conv_8bit_to_uni(value), up_flag);
+ }
