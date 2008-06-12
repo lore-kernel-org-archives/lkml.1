@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755126AbYFLPCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbYFLPHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755126AbYFLPCo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 11:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbYFLPCg
+	id S1755404AbYFLPHn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 11:07:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbYFLPHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 11:02:36 -0400
-Received: from ag-out-0708.google.com ([72.14.246.250]:34180 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752067AbYFLPCg (ORCPT
+	Thu, 12 Jun 2008 11:07:35 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:56528 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752573AbYFLPHe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 11:02:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=V0r1NCDTeHxIePvmgflPM772Pi3S+ZBiXfOmNyAwEiQX2fBpVAsOMESWfanpsHZ4sk
-         2sZSABfc/9bW3CzckSunfdCSKeD7MEl6rTE9PR/jrsd6pRzkV5VfyyAjcDjOLlF8ODX0
-         e/nrGmCghzG08DuQmFmlMevLGlFatnFP4yh4I=
-Message-ID: <48513A85.7020002@gmail.com>
-Date: Thu, 12 Jun 2008 10:02:29 -0500
-From: Elijah Anderson <kd0bpv@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Thu, 12 Jun 2008 11:07:34 -0400
+Date: Thu, 12 Jun 2008 09:07:16 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Jes Sorensen <jes@sgi.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Jeremy Higdon <jeremy@sgi.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, tpiepho@freescale.com,
+       linuxppc-dev@ozlabs.org, scottwood@freescale.com,
+       torvalds@linux-foundation.org, David Miller <davem@davemloft.net>,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: MMIO and gcc re-ordering issue
+Message-ID: <20080612150716.GX30405@parisc-linux.org>
+References: <1211852026.3286.36.camel@pasglop> <4843C3D7.7000609@sgi.com> <200806031433.12460.nickpiggin@yahoo.com.au> <200806030952.10360.jbarnes@virtuousgeek.org> <4847A690.302@sgi.com> <1212655433.9496.109.camel@pasglop>
 MIME-Version: 1.0
-To: Alessandro Suardi <alessandro.suardi@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 8139cp/too support not accessible?
-References: <4850C9F5.8000104@gmail.com> <5a4c581d0806120403n410b8deam627f4623d9b22a71@mail.gmail.com>
-In-Reply-To: <5a4c581d0806120403n410b8deam627f4623d9b22a71@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1212655433.9496.109.camel@pasglop>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you. That worked.
+On Thu, Jun 05, 2008 at 06:43:53PM +1000, Benjamin Herrenschmidt wrote:
+> Note that the powerpc implementation currently clears the flag
+> on spin_lock and tests it on unlock. We are considering changing
+> that to not touch the flag on spin_lock and just clear it whenever
+> we do a sync (ie, on unlock, on explicit mmiowb, and possibly even
+> on readl's where we happen to do sync's).
 
-Sorry about the confusion, I just didn't know where else to ask. For 
-future reference, what's a better list to ask for that sort of question?
+Your current scheme sounds like it's broken for
 
-Alessandro Suardi wrote:
-> On Thu, Jun 12, 2008 at 9:02 AM, Elijah Anderson <kd0bpv@gmail.com> wrote:
->> Hey List,
->>
->> I will admit right off the bat that I'm new to interacting directly with the
->> kernel, much less building one.
->>
->> The issue I'm having is that my ethernet card requires either the 8139cp or
->> 8139too module. I don't remember which one, so I want to modularize them
->> both. Problem is, using $make xconfig; I can't select it. I have the
->> interface set to show me all the options, but the modules I need are grayed
->> out and I can't change the value.
->>
->> Using $make config; It doesn't show them, even if I say Y to "Prompt for
->> development and/or incomplete code/drivers"
->>
->> Is there a way to manually select those drivers for modularization, or am I
->> just missing a step somewhere?
->>
->> Thank you.
-> 
-> That's not really a kernel issue... however, since I have
->  that configuration (both drivers modular) at home, I
->  know it works :)
-> 
-> You probably haven't selected NET_PCI, which is the
->     entry described by
-> 
->  "EISA, VLB, PCI and on board controllers"
-> 
-> The drivers you want depend on the above entry being selected.
-> 
-> --alessandro
-> 
->  "Give me love / Or give me hate
->  Give me anything that's not just ok"
-> 
->  (Sophia, 'Weightless')
+spin_lock(a)
+writel();
+spin_lock(b);
+spin_unlock(b);
+spin_unlock(a);
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
