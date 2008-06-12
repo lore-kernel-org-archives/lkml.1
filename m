@@ -1,103 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757494AbYFLHHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbYFLHQG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757494AbYFLHHT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 03:07:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754368AbYFLHHE
+	id S1756590AbYFLHQG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 03:16:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbYFLHPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 03:07:04 -0400
-Received: from ns2.suse.de ([195.135.220.15]:43083 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753418AbYFLHHB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 03:07:01 -0400
-From: Neil Brown <neilb@suse.de>
-To: Jan Kara <jack@suse.cz>
-Date: Thu, 12 Jun 2008 17:06:26 +1000
+	Thu, 12 Jun 2008 03:15:53 -0400
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:22000 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753575AbYFLHPw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 03:15:52 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=aSgtpqxysVKTgE8cUM9xOEyobdm6cEs74ZzZKOvdEFV3OblZYsvGU05gIC8sdEeTRmL8Gz1w+FmJNN7cQeXsNBcRVKCOkflpoYSyrZ/F0+BfTkwiVyWpGbqjmUoL6j6FTjN6dXIJG1VoW3mQB1LrOao3h/NUceJZXzVBGFT/rA4=  ;
+X-YMail-OSG: 2YKY43gVM1kCfR53mj0W6cG7b3QvMXyrui4JdOL37v8oWJEMr9Qb6J7vz_.VYq1eMpC8ZmRRsEdajzdjm9ptp9ItN1GZZThkpu0k2jC5TiWLNQJADg0bnXBNmWxLC.oNoi0-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+Subject: Re: [PATCH] gpio: gpio driver for max7301 SPI GPIO expander
+Date: Thu, 12 Jun 2008 00:15:50 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
+References: <Pine.LNX.4.64.0806061625260.3338@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.0806061625260.3338@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18512.51954.831279.617586@notabene.brown>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
-Subject: Re: Two questions on VFS/mm
-In-Reply-To: message from Jan Kara on Wednesday June 4
-References: <20080604163412.GL16572@duck.suse.cz>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200806120015.50953.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday June 4, jack@suse.cz wrote:
->   Hi,
-> 
->   could some kind soul knowledgable in VFS/mm help me with the following
-> two questions? I've spotted them when testing some ext4 for patches...
->   1) In write_cache_pages() we do:
-> ...
-> 	lock_page(page);
-> 	...
-> 	if (!wbc->range_cyclic && page->index > end) {
->                    done = 1;
->                    unlock_page(page);
->                    continue;
->         }
-> 	...
-> 	ret = (*writepage)(page, wbc, data);
-> 
->   Now the problem is that if range_cyclic is set, it can happen that the
-> page we give to the filesystem is beyond the current end of file (and can
-> be already processed by invalidatepage()). Is the filesystem supposed to
-> handle this (what would it be good for to give such a page to the fs?) or
-> is it just a bug in write_cache_pages()?
-
-Maybe there is an invariant that an address_space never has a dirty
-page beyond the end-of-file??
-Certainly 'truncate' invalidates and un-dirties such pages.
-
-With typical writes, ->write_begin will extend EOF to include the
-page, and ->write_end will mark it dirty (I think).
-
-mmap writes are probably a bit different, but I suspect the same
-principle applies.
-
-If the page is not dirty, then 
-			if (PageWriteback(page) ||
-			    !clear_page_dirty_for_io(page)) {
-				unlock_page(page);
-				continue;
-			}
-
-will fire, and you never get to
-			ret = (*writepage)(page, wbc, data);
+Some comments about one routine; presumably more to follow:
 
 
-> 
->   2) I have the following problem with page_mkwrite() when blocksize <
-> pagesize. What we want to do is to fill in a potential hole under a page
-> somebody wants to write to. But consider following scenario with a
-> filesystem with 1k blocksize:
->   truncate("file", 1024);
->   ptr = mmap("file");
->   *ptr = 'a'
->      -> page_mkwrite() is called.
->         but "file" is only 1k large and we cannot really allocate blocks
->         beyond end of file. So we allocate just one 1k block.
->   truncate("file", 4096);
->   *(ptr + 2048) = 'a'
->      - nothing is called and later during writepage() time we are surprised
->        we have a dirty page which is not backed by a filesystem block.
-> 
->   How to solve this? One idea I have here is that when we handle truncate(),
-> we mark the original last page (if it is partial) as read-only again so
-> that page_mkwrite() is called on the next write to it. Is something like
-> this possible? Pointers to code doing something similar are welcome, I don't
-> really know these things ;).
+On Friday 06 June 2008, Guennadi Liakhovetski wrote:
+> +/**
+> + * max7301_read - Read back register content
+> + * @spi: The SPI device
+> + * @reg: Register offset
+> + *
+> + * A read from the MAX7301 means one message with two transfers
 
-My understanding is that memory mapping is always done in multiples of
-the page size.
-When you dirty any part of a page, you effectively dirty the whole
-page, so you need to extend the file to cover the whole page.
-i.e. the page_mkwrite() call must extend the file to a size of 4096.
+That's not what you implement though ... what it needs is:
 
-NeilBrown
+	- transfer #1:
+		* select
+		* write 16 bit command, discard rx data
+		* deselect
+	- transfer #2
+		* select
+		* write 16 bit command, saving rx data
+		* deselect
+
+That's from the data sheet.  Now, that *could* be implemented
+with a single message ... or, as you do, with two messages.
+
+You should at least correct the comment, if you don't want to
+switch to a slightly faster single-message implementation.  :)
+
+
+> + *
+> + * Returns positive 8 bit value from device if successfull or a
+> + * negative value on error
+
+Actually it returns a 16 bit value... also, "successful" has one "l".
+You seem to have forgotten to mask off the high byte ...
+
+
+> + */
+> +static int max7301_read(struct spi_device *spi, unsigned int reg)
+> +{
+> +       int ret;
+> +       u16 word;
+> +
+> +       word = 0x8000 | (reg << 8);
+> +       if ((ret = spi_write(spi, (const u8*)&word, siz
+
+> eof(word))) != 0) 
+> +               return ret;
+> +       /*
+> +        * FIXME: This read should write 0x0000 (=NOOP at MAX7301 side)
+
+Take out this FIXME, and just replace it with a note that this relies
+on the fact that TX always shifts out zeroes if there's no data specified.
+
+> +        */
+> +       if ((ret = spi_read(spi, (u8*)&word, sizeof(word))))
+> +               return ret;
+> +       return word;
+> +}
+> +
+
+
+Oh, and in the probe():
+
+> +       spi->master->setup(spi);
+
+should be
+
+	ret = spi_setup(spi);
+	if (ret < 0)
+		return ret;
+
+It's quite possible that something get misconfigured, so you end up trying
+to talk through a spi_master controller that doesn't support 16-bit words.
+
+- Dave
+
