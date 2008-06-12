@@ -1,100 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760335AbYFLMIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760508AbYFLMIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760335AbYFLMIZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 08:08:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757039AbYFLMHl
+	id S1760508AbYFLMIk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 08:08:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760033AbYFLMHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 08:07:41 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4312 "EHLO
+	Thu, 12 Jun 2008 08:07:44 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4314 "EHLO
 	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756625AbYFLMHk (ORCPT
+	with ESMTP id S1759969AbYFLMHn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 08:07:40 -0400
+	Thu, 12 Jun 2008 08:07:43 -0400
 From: Andy Whitcroft <apw@shadowen.org>
 To: Andrew Morton <akpm@osdl.org>
 Cc: Randy Dunlap <rdunlap@xenotime.net>, Joel Schopp <jschopp@austin.ibm.com>,
        Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
        Andy Whitcroft <apw@shadowen.org>
-Subject: [PATCH 08/23] checkpatch: macros: fix statement counting block end detection
-Date: Thu, 12 Jun 2008 13:05:47 +0100
-Message-Id: <1213272362-19457-9-git-send-email-apw@shadowen.org>
+Subject: update checkpatch to version 0.20
+Date: Thu, 12 Jun 2008 13:05:39 +0100
+Message-Id: <1213272362-19457-1-git-send-email-apw@shadowen.org>
 X-Mailer: git-send-email 1.5.6.rc0.140.ga9675
-In-Reply-To: <1213272362-19457-1-git-send-email-apw@shadowen.org>
-References: <1213272362-19457-1-git-send-email-apw@shadowen.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are incorrectly counting the lines in a block while accumulating
-the trailing lines in a macro statement, leading to false positives.
-Fix end of block handling and general counting for negative context lines.
+Following this email is the next batch of updates to checkpatch.
+This marks a change in how I intend to send updates.  The previous
+"single delta" update caused us to lose a patch from Greg KH (which is
+re-included in this update), bad.  By sending the actual patches we avoid
+regressing anything I have missed, it also has the advantage of maintaining
+individual changes to carry signoff more accurately and generally being
+more transparent.
 
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
----
- scripts/checkpatch.pl |   23 +++++++++++------------
- 1 files changed, 11 insertions(+), 12 deletions(-)
+This version brings a few new checks and the usual slew of fixes for
+false positives mostly in type detection.  Of note:
 
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index b2b0648..add8686 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -470,7 +470,9 @@ sub ctx_statement_block {
- 		}
- 		$off++;
- 	}
-+	# We are truly at the end, so shuffle to the next line.
- 	if ($off == $len) {
-+		$loff = $len + 1;
- 		$line++;
- 		$remain--;
- 	}
-@@ -1793,30 +1795,26 @@ sub process {
- 				$lines[$ln - 1] =~ /^(?:-|..*\\$)/)
- 			{
- 				$ctx .= $rawlines[$ln - 1] . "\n";
-+				$cnt-- if ($lines[$ln - 1] !~ /^-/);
- 				$ln++;
--				$cnt--;
- 			}
- 			$ctx .= $rawlines[$ln - 1];
- 
- 			($dstat, $dcond, $ln, $cnt, $off) =
- 				ctx_statement_block($linenr, $ln - $linenr + 1, 0);
- 			#print "dstat<$dstat> dcond<$dcond> cnt<$cnt> off<$off>\n";
--			#print "LINE<$lines[$ln]> len<" . length($lines[$ln]) . "\n";
-+			#print "LINE<$lines[$ln-1]> len<" . length($lines[$ln-1]) . "\n";
- 
- 			# Extract the remainder of the define (if any) and
- 			# rip off surrounding spaces, and trailing \'s.
- 			$rest = '';
--			if (defined $lines[$ln - 1] &&
--			    $off > length($lines[$ln - 1]))
--			{
--				$ln++;
--				$cnt--;
--				$off = 0;
--			}
--			while ($cnt > 0) {
--				$rest .= substr($lines[$ln - 1], $off) . "\n";
-+			while ($off != 0 || ($cnt > 0 && $rest =~ /(?:^|\\)\s*$/)) {
-+				#print "ADDING $off <" . substr($lines[$ln - 1], $off) . ">\n";
-+				if ($off != 0 || $lines[$ln - 1] !~ /^-/) {
-+					$rest .= substr($lines[$ln - 1], $off) . "\n";
-+					$cnt--;
-+				}
- 				$ln++;
--				$cnt--;
- 				$off = 0;
- 			}
- 			$rest =~ s/\\\n.//g;
-@@ -1847,6 +1845,7 @@ sub process {
- 				DEFINE_PER_CPU|
- 				__typeof__\(
- 			}x;
-+			#print "REST<$rest>\n";
- 			if ($rest ne '') {
- 				if ($rest !~ /while\s*\(/ &&
- 				    $dstat !~ /$exceptions/)
--- 
-1.5.6.rc0.140.ga9675
+  - allow printk text strings to bust the width restrictions for
+    grepability,
+  - major fixes for possible type/modifier handling,
+  - trailing statement checks for case and default,
+  - trailing statement checks for for and while,
+  - spacing checks for square brackets '[' ']',
+  - conditions/loops indent checks, and
+  - checks for new use of __initcall.
 
+Complete changelog below.
+
+-apw
+
+Andy Whitcroft (20):
+      checkpatch: Version: 0.20
+      checkpatch: return is not a function -- parentheses for casts are ok too
+      checkpatch: types: some types may also be identifiers
+      checkpatch: possible types: __asm__ is never a type
+      checkpatch: comment detection: ignore macro continuation when
+	      detecting associated comments
+      checkpatch: types: unary -- goto introduces unary context
+      checkpatch: macros: fix statement counting block end detection
+      checkpatch: trailing statement indent: fix end of statement location
+      checkpatch: allow printk strings to exceed 80 characters to
+	      maintain their searchability
+      checkpatch: switch -- report trailing statements on case and default
+      checkpatch: check spacing for square brackets
+      checkpatch: toughen trailing if statement checks and extend them
+	      to while and for
+      checkpatch: condition/loop indent checks
+      checkpatch: allow for type modifiers on multiple declarations
+      checkpatch: improve type matcher debug
+      checkpatch: possible modifiers are not being correctly matched
+      checkpatch: macro complexity checks are meaningless in linker scripts
+      checkpatch: handle return types of pointers to functions
+      checkpatch: possible types -- known modifiers cannot be types
+      checkpatch: possible modifiers -- handle multiple modifiers and trailing
+
+Greg Kroah-Hartman (1):
+      checkpatch: usb_free_urb() can take NULL
+
+Michael Ellerman (1):
+      checkpatch: add a checkpatch warning for new uses of __initcall().
+
+Wolfram Sang (1):
+      checkpatch: correct spelling in kfree checks
