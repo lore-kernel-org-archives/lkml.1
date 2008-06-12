@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbYFLG7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756562AbYFLHCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755973AbYFLG7r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 02:59:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbYFLG7j
+	id S1756562AbYFLHCf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 03:02:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbYFLHC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 02:59:39 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:18606 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752449AbYFLG7i (ORCPT
+	Thu, 12 Jun 2008 03:02:28 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:43152 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753322AbYFLHC1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 02:59:38 -0400
+	Thu, 12 Jun 2008 03:02:27 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=FLuwoaYlLUmMqaynNQBtunNISI7q0/SCfAqsevtBQ9JuZDx2dXKvAH3NnRFFhnAmgz
-         7fCy1UqH6Z4VzYtV7MgtGk7zBojCiWqsDvElD0U1GRiMsrkYF1MhwVJdYQiZUoigzdH8
-         5enr32BdS/tjdz/rQE6F7nfgerRE03aoB3YHU=
-Message-ID: <4850C954.60805@gmail.com>
-Date: Thu, 12 Jun 2008 15:59:32 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=pn8W9Kxh6pseXFsBcLT/0hpILmwwNopullBPhsM+Ku5EV33OP6IWNDWotJfp7Tg/HY
+         2kAdBxxLM8qw2a1KxlnF5IifLOvxJAbiHJb+hrb2jBfKuC/OGEtpWFjKaOIEhSV31mhS
+         VUC3Ih2aV0vaQI0KyM4lI5cJtg6+SIdmuU6XI=
+Message-ID: <4850C9F5.8000104@gmail.com>
+Date: Thu, 12 Jun 2008 02:02:13 -0500
+From: Elijah Anderson <kd0bpv@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-To: Justin Mattock <justinmattock@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: macbook pro dvd playback after suspend Buffer I/O error
-References: <dd18b0c30804032207u36bd1f43l358e9949f0c94f79@mail.gmail.com>	 <485048EC.2080608@gmail.com>	 <dd18b0c30806111527x22fa895em230ceade4712f073@mail.gmail.com>	 <4850794F.3000200@gmail.com>	 <dd18b0c30806111910j4b127c32rbd546f885731e18c@mail.gmail.com>	 <dd18b0c30806111913gf505c05j479a6a682c2cdd28@mail.gmail.com>	 <4850A2F8.3050404@gmail.com>	 <dd18b0c30806112222k60e411dfs98e4cc7f64938b5b@mail.gmail.com>	 <dd18b0c30806112315x70dee219oa6738de3e22d4939@mail.gmail.com>	 <4850C1AC.4090809@gmail.com> <dd18b0c30806112336ma74115cta1923f7b08dcc2d@mail.gmail.com>
-In-Reply-To: <dd18b0c30806112336ma74115cta1923f7b08dcc2d@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+Subject: 8139cp/too support not accessible?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Mattock wrote:
-> Yeah, take you're time. Maybe it's easier  to have mplayer or which
-> ever media player wait for the drive. i.g.
-> under OSX, the media player pauses until the drive does it's thing,
-> and then resumes.(but this would be for the suspend aspect)
-> As for the live distro part I'd have to think as well. Let me know
-> what you think.
+Hey List,
 
-For apps which know they're accessing cd or dvd (probably using sg
-commands), asking for TUR test after resume could be acceptable but apps
-getting -EIO on read(2) because of intervening suspend/resume cycle is
-just not right.  The problem is that readiness waiting can take quite
-some time and under the current architecture, that can make resume take
-much longer or block IOs to other devices on the same port.  :-(
+I will admit right off the bat that I'm new to interacting directly with 
+the kernel, much less building one.
 
--- 
-tejun
+The issue I'm having is that my ethernet card requires either the 8139cp 
+or 8139too module. I don't remember which one, so I want to modularize 
+them both. Problem is, using $make xconfig; I can't select it. I have 
+the interface set to show me all the options, but the modules I need are 
+grayed out and I can't change the value.
+
+Using $make config; It doesn't show them, even if I say Y to "Prompt for 
+development and/or incomplete code/drivers"
+
+Is there a way to manually select those drivers for modularization, or 
+am I just missing a step somewhere?
+
+Thank you.
