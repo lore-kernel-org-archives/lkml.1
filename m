@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761156AbYFLXQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760839AbYFLXSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761156AbYFLXQS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 19:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbYFLXQI
+	id S1760839AbYFLXSX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 19:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756734AbYFLXSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 19:16:08 -0400
-Received: from [194.117.236.238] ([194.117.236.238]:47230 "EHLO
-	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1754693AbYFLXQH (ORCPT
+	Thu, 12 Jun 2008 19:18:12 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:28741 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754816AbYFLXSK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 19:16:07 -0400
-Date: Fri, 13 Jun 2008 02:15:42 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: righi.andrea@gmail.com
-Cc: tzanussi@gmail.com, penberg@cs.helsinki.fi, akpm@linux-foundation.org,
-       compudj@krystal.dyndns.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] relay: Fix race condition which occurs when reading
- across CPUs.
-Message-ID: <20080613021542.6ca9e6b5@linux360.ro>
-In-Reply-To: <4851A9FA.1000104@gmail.com>
-References: <20080612232618.647f5cda@linux360.ro>
-	<4851A9FA.1000104@gmail.com>
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 12 Jun 2008 19:18:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=uDJ6zakI9v86mZNS1QH6+CHzr2k4DYchYU63M4kMMiVW/a1ar1ez02bXU0FX7pRhW/
+         0Ux0l0uuZYBVNPGNTwTMb8z36WKoXZgmDHN+33o8FvOckoa1CEjJ9+iYhLjSC0jALPpC
+         romi+v8/X9ZMjskzpvPP9RdNabHFgRNehRUuk=
+Message-ID: <86802c440806121618t244e3088pdf93618209b9855e@mail.gmail.com>
+Date: Thu, 12 Jun 2008 16:18:09 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/1] x86: Add config option to setup early serial console
+Cc: "Mike Travis" <travis@sgi.com>, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080612161049.3bb2f1a3.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080612223802.528617000@polaris-admin.engr.sgi.com>
+	 <20080612223802.673729000@polaris-admin.engr.sgi.com>
+	 <20080612154600.fac8cc6b.akpm@linux-foundation.org>
+	 <4851AA00.1050006@sgi.com>
+	 <20080612161049.3bb2f1a3.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jun 2008 00:58:01 +0200 (MEST)
-Andrea Righi <righi.andrea@gmail.com> wrote:
+On Thu, Jun 12, 2008 at 4:10 PM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Thu, 12 Jun 2008 15:58:08 -0700
+> Mike Travis <travis@sgi.com> wrote:
+>
+>> Andrew Morton wrote:
+>> > On Thu, 12 Jun 2008 15:38:03 -0700
+>> > Mike Travis <travis@sgi.com> wrote:
+>> >
+>> >>  * Add config option EARLY_SERIAL_CONSOLE to enable early
+>> >>    printk's to be directed to the serial console.
+>> ...
+>> >>
+>> >
+>> > Confused.  What's wrong with console=uart,...?
+>> >
+>>
+>> The problem is that I need the output really, really early before
+>> the console is initialized.
+>
+> Sorry, I meant earlycon=uart..
 
-> If you just break here buf->rw_lock will be unlocked twice. Maybe a
-> better way is:
-> 		if (desc->error < 0)
-> 			goto out;
-> 		...
->   	} while (desc->count && ret);
-> 	spin_unlock_irqrestore(&buf->rw_lock, flags);
-> out:
->   	mutex_unlock(&filp->f_path.dentry->d_inode->i_mutex);
-> 
->   	return desc->written;
+the same. it checks earlycon=uart and console=uart...
 
-Thanks, I did not notice. Will fix and resubmit.
-
-
-	Eduard
+YH
