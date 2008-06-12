@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760645AbYFLMXE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760514AbYFLMX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760645AbYFLMXE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 08:23:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759721AbYFLMWo
+	id S1760514AbYFLMX2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 08:23:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758211AbYFLMXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 08:22:44 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51245 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759314AbYFLMWm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 08:22:42 -0400
-Date: Thu, 12 Jun 2008 14:22:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] sched: fair group: fix overflow(was: fix divide by
-	zero)
-Message-ID: <20080612122218.GA29661@elte.hu>
-References: <484F7AC5.8040206@cn.fujitsu.com> <1213168547.31518.66.camel@twins> <4850E192.3080804@cn.fujitsu.com> <1213260584.31518.86.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1213260584.31518.86.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0003]
+	Thu, 12 Jun 2008 08:23:15 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1282 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757554AbYFLMXM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 08:23:12 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Joel Schopp <jschopp@austin.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: [PATCH 22/23] checkpatch: possible types -- known modifiers cannot be types
+Date: Thu, 12 Jun 2008 13:06:01 +0100
+Message-Id: <1213272362-19457-23-git-send-email-apw@shadowen.org>
+X-Mailer: git-send-email 1.5.6.rc0.140.ga9675
+In-Reply-To: <1213272362-19457-1-git-send-email-apw@shadowen.org>
+References: <1213272362-19457-1-git-send-email-apw@shadowen.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ensure we do not inadvertantly load known modifiers up as possible types.
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+---
+ scripts/checkpatch.pl |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> > I think that (1UL << 18) is a good limited value:
-> > 1)it's not too large, we can create a lot of group before overflow
-> > 2)it's several times the weight value for nice=-19 (not too small)
-> 
-> Thanks!
-> 
-> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 6d07b67..9c20916 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -847,7 +847,7 @@ sub possible {
+ 	my ($possible, $line) = @_;
+ 
+ 	print "CHECK<$possible> ($line)\n" if ($dbg_possible > 1);
+-	if ($possible !~ /^(?:$Storage|$Type|DEFINE_\S+)$/ &&
++	if ($possible !~ /^(?:$Modifier|$Storage|$Type|DEFINE_\S+)$/ &&
+ 	    $possible ne 'goto' && $possible ne 'return' &&
+ 	    $possible ne 'case' && $possible ne 'else' &&
+ 	    $possible ne 'asm' && $possible ne '__asm__' &&
+-- 
+1.5.6.rc0.140.ga9675
 
-applied to tip/sched, thanks everyone.
-
-	Ingo
