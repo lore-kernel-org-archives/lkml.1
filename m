@@ -1,30 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759025AbYFLJQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758026AbYFLJSm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759025AbYFLJQX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 05:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbYFLJQO
+	id S1758026AbYFLJSm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 05:18:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbYFLJSe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 05:16:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60586 "EHLO mx2.mail.elte.hu"
+	Thu, 12 Jun 2008 05:18:34 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:32892 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754025AbYFLJQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 05:16:13 -0400
-Date: Thu, 12 Jun 2008 11:15:32 +0200
+	id S1751309AbYFLJSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 05:18:34 -0400
+Date: Thu, 12 Jun 2008 11:18:18 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 1/4] x86: Remove obsolete PM definitions from NMI header
-Message-ID: <20080612091532.GC15312@elte.hu>
-References: <200806121025.24668.rjw@sisk.pl> <200806121027.09085.rjw@sisk.pl>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [tree] ftrace, v16
+Message-ID: <20080612091818.GD15312@elte.hu>
+References: <20080612075425.GB18419@elte.hu> <20080612075545.GA32585@elte.hu> <20080612083339.GA25565@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200806121027.09085.rjw@sisk.pl>
+In-Reply-To: <20080612083339.GA25565@uranus.ravnborg.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,13 +36,54 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+* Sam Ravnborg <sam@ravnborg.org> wrote:
 
-> Remove obsolete and no longer used PM-related definitions from 
-> include/asm-x86/nmi.h .
+> Hi Ingo
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> >       kbuild: create new CFLAGS_REMOVE_(basename).o option
+> 
+> But no changes to Documentation/kbuild/makefiles.txt
+> 
+> Documentation must be included for new kbuild features.
+> 
+> 
+> > +ifdef CONFIG_DYNAMIC_FTRACE
+> > +CFLAGS_REMOVE_ftrace.o = -pg
+> > +endif
+> 
+> I can see where this comes from as we have:
+> 
+>     CFLAGS_ftrace.o := -foobar
+> 
+> But in all cases below I see the pattern:
+> 
+> ifdef CONFIG_FOO_BAR
+> CFLAGS_REMOVE_foobar.o = -pg
+> endif
+> 
+> And it would be nice to get this on one line instead.
+> And use a syntax we can somehow remember.
+> 
+> Today we have:
+>     ccflags-y := -foobar
+> 
+> to add options valid for the whole file.
+> So we should then add:
+> - possibility to remove an option valid for the whole file
+> - add/remove an option for a single file
+> 
+> The suggested syntax:
+> ccflags-remove-y := -foobar
+> ccflags-<file.o>-y := -foobar
+> ccflags-remove-<file.o>-y := -foobar
+> 
+> So in the case above for ftrace we would use:
+> 
+> ccflags-remove-ftrace.o-$(CONFIG_DYNAMIC_FTRACE) := -pg
+> 
+> Comments?
 
-applied to tip/x86/cleanups, thanks Rafael.
+sounds like a good cleanup to me. Would you be interested in sending 
+patches for this?
 
 	Ingo
