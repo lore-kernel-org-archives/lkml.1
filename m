@@ -1,52 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbYFLVb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755998AbYFLVhI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766AbYFLVb6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 17:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbYFLVbr
+	id S1755998AbYFLVhI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 17:37:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbYFLVgz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 17:31:47 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:46633 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751317AbYFLVbq (ORCPT
+	Thu, 12 Jun 2008 17:36:55 -0400
+Received: from mail201.messagelabs.com ([216.82.254.211]:5907 "EHLO
+	mail201.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751810AbYFLVgy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 17:31:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=WjNhlYYQoCb4o09I3BPYfngmUpQhn0ei+FAq1RKoMmkOxYKAyyoKCGdg4y+d6+YnrA
-         dhgYiRbTOofcLy6ugLt4RGmuuIdLr3f+LzcRuJHbO/qPAeDpvq9belxCtlyw/ZZKXWbc
-         ym6VEHWByS0MNpHXmI00Ba6HDvauulgcEJLEY=
-Message-ID: <48519577.8000402@gmail.com>
-Date: Thu, 12 Jun 2008 23:30:31 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Thu, 12 Jun 2008 17:36:54 -0400
+X-VirusChecked: Checked
+X-Env-Sender: mhanafi@csc.com
+X-Msg-Ref: server-11.tower-201.messagelabs.com!1213306601!7459179!2
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [20.137.2.87]
+To: linux-kernel@vger.kernel.org
+Subject: 
 MIME-Version: 1.0
-To: Tomas Winkler <tomasw@gmail.com>
-CC: Johannes Berg <johannes@sipsolutions.net>, Rik van Riel <riel@redhat.com>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       yi.zhu@intel.com, reinette.chatre@intel.com,
-       linux-wireless@vger.kernel.org
-Subject: Re: Problem: Out of memory after 2days with 2GB RAM
-References: <c4e36d110806120307n20cce692s9c136f11596f5ab0@mail.gmail.com>	 <20080612093833.0fb9cdd6@bree.surriel.com>	 <1213278884.3936.15.camel@johannes.berg> <1ba2fa240806120843s268b2ff4mb45a11adf11afc7f@mail.gmail.com>
-In-Reply-To: <1ba2fa240806120843s268b2ff4mb45a11adf11afc7f@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+X-Mailer: Lotus Notes Release 6.5.4 March 27, 2005
+Message-ID: <OF16371842.1DB9C597-ON85257466.0076B0CF-85257466.0076BBB4@csc.com>
+From: Mahmoud Hanafi <mhanafi@csc.com>
+Date: Thu, 12 Jun 2008 17:36:49 -0400
+X-MIMETrack: Serialize by Router on AMER-GW09/SRV/CSC(Release 8.0.1|February 07, 2008) at
+ 06/12/2008 05:39:45 PM,
+	Serialize complete at 06/12/2008 05:39:45 PM
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/12/2008 05:43 PM, Tomas Winkler wrote:
-> On Thu, Jun 12, 2008 at 4:54 PM, Johannes Berg
-> <johannes@sipsolutions.net> wrote:
->> This cuts the allocation to 10%, or (under) a page in all cases.
-> 
-> Probably. it would be safe to use vmalloc for allocating txb anyway.
-> I'll give it a try.
+We have random nodes experience killing of most daemons( syslog, ssh, 
+cron, etc). All these daemons report getting a sigkill or sigterm.
 
-Why it wouldn't be "safe". I suggested it to you already, since allocating 64k 
-by kmalloc for descriptors accessed only in kernel is crud. Moreover you're 
-mixing the buffer with its descriptors here? Or what you're considering to vmalloc?
+My question.... Is there a way to log all signals and the originator 
+pid/proc name.
+
+-Mahmoud
+
+
