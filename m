@@ -1,129 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762265AbYFLNoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762523AbYFLNoo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762265AbYFLNoN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 09:44:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761301AbYFLNns
+	id S1762523AbYFLNoo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 09:44:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760082AbYFLNnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 09:43:48 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:54240 "EHLO
+	Thu, 12 Jun 2008 09:43:50 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:49487 "EHLO
 	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761715AbYFLNno (ORCPT
+	with ESMTP id S1761905AbYFLNnq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 09:43:44 -0400
-Message-Id: <20080612133126.335618468@kerlabs.com>
+	Thu, 12 Jun 2008 09:43:46 -0400
+Message-Id: <20080612134203.960567897@kerlabs.com>
+References: <20080612133126.335618468@kerlabs.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 12 Jun 2008 15:31:26 +0200
+Date: Thu, 12 Jun 2008 15:31:28 +0200
 From: Louis Rilling <Louis.Rilling@kerlabs.com>
 To: Joel.Becker@oracle.com
 Cc: Louis.Rilling@kerlabs.com, linux-kernel@vger.kernel.org,
        ocfs2-devel@oss.oracle.com
-Subject: [PATCH 0/3][BUGFIX] configfs: Fix deadlock rmdir() vs rename()
+Subject: [PATCH 2/3][BUGFIX] configfs: Make configfs_new_dirent() return error code instead of NULL
+Content-Disposition: inline; filename=configfs-make-configfs_new_dirent-return-errno.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This patch makes configfs_new_dirent return negative error code instead of NULL,
+which will be useful in the next patch to differentiate ENOMEM from ENOENT.
 
-This patchset fixes the deadlock described below. I did not exactly implement
-what I described earlier, since I found this more elegant solution meanwhile.
-Please see the third patch header for a detailed explanation of the fix.
+Signed-off-by: Louis Rilling <Louis.Rilling@kerlabs.com>
+---
+ fs/configfs/dir.c |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-The following procedure can trigger a deadlock in configfs (see
-http://www.ussg.iu.edu/hypermail/linux/kernel/0806.1/0380.html for a patch
-that makes it easier to trigger):
-
-# mkdir /config/cluster/foo
-# cd /config/cluster/foo
-# mv heartbeat/dead_threshold node/bar
-
-and in another shell, right after having launched test_deadlock:
-
-# rmdir /config/cluster/foo
-
-First, lockdep warns as usual (see below), and after two minutes (standard task
-deadlock parameters), we get the dead lock alerts:
-
-<log>
-
-=============================================
-[ INFO: possible recursive locking detected ]
-2.6.26-rc5 #13
----------------------------------------------
-rmdir/3997 is trying to acquire lock:
- (&sb->s_type->i_mutex_key#11){--..}, at: [<ffffffff802d2131>] configfs_detach_prep+0x58/0xaa
-
-but task is already holding lock:
- (&sb->s_type->i_mutex_key#11){--..}, at: [<ffffffff80296070>] vfs_rmdir+0x49/0xac
-
-other info that might help us debug this:
-2 locks held by rmdir/3997:
- #0:  (&sb->s_type->i_mutex_key#3/1){--..}, at: [<ffffffff80297c77>] do_rmdir+0x82/0x108
- #1:  (&sb->s_type->i_mutex_key#11){--..}, at: [<ffffffff80296070>] vfs_rmdir+0x49/0xac
-
-stack backtrace:
-Pid: 3997, comm: rmdir Not tainted 2.6.26-rc5 #13
-
-Call Trace:
- [<ffffffff8024aa65>] __lock_acquire+0x8d2/0xc78
- [<ffffffff802495ec>] find_usage_backwards+0x9d/0xbe
- [<ffffffff802d2131>] configfs_detach_prep+0x58/0xaa
- [<ffffffff8024b1de>] lock_acquire+0x51/0x6c
- [<ffffffff802d2131>] configfs_detach_prep+0x58/0xaa
- [<ffffffff80247dad>] debug_mutex_lock_common+0x16/0x23
- [<ffffffff805d63a4>] mutex_lock_nested+0xcd/0x23b
- [<ffffffff802d2131>] configfs_detach_prep+0x58/0xaa
- [<ffffffff802d327b>] configfs_rmdir+0xb8/0x1c3
- [<ffffffff80296092>] vfs_rmdir+0x6b/0xac
- [<ffffffff80297cac>] do_rmdir+0xb7/0x108
- [<ffffffff80249d1e>] trace_hardirqs_on+0xef/0x113
- [<ffffffff805d74c4>] trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff8020b0cb>] system_call_after_swapgs+0x7b/0x80
-
-INFO: task test_deadlock:3996 blocked for more than 120 seconds.
-"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-test_deadlock D 0000000000000001     0  3996   3980
- ffff81007cc93d78 0000000000000046 ffff81007cc93d40 ffffffff808ed280
- ffffffff808ed280 ffff81007cc93d28 ffffffff808ed280 ffffffff808ed280
- ffffffff808ed280 ffffffff808ea120 ffffffff808ed280 ffff81007cdcaa10
-Call Trace:
- [<ffffffff802955e3>] lock_rename+0x11e/0x126
- [<ffffffff805d641e>] mutex_lock_nested+0x147/0x23b
- [<ffffffff802955e3>] lock_rename+0x11e/0x126
- [<ffffffff80297838>] sys_renameat+0xd7/0x21c
- [<ffffffff805d74c4>] trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff80249d1e>] trace_hardirqs_on+0xef/0x113
- [<ffffffff805d74c4>] trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff8020b0cb>] system_call_after_swapgs+0x7b/0x80
-
-INFO: lockdep is turned off.
-INFO: task rmdir:3997 blocked for more than 120 seconds.
-"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-rmdir         D 0000000000000000     0  3997   3986
- ffff81007cdb9dd8 0000000000000046 0000000000000000 ffffffff808ed280
- ffffffff808ed280 ffff81007cdb9d88 ffffffff808ed280 ffffffff808ed280
- ffffffff808ed280 ffffffff808ea120 ffffffff808ed280 ffff81007cde0a50
-Call Trace:
- [<ffffffff802d2131>] configfs_detach_prep+0x58/0xaa
- [<ffffffff805d641e>] mutex_lock_nested+0x147/0x23b
- [<ffffffff802d2131>] configfs_detach_prep+0x58/0xaa
- [<ffffffff802d327b>] configfs_rmdir+0xb8/0x1c3
- [<ffffffff80296092>] vfs_rmdir+0x6b/0xac
- [<ffffffff80297cac>] do_rmdir+0xb7/0x108
- [<ffffffff80249d1e>] trace_hardirqs_on+0xef/0x113
- [<ffffffff805d74c4>] trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff8020b0cb>] system_call_after_swapgs+0x7b/0x80
-
-INFO: lockdep is turned off.
-
-</log>
-
-The issue here is that the VFS locks the i_mutex of the source and target
-directories of the rename in source -> target order (because none is ascendent
-of the other one), while configfs_detach_prep() takes them in default group
-order (or reverse order, I'm not sure), following the order specified by the
-groups' creator.
-
-Louis
+Index: b/fs/configfs/dir.c
+===================================================================
+--- a/fs/configfs/dir.c	2008-06-12 13:45:14.000000000 +0200
++++ b/fs/configfs/dir.c	2008-06-12 15:18:28.000000000 +0200
+@@ -30,6 +30,7 @@
+ #include <linux/mount.h>
+ #include <linux/module.h>
+ #include <linux/slab.h>
++#include <linux/err.h>
+ 
+ #include <linux/configfs.h>
+ #include "configfs_internal.h"
+@@ -79,7 +80,7 @@ static struct configfs_dirent *configfs_
+ 
+ 	sd = kmem_cache_zalloc(configfs_dir_cachep, GFP_KERNEL);
+ 	if (!sd)
+-		return NULL;
++		return ERR_PTR(-ENOMEM);
+ 
+ 	atomic_set(&sd->s_count, 1);
+ 	INIT_LIST_HEAD(&sd->s_links);
+@@ -125,8 +126,8 @@ int configfs_make_dirent(struct configfs
+ 	struct configfs_dirent * sd;
+ 
+ 	sd = configfs_new_dirent(parent_sd, element);
+-	if (!sd)
+-		return -ENOMEM;
++	if (IS_ERR(sd))
++		return PTR_ERR(sd);
+ 
+ 	sd->s_mode = mode;
+ 	sd->s_type = type;
+@@ -1273,7 +1274,7 @@ static int configfs_dir_open(struct inod
+ 	file->private_data = configfs_new_dirent(parent_sd, NULL);
+ 	mutex_unlock(&dentry->d_inode->i_mutex);
+ 
+-	return file->private_data ? 0 : -ENOMEM;
++	return IS_ERR(file->private_data) ? PTR_ERR(file->private_data) : 0;
+ 
+ }
+ 
 
 -- 
 Dr Louis Rilling			Kerlabs
