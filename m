@@ -1,62 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754798AbYFLG1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755806AbYFLG20@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754798AbYFLG1S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 02:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbYFLG1A
+	id S1755806AbYFLG20 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 02:28:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbYFLG2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 02:27:00 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:43872 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752227AbYFLG07 (ORCPT
+	Thu, 12 Jun 2008 02:28:17 -0400
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:22645 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752476AbYFLG2Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 02:26:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=osP9r6mi8efbyGXmTvM/LeoaYq/h7dCOuskeeBfZCGemnN51y485aTJgHw/Vgv3j4S
-         Em5AigaZ975puUJc94bS4vH0dwur4fyqkrpyqqluqced++wlZt8D8sAETWjPZKzhlL8B
-         wKjXyHN6eWJtD8WlgI9otHXOLMB8jcMyK4N/I=
-Message-ID: <4850C1AC.4090809@gmail.com>
-Date: Thu, 12 Jun 2008 15:26:52 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 12 Jun 2008 02:28:16 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=EJAONvM2lmVBijZn5bV+1BSCoZS0H4KwFvzb2r90/riesBE0i+K1onAVRhbmkgndniUykzvvm66Qc5JdenuFO1TGtm9JtThm8h9zKTo5rryL9s/02EH7INikAOZntAsSpwVthlq2j7+1seFFyT7WQmEX/dXziAI6KKVjMxiIIvw=  ;
+X-YMail-OSG: n4JGkNwVM1mvf5p3hsQYGG8pEGC_X0ghN_3DHZXBQ1qHDJklwVDZjLLHHbKFXKh_tCqFcvLyDM7LXrowudItQxuXsZQkKy1Au.Z13gqGJivC40B3pQUFVnm3AOJgEiSHOvgr945Rrks5RKBZ_tA1CnmN
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [WARNING] local_bh_enable with irqs disabled:
+Date: Wed, 11 Jun 2008 23:28:14 -0700
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64.0806031529520.21106@axis700.grange> <Pine.LNX.4.64.0806060751240.14536@axis700.grange> <200806101715.52830.david-b@pacbell.net>
+In-Reply-To: <200806101715.52830.david-b@pacbell.net>
 MIME-Version: 1.0
-To: Justin Mattock <justinmattock@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: macbook pro dvd playback after suspend Buffer I/O error
-References: <dd18b0c30804032207u36bd1f43l358e9949f0c94f79@mail.gmail.com>	 <dd18b0c30806110045s6d19a034yd89b892441bd1621@mail.gmail.com>	 <dd18b0c30806111131gc1b506cva12f577ebb4afdf9@mail.gmail.com>	 <485048EC.2080608@gmail.com>	 <dd18b0c30806111527x22fa895em230ceade4712f073@mail.gmail.com>	 <4850794F.3000200@gmail.com>	 <dd18b0c30806111910j4b127c32rbd546f885731e18c@mail.gmail.com>	 <dd18b0c30806111913gf505c05j479a6a682c2cdd28@mail.gmail.com>	 <4850A2F8.3050404@gmail.com>	 <dd18b0c30806112222k60e411dfs98e4cc7f64938b5b@mail.gmail.com> <dd18b0c30806112315x70dee219oa6738de3e22d4939@mail.gmail.com>
-In-Reply-To: <dd18b0c30806112315x70dee219oa6738de3e22d4939@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806112328.14814.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Mattock wrote:
-> O.K. applied the patch and did what you have described,(except for
-> sysctl -w / ended up inserting dev.scsi.logging_level=1 in
-> /etc/sysctl.conf)
-> This is what dd reported:(same as before)
-> dd: reading `/dev/sr0':Input/output error
-> 41+1 records in
-> 41+1 records out
-> 43122688 bytes (43 MB) copied, 41.0967 seconds, 1.0 MB/s
+On Tuesday 10 June 2008, David Brownell wrote:
+> On Thursday 05 June 2008, Guennadi Liakhovetski wrote:
+> > Sorry, this was a 2.6.26-rc3 based kernel with the gpio-sysfs patch from 
+> > David, e.g., http://marc.info/?l=linux-kernel&m=121107105300923&w=2,
+> > which introduces a call to device_unregister via gpiochip_unexport(chip); 
+> > in gpiochip_remove. 
 > 
-> Attached is dmesg of using dd on the first suspend, and playing a dvd
-> on the second.
+> Right.  Obviously that wasn't tested with "rmmod" of a modular
+> GPIO expander ... I only have one board which supports such an
+> expander right now, and it's not been in use recently.
+> 
+> A fix is obvious; any problems with what's below?
 
-Ah.. okay.  The drive was becoming ready and the read commands were
-retried too fast.  The drive I tested on was fast enough to deliver the
-data but yours wasn't.  Hmmm.... This is difficult.  This also poses
-problems to live cd distros, I think.  We probably need to make sr wait
-for device readiness.  Maybe it's best to put TUR waiting in read error
-handling.  I'll think about it.
+I verified it works for me on that one board ... after I removed
+the board hooks that actually *use* those GPIOs (which prevent an
+rmmod) and just use it from sysfs.  The missing test case has now
+been covered.
 
-Thanks.
+I'll send an updated patch.
 
--- 
-tejun
+- Dave
+
+
+> 
+> - Dave
+> 
+> 
+> --- g26.orig/drivers/gpio/gpiolib.c	2008-06-10 16:56:01.000000000 -0700
+> +++ g26/drivers/gpio/gpiolib.c	2008-06-10 16:55:39.000000000 -0700
+> @@ -726,12 +726,15 @@ int gpiochip_remove(struct gpio_chip *ch
+>  		}
+>  	}
+>  	if (status == 0) {
+> -		gpiochip_unexport(chip);
+>  		for (id = chip->base; id < chip->base + chip->ngpio; id++)
+>  			gpio_desc[id].chip = NULL;
+>  	}
+>  
+>  	spin_unlock_irqrestore(&gpio_lock, flags);
+> +
+> +	if (status == 0)
+> +		gpiochip_unexport(chip);
+> +
+>  	return status;
+>  }
+>  EXPORT_SYMBOL_GPL(gpiochip_remove);
+> 
+> 
+
+
