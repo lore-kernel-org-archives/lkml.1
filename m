@@ -1,91 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbYFLFhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214AbYFLF6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756460AbYFLFhy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 01:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbYFLFhp
+	id S1755214AbYFLF6W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 01:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbYFLF6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 01:37:45 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:16071 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752786AbYFLFho (ORCPT
+	Thu, 12 Jun 2008 01:58:13 -0400
+Received: from orion2.pixelized.ch ([195.190.190.13]:59946 "EHLO
+	orion.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751877AbYFLF6M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 01:37:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=wDoO+6aI5tgW7b/g1PsL+NCo/7TmqZrL6M7xPH/kOs7q64mDKlA2GSRqkLFp1yPUoK
-         lxLNp1XFOY6r5PbMgRUNcbwlOfoO9xC30wBc8OvX7vEaJqsps4YSu0DwR+z4Qht1ftyn
-         20zvPLef5iDyxChHZFfuRjXnagboF/0Fh/rnQ=
-Message-ID: <19f34abd0806112237l34653a96qdbcdaf829f90cf1d@mail.gmail.com>
-Date: Thu, 12 Jun 2008 07:37:44 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Len Brown" <lenb@kernel.org>
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.26-rc5
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org,
-       "Linux Power Management List" <linux-pm@lists.osdl.org>,
-       "Lin Ming" <ming.m.lin@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <19f34abd0806112231m69bd521fgbce3c5f8dd413423@mail.gmail.com>
+	Thu, 12 Jun 2008 01:58:12 -0400
+X-Greylist: delayed 318 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Jun 2008 01:58:12 EDT
+Message-ID: <4850B9AA.7030004@debian.org>
+Date: Thu, 12 Jun 2008 07:52:42 +0200
+From: Giacomo Catenazzi <cate@debian.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Dave Jones <davej@redhat.com>, Ben Castricum <lk0806@bencastricum.nl>,
+       linux-kernel@vger.kernel.org, trivial@kernel.org,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
+Subject: Re: [patch] x86: microcode: Cosmetic changes
+References: <alpine.LNX.1.10.0806101312170.14868@gateway.bencastricum.nl> <20080611170939.GA15146@redhat.com>
+In-Reply-To: <20080611170939.GA15146@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.1.10.0806111942510.12191@localhost.localdomain>
-	 <19f34abd0806112231m69bd521fgbce3c5f8dd413423@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 12, 2008 at 7:31 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> Hi,
->
-> On Thu, Jun 12, 2008 at 1:44 AM, Len Brown <lenb@kernel.org> wrote:
->> please pull from:
->>
->> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
->>
->> This will update the files shown below.
->
-> What about the "ACPICA: Fixes for Unload and DDBHandles" patch?
->
-> http://bugzilla.kernel.org/show_bug.cgi?id=10669
->
+Dave Jones wrote:
+> On Tue, Jun 10, 2008 at 01:15:12PM +0200, Ben Castricum wrote:
+>  > @@ -805,6 +806,9 @@ static int __init microcode_init (void)
+>  >  {
+>  >  	int error;
+>  >  
+>  > +	printk(KERN_INFO
+>  > +		"IA-32 Microcode Update Driver: v" MICROCODE_VERSION " <tigran@aivazian.fsnet.co.uk>\n");
+>  > +
+>  >  	error = microcode_dev_init();
+>  >  	if (error)
+>  >  		return error;
+>  > @@ -825,9 +829,6 @@ static int __init microcode_init (void)
+>  >  	}
+>  >  
+>  >  	register_hotcpu_notifier(&mc_cpu_notifier);
+>  > -
+>  > -	printk(KERN_INFO 
+>  > -		"IA-32 Microcode Update Driver: v" MICROCODE_VERSION " <tigran@aivazian.fsnet.co.uk>\n");
+>  >  	return 0;
+> 
+> By doing this before the registration of the sysdev, we'll
+> now be printing this on machines that don't have the microcode
+> update facility.   Pointless spew, for no obvious gain imo.
+> 
+> [Why we go through so many hoops before we check if the CPU is
+>  capable is a mystery to me. It would make more sense to have
+>  that be the first thing that gets checked when this inits]
 
-Hm, sorry, I only looked for the patch title in your series. It seems
-to be this entry:
+I would remove the printk:
+- it is the only email on my dmesg, along two other copyright
+  notices (Ingo and Intel). So it seems that the dmesg clean-up
+  is going on.
+- the code of driver is stable, and now it is updated only in
+  kernel trees, so IMO it is better to use kernel version on
+  bug report. BTW I don't think people will update the version
+  number of driver.
+- IMO it is enough to printk the microcode loads, not the
+  driver load.
 
-commit 8410565f540db87ca938f56f92780d251e4f157d
-Author: Bob Moore <robert.moore@intel.com>
-Date:   Tue Jun 10 14:29:26 2008 +0800
-
-   ACPICA: Fix for access to deleted object <regression>
-
-   Fixes problem introduced in 20080123, with fix for Unload operator.
-   Parse tree object can be already deleted; must use the opcode
-   within the WalkState.
-
-   ACPI: kmemcheck: Caught 16-bit read from freed memory
-   http://bugzilla.kernel.org/show_bug.cgi?id=10669
-
-   Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-   Signed-off-by: Bob Moore <robert.moore@intel.com>
-   Signed-off-by: Len Brown <len.brown@intel.com>
-
-but now it has a completely new title and a new author? This looks
-like just the fix, I couldn't find the original patch (which had a
-nice title and description on its own). Hm.
-
-Thanks, and sorry for the noise.
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+ciao
+	cate
