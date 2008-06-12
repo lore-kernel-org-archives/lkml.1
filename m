@@ -1,81 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756738AbYFLWIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758004AbYFLWKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756738AbYFLWIk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 18:08:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbYFLWIa
+	id S1758004AbYFLWKP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 18:10:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbYFLWKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 18:08:30 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:58091 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751797AbYFLWI3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 18:08:29 -0400
-Message-ID: <48519E57.3030906@garzik.org>
-Date: Thu, 12 Jun 2008 18:08:23 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: sfr@canb.auug.org.au, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [git patches] net driver updates for .27
-References: <20080612023046.GA25958@havoc.gtf.org>	<20080612133842.0dc472bc.sfr@canb.auug.org.au> <20080611.212929.71729484.davem@davemloft.net>
-In-Reply-To: <20080611.212929.71729484.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 12 Jun 2008 18:10:04 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:19158 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752464AbYFLWKC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 18:10:02 -0400
+Subject: Re: [PATCH 5/5] futex: fix miss ordered wakeups
+From: Daniel Walker <dwalker@mvista.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ulrich Drepper <drepper@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <peterz@infradead.org>
+In-Reply-To: <alpine.LFD.1.10.0806121802050.3193@apollo.tec.linutronix.de>
+References: <20080611204916.271608740@mvista.com>
+	 <20080611204917.523866467@mvista.com>
+	 <alpine.LFD.1.10.0806121022250.3193@apollo.tec.linutronix.de>
+	 <1213277402.16459.25.camel@localhost.localdomain>
+	 <alpine.LFD.1.10.0806121533270.3193@apollo.tec.linutronix.de>
+	 <1213278286.16459.29.camel@localhost.localdomain>
+	 <alpine.LFD.1.10.0806121636380.3193@apollo.tec.linutronix.de>
+	 <1213286193.16459.53.camel@localhost.localdomain>
+	 <alpine.LFD.1.10.0806121802050.3193@apollo.tec.linutronix.de>
+Content-Type: text/plain
+Date: Thu, 12 Jun 2008 15:09:58 -0700
+Message-Id: <1213308598.16459.82.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Thu, 12 Jun 2008 13:38:42 +1000
+
+On Thu, 2008-06-12 at 21:55 +0200, Thomas Gleixner wrote:
+> Also your interpretation of the POSIX requirement is very
+> questionable:
 > 
->> Hi Jeff,
->>
->> On Wed, 11 Jun 2008 22:30:46 -0400 Jeff Garzik <jeff@garzik.org> wrote:
->>> Stephen Rothwell (1):
->>>       [netdrvr] Fix 8390 build breakage
->> That patch is actually from Tony Breeds ..
-> 
-> Jeff, there is still time to fix this.  If you want, just
-> fix up that patch in your tree to get the attribution
-> and author field correct, and send me a new pull request.
+>  "If there are threads blocked on the mutex object referenced by mutex
+>  when pthread_mutex_unlock() is called, resulting in the mutex
+>  becoming available, the scheduling policy shall determine which
+>  thread shall acquire the mutex."
 
-Did you actually read the commit description?  It's quite clear who 
-originated the commit:
+The key is "scheduling policy" .. When the mutex is un-blocked the next
+task to run is the same as if the scheduler was selecting tasks from the
+list of blocked tasks .. For Linux, that means the highest priority
+tasks should be selected.. So it's no more acceptable for the scheduler
+to priority invert some tasks than it is for the futex to do it.
 
-
-commit 0c1aa20fb87b796d904f4d89ad12e5a0c483127b
-Author: Stephen Rothwell <sfr@canb.auug.org.au>
-Date:   Thu May 29 22:39:28 2008 +1000
-
-     [netdrvr] Fix 8390 build breakage
-
-     From: tony@bakeyournoodle.com (Tony Breeds)
-
-     ...
-
-     Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
-     Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-
-
-It's pretty hard to miss, and it accurately captures the entire audit trail:
-
-1) who sent the patch?
-2) who wrote the patch?
-3) who committed the patch?
-
-So, you want to eliminate part of that audit trail (#1), making the 
-commit audit trail more hidden and opaque?
-
-I respectfully disagree.  We should capture the _entire_ audit trail, 
-not hide bits of it.
-
-Full credit is given, as you can see from looking at the commit.
-
-	Jeff
-
-
+Daniel
 
