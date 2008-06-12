@@ -1,61 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757380AbYFLWGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756738AbYFLWIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757380AbYFLWGm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 18:06:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbYFLWGd
+	id S1756738AbYFLWIk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 18:08:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbYFLWIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 18:06:33 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:47084 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751359AbYFLWGd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 18:06:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=TlSZdITw0QBYRPFU1LCLMAJZWDApyEd7otkNfexgpyV0DYR2a3ZplG/pJ8ayI3LU8h
-         4gdNHuv4xYlPEhjv+3a/B3BDhSDvGVd/WFlMEejg5iTnTaBX0rcCKYD6t+2zQBNpI7li
-         E1eCMEczp/cCPZYbq2HYh43xSRv/YzHm1imXg=
-Message-ID: <86802c440806121506o8628227he7522c35d906664b@mail.gmail.com>
-Date: Thu, 12 Jun 2008 15:06:32 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Paul Jackson" <pj@sgi.com>
-Subject: Re: Confusions with reserve_early, reserve_bootmem, e820, efi, ... on x86_64
-Cc: "H. Peter Anvin" <hpa@zytor.com>, andi@firstfloor.org, mingo@elte.hu,
-       bwalle@suse.de, hannes@saeurebad.de, ying.huang@intel.com,
-       linux-kernel@vger.kernel.org, steiner@sgi.com
-In-Reply-To: <20080612165252.b7ce6902.pj@sgi.com>
+	Thu, 12 Jun 2008 18:08:30 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:58091 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751797AbYFLWI3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 18:08:29 -0400
+Message-ID: <48519E57.3030906@garzik.org>
+Date: Thu, 12 Jun 2008 18:08:23 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: David Miller <davem@davemloft.net>
+CC: sfr@canb.auug.org.au, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches] net driver updates for .27
+References: <20080612023046.GA25958@havoc.gtf.org>	<20080612133842.0dc472bc.sfr@canb.auug.org.au> <20080611.212929.71729484.davem@davemloft.net>
+In-Reply-To: <20080611.212929.71729484.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080612050609.88a8cf7f.pj@sgi.com>
-	 <86802c440806120525v2da860bfyf05eb8ec6b9943d0@mail.gmail.com>
-	 <20080612111943.c140c4cb.pj@sgi.com>
-	 <86802c440806121005g42f2e44cxbe5f7bdb06836a1e@mail.gmail.com>
-	 <20080612151032.5a59309b.pj@sgi.com>
-	 <86802c440806121329s54bb1e6dobaaa15c26e7dc81c@mail.gmail.com>
-	 <48519077.2050402@zytor.com> <20080612165252.b7ce6902.pj@sgi.com>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 12, 2008 at 2:52 PM, Paul Jackson <pj@sgi.com> wrote:
-> hpa writes:
->> It's probably safer to reserve the EBDA even with EFI; it's only a page
->> or so so it doesn't matter much.
->
-> Reserving EBDA with EFI is fine by what little I know.
->
-> But the current code doesn't like it -- if the EFI memmap range is inside
-> the EBDA range, then the reserve_early() routine panics with:
->
->    "Overlapping early reservations"
->
-> Something needs tweaking here somehow ... and I'm not the one to know what.
+David Miller wrote:
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Thu, 12 Jun 2008 13:38:42 +1000
+> 
+>> Hi Jeff,
+>>
+>> On Wed, 11 Jun 2008 22:30:46 -0400 Jeff Garzik <jeff@garzik.org> wrote:
+>>> Stephen Rothwell (1):
+>>>       [netdrvr] Fix 8390 build breakage
+>> That patch is actually from Tony Breeds ..
+> 
+> Jeff, there is still time to fix this.  If you want, just
+> fix up that patch in your tree to get the attribution
+> and author field correct, and send me a new pull request.
 
-what is addr that the EFI memmap should be according to spec?
+Did you actually read the commit description?  It's quite clear who 
+originated the commit:
 
-YH
+
+commit 0c1aa20fb87b796d904f4d89ad12e5a0c483127b
+Author: Stephen Rothwell <sfr@canb.auug.org.au>
+Date:   Thu May 29 22:39:28 2008 +1000
+
+     [netdrvr] Fix 8390 build breakage
+
+     From: tony@bakeyournoodle.com (Tony Breeds)
+
+     ...
+
+     Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+     Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+
+
+It's pretty hard to miss, and it accurately captures the entire audit trail:
+
+1) who sent the patch?
+2) who wrote the patch?
+3) who committed the patch?
+
+So, you want to eliminate part of that audit trail (#1), making the 
+commit audit trail more hidden and opaque?
+
+I respectfully disagree.  We should capture the _entire_ audit trail, 
+not hide bits of it.
+
+Full credit is given, as you can see from looking at the commit.
+
+	Jeff
+
+
+
