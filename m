@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760418AbYFLUxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758135AbYFLU6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760418AbYFLUxS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 16:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbYFLUxI
+	id S1758135AbYFLU6T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 16:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754522AbYFLU6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 16:53:08 -0400
-Received: from moutng.kundenserver.de ([212.227.126.179]:64166 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754108AbYFLUxH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 16:53:07 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: eranian@gmail.com
-Subject: Re: [patch 02/21] perfmon2 minimal: generic headers
-Date: Thu, 12 Jun 2008 22:52:46 +0200
+	Thu, 12 Jun 2008 16:58:09 -0400
+Received: from outbound-mail-120.bluehost.com ([69.89.18.6]:56419 "HELO
+	outbound-mail-120.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754496AbYFLU6I convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 16:58:08 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Justin Madru <jdm64@gawab.com>
+Subject: Re: [regression?] Sometime (often) X come out blank (black screen) on cold boot - Intel chipset
+Date: Thu, 12 Jun 2008 13:58:00 -0700
 User-Agent: KMail/1.9.9
-Cc: "Arjan van de Ven" <arjan@infradead.org>, linux-kernel@vger.kernel.org
-References: <484dafc4.0af6660a.54fb.1b26@mx.google.com> <20080610072914.3b6b2cfe@infradead.org> <7c86c4470806110049g76247b4ex5e1b77af78d8dd7c@mail.gmail.com>
-In-Reply-To: <7c86c4470806110049g76247b4ex5e1b77af78d8dd7c@mail.gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+Cc: Romano Giannetti <romanol@upcomillas.es>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, lkml <linux-kernel@vger.kernel.org>,
+       =?utf-8?q?Sa=C3=AFvann_Carignan?= <oxmosys@gmail.com>
+References: <1213101501.21041.9.camel@pern> <484F5582.5000805@gawab.com>
+In-Reply-To: <484F5582.5000805@gawab.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200806122252.46849.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19abnJennJnODEBY0PSglyeokahEekJaBHOOJ6
- r8wpYoxrtxHceJIez/iZUzhLjJNRJ2oaMMy6svR4rvxWPlI/wt
- OWaSXqeUefrWtUEsOHZZQ==
+Message-Id: <200806121358.01514.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 June 2008, stephane eranian wrote:
-> > I'm very nervous when seeing something like this in userspace headers;
-> > you need to assume that the app has been compiled with a very different
-> > version of the headers than the currently running kernel.... either the
-> > version of perfmon doesn't matter, in which case these don't belong
-> > here, or it does and it should be a runtime query.
-> >
-> I think you bring up a good point. There is indeed a way of querying the version
-> via /sysfs.
-> 
-> However the question is how does an application know which API version
-> it was compiled
-> for, so it can compare with what it finds in /sysfs? That ought to be
-> somewhere in the
-> public headers that the application was compiled with.
-> 
+On Tuesday, June 10, 2008 9:33 pm Justin Madru wrote:
+> Jesse,
+>     It seems the problem might be related to usplash. In each reported
+> case Ubuntu and usplash were used, and disabling usplash (at least for
+> me) seems to fix the problem. Could there be some timing feature that
+> usplash uses that isn't guaranteed/changed with some optimizations of
+> CFS (or HR-timers) that went into 2.6.25? I've cc'ed Saïvann Carignan,
+> who seems to be the most active contributer to usplash.
 
-The normal way for an application is to just use a syscall or file
-interface, and check for -ENOENT or -ENOSYS error codes in order to
-find kernels that are too old. If older kernels had a different way
-of doing things, the application can fall back on that mechanism.
-An example for this would be pselect() which you can replace with
-select(), but only in a racy way that the user should avoid.
+Yeah, usplash really seems to affect things to make the bug more visible, but 
+I still suspect a timing bug in xf86-video-intel...  Unfortunately those are 
+hard to find & debug, but we're working on some related stuff, so hopefully 
+we'll find & fix it soon.
 
-When the kernel changes an interface, it must only do that in a
-backwards compatible way, so that old binaries do not break. Ever.
-
-	Arnd <><
+Thanks,
+Jesse
