@@ -1,133 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758498AbYFLTTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758996AbYFLTU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758498AbYFLTTQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 15:19:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbYFLTTE
+	id S1758996AbYFLTU6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 15:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbYFLTUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 15:19:04 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42062 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753240AbYFLTTC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 15:19:02 -0400
-Date: Thu, 12 Jun 2008 21:18:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [git pull] scheduler fixes
-Message-ID: <20080612191848.GA31003@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 12 Jun 2008 15:20:50 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56815 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754080AbYFLTUt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 15:20:49 -0400
+Date: Thu, 12 Jun 2008 12:20:09 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Manfred Spraul <manfred@colorfullife.com>
+Cc: penberg@cs.helsinki.fi, Nadia.Derbey@bull.net,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, clameter@sgi.com
+Subject: Re: repeatable slab corruption with LTP msgctl08
+Message-Id: <20080612122009.f4d3a82a.akpm@linux-foundation.org>
+In-Reply-To: <48517456.5000901@colorfullife.com>
+References: <20080611221324.42270ef2.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0806121332130.11556@sbz-30.cs.Helsinki.FI>
+	<48516BF3.8050805@colorfullife.com>
+	<20080612114152.18895d6c.akpm@linux-foundation.org>
+	<48517456.5000901@colorfullife.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 12 Jun 2008 21:09:10 +0200
+Manfred Spraul <manfred@colorfullife.com> wrote:
 
-Linus,
+> Either someone does a set_bit() or your cpu is breaking down.
 
-please pull the latest scheduler fixes git tree from:
+Well.  It is about ten years old.  But this is the first sign of a
+problem and it's always msgctl08.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
+>  From looking at the the msgctl08 test: it shouldn't produce any races, 
+> it just does lots of bulk msgsnd()/msgrcv() operations. Always one 
+> thread sends, one thread receives on each queue. It's probably more a 
+> scheduler stresstest than anything else.
+> 
+> Attached is a completely untested patch:
+> - add 8 bytes to each slabp struct: This changes the alignment of the 
+> bufctl entries.
+> - add a hexdump of the redzone bytes.
 
-thanks,
+OK, I'll try that this evening (eight hours hence).
 
-	Ingo
+I'll also try increasing /proc/sys/kernel/msgmni under 2.6.25.
 
------------------->
-Lai Jiangshan (2):
-      sched: fair group: fix overflow(was: fix divide by zero)
-      sched: 64-bit: fix arithmetics overflow
+> Andrew: how do you log the oops? 
+> it might scroll of the screen.
 
-Oleg Nesterov (1):
-      sched: fix TASK_WAKEKILL vs SIGKILL race
+netconsole-to-disk.
 
- include/linux/sched.h |   13 +++++++++++++
- kernel/sched.c        |   22 ++++++++++++++--------
- 2 files changed, 27 insertions(+), 8 deletions(-)
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index ae0be3c..c5d3f84 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -2026,6 +2026,19 @@ static inline int fatal_signal_pending(struct task_struct *p)
- 	return signal_pending(p) && __fatal_signal_pending(p);
- }
- 
-+static inline int signal_pending_state(long state, struct task_struct *p)
-+{
-+	if (!(state & (TASK_INTERRUPTIBLE | TASK_WAKEKILL)))
-+		return 0;
-+	if (!signal_pending(p))
-+		return 0;
-+
-+	if (state & (__TASK_STOPPED | __TASK_TRACED))
-+		return 0;
-+
-+	return (state & TASK_INTERRUPTIBLE) || __fatal_signal_pending(p);
-+}
-+
- static inline int need_resched(void)
- {
- 	return unlikely(test_thread_flag(TIF_NEED_RESCHED));
-diff --git a/kernel/sched.c b/kernel/sched.c
-index bfb8ad8..eaf6751 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -312,12 +312,15 @@ static DEFINE_SPINLOCK(task_group_lock);
- #endif
- 
- /*
-- * A weight of 0, 1 or ULONG_MAX can cause arithmetics problems.
-+ * A weight of 0 or 1 can cause arithmetics problems.
-+ * A weight of a cfs_rq is the sum of weights of which entities
-+ * are queued on this cfs_rq, so a weight of a entity should not be
-+ * too large, so as the shares value of a task group.
-  * (The default weight is 1024 - so there's no practical
-  *  limitation from this.)
-  */
- #define MIN_SHARES	2
--#define MAX_SHARES	(ULONG_MAX - 1)
-+#define MAX_SHARES	(1UL << 18)
- 
- static int init_task_group_load = INIT_TASK_GROUP_LOAD;
- #endif
-@@ -1337,8 +1340,13 @@ calc_delta_mine(unsigned long delta_exec, unsigned long weight,
- {
- 	u64 tmp;
- 
--	if (!lw->inv_weight)
--		lw->inv_weight = 1 + (WMULT_CONST-lw->weight/2)/(lw->weight+1);
-+	if (!lw->inv_weight) {
-+		if (BITS_PER_LONG > 32 && unlikely(lw->weight >= WMULT_CONST))
-+			lw->inv_weight = 1;
-+		else
-+			lw->inv_weight = 1 + (WMULT_CONST-lw->weight/2)
-+				/ (lw->weight+1);
-+	}
- 
- 	tmp = (u64)delta_exec * weight;
- 	/*
-@@ -4159,12 +4167,10 @@ need_resched_nonpreemptible:
- 	clear_tsk_need_resched(prev);
- 
- 	if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
--		if (unlikely((prev->state & TASK_INTERRUPTIBLE) &&
--				signal_pending(prev))) {
-+		if (unlikely(signal_pending_state(prev->state, prev)))
- 			prev->state = TASK_RUNNING;
--		} else {
-+		else
- 			deactivate_task(rq, prev, 1);
--		}
- 		switch_count = &prev->nvcsw;
- 	}
- 
