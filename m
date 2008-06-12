@@ -1,83 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbYFLPnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbYFLPq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754858AbYFLPnw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 11:43:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbYFLPnl
+	id S1755356AbYFLPq2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 11:46:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbYFLPqU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 11:43:41 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:42365 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752971AbYFLPnj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 11:43:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=lhfsX+dhcUZFKCIAEHtn5foBo96pY/12XthcEnHu0ov3SFjtvKd2lL4MAdmXVtZWdz
-         7Oc/o9pr14ap+JqFjMbyVSmrGYhtXpVHcsn9wJ7674U+2ishrOr1XdJL9iorRziY/DS+
-         AbIKDpRY7PNeVgoUIbP2+Kww8xAfOjRaU/gcc=
-Message-ID: <1ba2fa240806120843s268b2ff4mb45a11adf11afc7f@mail.gmail.com>
-Date: Thu, 12 Jun 2008 18:43:37 +0300
-From: "Tomas Winkler" <tomasw@gmail.com>
-To: "Johannes Berg" <johannes@sipsolutions.net>
-Subject: Re: Problem: Out of memory after 2days with 2GB RAM
-Cc: "Rik van Riel" <riel@redhat.com>,
-       "Zdenek Kabelac" <zdenek.kabelac@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       yi.zhu@intel.com, reinette.chatre@intel.com,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <1213278884.3936.15.camel@johannes.berg>
+	Thu, 12 Jun 2008 11:46:20 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:44823 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750982AbYFLPqT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 11:46:19 -0400
+Date: Fri, 13 Jun 2008 00:43:59 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: David Howells <dhowells@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Bryan Wu <cooloney@kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] nommu: Correct kobjsize() page validity checks.
+Message-ID: <20080612154359.GA9327@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	David Howells <dhowells@redhat.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Christoph Lameter <clameter@sgi.com>,
+	Bryan Wu <cooloney@kernel.org>, linux-kernel@vger.kernel.org
+References: <27332.1213264136@redhat.com> <20080612072955.GA8097@linux-sh.org> <2336.1213266053@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <c4e36d110806120307n20cce692s9c136f11596f5ab0@mail.gmail.com>
-	 <20080612093833.0fb9cdd6@bree.surriel.com>
-	 <1213278884.3936.15.camel@johannes.berg>
+In-Reply-To: <2336.1213266053@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 12, 2008 at 4:54 PM, Johannes Berg
-<johannes@sipsolutions.net> wrote:
-> On Thu, 2008-06-12 at 09:38 -0400, Rik van Riel wrote:
->> On Thu, 12 Jun 2008 12:07:34 +0200
->> "Zdenek Kabelac" <zdenek.kabelac@gmail.com> wrote:
->>
->> > It looks like while there was a huge amount of buffers and caches -
->> > system was unable to allocate few pages for kmalloc in iwl3945 driver
->> > after resume.
->>
->> It looks like this is because it wants to allocate 2**5 contiguous
->> pages, which is 128kB of contiguous kernel memory.
->
-> 64-bit system I assume?
-> The allocation should be 256 * 20 * sizeof(struct sk_buff *).
+On Thu, Jun 12, 2008 at 11:20:53AM +0100, David Howells wrote:
+> Here kobjsize() returns 16384 (PAGE_SIZE) when it should return something a
+> lot smaller.  This appears related to SLOB not setting PG_slab, so
+> /proc/pic/status gets messed up:
+> 
+> 	Mem:      983040 bytes
+> 	Slack:     44112 bytes
+> 	Shared:  1687552 bytes
+> 
+> SLAB returns 64 at this point, and in /proc/pid/status shows:
+> 
+> 	Mem:      594016 bytes
+> 	Slack:     44112 bytes
+> 	Shared:  1638688 bytes
+> 
+> with or without the patch, which might even be correct.
+> 
+Yes, this is the fundamental problem with kobjsize() as it is today.
+Without the setting of PG_slab, non-compound page objects default to
+PAGE_SIZE. Pekka posted a series of patches that hooked PG_slab in to
+SLUB and SLOB that get the same degree of accuracy that SLAB has today,
+but there was opposition to merging those.
 
-> Try the patch below. It should improve code generation too.
->
-> I discussed this with Tomas previously and he says the hw is capable of
-> doing 20 fragments per frame (wonder why, Broadcom can do an unlimited
-> number...) but he complained about the networking stack not being able
-> to.
+> Maybe on SLOB we want kobjsize() to become sizeof() where we're dealing with
+> fixed size units such as structs.  On the other hand, getting rid of
+> kobjsize() entirely would be good.
+> 
+I think for the time being we have to live with the innacuracy, and
+simply focus on getting rid of kobjsize() entirely. Without additional
+help from the various allocators, there's really not that much we can do.
+Rather than papering over that, bringing nommu more in line with MMU
+semantics is certainly a preferable option.
 
-This is scatter gather buffers that can be kicked in one DMA transaction.
-
-Well, the hardware needs to support IP checksumming for that, hence,
-> afaik, only two fragments can ever be used (one for hw header, one for
-> frame)
-This I still don't understand why but everybody is already tired to
-explaining me why.. :) Just need to find time to dig into it.
-
-> This cuts the allocation to 10%, or (under) a page in all cases.
-
-Probably. it would be safe to use vmalloc for allocating txb anyway.
-I'll give it a try.
-
-There was already discussion on LKML about memory allocation problems
-on X86_64, which might explain this regression. This didn't happen
-before.
-
-Tomas
+This patch in particular is unrelated to the inaccuracy issues, although
+it should fix the cases where kobjsize() would mistakenly account
+reserved pages.
