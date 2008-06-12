@@ -1,260 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759922AbYFLTP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758498AbYFLTTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759922AbYFLTP1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 15:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbYFLTPO
+	id S1758498AbYFLTTQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 15:19:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbYFLTTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 15:15:14 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:33850 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753827AbYFLTPM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 15:15:12 -0400
-Subject: Re: [patch] radix-tree: fix small lockless radix-tree bug
-From: Peter Zijlstra <peterz@infradead.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       paulmck@us.ibm.com
-In-Reply-To: <200806130503.45369.nickpiggin@yahoo.com.au>
-References: <200806130503.45369.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Thu, 12 Jun 2008 21:15:05 +0200
-Message-Id: <1213298105.31518.170.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Jun 2008 15:19:04 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42062 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753240AbYFLTTC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 15:19:02 -0400
+Date: Thu, 12 Jun 2008 21:18:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [git pull] scheduler fixes
+Message-ID: <20080612191848.GA31003@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-06-13 at 05:03 +1000, Nick Piggin wrote:
-> Hi guys,
-> 
-> Although this doesn't seem like cause for alarm (as per the analysis),
-> it may still be a good 2.6.26 candidate as we should have a few more
-> weeks of testing left.
-> 
-> It should definitely go in -mm with the lockless pagecache patch.
 
-Ouch - good one, I'll back-port it to -rt.
+Linus,
 
-This reminds me, I should get back to my radix-tree path compression
-stuff one day.
+please pull the latest scheduler fixes git tree from:
 
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
 
-> When shrinking a radix-tree, we do it in a lockless manner by atomically
-> switching the root pointer away from the redundant node (one that only
-> has a single entry in the left most slot), and switching it over to its
-> lone child.
-> 
-> Because a lockless lookup may have got a reference to the parent and be
-> in the middle of deciding what to do with it while it is being swapped
-> away for its child. For this reason, we also have to keep it around and
-> in a valid state for the lookup to proceed and give a valid result, for
-> at least an RCU grace period. So we need to keep the child in the left
-> most slot there in case that is requested by the lookup.
-> 
-> This is all pretty standard RCU stuff. It is worth repeating because
-> in my eagerness to obey the radix tree node constructor scheme, I had
-> broken this by zeroing the radix tree node before the grace period.
-> 
-> Fix it by clearing those fields in the RCU callback. I would normally
-> want to rip out the constructor entirely, but radix tree nodes are one
-> of those places where they make sense (only few cachelines will be
-> touched soon after allocation).
-> 
-> 
-> This was never actually observed in any lockless pagecache testing or
-> using the test harness, but as a rare problem testing my scalable vmap
-> rewrite.
-> 
-> Fortunately, it is not a problem anywhere lockless pagecache is used in
-> mainline kernels (pagecache probe is not a guarantee, and brd does not
-> have concurrent lookups and deletes).
-> 
-> However, it would eventually pop up for someone using lockless pagecache :P
-> 
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
+thanks,
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+	Ingo
 
-> ---
-> Index: linux-2.6/lib/radix-tree.c
-> ===================================================================
-> --- linux-2.6.orig/lib/radix-tree.c     2008-06-13 04:26:31.000000000
-> +1000
-> +++ linux-2.6/lib/radix-tree.c  2008-06-13 04:31:38.000000000 +1000
-> @@ -88,6 +88,57 @@ static inline gfp_t root_gfp_mask(struct
->         return root->gfp_mask & __GFP_BITS_MASK;
->  }
->  
-> +static inline void tag_set(struct radix_tree_node *node, unsigned int
-> tag,
-> +               int offset)
-> +{
-> +       __set_bit(offset, node->tags[tag]);
-> +}
-> +
-> +static inline void tag_clear(struct radix_tree_node *node, unsigned
-> int tag,
-> +               int offset)
-> +{
-> +       __clear_bit(offset, node->tags[tag]);
-> +}
-> +
-> +static inline int tag_get(struct radix_tree_node *node, unsigned int
-> tag,
-> +               int offset)
-> +{
-> +       return test_bit(offset, node->tags[tag]);
-> +}
-> +
-> +static inline void root_tag_set(struct radix_tree_root *root,
-> unsigned int tag)
-> +{
-> +       root->gfp_mask |= (__force gfp_t)(1 << (tag +
-> __GFP_BITS_SHIFT));
-> +}
-> +
-> +static inline void root_tag_clear(struct radix_tree_root *root,
-> unsigned int tag)
-> +{
-> +       root->gfp_mask &= (__force gfp_t)~(1 << (tag +
-> __GFP_BITS_SHIFT));
-> +}
-> +
-> +static inline void root_tag_clear_all(struct radix_tree_root *root)
-> +{
-> +       root->gfp_mask &= __GFP_BITS_MASK;
-> +}
-> +
-> +static inline int root_tag_get(struct radix_tree_root *root, unsigned
-> int tag)
-> +{
-> +       return (__force unsigned)root->gfp_mask & (1 << (tag +
-> __GFP_BITS_SHIFT));
-> +}
-> +
-> +/*
-> + * Returns 1 if any slot in the node has this tag set.
-> + * Otherwise returns 0.
-> + */
-> +static inline int any_tag_set(struct radix_tree_node *node, unsigned
-> int tag)
-> +{
-> +       int idx;
-> +       for (idx = 0; idx < RADIX_TREE_TAG_LONGS; idx++) {
-> +               if (node->tags[tag][idx])
-> +                       return 1;
-> +       }
-> +       return 0;
-> +}
->  /*
->   * This assumes that the caller has performed appropriate
-> preallocation, and
->   * that the caller has pinned this thread of control to the current
-> CPU.
-> @@ -124,6 +175,17 @@ static void radix_tree_node_rcu_free(str
->  {
->         struct radix_tree_node *node =
->                         container_of(head, struct radix_tree_node,
-> rcu_head);
-> +
-> +       /*
-> +        * must only free zeroed nodes into the slab.
-> radix_tree_shrink
-> +        * can leave us with a non-NULL entry in the first slot, so
-> clear
-> +        * that here to make sure.
-> +        */
-> +       tag_clear(node, 0, 0);
-> +       tag_clear(node, 1, 0);
-> +       node->slots[0] = NULL;
-> +       node->count = 0;
-> +
->         kmem_cache_free(radix_tree_node_cachep, node);
->  }
->  
-> @@ -165,59 +227,6 @@ out:
->  }
->  EXPORT_SYMBOL(radix_tree_preload);
->  
-> -static inline void tag_set(struct radix_tree_node *node, unsigned int
-> tag,
-> -               int offset)
-> -{
-> -       __set_bit(offset, node->tags[tag]);
-> -}
-> -
-> -static inline void tag_clear(struct radix_tree_node *node, unsigned
-> int tag,
-> -               int offset)
-> -{
-> -       __clear_bit(offset, node->tags[tag]);
-> -}
-> -
-> -static inline int tag_get(struct radix_tree_node *node, unsigned int
-> tag,
-> -               int offset)
-> -{
-> -       return test_bit(offset, node->tags[tag]);
-> -}
-> -
-> -static inline void root_tag_set(struct radix_tree_root *root,
-> unsigned int tag)
-> -{
-> -       root->gfp_mask |= (__force gfp_t)(1 << (tag +
-> __GFP_BITS_SHIFT));
-> -}
-> -
-> -
-> -static inline void root_tag_clear(struct radix_tree_root *root,
-> unsigned int tag)
-> -{
-> -       root->gfp_mask &= (__force gfp_t)~(1 << (tag +
-> __GFP_BITS_SHIFT));
-> -}
-> -
-> -static inline void root_tag_clear_all(struct radix_tree_root *root)
-> -{
-> -       root->gfp_mask &= __GFP_BITS_MASK;
-> -}
-> -
-> -static inline int root_tag_get(struct radix_tree_root *root, unsigned
-> int tag)
-> -{
-> -       return (__force unsigned)root->gfp_mask & (1 << (tag +
-> __GFP_BITS_SHIFT));
-> -}
-> -
-> -/*
-> - * Returns 1 if any slot in the node has this tag set.
-> - * Otherwise returns 0.
-> - */
-> -static inline int any_tag_set(struct radix_tree_node *node, unsigned
-> int tag)
-> -{
-> -       int idx;
-> -       for (idx = 0; idx < RADIX_TREE_TAG_LONGS; idx++) {
-> -               if (node->tags[tag][idx])
-> -                       return 1;
-> -       }
-> -       return 0;
-> -}
-> -
->  /*
->   *     Return the maximum key which can be store into a
->   *     radix tree with height HEIGHT.
-> @@ -930,11 +939,6 @@ static inline void radix_tree_shrink(str
->                         newptr = radix_tree_ptr_to_indirect(newptr);
->                 root->rnode = newptr;
->                 root->height--;
-> -               /* must only free zeroed nodes into the slab */
-> -               tag_clear(to_free, 0, 0);
-> -               tag_clear(to_free, 1, 0);
-> -               to_free->slots[0] = NULL;
-> -               to_free->count = 0;
->                 radix_tree_node_free(to_free);
->         }
->  }
+------------------>
+Lai Jiangshan (2):
+      sched: fair group: fix overflow(was: fix divide by zero)
+      sched: 64-bit: fix arithmetics overflow
 
+Oleg Nesterov (1):
+      sched: fix TASK_WAKEKILL vs SIGKILL race
+
+ include/linux/sched.h |   13 +++++++++++++
+ kernel/sched.c        |   22 ++++++++++++++--------
+ 2 files changed, 27 insertions(+), 8 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index ae0be3c..c5d3f84 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -2026,6 +2026,19 @@ static inline int fatal_signal_pending(struct task_struct *p)
+ 	return signal_pending(p) && __fatal_signal_pending(p);
+ }
+ 
++static inline int signal_pending_state(long state, struct task_struct *p)
++{
++	if (!(state & (TASK_INTERRUPTIBLE | TASK_WAKEKILL)))
++		return 0;
++	if (!signal_pending(p))
++		return 0;
++
++	if (state & (__TASK_STOPPED | __TASK_TRACED))
++		return 0;
++
++	return (state & TASK_INTERRUPTIBLE) || __fatal_signal_pending(p);
++}
++
+ static inline int need_resched(void)
+ {
+ 	return unlikely(test_thread_flag(TIF_NEED_RESCHED));
+diff --git a/kernel/sched.c b/kernel/sched.c
+index bfb8ad8..eaf6751 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -312,12 +312,15 @@ static DEFINE_SPINLOCK(task_group_lock);
+ #endif
+ 
+ /*
+- * A weight of 0, 1 or ULONG_MAX can cause arithmetics problems.
++ * A weight of 0 or 1 can cause arithmetics problems.
++ * A weight of a cfs_rq is the sum of weights of which entities
++ * are queued on this cfs_rq, so a weight of a entity should not be
++ * too large, so as the shares value of a task group.
+  * (The default weight is 1024 - so there's no practical
+  *  limitation from this.)
+  */
+ #define MIN_SHARES	2
+-#define MAX_SHARES	(ULONG_MAX - 1)
++#define MAX_SHARES	(1UL << 18)
+ 
+ static int init_task_group_load = INIT_TASK_GROUP_LOAD;
+ #endif
+@@ -1337,8 +1340,13 @@ calc_delta_mine(unsigned long delta_exec, unsigned long weight,
+ {
+ 	u64 tmp;
+ 
+-	if (!lw->inv_weight)
+-		lw->inv_weight = 1 + (WMULT_CONST-lw->weight/2)/(lw->weight+1);
++	if (!lw->inv_weight) {
++		if (BITS_PER_LONG > 32 && unlikely(lw->weight >= WMULT_CONST))
++			lw->inv_weight = 1;
++		else
++			lw->inv_weight = 1 + (WMULT_CONST-lw->weight/2)
++				/ (lw->weight+1);
++	}
+ 
+ 	tmp = (u64)delta_exec * weight;
+ 	/*
+@@ -4159,12 +4167,10 @@ need_resched_nonpreemptible:
+ 	clear_tsk_need_resched(prev);
+ 
+ 	if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
+-		if (unlikely((prev->state & TASK_INTERRUPTIBLE) &&
+-				signal_pending(prev))) {
++		if (unlikely(signal_pending_state(prev->state, prev)))
+ 			prev->state = TASK_RUNNING;
+-		} else {
++		else
+ 			deactivate_task(rq, prev, 1);
+-		}
+ 		switch_count = &prev->nvcsw;
+ 	}
+ 
