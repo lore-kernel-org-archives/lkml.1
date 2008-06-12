@@ -1,1022 +1,992 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757408AbYFLSxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758664AbYFLSyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757408AbYFLSxv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 14:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754298AbYFLSxn
+	id S1758664AbYFLSyg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 14:54:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755077AbYFLSyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 14:53:43 -0400
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:20108 "HELO
-	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753952AbYFLSxj (ORCPT
+	Thu, 12 Jun 2008 14:54:23 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:39742 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752121AbYFLSyQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 14:53:39 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=gitK9WQJ6dhK57IRJnZ2eXphjAzWZXdqbX8owiozj0ChdVnMlQM17n2W3QSKiPUdYXhjTsyOsbNCLs8TlkB8qa5QNlJCxza/934MretOPENVitNdK5RdW5Yzea/T5KLSEB3KkD4gwR+UJCIwYqdDKkcjmTdehKe4zi6Pnd3stgs=  ;
-X-YMail-OSG: ppJNbRMVM1kdFXdqoFtiHRlVTpZMvtFnkegHRtX6Pwqgb.QKq6FY53ge9hlQWL7XWx.m8JtdH9FKmM._MiEtWMOR5dcsP3AcSzFTmfSVan2_Ek_74aslFa9XxkTImJ6jagu_yC0aP4bSDQpkjR67ik.s
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [patch 2.6.26-rc5] gpio: sysfs interface (updated)
-Date: Thu, 12 Jun 2008 11:53:36 -0700
-User-Agent: KMail/1.9.9
-Cc: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Thu, 12 Jun 2008 14:54:16 -0400
+Subject: [RFC PATCH 1/2] Merge options into CONFIG_HUGETLB
+From: Adam Litke <agl@us.ibm.com>
+To: linux-mm <linux-mm@kvack.org>
+Cc: agl@us.ibm.com, npiggin@suse.de, nacc@us.ibm.com, mel@csn.ul.ie,
+       Eric B Munson <ebmunson@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-ia64@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       sparclinux@vger.kernel.org, linux-sh@vger.kernel.org,
+       linux-s390@vger.kernel.org, linux-mips@linux-mips.org
+In-Reply-To: <1213296540.17108.8.camel@localhost.localdomain>
+References: <1213296540.17108.8.camel@localhost.localdomain>
+Content-Type: text/plain
+Organization: IBM
+Date: Thu, 12 Jun 2008 14:53:47 -0400
+Message-Id: <1213296827.17108.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806121153.36557.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: gpio: sysfs interface
-From: David Brownell <dbrownell@users.sourceforge.net>
+Merge CONFIG_HUGETLB_PAGE and CONFIG_HUGETLBFS into one new config option:
+CONFIG_HUGETLB.  CONFIG_HUGETLB_PAGE is aliased to the value of
+CONFIG_HUGETLBFS, so one option can be removed without any effect.  This change
+is pretty mechanical, but a little extra verification from arch maintainers
+would be very helpful.  Thanks.
 
-This adds a simple sysfs interface for GPIOs.
+Signed-off-by: Adam Litke <agl@us.ibm.com>
 
-    /sys/class/gpio
-    	/export ... asks the kernel to export a GPIO to userspace
-    	/unexport ... to return a GPIO to the kernel
-        /gpioN ... for each exported GPIO #N
-	    /value ... always readable, writes fail for input GPIOs
-	    /direction ... r/w as: in, out (default low); write high, low
-	/gpiochipN ... for each gpiochip; #N is its first GPIO
-	    /base ... (r/o) same as N
-	    /label ... (r/o) descriptive, not necessarily unique
-	    /ngpio ... (r/o) number of GPIOs; numbered N .. N+(ngpio - 1)
+--
 
-GPIOs claimed by kernel code may be exported by its owner using a new
-gpio_export() call, which should be most useful for driver debugging. 
-Such exports may optionally be done without a "direction" attribute.
+ Documentation/vm/hugetlbpage.txt       |    6 ++----
+ arch/arm/mm/consistent.c               |    2 +-
+ arch/avr32/mm/dma-coherent.c           |    2 +-
+ arch/ia64/Kconfig                      |    8 ++++----
+ arch/ia64/kernel/ivt.S                 |    6 +++---
+ arch/ia64/kernel/sys_ia64.c            |    2 +-
+ arch/ia64/mm/Makefile                  |    2 +-
+ arch/ia64/mm/init.c                    |    2 +-
+ arch/powerpc/Kconfig                   |    2 +-
+ arch/powerpc/mm/Makefile               |    2 +-
+ arch/powerpc/mm/hash_utils_64.c        |   10 +++++-----
+ arch/powerpc/mm/init_64.c              |    2 +-
+ arch/powerpc/mm/tlb_64.c               |    2 +-
+ arch/powerpc/platforms/Kconfig.cputype |    2 +-
+ arch/s390/mm/Makefile                  |    2 +-
+ arch/sh/mm/Kconfig                     |    2 +-
+ arch/sh/mm/Makefile_32                 |    2 +-
+ arch/sh/mm/Makefile_64                 |    2 +-
+ arch/sparc64/Kconfig                   |    2 +-
+ arch/sparc64/kernel/sun4v_tlb_miss.S   |    2 +-
+ arch/sparc64/kernel/tsb.S              |    4 ++--
+ arch/sparc64/mm/Makefile               |    2 +-
+ arch/sparc64/mm/fault.c                |    4 ++--
+ arch/sparc64/mm/init.c                 |    2 +-
+ arch/sparc64/mm/tsb.c                  |   14 +++++++-------
+ arch/x86/mm/Makefile                   |    2 +-
+ fs/Kconfig                             |    5 +----
+ fs/Makefile                            |    2 +-
+ fs/hugetlbfs/Makefile                  |    2 +-
+ include/asm-ia64/mmu_context.h         |    2 +-
+ include/asm-ia64/page.h                |    6 +++---
+ include/asm-ia64/pgtable.h             |    2 +-
+ include/asm-mn10300/page.h             |    2 +-
+ include/asm-parisc/page.h              |    2 +-
+ include/asm-powerpc/mmu-hash64.h       |    4 ++--
+ include/asm-powerpc/page_64.h          |    6 +++---
+ include/asm-powerpc/pgtable-ppc64.h    |    2 +-
+ include/asm-sh/page.h                  |    2 +-
+ include/asm-sparc64/mmu.h              |    2 +-
+ include/asm-sparc64/mmu_context.h      |    2 +-
+ include/asm-sparc64/page.h             |    2 +-
+ include/asm-sparc64/pgtable.h          |    2 +-
+ include/asm-x86/page_32.h              |    2 +-
+ include/linux/hugetlb.h                |   12 ++++++------
+ include/linux/pageblock-flags.h        |    6 +++---
+ include/linux/vmstat.h                 |    2 +-
+ kernel/sysctl.c                        |    2 +-
+ mm/Makefile                            |    2 +-
+ mm/mempolicy.c                         |    4 ++--
+ mm/vmstat.c                            |    2 +-
+ 50 files changed, 81 insertions(+), 86 deletions(-)
 
-Userspace may ask to take over a GPIO by writing to a sysfs control file,
-helping to cope with incomplete board support or other "one-off"
-requirements that don't merit full kernel support:
-
-  echo 23 > /sys/class/gpio/export
-	... will gpio_request(23, "sysfs") and gpio_export(23);
-	use /sys/class/gpio/gpio-23/direction to (re)configure it,
-	when that GPIO can be used as both input and output.
-  echo 23 > /sys/class/gpio/unexport
-	... will gpio_free(23), when it was exported as above
-
-The extra D-space footprint is a few hundred bytes, except for the sysfs
-resources associated with each exported GPIO.  The additional I-space
-footprint is about two thirds of the current size of gpiolib (!).  Since
-no /dev node creation is involved, no "udev" support is needed.
-
-Related changes:
-
-  * This adds a device pointer to "struct gpio_chip".  When GPIO
-    providers initialize that, sysfs gpio class devices become children of
-    that device instead of being "virtual" devices.
-
-  * The (few) gpio_chip providers which have such a device node have
-    been updated.
-
-  * Some gpio_chip drivers also needed to update their module "owner"
-    field ...  for which missing kerneldoc was added.
-
-  * Some gpio_chips don't support input GPIOs.  Those GPIOs are now
-    flagged appropriately when the chip is registered.
-
-Based on previous patches, and discussion both on and off LKML.
-
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
-Changes since previous version: trivial fix for locking issue from
-  http://marc.info/?l=linux-kernel&m=121249999315314&w=2
-
-A Documentation/ABI/testing/sysfs-gpio update is ready to submit
-once this merges to mainline.
-
- Documentation/gpio.txt       |  123 +++++++++-
- arch/arm/plat-omap/gpio.c    |    3 
- arch/avr32/mach-at32ap/pio.c |    2 
- drivers/gpio/Kconfig         |   15 +
- drivers/gpio/gpiolib.c       |  512 ++++++++++++++++++++++++++++++++++++++++++-
- drivers/gpio/mcp23s08.c      |    1 
- drivers/gpio/pca953x.c       |    1 
- drivers/gpio/pcf857x.c       |    1 
- drivers/i2c/chips/tps65010.c |    2 
- drivers/mfd/htc-egpio.c      |    2 
- include/asm-generic/gpio.h   |   33 ++
- include/linux/gpio.h         |   13 +
- 12 files changed, 692 insertions(+), 16 deletions(-)
-
---- a/Documentation/gpio.txt	2008-06-09 20:02:35.000000000 -0700
-+++ b/Documentation/gpio.txt	2008-06-09 20:02:43.000000000 -0700
-@@ -347,15 +347,12 @@ necessarily be nonportable.
- Dynamic definition of GPIOs is not currently standard; for example, as
- a side effect of configuring an add-on board with some GPIO expanders.
+diff --git a/Documentation/vm/hugetlbpage.txt b/Documentation/vm/hugetlbpage.txt
+index 3102b81..53604e9 100644
+--- a/Documentation/vm/hugetlbpage.txt
++++ b/Documentation/vm/hugetlbpage.txt
+@@ -13,10 +13,8 @@ This optimization is more critical now as bigger and bigger physical memories
+ Users can use the huge page support in Linux kernel by either using the mmap
+ system call or standard SYSv shared memory system calls (shmget, shmat).
  
--These calls are purely for kernel space, but a userspace API could be built
--on top of them.
--
+-First the Linux kernel needs to be built with the CONFIG_HUGETLBFS
+-(present under "File systems") and CONFIG_HUGETLB_PAGE (selected
+-automatically when CONFIG_HUGETLBFS is selected) configuration
+-options.
++First the Linux kernel needs to be built with the CONFIG_HUGETLB
++(present under "File systems") configuration option.
  
- GPIO implementor's framework (OPTIONAL)
- =======================================
- As noted earlier, there is an optional implementation framework making it
- easier for platforms to support different kinds of GPIO controller using
--the same programming interface.
-+the same programming interface.  This framework is called "gpiolib".
- 
- As a debugging aid, if debugfs is available a /sys/kernel/debug/gpio file
- will be found there.  That will list all the controllers registered through
-@@ -439,4 +436,120 @@ becomes available.  That may mean the de
- calls for that GPIO can work.  One way to address such dependencies is for
- such gpio_chip controllers to provide setup() and teardown() callbacks to
- board specific code; those board specific callbacks would register devices
--once all the necessary resources are available.
-+once all the necessary resources are available, and remove them later when
-+the GPIO controller device becomes unavailable.
-+
-+
-+Sysfs Interface for Userspace (OPTIONAL)
-+========================================
-+Platforms which use the "gpiolib" implementors framework may choose to
-+configure a sysfs user interface to GPIOs.  This is different from the
-+debugfs interface, since it provides control over GPIO direction and
-+value instead of just showing a gpio state summary.  Plus, it could be
-+present on production systems without debugging support.
-+
-+Given approprate hardware documentation for the system, userspace could
-+know for example that GPIO #23 controls the write protect line used to
-+protect boot loader segments in flash memory.  System upgrade procedures
-+may need to temporarily remove that protection, first importing a GPIO,
-+then changing its output state, then updating the code before re-enabling
-+the write protection.  In normal use, GPIO #23 would never be touched,
-+and the kernel would have no need to know about it.
-+
-+Again depending on appropriate hardware documentation, on some systems
-+userspace GPIO can be used to determine system configuration data that
-+standard kernels won't know about.  And for some tasks, simple userspace
-+GPIO drivers could be all that the system really needs.
-+
-+Note that standard kernel drivers exist for common "LEDs and Buttons"
-+GPIO tasks:  "leds-gpio" and "gpio_keys", respectively.  Use those
-+instead of talking directly to the GPIOs; they integrate with kernel
-+frameworks better than your userspace code could.
-+
-+
-+Paths in Sysfs
-+--------------
-+There are three kinds of entry in /sys/class/gpio:
-+
-+   -	Control interfaces used to get userspace control over GPIOs;
-+
-+   -	GPIOs themselves; and
-+
-+   -	GPIO controllers ("gpio_chip" instances).
-+
-+That's in addition to standard files including the "device" symlink.
-+
-+The control interfaces are write-only:
-+
-+    /sys/class/gpio/
-+
-+    	"export" ... Userspace may ask the kernel to export control of
-+		a GPIO to userspace by writing its number to this file.
-+
-+		Example:  "echo 19 > export" will create a "gpio19" node
-+		for GPIO #19, if that's not requested by kernel code.
-+
-+    	"unexport" ... Reverses the effect of exporting to userspace.
-+
-+		Example:  "echo 19 > unexport" will remove a "gpio19"
-+		node exported using the "export" file.
-+
-+GPIO signals have paths like /sys/class/gpio/gpio42/ (for GPIO #42)
-+and have the following read/write attributes:
-+
-+    /sys/class/gpio/gpioN/
-+
-+	"direction" ... reads as either "in" or "out".  This value may
-+		normally be written.  Writing as "out" defaults to
-+		initializing the value as low.  To ensure glitch free
-+		operation, values "low" and "high" may be written to
-+		configure the GPIO as an output with that initial value.
-+
-+		Note that this attribute *will not exist* if the kernel
-+		doesn't support changing the direction of a GPIO, or
-+		it was exported by kernel code that didn't explicitly
-+		allow userspace to reconfigure this GPIO's direction.
-+
-+	"value" ... reads as either 0 (low) or 1 (high).  If the GPIO
-+		is configured as an output, this value may be written;
-+		any nonzero value is treated as high.
-+
-+GPIO controllers have paths like /sys/class/gpio/chipchip42/ (for the
-+controller implementing GPIOs starting at #42) and have the following
-+read-only attributes:
-+
-+    /sys/class/gpio/gpiochipN/
-+
-+    	"base" ... same as N, the first GPIO managed by this chip
-+
-+    	"label" ... provided for diagnostics (not always unique)
-+
-+    	"ngpio" ... how many GPIOs this manges (N to N + ngpio - 1)
-+
-+Board documentation should in most cases cover what GPIOs are used for
-+what purposes.  However, those numbers are not always stable; GPIOs on
-+a daughtercard might be different depending on the base board being used,
-+or other cards in the stack.  In such cases, you may need to use the
-+gpiochip nodes (possibly in conjunction with schematics) to determine
-+the correct GPIO number to use for a given signal.
-+
-+
-+Exporting from Kernel code
-+--------------------------
-+Kernel code can explicitly manage exports of GPIOs which have already been
-+requested using gpio_request():
-+
-+	/* export the GPIO to userspace */
-+	int gpio_export(unsigned gpio, bool direction_may_change);
-+
-+	/* reverse gpio_export() */
-+	void gpio_unexport();
-+
-+After a kernel driver requests a GPIO, it may only be made available in
-+the sysfs interface by gpio_export().  The driver can control whether the
-+signal direction may change.  This helps drivers prevent userspace code
-+from accidentally clobbering important system state.
-+
-+This explicit exporting can help with debugging (by making some kinds
-+of experiments easier), or can provide an always-there interface that's
-+suitable for documenting as part of a board support package.
---- a/arch/arm/plat-omap/gpio.c	2008-06-09 20:02:34.000000000 -0700
-+++ b/arch/arm/plat-omap/gpio.c	2008-06-09 20:02:43.000000000 -0700
-@@ -1488,6 +1488,9 @@ static int __init _omap_gpio_init(void)
- 		bank->chip.set = gpio_set;
- 		if (bank_is_mpuio(bank)) {
- 			bank->chip.label = "mpuio";
-+#ifdef CONFIG_ARCH_OMAP1
-+			bank->chip.dev = &omap_mpuio_device.dev;
-+#endif
- 			bank->chip.base = OMAP_MPUIO(0);
- 		} else {
- 			bank->chip.label = "gpio";
---- a/arch/avr32/mach-at32ap/pio.c	2008-06-09 20:02:34.000000000 -0700
-+++ b/arch/avr32/mach-at32ap/pio.c	2008-06-11 13:24:12.000000000 -0700
-@@ -358,6 +358,8 @@ static int __init pio_probe(struct platf
- 	pio->chip.label = pio->name;
- 	pio->chip.base = pdev->id * 32;
- 	pio->chip.ngpio = 32;
-+	pio->chip.dev = &pdev->dev;
-+	pio->chip.owner = THIS_MODULE;
- 
- 	pio->chip.direction_input = direction_input;
- 	pio->chip.get = gpio_get;
---- a/drivers/gpio/Kconfig	2008-06-09 20:02:34.000000000 -0700
-+++ b/drivers/gpio/Kconfig	2008-06-11 12:46:39.000000000 -0700
-@@ -23,6 +23,21 @@ config DEBUG_GPIO
- 	  slower.  The diagnostics help catch the type of setup errors
- 	  that are most common when setting up new platforms or boards.
- 
-+config GPIO_SYSFS
-+	bool "/sys/class/gpio/... (sysfs interface)"
-+	depends on SYSFS && EXPERIMENTAL
-+	help
-+	  Say Y here to add a sysfs interface for GPIOs.
-+
-+	  This is mostly useful to work around omissions in a system's
-+	  kernel support.  Those are common in custom and semicustom
-+	  hardware assembled using standard kernels with a minimum of
-+	  custom patches.  In those cases, userspace code may import
-+	  a given GPIO from the kernel, if no kernel driver requested it.
-+
-+	  Kernel drivers may also request that a particular GPIO be
-+	  exported to userspace; this can be useful when debugging.
-+
- # put expanders in the right section, in alphabetical order
- 
- comment "I2C GPIO expanders:"
---- a/drivers/gpio/gpiolib.c	2008-06-09 20:02:34.000000000 -0700
-+++ b/drivers/gpio/gpiolib.c	2008-06-11 12:41:57.000000000 -0700
-@@ -2,8 +2,11 @@
- #include <linux/module.h>
- #include <linux/irq.h>
- #include <linux/spinlock.h>
--
--#include <asm/gpio.h>
-+#include <linux/device.h>
-+#include <linux/err.h>
-+#include <linux/debugfs.h>
-+#include <linux/seq_file.h>
-+#include <linux/gpio.h>
- 
- 
- /* Optional implementation infrastructure for GPIO interfaces.
-@@ -44,6 +47,8 @@ struct gpio_desc {
- #define FLAG_REQUESTED	0
- #define FLAG_IS_OUT	1
- #define FLAG_RESERVED	2
-+#define FLAG_EXPORT	3	/* protected by sysfs_lock */
-+#define FLAG_SYSFS	4	/* exported via /sys/class/gpio/control */
- 
- #ifdef CONFIG_DEBUG_FS
- 	const char		*label;
-@@ -151,6 +156,484 @@ err:
- 	return ret;
+ The kernel built with hugepage support should show the number of configured
+ hugepages in the system by running the "cat /proc/meminfo" command.
+diff --git a/arch/arm/mm/consistent.c b/arch/arm/mm/consistent.c
+index 333a82a..5931192 100644
+--- a/arch/arm/mm/consistent.c
++++ b/arch/arm/mm/consistent.c
+@@ -140,7 +140,7 @@ static struct vm_region *vm_region_find(struct vm_region *head, unsigned long ad
+ 	return c;
  }
  
-+#ifdef CONFIG_GPIO_SYSFS
-+
-+/* lock protects against unexport_gpio() being called while
-+ * sysfs files are active.
-+ */
-+static DEFINE_MUTEX(sysfs_lock);
-+
-+/*
-+ * /sys/class/gpio/gpioN... only for GPIOs that are exported
-+ *   /direction
-+ *      * MAY BE OMITTED if kernel won't allow direction changes
-+ *      * is read/write as "in" or "out"
-+ *      * may also be written as "high" or "low", initializing
-+ *        output value as specified ("out" implies "low")
-+ *   /value
-+ *      * always readable, subject to hardware behavior
-+ *      * may be writable, as zero/nonzero
-+ *
-+ * REVISIT there will likely be an attribute for configuring async
-+ * notifications, e.g. to specify polling interval or IRQ trigger type
-+ * that would for example trigger a poll() on the "value".
-+ */
-+
-+static ssize_t gpio_direction_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	const struct gpio_desc	*desc = dev_get_drvdata(dev);
-+	ssize_t			status;
-+
-+	mutex_lock(&sysfs_lock);
-+
-+	if (!test_bit(FLAG_EXPORT, &desc->flags))
-+		status = -EIO;
-+	else
-+		status = sprintf(buf, "%s\n",
-+			test_bit(FLAG_IS_OUT, &desc->flags)
-+				? "out" : "in");
-+
-+	mutex_unlock(&sysfs_lock);
-+	return status;
-+}
-+
-+static ssize_t gpio_direction_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t size)
-+{
-+	const struct gpio_desc	*desc = dev_get_drvdata(dev);
-+	unsigned		gpio = desc - gpio_desc;
-+	ssize_t			status;
-+
-+	mutex_lock(&sysfs_lock);
-+
-+	if (!test_bit(FLAG_EXPORT, &desc->flags))
-+		status = -EIO;
-+	else if (sysfs_streq(buf, "high"))
-+		status = gpio_direction_output(gpio, 1);
-+	else if (sysfs_streq(buf, "out") || sysfs_streq(buf, "low"))
-+		status = gpio_direction_output(gpio, 0);
-+	else if (sysfs_streq(buf, "in"))
-+		status = gpio_direction_input(gpio);
-+	else
-+		status = -EINVAL;
-+
-+	mutex_unlock(&sysfs_lock);
-+	return status ? : size;
-+}
-+
-+static const DEVICE_ATTR(direction, 0644,
-+		gpio_direction_show, gpio_direction_store);
-+
-+static ssize_t gpio_value_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	const struct gpio_desc	*desc = dev_get_drvdata(dev);
-+	unsigned		gpio = desc - gpio_desc;
-+	ssize_t			status;
-+
-+	mutex_lock(&sysfs_lock);
-+
-+	if (!test_bit(FLAG_EXPORT, &desc->flags))
-+		status = -EIO;
-+	else
-+		status = sprintf(buf, "%d\n", gpio_get_value_cansleep(gpio));
-+
-+	mutex_unlock(&sysfs_lock);
-+	return status;
-+}
-+
-+static ssize_t gpio_value_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t size)
-+{
-+	const struct gpio_desc	*desc = dev_get_drvdata(dev);
-+	unsigned		gpio = desc - gpio_desc;
-+	ssize_t			status;
-+
-+	mutex_lock(&sysfs_lock);
-+
-+	if (!test_bit(FLAG_EXPORT, &desc->flags))
-+		status = -EIO;
-+	else if (!test_bit(FLAG_IS_OUT, &desc->flags))
-+		status = -EPERM;
-+	else {
-+		long		value;
-+
-+		status = strict_strtol(buf, 0, &value);
-+		if (status == 0) {
-+			gpio_set_value_cansleep(gpio, value != 0);
-+			status = size;
-+		}
-+	}
-+
-+	mutex_unlock(&sysfs_lock);
-+	return status;
-+}
-+
-+static /*const*/ DEVICE_ATTR(value, 0644,
-+		gpio_value_show, gpio_value_store);
-+
-+static const struct attribute *gpio_attrs[] = {
-+	&dev_attr_direction.attr,
-+	&dev_attr_value.attr,
-+	NULL,
-+};
-+
-+static const struct attribute_group gpio_attr_group = {
-+	.attrs = (struct attribute **) gpio_attrs,
-+};
-+
-+/*
-+ * /sys/class/gpio/gpiochipN/
-+ *   /base ... matching gpio_chip.base (N)
-+ *   /label ... matching gpio_chip.label
-+ *   /ngpio ... matching gpio_chip.ngpio
-+ */
-+
-+static ssize_t chip_base_show(struct device *dev,
-+			       struct device_attribute *attr, char *buf)
-+{
-+	const struct gpio_chip	*chip = dev_get_drvdata(dev);
-+
-+	return sprintf(buf, "%d\n", chip->base);
-+}
-+static DEVICE_ATTR(base, 0444, chip_base_show, NULL);
-+
-+static ssize_t chip_label_show(struct device *dev,
-+			       struct device_attribute *attr, char *buf)
-+{
-+	const struct gpio_chip	*chip = dev_get_drvdata(dev);
-+
-+	return sprintf(buf, "%s\n", chip->label ? : "");
-+}
-+static DEVICE_ATTR(label, 0444, chip_label_show, NULL);
-+
-+static ssize_t chip_ngpio_show(struct device *dev,
-+			       struct device_attribute *attr, char *buf)
-+{
-+	const struct gpio_chip	*chip = dev_get_drvdata(dev);
-+
-+	return sprintf(buf, "%u\n", chip->ngpio);
-+}
-+static DEVICE_ATTR(ngpio, 0444, chip_ngpio_show, NULL);
-+
-+static const struct attribute *gpiochip_attrs[] = {
-+	&dev_attr_base.attr,
-+	&dev_attr_label.attr,
-+	&dev_attr_ngpio.attr,
-+	NULL,
-+};
-+
-+static const struct attribute_group gpiochip_attr_group = {
-+	.attrs = (struct attribute **) gpiochip_attrs,
-+};
-+
-+/*
-+ * /sys/class/gpio/export ... write-only
-+ *	integer N ... number of GPIO to export (full access)
-+ * /sys/class/gpio/unexport ... write-only
-+ *	integer N ... number of GPIO to unexport
-+ */
-+static ssize_t export_store(struct class *class, const char *buf, size_t len)
-+{
-+	long	gpio;
-+	int	status;
-+
-+	status = strict_strtol(buf, 0, &gpio);
-+	if (status < 0)
-+		goto done;
-+
-+	/* No extra locking here; FLAG_SYSFS just signifies that the
-+	 * request and export were done by on behalf of userspace, so
-+	 * they may be undone on its behalf too.
-+	 */
-+
-+	status = gpio_request(gpio, "sysfs");
-+	if (status < 0)
-+		goto done;
-+
-+	status = gpio_export(gpio, true);
-+	if (status < 0)
-+		gpio_free(gpio);
-+	else
-+		set_bit(FLAG_SYSFS, &gpio_desc[gpio].flags);
-+
-+done:
-+	if (status)
-+		pr_debug("%s: status %d\n", __func__, status);
-+	return status ? : len;
-+}
-+
-+static ssize_t unexport_store(struct class *class, const char *buf, size_t len)
-+{
-+	long	gpio;
-+	int	status;
-+
-+	status = strict_strtol(buf, 0, &gpio);
-+	if (status < 0)
-+		goto done;
-+
-+	status = -EINVAL;
-+
-+	/* reject bogus commands (gpio_unexport ignores them) */
-+	if (!gpio_is_valid(gpio))
-+		goto done;
-+
-+	/* No extra locking here; FLAG_SYSFS just signifies that the
-+	 * request and export were done by on behalf of userspace, so
-+	 * they may be undone on its behalf too.
-+	 */
-+	if (test_and_clear_bit(FLAG_SYSFS, &gpio_desc[gpio].flags)) {
-+		status = 0;
-+		gpio_free(gpio);
-+	}
-+done:
-+	if (status)
-+		pr_debug("%s: status %d\n", __func__, status);
-+	return status ? : len;
-+}
-+
-+static struct class_attribute gpio_class_attrs[] = {
-+	__ATTR(export, 0200, NULL, export_store),
-+	__ATTR(unexport, 0200, NULL, unexport_store),
-+	__ATTR_NULL,
-+};
-+
-+static struct class gpio_class = {
-+	.name =		"gpio",
-+	.owner =	THIS_MODULE,
-+
-+	.class_attrs =	gpio_class_attrs,
-+};
-+
-+
-+/**
-+ * gpio_export - export a GPIO through sysfs
-+ * @gpio: gpio to make available, already requested
-+ * @direction_may_change: true if userspace may change gpio direction
-+ * Context: arch_initcall or later
-+ *
-+ * When drivers want to make a GPIO accessible to userspace after they
-+ * have requested it -- perhaps while debugging, or as part of their
-+ * public interface -- they may use this routine.  If the GPIO can
-+ * change direction (some can't) and the caller allows it, userspace
-+ * will see "direction" sysfs attribute which may be used to change
-+ * the gpio's direction.  A "value" attribute will always be provided.
-+ *
-+ * Returns zero on success, else an error.
-+ */
-+int gpio_export(unsigned gpio, bool direction_may_change)
-+{
-+	unsigned long		flags;
-+	struct gpio_desc	*desc;
-+	int			status = -EINVAL;
-+
-+	/* can't export until sysfs is available ... */
-+	if (!gpio_class.devices.next) {
-+		pr_debug("%s: called too early!\n", __func__);
-+		return -ENOENT;
-+	}
-+
-+	if (!gpio_is_valid(gpio))
-+		goto done;
-+
-+	mutex_lock(&sysfs_lock);
-+
-+	spin_lock_irqsave(&gpio_lock, flags);
-+	desc = &gpio_desc[gpio];
-+	if (test_bit(FLAG_REQUESTED, &desc->flags)
-+			&& !test_bit(FLAG_EXPORT, &desc->flags)) {
-+		status = 0;
-+		if (!desc->chip->direction_input
-+				|| !desc->chip->direction_output)
-+			direction_may_change = false;
-+	}
-+	spin_unlock_irqrestore(&gpio_lock, flags);
-+
-+	if (status == 0) {
-+		struct device	*dev;
-+
-+		dev = device_create(&gpio_class, desc->chip->dev, 0,
-+				"gpio%d", gpio);
-+		if (dev) {
-+			dev_set_drvdata(dev, desc);
-+			if (direction_may_change)
-+				status = sysfs_create_group(&dev->kobj,
-+						&gpio_attr_group);
-+			else
-+				status = device_create_file(dev,
-+						&dev_attr_value);
-+			if (status != 0)
-+				device_unregister(dev);
-+		} else
-+			status = -ENODEV;
-+		if (status == 0)
-+			set_bit(FLAG_EXPORT, &desc->flags);
-+	}
-+
-+	mutex_unlock(&sysfs_lock);
-+
-+done:
-+	if (status)
-+		pr_debug("%s: gpio%d status %d\n", __func__, gpio, status);
-+
-+	return status;
-+}
-+EXPORT_SYMBOL_GPL(gpio_export);
-+
-+static int match_export(struct device *dev, void *data)
-+{
-+	return dev_get_drvdata(dev) == data;
-+}
-+
-+/**
-+ * gpio_unexport - reverse effect of gpio_export()
-+ * @gpio: gpio to make unavailable
-+ *
-+ * This is implicit on gpio_free().
-+ */
-+void gpio_unexport(unsigned gpio)
-+{
-+	struct gpio_desc	*desc;
-+	int			status = -EINVAL;
-+
-+	if (!gpio_is_valid(gpio))
-+		goto done;
-+
-+	mutex_lock(&sysfs_lock);
-+
-+	desc = &gpio_desc[gpio];
-+	if (test_bit(FLAG_EXPORT, &desc->flags)) {
-+		struct device	*dev = NULL;
-+
-+		dev = class_find_device(&gpio_class, desc, match_export);
-+		if (dev) {
-+			clear_bit(FLAG_EXPORT, &desc->flags);
-+			put_device(dev);
-+			device_unregister(dev);
-+			status = 0;
-+		} else
-+			status = -ENODEV;
-+	}
-+
-+	mutex_unlock(&sysfs_lock);
-+done:
-+	if (status)
-+		pr_debug("%s: gpio%d status %d\n", __func__, gpio, status);
-+}
-+EXPORT_SYMBOL_GPL(gpio_unexport);
-+
-+static int gpiochip_export(struct gpio_chip *chip)
-+{
-+	int		status;
-+	struct device	*dev;
-+
-+	/* Many systems register gpio chips for SOC support very early,
-+	 * before driver model support is available.  In those cases we
-+	 * export this later, in gpiolib_sysfs_init() ... here we just
-+	 * verify that _some_ field of gpio_class got initialized.
-+	 */
-+	if (!gpio_class.devices.next)
-+		return 0;
-+
-+	/* use chip->base for the ID; it's already known to be unique */
-+	mutex_lock(&sysfs_lock);
-+	dev = device_create(&gpio_class, chip->dev, 0,
-+			"gpiochip%d", chip->base);
-+	if (dev) {
-+		dev_set_drvdata(dev, chip);
-+		status = sysfs_create_group(&dev->kobj,
-+				&gpiochip_attr_group);
-+	} else
-+		status = -ENODEV;
-+	chip->exported = (status == 0);
-+	mutex_unlock(&sysfs_lock);
-+
-+	if (status) {
-+		unsigned long	flags;
-+		unsigned	gpio;
-+
-+		spin_lock_irqsave(&gpio_lock, flags);
-+		gpio = chip->base;
-+		while (gpio_desc[gpio].chip == chip)
-+			gpio_desc[gpio++].chip = NULL;
-+		spin_unlock_irqrestore(&gpio_lock, flags);
-+
-+		pr_debug("%s: chip %s status %d\n", __func__,
-+				chip->label, status);
-+	}
-+
-+	return status;
-+}
-+
-+static void gpiochip_unexport(struct gpio_chip *chip)
-+{
-+	int			status;
-+	struct device		*dev;
-+
-+	mutex_lock(&sysfs_lock);
-+	dev = class_find_device(&gpio_class, chip, match_export);
-+	if (dev) {
-+		put_device(dev);
-+		device_unregister(dev);
-+		chip->exported = 0;
-+		status = 0;
-+	} else
-+		status = -ENODEV;
-+	mutex_unlock(&sysfs_lock);
-+
-+	if (status)
-+		pr_debug("%s: chip %s status %d\n", __func__,
-+				chip->label, status);
-+}
-+
-+static int __init gpiolib_sysfs_init(void)
-+{
-+	int		status;
-+	unsigned long	flags;
-+	unsigned	gpio;
-+
-+	status = class_register(&gpio_class);
-+	if (status < 0)
-+		return status;
-+
-+	/* Scan and register the gpio_chips which registered very
-+	 * early (e.g. before the class_register above was called).
-+	 *
-+	 * We run before arch_initcall() so chip->dev nodes can have
-+	 * registered, and so arch_initcall() can always gpio_export().
-+	 */
-+	spin_lock_irqsave(&gpio_lock, flags);
-+	for (gpio = 0; gpio < ARCH_NR_GPIOS; gpio++) {
-+		struct gpio_chip	*chip;
-+
-+		chip = gpio_desc[gpio].chip;
-+		if (!chip || chip->exported)
-+			continue;
-+
-+		spin_unlock_irqrestore(&gpio_lock, flags);
-+		status = gpiochip_export(chip);
-+		spin_lock_irqsave(&gpio_lock, flags);
-+	}
-+	spin_unlock_irqrestore(&gpio_lock, flags);
-+
-+
-+	return status;
-+}
-+postcore_initcall(gpiolib_sysfs_init);
-+
-+#else
-+static inline int gpiochip_export(struct gpio_chip *chip)
-+{
-+	return 0;
-+}
-+
-+static inline void gpiochip_unexport(struct gpio_chip *chip)
-+{
-+}
-+
-+#endif /* CONFIG_GPIO_SYSFS */
-+
- /**
-  * gpiochip_add() - register a gpio_chip
-  * @chip: the chip to register, with chip->base initialized
-@@ -160,6 +643,11 @@ err:
-  * because the chip->base is invalid or already associated with a
-  * different chip.  Otherwise it returns zero as a success code.
-  *
-+ * When gpiochip_add() is called very early during boot, so that GPIOs
-+ * can be freely used, the chip->dev device must be registered before
-+ * the gpio framework's arch_initcall().  Otherwise sysfs initialization
-+ * for GPIOs will fail rudely.
-+ *
-  * If chip->base is negative, this requests dynamic assignment of
-  * a range of valid GPIOs.
-  */
-@@ -182,7 +670,7 @@ int gpiochip_add(struct gpio_chip *chip)
- 		base = gpiochip_find_base(chip->ngpio);
- 		if (base < 0) {
- 			status = base;
--			goto fail_unlock;
-+			goto unlock;
- 		}
- 		chip->base = base;
- 	}
-@@ -197,12 +685,16 @@ int gpiochip_add(struct gpio_chip *chip)
- 	if (status == 0) {
- 		for (id = base; id < base + chip->ngpio; id++) {
- 			gpio_desc[id].chip = chip;
--			gpio_desc[id].flags = 0;
-+			gpio_desc[id].flags = chip->direction_input
-+				? (1 << FLAG_IS_OUT)
-+				: 0;
- 		}
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ #error ARM Coherent DMA allocator does not (yet) support huge TLB
+ #endif
+ 
+diff --git a/arch/avr32/mm/dma-coherent.c b/arch/avr32/mm/dma-coherent.c
+index 6d8c794..0cf57c6 100644
+--- a/arch/avr32/mm/dma-coherent.c
++++ b/arch/avr32/mm/dma-coherent.c
+@@ -45,7 +45,7 @@ static struct page *__dma_alloc(struct device *dev, size_t size,
+ 	 * with __GFP_COMP being passed to split_page() which cannot
+ 	 * handle them.  The real problem is that this flag probably
+ 	 * should be 0 on AVR32 as it is not supported on this
+-	 * platform--see CONFIG_HUGETLB_PAGE. */
++	 * platform--see CONFIG_HUGETLB. */
+ 	gfp &= ~(__GFP_COMP);
+ 
+ 	size = PAGE_ALIGN(size);
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 16be414..b9445b9 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -70,7 +70,7 @@ config ARCH_HAS_ILOG2_U64
+ 
+ config HUGETLB_PAGE_SIZE_VARIABLE
+ 	bool
+-	depends on HUGETLB_PAGE
++	depends on HUGETLB
+ 	default y
+ 
+ config GENERIC_FIND_NEXT_BIT
+@@ -285,9 +285,9 @@ config IOSAPIC
+ 	default y
+ 
+ config FORCE_MAX_ZONEORDER
+-	int "MAX_ORDER (11 - 17)"  if !HUGETLB_PAGE
+-	range 11 17  if !HUGETLB_PAGE
+-	default "17" if HUGETLB_PAGE
++	int "MAX_ORDER (11 - 17)"  if !HUGETLB
++	range 11 17  if !HUGETLB
++	default "17" if HUGETLB
+ 	default "11"
+ 
+ config VIRT_CPU_ACCOUNTING
+diff --git a/arch/ia64/kernel/ivt.S b/arch/ia64/kernel/ivt.S
+index 80b44ea..ddf7778 100644
+--- a/arch/ia64/kernel/ivt.S
++++ b/arch/ia64/kernel/ivt.S
+@@ -103,7 +103,7 @@ ENTRY(vhpt_miss)
+ 	 *	- the faulting virtual address has no valid page table mapping
+ 	 */
+ 	mov r16=cr.ifa				// get address that caused the TLB miss
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 	movl r18=PAGE_SHIFT
+ 	mov r25=cr.itir
+ #endif
+@@ -115,7 +115,7 @@ ENTRY(vhpt_miss)
+ 	shr.u r17=r16,61			// get the region number into r17
+ 	;;
+ 	shr.u r22=r21,3
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 	extr.u r26=r25,2,6
+ 	;;
+ 	cmp.ne p8,p0=r18,r26
+@@ -181,7 +181,7 @@ ENTRY(vhpt_miss)
+ (p6)	br.cond.spnt.many page_fault		// handle bad address/page not present (page fault)
+ 	mov cr.ifa=r22
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ (p8)	mov cr.itir=r25				// change to default page-size for VHPT
+ #endif
+ 
+diff --git a/arch/ia64/kernel/sys_ia64.c b/arch/ia64/kernel/sys_ia64.c
+index 1eda194..490c1ce 100644
+--- a/arch/ia64/kernel/sys_ia64.c
++++ b/arch/ia64/kernel/sys_ia64.c
+@@ -39,7 +39,7 @@ arch_get_unmapped_area (struct file *filp, unsigned long addr, unsigned long len
+ 		return addr;
  	}
  
--fail_unlock:
-+unlock:
- 	spin_unlock_irqrestore(&gpio_lock, flags);
-+	if (status == 0)
-+		status = gpiochip_export(chip);
- fail:
- 	/* failures here can mean systems won't boot... */
- 	if (status)
-@@ -239,6 +731,10 @@ int gpiochip_remove(struct gpio_chip *ch
- 	}
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 	if (REGION_NUMBER(addr) == RGN_HPAGE)
+ 		addr = 0;
+ #endif
+diff --git a/arch/ia64/mm/Makefile b/arch/ia64/mm/Makefile
+index bb0a01a..03a7b0e 100644
+--- a/arch/ia64/mm/Makefile
++++ b/arch/ia64/mm/Makefile
+@@ -4,7 +4,7 @@
  
- 	spin_unlock_irqrestore(&gpio_lock, flags);
-+
-+	if (status == 0)
-+		gpiochip_unexport(chip);
-+
- 	return status;
- }
- EXPORT_SYMBOL_GPL(gpiochip_remove);
-@@ -296,6 +792,8 @@ void gpio_free(unsigned gpio)
- 		return;
- 	}
+ obj-y := init.o fault.o tlb.o extable.o ioremap.o
  
-+	gpio_unexport(gpio);
-+
- 	spin_lock_irqsave(&gpio_lock, flags);
+-obj-$(CONFIG_HUGETLB_PAGE) += hugetlbpage.o
++obj-$(CONFIG_HUGETLB)      += hugetlbpage.o
+ obj-$(CONFIG_NUMA)	   += numa.o
+ obj-$(CONFIG_DISCONTIGMEM) += discontig.o
+ obj-$(CONFIG_SPARSEMEM)	   += discontig.o
+diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
+index 200100e..976d992 100644
+--- a/arch/ia64/mm/init.c
++++ b/arch/ia64/mm/init.c
+@@ -357,7 +357,7 @@ ia64_mmu_init (void *my_cpu_data)
  
- 	desc = &gpio_desc[gpio];
-@@ -534,10 +1032,6 @@ EXPORT_SYMBOL_GPL(gpio_set_value_canslee
+ 	ia64_tlb_init();
  
- #ifdef CONFIG_DEBUG_FS
+-#ifdef	CONFIG_HUGETLB_PAGE
++#ifdef	CONFIG_HUGETLB
+ 	ia64_set_rr(HPAGE_REGION_BASE, HPAGE_SHIFT << 2);
+ 	ia64_srlz_d();
+ #endif
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 3934e26..3c0abd1 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -231,7 +231,7 @@ source "fs/Kconfig.binfmt"
  
--#include <linux/debugfs.h>
--#include <linux/seq_file.h>
--
--
- static void gpiolib_dbg_show(struct seq_file *s, struct gpio_chip *chip)
- {
- 	unsigned		i;
---- a/drivers/gpio/mcp23s08.c	2008-06-09 20:02:34.000000000 -0700
-+++ b/drivers/gpio/mcp23s08.c	2008-06-09 20:02:43.000000000 -0700
-@@ -239,6 +239,7 @@ static int mcp23s08_probe(struct spi_dev
- 	mcp->chip.base = pdata->base;
- 	mcp->chip.ngpio = 8;
- 	mcp->chip.can_sleep = 1;
-+	mcp->chip.dev = &spi->dev;
- 	mcp->chip.owner = THIS_MODULE;
+ config HUGETLB_PAGE_SIZE_VARIABLE
+ 	bool
+-	depends on HUGETLB_PAGE
++	depends on HUGETLB
+ 	default y
  
- 	spi_set_drvdata(spi, mcp);
---- a/drivers/gpio/pca953x.c	2008-06-09 20:02:34.000000000 -0700
-+++ b/drivers/gpio/pca953x.c	2008-06-09 20:02:43.000000000 -0700
-@@ -188,6 +188,7 @@ static void pca953x_setup_gpio(struct pc
- 	gc->base = chip->gpio_start;
- 	gc->ngpio = gpios;
- 	gc->label = chip->client->name;
-+	gc->dev = &chip->client->dev;
- 	gc->owner = THIS_MODULE;
+ config MATH_EMULATION
+diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+index 1c00e01..fc51157 100644
+--- a/arch/powerpc/mm/Makefile
++++ b/arch/powerpc/mm/Makefile
+@@ -21,5 +21,5 @@ obj-$(CONFIG_44x)		+= 44x_mmu.o
+ obj-$(CONFIG_FSL_BOOKE)		+= fsl_booke_mmu.o
+ obj-$(CONFIG_NEED_MULTIPLE_NODES) += numa.o
+ obj-$(CONFIG_PPC_MM_SLICES)	+= slice.o
+-obj-$(CONFIG_HUGETLB_PAGE)	+= hugetlbpage.o
++obj-$(CONFIG_HUGETLB)		+= hugetlbpage.o
+ obj-$(CONFIG_PPC_SUBPAGE_PROT)	+= subpage-prot.o
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 0f2d239..37d8296 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -101,7 +101,7 @@ int mmu_io_psize = MMU_PAGE_4K;
+ int mmu_kernel_ssize = MMU_SEGSIZE_256M;
+ int mmu_highuser_ssize = MMU_SEGSIZE_256M;
+ u16 mmu_slb_size = 64;
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ int mmu_huge_psize = MMU_PAGE_16M;
+ unsigned int HPAGE_SHIFT;
+ #endif
+@@ -417,7 +417,7 @@ static void __init htab_init_page_sizes(void)
+ #endif
+ 	       );
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 	/* Init large page size. Currently, we pick 16M or 1M depending
+ 	 * on what is available
+ 	 */
+@@ -427,7 +427,7 @@ static void __init htab_init_page_sizes(void)
+ 	 * huge page size < PMD_SIZE */
+ 	else if (mmu_psize_defs[MMU_PAGE_1M].shift)
+ 		set_huge_psize(MMU_PAGE_1M);
+-#endif /* CONFIG_HUGETLB_PAGE */
++#endif /* CONFIG_HUGETLB */
  }
  
---- a/drivers/gpio/pcf857x.c	2008-06-09 20:02:34.000000000 -0700
-+++ b/drivers/gpio/pcf857x.c	2008-06-09 20:02:43.000000000 -0700
-@@ -175,6 +175,7 @@ static int pcf857x_probe(struct i2c_clie
+ static int __init htab_dt_scan_pftsize(unsigned long node,
+@@ -829,13 +829,13 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+ 	if (user_region && cpus_equal(mm->cpu_vm_mask, tmp))
+ 		local = 1;
  
- 	gpio->chip.base = pdata->gpio_base;
- 	gpio->chip.can_sleep = 1;
-+	gpio->chip.dev = &client->dev;
- 	gpio->chip.owner = THIS_MODULE;
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 	/* Handle hugepage regions */
+ 	if (HPAGE_SHIFT && psize == mmu_huge_psize) {
+ 		DBG_LOW(" -> huge page !\n");
+ 		return hash_huge_page(mm, access, ea, vsid, local, trap);
+ 	}
+-#endif /* CONFIG_HUGETLB_PAGE */
++#endif /* CONFIG_HUGETLB */
  
- 	/* NOTE:  the OnSemi jlc1562b is also largely compatible with
---- a/drivers/i2c/chips/tps65010.c	2008-06-09 20:02:34.000000000 -0700
-+++ b/drivers/i2c/chips/tps65010.c	2008-06-09 20:02:43.000000000 -0700
-@@ -636,6 +636,8 @@ static int tps65010_probe(struct i2c_cli
- 		tps->outmask = board->outmask;
- 
- 		tps->chip.label = client->name;
-+		tps->chip.dev = &client->dev;
-+		tps->chip.owner = THIS_MODULE;
- 
- 		tps->chip.set = tps65010_gpio_set;
- 		tps->chip.direction_output = tps65010_output;
---- a/drivers/mfd/htc-egpio.c	2008-06-09 20:02:34.000000000 -0700
-+++ b/drivers/mfd/htc-egpio.c	2008-06-09 20:02:43.000000000 -0700
-@@ -318,6 +318,8 @@ static int __init egpio_probe(struct pla
- 		ei->chip[i].dev = &(pdev->dev);
- 		chip = &(ei->chip[i].chip);
- 		chip->label           = "htc-egpio";
-+		chip->dev             = &pdev->dev;
-+		chip->owner           = THIS_MODULE;
- 		chip->get             = egpio_get;
- 		chip->set             = egpio_set;
- 		chip->direction_input = egpio_direction_input;
---- a/include/asm-generic/gpio.h	2008-06-09 20:02:34.000000000 -0700
-+++ b/include/asm-generic/gpio.h	2008-06-09 20:02:43.000000000 -0700
-@@ -32,6 +32,8 @@ struct module;
- /**
-  * struct gpio_chip - abstract a GPIO controller
-  * @label: for diagnostics
-+ * @dev: optional device providing the GPIOs
-+ * @owner: helps prevent removal of modules exporting active GPIOs
-  * @direction_input: configures signal "offset" as input, or returns error
-  * @get: returns value for signal "offset"; for output signals this
-  *	returns either the value actually sensed, or zero
-@@ -59,6 +61,7 @@ struct module;
-  */
- struct gpio_chip {
- 	char			*label;
-+	struct device		*dev;
- 	struct module		*owner;
- 
- 	int			(*direction_input)(struct gpio_chip *chip,
-@@ -74,6 +77,7 @@ struct gpio_chip {
- 	int			base;
- 	u16			ngpio;
- 	unsigned		can_sleep:1;
-+	unsigned		exported:1;
+ #ifndef CONFIG_PPC_64K_PAGES
+ 	/* If we use 4K pages and our psize is not 4K, then we are hitting
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index 6aa6537..03b9c1f 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -152,7 +152,7 @@ static const char *pgtable_cache_name[ARRAY_SIZE(pgtable_cache_size)] = {
+ #endif /* CONFIG_PPC_64K_PAGES */
  };
  
- extern const char *gpiochip_is_requested(struct gpio_chip *chip,
-@@ -108,7 +112,18 @@ extern void __gpio_set_value(unsigned gp
- extern int __gpio_cansleep(unsigned gpio);
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ /* Hugepages need one extra cache, initialized in hugetlbpage.c.  We
+  * can't put into the tables above, because HPAGE_SHIFT is not compile
+  * time constant. */
+diff --git a/arch/powerpc/mm/tlb_64.c b/arch/powerpc/mm/tlb_64.c
+index e2d867c..6494eb3 100644
+--- a/arch/powerpc/mm/tlb_64.c
++++ b/arch/powerpc/mm/tlb_64.c
+@@ -149,7 +149,7 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
+ 	 * of this call
+ 	 */
+ 	if (huge) {
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 		psize = mmu_huge_psize;
+ #else
+ 		BUG();
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index f7efaa9..7081354 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -182,7 +182,7 @@ config PPC_STD_MMU_32
  
+ config PPC_MM_SLICES
+ 	bool
+-	default y if HUGETLB_PAGE
++	default y if HUGETLB
+ 	default n
  
--#else
-+#ifdef CONFIG_GPIO_SYSFS
-+
-+/*
-+ * A sysfs interface can be exported by individual drivers if they want,
-+ * but more typically is configured entirely from userspace.
-+ */
-+extern int gpio_export(unsigned gpio, bool direction_may_change);
-+extern void gpio_unexport(unsigned gpio);
-+
-+#endif	/* CONFIG_GPIO_SYSFS */
-+
-+#else	/* !CONFIG_HAVE_GPIO_LIB */
+ config VIRT_CPU_ACCOUNTING
+diff --git a/arch/s390/mm/Makefile b/arch/s390/mm/Makefile
+index 2a74581..883aded 100644
+--- a/arch/s390/mm/Makefile
++++ b/arch/s390/mm/Makefile
+@@ -4,5 +4,5 @@
  
- static inline int gpio_is_valid(int number)
+ obj-y	 := init.o fault.o extmem.o mmap.o vmem.o pgtable.o
+ obj-$(CONFIG_CMM) += cmm.o
+-obj-$(CONFIG_HUGETLB_PAGE) += hugetlbpage.o
++obj-$(CONFIG_HUGETLB) += hugetlbpage.o
+ obj-$(CONFIG_PAGE_STATES) += page-states.o
+diff --git a/arch/sh/mm/Kconfig b/arch/sh/mm/Kconfig
+index 5fd2184..3f49d45 100644
+--- a/arch/sh/mm/Kconfig
++++ b/arch/sh/mm/Kconfig
+@@ -166,7 +166,7 @@ endchoice
+ 
+ choice
+ 	prompt "HugeTLB page size"
+-	depends on HUGETLB_PAGE && (CPU_SH4 || CPU_SH5) && MMU
++	depends on HUGETLB && (CPU_SH4 || CPU_SH5) && MMU
+ 	default HUGETLB_PAGE_SIZE_64K
+ 
+ config HUGETLB_PAGE_SIZE_64K
+diff --git a/arch/sh/mm/Makefile_32 b/arch/sh/mm/Makefile_32
+index e295db6..ff58abc 100644
+--- a/arch/sh/mm/Makefile_32
++++ b/arch/sh/mm/Makefile_32
+@@ -29,7 +29,7 @@ obj-$(CONFIG_SH7705_CACHE_32KB)	+= pg-sh7705.o
+ endif
+ endif
+ 
+-obj-$(CONFIG_HUGETLB_PAGE)	+= hugetlbpage.o
++obj-$(CONFIG_HUGETLB)		+= hugetlbpage.o
+ obj-$(CONFIG_PMB)		+= pmb.o
+ obj-$(CONFIG_NUMA)		+= numa.o
+ 
+diff --git a/arch/sh/mm/Makefile_64 b/arch/sh/mm/Makefile_64
+index 0d92a8a..06b7a6b 100644
+--- a/arch/sh/mm/Makefile_64
++++ b/arch/sh/mm/Makefile_64
+@@ -14,7 +14,7 @@ endif
+ 
+ obj-y			+= $(mmu-y)
+ 
+-obj-$(CONFIG_HUGETLB_PAGE)	+= hugetlbpage.o
++obj-$(CONFIG_HUGETLB)		+= hugetlbpage.o
+ obj-$(CONFIG_NUMA)		+= numa.o
+ 
+ EXTRA_CFLAGS += -Werror
+diff --git a/arch/sparc64/Kconfig b/arch/sparc64/Kconfig
+index eb36f3b..a004e2c 100644
+--- a/arch/sparc64/Kconfig
++++ b/arch/sparc64/Kconfig
+@@ -216,7 +216,7 @@ config GENERIC_CALIBRATE_DELAY
+ 
+ choice
+ 	prompt "SPARC64 Huge TLB Page Size"
+-	depends on HUGETLB_PAGE
++	depends on HUGETLB
+ 	default HUGETLB_PAGE_SIZE_4MB
+ 
+ config HUGETLB_PAGE_SIZE_4MB
+diff --git a/arch/sparc64/kernel/sun4v_tlb_miss.S b/arch/sparc64/kernel/sun4v_tlb_miss.S
+index e1fbf8c..152bf74 100644
+--- a/arch/sparc64/kernel/sun4v_tlb_miss.S
++++ b/arch/sparc64/kernel/sun4v_tlb_miss.S
+@@ -176,7 +176,7 @@ sun4v_tsb_miss_common:
+ 
+ 	sub	%g2, TRAP_PER_CPU_FAULT_INFO, %g2
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 	mov	SCRATCHPAD_UTSBREG2, %g5
+ 	ldxa	[%g5] ASI_SCRATCHPAD, %g5
+ 	cmp	%g5, -1
+diff --git a/arch/sparc64/kernel/tsb.S b/arch/sparc64/kernel/tsb.S
+index c499214..84ad9a6 100644
+--- a/arch/sparc64/kernel/tsb.S
++++ b/arch/sparc64/kernel/tsb.S
+@@ -49,7 +49,7 @@ tsb_miss_page_table_walk:
+ 	/* Before committing to a full page table walk,
+ 	 * check the huge page TSB.
+ 	 */
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 
+ 661:	ldx		[%g7 + TRAP_PER_CPU_TSB_HUGE], %g5
+ 	nop
+@@ -115,7 +115,7 @@ tsb_miss_page_table_walk_sun4v_fastpath:
+ 	brgez,pn	%g5, tsb_do_fault
+ 	 nop
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 661:	sethi		%uhi(_PAGE_SZALL_4U), %g7
+ 	sllx		%g7, 32, %g7
+ 	.section	.sun4v_2insn_patch, "ax"
+diff --git a/arch/sparc64/mm/Makefile b/arch/sparc64/mm/Makefile
+index 68d04c0..2c7f7ce 100644
+--- a/arch/sparc64/mm/Makefile
++++ b/arch/sparc64/mm/Makefile
+@@ -6,4 +6,4 @@ EXTRA_CFLAGS := -Werror
+ 
+ obj-y    := ultra.o tlb.o tsb.o fault.o init.o generic.o
+ 
+-obj-$(CONFIG_HUGETLB_PAGE) += hugetlbpage.o
++obj-$(CONFIG_HUGETLB) += hugetlbpage.o
+diff --git a/arch/sparc64/mm/fault.c b/arch/sparc64/mm/fault.c
+index 236f4d2..5b7b706 100644
+--- a/arch/sparc64/mm/fault.c
++++ b/arch/sparc64/mm/fault.c
+@@ -420,13 +420,13 @@ good_area:
+ 	up_read(&mm->mmap_sem);
+ 
+ 	mm_rss = get_mm_rss(mm);
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 	mm_rss -= (mm->context.huge_pte_count * (HPAGE_SIZE / PAGE_SIZE));
+ #endif
+ 	if (unlikely(mm_rss >
+ 		     mm->context.tsb_block[MM_TSB_BASE].tsb_rss_limit))
+ 		tsb_grow(mm, MM_TSB_BASE, mm_rss);
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 	mm_rss = mm->context.huge_pte_count;
+ 	if (unlikely(mm_rss >
+ 		     mm->context.tsb_block[MM_TSB_HUGE].tsb_rss_limit))
+diff --git a/arch/sparc64/mm/init.c b/arch/sparc64/mm/init.c
+index 84898c4..a8c10a7 100644
+--- a/arch/sparc64/mm/init.c
++++ b/arch/sparc64/mm/init.c
+@@ -303,7 +303,7 @@ void update_mmu_cache(struct vm_area_struct *vma, unsigned long address, pte_t p
+ 
+ 	spin_lock_irqsave(&mm->context.lock, flags);
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 	if (mm->context.tsb_block[MM_TSB_HUGE].tsb != NULL) {
+ 		if ((tlb_type == hypervisor &&
+ 		     (pte_val(pte) & _PAGE_SZALL_4V) == _PAGE_SZHUGE_4V) ||
+diff --git a/arch/sparc64/mm/tsb.c b/arch/sparc64/mm/tsb.c
+index fe70c8a..9b65f4a 100644
+--- a/arch/sparc64/mm/tsb.c
++++ b/arch/sparc64/mm/tsb.c
+@@ -78,7 +78,7 @@ void flush_tsb_user(struct mmu_gather *mp)
+ 		base = __pa(base);
+ 	__flush_tsb_one(mp, PAGE_SHIFT, base, nentries);
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 	if (mm->context.tsb_block[MM_TSB_HUGE].tsb) {
+ 		base = (unsigned long) mm->context.tsb_block[MM_TSB_HUGE].tsb;
+ 		nentries = mm->context.tsb_block[MM_TSB_HUGE].tsb_nentries;
+@@ -106,7 +106,7 @@ void flush_tsb_user(struct mmu_gather *mp)
+ #error Broken base page size setting...
+ #endif
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ #if defined(CONFIG_HUGETLB_PAGE_SIZE_64K)
+ #define HV_PGSZ_IDX_HUGE	HV_PGSZ_IDX_64K
+ #define HV_PGSZ_MASK_HUGE	HV_PGSZ_MASK_64K
+@@ -213,7 +213,7 @@ static void setup_tsb_params(struct mm_struct *mm, unsigned long tsb_idx, unsign
+ 		case MM_TSB_BASE:
+ 			hp->pgsz_idx = HV_PGSZ_IDX_BASE;
+ 			break;
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 		case MM_TSB_HUGE:
+ 			hp->pgsz_idx = HV_PGSZ_IDX_HUGE;
+ 			break;
+@@ -228,7 +228,7 @@ static void setup_tsb_params(struct mm_struct *mm, unsigned long tsb_idx, unsign
+ 		case MM_TSB_BASE:
+ 			hp->pgsz_mask = HV_PGSZ_MASK_BASE;
+ 			break;
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 		case MM_TSB_HUGE:
+ 			hp->pgsz_mask = HV_PGSZ_MASK_HUGE;
+ 			break;
+@@ -430,7 +430,7 @@ retry_tsb_alloc:
+ 
+ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
  {
-@@ -137,6 +152,20 @@ static inline void gpio_set_value_cansle
- 	gpio_set_value(gpio, value);
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 	unsigned long huge_pte_count;
+ #endif
+ 	unsigned int i;
+@@ -439,7 +439,7 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
+ 
+ 	mm->context.sparc64_ctx_val = 0UL;
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 	/* We reset it to zero because the fork() page copying
+ 	 * will re-increment the counters as the parent PTEs are
+ 	 * copied into the child address space.
+@@ -460,7 +460,7 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
+ 	 */
+ 	tsb_grow(mm, MM_TSB_BASE, get_mm_rss(mm));
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 	if (unlikely(huge_pte_count))
+ 		tsb_grow(mm, MM_TSB_HUGE, huge_pte_count);
+ #endif
+diff --git a/arch/x86/mm/Makefile b/arch/x86/mm/Makefile
+index b7b3e4c..e5ecc68 100644
+--- a/arch/x86/mm/Makefile
++++ b/arch/x86/mm/Makefile
+@@ -3,7 +3,7 @@ obj-y	:=  init_$(BITS).o fault.o ioremap.o extable.o pageattr.o mmap.o \
+ 
+ obj-$(CONFIG_X86_32)		+= pgtable_32.o
+ 
+-obj-$(CONFIG_HUGETLB_PAGE)	+= hugetlbpage.o
++obj-$(CONFIG_HUGETLB)		+= hugetlbpage.o
+ obj-$(CONFIG_X86_PTDUMP)	+= dump_pagetables.o
+ 
+ obj-$(CONFIG_HIGHMEM)		+= highmem_32.o
+diff --git a/fs/Kconfig b/fs/Kconfig
+index cf12c40..c8e9176 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -1003,7 +1003,7 @@ config TMPFS_POSIX_ACL
+ 
+ 	  If you don't know what Access Control Lists are, say N.
+ 
+-config HUGETLBFS
++config HUGETLB
+ 	bool "HugeTLB file system support"
+ 	depends on X86 || IA64 || PPC64 || SPARC64 || (SUPERH && MMU) || \
+ 		   (S390 && 64BIT) || BROKEN
+@@ -1014,9 +1014,6 @@ config HUGETLBFS
+ 
+ 	  If unsure, say N.
+ 
+-config HUGETLB_PAGE
+-	def_bool HUGETLBFS
+-
+ config CONFIGFS_FS
+ 	tristate "Userspace-driven configuration filesystem"
+ 	depends on SYSFS
+diff --git a/fs/Makefile b/fs/Makefile
+index 1e7a11b..aa6708a 100644
+--- a/fs/Makefile
++++ b/fs/Makefile
+@@ -74,7 +74,7 @@ obj-$(CONFIG_JBD2)		+= jbd2/
+ obj-$(CONFIG_EXT2_FS)		+= ext2/
+ obj-$(CONFIG_CRAMFS)		+= cramfs/
+ obj-y				+= ramfs/
+-obj-$(CONFIG_HUGETLBFS)		+= hugetlbfs/
++obj-$(CONFIG_HUGETLB)		+= hugetlbfs/
+ obj-$(CONFIG_CODA_FS)		+= coda/
+ obj-$(CONFIG_MINIX_FS)		+= minix/
+ obj-$(CONFIG_FAT_FS)		+= fat/
+diff --git a/fs/hugetlbfs/Makefile b/fs/hugetlbfs/Makefile
+index 6adf870..87f547c 100644
+--- a/fs/hugetlbfs/Makefile
++++ b/fs/hugetlbfs/Makefile
+@@ -2,6 +2,6 @@
+ # Makefile for the linux ramfs routines.
+ #
+ 
+-obj-$(CONFIG_HUGETLBFS) += hugetlbfs.o
++obj-$(CONFIG_HUGETLB) += hugetlbfs.o
+ 
+ hugetlbfs-objs := inode.o
+diff --git a/include/asm-ia64/mmu_context.h b/include/asm-ia64/mmu_context.h
+index cef2400..1fc64e1 100644
+--- a/include/asm-ia64/mmu_context.h
++++ b/include/asm-ia64/mmu_context.h
+@@ -144,7 +144,7 @@ reload_context (nv_mm_context_t context)
+ 	rr2 = rr0 + 2*rid_incr;
+ 	rr3 = rr0 + 3*rid_incr;
+ 	rr4 = rr0 + 4*rid_incr;
+-#ifdef  CONFIG_HUGETLB_PAGE
++#ifdef  CONFIG_HUGETLB
+ 	rr4 = (rr4 & (~(0xfcUL))) | (old_rr4 & 0xfc);
+ 
+ #  if RGN_HPAGE != 4
+diff --git a/include/asm-ia64/page.h b/include/asm-ia64/page.h
+index 36f3932..ab0d657 100644
+--- a/include/asm-ia64/page.h
++++ b/include/asm-ia64/page.h
+@@ -46,7 +46,7 @@
+ #define PERCPU_PAGE_SIZE	(__IA64_UL_CONST(1) << PERCPU_PAGE_SHIFT)
+ 
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ # define HPAGE_REGION_BASE	RGN_BASE(RGN_HPAGE)
+ # define HPAGE_SHIFT		hpage_shift
+ # define HPAGE_SHIFT_DEFAULT	28	/* check ia64 SDM for architecture supported size */
+@@ -54,7 +54,7 @@
+ # define HPAGE_MASK		(~(HPAGE_SIZE - 1))
+ 
+ # define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+-#endif /* CONFIG_HUGETLB_PAGE */
++#endif /* CONFIG_HUGETLB */
+ 
+ #ifdef __ASSEMBLY__
+ # define __pa(x)		((x) - PAGE_OFFSET)
+@@ -146,7 +146,7 @@ typedef union ia64_va {
+ #define REGION_NUMBER(x)	({ia64_va _v; _v.l = (long) (x); _v.f.reg;})
+ #define REGION_OFFSET(x)	({ia64_va _v; _v.l = (long) (x); _v.f.off;})
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ # define htlbpage_to_page(x)	(((unsigned long) REGION_NUMBER(x) << 61)			\
+ 				 | (REGION_OFFSET(x) >> (HPAGE_SHIFT-PAGE_SHIFT)))
+ # define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
+diff --git a/include/asm-ia64/pgtable.h b/include/asm-ia64/pgtable.h
+index 7a9bff4..53ccb4c 100644
+--- a/include/asm-ia64/pgtable.h
++++ b/include/asm-ia64/pgtable.h
+@@ -510,7 +510,7 @@ extern struct page *zero_page_memmap_ptr;
+ /* We provide our own get_unmapped_area to cope with VA holes for userland */
+ #define HAVE_ARCH_UNMAPPED_AREA
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ #define HUGETLB_PGDIR_SHIFT	(HPAGE_SHIFT + 2*(PAGE_SHIFT-3))
+ #define HUGETLB_PGDIR_SIZE	(__IA64_UL(1) << HUGETLB_PGDIR_SHIFT)
+ #define HUGETLB_PGDIR_MASK	(~(HUGETLB_PGDIR_SIZE-1))
+diff --git a/include/asm-mn10300/page.h b/include/asm-mn10300/page.h
+index 124971b..5cb71cf 100644
+--- a/include/asm-mn10300/page.h
++++ b/include/asm-mn10300/page.h
+@@ -43,7 +43,7 @@ typedef struct page *pgtable_t;
+ #define PTE_MASK	PAGE_MASK
+ #define HPAGE_SHIFT	22
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ #define HPAGE_SIZE		((1UL) << HPAGE_SHIFT)
+ #define HPAGE_MASK		(~(HPAGE_SIZE - 1))
+ #define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
+diff --git a/include/asm-parisc/page.h b/include/asm-parisc/page.h
+index 27d50b8..1f99754 100644
+--- a/include/asm-parisc/page.h
++++ b/include/asm-parisc/page.h
+@@ -156,7 +156,7 @@ extern int npmem_ranges;
+ #define pfn_valid(pfn)		((pfn) < max_mapnr)
+ #endif /* CONFIG_DISCONTIGMEM */
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ #define HPAGE_SHIFT		22	/* 4MB (is this fixed?) */
+ #define HPAGE_SIZE      	((1UL) << HPAGE_SHIFT)
+ #define HPAGE_MASK		(~(HPAGE_SIZE - 1))
+diff --git a/include/asm-powerpc/mmu-hash64.h b/include/asm-powerpc/mmu-hash64.h
+index 39c5c5f..12bc742 100644
+--- a/include/asm-powerpc/mmu-hash64.h
++++ b/include/asm-powerpc/mmu-hash64.h
+@@ -191,13 +191,13 @@ extern u16 mmu_slb_size;
+  */
+ extern int mmu_ci_restrictions;
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ /*
+  * The page size index of the huge pages for use by hugetlbfs
+  */
+ extern int mmu_huge_psize;
+ 
+-#endif /* CONFIG_HUGETLB_PAGE */
++#endif /* CONFIG_HUGETLB */
+ 
+ /*
+  * This function sets the AVPN and L fields of the HPTE  appropriately
+diff --git a/include/asm-powerpc/page_64.h b/include/asm-powerpc/page_64.h
+index 25af4fc..f7aeae4 100644
+--- a/include/asm-powerpc/page_64.h
++++ b/include/asm-powerpc/page_64.h
+@@ -82,7 +82,7 @@ static inline void copy_page(void *to, void *from)
+ extern u64 ppc64_pft_size;
+ 
+ /* Large pages size */
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ extern unsigned int HPAGE_SHIFT;
+ #else
+ #define HPAGE_SHIFT PAGE_SHIFT
+@@ -139,11 +139,11 @@ do {						\
+ #define slice_mm_new_context(mm)	1
+ #endif /* CONFIG_PPC_MM_SLICES */
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 
+ #define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+ 
+-#endif /* !CONFIG_HUGETLB_PAGE */
++#endif /* !CONFIG_HUGETLB */
+ 
+ #ifdef MODULE
+ #define __page_aligned __attribute__((__aligned__(PAGE_SIZE)))
+diff --git a/include/asm-powerpc/pgtable-ppc64.h b/include/asm-powerpc/pgtable-ppc64.h
+index cc6a43b..ac59e5b 100644
+--- a/include/asm-powerpc/pgtable-ppc64.h
++++ b/include/asm-powerpc/pgtable-ppc64.h
+@@ -147,7 +147,7 @@
+ #define __S110	PAGE_SHARED_X
+ #define __S111	PAGE_SHARED_X
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 
+ #define HAVE_ARCH_UNMAPPED_AREA
+ #define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
+diff --git a/include/asm-sh/page.h b/include/asm-sh/page.h
+index 304c30b..72091b3 100644
+--- a/include/asm-sh/page.h
++++ b/include/asm-sh/page.h
+@@ -39,7 +39,7 @@
+ #define HPAGE_SHIFT	29
+ #endif
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ #define HPAGE_SIZE		(1UL << HPAGE_SHIFT)
+ #define HPAGE_MASK		(~(HPAGE_SIZE-1))
+ #define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT-PAGE_SHIFT)
+diff --git a/include/asm-sparc64/mmu.h b/include/asm-sparc64/mmu.h
+index 8abc58f..e66eae1 100644
+--- a/include/asm-sparc64/mmu.h
++++ b/include/asm-sparc64/mmu.h
+@@ -100,7 +100,7 @@ struct tsb_config {
+ 
+ #define MM_TSB_BASE	0
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ #define MM_TSB_HUGE	1
+ #define MM_NUM_TSBS	2
+ #else
+diff --git a/include/asm-sparc64/mmu_context.h b/include/asm-sparc64/mmu_context.h
+index 5693ab4..5496962 100644
+--- a/include/asm-sparc64/mmu_context.h
++++ b/include/asm-sparc64/mmu_context.h
+@@ -37,7 +37,7 @@ static inline void tsb_context_switch(struct mm_struct *mm)
+ {
+ 	__tsb_context_switch(__pa(mm->pgd),
+ 			     &mm->context.tsb_block[0],
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 			     (mm->context.tsb_block[1].tsb ?
+ 			      &mm->context.tsb_block[1] :
+ 			      NULL)
+diff --git a/include/asm-sparc64/page.h b/include/asm-sparc64/page.h
+index 93f0881..9ef06d1 100644
+--- a/include/asm-sparc64/page.h
++++ b/include/asm-sparc64/page.h
+@@ -33,7 +33,7 @@
+ #define HPAGE_SHIFT		16
+ #endif
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ #define HPAGE_SIZE		(_AC(1,UL) << HPAGE_SHIFT)
+ #define HPAGE_MASK		(~(HPAGE_SIZE - 1UL))
+ #define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
+diff --git a/include/asm-sparc64/pgtable.h b/include/asm-sparc64/pgtable.h
+index b870177..76dda6a 100644
+--- a/include/asm-sparc64/pgtable.h
++++ b/include/asm-sparc64/pgtable.h
+@@ -356,7 +356,7 @@ static inline pgprot_t pgprot_noncached(pgprot_t prot)
+  */
+ #define pgprot_noncached pgprot_noncached
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ static inline pte_t pte_mkhuge(pte_t pte)
+ {
+ 	unsigned long mask;
+diff --git a/include/asm-x86/page_32.h b/include/asm-x86/page_32.h
+index 424e82f..e3f952d 100644
+--- a/include/asm-x86/page_32.h
++++ b/include/asm-x86/page_32.h
+@@ -59,7 +59,7 @@ typedef union {
+ typedef struct page *pgtable_t;
+ #endif
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ #define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+ #endif
+ 
+diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+index a79e80b..e378785 100644
+--- a/include/linux/hugetlb.h
++++ b/include/linux/hugetlb.h
+@@ -3,7 +3,7 @@
+ 
+ #include <linux/fs.h>
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 
+ #include <linux/mempolicy.h>
+ #include <linux/shm.h>
+@@ -52,7 +52,7 @@ int pmd_huge(pmd_t pmd);
+ void hugetlb_change_protection(struct vm_area_struct *vma,
+ 		unsigned long address, unsigned long end, pgprot_t newprot);
+ 
+-#else /* !CONFIG_HUGETLB_PAGE */
++#else /* !CONFIG_HUGETLB */
+ 
+ static inline int is_vm_hugetlb_page(struct vm_area_struct *vma)
+ {
+@@ -84,9 +84,9 @@ static inline unsigned long hugetlb_total_pages(void)
+ #define HPAGE_SIZE	PAGE_SIZE
+ #endif
+ 
+-#endif /* !CONFIG_HUGETLB_PAGE */
++#endif /* !CONFIG_HUGETLB */
+ 
+-#ifdef CONFIG_HUGETLBFS
++#ifdef CONFIG_HUGETLB
+ struct hugetlbfs_config {
+ 	uid_t   uid;
+ 	gid_t   gid;
+@@ -141,13 +141,13 @@ static inline void set_file_hugepages(struct file *file)
+ {
+ 	file->f_op = &hugetlbfs_file_operations;
+ }
+-#else /* !CONFIG_HUGETLBFS */
++#else /* !CONFIG_HUGETLB */
+ 
+ #define is_file_hugepages(file)		0
+ #define set_file_hugepages(file)	BUG()
+ #define hugetlb_file_setup(name,size)	ERR_PTR(-ENOSYS)
+ 
+-#endif /* !CONFIG_HUGETLBFS */
++#endif /* !CONFIG_HUGETLB */
+ 
+ #ifdef HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+ unsigned long hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
+diff --git a/include/linux/pageblock-flags.h b/include/linux/pageblock-flags.h
+index e875905..362f3cd 100644
+--- a/include/linux/pageblock-flags.h
++++ b/include/linux/pageblock-flags.h
+@@ -35,7 +35,7 @@ enum pageblock_bits {
+ 	NR_PAGEBLOCK_BITS
+ };
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 
+ #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
+ 
+@@ -49,12 +49,12 @@ extern int pageblock_order;
+ 
+ #endif /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
+ 
+-#else /* CONFIG_HUGETLB_PAGE */
++#else /* CONFIG_HUGETLB */
+ 
+ /* If huge pages are not used, group by MAX_ORDER_NR_PAGES */
+ #define pageblock_order		(MAX_ORDER-1)
+ 
+-#endif /* CONFIG_HUGETLB_PAGE */
++#endif /* CONFIG_HUGETLB */
+ 
+ #define pageblock_nr_pages	(1UL << pageblock_order)
+ 
+diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
+index e83b693..d2f6892 100644
+--- a/include/linux/vmstat.h
++++ b/include/linux/vmstat.h
+@@ -38,7 +38,7 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
+ 		FOR_ALL_ZONES(PGSCAN_DIRECT),
+ 		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
+ 		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 		HTLB_BUDDY_PGALLOC, HTLB_BUDDY_PGALLOC_FAIL,
+ #endif
+ 		NR_VM_EVENT_ITEMS
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 2911665..9d35488 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -924,7 +924,7 @@ static struct ctl_table vm_table[] = {
+ 		.extra1		= &zero,
+ 		.extra2		= &one_hundred,
+ 	},
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 	 {
+ 		.procname	= "nr_hugepages",
+ 		.data		= &max_huge_pages,
+diff --git a/mm/Makefile b/mm/Makefile
+index 18c143b..f34a484 100644
+--- a/mm/Makefile
++++ b/mm/Makefile
+@@ -17,7 +17,7 @@ obj-$(CONFIG_PROC_PAGE_MONITOR) += pagewalk.o
+ obj-$(CONFIG_BOUNCE)	+= bounce.o
+ obj-$(CONFIG_SWAP)	+= page_io.o swap_state.o swapfile.o thrash.o
+ obj-$(CONFIG_HAS_DMA)	+= dmapool.o
+-obj-$(CONFIG_HUGETLBFS)	+= hugetlb.o
++obj-$(CONFIG_HUGETLB)	+= hugetlb.o
+ obj-$(CONFIG_NUMA) 	+= mempolicy.o
+ obj-$(CONFIG_SPARSEMEM)	+= sparse.o
+ obj-$(CONFIG_SPARSEMEM_VMEMMAP) += sparse-vmemmap.o
+diff --git a/mm/mempolicy.c b/mm/mempolicy.c
+index a37a503..1c10f51 100644
+--- a/mm/mempolicy.c
++++ b/mm/mempolicy.c
+@@ -1452,7 +1452,7 @@ static inline unsigned interleave_nid(struct mempolicy *pol,
+ 		return interleave_nodes(pol);
  }
  
--#endif
-+#endif /* !CONFIG_HAVE_GPIO_LIB */
-+
-+#ifndef CONFIG_GPIO_SYSFS
-+
-+/* sysfs support is only available with gpiolib, where it's optional */
-+
-+static inline int gpio_export(unsigned gpio, bool direction_may_change)
-+{
-+	return -ENOSYS;
-+}
-+
-+static inline void gpio_unexport(unsigned gpio)
-+{
-+}
-+#endif	/* CONFIG_GPIO_SYSFS */
- 
- #endif /* _ASM_GENERIC_GPIO_H */
---- a/include/linux/gpio.h	2008-06-09 20:02:34.000000000 -0700
-+++ b/include/linux/gpio.h	2008-06-09 20:02:43.000000000 -0700
-@@ -79,6 +79,19 @@ static inline void gpio_set_value_cansle
- 	WARN_ON(1);
+-#ifdef CONFIG_HUGETLBFS
++#ifdef CONFIG_HUGETLB
+ /*
+  * huge_zonelist(@vma, @addr, @gfp_flags, @mpol)
+  * @vma = virtual memory area whose policy is sought
+@@ -2209,7 +2209,7 @@ static void gather_stats(struct page *page, void *private, int pte_dirty)
+ 	md->node[page_to_nid(page)]++;
  }
  
-+static inline int gpio_export(unsigned gpio, bool direction_may_change)
-+{
-+	/* GPIO can never have been requested or set as {in,out}put */
-+	WARN_ON(1);
-+	return -EINVAL;
-+}
-+
-+static inline void gpio_unexport(unsigned gpio)
-+{
-+	/* GPIO can never have been exported */
-+	WARN_ON(1);
-+}
-+
- static inline int gpio_to_irq(unsigned gpio)
- {
- 	/* GPIO can never have been requested or set as input */
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ static void check_huge_range(struct vm_area_struct *vma,
+ 		unsigned long start, unsigned long end,
+ 		struct numa_maps *md)
+diff --git a/mm/vmstat.c b/mm/vmstat.c
+index db9eabb..4705147 100644
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -653,7 +653,7 @@ static const char * const vmstat_text[] = {
+ 	"allocstall",
+ 
+ 	"pgrotated",
+-#ifdef CONFIG_HUGETLB_PAGE
++#ifdef CONFIG_HUGETLB
+ 	"htlb_buddy_alloc_success",
+ 	"htlb_buddy_alloc_fail",
+ #endif
+
+
+-- 
+Adam Litke - (agl at us.ibm.com)
+IBM Linux Technology Center
+
