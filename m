@@ -1,80 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760110AbYFLNz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762571AbYFLN4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760110AbYFLNz5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 09:55:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759424AbYFLNzs
+	id S1762571AbYFLN4U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 09:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760868AbYFLNzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 09:55:48 -0400
-Received: from qb-out-0506.google.com ([72.14.204.238]:3371 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757806AbYFLNzr (ORCPT
+	Thu, 12 Jun 2008 09:55:51 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:52648 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760554AbYFLNzu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 09:55:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=YNO+NfMQovbPGTwPtfTkGymqQztZPGMf+koTyWpzGOqsdcoiQMCdnUZ3WNn9WLnz2a
-         IpUvTCCX3mWYhTrnRrbOxFHXTgJm729cfl3G5nY5KLxZuXyoBoGK/E0Pb4VQHFCc+a9o
-         V+I/DeYm3vPRbphe/tqHltiep0x2aJ6r6MDWc=
-Message-ID: <19f34abd0806120655u75df09bfuaf33f1d54128b0b7@mail.gmail.com>
-Date: Thu, 12 Jun 2008 15:55:45 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Takashi Iwai" <tiwai@suse.de>
-Subject: Re: ALC883 recording troubles...
-Cc: "Daniel J Blueman" <daniel.blueman@gmail.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <s5hhcbyrcak.wl%tiwai@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 12 Jun 2008 09:55:50 -0400
+Subject: Re: Problem: Out of memory after 2days with 2GB RAM
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Rik van Riel <riel@redhat.com>
+Cc: Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       yi.zhu@intel.com, reinette.chatre@intel.com,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <20080612093833.0fb9cdd6@bree.surriel.com> (sfid-20080612_154046_320899_AF22CEFB)
+References: <c4e36d110806120307n20cce692s9c136f11596f5ab0@mail.gmail.com>
+	 <20080612093833.0fb9cdd6@bree.surriel.com>
+	 (sfid-20080612_154046_320899_AF22CEFB)
+Content-Type: text/plain
+Date: Thu, 12 Jun 2008 15:54:44 +0200
+Message-Id: <1213278884.3936.15.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6278d2220806091259t47c9b070v269da0f5855ef014@mail.gmail.com>
-	 <s5habhtesoq.wl%tiwai@suse.de>
-	 <6278d2220806111200g4f802885wfc5f0fd6c0405efb@mail.gmail.com>
-	 <s5hiqwf0vyr.wl%tiwai@suse.de>
-	 <19f34abd0806120603q2ddc6654r9562dfea556c2791@mail.gmail.com>
-	 <s5hlk1are3o.wl%tiwai@suse.de>
-	 <19f34abd0806120648j4f15b762r8e72c348c14b946f@mail.gmail.com>
-	 <s5hhcbyrcak.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 12, 2008 at 3:52 PM, Takashi Iwai <tiwai@suse.de> wrote:
-> At Thu, 12 Jun 2008 15:48:32 +0200,
-> Vegard Nossum wrote:
->>
->> The external mic:
->>
->> Node 0x18 [Pin Complex] wcaps 0x40018f: Stereo Amp-In Amp-Out
->>   Amp-In caps: ofs=0x00, nsteps=0x02, stepsize=0x4f, mute=0
->>   Amp-In vals:  [0x00 0x00]
->
-> The input volume is zero.  Try to raise "Mic Boost" (if present)?
+On Thu, 2008-06-12 at 09:38 -0400, Rik van Riel wrote:
+> On Thu, 12 Jun 2008 12:07:34 +0200
+> "Zdenek Kabelac" <zdenek.kabelac@gmail.com> wrote:
+> 
+> > It looks like while there was a huge amount of buffers and caches -
+> > system was unable to allocate few pages for kmalloc in iwl3945 driver
+> > after resume.
+> 
+> It looks like this is because it wants to allocate 2**5 contiguous
+> pages, which is 128kB of contiguous kernel memory.
 
-They're already all up.
+64-bit system I assume?
+The allocation should be 256 * 20 * sizeof(struct sk_buff *).
 
-Line In Boost = 100
-Mic Boost = 100
-Internal Mic Boost = 100
+Try the patch below. It should improve code generation too.
 
-Right after changing all these to max, I've read the value from
-card0/codec#0 again:
+I discussed this with Tomas previously and he says the hw is capable of
+doing 20 fragments per frame (wonder why, Broadcom can do an unlimited
+number...) but he complained about the networking stack not being able
+to. Well, the hardware needs to support IP checksumming for that, hence,
+afaik, only two fragments can ever be used (one for hw header, one for
+frame)
 
-Node 0x18 [Pin Complex] wcaps 0x40018f: Stereo Amp-In Amp-Out
-  Amp-In caps: ofs=0x00, nsteps=0x02, stepsize=0x4f, mute=0
-  Amp-In vals:  [0x00 0x00]
+This cuts the allocation to 10%, or (under) a page in all cases.
 
-There doesn't seem to be any difference. Even when changing them all
-to 0 in alsamixer, this output stays the same.
+johannes
+
+--- everything.orig/drivers/net/wireless/iwlwifi/iwl-3945.h	2008-06-12 15:50:29.000000000 +0200
++++ everything/drivers/net/wireless/iwlwifi/iwl-3945.h	2008-06-12 15:50:31.000000000 +0200
+@@ -120,7 +120,7 @@ struct iwl3945_queue {
+ int iwl3945_queue_space(const struct iwl3945_queue *q);
+ int iwl3945_x2_queue_used(const struct iwl3945_queue *q, int i);
+ 
+-#define MAX_NUM_OF_TBS          (20)
++#define MAX_NUM_OF_TBS          (2)
+ 
+ /* One for each TFD */
+ struct iwl3945_tx_info {
+--- everything.orig/drivers/net/wireless/iwlwifi/iwl-dev.h	2008-06-12 15:50:18.000000000 +0200
++++ everything/drivers/net/wireless/iwlwifi/iwl-dev.h	2008-06-12 15:50:24.000000000 +0200
+@@ -115,7 +115,7 @@ struct iwl_queue {
+ 				* space less than this */
+ } __attribute__ ((packed));
+ 
+-#define MAX_NUM_OF_TBS          (20)
++#define MAX_NUM_OF_TBS          (2)
+ 
+ /* One for each TFD */
+ struct iwl_tx_info {
 
 
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
