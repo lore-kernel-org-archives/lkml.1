@@ -1,85 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753690AbYFLFPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754461AbYFLFTX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753690AbYFLFPL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 01:15:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbYFLFO6
+	id S1754461AbYFLFTX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 01:19:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbYFLFTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 01:14:58 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57116 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751260AbYFLFO5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 01:14:57 -0400
-Date: Wed, 11 Jun 2008 22:13:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nadia Derbey <Nadia.Derbey@bull.net>,
-       Manfred Spraul <manfred@colorfullife.com>, linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: repeatable slab corruption with LTP msgctl08
-Message-Id: <20080611221324.42270ef2.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 12 Jun 2008 01:19:14 -0400
+Received: from sh.osrg.net ([192.16.179.4]:45594 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751493AbYFLFTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 01:19:13 -0400
+Date: Thu, 12 Jun 2008 14:18:32 +0900
+To: mb@bu3sch.de
+Cc: fujita.tomonori@lab.ntt.co.jp, vegard.nossum@gmail.com,
+       miles.lane@gmail.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: Re: BUG: NULL pointer dereference at 00000000 -- IP: [<f8e783d5>]
+ :b43:b43_dma_mapping_error+0x16/0x155
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <200806111205.10433.mb@bu3sch.de>
+References: <200806101650.27180.mb@bu3sch.de>
+	<20080611095844J.fujita.tomonori@lab.ntt.co.jp>
+	<200806111205.10433.mb@bu3sch.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080612142235A.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 11 Jun 2008 12:05:10 +0200
+Michael Buesch <mb@bu3sch.de> wrote:
 
-Running current mainline on my old 2-way PIII.  Distro is RH FC1.  LTP
-version is ltp-full-20070228 (lots of retro-computing there).
+> On Wednesday 11 June 2008 02:58:44 FUJITA Tomonori wrote:
+> > On Tue, 10 Jun 2008 16:50:26 +0200
+> > Michael Buesch <mb@bu3sch.de> wrote:
+> > 
+> > > On Tuesday 10 June 2008 16:42:41 Vegard Nossum wrote:
+> > > > This change comes from
+> > > > 
+> > > > commit 353c409463ecba63c3a41a992d3f5fba935eada9
+> > > > Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > > > Date:   Fri May 23 19:02:30 2008 +0000
+> > > 
+> > > 
+> > > Ok, FUJITA Tomonori, please make sure a patch like the following goes
+> > > into the same trees that you submitted commit 353c409 to.
+> > > Also make sure to check b43legacy. I _guess_ you might have added
+> > > the same bug there.
+> > 
+> > Ah, sorry about the bug.
+> > 
+> > From a quick look, mainline needs the same fix too?
+> > 
+> > b43_dma_mapping_error calls unmap_descbuffer() on the failure, which
+> > assumes that ring->dev is set up properly.
+> 
+> Yeah ok. That's an unlikely error path.
 
-Config is at http://userweb.kernel.org/~akpm/config-vmm.txt
-
-
-./testcases/bin/msgctl08 crashes after ten minutes or so:
-
-slab: Internal list corruption detected in cache 'size-128'(26), slabp f2905000(20). Hexdump:
-
-000: 00 e0 12 f2 88 32 c0 f7 88 00 00 00 88 50 90 f2
-010: 14 00 00 00 0f 00 00 00 00 00 00 00 ff ff ff ff
-020: fd ff ff ff fd ff ff ff fd ff ff ff fd ff ff ff
-030: fd ff ff ff fd ff ff ff fd ff ff ff fd ff ff ff
-040: fd ff ff ff fd ff ff ff 00 00 00 00 fd ff ff ff
-050: fd ff ff ff fd ff ff ff 19 00 00 00 17 00 00 00
-060: fd ff ff ff fd ff ff ff 0b 00 00 00 fd ff ff ff
-070: fd ff ff ff fd ff ff ff fd ff ff ff fd ff ff ff
-080: 10 00 00 00
-------------[ cut here ]------------
-kernel BUG at mm/slab.c:2949!
-invalid opcode: 0000 [#1] SMP 
-Modules linked in:
-
-Pid: 3348, comm: msgctl08 Not tainted (2.6.26-rc5 #1)
-EIP: 0060:[<c017a35b>] EFLAGS: 00010086 CPU: 0
-EIP is at check_slabp+0xeb/0x100
-EAX: 00000001 EBX: f2905083 ECX: 00000001 EDX: f20ee670
-ESI: f2905000 EDI: 00000084 EBP: f4671e88 ESP: f4671e64
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process msgctl08 (pid: 3348, ti=f4670000 task=f20ee670 task.ti=f4670000)
-Stack: c0472f2b 00000000 0000001a f2905000 00000014 f7c01500 ffffffff 0000000e 
-       f2905000 f4671eec c017b69f 00000010 000000d0 f20ee670 f7c032ac 000000d0 
-       f7c01500 0000000e f7c03288 f7c06df0 f29ec088 00000098 00000000 00000000 
-Call Trace:
- [<c017b69f>] ? cache_alloc_refill+0xcf/0x6b0
- [<c017bdd4>] ? __kmalloc+0x154/0x160
- [<c0257663>] ? load_msg+0x33/0x150
- [<c0257663>] ? load_msg+0x33/0x150
- [<c0257dfb>] ? do_msgsnd+0x17b/0x2e0
- [<c0257cc9>] ? do_msgsnd+0x49/0x2e0
- [<c0126f1f>] ? __do_softirq+0x6f/0x100
- [<c0126e58>] ? _local_bh_enable+0x48/0xa0
- [<c0257f92>] ? sys_msgsnd+0x32/0x40
- [<c0106e12>] ? sys_ipc+0xb2/0x240
- [<c0102f58>] ? sysenter_past_esp+0xa5/0xb1
- [<c0102f1d>] ? sysenter_past_esp+0x6a/0xb1
- =======================
-Code: 86 fa ff 8b 55 f0 8b 42 38 8d 04 85 1c 00 00 00 39 f8 76 0b 43 f7 c7 0f 00 00 00 75 d2 eb bd c7 04 24 2b 2f 47 c0 e8 85 86 fa ff <0f> 0b eb fe 83 c4 18 5b 5e 5f 5d c3 8b 56 10 e9 6b ff ff ff 90 
-EIP: [<c017a35b>] check_slabp+0xeb/0x100 SS:ESP 0068:f4671e64
----[ end trace d7a2cbbb5a3654be ]---
+Yeah, it doesn't always happen, but it possible that it happens?
 
 
-Pekka (or Christoph): could you please decrypt the slab bits for us?
+> The new bug is in the main path which will always trigger.
 
-Thanks.
+Right.
+
+
+> Next time please send _any_ patch for review to me and to the wireless list.
+> Please tell me which trees this bug has been merged to. Is it already in
+> Linus' tree?
+
+No, seems that there are some confusion. This is just in -mm to find
+problems:
+
+http://userweb.kernel.org/~akpm/mmotm/broken-out/dma-mapping-add-the-device-argument-to-dma_mapping_error.patch
+
+This patch is a trivial but changes lots of places. So it's difficult
+to get an ACK on all the places.
+
+This patch need several fixes but all the patches are trivial except
+for b34. I guess that it is because b34 handles devices for
+dma-mapping in an uncommon way.
+
+http://userweb.kernel.org/~akpm/mmotm/broken-out/dma-mapping-add-the-device-argument-to-dma_mapping_error-b34-fix.patch
+http://userweb.kernel.org/~akpm/mmotm/broken-out/dma-mapping-add-the-device-argument-to-dma_mapping_error-bnx2x.patch
+http://userweb.kernel.org/~akpm/mmotm/broken-out/dma-mapping-add-the-device-argument-to-dma_mapping_error-sge-fix.patch
+http://userweb.kernel.org/~akpm/mmotm/broken-out/dma-mapping-add-the-device-argument-to-dma_mapping_error-sparc32.patch
+http://userweb.kernel.org/~akpm/mmotm/broken-out/dma-mapping-add-the-device-argument-to-dma_mapping_error-svc_rdma-fix.patch
