@@ -1,43 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761449AbYFLNKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761284AbYFLNLO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761449AbYFLNKn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 09:10:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761273AbYFLNKU
+	id S1761284AbYFLNLO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 09:11:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760299AbYFLNK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 09:10:20 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4186 "EHLO spitz.ucw.cz"
+	Thu, 12 Jun 2008 09:10:56 -0400
+Received: from styx.suse.cz ([82.119.242.94]:60646 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761253AbYFLNKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 09:10:18 -0400
-Date: Thu, 12 Jun 2008 15:10:05 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH 3/4] Remove definition of struct pm_dev
-Message-ID: <20080612131005.GC5455@ucw.cz>
-References: <200806121025.24668.rjw@sisk.pl> <200806121030.26099.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200806121030.26099.rjw@sisk.pl>
-User-Agent: Mutt/1.5.9i
+	id S1759026AbYFLNKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 09:10:55 -0400
+Date: Thu, 12 Jun 2008 15:10:53 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] Input: fix HP 2133 not sending release event for video switch
+Message-ID: <Pine.LNX.4.64.0806121509350.10085@jikos.suse.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2008-06-12 10:30:25, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Remove the definition of 'struct pm_dev', which is not used any more,
-> along with some related stuff from include/linux/pm.h .
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Video switch key on HP 2133 doesn't send release event, so we
+have to create workaround similar to what we do for Dell Latitude,
+i.e. perform DMI match for the system and generate 'false' release
+event ourselves, so that userspace doesn't think that the key is
+stuck forever.
 
-ACK.
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+---
+ drivers/input/keyboard/atkbd.c |   26 ++++++++++++++++++++++++++
+ 1 files changed, 26 insertions(+), 0 deletions(-)
 
+diff --git a/drivers/input/keyboard/atkbd.c b/drivers/input/keyboard/atkbd.c
+index af58a6f..005173a 100644
+--- a/drivers/input/keyboard/atkbd.c
++++ b/drivers/input/keyboard/atkbd.c
+@@ -851,6 +851,23 @@ static void atkbd_latitude_keymap_fixup(struct atkbd *atkbd)
+ }
+ 
+ /*
++ * Perform fixup for HP system that doesn't generate release
++ * for its video switch
++ */
++static void atkbd_hp_keymap_fixup(struct atkbd *atkbd)
++{
++	const unsigned int forced_release_keys[] = {
++		0x94,
++	};
++	int i;
++
++	if (atkbd->set == 2)
++		for (i = 0; i < ARRAY_SIZE(forced_release_keys); i++)
++			__set_bit(forced_release_keys[i],
++					atkbd->force_release_mask);
++}
++
++/*
+  * atkbd_set_keycode_table() initializes keyboard's keycode table
+  * according to the selected scancode set
+  */
+@@ -1452,6 +1469,15 @@ static struct dmi_system_id atkbd_dmi_quirk_table[] __initdata = {
+ 		.callback = atkbd_setup_fixup,
+ 		.driver_data = atkbd_latitude_keymap_fixup,
+ 	},
++	{
++		.ident = "HP 2133",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "HP 2133"),
++		},
++		.callback = atkbd_setup_fixup,
++		.driver_data = atkbd_hp_keymap_fixup,
++	},
+ 	{ }
+ };
+ 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.5.2.4
+
