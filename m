@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760293AbYFLMsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760482AbYFLMxG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760293AbYFLMsP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 08:48:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757050AbYFLMr6
+	id S1760482AbYFLMxG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 08:53:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758051AbYFLMwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 08:47:58 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:2071 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755374AbYFLMr5 (ORCPT
+	Thu, 12 Jun 2008 08:52:49 -0400
+Received: from vs166246.vserver.de ([62.75.166.246]:37674 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755731AbYFLMws (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 08:47:57 -0400
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, Joel Schopp <jschopp@austin.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>, Wolfram Sang <w.sang@pengutronix.de>
-Subject: [PATCH 16/23] checkpatch: correct spelling in kfree checks
-Date: Thu, 12 Jun 2008 13:05:55 +0100
-Message-Id: <1213272362-19457-17-git-send-email-apw@shadowen.org>
-X-Mailer: git-send-email 1.5.6.rc0.140.ga9675
-In-Reply-To: <1213272362-19457-1-git-send-email-apw@shadowen.org>
-References: <1213272362-19457-1-git-send-email-apw@shadowen.org>
+	Thu, 12 Jun 2008 08:52:48 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Subject: Re: [PATCH] ssb: Partial revert of 4ac5846 to fix coherent DMA mask setting
+Date: Thu, 12 Jun 2008 14:52:24 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Glauber Costa <gcosta@redhat.com>
+References: <1213274522-7059-1-git-send-email-kirill@shutemov.name>
+In-Reply-To: <1213274522-7059-1-git-send-email-kirill@shutemov.name>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806121452.24592.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wolfram Sang <w.sang@pengutronix.de>
+On Thursday 12 June 2008 14:42:02 Kirill A. Shutemov wrote:
+> dma_set_mask() doesn't set coherent_dma_mask, this can cause
+> strange error like "powering down PHY" in b44(bz #10473).
+> 
+> At x86_64 this error had been hidden until aa99b16.
 
-Correct spelling in the kfree reports.
+This patch is wrong. I will send the right patch soon.
 
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
----
- scripts/checkpatch.pl |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index a4e8087..3961e75 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -2075,7 +2075,7 @@ sub process {
- 		if ($prevline =~ /\bif\s*\(([^\)]*)\)/) {
- 			my $expr = $1;
- 			if ($line =~ /\bkfree\(\Q$expr\E\);/) {
--				WARN("kfree(NULL) is safe this check is probabally not required\n" . $hereprev);
-+				WARN("kfree(NULL) is safe this check is probably not required\n" . $hereprev);
- 			}
- 		}
- # check for needless usb_free_urb() checks
+> Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+> ---
+>  drivers/ssb/main.c |    5 +++--
+>  1 files changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/ssb/main.c b/drivers/ssb/main.c
+> index 7cf8851..b7fbbc4 100644
+> --- a/drivers/ssb/main.c
+> +++ b/drivers/ssb/main.c
+> @@ -1170,8 +1170,9 @@ int ssb_dma_set_mask(struct ssb_device *ssb_dev, u64 mask)
+>  	struct device *dma_dev = ssb_dev->dma_dev;
+>  
+>  #ifdef CONFIG_SSB_PCIHOST
+> -	if (ssb_dev->bus->bustype == SSB_BUSTYPE_PCI)
+> -		return dma_set_mask(dma_dev, mask);
+> +	if (ssb_dev->bus->bustype == SSB_BUSTYPE_PCI &&
+> +	    !dma_supported(dma_dev, mask))
+> +		return -EIO;
+>  #endif
+>  	dma_dev->coherent_dma_mask = mask;
+>  	dma_dev->dma_mask = &dma_dev->coherent_dma_mask;
+
+
+
 -- 
-1.5.6.rc0.140.ga9675
-
+Greetings Michael.
