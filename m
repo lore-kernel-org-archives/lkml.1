@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759599AbYFLWNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760063AbYFLWNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759599AbYFLWNW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 18:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758758AbYFLWMk
+	id S1760063AbYFLWNh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 18:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754211AbYFLWMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 18:12:40 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:43415 "EHLO smtp5.pp.htv.fi"
+	Thu, 12 Jun 2008 18:12:53 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:44220 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758387AbYFLWMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 18:12:39 -0400
-Date: Fri, 13 Jun 2008 01:11:31 +0300
+	id S1759199AbYFLWMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 18:12:51 -0400
+Date: Fri, 13 Jun 2008 01:11:43 +0300
 From: Adrian Bunk <bunk@kernel.org>
 To: dhowells@redhat.com, yasutake.koichi@jp.panasonic.com
 Cc: linux-am33-list@redhat.com, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [2.6 patch] mn10300: move sg_dma_{address,len}() to
-	asm/scatterlist.h
-Message-ID: <20080612221131.GO17231@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] mn10300: export kernel_thread
+Message-ID: <20080612221143.GR17231@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -25,18 +24,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mn10300 was the only archotecture where sg_dma_{address,len}() were not 
-in asm/scatterlist.h, and it's not a big surprise that this caused a 
-compile error somewhere:
+This patch fixes thefollowing build error:
 
 <--  snip  -->
 
-..
-  CC      drivers/media/video/videobuf-dma-sg.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/media/video/videobuf-dma-sg.c: In function `videobuf_dma_map':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/media/video/videobuf-dma-sg.c:238: error: implicit declaration of function 'sg_dma_address'
 ...
-make[4]: *** [drivers/media/video/videobuf-dma-sg.o] Error 1
+  MODPOST 1310 modules
+ERROR: "kernel_thread" [net/sunrpc/sunrpc.ko] undefined!
+ERROR: "kernel_thread" [net/ipv4/ipvs/ip_vs.ko] undefined!
+ERROR: "kernel_thread" [net/bluetooth/hidp/hidp.ko] undefined!
+ERROR: "kernel_thread" [net/bluetooth/cmtp/cmtp.ko] undefined!
+ERROR: "kernel_thread" [net/bluetooth/bnep/bnep.ko] undefined!
+ERROR: "kernel_thread" [fs/nfs/nfs.ko] undefined!
+ERROR: "kernel_thread" [fs/lockd/lockd.ko] undefined!
+ERROR: "kernel_thread" [fs/jffs2/jffs2.ko] undefined!
+...
+WARNING: modpost: Found 2 section mismatch(es).
 
 <--  snip  -->
 
@@ -45,46 +48,25 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- include/asm-mn10300/pci.h         |    9 ---------
- include/asm-mn10300/scatterlist.h |    9 +++++++++
- 2 files changed, 9 insertions(+), 9 deletions(-)
+ arch/mn10300/kernel/mn10300_ksyms.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-b300203c4ab4c6ef3650159edc67a6806171f2f6 diff --git a/include/asm-mn10300/pci.h b/include/asm-mn10300/pci.h
-index 205192c..cd9cc5c 100644
---- a/include/asm-mn10300/pci.h
-+++ b/include/asm-mn10300/pci.h
-@@ -74,15 +74,6 @@ struct pci_dev;
- /* This is always fine. */
- #define pci_dac_dma_supported(pci_dev, mask)	(0)
+f6120ef1dbb0831e753b6f241bbca4600aa94c10 diff --git a/arch/mn10300/kernel/mn10300_ksyms.c b/arch/mn10300/kernel/mn10300_ksyms.c
+index 6d19628..aba584a 100644
+--- a/arch/mn10300/kernel/mn10300_ksyms.c
++++ b/arch/mn10300/kernel/mn10300_ksyms.c
+@@ -10,6 +10,7 @@
+  */
+ #include <linux/module.h>
+ #include <asm/uaccess.h>
++#include <asm/processor.h>
  
--/*
-- * These macros should be used after a pci_map_sg call has been done
-- * to get bus addresses of each of the SG entries and their lengths.
-- * You should only work with the number of sg entries pci_map_sg
-- * returns.
-- */
--#define sg_dma_address(sg)	((sg)->dma_address)
--#define sg_dma_len(sg)		((sg)->length)
--
- /* Return the index of the PCI controller for device. */
- static inline int pci_controller_num(struct pci_dev *dev)
- {
-diff --git a/include/asm-mn10300/scatterlist.h b/include/asm-mn10300/scatterlist.h
-index e29d91d..6753590 100644
---- a/include/asm-mn10300/scatterlist.h
-+++ b/include/asm-mn10300/scatterlist.h
-@@ -43,4 +43,13 @@ struct scatterlist {
  
- #define ISA_DMA_THRESHOLD (0x00ffffff)
- 
-+/*
-+ * These macros should be used after a pci_map_sg call has been done
-+ * to get bus addresses of each of the SG entries and their lengths.
-+ * You should only work with the number of sg entries pci_map_sg
-+ * returns.
-+ */
-+#define sg_dma_address(sg)	((sg)->dma_address)
-+#define sg_dma_len(sg)		((sg)->length)
+ EXPORT_SYMBOL(change_bit);
+@@ -35,3 +36,5 @@ EXPORT_SYMBOL(__ashrdi3);
+ EXPORT_SYMBOL(__ashldi3);
+ EXPORT_SYMBOL(__lshrdi3);
+ EXPORT_SYMBOL(__negdi2);
 +
- #endif /* _ASM_SCATTERLIST_H */
++EXPORT_SYMBOL(kernel_thread);
 
