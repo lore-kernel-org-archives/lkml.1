@@ -1,269 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756877AbYFLTwC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758387AbYFLTy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756877AbYFLTwC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 15:52:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755493AbYFLTvj
+	id S1758387AbYFLTy3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 15:54:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbYFLTyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 15:51:39 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35230 "EHLO mx2.mail.elte.hu"
+	Thu, 12 Jun 2008 15:54:20 -0400
+Received: from mailman1.ppco.com ([138.32.41.4]:59537 "EHLO mailman1.ppco.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754748AbYFLTvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 15:51:37 -0400
-Date: Thu, 12 Jun 2008 21:51:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: the arch/x86 maintainers <x86@kernel.org>, linux-kernel@vger.kernel.org
-Subject: [git pull] x86 fixes
-Message-ID: <20080612195106.GA17100@elte.hu>
+	id S1754569AbYFLTyT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 15:54:19 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
+Date: Thu, 12 Jun 2008 14:54:09 -0500
+Message-ID: <0122F800A3B64C449565A9E8C297701002D75DAE@hoexmb9.conoco.net>
+In-Reply-To: <20080611225431.GD25194@fieldses.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
+Thread-Index: AcjMFin8+i41T2qpR7mBtOM3VEEddQArhWpA
+References: <0122F800A3B64C449565A9E8C2977010155587@hoexmb9.conoco.net> <20080609185355.GF28584@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75D9F@hoexmb9.conoco.net> <20080610171602.GG20184@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DA3@hoexmb9.conoco.net> <20080611184613.GM15380@fieldses.org> <20080611195222.GP15380@fieldses.org> <20080611160947.5f08fb16@tleilax.poochiereds.net> <20080611205749.GA25194@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DAA@hoexmb9.conoco.net> <20080611225431.GD25194@fieldses.org>
+From: "Weathers, Norman R." <Norman.R.Weathers@conocophillips.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: "Jeff Layton" <jlayton@poochiereds.net>, <linux-kernel@vger.kernel.org>,
+       <linux-nfs@vger.kernel.org>
+X-OriginalArrivalTime: 12 Jun 2008 19:54:10.0615 (UTC) FILETIME=[14E43470:01C8CCC6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+ 
 
-please pull the latest x86 fixes tree from:
+> -----Original Message-----
+> From: linux-nfs-owner@vger.kernel.org 
+> [mailto:linux-nfs-owner@vger.kernel.org] On Behalf Of J. Bruce Fields
+> Sent: Wednesday, June 11, 2008 5:55 PM
+> To: Weathers, Norman R.
+> Cc: Jeff Layton; linux-kernel@vger.kernel.org; 
+> linux-nfs@vger.kernel.org
+> Subject: Re: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
+> 
+> On Wed, Jun 11, 2008 at 05:46:13PM -0500, Weathers, Norman R. wrote:
+> > I will try and get it patched and retested, but it may be a 
+> day or two
+> > before I can get back the information due to production jobs now
+> > running.  Once they finish up, I will get back with the info.
+> 
+> Understood.
+> 
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
 
-	Ingo
+I was able to get my big user to cooperate and let me in to be able to
+get the information that you were needing.  The full output from the
+/proc/slab_allocator file is at
+http://www.shashi-weathers.net/linux/cluster/NFS_DEBUG_2 .  The 16
+thread case is very interesting.  Also, there is a small txt file in the
+directory that has some rpc errors, but I imagine the way that I am
+running the box (oversubscribed threads) has more to do with the rpc
+errors than anything else.  For those of you wanting the gist of the
+story, the size-4096 slab has the following very large allocation:
 
------------------->
-David Howells (1):
-      x86: fix an incompatible pointer type warning on 64-bit compilations
+size-4096: 2 sys_init_module+0x140b/0x1980
+size-4096: 1 __vmalloc_area_node+0x188/0x1b0
+size-4096: 1 seq_read+0x1d9/0x2e0
+size-4096: 1 slabstats_open+0x2b/0x80
+size-4096: 5 vc_allocate+0x167/0x190
+size-4096: 3 input_allocate_device+0x12/0x80
+size-4096: 1 hid_add_field+0x122/0x290
+size-4096: 9 reqsk_queue_alloc+0x5f/0xf0
+size-4096: 1846825 __alloc_skb+0x7d/0x170
+size-4096: 3 alloc_netdev+0x33/0xa0
+size-4096: 10 neigh_sysctl_register+0x52/0x2b0
+size-4096: 5 devinet_sysctl_register+0x28/0x110
+size-4096: 1 pidmap_init+0x15/0x60
+size-4096: 1 netlink_proto_init+0x44/0x190
+size-4096: 1 ip_rt_init+0xfd/0x2f0
+size-4096: 1 cipso_v4_init+0x13/0x70
+size-4096: 3 journal_init_revoke+0xe7/0x270 [jbd]
+size-4096: 3 journal_init_revoke+0x18a/0x270 [jbd]
+size-4096: 2 journal_init_inode+0x84/0x150 [jbd]
+size-4096: 2 bnx2_alloc_mem+0x18/0x1f0 [bnx2]
+size-4096: 1 joydev_connect+0x53/0x390 [joydev]
+size-4096: 13 kmem_alloc+0xb3/0x100 [xfs]
+size-4096: 5 addrconf_sysctl_register+0x31/0x130 [ipv6]
+size-4096: 7 rpc_clone_client+0x84/0x140 [sunrpc]
+size-4096: 3 rpc_create+0x254/0x4d0 [sunrpc]
+size-4096: 16 __svc_create_thread+0x53/0x1f0 [sunrpc]
+size-4096: 16 __svc_create_thread+0x72/0x1f0 [sunrpc]
+size-4096: 1 nfsd_racache_init+0x2e/0x140 [nfsd]
 
-Henry Nestler (1):
-      x86: fix endless page faults in mount_block_root for Linux 2.6
+The big one seems to be the __alloc_skb. (This is with 16 threads, and
+it says that we are using up somewhere between 12 and 14 GB of memory,
+about 2 to 3 gig of that is disk cache).  If I were to put anymore
+threads out there, the server would become almost unresponsive (it was
+bad enough as it was).   
 
-Ingo Molnar (2):
-      geode: fix modular build
-      Revert "x86: fix ioapic bug again"
+At the same time, I also noticed this:
 
-Joe Korty (1):
-      x86: fix asm warning in head_32.S
+skbuff_fclone_cache: 1842524 __alloc_skb+0x50/0x170
 
-Manish Katiyar (1):
-      x86: fix unused variable 'loops' warning in arch/x86/boot/a20.c
+Don't know for sure if that is meaningful or not....
 
-Peter Zijlstra (1):
-      x86: fix lockdep warning during suspend-to-ram
 
-Vegard Nossum (1):
-      x86, lockdep: fix "WARNING: at kernel/lockdep.c:2658 check_flags+0x4c/0x128()"
 
- arch/x86/boot/a20.c          |    3 +--
- arch/x86/kernel/entry_32.S   |    1 +
- arch/x86/kernel/head_32.S    |    2 +-
- arch/x86/kernel/io_apic_32.c |   12 ++----------
- arch/x86/kernel/mfgpt_32.c   |    2 ++
- arch/x86/kernel/nmi_32.c     |    9 ++-------
- arch/x86/kernel/traps_32.c   |    1 +
- arch/x86/mm/fault.c          |    5 +++++
- arch/x86/mm/init_64.c        |    4 ++--
- 9 files changed, 17 insertions(+), 22 deletions(-)
+> > Thanks everyone for looking at this, by the way!
+> 
+> And thanks for your persistence.
+> 
+> --b.
+> 
 
-diff --git a/arch/x86/boot/a20.c b/arch/x86/boot/a20.c
-index 90943f8..e01aafd 100644
---- a/arch/x86/boot/a20.c
-+++ b/arch/x86/boot/a20.c
-@@ -115,8 +115,6 @@ static void enable_a20_fast(void)
- 
- int enable_a20(void)
- {
--	int loops = A20_ENABLE_LOOPS;
--
- #if defined(CONFIG_X86_ELAN)
- 	/* Elan croaks if we try to touch the KBC */
- 	enable_a20_fast();
-@@ -128,6 +126,7 @@ int enable_a20(void)
- 	enable_a20_kbc();
- 	return 0;
- #else
-+       int loops = A20_ENABLE_LOOPS;
- 	while (loops--) {
- 		/* First, check to see if A20 is already enabled
- 		   (legacy free, etc.) */
-diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
-index 2a609dc..c778e4f 100644
---- a/arch/x86/kernel/entry_32.S
-+++ b/arch/x86/kernel/entry_32.S
-@@ -248,6 +248,7 @@ ENTRY(resume_userspace)
-  	DISABLE_INTERRUPTS(CLBR_ANY)	# make sure we don't miss an interrupt
- 					# setting need_resched or sigpending
- 					# between sampling and the iret
-+	TRACE_IRQS_OFF
- 	movl TI_flags(%ebp), %ecx
- 	andl $_TIF_WORK_MASK, %ecx	# is there any work to be done on
- 					# int/exception return?
-diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-index b2cc737..f7357cc 100644
---- a/arch/x86/kernel/head_32.S
-+++ b/arch/x86/kernel/head_32.S
-@@ -189,7 +189,7 @@ default_entry:
- 	 * this stage.
- 	 */
- 
--#define KPMDS ((0x100000000-__PAGE_OFFSET) >> 30) /* Number of kernel PMDs */
-+#define KPMDS (((-__PAGE_OFFSET) >> 30) & 3) /* Number of kernel PMDs */
- 
- 	xorl %ebx,%ebx				/* %ebx is kept at zero */
- 
-diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
-index a40d54f..4dc8600 100644
---- a/arch/x86/kernel/io_apic_32.c
-+++ b/arch/x86/kernel/io_apic_32.c
-@@ -2130,14 +2130,10 @@ static inline void __init check_timer(void)
- {
- 	int apic1, pin1, apic2, pin2;
- 	int vector;
--	unsigned int ver;
- 	unsigned long flags;
- 
- 	local_irq_save(flags);
- 
--	ver = apic_read(APIC_LVR);
--	ver = GET_APIC_VERSION(ver);
--
- 	/*
- 	 * get/set the timer IRQ vector:
- 	 */
-@@ -2150,15 +2146,11 @@ static inline void __init check_timer(void)
- 	 * mode for the 8259A whenever interrupts are routed
- 	 * through I/O APICs.  Also IRQ0 has to be enabled in
- 	 * the 8259A which implies the virtual wire has to be
--	 * disabled in the local APIC.  Finally timer interrupts
--	 * need to be acknowledged manually in the 8259A for
--	 * timer_interrupt() and for the i82489DX when using
--	 * the NMI watchdog.
-+	 * disabled in the local APIC.
- 	 */
- 	apic_write_around(APIC_LVT0, APIC_LVT_MASKED | APIC_DM_EXTINT);
- 	init_8259A(1);
--	timer_ack = !cpu_has_tsc;
--	timer_ack |= (nmi_watchdog == NMI_IO_APIC && !APIC_INTEGRATED(ver));
-+	timer_ack = 1;
- 	if (timer_over_8254 > 0)
- 		enable_8259A_irq(0);
- 
-diff --git a/arch/x86/kernel/mfgpt_32.c b/arch/x86/kernel/mfgpt_32.c
-index 3cad17f..07c0f82 100644
---- a/arch/x86/kernel/mfgpt_32.c
-+++ b/arch/x86/kernel/mfgpt_32.c
-@@ -155,6 +155,7 @@ int geode_mfgpt_toggle_event(int timer, int cmp, int event, int enable)
- 	wrmsr(msr, value, dummy);
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(geode_mfgpt_toggle_event);
- 
- int geode_mfgpt_set_irq(int timer, int cmp, int irq, int enable)
- {
-@@ -222,6 +223,7 @@ int geode_mfgpt_alloc_timer(int timer, int domain)
- 	/* No timers available - too bad */
- 	return -1;
- }
-+EXPORT_SYMBOL_GPL(geode_mfgpt_alloc_timer);
- 
- 
- #ifdef CONFIG_GEODE_MFGPT_TIMER
-diff --git a/arch/x86/kernel/nmi_32.c b/arch/x86/kernel/nmi_32.c
-index 11b14bb..84160f7 100644
---- a/arch/x86/kernel/nmi_32.c
-+++ b/arch/x86/kernel/nmi_32.c
-@@ -26,7 +26,6 @@
- 
- #include <asm/smp.h>
- #include <asm/nmi.h>
--#include <asm/timer.h>
- 
- #include "mach_traps.h"
- 
-@@ -82,7 +81,7 @@ int __init check_nmi_watchdog(void)
- 
- 	prev_nmi_count = kmalloc(NR_CPUS * sizeof(int), GFP_KERNEL);
- 	if (!prev_nmi_count)
--		goto error;
-+		return -1;
- 
- 	printk(KERN_INFO "Testing NMI watchdog ... ");
- 
-@@ -119,7 +118,7 @@ int __init check_nmi_watchdog(void)
- 	if (!atomic_read(&nmi_active)) {
- 		kfree(prev_nmi_count);
- 		atomic_set(&nmi_active, -1);
--		goto error;
-+		return -1;
- 	}
- 	printk("OK.\n");
- 
-@@ -130,10 +129,6 @@ int __init check_nmi_watchdog(void)
- 
- 	kfree(prev_nmi_count);
- 	return 0;
--error:
--	timer_ack = !cpu_has_tsc;
--
--	return -1;
- }
- 
- static int __init setup_nmi_watchdog(char *str)
-diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
-index bde6f63..08d752d 100644
---- a/arch/x86/kernel/traps_32.c
-+++ b/arch/x86/kernel/traps_32.c
-@@ -544,6 +544,7 @@ vm86_trap:
- #define DO_ERROR(trapnr, signr, str, name)				\
- void do_##name(struct pt_regs *regs, long error_code)			\
- {									\
-+	trace_hardirqs_fixup();						\
- 	if (notify_die(DIE_TRAP, str, regs, error_code, trapnr, signr)	\
- 						== NOTIFY_STOP)		\
- 		return;							\
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index fd7e179..8bcb6f4 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -497,6 +497,11 @@ static int vmalloc_fault(unsigned long address)
- 	unsigned long pgd_paddr;
- 	pmd_t *pmd_k;
- 	pte_t *pte_k;
-+
-+	/* Make sure we are in vmalloc area */
-+	if (!(address >= VMALLOC_START && address < VMALLOC_END))
-+		return -1;
-+
- 	/*
- 	 * Synchronize this task's top level page-table
- 	 * with the 'reference' page table.
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 156e6d7..998a06e 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -506,7 +506,7 @@ early_param("memtest", parse_memtest);
- 
- static void __init early_memtest(unsigned long start, unsigned long end)
- {
--	u64 t_start, t_size;
-+	unsigned long t_start, t_size;
- 	unsigned pattern;
- 
- 	if (!memtest_pattern)
-@@ -525,7 +525,7 @@ static void __init early_memtest(unsigned long start, unsigned long end)
- 			if (t_start + t_size > end)
- 				t_size = end - t_start;
- 
--			printk(KERN_CONT "\n  %016llx - %016llx pattern %d",
-+			printk(KERN_CONT "\n  %016lx - %016lx pattern %d",
- 				t_start, t_start + t_size, pattern);
- 
- 			memtest(t_start, t_size, pattern);
+
+Anytime.  This is the part of the job that is fun (except for my
+users...).  Anyone can watch a system run, it's dealing with the unknown
+that makes it interesting.
+
+
+Norman Weathers
+
+
+> > 
+> > > 
+> > > 
+> > > diff --git a/mm/slab.c b/mm/slab.c
+> > > index 06236e4..b379e31 100644
+> > > --- a/mm/slab.c
+> > > +++ b/mm/slab.c
+> > > @@ -2202,7 +2202,7 @@ kmem_cache_create (const char *name, 
+> > > size_t size, size_t align,
+> > >  	 * above the next power of two: caches with object 
+> > > sizes just above a
+> > >  	 * power of two have a significant amount of internal 
+> > > fragmentation.
+> > >  	 */
+> > > -	if (size < 4096 || fls(size - 1) == fls(size-1 + REDZONE_ALIGN +
+> > > +	if (size < 8192 || fls(size - 1) == fls(size-1 + REDZONE_ALIGN +
+> > >  						2 * 
+> > > sizeof(unsigned long long)))
+> > >  		flags |= SLAB_RED_ZONE | SLAB_STORE_USER;
+> > >  	if (!(flags & SLAB_DESTROY_BY_RCU))
+> > > 
+> > 
+> > 
+> > Norman Weathers
+> --
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-nfs" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
