@@ -1,98 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758868AbYFLIpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758032AbYFLIuB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758868AbYFLIpj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 04:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754468AbYFLIpD
+	id S1758032AbYFLIuB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 04:50:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754716AbYFLItx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 04:45:03 -0400
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:41070 "EHLO
-	e28esmtp03.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752567AbYFLIor (ORCPT
+	Thu, 12 Jun 2008 04:49:53 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:52336 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754300AbYFLItw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 04:44:47 -0400
-Message-ID: <4850E1E5.90806@linux.vnet.ibm.com>
-Date: Thu, 12 Jun 2008 14:14:21 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080505)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       linux-mm@kvack.org, Nick Piggin <npiggin@suse.de>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: [BUG] 2.6.26-rc5-mm3 kernel BUG at mm/filemap.c:575!
-References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
-In-Reply-To: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 12 Jun 2008 04:49:52 -0400
+Subject: Re: [PATCH 1/2] sched: fair group: fix overflow(was: fix divide by
+	zero)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: mingo@elte.hu, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <4850E192.3080804@cn.fujitsu.com>
+References: <484F7AC5.8040206@cn.fujitsu.com>
+	 <1213168547.31518.66.camel@twins>  <4850E192.3080804@cn.fujitsu.com>
+Content-Type: text/plain
+Date: Thu, 12 Jun 2008 10:49:44 +0200
+Message-Id: <1213260584.31518.86.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On Thu, 2008-06-12 at 16:42 +0800, Lai Jiangshan wrote:
+> Peter Zijlstra wrote:
+> > 
+> > I think the same thing to do is limit the shares value to something
+> > smaller instead of using an even more expensive divide.
+> > 
+> 
+> yes, you are right!
+> 
+> I found another bug about "the shares value is too large":
+> 
+> pid1 and pid2 are set affinity to cpu#0
+> pid1 is attached to cg1 and pid2 is attached to cg2
+> 
+> if cg1/cpu.shares = 1024 cg2/cpu.shares = 2000000000
+> then pid2 got 100% usage of cpu, and pid1 0%
+> 
+> if cg1/cpu.shares = 1024 cg2/cpu.shares = 20000000000
+> then pid2 got 0% usage of cpu, and pid1 100%
+> 
+> 
+> And a weight of a cfs_rq is the sum of weights of which entities
+> are queued on this cfs_rq, so the shares value should be limited
+> to a smaller value.
 
-2.6.26-rc5-mm3 kernel panics while booting up on the x86_64
-machine. Sorry the console is bit overwritten for the first few lines.
+Yeah, a lot of stuff will fall apart when weights grow too large, I
+think somewhere the load balance code also assumes weight * NICE_0_LOAD
+always fits in a long. So that immediately limits us to 32-10=22 bits
+(on 32bit systems).
 
-------------[ cut here ]------------
-ot fs
-no fstab.kernel BUG at mm/filemap.c:575!
-sys, mounting ininvalid opcode: 0000 [1] ternal defaultsSMP 
-Switching to ne
-w root and runnilast sysfs file: /sys/block/dm-3/removable
-ng init.
-unmounCPU 3 ting old /dev
-u
-nmounting old /pModules linked in:roc
-unmounting 
-old /sys
-Pid: 1, comm: init Not tainted 2.6.26-rc5-mm3-autotest #1
-RIP: 0010:[<ffffffff80268155>]  [<ffffffff80268155>] unlock_page+0xf/0x26
-RSP: 0018:ffff81003f9e1dc8  EFLAGS: 00010246
-RAX: 0000000000000000 RBX: ffffe20000f63080 RCX: 0000000000000036
-RDX: 0000000000000000 RSI: ffffe20000f63080 RDI: ffffe20000f63080
-RBP: 0000000000000000 R08: ffff81003f9a5727 R09: ffffc10000200200
-R10: ffffc10000100100 R11: 000000000000000e R12: 0000000000000000
-R13: 0000000000000000 R14: ffff81003f47aed8 R15: 0000000000000000
-FS:  000000000066d870(0063) GS:ffff81003f99fa80(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 000000000065afa0 CR3: 000000003d580000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process init (pid: 1, threadinfo ffff81003f9e0000, task ffff81003f9d8000)
-Stack:  ffffe20000f63080 ffffffff80270d9c 0000000000000000 ffffffffffffffff
- 000000000000000e 0000000000000000 ffffe20000f63080 ffffe20000f630c0
- ffffe20000f63100 ffffe20000f63140 ffffe20000f63180 ffffe20000f631c0
-Call Trace:
- [<ffffffff80270d9c>] truncate_inode_pages_range+0xc5/0x305
- [<ffffffff802a7177>] generic_delete_inode+0xc9/0x133
- [<ffffffff8029e3cd>] do_unlinkat+0xf0/0x160
- [<ffffffff8020bd0b>] system_call_after_swapgs+0x7b/0x80
+There might be other funnies..
 
+> I think that (1UL << 18) is a good limited value:
+> 1)it's not too large, we can create a lot of group before overflow
+> 2)it's several times the weight value for nice=-19 (not too small)
 
-Code: 00 00 48 85 c0 74 0b 48 8b 40 10 48 85 c0 74 02 ff d0 e8 75 ec 32 00 41 5b 31 c0 c3 53 48 89 fb f0 0f ba 37 00 19 c0 85 c0 75 04 <0f> 0b eb fe e8 56 f5 ff ff 48 89 de 48 89 c7 31 d2 5b e9 47 be 
-RIP  [<ffffffff80268155>] unlock_page+0xf/0x26
- RSP <ffff81003f9e1dc8>
----[ end trace 27b1d01b03af7c12 ]---
-Kernel panic - not syncing: Attempted to kill init!
-Pid: 1, comm: init Tainted: G      D   2.6.26-rc5-mm3-autotest #1
+Thanks!
 
-Call Trace:
- [<ffffffff80232d87>] panic+0x86/0x144
- [<ffffffff80233a09>] printk+0x4e/0x56
- [<ffffffff80235740>] do_exit+0x71/0x67c
- [<ffffffff80598691>] oops_begin+0x0/0x8c
- [<ffffffff8020dbc0>] do_invalid_op+0x87/0x91
- [<ffffffff80268155>] unlock_page+0xf/0x26
- [<ffffffff805982d9>] error_exit+0x0/0x51
- [<ffffffff80268155>] unlock_page+0xf/0x26
- [<ffffffff80270d9c>] truncate_inode_pages_range+0xc5/0x305
- [<ffffffff802a7177>] generic_delete_inode+0xc9/0x133
- [<ffffffff8029e3cd>] do_unlinkat+0xf0/0x160
- [<ffffffff8020bd0b>] system_call_after_swapgs+0x7b/0x80
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index bfb8ad8..fe1b6c7 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -312,12 +312,15 @@ static DEFINE_SPINLOCK(task_group_lock);
+>  #endif
+>  
+>  /*
+> - * A weight of 0, 1 or ULONG_MAX can cause arithmetics problems.
+> + * A weight of 0 or 1 can cause arithmetics problems.
+> + * A weight of a cfs_rq is the sum of weights of which entities
+> + * are queued on this cfs_rq, so a weight of a entity should not be
+> + * too large, so as the shares value of a task group.
+>   * (The default weight is 1024 - so there's no practical
+>   *  limitation from this.)
+>   */
+>  #define MIN_SHARES	2
+> -#define MAX_SHARES	(ULONG_MAX - 1)
+> +#define MAX_SHARES	(1UL << 18)
+>  
+>  static int init_task_group_load = INIT_TASK_GROUP_LOAD;
+>  #endif
+> 
+> 
+> 
+> 
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
