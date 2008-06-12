@@ -1,307 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760719AbYFLU1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759571AbYFLU3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760719AbYFLU1g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 16:27:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760124AbYFLU0r
+	id S1759571AbYFLU3a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 16:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754873AbYFLU3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 16:26:47 -0400
-Received: from [194.117.236.238] ([194.117.236.238]:39376 "EHLO
-	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1760090AbYFLU0p (ORCPT
+	Thu, 12 Jun 2008 16:29:22 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:43884 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754294AbYFLU3V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 16:26:45 -0400
-Date: Thu, 12 Jun 2008 23:26:26 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: tzanussi@gmail.com
-Cc: penberg@cs.helsinki.fi, akpm@linux-foundation.org,
-       compudj@krystal.dyndns.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] relay: Add buffer-only channels; useful for early
- logging.
-Message-ID: <20080612232626.7ad01d76@linux360.ro>
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 12 Jun 2008 16:29:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=PblhRz3SGioybnohCYCZ0ccIy+ijupm0ho9IHgihHy3uf0XIctkuMbzrlYrVXAeCa/
+         gurR0vy/5uQPwhlZ+q8lMtTAA/QuBjuVvSUAmB21mLdrGPvnp4M8XupZnno29AT6WZbP
+         YVYCO2/0Fvj0OBfbBIjzIPQ9h/NtZ0auzely4=
+Message-ID: <86802c440806121329s54bb1e6dobaaa15c26e7dc81c@mail.gmail.com>
+Date: Thu, 12 Jun 2008 13:29:20 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Paul Jackson" <pj@sgi.com>, "Andi Kleen" <andi@firstfloor.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Confusions with reserve_early, reserve_bootmem, e820, efi, ... on x86_64
+Cc: mingo@elte.hu, bwalle@suse.de, hannes@saeurebad.de, ying.huang@intel.com,
+       linux-kernel@vger.kernel.org, steiner@sgi.com
+In-Reply-To: <20080612151032.5a59309b.pj@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080612050609.88a8cf7f.pj@sgi.com>
+	 <86802c440806120525v2da860bfyf05eb8ec6b9943d0@mail.gmail.com>
+	 <20080612111943.c140c4cb.pj@sgi.com>
+	 <86802c440806121005g42f2e44cxbe5f7bdb06836a1e@mail.gmail.com>
+	 <20080612151032.5a59309b.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allows one to create and use a channel with no associated files. Files
-can be initialized later. This is useful in scenarios such as logging
-in early code, before VFS is up. Therefore, such channels can be
-created and used as soon as kmem_cache_init() completed.
+On Thu, Jun 12, 2008 at 1:10 PM, Paul Jackson <pj@sgi.com> wrote:
+> Yinghai wrote:
+>> that function seems to increase the ebda to workaround some broken
+>> machine blindly.
+>
+> Yes, true.
+>
+> The reserve_ebda_region() has probably been like that for a while;
+> do you understand why it would be a problem conflicting with the
+> EFI memmap only now?
+>
+> My other two concerns remain as well:
+>
+>  2) Is what amounts to a change from calling reserve_bootmem()
+>    to calling reserve_early(), at the end of reserve_ebda_region()
+>    in the 32 bit case (now that it is merged with the 64 bit code)
+>    understood to be a desired and correct change?
+>
+>  3) There has been quite a few patches restructuring this early
+>    memory reservation code over the last week.  What is the
+>    state of that work ... is it still "in progress" or is it
+>    thought to be complete?
 
-Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
----
- Documentation/filesystems/relay.txt |   11 +++
- include/linux/relay.h               |    5 ++
- kernel/relay.c                      |  123 ++++++++++++++++++++++++++---------
- 3 files changed, 107 insertions(+), 32 deletions(-)
+please check that commit that increase the range to 1M.
+it seems at that time, andi and peter had different idea, because
+increase 1M could waste K bytes memory.
 
-diff --git a/Documentation/filesystems/relay.txt b/Documentation/filesystems/relay.txt
-index 094f2d2..b417f83 100644
---- a/Documentation/filesystems/relay.txt
-+++ b/Documentation/filesystems/relay.txt
-@@ -161,6 +161,7 @@ TBD(curr. line MT:/API/)
-     relay_close(chan)
-     relay_flush(chan)
-     relay_reset(chan)
-+    relay_late_setup_files(chan, base_filename, parent)
- 
-   channel management typically called on instigation of userspace:
- 
-@@ -294,6 +295,16 @@ user-defined data with a channel, and is immediately available
- (including in create_buf_file()) via chan->private_data or
- buf->chan->private_data.
- 
-+Buffer-only channels
-+--------------------
-+
-+These channels have no files associated and can be created with
-+relay_open(NULL, NULL, ...). Such channels are useful in scenarios such
-+as when doing early tracing in the kernel, before the VFS is up. In these
-+cases, one may open a buffer-only channel and then call 
-+relay_late_setup_files() when the kernel is ready to handle files,
-+to expose the buffered data to the userspace.
-+
- Channel 'modes'
- ---------------
- 
-diff --git a/include/linux/relay.h b/include/linux/relay.h
-index a3a03e7..1d3dcf8 100644
---- a/include/linux/relay.h
-+++ b/include/linux/relay.h
-@@ -49,6 +49,7 @@ struct rchan_buf
- 	size_t *padding;		/* padding counts per sub-buffer */
- 	size_t prev_padding;		/* temporary variable */
- 	size_t bytes_consumed;		/* bytes consumed in cur read subbuf */
-+	size_t early_bytes;		/* bytes consumed before VFS inited */
- 	unsigned int cpu;		/* this buf's cpu */
- } ____cacheline_aligned;
- 
-@@ -69,6 +70,7 @@ struct rchan
- 	int is_global;			/* One global buffer ? */
- 	struct list_head list;		/* for channel list */
- 	struct dentry *parent;		/* parent dentry passed to open */
-+	int has_base_filename;		/* has a filename associated? */
- 	char base_filename[NAME_MAX];	/* saved base filename */
- };
- 
-@@ -170,6 +172,9 @@ struct rchan *relay_open(const char *base_filename,
- 			 size_t n_subbufs,
- 			 struct rchan_callbacks *cb,
- 			 void *private_data);
-+extern int relay_late_setup_files(struct rchan *chan,
-+				  const char *base_filename,
-+				  struct dentry *parent);
- extern void relay_close(struct rchan *chan);
- extern void relay_flush(struct rchan *chan);
- extern void relay_subbufs_consumed(struct rchan *chan,
-diff --git a/kernel/relay.c b/kernel/relay.c
-index 1d2c3d1..7ac7a22 100644
---- a/kernel/relay.c
-+++ b/kernel/relay.c
-@@ -407,6 +407,39 @@ void relay_reset(struct rchan *chan)
+also wonder if EFI is there, we still need to ebda?
+
+YH
+
+commit f6eb62b6924b99ec7da97fb6f554685a9ad6dce4
+Author: Alexander van Heukelum <heukelum@mailshack.com>
+Date:   Mon Feb 25 19:07:51 2008 +0100
+
+    x86: reserve_early end-of-conventional-memory to 1MB, 64-bit
+
+    Explicitly reserve_early the whole address range from the end of
+    conventional memory as reported by the bios data area up to the
+    1Mb mark. Regard the info retrieved from the BIOS data area with
+    a bit of paranoia, though, because some biosses forget to register
+    the EBDA correctly.
+
+    Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+diff --git a/arch/x86/kernel/head64.c b/arch/x86/kernel/head64.c
+index 38f32e7..b684552 100644
+--- a/arch/x86/kernel/head64.c
++++ b/arch/x86/kernel/head64.c
+@@ -49,33 +49,42 @@ static void __init copy_bootdata(char *real_mode_data)
+        }
  }
- EXPORT_SYMBOL_GPL(relay_reset);
- 
-+static int relay_setup_buf_file(struct rchan *chan,
-+				struct rchan_buf *buf,
-+				unsigned int cpu)
-+{
-+	struct dentry *dentry;
-+	unsigned long flags;
-+ 	char *tmpname;
-+
-+	tmpname = kzalloc(NAME_MAX + 1, GFP_KERNEL);
-+	if (!tmpname)
-+		goto failed;
-+	snprintf(tmpname, NAME_MAX, "%s%d", chan->base_filename, cpu);
-+
-+	/* Create file in fs */
-+	dentry = chan->cb->create_buf_file(tmpname, chan->parent,
-+					   S_IRUSR, buf, 
-+					   &chan->is_global);
-+	
-+	kfree(tmpname);
-+
-+	if (!dentry)
-+		goto failed;
-+	spin_lock_irqsave(&buf->rw_lock, flags);
-+	buf->dentry = dentry;
-+	buf->dentry->d_inode->i_size = buf->early_bytes;
-+	spin_unlock_irqrestore(&buf->rw_lock, flags);
-+
-+	return 0;
-+
-+failed:
-+	return 1;
-+}
-+
- /*
-  *	relay_open_buf - create a new relay channel buffer
-  *
-@@ -415,48 +448,31 @@ EXPORT_SYMBOL_GPL(relay_reset);
- static struct rchan_buf *relay_open_buf(struct rchan *chan, unsigned int cpu)
- {
-  	struct rchan_buf *buf = NULL;
--	struct dentry *dentry;
-- 	char *tmpname;
- 
-  	if (chan->is_global)
- 		return chan->buf[0];
- 
--	tmpname = kzalloc(NAME_MAX + 1, GFP_KERNEL);
-- 	if (!tmpname)
-- 		goto end;
-- 	snprintf(tmpname, NAME_MAX, "%s%d", chan->base_filename, cpu);
--
- 	buf = relay_create_buf(chan);
- 	if (!buf)
-- 		goto free_name;
-+ 		return NULL;
- 
--	spin_lock_init(&buf->rw_lock);
-+	if (chan->has_base_filename)
-+		if (relay_setup_buf_file(chan, buf, cpu))
-+			goto free_buf;
- 
-  	buf->cpu = cpu;
-  	__relay_reset(buf, 1);
- 
--	/* Create file in fs */
-- 	dentry = chan->cb->create_buf_file(tmpname, chan->parent, S_IRUSR,
-- 					   buf, &chan->is_global);
-- 	if (!dentry)
-- 		goto free_buf;
--
--	buf->dentry = dentry;
--
-  	if(chan->is_global) {
-  		chan->buf[0] = buf;
-  		buf->cpu = 0;
-   	}
- 
-- 	goto free_name;
-+	return buf;
- 
- free_buf:
-  	relay_destroy_buf(buf);
-- 	buf = NULL;
--free_name:
-- 	kfree(tmpname);
--end:
--	return buf;
-+ 	return NULL;
- }
- 
- /**
-@@ -539,8 +555,8 @@ static int __cpuinit relay_hotcpu_callback(struct notifier_block *nb,
- 
- /**
-  *	relay_open - create a new relay channel
-- *	@base_filename: base name of files to create
-- *	@parent: dentry of parent directory, %NULL for root directory
-+ *	@base_filename: base name of files to create, %NULL for buffering only
-+ *	@parent: dentry of parent directory, %NULL for root directory or buffer
-  *	@subbuf_size: size of sub-buffers
-  *	@n_subbufs: number of sub-buffers
-  *	@cb: client callback functions
-@@ -562,8 +578,6 @@ struct rchan *relay_open(const char *base_filename,
- {
- 	unsigned int i;
- 	struct rchan *chan;
--	if (!base_filename)
--		return NULL;
- 
- 	if (!(subbuf_size && n_subbufs))
- 		return NULL;
-@@ -578,12 +592,15 @@ struct rchan *relay_open(const char *base_filename,
- 	chan->alloc_size = FIX_SIZE(subbuf_size * n_subbufs);
- 	chan->parent = parent;
- 	chan->private_data = private_data;
--	strlcpy(chan->base_filename, base_filename, NAME_MAX);
-+	if (base_filename) {
-+		chan->has_base_filename = 1;
-+		strlcpy(chan->base_filename, base_filename, NAME_MAX);
-+	}
- 	setup_callbacks(chan, cb);
- 	kref_init(&chan->kref);
- 
- 	mutex_lock(&relay_channels_mutex);
--	for_each_online_cpu(i) {
-+	for_each_present_cpu(i) {
- 		chan->buf[i] = relay_open_buf(chan, i);
- 		if (!chan->buf[i])
- 			goto free_bufs;
-@@ -594,7 +611,7 @@ struct rchan *relay_open(const char *base_filename,
- 	return chan;
- 
- free_bufs:
--	for_each_online_cpu(i) {
-+	for_each_present_cpu(i) {
- 		if (!chan->buf[i])
- 			break;
- 		relay_close_buf(chan->buf[i]);
-@@ -607,6 +624,43 @@ free_bufs:
- EXPORT_SYMBOL_GPL(relay_open);
- 
- /**
-+ *	relay_late_setup_files - triggers file creation
-+ *	@chan: channel to operate on
-+ *	@base_filename: base name of files to create
-+ *	@parent: dentry of parent directory, %NULL for root directory
-+ *
-+ *	Returns 0 if successful, non-zero otherwise.
-+ *
-+ *	Use to setup files for a previously buffer-only channel.
-+ *	Useful to do early tracing in kernel, before VFS is up, for example.
+
+-#define EBDA_ADDR_POINTER 0x40E
++#define BIOS_EBDA_SEGMENT 0x40E
++#define BIOS_LOWMEM_KILOBYTES 0x413
+
++/*
++ * The BIOS places the EBDA/XBDA at the top of conventional
++ * memory, and usually decreases the reported amount of
++ * conventional memory (int 0x12) too.
 + */
-+int relay_late_setup_files(struct rchan *chan,
-+			   const char *base_filename,
-+			   struct dentry *parent)
-+{
-+	unsigned int i;
-+	int ret;
-+	struct rchan_buf *buf;
-+	
-+	if (!chan || !base_filename)
-+		return 1;
-+	
-+	strlcpy(chan->base_filename, base_filename, NAME_MAX);
-+	chan->has_base_filename = 1;
-+	chan->parent = parent;
+ static __init void reserve_ebda(void)
+ {
+-       unsigned ebda_addr, ebda_size;
++       unsigned int lowmem, ebda_addr;
+
+-       /*
+-        * there is a real-mode segmented pointer pointing to the
+-        * 4K EBDA area at 0x40E
+-        */
+-       ebda_addr = *(unsigned short *)__va(EBDA_ADDR_POINTER);
++       /* end of low (conventional) memory */
++       lowmem = *(unsigned short *)__va(BIOS_LOWMEM_KILOBYTES);
++       lowmem <<= 10;
 +
-+	for_each_present_cpu(i) {
-+		buf = chan->buf[i];
-+		
-+		ret = relay_setup_buf_file(chan, buf, i);
-+		if (unlikely(ret))
-+			return 1;
-+	}
-+
-+	return 0;
-+}
-+		
-+/**
-  *	relay_switch_subbuf - switch to a new sub-buffer
-  *	@buf: channel buffer
-  *	@length: size of current event
-@@ -629,8 +683,13 @@ size_t relay_switch_subbuf(struct rchan_buf *buf, size_t length)
- 		old_subbuf = buf->subbufs_produced % buf->chan->n_subbufs;
- 		buf->padding[old_subbuf] = buf->prev_padding;
- 		buf->subbufs_produced++;
--		buf->dentry->d_inode->i_size += buf->chan->subbuf_size -
--			buf->padding[old_subbuf];
-+		if (buf->dentry)
-+			buf->dentry->d_inode->i_size +=
-+				buf->chan->subbuf_size -
-+				buf->padding[old_subbuf];
-+		else
-+			buf->early_bytes += buf->chan->subbuf_size -
-+					    buf->padding[old_subbuf];
- 		smp_mb();
- 		if (waitqueue_active(&buf->read_wait))
- 			/*
--- 
-1.5.5.4
++       /* start of EBDA area */
++       ebda_addr = *(unsigned short *)__va(BIOS_EBDA_SEGMENT);
+        ebda_addr <<= 4;
+
+-       if (!ebda_addr)
+-               return;
++       /* Fixup: bios puts an EBDA in the top 64K segment */
++       /* of conventional memory, but does not adjust lowmem. */
++       if ((lowmem - ebda_addr) <= 0x10000)
++               lowmem = ebda_addr;
+
+-       ebda_size = *(unsigned short *)__va(ebda_addr);
++       /* Fixup: bios does not report an EBDA at all. */
++       /* Some old Dells seem to need 4k anyhow (bugzilla 2990) */
++       if ((ebda_addr == 0) && (lowmem >= 0x9f000))
++               lowmem = 0x9f000;
+
+-       /* Round EBDA up to pages */
+-       if (ebda_size == 0)
+-               ebda_size = 1;
+-       ebda_size <<= 10;
+-       ebda_size = round_up(ebda_size + (ebda_addr & ~PAGE_MASK), PAGE_SIZE);
+-       if (ebda_size > 64*1024)
+-               ebda_size = 64*1024;
++       /* Paranoia: should never happen, but... */
++       if (lowmem >= 0x100000)
++               lowmem = 0xa0000;
+
+-       reserve_early(ebda_addr, ebda_addr + ebda_size, "EBDA");
++       /* reserve all memory between lowmem and the 1MB mark */
++       reserve_early(lowmem, 0x100000, "BIOS reserved");
+ }
+
+ void __init x86_64_start_kernel(char * real_mode_data)
