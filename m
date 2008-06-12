@@ -1,123 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755368AbYFLQRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbYFLQSa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755368AbYFLQRT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 12:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbYFLQRK
+	id S1756075AbYFLQSa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 12:18:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726AbYFLQSW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 12:17:10 -0400
-Received: from styx.suse.cz ([82.119.242.94]:39852 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750771AbYFLQRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 12:17:08 -0400
-Date: Thu, 12 Jun 2008 18:17:06 +0200
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, cmm@us.ibm.com,
-       linux-ext4@vger.kernel.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ext2: Use page_mkwrite vma_operations to get mmap
-	write notification.
-Message-ID: <20080612161706.GB12367@duck.suse.cz>
-References: <1212685513-32237-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com> <20080605123045.445e380a.akpm@linux-foundation.org> <20080611150845.GA21910@skywalker> <20080611120749.d0c5a7de.akpm@linux-foundation.org>
+	Thu, 12 Jun 2008 12:18:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42261 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753529AbYFLQSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 12:18:21 -0400
+Message-ID: <48514BE3.3000506@redhat.com>
+Date: Thu, 12 Jun 2008 12:16:35 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080611120749.d0c5a7de.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: "Frank Ch. Eigler" <fche@redhat.com>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Hideo AOKI <haoki@redhat.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: Kernel marker has no performance impact on ia64.
+References: <48447052.3030300@redhat.com> <1212445965.6269.22.camel@lappy.programming.kicks-ass.net> <20080602232135.GA20173@Krystal> <1212618449.19205.35.camel@lappy.programming.kicks-ass.net> <20080604232241.GA8488@Krystal> <1212653539.19205.47.camel@lappy.programming.kicks-ass.net> <20080612135319.GB22348@Krystal> <1213280823.31518.114.camel@twins> <20080612155332.GA16658@redhat.com>
+In-Reply-To: <20080612155332.GA16658@redhat.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 11-06-08 12:07:49, Andrew Morton wrote:
-> On Wed, 11 Jun 2008 20:38:45 +0530
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
-> 
-> > On Thu, Jun 05, 2008 at 12:30:45PM -0700, Andrew Morton wrote:
-> > > On Thu,  5 Jun 2008 22:35:12 +0530
-> > > "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > We would like to get notified when we are doing a write on mmap
-> > > > section.  The changes are needed to handle ENOSPC when writing to an
-> > > > mmap section of files with holes.
-> > > > 
-> > > 
-> > > Whoa.  You didn't copy anything like enough mailing lists for a change
-> > > of this magnitude.  I added some.
-> > > 
-> > > This is a large change in behaviour!
-> > > 
-> > > a) applications will now get a synchronous SIGBUS when modifying a
-> > >    page over an ENOSPC filesystem.  Whereas previously they could have
-> > >    proceeded to completion and then detected the error via an fsync().
-> > 
-> > Or not detect the error at all if we don't call fsync() right ? Isn't a
-> > synchronous SIGBUS the right behaviour ?
-> >
-> 
-> Not according to POSIX.  Or at least posix-several-years-ago, when this
-> last was discussed.  The spec doesn't have much useful to say about any
-> of this.
-> 
-> It's a significant change in the userspace interface.
-> 
-> > 
-> > > 
-> > >    It's going to take more than one skimpy little paragraph to
-> > >    justify this, and to demonstrate that it is preferable, and to
-> > >    convince us that nothing will break from this user-visible behaviour
-> > >    change.
-> > > 
-> > > b) we're now doing fs operations (and some I/O) in the pagefault
-> > >    code.  This has several implications:
-> > > 
-> > >    - performance changes
-> > > 
-> > >    - potential for deadlocks when a process takes the fault from
-> > >      within a copy_to_user() in, say, mm/filemap.c
-> > > 
-> > >    - performing additional memory allocations within that
-> > >      copy_to_user().  Possibility that these will reenter the
-> > >      filesystem.
-> > > 
-> > > And that's just ext2.
-> > > 
-> > > For ext3 things are even more complex, because we have the
-> > > journal_start/journal_end pair which is effectively another "lock" for
-> > > ranking/deadlock purposes.  And now we're taking i_alloc_sem and
-> > > lock_page and we're doing ->writepage() and its potential
-> > > journal_start(), all potentially within the context of a
-> > > copy_to_user().
-> > 
-> > One of the reason why we would need this in ext3/ext4 is that we cannot
-> > do block allocation in the writepage with the recent locking changes.
-> 
-> Perhaps those recent locking changes were wrong.
-  Well, the locking changes are those reverting locking ordering of
-transaction start and page lock - we have them in ext4 and Aneesh seems 
-to be looking into porting them to ext3 (at least ordered mode rewrite
-needs them). I wouldn't say they are wrong in principle.
-  It's easier to use page_mkwrite() to allocate blocks so that
-later in writepage() we don't have to do block allocation which needs to
-start a transaction (because that means unlocking the page which gets
-quickly nasty to handle properly...).
-  BTW: XFS, OCFS2 or GFS2 define page_mkwrite() in this manner so they do
-return SIGBUS when you run out of space when writing to mmapped hole. So
-it's not like this change is introducing completely new behavior... I can
-understand that we might not want to change the behavior for ext2 or ext3
-but ext4 is IMO definitely free to choose.
+Hi Frank,
 
-> > The locking changes involve changing the locking order of journal_start
-> > and page_lock. With writepage we are already called with page_lock and
-> > we can't start new transaction needed for block allocation.
+Frank Ch. Eigler wrote:
+> Hi -
 > 
-> ext3_write_begin() has journal_start() nesting inside the lock_page().
+> On Thu, Jun 12, 2008 at 04:27:03PM +0200, Peter Zijlstra wrote:
+>> [...]
+>>> Well, the string contains each field name and type. Therefore, SystemTAP
+>>> can hook on a marker and parse the string looking for some elements by
+>>> passing a NULL format string upon probe registration. Alternatively, it
+>>> can provide the exact format string expected when it registers its probe
+>>> to the marker and a check will be done to verify that the format string
+>>> passed along with the registered probe matches the marker format string.
+>> Yes, I get that, its one of the ugliest things I've met in this whole
+>> marker story. Why can't stap not insert a normal trace handler that
+>> extracts the information from prev/next it wants? [...]
 > 
-> > But if we agree that we should not do block allocation in page_mkwrite
-> > we need to add writepages and allocate blocks in writepages.
+> Think this through.  How should systemtap (or another user-space
+> separate-compiled tool like lttng) do this exactly?
 > 
-> I'm not sure what writepages has to do with pagefaults?
+> (a) rely on debugging information?  Even assuming we could get proper
+>     anchors (PC addresses or unambiguous type names) to start
+>     searching dwarf data, we lose a key attractions of markers: that
+>     it can robustly transfer data *without* dwarf data kept around.
+> 
+> (b) rely on hand-written C code (prototypes, pointer derefrencing
+>     wrappers) distributed with systemtap?  Not only would this be a
+>     brittle maintenance pain in the form of cude duplication, but then
+>     errors in it couldn't even be detected until the final C
+>     compilation stage.  That would make a lousy user experience.
+> 
+> (c) have systemtap try to parse the mhiramat-proposed "(struct
+>     task_struct * next, struct task_struct * prev)" format strings?
+>     Then we're asking systemtap to parse potentially general C type
+>     expressions, find the kernel headers that declare the types?
+>     Parse available subfields?  That seems too much to ask for.
+> 
+> (d) or another way?
 
-								Honza
+use a lookup table. we can expect that the marking points which
+regularly inserted in the upstream kernel are stable(not so
+frequently change). In that case, we can easily maintain
+a lookup table which has pairs of format strings like as
+"sched_switch(struct task_struct * next, struct task_struct * prev)":"next %p prev %p"
+out of tree. Thus, you can use the printf-style format parser.
+
+This actually is a kind of duplication, but in this way,
+I think we can detect errors before generating C code, and
+easily add lookup pairs of format strings.
+(additionally, we can choose %s or %p for "char *" ;-))
+
+> 
+> 
+> - FChE
+
+Thank you,
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
