@@ -1,94 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759951AbYFLLYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760036AbYFLLZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759951AbYFLLYm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 07:24:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755101AbYFLLYf
+	id S1760036AbYFLLZn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 07:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYFLLZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 07:24:35 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34747 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751388AbYFLLYd (ORCPT
+	Thu, 12 Jun 2008 07:25:34 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:59857 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750832AbYFLLZd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 07:24:33 -0400
-Date: Thu, 12 Jun 2008 20:20:03 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       linux-mm@kvack.org, Nick Piggin <npiggin@suse.de>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [BUG] 2.6.26-rc5-mm3 kernel BUG at mm/filemap.c:575!
-Message-Id: <20080612202003.db871cac.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080612015746.172c4b56.akpm@linux-foundation.org>
-References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
-	<4850E1E5.90806@linux.vnet.ibm.com>
-	<20080612015746.172c4b56.akpm@linux-foundation.org>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Thu, 12 Jun 2008 07:25:33 -0400
+X-Sasl-enc: m9G/QjrQHPO8ZfviSteO/ijTAeVwZF8nBY/4WuPUIlMl 1213269932
+Subject: Re: Linux 2.6.26-rc4
+From: Ian Kent <raven@themaw.net>
+To: Jesper Krogh <jesper@krogh.cc>
+Cc: Al Viro <viro@zeniv.linux.org.uk>, Jeff Moyer <jmoyer@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <50414.195.41.66.226.1213254146.squirrel@mail.jabbernet.dk>
+References: <20080603105258.GV28946@ZenIV.linux.org.uk>
+	 <1212499623.3025.46.camel@raven.themaw.net>
+	 <alpine.LFD.1.10.0806030751040.3473@woody.linux-foundation.org>
+	 <1212509263.3025.66.camel@raven.themaw.net>
+	 <alpine.LFD.1.10.0806030926330.3473@woody.linux-foundation.org>
+	 <1212513189.3025.101.camel@raven.themaw.net>
+	 <20080603173029.GD28946@ZenIV.linux.org.uk>
+	 <x49ej7ejtry.fsf@segfault.boston.devel.redhat.com>
+	 <20080603191859.GG28946@ZenIV.linux.org.uk>
+	 <x49abi2jnwf.fsf@segfault.boston.devel.redhat.com>
+	 <20080603230026.GH28946@ZenIV.linux.org.uk>
+	 <1212547323.3146.45.camel@raven.themaw.net>
+	 <1213073861.3024.34.camel@raven.themaw.net>  <484E1F20.4060804@krogh.cc>
+	 <1213080010.3024.42.camel@raven.themaw.net>
+	 <1213239782.4994.79.camel@raven.themaw.net>
+	 <50414.195.41.66.226.1213254146.squirrel@mail.jabbernet.dk>
+Content-Type: text/plain
+Date: Thu, 12 Jun 2008 19:21:26 +0800
+Message-Id: <1213269686.4994.105.camel@raven.themaw.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jun 2008 01:57:46 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> > Call Trace:
-> >  [<ffffffff80270d9c>] truncate_inode_pages_range+0xc5/0x305
-> >  [<ffffffff802a7177>] generic_delete_inode+0xc9/0x133
-> >  [<ffffffff8029e3cd>] do_unlinkat+0xf0/0x160
-> >  [<ffffffff8020bd0b>] system_call_after_swapgs+0x7b/0x80
-> > 
-> > 
-> > Code: 00 00 48 85 c0 74 0b 48 8b 40 10 48 85 c0 74 02 ff d0 e8 75 ec 32 00 41 5b 31 c0 c3 53 48 89 fb f0 0f ba 37 00 19 c0 85 c0 75 04 <0f> 0b eb fe e8 56 f5 ff ff 48 89 de 48 89 c7 31 d2 5b e9 47 be 
-> > RIP  [<ffffffff80268155>] unlock_page+0xf/0x26
-> >  RSP <ffff81003f9e1dc8>
-> > ---[ end trace 27b1d01b03af7c12 ]---
+On Thu, 2008-06-12 at 09:02 +0200, Jesper Krogh wrote:
+> > On Tue, 2008-06-10 at 14:40 +0800, Ian Kent wrote:
+> > The patch below is sufficiently different to the original patch I posted
+> > to warrant a replacement rather than a correction.
 > 
-> Another unlock of an unlocked page.  Presumably when reclaim hadn't
-> done anything yet. 
-> 
-> Don't know, sorry.  Strange.
-> 
-at first look,
+> I'll patch that in now and see what it gives. (Is it preferred
+> to use this --ghost option or not?) What would you suggest?
 
-==
-truncate_inode_pages_range()
-	-> TestSetPageLocked()  //
-        	-> truncate_complete_page()
-			-> remove_from_page_cache() // makes page->mapping to be NULL.
-			-> clear_page_mlock()
-				-> __clear_page_mlock()
-					-> putback_lru_page()
-						-> unlock_page() // page->mapping is NULL
-	-> unlock_page() //BUG
-==
+It is a matter of choice mostly.
+If you have a large number of entries in your map then don't use it. It
+will result in a performance hit especially during expires.
 
-It seems truncate_complete_page() is bad.
-==
-static void
-truncate_complete_page(struct address_space *mapping, struct page *page)
-{
-        if (page->mapping != mapping)
-                return;
+Ian
 
-        if (PagePrivate(page))
-                do_invalidatepage(page, 0);
-
-        cancel_dirty_page(page, PAGE_CACHE_SIZE);
-
-        remove_from_page_cache(page);     -----------------(A)
-        clear_page_mlock(page);           -----------------(B)
-        ClearPageUptodate(page);
-        ClearPageMappedToDisk(page);
-        page_cache_release(page);       /* pagecache ref */
-}
-==
-
-(B) should be called before (A) as invalidate_complete_page() does.
-
-Thanks,
--Kame
 
