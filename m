@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760839AbYFLXSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761238AbYFLXUM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760839AbYFLXSX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 19:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756734AbYFLXSM
+	id S1761238AbYFLXUM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 19:20:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756368AbYFLXUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 19:18:12 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:28741 "EHLO
+	Thu, 12 Jun 2008 19:20:00 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:29530 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754816AbYFLXSK (ORCPT
+	with ESMTP id S1755576AbYFLXT7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 19:18:10 -0400
+	Thu, 12 Jun 2008 19:19:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=uDJ6zakI9v86mZNS1QH6+CHzr2k4DYchYU63M4kMMiVW/a1ar1ez02bXU0FX7pRhW/
-         0Ux0l0uuZYBVNPGNTwTMb8z36WKoXZgmDHN+33o8FvOckoa1CEjJ9+iYhLjSC0jALPpC
-         romi+v8/X9ZMjskzpvPP9RdNabHFgRNehRUuk=
-Message-ID: <86802c440806121618t244e3088pdf93618209b9855e@mail.gmail.com>
-Date: Thu, 12 Jun 2008 16:18:09 -0700
+        b=VU29wsF5qG7ETagda8BWZ8uG4hG0W4gMV2QQrg/ozxDTeNn0uUey6xXQwV+FgslL2o
+         uAXtIpvQODtU7MwRW5NZihcWXJcExV5vJ7o7bFSe3+MisSgqng6o9CDknk0W6X8qs4hF
+         +zxepGk2g8k5VrGEfaoPsgOiHl0/SfcMt+aE8=
+Message-ID: <86802c440806121619g162626edv648b67b837e0d7f8@mail.gmail.com>
+Date: Thu, 12 Jun 2008 16:19:59 -0700
 From: "Yinghai Lu" <yhlu.kernel@gmail.com>
 To: "Andrew Morton" <akpm@linux-foundation.org>
 Subject: Re: [PATCH 1/1] x86: Add config option to setup early serial console
@@ -60,7 +60,8 @@ On Thu, Jun 12, 2008 at 4:10 PM, Andrew Morton
 >> the console is initialized.
 >
 > Sorry, I meant earlycon=uart..
+> --
 
-the same. it checks earlycon=uart and console=uart...
+could move the parsing from early_param to head_64.c::x86_64_start_kernel
 
 YH
