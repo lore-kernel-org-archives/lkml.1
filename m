@@ -1,53 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755651AbYFLRKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251AbYFLRN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755651AbYFLRKw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 13:10:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbYFLRKo
+	id S1756251AbYFLRN3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 13:13:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbYFLRNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 13:10:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54992 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753081AbYFLRKn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 13:10:43 -0400
-Date: Thu, 12 Jun 2008 13:10:34 -0400
-From: Rik van Riel <riel@redhat.com>
-To: "Tomas Winkler" <tomasw@gmail.com>
-Cc: "Johannes Berg" <johannes@sipsolutions.net>,
-       "Zdenek Kabelac" <zdenek.kabelac@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       yi.zhu@intel.com, reinette.chatre@intel.com,
-       linux-wireless@vger.kernel.org
-Subject: Re: Problem: Out of memory after 2days with 2GB RAM
-Message-ID: <20080612131034.4d8f6301@cuia.bos.redhat.com>
-In-Reply-To: <1ba2fa240806120843s268b2ff4mb45a11adf11afc7f@mail.gmail.com>
-References: <c4e36d110806120307n20cce692s9c136f11596f5ab0@mail.gmail.com>
-	<20080612093833.0fb9cdd6@bree.surriel.com>
-	<1213278884.3936.15.camel@johannes.berg>
-	<1ba2fa240806120843s268b2ff4mb45a11adf11afc7f@mail.gmail.com>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Jun 2008 13:13:21 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60244 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753498AbYFLRNU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 13:13:20 -0400
+Date: Thu, 12 Jun 2008 10:13:19 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Nadia Derbey <Nadia.Derbey@bull.net>,
+       Manfred Spraul <manfred@colorfullife.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: repeatable slab corruption with LTP msgctl08
+In-Reply-To: <Pine.LNX.4.64.0806121332130.11556@sbz-30.cs.Helsinki.FI>
+Message-ID: <Pine.LNX.4.64.0806121011320.30597@schroedinger.engr.sgi.com>
+References: <20080611221324.42270ef2.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0806121332130.11556@sbz-30.cs.Helsinki.FI>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jun 2008 18:43:37 +0300
-"Tomas Winkler" <tomasw@gmail.com> wrote:
+On Thu, 12 Jun 2008, Pekka J Enberg wrote:
 
-> This is scatter gather buffers that can be kicked in one DMA transaction.
+> I really don't understand how your bufctl chains has so many BUFCTL_END 
+> elements in the first place. It's doesn't look like the memory has been 
+> stomped on (slab->s_mem, for example, is 0xf2906088), so I'd look for a 
+> double kfree() of size 128 somewhere...
 
-> This I still don't understand why but everybody is already tired to
-> explaining me why.. :) Just need to find time to dig into it.
-
-The only thing that makes no sense to me is why your
-driver "needs" to allocate 10x as much memory in that
-buffer than it will ever use.
-
-What is the problem with the simpler solution, which
-just reduces the size of the buffer to an amount of
-memory that might actually get used?
-
--- 
-All Rights Reversed
+Looks pretty strange. Could this be rerun with SLAB_DEBUG or with SLUB 
+with full debugging?
