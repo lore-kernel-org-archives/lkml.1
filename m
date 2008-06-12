@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759195AbYFLXGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759291AbYFLXK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759195AbYFLXGS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 19:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbYFLXGI
+	id S1759291AbYFLXK7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 19:10:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbYFLXKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 19:06:08 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:44099 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751011AbYFLXGF (ORCPT
+	Thu, 12 Jun 2008 19:10:46 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:23855 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753400AbYFLXKp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 19:06:05 -0400
-Subject: Re: [PATCH 5/5] futex: fix miss ordered wakeups
-From: Daniel Walker <dwalker@mvista.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ulrich Drepper <drepper@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <alpine.LFD.1.10.0806130023440.3193@apollo.tec.linutronix.de>
-References: <20080611204916.271608740@mvista.com>
-	 <20080611204917.523866467@mvista.com>
-	 <alpine.LFD.1.10.0806121022250.3193@apollo.tec.linutronix.de>
-	 <1213277402.16459.25.camel@localhost.localdomain>
-	 <alpine.LFD.1.10.0806121533270.3193@apollo.tec.linutronix.de>
-	 <1213278286.16459.29.camel@localhost.localdomain>
-	 <alpine.LFD.1.10.0806121636380.3193@apollo.tec.linutronix.de>
-	 <1213286193.16459.53.camel@localhost.localdomain>
-	 <alpine.LFD.1.10.0806121802050.3193@apollo.tec.linutronix.de>
-	 <1213308598.16459.82.camel@localhost.localdomain>
-	 <alpine.LFD.1.10.0806130023440.3193@apollo.tec.linutronix.de>
-Content-Type: text/plain
-Date: Thu, 12 Jun 2008 16:06:02 -0700
-Message-Id: <1213311963.16459.89.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Jun 2008 19:10:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=RjN9uEZMS93eo2GGhwWBeoHEqqeUAQE4dyjgV2d8y50lATadx72FF5oHV74WEPHL2j
+         89li2cgFHPrmsjj+Zu6TUxlwDg0tPUQUQGpIIYn8wFVz6ovCZLZZc9vYP2nTZ4rh+Ttr
+         dQqISPuSPacSjKjL0QSS2Gg+HuHZ7j2y8Gwro=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org
+Date: Fri, 13 Jun 2008 01:12:24 +0200
+Message-Id: <20080612231224.18335.91182.sendpatchset@localhost.localdomain>
+Subject: [PATCH 1/7] ide-pmac: bugfix for media-bay support rework
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix bug introduced by:
 
-On Fri, 2008-06-13 at 00:43 +0200, Thomas Gleixner wrote:
-> On Thu, 12 Jun 2008, Daniel Walker wrote:
-> 
-> > 
-> > On Thu, 2008-06-12 at 21:55 +0200, Thomas Gleixner wrote:
-> > > Also your interpretation of the POSIX requirement is very
-> > > questionable:
-> > > 
-> > >  "If there are threads blocked on the mutex object referenced by mutex
-> > >  when pthread_mutex_unlock() is called, resulting in the mutex
-> > >  becoming available, the scheduling policy shall determine which
-> > >  thread shall acquire the mutex."
-> > 
-> > The key is "scheduling policy" .. When the mutex is un-blocked the next
-> > task to run is the same as if the scheduler was selecting tasks from the
-> > list of blocked tasks .. For Linux, that means the highest priority
-> > tasks should be selected.. So it's no more acceptable for the scheduler
-> > to priority invert some tasks than it is for the futex to do it.
-> 
-> Sigh, when do you actually get a gripe that the default futex
-> implementation does not and can not guarantee that at all and therefor
-> your "correctness" patch is as important as a bag of rice which
-> toopled over in China ?
+commit 2dde7861afa23cd59db83515cb0b810b92b220aa
+Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Date:   Fri Apr 18 00:46:23 2008 +0200
 
-Well, the last email I got from Arjan said this,
+    ide: rework PowerMac media-bay support (take 2)
+...
 
-".. Don't look at the release path... look at the acquire path.
-If a thread sees the futex is free, it'll take it, without even going
-to the kernel at all."
+[ Yeah, I suck. ]
 
-And yes, I understand that fully.
+bay->cd_index shouldn't be changed if IDE devices are not present
+or retry operations won't happen.
 
-> Provide answers to the real questions I asked more than once: 
-> 
-> What's the real world problem ? Who cares about that - except you ?
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+first three patches are meant for 2.6.26, the rest for 2.6.27
 
-Any application which starts a thread, and later changes the priority
-can observe the miss-ordering.. That's pretty common..
+drivers/macintosh/mediabay.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Daniel
-
+Index: b/drivers/macintosh/mediabay.c
+===================================================================
+--- a/drivers/macintosh/mediabay.c
++++ b/drivers/macintosh/mediabay.c
+@@ -556,7 +556,8 @@ static void media_bay_step(int i)
+ 				printk("mediabay %d, registering IDE...\n", i);
+ 				pmu_suspend();
+ 				ide_port_scan(bay->cd_port);
+-				bay->cd_index = bay->cd_port->index;
++				if (bay->cd_port->present)
++					bay->cd_index = bay->cd_port->index;
+ 				pmu_resume();
+ 			}
+ 			if (bay->cd_index == -1) {
