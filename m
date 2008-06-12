@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbYFLE1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753134AbYFLE3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753666AbYFLE1Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 00:27:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750813AbYFLE1B
+	id S1753134AbYFLE3k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 00:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750869AbYFLE3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 00:27:01 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:21635 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750724AbYFLE1A (ORCPT
+	Thu, 12 Jun 2008 00:29:30 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53695
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750813AbYFLE33 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 00:27:00 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Malte Cornils <malte@cornils.net>
-Subject: Re: Lenovo ThinkCentre A55: parport_pc 00:0a: disabled;  probe of 00:0a failed with error -22
-Date: Wed, 11 Jun 2008 22:26:44 -0600
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <1213221122.20453.26.camel@localhost>
-In-Reply-To: <1213221122.20453.26.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Thu, 12 Jun 2008 00:29:29 -0400
+Date: Wed, 11 Jun 2008 21:29:29 -0700 (PDT)
+Message-Id: <20080611.212929.71729484.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches] net driver updates for .27
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080612133842.0dc472bc.sfr@canb.auug.org.au>
+References: <20080612023046.GA25958@havoc.gtf.org>
+	<20080612133842.0dc472bc.sfr@canb.auug.org.au>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806112226.44596.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 June 2008 3:52:01 pm Malte Cornils wrote:
-> a friend of mine is unable to print on her system. I could trace that to
-> the kernel not finding the parallel port on the system. Windows Vista,
-> for whatever that's worth, prints fine.
->
-> dmesg says:
-> [   40.935843] parport_pc 00:0a: disabled
-> [   40.935850] parport_pc: probe of 00:0a failed with error -22
->
-> rmmod parport_pc ; modprobe parport_pc io=0x378 irq=none
-> did not work either, the detection failed and echoing some bytes to
-> the /dev/lp0 device fails, too.
->
-> Booting with noapic or pci=routeirq did not help, booting with noacpi
-> nolapic generated in the system grinding to a halt, which made getting
-> information out of it difficult due to the remote telephone debugging.
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Thu, 12 Jun 2008 13:38:42 +1000
 
-There are some known PNPACPI problems that affect parport_pc.
-You could try booting with "pnpacpi=off", which should cause
-us to use PNPBIOS instead.
+> Hi Jeff,
+> 
+> On Wed, 11 Jun 2008 22:30:46 -0400 Jeff Garzik <jeff@garzik.org> wrote:
+> >
+> > Stephen Rothwell (1):
+> >       [netdrvr] Fix 8390 build breakage
+> 
+> That patch is actually from Tony Breeds ..
 
-It would be very useful if you could build a current -mm tree
-with CONFIG_PNP_DEBUG turned on and collect the dmesg log.  That
-tree has the known PNPACPI problems fixed, so it *might* fix the
-problem you're seeing.  And if not, the debug output might have
-more clues.
+Jeff, there is still time to fix this.  If you want, just
+fix up that patch in your tree to get the attribution
+and author field correct, and send me a new pull request.
 
-Bjorn
-
+Thanks.
