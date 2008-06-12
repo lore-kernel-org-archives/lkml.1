@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758898AbYFLJNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758198AbYFLJPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758898AbYFLJNh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 05:13:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbYFLJN3
+	id S1758198AbYFLJPe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 05:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbYFLJPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 05:13:29 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:53080 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752091AbYFLJN3 (ORCPT
+	Thu, 12 Jun 2008 05:15:25 -0400
+Received: from vs166246.vserver.de ([62.75.166.246]:33836 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752241AbYFLJPY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 05:13:29 -0400
-Message-ID: <4850E875.8060506@de.ibm.com>
-Date: Thu, 12 Jun 2008 11:12:21 +0200
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Thu, 12 Jun 2008 05:15:24 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: BUG: NULL pointer dereference at 00000000 -- IP: [<f8e783d5>] :b43:b43_dma_mapping_error+0x16/0x155
+Date: Thu, 12 Jun 2008 11:14:53 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: vegard.nossum@gmail.com, miles.lane@gmail.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+References: <200806101650.27180.mb@bu3sch.de> <200806111205.10433.mb@bu3sch.de> <20080612142235A.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080612142235A.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Peter Oberparleiter <oberparleiter@googlemail.com>,
-       linux-kernel@vger.kernel.org, ltp-coverage@lists.sourceforge.net
-Subject: Re: [PATCH 6/6] gcov: architecture specific compile flag adjustments
-References: <4843F6F7.9020000@de.ibm.com> <20080611170127.46b46d28.akpm@linux-foundation.org>
-In-Reply-To: <20080611170127.46b46d28.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806121114.54445.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 02 Jun 2008 15:34:47 +0200
-> Peter Oberparleiter <peter.oberparleiter@de.ibm.com> wrote:
+On Thursday 12 June 2008 07:18:32 FUJITA Tomonori wrote:
+> > Yeah ok. That's an unlikely error path.
 > 
->> Exclude code from profiling which is not linked to the main kernel or
->> which is running in a context not compatible with the assumptions made
->> by gcc's profiling code.
+> Yeah, it doesn't always happen, but it possible that it happens?
+
+Yes. I will create a new patch and send it to John Linville.
+So it will also quickly end up in the -mm tree, too.
+This will fix both bugs.
+
+> No, seems that there are some confusion. This is just in -mm to find
+> problems:
 > 
-> powerpc allmodconfig fails with
+> http://userweb.kernel.org/~akpm/mmotm/broken-out/dma-mapping-add-the-device-argument-to-dma_mapping_error.patch
 > 
-> Error: External symbol '__gcov_init' referenced from prom_init.c
-> Error: External symbol '__gcov_merge_add' referenced from prom_init.c
+> This patch is a trivial but changes lots of places. So it's difficult
+> to get an ACK on all the places.
 
---
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+Thanks a lot for explaining this. This makes things a lot easier.
 
-Fix for gcov patch fallout:
+> This patch need several fixes but all the patches are trivial except
+> for b34. I guess that it is because b34 handles devices for
 
-powerpc allmodconfig fails with
+It's called b43 ;)
 
-Error: External symbol '__gcov_init' referenced from prom_init.c
-Error: External symbol '__gcov_merge_add' referenced from prom_init.c
+> dma-mapping in an uncommon way.
 
-Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
----
- arch/powerpc/kernel/Makefile |    1 +
- 1 files changed, 1 insertion(+)
+Yeah, the hardware is pretty stupid, so we have lots of special workarounds
+and so on... So I hardly touch the DMA code and was very surprised about
+this bugreport. :)
 
-Index: linux-2.6.26-rc5-mm2/arch/powerpc/kernel/Makefile
-===================================================================
---- linux-2.6.26-rc5-mm2.orig/arch/powerpc/kernel/Makefile
-+++ linux-2.6.26-rc5-mm2/arch/powerpc/kernel/Makefile
-@@ -11,6 +11,7 @@ ifeq ($(CONFIG_PPC32),y)
- CFLAGS_prom_init.o      += -fPIC
- CFLAGS_btext.o		+= -fPIC
- endif
-+GCOV_prom_init.o := n
- 
- ifdef CONFIG_FTRACE
- # Do not trace early boot code
+-- 
+Greetings Michael.
