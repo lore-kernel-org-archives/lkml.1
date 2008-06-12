@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758214AbYFLABr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759277AbYFLADl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758214AbYFLABr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 20:01:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbYFLABj
+	id S1759277AbYFLADl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 20:03:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbYFLADe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 20:01:39 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:36986
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750868AbYFLABi (ORCPT
+	Wed, 11 Jun 2008 20:03:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59230 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753902AbYFLADd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 20:01:38 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Tim Bird <tim.bird@am.sony.com>
-Subject: Re: mainlining min-configs...
-Date: Wed, 11 Jun 2008 19:01:33 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Sam Ravnborg <sam@ravnborg.org>, Adrian Bunk <bunk@kernel.org>,
-       linux-tiny <Linux-tiny@selenic.com>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-References: <48447615.5050806@am.sony.com> <20080611063921.GA27978@uranus.ravnborg.org> <48502304.1030304@am.sony.com>
-In-Reply-To: <48502304.1030304@am.sony.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Wed, 11 Jun 2008 20:03:33 -0400
+Date: Wed, 11 Jun 2008 17:01:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, ltp-coverage@lists.sourceforge.net,
+       oberparleiter@googlemail.com
+Subject: Re: [PATCH 6/6] gcov: architecture specific compile flag
+ adjustments
+Message-Id: <20080611170127.46b46d28.akpm@linux-foundation.org>
+In-Reply-To: <4843F6F7.9020000@de.ibm.com>
+References: <4843F6F7.9020000@de.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806111901.34630.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 June 2008 14:09:56 Tim Bird wrote:
-> Sam Ravnborg wrote:
-> >>> When I get my kconfig patchset polished you will be able to do:
-> >>>
-> >>> make K=my_mini_config allnoconfig
-> >>
-> >> So you're renaming KCONFIG_ALLNOCONFIG then?
-> >
-> > Somehow yes. The K= notation I hope will see more use. Only very few
-> > people know the KCONFIG_ALL*CONFIG= trick.
->
-> Indeed.  I had never heard of it, but it appears to have been
-> around for at least 18 months.  It looks like Randy Dunlap tried
-> to submit some documentation for this in Oct 2006, but it didn't
-> make it in?
+On Mon, 02 Jun 2008 15:34:47 +0200
+Peter Oberparleiter <peter.oberparleiter@de.ibm.com> wrote:
 
-Nor did the documentation I posted back in November 2005:
-http://lwn.net/Articles/160497/
+> Exclude code from profiling which is not linked to the main kernel or
+> which is running in a context not compatible with the assumptions made
+> by gcc's profiling code.
 
-Nor its resubmission:
-http://lwn.net/Articles/161086/
+powerpc allmodconfig fails with
 
-Nor its re-resubmission:
-http://lkml.org/lkml/2006/7/6/404
+Error: External symbol '__gcov_init' referenced from prom_init.c
+Error: External symbol '__gcov_merge_add' referenced from prom_init.c
 
-Randy's submission was after those three...
+This:
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+--- a/arch/powerpc/kernel/Makefile~a
++++ a/arch/powerpc/kernel/Makefile
+@@ -12,6 +12,10 @@ CFLAGS_prom_init.o      += -fPIC
+ CFLAGS_btext.o         += -fPIC
+ endif
+ 
++ifdef CONFIG_GCOV_PROFILE
++CFLAGS_prom_init.o     += -fno-profile-arcs -fno-test-coverage
++endif
++
+
+didn't fix it so I gave up.
