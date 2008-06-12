@@ -1,66 +1,286 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760223AbYFLMPQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760209AbYFLMSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760223AbYFLMPQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 08:15:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756011AbYFLMPA
+	id S1760209AbYFLMSj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 08:18:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756011AbYFLMSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 08:15:00 -0400
-Received: from ozlabs.org ([203.10.76.45]:57581 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753862AbYFLMO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 08:14:59 -0400
+	Thu, 12 Jun 2008 08:18:32 -0400
+Received: from fnoeppeil48.netpark.at ([217.175.205.176]:39691 "EHLO
+	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755806AbYFLMSb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 08:18:31 -0400
+Date: Thu, 12 Jun 2008 14:18:28 +0200
+From: Manuel Lauss <mano@roarinelk.homelinux.net>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-mips@linux-mips.org, sshtylyov@ru.mvista.com, drzeus@drzeus.cx,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 2/8] Alchemy: register mmc platform device for
+	db1200/pb1200 boards.
+Message-ID: <20080612121828.GA24603@roarinelk.homelinux.net>
+References: <20080609063521.GA8724@roarinelk.homelinux.net> <20080609063702.GC8724@roarinelk.homelinux.net> <20080612090206.GB21601@linux-mips.org> <20080612101839.GC21601@linux-mips.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18513.4925.711881.794221@cargo.ozlabs.ibm.com>
-Date: Thu, 12 Jun 2008 22:14:53 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>, Trent Piepho <tpiepho@freescale.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: MMIO and gcc re-ordering issue
-In-Reply-To: <200806111535.24523.nickpiggin@yahoo.com.au>
-References: <1211852026.3286.36.camel@pasglop>
-	<200806111500.30789.nickpiggin@yahoo.com.au>
-	<18511.24317.31038.926337@cargo.ozlabs.ibm.com>
-	<200806111535.24523.nickpiggin@yahoo.com.au>
-X-Mailer: VM 7.19 under Emacs 22.1.1
+Content-Disposition: inline
+In-Reply-To: <20080612101839.GC21601@linux-mips.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin writes:
+Hi Ralf, Pierre,
 
->                 /* turn off LED */
->                 val64 = readq(&bar0->adapter_control);
->                 val64 = val64 &(~ADAPTER_LED_ON);
->                 writeq(val64, &bar0->adapter_control);
->                 s2io_link(nic, LINK_DOWN);
->         }
->         clear_bit(__S2IO_STATE_LINK_TASK, &(nic->state));
+On Thu, Jun 12, 2008 at 11:18:39AM +0100, Ralf Baechle wrote:
+> On Thu, Jun 12, 2008 at 10:02:06AM +0100, Ralf Baechle wrote:
 > 
-> Now I can't say definitively that this is going to be wrong on
-> powerpc, because I don't know the code well enough. But I'd be
-> 90% sure that the unlock is not supposed to be visible to
-> other CPUs before the writeqs are queued to the card. On x86 it
-> wouldn't be.
+> I cleaned the numerals for the DMA constants with below patch which now
+> is in the 2.6.27 patch queue.
 
-Interestingly, there is also a store to cacheable memory
-(nic->device_enabled_once), but no smp_wmb or equivalent before the
-clear_bit.  So there are other potential problems here besides the I/O
-related ones.
+Here's a new version of [PATCH 2/8], against those changes.
 
-Anyway, I have done some tests on a dual G5 here with putting a sync
-on both sides of the store in writel etc. (i.e. making readl/writel
-strongly ordered w.r.t. everything else), and as you predicted, there
-wasn't a noticeable performance degradation, at least not on the
-couple of things I tried.  So I am now inclined to accept your
-suggestion that we should do that.  I should probably do some similar
-checks on POWER6 and a few other machines first, though.
+---
 
-Paul.
+From: Manuel Lauss <mano@roarinelk.homelinux.net>
+
+Add au1xmmc platform data for PB1200/DB1200 boards, and wire up
+the 2 SD controllers for them.
+
+Signed-off-by: Manuel Lauss <mano@roarinelk.homelinux.net>
+---
+ arch/mips/au1000/common/platform.c |   98 +++++++++++++++++++++++++++---------
+ arch/mips/au1000/pb1200/platform.c |   81 +++++++++++++++++++++++++++++
+ 2 files changed, 155 insertions(+), 24 deletions(-)
+
+diff --git a/arch/mips/au1000/common/platform.c b/arch/mips/au1000/common/platform.c
+index d01fe5f..5c76c64 100644
+--- a/arch/mips/au1000/common/platform.c
++++ b/arch/mips/au1000/common/platform.c
+@@ -17,6 +17,8 @@
+ #include <linux/init.h>
+ 
+ #include <asm/mach-au1x00/au1xxx.h>
++#include <asm/mach-au1x00/au1xxx_dbdma.h>
++#include <asm/mach-au1x00/au1100_mmc.h>
+ 
+ #define PORT(_base, _irq)				\
+ 	{						\
+@@ -163,24 +165,6 @@ static struct resource au1xxx_usb_gdt_resources[] = {
+ 	},
+ };
+ 
+-static struct resource au1xxx_mmc_resources[] = {
+-	[0] = {
+-		.start          = SD0_PHYS_ADDR,
+-		.end            = SD0_PHYS_ADDR + 0x40,
+-		.flags          = IORESOURCE_MEM,
+-	},
+-	[1] = {
+-		.start		= SD1_PHYS_ADDR,
+-		.end 		= SD1_PHYS_ADDR + 0x40,
+-		.flags		= IORESOURCE_MEM,
+-	},
+-	[2] = {
+-		.start          = AU1200_SD_INT,
+-		.end            = AU1200_SD_INT,
+-		.flags          = IORESOURCE_IRQ,
+-	}
+-};
+-
+ static u64 udc_dmamask = DMA_32BIT_MASK;
+ 
+ static struct platform_device au1xxx_usb_gdt_device = {
+@@ -249,16 +233,79 @@ static struct platform_device au1200_lcd_device = {
+ 
+ static u64 au1xxx_mmc_dmamask =  DMA_32BIT_MASK;
+ 
+-static struct platform_device au1xxx_mmc_device = {
++extern struct au1xmmc_platform_data au1xmmc_platdata[2];
++
++static struct resource au1200_mmc0_resources[] = {
++	[0] = {
++		.start          = SD0_PHYS_ADDR,
++		.end            = SD0_PHYS_ADDR + 0x7ffff,
++		.flags          = IORESOURCE_MEM,
++	},
++	[1] = {
++		.start		= AU1200_SD_INT,
++		.end		= AU1200_SD_INT,
++		.flags		= IORESOURCE_IRQ,
++	},
++	[2] = {
++		.start		= DSCR_CMD0_SDMS_TX0,
++		.end		= DSCR_CMD0_SDMS_TX0,
++		.flags		= IORESOURCE_DMA,
++	},
++	[3] = {
++		.start          = DSCR_CMD0_SDMS_RX0,
++		.end		= DSCR_CMD0_SDMS_RX0,
++		.flags          = IORESOURCE_DMA,
++	}
++};
++
++static struct platform_device au1200_mmc0_device = {
+ 	.name = "au1xxx-mmc",
+ 	.id = 0,
+ 	.dev = {
+-		.dma_mask               = &au1xxx_mmc_dmamask,
+-		.coherent_dma_mask      = DMA_32BIT_MASK,
++		.dma_mask		= &au1xxx_mmc_dmamask,
++		.coherent_dma_mask	= DMA_32BIT_MASK,
++		.platform_data		= &au1xmmc_platdata[0],
++	},
++	.num_resources	= ARRAY_SIZE(au1200_mmc0_resources),
++	.resource	= au1200_mmc0_resources,
++};
++
++#ifndef CONFIG_MIPS_DB1200
++static struct resource au1200_mmc1_resources[] = {
++	[0] = {
++		.start          = SD1_PHYS_ADDR,
++		.end            = SD1_PHYS_ADDR + 0x7ffff,
++		.flags          = IORESOURCE_MEM,
++	},
++	[1] = {
++		.start		= AU1200_SD_INT,
++		.end		= AU1200_SD_INT,
++		.flags		= IORESOURCE_IRQ,
++	},
++	[2] = {
++		.start		= DSCR_CMD0_SDMS_TX1,
++		.end		= DSCR_CMD0_SDMS_TX1,
++		.flags		= IORESOURCE_DMA,
+ 	},
+-	.num_resources  = ARRAY_SIZE(au1xxx_mmc_resources),
+-	.resource       = au1xxx_mmc_resources,
++	[3] = {
++		.start          = DSCR_CMD0_SDMS_RX1,
++		.end		= DSCR_CMD0_SDMS_RX1,
++		.flags          = IORESOURCE_DMA,
++	}
+ };
++
++static struct platform_device au1200_mmc1_device = {
++	.name = "au1xxx-mmc",
++	.id = 1,
++	.dev = {
++		.dma_mask		= &au1xxx_mmc_dmamask,
++		.coherent_dma_mask	= DMA_32BIT_MASK,
++		.platform_data		= &au1xmmc_platdata[1],
++	},
++	.num_resources	= ARRAY_SIZE(au1200_mmc1_resources),
++	.resource	= au1200_mmc1_resources,
++};
++#endif /* #ifndef CONFIG_MIPS_DB1200 */
+ #endif /* #ifdef CONFIG_SOC_AU1200 */
+ 
+ static struct platform_device au1x00_pcmcia_device = {
+@@ -296,7 +343,10 @@ static struct platform_device *au1xxx_platform_devices[] __initdata = {
+ 	&au1xxx_usb_gdt_device,
+ 	&au1xxx_usb_otg_device,
+ 	&au1200_lcd_device,
+-	&au1xxx_mmc_device,
++	&au1200_mmc0_device,
++#ifndef CONFIG_MIPS_DB1200
++	&au1200_mmc1_device,
++#endif
+ #endif
+ #ifdef SMBUS_PSC_BASE
+ 	&pbdb_smbus_device,
+diff --git a/arch/mips/au1000/pb1200/platform.c b/arch/mips/au1000/pb1200/platform.c
+index f8fb0ae..878b780 100644
+--- a/arch/mips/au1000/pb1200/platform.c
++++ b/arch/mips/au1000/pb1200/platform.c
+@@ -20,9 +20,90 @@
+ 
+ #include <linux/dma-mapping.h>
+ #include <linux/init.h>
++#include <linux/leds.h>
+ #include <linux/platform_device.h>
+ 
+ #include <asm/mach-au1x00/au1xxx.h>
++#include <asm/mach-au1x00/au1100_mmc.h>
++
++static int mmc_activity;
++
++static void pb1200mmc0_set_power(void *mmc_host, int state)
++{
++	if (state)
++		bcsr->board |= BCSR_BOARD_SD0PWR;
++	else
++		bcsr->board &= ~BCSR_BOARD_SD0PWR;
++
++	au_sync_delay(1);
++}
++
++static int pb1200mmc0_card_readonly(void *mmc_host)
++{
++	return (bcsr->status & BCSR_STATUS_SD0WP) ? 1 : 0;
++}
++
++static int pb1200mmc0_card_inserted(void *mmc_host)
++{
++	return (bcsr->sig_status & BCSR_INT_SD0INSERT) ? 1 : 0;
++}
++
++static void pb1200_mmcled_set(struct led_classdev *led,
++			enum led_brightness brightness)
++{
++	if (brightness != LED_OFF) {
++		if (++mmc_activity == 1)
++			bcsr->disk_leds &= ~(1 << 8);
++	} else {
++		if (--mmc_activity == 0)
++			bcsr->disk_leds |= (1 << 8);
++	}
++}
++
++static struct led_classdev pb1200mmc_led = {
++	.brightness_set	= pb1200_mmcled_set,
++};
++
++#ifndef CONFIG_MIPS_DB1200
++static void pb1200mmc1_set_power(void *mmc_host, int state)
++{
++	if (state)
++		bcsr->board |= BCSR_BOARD_SD1PWR;
++	else
++		bcsr->board &= ~BCSR_BOARD_SD1PWR;
++
++	au_sync_delay(1);
++}
++
++static int pb1200mmc1_card_readonly(void *mmc_host)
++{
++	return (bcsr->status & BCSR_STATUS_SD1WP) ? 1 : 0;
++}
++
++static int pb1200mmc1_card_inserted(void *mmc_host)
++{
++	return (bcsr->sig_status & BCSR_INT_SD1INSERT) ? 1 : 0;
++}
++#endif
++
++const struct au1xmmc_platform_data au1xmmc_platdata[2] = {
++	[0] = {
++		.set_power	= pb1200mmc0_set_power,
++		.card_inserted	= pb1200mmc0_card_inserted,
++		.card_readonly	= pb1200mmc0_card_readonly,
++		.cd_setup	= NULL,		/* use poll-timer in driver */
++		.led		= &pb1200mmc_led,
++	},
++#ifndef CONFIG_MIPS_DB1200
++	[1] = {
++		.set_power	= pb1200mmc1_set_power,
++		.card_inserted	= pb1200mmc1_card_inserted,
++		.card_readonly	= pb1200mmc1_card_readonly,
++		.cd_setup	= NULL,		/* use poll-timer in driver */
++		.led		= &pb1200mmc_led,
++	},
++#endif
++};
+ 
+ static struct resource ide_resources[] = {
+ 	[0] = {
+-- 
+1.5.5.3
+
