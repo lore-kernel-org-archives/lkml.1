@@ -1,73 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760011AbYFLL1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759185AbYFLLel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760011AbYFLL1j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 07:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbYFLL1a
+	id S1759185AbYFLLel (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 07:34:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbYFLLe3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 07:27:30 -0400
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:47439 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750786AbYFLL13 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 07:27:29 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Iaz7R33tw7Hwj7QrwtzfszbHvnt0nRELL/T9BjcpVr3iMwHDiFKEdnn/kxC7QWZDjC5Y1RsEi+CwuMlqj+UGC6zbQVy8qo01+5thHU1GO6VumDAAjbKAiE8v+SsEwrYI1SW82u7WPxeahZV4GeSPufFXI/svLWcT8U5Yw0j5zyw=  ;
-X-YMail-OSG: xl7mGq8VM1mC.ZaQuo0xsnfZRY1ZqPdBll8nspGgoqcMp_QoOaWkpIIMssb_5fks4hoZ._sH2GXAA3RXjHRV.UA.iEwAQlCcBRAZFBcAMMd_jbN5w4zwwO31USRhOi0GML8-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: MMIO and gcc re-ordering issue
-Date: Thu, 12 Jun 2008 21:27:18 +1000
-User-Agent: KMail/1.9.5
-Cc: linux-arch@vger.kernel.org, Roland Dreier <rdreier@cisco.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Wilcox <matthew@wil.cx>, Trent Piepho <tpiepho@freescale.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Miller <davem@davemloft.net>, scottwood@freescale.com,
-       linuxppc-dev@ozlabs.org, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-References: <1211852026.3286.36.camel@pasglop> <200806111329.35894.nickpiggin@yahoo.com.au> <200806110907.12070.jbarnes@virtuousgeek.org>
-In-Reply-To: <200806110907.12070.jbarnes@virtuousgeek.org>
+	Thu, 12 Jun 2008 07:34:29 -0400
+Received: from nebensachen.de ([195.34.83.29]:40614 "EHLO mail.nebensachen.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751542AbYFLLe1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 07:34:27 -0400
+X-Hashcash: 1:20:080612:htejun@gmail.com::vTLkH2/ck7NYLF31:01cbC
+X-Hashcash: 1:20:080612:alan@lxorguk.ukuu.org.uk::Eb/UaYvyMewKThb5:000000000000000000000000000000000000006Ki
+X-Hashcash: 1:20:080612:james.bottomley@hansenpartnership.com::C7q6jzXRLfdep+Hv:0000000000000000000000005Xhw
+X-Hashcash: 1:20:080612:jens.axboe@oracle.com::tbtd6CpdpdJr0KB3:00000000000000000000000000000000000000004LIv
+X-Hashcash: 1:20:080612:linux-ide@vger.kernel.org::n3+WV9PEVFKBKOI2:00000000000000000000000000000000000009mi
+X-Hashcash: 1:20:080612:linux-scsi@vger.kernel.org::F7v6lJ5q5iKl1mAq:0000000000000000000000000000000000056Mz
+X-Hashcash: 1:20:080612:linux-kernel@vger.kernel.org::Tgi/OnULC14bLeGX:0000000000000000000000000000000003WKC
+From: Elias Oltmanns <eo@nebensachen.de>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Prevent busy looping
+References: <20080416151305.8788.63912.stgit@denkblock.local>
+	<20080416163152.GK12774@kernel.dk> <87r6d5l9pb.fsf@denkblock.local>
+	<20080417071335.GR12774@kernel.dk> <87ve2gc1bn.fsf@denkblock.local>
+	<484F7A8D.1040809@gmail.com> <20080611080502.4aa43980@core>
+	<484F86D4.8050907@gmail.com> <485092C9.3050309@gmail.com>
+Date: Thu, 12 Jun 2008 13:32:52 +0200
+Message-ID: <87d4mmubvf.fsf@denkblock.local>
+User-Agent: Gnus/5.110007 (No Gnus v0.7)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806122127.19230.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 June 2008 02:07, Jesse Barnes wrote:
-> On Tuesday, June 10, 2008 8:29 pm Nick Piggin wrote:
+Tejun Heo <htejun@gmail.com> wrote:
+> Tejun Heo wrote:
+>> Alan Cox wrote:
+>
+>>>> Elias's synthetic test case triggered infinite loop because it wasn't
+>>>> a proper ->qc_defer().  ->qc_defer() should never defer commands when
+>>>> the target is idle.
+>>> Target or host ? We *do* defer commands in the case of an idle channel
+>>> when dealing with certain simplex controllers that can only issue one
+>>> command per host not one per cable (and in fact in the general case we
+>>> can defer commands due to activity on the other drive on the cable).
+>> 
+>> The term was confusing.  I used target to mean both device
+>> (ATA_DEFER_LINK) and host (ATA_DEFER_PORT).  Hmmm... in simplex case,
+>> yeah, blocked counters need to be > 1.  We'll need to increase blocked
+>> counts after all.  I'll test blocked counts of 2 w/ PMP and make sure it
+>> doesn't incur unnecessary delays and post the patch.
+>
+> Setting blocked counts to 2 makes simplex scheduling starve one of the
+> drives.  When a drive loses competition, it retries only after plug
+> delay and of course it loses most of the time.  For now, it seems we'll
+> have to live with busy loops (which doesn't lock up the machine) for
+> simplex controllers.  Ewww... :-(
 
-> > You mention strong ordering WRT spin_unlock, which suggests that
-> > you would prefer to take option #2 (the current powerpc one): io/io
-> > is ordered and io is contained inside spinlocks, but io/cacheable
-> > in general is not ordered.
->
-> I was thinking it would be good for the weaker accessors, but now that I
-> think about it you could just use the new io_* barrier functions.
->
-> I didn't mean to imply that I wasn't in favor of the io/cacheable ordering
-> as well.
->
-> > For any high performance drivers that are well maintained (ie. the
-> > ones where slowdown might be noticed), everyone should have a pretty
-> > good handle on memory ordering requirements, so it shouldn't take
-> > long to go through and convert them to relaxed accessors.
->
-> Yep.  Thanks for working on this, Nick, it's definitely a good thing that
-> you're taking control of it. :)
+Since I'm a little confused by your comment, please explain again. Do
+you mean to say that busy looping doesn't lock up the machine in general
+or merely in the case of a simplex configuration?
 
-Well, I really am just trying to help the kernel for everyone (and every
-architecture). Performance for all architectures really is my #2 priority,
-so if any arch becomes irrepearably slower under a proposal I would
-go back to the drawing board.
+The reason why I'm asking is this: The whole point of my synthetic
+->qc_defer() function was to prove that command deferral could (under
+certain conditions) lead to busy looping which *did* lock up my machine.
+Lock up in this context means that there was no response whatsoever to
+key presses and even timers didn't fire anymore. I can see your point
+that my ->qc_defer() function doesn't reflect reality very well because
+the device is idle at the time and therefore no interrupts can be
+expected from there. However, I still think that interrupts won't even
+be processed once busy looping has started (in some configurations at
+least).
 
-I'll come up with a proposal in the form of an initial code+documentation
-patch when I get some more time on it.
+You can find a slightly modified version of my synthetic ->qc_defer()
+function below (apply to 2.6.26-rc5) which demonstrates that at least
+soft interrupts don't get serviced anymore once the busy looping has
+started. Considering this, how can I be sure that an interrupt of the
+target would be processed, even if it was not idle?
+
+Regards,
+
+Elias
+
+ drivers/ata/ata_piix.c |   37 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 37 insertions(+), 0 deletions(-)
+
+
+diff --git a/drivers/ata/ata_piix.c b/drivers/ata/ata_piix.c
+index 81b7ae3..9816daa 100644
+--- a/drivers/ata/ata_piix.c
++++ b/drivers/ata/ata_piix.c
+@@ -167,6 +167,7 @@ static int ich_pata_cable_detect(struct ata_port *ap);
+ static u8 piix_vmw_bmdma_status(struct ata_port *ap);
+ static int piix_sidpr_scr_read(struct ata_port *ap, unsigned int reg, u32 *val);
+ static int piix_sidpr_scr_write(struct ata_port *ap, unsigned int reg, u32 val);
++static int piix_qc_defer(struct ata_queued_cmd *qc);
+ #ifdef CONFIG_PM
+ static int piix_pci_device_suspend(struct pci_dev *pdev, pm_message_t mesg);
+ static int piix_pci_device_resume(struct pci_dev *pdev);
+@@ -299,6 +300,7 @@ static struct ata_port_operations piix_pata_ops = {
+ 	.set_piomode		= piix_set_piomode,
+ 	.set_dmamode		= piix_set_dmamode,
+ 	.prereset		= piix_pata_prereset,
++	.qc_defer		= piix_qc_defer,
+ };
+ 
+ static struct ata_port_operations piix_vmw_ops = {
+@@ -314,6 +316,7 @@ static struct ata_port_operations ich_pata_ops = {
+ 
+ static struct ata_port_operations piix_sata_ops = {
+ 	.inherits		= &ata_bmdma_port_ops,
++	.qc_defer		= piix_qc_defer,
+ };
+ 
+ static struct ata_port_operations piix_sidpr_sata_ops = {
+@@ -323,6 +326,40 @@ static struct ata_port_operations piix_sidpr_sata_ops = {
+ 	.scr_write		= piix_sidpr_scr_write,
+ };
+ 
++static unsigned int defer_count = 0;
++static struct timer_list defer_timer;
++
++static void piix_defer_timeout(unsigned long data)
++{
++	struct ata_port *ap = (struct ata_port *)data;
++
++	spin_lock_bh(ap->lock);
++	defer_count = 0;
++	spin_unlock_bh(ap->lock);
++}
++
++static int piix_qc_defer(struct ata_queued_cmd *qc)
++{
++	static struct ata_port *ap = NULL;
++#define PIIX_QC_DEFER_THRESHOLD 2000
++
++	if (!ap) {
++		ap = qc->ap;
++		defer_timer.data = (unsigned long)ap;
++		defer_timer.function = piix_defer_timeout;
++		init_timer(&defer_timer);
++	} else if (ap != qc->ap)
++		return 0;
++
++	defer_count++;
++	if (defer_count < PIIX_QC_DEFER_THRESHOLD)
++		return 0;
++
++        if (defer_count == PIIX_QC_DEFER_THRESHOLD)
++		mod_timer(&defer_timer, msecs_to_jiffies(5));
++	return ATA_DEFER_LINK;
++}
++
+ static const struct piix_map_db ich5_map_db = {
+ 	.mask = 0x7,
+ 	.port_enable = 0x3,
