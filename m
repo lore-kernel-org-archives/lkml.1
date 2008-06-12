@@ -1,151 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757167AbYFLT5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759482AbYFLT57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757167AbYFLT5W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 15:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbYFLT5O
+	id S1759482AbYFLT57 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 15:57:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbYFLT5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 15:57:14 -0400
-Received: from www.tglx.de ([62.245.132.106]:43872 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750997AbYFLT5O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 15:57:14 -0400
-Date: Thu, 12 Jun 2008 21:55:18 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Daniel Walker <dwalker@mvista.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Ulrich Drepper <drepper@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 5/5] futex: fix miss ordered wakeups
-In-Reply-To: <1213286193.16459.53.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.1.10.0806121802050.3193@apollo.tec.linutronix.de>
-References: <20080611204916.271608740@mvista.com>  <20080611204917.523866467@mvista.com>  <alpine.LFD.1.10.0806121022250.3193@apollo.tec.linutronix.de>  <1213277402.16459.25.camel@localhost.localdomain>  <alpine.LFD.1.10.0806121533270.3193@apollo.tec.linutronix.de>
-  <1213278286.16459.29.camel@localhost.localdomain>  <alpine.LFD.1.10.0806121636380.3193@apollo.tec.linutronix.de> <1213286193.16459.53.camel@localhost.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 12 Jun 2008 15:57:51 -0400
+Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:29659 "HELO
+	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754130AbYFLT5u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 15:57:50 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=QM7HFMegrARSY6krdWwa07BPbMeM4YiQIyL+mBuPcJxkVn4Kpl5fx/yYywVbh/L+X1Bt0ePPbYmGg0uSJG7LZbGwpbgt/8DXgplJ+1M7P3zAZtjEZ3C9Q221V2WN6WEjGW0+d2qxdDD7b0iembVeDWShFRVvy/70s8VS/4XCsgY=  ;
+X-YMail-OSG: paX9l9wVM1nZKHT0WttPJOJcZMDwX6tHZqSoWCmGSbPCx9wgCEnLZNRsj4.fzD2ZZ8wLalF0FP5ej_TgsqNaPXR5sgf.MGU2zZUUbaSmoMCeTt24ODq6IVY7no0G4xc.wv0-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [PATCH, RFC] Earlier I2C initialization
+Date: Thu, 12 Jun 2008 12:57:47 -0700
+User-Agent: KMail/1.9.9
+Cc: Ryan Mallon <ryan@bluewatersys.com>, Uli Luckas <u.luckas@road.de>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>, i2c@lm-sensors.org,
+       linux-kernel@vger.kernel.org
+References: <200806091541.43899.u.luckas@road.de> <200806111131.50501.david-b@pacbell.net> <20080612204408.6f0a3e04@hyperion.delvare>
+In-Reply-To: <20080612204408.6f0a3e04@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806121257.47936.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jun 2008, Daniel Walker wrote:
+On Thursday 12 June 2008, Jean Delvare wrote:
+
+> > So while (a) having i2c and some i2c_adapter drivers at subsys_initcall
+> > is an essential first step, the *link order* issue comes up in two other
+> > ways:  (b1) drivers "outside the I2C tree and *before* it in link order"
+> > that may need to be subsys_initcall too, thus depending on core I2C
+> > stuff being available, and (b2) some other subsystems may need to rely
+> > on I2C in their bringup, such as by enabling a specific power domain
+> > and the chips using it.
 > 
-> On Thu, 2008-06-12 at 17:24 +0200, Thomas Gleixner wrote:
-> > > Just because you don't use it, doesn't make it useless .. At least
-> > > there's enough people asking for this that it warrants me writing it..
+> (b1) and (b2) are the same problem as far as I can see, and is down to:
+> is the needed i2c_adapter driver initialized early enough.
+
+... and *BEFORE* the "i2c_client" driver.  Moving I2C earlier in the
+link order may be necessary to ensure that.
+
+Yes, (b2) is essentially the "30,000 foot view" of the problem for
+which (b1) is the lower altitude "5,000 foot view".  The PCI version
+of that problem has the relevant init code running at arch_initcall
+level (in at least those MIPS cases) and also getting linked before
+all the code in the "drivers" subtree.
+
+
+> Which can be 
+> solved by either using subsys_initcall in said driver, or by moving
+> said driver earlier in the link order. Do we agree on this?
+
+No; that would be a case of moving other subsystems *AFTER* I2C in
+the link order, not moving any i2c_client driver earlier.
+
+Remember, you were wanting (appropriately!) to move drivers out of
+the i2c subtree when they have a better home.  And in this case,
+(b2) explains why that surfaces this requirement for earlier init
+of I2C ... if those drivers were in drivers/i2c/chips, the link order
+would not be an issue.
+
+
+> > > (...)
+> > > These were only two examples. We have i2c bus drivers depending on PCI,
+> > > parport, USB, ISA, GPIO and serio. Given the current linking order,
+> > > this makes it impossible to move I2C up in the link order without
+> > > moving all these too.
 > > 
-> > Which is not really a good technical reason to merge such a
-> > patch. Your handwaving about "enough people" is just irrelevant. Are
-> > you going to implement a root hole as well when enough people ask for
-> > it ?
+> > Not really; those particular i2c_adapter drivers don't actually get used
+> > early in system bringup.  They aren't subsys_initcall, and neither of
+> > the (b1) or (b2) cases apply.  Moving those adapters doesn't imply moving
+> > those other subsystems.
 > 
-> People asking for something is a very good reason to merge "features" ..
-> You can like or dislike implementations , but that doesn't reflect on
-> the nature of the feature.
+> If said subsystems are designed properly, I agree. But it they are not,
+> I suspect it's easier to not move the "external" i2c bus drivers, than
+> to fix these subsystems. But maybe I'm wrong on that.
 
-Again, I have not yet seen a single request aside of yours. Who is
-asking for that and what is the rationale for their request?
+Missing my point:  since those i2c_adapter drivers aren't getting
+used early (subsys_initcall etc), this issue *can't* come up with them.
+Whether or not those subsystems "play well with others".  This issue
+is *only* for drivers outside the i2c subtree which are essential for
+system bringup, at the subsys_initcall level.
 
-> > But there is also a Real Good technical reason why these patches are
-> > going nowhere else than into /dev/null:
+
+> > Likewise for PCI.  As I said earlier, GPIO is already covered (has to
+> > be usable before initcalls could be run, etc).  I think i2c-parport
+> > should behave OK too,
+> 
+> I have a doubt on parport, given that
+>   grep -r _initcall drivers/parport
+> doesn't return anything.
+
+I see a bunch of module_init(), which means device_initcall(),
+which means well after subsys_initcall().  So i2c-parport should
+behave.
+
+
+> > and i2c-parport-light.
+> 
+> i2c-parport-light doesn't depend on anything (thus the name), so it
+> can't have any problem. I shouldn't have mentioned it, sorry.
+
+Well, it's a legacy driver so automatically has that class of problems
+(making its own device node etc) ... but those issues are unrelated to
+the $SUBJECT issue.
+
+
+> > > My feeling is that we won't be able to solve this without first moving
+> > > the different type of i2c bus drivers (and possibly chip drivers) to
+> > > separate directories. For example, moving external I2C bus drivers
+> > > (i2c-parport-light, i2c-parport, i2c-taos-evm and i2c-tiny-usb) to a
+> > > separate directory that is always initialized late, would remove the
+> > > dependencies on parport, serio and USB for the "must initialize i2c
+> > > early" problem.
 > > 
-> >  your approach of hijacking blocked_on is fundamentaly wrong as it
-> >  mixes kernel internal state with user space state.
+> > I think you're looking at this wrong.  First, as I noted already,
+> > most of those drivers don't have this issue.  Second, if there *are*
+> > such issues, they'd be bus-specific issues to resolve, not reasons
+> > to avoid fixing the (b1) and (b2) problems by moving I2C earlier.
 > 
-> It mixes kernel state with kernel state, not to mention each state is
-> isolated from the others.
+> Not a reason to not change the link order, you're right. But definitely
+> a good reason to watch for breakage as we do, so that we can fix them.
 
-Wrong. The task is blocked on the user space futex and not on an in
-kernel concurrency control. What's the isolation, the enum or the
-union ? LOL.
+Always.  :)
 
-The blocked_on mechanism is restricted to kernel internal concurrency
-controls and while mutex and rt_mutex could share a common storage,
-the user space futex can not. That would preclude to ever use a
-(rt_)mutex in the futex code.
 
-The reason is simple: A task can only be blocked on one concurrency
-control, but it can be blocked on a user space futex and later on an
-in kernel concurrency control.
+> Now I am a bit confused as to your position about how to solve the
+> problem. In an earlier post, you were claiming that using
+> subsys_initcall in i2c bus drivers wasn't an abuse. And now you suggest
+> that moving i2c earlier in the build order is the way to go. As I
+> understand it we have no reason to do both. Or do we?
 
-Just get it. These are different concepts and do not mix at all.
+We have reason to do both.  That's why I called out cases (a) vs (b)
+(and b1/b2) above.  They address different problems.
 
-> >  It will break in preempt-rt at the point when this state is set and
-> >  the code blocks on a spinlock, which uses the rtmutex based sleeping
-> >  spinlock implementation and overwrites blocked_on.
-> 
-> That's an intersting point, however "preempt-rt" is out of tree, so it's
-> certainly not going be a reason to reject mainline changes.
+This is confusing stuff, in part because this part of initialization
+is all driven by side effects and is thus normally hidden.
 
-It is a perfectly good reason, simply because we know that rt is on
-the way to mainline and it would be pretty stupid to merge a change
-with a questionable technical merit which needs to be reverted and
-overhauled in the foreseeable future. Other not yet mainline features
-/ changes coordinate as well to avoid wreckage like that.
+The arch_initcall/subsys_initcall/device_initcall/... stuff (a) is at
+least partially explicit.  But the sequencing of initcalls within a
+given grouping (b) is purely a link order side effect.
 
-Also putting on my preempt-rt hat I just wonder about your brashly
-impertinence to expect that others clean up the mess you create.
+So every time changing the link order comes up, confusion arises.
 
-> > If there would be a real good technical reason to fix this priority
-> > ordering it could be done with less than 20 lines of code without
-> > extra locking and wreckage waiting left and right, but I have not yet
-> > seen a single convincing technical argument or a relevant use case
-> > which might justify that.
->
-> The technical reasons for including this are the same technical reasons
-> why we want the waiters queued in priority order .. It's a requirement
-> of posix, where many calls need the ordering and ultimately feed into
-> the futex interface. So we have every reason to do the ordering
-> correctly..
+- Dave
 
-Making a halfways correct thing a bit more correct is not going to
-reach full correctness. 
-
-Also your interpretation of the POSIX requirement is very
-questionable:
-
- "If there are threads blocked on the mutex object referenced by mutex
- when pthread_mutex_unlock() is called, resulting in the mutex
- becoming available, the scheduling policy shall determine which
- thread shall acquire the mutex."
-
-So there is no explicit guarantee requirement AFAICT. "... the
-scheduling policy shall determine ..." is a rather vague term which
-has enough room for interpretation. 
-
-My interpretation is, whoever has/gets the CPU will get the mutex. So
-why should I care about the priority order correctness, which is only
-incorrect in a corner case. Especially in a corner case which is not a
-hot path in any sane application:
-
- It requires thread A to block on a futex together with other threads
- and thread B to adjust the priority of thread A while it is
- blocked.
-
-This is definitely _NOT_ the common case in any application I'm aware
-of.
-
-If you think that this actually matters, then please stop your
-handwaving and provide proof. I'm really keen to add the absurdities
-of those use cases to my Ugly Code Museum.
-
-Furthermore the rationale section says explicitely:
-
- "The mutex functions and the particular default settings of the mutex
- attributes have been motivated by the desire to not preclude fast,
- inlined implementations of mutex locking and unlocking."
-
-This is another confirmation that the default pthread_mutex
-implementation aims for performance and not for correctness.
-
-We have an PI implementation which provides full correctness, so there
-is no need to add artificial correctness to something which is by
-default incorrect.
-
-> If you have a 20 line fix for this then great tell me what it is..
-
-I might write the patch once I can see a real world use case where
-this actually matters.
-
-Thanks,
-
-	tglx
