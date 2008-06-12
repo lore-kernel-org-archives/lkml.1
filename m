@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbYFLQ2q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754620AbYFLQ3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753984AbYFLQ2q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 12:28:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbYFLQ2g
+	id S1754620AbYFLQ3X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 12:29:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYFLQ3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 12:28:36 -0400
-Received: from mail-va3.bigfish.com ([216.32.180.112]:20389 "EHLO
-	mail74-va3-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751708AbYFLQ2f (ORCPT
+	Thu, 12 Jun 2008 12:29:13 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:52295 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752037AbYFLQ3N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 12:28:35 -0400
-X-Greylist: delayed 1297 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Jun 2008 12:28:35 EDT
-X-BigFish: VPS-27(zz154dM1432R98dR1805M8c8fjzz10d3izzz2fh6bh)
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
-Message-ID: <485149BC.4070901@am.sony.com>
-Date: Thu, 12 Jun 2008 09:07:24 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 12 Jun 2008 12:29:13 -0400
+Date: Thu, 12 Jun 2008 12:28:41 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH 1/2] UML - Remove include of asm/user.h
+Message-ID: <20080612162841.GA8404@c2.user-mode-linux.org>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Holger Schurig <hs4233@mail.mn-solutions.de>
-Subject: Re: [PATCH] add diffconfig utility
-References: <484ED902.9040000@am.sony.com> <20080610212158.GB23855@uranus.ravnborg.org> <484F1B8F.9000804@am.sony.com> <Pine.LNX.4.64.0806111328150.13310@vixen.sonytel.be> <48501836.10900@am.sony.com> <20080612131931.GB13702@uranus.ravnborg.org>
-In-Reply-To: <20080612131931.GB13702@uranus.ravnborg.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Jun 2008 16:06:43.0023 (UTC) FILETIME=[4E4AEDF0:01C8CCA6]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> Hi Tim.
-> 
->> The program is also now better structured, IMHO.
->>  -- Tim
-> 
-> Seeing this programs gets frequent updates (good!) I have not
-> yet applied it.
-> 
-> When you consider it stabilized could you please drop me a
-> new mail including full changelog and updated patch.
-> 
-> And please cc: linux-kbuild@vger.kernel.org + linux-kernel on the
-> submission.
+I allowed an include of asm/user.h to sneak back in.  This patch
+replaces it with sys/user.h.
 
-Will do.  I'll give it a little settle time, and then
-notify you.
- -- Tim
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+---
+ arch/um/os-Linux/sys-i386/registers.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
-
+Index: linux-2.6.22/arch/um/os-Linux/sys-i386/registers.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/os-Linux/sys-i386/registers.c	2008-06-10 11:42:06.000000000 -0400
++++ linux-2.6.22/arch/um/os-Linux/sys-i386/registers.c	2008-06-10 11:55:54.000000000 -0400
+@@ -6,7 +6,7 @@
+ 
+ #include <errno.h>
+ #include <sys/ptrace.h>
+-#include <asm/user.h>
++#include <sys/user.h>
+ #include "kern_constants.h"
+ #include "longjmp.h"
+ #include "user.h"
+@@ -76,7 +76,7 @@ int put_fp_registers(int pid, unsigned l
+ 
+ void arch_init_registers(int pid)
+ {
+-	struct user_fxsr_struct fpx_regs;
++	struct user_fpxregs_struct fpx_regs;
+ 	int err;
+ 
+ 	err = ptrace(PTRACE_GETFPXREGS, pid, 0, &fpx_regs);
