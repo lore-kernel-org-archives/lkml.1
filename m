@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757408AbYFLVxL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911AbYFLV6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757408AbYFLVxL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 17:53:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbYFLVw5
+	id S1755911AbYFLV6U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 17:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbYFLV6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 17:52:57 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:40048 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752268AbYFLVw5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 17:52:57 -0400
-Date: Thu, 12 Jun 2008 16:52:52 -0500
-From: Paul Jackson <pj@sgi.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: yhlu.kernel@gmail.com, andi@firstfloor.org, mingo@elte.hu, bwalle@suse.de,
-       hannes@saeurebad.de, ying.huang@intel.com, linux-kernel@vger.kernel.org,
-       steiner@sgi.com
-Subject: Re: Confusions with reserve_early, reserve_bootmem, e820, efi, ...
- on x86_64
-Message-Id: <20080612165252.b7ce6902.pj@sgi.com>
-In-Reply-To: <48519077.2050402@zytor.com>
-References: <20080612050609.88a8cf7f.pj@sgi.com>
-	<86802c440806120525v2da860bfyf05eb8ec6b9943d0@mail.gmail.com>
-	<20080612111943.c140c4cb.pj@sgi.com>
-	<86802c440806121005g42f2e44cxbe5f7bdb06836a1e@mail.gmail.com>
-	<20080612151032.5a59309b.pj@sgi.com>
-	<86802c440806121329s54bb1e6dobaaa15c26e7dc81c@mail.gmail.com>
-	<48519077.2050402@zytor.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 12 Jun 2008 17:58:11 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:29593 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751317AbYFLV6K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 17:58:10 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: pnp changes -> suspend oops [Was: 2.6.26-rc5-mm2]
+Date: Thu, 12 Jun 2008 15:57:27 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org
+References: <20080609223145.5c9a2878.akpm@linux-foundation.org> <200806121522.44199.bjorn.helgaas@hp.com> <48519782.9070306@gmail.com>
+In-Reply-To: <48519782.9070306@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806121557.28505.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hpa writes:
-> It's probably safer to reserve the EBDA even with EFI; it's only a page 
-> or so so it doesn't matter much.
+On Thursday 12 June 2008 03:39:14 pm Jiri Slaby wrote:
+> On 06/12/2008 11:22 PM, Bjorn Helgaas wrote:
+> > On Thursday 12 June 2008 03:10:04 pm Jiri Slaby wrote:
+> >> On 06/11/2008 09:03 PM, Bjorn Helgaas wrote:
+> >>> Before you go to all the trouble of bisecting it, can you turn on
+> >>> CONFIG_PNP_DEBUG and try the following debug patch?  I think this
+> >>> will prevent the oops, but it's just papering over the real problem,
+> >>> so please capture the complete dmesg log.
+> >> ACPI: PCI interrupt for device 0000:00:02.0 disabled
+> >> serial 00:07: disabled
+> >> serial 00:06: disabled
+> >> ACPI handle has no context!
+> >> ACPI: PCI interrupt for device 0000:00:1d.7 disabled
+> >> ...
+> >> serial 00:06:   no dma resource to encode!
+> >> serial 00:06: activated
+> >> serial 00:07:   no dma resource to encode!
+> >> serial 00:07: activated
+> >> ACPI: PCI Interrupt 0000:00:02.0[A] -> GSI 16 (level, low) -> IRQ 16
+> > 
+> > Interesting.  I wonder why a serial device would have a DMA resource.
+> > We encode resources by following a template from _CRS, so evidently
+> > that template had a DMA resource.  Or something deeper is wrong.
+> > 
+> > Can you send me the rest of that dmesg log?
+> 
+> Below.
 
-Reserving EBDA with EFI is fine by what little I know.
+Thanks, but it looks like CONFIG_PNP_DEBUG is not turned on.  Can
+you turn that on and capture the log again, please?
 
-But the current code doesn't like it -- if the EFI memmap range is inside
-the EBDA range, then the reserve_early() routine panics with:
+Bjorn
 
-    "Overlapping early reservations"
-
-Something needs tweaking here somehow ... and I'm not the one to know what.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
