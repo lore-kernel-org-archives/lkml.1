@@ -1,179 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762916AbYFLOOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761477AbYFLOSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762916AbYFLOOy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 10:14:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760334AbYFLOO2
+	id S1761477AbYFLOSY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 10:18:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbYFLOSP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 10:14:28 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:42736 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755913AbYFLOO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 10:14:27 -0400
-Date: Thu, 12 Jun 2008 16:14:25 +0200
-From: Olaf Dabrunz <od@suse.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Olaf Dabrunz <od@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jon Masters <jonathan@jonmasters.org>,
-       LKML <linux-kernel@vger.kernel.org>, Stefan Assmann <sassmann@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Ihno Krumreich <ihno@suse.de>,
-       Sven Dietrich <sdietrich@suse.de>, Daniel Gollub <dgollub@suse.de>,
-       Felix Foerster <ffoerster@suse.de>
-Subject: Re: [PATCH 5/7] disable AMD/ATI legacy boot interrupt generation
-Message-ID: <20080612141425.GD6811@suse.de>
-Mail-Followup-To: Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-	Jon Masters <jonathan@jonmasters.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Stefan Assmann <sassmann@suse.de>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	Ihno Krumreich <ihno@suse.de>, Sven Dietrich <sdietrich@suse.de>,
-	Daniel Gollub <dgollub@suse.de>, Felix Foerster <ffoerster@suse.de>
-References: <12124107071847-git-send-email-od@suse.de> <12124107073972-git-send-email-od@suse.de> <alpine.LFD.1.10.0806031246180.3235@apollo.tec.linutronix.de>
+	Thu, 12 Jun 2008 10:18:15 -0400
+Received: from po-out-1718.google.com ([72.14.252.157]:49290 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750956AbYFLOSO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 10:18:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=BKvX40hOdtSabfCHQaTY+xFvFwf6sbIL/PmCWTPV/wGdpF9ArJ3XB3tNCpqTbbT387
+         ypHOyv1sUF6ANwSZZRbFjW60WoqmTfegTalJlnnKUEWh4zeAzLSvUZGMpIvgh8wVyAXP
+         0c51HI3vFSo/vHn3tZeRFRwOqaW44a7/qn5U0=
+Message-ID: <19f34abd0806120718g21ddfa3bjbf6f194aa1d3d37d@mail.gmail.com>
+Date: Thu, 12 Jun 2008 16:18:14 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: ALC883 recording troubles...
+Cc: "Daniel J Blueman" <daniel.blueman@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <s5hej72rbsh.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.1.10.0806031246180.3235@apollo.tec.linutronix.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <6278d2220806091259t47c9b070v269da0f5855ef014@mail.gmail.com>
+	 <s5habhtesoq.wl%tiwai@suse.de>
+	 <6278d2220806111200g4f802885wfc5f0fd6c0405efb@mail.gmail.com>
+	 <s5hiqwf0vyr.wl%tiwai@suse.de>
+	 <19f34abd0806120603q2ddc6654r9562dfea556c2791@mail.gmail.com>
+	 <s5hlk1are3o.wl%tiwai@suse.de>
+	 <19f34abd0806120648j4f15b762r8e72c348c14b946f@mail.gmail.com>
+	 <s5hhcbyrcak.wl%tiwai@suse.de>
+	 <19f34abd0806120655u75df09bfuaf33f1d54128b0b7@mail.gmail.com>
+	 <s5hej72rbsh.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03-Jun-08, Thomas Gleixner wrote:
-> On Mon, 2 Jun 2008, Olaf Dabrunz wrote:
-> >  
-> >  /*
-> > + * disable boot interrupts on AMD and ATI chipsets
-> > + */
-> > +#define PCI_X_MISC			0x40
-> > +#define  PCI_X_AMD813X_NIOAMODE		(1<<0)
-> 
-> new line before the function and consistent spacing
-> 
-> > +static void quirk_disable_amd_813x_boot_interrupt(struct pci_dev *dev)
-> > +{
-> > +	u32 pci_x_misc;
-> > +
-> > +	if (nobootirqquirk)
-> > +		return;
-> > +
-> > +	pci_read_config_dword(dev, PCI_X_MISC, &pci_x_misc);
-> > +	pci_x_misc &= ~PCI_X_AMD813X_NIOAMODE;
-> > +	pci_write_config_dword(dev, PCI_X_MISC, pci_x_misc);
-> > +
-> > +	printk(KERN_INFO "disabled boot interrupts on PCI device "
-> > +			"0x%04x:0x%04x\n", dev->vendor, dev->device);
-> > +}
-> > +#undef PCI_X_MISC
-> > +#undef PCI_X_AMD813X_NIOAMODE
-> 
-> why #undef ?
+On Thu, Jun 12, 2008 at 4:02 PM, Takashi Iwai <tiwai@suse.de> wrote:
+> At Thu, 12 Jun 2008 15:55:45 +0200,
+> Vegard Nossum wrote:
+>>
+>> On Thu, Jun 12, 2008 at 3:52 PM, Takashi Iwai <tiwai@suse.de> wrote:
+>> > At Thu, 12 Jun 2008 15:48:32 +0200,
+>> > Vegard Nossum wrote:
+>> >>
+>> >> The external mic:
+>> >>
+>> >> Node 0x18 [Pin Complex] wcaps 0x40018f: Stereo Amp-In Amp-Out
+>> >>   Amp-In caps: ofs=0x00, nsteps=0x02, stepsize=0x4f, mute=0
+>> >>   Amp-In vals:  [0x00 0x00]
+>> >
+>> > The input volume is zero.  Try to raise "Mic Boost" (if present)?
+>>
+>> They're already all up.
+>>
+>> Line In Boost = 100
+>> Mic Boost = 100
+>> Internal Mic Boost = 100
+>>
+>> Right after changing all these to max, I've read the value from
+>> card0/codec#0 again:
+>>
+>> Node 0x18 [Pin Complex] wcaps 0x40018f: Stereo Amp-In Amp-Out
+>>   Amp-In caps: ofs=0x00, nsteps=0x02, stepsize=0x4f, mute=0
+>>   Amp-In vals:  [0x00 0x00]
+>>
+>> There doesn't seem to be any difference. Even when changing them all
+>> to 0 in alsamixer, this output stays the same.
+>
+> Weird.  What happens if you execute the verb directly via hda-verb
+> program like below?
+>        hda-verb /dev/snd/hwC0D0 0x18 SET_AMP 0x7002
+>
 
-To prevent spilling of constants to other code... Probably unneeded...
+Yep, this has the same effect has changing the "Mic Boost" control in
+the Playback section of alsamixer.
 
-> > +
-> > +#define PCI_AMD8111_PCI_IRQ_ROUTING	0x56
-> > +static void quirk_disable_amd_8111_boot_interrupt(struct pci_dev *dev)
-> > +{
-> > +	u16 pci_irq_routing;
-> > +
-> > +	if (nobootirqquirk)
-> > +		return;
-> > +
-> > +	pci_read_config_word(dev, PCI_AMD8111_PCI_IRQ_ROUTING,
-> > +						&pci_irq_routing);
-> > +	if (!pci_irq_routing) {
-> > +		printk(KERN_INFO "boot interrupts on PCI "
-> > +				"device 0x%04x:0x%04x were "
-> > +				"already disabled\n",
-> > +				dev->vendor, dev->device);
-> > +		return;
-> > +	}
-> > +	pci_write_config_word(dev, PCI_AMD8111_PCI_IRQ_ROUTING, 0);
-> > +	printk(KERN_INFO "disabled boot interrupts on PCI device "
-> > +			"0x%04x:0x%04x\n", dev->vendor, dev->device);
-> > +}
-> > +#undef PCI_AMD8111_PCI_IRQ_ROUTING
-> > +DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_AMD,   PCI_DEVICE_ID_AMD_8111_SMBUS, 	quirk_disable_amd_8111_boot_interrupt);
-> > +
-> > +#define PCI_AMD_SB700S_FEATURES_ENABLE	0x64
-> > +#define  PCI_AMD_SB700S_PIC_ENABLE	(1<<0)
-> > +#define PIC_PCI_INTR_INDEX		0xC00
-> > +#define PIC_PCI_INTR_DATA		0xC01
-> > +#define CLEAR_PIC_IRQ_ROUTING(irq)					\
-> > +	outb(irq, PIC_PCI_INTR_INDEX);					\
-> > +	outb(0x00, PIC_PCI_INTR_DATA);
-> 
-> Please use an inline function
-> 
-> > +static void quirk_disable_amd_sb700s_boot_interrupt(struct pci_dev *dev)
-> > +{
-> > +	u32 feature_enable;
-> > +	u32 saved_feature_enable;
-> > +
-> > +	if (nobootirqquirk)
-> > +		return;
-> > +
-> > +	pci_read_config_dword(dev, PCI_AMD_SB700S_FEATURES_ENABLE,
-> > +						&feature_enable);
-> > +	saved_feature_enable = feature_enable;
-> > +	feature_enable |= PCI_AMD_SB700S_PIC_ENABLE;
-> > +	pci_write_config_dword(dev, PCI_AMD_SB700S_FEATURES_ENABLE,
-> > +						feature_enable);
-> > +
-> > +	CLEAR_PIC_IRQ_ROUTING(0x0);
-> > +	CLEAR_PIC_IRQ_ROUTING(0x1);
-> > +	CLEAR_PIC_IRQ_ROUTING(0x2);
-> > +	CLEAR_PIC_IRQ_ROUTING(0x3);
-> > +	CLEAR_PIC_IRQ_ROUTING(0x4);
-> > +	CLEAR_PIC_IRQ_ROUTING(0x9);
-> > +	CLEAR_PIC_IRQ_ROUTING(0xA);
-> > +	CLEAR_PIC_IRQ_ROUTING(0xB);
-> > +	CLEAR_PIC_IRQ_ROUTING(0xC);
-> 
->   	int i, irqs[] = {0x0,.....0x0c};
-> 
-> 	for (i = 0; i < ARRAY_SIZE(irqs); i++) {
-> 	    outb(...);
-> 	    outb(...);
-> 	}
-> 	  
->   perhaps ?
+What I discovered now, though, is that I get a much wider range of
+values from the external mic (so playback of the captured data
+actually sounds correct). It actually works, but there is still a very
+strong DC offset that seems dependent on the level of the "Capture"
+control. This offset still makes it unusable for recording, since even
+slightly louder noises will clip the samples.
 
-Yep :)
+It also seems that this control is reset each time I start Audacity
+(even though the "Mic boost" level in alsamixer doesn't change). But I
+guess this unrelated to the DC offset issue.
 
-> > +
-> > +	pci_write_config_dword(dev, PCI_AMD_SB700S_FEATURES_ENABLE,
-> > +						saved_feature_enable);
-> > +
-> > +	printk(KERN_INFO "disabled boot interrupts on PCI device "
-> > +			"0x%04x:0x%04x\n", dev->vendor, dev->device);
-> > +}
-> > +#undef PCI_AMD_SB700S_FEATURES_ENABLE
-> > +#undef PCI_AMD_SB700S_PIC_ENABLE
-> > +#undef PIC_PCI_INTR_INDEX
-> > +#undef PIC_PCI_INTR_DATA
-> > +#undef CLEAR_PIC_IRQ_ROUTING
-> 
-> grmbl
+Changing the voltage level now (0x21, 0x22, 0x24, with Mic Boost at
+0x02) doesn't change the DC offset, but has the same effect as before
+(the values fluctuate, but eventually stabilize at the same level).
 
-murmur... :)
+Thanks for the help.
 
-> > +DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_ATI,   PCI_DEVICE_ID_ATI_IXP600_SMBUS, 	quirk_disable_amd_sb700s_boot_interrupt);
-> > +
-> > +/*
-> >   * disabled boot interrupts on HT-1000
-> >   */
-> >  static void quirk_disable_broadcom_boot_interrupt(struct pci_dev *dev)
-> > -- 
-> > 1.5.2.4
-> > 
-> > -- 
-> > Olaf Dabrunz (od/odabrunz), SUSE Linux Products GmbH, N??rnberg
-> > 
+
+Vegard
 
 -- 
-Olaf Dabrunz (od/odabrunz), SUSE Linux Products GmbH, Nürnberg
-
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
