@@ -1,80 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754358AbYFLQeI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755179AbYFLQfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754358AbYFLQeI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 12:34:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbYFLQd4
+	id S1755179AbYFLQfw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 12:35:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbYFLQfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 12:33:56 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:39309 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752197AbYFLQd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 12:33:56 -0400
-Date: Thu, 12 Jun 2008 20:35:35 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Max Krasnyansky <maxk@qualcomm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, mingo@elte.hu,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Paul Jackson <pj@sgi.com>,
-       menage@google.com, linux-kernel@vger.kernel.org,
-       Mark Hounschell <dmarkh@cfl.rr.com>
-Subject: Re: workqueue cpu affinity
-Message-ID: <20080612163535.GA12135@tv-sign.ru>
-References: <20080605152953.dcfefa47.pj@sgi.com> <alpine.DEB.1.10.0806051357480.32537@chino.kir.corp.google.com> <484D99AD.4000306@qualcomm.com> <1213080240.31518.5.camel@twins> <484E9FE8.9040504@qualcomm.com> <20080610170005.GA6038@tv-sign.ru> <1213118386.19005.9.camel@lappy.programming.kicks-ass.net> <484EE303.9070007@qualcomm.com> <20080611160815.GA150@tv-sign.ru> <485025CB.8050505@qualcomm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 12 Jun 2008 12:35:43 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:5363 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751104AbYFLQfm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 12:35:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=uTlg9XuaCgBlN5LNpH7yjKzVd7ueeryuV9lZD7NwM/FOWYURf4pPZx0s73Dg0gGX/d
+         fog1D6J26ytRMY4CxzhEBUSvgc1wIoQ8Z1/bQicI5OYhviTPICTVKPqLt8KBUvq0/WJ2
+         1ey7mAYUtdqWMzVeVKrosq29U8c6LEQOp47e4=
+Message-ID: <1ba2fa240806120935r54a080eci7fa6fafc718eed17@mail.gmail.com>
+Date: Thu, 12 Jun 2008 19:35:39 +0300
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "Johannes Berg" <johannes@sipsolutions.net>
+Subject: Re: Problem: Out of memory after 2days with 2GB RAM
+Cc: "Rik van Riel" <riel@redhat.com>,
+       "Zdenek Kabelac" <zdenek.kabelac@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       yi.zhu@intel.com, reinette.chatre@intel.com,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <1ba2fa240806120843s268b2ff4mb45a11adf11afc7f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <485025CB.8050505@qualcomm.com>
-User-Agent: Mutt/1.5.11
+References: <c4e36d110806120307n20cce692s9c136f11596f5ab0@mail.gmail.com>
+	 <20080612093833.0fb9cdd6@bree.surriel.com>
+	 <1213278884.3936.15.camel@johannes.berg>
+	 <1ba2fa240806120843s268b2ff4mb45a11adf11afc7f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/11, Max Krasnyansky wrote:
+On Thu, Jun 12, 2008 at 6:43 PM, Tomas Winkler <tomasw@gmail.com> wrote:
+> On Thu, Jun 12, 2008 at 4:54 PM, Johannes Berg
+> <johannes@sipsolutions.net> wrote:
+>> On Thu, 2008-06-12 at 09:38 -0400, Rik van Riel wrote:
+>>> On Thu, 12 Jun 2008 12:07:34 +0200
+>>> "Zdenek Kabelac" <zdenek.kabelac@gmail.com> wrote:
+>>>
+>>> > It looks like while there was a huge amount of buffers and caches -
+>>> > system was unable to allocate few pages for kmalloc in iwl3945 driver
+>>> > after resume.
+>>>
+>>> It looks like this is because it wants to allocate 2**5 contiguous
+>>> pages, which is 128kB of contiguous kernel memory.
+>>
+>> 64-bit system I assume?
+>> The allocation should be 256 * 20 * sizeof(struct sk_buff *).
 >
-> Oleg Nesterov wrote:
-> > 
-> > Yes, it is easy to implement flush_work(struct work_struct *work) which
-> > only waits for that work, so it can't hang unless it was enqueued on the
-> > isolated cpu.
-> > 
-> > But in most cases it is enough to just do
-> > 
-> > 	if (cancel_work_sync(work))
-> > 		work->func(work);
-> Cool. That would work.
-> btw Somehow I thought that you already implemented flush_work(). I do not see
-> it 2.6.25 but I could've sworn that I saw a patch flying by. Must have been
-> something else. Do you mind adding that ?
-
-Well... I don't think Andrew will take this patch right now... OK, I'll send
-the preparation patch with comments. Do you see an immediate user for this
-helper?
-
-> > Or we can add flush_workqueue_cpus(struct workqueue_struct *wq, cpumask_t *cpu_map).
-> That'd be special casing. I mean something will have to know what cpus cannot
-> be flushed.
-
-OK, we can make it flush_workqueue_except_isolated_cpus(struct workqueue_struct *wq).
-
-> I liked your proposal above much better.
-
-it was Peter who suggested this ;)
-
-> > But I don't think we should change the behaviour of flush_workqueue().
-> > 
-> >> This will require a bit of surgery across the entire tree. There is a lot of
-> >> code that calls flush_scheduled_work()
-> > 
-> > Almost all of them should be changed to use cancel_work_sync().
-> 
-> That'd be a lot of changes.
+>> Try the patch below. It should improve code generation too.
+>>
+>> I discussed this with Tomas previously and he says the hw is capable of
+>> doing 20 fragments per frame (wonder why, Broadcom can do an unlimited
+>> number...) but he complained about the networking stack not being able
+>> to.
 >
-> git grep flush_scheduled_work | wc
->     154     376    8674
-> 
-> Hmm, I guess maybe not that bad. I might actually do that :-).
+> This is scatter gather buffers that can be kicked in one DMA transaction.
+>
+> Well, the hardware needs to support IP checksumming for that, hence,
+>> afaik, only two fragments can ever be used (one for hw header, one for
+>> frame)
+> This I still don't understand why but everybody is already tired to
+> explaining me why.. :) Just need to find time to dig into it.
+>
+>> This cuts the allocation to 10%, or (under) a page in all cases.
+>
+> Probably. it would be safe to use vmalloc for allocating txb anyway.
+> I'll give it a try.
 
-Cool! I _bet_ you will find a lot of bugs ;)
+So vmalloc  didn't break anything on the 32bit machine I'm just about
+to install 64 one so it will take hour or two.. I will issue some
+official patch after that.
 
-Oleg.
+> There was already discussion on LKML about memory allocation problems
+> on X86_64, which might explain this regression. This didn't happen
+> before.
 
+This is  the thread title if you are interested.
+'x86/kernel/pci_dma.c: gfp |= __GFP_NORETRY'
+
+Tomas
