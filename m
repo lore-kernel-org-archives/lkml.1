@@ -1,75 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757697AbYFLTbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759437AbYFLTew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757697AbYFLTbr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 15:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbYFLTbj
+	id S1759437AbYFLTew (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 15:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbYFLTem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 15:31:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60659 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753665AbYFLTbj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 15:31:39 -0400
-Date: Thu, 12 Jun 2008 12:31:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, paulmck@us.ibm.com
-Subject: Re: [patch] radix-tree: fix small lockless radix-tree bug
-Message-Id: <20080612123102.d8783b98.akpm@linux-foundation.org>
-In-Reply-To: <200806130503.45369.nickpiggin@yahoo.com.au>
-References: <200806130503.45369.nickpiggin@yahoo.com.au>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Jun 2008 15:34:42 -0400
+Received: from zakalwe.fi ([80.83.5.154]:58987 "EHLO zakalwe.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753274AbYFLTem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 15:34:42 -0400
+X-Greylist: delayed 1835 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Jun 2008 15:34:42 EDT
+Date: Thu, 12 Jun 2008 22:04:05 +0300
+From: Heikki Orsila <shdl@zakalwe.fi>
+To: David Altobelli <david.altobelli@hp.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] HP iLO driver
+Message-ID: <20080612190405.GR31039@zakalwe.fi>
+References: <20080612182308.GA1091@ldl.fc.hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20080612182308.GA1091@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jun 2008 05:03:45 +1000
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+On Thu, Jun 12, 2008 at 12:23:08PM -0600, David Altobelli wrote:
+> +struct fifo {
+> +    u64 nrents;	/* user requested number of fifo entries */
+> +    u64 imask;  /* mask to extract valid fifo index */
+> +    u64 merge;	/*  O/C bits to merge in during enqueue operation */
+> +    u64 reset;	/* set to non-zero when the target device resets */
+> +    u8  pad_0[ILO_CACHE_SZ - (sizeof(u64) * 4)];
+> +
+> +    u64 head;
+> +    u8  pad_1[ILO_CACHE_SZ - (sizeof(u64))];
+> +
+> +    u64 tail;
+> +    u8  pad_2[ILO_CACHE_SZ - (sizeof(u64))];
+> +
+> +    volatile u64 fifobar[1];
+> +};
 
-> Hi guys,
-> 
-> Although this doesn't seem like cause for alarm (as per the analysis),
-> it may still be a good 2.6.26 candidate as we should have a few more
-> weeks of testing left.
-> 
-> It should definitely go in -mm with the lockless pagecache patch.
-> 
-> When shrinking a radix-tree, we do it in a lockless manner by atomically
-> switching the root pointer away from the redundant node (one that only
-> has a single entry in the left most slot), and switching it over to its
-> lone child.
-> 
-> Because a lockless lookup may have got a reference to the parent and be
-> in the middle of deciding what to do with it while it is being swapped
-> away for its child. For this reason, we also have to keep it around and
-> in a valid state for the lookup to proceed and give a valid result, for
-> at least an RCU grace period. So we need to keep the child in the left
-> most slot there in case that is requested by the lookup.
-> 
-> This is all pretty standard RCU stuff. It is worth repeating because
-> in my eagerness to obey the radix tree node constructor scheme, I had
-> broken this by zeroing the radix tree node before the grace period.
-> 
-> Fix it by clearing those fields in the RCU callback. I would normally
-> want to rip out the constructor entirely, but radix tree nodes are one
-> of those places where they make sense (only few cachelines will be
-> touched soon after allocation).
-> 
-> 
-> This was never actually observed in any lockless pagecache testing or
-> using the test harness, but as a rare problem testing my scalable vmap
-> rewrite.
-> 
-> Fortunately, it is not a problem anywhere lockless pagecache is used in
-> mainline kernels (pagecache probe is not a guarantee, and brd does not
-> have concurrent lookups and deletes).
-> 
-> However, it would eventually pop up for someone using lockless pagecache :P
-> 
+Why do you need a volatile? What you probably want is atomic ops. 
+Spinlocks will create memory barriers implicitly.
 
-OK, I give up.  A cannot spot what you actually changed amongst all the
-code motion?
+> +static int fifo_enqueue(struct ilo_hwinfo *hw, char *fifobar, int entry)
+> +{
+> +	struct fifo *Q = FIFOBARTOHANDLE(fifobar);
+> +	int ret = 0;
+> +
+> +	spin_lock(&hw->fifo_lock);
+> +	if (!(Q->fifobar[(Q->tail + 1) & Q->imask] & ENTRY_MASK_O)) {
+> +		Q->fifobar[Q->tail & Q->imask] |=
+> +			((entry & ENTRY_MASK_NOSTATE) | Q->merge);
+> +		Q->tail += 1;
+> +		ret = 1;
+> +	}
+> +	spin_unlock(&hw->fifo_lock);
+> +
+> +	return ret;
+> +}
 
+Is writing to Q->fifobar (u64 *) endian-safe?
+
+-- 
+Heikki Orsila
+heikki.orsila@iki.fi
+http://www.iki.fi/shd
