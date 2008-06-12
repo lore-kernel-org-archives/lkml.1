@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757385AbYFLUKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758473AbYFLULL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757385AbYFLUKp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 16:10:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754533AbYFLUKh
+	id S1758473AbYFLULL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 16:11:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756484AbYFLUKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 16:10:37 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37178 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753528AbYFLUKg (ORCPT
+	Thu, 12 Jun 2008 16:10:55 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:46800 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754533AbYFLUKy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 16:10:36 -0400
-Date: Thu, 12 Jun 2008 15:10:32 -0500
-From: Paul Jackson <pj@sgi.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: mingo@elte.hu, bwalle@suse.de, hannes@saeurebad.de, ying.huang@intel.com,
-       linux-kernel@vger.kernel.org, steiner@sgi.com
-Subject: Re: Confusions with reserve_early, reserve_bootmem, e820, efi, ...
- on x86_64
-Message-Id: <20080612151032.5a59309b.pj@sgi.com>
-In-Reply-To: <86802c440806121005g42f2e44cxbe5f7bdb06836a1e@mail.gmail.com>
-References: <20080612050609.88a8cf7f.pj@sgi.com>
-	<86802c440806120525v2da860bfyf05eb8ec6b9943d0@mail.gmail.com>
-	<20080612111943.c140c4cb.pj@sgi.com>
-	<86802c440806121005g42f2e44cxbe5f7bdb06836a1e@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Thu, 12 Jun 2008 16:10:54 -0400
+Subject: Re: [PATCH] HP iLO driver
+From: Marcel Holtmann <marcel@holtmann.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: David Altobelli <david.altobelli@hp.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <48516CF2.106@zytor.com>
+References: <20080612182308.GA1091@ldl.fc.hp.com>  <48516CF2.106@zytor.com>
+Content-Type: text/plain
+Date: Thu, 12 Jun 2008 22:13:52 +0200
+Message-Id: <1213301632.17870.75.camel@violet.holtmann.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai wrote:
-> that function seems to increase the ebda to workaround some broken
-> machine blindly.
+Hi Peter,
 
-Yes, true.
+> > A driver for the HP iLO/iLO2 management processor, which allows userspace
+> > programs to query the management processor.  Programs can open a channel
+> > to the device (/dev/hpilo_ccbN), and use this to send/receive queries.  
+> > The O_EXCL open flag is used to indicate that a particular channel cannot
+> > be shared between processes.  This driver will replace various packages
+> > HP has shipped, including hprsm and hp-ilo.
+> 
+> Wouldn't /dev/hpilo/ccbN be a more appropriate namespace?
 
-The reserve_ebda_region() has probably been like that for a while;
-do you understand why it would be a problem conflicting with the
-EFI memmap only now?
+this is udev's job.
 
-My other two concerns remain as well:
+Regards
 
- 2) Is what amounts to a change from calling reserve_bootmem()
-    to calling reserve_early(), at the end of reserve_ebda_region()
-    in the 32 bit case (now that it is merged with the 64 bit code)
-    understood to be a desired and correct change?
+Marcel
 
- 3) There has been quite a few patches restructuring this early
-    memory reservation code over the last week.  What is the
-    state of that work ... is it still "in progress" or is it
-    thought to be complete?
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
