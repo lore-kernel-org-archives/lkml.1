@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759261AbYFLGp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759394AbYFLGqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759261AbYFLGp5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 02:45:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756574AbYFLGli
+	id S1759394AbYFLGqV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 02:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054AbYFLGlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 02:41:38 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:8408 "EHLO
+	Thu, 12 Jun 2008 02:41:40 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:8605 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753702AbYFLGlK (ORCPT
+	with ESMTP id S1753418AbYFLGlG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 02:41:10 -0400
+	Thu, 12 Jun 2008 02:41:06 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=UT4a57s2HovufRZPA8UtUWAXLpr9LOrTsitVDorGZOq0A36rdZA39nnNgm69qx855p
-         aCiB2IS8RKERY6Rszwb9gdx+QttXT5pNd+e8y+5z4Znl7v9/2kdrgF2lGDRAjGWsEBgE
-         YMchyAv4ct4PaV3wHSQToV0qN7SyNbtgvmKsk=
+        b=j7p8ayI2A1To7WaItf/hSBNbXKi3tI+xv2+2h/zFGBJVyYKKYVY4sMPgThu71zfl+z
+         ljLU3Qvdmd3Iic3qMWNBT3jRz8ZRqjWWiXHCp4LD0U5GuIeCn8R8tqLwR64KmNxcFWHb
+         mJMPskofmnZaJ5nclvt8IzqKSv5ad7AleOguw=
 To: <bzolnier@gmail.com>
 Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
        Borislav Petkov <petkovbb@gmail.com>
-Subject: [PATCH 08/18] ide-cd: simplify request issuing path
-Date: Thu, 12 Jun 2008 08:41:00 +0200
-Message-Id: <1213252870-20474-9-git-send-email-petkovbb@gmail.com>
+Subject: [PATCH 02/18] ide-cd: remove ide_cd_drain_data and ide_cd_pad_transfer
+Date: Thu, 12 Jun 2008 08:40:54 +0200
+Message-Id: <1213252870-20474-3-git-send-email-petkovbb@gmail.com>
 X-Mailer: git-send-email 1.5.5.1
 In-Reply-To: <1213252870-20474-1-git-send-email-petkovbb@gmail.com>
 References: <1213252870-20474-1-git-send-email-petkovbb@gmail.com>
@@ -30,117 +30,90 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-call cdrom_start_packet_command() only from the do_request()
-routine. As a nice side effect, this improves code readability a bit.
-
-There should be no functionality change resulting from this patch.
+Use the generic ide_pad_transfer() helper instead
 
 Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 ---
- drivers/ide/ide-cd.c |   39 +++++++++++++++++++++------------------
- 1 files changed, 21 insertions(+), 18 deletions(-)
+ drivers/ide/ide-cd.c |   33 ++++-----------------------------
+ 1 files changed, 4 insertions(+), 29 deletions(-)
 
 diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-index e9d9363..abf9af2 100644
+index 92a8a36..2f0c9d4 100644
 --- a/drivers/ide/ide-cd.c
 +++ b/drivers/ide/ide-cd.c
-@@ -778,14 +778,12 @@ static ide_startstop_t cdrom_start_seek_continuation(ide_drive_t *drive)
- 	return cdrom_transfer_packet_command(drive, rq, &cdrom_seek_intr);
- }
- 
--static ide_startstop_t cdrom_start_seek(ide_drive_t *drive)
-+static void cdrom_start_seek(ide_drive_t *drive)
- {
- 	struct cdrom_info *info = drive->driver_data;
- 
- 	info->dma = 0;
- 	info->start_seek = jiffies;
--	return cdrom_start_packet_command(drive, 0,
--					  cdrom_start_seek_continuation);
+@@ -599,28 +599,6 @@ static ide_startstop_t cdrom_transfer_packet_command(ide_drive_t *drive,
  }
  
  /*
-@@ -1160,8 +1158,7 @@ static ide_startstop_t cdrom_start_rw(ide_drive_t *drive, struct request *rq)
- 	if (write)
- 		cd->devinfo.media_written = 1;
- 
--	/* start sending the read/write request to the drive */
--	return cdrom_start_packet_command(drive, 32768, cdrom_start_rw_cont);
-+	return ide_started;
- }
- 
- static ide_startstop_t cdrom_do_newpc_cont(ide_drive_t *drive)
-@@ -1174,7 +1171,7 @@ static ide_startstop_t cdrom_do_newpc_cont(ide_drive_t *drive)
- 	return cdrom_transfer_packet_command(drive, rq, cdrom_newpc_intr);
- }
- 
--static ide_startstop_t cdrom_do_block_pc(ide_drive_t *drive, struct request *rq)
-+static void cdrom_do_block_pc(ide_drive_t *drive, struct request *rq)
- {
- 	struct cdrom_info *info = drive->driver_data;
- 
-@@ -1202,10 +1199,6 @@ static ide_startstop_t cdrom_do_block_pc(ide_drive_t *drive, struct request *rq)
- 		if ((rq->data_len & 15) || (addr & mask))
- 			info->dma = 0;
- 	}
+- * Block read functions.
+- */
+-static void ide_cd_pad_transfer(ide_drive_t *drive, xfer_func_t *xf, int len)
+-{
+-	while (len > 0) {
+-		int dum = 0;
+-		xf(drive, NULL, &dum, sizeof(dum));
+-		len -= sizeof(dum);
+-	}
+-}
 -
--	/* start sending the command to the drive */
--	return cdrom_start_packet_command(drive, rq->data_len,
--					  cdrom_do_newpc_cont);
- }
+-static void ide_cd_drain_data(ide_drive_t *drive, int nsects)
+-{
+-	while (nsects > 0) {
+-		static char dum[SECTOR_SIZE];
+-
+-		drive->hwif->input_data(drive, NULL, dum, sizeof(dum));
+-		nsects--;
+-	}
+-}
+-
+-/*
+  * Check the contents of the interrupt reason register from the cdrom
+  * and attempt to recover if there are problems.  Returns  0 if everything's
+  * ok; nonzero if the request has been terminated.
+@@ -635,15 +613,12 @@ static int ide_cd_check_ireason(ide_drive_t *drive, struct request *rq,
+ 	if (ireason == (!rw << 1))
+ 		return 0;
+ 	else if (ireason == (rw << 1)) {
+-		ide_hwif_t *hwif = drive->hwif;
+-		xfer_func_t *xf;
  
- /*
-@@ -1214,8 +1207,9 @@ static ide_startstop_t cdrom_do_block_pc(ide_drive_t *drive, struct request *rq)
- static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq,
- 					sector_t block)
- {
--	ide_startstop_t action;
- 	struct cdrom_info *info = drive->driver_data;
-+	ide_handler_t *fn;
-+	int xferlen;
+ 		/* whoops... */
+ 		printk(KERN_ERR "%s: %s: wrong transfer direction!\n",
+ 				drive->name, __func__);
  
- 	if (blk_fs_request(rq)) {
- 		if (info->cd_flags & IDE_CD_FLAG_SEEKING) {
-@@ -1235,16 +1229,23 @@ static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq,
- 		}
- 		if (rq_data_dir(rq) == READ &&
- 		    IDE_LARGE_SEEK(info->last_block, block,
--				   IDECD_SEEK_THRESHOLD) &&
--		    drive->dsc_overlap)
--			action = cdrom_start_seek(drive);
--		else
--			action = cdrom_start_rw(drive, rq);
-+			    IDECD_SEEK_THRESHOLD) &&
-+		    drive->dsc_overlap) {
-+			xferlen = 0;
-+			fn = cdrom_start_seek_continuation;
-+			cdrom_start_seek(drive);
-+		} else {
-+			xferlen = 32768;
-+			fn = cdrom_start_rw_cont;
-+			if (cdrom_start_rw(drive, rq) == ide_stopped)
-+				return ide_stopped;
-+		}
- 		info->last_block = block;
--		return action;
- 	} else if (blk_sense_request(rq) || blk_pc_request(rq) ||
- 		   rq->cmd_type == REQ_TYPE_ATA_PC) {
--		return cdrom_do_block_pc(drive, rq);
-+		xferlen = rq->data_len;
-+		fn = cdrom_do_newpc_cont;
-+		cdrom_do_block_pc(drive, rq);
- 	} else if (blk_special_request(rq)) {
- 		/* right now this can only be a reset... */
- 		cdrom_end_request(drive, 1);
-@@ -1254,6 +1255,8 @@ static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq,
- 		cdrom_end_request(drive, 0);
- 		return ide_stopped;
- 	}
-+
-+	return cdrom_start_packet_command(drive, xferlen, fn);
- }
+-		xf = rw ? hwif->output_data : hwif->input_data;
+-		ide_cd_pad_transfer(drive, xf, len);
++		ide_pad_transfer(drive, rw, len);
+ 	} else  if (rw == 0 && ireason == 1) {
+ 		/*
+ 		 * Some drives (ASUS) seem to tell us that status info is
+@@ -1006,7 +981,7 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
+ 					   - bio_cur_sectors(rq->bio),
+ 					   thislen >> 9);
+ 			if (nskip > 0) {
+-				ide_cd_drain_data(drive, nskip);
++				ide_pad_transfer(drive, write, nskip);
+ 				rq->current_nr_sectors -= nskip;
+ 				thislen -= (nskip << 9);
+ 			}
+@@ -1043,7 +1018,7 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
+ 				 * If the buffers are full, pipe the rest into
+ 				 * oblivion.
+ 				 */
+-				ide_cd_drain_data(drive, thislen >> 9);
++				ide_pad_transfer(drive, 0, thislen >> 9);
+ 			else {
+ 				printk(KERN_ERR "%s: confused, missing data\n",
+ 						drive->name);
+@@ -1091,7 +1066,7 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
  
+ 	/* pad, if necessary */
+ 	if (!blk_fs_request(rq) && len > 0)
+-		ide_cd_pad_transfer(drive, xferfunc, len);
++		ide_pad_transfer(drive, write, len);
  
+ 	if (blk_pc_request(rq)) {
+ 		timeout = rq->timeout;
 -- 
 1.5.5.1
 
