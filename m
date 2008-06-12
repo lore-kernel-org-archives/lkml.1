@@ -1,235 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759329AbYFLTJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759596AbYFLTJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759329AbYFLTJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 15:09:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbYFLTJR
+	id S1759596AbYFLTJl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 15:09:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759155AbYFLTJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 15:09:17 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:33749 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754060AbYFLTJQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 15:09:16 -0400
-Message-ID: <48517456.5000901@colorfullife.com>
-Date: Thu, 12 Jun 2008 21:09:10 +0200
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 12 Jun 2008 15:09:22 -0400
+Received: from mail.tmr.com ([64.65.253.246]:60679 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756854AbYFLTJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 15:09:21 -0400
+Message-ID: <48517440.6020905@tmr.com>
+Date: Thu, 12 Jun 2008 15:08:48 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Nadia Derbey <Nadia.Derbey@bull.net>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Christoph Lameter <clameter@sgi.com>
-Subject: Re: repeatable slab corruption with LTP msgctl08
-References: <20080611221324.42270ef2.akpm@linux-foundation.org> <Pine.LNX.4.64.0806121332130.11556@sbz-30.cs.Helsinki.FI> <48516BF3.8050805@colorfullife.com> <20080612114152.18895d6c.akpm@linux-foundation.org>
-In-Reply-To: <20080612114152.18895d6c.akpm@linux-foundation.org>
-Content-Type: multipart/mixed;
- boundary="------------090503070905060005030200"
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte Veliciraptors
+References: <alpine.DEB.1.10.0806071015110.23323@p34.internal.lan> <4850354A.8090503@tmr.com> <alpine.DEB.1.10.0806111647360.18136@p34.internal.lan> <alpine.DEB.1.10.0806111652550.18136@p34.internal.lan>
+In-Reply-To: <alpine.DEB.1.10.0806111652550.18136@p34.internal.lan>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090503070905060005030200
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Andrew Morton wrote:
-> On Thu, 12 Jun 2008 20:33:23 +0200 Manfred Spraul <manfred@colorfullife.com> wrote:
+Justin Piszcz wrote:
 >
->   
->> Pekka J Enberg wrote:
->>     
->>> Hi Andrew,
+>
+> On Wed, 11 Jun 2008, Justin Piszcz wrote:
+>
+>>
+>>
+>> On Wed, 11 Jun 2008, Bill Davidsen wrote:
+>>
+>>> Justin Piszcz wrote:
+>>>> First, the original benchmarks with 6-SATA drives with fixed 
+>>>> formatting, using
+>>>> right justification and the same decimal point precision throughout:
+>>>> http://home.comcast.net/~jpiszcz/20080607/raid-benchmarks-decimal-fix-and-right-justified/disks.html 
+>>>> Now for for veliciraptors! Ever wonder what kind of speed is 
+>>>> possible with
+>>>> 3 disk, 4,5,6,7,8,9,10-disk RAID5s? I ran a loop to find out, each 
+>>>> run is
+>>>> executed three times and the average is taken of all three runs per 
+>>>> each RAID5 disk set.
+>>>>
+>>>> In short? The 965 no longer does justice with faster drives, a new 
+>>>> chipset
+>>>> and motherboard are needed. After reading or writing to 4-5 
+>>>> veliciraptors
+>>>> it saturates the bus/965 chipset.
 >>>
->>> On Wed, 11 Jun 2008, Andrew Morton wrote:
->>>   
->>>       
->>>> version is ltp-full-20070228 (lots of retro-computing there).
->>>>
->>>> Config is at http://userweb.kernel.org/~akpm/config-vmm.txt
->>>>
->>>> ./testcases/bin/msgctl08 crashes after ten minutes or so:
->>>>
->>>> slab: Internal list corruption detected in cache 'size-128'(26), slabp f2905000(20). Hexdump:
->>>>
->>>> 000: 00 e0 12 f2 88 32 c0 f7 88 00 00 00 88 50 90 f2
->>>> 010: 14 00 00 00 0f 00 00 00 00 00 00 00 ff ff ff ff
->>>> 020: fd ff ff ff fd ff ff ff fd ff ff ff fd ff ff ff
->>>> 030: fd ff ff ff fd ff ff ff fd ff ff ff fd ff ff ff
->>>> 040: fd ff ff ff fd ff ff ff 00 00 00 00 fd ff ff ff
->>>> 050: fd ff ff ff fd ff ff ff 19 00 00 00 17 00 00 00
->>>> 060: fd ff ff ff fd ff ff ff 0b 00 00 00 fd ff ff ff
->>>> 070: fd ff ff ff fd ff ff ff fd ff ff ff fd ff ff ff
->>>> 080: 10 00 00 00
->>>>     
->>>>         
->>> Looking at the above dump, slabp->free is 0x0f and the bufctl it points to 
->>> is 0xff ("BUFCTL_END") which marks the last element in the chain. This is 
->>> wrong as the total number of objects in the slab (cachep->num) is 26 but 
->>> the number of objects in use (slabp->inuse) is 20. So somehow you have 
->>> managed to lost 6 objects from the bufctl chain.
->>>
->>>   
->>>       
->> Hmm. double kfree() should be cached by the redzone code.
->> And I disagree with your link interpretation:
+>>> This is very interesting, but a 16GB chunk size bears no 
+>>> relationship to anything I would run in the real world, and I 
+>>> suspect most people are in the same category.
 >>
->> 000: 00 e0 12 f2 88 32 c0 f7 88 00 00 00 88 50 90 f2
->> 010:
->> inuse: 14 00 00 00 (20 entries in use, 6 should be free)
->> free:  0f 00 00 00
->> nodeid: 00 00 00 00
->> bufctl[0x00] ff ff ff ff 020: fd ff ff ff fd ff ff ff fd ff ff ff
->> bufctl[0x4] fd ff ff ff  030: fd ff ff ff fd ff ff ff fd ff ff ff
->> bufctl[0x8] fd ff ff ff  040: fd ff ff ff fd ff ff ff 00 00 00 00
->> bufctl[0x0c] fd ff ff ff 050: fd ff ff ff fd ff ff ff 19 00 00 00
->> bufctl[0x10] 17 00 00 00 060: fd ff ff ff fd ff ff ff 0b 00 00 00
->> bufctl[0x14] fd ff ff ff 070: fd ff ff ff fd ff ff ff fd ff ff ff
->> bufctl[0x18] fd ff ff ff 080: 10 00 00 00
+>> I based my bonnie++ test on:
+>> http://everything2.org/?node_id=1479435
 >>
->> free: points to entry 0x0f.
->> bufctl[0x0f] is 0x19, i.e. it points to entry 0x19
->> 0x19 points to 0x10
->> 0x10 points to 0x17
->> 0x17 is a BUFCTL_ACTIVE - that's a bug.
->> but: 0x13 is a valid link entry, is points to 0x0b
->> 0x0b points to 0x00, which is BUFCTL_END.
+>> So I could compare to his results.
 >>
->> IMHO the most probable bug is a single bit error:
->> bufctl[0x10] should be 0x13 instead of 0x17.
->>
->> What about printing all redzone words? That would allow us to validate the bufctl chain.
->>
->> Andrew: Could you post the new oops?
->>
->>     
+>> I use a 1024k (1MiB) with 16384 stripe, this offered the best overall 
+>> read/write/rewrite performance AFAIK.
 >
-> umm, what new oops?
->
-> I have four saved away here:
->
-> slab: Internal list corruption detected in cache 'size-96'(32), slabp ea2a5040(28). Hexdump:
->
-> 000: 20 90 b5 ec 88 54 80 f7 e0 00 00 00 e0 50 2a ea
-> 010: 1c 00 00 00 17 00 00 00 00 00 00 00 fd ff ff ff
-> 020: fd ff ff ff fd ff ff ff fd ff ff ff fd ff ff ff
-> 030: fd ff ff ff fd ff ff ff fd ff ff ff fd ff ff ff
-> 040: fd ff ff ff fd ff ff ff fd ff ff ff fd ff ff ff
-> 050: fd ff ff ff fd ff ff ff fd ff ff ff fd ff ff ff
-> 060: fd ff ff ff fd ff ff ff fd ff ff ff fd ff ff ff
-> 070: fd ff ff ff fd ff ff ff 18 00 00 00 1f 00 00 00
->   
-bufctl[0x18] 0x1b instead of 0x1f yields a valid bufctl chain.
-> 080: fd ff ff ff fd ff ff ff 1c 00 00 00 ff ff ff ff
-> 090: fd ff ff ff fd ff ff ff fd ff ff ff
-> ------------[ cut here ]------------
-> kernel BUG at mm/slab.c:2949!
-> invalid opcode: 0000 [#1] SMP 
-> last sysfs file: 
->
->
-> slab: Internal list corruption detected in cache 'size-128'(26), slabp f2905000(20). Hexdump:
->
-> 000: 00 e0 12 f2 88 32 c0 f7 88 00 00 00 88 50 90 f2
-> 010: 14 00 00 00 0f 00 00 00 00 00 00 00 ff ff ff ff
-> 020: fd ff ff ff fd ff ff ff fd ff ff ff fd ff ff ff
-> 030: fd ff ff ff fd ff ff ff fd ff ff ff fd ff ff ff
-> 040: fd ff ff ff fd ff ff ff 00 00 00 00 fd ff ff ff
-> 050: fd ff ff ff fd ff ff ff 19 00 00 00 17 00 00 00
->   
-bufctl[0x10]: 0x13 instead of 0x17 creates a valid tree
-> 060: fd ff ff ff fd ff ff ff 0b 00 00 00 fd ff ff ff
-> 070: fd ff ff ff fd ff ff ff fd ff ff ff fd ff ff ff
-> 080: 10 00 00 00
->
->   
+> 1024k chunk size (raid5 chunk size)
+> echo 16384 > stripe_cache_size
 
-> slab: Internal list corruption detected in cache 'size-128'(26), slabp f7159000(18). Hexdump:
->
-> 000: 00 f0 f8 f2 88 32 c0 f7 88 00 00 00 88 90 15 f7
-> 010: 12 00 00 00 08 00 00 00 00 00 00 00
-bufctl[0x00] 13 00 00 00 020: fd ff ff ff fd ff ff ff fd ff ff ff
-bufctl[0x04]  fd ff ff ff 030: 06 00 00 00 ff ff ff ff fd ff ff ff
-bufctl[0x08] 18 00 00 00 040: fd ff ff ff fd ff ff ff 17 00 00 00
-bufctl[0x0c] fd ff ff ff 050: fd ff ff ff fd ff ff ff fd ff ff ff
-bufctl[0x10] fd ff ff ff 060: fd ff ff ff fd ff ff ff 05 00 00 00
-bufctl[0x14] fd ff ff ff 070: fd ff ff ff fd ff ff ff 00 00 00 00
-bufctl[0x18] 0f 00 00 00 080: fd ff ff ff
+Please don't explain any more, I'm confused enough already. I can't make 
+those numbers match 16G no matter how I add them, either the contents of 
+the column labeled "size:chunk size" isn't the size of the chunk, or you 
+have a multiplier floating around that I don't see.  And you eliminated 
+the degraded performance, since your stripe_cache_size is less than 
+(raid5 chunk size)*(#disks), I would expect the reads in degraded mode 
+to be dog slow because the don't fit in cache, even if 1024k is what I 
+call chunk size and certainly not if chunk size is 16G.
 
-bufctl[0x18] is wrong, it must be 0x0b
+-- 
+Bill Davidsen <davidsen@tmr.com>
+  "Woe unto the statesman who makes war without a reason that will still
+  be valid when the war is over..." Otto von Bismark 
 
-> slab: Internal list corruption detected in cache 'size-128'(26), slabp ed9a9000(21). Hexdump:
->
-> 000: 00 c0 3a f3 88 32 80 f7 88 00 00 00 88 90 9a ed
-> 010: 15 00 00 00 12 00 00 00 00 00 00 00
-bufcfl[0x00] fd ff ff ff 020: fd ff ff ff fd ff ff ff 07 00 00 00
-bufctl[0x04] fd ff ff ff 030: fd ff ff ff fd ff ff ff 08 00 00 00
-bufctl[0x08] 0f 00 00 00 040: fd ff ff ff fd ff ff ff ff ff ff ff
-bufctl[0x0c] fd ff ff ff 050: fd ff ff ff fd ff ff ff fd ff ff ff
-bufctl[0x10] fd ff ff ff 060: fd ff ff ff 03 00 00 00 fd ff ff ff
-bufctl[0x14] fd ff ff ff 070: fd ff ff ff fd ff ff ff fd ff ff ff
-bufctl[0x18 fd ff ff ff 080: fd ff ff ff
 
-bufctl[0x08] is wrong, it must be 0x0b instead of 0x0f
-
-> but they're all from under basically the same conditions.
->   
-All bugs appear to be a spurious 0x04 in a bufctl[nr%8==0].
-
-Either someone does a set_bit() or your cpu is breaking down.
-
- From looking at the the msgctl08 test: it shouldn't produce any races, 
-it just does lots of bulk msgsnd()/msgrcv() operations. Always one 
-thread sends, one thread receives on each queue. It's probably more a 
-scheduler stresstest than anything else.
-
-Attached is a completely untested patch:
-- add 8 bytes to each slabp struct: This changes the alignment of the 
-bufctl entries.
-- add a hexdump of the redzone bytes. Andrew: how do you log the oops? 
-it might scroll of the screen.
-
---
-    Manfred
-
---------------090503070905060005030200
-Content-Type: text/plain;
- name="andrew"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="andrew"
-
-diff --git a/mm/slab.c b/mm/slab.c
-index 06236e4..77c00a0 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -219,6 +219,7 @@ typedef unsigned int kmem_bufctl_t;
-  */
- struct slab {
- 	struct list_head list;
-+	unsigned long buh;
- 	unsigned long colouroff;
- 	void *s_mem;		/* including colour offset */
- 	unsigned int inuse;	/* num of objs active in slab */
-@@ -2943,7 +2944,18 @@ bad:
- 		     i++) {
- 			if (i % 16 == 0)
- 				printk("\n%03x:", i);
--			printk(" %02x", ((unsigned char *)slabp)[i]);
-+			printk(" %0x", ((unsigned char *)slabp)[i]);
-+		}
-+		printk("\n");
-+		if (!OFF_SLAB(cachep) && (cachep->flags & SLAB_RED_ZONE)) {
-+			printk("redzone codes:\n");
-+			for (i = 0; i < cachep->num; i++) {
-+				void *objp = index_to_obj(cachep, slabp, i);
-+
-+				if (i % 2 == 0)
-+					printk("\n%03x:", i);
-+				printk("%llx/%llx ", *dbg_redzone1(cachep, objp), *dbg_redzone2(cachep, objp));
-+			}
- 		}
- 		printk("\n");
- 		BUG();
-
---------------090503070905060005030200--
