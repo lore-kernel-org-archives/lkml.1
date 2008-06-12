@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756330AbYFLWFO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757380AbYFLWGm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756330AbYFLWFO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 18:05:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbYFLWFA
+	id S1757380AbYFLWGm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 18:06:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbYFLWGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 18:05:00 -0400
-Received: from fmailhost04.isp.att.net ([207.115.11.54]:56631 "EHLO
-	fmailhost04.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752623AbYFLWE7 (ORCPT
+	Thu, 12 Jun 2008 18:06:33 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:47084 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751359AbYFLWGd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 18:04:59 -0400
-X-Originating-IP: [74.251.44.154]
-Date: Thu, 12 Jun 2008 17:04:54 -0500
-From: Jay Cliburn <jacliburn@bellsouth.net>
-To: jeff@garzik.org
-Cc: advantis@gmx.net, csnook@redhat.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [RESEND] [PATCH] atl1: relax eeprom mac address error check
-Message-ID: <20080612170454.3bc6f096@osprey.hogchain.net>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 12 Jun 2008 18:06:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=TlSZdITw0QBYRPFU1LCLMAJZWDApyEd7otkNfexgpyV0DYR2a3ZplG/pJ8ayI3LU8h
+         4gdNHuv4xYlPEhjv+3a/B3BDhSDvGVd/WFlMEejg5iTnTaBX0rcCKYD6t+2zQBNpI7li
+         E1eCMEczp/cCPZYbq2HYh43xSRv/YzHm1imXg=
+Message-ID: <86802c440806121506o8628227he7522c35d906664b@mail.gmail.com>
+Date: Thu, 12 Jun 2008 15:06:32 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: Confusions with reserve_early, reserve_bootmem, e820, efi, ... on x86_64
+Cc: "H. Peter Anvin" <hpa@zytor.com>, andi@firstfloor.org, mingo@elte.hu,
+       bwalle@suse.de, hannes@saeurebad.de, ying.huang@intel.com,
+       linux-kernel@vger.kernel.org, steiner@sgi.com
+In-Reply-To: <20080612165252.b7ce6902.pj@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080612050609.88a8cf7f.pj@sgi.com>
+	 <86802c440806120525v2da860bfyf05eb8ec6b9943d0@mail.gmail.com>
+	 <20080612111943.c140c4cb.pj@sgi.com>
+	 <86802c440806121005g42f2e44cxbe5f7bdb06836a1e@mail.gmail.com>
+	 <20080612151032.5a59309b.pj@sgi.com>
+	 <86802c440806121329s54bb1e6dobaaa15c26e7dc81c@mail.gmail.com>
+	 <48519077.2050402@zytor.com> <20080612165252.b7ce6902.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Radu Cristescu <advantis@gmx.net>
+On Thu, Jun 12, 2008 at 2:52 PM, Paul Jackson <pj@sgi.com> wrote:
+> hpa writes:
+>> It's probably safer to reserve the EBDA even with EFI; it's only a page
+>> or so so it doesn't matter much.
+>
+> Reserving EBDA with EFI is fine by what little I know.
+>
+> But the current code doesn't like it -- if the EFI memmap range is inside
+> the EBDA range, then the reserve_early() routine panics with:
+>
+>    "Overlapping early reservations"
+>
+> Something needs tweaking here somehow ... and I'm not the one to know what.
 
-The atl1 driver tries to determine the MAC address thusly:
+what is addr that the EFI memmap should be according to spec?
 
-	- If an EEPROM exists, read the MAC address from EEPROM and
-	  validate it.
-	- If an EEPROM doesn't exist, try to read a MAC address from
-	  SPI flash.
-	- If that fails, try to read a MAC address directly from the
-	  MAC Station Address register.
-	- If that fails, assign a random MAC address provided by the
-	  kernel.
-
-We now have a report of a system fitted with an EEPROM containing all
-zeros where we expect the MAC address to be, and we currently handle
-this as an error condition.  Turns out, on this system the BIOS writes
-a valid MAC address to the NIC's MAC Station Address register, but we
-never try to read it because we return an error when we find the all-
-zeros address in EEPROM.
-
-This patch relaxes the error check and continues looking for a MAC
-address even if it finds an illegal one in EEPROM.
-
-Signed-off-by: Radu Cristescu <advantis@gmx.net>
-Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
----
- drivers/net/atlx/atl1.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/atlx/atl1.c b/drivers/net/atlx/atl1.c
-index 99e0b4c..3c798ae 100644
---- a/drivers/net/atlx/atl1.c
-+++ b/drivers/net/atlx/atl1.c
-@@ -471,7 +471,6 @@ static int atl1_get_permanent_address(struct
-atl1_hw *hw) memcpy(hw->perm_mac_addr, eth_addr, ETH_ALEN);
- 			return 0;
- 		}
--		return 1;
- 	}
- 
- 	/* see if SPI FLAGS exist ? */
--- 
-1.5.5.1
+YH
