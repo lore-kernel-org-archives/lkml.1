@@ -1,100 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761973AbYFLNN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762054AbYFLNOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761973AbYFLNN4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 09:13:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759850AbYFLNNp
+	id S1762054AbYFLNOV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 09:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760299AbYFLNNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 12 Jun 2008 09:13:46 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4193 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757363AbYFLNNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 12 Jun 2008 09:13:45 -0400
-Received: from mail.gmx.net ([213.165.64.20]:54226 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757050AbYFLNNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 09:13:44 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1+c8ZMJ33yceXZ4vvfU0s9nGgGYB6Gc6YnA0r/Tdu
-	Nkg2gwb4CHM0cu
-Date: Thu, 12 Jun 2008 15:13:53 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
-X-X-Sender: lyakh@axis700.grange
-To: David Brownell <david-b@pacbell.net>
-cc: linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH -mm] max7301: check spi_setup() return code, general cleanup
-In-Reply-To: <200806120015.50953.david-b@pacbell.net>
-Message-ID: <Pine.LNX.4.64.0806121504560.18017@axis700.grange>
-References: <Pine.LNX.4.64.0806061625260.3338@axis700.grange>
- <200806120015.50953.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+Date: Thu, 12 Jun 2008 15:12:53 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH 4/4] Remove obsolete piece of PM documentation
+Message-ID: <20080612131253.GD5455@ucw.cz>
+References: <200806121025.24668.rjw@sisk.pl> <200806121031.39186.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200806121031.39186.rjw@sisk.pl>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix inaccuracies in comments, check spi_setup() return code, mask off high 
-byte in max7301_read(). Thanks to David Brownell for the review.
+On Thu 2008-06-12 10:31:38, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Remove an obsolete piece of PM documentation.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  Documentation/power/pm.txt |  257 ---------------------------------------------
+>  1 file changed, 257 deletions(-)
+> 
+> Index: linux-2.6/Documentation/power/pm.txt
+> ===================================================================
+> --- linux-2.6.orig/Documentation/power/pm.txt
+> +++ /dev/null
+> @@ -1,257 +0,0 @@
+> -               Linux Power Management Support
+> -
+> -This document briefly describes how to use power management with your
+> -Linux system and how to add power management support to Linux drivers.
+> -
+> -APM or ACPI?
+> -------------
+> -If you have a relatively recent x86 mobile, desktop, or server system,
+> -odds are it supports either Advanced Power Management (APM) or
+> -Advanced Configuration and Power Interface (ACPI).  ACPI is the newer
+> -of the two technologies and puts power management in the hands of the
+> -operating system, allowing for more intelligent power management than
+> -is possible with BIOS controlled APM.
+> -
+> -The best way to determine which, if either, your system supports is to
+> -build a kernel with both ACPI and APM enabled (as of 2.3.x ACPI is
+> -enabled by default).  If a working ACPI implementation is found, the
+> -ACPI driver will override and disable APM, otherwise the APM driver
+> -will be used.
+> -
+> -No, sorry, you cannot have both ACPI and APM enabled and running at
+> -once.  Some people with broken ACPI or broken APM implementations
+> -would like to use both to get a full set of working features, but you
+> -simply cannot mix and match the two.  Only one power management
+> -interface can be in control of the machine at once.  Think about it..
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+I'd keep this; it is still true, and we still support both.
 
----
+Maybe it should be moved into Doc*/power/apm.txt or something.
 
-On Thu, 12 Jun 2008, David Brownell wrote:
-
-> Some comments about one routine; presumably more to follow:
-
-Hopefully all points addressed.
-
-Thanks
-Guennadi
-
-diff --git a/drivers/gpio/max7301.c b/drivers/gpio/max7301.c
-index f35fac5..fc7cebc 100644
---- a/drivers/gpio/max7301.c
-+++ b/drivers/gpio/max7301.c
-@@ -71,7 +71,7 @@ struct max7301 {
-  *
-  * A write to the MAX7301 means one message with one transfer
-  *
-- * Returns 0 if successfull or a negative value on error
-+ * Returns 0 if successful or a negative value on error
-  */
- static int max7301_write(struct spi_device *spi, unsigned int reg, unsigned int val)
- {
-@@ -84,9 +84,9 @@ static int max7301_write(struct spi_device *spi, unsigned int reg, unsigned int
-  * @spi: The SPI device
-  * @reg: Register offset
-  *
-- * A read from the MAX7301 means one message with two transfers
-+ * A read from the MAX7301 means two messages with one transfer each
-  *
-- * Returns positive 8 bit value from device if successfull or a
-+ * Returns positive 8 bit value from device if successful or a
-  * negative value on error
-  */
- static int max7301_read(struct spi_device *spi, unsigned int reg)
-@@ -99,12 +99,13 @@ static int max7301_read(struct spi_device *spi, unsigned int reg)
- 	if (ret)
- 		return ret;
- 	/*
--	 * FIXME: This read should write 0x0000 (=NOOP at MAX7301 side)
-+	 * This relies on the fact, that a transfer with NULL tx_buf shifts out
-+	 * zero bytes (=NOOP for MAX7301)
- 	 */
- 	ret = spi_read(spi, (u8 *)&word, sizeof(word));
- 	if (ret)
- 		return ret;
--	return word;
-+	return word & 0xff;
- }
- 
- static int max7301_direction_input(struct gpio_chip *chip, unsigned offset)
-@@ -224,7 +225,9 @@ static int __devinit max7301_probe(struct spi_device *spi)
- 	 */
- 	spi->bits_per_word = 16;
- 
--	spi->master->setup(spi);
-+	ret = spi_setup(spi);
-+	if (ret < 0)
-+		return ret;
- 
- 	ts = kzalloc(sizeof(struct max7301), GFP_KERNEL);
- 	if (!ts)
+ACK on rest.
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
