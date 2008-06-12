@@ -1,115 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757641AbYFLRk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757195AbYFLRm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757641AbYFLRk7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 13:40:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbYFLRkv
+	id S1757195AbYFLRm7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 13:42:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbYFLRmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 13:40:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55515 "EHLO mx1.redhat.com"
+	Thu, 12 Jun 2008 13:42:52 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:51686 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753630AbYFLRku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 13:40:50 -0400
-Date: Thu, 12 Jun 2008 13:38:58 -0400
-From: "Frank Ch. Eigler" <fche@redhat.com>
+	id S1753603AbYFLRmv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 13:42:51 -0400
+Date: Thu, 12 Jun 2008 21:44:33 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Peter Zijlstra <peterz@infradead.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Hideo AOKI <haoki@redhat.com>, mingo@elte.hu,
-       Masami Hiramatsu <mhiramat@redhat.com>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: Kernel marker has no performance impact on ia64.
-Message-ID: <20080612173858.GA22454@redhat.com>
-References: <48447052.3030300@redhat.com> <1212445965.6269.22.camel@lappy.programming.kicks-ass.net> <20080602232135.GA20173@Krystal> <1212618449.19205.35.camel@lappy.programming.kicks-ass.net> <20080604232241.GA8488@Krystal> <1212653539.19205.47.camel@lappy.programming.kicks-ass.net> <20080612135319.GB22348@Krystal> <1213280823.31518.114.camel@twins> <20080612155332.GA16658@redhat.com> <1213289621.31518.128.camel@twins>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jarek Poplawski <jarkao2@o2.pl>,
+       Max Krasnyansky <maxk@qualcomm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] workqueues: insert_work: use "list_head *" instead of "int tail"
+Message-ID: <20080612174433.GA12204@tv-sign.ru>
+References: <20080612165120.GA12177@tv-sign.ru> <20080612165550.GA12183@tv-sign.ru> <1213290074.31518.136.camel@twins>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1213289621.31518.128.camel@twins>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <1213290074.31518.136.camel@twins>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
-
-On Thu, Jun 12, 2008 at 06:53:41PM +0200, Peter Zijlstra wrote:
-> [...]
-> > Think this through.  How should systemtap (or another user-space
-> > separate-compiled tool like lttng) do this exactly?
-> 
-> lttng has trace handlers to write data into some buffer, right?
-> The trace point need not be concerned with which data, nor into what
-> buffer.
-
-The "which data" is definitely a trace point concern.  It communicates
-from the developer to users as to what values are likely to be of
-interest.
-
-
-> > (a) rely on debugging information?  Even assuming we could get proper
-> >     anchors (PC addresses or unambiguous type names) to start
-> >     searching dwarf data, we lose a key attractions of markers: that
-> >     it can robustly transfer data *without* dwarf data kept around.
-> 
-> Perhaps you can ship a reduced set of dwarf info [...]
-
-"I" don't ship or generate dwarf data.  Distributors do.
-
-
-> > (b) rely on hand-written C code (prototypes, pointer derefrencing
-> >     wrappers) distributed with systemtap?  Not only would this be a
-> >     brittle maintenance pain in the form of cude duplication, but then
-> >     errors in it couldn't even be detected until the final C
-> >     compilation stage.  That would make a lousy user experience.
+On 06/12, Peter Zijlstra wrote:
 >
-> Not really sure what you mean here - I throught compile time errors
-> were the goal?!
-
-For us, it's too late.  In systemtap, we try to give people useful
-information when they make mistakes.  For probes of whatever sort, we
-want to know the available data types and names, while just starting
-to process their script, so that we can check types and suggest
-alternatives.  C code compilation is quite some way removed and is
-supposed to be a systemtap internal implementation detail.
-
-
-> > (c) have systemtap try to parse the mhiramat-proposed "(struct
-> >     task_struct * next, struct task_struct * prev)" format strings?
-> >     Then we're asking systemtap to parse potentially general C type
-> >     expressions, find the kernel headers that declare the types?
-> >     Parse available subfields?  That seems too much to ask for.
+> On Thu, 2008-06-12 at 20:55 +0400, Oleg Nesterov wrote:
+> > 
+> > This allows us to implement
+> > 
+> > 	int flush_work(struct work_struct *work)
+> > 	{
+> > 		struct cpu_workqueue_struct *cwq;
+> > 		struct list_head *head;
+> > 		struct wq_barrier barr;
+> > 
+> > 		cwq = get_wq_data(work);
+> > 		if (!cwq)
+> > 			return 0;
+> > 
+> > 		head = NULL;
+> > 		spin_lock_irq(&cwq->lock);
+> > 		if (!list_empty(&work->entry)) {
+> > 			smp_rmb();
+> > 			/*
+> > 			 * ---- FAT COMMENT ----
+> > 			 */
+> > 			if (cwq == get_wq_data(work))
+> > 				head = work->entry.next;
+> > 		} else if (cwq->current_work == work) {
+> > 			head = cwq->worklist.next;
+> > 		}
+> > 
+> > 		if (head)
+> > 			insert_wq_barrier(cwq, &barr, head);
+> > 		spin_unlock_irq(&cwq->lock);
+> > 
+> > 		if (!head)
+> > 			return 0;
+> > 		wait_for_completion(&barr.done);
+> > 		return 1;
+> > 	}
+> > 
+> > suggested by Peter. It only waits for selected work_struct.
+> > 
+> > I doubt it will have a lot of users though. In most cases we need
+> > cancel_work_sync() and nothing more.
 > 
-> tcc and sourcefs sound like way fun ;-)
-
-Really...
-
-
-> > (d) or another way?
+> Are there cases where we dynamically allocate work structs and queue
+> them and then forget about them? In such cases we'd need something a
+> little more complex as we don't have work pointers to flush or cancel.
 > 
-> Get your own tracer in kernel - that provides exactly what stap needs?
+> Hence that idea of flush context and completions.
 
-You are missing that (a) this is the point of markers - to allow the
-the gajillion tracers a single place per event to hook through, and
-(b) we would like to leave to subsystem developers and/or end-users as
-to what data should be available.  We don't want to get into the
-middle of it.
+Do you mean something like (just for example) below? If yes, then yes
+sure, flush_work() is limited. But I can't see how it is possible to
+"generalize" this idea.
 
+(hmm... actually, if we add flush_work(), we can speedup schedule_on_each_cpu(),
+ instead of flush_workqueue(keventd_wq) we can do
 
-> > This is another reason why markers are a nice solution.  They allow
-> > passing of actual useful values: not just the %p pointers but the most
-> > interesting derived values (e.g., prev->pid). 
-> 
-> Useful to whoem? stap isn't the holy grail of tracing and certainly not
-> the only consumer of trace points, so restricting the information to
-> just what stap needs is actually making trace points less useful.
+	for_each_online_cpu(cpu)
+		flush_work(per_cpu_ptr(works, cpu));
 
-Only you are talking about "restricting".  I am talking about
-thoughtfully *adding* simple scalar values that most tracing type
-tools will generally want, so that they don't have to perform heroic
-measures like ship their own dwarf subsets or parse kernel source
-code.  
+ not sure this really makes sense though).
 
-Which scalars?  Well, it depends on the subsystem and event, and you
-can review here several discussions about specific lttng
-instrumentation markers to see how they generally go.
+Oleg.
 
+--- kernel/workqueue.c~	2007-07-28 16:58:17.000000000 +0400
++++ kernel/workqueue.c	2007-08-06 20:33:25.000000000 +0400
+@@ -590,25 +590,54 @@ EXPORT_SYMBOL(schedule_delayed_work_on);
+  *
+  * schedule_on_each_cpu() is very slow.
+  */
++
++struct xxx
++{
++	atomic_t count;
++	struct completion done;
++	work_func_t func;
++};
++
++struct yyy
++{
++	struct work_struct work;
++	struct xxx *xxx;
++};
++
++static void yyy_func(struct work_struct *work)
++{
++	struct xxx *xxx = container_of(work, struct yyy, work)->xxx;
++	xxx->func(work);
++
++	if (atomic_dec_and_test(&xxx->count))
++		complete(&xxx->done);
++}
++
+ int schedule_on_each_cpu(work_func_t func)
+ {
+ 	int cpu;
+-	struct work_struct *works;
++	struct xxx xxx;
++	struct yyy *works;
+ 
+-	works = alloc_percpu(struct work_struct);
++	init_completion(&xxx.done);
++	xxx.func = func;
++
++	works = alloc_percpu(struct yyy);
+ 	if (!works)
+ 		return -ENOMEM;
+ 
+ 	get_online_cpus();
++	atomic_set(&xxx.count, num_online_cpus());
+ 	for_each_online_cpu(cpu) {
+-		struct work_struct *work = per_cpu_ptr(works, cpu);
++		struct yyy *yyy = per_cpu_ptr(works, cpu);
+ 
+-		INIT_WORK(work, func);
+-		set_bit(WORK_STRUCT_PENDING, work_data_bits(work));
+-		__queue_work(per_cpu_ptr(keventd_wq->cpu_wq, cpu), work);
++		yyy->xxx = &xxx;
++		INIT_WORK(&yyy->work, yyy_func);
++		set_bit(WORK_STRUCT_PENDING, work_data_bits(&yyy->work));
++		__queue_work(per_cpu_ptr(keventd_wq->cpu_wq, cpu), &yyy->work);
+ 	}
+-	flush_workqueue(keventd_wq);
+ 	put_online_cpus();
++	wait_for_completion(&xxx.done);
+ 	free_percpu(works);
+ 	return 0;
+ }
 
-- FChE
