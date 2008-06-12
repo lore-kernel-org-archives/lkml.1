@@ -1,94 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762087AbYFLNUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761641AbYFLNVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762087AbYFLNUh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 09:20:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761585AbYFLNUU
+	id S1761641AbYFLNVn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 09:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759633AbYFLNVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 09:20:20 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:40333 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761939AbYFLNUR (ORCPT
+	Thu, 12 Jun 2008 09:21:35 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:59470 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754775AbYFLNVe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 09:20:17 -0400
-Date: Thu, 12 Jun 2008 09:19:28 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Holger Kiehl <Holger.Kiehl@dwd.de>
-Cc: Solofo.Ramangalahy@bull.net, Nick Dokos <nicholas.dokos@hp.com>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       linux-ext4@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Performance of ext4
-Message-ID: <20080612131928.GB18229@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Holger Kiehl <Holger.Kiehl@dwd.de>, Solofo.Ramangalahy@bull.net,
-	Nick Dokos <nicholas.dokos@hp.com>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	linux-ext4@vger.kernel.org,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.64.0806110801370.19793@diagnostix.dwd.de> <20080611105945.GB9008@skywalker> <Pine.LNX.4.64.0806111937460.3720@diagnostix.dwd.de> <18563.1213215457@alphaville.zko.hp.com> <Pine.LNX.4.64.0806120855370.27806@diagnostix.dwd.de> <18513.345.553912.449710@frecb006361.adech.frec.bull.fr> <Pine.LNX.4.64.0806121154090.27806@diagnostix.dwd.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0806121154090.27806@diagnostix.dwd.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Thu, 12 Jun 2008 09:21:34 -0400
+Subject: Re: [PATCH 3/5] mutex debug: add generic blocked_on usage
+From: Daniel Walker <dwalker@mvista.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <1213248327.31518.77.camel@twins>
+References: <20080611204916.271608740@mvista.com>
+	 <20080611204917.267412694@mvista.com>  <1213248327.31518.77.camel@twins>
+Content-Type: text/plain
+Date: Thu, 12 Jun 2008 06:21:31 -0700
+Message-Id: <1213276891.16459.14.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 12, 2008 at 12:00:54PM +0000, Holger Kiehl wrote: 
-> Yes, that is the one I took. Just to make sure, I downloaded it
-> again (and the linux-2.6.26-rc5 tree) and now it works. When I
-> compare the two patchsets the one I pulled this morning had patches
-> from 7 June and this one has more and they are from 11th June.
 
-Note that you don't have to download things from scratch, necessarily;
-the git command "git pull" will (if you havent made any changes in the
-git repository; if you have there are a few more steps you might have
-to take) pull down any newer changes and update your patch directory
-directly.
+On Thu, 2008-06-12 at 07:25 +0200, Peter Zijlstra wrote:
+> On Wed, 2008-06-11 at 13:49 -0700, Daniel Walker wrote:
+> > plain text document attachment (blocked_on-mutex.patch)
+> 
+> > -#ifdef CONFIG_DEBUG_MUTEXES
+> > -	/* mutex deadlock detection */
+> > -	struct mutex_waiter *blocked_on;
+> > -#endif
+> > +	/*
+> > +	 * Deadlock detection and priority inheritance handling,
+> > +	 * and any other out of line mutex operations
+> > +	 */
+> > +	struct lock_waiter_state *blocked_on;
+> 
+> Now you grew task_struct unconditionally, how about
+> 
+> #if defined CONFIG_DEBUG_MUTEX || defined CONFIG_RT_MUTEXES || defined CONFIG_FUTEX
+> 
+> ?
 
-Note that after you type "git pull", you may find that the
-ext4-patch-queue has been rebased to a newer version of the kernel.
-For example, the patch queue is currently against 2.6.26-rc5.  The
-latest bleedig edge kernel as released by Linus in his git tree of the
-kernel already has these patches:
+Ok .. I didn't add it cause I wasn't convinced RT_MUTEXES was
+optional .. There's a lot of PI futex related code that isn't ifdef'd
+either..
 
-ext4-fix-use-of-uninitalized-data.patch
-ext4-fix-uninit-block-group-initialization-with-FLEX_BG.patch
-ext4-fix-onine-resize-bug.patch
-fix-journal-checksum-mem-leak
-jbd2-if-a-journal-checksum-error-is-detected-propa.patch 
-show-journal-async-commit-option
-jbd2-Fix-barrier-fallback-code-to-re-lock-the-buffe.patch
-ext4-enable-barriers-by-default.patch
+Daniel
 
-from the patch series.  But, he hasn't released an official kernel
-release for 2.6.26-rc5 yet.  So in the near future, the ext4 patch
-queue will probably get rebased against one of the "daily snapshots",
-as found in /pub/linux/kernel/v2.6/snapshots on ftp.kernel.org.  So
-for example, 2.6.26-rc5-git6 is the sixth snapshot since -rc5 was
-released.  There is a patch against -rc5 named
-patch-2.6.26-rc5-git6.bz2 as located in the aforementioned directory
-on ftp.kernel.org, or if you are tracking Linus's kernel git tree, the
-file patch-2.6.26-rc5-git6.id proclaims that -rc5-git6 is git id
-631025b.  You will see that when you look at the first line of the
-series file in the ext4 patch queue, where it currently states:
-
-# BASE 2.6.26-rc5
-
-and where it will in the future say something like this:
-
-# BASE 2.6.26-rc5-git6
-
-That can be used by automated scripts to automatically determine which
-version of the Linux kernel should be grabbed before trying to apply
-the latest version of the ext4 patch queue.  In general we try to use
-mainly official -rc1, -rc2, etc. release points, but after Linus
-pulled down some stable bug fixes, we will sometimes use a daily git
-snapshot release such as -rc5-git6 as described above.
-
-Hope this helps,
-
-							- Ted
