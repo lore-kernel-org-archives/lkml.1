@@ -1,82 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbYFLID1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757593AbYFLIDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756128AbYFLID1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 04:03:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbYFLIDG
+	id S1757593AbYFLIDy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 04:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756503AbYFLIDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 04:03:06 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:6001 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753443AbYFLIDB (ORCPT
+	Thu, 12 Jun 2008 04:03:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41161 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756122AbYFLID1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 04:03:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Y4PV3qHsud9aDPRv1IAdY50oi+DvcrlpK217HtbX5yaeFczSoDxNL8mQXrEyj2sepg
-         s3wLyN13BXN0EARu9v4qfwoDcuenCuzgsQLFcBYJSDnk7z3yWFZJkwEBg7VPQ0HoXyEV
-         aGu7j4GATaUBVbIGK9mShKn3GxP41R70UWx/0=
-Date: Thu, 12 Jun 2008 11:58:58 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       linux-mm@kvack.org, riel@redhat.com, npiggin@suse.de
-Subject: 2.6.26-rc5-mm3: kernel BUG at mm/vmscan.c:510
-Message-ID: <20080612075858.GA4874@martell.zuzino.mipt.ru>
-References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 12 Jun 2008 04:03:27 -0400
+Date: Thu, 12 Jun 2008 01:02:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nadia Derbey <Nadia.Derbey@bull.net>,
+       Manfred Spraul <manfred@colorfullife.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: repeatable slab corruption with LTP msgctl08
+Message-Id: <20080612010200.106df621.akpm@linux-foundation.org>
+In-Reply-To: <20080611233449.08e6eaa0.akpm@linux-foundation.org>
+References: <20080611221324.42270ef2.akpm@linux-foundation.org>
+	<20080611233449.08e6eaa0.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[  254.217776] ------------[ cut here ]------------
-[  254.217776] kernel BUG at mm/vmscan.c:510!
-[  254.217776] invalid opcode: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
-[  254.217776] last sysfs file: /sys/kernel/uevent_seqnum
-[  254.217776] CPU 1 
-[  254.217776] Modules linked in: ext2 nf_conntrack_irc xt_state iptable_filter ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack ip_tables x_tables usblp ehci_hcd uhci_hcd usbcore sr_mod cdrom
-[  254.217776] Pid: 12044, comm: madvise02 Not tainted 2.6.26-rc5-mm3 #4
-[  254.217776] RIP: 0010:[<ffffffff802729b2>]  [<ffffffff802729b2>] putback_lru_page+0x152/0x160
-[  254.217776] RSP: 0018:ffff81012edd1cd8  EFLAGS: 00010202
-[  254.217776] RAX: ffffe20003f344b8 RBX: 0000000000000000 RCX: 0000000000000001
-[  254.217776] RDX: 0000000000005d5c RSI: 0000000000000000 RDI: ffffe20003f344b8
-[  254.217776] RBP: ffff81012edd1cf8 R08: 0000000000000000 R09: 0000000000000000
-[  254.217776] R10: ffffffff80275152 R11: 0000000000000001 R12: ffffe20003f344b8
-[  254.217776] R13: 00000000ffffffff R14: ffff810124801080 R15: ffffffffffffffff
-[  254.217776] FS:  00007fb3ad83c6f0(0000) GS:ffff81017f845320(0000) knlGS:0000000000000000
-[  254.217776] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[  254.217776] CR2: 00007fffb5846d38 CR3: 0000000117de9000 CR4: 00000000000006e0
-[  254.217776] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[  254.217776] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-[  254.217776] Process madvise02 (pid: 12044, threadinfo ffff81012edd0000, task ffff81017db6b3c0)
-[  254.217776] Stack:  ffffe20003f344b8 ffffe20003f344b8 ffffffff80629300 0000000000000001
-[  254.217776]  ffff81012edd1d18 ffffffff8027d268 ffffe20003f344b8 0000000000000000
-[  254.217776]  ffff81012edd1d38 ffffffff80271783 0000000000000246 ffffe20003f344b8
-[  254.217776] Call Trace:
-[  254.217776]  [<ffffffff8027d268>] __clear_page_mlock+0xe8/0x100
-[  254.217776]  [<ffffffff80271783>] truncate_complete_page+0x73/0x80
-[  254.217776]  [<ffffffff80271871>] truncate_inode_pages_range+0xe1/0x3c0
-[  254.217776]  [<ffffffff80271b60>] truncate_inode_pages+0x10/0x20
-[  254.217776]  [<ffffffff802e9738>] ext3_delete_inode+0x18/0xf0
-[  254.217776]  [<ffffffff802e9720>] ? ext3_delete_inode+0x0/0xf0
-[  254.217776]  [<ffffffff802aa27b>] generic_delete_inode+0x7b/0x100
-[  254.217776]  [<ffffffff802aa43c>] generic_drop_inode+0x13c/0x180
-[  254.217776]  [<ffffffff802a960d>] iput+0x5d/0x70
-[  254.217776]  [<ffffffff8029f43e>] do_unlinkat+0x13e/0x1e0
-[  254.217776]  [<ffffffff8046de77>] ? trace_hardirqs_on_thunk+0x3a/0x3f
-[  254.217776]  [<ffffffff80255c69>] ? trace_hardirqs_on_caller+0xc9/0x150
-[  254.217776]  [<ffffffff8046de77>] ? trace_hardirqs_on_thunk+0x3a/0x3f
-[  254.217776]  [<ffffffff8029f4f1>] sys_unlink+0x11/0x20
-[  254.217776]  [<ffffffff8020b6bb>] system_call_after_swapgs+0x7b/0x80
-[  254.217776] 
-[  254.217776] 
-[  254.217776] Code: 0f 0b eb fe 0f 1f 44 00 00 f6 47 01 40 48 89 f8 75 1d 83 78 08 01 75 13 4c 89 e7 31 db e8 97 44 ff ff e9 2b ff ff ff 0f 0b eb fe <0f> 0b eb fe 48 8b 47 10 eb dd 0f 1f 40 00 55 48 89 e5 41 57 45 
-[  254.217776] RIP  [<ffffffff802729b2>] putback_lru_page+0x152/0x160
-[  254.217776]  RSP <ffff81012edd1cd8>
-[  254.234540] ---[ end trace a1dd07b571590cc8 ]---
+On Wed, 11 Jun 2008 23:34:49 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Wed, 11 Jun 2008 22:13:24 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > Running current mainline on my old 2-way PIII.  Distro is RH FC1.  LTP
+> > version is ltp-full-20070228 (lots of retro-computing there).
+> > 
+> > Config is at http://userweb.kernel.org/~akpm/config-vmm.txt
+> > 
+> > 
+> > ./testcases/bin/msgctl08 crashes after ten minutes or so:
+> 
+> ah, it runs to completion in about ten seconds on 2.6.25, so it'll be
+> easy for someone to bisect it.
+> 
+> What's that?  Sigh.  OK.  I wasn't doing anything much anyway.
+
+Oh drat.  git-bisect tells me that this one-year-old msgctl08's
+execution time vastly increased when we added
+
+commit f7bf3df8be72d98afa84f5ff183e14c1ba1e560d
+Author: Nadia Derbey <Nadia.Derbey@bull.net>
+Date:   Tue Apr 29 01:00:39 2008 -0700
+
+    ipc: scale msgmni to the amount of lowmem
+    
+
+But we already knew that, and LTP got changed to fix it.
+
+So I was wrong in assuming that the long-execution-time correlates with
+the slab-corruption bug.
+
+And the slab corruption bug takes half an hour to reproduce and an
+unknown amount of time to not-reproduce.  I don't think I'll be able to
+complete this before I disappear for over a week.
 
