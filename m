@@ -1,64 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760568AbYFLW1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760753AbYFLW1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760568AbYFLW1Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 18:27:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756563AbYFLW07
+	id S1760753AbYFLW1c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 18:27:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756563AbYFLW1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 18:26:59 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:49787 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755380AbYFLW06 (ORCPT
+	Thu, 12 Jun 2008 18:27:23 -0400
+Received: from smtp-vbr13.xs4all.nl ([194.109.24.33]:2425 "EHLO
+	smtp-vbr13.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757954AbYFLW1W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 18:26:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=YbfUXkJdjEMROKcXXAg1ch8M1WMfLoL9QHo7t+Nd2nieIGqjwI9SxDjSZfgQGu5sst
-         +JY7d3xqEHMuaTMDYWd9uQ4T5b9DyvCrT4C7Oy2gbwzdamfcjHu1kOFSp1ihLSnWMgXw
-         dw4U0zJEDb31znTisLYXwcO24uPL3vTdWtchI=
-Message-ID: <1ba2fa240806121526g2ed0c7u733d5620cb790eb6@mail.gmail.com>
-Date: Fri, 13 Jun 2008 01:26:58 +0300
-From: "Tomas Winkler" <tomasw@gmail.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: Problem: Out of memory after 2days with 2GB RAM
-Cc: "Johannes Berg" <johannes@sipsolutions.net>,
-       "Rik van Riel" <riel@redhat.com>,
-       "Zdenek Kabelac" <zdenek.kabelac@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       yi.zhu@intel.com, reinette.chatre@intel.com,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <48519577.8000402@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 12 Jun 2008 18:27:22 -0400
+Subject: Re: XFS internal error xfs_trans_cancel at line 1163 of file
+	fs/xfs/xfs_trans.c
+From: Miquel van Smoorenburg <mikevs@xs4all.net>
+To: Oliver Pinter <oliver.pntr@gmail.com>
+Cc: lists@ku-gbr.de, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
+       xfs-masters@oss.sgi.com, mikevs@xs4all.net
+In-Reply-To: <6101e8c40806120733m3c8647ccy149eb237e2c6d027@mail.gmail.com>
+References: <20080612123031.21594jyk6rjc1lfk@imp.ku-gbr.de>
+	 <6101e8c40806120733m3c8647ccy149eb237e2c6d027@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 13 Jun 2008 00:27:09 +0200
+Message-Id: <1213309629.29745.8.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <c4e36d110806120307n20cce692s9c136f11596f5ab0@mail.gmail.com>
-	 <20080612093833.0fb9cdd6@bree.surriel.com>
-	 <1213278884.3936.15.camel@johannes.berg>
-	 <1ba2fa240806120843s268b2ff4mb45a11adf11afc7f@mail.gmail.com>
-	 <48519577.8000402@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 13, 2008 at 12:30 AM, Jiri Slaby <jirislaby@gmail.com> wrote:
-> On 06/12/2008 05:43 PM, Tomas Winkler wrote:
->>
->> On Thu, Jun 12, 2008 at 4:54 PM, Johannes Berg
->> <johannes@sipsolutions.net> wrote:
->>>
->>> This cuts the allocation to 10%, or (under) a page in all cases.
->>
->> Probably. it would be safe to use vmalloc for allocating txb anyway.
->> I'll give it a try.
->
-> Why it wouldn't be "safe". I suggested it to you already, since allocating
-> 64k by kmalloc for descriptors accessed only in kernel is crud. Moreover
-> you're mixing the buffer with its descriptors here? Or what you're
-> considering to vmalloc?
->
-Not that. I just wasn't sure when I dropped the line  I'm not doing it
-under some spinlock or something like that.
-Tomas
+On Thu, 2008-06-12 at 16:33 +0200, Oliver Pinter wrote:
+> add CC's
+> 
+> On 6/12/08, lists@ku-gbr.de <lists@ku-gbr.de> wrote:
+> > Hi!
+> >
+> > Today morning my server at home bailed out two times (reboot between):
+
+> > Jun 12 07:23:40 zappa
+> > Jun 12 07:23:40 zappa xfs_force_shutdown(sda7,0x8) called from line
+> > 1164 of file fs/xfs/xfs_trans.c.  Return address = 0xffffffff802f4d8a
+> > Jun 12 07:23:40 zappa Filesystem "sda7": Corruption of in-memory data
+> > detected.  Shutting down filesystem: sda7
+> > Jun 12 07:23:40 zappa Please umount the filesystem, and rectify the
+> > problem(s)
+
+Hmm, interesting. I'm seeing the same thing on one of my servers since I
+upgraded from 2.6.ancient (14 or so) to 2.6.25, while XFS otherwise has
+been very stable for me over the years:
+
+Linux transit5.news.xs4all.nl 2.6.25.6 #1 SMP Wed Jun 11 10:59:10 CEST
+2008 x86_64 GNU/Linux
+
+Filesystem "sda4": XFS internal error xfs_trans_cancel at line 1163 of
+file fs/xfs/xfs_trans.c.  Caller 0xffffffff880f1315
+Pid: 3402, comm: diablo Not tainted 2.6.25.6 #1
+
+Call Trace:
+ [<ffffffff880f1315>] :xfs:xfs_create+0x1e5/0x520
+ [<ffffffff880ea4a6>] :xfs:xfs_trans_cancel+0x126/0x150
+ [<ffffffff880f1315>] :xfs:xfs_create+0x1e5/0x520
+ [<ffffffff880fcb79>] :xfs:xfs_vn_mknod+0x1d9/0x320
+ [<ffffffff8028811c>] vfs_create+0xac/0xf0
+ [<ffffffff8028b6bd>] open_namei+0x61d/0x6c0
+ [<ffffffff802448c0>] autoremove_wake_function+0x0/0x30
+ [<ffffffff8027da0c>] do_filp_open+0x1c/0x50
+ [<ffffffff8027d6e9>] get_unused_fd_flags+0x79/0x120
+ [<ffffffff8027da9a>] do_sys_open+0x5a/0xf0
+ [<ffffffff8020b2bb>] system_call_after_swapgs+0x7b/0x80
+
+xfs_force_shutdown(sda4,0x8) called from line 1164 of file
+fs/xfs/xfs_trans.c.  Return address = 0xffffffff880ea4bf
+Filesystem "sda4": Corruption of in-memory data detected.  Shutting down
+filesystem: sda4
+Please umount the filesystem, and rectify the problem(s)
+
+After a reboot, xfs_repair didn't find anything wrong with the fs. It
+has happened 3 times over the last few days already.
+
+FS is on a local SCSI raid (dpt_i2o), not SATA.
+
+Mike.
+
