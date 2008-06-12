@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758247AbYFLJk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbYFLJuD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758247AbYFLJk5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 05:40:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbYFLJkt
+	id S1757884AbYFLJuD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 05:50:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbYFLJtw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 05:40:49 -0400
-Received: from ozlabs.org ([203.10.76.45]:39332 "EHLO ozlabs.org"
+	Thu, 12 Jun 2008 05:49:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47052 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753036AbYFLJks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 05:40:48 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18512.61122.976550.619180@cargo.ozlabs.ibm.com>
-Date: Thu, 12 Jun 2008 19:39:14 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-Cc: Roland Dreier <rolandd@cisco.com>,
-       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-EWG" <ewg@lists.openfabrics.org>, general@lists.openfabrics.org,
-       fenkes@de.ibm.com, raisch@de.ibm.com, hnguyen@de.ibm.com,
-       TKLEIN@de.ibm.com, THEMANN@de.ibm.com
-Subject: Re: [PATCH REPOST] IB/ehca: In case of lost interrupts, trigger EOI to reenable interrupts
-In-Reply-To: <200806101644.34693.ossrosch@linux.vnet.ibm.com>
-References: <200806101644.34693.ossrosch@linux.vnet.ibm.com>
-X-Mailer: VM 7.19 under Emacs 22.1.1
+	id S1752863AbYFLJtv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 05:49:51 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080612072955.GA8097@linux-sh.org>
+References: <20080612072955.GA8097@linux-sh.org>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: dhowells@redhat.com, Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Bryan Wu <cooloney@kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] nommu: Correct kobjsize() page validity checks.
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Thu, 12 Jun 2008 10:48:56 +0100
+Message-ID: <27332.1213264136@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Roscher writes:
 
-> During corner case testing, we noticed that some versions of ehca 
-> do not properly transition to interrupt done in special load situations.
-> This can be resolved by periodically triggering EOI through H_EOI, 
-> if eqes are pending.
-> 
-> Signed-off-by: Stefan Roscher <stefan.roscher@de.ibm.com>
+Paul Mundt <lethal@linux-sh.org> wrote:
 
-If this is OKed by the hypervisor team, then you can add:
-Acked-by: Paul Mackerras <paulus@samba.org>
+> This implements a few changes on top of the recent kobjsize() refactoring
+> introduced by commit 6cfd53fc03670c7a544a56d441eb1a6cc800d72b.
+> ...
+>
+> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+> Reviewed-by: Christoph Lameter <clameter@sgi.com>
 
-Paul.
+Works for me.
+
+Acked-by: David Howells <dhowells@redhat.com>
