@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758928AbYFLT1l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758116AbYFLT3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758928AbYFLT1l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 15:27:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755334AbYFLT1U
+	id S1758116AbYFLT3Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 15:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbYFLT3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 15:27:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36724 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755537AbYFLT1T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 15:27:19 -0400
-Date: Thu, 12 Jun 2008 12:27:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: g.liakhovetski@gmx.de, linux-kernel@vger.kernel.org
-Subject: Re: [WARNING] local_bh_enable with irqs disabled:
-Message-Id: <20080612122708.eb7c1837.akpm@linux-foundation.org>
-In-Reply-To: <200806121200.03424.david-b@pacbell.net>
-References: <Pine.LNX.4.64.0806031529520.21106@axis700.grange>
-	<Pine.LNX.4.64.0806060751240.14536@axis700.grange>
-	<20080605234136.189895a5.akpm@linux-foundation.org>
-	<200806121200.03424.david-b@pacbell.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 12 Jun 2008 15:29:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54883 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751844AbYFLT3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 15:29:15 -0400
+Date: Thu, 12 Jun 2008 15:29:05 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: 2.6.26-rc5-mm2
+Message-ID: <20080612152905.6cb294ae@cuia.bos.redhat.com>
+In-Reply-To: <200806120958.38545.nickpiggin@yahoo.com.au>
+References: <20080609223145.5c9a2878.akpm@linux-foundation.org>
+	<200806101848.22237.nickpiggin@yahoo.com.au>
+	<20080611140902.544e59ec@bree.surriel.com>
+	<200806120958.38545.nickpiggin@yahoo.com.au>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -29,40 +30,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jun 2008 12:00:03 -0700
-David Brownell <david-b@pacbell.net> wrote:
+On Thu, 12 Jun 2008 09:58:38 +1000
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-> On Thursday 05 June 2008, you wrote:
-> > On Fri, 6 Jun 2008 08:11:23 +0200 (CEST) Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
-> > 
-> > > > Which kernel version are you running?
-> > > 
-> > > Sorry, this was a 2.6.26-rc3 based kernel with the gpio-sysfs patch from 
-> > > David, e.g., http://marc.info/?l=linux-kernel&m=121107105300923&w=2,
-> > > which introduces a call to device_unregister via gpiochip_unexport(chip); 
-> > > in gpiochip_remove. 
-> > 
-> > OK, thanks.
-> > 
-> > That's quite buggy and would have generated so many runtime warnings in
-> > a "developer" setup (rofl) that I look at Documentation/SubmitChecklist
-> > and just weep.
-> > 
-> > I'll drop it.
+> > Does loopback over tmpfs use a different allocation path?
 > 
-> That seems excessive.  I observe a locking bug with a trivial fix;
-> happened because *one* code path (rmmod -- not often used with GPIOs
-> once they work) couldn't be tested on most of my test rigs.  It would
-> produce *ONE* runtime warning on that code path.
+> I'm sorry, hmm I didn't look closely enough and forgot that
+> write_begin/write_end requires the callee to allocate the page
+> as well, and that Hugh had nicely unified most of that.
 > 
-> Other than missing one test case, the only other significant issue
-> from SubmitChecklist is that the Documentation/ABI update needs to
-> hold up until this merges to mainline, since one part of it includes
-> the date where that interface became available.
-> 
-> So ... what else were you thinking was trouble?
-> 
+> So maybe it's not that. It's pretty easy to hit I found with
+> ext2 mounted over loopback on a tmpfs file.
 
-The patch had a great string of sysfs operations and mutex-takings all
-happening under spinlock.  Obviously all that code hadn't been tested.
-I didn't take the time to sit down and analyse where it was all happening.
+Turns out the loopback driver uses splice, which moves
+the pages from one place to another.  This is why you
+were seeing the problem with loopback, but not with
+just a really big file on tmpfs.
+
+I'm trying to make sense of all the splice code now
+and will send fix as soon as I know how to fix this
+problem in a nice way.
+
+-- 
+All Rights Reversed
