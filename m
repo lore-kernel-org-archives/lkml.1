@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756814AbYFLHf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbYFLHqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756814AbYFLHf1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 03:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbYFLHfR
+	id S1755481AbYFLHqV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 03:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbYFLHqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 03:35:17 -0400
-Received: from mail.gmx.net ([213.165.64.20]:46404 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752102AbYFLHfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 03:35:16 -0400
-X-Authenticated: #2253541
-X-Provags-ID: V01U2FsdGVkX18RLpc/uSIRhmb+YNX6pY975J2Rs/nveAdg8q1J/S
-	ZlesWDOGyyCbnE
-Date: Thu, 12 Jun 2008 09:35:15 +0200
-From: Thomas Bleher <ThomasBleher@gmx.de>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org, dada1@cosmosbay.com,
-       debian-embedded@lists.debian.org
-Subject: Re: ARM on qemu: running kernel 2.6.20 or newer?
-Message-ID: <20080612073514.GA31458@j-crew.de>
-References: <20080605135149.GA20870@j-crew.de> <200806051644.07430.elendil@planet.nl>
+	Thu, 12 Jun 2008 03:46:04 -0400
+Received: from an-out-0708.google.com ([209.85.132.241]:24682 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753455AbYFLHqB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 03:46:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=uQxJYek9FGo3qL56CW1P/1lVEJylUfhAVR1BEeriiggVty6x3HsBW9H6sBEH1oAQou
+         iVnT7ktWks33YeOLSsLbm/ghJxmqtn09JvuwJT2s6G1aBK1b6k4JZ3g6cRPZDvitf7DO
+         NPJpweRtMYAngCsLDItwl+Yx9LkaGo9GaAgDs=
+Message-ID: <dd18b0c30806120045r3b0b8dd5h42783aa56eab657b@mail.gmail.com>
+Date: Thu, 12 Jun 2008 07:45:58 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Tejun Heo" <htejun@gmail.com>
+Subject: Re: macbook pro dvd playback after suspend Buffer I/O error
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+In-Reply-To: <4850C954.60805@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200806051644.07430.elendil@planet.nl>
-X-Accept-Language: de, en
-X-Operating-System: Linux 2.6.18 x86_64
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Y-GMX-Trusted: 0
+References: <dd18b0c30804032207u36bd1f43l358e9949f0c94f79@mail.gmail.com>
+	 <4850794F.3000200@gmail.com>
+	 <dd18b0c30806111910j4b127c32rbd546f885731e18c@mail.gmail.com>
+	 <dd18b0c30806111913gf505c05j479a6a682c2cdd28@mail.gmail.com>
+	 <4850A2F8.3050404@gmail.com>
+	 <dd18b0c30806112222k60e411dfs98e4cc7f64938b5b@mail.gmail.com>
+	 <dd18b0c30806112315x70dee219oa6738de3e22d4939@mail.gmail.com>
+	 <4850C1AC.4090809@gmail.com>
+	 <dd18b0c30806112336ma74115cta1923f7b08dcc2d@mail.gmail.com>
+	 <4850C954.60805@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Frans Pop <elendil@planet.nl> [2008-06-05 16:44]:
-> Thomas Bleher wrote:
-> > I'm trying to run an ARM kernel on qemu (0.9.1-5) on a Debian AMD64
-> > system. 2.6.19 worked fine, but all newer kernel releases[1] result in
-> > qemu consuming 100% of the CPU without ever outputting anything to the
-> > console.
-> 
-> The daily built armel versatile D-I images [1] worked fine for me in qemu 
-> just a few days ago. They use 2.6.24. There's one issue [2] related to 
-> serial console, but graphics mode works fine.
-> 
-> [1] http://wiki.debian.org/ArmEabiHowto
-> [2] http://bugs.debian.org/484366
+On Thu, Jun 12, 2008 at 6:59 AM, Tejun Heo <htejun@gmail.com> wrote:
+> Justin Mattock wrote:
+>> Yeah, take you're time. Maybe it's easier  to have mplayer or which
+>> ever media player wait for the drive. i.g.
+>> under OSX, the media player pauses until the drive does it's thing,
+>> and then resumes.(but this would be for the suspend aspect)
+>> As for the live distro part I'd have to think as well. Let me know
+>> what you think.
+>
+> For apps which know they're accessing cd or dvd (probably using sg
+> commands), asking for TUR test after resume could be acceptable but apps
+> getting -EIO on read(2) because of intervening suspend/resume cycle is
+> just not right.  The problem is that readiness waiting can take quite
+> some time and under the current architecture, that can make resume take
+> much longer or block IOs to other devices on the same port.  :-(
+>
+> --
+> tejun
+>
 
-Thank you for the fast response!
-I did some further tests, and it looks like the Emdebian cross-compiler
-miscompiles newer kernels, at least for the configs I tested. Using the
-ELDK cross-compiler instead, the kernel boots fine under qemu.
+>From what I could tell it's the whole start, think, move a little,
+then start spinning, then slow down, then finally locate it's place,
+that the drive
+is doing that's causing the timing to be out of sync, with what's left
+in the cache/or memory,  I'm wondering if its possible to have the
+disk not do the whole cycle that it does once suspend/resume is
+activated, just to see.
+regards;
 
-I don't think I'll have time to further debug this issue, but I've cc'ed
-debian-embedded@l.d.o, in case anyone is interested in tracking this
-down. I'll provide .configs + vmlinux files on request.
-
-Regards,
-Thomas Bleher
-
+-- 
+Justin P. Mattock
