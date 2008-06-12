@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759945AbYFLMZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760704AbYFLM0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759945AbYFLMZX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 08:25:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760672AbYFLMZH
+	id S1760704AbYFLM0i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 08:26:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759047AbYFLM0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 08:25:07 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:15807 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757419AbYFLMZE (ORCPT
+	Thu, 12 Jun 2008 08:26:30 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4172 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759013AbYFLM03 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 08:25:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=siS7OvrTIIUWk3T12ZXx9mgutnnsYGF5Og7nmpcfpzbXtapQVpUyR17D0JmgMeMCTx
-         8J7NkPeqMQAKj0fUY55ON7ifmVHUZHEzWrTPXMfO9C7E8hA4T79sns1xPKG58KmoQCxG
-         5eTXXc8NgsjXSAjdIisI8mLB0+9ng0fxQFSwE=
-Message-ID: <86802c440806120525v2da860bfyf05eb8ec6b9943d0@mail.gmail.com>
-Date: Thu, 12 Jun 2008 05:25:03 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Paul Jackson" <pj@sgi.com>
-Subject: Re: Confusions with reserve_early, reserve_bootmem, e820, efi, ... on x86_64
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Bernhard Walle" <bwalle@suse.de>,
-       "Johannes Weiner" <hannes@saeurebad.de>,
-       "Huang, Ying" <ying.huang@intel.com>, linux-kernel@vger.kernel.org,
-       "Jack Steiner" <steiner@sgi.com>
-In-Reply-To: <20080612050609.88a8cf7f.pj@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080612050609.88a8cf7f.pj@sgi.com>
+	Thu, 12 Jun 2008 08:26:29 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Joel Schopp <jschopp@austin.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 15/23] checkpatch: usb_free_urb() can take NULL
+Date: Thu, 12 Jun 2008 13:05:54 +0100
+Message-Id: <1213272362-19457-16-git-send-email-apw@shadowen.org>
+X-Mailer: git-send-email 1.5.6.rc0.140.ga9675
+In-Reply-To: <1213272362-19457-1-git-send-email-apw@shadowen.org>
+References: <1213272362-19457-1-git-send-email-apw@shadowen.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 12, 2008 at 3:06 AM, Paul Jackson <pj@sgi.com> wrote:
-> Bernhard, Johannes, Huang, and Yinghai:
->
-> I am running into some complications with reserve_bootmem vs
-> reserve_early, and a reserve_early of "EFI memmap" in the
-> efi_reserve_early() routine conflicting with reserve_early of
-> "BIOS reserved" in reserve_ebda_region().
->
-> This is on x86_64 arch, using Ingo's x86-latest, with possibly
-> still buggy EFI firmware in a lab system I'm helping to develop.
->
-> I have three concerns:
->
->  1) The find_overlapped_early() check called from reserve_early is
->    failing on my lab system , causing panic, when it tries to
->    register "EFI memmap" at addresses <0xe0660, 0xe0778> that
->    overlaps with the "BIOS reserved" early reserve at addresses
->    <0x9f000, 0x100000>
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-then reserve_ebda_region() need to be fixed.
+usb_free_urb() can take a NULL, so let's check and warn about that.
 
-YH
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+---
+ scripts/checkpatch.pl |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 13d7a33..a4e8087 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -2078,6 +2078,13 @@ sub process {
+ 				WARN("kfree(NULL) is safe this check is probabally not required\n" . $hereprev);
+ 			}
+ 		}
++# check for needless usb_free_urb() checks
++		if ($prevline =~ /\bif\s*\(([^\)]*)\)/) {
++			my $expr = $1;
++			if ($line =~ /\busb_free_urb\(\Q$expr\E\);/) {
++				WARN("usb_free_urb(NULL) is safe this check is probably not required\n" . $hereprev);
++			}
++		}
+ 
+ # warn about #ifdefs in C files
+ #		if ($line =~ /^.\s*\#\s*if(|n)def/ && ($realfile =~ /\.c$/)) {
+-- 
+1.5.6.rc0.140.ga9675
+
