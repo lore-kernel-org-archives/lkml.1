@@ -1,156 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758387AbYFLTy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757167AbYFLT5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758387AbYFLTy3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 15:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbYFLTyU
+	id S1757167AbYFLT5W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 15:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbYFLT5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 15:54:20 -0400
-Received: from mailman1.ppco.com ([138.32.41.4]:59537 "EHLO mailman1.ppco.com"
+	Thu, 12 Jun 2008 15:57:14 -0400
+Received: from www.tglx.de ([62.245.132.106]:43872 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754569AbYFLTyT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 15:54:19 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1750997AbYFLT5O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 15:57:14 -0400
+Date: Thu, 12 Jun 2008 21:55:18 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Daniel Walker <dwalker@mvista.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Ulrich Drepper <drepper@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 5/5] futex: fix miss ordered wakeups
+In-Reply-To: <1213286193.16459.53.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.1.10.0806121802050.3193@apollo.tec.linutronix.de>
+References: <20080611204916.271608740@mvista.com>  <20080611204917.523866467@mvista.com>  <alpine.LFD.1.10.0806121022250.3193@apollo.tec.linutronix.de>  <1213277402.16459.25.camel@localhost.localdomain>  <alpine.LFD.1.10.0806121533270.3193@apollo.tec.linutronix.de>
+  <1213278286.16459.29.camel@localhost.localdomain>  <alpine.LFD.1.10.0806121636380.3193@apollo.tec.linutronix.de> <1213286193.16459.53.camel@localhost.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
-Date: Thu, 12 Jun 2008 14:54:09 -0500
-Message-ID: <0122F800A3B64C449565A9E8C297701002D75DAE@hoexmb9.conoco.net>
-In-Reply-To: <20080611225431.GD25194@fieldses.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
-Thread-Index: AcjMFin8+i41T2qpR7mBtOM3VEEddQArhWpA
-References: <0122F800A3B64C449565A9E8C2977010155587@hoexmb9.conoco.net> <20080609185355.GF28584@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75D9F@hoexmb9.conoco.net> <20080610171602.GG20184@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DA3@hoexmb9.conoco.net> <20080611184613.GM15380@fieldses.org> <20080611195222.GP15380@fieldses.org> <20080611160947.5f08fb16@tleilax.poochiereds.net> <20080611205749.GA25194@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DAA@hoexmb9.conoco.net> <20080611225431.GD25194@fieldses.org>
-From: "Weathers, Norman R." <Norman.R.Weathers@conocophillips.com>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: "Jeff Layton" <jlayton@poochiereds.net>, <linux-kernel@vger.kernel.org>,
-       <linux-nfs@vger.kernel.org>
-X-OriginalArrivalTime: 12 Jun 2008 19:54:10.0615 (UTC) FILETIME=[14E43470:01C8CCC6]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
-
-> -----Original Message-----
-> From: linux-nfs-owner@vger.kernel.org 
-> [mailto:linux-nfs-owner@vger.kernel.org] On Behalf Of J. Bruce Fields
-> Sent: Wednesday, June 11, 2008 5:55 PM
-> To: Weathers, Norman R.
-> Cc: Jeff Layton; linux-kernel@vger.kernel.org; 
-> linux-nfs@vger.kernel.org
-> Subject: Re: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
+On Thu, 12 Jun 2008, Daniel Walker wrote:
 > 
-> On Wed, Jun 11, 2008 at 05:46:13PM -0500, Weathers, Norman R. wrote:
-> > I will try and get it patched and retested, but it may be a 
-> day or two
-> > before I can get back the information due to production jobs now
-> > running.  Once they finish up, I will get back with the info.
-> 
-> Understood.
-> 
-
-
-I was able to get my big user to cooperate and let me in to be able to
-get the information that you were needing.  The full output from the
-/proc/slab_allocator file is at
-http://www.shashi-weathers.net/linux/cluster/NFS_DEBUG_2 .  The 16
-thread case is very interesting.  Also, there is a small txt file in the
-directory that has some rpc errors, but I imagine the way that I am
-running the box (oversubscribed threads) has more to do with the rpc
-errors than anything else.  For those of you wanting the gist of the
-story, the size-4096 slab has the following very large allocation:
-
-size-4096: 2 sys_init_module+0x140b/0x1980
-size-4096: 1 __vmalloc_area_node+0x188/0x1b0
-size-4096: 1 seq_read+0x1d9/0x2e0
-size-4096: 1 slabstats_open+0x2b/0x80
-size-4096: 5 vc_allocate+0x167/0x190
-size-4096: 3 input_allocate_device+0x12/0x80
-size-4096: 1 hid_add_field+0x122/0x290
-size-4096: 9 reqsk_queue_alloc+0x5f/0xf0
-size-4096: 1846825 __alloc_skb+0x7d/0x170
-size-4096: 3 alloc_netdev+0x33/0xa0
-size-4096: 10 neigh_sysctl_register+0x52/0x2b0
-size-4096: 5 devinet_sysctl_register+0x28/0x110
-size-4096: 1 pidmap_init+0x15/0x60
-size-4096: 1 netlink_proto_init+0x44/0x190
-size-4096: 1 ip_rt_init+0xfd/0x2f0
-size-4096: 1 cipso_v4_init+0x13/0x70
-size-4096: 3 journal_init_revoke+0xe7/0x270 [jbd]
-size-4096: 3 journal_init_revoke+0x18a/0x270 [jbd]
-size-4096: 2 journal_init_inode+0x84/0x150 [jbd]
-size-4096: 2 bnx2_alloc_mem+0x18/0x1f0 [bnx2]
-size-4096: 1 joydev_connect+0x53/0x390 [joydev]
-size-4096: 13 kmem_alloc+0xb3/0x100 [xfs]
-size-4096: 5 addrconf_sysctl_register+0x31/0x130 [ipv6]
-size-4096: 7 rpc_clone_client+0x84/0x140 [sunrpc]
-size-4096: 3 rpc_create+0x254/0x4d0 [sunrpc]
-size-4096: 16 __svc_create_thread+0x53/0x1f0 [sunrpc]
-size-4096: 16 __svc_create_thread+0x72/0x1f0 [sunrpc]
-size-4096: 1 nfsd_racache_init+0x2e/0x140 [nfsd]
-
-The big one seems to be the __alloc_skb. (This is with 16 threads, and
-it says that we are using up somewhere between 12 and 14 GB of memory,
-about 2 to 3 gig of that is disk cache).  If I were to put anymore
-threads out there, the server would become almost unresponsive (it was
-bad enough as it was).   
-
-At the same time, I also noticed this:
-
-skbuff_fclone_cache: 1842524 __alloc_skb+0x50/0x170
-
-Don't know for sure if that is meaningful or not....
-
-
-
-> > Thanks everyone for looking at this, by the way!
-> 
-> And thanks for your persistence.
-> 
-> --b.
-> 
-
-
-Anytime.  This is the part of the job that is fun (except for my
-users...).  Anyone can watch a system run, it's dealing with the unknown
-that makes it interesting.
-
-
-Norman Weathers
-
-
+> On Thu, 2008-06-12 at 17:24 +0200, Thomas Gleixner wrote:
+> > > Just because you don't use it, doesn't make it useless .. At least
+> > > there's enough people asking for this that it warrants me writing it..
 > > 
-> > > 
-> > > 
-> > > diff --git a/mm/slab.c b/mm/slab.c
-> > > index 06236e4..b379e31 100644
-> > > --- a/mm/slab.c
-> > > +++ b/mm/slab.c
-> > > @@ -2202,7 +2202,7 @@ kmem_cache_create (const char *name, 
-> > > size_t size, size_t align,
-> > >  	 * above the next power of two: caches with object 
-> > > sizes just above a
-> > >  	 * power of two have a significant amount of internal 
-> > > fragmentation.
-> > >  	 */
-> > > -	if (size < 4096 || fls(size - 1) == fls(size-1 + REDZONE_ALIGN +
-> > > +	if (size < 8192 || fls(size - 1) == fls(size-1 + REDZONE_ALIGN +
-> > >  						2 * 
-> > > sizeof(unsigned long long)))
-> > >  		flags |= SLAB_RED_ZONE | SLAB_STORE_USER;
-> > >  	if (!(flags & SLAB_DESTROY_BY_RCU))
-> > > 
-> > 
-> > 
-> > Norman Weathers
-> --
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Which is not really a good technical reason to merge such a
+> > patch. Your handwaving about "enough people" is just irrelevant. Are
+> > you going to implement a root hole as well when enough people ask for
+> > it ?
 > 
+> People asking for something is a very good reason to merge "features" ..
+> You can like or dislike implementations , but that doesn't reflect on
+> the nature of the feature.
+
+Again, I have not yet seen a single request aside of yours. Who is
+asking for that and what is the rationale for their request?
+
+> > But there is also a Real Good technical reason why these patches are
+> > going nowhere else than into /dev/null:
+> > 
+> >  your approach of hijacking blocked_on is fundamentaly wrong as it
+> >  mixes kernel internal state with user space state.
+> 
+> It mixes kernel state with kernel state, not to mention each state is
+> isolated from the others.
+
+Wrong. The task is blocked on the user space futex and not on an in
+kernel concurrency control. What's the isolation, the enum or the
+union ? LOL.
+
+The blocked_on mechanism is restricted to kernel internal concurrency
+controls and while mutex and rt_mutex could share a common storage,
+the user space futex can not. That would preclude to ever use a
+(rt_)mutex in the futex code.
+
+The reason is simple: A task can only be blocked on one concurrency
+control, but it can be blocked on a user space futex and later on an
+in kernel concurrency control.
+
+Just get it. These are different concepts and do not mix at all.
+
+> >  It will break in preempt-rt at the point when this state is set and
+> >  the code blocks on a spinlock, which uses the rtmutex based sleeping
+> >  spinlock implementation and overwrites blocked_on.
+> 
+> That's an intersting point, however "preempt-rt" is out of tree, so it's
+> certainly not going be a reason to reject mainline changes.
+
+It is a perfectly good reason, simply because we know that rt is on
+the way to mainline and it would be pretty stupid to merge a change
+with a questionable technical merit which needs to be reverted and
+overhauled in the foreseeable future. Other not yet mainline features
+/ changes coordinate as well to avoid wreckage like that.
+
+Also putting on my preempt-rt hat I just wonder about your brashly
+impertinence to expect that others clean up the mess you create.
+
+> > If there would be a real good technical reason to fix this priority
+> > ordering it could be done with less than 20 lines of code without
+> > extra locking and wreckage waiting left and right, but I have not yet
+> > seen a single convincing technical argument or a relevant use case
+> > which might justify that.
+>
+> The technical reasons for including this are the same technical reasons
+> why we want the waiters queued in priority order .. It's a requirement
+> of posix, where many calls need the ordering and ultimately feed into
+> the futex interface. So we have every reason to do the ordering
+> correctly..
+
+Making a halfways correct thing a bit more correct is not going to
+reach full correctness. 
+
+Also your interpretation of the POSIX requirement is very
+questionable:
+
+ "If there are threads blocked on the mutex object referenced by mutex
+ when pthread_mutex_unlock() is called, resulting in the mutex
+ becoming available, the scheduling policy shall determine which
+ thread shall acquire the mutex."
+
+So there is no explicit guarantee requirement AFAICT. "... the
+scheduling policy shall determine ..." is a rather vague term which
+has enough room for interpretation. 
+
+My interpretation is, whoever has/gets the CPU will get the mutex. So
+why should I care about the priority order correctness, which is only
+incorrect in a corner case. Especially in a corner case which is not a
+hot path in any sane application:
+
+ It requires thread A to block on a futex together with other threads
+ and thread B to adjust the priority of thread A while it is
+ blocked.
+
+This is definitely _NOT_ the common case in any application I'm aware
+of.
+
+If you think that this actually matters, then please stop your
+handwaving and provide proof. I'm really keen to add the absurdities
+of those use cases to my Ugly Code Museum.
+
+Furthermore the rationale section says explicitely:
+
+ "The mutex functions and the particular default settings of the mutex
+ attributes have been motivated by the desire to not preclude fast,
+ inlined implementations of mutex locking and unlocking."
+
+This is another confirmation that the default pthread_mutex
+implementation aims for performance and not for correctness.
+
+We have an PI implementation which provides full correctness, so there
+is no need to add artificial correctness to something which is by
+default incorrect.
+
+> If you have a 20 line fix for this then great tell me what it is..
+
+I might write the patch once I can see a real world use case where
+this actually matters.
+
+Thanks,
+
+	tglx
