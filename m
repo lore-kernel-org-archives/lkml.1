@@ -1,74 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760825AbYFLWoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760666AbYFLWoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760825AbYFLWoS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 18:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760662AbYFLWoA
+	id S1760666AbYFLWoe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 18:44:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760855AbYFLWoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 18:44:00 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:57043 "EHLO relay.sgi.com"
+	Thu, 12 Jun 2008 18:44:21 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:61200 "EHLO serum.com.pl"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753695AbYFLWn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 18:43:58 -0400
-Message-Id: <20080612224247.623141000@polaris-admin.engr.sgi.com>
-References: <20080612224247.486614000@polaris-admin.engr.sgi.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 12 Jun 2008 15:42:48 -0700
-From: Mike Travis <travis@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+	id S1760833AbYFLWoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 18:44:19 -0400
+Date: Thu, 12 Jun 2008 23:43:47 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-serial@vger.kernel.org, linux-mips@linux-mips.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1] x86: Add config option to setup early serial console
-Content-Disposition: inline; filename=setup-early-serial-console
+Subject: [PATCH] serial: DZ11: Avoid a hang at console switch-over
+Message-ID: <Pine.LNX.4.55.0806122328350.23634@cliff.in.clinika.pl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- * Add config option EARLY_SERIAL_CONSOLE to enable early
-   printk's to be directed to the serial console.
+ Changes to the generic console support code that happened a while ago
+introduced a scenario where the initial console is used in parallel with
+the final console during a brief period when switching between the two is
+in progress.  During that time a message about the switch-over is printed.
 
-Based on linux-next
+ With some combinations of chips, firmware and drivers, such as the DEC
+DZ11 clone used with the DECstation, a hang may happen because the
+firmware used for the initial console may not expect the state of the chip
+after it has been initialised by the driver.
 
-Signed-off-by: Mike Travis <travis@sgi.com>
+ This is a workaround for the DZ11 which reuses the power-management
+callback to keep the transmitter of the line associated with the console
+enabled.  It reflects the consensus reached in a discussion a while ago.
+
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
 ---
-
----
- arch/x86/Kconfig.debug         |    9 +++++++++
- arch/x86/kernel/early_printk.c |    4 ++++
- 2 files changed, 13 insertions(+)
-
---- linux-2.6-next.orig/arch/x86/Kconfig.debug
-+++ linux-2.6-next/arch/x86/Kconfig.debug
-@@ -29,6 +29,15 @@ config EARLY_PRINTK
- 	  with klogd/syslogd or the X server. You should normally N here,
- 	  unless you want to debug such a crash.
+patch-mips-2.6.23-rc5-20070904-dz-pm-1
+diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/drivers/serial/dz.c linux-mips-2.6.23-rc5-20070904/drivers/serial/dz.c
+--- linux-mips-2.6.23-rc5-20070904.macro/drivers/serial/dz.c	2007-10-14 00:49:58.000000000 +0000
++++ linux-mips-2.6.23-rc5-20070904/drivers/serial/dz.c	2007-10-14 01:46:41.000000000 +0000
+@@ -637,6 +637,26 @@ static void dz_set_termios(struct uart_p
+ 	spin_unlock_irqrestore(&dport->port.lock, flags);
+ }
  
-+config EARLY_SERIAL_CONSOLE
-+	bool "Early Serial Console"
-+	default n
-+	help
-+	  Initializes the early console to be the serial port.  The default
-+	  is to use the VGA console.
++/*
++ * Hack alert!
++ * Required solely so that the initial PROM-based console
++ * works undisturbed in parallel with this one.
++ */
++static void dz_pm(struct uart_port *uport, unsigned int state,
++		  unsigned int oldstate)
++{
++	struct dz_port *dport = to_dport(uport);
++	unsigned long flags;
 +
-+	  This is useful for server systems that do not have a VGA console.
++	spin_lock_irqsave(&dport->port.lock, flags);
++	if (state < 3)
++		dz_start_tx(&dport->port);
++	else
++		dz_stop_tx(&dport->port);
++	spin_unlock_irqrestore(&dport->port.lock, flags);
++}
 +
- config DEBUG_STACKOVERFLOW
- 	bool "Check for stack overflows"
- 	depends on DEBUG_KERNEL
---- linux-2.6-next.orig/arch/x86/kernel/early_printk.c
-+++ linux-2.6-next/arch/x86/kernel/early_printk.c
-@@ -193,7 +193,11 @@ static struct console simnow_console = {
- };
++
+ static const char *dz_type(struct uart_port *uport)
+ {
+ 	return "DZ";
+@@ -733,6 +753,7 @@ static struct uart_ops dz_ops = {
+ 	.startup	= dz_startup,
+ 	.shutdown	= dz_shutdown,
+ 	.set_termios	= dz_set_termios,
++	.pm		= dz_pm,
+ 	.type		= dz_type,
+ 	.release_port	= dz_release_port,
+ 	.request_port	= dz_request_port,
+@@ -856,7 +877,10 @@ static int __init dz_console_setup(struc
+ 	if (ret)
+ 		return ret;
  
- /* Direct interface for emergencies */
-+#ifdef CONFIG_EARLY_SERIAL_CONSOLE
-+static struct console *early_console = &early_serial_console;
-+#else
- static struct console *early_console = &early_vga_console;
-+#endif
- static int early_console_initialized;
++	spin_lock_init(&dport->port.lock);	/* For dz_pm().  */
++
+ 	dz_reset(dport);
++	dz_pm(uport, 0, -1);
  
- void early_printk(const char *fmt, ...)
-
--- 
-
+ 	if (options)
+ 		uart_parse_options(options, &baud, &parity, &bits, &flow);
