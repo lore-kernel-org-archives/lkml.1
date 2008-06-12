@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756354AbYFLJf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756840AbYFLJiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756354AbYFLJf1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 05:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbYFLJfP
+	id S1756840AbYFLJiT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 05:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbYFLJiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 05:35:15 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51452 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752120AbYFLJfO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 05:35:14 -0400
-Date: Thu, 12 Jun 2008 11:34:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@suse.cz>, the arch/x86 maintainers <x86@kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86 GART: Add resume handling (was: Re: >3G => iommu
-	=> suspend problems -- was Re: SB600 AHCI: Hard Disk Corruption)
-Message-ID: <20080612093430.GA641@elte.hu>
-References: <1211717435.6038.53.camel@localhost.localdomain> <20080609124630.GA28799@elte.hu> <200806100010.49194.rjw@sisk.pl> <200806101203.01836.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200806101203.01836.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 12 Jun 2008 05:38:08 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:61355 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752192AbYFLJiG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 05:38:06 -0400
+Subject: Re: [patch 04/41] cpu ops: Core piece for generic atomic per cpu
+	operations
+From: Martin Peschke <mp3@de.ibm.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Peter Zijlstra <peterz@infradead.org>, Mike Travis <travis@sgi.com>
+In-Reply-To: <200806121340.29366.nickpiggin@yahoo.com.au>
+References: <20080530035620.587204923@sgi.com>
+	 <200806121058.02125.nickpiggin@yahoo.com.au>
+	 <200806121244.12173.rusty@rustcorp.com.au>
+	 <200806121340.29366.nickpiggin@yahoo.com.au>
+Content-Type: text/plain
+Date: Thu, 12 Jun 2008 11:37:49 +0200
+Message-Id: <1213263470.25502.6.camel@kitka.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
-
-> > Okay, appended is the patch rebased on tip/x86/gart with (mainline) 
-> > commit cd76374e9de4501acc74f833dc6cb5e7a5dca115 "suspend-vs-iommu: 
-> > prevent suspend if we could not resume" (which appears to be missing 
-> > from tip/x86/gart) applied.
-> > 
-> > This version of the patch doesn't break compilation, but it hasn't 
-> > been really tested yet.
+On Thu, 2008-06-12 at 13:40 +1000, Nick Piggin wrote:
+> On Thursday 12 June 2008 12:44, Rusty Russell wrote:
+> > On Thursday 12 June 2008 10:58:01 Nick Piggin wrote:
+> > > On Thursday 12 June 2008 09:39, Christoph Lameter wrote:
+> > > > On Wed, 11 Jun 2008, Rusty Russell wrote:
+> > > > > > 4. The modeling of local_t on atomic_t limits it to 32bit!
+> > > > >
+> > > > > Again wrong.  And adding an exclamation mark doesn't make it true.
+> > > >
+> > > > Ewww ... Its atomic_long_t ahh. Ok then there no 32 bit support. What
+> > > > about pointers?
+> > >
+> > > sizeof(long) == sizeof(void *) in Linux, right?
+> > >
+> > > If you were to support just a single data type, long would probably
+> > > be the most useful. Still, it might be more consistent to support
+> > > int and long, same as atomic.
+> >
+> > Sure, but in practice these tend to be simple counters: that could well
+> > change when dynamic percpu allocs become first class citizens, but let's
+> > not put the cart before the horse...
 > 
-> Now it has been (successfully) tested too. :-)
+> Right, I was just responding to Christoph's puzzling question.
+> 
+> 
+> > Per-cpu seems to be particularly prone to over-engineering: see commit
+> > 7ff6f08295d90ab20d25200ef485ebb45b1b8d71 from almost two years ago. 
+> > Grepping here reveals that this infrastructure is still not used.
+> 
+> Hmm. Something like that needs the question asked "who uses this?"
+> before it is merged I guess. If it were a trivial patch maybe not,
+> but something like this that sits untested for so long is almost
+> broken by definition ;)
 
-applied to tip/x86/gart, thanks Rafael.
+Some code of mine which didn't make it beyond -mm used this small
+per-cpu extension. So the commit you refer to was tested.
 
-	Ingo
