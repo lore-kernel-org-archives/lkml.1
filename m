@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760197AbYFLWiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760104AbYFLWjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760197AbYFLWiV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 18:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbYFLWiL
+	id S1760104AbYFLWjW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 18:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753400AbYFLWjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 18:38:11 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:33064 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759195AbYFLWiK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 18:38:10 -0400
-Date: Fri, 13 Jun 2008 00:38:03 +0200
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: Joel Becker <joel.becker@oracle.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       ocfs2-devel@oss.oracle.com, cluster-devel@redhat.com,
-       teigland@redhat.com
-Subject: Re: [RFC] configfs: Allow ->make_item() and ->make_group() to
-	return detailed errors.
-Message-ID: <20080612223803.GB4012@localdomain>
-Reply-To: Louis.Rilling@kerlabs.com
-References: <1213305595-16805-1-git-send-email-joel.becker@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1213305595-16805-1-git-send-email-joel.becker@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 12 Jun 2008 18:39:14 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:56881 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753317AbYFLWjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 18:39:13 -0400
+Message-Id: <20080612223802.673729000@polaris-admin.engr.sgi.com>
+References: <20080612223802.528617000@polaris-admin.engr.sgi.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 12 Jun 2008 15:38:03 -0700
+From: Mike Travis <travis@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/1] x86: Add config option to setup early serial console
+Content-Disposition: inline; filename=setup-early-serial-console
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 12, 2008 at 02:19:55PM -0700, Joel Becker wrote:
-> The configfs operations ->make_item() and ->make_group() currently
-> return a new item/group.  A return of NULL signifies an error.  Because
-> of this, -ENOMEM is the only return code bubbled up the stack.
-> 
-> Multiple folks have requested the ability to return specific error codes
-> when these operations fail.  This patch adds that ability by changing the
-> ->make_item/group() ops to return an int.
-> 
-> Also updated are the in-kernel users of configfs.
-> 
-> Signed-off-by: Joel Becker <joel.becker@oracle.com>
+ * Add config option EARLY_SERIAL_CONSOLE to enable early
+   printk's to be directed to the serial console.
 
-Looks good to me. Happy to see this change coming :)
+Based on linux-next
 
-Louis
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+
+---
+ arch/x86/Kconfig.debug         |    9 +++++++++
+ arch/x86/kernel/early_printk.c |    4 ++++
+ 2 files changed, 13 insertions(+)
+
+--- linux-2.6-next.orig/arch/x86/Kconfig.debug
++++ linux-2.6-next/arch/x86/Kconfig.debug
+@@ -29,6 +29,15 @@ config EARLY_PRINTK
+ 	  with klogd/syslogd or the X server. You should normally N here,
+ 	  unless you want to debug such a crash.
+ 
++config EARLY_SERIAL_CONSOLE
++	bool "Early Serial Console"
++	default m
++	help
++	  Initializes the early console to be the serial port.  The default
++	  is to use the VGA console.
++
++	  This is useful for server systems that do not have a VGA console.
++
+ config DEBUG_STACKOVERFLOW
+ 	bool "Check for stack overflows"
+ 	depends on DEBUG_KERNEL
+--- linux-2.6-next.orig/arch/x86/kernel/early_printk.c
++++ linux-2.6-next/arch/x86/kernel/early_printk.c
+@@ -193,7 +193,11 @@ static struct console simnow_console = {
+ };
+ 
+ /* Direct interface for emergencies */
++#ifdef CONFIG_EARLY_SERIAL_CONSOLE
++static struct console *early_console = &early_serial_console;
++#else
+ static struct console *early_console = &early_vga_console;
++#endif
+ static int early_console_initialized;
+ 
+ void early_printk(const char *fmt, ...)
 
 -- 
-Dr Louis Rilling			Kerlabs - IRISA
-Skype: louis.rilling			Campus Universitaire de Beaulieu
-Phone: (+33|0) 2 99 84 71 52		Avenue du General Leclerc
-Fax: (+33|0) 2 99 84 71 71		35042 Rennes CEDEX - France
-http://www.kerlabs.com/
+
