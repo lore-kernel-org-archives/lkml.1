@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757979AbYFLGpO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757360AbYFLGpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757979AbYFLGpO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 02:45:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756460AbYFLGld
+	id S1757360AbYFLGpk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 02:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756546AbYFLGlg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 02:41:33 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:9089 "EHLO
+	Thu, 12 Jun 2008 02:41:36 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:10070 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753722AbYFLGlK (ORCPT
+	with ESMTP id S1753718AbYFLGlK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 12 Jun 2008 02:41:10 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=uVJvjMdboXkcDJTds1ZkzU4x3Fo/VEm7hXBvyhblEUzbiLCAWPohH/YiMK/9mSXYrU
-         E1cMgow96BGMw5lfY8JkG+U15mvPxHLZGk3YkGoVqgrNtn36YQ8wmobKrXOyZe4QFjmy
-         vVQMjGKRdkzhOTEooLYB/bn3gyuW8rMqSr/8I=
+        b=OGJlCE7aQnuXRj86/qtkk+gFEJ4rFVgYk8rLwsquwiydB+YjETER51SFz3+3dD2Et5
+         iECZ3ZMPDWJn1TUfLLMRE4e1TbCak0rmJtDpm+O0qvtgogQ1W06J+EVmwslSX5+KpKSn
+         hRZUKzAvCc+mi4mA0HrbAtVqRr/Ciggiv8+20=
 To: <bzolnier@gmail.com>
 Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
        Borislav Petkov <petkovbb@gmail.com>
-Subject: [PATCH 14/18] ide-floppy: fold idefloppy_create_test_unit_ready_cmd into idefloppy_open
-Date: Thu, 12 Jun 2008 08:41:06 +0200
-Message-Id: <1213252870-20474-15-git-send-email-petkovbb@gmail.com>
+Subject: [PATCH 10/18] ide-cd: move request prep from cdrom_start_seek_continuation to rq issue path
+Date: Thu, 12 Jun 2008 08:41:02 +0200
+Message-Id: <1213252870-20474-11-git-send-email-petkovbb@gmail.com>
 X-Mailer: git-send-email 1.5.5.1
 In-Reply-To: <1213252870-20474-1-git-send-email-petkovbb@gmail.com>
 References: <1213252870-20474-1-git-send-email-petkovbb@gmail.com>
@@ -30,42 +30,59 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There's no need for this function since it is used only once.
+... by factoring out the rq preparation code into a separate
+function called in the request routine. Bart: As a nice
+side effect, this minimizes the IRQ handler execution time.
+
+There should be no functionality change resulting from this patch.
 
 Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 ---
- drivers/ide/ide-floppy.c |   11 +++--------
- 1 files changed, 3 insertions(+), 8 deletions(-)
+ drivers/ide/ide-cd.c |   12 ++++++++++--
+ 1 files changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/ide/ide-floppy.c b/drivers/ide/ide-floppy.c
-index ffebf83..615d3a3 100644
---- a/drivers/ide/ide-floppy.c
-+++ b/drivers/ide/ide-floppy.c
-@@ -569,13 +569,6 @@ static void idefloppy_create_start_stop_cmd(struct ide_atapi_pc *pc, int start,
- 	cmd[4] = start;
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index b8c98e1..da0f28c 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -763,9 +763,8 @@ static ide_startstop_t cdrom_seek_intr(ide_drive_t *drive)
+ 	return ide_stopped;
  }
  
--static void idefloppy_create_test_unit_ready_cmd(struct ide_atapi_pc *pc,
--						 unsigned char *cmd)
--{
--	idefloppy_init_pc(pc, cmd);
--	cmd[0] = GPCMD_TEST_UNIT_READY;
--}
--
- static void idefloppy_create_rw_cmd(idefloppy_floppy_t *floppy,
- 				    struct ide_atapi_pc *pc, struct request *rq,
- 				    unsigned long sector)
-@@ -1161,7 +1154,9 @@ static int idefloppy_open(struct inode *inode, struct file *filp)
- 		floppy->flags &= ~IDEFLOPPY_FLAG_FORMAT_IN_PROGRESS;
- 		/* Just in case */
+-static ide_startstop_t cdrom_start_seek_continuation(ide_drive_t *drive)
++static void ide_cd_prepare_seek_request(ide_drive_t *drive, struct request *rq)
+ {
+-	struct request *rq = HWGROUP(drive)->rq;
+ 	sector_t frame = rq->sector;
  
--		idefloppy_create_test_unit_ready_cmd(&pc, cmd);
-+		idefloppy_init_pc(&pc, cmd);
-+		cmd[0] = GPCMD_TEST_UNIT_READY;
+ 	sector_div(frame, queue_hardsect_size(drive->queue) >> SECTOR_BITS);
+@@ -775,6 +774,11 @@ static ide_startstop_t cdrom_start_seek_continuation(ide_drive_t *drive)
+ 	put_unaligned(cpu_to_be32(frame), (unsigned int *) &rq->cmd[2]);
+ 
+ 	rq->timeout = ATAPI_WAIT_PC;
++}
 +
- 		if (idefloppy_queue_pc_tail(drive, &pc, cmd)) {
- 			idefloppy_create_start_stop_cmd(&pc, 1, cmd);
- 			(void) idefloppy_queue_pc_tail(drive, &pc, cmd);
++static ide_startstop_t cdrom_start_seek_continuation(ide_drive_t *drive)
++{
++	struct request *rq = HWGROUP(drive)->rq;
+ 	return cdrom_transfer_packet_command(drive, rq, &cdrom_seek_intr);
+ }
+ 
+@@ -1223,10 +1227,14 @@ static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq,
+ 		    IDE_LARGE_SEEK(info->last_block, block,
+ 			    IDECD_SEEK_THRESHOLD) &&
+ 		    drive->dsc_overlap) {
++
+ 			xferlen = 0;
+ 			fn = cdrom_start_seek_continuation;
+ 			info->dma = 0;
+ 			info->start_seek = jiffies;
++
++			ide_cd_prepare_seek_request(drive, rq);
++
+ 		} else {
+ 			xferlen = 32768;
+ 			fn = cdrom_start_rw_cont;
 -- 
 1.5.5.1
 
