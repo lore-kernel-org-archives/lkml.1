@@ -1,105 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759611AbYFLK6G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759998AbYFLK60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759611AbYFLK6G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 06:58:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756011AbYFLK5z
+	id S1759998AbYFLK60 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 06:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759666AbYFLK6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 06:57:55 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48631 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755715AbYFLK5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 06:57:55 -0400
-Date: Thu, 12 Jun 2008 12:57:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [PATCH 0/5] x86: minor PAT adaptations
-Message-ID: <20080612105740.GA20156@elte.hu>
-References: <20080610140411.GD5024@alberich.amd.com> <20080612081029.GA1403@elte.hu> <20080612100110.GA7763@alberich.amd.com>
+	Thu, 12 Jun 2008 06:58:09 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:47712 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759612AbYFLK6H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 06:58:07 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080612100110.GA7763@alberich.amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
+Message-ID: <18513.345.553912.449710@frecb006361.adech.frec.bull.fr>
+Date: Thu, 12 Jun 2008 12:58:33 +0200
+To: Holger Kiehl <Holger.Kiehl@dwd.de>
+Cc: Nick Dokos <nicholas.dokos@hp.com>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       linux-ext4@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Performance of ext4 
+In-Reply-To: <Pine.LNX.4.64.0806120855370.27806@diagnostix.dwd.de>
+References: <Pine.LNX.4.64.0806110801370.19793@diagnostix.dwd.de>
+	<20080611105945.GB9008@skywalker>
+	<Pine.LNX.4.64.0806111937460.3720@diagnostix.dwd.de>
+	<18563.1213215457@alphaville.zko.hp.com>
+	<Pine.LNX.4.64.0806120855370.27806@diagnostix.dwd.de>
+X-Mailer: VM 8.0.9 under Emacs 23.0.50.1 (i486-pc-linux-gnu)
+From: Solofo.Ramangalahy@bull.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Holger,
 
-* Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
+Holger Kiehl writes:
+ > That works until it comes to patch patches/ext4_ialloc-flexbg.patch when
+ > it gets lots of rejects. So how do I set this up correctly?
 
-> > > patch 5 - slightly changing the code that is doing the intersection of
-> > >           pat_type and mtrr_type to be more readable (from my point of view)
-> > > 
-> > > Patches are against x86/pat (as of version 
-> > > v2.6.26-rc3-6-g46dd98a).
-> > 
-> > #5 makes sense too, but it didnt apply cleanly:
-> 
-> That's odd. I've double checked it by doing a fresh
-> 
-> $ git remote add tip git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
-> $ git remote update
-> $ git checkout tip/x86/pat
-> 
-> and applying patches 1-5 in sequence without problems.
-> (Patches were taken from emails that arrived via my linux-kernel
-> subscription.) Probably your tip/x86/pat is not at
-> v2.6.26-rc3-6-g46dd98a?
+I think your quilt is set up correctly.
 
-it was there - but some other commit from upstream interfered.
+The rejects probably come from the patch queue being based on a
+different version than 2.6.26-rc5.
 
-> When trying to apply the patches to tip/master I get rejects for 
-> patches 3 and 5.
-> 
-> Hence I think creating my patches against a feature branch was not a 
-> good idea.
+Which patchset did you use?
 
-it was a good idea - as that the final destination where the PAT patches 
-end up.
+What I do when wanting a patch queue for a specific kernel is to
+search for commit message indicating the rebase for this version.
 
-current tip/x86/pat head is:
+There is a "Rebase to linux-2.6.26-rc5" on
+http://repo.or.cz/w/ext4-patch-queue.git
+So the corresponding snapshot
+http://repo.or.cz/w/ext4-patch-queue.git?a=snapshot;h=ed6aaac3b0cc0ba47dbb2af0884306584271e5a2;sf=tgz
+patches 2.6.26-rc5 smoothly.
+(the last patchset also applies, with offset and fuzz, though)
 
- tip/x86/pat 499f8f8: x86: rename pat_wc_enabled to pat_enabled
-
-> >  1 out of 1 hunk FAILED -- rejects in file arch/x86/mm/pat.c
-> > 
-> > (it didnt apply neither against tip/x86/pat or tip/master, nor against 
-> > linus/master. I guess it's some mixup somewhere.)
-> 
-> Ok, it's commit 282c454cd3a7041f59a37112bb2f82263bc38f6c which was not 
-> contained in the tip/x86/pat branch. This means I have to adapt patch 
-> 5.
-
-indeed. I cherry-picked this commit meanwhile into x86/pat.
-
-> Finally a dumb question. What patches do you prefer? Patches against 
-> feature branches (say tip/x86/foo), against tip/master or against 
-> tip/auto-latest as described in your tip.git-Readme?
-
-either is fine - but if you make specific topic updates it's best to do 
-them against the topic branch and we'll integrate them all together. If 
-in doubt, using tip/master doesnt hurt.
-
-usually i do this: i update x86/pat, then i switch to 'master' and check 
-whether it all merges cleanly via 'git-merge x86/pat'.
-
-when you switch to a topic branch, you might also want to update to the 
-latest linus tree via 'git-merge linus/master', to pick up all other 
-fixes as well. The topic branches always merge cleanly to linus-latest. 
-(we automate that - the x86/pat topic branch is not stale as its -rc3 
-base would suggest, there simply was no need to merge it to Linus-latest 
-up to now)
-
-	Ingo
+-- 
+solofo
