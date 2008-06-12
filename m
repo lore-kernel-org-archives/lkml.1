@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbYFLHCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757068AbYFLHFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757493AbYFLHCw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 03:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbYFLHCk
+	id S1757068AbYFLHFX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 03:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753418AbYFLHFL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 03:02:40 -0400
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:48137 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756686AbYFLHCj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 03:02:39 -0400
-Message-ID: <50414.195.41.66.226.1213254146.squirrel@mail.jabbernet.dk>
-In-Reply-To: <1213239782.4994.79.camel@raven.themaw.net>
-References: <20080603105258.GV28946@ZenIV.linux.org.uk> 
-    <1212499623.3025.46.camel@raven.themaw.net> 
-    <alpine.LFD.1.10.0806030751040.3473@woody.linux-foundation.org> 
-    <1212509263.3025.66.camel@raven.themaw.net> 
-    <alpine.LFD.1.10.0806030926330.3473@woody.linux-foundation.org> 
-    <1212513189.3025.101.camel@raven.themaw.net> 
-    <20080603173029.GD28946@ZenIV.linux.org.uk> 
-    <x49ej7ejtry.fsf@segfault.boston.devel.redhat.com> 
-    <20080603191859.GG28946@ZenIV.linux.org.uk> 
-    <x49abi2jnwf.fsf@segfault.boston.devel.redhat.com> 
-    <20080603230026.GH28946@ZenIV.linux.org.uk> 
-    <1212547323.3146.45.camel@raven.themaw.net> 
-    <1213073861.3024.34.camel@raven.themaw.net> 
-    <484E1F20.4060804@krogh.cc> 
-    <1213080010.3024.42.camel@raven.themaw.net>
-    <1213239782.4994.79.camel@raven.themaw.net>
-Date: Thu, 12 Jun 2008 09:02:26 +0200 (CEST)
-Subject: Re: Linux 2.6.26-rc4
-From: "Jesper Krogh" <jesper@krogh.cc>
-To: "Ian Kent" <raven@themaw.net>
-Cc: "Jesper Krogh" <jesper@krogh.cc>, "Al Viro" <viro@zeniv.linux.org.uk>,
-       "Jeff Moyer" <jmoyer@redhat.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Miklos Szeredi" <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-User-Agent: SquirrelMail/1.5.1 [CVS]
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Thu, 12 Jun 2008 03:05:11 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:4783 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753345AbYFLHFK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 03:05:10 -0400
+Subject: Re: [2.6.26-rc5-git2] WARNING: at kernel/lockdep.c:2658
+	check_flags+0x4c/0x128()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Alessandro Suardi <alessandro.suardi@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <19f34abd0806112355v7330ccd4x41e66151f333c144@mail.gmail.com>
+References: <5a4c581d0806111506m31412b21lee7bb851dabe6576@mail.gmail.com>
+	 <19f34abd0806112355v7330ccd4x41e66151f333c144@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 12 Jun 2008 09:05:06 +0200
+Message-Id: <1213254306.31518.84.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 2008-06-10 at 14:40 +0800, Ian Kent wrote:
-> The patch below is sufficiently different to the original patch I posted
-> to warrant a replacement rather than a correction.
+On Thu, 2008-06-12 at 08:55 +0200, Vegard Nossum wrote:
 
-I'll patch that in now and see what it gives. (Is it preferred
-to use this --ghost option or not?) What would you suggest?
 
-Jesper
--- 
-Jesper Krogh
+> From: Vegard Nossum <vegard.nossum@gmail.com>
+> Date: Thu, 12 Jun 2008 08:49:18 +0200
+> Subject: [PATCH] x86: more hardirq annotations for notify_die()
+> 
+> Reported-by: Alessandro Suardi <alessandro.suardi@gmail.com>
+> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+> ---
+>  arch/x86/kernel/traps_32.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
+> index bde6f63..be9ecae 100644
+> --- a/arch/x86/kernel/traps_32.c
+> +++ b/arch/x86/kernel/traps_32.c
+> @@ -569,6 +569,7 @@ void do_##name(struct pt_regs *regs, long error_code)			\
+>  #define DO_VM86_ERROR(trapnr, signr, str, name)				\
+>  void do_##name(struct pt_regs *regs, long error_code)			\
+>  {									\
+> +	trace_hardirqs_fixup();						\
+>  	if (notify_die(DIE_TRAP, str, regs, error_code, trapnr, signr)	\
+>  						== NOTIFY_STOP)		\
+>  		return;							\
+
+Yeah, I think this is ok, actual traps don't have any way of knowing the
+actual IRQ state afaik. So
+
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
