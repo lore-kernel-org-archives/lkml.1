@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757799AbYFLUQt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758869AbYFLUSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757799AbYFLUQt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 16:16:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbYFLUQj
+	id S1758869AbYFLUSX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 16:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbYFLUSP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 16:16:39 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:27005 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754541AbYFLUQj convert rfc822-to-8bit (ORCPT
+	Thu, 12 Jun 2008 16:18:15 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:55838 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754592AbYFLUSO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 16:16:39 -0400
-From: "Altobelli, David" <david.altobelli@hp.com>
-To: Heikki Orsila <shdl@zakalwe.fi>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Thu, 12 Jun 2008 20:16:02 +0000
-Subject: RE: [PATCH] HP iLO driver
-Thread-Topic: [PATCH] HP iLO driver
-Thread-Index: AcjMvyjuNWE8n8ibS1mV0mSKzWJFZgABMO4A
-Message-ID: <CF70AA892F109448AEA269483B3A983903B6F79D74@G1W1215.americas.hpqcorp.net>
-References: <20080612182308.GA1091@ldl.fc.hp.com>
- <20080612190405.GR31039@zakalwe.fi>
-In-Reply-To: <20080612190405.GR31039@zakalwe.fi>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 12 Jun 2008 16:18:14 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Thu, 12 Jun 2008 22:17:49 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: bkl-removal: drivers/firewire and drivers/ieee1394 patches can be
+ reverted/ dropped
+To: Jonathan Corbet <corbet@lwn.net>
+cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+Message-ID: <tkrat.08d683698d08913b@s5r6.in-berlin.de>
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Heikki Orsila wrote:
-> On Thu, Jun 12, 2008 at 12:23:08PM -0600, David Altobelli wrote:
->> +    volatile u64 fifobar[1];
->> +};
->
-> Why do you need a volatile? What you probably want is atomic ops.
-> Spinlocks will create memory barriers implicitly.
+Jonathan,
 
-This points to a queue that is shared with hardware, and could
-be modified outside of kernel control.
+please revert commits
 
->> +static int fifo_enqueue(struct ilo_hwinfo *hw, char *fifobar, int
->> entry) +{ +     struct fifo *Q = FIFOBARTOHANDLE(fifobar);
->> +     int ret = 0;
->> +
->> +     spin_lock(&hw->fifo_lock);
->> +     if (!(Q->fifobar[(Q->tail + 1) & Q->imask] & ENTRY_MASK_O)) {
->> +             Q->fifobar[Q->tail & Q->imask] |=
->> +                     ((entry & ENTRY_MASK_NOSTATE) | Q->merge); +
->> Q->tail += 1; +             ret = 1;
->> +     }
->> +     spin_unlock(&hw->fifo_lock);
->> +
->> +     return ret;
->> +}
->
-> Is writing to Q->fifobar (u64 *) endian-safe?
+"firewire: cdev lock_kernel() pushdown"
+aabbc0e478bf1e82e7f4a9ec61abb8a1a259175b
+http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commitdiff;h=aabbc0e478bf1e82e7f4a9ec61abb8a1a259175b
 
-No, this is not endian-safe. Good point.  I think converting these
-to readl() operations would let me remove the volatile and fix the
-endian issue.
+"ieee1394: cdev lock_kernel() pushdown"
+8fff9d8cda2b288231fd100333fed26b9bb2042f
+http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commitdiff;h=8fff9d8cda2b288231fd100333fed26b9bb2042f
+
+and drop them before mainline submission.
+
+I looked at the respective drivers last month and came to the conclusion
+that fw_device_op_open(), dv1394_open(), raw1394_open() are safe to be
+called without the BKL held.  I specifically looked for possible races
+with module initialization or with other processes accessing the
+respective character device file interface and found none.
+
+(Well, extremely early openers of dv1394 or raw1394 could find the
+devices not yet operational, i.e. they may look to the opener as if no
+hardware were present.  But this is no real-world problem.  All actual
+application programs which use those device files will in practice
+access them only after module initialization was finished and thus be
+able to get through to hardware.)
+
+I found a race condition of video1394_open() with module initialization
+and fixed it in commit
+"ieee1394: video1394: reorder module init, prepare BKL removal"
+6ee70088d975130142debdf1f6fe07958d3d2f26
+http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commitdiff;h=6ee70088d975130142debdf1f6fe07958d3d2f26
+
+Thanks,
+-- 
+Stefan Richter
+-=====-==--- -==- -==--
+http://arcgraph.de/sr/
+
