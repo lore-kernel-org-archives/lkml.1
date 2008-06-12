@@ -1,135 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757862AbYFLITd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757412AbYFLIW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757862AbYFLITd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 04:19:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121AbYFLITR
+	id S1757412AbYFLIW5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 04:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbYFLIWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 04:19:17 -0400
-Received: from sh.osrg.net ([192.16.179.4]:33512 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757517AbYFLITO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 04:19:14 -0400
-Date: Thu, 12 Jun 2008 16:29:33 +0900
-To: alexisb@us.ibm.com
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
-       muli@il.ibm.com, mingo@elte.hu, akpm@linux-foundation.org
-Subject: Re: [PATCH -mm] x86 calgary: fix handling of devces that aren't
-	behind the Calgary
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1213233906.8567.146.camel@alexis>
-References: <20080531133114P.tomof@acm.org>
-	<1213233906.8567.146.camel@alexis>
+	Thu, 12 Jun 2008 04:22:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38871 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752952AbYFLIWi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 04:22:38 -0400
+Date: Thu, 12 Jun 2008 01:22:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       linux-mm@kvack.org, riel@redhat.com, npiggin@suse.de,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>
+Subject: Re: 2.6.26-rc5-mm3: kernel BUG at mm/vmscan.c:510
+Message-Id: <20080612012205.95eb10e9.akpm@linux-foundation.org>
+In-Reply-To: <20080612075858.GA4874@martell.zuzino.mipt.ru>
+References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
+	<20080612075858.GA4874@martell.zuzino.mipt.ru>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080612163403K.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jun 2008 18:25:06 -0700
-Alexis Bruemmer <alexisb@us.ibm.com> wrote:
+On Thu, 12 Jun 2008 11:58:58 +0400 Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
-> On Sat, 2008-05-31 at 13:31 +0900, FUJITA Tomonori wrote:
-> > The calgary code can give drivers addresses above 4GB which is very
-> > bad for hardware that is only 32bit DMA addressable:
-> > 
-> > http://lkml.org/lkml/2008/5/8/423
-> > 
-> > This patch tries to fix the problem by using per-device
-> > dma_mapping_ops support. This fixes the calgary code to use swiotlb or
-> > nommu properly for devices which are not behind the Calgary/CalIOC2.
-> > 
-> > With this patch, the calgary code sets the global dma_ops to swiotlb
-> > or nommu, and the dma_ops of devices behind the Calgary/CalIOC2 to
-> > calgary_dma_ops. So the calgary code can handle devices safely that
-> > aren't behind the Calgary/CalIOC2.
-> > 
-> > I think that bus_register_notifier works nicely for hotplugging (the
-> > calgary code can register a hook to set the device-per ops to
-> > calgary_dma_ops) though I don't know the calgary code needs it.
-> > 
-> > This patch is against -mm (depends on the per-device dma_mapping_ops
-> > patchset in -mm).
-> > 
-> > This is only compile tested.
-> So this patch dose not completely work.  The problem is that devices
-> that are controlled by the CalIO2/calgary are not getting the calgary
-> dma_ops assigned to them.  Having the proper changes to pci-dma.c helped
-> (thank you) but still didn't quite get us there.  From what I could tell
-> having the per device dma_ops being assigned in calgary_init_one was not
-> correct.  The dev being past to calgary_init_one is only ever an IBM
-> CalIO2/calgary device which meant that many devices that are being
-> controlled by the CalI02/calgary, such as the the MegaRAID SAS
-> controller, were not getting the calgary based dma ops assigned to them.
+> [  254.217776] ------------[ cut here ]------------
+> [  254.217776] kernel BUG at mm/vmscan.c:510!
+> [  254.217776] invalid opcode: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
+> [  254.217776] last sysfs file: /sys/kernel/uevent_seqnum
+> [  254.217776] CPU 1 
+> [  254.217776] Modules linked in: ext2 nf_conntrack_irc xt_state iptable_filter ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack ip_tables x_tables usblp ehci_hcd uhci_hcd usbcore sr_mod cdrom
+> [  254.217776] Pid: 12044, comm: madvise02 Not tainted 2.6.26-rc5-mm3 #4
+> [  254.217776] RIP: 0010:[<ffffffff802729b2>]  [<ffffffff802729b2>] putback_lru_page+0x152/0x160
+> [  254.217776] RSP: 0018:ffff81012edd1cd8  EFLAGS: 00010202
+> [  254.217776] RAX: ffffe20003f344b8 RBX: 0000000000000000 RCX: 0000000000000001
+> [  254.217776] RDX: 0000000000005d5c RSI: 0000000000000000 RDI: ffffe20003f344b8
+> [  254.217776] RBP: ffff81012edd1cf8 R08: 0000000000000000 R09: 0000000000000000
+> [  254.217776] R10: ffffffff80275152 R11: 0000000000000001 R12: ffffe20003f344b8
+> [  254.217776] R13: 00000000ffffffff R14: ffff810124801080 R15: ffffffffffffffff
+> [  254.217776] FS:  00007fb3ad83c6f0(0000) GS:ffff81017f845320(0000) knlGS:0000000000000000
+> [  254.217776] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> [  254.217776] CR2: 00007fffb5846d38 CR3: 0000000117de9000 CR4: 00000000000006e0
+> [  254.217776] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> [  254.217776] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> [  254.217776] Process madvise02 (pid: 12044, threadinfo ffff81012edd0000, task ffff81017db6b3c0)
+> [  254.217776] Stack:  ffffe20003f344b8 ffffe20003f344b8 ffffffff80629300 0000000000000001
+> [  254.217776]  ffff81012edd1d18 ffffffff8027d268 ffffe20003f344b8 0000000000000000
+> [  254.217776]  ffff81012edd1d38 ffffffff80271783 0000000000000246 ffffe20003f344b8
+> [  254.217776] Call Trace:
+> [  254.217776]  [<ffffffff8027d268>] __clear_page_mlock+0xe8/0x100
+> [  254.217776]  [<ffffffff80271783>] truncate_complete_page+0x73/0x80
+> [  254.217776]  [<ffffffff80271871>] truncate_inode_pages_range+0xe1/0x3c0
+> [  254.217776]  [<ffffffff80271b60>] truncate_inode_pages+0x10/0x20
+> [  254.217776]  [<ffffffff802e9738>] ext3_delete_inode+0x18/0xf0
+> [  254.217776]  [<ffffffff802e9720>] ? ext3_delete_inode+0x0/0xf0
+> [  254.217776]  [<ffffffff802aa27b>] generic_delete_inode+0x7b/0x100
+> [  254.217776]  [<ffffffff802aa43c>] generic_drop_inode+0x13c/0x180
+> [  254.217776]  [<ffffffff802a960d>] iput+0x5d/0x70
+> [  254.217776]  [<ffffffff8029f43e>] do_unlinkat+0x13e/0x1e0
+> [  254.217776]  [<ffffffff8046de77>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+> [  254.217776]  [<ffffffff80255c69>] ? trace_hardirqs_on_caller+0xc9/0x150
+> [  254.217776]  [<ffffffff8046de77>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+> [  254.217776]  [<ffffffff8029f4f1>] sys_unlink+0x11/0x20
+> [  254.217776]  [<ffffffff8020b6bb>] system_call_after_swapgs+0x7b/0x80
+> [  254.217776] 
+> [  254.217776] 
+> [  254.217776] Code: 0f 0b eb fe 0f 1f 44 00 00 f6 47 01 40 48 89 f8 75 1d 83 78 08 01 75 13 4c 89 e7 31 db e8 97 44 ff ff e9 2b ff ff ff 0f 0b eb fe <0f> 0b eb fe 48 8b 47 10 eb dd 0f 1f 40 00 55 48 89 e5 41 57 45 
+> [  254.217776] RIP  [<ffffffff802729b2>] putback_lru_page+0x152/0x160
+> [  254.217776]  RSP <ffff81012edd1cd8>
+> [  254.234540] ---[ end trace a1dd07b571590cc8 ]---
 
-Thanks, now I see what's wrong in my patch.
+int putback_lru_page(struct page *page)
+{
+	int lru;
+	int ret = 1;
+	int was_unevictable;
 
+	VM_BUG_ON(!PageLocked(page));
+	VM_BUG_ON(PageLRU(page));
 
-> I have attached an updated patch that does assign the per device calgary
-> dma_ops correctly and have successfully tested it on an IBM x3950 M2.  I
-> think there is a better way to do this, but this does work.
+	lru = !!TestClearPageActive(page);
+	was_unevictable = TestClearPageUnevictable(page); /* for page_evictable() */
 
-Looks good though I have one minor comment.
-
-
-> Thank you some much for your help and work on this problem!
-
-You're welcome! I just want to improve IOMMUs and dma mapping code.
-
-
-> Alexis 
-> 
-> 
-> > Thanks,
-> > 
-> > ==
-> > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > Subject: [PATCH] x86 calgary: fix handling of devces that aren't behind the Calgary
-> > 
-> > The calgary code can give drivers addresses above 4GB which is very
-> > bad for hardware that is only 32bit DMA addressable.
-> > 
-> > With this patch, the calgary code sets the global dma_ops to swiotlb
-> > or nommu properly, and the dma_ops of devices behind the
-> > Calgary/CalIOC2 to calgary_dma_ops. So the calgary code can handle
-> > devices safely that aren't behind the Calgary/CalIOC2.
-> > 
-> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > ---
-> <snip>
-> 
-> Signed-off-by: Alexis Bruemmer <alexisb@us.ibm.com>
+	if (unlikely(!page->mapping)) {
+		/*
+		 * page truncated.  drop lock as put_page() will
+		 * free the page.
+		 */
+		VM_BUG_ON(page_count(page) != 1);
 
 
-> @@ -1230,6 +1197,21 @@ static int __init calgary_init(void)
->  			goto error;
->  	} while (1);
->  
-> +	dev = NULL;
-> +	do {
-> +		struct iommu_table *tbl;
-> +		dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev);
-> +
-> +		if (!dev)
-> +			break;
-> +
-> +		tbl = find_iommu_table(&dev->dev);
-> +
-> +		if(translation_enabled(tbl))
-> +			dev->dev.archdata.dma_ops = &calgary_dma_ops;
-> +
-> +	} while (1);
+added by unevictable-lru-infrastructure.patch.
 
-for_each_pci_dev would simplify the code a bit?
+How does one reproduce this?  Looks like LTP madvise2.
 
-dev = NULL;
-
-for_each_pci_dev(dev) {
-	struct iommu_table *tbl;
-
-	tbl = find_iommu_table(&dev->dev);
-
-	if(translation_enabled(tbl))
-		dev->dev.archdata.dma_ops = &calgary_dma_ops;
-}
