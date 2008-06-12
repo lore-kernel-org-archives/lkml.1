@@ -1,61 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760074AbYFLNMq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761973AbYFLNN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760074AbYFLNMq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 09:12:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761376AbYFLNMg
+	id S1761973AbYFLNN4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 09:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759850AbYFLNNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 09:12:36 -0400
-Received: from styx.suse.cz ([82.119.242.94]:60692 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760011AbYFLNMf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 09:12:35 -0400
-Date: Thu, 12 Jun 2008 15:12:34 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Thu, 12 Jun 2008 09:13:45 -0400
+Received: from mail.gmx.net ([213.165.64.20]:54226 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757050AbYFLNNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 09:13:44 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+c8ZMJ33yceXZ4vvfU0s9nGgGYB6Gc6YnA0r/Tdu
+	Nkg2gwb4CHM0cu
+Date: Thu, 12 Jun 2008 15:13:53 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+X-X-Sender: lyakh@axis700.grange
+To: David Brownell <david-b@pacbell.net>
+cc: linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net,
        Andrew Morton <akpm@linux-foundation.org>
-cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [RESEND] [PATCH] Input: add retry logic to resume with respect to
- CTR
-Message-ID: <Pine.LNX.4.64.0806121511290.10085@jikos.suse.cz>
+Subject: [PATCH -mm] max7301: check spi_setup() return code, general cleanup
+In-Reply-To: <200806120015.50953.david-b@pacbell.net>
+Message-ID: <Pine.LNX.4.64.0806121504560.18017@axis700.grange>
+References: <Pine.LNX.4.64.0806061625260.3338@axis700.grange>
+ <200806120015.50953.david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are systems that fail in i8042_resume() with
+Fix inaccuracies in comments, check spi_setup() return code, mask off high 
+byte in max7301_read(). Thanks to David Brownell for the review.
 
-	i8042: Can't write CTR to resume
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
 
-as i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR) fails even though the
-controller claimed itself to be ready before.
-
-One retry after failing write fixes the problems on the failing systems.
-
-Reported-by: Helmut Schaa <hschaa@novell.com>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 ---
- drivers/input/serio/i8042.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
 
---- linux-2.6.25.orig/drivers/input/serio/i8042.c
-+++ linux-2.6.25/drivers/input/serio/i8042.c
-@@ -938,8 +938,12 @@ static int i8042_resume(struct platform_
- 	i8042_ctr |= I8042_CTR_AUXDIS | I8042_CTR_KBDDIS;
- 	i8042_ctr &= ~(I8042_CTR_AUXINT | I8042_CTR_KBDINT);
- 	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
--		printk(KERN_ERR "i8042: Can't write CTR to resume\n");
--		return -EIO;
-+		printk(KERN_WARNING "i8042: Can't write CTR to resume, retrying ...\n");
-+		msleep(50);
-+		if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
-+			printk(KERN_ERR "i8042: CTR write retry failed\n");
-+			return -EIO;
-+		}
- 	}
+On Thu, 12 Jun 2008, David Brownell wrote:
+
+> Some comments about one routine; presumably more to follow:
+
+Hopefully all points addressed.
+
+Thanks
+Guennadi
+
+diff --git a/drivers/gpio/max7301.c b/drivers/gpio/max7301.c
+index f35fac5..fc7cebc 100644
+--- a/drivers/gpio/max7301.c
++++ b/drivers/gpio/max7301.c
+@@ -71,7 +71,7 @@ struct max7301 {
+  *
+  * A write to the MAX7301 means one message with one transfer
+  *
+- * Returns 0 if successfull or a negative value on error
++ * Returns 0 if successful or a negative value on error
+  */
+ static int max7301_write(struct spi_device *spi, unsigned int reg, unsigned int val)
+ {
+@@ -84,9 +84,9 @@ static int max7301_write(struct spi_device *spi, unsigned int reg, unsigned int
+  * @spi: The SPI device
+  * @reg: Register offset
+  *
+- * A read from the MAX7301 means one message with two transfers
++ * A read from the MAX7301 means two messages with one transfer each
+  *
+- * Returns positive 8 bit value from device if successfull or a
++ * Returns positive 8 bit value from device if successful or a
+  * negative value on error
+  */
+ static int max7301_read(struct spi_device *spi, unsigned int reg)
+@@ -99,12 +99,13 @@ static int max7301_read(struct spi_device *spi, unsigned int reg)
+ 	if (ret)
+ 		return ret;
+ 	/*
+-	 * FIXME: This read should write 0x0000 (=NOOP at MAX7301 side)
++	 * This relies on the fact, that a transfer with NULL tx_buf shifts out
++	 * zero bytes (=NOOP for MAX7301)
+ 	 */
+ 	ret = spi_read(spi, (u8 *)&word, sizeof(word));
+ 	if (ret)
+ 		return ret;
+-	return word;
++	return word & 0xff;
+ }
  
- 	if (i8042_mux_present) {
-
---
-1.5.2.4
-
+ static int max7301_direction_input(struct gpio_chip *chip, unsigned offset)
+@@ -224,7 +225,9 @@ static int __devinit max7301_probe(struct spi_device *spi)
+ 	 */
+ 	spi->bits_per_word = 16;
+ 
+-	spi->master->setup(spi);
++	ret = spi_setup(spi);
++	if (ret < 0)
++		return ret;
+ 
+ 	ts = kzalloc(sizeof(struct max7301), GFP_KERNEL);
+ 	if (!ts)
