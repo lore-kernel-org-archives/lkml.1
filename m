@@ -1,101 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761232AbYFLWos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760296AbYFLWq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761232AbYFLWos (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 18:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760900AbYFLWoZ
+	id S1760296AbYFLWq5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 18:46:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753426AbYFLWqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 18:44:25 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:61203 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760878AbYFLWoY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 18:44:24 -0400
-Date: Thu, 12 Jun 2008 23:43:36 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-serial@vger.kernel.org, linux-mips@linux-mips.org,
+	Thu, 12 Jun 2008 18:46:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60637 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752759AbYFLWqt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 18:46:49 -0400
+Date: Thu, 12 Jun 2008 15:46:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Travis <travis@sgi.com>
+Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] serial: Z85C30: Avoid a hang at console switch-over
-Message-ID: <Pine.LNX.4.55.0806122024410.23634@cliff.in.clinika.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: [PATCH 1/1] x86: Add config option to setup early serial
+ console
+Message-Id: <20080612154600.fac8cc6b.akpm@linux-foundation.org>
+In-Reply-To: <20080612223802.673729000@polaris-admin.engr.sgi.com>
+References: <20080612223802.528617000@polaris-admin.engr.sgi.com>
+	<20080612223802.673729000@polaris-admin.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Changes to the generic console support code that happened a while ago
-introduced a scenario where the initial console is used in parallel with
-the final console during a brief period when switching between the two is
-in progress.  During that time a message about the switch-over is printed.
+On Thu, 12 Jun 2008 15:38:03 -0700
+Mike Travis <travis@sgi.com> wrote:
 
- With some combinations of chips, firmware and drivers, such as the Zilog
-Z85C30 SCC used with the DECstation, a hang may happen because the
-firmware used for the initial console may not expect the state of the chip
-after it has been initialised by the driver.  This is not a bug in the
-firmware, as some registers it would have to examine are write-only.
+>  * Add config option EARLY_SERIAL_CONSOLE to enable early
+>    printk's to be directed to the serial console.
+> 
+> Based on linux-next
+> 
+> Signed-off-by: Mike Travis <travis@sgi.com>
+> ---
+> 
+> ---
+>  arch/x86/Kconfig.debug         |    9 +++++++++
+>  arch/x86/kernel/early_printk.c |    4 ++++
+>  2 files changed, 13 insertions(+)
+> 
+> --- linux-2.6-next.orig/arch/x86/Kconfig.debug
+> +++ linux-2.6-next/arch/x86/Kconfig.debug
+> @@ -29,6 +29,15 @@ config EARLY_PRINTK
+>  	  with klogd/syslogd or the X server. You should normally N here,
+>  	  unless you want to debug such a crash.
+>  
+> +config EARLY_SERIAL_CONSOLE
+> +	bool "Early Serial Console"
+> +	default m
+> +	help
+> +	  Initializes the early console to be the serial port.  The default
+> +	  is to use the VGA console.
+> +
+> +	  This is useful for server systems that do not have a VGA console.
+> +
+>  config DEBUG_STACKOVERFLOW
+>  	bool "Check for stack overflows"
+>  	depends on DEBUG_KERNEL
+> --- linux-2.6-next.orig/arch/x86/kernel/early_printk.c
+> +++ linux-2.6-next/arch/x86/kernel/early_printk.c
+> @@ -193,7 +193,11 @@ static struct console simnow_console = {
+>  };
+>  
+>  /* Direct interface for emergencies */
+> +#ifdef CONFIG_EARLY_SERIAL_CONSOLE
+> +static struct console *early_console = &early_serial_console;
+> +#else
+>  static struct console *early_console = &early_vga_console;
+> +#endif
+>  static int early_console_initialized;
+>  
+>  void early_printk(const char *fmt, ...)
+> 
 
- This is a workaround for the Z85C30 which reuses the power-management 
-callback to keep the transmitter of the line associated with the console 
-enabled.  It reflects the consensus reached in a discussion a while ago.
+Confused.  What's wrong with console=uart,...?
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
----
-patch-mips-2.6.23-rc5-20070904-zs-pm-4
-diff -up --recursive --new-file linux-mips-2.6.23-rc5-20070904.macro/drivers/serial/zs.c linux-mips-2.6.23-rc5-20070904/drivers/serial/zs.c
---- linux-mips-2.6.23-rc5-20070904.macro/drivers/serial/zs.c	2007-09-04 04:55:44.000000000 +0000
-+++ linux-mips-2.6.23-rc5-20070904/drivers/serial/zs.c	2007-09-22 20:25:10.000000000 +0000
-@@ -787,7 +787,6 @@ static int zs_startup(struct uart_port *
- 	zport->regs[1] &= ~RxINT_MASK;
- 	zport->regs[1] |= RxINT_ALL | TxINT_ENAB | EXT_INT_ENAB;
- 	zport->regs[3] |= RxENABLE;
--	zport->regs[5] |= TxENAB;
- 	zport->regs[15] |= BRKIE;
- 	write_zsreg(zport, R1, zport->regs[1]);
- 	write_zsreg(zport, R3, zport->regs[3]);
-@@ -814,7 +813,6 @@ static void zs_shutdown(struct uart_port
- 
- 	spin_lock_irqsave(&scc->zlock, flags);
- 
--	zport->regs[5] &= ~TxENAB;
- 	zport->regs[3] &= ~RxENABLE;
- 	write_zsreg(zport, R5, zport->regs[5]);
- 	write_zsreg(zport, R3, zport->regs[3]);
-@@ -959,6 +957,23 @@ static void zs_set_termios(struct uart_p
- 	spin_unlock_irqrestore(&scc->zlock, flags);
- }
- 
-+/*
-+ * Hack alert!
-+ * Required solely so that the initial PROM-based console
-+ * works undisturbed in parallel with this one.
-+ */
-+static void zs_pm(struct uart_port *uport, unsigned int state,
-+		  unsigned int oldstate)
-+{
-+	struct zs_port *zport = to_zport(uport);
-+
-+	if (state < 3)
-+		zport->regs[5] |= TxENAB;
-+	else
-+		zport->regs[5] &= ~TxENAB;
-+	write_zsreg(zport, R5, zport->regs[5]);
-+}
-+
- 
- static const char *zs_type(struct uart_port *uport)
- {
-@@ -1041,6 +1056,7 @@ static struct uart_ops zs_ops = {
- 	.startup	= zs_startup,
- 	.shutdown	= zs_shutdown,
- 	.set_termios	= zs_set_termios,
-+	.pm		= zs_pm,
- 	.type		= zs_type,
- 	.release_port	= zs_release_port,
- 	.request_port	= zs_request_port,
-@@ -1190,6 +1206,7 @@ static int __init zs_console_setup(struc
- 		return ret;
- 
- 	zs_reset(zport);
-+	zs_pm(uport, 0, -1);
- 
- 	if (options)
- 		uart_parse_options(options, &baud, &parity, &bits, &flow);
+
