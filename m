@@ -1,108 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbYFLPbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756333AbYFLPbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755984AbYFLPbS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 11:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbYFLPat
+	id S1756333AbYFLPbc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 11:31:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbYFLPat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 12 Jun 2008 11:30:49 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:51312 "EHLO
+Received: from bohort.kerlabs.com ([62.160.40.57]:54020 "EHLO
 	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753194AbYFLPas (ORCPT
+	with ESMTP id S1753309AbYFLPas (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 12 Jun 2008 11:30:48 -0400
-Message-Id: <20080612152953.438035514@kerlabs.com>
+Message-Id: <20080612152953.667564205@kerlabs.com>
 References: <20080612152645.445504681@kerlabs.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 12 Jun 2008 17:26:46 +0200
+Date: Thu, 12 Jun 2008 17:26:47 +0200
 From: Louis Rilling <Louis.Rilling@kerlabs.com>
 To: Joel.Becker@oracle.com
 Cc: Louis.Rilling@kerlabs.com, ocfs2-devel@oss.oracle.com,
        linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH 1/3] configfs: Report errors in config_*_init_type_name()
-Content-Disposition: inline; filename=configfs-make-set-name-functions-return-errors.patch
+Subject: [RFC][PATCH 2/3] configfs: call drop_link() to cleanup after create_link() failure
+Content-Disposition: inline; filename=configfs-drop_link-if-create_link-fails.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-config_item_set_name() may fail but its error code is not checked in
-config_*init_type_name().
+When allow_link() succeeds but create_link() fails, the subsystem is not
+informed of the failure.
 
-This patch adds the missing error checking and make config_*_init_type_name()
-report errors.
+This patch fixes this by calling drop_link() on create_link() failures.
 
 Signed-off-by: Louis Rilling <Louis.Rilling@kerlabs.com>
 ---
- fs/configfs/item.c       |   18 ++++++++++++++----
- include/linux/configfs.h |    8 ++++----
- 2 files changed, 18 insertions(+), 8 deletions(-)
+ fs/configfs/symlink.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-Index: b/fs/configfs/item.c
+Index: b/fs/configfs/symlink.c
 ===================================================================
---- a/fs/configfs/item.c	2008-06-12 17:13:32.000000000 +0200
-+++ b/fs/configfs/item.c	2008-06-12 17:13:35.000000000 +0200
-@@ -112,22 +112,32 @@ int config_item_set_name(struct config_i
+--- a/fs/configfs/symlink.c	2008-06-12 17:13:27.000000000 +0200
++++ b/fs/configfs/symlink.c	2008-06-12 17:13:38.000000000 +0200
+@@ -137,8 +137,12 @@ int configfs_symlink(struct inode *dir, 
+ 		goto out_put;
  
- EXPORT_SYMBOL(config_item_set_name);
+ 	ret = type->ct_item_ops->allow_link(parent_item, target_item);
+-	if (!ret)
++	if (!ret) {
+ 		ret = create_link(parent_item, target_item, dentry);
++		if (ret && type->ct_item_ops->drop_link)
++			type->ct_item_ops->drop_link(parent_item,
++						     target_item);
++	}
  
--void config_item_init_type_name(struct config_item *item,
-+int config_item_init_type_name(struct config_item *item,
- 				const char *name,
- 				struct config_item_type *type)
- {
--	config_item_set_name(item, name);
-+	int error;
-+
-+	error = config_item_set_name(item, name);
-+	if (error)
-+		return error;
- 	item->ci_type = type;
- 	config_item_init(item);
-+	return 0;
- }
- EXPORT_SYMBOL(config_item_init_type_name);
- 
--void config_group_init_type_name(struct config_group *group, const char *name,
-+int config_group_init_type_name(struct config_group *group, const char *name,
- 			 struct config_item_type *type)
- {
--	config_item_set_name(&group->cg_item, name);
-+	int error;
-+
-+	error = config_item_set_name(&group->cg_item, name);
-+	if (error)
-+		return error;
- 	group->cg_item.ci_type = type;
- 	config_group_init(group);
-+	return 0;
- }
- EXPORT_SYMBOL(config_group_init_type_name);
- 
-Index: b/include/linux/configfs.h
-===================================================================
---- a/include/linux/configfs.h	2008-06-12 17:13:32.000000000 +0200
-+++ b/include/linux/configfs.h	2008-06-12 17:13:35.000000000 +0200
-@@ -71,9 +71,9 @@ static inline char *config_item_name(str
- }
- 
- extern void config_item_init(struct config_item *);
--extern void config_item_init_type_name(struct config_item *item,
--				       const char *name,
--				       struct config_item_type *type);
-+extern int config_item_init_type_name(struct config_item *item,
-+				      const char *name,
-+				      struct config_item_type *type);
- 
- extern struct config_item * config_item_get(struct config_item *);
- extern void config_item_put(struct config_item *);
-@@ -97,7 +97,7 @@ struct config_group {
- };
- 
- extern void config_group_init(struct config_group *group);
--extern void config_group_init_type_name(struct config_group *group,
-+extern int config_group_init_type_name(struct config_group *group,
- 					const char *name,
- 					struct config_item_type *type);
- 
+ 	config_item_put(target_item);
+ 	path_put(&nd.path);
 
 -- 
 Dr Louis Rilling			Kerlabs
