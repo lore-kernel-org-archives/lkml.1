@@ -1,81 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbYFLVXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbYFLVb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755355AbYFLVXW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 17:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbYFLVXJ
+	id S1754766AbYFLVb6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 17:31:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbYFLVbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 17:23:09 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:37909 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751222AbYFLVXI (ORCPT
+	Thu, 12 Jun 2008 17:31:47 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:46633 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751317AbYFLVbq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 17:23:08 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: pnp changes -> suspend oops [Was: 2.6.26-rc5-mm2]
-Date: Thu, 12 Jun 2008 15:22:43 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org
-References: <20080609223145.5c9a2878.akpm@linux-foundation.org> <200806111303.39267.bjorn.helgaas@hp.com> <485190AC.3060107@gmail.com>
-In-Reply-To: <485190AC.3060107@gmail.com>
+	Thu, 12 Jun 2008 17:31:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=WjNhlYYQoCb4o09I3BPYfngmUpQhn0ei+FAq1RKoMmkOxYKAyyoKCGdg4y+d6+YnrA
+         dhgYiRbTOofcLy6ugLt4RGmuuIdLr3f+LzcRuJHbO/qPAeDpvq9belxCtlyw/ZZKXWbc
+         ym6VEHWByS0MNpHXmI00Ba6HDvauulgcEJLEY=
+Message-ID: <48519577.8000402@gmail.com>
+Date: Thu, 12 Jun 2008 23:30:31 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Tomas Winkler <tomasw@gmail.com>
+CC: Johannes Berg <johannes@sipsolutions.net>, Rik van Riel <riel@redhat.com>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       yi.zhu@intel.com, reinette.chatre@intel.com,
+       linux-wireless@vger.kernel.org
+Subject: Re: Problem: Out of memory after 2days with 2GB RAM
+References: <c4e36d110806120307n20cce692s9c136f11596f5ab0@mail.gmail.com>	 <20080612093833.0fb9cdd6@bree.surriel.com>	 <1213278884.3936.15.camel@johannes.berg> <1ba2fa240806120843s268b2ff4mb45a11adf11afc7f@mail.gmail.com>
+In-Reply-To: <1ba2fa240806120843s268b2ff4mb45a11adf11afc7f@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806121522.44199.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 June 2008 03:10:04 pm Jiri Slaby wrote:
-> On 06/11/2008 09:03 PM, Bjorn Helgaas wrote:
-> > On Wednesday 11 June 2008 12:08:53 pm Jiri Slaby wrote:
-> >> On 06/10/2008 07:31 AM, Andrew Morton wrote:
-> >>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc5/2.6.26-rc5-mm2/
-> >> I face problems after some of the pnp changes. If this is not known, I may 
-> >> bisect it, it's 100% reproducible. I have no real logs, It panics prior to 
-> >> network is woken up to see something on netconsole, I just captured a function 
-> >> name and an offset of place where it oopses.
-> >>
-> >> pnpacpi_encode_resources, ACPI_RESOURCE_TYPE_DMA case, pnp_get_resource(dev, 
-> >> IORESOURCE_DMA, dma) returns NULL, which is dereferenced at pnpacpi_encode_dma 
-> >> at p->flags.
-> >>
-> >> It happens on resume after mem > /sys/power/state.
-> > 
-> > Thanks for the report, I hadn't heard about this.
-> > 
-> > We used to always have a resource from the static table to encode
-> > (assuming the table was big enough), even if that resource was
-> > disabled or unassigned.  But now we don't keep those around, so
-> > we can end up with null pointers like you're seeing.
-> > 
-> > Before you go to all the trouble of bisecting it, can you turn on
-> > CONFIG_PNP_DEBUG and try the following debug patch?  I think this
-> > will prevent the oops, but it's just papering over the real problem,
-> > so please capture the complete dmesg log.
+On 06/12/2008 05:43 PM, Tomas Winkler wrote:
+> On Thu, Jun 12, 2008 at 4:54 PM, Johannes Berg
+> <johannes@sipsolutions.net> wrote:
+>> This cuts the allocation to 10%, or (under) a page in all cases.
 > 
-> ACPI: PCI interrupt for device 0000:00:02.0 disabled
-> serial 00:07: disabled
-> serial 00:06: disabled
-> ACPI handle has no context!
-> ACPI: PCI interrupt for device 0000:00:1d.7 disabled
-> ...
-> serial 00:06:   no dma resource to encode!
-> serial 00:06: activated
-> serial 00:07:   no dma resource to encode!
-> serial 00:07: activated
-> ACPI: PCI Interrupt 0000:00:02.0[A] -> GSI 16 (level, low) -> IRQ 16
+> Probably. it would be safe to use vmalloc for allocating txb anyway.
+> I'll give it a try.
 
-Interesting.  I wonder why a serial device would have a DMA resource.
-We encode resources by following a template from _CRS, so evidently
-that template had a DMA resource.  Or something deeper is wrong.
-
-Can you send me the rest of that dmesg log?
-
-I take it that with the debug patch, your system is functional
-after resume?
-
-Bjorn
+Why it wouldn't be "safe". I suggested it to you already, since allocating 64k 
+by kmalloc for descriptors accessed only in kernel is crud. Moreover you're 
+mixing the buffer with its descriptors here? Or what you're considering to vmalloc?
