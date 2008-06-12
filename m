@@ -1,46 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753524AbYFLVPA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755250AbYFLVQd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753524AbYFLVPA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 17:15:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751058AbYFLVOu
+	id S1755250AbYFLVQd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 17:16:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751096AbYFLVQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 17:14:50 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:47902 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751047AbYFLVOu (ORCPT
+	Thu, 12 Jun 2008 17:16:25 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:57277 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751057AbYFLVQY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 17:14:50 -0400
-Date: Thu, 12 Jun 2008 17:14:49 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: AntonioLin <antonio.lin@alcormicro.com>,
-       David Vrabel <david.vrabel@csr.com>,
-       USB list <linux-usb@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [S] Re: [linux-uwb] packet size problem
-In-Reply-To: <20080611145349.GD20851@kernel.dk>
-Message-ID: <Pine.LNX.4.44L0.0806121713330.27763-100000@iolanthe.rowland.org>
+	Thu, 12 Jun 2008 17:16:24 -0400
+Date: Thu, 12 Jun 2008 22:15:54 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Rik van Riel <riel@redhat.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: 2.6.26-rc5-mm2 (swap_state.c:77)
+In-Reply-To: <20080612152905.6cb294ae@cuia.bos.redhat.com>
+Message-ID: <Pine.LNX.4.64.0806122131330.10415@blonde.site>
+References: <20080609223145.5c9a2878.akpm@linux-foundation.org>
+ <200806101848.22237.nickpiggin@yahoo.com.au> <20080611140902.544e59ec@bree.surriel.com>
+ <200806120958.38545.nickpiggin@yahoo.com.au> <20080612152905.6cb294ae@cuia.bos.redhat.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Jun 2008, Jens Axboe wrote:
-
-> > Jens, this is a question for you.  How come we're getting an SG element
-> > whose lenth is 3584 when the request_queue's dma_alignment mask is set
-> > to 1023?  Is dma_alignment not the right parameter to set?
+On Thu, 12 Jun 2008, Rik van Riel wrote:
+> On Thu, 12 Jun 2008 09:58:38 +1000
+> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 > 
-> dma_alignment mask is the buffer address alignment, so they are not
-> completely the same. But it does sound odd, since you would then be
-> spanning two pages for that sg element. Is this before or after dma
-> mapping the sg table?
+> > > Does loopback over tmpfs use a different allocation path?
+> > 
+> > I'm sorry, hmm I didn't look closely enough and forgot that
+> > write_begin/write_end requires the callee to allocate the page
+> > as well, and that Hugh had nicely unified most of that.
+> > 
+> > So maybe it's not that. It's pretty easy to hit I found with
+> > ext2 mounted over loopback on a tmpfs file.
 
-Any followup on this?  Is there a different way to request that each SG 
-element (except the last) has length divisible by 1024, other than 
-setting the dma_alignment mask to 1023?
+The loop-on-tmpfs write side is okay nowaways, but the read side
+still has to use shmem_readpage, with page passed in from splice.
 
-Alan Stern
+> Turns out the loopback driver uses splice, which moves
+> the pages from one place to another.  This is why you
+> were seeing the problem with loopback, but not with
+> just a really big file on tmpfs.
+> 
+> I'm trying to make sense of all the splice code now
+> and will send fix as soon as I know how to fix this
+> problem in a nice way.
 
+There's no need to make sense of all the splice code, it's just
+that it's doing add_to_page_cache_lru (on a page not marked as
+SwapBacked), then shmem and swap_state consistency relies on it
+as having been marked as SwapBacked.  Normally, yes, shmem_getpage
+is the one that allocates the page, but in this case it's already
+been done outside, awkward (and long predates loop's use of splice).
+
+It's remarkably hard to correct the LRU of a page once it's been
+launched towards one.  Is it still on this cpu's pagevec?  Have we
+been preempted and it's on another cpu's pagevec?  If it's reached
+the LRU, has vmscan whisked it off for a moment, even though it's
+PageLocked?  Until now it's been that the LRUs are self-correcting,
+but these patches move away from that.
+
+I don't know how to fix this problem in a nice way.  For the moment,
+to proceed with testing, I'm using the hack below.  But perhaps that
+screws things up for the other !mapping_cap_account_dirty filesystems
+e.g. ramfs, I just haven't tried them yet - nor shall in the next
+couple of days.
+
+It could be turned into a proper bdi check of its own, instead of
+parasiting off cap_account_dirty.  But I'm not yet convinced by any
+of the PageSwapBacked stuff, so currently preferring a quick hack
+to a grand scheme.
+
+It's not clear to me why tmpfs file pages should be counted as anon
+pages rather than file pages; though it is clear that switching their
+LRU midstream, when swizzled to swap, can have implementation problems.
+
+I don't really get why SwapBacked is the important consideration:
+I can see that you may want different balancing for pages mapped
+into userspace from pages just cached in kernel; but SwapBacked?
+
+Am I right to think that the memcontrol stuff is now all broken,
+because memcontrol.c hasn't yet been converted to the more LRUs?
+Certainly I'm now hanging when trying to run in a restricted memcg.
+
+Unrelated fix to compiler warning and silly /proc/meminfo numbers
+below too, that one raises fewer questions!
+
+Hugh
+
+--- 2.6.26-rc5-mm3/mm/filemap.c	2008-06-12 11:03:35.000000000 +0100
++++ linux/mm/filemap.c	2008-06-12 21:28:43.000000000 +0100
+@@ -496,6 +496,8 @@ int add_to_page_cache_lru(struct page *p
+ {
+ 	int ret = add_to_page_cache(page, mapping, offset, gfp_mask);
+ 	if (ret == 0) {
++		if (!mapping_cap_account_dirty(mapping))
++			SetPageSwapBacked(page);
+ 		if (page_is_file_cache(page))
+ 			lru_cache_add_file(page);
+ 		else
+--- 2.6.26-rc5-mm3/fs/proc/proc_misc.c	2008-06-12 11:03:28.000000000 +0100
++++ linux/fs/proc/proc_misc.c	2008-06-12 16:58:34.000000000 +0100
+@@ -216,7 +216,7 @@ static int meminfo_read_proc(char *page,
+ 		K(pages[LRU_INACTIVE_FILE]),
+ #ifdef CONFIG_UNEVICTABLE_LRU
+ 		K(pages[LRU_UNEVICTABLE]),
+-		K(pages[NR_MLOCK]),
++		K(global_page_state(NR_MLOCK)),
+ #endif
+ #ifdef CONFIG_HIGHMEM
+ 		K(i.totalhigh),
