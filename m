@@ -1,44 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762422AbYFLN5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762585AbYFLN6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762422AbYFLN5U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 09:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759050AbYFLN5M
+	id S1762585AbYFLN6U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 09:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759050AbYFLN6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 09:57:12 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:51095 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752885AbYFLN5L (ORCPT
+	Thu, 12 Jun 2008 09:58:13 -0400
+Received: from fnoeppeil48.netpark.at ([217.175.205.176]:48889 "EHLO
+	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753282AbYFLN6M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 09:57:11 -0400
-Subject: Re: [PATCH 5/5] futex: fix miss ordered wakeups
-From: Peter Zijlstra <peterz@infradead.org>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <1213276932.16459.16.camel@localhost.localdomain>
-References: <20080611204916.271608740@mvista.com>
-	 <20080611204917.523866467@mvista.com>  <1213250825.31518.80.camel@twins>
-	 <1213276932.16459.16.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 12 Jun 2008 15:57:08 +0200
-Message-Id: <1213279028.31518.91.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Jun 2008 09:58:12 -0400
+Date: Thu, 12 Jun 2008 15:58:10 +0200
+From: Manuel Lauss <mano@roarinelk.homelinux.net>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: Pierre Ossman <drzeus@drzeus.cx>, linux-mips@linux-mips.org,
+       sshtylyov@ru.mvista.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/8] Alchemy: register mmc platform device for
+	db1200/pb1200 boards.
+Message-ID: <20080612135810.GA25352@roarinelk.homelinux.net>
+References: <20080609063521.GA8724@roarinelk.homelinux.net> <20080609063702.GC8724@roarinelk.homelinux.net> <20080612090206.GB21601@linux-mips.org> <20080612101839.GC21601@linux-mips.org> <20080612121828.GA24603@roarinelk.homelinux.net> <20080612122646.GA9493@linux-mips.org> <20080612154248.5c9c5c9d@mjolnir.drzeus.cx> <20080612134729.GA20015@linux-mips.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080612134729.GA20015@linux-mips.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-06-12 at 06:22 -0700, Daniel Walker wrote:
-> On Thu, 2008-06-12 at 08:07 +0200, Peter Zijlstra wrote:
-> > On Wed, 2008-06-11 at 13:49 -0700, Daniel Walker wrote:
-> > > plain text document attachment (blocked_on-futex.patch)
-> > 
-> > I thought everybody and his dog didn't care for this?
+On Thu, Jun 12, 2008 at 02:47:30PM +0100, Ralf Baechle wrote:
+> On Thu, Jun 12, 2008 at 03:42:48PM +0200, Pierre Ossman wrote:
 > 
-> Just Thomas ..
+> > > Pierre, feel free to merge these MIPS bits into your tree.  The whole
+> > > series should probably go upstream together.
+> > > 
+> > 
+> > How's the dependency issue though? Will this series be bisectable in my
+> > tree?
+> 
+> If we're only talking about a build, there should be no dependencies
+> between the Alchemy and the MMC parts of the series.  The Alchemy part
+> sorts the device registration and that's a separate construction site
+> from the rest.  Of course with only one applied things won't work
+> terribly well but that would only be temporarily.
 
-And me, I really don't see the point in this, use PI futexes already if
-you care for wakeup ordering.
+FWIW, I build tested-tested the DB1200 defconfig after each patch applied.
+As Ralf said, patch 1 alone isn't terribly useful on it, but it should work.
 
+	Manuel Lauss
