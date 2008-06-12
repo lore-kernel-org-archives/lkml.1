@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761238AbYFLXUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760625AbYFLXW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761238AbYFLXUM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 19:20:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756368AbYFLXUA
+	id S1760625AbYFLXW2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 19:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755934AbYFLXWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 19:20:00 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:29530 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755576AbYFLXT7 (ORCPT
+	Thu, 12 Jun 2008 19:22:16 -0400
+Received: from vs166246.vserver.de ([62.75.166.246]:39490 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753907AbYFLXWP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 19:19:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=VU29wsF5qG7ETagda8BWZ8uG4hG0W4gMV2QQrg/ozxDTeNn0uUey6xXQwV+FgslL2o
-         uAXtIpvQODtU7MwRW5NZihcWXJcExV5vJ7o7bFSe3+MisSgqng6o9CDknk0W6X8qs4hF
-         +zxepGk2g8k5VrGEfaoPsgOiHl0/SfcMt+aE8=
-Message-ID: <86802c440806121619g162626edv648b67b837e0d7f8@mail.gmail.com>
-Date: Thu, 12 Jun 2008 16:19:59 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/1] x86: Add config option to setup early serial console
-Cc: "Mike Travis" <travis@sgi.com>, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20080612161049.3bb2f1a3.akpm@linux-foundation.org>
+	Thu, 12 Jun 2008 19:22:15 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH] ssb: Fix coherent DMA mask for PCI devices
+Date: Fri, 13 Jun 2008 01:21:49 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: "John Linville" <linville@tuxdriver.com>, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       "Glauber Costa" <gcosta@redhat.com>
+References: <200806121533.14435.mb@bu3sch.de> <84144f020806121444i43d381ehdee1774c135d8841@mail.gmail.com>
+In-Reply-To: <84144f020806121444i43d381ehdee1774c135d8841@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080612223802.528617000@polaris-admin.engr.sgi.com>
-	 <20080612223802.673729000@polaris-admin.engr.sgi.com>
-	 <20080612154600.fac8cc6b.akpm@linux-foundation.org>
-	 <4851AA00.1050006@sgi.com>
-	 <20080612161049.3bb2f1a3.akpm@linux-foundation.org>
+Message-Id: <200806130121.50052.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 12, 2008 at 4:10 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Thu, 12 Jun 2008 15:58:08 -0700
-> Mike Travis <travis@sgi.com> wrote:
->
->> Andrew Morton wrote:
->> > On Thu, 12 Jun 2008 15:38:03 -0700
->> > Mike Travis <travis@sgi.com> wrote:
->> >
->> >>  * Add config option EARLY_SERIAL_CONSOLE to enable early
->> >>    printk's to be directed to the serial console.
->> ...
->> >>
->> >
->> > Confused.  What's wrong with console=uart,...?
->> >
->>
->> The problem is that I need the output really, really early before
->> the console is initialized.
->
-> Sorry, I meant earlycon=uart..
-> --
+On Thursday 12 June 2008 23:44:13 Pekka Enberg wrote:
+> On Thu, Jun 12, 2008 at 4:33 PM, Michael Buesch <mb@bu3sch.de> wrote:
+> > This fixes setting the coherent DMA mask for PCI devices.
+> >
+> > Signed-off-by: Michael Buesch <mb@bu3sch.de>
+> >
+> > ---
+> >
+> > John, please queue this bugfix for 2.6.26
+> >
+> > The whole SSB DMA API should be rewritten, as it makes too many bad
+> > assumptions about the other subsytems. I will do that soon.
+> > But let's apply this patch for now, as it fixes this particular bug.
+> 
+> Hmm. Does the patch have anything to do with this bug report?
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=10819
+> 
+> 
 
-could move the parsing from early_param to head_64.c::x86_64_start_kernel
+Sorry. Magic crystal ball is broken. :)
+Can you please try?
 
-YH
+-- 
+Greetings Michael.
