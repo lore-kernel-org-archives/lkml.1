@@ -1,112 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755696AbYFLPdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbYFLPnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755696AbYFLPdf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 11:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYFLPd1
+	id S1754858AbYFLPnw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 11:43:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbYFLPnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 11:33:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59317 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751221AbYFLPd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 11:33:26 -0400
-Message-ID: <48514150.6090001@redhat.com>
-Date: Thu, 12 Jun 2008 11:31:28 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 12 Jun 2008 11:43:41 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:42365 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752971AbYFLPnj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 11:43:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=lhfsX+dhcUZFKCIAEHtn5foBo96pY/12XthcEnHu0ov3SFjtvKd2lL4MAdmXVtZWdz
+         7Oc/o9pr14ap+JqFjMbyVSmrGYhtXpVHcsn9wJ7674U+2ishrOr1XdJL9iorRziY/DS+
+         AbIKDpRY7PNeVgoUIbP2+Kww8xAfOjRaU/gcc=
+Message-ID: <1ba2fa240806120843s268b2ff4mb45a11adf11afc7f@mail.gmail.com>
+Date: Thu, 12 Jun 2008 18:43:37 +0300
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "Johannes Berg" <johannes@sipsolutions.net>
+Subject: Re: Problem: Out of memory after 2days with 2GB RAM
+Cc: "Rik van Riel" <riel@redhat.com>,
+       "Zdenek Kabelac" <zdenek.kabelac@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       yi.zhu@intel.com, reinette.chatre@intel.com,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <1213278884.3936.15.camel@johannes.berg>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Peter Zijlstra <peterz@infradead.org>, Hideo AOKI <haoki@redhat.com>,
-       mingo@elte.hu, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: Kernel marker has no performance impact on ia64.
-References: <48447052.3030300@redhat.com> <1212445965.6269.22.camel@lappy.programming.kicks-ass.net> <20080602232135.GA20173@Krystal> <1212618449.19205.35.camel@lappy.programming.kicks-ass.net> <20080604232241.GA8488@Krystal> <1212653539.19205.47.camel@lappy.programming.kicks-ass.net> <4847F811.7060406@redhat.com> <20080612140415.GC22348@Krystal>
-In-Reply-To: <20080612140415.GC22348@Krystal>
-X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <c4e36d110806120307n20cce692s9c136f11596f5ab0@mail.gmail.com>
+	 <20080612093833.0fb9cdd6@bree.surriel.com>
+	 <1213278884.3936.15.camel@johannes.berg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mathieu,
-
-Mathieu Desnoyers wrote:
->> If so, I'd like to suggest below changes,
+On Thu, Jun 12, 2008 at 4:54 PM, Johannes Berg
+<johannes@sipsolutions.net> wrote:
+> On Thu, 2008-06-12 at 09:38 -0400, Rik van Riel wrote:
+>> On Thu, 12 Jun 2008 12:07:34 +0200
+>> "Zdenek Kabelac" <zdenek.kabelac@gmail.com> wrote:
 >>
->> - introduce below macro in marker.h
+>> > It looks like while there was a huge amount of buffers and caches -
+>> > system was unable to allocate few pages for kmalloc in iwl3945 driver
+>> > after resume.
 >>
->> #define DEFINE_TRACE(name, vargs, args...)	\
->> static inline void trace_##name vargs		\
->> {						\
->> 	trace_mark(name, #vargs, ##args);	\
->> }
->>
->> - remove __marker_check_format from __trace_mark
->> - and write a definition in sched_trace.h
->>
->> DEFINE_TRACE(sched_switch, (struct task_struct *prev, struct task_struct *next),
->> 	     prev, next);
->>
->> Thus, we can remove fmt string and also ensure the type checking, because;
->> - Type checking at the trace point is done by the compiler.
->> - Type checking of probe handler can be done by comparing #vargs strings.
->>
-> 
-> Hrm, interesting! The only problem I see with this is that it won't
-> allow a tracer to efficiently parse the "format information". Parsing C
-> code is not as straightforward and compact as parsing a format string.
+>> It looks like this is because it wants to allocate 2**5 contiguous
+>> pages, which is 128kB of contiguous kernel memory.
+>
+> 64-bit system I assume?
+> The allocation should be 256 * 20 * sizeof(struct sk_buff *).
 
-Sure, Parsing C code is not a good idea. I think each tracer can have
-a lookup table to get a printf-style format corresponding to each
-"regular" marking point. Maintaining this lookup table is not so hard,
-because these "regular" marking points should be enough stable.
+> Try the patch below. It should improve code generation too.
+>
+> I discussed this with Tomas previously and he says the hw is capable of
+> doing 20 fragments per frame (wonder why, Broadcom can do an unlimited
+> number...) but he complained about the networking stack not being able
+> to.
 
-> However, Peter and you are about to convince me that an hybrid between
-> the solution you propose here and the marker scheme could be used.
-> 
-> Your scheme could be used to declare the markers and probes
-> (DEFINE_TRACE()) in header files. It would declare a static inline
-> function called at the instrumentation site and a probe prototype
-> that could then be used in the probe module to declare the probe that
-> will have to be connected to the marker. This part would allow
-> custom-made probes.
-> 
-> Within the tracer, we would declare custom-made probes for each of these
-> DEFINE_TRACE statements and associate them with format strings. Because
-> the probe has to match the prototype, type correctness is ensured. The
-> format strings would at that point be the exact same as the current
-> trace_mark() statements. The information passed to trace_mark() would be
-> send for direct interpretation or serialization with only basic types
-> available, similar to printk().
+This is scatter gather buffers that can be kicked in one DMA transaction.
 
-If the tracer including systemtap introduces above the lookup table,
-that can translate "name(arguments)" to "format" easily, and can continue
-to use its format string parser.
+Well, the hardware needs to support IP checksumming for that, hence,
+> afaik, only two fragments can ever be used (one for hw header, one for
+> frame)
+This I still don't understand why but everybody is already tired to
+explaining me why.. :) Just need to find time to dig into it.
 
-> We sould leave the trace_mark() statements available for people who want
-> to add their own debug-style instrumentation to their kernel without
-> having to add DEFINE_TRACE() statements and modify the tracer
-> accordingly.
+> This cuts the allocation to 10%, or (under) a page in all cases.
 
-I agree, trace_mark() still useful for "non-regular" markers temporarily
-inserted to the developing code by individual developers.
+Probably. it would be safe to use vmalloc for allocating txb anyway.
+I'll give it a try.
 
-> I guess a bit of polishing will come with the implementation, which I
-> plan to start soon.
-> 
-> Thanks!
-> 
-> Mathieu
-> 
+There was already discussion on LKML about memory allocation problems
+on X86_64, which might explain this regression. This didn't happen
+before.
 
-Thank you!
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Tomas
