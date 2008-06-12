@@ -1,115 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757154AbYFLHcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756814AbYFLHf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757154AbYFLHcn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 03:32:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbYFLHcg
+	id S1756814AbYFLHf1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 03:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbYFLHfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 03:32:36 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:35515 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750834AbYFLHcf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 03:32:35 -0400
-Date: Thu, 12 Jun 2008 16:29:55 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Lameter <clameter@sgi.com>, Bryan Wu <cooloney@kernel.org>,
-       David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] nommu: Correct kobjsize() page validity checks.
-Message-ID: <20080612072955.GA8097@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Christoph Lameter <clameter@sgi.com>,
-	Bryan Wu <cooloney@kernel.org>, David Howells <dhowells@redhat.com>,
-	linux-kernel@vger.kernel.org
+	Thu, 12 Jun 2008 03:35:17 -0400
+Received: from mail.gmx.net ([213.165.64.20]:46404 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752102AbYFLHfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 03:35:16 -0400
+X-Authenticated: #2253541
+X-Provags-ID: V01U2FsdGVkX18RLpc/uSIRhmb+YNX6pY975J2Rs/nveAdg8q1J/S
+	ZlesWDOGyyCbnE
+Date: Thu, 12 Jun 2008 09:35:15 +0200
+From: Thomas Bleher <ThomasBleher@gmx.de>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org, dada1@cosmosbay.com,
+       debian-embedded@lists.debian.org
+Subject: Re: ARM on qemu: running kernel 2.6.20 or newer?
+Message-ID: <20080612073514.GA31458@j-crew.de>
+References: <20080605135149.GA20870@j-crew.de> <200806051644.07430.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <200806051644.07430.elendil@planet.nl>
+X-Accept-Language: de, en
+X-Operating-System: Linux 2.6.18 x86_64
 User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This implements a few changes on top of the recent kobjsize() refactoring
-introduced by commit 6cfd53fc03670c7a544a56d441eb1a6cc800d72b.
+* Frans Pop <elendil@planet.nl> [2008-06-05 16:44]:
+> Thomas Bleher wrote:
+> > I'm trying to run an ARM kernel on qemu (0.9.1-5) on a Debian AMD64
+> > system. 2.6.19 worked fine, but all newer kernel releases[1] result in
+> > qemu consuming 100% of the CPU without ever outputting anything to the
+> > console.
+> 
+> The daily built armel versatile D-I images [1] worked fine for me in qemu 
+> just a few days ago. They use 2.6.24. There's one issue [2] related to 
+> serial console, but graphics mode works fine.
+> 
+> [1] http://wiki.debian.org/ArmEabiHowto
+> [2] http://bugs.debian.org/484366
 
-As Christoph points out:
+Thank you for the fast response!
+I did some further tests, and it looks like the Emdebian cross-compiler
+miscompiles newer kernels, at least for the configs I tested. Using the
+ELDK cross-compiler instead, the kernel boots fine under qemu.
 
-	virt_to_head_page cannot return NULL. virt_to_page also
-	does not return NULL. pfn_valid() needs to be used to
-	figure out if a page is valid.  Otherwise the page struct
-	reference that was returned may have PageReserved() set
-	to indicate that it is not a valid page.
+I don't think I'll have time to further debug this issue, but I've cc'ed
+debian-embedded@l.d.o, in case anyone is interested in tracking this
+down. I'll provide .configs + vmlinux files on request.
 
-As discussed further in the thread, virt_addr_valid() is the preferable
-way to validate the object pointer in this case. In addition to fixing
-up the reserved page case, it also has the benefit of encapsulating the
-hack introduced by commit 4016a1390d07f15b267eecb20e76a48fd5c524ef on
-the impacted platforms, allowing us to get rid of the extra checking in
-kobjsize() for the platforms that don't perform this type of bizarre
-memory_end abuse (every nommu platform that isn't blackfin). If blackfin
-decides to get in line with every other platform and use PageReserved
-for the DMA pages in question, kobjsize() will also continue to work
-fine.
+Regards,
+Thomas Bleher
 
-It also turns out that compound_order() will give us back 0-order for
-non-head pages, so we can get rid of the PageCompound check and just
-use compound_order() directly. Clean that up while we're at it.
-
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-Reviewed-by: Christoph Lameter <clameter@sgi.com>
-
----
-
- mm/nommu.c |   21 +++------------------
- 1 file changed, 3 insertions(+), 18 deletions(-)
-
-diff --git a/mm/nommu.c b/mm/nommu.c
-index 3abd084..4462b6a 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -104,21 +104,15 @@ EXPORT_SYMBOL(vmtruncate);
- unsigned int kobjsize(const void *objp)
- {
- 	struct page *page;
--	int order = 0;
- 
- 	/*
- 	 * If the object we have should not have ksize performed on it,
- 	 * return size of 0
- 	 */
--	if (!objp)
--		return 0;
--
--	if ((unsigned long)objp >= memory_end)
-+	if (!objp || !virt_addr_valid(objp))
- 		return 0;
- 
- 	page = virt_to_head_page(objp);
--	if (!page)
--		return 0;
- 
- 	/*
- 	 * If the allocator sets PageSlab, we know the pointer came from
-@@ -129,18 +123,9 @@ unsigned int kobjsize(const void *objp)
- 
- 	/*
- 	 * The ksize() function is only guaranteed to work for pointers
--	 * returned by kmalloc(). So handle arbitrary pointers, that we expect
--	 * always to be compound pages, here.
--	 */
--	if (PageCompound(page))
--		order = compound_order(page);
--
--	/*
--	 * Finally, handle arbitrary pointers that don't set PageSlab.
--	 * Default to 0-order in the case when we're unable to ksize()
--	 * the object.
-+	 * returned by kmalloc(). So handle arbitrary pointers here.
- 	 */
--	return PAGE_SIZE << order;
-+	return PAGE_SIZE << compound_order(page);
- }
- 
- /*
