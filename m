@@ -1,92 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759482AbYFLK3H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759616AbYFLK31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759482AbYFLK3H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 06:29:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754946AbYFLK2z
+	id S1759616AbYFLK31 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 06:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759460AbYFLK3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 06:28:55 -0400
-Received: from www.tglx.de ([62.245.132.106]:33194 "EHLO www.tglx.de"
+	Thu, 12 Jun 2008 06:29:04 -0400
+Received: from www.tglx.de ([62.245.132.106]:33224 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754213AbYFLK2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 06:28:54 -0400
-Message-Id: <20080610171639.551369443@linutronix.de>
+	id S1759406AbYFLK3B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 06:29:01 -0400
+Message-Id: <20080610171712.196774103@linutronix.de>
+References: <20080610171639.551369443@linutronix.de>
 User-Agent: quilt/0.46-1
-Date: Thu, 12 Jun 2008 10:28:32 -0000
+Date: Thu, 12 Jun 2008 10:28:38 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Arjan van de Veen <arjan@infradead.org>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: [patch 0/6] AMD C1E aware idle support
+       Andreas Herrmann <andreas.herrmann3@amd.com>
+Subject: [patch 1/6] x86: simplify idle selection
+Content-Disposition: inline;
+	filename=0001-391c1a465c0bad7a2c5ab6c46fd5da7fcaee4adc.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-AMD CPUs with C1E support are currently excluded from high resolution
-timers and NOHZ support. The reason is that C1E is a BIOS controlled
-C3 power state which switches off TSC and the local APIC timer. The
-ACPI C-State control manages the TSC/local APIC timer wreckage, but
-this does not include the C1 based ("halt" instruction) C1E mode. The
-BIOS/SMM controlled C1E state works on most systems even without
-enabling ACPI C-State control.
+default_idle is selected in cpu_idle(), when no other idle routine is
+selected. Select it in select_idle_routine() when mwait is not
+selected.
 
-The fact that a system has C1E support enabled is advertised in a MSR,
-but the time during boot when the C1E bit is set by the BIOS varies:
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andreas Herrmann <andreas.herrmann3@amd.com>
 
-1) Boot CPU has already C1E bit set
-2) Secondary CPU sets C1E bit
-3) C1E bit is set after ACPI C-State query
+---
+ arch/x86/kernel/process.c    |   18 +++++++-----------
+ arch/x86/kernel/process_32.c |    7 +------
+ arch/x86/kernel/process_64.c |    7 ++-----
+ 3 files changed, 10 insertions(+), 22 deletions(-)
 
-Case #1 and #2 are covered by the current implementation, but case #3
-results in a complete system lockup due to missing timer
-interrupts. The current solution is to disable the local APIC timer
-and use the PIT in broadcast mode. This restricts the C1E enabled
-systems to periodic timer mode.
-
-The following patch series implements a C1E aware idle function which
-also covers the late C1E enablement (case #3):
-
-The function is selected during boot for CPUs which have possibly C1E
-support. The function checks the MSR which contains the C1E active
-bits before executing the halt instruction. When one of the C1E active
-bits is set, it makes the system C1E aware by enabling the timer
-broadcast mechanism for all CPUs. For high resolution timer and/or
-nohz enabled systems it calls the oneshot timer broadcast mechanism
-before executing the halt instruction. This is the same mechanism
-which is used in the ACPI C-State control for C2/C3 power states.
-
-On my C1E affected X2 box these patches reduce the wakeups/sec down to
-20 according to powertop.
-
-The patches work fine on systems which are not affected by the dreaded
-ATI chipset timer wreckage. On those which have the problem, the box
-needs help from the keyboard to continue working.
-
-The x86 changes for .27 contain a complete overhaul of the affected
-code, but this is out of scope for this patchset.
-
-For those who are interested to test those patches on top of 2.6.26-rc
-I extracted a patch and added it to the c1e series. It's available
-from:
-
-http://www.kernel.org/pub/linux/kernel/people/tglx/c1e/2.6.26-rc5-c1e-patches.tar.gz
-or
-http://www.kernel.org/pub/linux/kernel/people/tglx/c1e/2.6.26-rc5-c1e-patches.tar.bz2
-
-@Macej: I bisected your patches and the commit which solves the mysterious
-hangs is:
-
-x86: I/O APIC: timer through 8259A second-chance
-(7e3530cd98a0c6ab38f5898e855a5beffab26561 in linux-2.6-tip.git)
-
-That's the patch which you worried about possible impacts, but it
-seems that it actually fixes the stupid timer irq issue finally. I
-have tested it on various machines which had timer irq problems in the
-past and they all run smothly. Great work!
-
-Thanks,
-
-	tglx
+Index: linux-2.6/arch/x86/kernel/process.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/process.c
++++ linux-2.6/arch/x86/kernel/process.c
+@@ -139,27 +139,23 @@ static int __cpuinit mwait_usable(const 
+ 
+ void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
+ {
+-	static int selected;
+-
+-	if (selected)
+-		return;
+ #ifdef CONFIG_X86_SMP
+ 	if (pm_idle == poll_idle && smp_num_siblings > 1) {
+ 		printk(KERN_WARNING "WARNING: polling idle and HT enabled,"
+ 			" performance may degrade.\n");
+ 	}
+ #endif
++	if (pm_idle)
++		return;
++
+ 	if (cpu_has(c, X86_FEATURE_MWAIT) && mwait_usable(c)) {
+ 		/*
+-		 * Skip, if setup has overridden idle.
+ 		 * One CPU supports mwait => All CPUs supports mwait
+ 		 */
+-		if (!pm_idle) {
+-			printk(KERN_INFO "using mwait in idle threads.\n");
+-			pm_idle = mwait_idle;
+-		}
+-	}
+-	selected = 1;
++		printk(KERN_INFO "using mwait in idle threads.\n");
++		pm_idle = mwait_idle;
++	} else
++		pm_idle = default_idle;
+ }
+ 
+ static int __init idle_setup(char *str)
+Index: linux-2.6/arch/x86/kernel/process_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/process_32.c
++++ linux-2.6/arch/x86/kernel/process_32.c
+@@ -168,24 +168,19 @@ void cpu_idle(void)
+ 	while (1) {
+ 		tick_nohz_stop_sched_tick();
+ 		while (!need_resched()) {
+-			void (*idle)(void);
+ 
+ 			check_pgt_cache();
+ 			rmb();
+-			idle = pm_idle;
+ 
+ 			if (rcu_pending(cpu))
+ 				rcu_check_callbacks(cpu, 0);
+ 
+-			if (!idle)
+-				idle = default_idle;
+-
+ 			if (cpu_is_offline(cpu))
+ 				play_dead();
+ 
+ 			local_irq_disable();
+ 			__get_cpu_var(irq_stat).idle_timestamp = jiffies;
+-			idle();
++			pm_idle();
+ 		}
+ 		tick_nohz_restart_sched_tick();
+ 		preempt_enable_no_resched();
+Index: linux-2.6/arch/x86/kernel/process_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/process_64.c
++++ linux-2.6/arch/x86/kernel/process_64.c
+@@ -150,12 +150,9 @@ void cpu_idle(void)
+ 	while (1) {
+ 		tick_nohz_stop_sched_tick();
+ 		while (!need_resched()) {
+-			void (*idle)(void);
+ 
+ 			rmb();
+-			idle = pm_idle;
+-			if (!idle)
+-				idle = default_idle;
++
+ 			if (cpu_is_offline(smp_processor_id()))
+ 				play_dead();
+ 			/*
+@@ -165,7 +162,7 @@ void cpu_idle(void)
+ 			 */
+ 			local_irq_disable();
+ 			enter_idle();
+-			idle();
++			pm_idle();
+ 			/* In many cases the interrupt that ended idle
+ 			   has already called exit_idle. But some idle
+ 			   loops can be woken up without interrupt. */
 
 -- 
 
