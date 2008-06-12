@@ -1,79 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761929AbYFLNUO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762087AbYFLNUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761929AbYFLNUO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 09:20:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759965AbYFLNT4
+	id S1762087AbYFLNUh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 09:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761585AbYFLNUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 09:19:56 -0400
-Received: from mail7.hitachi.co.jp ([133.145.228.42]:44365 "EHLO
-	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759827AbYFLNTy (ORCPT
+	Thu, 12 Jun 2008 09:20:20 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:40333 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761939AbYFLNUR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 09:19:54 -0400
-X-AuditID: 0ac90647-abd22ba000004aeb-86-48512278e9fd
-Message-ID: <48512269.70504@hitachi.com>
-Date: Thu, 12 Jun 2008 22:19:37 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
+	Thu, 12 Jun 2008 09:20:17 -0400
+Date: Thu, 12 Jun 2008 09:19:28 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Holger Kiehl <Holger.Kiehl@dwd.de>
+Cc: Solofo.Ramangalahy@bull.net, Nick Dokos <nicholas.dokos@hp.com>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       linux-ext4@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Performance of ext4
+Message-ID: <20080612131928.GB18229@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Holger Kiehl <Holger.Kiehl@dwd.de>, Solofo.Ramangalahy@bull.net,
+	Nick Dokos <nicholas.dokos@hp.com>,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+	linux-ext4@vger.kernel.org,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.64.0806110801370.19793@diagnostix.dwd.de> <20080611105945.GB9008@skywalker> <Pine.LNX.4.64.0806111937460.3720@diagnostix.dwd.de> <18563.1213215457@alphaville.zko.hp.com> <Pine.LNX.4.64.0806120855370.27806@diagnostix.dwd.de> <18513.345.553912.449710@frecb006361.adech.frec.bull.fr> <Pine.LNX.4.64.0806121154090.27806@diagnostix.dwd.de>
 MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-Cc: Andreas Dilger <adilger@sun.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       sct@redhat.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, jbacik@redhat.com, cmm@us.ibm.com,
-       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
-Subject: Re: [PATCH 1/5] jbd: strictly check for write errors on data	buffers
-References: <20080604111911.c1fe09c6.akpm@linux-foundation.org> 
-    <20080604212202.GA8727@mit.edu> 
-    <20080604145848.e3da6f20.akpm@linux-foundation.org> 
-    <20080604225155.GB8727@mit.edu> <20080605093536.GE27370@duck.suse.cz> 
-    <4847CF07.1020904@hitachi.com> <20080605142948.GA25477@mit.edu> 
-    <20080605092006.ba7dceef.akpm@linux-foundation.org> 
-    <20080605184941.GX2961@webber.adilger.int> <484D0155.4040701@hitachi.com> 
-    <20080611123556.GA8121@duck.suse.cz>
-In-Reply-To: <20080611123556.GA8121@duck.suse.cz>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0806121154090.27806@diagnostix.dwd.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Jun 12, 2008 at 12:00:54PM +0000, Holger Kiehl wrote: 
+> Yes, that is the one I took. Just to make sure, I downloaded it
+> again (and the linux-2.6.26-rc5 tree) and now it works. When I
+> compare the two patchsets the one I pulled this morning had patches
+> from 7 June and this one has more and they are from 11th June.
 
-Jan Kara wrote:
+Note that you don't have to download things from scratch, necessarily;
+the git command "git pull" will (if you havent made any changes in the
+git repository; if you have there are a few more steps you might have
+to take) pull down any newer changes and update your patch directory
+directly.
 
-> On Mon 09-06-08 19:09:25, Hidehiro Kawai wrote:
+Note that after you type "git pull", you may find that the
+ext4-patch-queue has been rebased to a newer version of the kernel.
+For example, the patch queue is currently against 2.6.26-rc5.  The
+latest bleedig edge kernel as released by Linus in his git tree of the
+kernel already has these patches:
 
->>Index: linux-2.6.26-rc4/fs/jbd/commit.c
->>===================================================================
->>--- linux-2.6.26-rc4.orig/fs/jbd/commit.c
->>+++ linux-2.6.26-rc4/fs/jbd/commit.c
->>@@ -432,8 +432,11 @@ void journal_commit_transaction(journal_
->> 			wait_on_buffer(bh);
->> 			spin_lock(&journal->j_list_lock);
->> 		}
->>-		if (unlikely(!buffer_uptodate(bh)))
->>+		if (unlikely(!buffer_uptodate(bh))) {
->>+			set_bit(AS_EIO, &bh->b_page->mapping->flags);
->>+			SetPageError(bh->b_page);
->> 			err = -EIO;
->>+		}
-> 
->   Actually, you should be more careful here because if the data buffer has
-> been truncated in the currently running transaction, it can happen that
-> b_page->mapping is NULL. It is a question how to safely access
-> page->mapping - probably you'll need page lock for that...
+ext4-fix-use-of-uninitalized-data.patch
+ext4-fix-uninit-block-group-initialization-with-FLEX_BG.patch
+ext4-fix-onine-resize-bug.patch
+fix-journal-checksum-mem-leak
+jbd2-if-a-journal-checksum-error-is-detected-propa.patch 
+show-journal-async-commit-option
+jbd2-Fix-barrier-fallback-code-to-re-lock-the-buffe.patch
+ext4-enable-barriers-by-default.patch
 
-Thank you for pointing out this problem.  I confirmed that
-b_page->mapping can be NULL.  I'm making sure that the locking page
-approach works out well.
+from the patch series.  But, he hasn't released an official kernel
+release for 2.6.26-rc5 yet.  So in the near future, the ext4 patch
+queue will probably get rebased against one of the "daily snapshots",
+as found in /pub/linux/kernel/v2.6/snapshots on ftp.kernel.org.  So
+for example, 2.6.26-rc5-git6 is the sixth snapshot since -rc5 was
+released.  There is a patch against -rc5 named
+patch-2.6.26-rc5-git6.bz2 as located in the aforementioned directory
+on ftp.kernel.org, or if you are tracking Linus's kernel git tree, the
+file patch-2.6.26-rc5-git6.id proclaims that -rc5-git6 is git id
+631025b.  You will see that when you look at the first line of the
+series file in the ext4 patch queue, where it currently states:
 
-Thanks,
--- 
-Hidehiro Kawai
-Hitachi, Systems Development Laboratory
-Linux Technology Center
+# BASE 2.6.26-rc5
 
+and where it will in the future say something like this:
+
+# BASE 2.6.26-rc5-git6
+
+That can be used by automated scripts to automatically determine which
+version of the Linux kernel should be grabbed before trying to apply
+the latest version of the ext4 patch queue.  In general we try to use
+mainly official -rc1, -rc2, etc. release points, but after Linus
+pulled down some stable bug fixes, we will sometimes use a daily git
+snapshot release such as -rc5-git6 as described above.
+
+Hope this helps,
+
+							- Ted
