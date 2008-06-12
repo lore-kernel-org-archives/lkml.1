@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755765AbYFLA6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756944AbYFLBKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755765AbYFLA6V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 20:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbYFLA6N
+	id S1756944AbYFLBKZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 21:10:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755339AbYFLBKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 20:58:13 -0400
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:44935 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751360AbYFLA6M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 20:58:12 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=3a0Hfa5n9bEVGVfsqfR88xXtX6IORguJaqL0gB/IkTmE3Scf5bqdfdva6afiSylaqedmH4RUCIWpb1gjWA5wiARa4vaicMOSoU+XrXykqwh5WR/E7TX+ueUMHJYCT6Cyv2s/fTwa3YJ856Xm0HZZFqkY0UNAFKbJhRO+kdjFbsE=  ;
-X-YMail-OSG: Am4psd8VM1nIzSV_gKZR2BW9o4QWP.20UgihzCxCMOVSZGYZgnvFLVbaSNgBzIjJNA3CKzIMIqLrrolC8kweF15WiZxmwjvn9ugpbuoS0SZD1kgb.7xSeq6F1pndWJ6SX_8-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [patch 04/41] cpu ops: Core piece for generic atomic per cpu operations
-Date: Thu, 12 Jun 2008 10:58:01 +1000
-User-Agent: KMail/1.9.5
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Peter Zijlstra <peterz@infradead.org>, Mike Travis <travis@sgi.com>
-References: <20080530035620.587204923@sgi.com> <200806112110.56805.rusty@rustcorp.com.au> <Pine.LNX.4.64.0806111635350.27184@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0806111635350.27184@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806121058.02125.nickpiggin@yahoo.com.au>
+	Wed, 11 Jun 2008 21:10:10 -0400
+Received: from mga09.intel.com ([134.134.136.24]:56126 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754928AbYFLBKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 21:10:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,627,1204531200"; 
+   d="scan'208";a="393904123"
+Subject: Re: [Fedora-ia64-list] Kernel directory change
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: ia64 Fedora Core Development <fedora-ia64-list@redhat.com>,
+       dchapman@redhat.com
+Cc: Development discussions related to Fedora 
+	<fedora-devel-list@redhat.com>,
+       yi.zhan@intel.com, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1213189422.3673.2.camel@centrino>
+References: <1213145883.3054.8.camel@ymzhang>
+	 <1213189422.3673.2.camel@centrino>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 12 Jun 2008 09:04:06 +0800
+Message-Id: <1213232646.3054.16.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 June 2008 09:39, Christoph Lameter wrote:
-> On Wed, 11 Jun 2008, Rusty Russell wrote:
-> > > 4. The modeling of local_t on atomic_t limits it to 32bit!
-> >
-> > Again wrong.  And adding an exclamation mark doesn't make it true.
->
-> Ewww ... Its atomic_long_t ahh. Ok then there no 32 bit support. What about
-> pointers?
 
-sizeof(long) == sizeof(void *) in Linux, right?
+On Wed, 2008-06-11 at 09:03 -0400, Doug Chapman wrote:
+> On Wed, 2008-06-11 at 08:58 +0800, Zhang, Yanmin wrote:
+> > Yi,
+> > 
+> > I installed FC9 Beta ia64 on my Montvale machine and found the kernel
+> > directory is changed. The old directory is /boot/efi/efi/redhat, but the
+> > new one is /boot/efi/EFI/redhat. Is there any special reason to do so?
+> > 
+> > A couple of test suites assumes ﻿/boot/efi/efi/redhat.
+> > 
+> > -yanmin
+> > 
+> 
+> This changed a while back.  What it appears happened was that the vfat
+> filesystem for some reason now understands upper/lower case.  In
+> actuality it was always /boot/efi/EFI but the linux implementation of
+> vfat shifted the directory name to lower case.
+> 
+> Note that under the EFI shell it was always an upper case EFI as that is
+> what is actually on the filesystem.  I would suggest modifying your test
+> to handle either case.
+That's not a good idea. Although it's caused by vfat improvements, I would
+suggest to keep the old interface.
 
-If you were to support just a single data type, long would probably
-be the most useful. Still, it might be more consistent to support
-int and long, same as atomic.
+Long long ago, there was a long discussion about interface change on LKML. It's
+a bad idea to change interfaces or API when they become de facto.
+
 
