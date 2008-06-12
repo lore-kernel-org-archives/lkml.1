@@ -1,34 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544AbYFLPa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbYFLPbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755544AbYFLPa4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 11:30:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584AbYFLPaq
+	id S1755984AbYFLPbS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 11:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbYFLPat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 11:30:46 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:54020 "EHLO
+	Thu, 12 Jun 2008 11:30:49 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:51312 "EHLO
 	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752470AbYFLPaq (ORCPT
+	with ESMTP id S1753194AbYFLPas (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 11:30:46 -0400
-Message-Id: <20080612152645.445504681@kerlabs.com>
+	Thu, 12 Jun 2008 11:30:48 -0400
+Message-Id: <20080612152953.438035514@kerlabs.com>
+References: <20080612152645.445504681@kerlabs.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 12 Jun 2008 17:26:45 +0200
+Date: Thu, 12 Jun 2008 17:26:46 +0200
 From: Louis Rilling <Louis.Rilling@kerlabs.com>
 To: Joel.Becker@oracle.com
 Cc: Louis.Rilling@kerlabs.com, ocfs2-devel@oss.oracle.com,
        linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH 0/3] configfs: Miscellaneous fixes
+Subject: [RFC][PATCH 1/3] configfs: Report errors in config_*_init_type_name()
+Content-Disposition: inline; filename=configfs-make-set-name-functions-return-errors.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+config_item_set_name() may fail but its error code is not checked in
+config_*init_type_name().
 
-The following patches fix few bugs/APIs in configfs. The third one depends on
-the patch introducing configfs_dirent_lock previously submitted in 
-http://lkml.org/lkml/2008/6/12/232
+This patch adds the missing error checking and make config_*_init_type_name()
+report errors.
 
-Louis
+Signed-off-by: Louis Rilling <Louis.Rilling@kerlabs.com>
+---
+ fs/configfs/item.c       |   18 ++++++++++++++----
+ include/linux/configfs.h |    8 ++++----
+ 2 files changed, 18 insertions(+), 8 deletions(-)
+
+Index: b/fs/configfs/item.c
+===================================================================
+--- a/fs/configfs/item.c	2008-06-12 17:13:32.000000000 +0200
++++ b/fs/configfs/item.c	2008-06-12 17:13:35.000000000 +0200
+@@ -112,22 +112,32 @@ int config_item_set_name(struct config_i
+ 
+ EXPORT_SYMBOL(config_item_set_name);
+ 
+-void config_item_init_type_name(struct config_item *item,
++int config_item_init_type_name(struct config_item *item,
+ 				const char *name,
+ 				struct config_item_type *type)
+ {
+-	config_item_set_name(item, name);
++	int error;
++
++	error = config_item_set_name(item, name);
++	if (error)
++		return error;
+ 	item->ci_type = type;
+ 	config_item_init(item);
++	return 0;
+ }
+ EXPORT_SYMBOL(config_item_init_type_name);
+ 
+-void config_group_init_type_name(struct config_group *group, const char *name,
++int config_group_init_type_name(struct config_group *group, const char *name,
+ 			 struct config_item_type *type)
+ {
+-	config_item_set_name(&group->cg_item, name);
++	int error;
++
++	error = config_item_set_name(&group->cg_item, name);
++	if (error)
++		return error;
+ 	group->cg_item.ci_type = type;
+ 	config_group_init(group);
++	return 0;
+ }
+ EXPORT_SYMBOL(config_group_init_type_name);
+ 
+Index: b/include/linux/configfs.h
+===================================================================
+--- a/include/linux/configfs.h	2008-06-12 17:13:32.000000000 +0200
++++ b/include/linux/configfs.h	2008-06-12 17:13:35.000000000 +0200
+@@ -71,9 +71,9 @@ static inline char *config_item_name(str
+ }
+ 
+ extern void config_item_init(struct config_item *);
+-extern void config_item_init_type_name(struct config_item *item,
+-				       const char *name,
+-				       struct config_item_type *type);
++extern int config_item_init_type_name(struct config_item *item,
++				      const char *name,
++				      struct config_item_type *type);
+ 
+ extern struct config_item * config_item_get(struct config_item *);
+ extern void config_item_put(struct config_item *);
+@@ -97,7 +97,7 @@ struct config_group {
+ };
+ 
+ extern void config_group_init(struct config_group *group);
+-extern void config_group_init_type_name(struct config_group *group,
++extern int config_group_init_type_name(struct config_group *group,
+ 					const char *name,
+ 					struct config_item_type *type);
+ 
 
 -- 
 Dr Louis Rilling			Kerlabs
