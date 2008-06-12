@@ -1,102 +1,233 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758973AbYFLLwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759165AbYFLL50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758973AbYFLLwV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 07:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbYFLLwJ
+	id S1759165AbYFLL50 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 07:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752715AbYFLL5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 07:52:09 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:55625 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752077AbYFLLwI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 07:52:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=SYhLXwV762lB5RpqODL0jdqUFpWER+Gm8uBG0uEXZA9HxC1yEAQuZkRLoRk0ZGbUOP
-         WRuP0O0sipSrdsK37wdLLWIkUQaDEhT+ppASahn/QBRg21NQguCVuYFsvEZd0TXn4L0a
-         DDIaBHiT7zFrS7kxpgaC4zrVZe1WU24LHbKjk=
-Message-ID: <19f34abd0806120452w433e9763v2ee92e2f278ae988@mail.gmail.com>
-Date: Thu, 12 Jun 2008 13:52:06 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Joe Peterson" <joe@skyrush.com>
-Subject: Re: 2.6.25.3: su gets stuck for root
-Cc: "Alan Cox" <alan@redhat.com>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "David Newall" <davidn@davidnewall.com>, "Willy Tarreau" <w@1wt.eu>,
-       "Harald Dunkel" <harald.dunkel@t-online.de>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <484FDB63.6050504@skyrush.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48438126.3080308@t-online.de> <20080602102033.63e4cd18@core>
-	 <48441138.90503@skyrush.com>
-	 <20080602155133.GC933@devserv.devel.redhat.com>
-	 <4846A9F4.40003@skyrush.com>
-	 <20080604151649.GB12625@devserv.devel.redhat.com>
-	 <4846C85E.7080309@skyrush.com>
-	 <20080604171056.GB17875@devserv.devel.redhat.com>
-	 <4846FBF2.9010206@skyrush.com> <484FDB63.6050504@skyrush.com>
+	Thu, 12 Jun 2008 07:57:18 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:49824 "EHLO WNmonitoring"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752052AbYFLL5R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 07:57:17 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Ingo Molnar <mingo@redhat.com>
+Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Jiri Slaby <jirislaby@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: [PATCH 1/1] MM: virtual address debug
+Date: Thu, 12 Jun 2008 13:56:40 +0200
+Message-Id: <1213271800-1556-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.5.5.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 11, 2008 at 4:04 PM, Joe Peterson <joe@skyrush.com> wrote:
-> Joe Peterson wrote:
->> Anyway, here is more info:
->>
->> tty_check_change: current->signal->tty = f7880800
->> tty_check_change: tty = f7880800
->> tty_check_change: tty->pgrp = f7b99e40
->>   tty->pgrp->count = 5
->>   tty->pgrp->level = 0
->>   tty->pgrp->numbers[0].nr = 6951
->> tty_check_change: task_pgrp(current) = f7b99d40
->>   task_pgrp(current)->count = 1
->>   task_pgrp(current)->level = 0
->>   task_pgrp(current)->numbers[0].nr = 6952
->> tty_check_change: kill_pgrp called; returning -ERESTARTSYS
->> set_termios: error return value (-512) from tty_check_change
->> foo       6951  0.0  0.1   2332  1096 tty1     S+   14:18   0:00 su foo
->> foo       6952  0.0  0.1   2988  1464 tty1     S    14:18   0:00 bash
->>
->>
->> So, looks like the tty->pgrp's process is the "su" command itself, and
->> the task_pgrp(current)'s process is "bash" - the shell started by the su.
->
-> If anyone has any tips for my further debugging of this, given the
-> above, let me know.  I'd like to help resolve this.
+Add some (configurable) expensive sanity checking to catch wrong address
+translations on x86.
 
-I think knowing the pgrps of the above processes (there is possibly
-one more involved, stty?) would be useful; try:
+- create linux/mmdebug.h file to be able include this file in
+  asm headers to not get unsolvable loops in header files
+- __phys_addr on x86_32 became a function in ioremap.c since
+  PAGE_OFFSET, is_vmalloc_addr and VMALLOC_* non-constasts are undefined
+  if declared in page_32.h
+- add __phys_addr_const for initializing doublefault_tss.__cr3
 
-    $ ps -eo pid,pgrp,tpgid,user,args
+Tested on 386, 386pae, x86_64 and x86_64 numa=fake=2.
 
-..as this problem occurs because a process tries to change the
-terminal settings (and subsequently gets suspended because of that)
-while it's not the owner of the terminal.
+Contains Andi's enable numa virtual address debug patch.
 
-This can happen if you fork something off to the background, e.g. like
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>
+---
+ arch/x86/kernel/doublefault_32.c |    2 +-
+ arch/x86/mm/ioremap.c            |   31 ++++++++++++++++++++++++-------
+ include/asm-x86/mmzone_64.h      |    2 +-
+ include/asm-x86/page_32.h        |    3 ++-
+ include/linux/mm.h               |    7 +------
+ include/linux/mmdebug.h          |   18 ++++++++++++++++++
+ lib/Kconfig.debug                |    9 +++++++++
+ mm/vmalloc.c                     |    5 +++++
+ 8 files changed, 61 insertions(+), 16 deletions(-)
+ create mode 100644 include/linux/mmdebug.h
 
-    $ stty 9600 &
-
-(which should immediately give you [1]+ Stopped stty 9600),
-
-so can you please look for anything like that in your login scripts or
-shell rc files?
-
-I don't know any other way to debug this further, sorry :-(
-
-Thanks.
-
-
-Vegard
-
+diff --git a/arch/x86/kernel/doublefault_32.c b/arch/x86/kernel/doublefault_32.c
+index a47798b..395acb1 100644
+--- a/arch/x86/kernel/doublefault_32.c
++++ b/arch/x86/kernel/doublefault_32.c
+@@ -66,6 +66,6 @@ struct tss_struct doublefault_tss __cacheline_aligned = {
+ 		.ds		= __USER_DS,
+ 		.fs		= __KERNEL_PERCPU,
+ 
+-		.__cr3		= __pa(swapper_pg_dir)
++		.__cr3		= __phys_addr_const((unsigned long)swapper_pg_dir)
+ 	}
+ };
+diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+index c0d4958..bd130d4 100644
+--- a/arch/x86/mm/ioremap.c
++++ b/arch/x86/mm/ioremap.c
+@@ -24,18 +24,26 @@
+ 
+ #ifdef CONFIG_X86_64
+ 
+-unsigned long __phys_addr(unsigned long x)
++static inline int phys_addr_valid(unsigned long addr)
+ {
+-	if (x >= __START_KERNEL_map)
+-		return x - __START_KERNEL_map + phys_base;
+-	return x - PAGE_OFFSET;
++	return addr < (1UL << boot_cpu_data.x86_phys_bits);
+ }
+-EXPORT_SYMBOL(__phys_addr);
+ 
+-static inline int phys_addr_valid(unsigned long addr)
++unsigned long __phys_addr(unsigned long x)
+ {
+-	return addr < (1UL << boot_cpu_data.x86_phys_bits);
++	if (x >= __START_KERNEL_map) {
++		x -= __START_KERNEL_map;
++		VIRTUAL_BUG_ON(x >= KERNEL_IMAGE_SIZE);
++		x += phys_base;
++	} else {
++		VIRTUAL_BUG_ON(x < PAGE_OFFSET);
++		x -= PAGE_OFFSET;
++		VIRTUAL_BUG_ON(system_state == SYSTEM_BOOTING ? x > MAXMEM :
++					!phys_addr_valid(x));
++	}
++	return x;
+ }
++EXPORT_SYMBOL(__phys_addr);
+ 
+ #else
+ 
+@@ -44,6 +52,15 @@ static inline int phys_addr_valid(unsigned long addr)
+ 	return 1;
+ }
+ 
++unsigned long __phys_addr(unsigned long x)
++{
++	/* VMALLOC_* aren't constants; not available at the boot time */
++	VIRTUAL_BUG_ON(x < PAGE_OFFSET || (system_state != SYSTEM_BOOTING &&
++					is_vmalloc_addr((void *)x)));
++	return x - PAGE_OFFSET;
++}
++EXPORT_SYMBOL(__phys_addr);
++
+ #endif
+ 
+ int page_is_ram(unsigned long pagenr)
+diff --git a/include/asm-x86/mmzone_64.h b/include/asm-x86/mmzone_64.h
+index 594bd0d..facde3e 100644
+--- a/include/asm-x86/mmzone_64.h
++++ b/include/asm-x86/mmzone_64.h
+@@ -7,7 +7,7 @@
+ 
+ #ifdef CONFIG_NUMA
+ 
+-#define VIRTUAL_BUG_ON(x)
++#include <linux/mmdebug.h>
+ 
+ #include <asm/smp.h>
+ 
+diff --git a/include/asm-x86/page_32.h b/include/asm-x86/page_32.h
+index 50b33eb..bd9001b 100644
+--- a/include/asm-x86/page_32.h
++++ b/include/asm-x86/page_32.h
+@@ -72,7 +72,8 @@ typedef struct page *pgtable_t;
+ #endif
+ 
+ #ifndef __ASSEMBLY__
+-#define __phys_addr(x)		((x) - PAGE_OFFSET)
++#define __phys_addr_const(x)	((x) - PAGE_OFFSET)
++extern unsigned long __phys_addr(unsigned long);
+ #define __phys_reloc_hide(x)	RELOC_HIDE((x), 0)
+ 
+ #ifdef CONFIG_FLATMEM
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 460128d..b898b49 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -7,6 +7,7 @@
+ 
+ #include <linux/gfp.h>
+ #include <linux/list.h>
++#include <linux/mmdebug.h>
+ #include <linux/mmzone.h>
+ #include <linux/rbtree.h>
+ #include <linux/prio_tree.h>
+@@ -220,12 +221,6 @@ struct inode;
+  */
+ #include <linux/page-flags.h>
+ 
+-#ifdef CONFIG_DEBUG_VM
+-#define VM_BUG_ON(cond) BUG_ON(cond)
+-#else
+-#define VM_BUG_ON(condition) do { } while(0)
+-#endif
+-
+ /*
+  * Methods to modify the page usage count.
+  *
+diff --git a/include/linux/mmdebug.h b/include/linux/mmdebug.h
+new file mode 100644
+index 0000000..860ed1a
+--- /dev/null
++++ b/include/linux/mmdebug.h
+@@ -0,0 +1,18 @@
++#ifndef LINUX_MM_DEBUG_H
++#define LINUX_MM_DEBUG_H 1
++
++#include <linux/autoconf.h>
++
++#ifdef CONFIG_DEBUG_VM
++#define VM_BUG_ON(cond) BUG_ON(cond)
++#else
++#define VM_BUG_ON(cond) do { } while(0)
++#endif
++
++#ifdef CONFIG_DEBUG_VIRTUAL
++#define VIRTUAL_BUG_ON(cond) BUG_ON(cond)
++#else
++#define VIRTUAL_BUG_ON(cond) do { } while(0)
++#endif
++
++#endif
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index f9f210d..5f15fb8 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -470,6 +470,15 @@ config DEBUG_VM
+ 
+ 	  If unsure, say N.
+ 
++config DEBUG_VIRTUAL
++	bool "Debug VM translations"
++	depends on DEBUG_KERNEL && X86
++	help
++	  Enable some costly sanity checks in virtual to page code. This can
++	  catch mistakes with virt_to_page() and friends.
++
++	  If unsure, say N.
++
+ config DEBUG_WRITECOUNT
+ 	bool "Debug filesystem writers count"
+ 	depends on DEBUG_KERNEL
+diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+index 35f2938..cba7d27 100644
+--- a/mm/vmalloc.c
++++ b/mm/vmalloc.c
+@@ -180,6 +180,11 @@ struct page *vmalloc_to_page(const void *vmalloc_addr)
+ 	pmd_t *pmd;
+ 	pte_t *ptep, pte;
+ 
++	/* XXX we might need to change this if we add VIRTUAL_BUG_ON for
++	 * architectures that do not vmalloc module space */
++	VIRTUAL_BUG_ON(!is_vmalloc_addr(vmalloc_addr) &&
++			!is_module_address(addr));
++
+ 	if (!pgd_none(*pgd)) {
+ 		pud = pud_offset(pgd, addr);
+ 		if (!pud_none(*pud)) {
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+1.5.5.1
+
