@@ -1,72 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214AbYFLF6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbYFLGA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755214AbYFLF6W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 01:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbYFLF6N
+	id S1755898AbYFLGA6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 02:00:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbYFLGAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 01:58:13 -0400
-Received: from orion2.pixelized.ch ([195.190.190.13]:59946 "EHLO
-	orion.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751877AbYFLF6M (ORCPT
+	Thu, 12 Jun 2008 02:00:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46549 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751945AbYFLGAo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 01:58:12 -0400
-X-Greylist: delayed 318 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Jun 2008 01:58:12 EDT
-Message-ID: <4850B9AA.7030004@debian.org>
-Date: Thu, 12 Jun 2008 07:52:42 +0200
-From: Giacomo Catenazzi <cate@debian.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
-MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Ben Castricum <lk0806@bencastricum.nl>,
-       linux-kernel@vger.kernel.org, trivial@kernel.org,
-       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>
-Subject: Re: [patch] x86: microcode: Cosmetic changes
-References: <alpine.LNX.1.10.0806101312170.14868@gateway.bencastricum.nl> <20080611170939.GA15146@redhat.com>
-In-Reply-To: <20080611170939.GA15146@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 12 Jun 2008 02:00:44 -0400
+Date: Wed, 11 Jun 2008 22:59:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: linux-kernel@vger.kernel.org
+Cc: kernel-testers@vger.kernel.org, linux-mm@kvack.org
+Subject: 2.6.26-rc5-mm3
+Message-Id: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> On Tue, Jun 10, 2008 at 01:15:12PM +0200, Ben Castricum wrote:
->  > @@ -805,6 +806,9 @@ static int __init microcode_init (void)
->  >  {
->  >  	int error;
->  >  
->  > +	printk(KERN_INFO
->  > +		"IA-32 Microcode Update Driver: v" MICROCODE_VERSION " <tigran@aivazian.fsnet.co.uk>\n");
->  > +
->  >  	error = microcode_dev_init();
->  >  	if (error)
->  >  		return error;
->  > @@ -825,9 +829,6 @@ static int __init microcode_init (void)
->  >  	}
->  >  
->  >  	register_hotcpu_notifier(&mc_cpu_notifier);
->  > -
->  > -	printk(KERN_INFO 
->  > -		"IA-32 Microcode Update Driver: v" MICROCODE_VERSION " <tigran@aivazian.fsnet.co.uk>\n");
->  >  	return 0;
-> 
-> By doing this before the registration of the sysdev, we'll
-> now be printing this on machines that don't have the microcode
-> update facility.   Pointless spew, for no obvious gain imo.
-> 
-> [Why we go through so many hoops before we check if the CPU is
->  capable is a mystery to me. It would make more sense to have
->  that be the first thing that gets checked when this inits]
 
-I would remove the printk:
-- it is the only email on my dmesg, along two other copyright
-  notices (Ingo and Intel). So it seems that the dmesg clean-up
-  is going on.
-- the code of driver is stable, and now it is updated only in
-  kernel trees, so IMO it is better to use kernel version on
-  bug report. BTW I don't think people will update the version
-  number of driver.
-- IMO it is enough to printk the microcode loads, not the
-  driver load.
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc5/2.6.26-rc5-mm3/
 
-ciao
-	cate
+- This is a bugfixed version of 2.6.26-rc5-mm2, which was a bugfixed
+  version of 2.6.26-rc5-mm1.  None of the git trees were repulled for -mm3
+  (and nor were they repulled for -mm2).
+
+  The aim here is to get all the stupid bugs out of the way so that some
+  serious MM testing can be performed.
+
+- Please perform some serious MM testing.
+
+
+
+Boilerplate:
+
+- See the `hot-fixes' directory for any important updates to this patchset.
+
+- To fetch an -mm tree using git, use (for example)
+
+  git-fetch git://git.kernel.org/pub/scm/linux/kernel/git/smurf/linux-trees.git tag v2.6.16-rc2-mm1
+  git-checkout -b local-v2.6.16-rc2-mm1 v2.6.16-rc2-mm1
+
+- -mm kernel commit activity can be reviewed by subscribing to the
+  mm-commits mailing list.
+
+        echo "subscribe mm-commits" | mail majordomo@vger.kernel.org
+
+- If you hit a bug in -mm and it is not obvious which patch caused it, it is
+  most valuable if you can perform a bisection search to identify which patch
+  introduced the bug.  Instructions for this process are at
+
+        http://www.zip.com.au/~akpm/linux/patches/stuff/bisecting-mm-trees.txt
+
+  But beware that this process takes some time (around ten rebuilds and
+  reboots), so consider reporting the bug first and if we cannot immediately
+  identify the faulty patch, then perform the bisection search.
+
+- When reporting bugs, please try to Cc: the relevant maintainer and mailing
+  list on any email.
+
+- When reporting bugs in this kernel via email, please also rewrite the
+  email Subject: in some manner to reflect the nature of the bug.  Some
+  developers filter by Subject: when looking for messages to read.
+
+- Occasional snapshots of the -mm lineup are uploaded to
+  ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/ and are announced on
+  the mm-commits list.  These probably are at least compilable.
+
+- More-than-daily -mm snapshots may be found at
+  http://userweb.kernel.org/~akpm/mmotm/.  These are almost certainly not
+  compileable.
+
+
+
+
+Changes since 2.6.26-rc5-mm2:
+
+ origin.patch
+ linux-next.patch
+ git-jg-misc.patch
+ git-leds.patch
+ git-libata-all.patch
+ git-battery.patch
+ git-parisc.patch
+ git-regulator.patch
+ git-unionfs.patch
+ git-logfs.patch
+ git-unprivileged-mounts.patch
+ git-xtensa.patch
+ git-orion.patch
+ git-pekka.patch
+
+ git trees
+
+-fsldma-the-mpc8377mds-board-device-tree-node-for-fsldma-driver.patch
+
+ Merged into mainline or a subsystem tree
+
++capabilities-add-back-dummy-support-for-keepcaps.patch
++cciss-add-new-hardware-support.patch
++cciss-add-new-hardware-support-fix.patch
++cciss-bump-version-to-20-to-reflect-new-hw-support.patch
++kprobes-fix-error-checking-of-batch-registration.patch
++m68knommu-init-coldfire-timer-trr-with-n-1-not-n.patch
++rtc-at32ap700x-fix-bug-in-at32_rtc_readalarm.patch
+
+ 2.6.26 queue
+
+-acpi-video-balcklist-fujitsu-lifebook-s6410.patch
+
+ Dropped
+
+-bay-exit-if-notify-handler-cannot-be-installed.patch
+
+ Dropped
+
+-intel-agp-rewrite-gtt-on-resume-fix.patch
+-intel-agp-rewrite-gtt-on-resume-fix-fix.patch
+
+ Folded into intel-agp-rewrite-gtt-on-resume.patch
+
+-kbuild-move-non-__kernel__-checking-headers-to-header-y.patch
+
+ Dropped
+
++8390-split-8390-support-into-a-pausing-and-a-non-pausing-driver-core-fix.patch
+
+ Unfix
+ 8390-split-8390-support-into-a-pausing-and-a-non-pausing-driver-core.patch
+
++mpc8xxx_wdt-various-renames-mostly-s-mpc83xx-mpc8xxx-g-fix.patch
+
+ Fix mpc8xxx_wdt-various-renames-mostly-s-mpc83xx-mpc8xxx-g.patch
+
++intel_rng-make-device-not-found-a-warning.patch
++driver-video-cirrusfb-fix-ram-address-printk.patch
++driver-video-cirrusfb-fix-ram-address-printk-fix.patch
++driver-video-cirrusfb-fix-ram-address-printk-fix-fix.patch
++driver-char-generic_nvram-fix-banner.patch
++pagemap-pass-mm-into-pagewalkers.patch
++pagemap-fix-large-pages-in-pagemap.patch
++proc-sysvipc-shm-fix-32-bit-truncation-of-segment-sizes.patch
++console-keyboard-mapping-broken-by-04c71976.patch
+
+ More 2.6.26 queue
+
++bay-exit-if-notify-handler-cannot-be-installed.patch
+
+ ACPI Bay driver fix
+
++smc91x-fix-build-error-from-the-smc_get_mac_addr-api-change.patch
+
+ netdev fix
+
++add-a-helper-function-to-test-if-an-object-is-on-the-stack.patch
+
+ Infrastructure
+
++hugetlb-introduce-pud_huge-s390-fix.patch
+
+ Fix hugetlb-introduce-pud_huge.patch some more
+
++kprobes-remove-redundant-config-check.patch
++kprobes-indirectly-call-kprobe_target.patch
++kprobes-add-tests-for-register_kprobes.patch
+
+ kprobers updates
+
++not-for-merging-pnp-changes-suspend-oops.patch
+
+ Try to debug some pnp problems
+
++quota-move-function-macros-from-quotah-to-quotaopsh-fix.patch
+
+ Fix quota-move-function-macros-from-quotah-to-quotaopsh.patch some more
+
++memcg-remove-refcnt-from-page_cgroup-fix-2.patch
+
+ Fix memcg-remove-refcnt-from-page_cgroup-fix.patch
+
++sgi-xp-eliminate-in-comments.patch
++sgi-xp-use-standard-bitops-macros-and-functions.patch
++sgi-xp-add-jiffies-to-reserved-pages-timestamp-name.patch
+
+ Update SGI XP driver
+
++dma-mapping-add-the-device-argument-to-dma_mapping_error-b34-fix.patch
+
+ Fix dma-mapping-add-the-device-argument-to-dma_mapping_error.patch som more
+
++include-linux-aioh-removed-duplicated-include.patch
+
+ AIO cleanup
+
++kernel-call-constructors-uml-fix-1.patch
++kernel-call-constructors-uml-fix-2.patch
+
+ Fix kernel-call-constructors.patch
+
++x86-support-1gb-hugepages-with-get_user_pages_lockless.patch
+
+ Wire up x86 large large pages
+
++mm-speculative-page-references-hugh-fix3.patch
+
+ Fix mm-speculative-page-references.patch som more
+
+ vmscan-move-isolate_lru_page-to-vmscanc.patch
++vmscan-move-isolate_lru_page-to-vmscanc-fix.patch
+ vmscan-use-an-indexed-array-for-lru-variables.patch
+-vmscan-use-an-array-for-the-lru-pagevecs.patch
++swap-use-an-array-for-the-lru-pagevecs.patch
+ vmscan-free-swap-space-on-swap-in-activation.patch
+-vmscan-define-page_file_cache-function.patch
++define-page_file_cache-function.patch
+ vmscan-split-lru-lists-into-anon-file-sets.patch
+ vmscan-second-chance-replacement-for-anonymous-pages.patch
+-vmscan-add-some-sanity-checks-to-get_scan_ratio.patch
+ vmscan-fix-pagecache-reclaim-referenced-bit-check.patch
+ vmscan-add-newly-swapped-in-pages-to-the-inactive-list.patch
+-vmscan-more-aggressively-use-lumpy-reclaim.patch
+-vmscan-pageflag-helpers-for-configed-out-flags.patch
+-vmscan-noreclaim-lru-infrastructure.patch
+-vmscan-noreclaim-lru-page-statistics.patch
+-vmscan-ramfs-and-ram-disk-pages-are-non-reclaimable.patch
+-vmscan-shm_locked-pages-are-non-reclaimable.patch
+-vmscan-mlocked-pages-are-non-reclaimable.patch
+-vmscan-downgrade-mmap-sem-while-populating-mlocked-regions.patch
+-vmscan-handle-mlocked-pages-during-map-remap-unmap.patch
+-vmscan-mlocked-pages-statistics.patch
+-vmscan-cull-non-reclaimable-pages-in-fault-path.patch
+-vmscan-noreclaim-and-mlocked-pages-vm-events.patch
+-mm-only-vmscan-noreclaim-lru-scan-sysctl.patch
+-vmscan-mlocked-pages-count-attempts-to-free-mlocked-page.patch
+-vmscan-noreclaim-lru-and-mlocked-pages-documentation.patch
++more-aggressively-use-lumpy-reclaim.patch
++pageflag-helpers-for-configed-out-flags.patch
++unevictable-lru-infrastructure.patch
++unevictable-lru-page-statistics.patch
++ramfs-and-ram-disk-pages-are-unevictable.patch
++shm_locked-pages-are-unevictable.patch
++mlock-mlocked-pages-are-unevictable.patch
++mlock-mlocked-pages-are-unevictable-fix.patch
++mlock-mlocked-pages-are-unevictable-fix-fix.patch
++mlock-mlocked-pages-are-unevictable-fix-2.patch
++mlock-downgrade-mmap-sem-while-populating-mlocked-regions.patch
++mmap-handle-mlocked-pages-during-map-remap-unmap.patch
++mmap-handle-mlocked-pages-during-map-remap-unmap-cleanup.patch
++vmstat-mlocked-pages-statistics.patch
++swap-cull-unevictable-pages-in-fault-path.patch
++vmstat-unevictable-and-mlocked-pages-vm-events.patch
++vmscan-unevictable-lru-scan-sysctl.patch
++vmscan-unevictable-lru-scan-sysctl-nommu-fix.patch
++mlock-count-attempts-to-free-mlocked-page.patch
++doc-unevictable-lru-and-mlocked-pages-documentation.patch
+
+ New iteration of Rik's page reclaim work
+
+1390 commits in 967 patch files
+
+
+
+All patches:
+
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc5/2.6.26-rc5-mm3/patch-list
+
+
