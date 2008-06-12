@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759394AbYFLGqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758576AbYFLGrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759394AbYFLGqV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 02:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054AbYFLGlk
+	id S1758576AbYFLGrY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 02:47:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754396AbYFLGrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 02:41:40 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:8605 "EHLO
+	Thu, 12 Jun 2008 02:47:15 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:21650 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753418AbYFLGlG (ORCPT
+	with ESMTP id S1753744AbYFLGrO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 02:41:06 -0400
+	Thu, 12 Jun 2008 02:47:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=j7p8ayI2A1To7WaItf/hSBNbXKi3tI+xv2+2h/zFGBJVyYKKYVY4sMPgThu71zfl+z
-         ljLU3Qvdmd3Iic3qMWNBT3jRz8ZRqjWWiXHCp4LD0U5GuIeCn8R8tqLwR64KmNxcFWHb
-         mJMPskofmnZaJ5nclvt8IzqKSv5ad7AleOguw=
+        b=RcO5RzkQzFSEOaXXnCBNWB/qEPKVbcdRlVRdeKTliGmViv/IKqs0f3O1y4BCUx2M0D
+         aG9WrqPxATJ89Vg/Fiy4//vHBAp7FHFqsxQLKR+daOP093G5hLUlprSwIFONCXmb5kPB
+         NjORz71EWfD8mNkAgTufjUtI7nbVaesIP+Cjk=
 To: <bzolnier@gmail.com>
 Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
        Borislav Petkov <petkovbb@gmail.com>
-Subject: [PATCH 02/18] ide-cd: remove ide_cd_drain_data and ide_cd_pad_transfer
-Date: Thu, 12 Jun 2008 08:40:54 +0200
-Message-Id: <1213252870-20474-3-git-send-email-petkovbb@gmail.com>
+Subject: [PATCH 11/18] ide-cd: move request prep from cdrom_start_rw_cont to rq issue path
+Date: Thu, 12 Jun 2008 08:41:03 +0200
+Message-Id: <1213252870-20474-12-git-send-email-petkovbb@gmail.com>
 X-Mailer: git-send-email 1.5.5.1
 In-Reply-To: <1213252870-20474-1-git-send-email-petkovbb@gmail.com>
 References: <1213252870-20474-1-git-send-email-petkovbb@gmail.com>
@@ -30,90 +30,76 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the generic ide_pad_transfer() helper instead
+... by factoring out the rq preparation code into a separate
+function called in the request routine. Bart: As a nice
+side effect, this minimizes the IRQ handler execution time.
+
+There should be no functionality change resulting from this patch.
 
 Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 ---
- drivers/ide/ide-cd.c |   33 ++++-----------------------------
- 1 files changed, 4 insertions(+), 29 deletions(-)
+ drivers/ide/ide-cd.c |   29 ++++++++++++++++++++---------
+ 1 files changed, 20 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-index 92a8a36..2f0c9d4 100644
+index da0f28c..a5715b1 100644
 --- a/drivers/ide/ide-cd.c
 +++ b/drivers/ide/ide-cd.c
-@@ -599,28 +599,6 @@ static ide_startstop_t cdrom_transfer_packet_command(ide_drive_t *drive,
- }
+@@ -691,16 +691,9 @@ static int ide_cd_check_transfer_size(ide_drive_t *drive, int len)
  
- /*
-- * Block read functions.
-- */
--static void ide_cd_pad_transfer(ide_drive_t *drive, xfer_func_t *xf, int len)
--{
--	while (len > 0) {
--		int dum = 0;
--		xf(drive, NULL, &dum, sizeof(dum));
--		len -= sizeof(dum);
--	}
--}
--
--static void ide_cd_drain_data(ide_drive_t *drive, int nsects)
--{
--	while (nsects > 0) {
--		static char dum[SECTOR_SIZE];
--
--		drive->hwif->input_data(drive, NULL, dum, sizeof(dum));
--		nsects--;
--	}
--}
--
+ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *);
+ 
 -/*
-  * Check the contents of the interrupt reason register from the cdrom
-  * and attempt to recover if there are problems.  Returns  0 if everything's
-  * ok; nonzero if the request has been terminated.
-@@ -635,15 +613,12 @@ static int ide_cd_check_ireason(ide_drive_t *drive, struct request *rq,
- 	if (ireason == (!rw << 1))
- 		return 0;
- 	else if (ireason == (rw << 1)) {
--		ide_hwif_t *hwif = drive->hwif;
--		xfer_func_t *xf;
+- * Routine to send a read/write packet command to the drive. This is usually
+- * called directly from cdrom_start_{read,write}(). However, for drq_interrupt
+- * devices, it is called from an interrupt when the drive is ready to accept
+- * the command.
+- */
+-static ide_startstop_t cdrom_start_rw_cont(ide_drive_t *drive)
++static ide_startstop_t ide_cd_prepare_rw_request(ide_drive_t *drive,
++						 struct request *rq)
+ {
+-	struct request *rq = HWGROUP(drive)->rq;
+-
+ 	if (rq_data_dir(rq) == READ) {
+ 		unsigned short sectors_per_frame =
+ 			queue_hardsect_size(drive->queue) >> SECTOR_BITS;
+@@ -737,6 +730,19 @@ static ide_startstop_t cdrom_start_rw_cont(ide_drive_t *drive)
+ 	/* set up the command */
+ 	rq->timeout = ATAPI_WAIT_PC;
  
- 		/* whoops... */
- 		printk(KERN_ERR "%s: %s: wrong transfer direction!\n",
- 				drive->name, __func__);
- 
--		xf = rw ? hwif->output_data : hwif->input_data;
--		ide_cd_pad_transfer(drive, xf, len);
-+		ide_pad_transfer(drive, rw, len);
- 	} else  if (rw == 0 && ireason == 1) {
- 		/*
- 		 * Some drives (ASUS) seem to tell us that status info is
-@@ -1006,7 +981,7 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
- 					   - bio_cur_sectors(rq->bio),
- 					   thislen >> 9);
- 			if (nskip > 0) {
--				ide_cd_drain_data(drive, nskip);
-+				ide_pad_transfer(drive, write, nskip);
- 				rq->current_nr_sectors -= nskip;
- 				thislen -= (nskip << 9);
- 			}
-@@ -1043,7 +1018,7 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
- 				 * If the buffers are full, pipe the rest into
- 				 * oblivion.
- 				 */
--				ide_cd_drain_data(drive, thislen >> 9);
-+				ide_pad_transfer(drive, 0, thislen >> 9);
- 			else {
- 				printk(KERN_ERR "%s: confused, missing data\n",
- 						drive->name);
-@@ -1091,7 +1066,7 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
- 
- 	/* pad, if necessary */
- 	if (!blk_fs_request(rq) && len > 0)
--		ide_cd_pad_transfer(drive, xferfunc, len);
-+		ide_pad_transfer(drive, write, len);
- 
- 	if (blk_pc_request(rq)) {
- 		timeout = rq->timeout;
++	return ide_started;
++}
++
++/*
++ * Routine to send a read/write packet command to the drive. This is usually
++ * called directly from cdrom_start_{read,write}(). However, for drq_interrupt
++ * devices, it is called from an interrupt when the drive is ready to accept
++ * the command.
++ */
++static ide_startstop_t cdrom_start_rw_cont(ide_drive_t *drive)
++{
++	struct request *rq = HWGROUP(drive)->rq;
++
+ 	/* send the command to the drive and return */
+ 	return cdrom_transfer_packet_command(drive, rq, cdrom_newpc_intr);
+ }
+@@ -1238,10 +1244,15 @@ static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq,
+ 		} else {
+ 			xferlen = 32768;
+ 			fn = cdrom_start_rw_cont;
++
+ 			if (cdrom_start_rw(drive, rq) == ide_stopped)
+ 				return ide_stopped;
++
++			if (ide_cd_prepare_rw_request(drive, rq) == ide_stopped)
++				return ide_stopped;
+ 		}
+ 		info->last_block = block;
++
+ 	} else if (blk_sense_request(rq) || blk_pc_request(rq) ||
+ 		   rq->cmd_type == REQ_TYPE_ATA_PC) {
+ 		xferlen = rq->data_len;
 -- 
 1.5.5.1
 
