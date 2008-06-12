@@ -1,98 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759209AbYFLK5J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759611AbYFLK6G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759209AbYFLK5J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 06:57:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755715AbYFLK4z
+	id S1759611AbYFLK6G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 06:58:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756011AbYFLK5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 06:56:55 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:24185 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754931AbYFLK4y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 06:56:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=JeNl4gaUOE+6OoUoQbvkCtsySXw5Y3+bJu9c8jhSPPxltmLe7/0lpfHdJzD5IXs91j
-         6HVm9FIhTt8aQf3IcqYPPsaj7OVp5hw69aqe67Asqs34kd4gzj4aHZBcjcxPE40Rnyx6
-         Jekqs651Mi1VTmAriitPMaTicGxM66Wn3/PbE=
-Message-ID: <5a4c581d0806120356x3e933967od7ce0e109037306f@mail.gmail.com>
-Date: Thu, 12 Jun 2008 12:56:46 +0200
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [2.6.26-rc5-git2] WARNING: at kernel/lockdep.c:2658 check_flags+0x4c/0x128()
-Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Vegard Nossum" <vegard.nossum@gmail.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080612073014.GA9402@elte.hu>
+	Thu, 12 Jun 2008 06:57:55 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48631 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755715AbYFLK5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 06:57:55 -0400
+Date: Thu, 12 Jun 2008 12:57:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [PATCH 0/5] x86: minor PAT adaptations
+Message-ID: <20080612105740.GA20156@elte.hu>
+References: <20080610140411.GD5024@alberich.amd.com> <20080612081029.GA1403@elte.hu> <20080612100110.GA7763@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <5a4c581d0806111506m31412b21lee7bb851dabe6576@mail.gmail.com>
-	 <19f34abd0806112355v7330ccd4x41e66151f333c144@mail.gmail.com>
-	 <1213254306.31518.84.camel@twins> <20080612073014.GA9402@elte.hu>
+In-Reply-To: <20080612100110.GA7763@alberich.amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 12, 2008 at 9:30 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
->
->> On Thu, 2008-06-12 at 08:55 +0200, Vegard Nossum wrote:
->>
->>
->> > From: Vegard Nossum <vegard.nossum@gmail.com>
->> > Date: Thu, 12 Jun 2008 08:49:18 +0200
->> > Subject: [PATCH] x86: more hardirq annotations for notify_die()
->> >
->> > Reported-by: Alessandro Suardi <alessandro.suardi@gmail.com>
->> > Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
->> > ---
->> >  arch/x86/kernel/traps_32.c |    1 +
->> >  1 files changed, 1 insertions(+), 0 deletions(-)
->> >
->> > diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
->> > index bde6f63..be9ecae 100644
->> > --- a/arch/x86/kernel/traps_32.c
->> > +++ b/arch/x86/kernel/traps_32.c
->> > @@ -569,6 +569,7 @@ void do_##name(struct pt_regs *regs, long error_code)                   \
->> >  #define DO_VM86_ERROR(trapnr, signr, str, name)                            \
->> >  void do_##name(struct pt_regs *regs, long error_code)                      \
->> >  {                                                                  \
->> > +   trace_hardirqs_fixup();                                         \
->> >     if (notify_die(DIE_TRAP, str, regs, error_code, trapnr, signr)  \
->> >                                             == NOTIFY_STOP)         \
->> >             return;                                                 \
->>
->> Yeah, I think this is ok, actual traps don't have any way of knowing the
->> actual IRQ state afaik. So
->>
->> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
->
-> applied to tip/x86/urgent - thanks.
->
-> Alessandro, does the patch from Vegard fix the ltrace warning for you?
->
->        Ingo
->
 
-I don't  know whether the issue is reproducable at will.
+* Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
 
-I'll give the patch a go when I come home from work
- later, trying to put back the rogue nautilus RPM and
- putting it under ltrace, then report back.
+> > > patch 5 - slightly changing the code that is doing the intersection of
+> > >           pat_type and mtrr_type to be more readable (from my point of view)
+> > > 
+> > > Patches are against x86/pat (as of version 
+> > > v2.6.26-rc3-6-g46dd98a).
+> > 
+> > #5 makes sense too, but it didnt apply cleanly:
+> 
+> That's odd. I've double checked it by doing a fresh
+> 
+> $ git remote add tip git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
+> $ git remote update
+> $ git checkout tip/x86/pat
+> 
+> and applying patches 1-5 in sequence without problems.
+> (Patches were taken from emails that arrived via my linux-kernel
+> subscription.) Probably your tip/x86/pat is not at
+> v2.6.26-rc3-6-g46dd98a?
 
-Thanks for the quick turnaround, hope to be able to
- provide feedback later. Ciao,
+it was there - but some other commit from upstream interfered.
 
---alessandro
+> When trying to apply the patches to tip/master I get rejects for 
+> patches 3 and 5.
+> 
+> Hence I think creating my patches against a feature branch was not a 
+> good idea.
 
- "Give me love / Or give me hate
- Give me anything that's not just ok"
+it was a good idea - as that the final destination where the PAT patches 
+end up.
 
- (Sophia, 'Weightless')
+current tip/x86/pat head is:
+
+ tip/x86/pat 499f8f8: x86: rename pat_wc_enabled to pat_enabled
+
+> >  1 out of 1 hunk FAILED -- rejects in file arch/x86/mm/pat.c
+> > 
+> > (it didnt apply neither against tip/x86/pat or tip/master, nor against 
+> > linus/master. I guess it's some mixup somewhere.)
+> 
+> Ok, it's commit 282c454cd3a7041f59a37112bb2f82263bc38f6c which was not 
+> contained in the tip/x86/pat branch. This means I have to adapt patch 
+> 5.
+
+indeed. I cherry-picked this commit meanwhile into x86/pat.
+
+> Finally a dumb question. What patches do you prefer? Patches against 
+> feature branches (say tip/x86/foo), against tip/master or against 
+> tip/auto-latest as described in your tip.git-Readme?
+
+either is fine - but if you make specific topic updates it's best to do 
+them against the topic branch and we'll integrate them all together. If 
+in doubt, using tip/master doesnt hurt.
+
+usually i do this: i update x86/pat, then i switch to 'master' and check 
+whether it all merges cleanly via 'git-merge x86/pat'.
+
+when you switch to a topic branch, you might also want to update to the 
+latest linus tree via 'git-merge linus/master', to pick up all other 
+fixes as well. The topic branches always merge cleanly to linus-latest. 
+(we automate that - the x86/pat topic branch is not stale as its -rc3 
+base would suggest, there simply was no need to merge it to Linus-latest 
+up to now)
+
+	Ingo
