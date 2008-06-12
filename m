@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755163AbYFLFZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbYFLFcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755163AbYFLFZj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 01:25:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbYFLFZb
+	id S1755339AbYFLFcA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 01:32:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbYFLFbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 01:25:31 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:45595 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751562AbYFLFZb (ORCPT
+	Thu, 12 Jun 2008 01:31:49 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:12645 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751564AbYFLFbs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 01:25:31 -0400
-Subject: Re: [PATCH 3/5] mutex debug: add generic blocked_on usage
-From: Peter Zijlstra <peterz@infradead.org>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <20080611204917.267412694@mvista.com>
-References: <20080611204916.271608740@mvista.com>
-	 <20080611204917.267412694@mvista.com>
-Content-Type: text/plain
-Date: Thu, 12 Jun 2008 07:25:27 +0200
-Message-Id: <1213248327.31518.77.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Thu, 12 Jun 2008 01:31:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=TMqZXqNUIdcvkNFOmtSsDcsJ9wcaJZc1YoneYTATUSo380RBFVDgC4uniyiz+1c4bB
+         0kSjcXvxhl2Xx5S3Qvv5p3k8vbcbF1hUJy4wPrH4vn6R2XEl82AjGlZuIuQlHrUGZNpT
+         deS1GxB9roczIaOSFe8saMLU6tirMYbKd8KBg=
+Message-ID: <19f34abd0806112231m69bd521fgbce3c5f8dd413423@mail.gmail.com>
+Date: Thu, 12 Jun 2008 07:31:47 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Len Brown" <lenb@kernel.org>
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.26-rc5
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org,
+       "Linux Power Management List" <linux-pm@lists.osdl.org>,
+       "Lin Ming" <ming.m.lin@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.1.10.0806111942510.12191@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.1.10.0806111942510.12191@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-06-11 at 13:49 -0700, Daniel Walker wrote:
-> plain text document attachment (blocked_on-mutex.patch)
+Hi,
 
-> -#ifdef CONFIG_DEBUG_MUTEXES
-> -	/* mutex deadlock detection */
-> -	struct mutex_waiter *blocked_on;
-> -#endif
-> +	/*
-> +	 * Deadlock detection and priority inheritance handling,
-> +	 * and any other out of line mutex operations
-> +	 */
-> +	struct lock_waiter_state *blocked_on;
+On Thu, Jun 12, 2008 at 1:44 AM, Len Brown <lenb@kernel.org> wrote:
+> please pull from:
+>
+> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
+>
+> This will update the files shown below.
 
-Now you grew task_struct unconditionally, how about
+What about the "ACPICA: Fixes for Unload and DDBHandles" patch?
 
-#if defined CONFIG_DEBUG_MUTEX || defined CONFIG_RT_MUTEXES || defined CONFIG_FUTEX
+http://bugzilla.kernel.org/show_bug.cgi?id=10669
 
-?
+The patch was reverted in mainline, but is now fixed, shouldn't it be
+brought back at some point? It's (still) listed as a regression,
+anyway.
 
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
