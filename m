@@ -1,212 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbYFLQrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbYFLQtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755529AbYFLQrV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 12:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbYFLQrM
+	id S1754906AbYFLQtY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 12:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbYFLQtQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 12:47:12 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:30889 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751636AbYFLQrK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 12:47:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=YVmx5p4MXhovWCE4TfJWOOMye6utl50kmNot1Kezr+aQCkym8wspdpPbt1elFtRjbc
-         ok00YSQrP7EWVTNBVkcyVrLda6pugo5uJLsAwCm2KGPvq5ds45NcNrg5ev4/TgK2M+Bh
-         woCkJ3C046UOfTPZHi1SZgOIJspuc805DNxwY=
-Message-ID: <8265cb9e0806120947o4f39f78aqa3ace61a1ec1d6e3@mail.gmail.com>
-Date: Thu, 12 Jun 2008 17:47:09 +0100
-From: "Julia Jomantaite" <julia.jomantaite@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] drivers/acpi/video: fix brightness allocation
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Jun 2008 12:49:16 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:35674 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750771AbYFLQtQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 12:49:16 -0400
+Date: Thu, 12 Jun 2008 20:51:20 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jarek Poplawski <jarkao2@o2.pl>, Max Krasnyansky <maxk@qualcomm.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] workqueues: insert_work: use "list_head *" instead of "int tail"
+Message-ID: <20080612165120.GA12177@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ACPI Video Driver module (drivers/acpi/video.c) produces Oops message
-after pressing one of two Fn+<key> combinations responsible for switching
-the brightness level on my laptop.
+insert_work() inserts the new work_struct before or after cwq->worklist,
+depending on the "int tail" parameter. Change it to accept "list_head *"
+instead, this shrinks .text a bit and allows us to insert the barrier
+after specific work_struct.
 
-The source of this problem is in the function acpi_video_switch_brightness
-which can access device->brightness when it is not allocated. Function
-"acpi_video_device_find_cap" which is responsible for allocating
-device->brightness can leave it unallocated in some cases.
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-Function acpi_video_switch_brightness isn't called if modules's parameter
-"brightness_switch_enabled" is equal to zero so i've decided to add
-zeroing of this parameter to the part of the code where unsuccessfull
-allocation of device->brightness was handled.
-
-Also i've moved initialization of brightness to a separate function
-"acpi_video_init_brightness" to improve readability of the code and
-to simplify error handling.
-
-Julia
-
-
---- orig/drivers/acpi/video.c	2008-06-12 17:15:08.000000000 +0100
-+++ linux-2.6/drivers/acpi/video.c	2008-06-12 17:04:09.000000000 +0100
-@@ -631,6 +631,74 @@
-  *  	device	: video output device (LCD, CRT, ..)
-  *
-  *  Return Value:
-+ *  	Maximum brightness level
-+ *
-+ *  Allocate and initialize device->brightness.
-+ */
-+
-+static int
-+acpi_video_init_brightness(struct acpi_video_device *device)
-+{
-+	union acpi_object *obj = NULL;
-+	int i, max_level = 0, count = 0;
-+	union acpi_object *o;
-+	struct acpi_video_device_brightness *br = NULL;
-+
-+	if (!ACPI_SUCCESS(acpi_video_device_lcd_query_levels(device, &obj))) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Could not query available LCD
-brightness level\n"));
-+		goto out;
-+	}
-+
-+	if (obj->package.count < 2)
-+		goto out;
-+
-+	br = kzalloc(sizeof(*br), GFP_KERNEL);
-+	if (!br) {
-+		printk(KERN_ERR "can't allocate memory\n");
-+		goto out;
-+	}
-+
-+	br->levels = kmalloc(obj->package.count * sizeof *(br->levels), GFP_KERNEL);
-+	if (!br->levels)
-+		goto out_free;
-+
-+	for (i = 0; i < obj->package.count; i++) {
-+		o = (union acpi_object *)&obj->package.elements[i];
-+		if (o->type != ACPI_TYPE_INTEGER) {
-+			printk(KERN_ERR PREFIX "Invalid data\n");
-+			continue;
-+		}
-+		br->levels[count] = (u32) o->integer.value;
-+
-+		if (br->levels[count] > max_level)
-+			max_level = br->levels[count];
-+		count++;
-+	}
-+
-+	if (count < 2)
-+		goto out_free_levels;
-+
-+	br->count = count;
-+	device->brightness = br;
-+	ACPI_DEBUG_PRINT((ACPI_DB_INFO,	"found %d brightness levels\n",	count));
-+	kfree(obj);
-+	return max_level;
-+
-+out_free_levels:
-+	kfree(br->levels);
-+out_free:
-+	kfree(br);
-+out:
-+	brightness_switch_enabled = 0;
-+	kfree(obj);
-+	return 0;
-+}
-+
-+/*
-+ *  Arg:	
-+ *  	device	: video output device (LCD, CRT, ..)
-+ *
-+ *  Return Value:
-  *  	None
-  *
-  *  Find out all required AML methods defined under the output
-@@ -640,10 +708,7 @@
- static void acpi_video_device_find_cap(struct acpi_video_device *device)
+--- 26-rc2/kernel/workqueue.c~WQ_1_S_TAIL_PREV	2008-05-18 15:44:19.000000000 +0400
++++ 26-rc2/kernel/workqueue.c	2008-06-12 19:12:46.000000000 +0400
+@@ -125,7 +125,7 @@ struct cpu_workqueue_struct *get_wq_data
+ }
+ 
+ static void insert_work(struct cpu_workqueue_struct *cwq,
+-				struct work_struct *work, int tail)
++			struct work_struct *work, struct list_head *head)
  {
- 	acpi_handle h_dummy1;
--	int i;
- 	u32 max_level = 0;
--	union acpi_object *obj = NULL;
--	struct acpi_video_device_brightness *br = NULL;
-
-
- 	memset(&device->cap, 0, sizeof(device->cap));
-@@ -657,8 +722,9 @@
- 	if (ACPI_SUCCESS(acpi_get_handle(device->dev->handle, "_BCM", &h_dummy1))) {
- 		device->cap._BCM = 1;
+ 	set_wq_data(work, cwq);
+ 	/*
+@@ -133,10 +133,7 @@ static void insert_work(struct cpu_workq
+ 	 * result of list_add() below, see try_to_grab_pending().
+ 	 */
+ 	smp_wmb();
+-	if (tail)
+-		list_add_tail(&work->entry, &cwq->worklist);
+-	else
+-		list_add(&work->entry, &cwq->worklist);
++	list_add_tail(&work->entry, head);
+ 	wake_up(&cwq->more_work);
+ }
+ 
+@@ -147,7 +144,7 @@ static void __queue_work(struct cpu_work
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&cwq->lock, flags);
+-	insert_work(cwq, work, 1);
++	insert_work(cwq, work, &cwq->worklist);
+ 	spin_unlock_irqrestore(&cwq->lock, flags);
+ }
+ 
+@@ -337,14 +334,14 @@ static void wq_barrier_func(struct work_
+ }
+ 
+ static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
+-					struct wq_barrier *barr, int tail)
++			struct wq_barrier *barr, struct list_head *head)
+ {
+ 	INIT_WORK(&barr->work, wq_barrier_func);
+ 	__set_bit(WORK_STRUCT_PENDING, work_data_bits(&barr->work));
+ 
+ 	init_completion(&barr->done);
+ 
+-	insert_work(cwq, &barr->work, tail);
++	insert_work(cwq, &barr->work, head);
+ }
+ 
+ static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
+@@ -364,7 +361,7 @@ static int flush_cpu_workqueue(struct cp
+ 		active = 0;
+ 		spin_lock_irq(&cwq->lock);
+ 		if (!list_empty(&cwq->worklist) || cwq->current_work != NULL) {
+-			insert_wq_barrier(cwq, &barr, 1);
++			insert_wq_barrier(cwq, &barr, &cwq->worklist);
+ 			active = 1;
+ 		}
+ 		spin_unlock_irq(&cwq->lock);
+@@ -449,7 +446,7 @@ static void wait_on_cpu_work(struct cpu_
+ 
+ 	spin_lock_irq(&cwq->lock);
+ 	if (unlikely(cwq->current_work == work)) {
+-		insert_wq_barrier(cwq, &barr, 0);
++		insert_wq_barrier(cwq, &barr, cwq->worklist.next);
+ 		running = 1;
  	}
--	if (ACPI_SUCCESS(acpi_get_handle(device->dev->handle,"_BQC",&h_dummy1)))
-+	if (ACPI_SUCCESS(acpi_get_handle(device->dev->handle, "_BQC", &h_dummy1))) {
- 		device->cap._BQC = 1;
-+	}
- 	if (ACPI_SUCCESS(acpi_get_handle(device->dev->handle, "_DDC", &h_dummy1))) {
- 		device->cap._DDC = 1;
- 	}
-@@ -672,54 +738,10 @@
- 		device->cap._DSS = 1;
- 	}
+ 	spin_unlock_irq(&cwq->lock);
 
--	if (ACPI_SUCCESS(acpi_video_device_lcd_query_levels(device, &obj))) {
--
--		if (obj->package.count >= 2) {
--			int count = 0;
--			union acpi_object *o;
--
--			br = kzalloc(sizeof(*br), GFP_KERNEL);
--			if (!br) {
--				printk(KERN_ERR "can't allocate memory\n");
--			} else {
--				br->levels = kmalloc(obj->package.count *
--						     sizeof *(br->levels), GFP_KERNEL);
--				if (!br->levels)
--					goto out;
--
--				for (i = 0; i < obj->package.count; i++) {
--					o = (union acpi_object *)&obj->package.
--					    elements[i];
--					if (o->type != ACPI_TYPE_INTEGER) {
--						printk(KERN_ERR PREFIX "Invalid data\n");
--						continue;
--					}
--					br->levels[count] = (u32) o->integer.value;
--
--					if (br->levels[count] > max_level)
--						max_level = br->levels[count];
--					count++;
--				}
--			      out:
--				if (count < 2) {
--					kfree(br->levels);
--					kfree(br);
--				} else {
--					br->count = count;
--					device->brightness = br;
--					ACPI_DEBUG_PRINT((ACPI_DB_INFO,
--							  "found %d brightness levels\n",
--							  count));
--				}
--			}
--		}
--
--	} else {
--		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Could not query available LCD
-brightness level\n"));
-+	if (brightness_switch_enabled) {
-+		max_level = acpi_video_init_brightness(device);
- 	}
-
--	kfree(obj);
--
- 	if (device->cap._BCL && device->cap._BCM && device->cap._BQC &&
-max_level > 0){
- 		int result;
- 		static int count = 0;
