@@ -1,116 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757667AbYFLSjM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbYFLSj2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757667AbYFLSjM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 14:39:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227AbYFLSiz
+	id S1754572AbYFLSj2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 14:39:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbYFLSjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 14:38:55 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:54068 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754087AbYFLSiy convert rfc822-to-8bit (ORCPT
+	Thu, 12 Jun 2008 14:39:18 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45608 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757855AbYFLSjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 14:38:54 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-Message-ID: <18513.27708.452410.527696@stoffel.org>
-Date: Thu, 12 Jun 2008 14:34:36 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: linux-kernel@vger.kernel.org
-CC: i2c@lm-sensors.org, netdev@vger.kernel.org
-Subject: 2.6.26-rc5: CFI: Found no ck804xrom @ffc00000 device at
-   location zero
-In-Reply-To: <20080612182308.GA1091@ldl.fc.hp.com>
-References: <20080612182308.GA1091@ldl.fc.hp.com>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+	Thu, 12 Jun 2008 14:39:17 -0400
+Subject: Re: [PATCH] workqueues: insert_work: use "list_head *" instead of
+	"int tail"
+From: Peter Zijlstra <peterz@infradead.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jarek Poplawski <jarkao2@o2.pl>,
+       Max Krasnyansky <maxk@qualcomm.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080612174433.GA12204@tv-sign.ru>
+References: <20080612165120.GA12177@tv-sign.ru>
+	 <20080612165550.GA12183@tv-sign.ru> <1213290074.31518.136.camel@twins>
+	 <20080612174433.GA12204@tv-sign.ru>
+Content-Type: text/plain
+Date: Thu, 12 Jun 2008 20:38:59 +0200
+Message-Id: <1213295939.31518.159.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-06-12 at 21:44 +0400, Oleg Nesterov wrote:
 
-Hi,
+> > Hence that idea of flush context and completions.
+> 
+> Do you mean something like (just for example) below? If yes, then yes
+> sure, flush_work() is limited. But I can't see how it is possible to
+> "generalize" this idea.
+> 
+> (hmm... actually, if we add flush_work(), we can speedup schedule_on_each_cpu(),
+>  instead of flush_workqueue(keventd_wq) we can do
+> 
+> 	for_each_online_cpu(cpu)
+> 		flush_work(per_cpu_ptr(works, cpu));
+> 
+>  not sure this really makes sense though).
 
-I'm running a AMD X2 box with 4gb of RAM, Ubuntu 8.04 x86_64.  I just
-rebooted the system and I notice the following repeated messages
-(errors? warnings?) in my dmesg output.  I think this is from my
-nForce ethernet chips, but I'm not sure.
+Speedups are always nice ;-), but the below also gets us there.
 
-[   13.268005] ck804xrom ck804xrom_init_one(): Unable to register resource 0x00000000ff000000-0x00000000ffffffff - kernel bug?
-[   13.336752] i2c-adapter i2c-0: nForce2 SMBus adapter at 0x1c00
-[   13.336786] i2c-adapter i2c-1: nForce2 SMBus adapter at 0x1c40
-[   13.376771] CFI: Found no ck804xrom @ffc00000 device at location zero
-[   13.398810] JEDEC: Found no ck804xrom @ffc00000 device at location zero
-[   13.398822] CFI: Found no ck804xrom @ffc00000 device at location zero
-[   13.398883] JEDEC: Found no ck804xrom @ffc00000 device at location zero
-[   13.398889] CFI: Found no ck804xrom @ffc00000 device at location zero
-[   13.398928] JEDEC: Found no ck804xrom @ffc00000 device at location zero
-[   13.398934] CFI: Found no ck804xrom @ffc10000 device at location zero
-[   13.398971] JEDEC: Found no ck804xrom @ffc10000 device at location zero
-[   13.398980] CFI: Found no ck804xrom @ffc10000 device at location zero
-[   13.399042] JEDEC: Found no ck804xrom @ffc10000 device at location zero
-[   13.399048] CFI: Found no ck804xrom @ffc10000 device at location zero
-[   13.399579] JEDEC: Found no ck804xrom @ffc10000 device at location zero
-[   13.399579] CFI: Found no ck804xrom @ffc20000 device at location zero
-[   13.399582] JEDEC: Found no ck804xrom @ffc20000 device at location zero
-[   13.399591] CFI: Found no ck804xrom @ffc20000 device at location zero
-[   13.399652] JEDEC: Found no ck804xrom @ffc20000 device at location zero
-[   13.399658] CFI: Found no ck804xrom @ffc20000 device at location zero
-[   13.399696] JEDEC: Found no ck804xrom @ffc20000 device at location zero
-[   13.399702] CFI: Found no ck804xrom @ffc30000 device at location zero
-[   13.399739] JEDEC: Found no ck804xrom @ffc30000 device at location zero
-[   13.399748] CFI: Found no ck804xrom @ffc30000 device at location zero
-[   13.399809] JEDEC: Found no ck804xrom @ffc30000 device at location zero
-[   13.399815] CFI: Found no ck804xrom @ffc30000 device at location zero
-[   13.399853] JEDEC: Found no ck804xrom @ffc30000 device at location zero
-[   13.399859] CFI: Found no ck804xrom @ffc40000 device at location zero
-[   13.399896] JEDEC: Found no ck804xrom @ffc40000 device at location zero
-[   13.399905] CFI: Found no ck804xrom @ffc40000 device at location zero
-[   13.400587] JEDEC: Found no ck804xrom @ffc40000 device at location zero
-[   13.400593] CFI: Found no ck804xrom @ffc40000 device at location zero
-[   13.400631] JEDEC: Found no ck804xrom @ffc40000 device at location zero
-[   13.400637] CFI: Found no ck804xrom @ffc50000 device at location zero
-[   13.400674] JEDEC: Found no ck804xrom @ffc50000 device at location zero
-[   13.400683] CFI: Found no ck804xrom @ffc50000 device at location zero
-[   13.400744] JEDEC: Found no ck804xrom @ffc50000 device at location zero
-[   13.400750] CFI: Found no ck804xrom @ffc50000 device at location zero
-[   13.400788] JEDEC: Found no ck804xrom @ffc50000 device at location zero
-[   13.400795] CFI: Found no ck804xrom @ffc60000 device at location zero
-[   13.400831] JEDEC: Found no ck804xrom @ffc60000 device at location zero
-[   13.400840] CFI: Found no ck804xrom @ffc60000 device at location zero
-[   13.400902] JEDEC: Found no ck804xrom @ffc60000 device at location zero
-[   13.400908] CFI: Found no ck804xrom @ffc60000 device at location zero
-[   13.401577] JEDEC: Found no ck804xrom @ffc60000 device at location zero
-[   13.401577] CFI: Found no ck804xrom @ffc70000 device at location zero
-.
-.
-.
-.
-.
-.
-[   13.420781] JEDEC: Found no ck804xrom @fff60000 device at location zero
-[   13.420789] CFI: Found no ck804xrom @fff60000 device at location zero
-[   13.420851] JEDEC: Found no ck804xrom @fff60000 device at location zero
-[   13.420857] CFI: Found no ck804xrom @fff60000 device at location zero
-[   13.420895] JEDEC: Found no ck804xrom @fff60000 device at location zero
-[   13.420901] CFI: Found no ck804xrom @fff70000 device at location zero
-[   13.421576] JEDEC: Found no ck804xrom @fff70000 device at location zero
-[   13.421576] CFI: Found no ck804xrom @fff70000 device at location zero
-[   13.421626] JEDEC: Found no ck804xrom @fff70000 device at location zero
-[   13.421632] CFI: Found no ck804xrom @fff70000 device at location zero
-[   13.421670] JEDEC: Found no ck804xrom @fff70000 device at location zero
-[   13.421698] CFI: Found no ck804xrom @fff80000 device at location zero
-[   13.421881] JEDEC: Found no ck804xrom @fff80000 device at location zero
-[   13.421908] CFI: Found no ck804xrom @fff80000 device at location zero
-[   13.422716] JEDEC: Found no ck804xrom @fff80000 device at location zero
-[   13.422728] CFI: Found no ck804xrom @fff80000 device at location zero
-[   13.422752] Found: PMC Pm49FL004
-[   13.422775] ck804xrom @fff80000: Found 1 x8 devices at 0x0 in 8-bit bank
-[   13.486876] number of JEDEC chips: 1
-[   13.486897] cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
+> Oleg.
+> 
+> --- kernel/workqueue.c~	2007-07-28 16:58:17.000000000 +0400
+> +++ kernel/workqueue.c	2007-08-06 20:33:25.000000000 +0400
+> @@ -590,25 +590,54 @@ EXPORT_SYMBOL(schedule_delayed_work_on);
+>   *
+>   * schedule_on_each_cpu() is very slow.
+>   */
+> +
+> +struct xxx
+> +{
+> +	atomic_t count;
+> +	struct completion done;
+> +	work_func_t func;
+> +};
+> +
+> +struct yyy
+> +{
+> +	struct work_struct work;
+> +	struct xxx *xxx;
+> +};
+> +
+> +static void yyy_func(struct work_struct *work)
+> +{
+> +	struct xxx *xxx = container_of(work, struct yyy, work)->xxx;
+> +	xxx->func(work);
+> +
+> +	if (atomic_dec_and_test(&xxx->count))
+> +		complete(&xxx->done);
+> +}
+> +
+>  int schedule_on_each_cpu(work_func_t func)
+>  {
+>  	int cpu;
+> -	struct work_struct *works;
+> +	struct xxx xxx;
+> +	struct yyy *works;
+>  
+> -	works = alloc_percpu(struct work_struct);
+> +	init_completion(&xxx.done);
+> +	xxx.func = func;
+> +
+> +	works = alloc_percpu(struct yyy);
+>  	if (!works)
+>  		return -ENOMEM;
+>  
+>  	get_online_cpus();
+> +	atomic_set(&xxx.count, num_online_cpus());
+>  	for_each_online_cpu(cpu) {
+> -		struct work_struct *work = per_cpu_ptr(works, cpu);
+> +		struct yyy *yyy = per_cpu_ptr(works, cpu);
+>  
+> -		INIT_WORK(work, func);
+> -		set_bit(WORK_STRUCT_PENDING, work_data_bits(work));
+> -		__queue_work(per_cpu_ptr(keventd_wq->cpu_wq, cpu), work);
+> +		yyy->xxx = &xxx;
+> +		INIT_WORK(&yyy->work, yyy_func);
+> +		set_bit(WORK_STRUCT_PENDING, work_data_bits(&yyy->work));
+> +		__queue_work(per_cpu_ptr(keventd_wq->cpu_wq, cpu), &yyy->work);
+>  	}
+> -	flush_workqueue(keventd_wq);
+>  	put_online_cpus();
+> +	wait_for_completion(&xxx.done);
+>  	free_percpu(works);
+>  	return 0;
+>  }
+
+Yes, along those lines.
+
+you can call xxx a flush_context and create an interface like:
+
+int queue_work_contex(struct workqueue_struct *wq, 
+		      struct flush_context *fc, struct work_struct *work)
+{
+	work->context = fc;
+	return queue_work(wq, work);
+}
+
+void flush_workqueue_context(struct workqueue_strucy *wq, t
+			     struct flush_context *fc)
+{
+	if (atomic_read(&context->count))
+		wait_for_completion(&fc->completion);
+	/* except that the above is racy, wait_event() comes to mind */
+}
+
+of course run_workqueue() would then need to be augmented with something
+like:
+
+  context = work->context;
+  ...
+  f(work);
+  ...
+  if (context && atomic_dec_and_test(&context->count))
+    complete(&context->done);
+
+making all this PI savvy for -rt is going to be fun though.. I guess we
+can just queue a normal barrier of the flusher's priority, and cancel it
+once we complete.. hey - that doesn't sound hard at all :-)
+
+also, I seem to have quitely ignored the fact that struct work doesn't
+have the context pointer, and growing it unconditionally like this isn't
+nice - hummm,. perhaps we have a bit left in data and can signify a
+larger struct work_struct.. ?
 
 
 
-
-These messages seem really damn noisy, esp since it does find a JEDEC chip eventually.  I'll try and see about bisecting this later on if I get a chance.
-
-John
