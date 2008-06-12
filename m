@@ -1,93 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbYFLRkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757641AbYFLRk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757433AbYFLRkU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 13:40:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbYFLRkG
+	id S1757641AbYFLRk7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 13:40:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbYFLRkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 13:40:06 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:41202 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753405AbYFLRkE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 13:40:04 -0400
-Subject: Re: Problem: Out of memory after 2days with 2GB RAM
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Tomas Winkler <tomasw@gmail.com>
-Cc: Rik van Riel <riel@redhat.com>, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       yi.zhu@intel.com, reinette.chatre@intel.com,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <1ba2fa240806121035t40d3e8c4laccc768ae337075d@mail.gmail.com> (sfid-20080612_193551_838295_1C054FEF)
-References: <c4e36d110806120307n20cce692s9c136f11596f5ab0@mail.gmail.com>
-	 <20080612093833.0fb9cdd6@bree.surriel.com>
-	 <1213278884.3936.15.camel@johannes.berg>
-	 <1ba2fa240806120843s268b2ff4mb45a11adf11afc7f@mail.gmail.com>
-	 <1213290205.3730.2.camel@johannes.berg>
-	 <1ba2fa240806121035t40d3e8c4laccc768ae337075d@mail.gmail.com>
-	 (sfid-20080612_193551_838295_1C054FEF)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-+uJ2PTNaCZvAlhzxVbuJ"
-Date: Thu, 12 Jun 2008 19:39:00 +0200
-Message-Id: <1213292340.3730.13.camel@johannes.berg>
+	Thu, 12 Jun 2008 13:40:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55515 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753630AbYFLRku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 13:40:50 -0400
+Date: Thu, 12 Jun 2008 13:38:58 -0400
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Hideo AOKI <haoki@redhat.com>, mingo@elte.hu,
+       Masami Hiramatsu <mhiramat@redhat.com>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: Kernel marker has no performance impact on ia64.
+Message-ID: <20080612173858.GA22454@redhat.com>
+References: <48447052.3030300@redhat.com> <1212445965.6269.22.camel@lappy.programming.kicks-ass.net> <20080602232135.GA20173@Krystal> <1212618449.19205.35.camel@lappy.programming.kicks-ass.net> <20080604232241.GA8488@Krystal> <1212653539.19205.47.camel@lappy.programming.kicks-ass.net> <20080612135319.GB22348@Krystal> <1213280823.31518.114.camel@twins> <20080612155332.GA16658@redhat.com> <1213289621.31518.128.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1213289621.31518.128.camel@twins>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi -
 
---=-+uJ2PTNaCZvAlhzxVbuJ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Thu, Jun 12, 2008 at 06:53:41PM +0200, Peter Zijlstra wrote:
+> [...]
+> > Think this through.  How should systemtap (or another user-space
+> > separate-compiled tool like lttng) do this exactly?
+> 
+> lttng has trace handlers to write data into some buffer, right?
+> The trace point need not be concerned with which data, nor into what
+> buffer.
+
+The "which data" is definitely a trace point concern.  It communicates
+from the developer to users as to what values are likely to be of
+interest.
 
 
-> > Yeah, but why bother if we can just allocate 10% of the size, waste a
-> > lot less memory etc. mac80211 isn't going to pass in a scatter/gather
-> > frame anyway.
->=20
-> Hope never dies. I actually have seen this speed up the throughput so
-> I will dig into it anyway.
+> > (a) rely on debugging information?  Even assuming we could get proper
+> >     anchors (PC addresses or unambiguous type names) to start
+> >     searching dwarf data, we lose a key attractions of markers: that
+> >     it can robustly transfer data *without* dwarf data kept around.
+> 
+> Perhaps you can ship a reduced set of dwarf info [...]
 
-Well, you can always add it back later if you make the networking stack
-and mac80211 support it. It's a two-line patch after all.
+"I" don't ship or generate dwarf data.  Distributors do.
 
-> > The more interesting thing is the pci_alloc_consistent allocation right
-> > below that is also _huge_, but that's because of the stupid hardware
-> > design, or can the hardware cope with having the descriptors non-linear
-> > in memory?
->=20
-> We talk after your next HW design. How will configure 265 * 16
-> descriptors separately.
 
-Well, considering that other hardware does manage to do things
-differently (say Broadcom because I know their DMA engine), I don't know
-why your hw designers went wild with this. All you need is an
-"end-of-frame" flag. But that's not really interesting to discuss,
-unless this is actually controlled by the microcode and you can change
-it.
+> > (b) rely on hand-written C code (prototypes, pointer derefrencing
+> >     wrappers) distributed with systemtap?  Not only would this be a
+> >     brittle maintenance pain in the form of cude duplication, but then
+> >     errors in it couldn't even be detected until the final C
+> >     compilation stage.  That would make a lousy user experience.
+>
+> Not really sure what you mean here - I throught compile time errors
+> were the goal?!
 
-johannes
+For us, it's too late.  In systemtap, we try to give people useful
+information when they make mistakes.  For probes of whatever sort, we
+want to know the available data types and names, while just starting
+to process their script, so that we can check types and suggest
+alternatives.  C code compilation is quite some way removed and is
+supposed to be a systemtap internal implementation detail.
 
---=-+uJ2PTNaCZvAlhzxVbuJ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+> > (c) have systemtap try to parse the mhiramat-proposed "(struct
+> >     task_struct * next, struct task_struct * prev)" format strings?
+> >     Then we're asking systemtap to parse potentially general C type
+> >     expressions, find the kernel headers that declare the types?
+> >     Parse available subfields?  That seems too much to ask for.
+> 
+> tcc and sourcefs sound like way fun ;-)
 
-iQIcBAABAgAGBQJIUV8wAAoJEKVg1VMiehFYaIEP/1eGs29PeSXMF+RTnOz0y/7G
-aefYFoRSGhpa6SaaRuljlWoRXVrX8tGAE9XX8K8G/JBhFpyrg8n+ZjsWB0uIm/TH
-spa4Wp6TJLo7i0uxHb0TXMCQXjK2q1EP37ZhwgiX+4yBQ+jp9R8m67iLqtRVRgSc
-YbAUcNp1AVdm5PASNRPwAYsgrmRtNWRKinHNQwSCQjRGVJnGjPVR2hs4oRs/0Q/L
-wt+nkIy5AzEiSxqXo+DK40EMJBQfXfHFSuvieZWVYeu7m39OW4/Edjhq6v7Vfq57
-4YcqxRcLKWRaAsXBaoXAr5lXZHUNCsikrpqDR/KmactmvA6pDpM/7hLJbMgiZjef
-AwUbEUy4T23h3bEznXFmdeseM2dJE87pMDOZOBzkCWfHUkjz0Fge+twXYFQtVpyY
-9O3hMsEB3iRpvJ9tdkSjGec8mBCgf5bRNQ2DMBSrf8tUIESL9w1whw6DIBRal9Mu
-ADsfeGfajMqq/qgaREwtwsNVpwGrLt9hImTPBwnhQAgbSBeSPS5gOgJIKbLJwUiA
-9YCX7pHEW/+ufH4quU/HHaaCvVP4E1h+VENPN3yGqqhoomKDpqY4tU/1HnJIUi6Q
-Rp8m89JJ9erOStH141TxZJzMz9O3HL8zE+q3sL+uZDTmBAmhGDplbhqFPV8202pH
-VUWZRuIgrFJU8hsU4X9l
-=X05g
------END PGP SIGNATURE-----
+Really...
 
---=-+uJ2PTNaCZvAlhzxVbuJ--
 
+> > (d) or another way?
+> 
+> Get your own tracer in kernel - that provides exactly what stap needs?
+
+You are missing that (a) this is the point of markers - to allow the
+the gajillion tracers a single place per event to hook through, and
+(b) we would like to leave to subsystem developers and/or end-users as
+to what data should be available.  We don't want to get into the
+middle of it.
+
+
+> > This is another reason why markers are a nice solution.  They allow
+> > passing of actual useful values: not just the %p pointers but the most
+> > interesting derived values (e.g., prev->pid). 
+> 
+> Useful to whoem? stap isn't the holy grail of tracing and certainly not
+> the only consumer of trace points, so restricting the information to
+> just what stap needs is actually making trace points less useful.
+
+Only you are talking about "restricting".  I am talking about
+thoughtfully *adding* simple scalar values that most tracing type
+tools will generally want, so that they don't have to perform heroic
+measures like ship their own dwarf subsets or parse kernel source
+code.  
+
+Which scalars?  Well, it depends on the subsystem and event, and you
+can review here several discussions about specific lttng
+instrumentation markers to see how they generally go.
+
+
+- FChE
