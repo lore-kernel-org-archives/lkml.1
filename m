@@ -1,71 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759437AbYFLTew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759247AbYFLTff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759437AbYFLTew (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 15:34:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbYFLTem
+	id S1759247AbYFLTff (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 15:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755297AbYFLTfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 15:34:42 -0400
-Received: from zakalwe.fi ([80.83.5.154]:58987 "EHLO zakalwe.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753274AbYFLTem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 15:34:42 -0400
-X-Greylist: delayed 1835 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Jun 2008 15:34:42 EDT
-Date: Thu, 12 Jun 2008 22:04:05 +0300
-From: Heikki Orsila <shdl@zakalwe.fi>
-To: David Altobelli <david.altobelli@hp.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] HP iLO driver
-Message-ID: <20080612190405.GR31039@zakalwe.fi>
-References: <20080612182308.GA1091@ldl.fc.hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20080612182308.GA1091@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.11
+	Thu, 12 Jun 2008 15:35:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35391 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754397AbYFLTfU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 15:35:20 -0400
+Date: Thu, 12 Jun 2008 12:34:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, paulmck@us.ibm.com
+Subject: Re: [patch] radix-tree: fix small lockless radix-tree bug
+Message-Id: <20080612123443.e4682b3f.akpm@linux-foundation.org>
+In-Reply-To: <200806130503.45369.nickpiggin@yahoo.com.au>
+References: <200806130503.45369.nickpiggin@yahoo.com.au>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 12, 2008 at 12:23:08PM -0600, David Altobelli wrote:
-> +struct fifo {
-> +    u64 nrents;	/* user requested number of fifo entries */
-> +    u64 imask;  /* mask to extract valid fifo index */
-> +    u64 merge;	/*  O/C bits to merge in during enqueue operation */
-> +    u64 reset;	/* set to non-zero when the target device resets */
-> +    u8  pad_0[ILO_CACHE_SZ - (sizeof(u64) * 4)];
-> +
-> +    u64 head;
-> +    u8  pad_1[ILO_CACHE_SZ - (sizeof(u64))];
-> +
-> +    u64 tail;
-> +    u8  pad_2[ILO_CACHE_SZ - (sizeof(u64))];
-> +
-> +    volatile u64 fifobar[1];
-> +};
+On Fri, 13 Jun 2008 05:03:45 +1000
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-Why do you need a volatile? What you probably want is atomic ops. 
-Spinlocks will create memory barriers implicitly.
-
-> +static int fifo_enqueue(struct ilo_hwinfo *hw, char *fifobar, int entry)
-> +{
-> +	struct fifo *Q = FIFOBARTOHANDLE(fifobar);
-> +	int ret = 0;
+> @@ -124,6 +175,17 @@ static void radix_tree_node_rcu_free(str
+>  {
+>  	struct radix_tree_node *node =
+>  			container_of(head, struct radix_tree_node, rcu_head);
 > +
-> +	spin_lock(&hw->fifo_lock);
-> +	if (!(Q->fifobar[(Q->tail + 1) & Q->imask] & ENTRY_MASK_O)) {
-> +		Q->fifobar[Q->tail & Q->imask] |=
-> +			((entry & ENTRY_MASK_NOSTATE) | Q->merge);
-> +		Q->tail += 1;
-> +		ret = 1;
-> +	}
-> +	spin_unlock(&hw->fifo_lock);
+> +	/*
+> +	 * must only free zeroed nodes into the slab. radix_tree_shrink
+> +	 * can leave us with a non-NULL entry in the first slot, so clear
+> +	 * that here to make sure.
+> +	 */
+> +	tag_clear(node, 0, 0);
+> +	tag_clear(node, 1, 0);
+> +	node->slots[0] = NULL;
+> +	node->count = 0;
 > +
-> +	return ret;
-> +}
+>  	kmem_cache_free(radix_tree_node_cachep, node);
+>  }
 
-Is writing to Q->fifobar (u64 *) endian-safe?
-
--- 
-Heikki Orsila
-heikki.orsila@iki.fi
-http://www.iki.fi/shd
+oic, that stuff got moved from the synchronous case into the RCU callback
+case.
