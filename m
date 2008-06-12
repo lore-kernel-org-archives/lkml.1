@@ -1,62 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758425AbYFLTaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757697AbYFLTbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758425AbYFLTaV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 15:30:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbYFLTaK
+	id S1757697AbYFLTbr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 15:31:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbYFLTbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 15:30:10 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:50700 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752121AbYFLTaI (ORCPT
+	Thu, 12 Jun 2008 15:31:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60659 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753665AbYFLTbj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 15:30:08 -0400
-Message-ID: <485178A8.2040002@cs.helsinki.fi>
-Date: Thu, 12 Jun 2008 22:27:36 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
-MIME-Version: 1.0
-To: Manfred Spraul <manfred@colorfullife.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Nadia Derbey <Nadia.Derbey@bull.net>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Christoph Lameter <clameter@sgi.com>
-Subject: Re: repeatable slab corruption with LTP msgctl08
-References: <20080611221324.42270ef2.akpm@linux-foundation.org> <Pine.LNX.4.64.0806121332130.11556@sbz-30.cs.Helsinki.FI> <48516BF3.8050805@colorfullife.com>
-In-Reply-To: <48516BF3.8050805@colorfullife.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 12 Jun 2008 15:31:39 -0400
+Date: Thu, 12 Jun 2008 12:31:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, paulmck@us.ibm.com
+Subject: Re: [patch] radix-tree: fix small lockless radix-tree bug
+Message-Id: <20080612123102.d8783b98.akpm@linux-foundation.org>
+In-Reply-To: <200806130503.45369.nickpiggin@yahoo.com.au>
+References: <200806130503.45369.nickpiggin@yahoo.com.au>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Manfred Spraul wrote:
-> Hmm. double kfree() should be cached by the redzone code.
-> And I disagree with your link interpretation:
-> 
-> 000: 00 e0 12 f2 88 32 c0 f7 88 00 00 00 88 50 90 f2
-> 010:
-> inuse: 14 00 00 00 (20 entries in use, 6 should be free)
-> free:  0f 00 00 00
-> nodeid: 00 00 00 00
-> bufctl[0x00] ff ff ff ff 020: fd ff ff ff fd ff ff ff fd ff ff ff
-> bufctl[0x4] fd ff ff ff  030: fd ff ff ff fd ff ff ff fd ff ff ff
-> bufctl[0x8] fd ff ff ff  040: fd ff ff ff fd ff ff ff 00 00 00 00
-> bufctl[0x0c] fd ff ff ff 050: fd ff ff ff fd ff ff ff 19 00 00 00
-> bufctl[0x10] 17 00 00 00 060: fd ff ff ff fd ff ff ff 0b 00 00 00
-> bufctl[0x14] fd ff ff ff 070: fd ff ff ff fd ff ff ff fd ff ff ff
-> bufctl[0x18] fd ff ff ff 080: 10 00 00 00
-> 
-> free: points to entry 0x0f.
-> bufctl[0x0f] is 0x19, i.e. it points to entry 0x19
-> 0x19 points to 0x10
-> 0x10 points to 0x17
-> 0x17 is a BUFCTL_ACTIVE - that's a bug.
-> but: 0x13 is a valid link entry, is points to 0x0b
-> 0x0b points to 0x00, which is BUFCTL_END.
-> 
-> IMHO the most probable bug is a single bit error:
-> bufctl[0x10] should be 0x13 instead of 0x17.
+On Fri, 13 Jun 2008 05:03:45 +1000
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-Ah, you're, of course, right. For some reason I was looking at 8-bit 
-bufctls when they are, in fact, 32-bit.
+> Hi guys,
+> 
+> Although this doesn't seem like cause for alarm (as per the analysis),
+> it may still be a good 2.6.26 candidate as we should have a few more
+> weeks of testing left.
+> 
+> It should definitely go in -mm with the lockless pagecache patch.
+> 
+> When shrinking a radix-tree, we do it in a lockless manner by atomically
+> switching the root pointer away from the redundant node (one that only
+> has a single entry in the left most slot), and switching it over to its
+> lone child.
+> 
+> Because a lockless lookup may have got a reference to the parent and be
+> in the middle of deciding what to do with it while it is being swapped
+> away for its child. For this reason, we also have to keep it around and
+> in a valid state for the lookup to proceed and give a valid result, for
+> at least an RCU grace period. So we need to keep the child in the left
+> most slot there in case that is requested by the lookup.
+> 
+> This is all pretty standard RCU stuff. It is worth repeating because
+> in my eagerness to obey the radix tree node constructor scheme, I had
+> broken this by zeroing the radix tree node before the grace period.
+> 
+> Fix it by clearing those fields in the RCU callback. I would normally
+> want to rip out the constructor entirely, but radix tree nodes are one
+> of those places where they make sense (only few cachelines will be
+> touched soon after allocation).
+> 
+> 
+> This was never actually observed in any lockless pagecache testing or
+> using the test harness, but as a rare problem testing my scalable vmap
+> rewrite.
+> 
+> Fortunately, it is not a problem anywhere lockless pagecache is used in
+> mainline kernels (pagecache probe is not a guarantee, and brd does not
+> have concurrent lookups and deletes).
+> 
+> However, it would eventually pop up for someone using lockless pagecache :P
+> 
 
-		Pekka
+OK, I give up.  A cannot spot what you actually changed amongst all the
+code motion?
+
