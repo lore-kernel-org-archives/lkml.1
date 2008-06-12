@@ -1,86 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759596AbYFLTJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754294AbYFLTK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759596AbYFLTJl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 15:09:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759155AbYFLTJW
+	id S1754294AbYFLTK3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 15:10:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbYFLTKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 15:09:22 -0400
-Received: from mail.tmr.com ([64.65.253.246]:60679 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756854AbYFLTJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 15:09:21 -0400
-Message-ID: <48517440.6020905@tmr.com>
-Date: Thu, 12 Jun 2008 15:08:48 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Thu, 12 Jun 2008 15:10:20 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:39827 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753697AbYFLTKS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 15:10:18 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5316"; a="3882635"
+Message-ID: <48517493.30305@qualcomm.com>
+Date: Thu, 12 Jun 2008 12:10:11 -0700
+From: Max Krasnyanskiy <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
-       Alan Piszcz <ap@solarrain.com>
-Subject: Re: Linux MD RAID 5 Benchmarks Across (3 to 10) 300 Gigabyte Veliciraptors
-References: <alpine.DEB.1.10.0806071015110.23323@p34.internal.lan> <4850354A.8090503@tmr.com> <alpine.DEB.1.10.0806111647360.18136@p34.internal.lan> <alpine.DEB.1.10.0806111652550.18136@p34.internal.lan>
-In-Reply-To: <alpine.DEB.1.10.0806111652550.18136@p34.internal.lan>
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Oleg Nesterov <oleg@tv-sign.ru>, mingo@elte.hu,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Paul Jackson <pj@sgi.com>,
+       menage@google.com, linux-kernel@vger.kernel.org,
+       Mark Hounschell <dmarkh@cfl.rr.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: workqueue cpu affinity
+References: <alpine.DEB.1.10.0806051255500.31157@chino.kir.corp.google.com>	 <20080605152953.dcfefa47.pj@sgi.com>	 <alpine.DEB.1.10.0806051357480.32537@chino.kir.corp.google.com>	 <484D99AD.4000306@qualcomm.com> <1213080240.31518.5.camel@twins>	 <484E9FE8.9040504@qualcomm.com>  <20080610170005.GA6038@tv-sign.ru>	 <1213118386.19005.9.camel@lappy.programming.kicks-ass.net>	 <484EE303.9070007@qualcomm.com> <1213166964.31518.62.camel@twins>	 <4850214A.8090100@qualcomm.com> <1213296240.31518.163.camel@twins>
+In-Reply-To: <1213296240.31518.163.camel@twins>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
->
->
-> On Wed, 11 Jun 2008, Justin Piszcz wrote:
->
->>
->>
->> On Wed, 11 Jun 2008, Bill Davidsen wrote:
->>
->>> Justin Piszcz wrote:
->>>> First, the original benchmarks with 6-SATA drives with fixed 
->>>> formatting, using
->>>> right justification and the same decimal point precision throughout:
->>>> http://home.comcast.net/~jpiszcz/20080607/raid-benchmarks-decimal-fix-and-right-justified/disks.html 
->>>> Now for for veliciraptors! Ever wonder what kind of speed is 
->>>> possible with
->>>> 3 disk, 4,5,6,7,8,9,10-disk RAID5s? I ran a loop to find out, each 
->>>> run is
->>>> executed three times and the average is taken of all three runs per 
->>>> each RAID5 disk set.
->>>>
->>>> In short? The 965 no longer does justice with faster drives, a new 
->>>> chipset
->>>> and motherboard are needed. After reading or writing to 4-5 
->>>> veliciraptors
->>>> it saturates the bus/965 chipset.
->>>
->>> This is very interesting, but a 16GB chunk size bears no 
->>> relationship to anything I would run in the real world, and I 
->>> suspect most people are in the same category.
->>
->> I based my bonnie++ test on:
->> http://everything2.org/?node_id=1479435
->>
->> So I could compare to his results.
->>
->> I use a 1024k (1MiB) with 16384 stripe, this offered the best overall 
->> read/write/rewrite performance AFAIK.
->
-> 1024k chunk size (raid5 chunk size)
-> echo 16384 > stripe_cache_size
+Peter Zijlstra wrote:
+> Sorry for being late,.. and I'm afraid most will have to wait a bit
+> longer :-(
+> 
+> On Wed, 2008-06-11 at 12:02 -0700, Max Krasnyansky wrote:
+>> Peter Zijlstra wrote:
+> 
+>>> Please don't take this too personal - I'm glad you're working on this.
+>>> I'm just trying to see what we can generalize.
+> 
+>> Oh, no worries, I'm not taking this personally, except maybe the "most your
+>> ideas suck" part which got me a little bit ;-). I'm definitely all for making
+>> it suitable for more general usage.
+>> This is actually first constructive criticism (except for the "most of your
+>> ideas suck" part :). 
+> 
+> No, no, you understand me wrong (or I expressed myself wrong). Your
+> ideas are good, its just the implementation / execution I have issues
+> with.
+> 
+> Like with extending the isolation map, what didn't leave any room for
+> hard-rt smp schedulers or multiple rt domains. Whereas the cpuset stuff
+> does.
+Yep. And I redid it completely and switched gears to fix/improve cpusets, 
+genirq, etc.
+Anyway, I think we're on the same page. Please look over the summary that I 
+sent out and see if I missed anything.
 
-Please don't explain any more, I'm confused enough already. I can't make 
-those numbers match 16G no matter how I add them, either the contents of 
-the column labeled "size:chunk size" isn't the size of the chunk, or you 
-have a multiplier floating around that I don't see.  And you eliminated 
-the degraded performance, since your stripe_cache_size is less than 
-(raid5 chunk size)*(#disks), I would expect the reads in degraded mode 
-to be dog slow because the don't fit in cache, even if 1024k is what I 
-call chunk size and certainly not if chunk size is 16G.
-
--- 
-Bill Davidsen <davidsen@tmr.com>
-  "Woe unto the statesman who makes war without a reason that will still
-  be valid when the war is over..." Otto von Bismark 
-
-
+Max
