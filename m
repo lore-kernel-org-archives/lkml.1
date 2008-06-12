@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755820AbYFLC4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755510AbYFLDHK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755820AbYFLC4f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 22:56:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYFLC42
+	id S1755510AbYFLDHK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 23:07:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbYFLDG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 22:56:28 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:39577 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750837AbYFLC42 (ORCPT
+	Wed, 11 Jun 2008 23:06:56 -0400
+Received: from ti-out-0910.google.com ([209.85.142.189]:56330 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752933AbYFLDGz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 22:56:28 -0400
-X-Sasl-enc: vU8CuXRTY+HZBr2bMrZStD8945IkPMmTX27IW24Hm7Wi 1213239386
-Subject: Re: [PATCH] autofs4: fix 32-bit userspace vs 64-bit
-	kernel	communications
-From: Ian Kent <raven@themaw.net>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: Pavel Emelyanov <xemul@openvz.org>,
-       autofs mailing list <autofs@linux.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Konstantin Khlebnikov <khlebnikov@openvz.org>
-In-Reply-To: <18511.57661.944934.513223@harpo.it.uu.se>
-References: <484FA0B8.2000002@openvz.org>
-	 <1213187579.4994.25.camel@raven.themaw.net> <484FC94E.1000209@openvz.org>
-	 <1213190100.4994.54.camel@raven.themaw.net>
-	 <18511.57661.944934.513223@harpo.it.uu.se>
-Content-Type: text/plain
-Date: Thu, 12 Jun 2008 10:52:28 +0800
-Message-Id: <1213239148.4994.70.camel@raven.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+	Wed, 11 Jun 2008 23:06:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=skLAUclWT3ccfF4kCZSFRCMCrZgOddCtF3ufDjj/g8XSU2KGBE8/h/TDS7R66P6UBu
+         wEKJtYdgfWaMD90BalwRj7r2kLcpDB4x84gW3179Cwd5agFueWniTB3WKd7l0VmQZTzk
+         pSoOmW6lTdeZiz+cV35l/7WhtYFksTWzDIJQU=
+Message-ID: <485092C9.3050309@gmail.com>
+Date: Thu, 12 Jun 2008 12:06:49 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Prevent busy looping
+References: <20080416151305.8788.63912.stgit@denkblock.local>	<20080416163152.GK12774@kernel.dk>	<87r6d5l9pb.fsf@denkblock.local>	<20080417071335.GR12774@kernel.dk>	<87ve2gc1bn.fsf@denkblock.local>	<484F7A8D.1040809@gmail.com> <20080611080502.4aa43980@core> <484F86D4.8050907@gmail.com>
+In-Reply-To: <484F86D4.8050907@gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-06-11 at 16:29 +0200, Mikael Pettersson wrote:
-> Ian Kent writes:
->  > What about other arches offer 32-bit within a 64-bit environment (has
->  > this been the case on sparc64 at some point)?
->  > What about the compiler padding on these?
+Tejun Heo wrote:
+> Alan Cox wrote:
+>>> Elias's synthetic test case triggered infinite loop because it wasn't
+>>> a proper ->qc_defer().  ->qc_defer() should never defer commands when
+>>> the target is idle.
+>> Target or host ? We *do* defer commands in the case of an idle channel
+>> when dealing with certain simplex controllers that can only issue one
+>> command per host not one per cable (and in fact in the general case we
+>> can defer commands due to activity on the other drive on the cable).
 > 
-> Both ppc64 and sparc64 commonly have 32-bit userspaces.
-> But 64-bit and mixed 32/64-bit userspaces are of course possible.
+> The term was confusing.  I used target to mean both device
+> (ATA_DEFER_LINK) and host (ATA_DEFER_PORT).  Hmmm... in simplex case,
+> yeah, blocked counters need to be > 1.  We'll need to increase blocked
+> counts after all.  I'll test blocked counts of 2 w/ PMP and make sure it
+> doesn't incur unnecessary delays and post the patch.
 
-I believe that both these archs have the same alignment characteristics
-a x86_64. Can anyone confirm that?
+Setting blocked counts to 2 makes simplex scheduling starve one of the
+drives.  When a drive loses competition, it retries only after plug
+delay and of course it loses most of the time.  For now, it seems we'll
+have to live with busy loops (which doesn't lock up the machine) for
+simplex controllers.  Ewww... :-(
 
-Ian
-
-
+-- 
+tejun
