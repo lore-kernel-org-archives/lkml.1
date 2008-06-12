@@ -1,111 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757432AbYFLITK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757862AbYFLITd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757432AbYFLITK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 04:19:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121AbYFLISw
+	id S1757862AbYFLITd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 04:19:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121AbYFLITR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 04:18:52 -0400
-Received: from styx.suse.cz ([82.119.242.94]:50461 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752091AbYFLISt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 04:18:49 -0400
-Date: Thu, 12 Jun 2008 10:18:47 +0200
-From: Jan Kara <jack@suse.cz>
-To: Neil Brown <neilb@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
-Subject: Re: Two questions on VFS/mm
-Message-ID: <20080612081847.GA12367@duck.suse.cz>
-References: <20080604163412.GL16572@duck.suse.cz> <18512.51954.831279.617586@notabene.brown>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18512.51954.831279.617586@notabene.brown>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 12 Jun 2008 04:19:17 -0400
+Received: from sh.osrg.net ([192.16.179.4]:33512 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757517AbYFLITO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 04:19:14 -0400
+Date: Thu, 12 Jun 2008 16:29:33 +0900
+To: alexisb@us.ibm.com
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       muli@il.ibm.com, mingo@elte.hu, akpm@linux-foundation.org
+Subject: Re: [PATCH -mm] x86 calgary: fix handling of devces that aren't
+	behind the Calgary
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1213233906.8567.146.camel@alexis>
+References: <20080531133114P.tomof@acm.org>
+	<1213233906.8567.146.camel@alexis>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080612163403K.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 12-06-08 17:06:26, Neil Brown wrote:
-> On Wednesday June 4, jack@suse.cz wrote:
-> >   Hi,
-> > 
-> >   could some kind soul knowledgable in VFS/mm help me with the following
-> > two questions? I've spotted them when testing some ext4 for patches...
-> >   1) In write_cache_pages() we do:
-> > ...
-> > 	lock_page(page);
-> > 	...
-> > 	if (!wbc->range_cyclic && page->index > end) {
-> >                    done = 1;
-> >                    unlock_page(page);
-> >                    continue;
-> >         }
-> > 	...
-> > 	ret = (*writepage)(page, wbc, data);
-> > 
-> >   Now the problem is that if range_cyclic is set, it can happen that the
-> > page we give to the filesystem is beyond the current end of file (and can
-> > be already processed by invalidatepage()). Is the filesystem supposed to
-> > handle this (what would it be good for to give such a page to the fs?) or
-> > is it just a bug in write_cache_pages()?
-> 
-> Maybe there is an invariant that an address_space never has a dirty
-> page beyond the end-of-file??
-> Certainly 'truncate' invalidates and un-dirties such pages.
-> 
-> With typical writes, ->write_begin will extend EOF to include the
-> page, and ->write_end will mark it dirty (I think).
-> 
-> mmap writes are probably a bit different, but I suspect the same
-> principle applies.
-> 
-> If the page is not dirty, then 
-> 			if (PageWriteback(page) ||
-> 			    !clear_page_dirty_for_io(page)) {
-> 				unlock_page(page);
-> 				continue;
-> 			}
-> 
-> will fire, and you never get to
-> 			ret = (*writepage)(page, wbc, data);
-  As Miklos pointed out, there's at least call do_invalidatepage() from
-block_write_full_page() which does invalidate the page but does not clear
-dirty bits or remove page from page cache. Otherwise I'd agree with
-you...
+On Wed, 11 Jun 2008 18:25:06 -0700
+Alexis Bruemmer <alexisb@us.ibm.com> wrote:
 
-> >   2) I have the following problem with page_mkwrite() when blocksize <
-> > pagesize. What we want to do is to fill in a potential hole under a page
-> > somebody wants to write to. But consider following scenario with a
-> > filesystem with 1k blocksize:
-> >   truncate("file", 1024);
-> >   ptr = mmap("file");
-> >   *ptr = 'a'
-> >      -> page_mkwrite() is called.
-> >         but "file" is only 1k large and we cannot really allocate blocks
-> >         beyond end of file. So we allocate just one 1k block.
-> >   truncate("file", 4096);
-> >   *(ptr + 2048) = 'a'
-> >      - nothing is called and later during writepage() time we are surprised
-> >        we have a dirty page which is not backed by a filesystem block.
+> On Sat, 2008-05-31 at 13:31 +0900, FUJITA Tomonori wrote:
+> > The calgary code can give drivers addresses above 4GB which is very
+> > bad for hardware that is only 32bit DMA addressable:
 > > 
-> >   How to solve this? One idea I have here is that when we handle truncate(),
-> > we mark the original last page (if it is partial) as read-only again so
-> > that page_mkwrite() is called on the next write to it. Is something like
-> > this possible? Pointers to code doing something similar are welcome, I don't
-> > really know these things ;).
-> 
-> My understanding is that memory mapping is always done in multiples of
-> the page size.  When you dirty any part of a page, you effectively dirty
-> the whole page, so you need to extend the file to cover the whole page.
-> i.e. the page_mkwrite() call must extend the file to a size of 4096.
-  Well, you definitely cannot increase file size because someone wrote to
-the last page of file whose size is not multiple of page size. So when your
-block size is smaller than page size, you have to handle it somehow... You
-could instantiate blocks beyond end of file but that gets a bit tricky
-(e.g. in ext3, we don't allow such blocks to exist so far).
+> > http://lkml.org/lkml/2008/5/8/423
+> > 
+> > This patch tries to fix the problem by using per-device
+> > dma_mapping_ops support. This fixes the calgary code to use swiotlb or
+> > nommu properly for devices which are not behind the Calgary/CalIOC2.
+> > 
+> > With this patch, the calgary code sets the global dma_ops to swiotlb
+> > or nommu, and the dma_ops of devices behind the Calgary/CalIOC2 to
+> > calgary_dma_ops. So the calgary code can handle devices safely that
+> > aren't behind the Calgary/CalIOC2.
+> > 
+> > I think that bus_register_notifier works nicely for hotplugging (the
+> > calgary code can register a hook to set the device-per ops to
+> > calgary_dma_ops) though I don't know the calgary code needs it.
+> > 
+> > This patch is against -mm (depends on the per-device dma_mapping_ops
+> > patchset in -mm).
+> > 
+> > This is only compile tested.
+> So this patch dose not completely work.  The problem is that devices
+> that are controlled by the CalIO2/calgary are not getting the calgary
+> dma_ops assigned to them.  Having the proper changes to pci-dma.c helped
+> (thank you) but still didn't quite get us there.  From what I could tell
+> having the per device dma_ops being assigned in calgary_init_one was not
+> correct.  The dev being past to calgary_init_one is only ever an IBM
+> CalIO2/calgary device which meant that many devices that are being
+> controlled by the CalI02/calgary, such as the the MegaRAID SAS
+> controller, were not getting the calgary based dma ops assigned to them.
 
-							Thanks for ideas
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Thanks, now I see what's wrong in my patch.
+
+
+> I have attached an updated patch that does assign the per device calgary
+> dma_ops correctly and have successfully tested it on an IBM x3950 M2.  I
+> think there is a better way to do this, but this does work.
+
+Looks good though I have one minor comment.
+
+
+> Thank you some much for your help and work on this problem!
+
+You're welcome! I just want to improve IOMMUs and dma mapping code.
+
+
+> Alexis 
+> 
+> 
+> > Thanks,
+> > 
+> > ==
+> > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > Subject: [PATCH] x86 calgary: fix handling of devces that aren't behind the Calgary
+> > 
+> > The calgary code can give drivers addresses above 4GB which is very
+> > bad for hardware that is only 32bit DMA addressable.
+> > 
+> > With this patch, the calgary code sets the global dma_ops to swiotlb
+> > or nommu properly, and the dma_ops of devices behind the
+> > Calgary/CalIOC2 to calgary_dma_ops. So the calgary code can handle
+> > devices safely that aren't behind the Calgary/CalIOC2.
+> > 
+> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > ---
+> <snip>
+> 
+> Signed-off-by: Alexis Bruemmer <alexisb@us.ibm.com>
+
+
+> @@ -1230,6 +1197,21 @@ static int __init calgary_init(void)
+>  			goto error;
+>  	} while (1);
+>  
+> +	dev = NULL;
+> +	do {
+> +		struct iommu_table *tbl;
+> +		dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev);
+> +
+> +		if (!dev)
+> +			break;
+> +
+> +		tbl = find_iommu_table(&dev->dev);
+> +
+> +		if(translation_enabled(tbl))
+> +			dev->dev.archdata.dma_ops = &calgary_dma_ops;
+> +
+> +	} while (1);
+
+for_each_pci_dev would simplify the code a bit?
+
+dev = NULL;
+
+for_each_pci_dev(dev) {
+	struct iommu_table *tbl;
+
+	tbl = find_iommu_table(&dev->dev);
+
+	if(translation_enabled(tbl))
+		dev->dev.archdata.dma_ops = &calgary_dma_ops;
+}
