@@ -1,88 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761110AbYFLMfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761497AbYFLMgA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761110AbYFLMfp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 08:35:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757737AbYFLMfi
+	id S1761497AbYFLMgA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 08:36:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761234AbYFLMfu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 08:35:38 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:36043 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755532AbYFLMfh (ORCPT
+	Thu, 12 Jun 2008 08:35:50 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:61166 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761190AbYFLMfr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 08:35:37 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=NBVfHoFIzTAUt+jykFbAHAfWb9pbbRkGHLiN4u4Cnm7WPa7AOxlDmEs4gUimItmc5WiTYI29Gc/cwTyaK2nV1BMb6mvUF/ZsW3MwtjLV6ogetuq128ey9F4f49XkbEHpalHqo1+RWcg2Wz34NefzXeYksC01MXcGXdV3sS3fpyY=  ;
-X-YMail-OSG: nshApv4VM1kAZV3W.wp38dOoJd.GpRzF8FIAQVcCEigmaH.vzincDaatafxsBwI2eMQU2tHEYxvB3lYrljhlE7iz6O.pIvDrTsO5zBmPGyv0I46ctv1LV5AtpChJv3BrlEQ-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Cliff Wickman <cpw@sgi.com>
-Subject: Re: [PATCHv4] SGI UV: TLB shootdown using broadcast assist unit
-Date: Thu, 12 Jun 2008 22:35:29 +1000
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-References: <E1K6lqI-0006pX-JQ@eag09.americas.sgi.com>
-In-Reply-To: <E1K6lqI-0006pX-JQ@eag09.americas.sgi.com>
+	Thu, 12 Jun 2008 08:35:47 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Maynard Johnson <maynardj@us.ibm.com>
+Subject: Re: [PATCH] Version 3: Reworked Cell OProfile: SPU mutex lock fix
+Date: Thu, 12 Jun 2008 14:31:52 +0200
+User-Agent: KMail/1.9.9
+Cc: Carl Love <cel@us.ibm.com>, acjohnso <acjohnso@us.ibm.com>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>,
+       cbe-oss-dev@ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>
+References: <1213139954.6763.244.camel@carll-linux-desktop> <200806111452.46619.arnd@arndb.de> <484FE6EA.2060403@us.ibm.com>
+In-Reply-To: <484FE6EA.2060403@us.ibm.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?iso-8859-1?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60?=
+ =?iso-8859-1?q?Y=2Ea=5E3zb?=)
+ =?iso-8859-1?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5C?=
+ =?iso-8859-1?q?wg=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806122235.29888.nickpiggin@yahoo.com.au>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200806121431.53596.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18BdDA3yaNSIxqyT/Y3Zs/tAM24YUhxFmY0KiZ
+ LR0H9wtRJKXYUEqwtxG+WKVFza7UJL/RApCE+itdMsDVad9eAI
+ nyId2MaX+zZwzzDbb/mHQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 June 2008 22:23, Cliff Wickman wrote:
-> From: Cliff Wickman <cpw@sgi.com>
->
-> TLB shootdown for SGI UV.
->
-> v1: 6/2 original
-> v2: 6/3 corrections/improvements per Ingo's review
-> v3: 6/4 split atomic operations off to a separate patch (Jeremy's review)
-> v4: 6/12 include <mach_apic.h> rather than <asm/mach-bigsmp/mach_apic.h>
->          (fixes a !SMP build problem that Ingo found)
->          fix the index on uv_table_bases[blade]
-> Now depends on patch:
->     x86 atomic operations: atomic_or_long atomic_inc_short
->   which was split off (and improved) at the suggestion of
->   Jeremy Fitzhardinge <jeremy@goop.org>
->
-> This patch provides the ability to flush TLB's in cpu's that are not on
-> the local node.  The hardware mechanism for distributing the flush
-> messages is the UV's "broadcast assist unit".
->
-> The hook to intercept TLB shootdown requests is a 2-line change to
-> native_flush_tlb_others() (arch/x86/kernel/tlb_64.c).
->
-> This code has been tested on a hardware simulator. The real hardware
-> is not yet available.
->
-> The shootdown statistics are provided through /proc/sgi_uv/ptc_statistics.
-> The use of /sys was considered, but would have required the use of
-> many /sys files.  The debugfs was also considered, but these statistics
-> should be available on an ongoing basis, not just for debugging.
->
-> Issues to be fixed later:
-> - The IRQ for the messaging interrupt is currently hardcoded as 200
->   (see UV_BAU_MESSAGE).  It should be dynamically assigned in the future.
-> - The use of appropriate udelay()'s is untested, as they are a problem
->   in the simulator.
+On Wednesday 11 June 2008, Maynard Johnson wrote:
 
-For someone not too familiar with low level x86 (or UV) code, can
-you explain why you are hooking at this point? I mean, what it
-looks like is either a performance improvement, or for some reason
-UV does not support send_IPI_mask out to CPUs "not on the local node".
+> >
+> > I like the approach in general, but would prefer to have it more generic,
+> > so that other subsystems can use the same infrastructure if necessary:
+> >   
+> I believe Carl's thoughts on implementation would result in
+> model-specific buffer create/destroy routines, to be invoked by the
+> generic routine.  This would give the flexibility for architectures to
+> implement their own unique buffering mechanism.  I don't think it would
+> be worthwhile to go beyond this level in trying to build some generic
+> mechanism since the generic mechanism already exists and has been
+> sufficient for all other architectures.
 
-If the former, what sort of improvement to you expect / see?
+Well, the amount of code should be the same either way. We currently
+have an interface between the cpu_buffer and its users, which the
+interface between the event_buffer and the cpu_buffer is private
+to the oprofile layer.
 
-If the latter, then why aren't you hooking at send_IPI_mask? If
-possible that would obviously be preferable so you aren't
-making the tlb flushing harder to follow...
+The logical extension of this would be to have another buffer in
+common oprofile code, and have its users in the architecture code,
+rather than interface the architecture with the private event_buffer.
 
-Can you set me straight? :)
+> > I think the dependency on the size of the per cpu buffers is a bit
+> > artificial. How about making this independently tunable with
+> > another oprofilefs file and a reasonable default?
+> > You could either create the extra files in oprofile_create_files
+> > or in oprofile_ops.create_files.
+> >   
+> With the right scaling factor, we should be able to avoid the buffer
+> overflows for the most part.  Adding a new file in oprofilefs for an
+> arch-specific buffer size would have to be documented on the user side,
+> as well as providing a new option on the opcontrol command to adjust the
+> value.  Granted, the system-wide buffer that Carl is proposing for Cell
+> clashes with the "cpu buffer" construct, but some other architecture in
+> the future may want to make use of this new model-specific buffer
+> management routines and perhaps their buffers *would* be per-cpu.  I'm
+> not sure there  would be much value add in exposing this implementation
+> detail to the user as long as we can effectively use the existing user
+> interface mechanism for managing buffer size.
 
-Thanks,
-Nick
+But we're already exposing the implementation detail for the cpu buffers,
+which are similar enough, just not the same. Since the file and opcontrol
+option are called cpu-buffer-size, its rather unobvious how this should
+control the size of a global buffer. As I mentioned, with a reasonable
+default, you should not need to tune this anyway.
+Changing opcontrol is a real disadvantage, but if a user needs to tune
+this without a new opcontrol tool, it's always possible to directly
+write to the file system.
+
+> > As a general design principle, I'd always try to have locks close
+> > to the data. What this means is that I think the SPU_BUFFER should
+> > be in drivers/oprofile, similar to the cpu_buffer. In that case,
+> > it may be better to change the name to something more generic, e.g.
+> > aux_buffer.
+> >   
+> I agree -- in principle -- however, I really don't think a system-wide
+> buffer is something we want to put into generic code.  It is not
+> generally useful.  Also, putting this new code in drivers/oprofile would
+> not fit well with the general technique of adding model-specific
+> function pointers to 'struct oprofile_operations'.
+
+> This assumes we can get the oprofile maintainer to review and comment on
+> the new patch, which has been difficult to do lately.  I agree that we
+> should not avoid making changes to common code when there's a good
+> justification for it, but I would say that this is not such a case.
+
+You have to change the oprofile code either way, because the existing
+interface is not sufficient. However, there is no point in trying to do
+a minimal change to the existing code when a larger change clearly gives
+us a better resulting code.
+
+	Arnd <><
