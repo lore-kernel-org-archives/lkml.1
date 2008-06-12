@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756562AbYFLHCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbYFLHCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756562AbYFLHCf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 03:02:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbYFLHC2
+	id S1757493AbYFLHCw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 03:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbYFLHCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 03:02:28 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:43152 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753322AbYFLHC1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 03:02:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=pn8W9Kxh6pseXFsBcLT/0hpILmwwNopullBPhsM+Ku5EV33OP6IWNDWotJfp7Tg/HY
-         2kAdBxxLM8qw2a1KxlnF5IifLOvxJAbiHJb+hrb2jBfKuC/OGEtpWFjKaOIEhSV31mhS
-         VUC3Ih2aV0vaQI0KyM4lI5cJtg6+SIdmuU6XI=
-Message-ID: <4850C9F5.8000104@gmail.com>
-Date: Thu, 12 Jun 2008 02:02:13 -0500
-From: Elijah Anderson <kd0bpv@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Thu, 12 Jun 2008 03:02:40 -0400
+Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:48137 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756686AbYFLHCj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 03:02:39 -0400
+Message-ID: <50414.195.41.66.226.1213254146.squirrel@mail.jabbernet.dk>
+In-Reply-To: <1213239782.4994.79.camel@raven.themaw.net>
+References: <20080603105258.GV28946@ZenIV.linux.org.uk> 
+    <1212499623.3025.46.camel@raven.themaw.net> 
+    <alpine.LFD.1.10.0806030751040.3473@woody.linux-foundation.org> 
+    <1212509263.3025.66.camel@raven.themaw.net> 
+    <alpine.LFD.1.10.0806030926330.3473@woody.linux-foundation.org> 
+    <1212513189.3025.101.camel@raven.themaw.net> 
+    <20080603173029.GD28946@ZenIV.linux.org.uk> 
+    <x49ej7ejtry.fsf@segfault.boston.devel.redhat.com> 
+    <20080603191859.GG28946@ZenIV.linux.org.uk> 
+    <x49abi2jnwf.fsf@segfault.boston.devel.redhat.com> 
+    <20080603230026.GH28946@ZenIV.linux.org.uk> 
+    <1212547323.3146.45.camel@raven.themaw.net> 
+    <1213073861.3024.34.camel@raven.themaw.net> 
+    <484E1F20.4060804@krogh.cc> 
+    <1213080010.3024.42.camel@raven.themaw.net>
+    <1213239782.4994.79.camel@raven.themaw.net>
+Date: Thu, 12 Jun 2008 09:02:26 +0200 (CEST)
+Subject: Re: Linux 2.6.26-rc4
+From: "Jesper Krogh" <jesper@krogh.cc>
+To: "Ian Kent" <raven@themaw.net>
+Cc: "Jesper Krogh" <jesper@krogh.cc>, "Al Viro" <viro@zeniv.linux.org.uk>,
+       "Jeff Moyer" <jmoyer@redhat.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Miklos Szeredi" <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>
+User-Agent: SquirrelMail/1.5.1 [CVS]
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: 8139cp/too support not accessible?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey List,
+> On Tue, 2008-06-10 at 14:40 +0800, Ian Kent wrote:
+> The patch below is sufficiently different to the original patch I posted
+> to warrant a replacement rather than a correction.
 
-I will admit right off the bat that I'm new to interacting directly with 
-the kernel, much less building one.
+I'll patch that in now and see what it gives. (Is it preferred
+to use this --ghost option or not?) What would you suggest?
 
-The issue I'm having is that my ethernet card requires either the 8139cp 
-or 8139too module. I don't remember which one, so I want to modularize 
-them both. Problem is, using $make xconfig; I can't select it. I have 
-the interface set to show me all the options, but the modules I need are 
-grayed out and I can't change the value.
+Jesper
+-- 
+Jesper Krogh
 
-Using $make config; It doesn't show them, even if I say Y to "Prompt for 
-development and/or incomplete code/drivers"
-
-Is there a way to manually select those drivers for modularization, or 
-am I just missing a step somewhere?
-
-Thank you.
