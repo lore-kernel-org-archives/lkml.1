@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758004AbYFLWKP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754872AbYFLWLN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758004AbYFLWKP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 18:10:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbYFLWKE
+	id S1754872AbYFLWLN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 18:11:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbYFLWK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 18:10:04 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:19158 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752464AbYFLWKC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 18:10:02 -0400
-Subject: Re: [PATCH 5/5] futex: fix miss ordered wakeups
-From: Daniel Walker <dwalker@mvista.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ulrich Drepper <drepper@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <alpine.LFD.1.10.0806121802050.3193@apollo.tec.linutronix.de>
-References: <20080611204916.271608740@mvista.com>
-	 <20080611204917.523866467@mvista.com>
-	 <alpine.LFD.1.10.0806121022250.3193@apollo.tec.linutronix.de>
-	 <1213277402.16459.25.camel@localhost.localdomain>
-	 <alpine.LFD.1.10.0806121533270.3193@apollo.tec.linutronix.de>
-	 <1213278286.16459.29.camel@localhost.localdomain>
-	 <alpine.LFD.1.10.0806121636380.3193@apollo.tec.linutronix.de>
-	 <1213286193.16459.53.camel@localhost.localdomain>
-	 <alpine.LFD.1.10.0806121802050.3193@apollo.tec.linutronix.de>
-Content-Type: text/plain
-Date: Thu, 12 Jun 2008 15:09:58 -0700
-Message-Id: <1213308598.16459.82.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Jun 2008 18:10:58 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:46821 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752524AbYFLWK5 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 18:10:57 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao0FADQ2UUhMQW1O/2dsb2JhbACBW61S
+Date: Thu, 12 Jun 2008 18:10:55 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Frank Ch. Eigler" <fche@redhat.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>, Hideo AOKI <haoki@redhat.com>,
+       mingo@elte.hu, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: Kernel marker has no performance impact on ia64.
+Message-ID: <20080612221055.GA8142@Krystal>
+References: <20080602232135.GA20173@Krystal> <1212618449.19205.35.camel@lappy.programming.kicks-ass.net> <20080604232241.GA8488@Krystal> <1212653539.19205.47.camel@lappy.programming.kicks-ass.net> <20080612135319.GB22348@Krystal> <1213280823.31518.114.camel@twins> <20080612155332.GA16658@redhat.com> <48514BE3.3000506@redhat.com> <20080612164318.GB17814@redhat.com> <1213289778.31518.132.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <1213289778.31518.132.camel@twins>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 18:08:24 up 8 days,  2:49,  3 users,  load average: 1.35, 0.83,
+	0.68
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2008-06-12 at 21:55 +0200, Thomas Gleixner wrote:
-> Also your interpretation of the POSIX requirement is very
-> questionable:
+* Peter Zijlstra (peterz@infradead.org) wrote:
+> On Thu, 2008-06-12 at 12:43 -0400, Frank Ch. Eigler wrote:
 > 
->  "If there are threads blocked on the mutex object referenced by mutex
->  when pthread_mutex_unlock() is called, resulting in the mutex
->  becoming available, the scheduling policy shall determine which
->  thread shall acquire the mutex."
+> > This is another reason why markers are a nice solution.  They allow
+> > passing of actual useful values: not just the %p pointers but the most
+> > interesting derived values (e.g., prev->pid). 
+> 
+> Useful to whoem? stap isn't the holy grail of tracing and certainly not
+> the only consumer of trace points, so restricting the information to
+> just what stap needs is actually making trace points less useful.
+> 
 
-The key is "scheduling policy" .. When the mutex is un-blocked the next
-task to run is the same as if the scheduler was selecting tasks from the
-list of blocked tasks .. For Linux, that means the highest priority
-tasks should be selected.. So it's no more acceptable for the scheduler
-to priority invert some tasks than it is for the futex to do it.
+LTTng also currently relies on the markers identifying useful data and
+ideally won't contain any tracepoint-specific code to extract subfields
+from structures.
 
-Daniel
+By the way, a point that should be clarified is that putting a 
+"prev->pid" field in a marker does not make this variable live unless
+the marker is activated. When disabled, the marker site jumps over the
+stack setup, including any pointer dereference.
 
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
