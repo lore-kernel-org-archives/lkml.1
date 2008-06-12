@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759564AbYFLKp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759633AbYFLKt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759564AbYFLKp2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 06:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755859AbYFLKpT
+	id S1759633AbYFLKt0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 06:49:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755700AbYFLKtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 06:45:19 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:55539 "EHLO mx2.suse.de"
+	Thu, 12 Jun 2008 06:49:18 -0400
+Received: from ns2.suse.de ([195.135.220.15]:55758 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755424AbYFLKpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 06:45:18 -0400
-Date: Thu, 12 Jun 2008 12:45:16 +0200
-Message-ID: <s5hk5gv0w5f.wl%tiwai@suse.de>
+	id S1754701AbYFLKtS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 06:49:18 -0400
+Date: Thu, 12 Jun 2008 12:49:16 +0200
+Message-ID: <s5hiqwf0vyr.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: "Daniel J Blueman" <daniel.blueman@gmail.com>
 Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
 Subject: Re: ALC883 recording troubles...
-In-Reply-To: <6278d2220806111437m22b16795i9650bad8f93120e6@mail.gmail.com>
+In-Reply-To: <6278d2220806111200g4f802885wfc5f0fd6c0405efb@mail.gmail.com>
 References: <6278d2220806091259t47c9b070v269da0f5855ef014@mail.gmail.com>
 	<s5habhtesoq.wl%tiwai@suse.de>
 	<6278d2220806111200g4f802885wfc5f0fd6c0405efb@mail.gmail.com>
-	<6278d2220806111437m22b16795i9650bad8f93120e6@mail.gmail.com>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28)
  (fuki) (x86_64-suse-linux)
@@ -29,85 +28,68 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Wed, 11 Jun 2008 22:37:49 +0100,
+At Wed, 11 Jun 2008 20:00:17 +0100,
 Daniel J Blueman wrote:
 > 
-> On Wed, Jun 11, 2008 at 8:00 PM, Daniel J Blueman
-> <daniel.blueman@gmail.com> wrote:
-> > On Tue, Jun 10, 2008 at 6:59 AM, Takashi Iwai <tiwai@suse.de> wrote:
-> >> At Mon, 9 Jun 2008 20:59:00 +0100,
-> >> Daniel J Blueman wrote:
-> >>>
-> >>> Hi Takashi-san,
-> >>>
-> >>> I'm experiencing DC offset with the microphone on 2.6.24 (Ubuntu 8.04
-> >>> LTS x86-64). I can see on Audacity that the DC offset that varies with
-> >>> the recording capture level.
+> On Tue, Jun 10, 2008 at 6:59 AM, Takashi Iwai <tiwai@suse.de> wrote:
+> > At Mon, 9 Jun 2008 20:59:00 +0100,
+> > Daniel J Blueman wrote:
 > >>
-> >> Could you elaborate?  The mic bias level could be changed via the pin
-> >> control value.  Usually, it's set as VREF 80%.
-> >
-> > When the recording->capture level is set to 0, the mic has no DC
-> > offset as expected. Maxing the recording->capture level, the mic input
-> > is saturated, in between, we see a linear connection.
-> >
-> >>> Plus, the mixer playback->mic-boost
-> >>> muting enables/disables mic-boost in recording.
+> >> Hi Takashi-san,
 > >>
-> >> This is a known bug in alsa-lib mixer abstraction.  No kernel issue.
+> >> I'm experiencing DC offset with the microphone on 2.6.24 (Ubuntu 8.04
+> >> LTS x86-64). I can see on Audacity that the DC offset that varies with
+> >> the recording capture level.
 > >
-> >>> It feels like the ALC883 pins aren't configured quite right. The mobo
-> >>> is an Asus P5E-VM with current BIOS [1]
-> >>>
-> >>> What's the routine to debug this? Would it help to install windows,
-> >>> dump the register space and compare?
-> >>
-> >> You can find *.INI file that contains the default pin configuration
-> >> in Windows.  This might be useful in the case BIOS is broken but
-> >> Windows does a black magic.
-> >
-> > That'll be these defaults stashed in the INF file [2]. Let me know if
-> > it's not what you expected and I'll publish the complete INF file.
-> >
-> >> Anyway, please run alsa-info.sh with --no-upload option and show the
-> >> generated file here.  It contains the codec information and mixer
-> >> setup.
-> >>        http://hg.alsa-project.org/alsa/raw-file/tip/alsa-info.sh
-> >
-> > See [3].
+> > Could you elaborate?  The mic bias level could be changed via the pin
+> > control value.  Usually, it's set as VREF 80%.
 > 
-> >> Also, you can adjust the pin setting on the fly via hda-verb utility
-> >> below:
-> >>        http://ftp.suse.com/pub/people/tiwai/misc/hda-verb-0.2.tar.bz2
-> >>
-> >> Don't forget to build snd-hda-intel module with
-> >> CONFIG_SND_HDA_HWDEP=y to use this command.
+> When the recording->capture level is set to 0, the mic has no DC
+> offset as expected. Maxing the recording->capture level, the mic input
+> is saturated, in between, we see a linear connection.
+> 
+> >> Plus, the mixer playback->mic-boost
+> >> muting enables/disables mic-boost in recording.
 > >
-> > I'll give this a shot if I get time.
+> > This is a known bug in alsa-lib mixer abstraction.  No kernel issue.
 > 
-> Looking at the datasheet and ALSA report, changing the front mic node
-> id also affects capturing from the (rear) mic input.
-
-Depends on the hardware implementation.  But, usually, no, different
-pin widgets are assigned for front and mic jacks.
-
-> ftp://66.104.77.130/pc/audio/ALC883_DataSheet_1.3.pdf
+> >> It feels like the ALC883 pins aren't configured quite right. The mobo
+> >> is an Asus P5E-VM with current BIOS [1]
+> >>
+> >> What's the routine to debug this? Would it help to install windows,
+> >> dump the register space and compare?
+> >
+> > You can find *.INI file that contains the default pin configuration
+> > in Windows.  This might be useful in the case BIOS is broken but
+> > Windows does a black magic.
 > 
-> We get the "hda_codec: Unknown model for ALC883, trying auto-probe
-> from BIOS..." kernel message, so we may need to tweak
-> pci/hda/patch_realtek.c.
+> That'll be these defaults stashed in the INF file [2]. Let me know if
+> it's not what you expected and I'll publish the complete INF file.
+> 
+> > Anyway, please run alsa-info.sh with --no-upload option and show the
+> > generated file here.  It contains the codec information and mixer
+> > setup.
+> >        http://hg.alsa-project.org/alsa/raw-file/tip/alsa-info.sh
+> 
+> See [3].
+> 
+> > Also, you can adjust the pin setting on the fly via hda-verb utility
+> > below:
+> >        http://ftp.suse.com/pub/people/tiwai/misc/hda-verb-0.2.tar.bz2
+> >
+> > Don't forget to build snd-hda-intel module with
+> > CONFIG_SND_HDA_HWDEP=y to use this command.
+> 
+> I'll give this a shot if I get time.
 
-Note that this is no error but information.  The driver has preset
-models for known devices and use the static configuration table for
-such devices.  For other devices, the driver just relies on BIOS
-setup.
+You can try to adjust VREF value of mic pins.
+For example, the node 0x18 and 0x19 correspond to the rear and front
+mics, respectively.  Then run the following as root:
 
-> Also, I can reproduce the problem the with HD
-> and legacy front-panel audio settings in the BIOS. Do you know a way
-> to dump eg the pin configuration in windows or other useful state, so
-> I can compare with all the possible node ID configuration values?
+	# ./hda-verb /dev/snd/hwC0D0 0x18 SET_PIN_WID 0x21
 
-Sorry, no, I've not booted Windows over years :)
+which will change the widget 0x18 (rear mic) to input-VREF 50%
+(0x21).  The original value is input-VREF 80% (0x24).
 
 
 Takashi
