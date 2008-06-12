@@ -1,93 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757151AbYFLIRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757432AbYFLITK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757151AbYFLIRt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 04:17:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbYFLIRf
+	id S1757432AbYFLITK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 04:19:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121AbYFLISw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 04:17:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41462 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752121AbYFLIRd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 04:17:33 -0400
-Date: Thu, 12 Jun 2008 01:16:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nadia Derbey <Nadia.Derbey@bull.net>,
-       Manfred Spraul <manfred@colorfullife.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: repeatable slab corruption with LTP msgctl08
-Message-Id: <20080612011651.374e60fe.akpm@linux-foundation.org>
-In-Reply-To: <20080612011537.6146c41d.akpm@linux-foundation.org>
-References: <20080611221324.42270ef2.akpm@linux-foundation.org>
-	<20080611233449.08e6eaa0.akpm@linux-foundation.org>
-	<20080612010200.106df621.akpm@linux-foundation.org>
-	<20080612011537.6146c41d.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Jun 2008 04:18:52 -0400
+Received: from styx.suse.cz ([82.119.242.94]:50461 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752091AbYFLISt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 04:18:49 -0400
+Date: Thu, 12 Jun 2008 10:18:47 +0200
+From: Jan Kara <jack@suse.cz>
+To: Neil Brown <neilb@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
+Subject: Re: Two questions on VFS/mm
+Message-ID: <20080612081847.GA12367@duck.suse.cz>
+References: <20080604163412.GL16572@duck.suse.cz> <18512.51954.831279.617586@notabene.brown>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18512.51954.831279.617586@notabene.brown>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jun 2008 01:15:37 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+On Thu 12-06-08 17:06:26, Neil Brown wrote:
+> On Wednesday June 4, jack@suse.cz wrote:
+> >   Hi,
+> > 
+> >   could some kind soul knowledgable in VFS/mm help me with the following
+> > two questions? I've spotted them when testing some ext4 for patches...
+> >   1) In write_cache_pages() we do:
+> > ...
+> > 	lock_page(page);
+> > 	...
+> > 	if (!wbc->range_cyclic && page->index > end) {
+> >                    done = 1;
+> >                    unlock_page(page);
+> >                    continue;
+> >         }
+> > 	...
+> > 	ret = (*writepage)(page, wbc, data);
+> > 
+> >   Now the problem is that if range_cyclic is set, it can happen that the
+> > page we give to the filesystem is beyond the current end of file (and can
+> > be already processed by invalidatepage()). Is the filesystem supposed to
+> > handle this (what would it be good for to give such a page to the fs?) or
+> > is it just a bug in write_cache_pages()?
+> 
+> Maybe there is an invariant that an address_space never has a dirty
+> page beyond the end-of-file??
+> Certainly 'truncate' invalidates and un-dirties such pages.
+> 
+> With typical writes, ->write_begin will extend EOF to include the
+> page, and ->write_end will mark it dirty (I think).
+> 
+> mmap writes are probably a bit different, but I suspect the same
+> principle applies.
+> 
+> If the page is not dirty, then 
+> 			if (PageWriteback(page) ||
+> 			    !clear_page_dirty_for_io(page)) {
+> 				unlock_page(page);
+> 				continue;
+> 			}
+> 
+> will fire, and you never get to
+> 			ret = (*writepage)(page, wbc, data);
+  As Miklos pointed out, there's at least call do_invalidatepage() from
+block_write_full_page() which does invalidate the page but does not clear
+dirty bits or remove page from page cache. Otherwise I'd agree with
+you...
 
-> On Thu, 12 Jun 2008 01:02:00 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+> >   2) I have the following problem with page_mkwrite() when blocksize <
+> > pagesize. What we want to do is to fill in a potential hole under a page
+> > somebody wants to write to. But consider following scenario with a
+> > filesystem with 1k blocksize:
+> >   truncate("file", 1024);
+> >   ptr = mmap("file");
+> >   *ptr = 'a'
+> >      -> page_mkwrite() is called.
+> >         but "file" is only 1k large and we cannot really allocate blocks
+> >         beyond end of file. So we allocate just one 1k block.
+> >   truncate("file", 4096);
+> >   *(ptr + 2048) = 'a'
+> >      - nothing is called and later during writepage() time we are surprised
+> >        we have a dirty page which is not backed by a filesystem block.
+> > 
+> >   How to solve this? One idea I have here is that when we handle truncate(),
+> > we mark the original last page (if it is partial) as read-only again so
+> > that page_mkwrite() is called on the next write to it. Is something like
+> > this possible? Pointers to code doing something similar are welcome, I don't
+> > really know these things ;).
 > 
-> > On Wed, 11 Jun 2008 23:34:49 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > On Wed, 11 Jun 2008 22:13:24 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > 
-> > > > Running current mainline on my old 2-way PIII.  Distro is RH FC1.  LTP
-> > > > version is ltp-full-20070228 (lots of retro-computing there).
-> > > > 
-> > > > Config is at http://userweb.kernel.org/~akpm/config-vmm.txt
-> > > > 
-> > > > 
-> > > > ./testcases/bin/msgctl08 crashes after ten minutes or so:
-> > > 
-> > > ah, it runs to completion in about ten seconds on 2.6.25, so it'll be
-> > > easy for someone to bisect it.
-> > > 
-> > > What's that?  Sigh.  OK.  I wasn't doing anything much anyway.
-> > 
-> > Oh drat.  git-bisect tells me that this one-year-old msgctl08's
-> > execution time vastly increased when we added
-> > 
-> > commit f7bf3df8be72d98afa84f5ff183e14c1ba1e560d
-> > Author: Nadia Derbey <Nadia.Derbey@bull.net>
-> > Date:   Tue Apr 29 01:00:39 2008 -0700
-> > 
-> >     ipc: scale msgmni to the amount of lowmem
-> >     
-> > 
-> > But we already knew that, and LTP got changed to fix it.
-> > 
-> > So I was wrong in assuming that the long-execution-time correlates with
-> > the slab-corruption bug.
-> > 
-> > And the slab corruption bug takes half an hour to reproduce and an
-> > unknown amount of time to not-reproduce.  I don't think I'll be able to
-> > complete this before I disappear for over a week.
-> > 
-> 
-> Doing
-> 
-> 	echo 16 > /proc/sys/kernel/msgmni
-> 
-> on the tree at the above bisection point
-> (f7bf3df8be72d98afa84f5ff183e14c1ba1e560d is most-recently-applied
-> patch), msgctl08 runs to completion in 15.7 seconds.
-> 
-> Doing the same thing on 2.6.26-rc5-mm3, msgctl08 also runs to
-> completion, in 20.9 seconds.  So
-> 
-> - it got slower
-> 
-> - the crash requires the huge value of /proc/sys/kernel/msgmni (1746)
+> My understanding is that memory mapping is always done in multiples of
+> the page size.  When you dirty any part of a page, you effectively dirty
+> the whole page, so you need to extend the file to cover the whole page.
+> i.e. the page_mkwrite() call must extend the file to a size of 4096.
+  Well, you definitely cannot increase file size because someone wrote to
+the last page of file whose size is not multiple of page size. So when your
+block size is smaller than page size, you have to handle it somehow... You
+could instantiate blocks beyond end of file but that gets a bit tricky
+(e.g. in ext3, we don't allow such blocks to exist so far).
 
-                                                                  actually, it's 1741.
-
->   to reproduce.
-> 
+							Thanks for ideas
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
