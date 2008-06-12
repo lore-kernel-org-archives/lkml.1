@@ -1,88 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760494AbYFLO35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759828AbYFLOeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760494AbYFLO35 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 10:29:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbYFLO3u
+	id S1759828AbYFLOeO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 10:34:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbYFLOd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 10:29:50 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:38011 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751472AbYFLO3t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 10:29:49 -0400
-Date: Thu, 12 Jun 2008 09:28:52 -0500
-From: Cliff Wickman <cpw@sgi.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCHv4] SGI UV: TLB shootdown using broadcast assist unit
-Message-ID: <20080612142852.GA28430@sgi.com>
-References: <E1K6lqI-0006pX-JQ@eag09.americas.sgi.com> <200806122235.29888.nickpiggin@yahoo.com.au> <20080612125605.GA26760@sgi.com> <200806122318.45397.nickpiggin@yahoo.com.au>
+	Thu, 12 Jun 2008 10:33:56 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:11312 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753022AbYFLOdz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 10:33:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=qY70qinkNVD3h3OKkLCasRLYo67iz0yPTEaU7iOuh52xnU8T2bwjY170AOAUtZRSH/
+         ytW+O5SrrPuZj96a3radT8SNQLZDLI7rwsp15byP4LyuOMl3jrBk1+sAUcsiEofJyfF0
+         dy9n9Uhm6t4pdWHrAHspZ/cy9/e4X2O7Or3NQ=
+Message-ID: <6101e8c40806120733m3c8647ccy149eb237e2c6d027@mail.gmail.com>
+Date: Thu, 12 Jun 2008 16:33:53 +0200
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: lists@ku-gbr.de
+Subject: Re: XFS internal error xfs_trans_cancel at line 1163 of file fs/xfs/xfs_trans.c
+Cc: linux-kernel@vger.kernel.org, "Christoph Hellwig" <hch@infradead.org>,
+       xfs@oss.sgi.com, xfs-masters@oss.sgi.com
+In-Reply-To: <20080612123031.21594jyk6rjc1lfk@imp.ku-gbr.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200806122318.45397.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <20080612123031.21594jyk6rjc1lfk@imp.ku-gbr.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nick,
+add CC's
 
-On Thu, Jun 12, 2008 at 11:18:45PM +1000, Nick Piggin wrote:
-> On Thursday 12 June 2008 22:56, Cliff Wickman wrote:
-> > Hi Nick,
-> >
-> > On Thu, Jun 12, 2008 at 10:35:29PM +1000, Nick Piggin wrote:
-> > > On Thursday 12 June 2008 22:23, Cliff Wickman wrote:
-> 
-> > > For someone not too familiar with low level x86 (or UV) code, can
-> > > you explain why you are hooking at this point? I mean, what it
-> > > looks like is either a performance improvement, or for some reason
-> > > UV does not support send_IPI_mask out to CPUs "not on the local node".
-> >
-> > Yes, a performance improvement.  The UV machine has hardware for
-> > broadcasting messages to a set of nodes (represented in a bit mask).  The
-> > messages will raise interrupts at each of the target nodes and provide
-> > the message - all in one step.
-> > (IPI is supported.  In fact this patch falls back to the IPI method
-> >  if all the cpus on the remote nodes do not respond.)
-> 
-> Thanks, that makes it perfectly clear to me now (the intent, not
-> the details of the code :))
-> 
-> So long as this raises a maskable interrupt on each target CPU, it
-> doesn't break x86's lockless get_user_pages :)
-> 
-> 
-> > > If the former, what sort of improvement to you expect / see?
-> >
-> > Good question.  The hardware does not exist yet.  But using IPI there
-> > would be one set of packets exchanged to deliver the interrupts and
-> > another set to pull over the flush address, just to start the operation.
-> > I expect the improvement to be significant.
-> 
-> Ah, so you can send a small message with the IPI, and that can be
-> decoded and used by the target without invoking the cc protocol.
-> Seems like pretty sweet functionality.
-> 
-> I guess TLB flushing is an obvious candidate, but it could be
-> quite useful for other operations as well. I wonder if it couldn't
-> be used to create a slightly more advanced API (than send_IPI)
-> which other platforms can just implement using cache coherency for
-> the payload...
-> 
-> For example, some classes of smp_call_function could use this too.
+On 6/12/08, lists@ku-gbr.de <lists@ku-gbr.de> wrote:
+> Hi!
+>
+> Today morning my server at home bailed out two times (reboot between):
+>
+> Jun 12 07:23:40 zappa Filesystem "sda7": XFS internal error
+> xfs_trans_cancel at line 1163 of file fs/xfs/xfs_trans.c.  Caller
+> 0xffffffff802fa8f5
+> Jun 12 07:23:40 zappa Pid: 2379, comm: procmail Not tainted
+> 2.6.25-gentoo-r4 #3
+> Jun 12 07:23:40 zappa
+> Jun 12 07:23:40 zappa Call Trace:
+> Jun 12 07:23:40 zappa [<ffffffff802fa8f5>]
+> Jun 12 07:23:40 zappa [<ffffffff802f4d71>]
+> Jun 12 07:23:40 zappa [<ffffffff802fa8f5>]
+> Jun 12 07:23:40 zappa [<ffffffff803038bb>]
+> Jun 12 07:23:40 zappa [<ffffffff8025f1e1>]
+> Jun 12 07:23:40 zappa [<ffffffff80261899>]
+> Jun 12 07:23:40 zappa [<ffffffff8025ae00>]
+> Jun 12 07:23:40 zappa [<ffffffff80257010>]
+> Jun 12 07:23:40 zappa [<ffffffff80256d92>]
+> Jun 12 07:23:40 zappa [<ffffffff80257077>]
+> Jun 12 07:23:40 zappa [<ffffffff8020ad3b>]
+> Jun 12 07:23:40 zappa
+> Jun 12 07:23:40 zappa xfs_force_shutdown(sda7,0x8) called from line
+> 1164 of file fs/xfs/xfs_trans.c.  Return address = 0xffffffff802f4d8a
+> Jun 12 07:23:40 zappa Filesystem "sda7": Corruption of in-memory data
+> detected.  Shutting down filesystem: sda7
+> Jun 12 07:23:40 zappa Please umount the filesystem, and rectify the
+> problem(s)
+>
+> Jun 12 08:15:58 zappa Filesystem "sda7": XFS internal error
+> xfs_trans_cancel at line 1163 of file fs/xfs/xfs_trans.c.  Caller
+> 0xffffffff802fa8f5
+> Jun 12 08:15:58 zappa Pid: 2161, comm: procmail Not tainted
+> 2.6.25-gentoo-r4 #3
+> Jun 12 08:15:58 zappa
+> Jun 12 08:15:58 zappa Call Trace:
+> Jun 12 08:15:58 zappa [<ffffffff802fa8f5>]
+> Jun 12 08:15:58 zappa [<ffffffff802f4d71>]
+> Jun 12 08:15:58 zappa [<ffffffff802fa8f5>]
+> Jun 12 08:15:58 zappa [<ffffffff803038bb>]
+> Jun 12 08:15:58 zappa [<ffffffff8025f1e1>]
+> Jun 12 08:15:58 zappa [<ffffffff80261899>]
+> Jun 12 08:15:58 zappa [<ffffffff8025ae00>]
+> Jun 12 08:15:58 zappa [<ffffffff80257010>]
+> Jun 12 08:15:58 zappa [<ffffffff80256d92>]
+> Jun 12 08:15:58 zappa [<ffffffff80257077>]
+> Jun 12 08:15:58 zappa [<ffffffff8020ad3b>]
+> Jun 12 08:15:58 zappa
+> Jun 12 08:15:58 zappa xfs_force_shutdown(sda7,0x8) called from line
+> 1164 of file fs/xfs/xfs_trans.c.  Return address = 0xffffffff802f4d8a
+> Jun 12 08:15:58 zappa Filesystem "sda7": Corruption of in-memory data
+> detected.  Shutting down filesystem: sda7
+> Jun 12 08:15:58 zappa Please umount the filesystem, and rectify the
+> problem(s)
+>
+>
+> The partitition sda7 is my /home directory located on a SATA 750GB
+> Harddisk, kernel is vanilla 2.6.25. The fs is 100GB sized and 12%
+> filled with several small files (imap mailspool).
+>
+> I investigated the system and while anything else behaves normal, I
+> found no error in syslog or with smartctl regarding a possible sector
+> reaad/write error or anything else.
+> Sadly I lost my ssh connection now until this evening, but xfs_check
+> put out a line like "xxx-count is 1 but counted 0 in ag17" after I was
+> instructed to remount the system once to replay the log (which
+> worked). Backups are finished, I wanted to run xfs_repair now...
+>
+> Is this something I should worry about or the xfs Folks?
+>
+> Kind Regards, Konsti
+>
+>
+> ----------------------------------------------------------------
+> This message was sent using IMP, the Internet Messaging Program.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-Jack Steiner's thought as well.  But I haven't considered any yet. If
-you care to nominate any other such uses for this hardware mechanism
-I'd like to hear your ideas.
 
-> 
-> But for now I don't see anything wrong with getting this patch
-> upstream and looking to generalise it later.
-
--Cliff
 -- 
-Cliff Wickman
-Silicon Graphics, Inc.
-cpw@sgi.com
-(651) 683-3824
+Thanks,
+Oliver
