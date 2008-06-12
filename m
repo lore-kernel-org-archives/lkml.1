@@ -1,134 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbYFLI0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757839AbYFLI1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757583AbYFLI0a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 04:26:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbYFLI0V
+	id S1757839AbYFLI1x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 04:27:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbYFLI1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 04:26:21 -0400
-Received: from sh.osrg.net ([192.16.179.4]:52872 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750744AbYFLI0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 04:26:20 -0400
-Date: Thu, 12 Jun 2008 17:21:20 +0900
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Cc: alexisb@us.ibm.com, muli@il.ibm.com, mingo@elte.hu
-Subject: [PATCH -mm] fix per-device dma_mapping_ops support
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080612172554X.fujita.tomonori@lab.ntt.co.jp>
+	Thu, 12 Jun 2008 04:27:45 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:7172 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752075AbYFLI1n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 04:27:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=GTtOM7GAnn/aVuoPOCvEjifJsYQjK+Rv9c6gaQ6SCr6qAKmSgfOCmK2OtF2HtkD6NN
+         9sk9pkB270zZcREp99QVKDCFuXmaLq0grB03z/ogx5fWahHjSmsa1zqJ6nQs9PNtHKCz
+         qVNKxCnzJdGBYWISTy3CqLA8vK1K3feiQBaA0=
+Date: Thu, 12 Jun 2008 12:23:37 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       linux-mm@kvack.org, riel@redhat.com, npiggin@suse.de,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>
+Subject: Re: 2.6.26-rc5-mm3: kernel BUG at mm/vmscan.c:510
+Message-ID: <20080612082337.GA4914@martell.zuzino.mipt.ru>
+References: <20080611225945.4da7bb7f.akpm@linux-foundation.org> <20080612075858.GA4874@martell.zuzino.mipt.ru> <20080612012205.95eb10e9.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080612012205.95eb10e9.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew, can you put this patch to -mm?
+On Thu, Jun 12, 2008 at 01:22:05AM -0700, Andrew Morton wrote:
+> On Thu, 12 Jun 2008 11:58:58 +0400 Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> 
+> > [  254.217776] ------------[ cut here ]------------
+> > [  254.217776] kernel BUG at mm/vmscan.c:510!
+> > [  254.217776] invalid opcode: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
+> > [  254.217776] last sysfs file: /sys/kernel/uevent_seqnum
+> > [  254.217776] CPU 1 
+> > [  254.217776] Modules linked in: ext2 nf_conntrack_irc xt_state iptable_filter ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack ip_tables x_tables usblp ehci_hcd uhci_hcd usbcore sr_mod cdrom
+> > [  254.217776] Pid: 12044, comm: madvise02 Not tainted 2.6.26-rc5-mm3 #4
+> > [  254.217776] RIP: 0010:[<ffffffff802729b2>]  [<ffffffff802729b2>] putback_lru_page+0x152/0x160
+> > [  254.217776] RSP: 0018:ffff81012edd1cd8  EFLAGS: 00010202
+> > [  254.217776] RAX: ffffe20003f344b8 RBX: 0000000000000000 RCX: 0000000000000001
+> > [  254.217776] RDX: 0000000000005d5c RSI: 0000000000000000 RDI: ffffe20003f344b8
+> > [  254.217776] RBP: ffff81012edd1cf8 R08: 0000000000000000 R09: 0000000000000000
+> > [  254.217776] R10: ffffffff80275152 R11: 0000000000000001 R12: ffffe20003f344b8
+> > [  254.217776] R13: 00000000ffffffff R14: ffff810124801080 R15: ffffffffffffffff
+> > [  254.217776] FS:  00007fb3ad83c6f0(0000) GS:ffff81017f845320(0000) knlGS:0000000000000000
+> > [  254.217776] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> > [  254.217776] CR2: 00007fffb5846d38 CR3: 0000000117de9000 CR4: 00000000000006e0
+> > [  254.217776] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > [  254.217776] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > [  254.217776] Process madvise02 (pid: 12044, threadinfo ffff81012edd0000, task ffff81017db6b3c0)
+> > [  254.217776] Stack:  ffffe20003f344b8 ffffe20003f344b8 ffffffff80629300 0000000000000001
+> > [  254.217776]  ffff81012edd1d18 ffffffff8027d268 ffffe20003f344b8 0000000000000000
+> > [  254.217776]  ffff81012edd1d38 ffffffff80271783 0000000000000246 ffffe20003f344b8
+> > [  254.217776] Call Trace:
+> > [  254.217776]  [<ffffffff8027d268>] __clear_page_mlock+0xe8/0x100
+> > [  254.217776]  [<ffffffff80271783>] truncate_complete_page+0x73/0x80
+> > [  254.217776]  [<ffffffff80271871>] truncate_inode_pages_range+0xe1/0x3c0
+> > [  254.217776]  [<ffffffff80271b60>] truncate_inode_pages+0x10/0x20
+> > [  254.217776]  [<ffffffff802e9738>] ext3_delete_inode+0x18/0xf0
+> > [  254.217776]  [<ffffffff802e9720>] ? ext3_delete_inode+0x0/0xf0
+> > [  254.217776]  [<ffffffff802aa27b>] generic_delete_inode+0x7b/0x100
+> > [  254.217776]  [<ffffffff802aa43c>] generic_drop_inode+0x13c/0x180
+> > [  254.217776]  [<ffffffff802a960d>] iput+0x5d/0x70
+> > [  254.217776]  [<ffffffff8029f43e>] do_unlinkat+0x13e/0x1e0
+> > [  254.217776]  [<ffffffff8046de77>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+> > [  254.217776]  [<ffffffff80255c69>] ? trace_hardirqs_on_caller+0xc9/0x150
+> > [  254.217776]  [<ffffffff8046de77>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+> > [  254.217776]  [<ffffffff8029f4f1>] sys_unlink+0x11/0x20
+> > [  254.217776]  [<ffffffff8020b6bb>] system_call_after_swapgs+0x7b/0x80
+> > [  254.217776] 
+> > [  254.217776] 
+> > [  254.217776] Code: 0f 0b eb fe 0f 1f 44 00 00 f6 47 01 40 48 89 f8 75 1d 83 78 08 01 75 13 4c 89 e7 31 db e8 97 44 ff ff e9 2b ff ff ff 0f 0b eb fe <0f> 0b eb fe 48 8b 47 10 eb dd 0f 1f 40 00 55 48 89 e5 41 57 45 
+> > [  254.217776] RIP  [<ffffffff802729b2>] putback_lru_page+0x152/0x160
+> > [  254.217776]  RSP <ffff81012edd1cd8>
+> > [  254.234540] ---[ end trace a1dd07b571590cc8 ]---
+> 
+> int putback_lru_page(struct page *page)
+> {
+> 	int lru;
+> 	int ret = 1;
+> 	int was_unevictable;
+> 
+> 	VM_BUG_ON(!PageLocked(page));
+> 	VM_BUG_ON(PageLRU(page));
+> 
+> 	lru = !!TestClearPageActive(page);
+> 	was_unevictable = TestClearPageUnevictable(page); /* for page_evictable() */
+> 
+> 	if (unlikely(!page->mapping)) {
+> 		/*
+> 		 * page truncated.  drop lock as put_page() will
+> 		 * free the page.
+> 		 */
+> 		VM_BUG_ON(page_count(page) != 1);
+> 
+> 
+> added by unevictable-lru-infrastructure.patch.
+> 
+> How does one reproduce this?  Looks like LTP madvise2.
 
-This patch fixes a bug in per-device dma_mapping_ops support. The
-patch to fix Calgary IOMMU with per-device dma_mapping_ops support is
-ready so we need this fix in -mm.
+Yep, totally reproducible here:
 
-http://lkml.org/lkml/2008/6/11/447
-
-This is a resend of:
-
-http://lkml.org/lkml/2008/6/3/430
-
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Date: Thu, 12 Jun 2008 17:14:02 +0900
-Subject: [PATCH] fix per-device dma_mapping_ops support
-
-On x86, pci_dma_supported, pci_alloc_consistent, and
-pci_free_consistent don't call DMA APIs directly (the majority of
-platforms do). per-device dma_mapping_ops support patch needs to
-modify pci-dma.c.
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/x86/kernel/pci-dma.c |   25 +++++++++++++++----------
- 1 files changed, 15 insertions(+), 10 deletions(-)
-
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index fa500c4..a2b98a5 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -318,6 +318,8 @@ static int dma_release_coherent(struct device *dev, int order, void *vaddr)
- 
- int dma_supported(struct device *dev, u64 mask)
- {
-+	struct dma_mapping_ops *ops = get_dma_ops(dev);
-+
- #ifdef CONFIG_PCI
- 	if (mask > 0xffffffff && forbid_dac > 0) {
- 		dev_info(dev, "PCI: Disallowing DAC for device\n");
-@@ -325,8 +327,8 @@ int dma_supported(struct device *dev, u64 mask)
- 	}
- #endif
- 
--	if (dma_ops->dma_supported)
--		return dma_ops->dma_supported(dev, mask);
-+	if (ops->dma_supported)
-+		return ops->dma_supported(dev, mask);
- 
- 	/* Copied from i386. Doesn't make much sense, because it will
- 	   only work for pci_alloc_coherent.
-@@ -373,6 +375,7 @@ void *
- dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
- 		   gfp_t gfp)
- {
-+	struct dma_mapping_ops *ops = get_dma_ops(dev);
- 	void *memory = NULL;
- 	struct page *page;
- 	unsigned long dma_mask = 0;
-@@ -435,8 +438,8 @@ dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
- 			/* Let low level make its own zone decisions */
- 			gfp &= ~(GFP_DMA32|GFP_DMA);
- 
--			if (dma_ops->alloc_coherent)
--				return dma_ops->alloc_coherent(dev, size,
-+			if (ops->alloc_coherent)
-+				return ops->alloc_coherent(dev, size,
- 							   dma_handle, gfp);
- 			return NULL;
- 		}
-@@ -448,14 +451,14 @@ dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
- 		}
- 	}
- 
--	if (dma_ops->alloc_coherent) {
-+	if (ops->alloc_coherent) {
- 		free_pages((unsigned long)memory, get_order(size));
- 		gfp &= ~(GFP_DMA|GFP_DMA32);
--		return dma_ops->alloc_coherent(dev, size, dma_handle, gfp);
-+		return ops->alloc_coherent(dev, size, dma_handle, gfp);
- 	}
- 
--	if (dma_ops->map_simple) {
--		*dma_handle = dma_ops->map_simple(dev, virt_to_phys(memory),
-+	if (ops->map_simple) {
-+		*dma_handle = ops->map_simple(dev, virt_to_phys(memory),
- 					      size,
- 					      PCI_DMA_BIDIRECTIONAL);
- 		if (*dma_handle != bad_dma_address)
-@@ -477,12 +480,14 @@ EXPORT_SYMBOL(dma_alloc_coherent);
- void dma_free_coherent(struct device *dev, size_t size,
- 			 void *vaddr, dma_addr_t bus)
- {
-+	struct dma_mapping_ops *ops = get_dma_ops(dev);
-+
- 	int order = get_order(size);
- 	WARN_ON(irqs_disabled());	/* for portability */
- 	if (dma_release_coherent(dev, order, vaddr))
- 		return;
--	if (dma_ops->unmap_single)
--		dma_ops->unmap_single(dev, bus, size, 0);
-+	if (ops->unmap_single)
-+		ops->unmap_single(dev, bus, size, 0);
- 	free_pages((unsigned long)vaddr, order);
- }
- EXPORT_SYMBOL(dma_free_coherent);
--- 
-1.5.5.GIT
+	sudo ./testcases/bin/madvise02
 
