@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475AbYFLQiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754185AbYFLQpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755475AbYFLQiU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 12:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753084AbYFLQiI
+	id S1754185AbYFLQpT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 12:45:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbYFLQpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 12:38:08 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:65283 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753001AbYFLQiG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 12:38:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=L6wC0LFikEOL+kIa90auWvOd6uXHFpphPjb4l5kZDCrkokdd9cRFKs6DiPphvJtSbZ
-         2PBCfHf5fKc78ijdpH9jKX+b+m5df+c5b/uW3ZpeMqzo1qD++GC+VCjKUhV706IGks0P
-         Qd+vNbeJ775nqSWhi0fIhsJrVFM7fP3CZg3NQ=
-Message-ID: <1ba2fa240806120938i248d38bek2a9155defff9428f@mail.gmail.com>
-Date: Thu, 12 Jun 2008 19:38:05 +0300
-From: "Tomas Winkler" <tomasw@gmail.com>
-To: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-Subject: Re: Problem: Out of memory after 2days with 2GB RAM
-Cc: "Johannes Berg" <johannes@sipsolutions.net>,
-       "Rik van Riel" <riel@redhat.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       yi.zhu@intel.com, reinette.chatre@intel.com,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <c4e36d110806120712h1237d084v2eaeb494cc48b43c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Jun 2008 12:45:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58505 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751045AbYFLQpG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 12:45:06 -0400
+Date: Thu, 12 Jun 2008 12:43:18 -0400
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Hideo AOKI <haoki@redhat.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: Kernel marker has no performance impact on ia64.
+Message-ID: <20080612164318.GB17814@redhat.com>
+References: <48447052.3030300@redhat.com> <1212445965.6269.22.camel@lappy.programming.kicks-ass.net> <20080602232135.GA20173@Krystal> <1212618449.19205.35.camel@lappy.programming.kicks-ass.net> <20080604232241.GA8488@Krystal> <1212653539.19205.47.camel@lappy.programming.kicks-ass.net> <20080612135319.GB22348@Krystal> <1213280823.31518.114.camel@twins> <20080612155332.GA16658@redhat.com> <48514BE3.3000506@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <c4e36d110806120307n20cce692s9c136f11596f5ab0@mail.gmail.com>
-	 <20080612093833.0fb9cdd6@bree.surriel.com>
-	 <1213278884.3936.15.camel@johannes.berg>
-	 <c4e36d110806120712h1237d084v2eaeb494cc48b43c@mail.gmail.com>
+In-Reply-To: <48514BE3.3000506@redhat.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 12, 2008 at 5:12 PM, Zdenek Kabelac
-<zdenek.kabelac@gmail.com> wrote:
-> 2008/6/12 Johannes Berg <johannes@sipsolutions.net>:
->> On Thu, 2008-06-12 at 09:38 -0400, Rik van Riel wrote:
->>> On Thu, 12 Jun 2008 12:07:34 +0200
->>> "Zdenek Kabelac" <zdenek.kabelac@gmail.com> wrote:
->>>
->>> > It looks like while there was a huge amount of buffers and caches -
->>> > system was unable to allocate few pages for kmalloc in iwl3945 driver
->>> > after resume.
->>>
->>> It looks like this is because it wants to allocate 2**5 contiguous
->>> pages, which is 128kB of contiguous kernel memory.
->>
->> 64-bit system I assume?
->> The allocation should be 256 * 20 * sizeof(struct sk_buff *).
->>
->> Try the patch below. It should improve code generation too.
->
-> I'll surely try you patch - but is the iwl the only driver which needs
-> 128kB continuous memory chunk?
+Hi -
 
-We do some stupid free-alloc sequence on restart this is where it
-fails. I'm still polishing a patch that eliminates it.
-Tomas
+On Thu, Jun 12, 2008 at 12:16:35PM -0400, Masami Hiramatsu wrote:
+> [...]
+> > Think this through.  How should systemtap (or another user-space
+> > separate-compiled tool like lttng) do this exactly?
+> > [...]
+> > (d) or another way?
+> 
+> use a lookup table. we can expect that the marking points which
+> regularly inserted in the upstream kernel are stable(not so
+> frequently change). In that case, we can easily maintain
+> a lookup table which has pairs of format strings like as
+> "sched_switch(struct task_struct * next, struct task_struct * prev)":"next %p prev %p"
+> out of tree. Thus, you can use the printf-style format parser.
+
+That's an interesting idea, but errors in this table would themselves
+only be caught at C compilation time.  Worse, it does nothing helpful
+for actually pulling out the next/prev fields of interest.  Remember,
+real tracing users don't care so much about the task_struct pointers,
+but about observable things like PIDs.  Systemtap would be back to the
+debuginfo or C-header-guessing/parsing job (or embedded-C, yuck).
+
+This is another reason why markers are a nice solution.  They allow
+passing of actual useful values: not just the %p pointers but the most
+interesting derived values (e.g., prev->pid).  And they do this
+*efficiently* - in out-of-line code that imposes no measurable
+overhead in the normal case..
+
+
+- FChE
