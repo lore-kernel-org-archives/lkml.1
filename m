@@ -1,140 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752556AbYFLEHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752700AbYFLEPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752556AbYFLEHT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 00:07:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750797AbYFLEHH
+	id S1752700AbYFLEPq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 00:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbYFLEPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 00:07:07 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:48859 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750793AbYFLEHE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 00:07:04 -0400
-Date: Thu, 12 Jun 2008 09:36:43 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: cmm@us.ibm.com, jack@suse.cz, linux-ext4@vger.kernel.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ext2: Use page_mkwrite vma_operations to get mmap
-	write notification.
-Message-ID: <20080612040643.GA5518@skywalker>
-References: <1212685513-32237-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com> <20080605123045.445e380a.akpm@linux-foundation.org> <20080611150845.GA21910@skywalker> <20080611120749.d0c5a7de.akpm@linux-foundation.org>
+	Thu, 12 Jun 2008 00:15:36 -0400
+Received: from smtps.uol.com.br ([200.221.4.131]:42986 "EHLO smtp.uol.com.br"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750794AbYFLEPf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 00:15:35 -0400
+Date: Thu, 12 Jun 2008 01:15:30 -0300
+From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Ivo van Doorn <ivdoorn@gmail.com>, linux-kernel@vger.kernel.org,
+       rbrito@ime.usp.br
+Subject: Re: [2.6.26-rc4] Problems with rt2x00 USB interface on powerpc
+Message-ID: <20080612041530.GA19980@ime.usp.br>
+References: <20080601193000.GA3056@ime.usp.br> <200806081242.54896.IvDoorn@gmail.com> <20080608213513.GA30499@ime.usp.br> <200806090002.17938.IvDoorn@gmail.com> <20080609001540.GA19072@ime.usp.br> <20080611093605.GA13557@ime.usp.br> <20080611134323.GA7149@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20080611120749.d0c5a7de.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080611134323.GA7149@tuxdriver.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SIG5: b3ef07dee8442ec3539d7bff0ab3d83f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 11, 2008 at 12:07:49PM -0700, Andrew Morton wrote:
-> On Wed, 11 Jun 2008 20:38:45 +0530
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
-> 
-> > On Thu, Jun 05, 2008 at 12:30:45PM -0700, Andrew Morton wrote:
-> > > On Thu,  5 Jun 2008 22:35:12 +0530
-> > > "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > We would like to get notified when we are doing a write on mmap
-> > > > section.  The changes are needed to handle ENOSPC when writing to an
-> > > > mmap section of files with holes.
-> > > > 
-> > > 
-> > > Whoa.  You didn't copy anything like enough mailing lists for a change
-> > > of this magnitude.  I added some.
-> > > 
-> > > This is a large change in behaviour!
-> > > 
-> > > a) applications will now get a synchronous SIGBUS when modifying a
-> > >    page over an ENOSPC filesystem.  Whereas previously they could have
-> > >    proceeded to completion and then detected the error via an fsync().
+Hi, Ivo and John.
+
+On Jun 11 2008, John W. Linville wrote:
+> On Wed, Jun 11, 2008 at 06:36:05AM -0300, Rogério Brito wrote:
+> > I don't know if you received my earlier message.
 > > 
-> > Or not detect the error at all if we don't call fsync() right ? Isn't a
-> > synchronous SIGBUS the right behaviour ?
-> >
-> 
-> Not according to POSIX.  Or at least posix-several-years-ago, when this
-> last was discussed.  The spec doesn't have much useful to say about any
-> of this.
-> 
-> It's a significant change in the userspace interface.
-> 
+> > On Jun 08 2008, Rogério Brito wrote:
+> > > Correction here: I just went to the ia32 notebook again and, now,
+> > > running Ubuntu's hardy kernel (which is a patched 2.6.24 kernel,
+> > > AFAIK---yes, it is; just checked it) I could make the D-Link stick
+> > > work fine.
 > > 
-> > > 
-> > >    It's going to take more than one skimpy little paragraph to
-> > >    justify this, and to demonstrate that it is preferable, and to
-> > >    convince us that nothing will break from this user-visible behaviour
-> > >    change.
-> > > 
-> > > b) we're now doing fs operations (and some I/O) in the pagefault
-> > >    code.  This has several implications:
-> > > 
-> > >    - performance changes
-> > > 
-> > >    - potential for deadlocks when a process takes the fault from
-> > >      within a copy_to_user() in, say, mm/filemap.c
-> > > 
-> > >    - performing additional memory allocations within that
-> > >      copy_to_user().  Possibility that these will reenter the
-> > >      filesystem.
-> > > 
-> > > And that's just ext2.
-> > > 
-> > > For ext3 things are even more complex, because we have the
-> > > journal_start/journal_end pair which is effectively another "lock" for
-> > > ranking/deadlock purposes.  And now we're taking i_alloc_sem and
-> > > lock_page and we're doing ->writepage() and its potential
-> > > journal_start(), all potentially within the context of a
-> > > copy_to_user().
-> > 
-> > One of the reason why we would need this in ext3/ext4 is that we cannot
-> > do block allocation in the writepage with the recent locking changes.
-> 
-> Perhaps those recent locking changes were wrong.
-> 
-> > The locking changes involve changing the locking order of journal_start
-> > and page_lock. With writepage we are already called with page_lock and
-> > we can't start new transaction needed for block allocation.
-> 
-> ext3_write_begin() has journal_start() nesting inside the lock_page().
-> 
+> > The only problem that I had is that I had to reissue the command
+> > "iwconfig wlan0 ap any" or, otherwise, the connection with the AP
+> > would be dropped (I can get a log for you to peruse, if you wish).
 
-All those are changed as a part of lock inversion changes.
+Let me be a bit more detailed here: when I connected the D-Link stick on
+the ia32 notebook with Ubuntu's 2.6.24 kernel, if I *didn't* issue the
+command "iwconfig wlan0 ap any" *periodically* (say, with
+     # while true; iwconfig wlan0 ap any; sleep 10; done
+), then the connection would die: the dmesg logs would indicate that the
+AP lost connection with the stick.
+
+By the way, I see this exactly same behaviour with the rt61pci driver on
+the same machine (with the only difference being that the interface name
+is ra0 instead of wlan0): I even put a cron job to issue the command
+every minute, so that my parents (which are using a PCMCIA card that
+uses the rt61pci) don't have to learn about the nasty things of
+networking.
+
+Anyway, I would be happy to get the D-Link USB stick getting a lease
+from the AP as a first step. This way, I think that I could help you
+both much more than what I can now, and I would be a step closer into
+the direction of ditching MacOS X.
+
+> What does "iwconfig wlan0" show _before_ doing the "iwconfig wlan0 ap any"?
+
+Actually, it shows the output that I listed before in the mail that had
+the script "levanta.sh" attached (which was blocked by many people's
+e-mail servers): both interfaces up and configured with the same AP (but
+the ra0 one with the DHCP daemon disabled).
+
+(In that message, I mentioned something along the lines: notice that the
+Signal Strength is reported to be higher on the ra0 interface than on
+the wlan0, despite both working on ia32).
 
 
+Regards, Rogério Brito.
 
-> > But if we agree that we should not do block allocation in page_mkwrite
-> > we need to add writepages and allocate blocks in writepages.
-> 
-> I'm not sure what writepages has to do with pagefaults?
-> 
-
-The idea is to have ext3/4_writepages. In writepages start a transaction
-and iterate over the pages take the lock and do block allocation. With
-that change we should be able to not do block allocation in the
-page_mkwrite path. We may still want to do block reservation there.
-
-Something like.
-
-ext4_writepages()
-{
-	journal_start()
-	for_each_page()
-	lock_page
-	if (bh_unmapped()...)
-		block_alloc()
-	unlock_page
-	journal_stop()
-
-}
-
-ext4_writepage()
-{
-	for_each_buffer_head()
-		if (bh_unmapped()) {
-			redirty_page
-			unlock_page
-			return;
-		}
-}
+P.S.: Sorry for an e-mail not more detailed. I'm not with physical
+access to my parent's notebook.
+-- 
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
