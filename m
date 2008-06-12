@@ -1,178 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760036AbYFLLjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758973AbYFLLwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760036AbYFLLjW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 07:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755654AbYFLLjJ
+	id S1758973AbYFLLwV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 07:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbYFLLwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 07:39:09 -0400
-Received: from smtp117.mail.mud.yahoo.com ([209.191.84.166]:44948 "HELO
-	smtp117.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753909AbYFLLjI (ORCPT
+	Thu, 12 Jun 2008 07:52:09 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:55625 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752077AbYFLLwI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 07:39:08 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=uDtu4SdIbxZYg9TficuP3MLkWk7T2ZZb1YONJuy66kcO5VEV9NFt8j7WUEgrIUjU9Ia157jlX1LmSez0yQD+9Uhu99iAwpXn/FJV6RtLKC4trZ7GL6LW2lInmKIee+OtslR8x9BkIQfKOrkho03WCYQF1vUD3yb3qsBbkSDrnu8=  ;
-X-YMail-OSG: DrVYS9cVM1mK9Ep2iBauZLadNOSplNnqCHgH0WqrmYCIZF6wjvx0lx6VU31J7xhxl6scEtYGjoMujrpGHB40OEEX8zZs7C.SObz9XwwHSPQeTmUTwrS3tBYQkUYMugh4itY-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>
-Subject: Re: [BUG] 2.6.26-rc5-mm3 kernel BUG at mm/filemap.c:575!
-Date: Thu, 12 Jun 2008 21:38:59 +1000
-User-Agent: KMail/1.9.5
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       linux-mm@kvack.org, Nick Piggin <npiggin@suse.de>,
-       Andy Whitcroft <apw@shadowen.org>
-References: <20080611225945.4da7bb7f.akpm@linux-foundation.org> <4850E1E5.90806@linux.vnet.ibm.com> <20080612015746.172c4b56.akpm@linux-foundation.org>
-In-Reply-To: <20080612015746.172c4b56.akpm@linux-foundation.org>
+	Thu, 12 Jun 2008 07:52:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=SYhLXwV762lB5RpqODL0jdqUFpWER+Gm8uBG0uEXZA9HxC1yEAQuZkRLoRk0ZGbUOP
+         WRuP0O0sipSrdsK37wdLLWIkUQaDEhT+ppASahn/QBRg21NQguCVuYFsvEZd0TXn4L0a
+         DDIaBHiT7zFrS7kxpgaC4zrVZe1WU24LHbKjk=
+Message-ID: <19f34abd0806120452w433e9763v2ee92e2f278ae988@mail.gmail.com>
+Date: Thu, 12 Jun 2008 13:52:06 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Joe Peterson" <joe@skyrush.com>
+Subject: Re: 2.6.25.3: su gets stuck for root
+Cc: "Alan Cox" <alan@redhat.com>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "David Newall" <davidn@davidnewall.com>, "Willy Tarreau" <w@1wt.eu>,
+       "Harald Dunkel" <harald.dunkel@t-online.de>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <484FDB63.6050504@skyrush.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806122138.59969.nickpiggin@yahoo.com.au>
+References: <48438126.3080308@t-online.de> <20080602102033.63e4cd18@core>
+	 <48441138.90503@skyrush.com>
+	 <20080602155133.GC933@devserv.devel.redhat.com>
+	 <4846A9F4.40003@skyrush.com>
+	 <20080604151649.GB12625@devserv.devel.redhat.com>
+	 <4846C85E.7080309@skyrush.com>
+	 <20080604171056.GB17875@devserv.devel.redhat.com>
+	 <4846FBF2.9010206@skyrush.com> <484FDB63.6050504@skyrush.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 June 2008 18:57, Andrew Morton wrote:
-> On Thu, 12 Jun 2008 14:14:21 +0530 Kamalesh Babulal 
-<kamalesh@linux.vnet.ibm.com> wrote:
-> > Hi Andrew,
-> >
-> > 2.6.26-rc5-mm3 kernel panics while booting up on the x86_64
-> > machine. Sorry the console is bit overwritten for the first few lines.
-> >
-> > ------------[ cut here ]------------
-> > ot fs
-> > no fstab.kernel BUG at mm/filemap.c:575!
-> > sys, mounting ininvalid opcode: 0000 [1] ternal defaultsSMP
-> > Switching to ne
-> > w root and runnilast sysfs file: /sys/block/dm-3/removable
-> > ng init.
-> > unmounCPU 3 ting old /dev
-> > u
-> > nmounting old /pModules linked in:roc
-> > unmounting
-> > old /sys
-> > Pid: 1, comm: init Not tainted 2.6.26-rc5-mm3-autotest #1
-> > RIP: 0010:[<ffffffff80268155>]  [<ffffffff80268155>] unlock_page+0xf/0x26
-> > RSP: 0018:ffff81003f9e1dc8  EFLAGS: 00010246
-> > RAX: 0000000000000000 RBX: ffffe20000f63080 RCX: 0000000000000036
-> > RDX: 0000000000000000 RSI: ffffe20000f63080 RDI: ffffe20000f63080
-> > RBP: 0000000000000000 R08: ffff81003f9a5727 R09: ffffc10000200200
-> > R10: ffffc10000100100 R11: 000000000000000e R12: 0000000000000000
-> > R13: 0000000000000000 R14: ffff81003f47aed8 R15: 0000000000000000
-> > FS:  000000000066d870(0063) GS:ffff81003f99fa80(0000)
-> > knlGS:0000000000000000 CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> > CR2: 000000000065afa0 CR3: 000000003d580000 CR4: 00000000000006e0
-> > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > Process init (pid: 1, threadinfo ffff81003f9e0000, task ffff81003f9d8000)
-> > Stack:  ffffe20000f63080 ffffffff80270d9c 0000000000000000
-> > ffffffffffffffff 000000000000000e 0000000000000000 ffffe20000f63080
-> > ffffe20000f630c0 ffffe20000f63100 ffffe20000f63140 ffffe20000f63180
-> > ffffe20000f631c0 Call Trace:
-> >  [<ffffffff80270d9c>] truncate_inode_pages_range+0xc5/0x305
-> >  [<ffffffff802a7177>] generic_delete_inode+0xc9/0x133
-> >  [<ffffffff8029e3cd>] do_unlinkat+0xf0/0x160
-> >  [<ffffffff8020bd0b>] system_call_after_swapgs+0x7b/0x80
-> >
-> >
-> > Code: 00 00 48 85 c0 74 0b 48 8b 40 10 48 85 c0 74 02 ff d0 e8 75 ec 32
-> > 00 41 5b 31 c0 c3 53 48 89 fb f0 0f ba 37 00 19 c0 85 c0 75 04 <0f> 0b eb
-> > fe e8 56 f5 ff ff 48 89 de 48 89 c7 31 d2 5b e9 47 be RIP 
-> > [<ffffffff80268155>] unlock_page+0xf/0x26
-> >  RSP <ffff81003f9e1dc8>
-> > ---[ end trace 27b1d01b03af7c12 ]---
+On Wed, Jun 11, 2008 at 4:04 PM, Joe Peterson <joe@skyrush.com> wrote:
+> Joe Peterson wrote:
+>> Anyway, here is more info:
+>>
+>> tty_check_change: current->signal->tty = f7880800
+>> tty_check_change: tty = f7880800
+>> tty_check_change: tty->pgrp = f7b99e40
+>>   tty->pgrp->count = 5
+>>   tty->pgrp->level = 0
+>>   tty->pgrp->numbers[0].nr = 6951
+>> tty_check_change: task_pgrp(current) = f7b99d40
+>>   task_pgrp(current)->count = 1
+>>   task_pgrp(current)->level = 0
+>>   task_pgrp(current)->numbers[0].nr = 6952
+>> tty_check_change: kill_pgrp called; returning -ERESTARTSYS
+>> set_termios: error return value (-512) from tty_check_change
+>> foo       6951  0.0  0.1   2332  1096 tty1     S+   14:18   0:00 su foo
+>> foo       6952  0.0  0.1   2988  1464 tty1     S    14:18   0:00 bash
+>>
+>>
+>> So, looks like the tty->pgrp's process is the "su" command itself, and
+>> the task_pgrp(current)'s process is "bash" - the shell started by the su.
 >
-> Another unlock of an unlocked page.  Presumably when reclaim hadn't
-> done anything yet.
->
-> Don't know, sorry.  Strange.
+> If anyone has any tips for my further debugging of this, given the
+> above, let me know.  I'd like to help resolve this.
 
-Looks like something lockless pagecache *could* be connected with, but
-I have never seen such a bug.
+I think knowing the pgrps of the above processes (there is possibly
+one more involved, stty?) would be useful; try:
 
-Hmm...
+    $ ps -eo pid,pgrp,tpgid,user,args
 
-@@ -104,6 +105,7 @@ truncate_complete_page(struct address_sp
-        cancel_dirty_page(page, PAGE_CACHE_SIZE);
+..as this problem occurs because a process tries to change the
+terminal settings (and subsequently gets suspended because of that)
+while it's not the owner of the terminal.
 
-        remove_from_page_cache(page);
-+       clear_page_mlock(page);
-        ClearPageUptodate(page);
-        ClearPageMappedToDisk(page);
-        page_cache_release(page);       /* pagecache ref */
+This can happen if you fork something off to the background, e.g. like
 
-...
+    $ stty 9600 &
 
-+static inline void clear_page_mlock(struct page *page)
-+{
-+       if (unlikely(TestClearPageMlocked(page)))
-+               __clear_page_mlock(page);
-+}
+(which should immediately give you [1]+ Stopped stty 9600),
 
-...
+so can you please look for anything like that in your login scripts or
+shell rc files?
 
-+void __clear_page_mlock(struct page *page)
-+{
-+       VM_BUG_ON(!PageLocked(page));   /* for LRU isolate/putback */
-+
-+       dec_zone_page_state(page, NR_MLOCK);
-+       count_vm_event(NORECL_PGCLEARED);
-+       if (!isolate_lru_page(page)) {
-+               putback_lru_page(page);
-+       } else {
-+               /*
-+                * Page not on the LRU yet.  Flush all pagevecs and retry.
-+                */
-+               lru_add_drain_all();
-+               if (!isolate_lru_page(page))
-+                       putback_lru_page(page);
-+               else if (PageUnevictable(page))
-+                       count_vm_event(NORECL_PGSTRANDED);
-+       }
-+}
+I don't know any other way to debug this further, sorry :-(
 
-...
-
-+int putback_lru_page(struct page *page)
-+{
-+       int lru;
-+       int ret = 1;
-+       int was_unevictable;
-+
-+       VM_BUG_ON(!PageLocked(page));
-+       VM_BUG_ON(PageLRU(page));
-+
-+       lru = !!TestClearPageActive(page);
-+       was_unevictable = TestClearPageUnevictable(page); /* for 
-page_evictable() */
-+
-+       if (unlikely(!page->mapping)) {
-+               /*
-+                * page truncated.  drop lock as put_page() will
-+                * free the page.
-+                */
-+               VM_BUG_ON(page_count(page) != 1);
-+               unlock_page(page);
-                ^^^^^^^^^^^^^^^^^^
+Thanks.
 
 
-This is a rather wild thing to be doing. It's a really bad idea
-to drop a lock that's taken several function calls distant and
-across different files...
+Vegard
 
-This is most likely where the locking is getting screwed up, but
-even if it was cobbled together to work, it just makes the
-locking scheme very hard to follow and verify.
-
-I don't have any suggestions yet, as I still haven't been able
-to review the patchset properly (and probably won't for the next
-week or so). But please rethink the locking.
-
-Thanks,
-Nick
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
