@@ -1,58 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbYFLBS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756745AbYFLBWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756656AbYFLBS0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Jun 2008 21:18:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754901AbYFLBSP
+	id S1756745AbYFLBWR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Jun 2008 21:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbYFLBWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Jun 2008 21:18:15 -0400
-Received: from ti-out-0910.google.com ([209.85.142.188]:42990 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753826AbYFLBSN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Jun 2008 21:18:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=i68IQFjynHHinLMdnoN76qamJYaFCG/QABTiuW+8hZA//sdyOcClJtZ58In9/8sQs2
-         mNgm5l7aFRXFw9wTE4NW23yI8oZhMGoYOjcsvg27jvqkFpxlAOVZYT3jWNEME8KGMPIi
-         eOVYY0+7oBsMLdIuhFkcK5kC11lrbv2coAYe8=
-Message-ID: <4850794F.3000200@gmail.com>
-Date: Thu, 12 Jun 2008 10:18:07 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Justin Mattock <justinmattock@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: macbook pro dvd playback after suspend Buffer I/O error
-References: <dd18b0c30804032207u36bd1f43l358e9949f0c94f79@mail.gmail.com>	 <20080404012147.abf8a598.akpm@linux-foundation.org>	 <484F31B8.8030001@gmail.com>	 <dd18b0c30806110045s6d19a034yd89b892441bd1621@mail.gmail.com>	 <dd18b0c30806111131gc1b506cva12f577ebb4afdf9@mail.gmail.com>	 <485048EC.2080608@gmail.com> <dd18b0c30806111527x22fa895em230ceade4712f073@mail.gmail.com>
-In-Reply-To: <dd18b0c30806111527x22fa895em230ceade4712f073@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Jun 2008 21:22:06 -0400
+Received: from ns1.suse.de ([195.135.220.2]:53124 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751527AbYFLBWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Jun 2008 21:22:04 -0400
+Date: Thu, 12 Jun 2008 03:22:01 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc][patch] mm: vmap rewrite
+Message-ID: <20080612012201.GB29611@wotan.suse.de>
+References: <20080605102015.GA11366@wotan.suse.de> <484AC779.1070803@goop.org> <20080610025312.GC19404@wotan.suse.de> <48501D7C.5050600@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48501D7C.5050600@goop.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Mattock wrote:
-> O.K. attached is dmesg of playing a dvd, then suspending and wakingup,
-> as well as starting after the buffer error.(audit messages)
-> This is interesting, even  pausing the dvd before suspending, causes
-> the same error.
-> I sent a post to mplayer-users to see if there is a way to have
-> mplayer pause and wait for the disk drive to align, but am still
-> waiting
-> for a response.
+On Wed, Jun 11, 2008 at 07:46:20PM +0100, Jeremy Fitzhardinge wrote:
+> Nick Piggin wrote:
+> >It's harder than that even, because we don't own the page flags, so then
+> >clearing the PG_kalias bit would require that we make all page flags ops
+> >atomic in all parts of the kernel. Obviously not going to happen.
+> >
+> >The other thing we could do is have vmap layer keep some p->v translations
+> >around (actually it doesn't even need to go all the way to v, just a single
+> >bit would suffice) So I guess this would be like another page flag, but
+> >without the atomicity problem and without me getting angry at using another
+> >flag ;) Still, I'd rather not do this and slow everything else down.
+> >  
+> 
+> Yeah.  It's a bit awkward to maintain a secondary structure just to deal 
+> with the confluence of two edge cases (running Xen + reusing an aliased 
+> page in a pagetable).
 
-Can you please do the followings?
+It would be possible though. Even if it were something we make conditional
+on Xen. So it is something to keep in mind.
 
-1. dd if=/dev/sr0 of=/dev/null bs=1M
-2. suspend / resume
-3. see whether dd fails and post the resulting dmesg.
+ 
+> >It could be switched on at runtime if Xen is running perhaps. Or the other
+> >thing Xen could do is keep a cache of unaliased page table pages. You
+> >could fill it up N pages at a time, and just do a single unmap_aliases call
+> >to sanitize them all; also, clean pages returned from pagetables could be
+> >reused. Like the quicklists things.
+> >  
+> 
+> Hm, that wouldn't be too bad (so long as it doesn't end up hiding 
+> gigabytes of memory away from the rest of the system ;).
 
-Thanks.
+Well, it obviously has to be implemented properly ;) Another thing to keep
+in mind. If we end up with a huge number of vmap users (which I don't
+really anticipate, but maybe), then it might be more common to have aliased
+pages, in which case simply detecting them quickly doesn't help if we have
+to flush. So this approach would go some way to solving that situation.
 
--- 
-tejun
+ 
+> >Or: doesn't the host have to do its own alias check anyway? In case of an
+> >AWOL guest? Why not just reuse that and trap back into the guest to fix it
+> >up?
+> 
+> That's possible, but awkward.  In many cases these updates will be 
+> batched, so it would become a matter of issuing a batch, then picking 
+> through the results to see what worked and what failed.  I suppose I 
+> could just do the simple flush and then if that turns out too expensive, 
+> do the submit-and-retry approach.
+
+OK. Again, this is more of the "fast detection" approach, rather than
+avoiding aliasing pages. But it's good to have so many options :)
+
+Anyway, option #4 is just to wait and see. I don't think Xen should
+significantly slow down after this patch, it just may be able to go
+faster with more tweaking.
