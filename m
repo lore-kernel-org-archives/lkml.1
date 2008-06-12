@@ -1,174 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762634AbYFLNo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762376AbYFLNo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762634AbYFLNo5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 09:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762051AbYFLNnv
+	id S1762376AbYFLNo1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 09:44:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762026AbYFLNnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 09:43:51 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:54240 "EHLO
+	Thu, 12 Jun 2008 09:43:49 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:56324 "EHLO
 	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762006AbYFLNns (ORCPT
+	with ESMTP id S1761731AbYFLNno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 09:43:48 -0400
-Message-Id: <20080612134204.097928479@kerlabs.com>
+	Thu, 12 Jun 2008 09:43:44 -0400
+Message-Id: <20080612134203.763166823@kerlabs.com>
 References: <20080612133126.335618468@kerlabs.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 12 Jun 2008 15:31:29 +0200
+Date: Thu, 12 Jun 2008 15:31:27 +0200
 From: Louis Rilling <Louis.Rilling@kerlabs.com>
 To: Joel.Becker@oracle.com
 Cc: Louis.Rilling@kerlabs.com, linux-kernel@vger.kernel.org,
        ocfs2-devel@oss.oracle.com
-Subject: [PATCH 3/3][BUGFIX] configfs: Fix deadlock with racing rmdir() and rename()
-Content-Disposition: inline; filename=configfs-fix-rmdir-vs-rename-deadlock.patch
+Subject: [PATCH 1/3][BUGFIX] configfs: Introduce configfs_dirent_lock
+Content-Disposition: inline; filename=configfs-introduce-configfs_dirent_lock.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the deadlock between racing sys_rename() and configfs_rmdir().
+This patch introduces configfs_dirent_lock spinlock to protect configfs_dirent
+traversals against linkage mutations (add/del/move). This will allow
+configfs_detach_prep() to avoid locking i_mutexes. 
 
-The idea is to avoid locking i_mutexes of default groups in
-configfs_detach_prep(), and rely instead on the new configfs_dirent_lock to
-protect against configfs_dirent's linkage mutations. To ensure that an mkdir()
-racing with rmdir() will not create new items in a to-be-removed default group,
-we make configfs_new_dirent() check for the CONFIGFS_USET_DROPPING flag right
-before linking the new dirent, and return error if the flag is set. This makes
-racing mkdir()/symlink()/dir_open() fail in places where errors could already
-happen, resp. in (attach_item()|attach_group())/create_link()/new_dirent().
+Locking rules for configfs_dirent linkage mutations are the same plus the
+requirement of taking configfs_dirent_lock. For configfs_dirent walking, one can
+either take appropriate i_mutex as before, or take configfs_dirent_lock.
 
-configfs_depend() remains safe since it locks all the path from configfs root,
-and is thus mutually exclusive with rmdir().
-
-An advantage of this is that now detach_groups() unconditionnaly takes the
-default groups i_mutex, which makes it more consistent with populate_groups().
+The spinlock could actually be a mutex, but the critical sections are either
+O(1) or should not be too long (default groups walking in last patch).
 
 Signed-off-by: Louis Rilling <Louis.Rilling@kerlabs.com>
 ---
- fs/configfs/dir.c |   44 ++++++++++++++++++++++++--------------------
- 1 file changed, 24 insertions(+), 20 deletions(-)
+ fs/configfs/configfs_internal.h |    3 +++
+ fs/configfs/dir.c               |   25 +++++++++++++++++++++++++
+ fs/configfs/inode.c             |    2 ++
+ fs/configfs/symlink.c           |    2 ++
+ 4 files changed, 32 insertions(+)
 
+Index: b/fs/configfs/configfs_internal.h
+===================================================================
+--- a/fs/configfs/configfs_internal.h	2008-06-12 13:44:27.000000000 +0200
++++ b/fs/configfs/configfs_internal.h	2008-06-12 13:44:34.000000000 +0200
+@@ -26,6 +26,7 @@
+ 
+ #include <linux/slab.h>
+ #include <linux/list.h>
++#include <linux/spinlock.h>
+ 
+ struct configfs_dirent {
+ 	atomic_t		s_count;
+@@ -49,6 +50,8 @@ struct configfs_dirent {
+ #define CONFIGFS_USET_DROPPING	0x0100
+ #define CONFIGFS_NOT_PINNED	(CONFIGFS_ITEM_ATTR)
+ 
++extern spinlock_t configfs_dirent_lock;
++
+ extern struct vfsmount * configfs_mount;
+ extern struct kmem_cache *configfs_dir_cachep;
+ 
 Index: b/fs/configfs/dir.c
 ===================================================================
---- a/fs/configfs/dir.c	2008-06-12 13:45:18.000000000 +0200
-+++ b/fs/configfs/dir.c	2008-06-12 13:50:10.000000000 +0200
-@@ -38,6 +38,9 @@
+--- a/fs/configfs/dir.c	2008-06-12 13:44:27.000000000 +0200
++++ b/fs/configfs/dir.c	2008-06-12 15:20:26.000000000 +0200
+@@ -35,6 +35,11 @@
+ #include "configfs_internal.h"
+ 
  DECLARE_RWSEM(configfs_rename_sem);
- /*
-  * Protects configfs_dirent traversals against linkage mutations
-+ * Protects setting of CONFIGFS_USET_DROPPING: checking the flag
-+ * unlocked is not reliable unless in detach_groups called from
-+ * rmdir/unregister and from configfs_attach_group
-  * Can be used as an alternative to taking the concerned i_mutex
-  */
- DEFINE_SPINLOCK(configfs_dirent_lock);
-@@ -86,6 +89,11 @@ static struct configfs_dirent *configfs_
++/*
++ * Protects configfs_dirent traversals against linkage mutations
++ * Can be used as an alternative to taking the concerned i_mutex
++ */
++DEFINE_SPINLOCK(configfs_dirent_lock);
+ 
+ static void configfs_d_iput(struct dentry * dentry,
+ 			    struct inode * inode)
+@@ -79,7 +84,9 @@ static struct configfs_dirent *configfs_
+ 	atomic_set(&sd->s_count, 1);
  	INIT_LIST_HEAD(&sd->s_links);
  	INIT_LIST_HEAD(&sd->s_children);
- 	spin_lock(&configfs_dirent_lock);
-+	if (parent_sd->s_type & CONFIGFS_USET_DROPPING) {
-+		spin_unlock(&configfs_dirent_lock);
-+		kmem_cache_free(configfs_dir_cachep, sd);
-+		return ERR_PTR(-ENOENT);
-+	}
++	spin_lock(&configfs_dirent_lock);
  	list_add(&sd->s_sibling, &parent_sd->s_children);
- 	spin_unlock(&configfs_dirent_lock);
++	spin_unlock(&configfs_dirent_lock);
  	sd->s_element = element;
-@@ -345,11 +353,11 @@ static struct dentry * configfs_lookup(s
  
- /*
-  * Only subdirectories count here.  Files (CONFIGFS_NOT_PINNED) are
-- * attributes and are removed by rmdir().  We recurse, taking i_mutex
-- * on all children that are candidates for default detach.  If the
-- * result is clean, then configfs_detach_group() will handle dropping
-- * i_mutex.  If there is an error, the caller will clean up the i_mutex
-- * holders via configfs_detach_rollback().
-+ * attributes and are removed by rmdir().  We recurse, setting
-+ * CONFIGFS_USET_DROPPING on all children that are candidates for
-+ * default detach.
-+ * If there is an error, the caller will reset the flags via
-+ * configfs_detach_rollback().
-  */
- static int configfs_detach_prep(struct dentry *dentry)
- {
-@@ -366,8 +374,7 @@ static int configfs_detach_prep(struct d
- 		if (sd->s_type & CONFIGFS_NOT_PINNED)
+ 	return sd;
+@@ -173,7 +180,9 @@ static int create_dir(struct config_item
+ 		} else {
+ 			struct configfs_dirent *sd = d->d_fsdata;
+ 			if (sd) {
++				spin_lock(&configfs_dirent_lock);
+ 				list_del_init(&sd->s_sibling);
++				spin_unlock(&configfs_dirent_lock);
+ 				configfs_put(sd);
+ 			}
+ 		}
+@@ -224,7 +233,9 @@ int configfs_create_link(struct configfs
+ 		else {
+ 			struct configfs_dirent *sd = dentry->d_fsdata;
+ 			if (sd) {
++				spin_lock(&configfs_dirent_lock);
+ 				list_del_init(&sd->s_sibling);
++				spin_unlock(&configfs_dirent_lock);
+ 				configfs_put(sd);
+ 			}
+ 		}
+@@ -238,7 +249,9 @@ static void remove_dir(struct dentry * d
+ 	struct configfs_dirent * sd;
+ 
+ 	sd = d->d_fsdata;
++	spin_lock(&configfs_dirent_lock);
+ 	list_del_init(&sd->s_sibling);
++	spin_unlock(&configfs_dirent_lock);
+ 	configfs_put(sd);
+ 	if (d->d_inode)
+ 		simple_rmdir(parent->d_inode,d);
+@@ -410,7 +423,9 @@ static void detach_attrs(struct config_i
+ 	list_for_each_entry_safe(sd, tmp, &parent_sd->s_children, s_sibling) {
+ 		if (!sd->s_element || !(sd->s_type & CONFIGFS_NOT_PINNED))
  			continue;
- 		if (sd->s_type & CONFIGFS_USET_DEFAULT) {
--			mutex_lock(&sd->s_dentry->d_inode->i_mutex);
--			/* Mark that we've taken i_mutex */
-+			/* Mark that we're trying to drop the group */
- 			sd->s_type |= CONFIGFS_USET_DROPPING;
++		spin_lock(&configfs_dirent_lock);
+ 		list_del_init(&sd->s_sibling);
++		spin_unlock(&configfs_dirent_lock);
+ 		configfs_drop_dentry(sd, dentry);
+ 		configfs_put(sd);
+ 	}
+@@ -1268,7 +1283,9 @@ static int configfs_dir_close(struct ino
+ 	struct configfs_dirent * cursor = file->private_data;
  
- 			/*
-@@ -388,7 +395,7 @@ out:
- }
+ 	mutex_lock(&dentry->d_inode->i_mutex);
++	spin_lock(&configfs_dirent_lock);
+ 	list_del_init(&cursor->s_sibling);
++	spin_unlock(&configfs_dirent_lock);
+ 	mutex_unlock(&dentry->d_inode->i_mutex);
  
- /*
-- * Walk the tree, dropping i_mutex wherever CONFIGFS_USET_DROPPING is
-+ * Walk the tree, resetting CONFIGFS_USET_DROPPING wherever it was
-  * set.
-  */
- static void configfs_detach_rollback(struct dentry *dentry)
-@@ -399,11 +406,7 @@ static void configfs_detach_rollback(str
- 	list_for_each_entry(sd, &parent_sd->s_children, s_sibling) {
- 		if (sd->s_type & CONFIGFS_USET_DEFAULT) {
- 			configfs_detach_rollback(sd->s_dentry);
--
--			if (sd->s_type & CONFIGFS_USET_DROPPING) {
--				sd->s_type &= ~CONFIGFS_USET_DROPPING;
--				mutex_unlock(&sd->s_dentry->d_inode->i_mutex);
--			}
-+			sd->s_type &= ~CONFIGFS_USET_DROPPING;
+ 	release_configfs_dirent(cursor);
+@@ -1308,7 +1325,9 @@ static int configfs_readdir(struct file 
+ 			/* fallthrough */
+ 		default:
+ 			if (filp->f_pos == 2) {
++				spin_lock(&configfs_dirent_lock);
+ 				list_move(q, &parent_sd->s_children);
++				spin_unlock(&configfs_dirent_lock);
+ 			}
+ 			for (p=q->next; p!= &parent_sd->s_children; p=p->next) {
+ 				struct configfs_dirent *next;
+@@ -1331,7 +1350,9 @@ static int configfs_readdir(struct file 
+ 						 dt_type(next)) < 0)
+ 					return 0;
+ 
++				spin_lock(&configfs_dirent_lock);
+ 				list_move(q, p);
++				spin_unlock(&configfs_dirent_lock);
+ 				p = q;
+ 				filp->f_pos++;
+ 			}
+@@ -1362,7 +1383,9 @@ static loff_t configfs_dir_lseek(struct 
+ 			struct list_head *p;
+ 			loff_t n = file->f_pos - 2;
+ 
++			spin_lock(&configfs_dirent_lock);
+ 			list_del(&cursor->s_sibling);
++			spin_unlock(&configfs_dirent_lock);
+ 			p = sd->s_children.next;
+ 			while (n && p != &sd->s_children) {
+ 				struct configfs_dirent *next;
+@@ -1372,7 +1395,9 @@ static loff_t configfs_dir_lseek(struct 
+ 					n--;
+ 				p = p->next;
+ 			}
++			spin_lock(&configfs_dirent_lock);
+ 			list_add_tail(&cursor->s_sibling, p);
++			spin_unlock(&configfs_dirent_lock);
  		}
  	}
- }
-@@ -482,16 +485,12 @@ static void detach_groups(struct config_
- 
- 		child = sd->s_dentry;
- 
-+		mutex_lock(&child->d_inode->i_mutex);
-+
- 		configfs_detach_group(sd->s_element);
- 		child->d_inode->i_flags |= S_DEAD;
- 
--		/*
--		 * From rmdir/unregister, a configfs_detach_prep() pass
--		 * has taken our i_mutex for us.  Drop it.
--		 * From mkdir/register cleanup, there is no sem held.
--		 */
--		if (sd->s_type & CONFIGFS_USET_DROPPING)
--			mutex_unlock(&child->d_inode->i_mutex);
-+		mutex_unlock(&child->d_inode->i_mutex);
- 
- 		d_delete(child);
- 		dput(child);
-@@ -1177,12 +1176,15 @@ static int configfs_rmdir(struct inode *
- 		return -EINVAL;
- 	}
- 
-+	spin_lock(&configfs_dirent_lock);
- 	ret = configfs_detach_prep(dentry);
- 	if (ret) {
- 		configfs_detach_rollback(dentry);
-+		spin_unlock(&configfs_dirent_lock);
- 		config_item_put(parent_item);
- 		return ret;
- 	}
-+	spin_unlock(&configfs_dirent_lock);
- 
- 	/* Get a working ref for the duration of this function */
- 	item = configfs_get_config_item(dentry);
-@@ -1474,9 +1476,11 @@ void configfs_unregister_subsystem(struc
- 	mutex_lock_nested(&configfs_sb->s_root->d_inode->i_mutex,
- 			  I_MUTEX_PARENT);
- 	mutex_lock_nested(&dentry->d_inode->i_mutex, I_MUTEX_CHILD);
-+	spin_lock(&configfs_dirent_lock);
- 	if (configfs_detach_prep(dentry)) {
- 		printk(KERN_ERR "configfs: Tried to unregister non-empty subsystem!\n");
- 	}
-+	spin_unlock(&configfs_dirent_lock);
- 	configfs_detach_group(&group->cg_item);
- 	dentry->d_inode->i_flags |= S_DEAD;
  	mutex_unlock(&dentry->d_inode->i_mutex);
+Index: b/fs/configfs/inode.c
+===================================================================
+--- a/fs/configfs/inode.c	2008-06-12 13:44:27.000000000 +0200
++++ b/fs/configfs/inode.c	2008-06-12 13:44:34.000000000 +0200
+@@ -247,7 +247,9 @@ void configfs_hash_and_remove(struct den
+ 		if (!sd->s_element)
+ 			continue;
+ 		if (!strcmp(configfs_get_name(sd), name)) {
++			spin_lock(&configfs_dirent_lock);
+ 			list_del_init(&sd->s_sibling);
++			spin_unlock(&configfs_dirent_lock);
+ 			configfs_drop_dentry(sd, dir);
+ 			configfs_put(sd);
+ 			break;
+Index: b/fs/configfs/symlink.c
+===================================================================
+--- a/fs/configfs/symlink.c	2008-06-12 13:44:27.000000000 +0200
++++ b/fs/configfs/symlink.c	2008-06-12 13:44:34.000000000 +0200
+@@ -169,7 +169,9 @@ int configfs_unlink(struct inode *dir, s
+ 	parent_item = configfs_get_config_item(dentry->d_parent);
+ 	type = parent_item->ci_type;
+ 
++	spin_lock(&configfs_dirent_lock);
+ 	list_del_init(&sd->s_sibling);
++	spin_unlock(&configfs_dirent_lock);
+ 	configfs_drop_dentry(sd, dentry->d_parent);
+ 	dput(dentry);
+ 	configfs_put(sd);
 
 -- 
 Dr Louis Rilling			Kerlabs
