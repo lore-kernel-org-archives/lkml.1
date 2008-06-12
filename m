@@ -1,177 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757845AbYFLTuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759151AbYFLTuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757845AbYFLTuZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 15:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754346AbYFLTuN
+	id S1759151AbYFLTuz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 15:50:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754626AbYFLTuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 15:50:13 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:16360 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754044AbYFLTuL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 15:50:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=aVZkkEzCbzkyqr/4uI00owk9HmaB+e5pmdt0WXyyiJGXKEBnk3dal9z9/7nIOJnqPs
-         RSaj7mvEgPJJo2lSD/XF4Nded/qZf/QkyQ4Dw2DYYg3eAp2Isvs7Oc3mN/KubQAaq7qw
-         WO44fNcE59cmftzNI2HCz+mWaX2j1IzCdKQSY=
-Message-ID: <86802c440806121250s1b04c553ld505f6c76c2e206@mail.gmail.com>
-Date: Thu, 12 Jun 2008 12:50:10 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Robert Richter" <robert.richter@amd.com>
-Subject: Re: [PATCH 2/2] x86: Move PCI IO ECS code to x86/pci
-Cc: "Arjan van de Ven" <arjan@infradead.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, "Andi Kleen" <andi@firstfloor.org>
-In-Reply-To: <1213294763-19566-2-git-send-email-robert.richter@amd.com>
+	Thu, 12 Jun 2008 15:50:44 -0400
+Received: from dwdmx4.dwd.de ([141.38.3.230]:59605 "EHLO dwdmx4.dwd.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754527AbYFLTun (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 15:50:43 -0400
+Date: Thu, 12 Jun 2008 19:50:35 +0000 (GMT)
+From: Holger Kiehl <Holger.Kiehl@dwd.de>
+X-X-Sender: kiehl@diagnostix.dwd.de
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Theodore Tso <tytso@mit.edu>, Solofo.Ramangalahy@bull.net,
+       Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Performance of ext4
+In-Reply-To: <20080612180605.GD22481@skywalker>
+Message-ID: <Pine.LNX.4.64.0806121940020.2974@diagnostix.dwd.de>
+References: <Pine.LNX.4.64.0806110801370.19793@diagnostix.dwd.de>
+ <20080611105945.GB9008@skywalker> <Pine.LNX.4.64.0806111937460.3720@diagnostix.dwd.de>
+ <18563.1213215457@alphaville.zko.hp.com> <Pine.LNX.4.64.0806120855370.27806@diagnostix.dwd.de>
+ <18513.345.553912.449710@frecb006361.adech.frec.bull.fr>
+ <Pine.LNX.4.64.0806121154090.27806@diagnostix.dwd.de> <20080612131928.GB18229@mit.edu>
+ <Pine.LNX.4.64.0806121333480.27806@diagnostix.dwd.de> <20080612180605.GD22481@skywalker>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080603072550.GR23679@erda.amd.com>
-	 <1213294763-19566-2-git-send-email-robert.richter@amd.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 12, 2008 at 11:19 AM, Robert Richter <robert.richter@amd.com> wrote:
-> "Form follows function". Code is now where it belongs to.
->
-> Signed-off-by: Robert Richter <robert.richter@amd.com>
-> ---
->  arch/x86/kernel/cpu/amd.c    |    3 ---
->  arch/x86/kernel/cpu/amd_64.c |    4 ----
->  arch/x86/kernel/cpu/cpu.h    |    2 --
->  arch/x86/kernel/setup.c      |   13 -------------
->  arch/x86/pci/Makefile_32     |    1 +
->  arch/x86/pci/amd_bus.c       |   32 ++++++++++++++++++++++++++++++++
->  arch/x86/pci/direct.c        |   16 +++++++++-------
->  arch/x86/pci/pci.h           |    1 +
->  include/asm-x86/cpufeature.h |    2 --
->  9 files changed, 43 insertions(+), 31 deletions(-)
->
-> diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
-> index acc891a..81a07ca 100644
-> --- a/arch/x86/kernel/cpu/amd.c
-> +++ b/arch/x86/kernel/cpu/amd.c
-> @@ -266,9 +266,6 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
->
->        if (cpu_has_xmm2)
->                set_cpu_cap(c, X86_FEATURE_MFENCE_RDTSC);
-> -
-> -       if (c->x86 == 0x10)
-> -               amd_enable_pci_ext_cfg(c);
->  }
->
->  static unsigned int __cpuinit amd_size_cache(struct cpuinfo_x86 *c, unsigned int size)
-> diff --git a/arch/x86/kernel/cpu/amd_64.c b/arch/x86/kernel/cpu/amd_64.c
-> index f8d2058..250bfe6 100644
-> --- a/arch/x86/kernel/cpu/amd_64.c
-> +++ b/arch/x86/kernel/cpu/amd_64.c
-> @@ -6,7 +6,6 @@
->  #include <asm/cacheflush.h>
->
->  #include <mach_apic.h>
-> -#include "cpu.h"
->
->  extern int __cpuinit get_model_name(struct cpuinfo_x86 *c);
->  extern void __cpuinit display_cacheinfo(struct cpuinfo_x86 *c);
-> @@ -187,9 +186,6 @@ void __cpuinit init_amd(struct cpuinfo_x86 *c)
->        if (c->x86 == 0x10)
->                fam10h_check_enable_mmcfg();
->
-> -       if (c->x86 == 0x10)
-> -               amd_enable_pci_ext_cfg(c);
-> -
->        if (c == &boot_cpu_data && c->x86 >= 0xf && c->x86 <= 0x11) {
->                unsigned long long tseg;
->
-> diff --git a/arch/x86/kernel/cpu/cpu.h b/arch/x86/kernel/cpu/cpu.h
-> index f5d5bb1..40ad189 100644
-> --- a/arch/x86/kernel/cpu/cpu.h
-> +++ b/arch/x86/kernel/cpu/cpu.h
-> @@ -39,5 +39,3 @@ extern int get_model_name(struct cpuinfo_x86 *c);
->  extern void display_cacheinfo(struct cpuinfo_x86 *c);
->
->  #endif /* CONFIG_X86_32 */
-> -
-> -extern void __cpuinit amd_enable_pci_ext_cfg(struct cpuinfo_x86 *c);
-> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-> index 20e14db..6f80b85 100644
-> --- a/arch/x86/kernel/setup.c
-> +++ b/arch/x86/kernel/setup.c
-> @@ -137,16 +137,3 @@ void __init setup_per_cpu_areas(void)
->  }
->
->  #endif
-> -#define ENABLE_CF8_EXT_CFG      (1ULL << 46)
-> -
-> -void __cpuinit amd_enable_pci_ext_cfg(struct cpuinfo_x86 *c)
-> -{
-> -       u64 reg;
-> -       rdmsrl(MSR_AMD64_NB_CFG, reg);
-> -       if (!(reg & ENABLE_CF8_EXT_CFG)) {
-> -               reg |= ENABLE_CF8_EXT_CFG;
-> -               wrmsrl(MSR_AMD64_NB_CFG, reg);
-> -       }
-> -       set_cpu_cap(c, X86_FEATURE_PCI_EXT_CFG);
-> -}
-> -
-> diff --git a/arch/x86/pci/Makefile_32 b/arch/x86/pci/Makefile_32
-> index 89ec35d..f647e7e 100644
-> --- a/arch/x86/pci/Makefile_32
-> +++ b/arch/x86/pci/Makefile_32
-> @@ -22,3 +22,4 @@ pci-$(CONFIG_X86_NUMAQ)               := numa.o irq.o
->  pci-$(CONFIG_NUMA)             += mp_bus_to_node.o
->
->  obj-y                          += $(pci-y) common.o early.o
-> +obj-y                          += amd_bus.o
-> diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
-> index 5c2799c..15f505d 100644
-> --- a/arch/x86/pci/amd_bus.c
-> +++ b/arch/x86/pci/amd_bus.c
-> @@ -1,5 +1,9 @@
->  #include <linux/init.h>
->  #include <linux/pci.h>
-> +#include "pci.h"
-> +
-> +#ifdef CONFIG_X86_64
-> +
->  #include <asm/pci-direct.h>
->  #include <asm/mpspec.h>
->  #include <linux/cpumask.h>
-> @@ -526,3 +530,31 @@ static int __init early_fill_mp_bus_info(void)
->  }
->
->  postcore_initcall(early_fill_mp_bus_info);
-> +
-> +#endif
-> +
-> +/* common 32/64 bit code */
-> +
-> +#define ENABLE_CF8_EXT_CFG      (1ULL << 46)
-> +
-> +static void enable_pci_io_ecs_per_cpu(void *unused)
-> +{
-> +       u64 reg;
-> +       rdmsrl(MSR_AMD64_NB_CFG, reg);
-> +       if (!(reg & ENABLE_CF8_EXT_CFG)) {
-> +               reg |= ENABLE_CF8_EXT_CFG;
-> +               wrmsrl(MSR_AMD64_NB_CFG, reg);
-> +       }
-> +}
-> +
-> +static int __init enable_pci_io_ecs(void)
-> +{
-> +       /* assume all cpus from fam10h have IO ECS */
-> +        if (boot_cpu_data.x86 < 0x10)
-> +               return 0;
-> +       on_each_cpu(enable_pci_io_ecs_per_cpu, NULL, 1, 1);
+On Thu, 12 Jun 2008, Aneesh Kumar K.V wrote:
 
-how about some cpu hotplug? i mean if you limit that when booting and
-later use "echo 1 > /sys/.../online" etc to get it online.
+> On Thu, Jun 12, 2008 at 02:07:30PM +0000, Holger Kiehl wrote:
+>> This time there is no OOPS and system is still up running without any
+>> problem (except any process wanting to write something to this filesystem
+>> gets stuck forever).
+>>
+>> What can I do to help find the problem? The system is still up with all those
+>> process hanging in D-state.
+>>
+>
+> if you can login to the system get the dmesg output after
+>
+> echo t > /proc/sysrq-trigger
+>
+Unfortunately I have not set CONFIG_MAGIC_SYSRQ. Tomorrow I will try to
+reproduce this with a kernel that has CONFIG_MAGIC_SYSRQ set.
 
-YH
+Holger
+
