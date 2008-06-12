@@ -1,50 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760958AbYFLMe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761110AbYFLMfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760958AbYFLMe1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 08:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758701AbYFLMeT
+	id S1761110AbYFLMfp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 08:35:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757737AbYFLMfi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 08:34:19 -0400
-Received: from vigor.karmaclothing.net ([217.169.26.28]:38838 "EHLO
-	vigor.karmaclothing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756569AbYFLMeT (ORCPT
+	Thu, 12 Jun 2008 08:35:38 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:36043 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755532AbYFLMfh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 08:34:19 -0400
-Date: Thu, 12 Jun 2008 13:26:46 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Manuel Lauss <mano@roarinelk.homelinux.net>
-Cc: linux-mips@linux-mips.org, sshtylyov@ru.mvista.com, drzeus@drzeus.cx,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/8] Alchemy: register mmc platform device for
-	db1200/pb1200 boards.
-Message-ID: <20080612122646.GA9493@linux-mips.org>
-References: <20080609063521.GA8724@roarinelk.homelinux.net> <20080609063702.GC8724@roarinelk.homelinux.net> <20080612090206.GB21601@linux-mips.org> <20080612101839.GC21601@linux-mips.org> <20080612121828.GA24603@roarinelk.homelinux.net>
+	Thu, 12 Jun 2008 08:35:37 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=NBVfHoFIzTAUt+jykFbAHAfWb9pbbRkGHLiN4u4Cnm7WPa7AOxlDmEs4gUimItmc5WiTYI29Gc/cwTyaK2nV1BMb6mvUF/ZsW3MwtjLV6ogetuq128ey9F4f49XkbEHpalHqo1+RWcg2Wz34NefzXeYksC01MXcGXdV3sS3fpyY=  ;
+X-YMail-OSG: nshApv4VM1kAZV3W.wp38dOoJd.GpRzF8FIAQVcCEigmaH.vzincDaatafxsBwI2eMQU2tHEYxvB3lYrljhlE7iz6O.pIvDrTsO5zBmPGyv0I46ctv1LV5AtpChJv3BrlEQ-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Cliff Wickman <cpw@sgi.com>
+Subject: Re: [PATCHv4] SGI UV: TLB shootdown using broadcast assist unit
+Date: Thu, 12 Jun 2008 22:35:29 +1000
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
+References: <E1K6lqI-0006pX-JQ@eag09.americas.sgi.com>
+In-Reply-To: <E1K6lqI-0006pX-JQ@eag09.americas.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080612121828.GA24603@roarinelk.homelinux.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200806122235.29888.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 12, 2008 at 02:18:28PM +0200, Manuel Lauss wrote:
+On Thursday 12 June 2008 22:23, Cliff Wickman wrote:
+> From: Cliff Wickman <cpw@sgi.com>
+>
+> TLB shootdown for SGI UV.
+>
+> v1: 6/2 original
+> v2: 6/3 corrections/improvements per Ingo's review
+> v3: 6/4 split atomic operations off to a separate patch (Jeremy's review)
+> v4: 6/12 include <mach_apic.h> rather than <asm/mach-bigsmp/mach_apic.h>
+>          (fixes a !SMP build problem that Ingo found)
+>          fix the index on uv_table_bases[blade]
+> Now depends on patch:
+>     x86 atomic operations: atomic_or_long atomic_inc_short
+>   which was split off (and improved) at the suggestion of
+>   Jeremy Fitzhardinge <jeremy@goop.org>
+>
+> This patch provides the ability to flush TLB's in cpu's that are not on
+> the local node.  The hardware mechanism for distributing the flush
+> messages is the UV's "broadcast assist unit".
+>
+> The hook to intercept TLB shootdown requests is a 2-line change to
+> native_flush_tlb_others() (arch/x86/kernel/tlb_64.c).
+>
+> This code has been tested on a hardware simulator. The real hardware
+> is not yet available.
+>
+> The shootdown statistics are provided through /proc/sgi_uv/ptc_statistics.
+> The use of /sys was considered, but would have required the use of
+> many /sys files.  The debugfs was also considered, but these statistics
+> should be available on an ongoing basis, not just for debugging.
+>
+> Issues to be fixed later:
+> - The IRQ for the messaging interrupt is currently hardcoded as 200
+>   (see UV_BAU_MESSAGE).  It should be dynamically assigned in the future.
+> - The use of appropriate udelay()'s is untested, as they are a problem
+>   in the simulator.
 
-> Hi Ralf, Pierre,
-> 
-> On Thu, Jun 12, 2008 at 11:18:39AM +0100, Ralf Baechle wrote:
-> > On Thu, Jun 12, 2008 at 10:02:06AM +0100, Ralf Baechle wrote:
-> > 
-> > I cleaned the numerals for the DMA constants with below patch which now
-> > is in the 2.6.27 patch queue.
-> 
-> Here's a new version of [PATCH 2/8], against those changes.
+For someone not too familiar with low level x86 (or UV) code, can
+you explain why you are hooking at this point? I mean, what it
+looks like is either a performance improvement, or for some reason
+UV does not support send_IPI_mask out to CPUs "not on the local node".
 
-Thanks, looking good, thus:
+If the former, what sort of improvement to you expect / see?
 
-Acked-by: Ralf Baechl <ralf@linux-mips.org>
+If the latter, then why aren't you hooking at send_IPI_mask? If
+possible that would obviously be preferable so you aren't
+making the tlb flushing harder to follow...
 
-Pierre, feel free to merge these MIPS bits into your tree.  The whole
-series should probably go upstream together.
+Can you set me straight? :)
 
-  Ralf
+Thanks,
+Nick
