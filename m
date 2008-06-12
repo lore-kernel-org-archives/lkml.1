@@ -1,95 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759373AbYFLUwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760157AbYFLUwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759373AbYFLUwA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 16:52:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbYFLUvw
+	id S1760157AbYFLUwn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 16:52:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754688AbYFLUwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 16:51:52 -0400
-Received: from web53709.mail.re2.yahoo.com ([206.190.37.30]:42702 "HELO
-	web53709.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754689AbYFLUvv (ORCPT
+	Thu, 12 Jun 2008 16:52:34 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38459 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752952AbYFLUwd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 16:51:51 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=NIbuPveT8aJciRuklfGt/gZehyUqLWtrkovAFomUYE5Cu+1GlBDFOYgouCzhZ2RSB5yAADqmOGwAki3lzWg8thQXfanpK0tVecNYH6lW66SHJ/7ignmeaDV6czzIDREk7Wd3+tp7x7VTfrGC3E9+dMM95qpj6hNplhDp73nsPXs=;
-X-YMail-OSG: k99M_cEVM1lfKHOeVj6jTiQ2A8RFR7r9YskRgI_D8bhf9cfj3J2lQ0kNBZ82fFHxQFEOYpH3dKWgilx3UCcnCBJPhnZeA4pvvA--
-Date: Thu, 12 Jun 2008 13:51:48 -0700 (PDT)
-From: Benjamin Kidwell <benjkidwell@yahoo.com>
-Subject: Re: 2.6.26-rc5-mm3 reproducible BUG and build failures
-To: linux-kernel@vger.kernel.org
-Cc: benjkidwell@yahoo.com
-In-Reply-To: <314477.88718.qm@web53707.mail.re2.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <24548.95429.qm@web53709.mail.re2.yahoo.com>
+	Thu, 12 Jun 2008 16:52:33 -0400
+Date: Thu, 12 Jun 2008 15:52:32 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, holt@sgi.com, andrea@qumranet.com,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [patch 00/11] GRU Driver
+Message-ID: <20080612205232.GB17826@sgi.com>
+References: <20080609211028.110089743@attica.americas.sgi.com> <20080612132700.GA18107@elte.hu> <20080612140509.GA21437@sgi.com> <20080612110336.cde5fccb.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080612110336.cde5fccb.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
+On Thu, Jun 12, 2008 at 11:03:36AM -0700, Andrew Morton wrote:
+> On Thu, 12 Jun 2008 09:05:09 -0500 Jack Steiner <steiner@sgi.com> wrote:
+> 
+> > On Thu, Jun 12, 2008 at 03:27:00PM +0200, Ingo Molnar wrote:
+> > > 
+> > > * steiner@sgi.com <steiner@sgi.com> wrote:
+> > > 
+> > > > This series of patches adds a driver for the SGI UV GRU. The driver is 
+> > > > still in development but it currently compiles for both x86_64 & IA64. 
+> > > > All simple regression tests pass on IA64. Although features remain to 
+> > > > be added, I'd like to start the process of getting the driver into the 
+> > > > kernel. Additional kernel drivers will depend on services provide by 
+> > > > the GRU driver.
+> > > > 
+> > > > The GRU is a hardware resource located in the system chipset. The GRU 
+> > > > contains memory that is mmaped into the user address space. This 
+> > > > memory is used to communicate with the GRU to perform functions such 
+> > > > as load/store, scatter/gather, bcopy, AMOs, etc.  The GRU is directly 
+> > > > accessed by user instructions using user virtual addresses. GRU 
+> > > > instructions (ex., bcopy) use user virtual addresses for operands.
+> > > 
+> > > did i get it right that it's basically a fast, hardware based message 
+> > > passing interface that allows two tasks to communicate via DMA and 
+> > > interrupts, without holding up the CPU? 
+> > 
+> > Yes
+> > 
+> > 
+> > > If that is the case, wouldnt the 
+> > > proper support model be a network driver, instead of these special 
+> > > ioctls. (a network driver with no checksumming, with scatter-gather, 
+> > > zero-copy and TSO support, etc.)
+> > > 
+> > > or a filesystem. Anything but special-purpose ioctls ...
+> > 
+> > The ioctls are not used directly by users.
+> > 
+> > Users function the GRU by directly writing to the memory that is mmaped into
+> > GRU space, ie; load/store directly to GRU space. The ioctls are used
+> > infrequently by libgru.so to configure the driver during user initialization
+> > and to handle errors that may occur.
+> > 
+> > For example, here is the code that is required to issue a GRU
+> > instruction & wait for completion:
+> > 
+> 
+> But could/should it be implemented as (say) a net driver?
 
-<horribly botched cut&paste job snipped>
+I don't think so.
 
-Ugh, sorry, didn't mean to paste the same dmesg and kernel BUG twice. Here's
-the BUG report from 2nd boot cycle, basically identical to the 1st I think:
+The GRU driver is not primarily a point-to-point communication engine. The
+most common use of the GRU is by a single process, or possibly an OpemMP/MPI
+application.  There is typically no end-to-end communication or RDMA
+involved.  All data transfer takes place between blocks of cacheable memory
+that are resident in the process address space.  There is nothing in the GRU
+or GRU libraries that does anything equivalent to connection establishment
+between different processes.
 
-[   33.020043] ------------[ cut here ]------------
-[   33.020043] Kernel BUG at c0141256 [verbose debug info unavailable]
-[   33.020043] invalid opcode: 0000 [#1] SMP 
-[   33.020043] last sysfs file:
-/sys/devices/pci0000:00/0000:00:14.4/0000:01:03.0/resource
-[   33.020043] Modules linked in: ipv6 sbs sbshc container battery
-iptable_filter ip_tables x_tables ac loop af_packet snd_hda_intel serio_raw
-snd_pcm snd_timer psmouse snd soundcore snd_page_alloc i2c_piix4 ati_agp
-i2c_core agpgart button evdev ext3 jbd mbcache sd_mod ide_cd_mod cdrom usbhid
-hid pata_atiixp sata_sil pata_acpi 8139too 8139cp mii atiixp ata_generic
-ehci_hcd ohci_hcd libata scsi_mod usbcore dock ide_pci_generic ide_core
-thermal processor fan fuse
-[   33.020043] 
-[   33.020043] Pid: 5390, comm: aplay Not tainted (2.6.26-rc5-mm3mmtry #1)
-[   33.020043] EIP: 0060:[<c0141256>] EFLAGS: 00010246 CPU: 0
-[   33.020043] EIP is at unlock_page+0xe/0x23
-[   33.020043] EAX: 00000000 EBX: c14aee60 ECX: 00000000 EDX: c14aee60
-[   33.020043] ESI: 00000001 EDI: c14aee60 EBP: eeec67e8 ESP: ee90adec
-[   33.020043]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-[   33.020043] Process aplay (pid: 5390, ti=ee90a000 task=eee9f960
-task.ti=ee90a000)
-[   33.020043] Stack: 00000000 c0149c37 0000000e 00004082 c0131baf 00000000
-00000000 00000000 
-[   33.020043]        ffffffff 0000000e 00000000 c14aee60 c14aee80 c14aeea0
-c14aeec0 c14aeee0 
-[   33.020043]        c14aef00 c14aef20 c14aef40 c14aef60 c14aef80 c14aefa0
-c14aefc0 c14aefe0 
-[   33.020043] Call Trace:
-[   33.020043]  [<c0149c37>] truncate_inode_pages_range+0xc4/0x336
-[   33.020043]  [<c0131baf>] getnstimeofday+0x37/0xdf
-[   33.020043]  [<c015d5c7>] shmem_delete_inode+0x0/0xb6
-[   33.020043]  [<c0149ec0>] truncate_inode_pages+0x17/0x27
-[   33.020043]  [<c015d60f>] shmem_delete_inode+0x48/0xb6
-[   33.020043]  [<c015d5c7>] shmem_delete_inode+0x0/0xb6
-[   33.020043]  [<c0172fc1>] generic_delete_inode+0x7f/0x100
-[   33.020043]  [<c01726c4>] iput+0x44/0x4a
-[   33.020043]  [<c017069a>] d_kill+0x2b/0x44
-[   33.020043]  [<c01717d6>] dput+0xc3/0x16f
-[   33.020043]  [<c016237d>] __fput+0x117/0x16f
-[   33.020043]  [<c01a373c>] shm_destroy+0x36/0x3e
-[   33.020043]  [<c01a43e1>] sys_shmctl+0x60b/0x61e
-[   33.020043]  [<c01764a7>] mnt_drop_write+0x1d/0xd4
-[   33.020043]  [<c01a364f>] sys_shmdt+0x10f/0x139
-[   33.020043]  [<c0106799>] sys_ipc+0x42/0x28e
-[   33.020043]  [<c01535e6>] sys_munmap+0x30/0x35
-[   33.020043]  [<c0102de1>] sysenter_past_esp+0x6a/0x91
-[   33.020043]  [<c0280000>] setup_local_APIC+0x3f/0x1aa
-[   33.020043]  =======================
-[   33.020043] Code: 74 09 8b 52 08 85 d2 74 02 ff d2 e8 37 0d 14 00 31 c0 8d
-76 00 c3 ba a0 fa 2f c0 eb de 53 89 c3 f0 0f ba 30 00 19 c0 85 c0 75 04 <0f>
-0b eb fe 89 d8 e8 7f f4 ff ff 31 c9 89 da 5b e9 9e b8 fe ff 
-[   33.020043] EIP: [<c0141256>] unlock_page+0xe/0x23 SS:ESP 0068:ee90adec
-[   33.020043] ---[ end trace 516df9d441a65b28 ]---
+Applications on large NUMA systems use the GRU to access data that is
+located on memory within the process address space but located on remote
+nodes. For example, the GRU can pull large blocks of data from a remote node
+to the local node asynchronously. Other GRU instructions provide
+scatter/gather, AMOs, etc. but always operating on memory within the
+existing process address space.
+
+The one place where there is process-to-process communication is between MPI
+processes. However, separate from the GRU, the MPI processes have to memory
+map a common block of memory into the address spaces of both processes.
+Nothing in the GRU or GRU library is aware that interprocess communication
+is taking place.
 
 
+The GRU hardware is the next generation of what SN2 refers to the "mspec"
+driver (see drivers/char/mspec.c). The GRU is much more complicated but it
+provide a similar capability - mmaping of special memory into the user
+address space.
 
-      
+>From a user standpoint, the user simply mmaps a chunk of GRU memory into the
+user address space, then does loads & stores to the GRU memory to issue GRU
+instructions to do data transfers. The user could also do the same data
+transfers using processor load/store instructions but at a slower (we hope)
+rate.
+
+
+--- jack
