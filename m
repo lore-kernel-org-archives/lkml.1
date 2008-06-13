@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758731AbYFMLlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758863AbYFMLnI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758731AbYFMLlx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 07:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbYFMLlo
+	id S1758863AbYFMLnI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 07:43:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbYFMLmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 07:41:44 -0400
-Received: from ns1.suse.de ([195.135.220.2]:33151 "EHLO mx1.suse.de"
+	Fri, 13 Jun 2008 07:42:55 -0400
+Received: from ns1.suse.de ([195.135.220.2]:33229 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752904AbYFMLln (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 07:41:43 -0400
+	id S1754047AbYFMLmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 07:42:54 -0400
 From: NeilBrown <neilb@suse.de>
-To: J.Bruce@suse.de, Fields@suse.de, " <bfields@fieldses.org>@suse.de"@suse.de
-Date: Fri, 13 Jun 2008 21:41:03 +1000
-Message-Id: <1080613114103.27052@suse.de>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Date: Fri, 13 Jun 2008 21:42:15 +1000
+Message-Id: <1080613114215.27095@suse.de>
 X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
 	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
 	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
