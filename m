@@ -1,73 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751221AbYFMSOH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbYFMSS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751221AbYFMSOH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 14:14:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbYFMSNn
+	id S1754130AbYFMSS3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 14:18:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbYFMSSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 14:13:43 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:59194 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751221AbYFMSNl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 14:13:41 -0400
-Date: Fri, 13 Jun 2008 20:14:23 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andres Salomon <dilinger@queued.net>
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@codemonkey.org.uk>,
-       Roland McGrath <roland@redhat.com>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: Additional kconfig targets (cloneconfig, nonint_oldconfig etc)
-Message-ID: <20080613181423.GA17930@uranus.ravnborg.org>
-References: <20080429183531.GB19652@uranus.ravnborg.org> <20080502190949.GA30270@uranus.ravnborg.org> <20080521164703.61c7d715@ephemeral> <20080521214723.GB15136@uranus.ravnborg.org> <20080613141049.0fb3a770@ephemeral>
-Mime-Version: 1.0
+	Fri, 13 Jun 2008 14:18:18 -0400
+Received: from mail-va3.bigfish.com ([216.32.180.112]:7375 "EHLO
+	mail64-va3-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751506AbYFMSSR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 14:18:17 -0400
+X-BigFish: VPS-41(zz1432R98dR62a3L7efV1805Mzz10d3izzz32i6bh62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
+X-WSS-ID: 0K2EYST-02-5F3-01
+Date: Fri, 13 Jun 2008 20:16:27 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: Glauber Costa <glommer@gmail.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH 2/2] x86: Move PCI IO ECS code to x86/pci
+Message-ID: <20080613181627.GH10019@erda.amd.com>
+References: <20080603072550.GR23679@erda.amd.com> <1213294763-19566-2-git-send-email-robert.richter@amd.com> <5d6222a80806131002t4f5c6e54tee63d4ed0fc222a6@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080613141049.0fb3a770@ephemeral>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <5d6222a80806131002t4f5c6e54tee63d4ed0fc222a6@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 13 Jun 2008 18:16:27.0711 (UTC) FILETIME=[98BDCCF0:01C8CD81]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 13, 2008 at 02:10:49PM -0400, Andres Salomon wrote:
-> On Wed, 21 May 2008 23:47:23 +0200
-> Sam Ravnborg <sam@ravnborg.org> wrote:
+On 13.06.08 14:02:46, Glauber Costa wrote:
+> > diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
+> > index 5c2799c..15f505d 100644
+> > --- a/arch/x86/pci/amd_bus.c
+> > +++ b/arch/x86/pci/amd_bus.c
+> > @@ -1,5 +1,9 @@
+> >  #include <linux/init.h>
+> >  #include <linux/pci.h>
+> > +#include "pci.h"
+> > +
+> > +#ifdef CONFIG_X86_64
 > 
-> > On Wed, May 21, 2008 at 04:47:03PM -0400, Andres Salomon wrote:
-> > > On Fri, 2 May 2008 21:09:49 +0200
-> > > Sam Ravnborg <sam@ravnborg.org> wrote:
-> > > 
-> > > > With the attached patch you can do:
-> > > > 
-> > > > make K=my_favourite_config defconfig
-> > > > 
-> > > > kconfig will read all config values form 'my_favourite_config'
-> > > > and set all other symbols to their default value.
-> > > > The output is now dense like this:
-> > > > # configuration is based on 'my_favourite_config'
-> > > > #
-> > > > # configuration written to .config
-> > > > #
-> > > > 
-> > > 
-> > > 
-> > > Is this slated for 2.6.27?
-> > 
-> > Been busy and got sidetracked after my first version proved broken.
-> > Will try to look at it in the weekend.
-> > 
-> > 	Sam
-> 
-> 
-> Any updates on this?  I've been forced to use a workaround in the
-> meantime..
-Nope. I have been busy with other stuff and need to close this first.
-Pending stuff before this:
+> Please, don't do that. We are in an ongoing effort to cleanup the
+> remaining ifdefs in x86 code, and adding more of them would just make
+> it harder.
+> If you really need it, move the common part to a separate file (avoid
+> the _32 and _64 naming), and have it compiled conditionally on your
+> architecture.
 
--> Simplify link of vmlinux (about to be dropped for now as I cannot solve um issue)
--> Kill need for ALTARCH in sparc (almost finished)
--> Optimize make headers_* (almost finished)
+Ok, so what about shared code? Keep all this in separate files:
+amd_bus.c, (amd_bus_32.c), amd_bus_64.c, (amd_bus.h)?
 
-And a few more things that I cannot remember atm
+Is the strategy to avoid #ifdefs and instead use the flags in
+Makefiles? My intention was to coalesce the files. Maybe I was wrong
+here.
 
-	Sam
+-Robert
+
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
