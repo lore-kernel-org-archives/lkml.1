@@ -1,78 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759567AbYFMEZO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758692AbYFMEkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759567AbYFMEZO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 00:25:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbYFMEZA
+	id S1758692AbYFMEkA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 00:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbYFMEjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 00:25:00 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35440
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751964AbYFMEY5 (ORCPT
+	Fri, 13 Jun 2008 00:39:42 -0400
+Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:38968 "HELO
+	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751442AbYFMEjl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 00:24:57 -0400
-Date: Thu, 12 Jun 2008 21:24:57 -0700 (PDT)
-Message-Id: <20080612.212457.01943346.davem@davemloft.net>
-To: galak@kernel.crashing.org
-Cc: joseph@codesourcery.com, linux-kernel@vger.kernel.org,
-       libc-alpha@sourceware.org
-Subject: Re: math-emu issue with fp divide
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0806050837230.24924@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0806042134020.32021@digraph.polyomino.org.uk>
-	<20080604.144950.117343339.davem@davemloft.net>
-	<Pine.LNX.4.64.0806050837230.24924@blarg.am.freescale.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 13 Jun 2008 00:39:41 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:To:Subject:Cc:Content-Disposition:From:Date:MIME-Version:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=0pSn4rzjaejqc03RdWv5wSjhA2qs+PUEgQgXtKu/naDhyJJyfRzxilzHpn26u7O/wyXUC/tk3Ko4OcOZqGs73H9ZVXxfJXYe0lYKFUGHPXel8+SrDYuF1gC53vOMtMlaH+v7H8NLorPbER5funp/rpwPWniqsKy5tWt9Sqz6m68=  ;
+X-YMail-OSG: Kk8hn3YVM1kJVd_E2OyKlRw9SH7mPVY7YGGvN8yRJ5mIQRbXOOp7RYV7A2kO_u0TWobaVLMTuL8xkmnjjHUwNy56Hj8F1y7NOBJRJ9b9aA--
+X-Yahoo-Newman-Property: ymail-3
+To: netdev@vger.kernel.org
+Subject: [RESEND #4/patch 2.6.26-rc6] net/enc28j60: section fix
+Cc: Claudio Lanconelli <lanconelli.claudio@eptar.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
+From: David Brownell <david-b@pacbell.net>
+Date: Thu, 12 Jun 2008 21:36:24 -0700
+MIME-Version: 1.0
+Message-Id: <200806122136.24921.david-b@pacbell.net>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kumar Gala <galak@kernel.crashing.org>
-Date: Thu, 5 Jun 2008 08:38:44 -0500 (CDT)
+Minor bugfixes to the enc28j60 driver ... wrong section marking,
+indentation, and bogus use of spi_bus_type.
 
-> Now that I'm digging into this a bit I'm thinking my issue has to do with
-> the fix you put in place from back in Aug 2007 (commit
-> 405849610fd96b4f34cd1875c4c033228fea6c0f):
-> 
-> [MATH-EMU]: Fix underflow exception reporting.
-> 
->     2) we ended up rounding back up to normal (this is the case where
->        we set the exponent to 1 and set the fraction to zero), this
->        should set inexact too
-> ...
-> 
->     Another example, "0x0.0000000000001p-1022 / 16.0", should signal both
->     inexact and underflow.  The cpu implementations and ieee1754
->     literature is very clear about this.  This is case #2 above.
-> 
-> I'm not clear from your commit comment on what actual number
-> 0x0.0....01p-1022 is?
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Acked-by: Claudio Lanconelli <lanconelli.claudio@eptar.com>
+---
+Previously sent:  18-April, 19-February, 6-February.
 
-I haven't been able to look closely at this yet but I think I
-happened to stumble over the test case that lead me to that
-changeset you are referencing here.
+ drivers/net/enc28j60.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-The "actual number" is exactly as listed "0x0.0000000000001p-1022",
-I don't know what's so confusing about it :-)))
-
-I think this was distilled by Jakub Jelinek from some glibc test case.
-
-#include <float.h>
-#include <fenv.h>
-#include <stdio.h>
-
-volatile double d = DBL_MIN;
-volatile double e = 0x0.0000000000001p-1022;
-volatile double f = 16.0;
-int
-main (void)
-{
-  printf ("%x\n", fetestexcept (FE_UNDERFLOW));
-  d /= f;
-  printf ("%x\n", fetestexcept (FE_UNDERFLOW));
-  e /= f;
-  printf ("%x\n", fetestexcept (FE_UNDERFLOW));
-  return 0;
-}
+--- g26.orig/drivers/net/enc28j60.c	2008-02-22 19:48:13.000000000 -0800
++++ g26/drivers/net/enc28j60.c	2008-02-22 19:48:14.000000000 -0800
+@@ -1556,7 +1556,7 @@ error_alloc:
+ 	return ret;
+ }
+ 
+-static int enc28j60_remove(struct spi_device *spi)
++static int __devexit enc28j60_remove(struct spi_device *spi)
+ {
+ 	struct enc28j60_net *priv = dev_get_drvdata(&spi->dev);
+ 
+@@ -1573,9 +1573,8 @@ static int enc28j60_remove(struct spi_de
+ static struct spi_driver enc28j60_driver = {
+ 	.driver = {
+ 		   .name = DRV_NAME,
+-		   .bus = &spi_bus_type,
+ 		   .owner = THIS_MODULE,
+-		   },
++	 },
+ 	.probe = enc28j60_probe,
+ 	.remove = __devexit_p(enc28j60_remove),
+ };
