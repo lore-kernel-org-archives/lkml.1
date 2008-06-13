@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762032AbYFMOB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761685AbYFMODw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762032AbYFMOB7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 10:01:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756143AbYFMOBu
+	id S1761685AbYFMODw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 10:03:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756635AbYFMODm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 10:01:50 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:58352 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754972AbYFMOBt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 10:01:49 -0400
-Date: Fri, 13 Jun 2008 17:00:37 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Ivo van Doorn <IvDoorn@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christian Casteyde <casteyde.christian@free.fr>,
-       linux-wireless@vger.kernel.org, rt2400-devel@lists.sourceforge.net,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [Bug #10821] rt25xx: lock dependancy warning, association
-	failure, and kmalloc corruption
-Message-ID: <20080613140037.GC21341@cs181133002.pp.htv.fi>
-References: <GIilET9wkhI.A.JzB.81vSIB@albercik> <dCRO4tbfLzK.A.pGD.22vSIB@albercik>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <dCRO4tbfLzK.A.pGD.22vSIB@albercik>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 13 Jun 2008 10:03:42 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:49599 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751445AbYFMODk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 10:03:40 -0400
+Subject: Re: [RFC PATCH 0/2] Merge HUGETLB_PAGE and HUGETLBFS Kconfig
+	options
+From: Adam Litke <agl@us.ibm.com>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-mm <linux-mm@kvack.org>, npiggin@suse.de, nacc@us.ibm.com,
+       mel@csn.ul.ie, Eric B Munson <ebmunson@us.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+       linux-sh@vger.kernel.org, linux-s390@vger.kernel.org,
+       linux-mips@linux-mips.org
+In-Reply-To: <20080613134629.GD16344@linux-mips.org>
+References: <1213296540.17108.8.camel@localhost.localdomain>
+	 <20080613134629.GD16344@linux-mips.org>
+Content-Type: text/plain
+Organization: IBM
+Date: Fri, 13 Jun 2008 10:03:28 -0400
+Message-Id: <1213365808.15016.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 07, 2008 at 10:42:57PM +0200, Rafael J. Wysocki wrote:
->...
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10821
-> Subject		: rt25xx: lock dependancy warning, association failure, and kmalloc corruption
-> Submitter	: Christian Casteyde <casteyde.christian@free.fr>
-> Date		: 2008-05-29 14:30 (10 days old)
+On Fri, 2008-06-13 at 14:46 +0100, Ralf Baechle wrote:
+> MIPS doesn't do HUGETLB (at least not in-tree atm) so I'm not sure why
+> linux-mips@linux-mips.org was cc'ed at all.  So feel free to add my
+> Couldnt-care-less: ack line ;-)
 
-
-Ivo, can you look at this 2.6.26-rc regression?
-
-
-TIA
-Adrian
+Sorry :)  My patches touched your defconfigs so I felt it prudent to
+include the mips list as an FYI.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Adam Litke - (agl at us.ibm.com)
+IBM Linux Technology Center
 
