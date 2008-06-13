@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752634AbYFMQyC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753209AbYFMQyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752634AbYFMQyC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 12:54:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbYFMQxf
+	id S1753209AbYFMQyZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 12:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751062AbYFMQxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 12:53:35 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:43190 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750813AbYFMQxa (ORCPT
+	Fri, 13 Jun 2008 12:53:32 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:23941 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750706AbYFMQx2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 12:53:30 -0400
-Message-Id: <20080613165304.438740663@ldl.fc.hp.com>
+	Fri, 13 Jun 2008 12:53:28 -0400
+Message-Id: <20080613165304.021507599@ldl.fc.hp.com>
 References: <20080613165209.507694130@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 13 Jun 2008 10:52:12 -0600
+Date: Fri, 13 Jun 2008 10:52:10 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 To: Jesse Barnes <jbarnes@virtuousgeek.org>
@@ -24,137 +24,122 @@ Cc: linux-acpi@vger.kernel.org
 Cc: linux-pci@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 3/5] PCIE: aer: use dev_printk when possible
-Content-Disposition: inline; filename=pci-aer-dev_printk
+Subject: [patch 1/5] ACPI: use dev_printk when possible
+Content-Disposition: inline; filename=acpi-dev_printk
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert printks to use dev_printk().
+Convert printks to use dev_printk().  The most obvious change will
+be messages like this:
+
+   -ACPI: PCI Interrupt 0000:00:04.0[A] -> GSI 31 (level, low) -> IRQ 31
+   +cciss 0000:00:04.0: PCI INTA# -> GSI 31 (level, low) -> IRQ 31
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
----
- drivers/pci/pcie/aer/aerdrv.c      |    8 +++-----
- drivers/pci/pcie/aer/aerdrv_acpi.c |    8 ++++----
- drivers/pci/pcie/aer/aerdrv_core.c |   24 ++++++++++++------------
- 3 files changed, 19 insertions(+), 21 deletions(-)
-
-Index: work11/drivers/pci/pcie/aer/aerdrv.c
+Index: work11/drivers/acpi/pci_irq.c
 ===================================================================
---- work11.orig/drivers/pci/pcie/aer/aerdrv.c	2008-06-13 09:28:29.000000000 -0600
-+++ work11/drivers/pci/pcie/aer/aerdrv.c	2008-06-13 09:45:25.000000000 -0600
-@@ -219,8 +219,7 @@ static int __devinit aer_probe (struct p
+--- work11.orig/drivers/acpi/pci_irq.c	2008-06-12 16:53:52.000000000 -0600
++++ work11/drivers/acpi/pci_irq.c	2008-06-13 09:32:19.000000000 -0600
+@@ -162,7 +162,7 @@ do_prt_fixups(struct acpi_prt_entry *ent
+ 		    !strcmp(prt->source, quirk->source) &&
+ 		    strlen(prt->source) >= strlen(quirk->actual_source)) {
+ 			printk(KERN_WARNING PREFIX "firmware reports "
+-				"%04x:%02x:%02x[%c] connected to %s; "
++				"%04x:%02x:%02x PCI INT%c# connected to %s; "
+ 				"changing to %s\n",
+ 				entry->id.segment, entry->id.bus,
+ 				entry->id.device, 'A' + entry->pin,
+@@ -429,7 +429,7 @@ acpi_pci_irq_derive(struct pci_dev *dev,
+ {
+ 	struct pci_dev *bridge = dev;
+ 	int irq = -1;
+-	u8 bridge_pin = 0;
++	u8 bridge_pin = 0, orig_pin = pin;
  
- 	/* Alloc rpc data structure */
- 	if (!(rpc = aer_alloc_rpc(dev))) {
--		printk(KERN_DEBUG "%s: Alloc rpc fails on PCIE device[%s]\n",
--			__func__, device->bus_id);
-+		dev_printk(KERN_DEBUG, device, "alloc rpc failed\n");
- 		aer_remove(dev);
- 		return -ENOMEM;
- 	}
-@@ -228,8 +227,7 @@ static int __devinit aer_probe (struct p
- 	/* Request IRQ ISR */
- 	if ((status = request_irq(dev->irq, aer_irq, IRQF_SHARED, "aerdrv",
- 				dev))) {
--		printk(KERN_DEBUG "%s: Request ISR fails on PCIE device[%s]\n",
--			__func__, device->bus_id);
-+		dev_printk(KERN_DEBUG, device, "request IRQ failed\n");
- 		aer_remove(dev);
- 		return status;
- 	}
-@@ -273,7 +271,7 @@ static pci_ers_result_t aer_root_reset(s
- 	 * to issue Configuration Requests to those devices.
- 	 */
- 	msleep(200);
--	printk(KERN_DEBUG "Complete link reset at Root[%s]\n", dev->dev.bus_id);
-+	dev_printk(KERN_DEBUG, &dev->dev, "Root Port link has been reset\n");
  
- 	/* Enable Root Port's interrupt in response to error messages */
- 	pci_read_config_dword(dev, pos + PCI_ERR_ROOT_STATUS, &status);
-Index: work11/drivers/pci/pcie/aer/aerdrv_acpi.c
-===================================================================
---- work11.orig/drivers/pci/pcie/aer/aerdrv_acpi.c	2008-06-13 09:28:29.000000000 -0600
-+++ work11/drivers/pci/pcie/aer/aerdrv_acpi.c	2008-06-13 09:44:26.000000000 -0600
-@@ -50,10 +50,10 @@ int aer_osc_setup(struct pcie_device *pc
+ 	if (!dev)
+@@ -463,8 +463,8 @@ acpi_pci_irq_derive(struct pci_dev *dev,
  	}
  
- 	if (ACPI_FAILURE(status)) {
--		printk(KERN_DEBUG "AER service couldn't init device %s - %s\n",
--		    pciedev->device.bus_id,
--		    (status == AE_SUPPORT || status == AE_NOT_FOUND) ?
--		    "no _OSC support" : "Run ACPI _OSC fails");
-+		dev_printk(KERN_DEBUG, &pciedev->device, "AER service couldn't "
-+			   "init device: %s\n",
-+			   (status == AE_SUPPORT || status == AE_NOT_FOUND) ?
-+			   "no _OSC support" : "_OSC failed");
+ 	if (irq < 0) {
+-		printk(KERN_WARNING PREFIX "Unable to derive IRQ for device %s\n",
+-			      pci_name(dev));
++		dev_warn(&dev->dev, "can't derive routing for PCI INT%c#\n",
++			 'A' + orig_pin);
  		return -1;
  	}
  
-Index: work11/drivers/pci/pcie/aer/aerdrv_core.c
-===================================================================
---- work11.orig/drivers/pci/pcie/aer/aerdrv_core.c	2008-06-13 09:28:29.000000000 -0600
-+++ work11/drivers/pci/pcie/aer/aerdrv_core.c	2008-06-13 09:44:26.000000000 -0600
-@@ -221,9 +221,9 @@ static void report_error_detected(struct
- 			 * of a driver for this device is unaware of
- 			 * its hw state.
- 			 */
--			printk(KERN_DEBUG "Device ID[%s] has %s\n",
--					dev->dev.bus_id, (dev->driver) ?
--					"no AER-aware driver" : "no driver");
-+			dev_printk(KERN_DEBUG, &dev->dev, "device has %s\n",
-+				   dev->driver ?
-+				   "no AER-aware driver" : "no driver");
- 		}
- 		return;
- 	}
-@@ -304,7 +304,7 @@ static pci_ers_result_t broadcast_error_
- {
- 	struct aer_broadcast_data result_data;
+@@ -487,6 +487,7 @@ int acpi_pci_irq_enable(struct pci_dev *
+ 	int triggering = ACPI_LEVEL_SENSITIVE;
+ 	int polarity = ACPI_ACTIVE_LOW;
+ 	char *link = NULL;
++	char link_desc[16];
+ 	int rc;
  
--	printk(KERN_DEBUG "Broadcast %s message\n", error_mesg);
-+	dev_printk(KERN_DEBUG, &dev->dev, "broadcast %s message\n", error_mesg);
- 	result_data.state = state;
- 	if (cb == report_error_detected)
- 		result_data.result = PCI_ERS_RESULT_CAN_RECOVER;
-@@ -404,18 +404,16 @@ static pci_ers_result_t reset_link(struc
- 			data.aer_driver =
- 				to_service_driver(aerdev->device.driver);
- 		} else {
--			printk(KERN_DEBUG "No link-reset support to Device ID"
--				"[%s]\n",
--				dev->dev.bus_id);
-+			dev_printk(KERN_DEBUG, &dev->dev, "no link-reset "
-+				   "support\n");
- 			return PCI_ERS_RESULT_DISCONNECT;
- 		}
+ 
+@@ -503,7 +504,7 @@ int acpi_pci_irq_enable(struct pci_dev *
+ 	pin--;
+ 
+ 	if (!dev->bus) {
+-		printk(KERN_ERR PREFIX "Invalid (NULL) 'bus' field\n");
++		dev_err(&dev->dev, "invalid (NULL) 'bus' field\n");
+ 		return -ENODEV;
  	}
  
- 	status = data.aer_driver->reset_link(udev);
- 	if (status != PCI_ERS_RESULT_RECOVERED) {
--		printk(KERN_DEBUG "Link reset at upstream Device ID"
--			"[%s] failed\n",
--			udev->dev.bus_id);
-+		dev_printk(KERN_DEBUG, &dev->dev, "link reset at upstream "
-+			   "device %s failed\n", pci_name(udev));
- 		return PCI_ERS_RESULT_DISCONNECT;
- 	}
+@@ -538,8 +539,7 @@ int acpi_pci_irq_enable(struct pci_dev *
+ 	 * driver reported one, then use it. Exit in any case.
+ 	 */
+ 	if (irq < 0) {
+-		printk(KERN_WARNING PREFIX "PCI Interrupt %s[%c]: no GSI",
+-		       pci_name(dev), ('A' + pin));
++		dev_warn(&dev->dev, "PCI INT%c#: no GSI", 'A' + pin);
+ 		/* Interrupt Line values above 0xF are forbidden */
+ 		if (dev->irq > 0 && (dev->irq <= 0xF)) {
+ 			printk(" - using IRQ %d\n", dev->irq);
+@@ -554,21 +554,21 @@ int acpi_pci_irq_enable(struct pci_dev *
  
-@@ -511,10 +509,12 @@ static void handle_error_source(struct p
- 	} else {
- 		status = do_recovery(aerdev, dev, info.severity);
- 		if (status == PCI_ERS_RESULT_RECOVERED) {
--			printk(KERN_DEBUG "AER driver successfully recovered\n");
-+			dev_printk(KERN_DEBUG, &dev->dev, "AER driver "
-+				   "successfully recovered\n");
- 		} else {
- 			/* TODO: Should kernel panic here? */
--			printk(KERN_DEBUG "AER driver didn't recover\n");
-+			dev_printk(KERN_DEBUG, &dev->dev, "AER driver didn't "
-+				   "recover\n");
- 		}
+ 	rc = acpi_register_gsi(irq, triggering, polarity);
+ 	if (rc < 0) {
+-		printk(KERN_WARNING PREFIX "PCI Interrupt %s[%c]: failed "
+-		       "to register GSI\n", pci_name(dev), ('A' + pin));
++		dev_warn(&dev->dev, "PCI INT%c#: failed to register GSI\n",
++			 'A' + pin);
+ 		return rc;
  	}
+ 	dev->irq = rc;
+ 
+-	printk(KERN_INFO PREFIX "PCI Interrupt %s[%c] -> ",
+-	       pci_name(dev), 'A' + pin);
+-
+ 	if (link)
+-		printk("Link [%s] -> ", link);
++		snprintf(link_desc, sizeof(link_desc), " -> Link[%s]", link);
++	else
++		link_desc[0] = '\0';
+ 
+-	printk("GSI %u (%s, %s) -> IRQ %d\n", irq,
+-	       (triggering == ACPI_LEVEL_SENSITIVE) ? "level" : "edge",
+-	       (polarity == ACPI_ACTIVE_LOW) ? "low" : "high", dev->irq);
++	dev_info(&dev->dev, "PCI INT%c#%s -> GSI %u (%s, %s) -> IRQ %d\n",
++		 'A' + pin, link_desc, irq,
++		 (triggering == ACPI_LEVEL_SENSITIVE) ? "level" : "edge",
++		 (polarity == ACPI_ACTIVE_LOW) ? "low" : "high", dev->irq);
+ 
+ 	return 0;
+ }
+@@ -616,10 +616,6 @@ void acpi_pci_irq_disable(struct pci_dev
+ 	 * (e.g. PCI_UNDEFINED_IRQ).
+ 	 */
+ 
+-	printk(KERN_INFO PREFIX "PCI interrupt for device %s disabled\n",
+-	       pci_name(dev));
+-
++	dev_info(&dev->dev, "PCI INT%c# disabled\n", 'A' + pin);
+ 	acpi_unregister_gsi(gsi);
+-
+-	return;
  }
 
 -- 
