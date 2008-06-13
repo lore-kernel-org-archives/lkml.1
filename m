@@ -1,137 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758600AbYFMWrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758860AbYFMWxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758600AbYFMWrY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 18:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755604AbYFMWrO
+	id S1758860AbYFMWxl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 18:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755902AbYFMWx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 18:47:14 -0400
-Received: from mga01.intel.com ([192.55.52.88]:16525 "EHLO mga01.intel.com"
+	Fri, 13 Jun 2008 18:53:29 -0400
+Received: from mailman2.ppco.com ([138.32.41.14]:46273 "EHLO mailman2.ppco.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755323AbYFMWrN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 18:47:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,642,1204531200"; 
-   d="scan'208";a="259534949"
-Date: Fri, 13 Jun 2008 15:47:12 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Patrick McHardy <kaber@trash.net>,
-       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Chuck Ebbert <cebbert@redhat.com>, x86@kernel.org
-Subject: Re: 2.6.26-git: NULL pointer deref in __switch_to
-Message-ID: <20080613224711.GA15084@linux-os.sc.intel.com>
-References: <4852B19E.4010202@trash.net> <19f34abd0806131124w32133715o3ef8c27cb0a9f96e@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19f34abd0806131124w32133715o3ef8c27cb0a9f96e@mail.gmail.com>
-User-Agent: Mutt/1.4.1i
+	id S1755171AbYFMWx1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 18:53:27 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
+Date: Fri, 13 Jun 2008 17:53:20 -0500
+Message-ID: <0122F800A3B64C449565A9E8C297701002D75DB7@hoexmb9.conoco.net>
+In-Reply-To: <20080613220422.GC14338@fieldses.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
+Thread-Index: AcjNoXwItvyeMJeHTzWHNR64pi26cgABcDqg
+References: <0122F800A3B64C449565A9E8C297701002D75DA3@hoexmb9.conoco.net> <20080611184613.GM15380@fieldses.org> <20080611195222.GP15380@fieldses.org> <20080611160947.5f08fb16@tleilax.poochiereds.net> <20080611205749.GA25194@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DAA@hoexmb9.conoco.net> <20080611225431.GD25194@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DAE@hoexmb9.conoco.net> <20080613201552.GH8501@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DB6@hoexmb9.conoco.net> <20080613220422.GC14338@fieldses.org>
+From: "Weathers, Norman R." <Norman.R.Weathers@conocophillips.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: "Jeff Layton" <jlayton@poochiereds.net>, <linux-kernel@vger.kernel.org>,
+       <linux-nfs@vger.kernel.org>, "Neil Brown" <neilb@suse.de>
+X-OriginalArrivalTime: 13 Jun 2008 22:53:21.0104 (UTC) FILETIME=[47186500:01C8CDA8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 13, 2008 at 11:24:01AM -0700, Vegard Nossum wrote:
-> On Fri, Jun 13, 2008 at 7:42 PM, Patrick McHardy <kaber@trash.net> wrote:
-> > I get this oops once a day, its apparently triggered by something
-> > run by cron, but the process is a different one each time.
-> >
-> > Kernel is -git from yesterday shortly before the -rc6 release
-> > (last commit is the usb-2.6 merge, the x86 patches are missing),
-> > .config is attached.
-> >
-> > I'll retry with current -git, but the patches that have gone in
-> > since I last updated don't look related.
-> >
+ 
+
+> -----Original Message-----
+> From: J. Bruce Fields [mailto:bfields@fieldses.org] 
+> Sent: Friday, June 13, 2008 5:04 PM
+> To: Weathers, Norman R.
+> Cc: Jeff Layton; linux-kernel@vger.kernel.org; 
+> linux-nfs@vger.kernel.org; Neil Brown
+> Subject: Re: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
 > 
-> Thanks for the report.
+> On Fri, Jun 13, 2008 at 04:53:31PM -0500, Weathers, Norman R. wrote:
+> >  
+> > 
+> > > > The big one seems to be the __alloc_skb. (This is with 16 
+> > > threads, and
+> > > > it says that we are using up somewhere between 12 and 14 GB 
+> > > of memory,
+> > > > about 2 to 3 gig of that is disk cache).  If I were to 
+> put anymore
+> > > > threads out there, the server would become almost 
+> > > unresponsive (it was
+> > > > bad enough as it was).   
+> > > > 
+> > > > At the same time, I also noticed this:
+> > > > 
+> > > > skbuff_fclone_cache: 1842524 __alloc_skb+0x50/0x170
+> > > > 
+> > > > Don't know for sure if that is meaningful or not....
+> > > 
+> > > OK, so, starting at net/core/skbuff.c, this means that 
+> this memory was
+> > > allocated by __alloc_skb() calls with something nonzero 
+> in the third
+> > > ("fclone") argument.  The only such caller is alloc_skb_fclone().
+> > > Callers of alloc_skb_fclone() include:
+> > > 
+> > > 	sk_stream_alloc_skb:
+> > > 		do_tcp_sendpages
+> > > 		tcp_sendmsg
+> > > 		tcp_fragment
+> > > 		tso_fragment
+> > 
+> > Interesting you should mention the tso...  We recently went 
+> through and
+> > turned on TSO on all of our systems, trying it out to see 
+> if it helped
+> > with performance...  This could be something to do with 
+> that.  I can try
+> > disabling the tso on all of the servers and see if that 
+> helps with the
+> > memory.  Actually, I think I will, and I will monitor the 
+> situation.  I
+> > think it might help some, but I still think there may be 
+> something else
+> > going on in a deep corner...
 > 
-> >
-> > [62060.043009] BUG: unable to handle kernel NULL pointer dereference at
-> > 000001ff
-> > [62060.043009] IP: [<c0102a9b>] __switch_to+0x2f/0x118
-> > [62060.043009] *pde = 00000000
-> > [62060.043009] Oops: 0002 [#1] PREEMPT
-
-Patrick, Do you see any other error messages before this BUG stmt? Can you
-please provide the complete kernel log till the point of failure?
-
-I have a theory for your problem and have appended a patch to test it. Can
-you please check if the appended patch fixes your problem.
-
-> This decodes to
+> I'll plead total ignorance about TSO, and it sounds like a long
+> shot--but sure, it'd be worth trying, thanks.
 > 
->    0:   0f ae 00                fxsave (%eax)
+
+Tried it, not for sure if I like the results yet or not...  Didn't seem
+to make a huge difference, but here is something that will really make
+you want to drink, the 2.6.25.4 kernel does not go into the size-4096
+hell.  The largest users of slab there are the size-1024 and still the
+skbuff_fclone_cache.  On a box with 16 threads, it will cache up about 5
+GB of disk data, and still use about 6 GB of slab to put the information
+out there (without TSO on), but at least it is not causing the disk
+cache to be evicted, and it appears to be a little more responsive.  If
+I up it to 32 or more threads, however, it gets very sluggish, but then
+again, I am hitting it with a lot of nodes.
+
+> > 
+> > > 		tcp_mtu_probe
+> > > 	tcp_send_fin
+> > > 	tcp_connect
+> > > 	buf_acquire:
+> > > 		lots of callers in tipc code (whatever that is).
+> > > 
+> > > So unless you're using tipc, or you have something in 
+> userspace going
+> > > haywire (perhaps netstat would help rule that out?), then 
+> I suppose
+> > > there's something wrong with knfsd's tcp code.  Which 
+> makes sense, I
+> > > guess.
+> > > 
+> > 
+> > Not for sure what tipc is either....
+> > 
+> > > I'd think this sort of allocation would be limited by the 
+> number of
+> > > sockets times the size of the send and receive buffers.
+> > > svc_xprt.c:svc_check_conn_limits() claims to be limiting 
+> the number of
+> > > sockets to (nrthreads+3)*20.  (You aren't hitting the 
+> "too many open
+> > > connections" printk there, are you?)  The total buffer 
+> size should be
+> > > bounded by something like 4 megs.
+> > > 
+> > > --b.
+> > > 
+> > 
+> > Yes, we are getting a continuous stream of the too many 
+> open connections
+> > scrolling across our logs.  
 > 
-> so it's related to the floating-point context. This is the exact
-> location of the crash:
+> That's interesting!  So we should probably look more closely at the
+> svc_check_conn_limits() behavior.  I wonder whether some pathological
+> behavior is triggered in the case where you're constantly 
+> over the limit
+> it's trying to enforce.
 > 
-> $ addr2line -e arch/x86/kernel/process_32.o -i ab0
-> include/asm/i387.h:232
-> include/asm/i387.h:262
-> arch/x86/kernel/process_32.c:595
+> (Remind me how many active clients you have?)
 > 
-> ...so it looks like prev_task->thread.xstate->fxsave has become NULL.
-> Or maybe it never had any other value.
 
-Somehow (as described below?) TS_USEDFPU is set but the fpu is not
-allocated or freed.
 
-Please try the appended patch.
+We currently are hitting with somewhere around 600 to 800 nodes, but it
+can go up to over 1000 nodes.  We are artificially starving with a
+limited number of threads (2 to 3) right now on the older 2.6.22.14
+kernel because of that memory issue (which may or may not be tso
+related)...
 
----
-Another possible FPU pre-emption issue with the sleazy FPU optimization
-which was benign before but not so anymore, with the dynamic FPU allocation
-patch.
+I really want to move forward to the newer kernel, but we had an issue
+where clients all of the sudden wouldn't connect, yet other clients
+could, to the exact same server NFS export.  I had booted the server
+into the 2.6.25.4 kernel at the time, and the other admin set us back to
+the 2.6.22.14 to see if that was it.  The clients started working again,
+and he left it there (he also took out my options in the exports file,
+no_subtree_check and insecure).  I know that we are running over the
+number of privelaged ports, and we probably need the insecure, but I am
+having a hard time wrapping my self around all of the problems at
+once....
 
-New task is getting exec'd and it is prempted at the below point.
 
-flush_thread() {
-	...
-	/*
-	* Forget coprocessor state..
-	*/
-	clear_fpu(tsk);
-		<----- Preemption point
-	clear_used_math();
-	...
-}
 
-Now when it context switches in again, as the used_math() is still set
-and fpu_counter can be > 5, we will do a math_state_restore() which sets
-the task's TS_USEDFPU. After it continues from the above preemption point
-it does clear_used_math() and much later free_thread_xstate().
-
-Now, at the next context switch, it is quite possible that xstate is
-null, used_math() is not set and TS_USEDFPU is still set. This will
-trigger unlazy_fpu() causing kernel oops.
-
-Fix this  by clearing tsk's fpu_counter before clearing task's fpu.
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
-
-diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index 6d54833..e2db9ac 100644
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -333,6 +333,7 @@ void flush_thread(void)
- 	/*
- 	 * Forget coprocessor state..
- 	 */
-+	tsk->fpu_counter = 0;
- 	clear_fpu(tsk);
- 	clear_used_math();
- }
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index ac54ff5..c6eb5c9 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -294,6 +294,7 @@ void flush_thread(void)
- 	/*
- 	 * Forget coprocessor state..
- 	 */
-+	tsk->fpu_counter = 0;
- 	clear_fpu(tsk);
- 	clear_used_math();
- }
+> > No problems.  I feel good if I exercised some deep corner 
+> of the code
+> > and found something that needed flushed out, that's what 
+> the experience
+> > is all about, isn't it?
+> 
+> Yep!
+> 
+> --b.
+> 
