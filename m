@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758875AbYFML13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760281AbYFML3H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758875AbYFML13 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 07:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754841AbYFML1V
+	id S1760281AbYFML3H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 07:29:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755166AbYFML24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 07:27:21 -0400
-Received: from baikonur.stro.at ([213.239.196.228]:51989 "EHLO
-	baikonur.stro.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752245AbYFML1U (ORCPT
+	Fri, 13 Jun 2008 07:28:56 -0400
+Received: from smtp-vbr3.xs4all.nl ([194.109.24.23]:3065 "EHLO
+	smtp-vbr3.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755151AbYFML2z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 07:27:20 -0400
-From: maximilian attems <max@stro.at>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jean Delvare <khali@linux-fr.org>, linux-kernel@vger.kernel.org,
-       maximilian attems <max@stro.at>,
-       "Klaus S. Madsen" <ubuntu@hjernemadsen.org>,
-       Chuck Short <zulcss@ubuntu.com>,
-       Tim Gardner <tim.gardner@canonical.com>
-Subject: [PATCH] hdaps add support for various IBM thinkpads R61/T61/T61P
-Date: Fri, 13 Jun 2008 13:26:47 +0200
-Message-Id: <1213356407-1220-1-git-send-email-max@stro.at>
-X-Mailer: git-send-email 1.5.5.3
+	Fri, 13 Jun 2008 07:28:55 -0400
+Subject: Re: XFS internal error xfs_trans_cancel at line 1163 of file
+	fs/xfs/xfs_trans.c
+From: Miquel van Smoorenburg <mikevs@xs4all.net>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Oliver Pinter <oliver.pntr@gmail.com>, lists@ku-gbr.de,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       xfs@oss.sgi.com, xfs-masters@oss.sgi.com, mikevs@xs4all.net
+In-Reply-To: <20080613030841.GC3700@disturbed>
+References: <20080612123031.21594jyk6rjc1lfk@imp.ku-gbr.de>
+	 <6101e8c40806120733m3c8647ccy149eb237e2c6d027@mail.gmail.com>
+	 <1213309629.29745.8.camel@localhost.localdomain>
+	 <20080613030841.GC3700@disturbed>
+Content-Type: text/plain
+Organization: XS4ALL Internet B.V.
+Date: Fri, 13 Jun 2008 13:28:38 +0200
+Message-Id: <1213356518.8530.5.camel@n2o.xs4all.nl>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-last missing hdaps ubuntu sync.
-add the ubuntu entries in alphabetical order.
-original authors below on Cc.
+On Fri, 2008-06-13 at 13:08 +1000, Dave Chinner wrote: 
+> On Fri, Jun 13, 2008 at 12:27:09AM +0200, Miquel van Smoorenburg wrote:
+> > On Thu, 2008-06-12 at 16:33 +0200, Oliver Pinter wrote:
+> > > add CC's
+> > > 
+> > > On 6/12/08, lists@ku-gbr.de <lists@ku-gbr.de> wrote:
+> > > > Hi!
+> > > >
+> > > > Today morning my server at home bailed out two times (reboot between):
+> > 
+> > > > Jun 12 07:23:40 zappa
+> > > > Jun 12 07:23:40 zappa xfs_force_shutdown(sda7,0x8) called from line
+> > > > 1164 of file fs/xfs/xfs_trans.c.  Return address = 0xffffffff802f4d8a
+> > > > Jun 12 07:23:40 zappa Filesystem "sda7": Corruption of in-memory data
+> > > > detected.  Shutting down filesystem: sda7
+> > > > Jun 12 07:23:40 zappa Please umount the filesystem, and rectify the
+> > > > problem(s)
+> > 
+> > Hmm, interesting. I'm seeing the same thing on one of my servers since I
+> > upgraded from 2.6.ancient (14 or so) to 2.6.25, while XFS otherwise has
+> > been very stable for me over the years:
+> > 
+> > Linux transit5.news.xs4all.nl 2.6.25.6 #1 SMP Wed Jun 11 10:59:10 CEST
+> > 2008 x86_64 GNU/Linux
+> > 
+> > Filesystem "sda4": XFS internal error xfs_trans_cancel at line 1163 of
+> > file fs/xfs/xfs_trans.c.  Caller 0xffffffff880f1315
+> > Pid: 3402, comm: diablo Not tainted 2.6.25.6 #1
+> 
+> This commit in 2.6.26 will probably fix it.
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=75de2a91c98a6f486f261c1367fe59f5583e15a3
 
-Cc: Klaus S. Madsen <ubuntu@hjernemadsen.org>
-Cc: Chuck Short <zulcss@ubuntu.com>
-Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
-Signed-off-by: maximilian attems <max@stro.at>
----
- drivers/hwmon/hdaps.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+"At ENOSPC, we can get a filesystem shutdown due to a cancelling a dirty
+transaction in xfs_mkdir or xfs_create."
 
-diff --git a/drivers/hwmon/hdaps.c b/drivers/hwmon/hdaps.c
-index 26df06f..e07c712 100644
---- a/drivers/hwmon/hdaps.c
-+++ b/drivers/hwmon/hdaps.c
-@@ -515,6 +515,7 @@ static struct dmi_system_id __initdata hdaps_whitelist[] = {
- 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad R50"),
- 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad R51"),
- 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad R52"),
-+	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad R61"),
- 	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad R61i"),
- 	HDAPS_DMI_MATCH_INVERT("IBM", "ThinkPad T41p"),
- 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad T41"),
-@@ -523,6 +524,8 @@ static struct dmi_system_id __initdata hdaps_whitelist[] = {
- 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad T43"),
- 	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T60"),
- 	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T61"),
-+	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad T61"),
-+	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad T61P"),
- 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad X40"),
- 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad X41"),
- 	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X60"),
--- 
-1.5.5.3
+But:
+
+$ df -h
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/sda4              15G  5.1G  9.6G  35% /news
+
+The filesystem is only used for 35%. It might have hit 100% somewhere in
+the recent past though (a few reboots ago).
+
+I've applied the patch to 2.6.25.6 just in case, I'll let it run over
+the weekend to see what happens.
+
+Mike.
 
