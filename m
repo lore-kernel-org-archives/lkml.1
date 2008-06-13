@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760503AbYFMNyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761314AbYFMNzX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760503AbYFMNyS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 09:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbYFMNyI
+	id S1761314AbYFMNzX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 09:55:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756035AbYFMNzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 09:54:08 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:57150 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751471AbYFMNyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 09:54:07 -0400
-Date: Fri, 13 Jun 2008 16:52:55 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [Bug #10815] 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
-Message-ID: <20080613135255.GB21341@cs181133002.pp.htv.fi>
-References: <GIilET9wkhI.A.JzB.81vSIB@albercik> <dCRO4tbfLzK.A.BVD.E3vSIB@albercik>
+	Fri, 13 Jun 2008 09:55:07 -0400
+Received: from vigor.karmaclothing.net ([217.169.26.28]:54642 "EHLO
+	vigor.karmaclothing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755874AbYFMNzF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 09:55:05 -0400
+Date: Fri, 13 Jun 2008 14:46:29 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Adam Litke <agl@us.ibm.com>
+Cc: linux-mm <linux-mm@kvack.org>, npiggin@suse.de, nacc@us.ibm.com,
+       mel@csn.ul.ie, Eric B Munson <ebmunson@us.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+       linux-sh@vger.kernel.org, linux-s390@vger.kernel.org,
+       linux-mips@linux-mips.org
+Subject: Re: [RFC PATCH 0/2] Merge HUGETLB_PAGE and HUGETLBFS Kconfig
+	options
+Message-ID: <20080613134629.GD16344@linux-mips.org>
+References: <1213296540.17108.8.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <dCRO4tbfLzK.A.BVD.E3vSIB@albercik>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1213296540.17108.8.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 07, 2008 at 10:42:57PM +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+On Thu, Jun 12, 2008 at 02:49:00PM -0400, Adam Litke wrote:
+
+> There are currently two global Kconfig options that enable/disable the
+> hugetlb code: CONFIG_HUGETLB_PAGE and CONFIG_HUGETLBFS.  This may have
+> made sense before hugetlbfs became ubiquitous but now the pair of
+> options are redundant.  Merging these two options into one will simplify
+> the code slightly and will, more importantly, avoid confusion and
+> questions like: Which hugetlbfs CONFIG option should my code depend on?
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.25.  Please verify if it still should be listed.
+> CONFIG_HUGETLB_PAGE is aliased to the value of CONFIG_HUGETLBFS, so one
+> option can be removed without any effect.  The first patch merges the
+> two options into one option: CONFIG_HUGETLB.  The second patch updates
+> the defconfigs to set the one new option appropriately.
 > 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10815
-> Subject		: 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
-> Submitter	: Alexey Dobriyan <adobriyan@gmail.com>
-> Date		: 2008-05-27 09:23 (12 days old)
-> References	: http://lkml.org/lkml/2008/5/27/9
-> Handled-By	: Oleg Nesterov <oleg@tv-sign.ru>
-> 		  Linus Torvalds <torvalds@linux-foundation.org>
-> 		  Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> Patch		: http://lkml.org/lkml/2008/5/28/16
+> I have cross-compiled this on i386, x86_64, ia64, powerpc, sparc64 and
+> sh with the option enabled and disabled.  This is completely mechanical
+> but, due to the large number of files affected (especially defconfigs),
+> could do well with a review from several sets of eyeballs.  Thanks.
 
-What happened with this issue?
+MIPS doesn't do HUGETLB (at least not in-tree atm) so I'm not sure why
+linux-mips@linux-mips.org was cc'ed at all.  So feel free to add my
+Couldnt-care-less: ack line ;-)
 
-It is currently listed as 2.6.26-rc regression.
-Is this correct?
-
-And if this patch is required it might not be a good idea to allow the 
-use to disable the new code.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+  Ralf
