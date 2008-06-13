@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760314AbYFMAXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759275AbYFMAii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760314AbYFMAXZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 20:23:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756349AbYFMAXP
+	id S1759275AbYFMAii (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 20:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756688AbYFMAi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 20:23:15 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48440 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755427AbYFMAXO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 20:23:14 -0400
-Date: Fri, 13 Jun 2008 09:25:20 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       linux-mm@kvack.org, Nick Piggin <npiggin@suse.de>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [BUG] 2.6.26-rc5-mm3 kernel BUG at mm/filemap.c:575!
-Message-Id: <20080613092520.fb35cd70.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <200806122138.59969.nickpiggin@yahoo.com.au>
-References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
-	<4850E1E5.90806@linux.vnet.ibm.com>
-	<20080612015746.172c4b56.akpm@linux-foundation.org>
-	<200806122138.59969.nickpiggin@yahoo.com.au>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 12 Jun 2008 20:38:28 -0400
+Received: from ozlabs.org ([203.10.76.45]:33268 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756349AbYFMAi2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 20:38:28 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch 04/41] cpu ops: Core piece for generic atomic per cpu operations
+Date: Fri, 13 Jun 2008 10:38:12 +1000
+User-Agent: KMail/1.9.9
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Martin Peschke <mp3@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Peter Zijlstra <peterz@infradead.org>, Mike Travis <travis@sgi.com>
+References: <20080530035620.587204923@sgi.com> <200806122121.09835.nickpiggin@yahoo.com.au> <Pine.LNX.4.64.0806121017010.30597@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0806121017010.30597@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806131038.12987.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jun 2008 21:38:59 +1000
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+On Friday 13 June 2008 03:19:51 Christoph Lameter wrote:
+> Populating the per cpu areas on demand is a good thing especially for
+> configurations with a large number of processors. If we really go to 
+> support 4k processor by default then we need to allocate the smallest
+> amount of per cpu structures necessary.  Maybe ACPI or so can tell us how 
+> many processors are possible and we only allocate those. But it would be
+> best if the percpu structures are only allocated for actually active
+> processors.
 
-> +int putback_lru_page(struct page *page)
-> +{
-> +       int lru;
-> +       int ret = 1;
-> +       int was_unevictable;
-> +
-> +       VM_BUG_ON(!PageLocked(page));
-> +       VM_BUG_ON(PageLRU(page));
-> +
-> +       lru = !!TestClearPageActive(page);
-> +       was_unevictable = TestClearPageUnevictable(page); /* for 
-> page_evictable() */
-> +
-> +       if (unlikely(!page->mapping)) {
-> +               /*
-> +                * page truncated.  drop lock as put_page() will
-> +                * free the page.
-> +                */
-> +               VM_BUG_ON(page_count(page) != 1);
-> +               unlock_page(page);
->                 ^^^^^^^^^^^^^^^^^^
-> 
-> 
-> This is a rather wild thing to be doing. It's a really bad idea
-> to drop a lock that's taken several function calls distant and
-> across different files...
-> 
-I agree and strongly hope this unlock should be removed.
-The caller can do unlock by itself, I think.
+cpu_possible_map should definitely be minimal, but your point is well made: 
+dynamic percpu could actually cut memory allocation.  If we go for a hybrid 
+scheme where static percpu is always allocated from the initial chunk, 
+however, we still need the current pessimistic overallocation.
 
-Thanks,
--Kame
-
+Mike's a clever guy, I'm sure he'll think of something :)
+Rusty.
