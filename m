@@ -1,67 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758692AbYFMEkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760690AbYFMEkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758692AbYFMEkA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 00:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbYFMEjm
+	id S1760690AbYFMEkZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 00:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbYFMEjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 00:39:42 -0400
-Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:38968 "HELO
+	Fri, 13 Jun 2008 00:39:44 -0400
+Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:38976 "HELO
 	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751442AbYFMEjl (ORCPT
+	by vger.kernel.org with SMTP id S1751627AbYFMEjm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 00:39:41 -0400
+	Fri, 13 Jun 2008 00:39:42 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:To:Subject:Cc:Content-Disposition:From:Date:MIME-Version:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=0pSn4rzjaejqc03RdWv5wSjhA2qs+PUEgQgXtKu/naDhyJJyfRzxilzHpn26u7O/wyXUC/tk3Ko4OcOZqGs73H9ZVXxfJXYe0lYKFUGHPXel8+SrDYuF1gC53vOMtMlaH+v7H8NLorPbER5funp/rpwPWniqsKy5tWt9Sqz6m68=  ;
-X-YMail-OSG: Kk8hn3YVM1kJVd_E2OyKlRw9SH7mPVY7YGGvN8yRJ5mIQRbXOOp7RYV7A2kO_u0TWobaVLMTuL8xkmnjjHUwNy56Hj8F1y7NOBJRJ9b9aA--
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:To:Subject:Cc:Content-Disposition:From:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=hAScdBKW9X9xR43pvpcW/RDfJo7eck5pqZbnugQKzYAjWQ48sFUzwUqX/kmy+fflzUvahBu1PJiggDMRvC6pPS5Y+mZVTM0Xb9osCBdIFHn59HvBKSIr2PDrT7hWhySU8YmxE/t29NSQ5CKE1hxwPYR74re7MIutJJsMmVOhITo=  ;
+X-YMail-OSG: FlmOz8wVM1kNi0ufz53CFMigDk5E1CwtQ6jSNWcZrCdXH0hsFnvp42rgZJML_Y9Dt4Ncklxh3OcwtngZssPYGvmm7mN69urRbl5aiDQENnMIubyesYKiEE3mJ1FLhSwGxhfjKKTZLj3hr1ZR9koiM1ak
 X-Yahoo-Newman-Property: ymail-3
 To: netdev@vger.kernel.org
-Subject: [RESEND #4/patch 2.6.26-rc6] net/enc28j60: section fix
+Subject: [RESEND #3/patch 2.6.26-rc6] net/enc28j60: low power mode
 Cc: Claudio Lanconelli <lanconelli.claudio@eptar.com>,
        lkml <linux-kernel@vger.kernel.org>
 Content-Disposition: inline
 From: David Brownell <david-b@pacbell.net>
-Date: Thu, 12 Jun 2008 21:36:24 -0700
+Date: Thu, 12 Jun 2008 21:38:06 -0700
 MIME-Version: 1.0
-Message-Id: <200806122136.24921.david-b@pacbell.net>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200806122138.06674.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Minor bugfixes to the enc28j60 driver ... wrong section marking,
-indentation, and bogus use of spi_bus_type.
+Keep enc28j60 chips in low-power mode when they're not in use.
+At typically 120 mA, these chips run hot even when idle; this
+low power mode cuts that power usage by a factor of around 100.
+
+This version provides a generic routine to poll a register until
+its masked value equals some value ... e.g. bit set or cleared.
+It's basically what the previous wait_phy_ready() did, but this
+version is generalized to support the handshaking needed to
+enter and exit low power mode.
 
 Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-Acked-by: Claudio Lanconelli <lanconelli.claudio@eptar.com>
+Signed-off-by: Claudio Lanconelli <lanconelli.claudio@eptar.com>
 ---
-Previously sent:  18-April, 19-February, 6-February.
+Previously sent:  18-May, 19-February; there were several
+previous iterations too ...
 
- drivers/net/enc28j60.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/net/enc28j60.c |   82 ++++++++++++++++++++++++++++++++++---------------
+ 1 file changed, 58 insertions(+), 24 deletions(-)
 
---- g26.orig/drivers/net/enc28j60.c	2008-02-22 19:48:13.000000000 -0800
-+++ g26/drivers/net/enc28j60.c	2008-02-22 19:48:14.000000000 -0800
-@@ -1556,7 +1556,7 @@ error_alloc:
- 	return ret;
+--- g26.orig/drivers/net/enc28j60.c	2008-02-22 19:48:14.000000000 -0800
++++ g26/drivers/net/enc28j60.c	2008-02-22 19:48:21.000000000 -0800
+@@ -400,26 +400,31 @@ enc28j60_packet_write(struct enc28j60_ne
+ 	mutex_unlock(&priv->lock);
  }
  
--static int enc28j60_remove(struct spi_device *spi)
-+static int __devexit enc28j60_remove(struct spi_device *spi)
+-/*
+- * Wait until the PHY operation is complete.
+- */
+-static int wait_phy_ready(struct enc28j60_net *priv)
++static unsigned long msec20_to_jiffies;
++
++static int poll_ready(struct enc28j60_net *priv, u8 reg, u8 mask, u8 val)
  {
- 	struct enc28j60_net *priv = dev_get_drvdata(&spi->dev);
+-	unsigned long timeout = jiffies + 20 * HZ / 1000;
+-	int ret = 1;
++	unsigned long timeout = jiffies + msec20_to_jiffies;
  
-@@ -1573,9 +1573,8 @@ static int enc28j60_remove(struct spi_de
- static struct spi_driver enc28j60_driver = {
- 	.driver = {
- 		   .name = DRV_NAME,
--		   .bus = &spi_bus_type,
- 		   .owner = THIS_MODULE,
--		   },
-+	 },
- 	.probe = enc28j60_probe,
- 	.remove = __devexit_p(enc28j60_remove),
- };
+ 	/* 20 msec timeout read */
+-	while (nolock_regb_read(priv, MISTAT) & MISTAT_BUSY) {
++	while ((nolock_regb_read(priv, reg) & mask) != val) {
+ 		if (time_after(jiffies, timeout)) {
+ 			if (netif_msg_drv(priv))
+-				printk(KERN_DEBUG DRV_NAME
+-					": PHY ready timeout!\n");
+-			ret = 0;
+-			break;
++				dev_dbg(&priv->spi->dev,
++					"reg %02x ready timeout!\n", reg);
++			return -ETIMEDOUT;
+ 		}
+ 		cpu_relax();
+ 	}
+-	return ret;
++	return 0;
++}
++
++/*
++ * Wait until the PHY operation is complete.
++ */
++static int wait_phy_ready(struct enc28j60_net *priv)
++{
++	return poll_ready(priv, MISTAT, MISTAT_BUSY, 0) ? 0 : 1;
+ }
+ 
+ /*
+@@ -594,6 +599,32 @@ static void nolock_txfifo_init(struct en
+ 	nolock_regw_write(priv, ETXNDL, end);
+ }
+ 
++/*
++ * Low power mode shrinks power consumption about 100x, so we'd like
++ * the chip to be in that mode whenever it's inactive.  (However, we
++ * can't stay in lowpower mode during suspend with WOL active.)
++ */
++static void enc28j60_lowpower(struct enc28j60_net *priv, bool is_low)
++{
++	if (netif_msg_drv(priv))
++		dev_dbg(&priv->spi->dev, "%s power...\n",
++				is_low ? "low" : "high");
++
++	mutex_lock(&priv->lock);
++	if (is_low) {
++		nolock_reg_bfclr(priv, ECON1, ECON1_RXEN);
++		poll_ready(priv, ESTAT, ESTAT_RXBUSY, 0);
++		poll_ready(priv, ECON1, ECON1_TXRTS, 0);
++		/* ECON2_VRPS was set during initialization */
++		nolock_reg_bfset(priv, ECON2, ECON2_PWRSV);
++	} else {
++		nolock_reg_bfclr(priv, ECON2, ECON2_PWRSV);
++		poll_ready(priv, ESTAT, ESTAT_CLKRDY, ESTAT_CLKRDY);
++		/* caller sets ECON1_RXEN */
++	}
++	mutex_unlock(&priv->lock);
++}
++
+ static int enc28j60_hw_init(struct enc28j60_net *priv)
+ {
+ 	u8 reg;
+@@ -612,8 +643,8 @@ static int enc28j60_hw_init(struct enc28
+ 	priv->tx_retry_count = 0;
+ 	priv->max_pk_counter = 0;
+ 	priv->rxfilter = RXFILTER_NORMAL;
+-	/* enable address auto increment */
+-	nolock_regb_write(priv, ECON2, ECON2_AUTOINC);
++	/* enable address auto increment and voltage regulator powersave */
++	nolock_regb_write(priv, ECON2, ECON2_AUTOINC | ECON2_VRPS);
+ 
+ 	nolock_rxfifo_init(priv, RXSTART_INIT, RXEND_INIT);
+ 	nolock_txfifo_init(priv, TXSTART_INIT, TXEND_INIT);
+@@ -690,7 +721,7 @@ static int enc28j60_hw_init(struct enc28
+ 
+ static void enc28j60_hw_enable(struct enc28j60_net *priv)
+ {
+-	/* enable interrutps */
++	/* enable interrupts */
+ 	if (netif_msg_hw(priv))
+ 		printk(KERN_DEBUG DRV_NAME ": %s() enabling interrupts.\n",
+ 			__FUNCTION__);
+@@ -726,15 +757,12 @@ enc28j60_setlink(struct net_device *ndev
+ 	int ret = 0;
+ 
+ 	if (!priv->hw_enable) {
+-		if (autoneg == AUTONEG_DISABLE && speed == SPEED_10) {
++		/* link is in low power mode now; duplex setting
++		 * will take effect on next enc28j60_hw_init().
++		 */
++		if (autoneg == AUTONEG_DISABLE && speed == SPEED_10)
+ 			priv->full_duplex = (duplex == DUPLEX_FULL);
+-			if (!enc28j60_hw_init(priv)) {
+-				if (netif_msg_drv(priv))
+-					dev_err(&ndev->dev,
+-						"hw_reset() failed\n");
+-				ret = -EINVAL;
+-			}
+-		} else {
++		else {
+ 			if (netif_msg_link(priv))
+ 				dev_warn(&ndev->dev,
+ 					"unsupported link setting\n");
+@@ -1307,7 +1335,8 @@ static int enc28j60_net_open(struct net_
+ 		}
+ 		return -EADDRNOTAVAIL;
+ 	}
+-	/* Reset the hardware here */
++	/* Reset the hardware here (and take it out of low power mode) */
++	enc28j60_lowpower(priv, false);
+ 	enc28j60_hw_disable(priv);
+ 	if (!enc28j60_hw_init(priv)) {
+ 		if (netif_msg_ifup(priv))
+@@ -1337,6 +1366,7 @@ static int enc28j60_net_close(struct net
+ 		printk(KERN_DEBUG DRV_NAME ": %s() enter\n", __FUNCTION__);
+ 
+ 	enc28j60_hw_disable(priv);
++	enc28j60_lowpower(priv, true);
+ 	netif_stop_queue(dev);
+ 
+ 	return 0;
+@@ -1537,6 +1567,8 @@ static int __devinit enc28j60_probe(stru
+ 	dev->watchdog_timeo = TX_TIMEOUT;
+ 	SET_ETHTOOL_OPS(dev, &enc28j60_ethtool_ops);
+ 
++	enc28j60_lowpower(priv, true);
++
+ 	ret = register_netdev(dev);
+ 	if (ret) {
+ 		if (netif_msg_probe(priv))
+@@ -1581,6 +1613,8 @@ static struct spi_driver enc28j60_driver
+ 
+ static int __init enc28j60_init(void)
+ {
++	msec20_to_jiffies = msecs_to_jiffies(20);
++
+ 	return spi_register_driver(&enc28j60_driver);
+ }
+ 
