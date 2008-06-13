@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761051AbYFMGft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761261AbYFMGhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761051AbYFMGft (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 02:35:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbYFMGfl
+	id S1761261AbYFMGhy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 02:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752555AbYFMGhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 02:35:41 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:59915 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752096AbYFMGfk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 02:35:40 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <48521539.9020102@s5r6.in-berlin.de>
-Date: Fri, 13 Jun 2008 08:35:37 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
-MIME-Version: 1.0
-To: Shawn Jin <shawnxjin@gmail.com>
-CC: Tomasz Chmielewski <mangoo@wpkg.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Force a usb drive to be /dev/sda?
-References: <4850DFB4.5020205@wpkg.org> <4851046E.907@s5r6.in-berlin.de> <c3d0340b0806122232s72d37509wd976217d336b83e7@mail.gmail.com>
-In-Reply-To: <c3d0340b0806122232s72d37509wd976217d336b83e7@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 13 Jun 2008 02:37:46 -0400
+Received: from mga02.intel.com ([134.134.136.20]:5611 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752598AbYFMGhp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 02:37:45 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,636,1204531200"; 
+   d="scan'208";a="394763509"
+Subject: [BUGFIX] lockdep: output lock_class key instead of address for
+	forward dependency output
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Fri, 13 Jun 2008 14:40:17 +0800
+Message-Id: <1213339217.17201.6.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+X-OriginalArrivalTime: 13 Jun 2008 06:37:35.0035 (UTC) FILETIME=[F6EB38B0:01C8CD1F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shawn Jin wrote:
->>  1. Mount filesystems by UUID or by label.
->>    Doesn't work with some filesystems.
-> 
-> The bootloader I'm using is LILO. So I have to specify the boot device
-> and the root device in lilo.conf. For example, boot=/dev/sda,
-> root=/dev/sda1. I'm not sure how mounting filesystem by UUID or by
-> label can help. A little bit elaboration will be more helpful.
+The key instead of address of lock_class should be output in
+/proc/lockdep when forward dependency is output, because key is
+output for lock_class itself as identifier too.
 
-Ah I forgot that...  Looks like this requires an initrd too, though 
-without special scripts of your own.
+This patch is based on x86/auto-latest branch of git-x86 tree, and has
+been tested on x86_64 platform.
 
->>  2. Refer to devices by device ID or by device path.
-...
-> Every USB thumb drive has a unique ID. So will I have to have a
-> different root filesystem image if it's install in a different usb
-> drive if the by-id way is adopted?
+Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-That's right, hence a filesystem ID is preferable over a drive ID.
--- 
-Stefan Richter
--=====-==--- -==- -==-=
-http://arcgraph.de/sr/
+---
+ kernel/lockdep_proc.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/kernel/lockdep_proc.c
++++ b/kernel/lockdep_proc.c
+@@ -139,7 +139,7 @@ static int l_show(struct seq_file *m, vo
+ 
+ 	list_for_each_entry(entry, &class->locks_after, entry) {
+ 		if (entry->distance == 1) {
+-			seq_printf(m, " -> [%p] ", entry->class);
++			seq_printf(m, " -> [%p] ", entry->class->key);
+ 			print_name(m, entry->class);
+ 			seq_puts(m, "\n");
+ 		}
+
