@@ -1,159 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753145AbYFMRPR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752682AbYFMRXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753145AbYFMRPR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 13:15:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbYFMRPB
+	id S1752682AbYFMRXw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 13:23:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbYFMRXm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 13:15:01 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:10504 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750991AbYFMRPA (ORCPT
+	Fri, 13 Jun 2008 13:23:42 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:48365 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750771AbYFMRXl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 13:15:00 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:mime-version:content-type:message-id:cc:
-	content-transfer-encoding:from:subject:date:to:x-mailer;
-	b=T8VtZKAnxXP9wNrtigAkLk2nN6lbI/rcCjFaGw2lkqYHJThnT0QCTjiDnIYFdZ/MM
-	h7crN0hrNg51GmObA5l/w==
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <73DD0C9F-9A95-4636-A412-95E04ADED820@google.com>
-Cc: linux-kernel@vger.kernel.org
+	Fri, 13 Jun 2008 13:23:41 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: pnp changes -> suspend oops [Was: 2.6.26-rc5-mm2]
+Date: Fri, 13 Jun 2008 11:23:16 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org
+References: <20080609223145.5c9a2878.akpm@linux-foundation.org> <200806121557.28505.bjorn.helgaas@hp.com> <48529AAC.3030008@gmail.com>
+In-Reply-To: <48529AAC.3030008@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-From: Divyesh Shah <dpshah@google.com>
-Subject: [BUGFIX][RESEND] Fix the starving writes bug in the anticipatory IO scheduler
-Date: Fri, 13 Jun 2008 10:14:12 -0700
-To: axboe@kernel.dk, nickpiggin@yahoo.com.au, akpm@linux-foundation.org
-X-Mailer: Apple Mail (2.753.1)
+Content-Disposition: inline
+Message-Id: <200806131123.16890.bjorn.helgaas@hp.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Sorry again for the resend, the previous mail got bounced off lkml]
+On Friday 13 June 2008 10:05:00 am Jiri Slaby wrote:
+> On 06/12/2008 11:57 PM, Bjorn Helgaas wrote:
+> > On Thursday 12 June 2008 03:39:14 pm Jiri Slaby wrote:
+> >> On 06/12/2008 11:22 PM, Bjorn Helgaas wrote:
+> >>> On Thursday 12 June 2008 03:10:04 pm Jiri Slaby wrote:
+> >>>> On 06/11/2008 09:03 PM, Bjorn Helgaas wrote:
+> >>>>> Before you go to all the trouble of bisecting it, can you turn on
+> >>>>> CONFIG_PNP_DEBUG and try the following debug patch?  I think this
+> >>>>> will prevent the oops, but it's just papering over the real problem,
+> >>>>> so please capture the complete dmesg log.
+> >>>> ACPI: PCI interrupt for device 0000:00:02.0 disabled
+> >>>> serial 00:07: disabled
+> >>>> serial 00:06: disabled
+> >>>> ACPI handle has no context!
+> >>>> ACPI: PCI interrupt for device 0000:00:1d.7 disabled
+> >>>> ...
+> >>>> serial 00:06:   no dma resource to encode!
+> >>>> serial 00:06: activated
+> >>>> serial 00:07:   no dma resource to encode!
+> >>>> serial 00:07: activated
+> >>>> ACPI: PCI Interrupt 0000:00:02.0[A] -> GSI 16 (level, low) -> IRQ 16
+> >>> Interesting.  I wonder why a serial device would have a DMA resource.
+> >>> We encode resources by following a template from _CRS, so evidently
+> >>> that template had a DMA resource.  Or something deeper is wrong.
+> >>>
+> >>> Can you send me the rest of that dmesg log?
+> >> Below.
+> > 
+> > Thanks, but it looks like CONFIG_PNP_DEBUG is not turned on.  Can
+> > you turn that on and capture the log again, please?
+> 
+> Here it goes:
 
-Bug description:
-AS scheduler alternates between issuing read and write batches. It does
-the batch switch only after all requests from the previous batch are
-completed.
+Thanks a lot!  Your BIOS clearly claims that at least one of your
+serial ports can be configured with DMA:
 
-When switching to a write batch, if there is an on-going read request,
-it waits for its completion and indicates its intention of switching by
-setting ad->changed_batch and the new direction but does not update the
-batch_expire_time for the new write batch which it does in the case of
-no previous pending requests.
-On completion of the read request, it sees that we were waiting for the
-switch and schedules work for kblockd right away and resets the
-ad->changed_data flag.
-Now when kblockd enters dispatch_request where it is expected to pick
-up a write request, it in turn ends the write batch because the
-batch_expire_timer was not updated and shows the expire timestamp for
-the previous batch.
+  pnp 00:07:   dependent set 5 (acceptable) io  min 0x3f8 max 0x3f8 align 1 size 8 flags 0x1
+  pnp 00:07:   dependent set 5 (acceptable) irq 3 4 5 6 7 10 11 12 flags 0x1
+  pnp 00:07:   dependent set 5 (acceptable) dma 0 1 2 3 (bitmask 0xf) flags 0x0
 
-This results in the write starvation for all the cases where there is
-the intention for switching to a write batch, but there is a previous
-in-flight read request and the batch gets reverted to a read_batch
-right away.
+That's wierd, but whatever, we still have to be careful to give the
+BIOS back what it expects, and I think that means we have to keep
+track of that disabled DMA resource in pnpacpi_allocated_resource().
 
-This also holds true in the reverse case (switching from a write batch
-to a read batch with an in-flight write request).
+Can you please replace the debug patch with the one below and send me
+the results again?
 
-I've checked that this bug exists on 2.6.11, 2.6.18, 2.6.24 and
-linux-2.6-block git HEAD. I've tested the fix on x86 platforms with
-SCSI drives where the driver asks for the next request while a current
-request is in-flight.
-
-This patch is based off linux-2.6-block git HEAD.
-
-Bug reproduction:
-A simple scenario which reproduces this bug is:
-- dd if=/dev/hda3 of=/dev/null &
-- lilo
-   The lilo takes forever to complete.
-
-This can also be reproduced fairly easily with the earlier dd and  
-another test
-program doing msync().
-
-The example test program below should print out a message after every  
-iteration
-but it simply hangs forever. With this bugfix it makes forward progress.
-
-====
-Example test program using msync() (thanks to suleiman AT google DOT  
-com)
-
-inline uint64_t
-rdtsc(void)
-{
-         int64_t tsc;
-
-         __asm __volatile("rdtsc" : "=A" (tsc));
-         return (tsc);
-}
-
-int
-main(int argc, char **argv)
-{
-         struct stat st;
-         uint64_t e, s, t;
-         char *p, q;
-         long i;
-         int fd;
-
-         if (argc < 2) {
-                 printf("Usage: %s <file>\n", argv[0]);
-                 return (1);
-         }
-
-         if ((fd = open(argv[1], O_RDWR | O_NOATIME)) < 0)
-                 err(1, "open");
-
-         if (fstat(fd, &st) < 0)
-                 err(1, "fstat");
-
-         p = mmap(NULL, st.st_size, PROT_READ | PROT_WRITE,  
-MAP_SHARED, fd, 0);
-
-         t = 0;
-         for (i = 0; i < 1000; i++) {
-                 *p = 0;
-                 msync(p, 4096, MS_SYNC);
-                 s = rdtsc();
-                *p = 0;
-                 __asm __volatile(""::: "memory");
-                 e = rdtsc();
-                 if (argc > 2)
-                         printf("%d: %lld cycles %jd %jd\n",
-                                i, e - s, (intmax_t)s, (intmax_t)e);
-                 t += e - s;
-         }
-         printf("average time: %lld cycles\n", t / 1000);
-         return (0);
-}
-====
-
-  block/as-iosched.c |    2 ++
-  1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/block/as-iosched.c b/block/as-iosched.c
-index 8c39467..d4c9f9c 100644
---- a/block/as-iosched.c
-+++ b/block/as-iosched.c
-@@ -831,6 +831,8 @@ static void as_completed_request(struct  
-request_queue *q, struct request *rq)
-         }
-
-         if (ad->changed_batch && ad->nr_dispatched == 1) {
-+                ad->current_batch_expires = jiffies +
-+                        ad->batch_expire[ad->batch_data_dir];
-                 kblockd_schedule_work(&ad->antic_work);
-                 ad->changed_batch = 0;
-
---
-
--Divyesh Shah
-
-
-
-
+Index: work10/drivers/pnp/pnpacpi/rsparser.c
+===================================================================
+--- work10.orig/drivers/pnp/pnpacpi/rsparser.c	2008-06-11 12:46:28.000000000 -0600
++++ work10/drivers/pnp/pnpacpi/rsparser.c	2008-06-13 11:13:21.000000000 -0600
+@@ -240,6 +240,7 @@ static acpi_status pnpacpi_allocated_res
+ 	struct acpi_resource_fixed_memory32 *fixed_memory32;
+ 	struct acpi_resource_extended_irq *extended_irq;
+ 	int i, flags;
++	u8 channel;
+ 
+ 	switch (res->type) {
+ 	case ACPI_RESOURCE_TYPE_IRQ:
+@@ -259,13 +260,13 @@ static acpi_status pnpacpi_allocated_res
+ 
+ 	case ACPI_RESOURCE_TYPE_DMA:
+ 		dma = &res->data.dma;
+-		if (dma->channel_count > 0) {
+-			flags = dma_flags(dma->type, dma->bus_master,
+-					  dma->transfer);
+-			if (dma->channels[0] == (u8) -1)
+-				flags |= IORESOURCE_DISABLED;
+-			pnp_add_dma_resource(dev, dma->channels[0], flags);
++		channel = dma->channels[0];
++		flags = dma_flags(dma->type, dma->bus_master, dma->transfer);
++		if (dma->channel_count == 0 || dma->channels[0] == (u8) -1) {
++			channel = -1;
++			flags = IORESOURCE_DISABLED;
+ 		}
++		pnp_add_dma_resource(dev, channel, flags);
+ 		break;
+ 
+ 	case ACPI_RESOURCE_TYPE_IO:
+@@ -749,6 +750,11 @@ static void pnpacpi_encode_irq(struct pn
+ 	struct acpi_resource_irq *irq = &resource->data.irq;
+ 	int triggering, polarity, shareable;
+ 
++	if (!p) {
++		dev_err(&dev->dev, "  no irq resource to encode!\n");
++		return;
++	}
++
+ 	decode_irq_flags(dev, p->flags, &triggering, &polarity, &shareable);
+ 	irq->triggering = triggering;
+ 	irq->polarity = polarity;
+@@ -771,6 +777,11 @@ static void pnpacpi_encode_ext_irq(struc
+ 	struct acpi_resource_extended_irq *extended_irq = &resource->data.extended_irq;
+ 	int triggering, polarity, shareable;
+ 
++	if (!p) {
++		dev_err(&dev->dev, "  no extended irq resource to encode!\n");
++		return;
++	}
++
+ 	decode_irq_flags(dev, p->flags, &triggering, &polarity, &shareable);
+ 	extended_irq->producer_consumer = ACPI_CONSUMER;
+ 	extended_irq->triggering = triggering;
+@@ -791,6 +802,11 @@ static void pnpacpi_encode_dma(struct pn
+ {
+ 	struct acpi_resource_dma *dma = &resource->data.dma;
+ 
++	if (!p) {
++		dev_err(&dev->dev, "  no dma resource to encode!\n");
++		return;
++	}
++
+ 	/* Note: pnp_assign_dma will copy pnp_dma->flags into p->flags */
+ 	switch (p->flags & IORESOURCE_DMA_SPEED_MASK) {
+ 	case IORESOURCE_DMA_TYPEA:
+@@ -832,6 +848,11 @@ static void pnpacpi_encode_io(struct pnp
+ {
+ 	struct acpi_resource_io *io = &resource->data.io;
+ 
++	if (!p) {
++		dev_err(&dev->dev, "  no io resource to encode!\n");
++		return;
++	}
++
+ 	/* Note: pnp_assign_port will copy pnp_port->flags into p->flags */
+ 	io->io_decode = (p->flags & IORESOURCE_IO_16BIT_ADDR) ?
+ 	    ACPI_DECODE_16 : ACPI_DECODE_10;
+@@ -851,6 +872,11 @@ static void pnpacpi_encode_fixed_io(stru
+ {
+ 	struct acpi_resource_fixed_io *fixed_io = &resource->data.fixed_io;
+ 
++	if (!p) {
++		dev_err(&dev->dev, "  no fixed io resource to encode!\n");
++		return;
++	}
++
+ 	fixed_io->address = p->start;
+ 	fixed_io->address_length = p->end - p->start + 1;
+ 
+@@ -864,6 +890,11 @@ static void pnpacpi_encode_mem24(struct 
+ {
+ 	struct acpi_resource_memory24 *memory24 = &resource->data.memory24;
+ 
++	if (!p) {
++		dev_err(&dev->dev, "  no mem24 resource to encode!\n");
++		return;
++	}
++
+ 	/* Note: pnp_assign_mem will copy pnp_mem->flags into p->flags */
+ 	memory24->write_protect =
+ 	    (p->flags & IORESOURCE_MEM_WRITEABLE) ?
+@@ -884,6 +915,11 @@ static void pnpacpi_encode_mem32(struct 
+ {
+ 	struct acpi_resource_memory32 *memory32 = &resource->data.memory32;
+ 
++	if (!p) {
++		dev_err(&dev->dev, "  no mem32 resource to encode!\n");
++		return;
++	}
++
+ 	memory32->write_protect =
+ 	    (p->flags & IORESOURCE_MEM_WRITEABLE) ?
+ 	    ACPI_READ_WRITE_MEMORY : ACPI_READ_ONLY_MEMORY;
+@@ -903,6 +939,11 @@ static void pnpacpi_encode_fixed_mem32(s
+ {
+ 	struct acpi_resource_fixed_memory32 *fixed_memory32 = &resource->data.fixed_memory32;
+ 
++	if (!p) {
++		dev_err(&dev->dev, "  no fixed_mem32 resource to encode!\n");
++		return;
++	}
++
+ 	fixed_memory32->write_protect =
+ 	    (p->flags & IORESOURCE_MEM_WRITEABLE) ?
+ 	    ACPI_READ_WRITE_MEMORY : ACPI_READ_ONLY_MEMORY;
 
