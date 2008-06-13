@@ -1,79 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbYFMSBn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752677AbYFMSCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753978AbYFMSBn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 14:01:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbYFMSBd
+	id S1752677AbYFMSCU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 14:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbYFMSCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 14:01:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37428 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751500AbYFMSBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 14:01:33 -0400
-Date: Fri, 13 Jun 2008 14:00:59 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATCH -mm 1/2] kexec jump -v11: kexec jump
-Message-ID: <20080613180059.GA4906@redhat.com>
-References: <1213082104.22608.29.camel@caritas-dev.intel.com> <20080612192015.GH9654@redhat.com> <1213319040.20431.8.camel@caritas-dev.intel.com>
+	Fri, 13 Jun 2008 14:02:03 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:11179 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751836AbYFMSCB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 14:02:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=U56i15H73MFF5eRG8v1BwAr6nt14KCSeItTh1cfgIKtzZCubggSh4bVE22p+tXvYX7
+         AsJXUBYYs9VbNL5JwRmeamYPPpZnMIHrxMhwq5bX10D7EDRXSbLhd7ZLVl30c1bKM/tn
+         neY4UvMIOiKMiXOQHyB8rdswT1/SLOxcWYyu0=
+Message-ID: <86802c440806131102s44d4b909jadc21cec89d0cc11@mail.gmail.com>
+Date: Fri, 13 Jun 2008 11:02:00 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] x86: clean up reserve_bootmem_generic
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080613112256.GE9867@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1213319040.20431.8.camel@caritas-dev.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <200806130200.56822.yhlu.kernel@gmail.com>
+	 <20080613112256.GE9867@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 13, 2008 at 09:04:00AM +0800, Huang, Ying wrote:
-> On Thu, 2008-06-12 at 15:20 -0400, Vivek Goyal wrote:
-> > On Tue, Jun 10, 2008 at 03:15:04PM +0800, Huang, Ying wrote:
-> > > This patch provides an enhancement to kexec/kdump. It implements
-> > > the following features:
-> > > 
-> > > - Backup/restore memory used by the original kernel before/after
-> > >   kexec.
-> > > 
-> > > - Save/restore CPU state before/after kexec.
-> > > 
-> > > The features of this patch can be used as a general method to call
-> > > program in physical mode (paging turning off). This can be used to
-> > > call BIOS code under Linux.
-> > > 
-> > > 
-> > 
-> > Hi Huang,
-> > 
-> > I was testing these patches and I get following error on my machine.
-> > 
-> > Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-> > Suspending console(s) (use no_console_suspend to debug)
-> > PM: Device i8042 failed to freeze: error -22
-> > Restarting tasks ... done.
-> > 
-> > Any idea why keyboard controller would not freeze?
-> 
-> Which kernel version do you use?
-> 
+On Fri, Jun 13, 2008 at 4:22 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>
+>> 1. add reserve_bootmem_generic for 32bit
+>> 2. change len to unsigned long
+>> 3. make early_res_to_bootmem to use it
+>
+> applied to tip/x86/mpparse - thanks Yinghai.
+>
+> This does properly finish my band-aid:
+>
+> # x86/mpparse: f245905: x86: unify the reserve_bootmem() behavior of early_res_to_bootmem()
+>
+> correct?
 
-2.6.26-rc5-mm1.
+yes. restore the original behavior of that for 64bit.
 
-> Does original hibernation work? It can be setup easily. Just add
-> following parameters to kernel command line:
-> 
-
-Ok, I found that in my config CONFIG_HIBERNATION was not enabled. After
-enabling CONFIG_HIBERNATION, both suspend to disk and kjump started
-working.
-
-Does that mean there is some dependency on code under CONFIG_HIBERNATION.
-If yes, I think this dependency should be resolved during compile time.
-May be addtional config option (CONFIG_KEXEC_JUMP), which also selects
-the CONFIG_HIBERNATION automatically etc...
-
-Thanks
-Vivek
+YH
