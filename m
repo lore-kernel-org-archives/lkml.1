@@ -1,41 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbYFMTYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbYFMTY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754025AbYFMTYA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 15:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbYFMTXt
+	id S1756402AbYFMTY2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 15:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbYFMTYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 15:23:49 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:27869 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751058AbYFMTXs (ORCPT
+	Fri, 13 Jun 2008 15:24:06 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45775 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754065AbYFMTYC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 15:23:48 -0400
-Subject: Re: [PATCH] 2.6.25.4-rt6: missing global_rt_runtime() in sched.c
-From: Daniel Walker <dwalker@mvista.com>
-To: ciaby <ciaby@autistici.org>
-Cc: linux-kernel@vger.kernel.org, rostedt@goodmis.org,
-       linux-rt-users@vger.kernel.org
-In-Reply-To: <3d9feabb2d29056cad57ab36c76ac858@localhost>
-References: <7688fdc041a8f848b0627dccccddcf12@localhost>
-	 <3d9feabb2d29056cad57ab36c76ac858@localhost>
-Content-Type: text/plain
-Date: Fri, 13 Jun 2008 12:23:44 -0700
-Message-Id: <1213385024.16459.96.camel@localhost.localdomain>
+	Fri, 13 Jun 2008 15:24:02 -0400
+Date: Fri, 13 Jun 2008 16:23:52 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+       akpm@linux-foundation.org, Holger Waechtler <holger@convergence.de>,
+       Felix Domke <tmbinc@elitedvb.net>, Michael Krufky <mkrufky@linuxtv.org>
+Subject: Re: [PATCH] ttusb-budget: use request_firmware()
+Message-ID: <20080613162352.2d1ce9ca@gaivota>
+In-Reply-To: <1212083344.26088.93.camel@shinybook.infradead.org>
+References: <1211708969@pmac.infradead.org>
+	<1212083344.26088.93.camel@shinybook.infradead.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-mandriva-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 29 May 2008 20:49:04 +0300
+David Woodhouse <dwmw2@infradead.org> wrote:
 
-On Fri, 2008-06-13 at 10:07 +0000, ciaby wrote:
-> Not-line-wrapped, with proper tabs :)
-> Cheers
-> 
-> Giovanni 'ciaby' Civardi
+> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 
-No patch tho included here tho ..
+Acked-by: Mauro Carvalho Chehab <mchehab@infradead.org>
 
-Daniel
 
+
+Cheers,
+Mauro
