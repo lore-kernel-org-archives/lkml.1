@@ -1,95 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758429AbYFMLC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758575AbYFMLFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758429AbYFMLC7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 07:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbYFMLCw
+	id S1758575AbYFMLFu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 07:05:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbYFMLFl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 07:02:52 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47886 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753914AbYFMLCv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 07:02:51 -0400
-Date: Fri, 13 Jun 2008 13:02:36 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Ben Hutchings <bhutchings@solarflare.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: [PATCH] cputopology: Always define CPU topology information
-	[5th try]
-Message-ID: <20080613110236.GA9867@elte.hu>
-References: <20080604154454.GD11300@solarflare.com> <20080604214715.bbebe325.akpm@linux-foundation.org> <20080605120829.GI11300@solarflare.com> <20080605092831.a77d164d.akpm@linux-foundation.org> <20080605163714.GO11300@solarflare.com> <20080613051654.GC21586@elte.hu> <20080613101539.GV11300@solarflare.com>
+	Fri, 13 Jun 2008 07:05:41 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:40058 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753120AbYFMLFk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 07:05:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Xh+KrBiQBgFMW8hijeGc2F17687YfZM63/JSvq1DN1hTQCfRa9AIJ79GM5YaaiM3JM
+         1Gi3Pz/nqxrcpP+2Ps9LZYUBhVwF0j8yHO3F7K24ZF1nre39aY5Pg6X6JpX5H5VSJnqr
+         EjlQfztoFiPZdBJL8jB6exf31ZJZg9kJ+/kE4=
+Message-ID: <8265cb9e0806130405m340a314fm6935f388653e9e6a@mail.gmail.com>
+Date: Fri, 13 Jun 2008 12:05:40 +0100
+From: "Julia Jomantaite" <julia.jomantaite@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] drivers/acpi/video: fix brightness allocation
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       rui.zhang@intel.com
+In-Reply-To: <20080612180006.7cc946b2.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080613101539.GV11300@solarflare.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.3
-	_SUMMARY_
+References: <8265cb9e0806120947o4f39f78aqa3ace61a1ec1d6e3@mail.gmail.com>
+	 <20080612180006.7cc946b2.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jun 13, 2008 at 2:00 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Thu, 12 Jun 2008 17:47:09 +0100
+> "Julia Jomantaite" <julia.jomantaite@gmail.com> wrote:
+>
+>> ACPI Video Driver module (drivers/acpi/video.c) produces Oops message
+>> after pressing one of two Fn+<key> combinations responsible for switching
+>> the brightness level on my laptop.
+>>
+>> The source of this problem is in the function acpi_video_switch_brightness
+>> which can access device->brightness when it is not allocated. Function
+>> "acpi_video_device_find_cap" which is responsible for allocating
+>> device->brightness can leave it unallocated in some cases.
+>>
+>> Function acpi_video_switch_brightness isn't called if modules's parameter
+>> "brightness_switch_enabled" is equal to zero so i've decided to add
+>> zeroing of this parameter to the part of the code where unsuccessfull
+>> allocation of device->brightness was handled.
+>>
+>> Also i've moved initialization of brightness to a separate function
+>> "acpi_video_init_brightness" to improve readability of the code and
+>> to simplify error handling.
+>>
+>
+> (cc's added)
+>
+> Thanks.  Which kernel version were you running?
 
-* Ben Hutchings <bhutchings@solarflare.com> wrote:
+This patch is for the latest version of kernel from git  (linux-2.6),
+but the similar allocation problem exists on earlier versions of
+kernel ( for example 2.6.22 and 2.6.23).
 
-> > > This patch:
-> > > 
-> > > - Adds default definitions of the 4 topology macros to <linux/topology.h>
-> > > - Changes drivers/base/topology.c to use the topology macros unconditionally
-> > > - Updates documentation accordingly
-> > 
-> > applied to tip/core/topology - thanks Ben.
-> 
-> Unfortunately you lost the first paragraph of the commit message, then 
-> created a second commit (difference between 4th and 5th versions) with 
-> your own commit message and me as the author.  Maybe it's nitpicking 
-> but I would prefer to have strictly accurate metadata in the commit 
-> log.
+> The patch was a bit wordwrapped.  Here's the fixed up version:
 
-that's OK, see the delta patch below, it's rather trivial. It's better 
-to do these small delta patches where each change stands on its own than 
-to review a more complex combo patch. (Suggest me any other commit 
-metadata for this delta if you prefer, we can still change it.)
-
-	Ingo
-
--------------->
-commit 131b943ae643b1ad6febd67cdbb31d955706ecf4
-Author: Ben Hutchings <bhutchings@solarflare.com>
-Date:   Thu Jun 5 17:37:15 2008 +0100
-
-    cputopology: always define CPU topology information, clean up
-    
-    simplify drivers/base/topology.c a bit.
-    
-    Signed-off-by: Ben Hutchings <bhutchings@solarflare.com>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-diff --git a/drivers/base/topology.c b/drivers/base/topology.c
-index 24d29a9..f0cb270 100644
---- a/drivers/base/topology.c
-+++ b/drivers/base/topology.c
-@@ -59,16 +59,14 @@ static ssize_t show_cpumap(int type, cpumask_t *mask, char *buf)
- static inline ssize_t show_##name(struct sys_device *dev, char *buf)	\
- {									\
- 	unsigned int cpu = dev->id;					\
--	cpumask_t siblings = topology_##name(cpu);			\
--	return show_cpumap(0, &siblings, buf);				\
-+	return show_cpumap(0, &(topology_##name(cpu)), buf);		\
- }
- 
- #define define_siblings_show_list(name)					\
- static inline ssize_t show_##name##_list(struct sys_device *dev, char *buf) \
- {									\
- 	unsigned int cpu = dev->id;					\
--	cpumask_t siblings = topology_##name(cpu);			\
--	return show_cpumap(1, &siblings, buf);				\
-+	return show_cpumap(1, &(topology_##name(cpu)), buf);		\
- }
- 
- #define define_siblings_show_func(name)		\
+Thank you.
