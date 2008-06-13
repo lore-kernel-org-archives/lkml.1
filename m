@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbYFMSMe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754475AbYFMSNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753900AbYFMSMe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 14:12:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbYFMSMV
+	id S1754475AbYFMSNv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 14:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYFMSNl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 14:12:21 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:34968 "EHLO e4.ny.us.ibm.com"
+	Fri, 13 Jun 2008 14:13:41 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47296 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751500AbYFMSMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 14:12:19 -0400
-Subject: Re: [RFC PATCH 2/2] Update defconfigs for CONFIG_HUGETLB
-From: Adam Litke <agl@us.ibm.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-mm <linux-mm@kvack.org>, npiggin@suse.de, nacc@us.ibm.com,
-       mel@csn.ul.ie, Eric B Munson <ebmunson@us.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-       linux-sh@vger.kernel.org, linux-s390@vger.kernel.org,
-       linux-mips@linux-mips.org
-In-Reply-To: <20080612193638.GB17231@cs181133002.pp.htv.fi>
-References: <1213296540.17108.8.camel@localhost.localdomain>
-	 <1213296945.17108.13.camel@localhost.localdomain>
-	 <20080612193638.GB17231@cs181133002.pp.htv.fi>
-Content-Type: text/plain
-Organization: IBM
-Date: Fri, 13 Jun 2008 14:12:08 -0400
-Message-Id: <1213380728.15016.8.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	id S1750701AbYFMSNk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 14:13:40 -0400
+Date: Fri, 13 Jun 2008 14:05:55 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Len Brown <lenb@kernel.org>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [linux-pm] [PATCH -mm 2/2] kexec jump -v11: save/restore
+	device state
+Message-ID: <20080613180555.GB4906@redhat.com>
+References: <1213082106.22608.30.camel@caritas-dev.intel.com> <alpine.LFD.1.10.0806101400090.14381@localhost.localdomain> <1213146074.21923.10.camel@caritas-dev.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1213146074.21923.10.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-06-12 at 22:36 +0300, Adrian Bunk wrote:
-> On Thu, Jun 12, 2008 at 02:55:45PM -0400, Adam Litke wrote:
-> > Update all defconfigs that specify a default configuration for hugetlbfs.
-> > There is now only one option: CONFIG_HUGETLB.  Replace the old
-> > CONFIG_HUGETLB_PAGE and CONFIG_HUGETLBFS options with the new one.  I found no
-> > cases where CONFIG_HUGETLBFS and CONFIG_HUGETLB_PAGE had different values so
-> > this patch is large but completely mechanical:
-> >...
-> >  335 files changed, 335 insertions(+), 385 deletions(-)
-> >...
+On Wed, Jun 11, 2008 at 09:01:14AM +0800, Huang, Ying wrote:
+> On Tue, 2008-06-10 at 14:01 -0400, Len Brown wrote:
+> > 
+> > On Tue, 10 Jun 2008, Huang, Ying wrote:
+> > 
+> > > This patch implements devices state save/restore before after kexec.
+> > > 
+> > > 
+> > > This patch together with features in kexec_jump patch can be used for
+> > > following:
+> > > 
+> > > - A simple hibernation implementation without ACPI support. You can
+> > >   kexec a hibernating kernel, save the memory image of original system
+> > >   and shutdown the system. When resuming, you restore the memory image
+> > >   of original system via ordinary kexec load then jump back.
+> > 
+> > What part of ACPI's role in hibernation are you trying to avoid
+> > 1. enabling wake devices
+> > 2. removing power from the system
+> > 3. something else?
 > 
-> Please don't do this kind of patches - it doesn't bring any advantage 
-> but can create tons of patch conflicts.
-> 
-> The next time a defconfig gets updated it will anyway automatically be 
-> fixed, and for defconfigs that aren't updated it doesn't create any 
-> problems to keep them as they are today until they might one day get 
-> updated.
+> ACPI S5 is used instead of S4 for this simple hibernation
+> implementation. That is, before creating the hibernation image, the ACPI
+> _PTS is not executed, devices are not put into low power state and wake
+> devices are not enabled. After creating the hibernation image, the image
+> is saved to disk and system is shutdown (go to S5). When resuming from
+> hibernated image, ACPI _BFS and _WAK are not executed too.
 
-Thanks for taking a look.  I am not sure if I have ever seen a defconfig
-patch hit the mailing list before and I was wondering how those changes
-happen.  In any case I am perfectly happy to drop this huge patch and
-stick with just the first one.
+Hi huang,
 
--- 
-Adam Litke - (agl at us.ibm.com)
-IBM Linux Technology Center
+Can't we implement ACPI S5 state as an option in current hibernation
+framework? Or kexec jump is a requirement for that? 
 
+Thanks
+Vivek
