@@ -1,123 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758404AbYFMClw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758692AbYFMCv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758404AbYFMClw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 22:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbYFMClm
+	id S1758692AbYFMCv5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 22:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbYFMCvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 22:41:42 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:20971 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750931AbYFMCll (ORCPT
+	Thu, 12 Jun 2008 22:51:47 -0400
+Received: from Mycroft.westnet.com ([216.187.52.7]:57685 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750963AbYFMCvr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 22:41:41 -0400
-Date: Thu, 12 Jun 2008 19:41:31 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Louis Rilling <Louis.Rilling@kerlabs.com>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: Re: [PATCH 1/3][BUGFIX] configfs: Introduce configfs_dirent_lock
-Message-ID: <20080613024130.GD20581@mail.oracle.com>
-Mail-Followup-To: Louis Rilling <Louis.Rilling@kerlabs.com>,
-	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-References: <20080612133126.335618468@kerlabs.com> <20080612134203.763166823@kerlabs.com> <20080612191348.GE5377@mail.oracle.com> <20080612222558.GA4012@localdomain>
+	Thu, 12 Jun 2008 22:51:47 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080612222558.GA4012@localdomain>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Transfer-Encoding: 7bit
+Message-ID: <18513.57523.963418.72893@stoffel.org>
+Date: Thu, 12 Jun 2008 22:51:31 -0400
+From: "John Stoffel" <john@stoffel.org>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: "John Stoffel" <john@stoffel.org>, linux-kernel@vger.kernel.org,
+       David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org
+Subject: Re: 2.6.26-rc5: CFI: Found no ck804xrom @ffc00000 device at 
+ location zero
+In-Reply-To: <20080612222523.7ae0e8eb@hyperion.delvare>
+References: <20080612182308.GA1091@ldl.fc.hp.com>
+	<18513.27708.452410.527696@stoffel.org>
+	<20080612222523.7ae0e8eb@hyperion.delvare>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 13, 2008 at 12:25:58AM +0200, Louis Rilling wrote:
-> On Thu, Jun 12, 2008 at 12:13:48PM -0700, Joel Becker wrote:
-> > On Thu, Jun 12, 2008 at 03:31:27PM +0200, Louis Rilling wrote:
-> > > Locking rules for configfs_dirent linkage mutations are the same plus the
-> > > requirement of taking configfs_dirent_lock. For configfs_dirent walking, one can
-> > > either take appropriate i_mutex as before, or take configfs_dirent_lock.
-> > 
-> > 	Nope, you *must* take configfs_dirent_lock now.  You've removed
-> > i_mutex protection in the last patch.
-> 
-> Oh well. Do you mean because of CONFIGFS_USET_DROPPING being set without
-> i_mutex locked? This is the only mutation (except in the s_links patch) done
-> without i_mutex locked. I thought that actually either other
-> configfs_dirent traversals like readdir() and dir_lseek() would prevent
-> detach_prep() from succeeding because they add dirents before, or are done in
-> places where detach_prep() cannot do harm because new_dirent() fails whenever it
-> sees CONFIGFS_USET_DROPPING: detach_attrs() and detach_groups()
-> must ignore CONFIGFS_USET_DROPPING, depend_prep() is protected since the
-> whole path is locked from configfs root, lookup() can succeed since at worst its
-> result will be invalidated when actually detaching the default groups. The only
-> function for which I can not figure out is configfs_hash_and_remove(), but it is
-> not used.
 
-	I don't mean that your code is wrong, I mean that the comment is
-unclear.  The locking rules aren't "you can use i_mutex or dirent_lock,
-take your pick".  I think you are right that configfs_detach_prep() is
-safe to set dropping as it does without i_mutex.
-	This is related to the discussion below about VFS visible
-changes (i_mutex protection) vs subsystem internal changes (dirent_lock
-protection).  The protections have different scope, but your comment
-made them sound interchangable. 
+Jean> On Thu, 12 Jun 2008 14:34:36 -0400, John Stoffel wrote:
+>> I'm running a AMD X2 box with 4gb of RAM, Ubuntu 8.04 x86_64.  I just
+>> rebooted the system and I notice the following repeated messages
+>> (errors? warnings?) in my dmesg output.  I think this is from my
+>> nForce ethernet chips, but I'm not sure.
+>> 
+>> [   13.268005] ck804xrom ck804xrom_init_one(): Unable to register resource 0x00000000ff000000-0x00000000ffffffff - kernel bug?
+>> [   13.336752] i2c-adapter i2c-0: nForce2 SMBus adapter at 0x1c00
+>> [   13.336786] i2c-adapter i2c-1: nForce2 SMBus adapter at 0x1c40
+>> [   13.376771] CFI: Found no ck804xrom @ffc00000 device at location zero
+>> [   13.398810] JEDEC: Found no ck804xrom @ffc00000 device at location zero
+>> (...)
 
-> 	I admit that the case of symlink() needs an extra check to ensure
-> that the target is not about to be removed. The bug was already there
-> though, right?
-> 	Anyway, if it looks conceptually simpler to use
-> configfs_dirent_lock (probably better a mutex in that case) wherever
-> i_mutex are supposed to protect configfs_dirent traversals, I'm ok with it.
+Jean> Definitely not related to i2c.
 
-	Leave it as a spinlock.
-	Going over the changes, I was pretty convinced your detach_prep
-was safe vis-a-vis mkdir.  You're under i_mutex for the immediate
-directory, and both attach_* and detach_* are under the immediate
-i_mutex when they make the change.  Also, you have your readdir and
-lookup walking s_children without a lock.  I *think* that's safe, because
-it's also against the immediate directory, and thus the vfs is holding
-i_mutex for you.
+THanks for the help and quick reply.  I really should have done more
+grepping on the source myself.  
+
+Jean> Apparently the messages are coming from
+Jean> drivers/mtd/chips/gen_probe.c.  So I doubt it is related to
+Jean> networking either...
+
+Heh.  What the heck am I doing with mtd?  *grin*  I must have left it
+in when I migrated to my new system here.  
+
+Jean> They are debugging messages, but printk(KERN_DEBUG ...) is used
+Jean> where pr_debug(...) should be. The following (untested) patch
+Jean> should fix it:
+
+Jean> Subject: [MTD] No debug message when debugging is disabled
+
+Jean> Use pr_debug(...) instead of printk(KERN_DEBUG ...) so that the message
+Jean> is only printed when debugging is enabled.
+
+I'm doing a test compile now and a reboot later on this evening and
+I'll let you know how it goes.
+
+John
+
+
+Jean> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Jean> ---
+Jean>  drivers/mtd/chips/gen_probe.c |    4 ++--
+Jean>  1 file changed, 2 insertions(+), 2 deletions(-)
+
+Jean> --- linux-2.6.26-rc5.orig/drivers/mtd/chips/gen_probe.c	2008-04-17 04:49:44.000000000 +0200
+Jean> +++ linux-2.6.26-rc5/drivers/mtd/chips/gen_probe.c	2008-06-12 22:20:12.000000000 +0200
+Jean> @@ -71,8 +71,8 @@ static struct cfi_private *genprobe_iden
+Jean>  	   interleave and device type, etc. */
+Jean>  	if (!genprobe_new_chip(map, cp, &cfi)) {
+Jean>  		/* The probe didn't like it */
+Jean> -		printk(KERN_DEBUG "%s: Found no %s device at location zero\n",
+Jean> -		       cp->name, map->name);
+Jean> +		pr_debug("%s: Found no %s device at location zero\n",
+Jean> +			 cp->name, map->name);
+Jean>  		return NULL;
+Jean>  	}
  
-> And we should not take other i_mutex in populate_groups() and
-> populate_attrs(), otherwise deadlocks could happen.
 
-	Huh, we certainly should.  perhaps you are speaking as if we
-were turning dirent_lock into a mutex.  We're not turning dirent_lock
-into a mutex yet.
 
-> > 	Now, the only thing that sees this intermediate condition is
-> > configfs itself.  Everyone else is protected by i_mutex.  I guess it's
-> > OK - but can you comment that fact?  i_mutex does *not* protect
-> > traversal of the configfs_dirent tree, but it does prevent the outside
-> > world from seeing the intermediate states.
-> 
-> The only intermediate conditions that may hurt one's mind is that an
-> mkdir() (resp. symlink()) racing with an rmdir() can successfuly call
-> make_item()/make_group() (resp. allow_link()) and immediately fail when
-> finalizing with attach_item()/attach_group() (resp. create_link()). So, from
-> userspace and the VFS this seems like "mkdir foo/bar/baz" simply failed because
-> of "rmdir foo", while at the same time from the subsystem point of view this
-> seems like userspace did "mkdir foo/bar/baz; rmdir foo/bar/baz; rmdir foo".
-> As I pointed out in the rename fix, this however can already happen when
-> attach_item()/attach_group() (resp. create_link()) fails because of
-> memory pressure for instance.
-
-	I'm not even sure what you said here :-)
-
-Joel
-
--- 
-
-"Egotist: a person more interested in himself than in me."
-         - Ambrose Bierce 
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+Jean> -- 
+Jean> Jean Delvare
