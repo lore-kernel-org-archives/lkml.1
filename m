@@ -1,66 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758434AbYFMWEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759813AbYFMWEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758434AbYFMWEV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 18:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754647AbYFMWEG
+	id S1759813AbYFMWEl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 18:04:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbYFMWE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 18:04:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57364 "EHLO mx1.redhat.com"
+	Fri, 13 Jun 2008 18:04:28 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:41476 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754629AbYFMWEE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 18:04:04 -0400
-Date: Fri, 13 Jun 2008 18:03:48 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: 2.6.26-rc5-mm2 (swap_state.c:77)
-Message-ID: <20080613180348.55d3fb67@bree.surriel.com>
-In-Reply-To: <Pine.LNX.4.64.0806132135460.10183@blonde.site>
-References: <20080609223145.5c9a2878.akpm@linux-foundation.org>
-	<200806101848.22237.nickpiggin@yahoo.com.au>
-	<20080611140902.544e59ec@bree.surriel.com>
-	<200806120958.38545.nickpiggin@yahoo.com.au>
-	<20080612152905.6cb294ae@cuia.bos.redhat.com>
-	<Pine.LNX.4.64.0806122131330.10415@blonde.site>
-	<20080613134507.3f08820e@cuia.bos.redhat.com>
-	<Pine.LNX.4.64.0806132135460.10183@blonde.site>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1754647AbYFMWE0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 18:04:26 -0400
+Date: Fri, 13 Jun 2008 18:04:22 -0400
+To: "Weathers, Norman R." <Norman.R.Weathers@conocophillips.com>
+Cc: Jeff Layton <jlayton@poochiereds.net>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org, Neil Brown <neilb@suse.de>
+Subject: Re: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
+Message-ID: <20080613220422.GC14338@fieldses.org>
+References: <0122F800A3B64C449565A9E8C297701002D75DA3@hoexmb9.conoco.net> <20080611184613.GM15380@fieldses.org> <20080611195222.GP15380@fieldses.org> <20080611160947.5f08fb16@tleilax.poochiereds.net> <20080611205749.GA25194@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DAA@hoexmb9.conoco.net> <20080611225431.GD25194@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DAE@hoexmb9.conoco.net> <20080613201552.GH8501@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DB6@hoexmb9.conoco.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <0122F800A3B64C449565A9E8C297701002D75DB6@hoexmb9.conoco.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jun 2008 22:15:01 +0100 (BST)
-Hugh Dickins <hugh@veritas.com> wrote:
-
-> > I guess we'll need per-mapping flags to help determine where
-> > a page goes at add_to_page_cache_lru() time.
+On Fri, Jun 13, 2008 at 04:53:31PM -0500, Weathers, Norman R. wrote:
+>  
 > 
-> The better way would be to add a backing_dev_info flag.  (At one
-> point I had been going to criticize your per-mapping AS_UNEVICTABLE,
-> to say that one should be a backing_dev_info flag; but no, you're
-> right, you've the SHM_LOCK case where it has to be per-mapping.)
-
-Good point.  I'll take a look at that.
- 
-> > > Am I right to think that the memcontrol stuff is now all broken,
-> > > because memcontrol.c hasn't yet been converted to the more LRUs?
-> > > Certainly I'm now hanging when trying to run in a restricted memcg.
+> > > The big one seems to be the __alloc_skb. (This is with 16 
+> > threads, and
+> > > it says that we are using up somewhere between 12 and 14 GB 
+> > of memory,
+> > > about 2 to 3 gig of that is disk cache).  If I were to put anymore
+> > > threads out there, the server would become almost 
+> > unresponsive (it was
+> > > bad enough as it was).   
+> > > 
+> > > At the same time, I also noticed this:
+> > > 
+> > > skbuff_fclone_cache: 1842524 __alloc_skb+0x50/0x170
+> > > 
+> > > Don't know for sure if that is meaningful or not....
 > > 
-> > I believe memcontrol has been converted.  Of course, maybe
-> > they changed some stuff under me that I didn't notice :(
+> > OK, so, starting at net/core/skbuff.c, this means that this memory was
+> > allocated by __alloc_skb() calls with something nonzero in the third
+> > ("fclone") argument.  The only such caller is alloc_skb_fclone().
+> > Callers of alloc_skb_fclone() include:
+> > 
+> > 	sk_stream_alloc_skb:
+> > 		do_tcp_sendpages
+> > 		tcp_sendmsg
+> > 		tcp_fragment
+> > 		tso_fragment
 > 
-> Ah, yes, there are NR_LRU_LISTS arrays in there now, so it has
-> the appearance of having been converted.  Fine, then it's worth
-> my looking into why it isn't actually working as intended.
+> Interesting you should mention the tso...  We recently went through and
+> turned on TSO on all of our systems, trying it out to see if it helped
+> with performance...  This could be something to do with that.  I can try
+> disabling the tso on all of the servers and see if that helps with the
+> memory.  Actually, I think I will, and I will monitor the situation.  I
+> think it might help some, but I still think there may be something else
+> going on in a deep corner...
 
-I believe that Lee and Kosaki-san have tested this code,
-so the breakage could be pretty new.
+I'll plead total ignorance about TSO, and it sounds like a long
+shot--but sure, it'd be worth trying, thanks.
 
--- 
-All rights reversed.
+> 
+> > 		tcp_mtu_probe
+> > 	tcp_send_fin
+> > 	tcp_connect
+> > 	buf_acquire:
+> > 		lots of callers in tipc code (whatever that is).
+> > 
+> > So unless you're using tipc, or you have something in userspace going
+> > haywire (perhaps netstat would help rule that out?), then I suppose
+> > there's something wrong with knfsd's tcp code.  Which makes sense, I
+> > guess.
+> > 
+> 
+> Not for sure what tipc is either....
+> 
+> > I'd think this sort of allocation would be limited by the number of
+> > sockets times the size of the send and receive buffers.
+> > svc_xprt.c:svc_check_conn_limits() claims to be limiting the number of
+> > sockets to (nrthreads+3)*20.  (You aren't hitting the "too many open
+> > connections" printk there, are you?)  The total buffer size should be
+> > bounded by something like 4 megs.
+> > 
+> > --b.
+> > 
+> 
+> Yes, we are getting a continuous stream of the too many open connections
+> scrolling across our logs.  
+
+That's interesting!  So we should probably look more closely at the
+svc_check_conn_limits() behavior.  I wonder whether some pathological
+behavior is triggered in the case where you're constantly over the limit
+it's trying to enforce.
+
+(Remind me how many active clients you have?)
+
+> No problems.  I feel good if I exercised some deep corner of the code
+> and found something that needed flushed out, that's what the experience
+> is all about, isn't it?
+
+Yep!
+
+--b.
