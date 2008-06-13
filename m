@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761256AbYFMBnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758262AbYFMCPE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761256AbYFMBnT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 21:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757992AbYFMBnK
+	id S1758262AbYFMCPE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 22:15:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbYFMCOv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 21:43:10 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:45791 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755594AbYFMBnJ (ORCPT
+	Thu, 12 Jun 2008 22:14:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48279 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754568AbYFMCOu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 21:43:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=eg09BUP9U6fOTV9VqMY4Y3ZOoGk0+FKrZ7ThHZeaWfa9QN6EVham6/+91BFNEPhPgV
-         +56n4XQvAKLGG/5iv/wF3CrKrw+AJ2i1dnOwKYy2YiIxrXXBUIsDoAbVnYMJmaCdSqkm
-         S8lgvlofv79mW69/60OgDw/XwIHEApCFVhp5I=
-Message-ID: <86802c440806121843k221aaed9wc49b3a6a1ea966af@mail.gmail.com>
-Date: Thu, 12 Jun 2008 18:43:09 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: kexec@lists.infradead.org, vgoyal@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Limit E820 map and /proc/iomem for mem parameter on x86-64
-In-Reply-To: <20080610215325.GA20673@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 12 Jun 2008 22:14:50 -0400
+Date: Thu, 12 Jun 2008 19:13:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       linux-mm@kvack.org, Nick Piggin <npiggin@suse.de>,
+       Andy Whitcroft <apw@shadowen.org>, "riel@redhat.com" <riel@redhat.com>,
+       "Lee.Schermerhorn@hp.com" <Lee.Schermerhorn@hp.com>
+Subject: Re: [PATCH] fix double unlock_page() in 2.6.26-rc5-mm3 kernel BUG
+ at mm/filemap.c:575!
+Message-Id: <20080612191311.1331f337.akpm@linux-foundation.org>
+In-Reply-To: <20080613104444.63bd242f.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
+	<4850E1E5.90806@linux.vnet.ibm.com>
+	<20080612015746.172c4b56.akpm@linux-foundation.org>
+	<20080612202003.db871cac.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080613104444.63bd242f.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080610215325.GA20673@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 10, 2008 at 2:53 PM, Bernhard Walle <bwalle@suse.de> wrote:
-> This patch tries to unify the behaviour of i386 and x86-64 when parsing
-> the memory (mem/memmap) parameter of the kernel command line:
->
-> On i386, the view was limited (i.e. the actual view was presented).
-> On x86-64, the view was full (i.e. the BIOS view was presented).
->
-> This patch moves the limit_regions() function and the print_memory_map()
-> function to a new file e820.c, shared between the two x86 flavours. Then
-> it adds calls to limit_regions() in 64 bit code.
->
-> I gave the patch a bit testing. However, it's not for merging, it's just
-> to get early feedback to see if that goes into the right direction.
+On Fri, 13 Jun 2008 10:44:44 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-can you check tip/master about that e820 merge?
+> This is reproducer of panic. "quick fix" is attached.
 
-http://people.redhat.com/mingo/tip.git/readme.txt
+Thanks - I put that in
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc5/2.6.26-rc5-mm3/hot-fixes/
 
-it made 32bit using e820_register_active_region...and limit_region in
-32bit is remove.
+> But I think putback_lru_page() should be re-designed.
 
-YH
+Yes, it sounds that way.
