@@ -1,151 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761206AbYFMGpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761155AbYFMGzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761206AbYFMGpi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 02:45:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbYFMGp1
+	id S1761155AbYFMGzx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 02:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbYFMGzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 02:45:27 -0400
-Received: from cantor.suse.de ([195.135.220.2]:37990 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753476AbYFMGp1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 02:45:27 -0400
-From: Neil Brown <neilb@suse.de>
-To: Jan Kara <jack@suse.cz>
-Date: Fri, 13 Jun 2008 16:44:47 +1000
+	Fri, 13 Jun 2008 02:55:41 -0400
+Received: from mail-va3.bigfish.com ([216.32.180.112]:27552 "EHLO
+	mail88-va3-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753328AbYFMGzk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 02:55:40 -0400
+X-BigFish: VPS-31(z34a4nz1432R98dR7efV1805Mzz10d3izzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
+X-WSS-ID: 0K2E38H-02-GVH-01
+Date: Fri, 13 Jun 2008 08:55:24 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Veen <arjan@infradead.org>
+Subject: Re: [patch 3/6] x86: use cpuinfo to check for interrupt pending
+	message msr
+Message-ID: <20080613065524.GE7763@alberich.amd.com>
+References: <20080610171639.551369443@linutronix.de> <20080610171712.304283554@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18514.5983.603918.591472@notabene.brown>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
-Subject: Re: Two questions on VFS/mm
-In-Reply-To: message from Jan Kara on Thursday June 12
-References: <20080604163412.GL16572@duck.suse.cz>
-	<18512.51954.831279.617586@notabene.brown>
-	<20080612081847.GA12367@duck.suse.cz>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+In-Reply-To: <20080610171712.304283554@linutronix.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 13 Jun 2008 06:55:26.0731 (UTC) FILETIME=[75B30DB0:01C8CD22]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday June 12, jack@suse.cz wrote:
-> On Thu 12-06-08 17:06:26, Neil Brown wrote:
-> > On Wednesday June 4, jack@suse.cz wrote:
-> > >   Hi,
-> > > 
-> > >   could some kind soul knowledgable in VFS/mm help me with the following
-> > > two questions? I've spotted them when testing some ext4 for patches...
-> > >   1) In write_cache_pages() we do:
-> > > ...
-> > > 	lock_page(page);
-> > > 	...
-> > > 	if (!wbc->range_cyclic && page->index > end) {
-> > >                    done = 1;
-> > >                    unlock_page(page);
-> > >                    continue;
-> > >         }
-> > > 	...
-> > > 	ret = (*writepage)(page, wbc, data);
-> > > 
-> > >   Now the problem is that if range_cyclic is set, it can happen that the
-> > > page we give to the filesystem is beyond the current end of file (and can
-> > > be already processed by invalidatepage()). Is the filesystem supposed to
-> > > handle this (what would it be good for to give such a page to the fs?) or
-> > > is it just a bug in write_cache_pages()?
-> > 
-> > Maybe there is an invariant that an address_space never has a dirty
-> > page beyond the end-of-file??
-> > Certainly 'truncate' invalidates and un-dirties such pages.
-> > 
-> > With typical writes, ->write_begin will extend EOF to include the
-> > page, and ->write_end will mark it dirty (I think).
-> > 
-> > mmap writes are probably a bit different, but I suspect the same
-> > principle applies.
-> > 
-> > If the page is not dirty, then 
-> > 			if (PageWriteback(page) ||
-> > 			    !clear_page_dirty_for_io(page)) {
-> > 				unlock_page(page);
-> > 				continue;
-> > 			}
-> > 
-> > will fire, and you never get to
-> > 			ret = (*writepage)(page, wbc, data);
->   As Miklos pointed out, there's at least call do_invalidatepage() from
-> block_write_full_page() which does invalidate the page but does not clear
-> dirty bits or remove page from page cache. Otherwise I'd agree with
-> you...
-
-block_write_full_page will have been called after a
-clear_page_dirty_for_io() call, so it should not be dirty.
-
-I guess it could have been dirtied again as you don't need the page
-lock to dirty a page... though if it is beyond EOF, maybe you do...
-
-Hmm, I have a very strong feeling that "this cannot happen", and that
-it should certainly be "this shouldn't happen", but I guess I'm not
-100% convincing at the moment :-)
-
-
+On Thu, Jun 12, 2008 at 10:28:47AM -0000, Thomas Gleixner wrote:
+> No need to do a cpuid(1) again. The cpuinfo structure has all
+> necessary information already.
 > 
-> > >   2) I have the following problem with page_mkwrite() when blocksize <
-> > > pagesize. What we want to do is to fill in a potential hole under a page
-> > > somebody wants to write to. But consider following scenario with a
-> > > filesystem with 1k blocksize:
-> > >   truncate("file", 1024);
-> > >   ptr = mmap("file");
-> > >   *ptr = 'a'
-> > >      -> page_mkwrite() is called.
-> > >         but "file" is only 1k large and we cannot really allocate blocks
-> > >         beyond end of file. So we allocate just one 1k block.
-> > >   truncate("file", 4096);
-> > >   *(ptr + 2048) = 'a'
-> > >      - nothing is called and later during writepage() time we are surprised
-> > >        we have a dirty page which is not backed by a filesystem block.
-> > > 
-> > >   How to solve this? One idea I have here is that when we handle truncate(),
-> > > we mark the original last page (if it is partial) as read-only again so
-> > > that page_mkwrite() is called on the next write to it. Is something like
-> > > this possible? Pointers to code doing something similar are welcome, I don't
-> > > really know these things ;).
-> > 
-> > My understanding is that memory mapping is always done in multiples of
-> > the page size.  When you dirty any part of a page, you effectively dirty
-> > the whole page, so you need to extend the file to cover the whole page.
-> > i.e. the page_mkwrite() call must extend the file to a size of 4096.
->   Well, you definitely cannot increase file size because someone wrote to
-> the last page of file whose size is not multiple of page size. So when your
-> block size is smaller than page size, you have to handle it somehow... You
-> could instantiate blocks beyond end of file but that gets a bit tricky
-> (e.g. in ext3, we don't allow such blocks to exist so far).
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Andreas Herrmann <andreas.herrmann3@amd.com>
+> 
+> ---
+>  arch/x86/kernel/cpu/amd.c  |   41 +++++++++++++++--------------------------
+>  arch/x86/kernel/setup_64.c |   38 +++++++++++++++-----------------------
+>  2 files changed, 30 insertions(+), 49 deletions(-)
+> 
+> Index: linux-2.6/arch/x86/kernel/cpu/amd.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/cpu/amd.c
+> +++ linux-2.6/arch/x86/kernel/cpu/amd.c
+> @@ -25,35 +25,24 @@ extern void vide(void);
+>  __asm__(".align 4\nvide: ret");
+>  
+>  #ifdef CONFIG_X86_LOCAL_APIC
+> -#define CPUID_PROCESSOR_SIGNATURE       1
+> -#define CPUID_XFAM              0x0ff00000
+> -#define CPUID_XFAM_K8           0x00000000
+> -#define CPUID_XFAM_10H          0x00100000
+> -#define CPUID_XFAM_11H          0x00200000
+> -#define CPUID_XMOD              0x000f0000
+> -#define CPUID_XMOD_REV_F        0x00040000
+>  
+>  /* AMD systems with C1E don't have a working lAPIC timer. Check for that. */
+> -static __cpuinit int amd_apic_timer_broken(void)
+> +static __cpuinit int amd_apic_timer_broken(struct cpuinfo_x86 *c)
+>  {
+>  	u32 lo, hi;
+> -	u32 eax = cpuid_eax(CPUID_PROCESSOR_SIGNATURE);
+> -	switch (eax & CPUID_XFAM) {
+> -	case CPUID_XFAM_K8:
+> -		if ((eax & CPUID_XMOD) < CPUID_XMOD_REV_F)
+> -			break;
+> -	case CPUID_XFAM_10H:
+> -	case CPUID_XFAM_11H:
+> -		rdmsr(MSR_K8_INT_PENDING_MSG, lo, hi);
+> -		if (lo & K8_INTP_C1E_ACTIVE_MASK) {
+> -			if (smp_processor_id() != boot_cpu_physical_apicid)
+> -				printk(KERN_INFO "AMD C1E detected late. "
+> -				       "	Force timer broadcast.\n");
+> -			return 1;
+> -		}
+> -		break;
+> -	default:
+> -		/* err on the side of caution */
+> +
+> +	if (c->x86 < 0x0F)
+> +		return 0;
+> +
+> +	/* Family 0x0f models < rev F do not have this MSR */
+> +	if (c->x86 == 0x0f && c->x86_model < 0x40)
+> +		return 0;
 
-I get the problem now.. I read the 'mmap' man page:
+Just some minor nitpicking.
+Older AMD family 0xf CPUs have this Interrupt Pending Message
+Register. But they do not support C1E and thus bits 27 and 28 of this
+MSR are reserved.
 
-       A file is mapped in multiples of the page size.  For a file that is not
-       a multiple of the page  size,  the  remaining  memory  is  zeroed  when
-       mapped, and writes to that region are not written out to the file.  The
-       effect of changing the size of the underlying file of a mapping on  the
-       pages  that  correspond  to  added  or  removed  regions of the file is
-       unspecified.
 
-As the situation you are describing is documented as having
-"unspecified" behaviour, I guess you can do whatever you want.
-So just not writing out to any block that isn't backed by a filesystem
-block would be defensible.  But maybe not desirable.
+Andreas
 
-I like your idea of playing with the mapping.
-I don't think you want to bother mapping it as "read-only" - just
-unmap it altogether.  When it is next mapped writable to service a
-write you will get a page_mkwrite call and you can fix things up.
 
-To unmap the page, just call
-  unmap_mapping_range(mapping, page_index << PAGE_CACHE_SHIFT,
-		      PAGE_CACHE_SIZE, 0);
-(I got that from truncate_inode_pages_range in mm/truncate.c).
-You can do this while you have the page locked, and it won't be
-mapped again until you unlock it.
-
-NeilBrown
