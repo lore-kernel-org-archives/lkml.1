@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761522AbYFMG4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761464AbYFMG62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761522AbYFMG4X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 02:56:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761448AbYFMG4J
+	id S1761464AbYFMG62 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 02:58:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbYFMG6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 02:56:09 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:58955 "EHLO mail.dvmed.net"
+	Fri, 13 Jun 2008 02:58:20 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41272 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761256AbYFMG4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 02:56:07 -0400
-Message-ID: <48521A02.5070301@garzik.org>
-Date: Fri, 13 Jun 2008 02:56:02 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1753166AbYFMG6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 02:58:20 -0400
+Date: Fri, 13 Jun 2008 08:58:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: Re: [BUGFIX] lockdep: output lock_class key instead of address for
+	forward dependency output
+Message-ID: <20080613065809.GA28810@elte.hu>
+References: <1213339217.17201.6.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [patch] libata:ahci: enclosure management support (resend)
-References: <20080603103355.34c49ef4@appleyard>
-In-Reply-To: <20080603103355.34c49ef4@appleyard>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1213339217.17201.6.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0112]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristen Carlson Accardi wrote:
-> Here's a resend of the patch I sent 2 weeks ago, refreshed against
-> Andrews kernel.  This is one of many resends since the original 
-> patch was sent in January-ish. Could you please review this patch 
-> and let me know what you'd like me to change?  I'm happy to change it 
-> however you want as long as the feature still functions.
-> 
-> Thanks,
-> Kristen
-> 
-> Add Enclosure Management support to libata and ahci.
-> 
-> Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-> ---
->  drivers/ata/ahci.c        |  321 +++++++++++++++++++++++++++++++++++++++++++++-
->  drivers/ata/libata-scsi.c |   79 +++++++++++
->  include/linux/libata.h    |   21 +++
->  3 files changed, 419 insertions(+), 2 deletions(-)
 
-applied
+* Huang, Ying <ying.huang@intel.com> wrote:
 
+> The key instead of address of lock_class should be output in
+> /proc/lockdep when forward dependency is output, because key is
+> output for lock_class itself as identifier too.
+> 
+> This patch is based on x86/auto-latest branch of git-x86 tree, and has
+> been tested on x86_64 platform.
 
+applied to tip/core/locking - thanks Ying.
+
+i'm wondering, can entry->class never be NULL here?
+
+	Ingo
