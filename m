@@ -1,219 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760812AbYFMBA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761243AbYFMBBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760812AbYFMBA2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 21:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757634AbYFMBAQ
+	id S1761243AbYFMBBf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 21:01:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757918AbYFMBB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 21:00:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34660 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757590AbYFMBAO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 21:00:14 -0400
-Date: Thu, 12 Jun 2008 18:00:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Julia Jomantaite" <julia.jomantaite@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] drivers/acpi/video: fix brightness allocation
-Message-Id: <20080612180006.7cc946b2.akpm@linux-foundation.org>
-In-Reply-To: <8265cb9e0806120947o4f39f78aqa3ace61a1ec1d6e3@mail.gmail.com>
-References: <8265cb9e0806120947o4f39f78aqa3ace61a1ec1d6e3@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 12 Jun 2008 21:01:27 -0400
+Received: from mga11.intel.com ([192.55.52.93]:62032 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757833AbYFMBB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 21:01:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,634,1204531200"; 
+   d="scan'208";a="259115170"
+Subject: Re: [PATCH -mm 1/2] kexec jump -v11: kexec jump
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+In-Reply-To: <20080612192015.GH9654@redhat.com>
+References: <1213082104.22608.29.camel@caritas-dev.intel.com>
+	 <20080612192015.GH9654@redhat.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Fri, 13 Jun 2008 09:04:00 +0800
+Message-Id: <1213319040.20431.8.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+X-OriginalArrivalTime: 13 Jun 2008 01:01:19.0654 (UTC) FILETIME=[FD746460:01C8CCF0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jun 2008 17:47:09 +0100
-"Julia Jomantaite" <julia.jomantaite@gmail.com> wrote:
-
-> ACPI Video Driver module (drivers/acpi/video.c) produces Oops message
-> after pressing one of two Fn+<key> combinations responsible for switching
-> the brightness level on my laptop.
+On Thu, 2008-06-12 at 15:20 -0400, Vivek Goyal wrote:
+> On Tue, Jun 10, 2008 at 03:15:04PM +0800, Huang, Ying wrote:
+> > This patch provides an enhancement to kexec/kdump. It implements
+> > the following features:
+> > 
+> > - Backup/restore memory used by the original kernel before/after
+> >   kexec.
+> > 
+> > - Save/restore CPU state before/after kexec.
+> > 
+> > The features of this patch can be used as a general method to call
+> > program in physical mode (paging turning off). This can be used to
+> > call BIOS code under Linux.
+> > 
+> > 
 > 
-> The source of this problem is in the function acpi_video_switch_brightness
-> which can access device->brightness when it is not allocated. Function
-> "acpi_video_device_find_cap" which is responsible for allocating
-> device->brightness can leave it unallocated in some cases.
+> Hi Huang,
 > 
-> Function acpi_video_switch_brightness isn't called if modules's parameter
-> "brightness_switch_enabled" is equal to zero so i've decided to add
-> zeroing of this parameter to the part of the code where unsuccessfull
-> allocation of device->brightness was handled.
+> I was testing these patches and I get following error on my machine.
 > 
-> Also i've moved initialization of brightness to a separate function
-> "acpi_video_init_brightness" to improve readability of the code and
-> to simplify error handling.
+> Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+> Suspending console(s) (use no_console_suspend to debug)
+> PM: Device i8042 failed to freeze: error -22
+> Restarting tasks ... done.
 > 
+> Any idea why keyboard controller would not freeze?
 
-(cc's added)
+Which kernel version do you use?
 
-Thanks.  Which kernel version were you running?
+Does original hibernation work? It can be setup easily. Just add
+following parameters to kernel command line:
 
-The patch was a bit wordwrapped.  Here's the fixed up version:
+resume=/dev/<xxx>
 
- drivers/acpi/video.c |  122 ++++++++++++++++++++++++-----------------
- 1 file changed, 72 insertions(+), 50 deletions(-)
+Where <xxx> is the swap partition.
 
-diff -puN drivers/acpi/video.c~drivers-acpi-video-fix-brightness-allocation drivers/acpi/video.c
---- a/drivers/acpi/video.c~drivers-acpi-video-fix-brightness-allocation
-+++ a/drivers/acpi/video.c
-@@ -631,6 +631,74 @@ acpi_video_bus_DOS(struct acpi_video_bus
-  *  	device	: video output device (LCD, CRT, ..)
-  *
-  *  Return Value:
-+ *  	Maximum brightness level
-+ *
-+ *  Allocate and initialize device->brightness.
-+ */
-+
-+static int
-+acpi_video_init_brightness(struct acpi_video_device *device)
-+{
-+	union acpi_object *obj = NULL;
-+	int i, max_level = 0, count = 0;
-+	union acpi_object *o;
-+	struct acpi_video_device_brightness *br = NULL;
-+
-+	if (!ACPI_SUCCESS(acpi_video_device_lcd_query_levels(device, &obj))) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Could not query available LCD brightness level\n"));
-+		goto out;
-+	}
-+
-+	if (obj->package.count < 2)
-+		goto out;
-+
-+	br = kzalloc(sizeof(*br), GFP_KERNEL);
-+	if (!br) {
-+		printk(KERN_ERR "can't allocate memory\n");
-+		goto out;
-+	}
-+
-+	br->levels = kmalloc(obj->package.count * sizeof *(br->levels), GFP_KERNEL);
-+	if (!br->levels)
-+		goto out_free;
-+
-+	for (i = 0; i < obj->package.count; i++) {
-+		o = (union acpi_object *)&obj->package.elements[i];
-+		if (o->type != ACPI_TYPE_INTEGER) {
-+			printk(KERN_ERR PREFIX "Invalid data\n");
-+			continue;
-+		}
-+		br->levels[count] = (u32) o->integer.value;
-+
-+		if (br->levels[count] > max_level)
-+			max_level = br->levels[count];
-+		count++;
-+	}
-+
-+	if (count < 2)
-+		goto out_free_levels;
-+
-+	br->count = count;
-+	device->brightness = br;
-+	ACPI_DEBUG_PRINT((ACPI_DB_INFO,	"found %d brightness levels\n",	count));
-+	kfree(obj);
-+	return max_level;
-+
-+out_free_levels:
-+	kfree(br->levels);
-+out_free:
-+	kfree(br);
-+out:
-+	brightness_switch_enabled = 0;
-+	kfree(obj);
-+	return 0;
-+}
-+
-+/*
-+ *  Arg:	
-+ *  	device	: video output device (LCD, CRT, ..)
-+ *
-+ *  Return Value:
-  *  	None
-  *
-  *  Find out all required AML methods defined under the output
-@@ -640,10 +708,7 @@ acpi_video_bus_DOS(struct acpi_video_bus
- static void acpi_video_device_find_cap(struct acpi_video_device *device)
- {
- 	acpi_handle h_dummy1;
--	int i;
- 	u32 max_level = 0;
--	union acpi_object *obj = NULL;
--	struct acpi_video_device_brightness *br = NULL;
- 
- 
- 	memset(&device->cap, 0, sizeof(device->cap));
-@@ -657,8 +722,9 @@ static void acpi_video_device_find_cap(s
- 	if (ACPI_SUCCESS(acpi_get_handle(device->dev->handle, "_BCM", &h_dummy1))) {
- 		device->cap._BCM = 1;
- 	}
--	if (ACPI_SUCCESS(acpi_get_handle(device->dev->handle,"_BQC",&h_dummy1)))
-+	if (ACPI_SUCCESS(acpi_get_handle(device->dev->handle, "_BQC", &h_dummy1))) {
- 		device->cap._BQC = 1;
-+	}
- 	if (ACPI_SUCCESS(acpi_get_handle(device->dev->handle, "_DDC", &h_dummy1))) {
- 		device->cap._DDC = 1;
- 	}
-@@ -672,54 +738,10 @@ static void acpi_video_device_find_cap(s
- 		device->cap._DSS = 1;
- 	}
- 
--	if (ACPI_SUCCESS(acpi_video_device_lcd_query_levels(device, &obj))) {
--
--		if (obj->package.count >= 2) {
--			int count = 0;
--			union acpi_object *o;
--
--			br = kzalloc(sizeof(*br), GFP_KERNEL);
--			if (!br) {
--				printk(KERN_ERR "can't allocate memory\n");
--			} else {
--				br->levels = kmalloc(obj->package.count *
--						     sizeof *(br->levels), GFP_KERNEL);
--				if (!br->levels)
--					goto out;
--
--				for (i = 0; i < obj->package.count; i++) {
--					o = (union acpi_object *)&obj->package.
--					    elements[i];
--					if (o->type != ACPI_TYPE_INTEGER) {
--						printk(KERN_ERR PREFIX "Invalid data\n");
--						continue;
--					}
--					br->levels[count] = (u32) o->integer.value;
--
--					if (br->levels[count] > max_level)
--						max_level = br->levels[count];
--					count++;
--				}
--			      out:
--				if (count < 2) {
--					kfree(br->levels);
--					kfree(br);
--				} else {
--					br->count = count;
--					device->brightness = br;
--					ACPI_DEBUG_PRINT((ACPI_DB_INFO,
--							  "found %d brightness levels\n",
--							  count));
--				}
--			}
--		}
--
--	} else {
--		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Could not query available LCD brightness level\n"));
-+	if (brightness_switch_enabled) {
-+		max_level = acpi_video_init_brightness(device);
- 	}
- 
--	kfree(obj);
--
- 	if (device->cap._BCL && device->cap._BCM && device->cap._BQC && max_level > 0){
- 		int result;
- 		static int count = 0;
-_
+And execute following command:
+
+echo reboot > /sys/power/disk
+echo disk > /sys/power/state
+
+Best Regards,
+Huang Ying
 
