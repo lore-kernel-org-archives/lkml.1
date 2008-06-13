@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761685AbYFMODw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761554AbYFMOHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761685AbYFMODw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 10:03:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756635AbYFMODm
+	id S1761554AbYFMOHi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 10:07:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755896AbYFMOHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 10:03:42 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:49599 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751445AbYFMODk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 10:03:40 -0400
-Subject: Re: [RFC PATCH 0/2] Merge HUGETLB_PAGE and HUGETLBFS Kconfig
-	options
-From: Adam Litke <agl@us.ibm.com>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-mm <linux-mm@kvack.org>, npiggin@suse.de, nacc@us.ibm.com,
-       mel@csn.ul.ie, Eric B Munson <ebmunson@us.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-       linux-sh@vger.kernel.org, linux-s390@vger.kernel.org,
-       linux-mips@linux-mips.org
-In-Reply-To: <20080613134629.GD16344@linux-mips.org>
-References: <1213296540.17108.8.camel@localhost.localdomain>
-	 <20080613134629.GD16344@linux-mips.org>
-Content-Type: text/plain
-Organization: IBM
-Date: Fri, 13 Jun 2008 10:03:28 -0400
-Message-Id: <1213365808.15016.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Fri, 13 Jun 2008 10:07:31 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44681 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755173AbYFMOHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 10:07:30 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+Subject: Re: Problem: Out of memory after 2days with 2GB RAM
+Date: Fri, 13 Jun 2008 16:08:31 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       riel@redhat.com
+References: <c4e36d110806120307n20cce692s9c136f11596f5ab0@mail.gmail.com>
+In-Reply-To: <c4e36d110806120307n20cce692s9c136f11596f5ab0@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806131608.31803.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-06-13 at 14:46 +0100, Ralf Baechle wrote:
-> MIPS doesn't do HUGETLB (at least not in-tree atm) so I'm not sure why
-> linux-mips@linux-mips.org was cc'ed at all.  So feel free to add my
-> Couldnt-care-less: ack line ;-)
+On Thursday, 12 of June 2008, Zdenek Kabelac wrote:
+> Hello
+> 
+> I'm attaching a trace where my machine has got into big troubles after
+> 2 day usage and several successful suspend/resumes (this seems to be
+> finally getting better now :))
+> 
+> It looks like while there was a huge amount of buffers and caches -
+> system was unable to allocate few pages for kmalloc in iwl3945 driver
+> after resume.
+> 
+> I've even tried to 3 > drop_cache  and reinsert iwl driver - but this
+> had fatal results - machine died completely with blinking caps lock -
+> and no oops in the log for this case:
+> 
+> This is the commit aab2545fdd6641b76af0ae96456c4ca9d1e50dad  for the
+> 2.6.26-rc5 I've been in this case.
 
-Sorry :)  My patches touched your defconfigs so I felt it prudent to
-include the mips list as an FYI.
+Is this a regression from 2.6.25, BTW?
 
--- 
-Adam Litke - (agl at us.ibm.com)
-IBM Linux Technology Center
-
+Rafael
