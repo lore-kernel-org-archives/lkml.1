@@ -1,69 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbYFMSS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754914AbYFMSTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130AbYFMSS3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 14:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbYFMSSS
+	id S1754914AbYFMSTS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 14:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbYFMSTD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 14:18:18 -0400
-Received: from mail-va3.bigfish.com ([216.32.180.112]:7375 "EHLO
-	mail64-va3-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751506AbYFMSSR (ORCPT
+	Fri, 13 Jun 2008 14:19:03 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:60927 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751221AbYFMSTA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 14:18:17 -0400
-X-BigFish: VPS-41(zz1432R98dR62a3L7efV1805Mzz10d3izzz32i6bh62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
-X-WSS-ID: 0K2EYST-02-5F3-01
-Date: Fri, 13 Jun 2008 20:16:27 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Glauber Costa <glommer@gmail.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 2/2] x86: Move PCI IO ECS code to x86/pci
-Message-ID: <20080613181627.GH10019@erda.amd.com>
-References: <20080603072550.GR23679@erda.amd.com> <1213294763-19566-2-git-send-email-robert.richter@amd.com> <5d6222a80806131002t4f5c6e54tee63d4ed0fc222a6@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5d6222a80806131002t4f5c6e54tee63d4ed0fc222a6@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 13 Jun 2008 18:16:27.0711 (UTC) FILETIME=[98BDCCF0:01C8CD81]
+	Fri, 13 Jun 2008 14:19:00 -0400
+Date: Fri, 13 Jun 2008 15:18:43 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Zbynek Hrabovsky <hrabosh@t-email.cz>
+Cc: linux-kernel@vger.kernel.org, video4linux-list@redhat.com,
+       "Nicolas Marot" <nicolas.marot@gmail.com>,
+       nicolas <nicolas@nikoland.homelinux.org>,
+       "Michel Lespinasse" <walken@zoy.org>
+Subject: Re: [PATCH][RESEND] New type of DTV2000H TV Card
+Message-ID: <20080613151843.240a62cb@gaivota>
+In-Reply-To: <20080207002224.e26d6bb1.hrabosh@t-email.cz>
+References: <20080207002224.e26d6bb1.hrabosh@t-email.cz>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13.06.08 14:02:46, Glauber Costa wrote:
-> > diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
-> > index 5c2799c..15f505d 100644
-> > --- a/arch/x86/pci/amd_bus.c
-> > +++ b/arch/x86/pci/amd_bus.c
-> > @@ -1,5 +1,9 @@
-> >  #include <linux/init.h>
-> >  #include <linux/pci.h>
-> > +#include "pci.h"
-> > +
-> > +#ifdef CONFIG_X86_64
+
+On Thu, 7 Feb 2008 00:22:24 +0100
+Zbynek Hrabovsky <hrabosh@t-email.cz> wrote:
+
+> 		Hello all,
 > 
-> Please, don't do that. We are in an ongoing effort to cleanup the
-> remaining ifdefs in x86 code, and adding more of them would just make
-> it harder.
-> If you really need it, move the common part to a separate file (avoid
-> the _32 and _64 naming), and have it compiled conditionally on your
-> architecture.
+> I bought Leadtek WinFast DTV2000H, but it didn't work. I found, that there are two types of this card. Type I (older), and type J (latest) ... and only type I is supported by the module.
+> 
+> Type J is not autodetected, and if you force card type (card = 51), DVB-T works, but there is no sound in analogue television. I know why (multiplexer, which is switching between the radio, TV, and external sound is driven by GPIO pins ... and setting of this pins is wrong), and I wrote a patch, which makes this card (DTV2000H type J) works. 
+> 
+> With this patch, card is autodetected, I'm having sound in analogue television, I can switch between antenna, and cable signal input, and I can see video from external S-video and composite video input.
+> 
+> So ... I'm sending this patch to you. I think it will be good to add support for this card to the cx88xx module.
+> 
+> Bye,
+> 	Zbynek Hrabovsky, Brno, Czech Republic
+> 
+> PS .. sorry for my English.
 
-Ok, so what about shared code? Keep all this in separate files:
-amd_bus.c, (amd_bus_32.c), amd_bus_64.c, (amd_bus.h)?
+Hi Zbynek,
 
-Is the strategy to avoid #ifdefs and instead use the flags in
-Makefiles? My intention was to coalesce the files. Maybe I was wrong
-here.
+Sorry for not answering earlier. Your patch got lost on my inbox. As Nicolas
+pointed it to me, I've took a look on it. It seems sane. 
 
--Robert
+Yet, a few style corrections were needed. Also, the patch doesn't apply
+anymore, since board 57 is already defined.
 
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+Generally, I would ask you to check it, using checkpatch.pl and fix the issues.
+But, as this patch is old, I decided to fix it and resubmit for you to check
+and test it.
 
+Please let me know if everything is ok for me to commit it and send upstream.
+Also, please send your Signed-off-by:
+
+Nicolas,
+
+It would be nice if you can review the patch and send us a reviewed-by: line.
+
+Cheers,
+Mauro
+
+---
+
+From: Zbynek Hrabovsky <hrabosh@t-email.cz>
+
+I bought Leadtek WinFast DTV2000H, but it didn't work. I found, that there are
+two types of this card. Type I (older), and type J (latest) ... and only type I
+is supported by the module.
+
+Type J is not autodetected, and if you force card type (card = 51), DVB-T
+works, but there is no sound in analogue television. I know why (multiplexer,
+which is switching between the radio, TV, and external sound is driven by GPIO
+pins ... and setting of this pins is wrong), and I wrote a patch, which makes
+this card (DTV2000H type J) works.
+
+With this patch, card is autodetected, I'm having sound in analogue television,
+I can switch between antenna, and cable signal input, and I can see video from
+external S-video and composite video input.
+
+So ... I'm sending this patch to you. I think it will be good to add support
+for this card to the cx88xx module.
+
+Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+
+diff -r 04ddbe145932 linux/drivers/media/video/cx88/cx88-cards.c
+--- a/linux/drivers/media/video/cx88/cx88-cards.c	Tue Jun 10 15:27:29 2008 -0300
++++ b/linux/drivers/media/video/cx88/cx88-cards.c	Fri Jun 13 15:07:33 2008 -0300
+@@ -1284,7 +1284,7 @@
+ 	},
+ 	[CX88_BOARD_WINFAST_DTV2000H] = {
+ 		/* video inputs and radio still in testing */
+-		.name           = "WinFast DTV2000 H",
++		.name           = "WinFast DTV2000 H ver. I (old)",
+ 		.tuner_type     = TUNER_PHILIPS_FMD1216ME_MK3,
+ 		.radio_type     = UNSET,
+ 		.tuner_addr     = ADDR_UNSET,
+@@ -1298,6 +1298,45 @@
+ 			.gpio2  = 0x00017304,
+ 			.gpio3  = 0x02000000,
+ 		}},
++		.mpeg           = CX88_MPEG_DVB,
++	},
++	[CX88_BOARD_WINFAST_DTV2000H_2] = {
++		/* this is just a try */
++		.name           = "WinFast DTV2000 H ver. J (new)",
++		.tuner_type     = TUNER_PHILIPS_FMD1216ME_MK3,
++		.radio_type     = UNSET,
++		.tuner_addr     = ADDR_UNSET,
++		.radio_addr     = ADDR_UNSET,
++		.tda9887_conf   = TDA9887_PRESENT,
++		.input          = { {
++			.type   = CX88_VMUX_TELEVISION,
++			.vmux   = 0,
++			.gpio0  = 0x00017300,
++			.gpio1  = 0x00008207,
++			.gpio2	= 0x00000000,
++			.gpio3  = 0x02000000,
++		}, {
++			.type   = CX88_VMUX_TELEVISION,
++			.vmux   = 0,
++			.gpio0  = 0x00018300,
++			.gpio1  = 0x0000f207,
++			.gpio2	= 0x00017304,
++			.gpio3  = 0x02000000,
++		}, {
++			.type   = CX88_VMUX_COMPOSITE1,
++			.vmux   = 1,
++			.gpio0  = 0x00018301,
++			.gpio1  = 0x0000f207,
++			.gpio2	= 0x00017304,
++			.gpio3  = 0x02000000,
++		}, {
++			.type   = CX88_VMUX_SVIDEO,
++			.vmux   = 2,
++			.gpio0  = 0x00018301,
++			.gpio1  = 0x0000f207,
++			.gpio2	= 0x00017304,
++			.gpio3  = 0x02000000,
++		} },
+ 		.mpeg           = CX88_MPEG_DVB,
+ 	},
+ 	[CX88_BOARD_GENIATECH_DVBS] = {
+@@ -1963,6 +2002,10 @@
+ 		.subdevice = 0x665e,
+ 		.card      = CX88_BOARD_WINFAST_DTV2000H,
+ 	},{
++		.subvendor = 0x107d,
++		.subdevice = 0x6f2b,
++		.card      = CX88_BOARD_WINFAST_DTV2000H_2,
++	}, {
+ 		.subvendor = 0x18ac,
+ 		.subdevice = 0xd800, /* FusionHDTV 3 Gold (original revision) */
+ 		.card      = CX88_BOARD_DVICO_FUSIONHDTV_3_GOLD_Q,
+diff -r 04ddbe145932 linux/drivers/media/video/cx88/cx88-dvb.c
+--- a/linux/drivers/media/video/cx88/cx88-dvb.c	Tue Jun 10 15:27:29 2008 -0300
++++ b/linux/drivers/media/video/cx88/cx88-dvb.c	Fri Jun 13 15:07:34 2008 -0300
+@@ -561,6 +561,7 @@
+ 		}
+ 		break;
+ 	case CX88_BOARD_WINFAST_DTV2000H:
++	case CX88_BOARD_WINFAST_DTV2000H_2:
+ 	case CX88_BOARD_HAUPPAUGE_HVR1100:
+ 	case CX88_BOARD_HAUPPAUGE_HVR1100LP:
+ 	case CX88_BOARD_HAUPPAUGE_HVR1300:
+diff -r 04ddbe145932 linux/drivers/media/video/cx88/cx88-input.c
+--- a/linux/drivers/media/video/cx88/cx88-input.c	Tue Jun 10 15:27:29 2008 -0300
++++ b/linux/drivers/media/video/cx88/cx88-input.c	Fri Jun 13 15:07:34 2008 -0300
+@@ -242,6 +242,7 @@
+ 		ir->sampling = 1;
+ 		break;
+ 	case CX88_BOARD_WINFAST_DTV2000H:
++	case CX88_BOARD_WINFAST_DTV2000H_2:
+ 		ir_codes = ir_codes_winfast;
+ 		ir->gpio_addr = MO_GP0_IO;
+ 		ir->mask_keycode = 0x8f8;
+diff -r 04ddbe145932 linux/drivers/media/video/cx88/cx88-mpeg.c
+--- a/linux/drivers/media/video/cx88/cx88-mpeg.c	Tue Jun 10 15:27:29 2008 -0300
++++ b/linux/drivers/media/video/cx88/cx88-mpeg.c	Fri Jun 13 15:07:34 2008 -0300
+@@ -148,6 +148,12 @@
+ 			cx_write(TS_SOP_STAT, 0);
+ 			cx_write(TS_VALERR_CNTRL, 0);
+ 			udelay(100);
++			break;
++		case CX88_BOARD_WINFAST_DTV2000H_2:
++			/* switch signal input to antena */
++			cx_write(MO_GP0_IO, 0x00017300);
++
++			cx_write(TS_SOP_STAT, 0x00);
+ 			break;
+ 		default:
+ 			cx_write(TS_SOP_STAT, 0x00);
+diff -r 04ddbe145932 linux/drivers/media/video/cx88/cx88.h
+--- a/linux/drivers/media/video/cx88/cx88.h	Tue Jun 10 15:27:29 2008 -0300
++++ b/linux/drivers/media/video/cx88/cx88.h	Fri Jun 13 15:07:34 2008 -0300
+@@ -224,6 +224,7 @@
+ #define CX88_BOARD_DVICO_FUSIONHDTV_7_GOLD 65
+ #define CX88_BOARD_PROLINK_PV_8000GT       66
+ #define CX88_BOARD_KWORLD_ATSC_120         67
++#define CX88_BOARD_WINFAST_DTV2000H_2      68
+ 
+ enum cx88_itype {
+ 	CX88_VMUX_COMPOSITE1 = 1,
