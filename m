@@ -1,119 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761381AbYFMIdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761266AbYFMIiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761381AbYFMIdR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 04:33:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbYFMIdD
+	id S1761266AbYFMIiR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 04:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbYFMIiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 04:33:03 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:35681 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753576AbYFMIdA (ORCPT
+	Fri, 13 Jun 2008 04:38:04 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:41944 "EHLO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754128AbYFMIiB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 04:33:00 -0400
-Message-ID: <485230EA.2040808@bull.net>
-Date: Fri, 13 Jun 2008 10:33:46 +0200
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
+	Fri, 13 Jun 2008 04:38:01 -0400
+Message-ID: <485231E6.30101@aitel.hist.no>
+Date: Fri, 13 Jun 2008 10:37:58 +0200
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080420)
 MIME-Version: 1.0
-To: Nadia Derbey <Nadia.Derbey@bull.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Manfred Spraul <manfred@colorfullife.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: repeatable slab corruption with LTP msgctl08
-References: <20080611221324.42270ef2.akpm@linux-foundation.org> <48521BC8.5080801@bull.net>
-In-Reply-To: <48521BC8.5080801@bull.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Bodo Eggert <7eggert@gmx.de>
+CC: Leon Woestenberg <leon.woestenberg@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Jakub Jozwicki <jozwicki@aster.pl>, linux-kernel@vger.kernel.org,
+       Robert Hancock <hancockr@shaw.ca>
+Subject: Re: sched_yield() on 2.6.25
+References: <aCBfw-3Cv-23@gated-at.bofh.it> <aCBfw-3Cv-21@gated-at.bofh.it>  <aCJd6-3IF-11@gated-at.bofh.it> <aCRaM-8cM-33@gated-at.bofh.it>  <20080611152807.0682218F62@be1.lrz> <c384c5ea0806111545g6e6128bek519ce6022a301339@mail.gmail.com> <Pine.LNX.4.58.0806130006530.8419@be10.lrz>
+In-Reply-To: <Pine.LNX.4.58.0806130006530.8419@be10.lrz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nadia Derbey wrote:
-> Andrew Morton wrote:
-> 
->> Running current mainline on my old 2-way PIII.  Distro is RH FC1.  LTP
->> version is ltp-full-20070228 (lots of retro-computing there).
+Bodo Eggert wrote:
+> On Thu, 12 Jun 2008, Leon Woestenberg wrote:
+>   
+[...]
 >>
->> Config is at http://userweb.kernel.org/~akpm/config-vmm.txt
->>
->>
->> ./testcases/bin/msgctl08 crashes after ten minutes or so:
->>
->> slab: Internal list corruption detected in cache 'size-128'(26), slabp 
->> f2905000(20). Hexdump:
->>
->> 000: 00 e0 12 f2 88 32 c0 f7 88 00 00 00 88 50 90 f2
->> 010: 14 00 00 00 0f 00 00 00 00 00 00 00 ff ff ff ff
->> 020: fd ff ff ff fd ff ff ff fd ff ff ff fd ff ff ff
->> 030: fd ff ff ff fd ff ff ff fd ff ff ff fd ff ff ff
->> 040: fd ff ff ff fd ff ff ff 00 00 00 00 fd ff ff ff
->> 050: fd ff ff ff fd ff ff ff 19 00 00 00 17 00 00 00
->> 060: fd ff ff ff fd ff ff ff 0b 00 00 00 fd ff ff ff
->> 070: fd ff ff ff fd ff ff ff fd ff ff ff fd ff ff ff
->> 080: 10 00 00 00
->> ------------[ cut here ]------------
->> kernel BUG at mm/slab.c:2949!
->> invalid opcode: 0000 [#1] SMP Modules linked in:
->>
->> Pid: 3348, comm: msgctl08 Not tainted (2.6.26-rc5 #1)
->> EIP: 0060:[<c017a35b>] EFLAGS: 00010086 CPU: 0
->> EIP is at check_slabp+0xeb/0x100
->> EAX: 00000001 EBX: f2905083 ECX: 00000001 EDX: f20ee670
->> ESI: f2905000 EDI: 00000084 EBP: f4671e88 ESP: f4671e64
->>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
->> Process msgctl08 (pid: 3348, ti=f4670000 task=f20ee670 task.ti=f4670000)
->> Stack: c0472f2b 00000000 0000001a f2905000 00000014 f7c01500 ffffffff 
->> 0000000e        f2905000 f4671eec c017b69f 00000010 000000d0 f20ee670 
->> f7c032ac 000000d0        f7c01500 0000000e f7c03288 f7c06df0 f29ec088 
->> 00000098 00000000 00000000 Call Trace:
->>  [<c017b69f>] ? cache_alloc_refill+0xcf/0x6b0
->>  [<c017bdd4>] ? __kmalloc+0x154/0x160
->>  [<c0257663>] ? load_msg+0x33/0x150
->>  [<c0257663>] ? load_msg+0x33/0x150
->>  [<c0257dfb>] ? do_msgsnd+0x17b/0x2e0
->>  [<c0257cc9>] ? do_msgsnd+0x49/0x2e0
->>  [<c0126f1f>] ? __do_softirq+0x6f/0x100
->>  [<c0126e58>] ? _local_bh_enable+0x48/0xa0
->>  [<c0257f92>] ? sys_msgsnd+0x32/0x40
->>  [<c0106e12>] ? sys_ipc+0xb2/0x240
->>  [<c0102f58>] ? sysenter_past_esp+0xa5/0xb1
->>  [<c0102f1d>] ? sysenter_past_esp+0x6a/0xb1
->>  =======================
->> Code: 86 fa ff 8b 55 f0 8b 42 38 8d 04 85 1c 00 00 00 39 f8 76 0b 43 
->> f7 c7 0f 00 00 00 75 d2 eb bd c7 04 24 2b 2f 47 c0 e8 85 86 fa ff <0f> 
->> 0b eb fe 83 c4 18 5b 5e 5f 5d c3 8b 56 10 e9 6b ff ff ff 90 EIP: 
->> [<c017a35b>] check_slabp+0xeb/0x100 SS:ESP 0068:f4671e64
->> ---[ end trace d7a2cbbb5a3654be ]---
->>
->>
->> Pekka (or Christoph): could you please decrypt the slab bits for us?
->>
-> 
-> Andrew,
-> 
-> Sorry for answering so late (I only saw you e-mail yesterday afternoon).
-> I have just run msgctl08, setting msgmni to 1722 and turning on the SLAB 
-> debug:
-> 
-> CONFIG_SLAB=y
-> CONFIG_SLABINFO=y
-> CONFIG_DEBUG_SLAB=y
-> CONFIG_DEBUG_SLAB_LEAK=y
-> 
-> kernel: linux-2.6.26-rc5-mm1
-> ltp: ltp-full-20080430
-> 
-> But I could not reproduce the bug.
-> 
-> Will try to investigate more.
-> 
+>> As the code after sched_yield() has to be executed the thread will be
+>> rescheduled soon (or even immediately) anyway.
+>>     
+>
+> The code after yield() is most likely to not run successfully (and as a
+> result will return to the yield call) unless some time passes, and this
+> time can pass while another process gets the CPU. It might even depend on
+> another process to change the system state.
+>
+> Besides that, "Schedule another process, if you can" is part of the 
+> semantics of yield. The code after yield should therefore be expected to 
+> NOT be the very next code to run.
+>
+> If you can't do that, it's fine, the process will abuse some more innocent 
+> electrons for busy waiting, but if you can support this yield() semantics, 
+> the system will perform much better. Won't it?
+>   
+The system as a whole will perform better if the busy-wait is avoided - yes.
+A multithreaded app actually using yield this way may suffer badly though.
 
-Same result with 2.6.26-rc6.
-I saw from your config file that you're running a 2.6.26-rc2. Will try 
-with that one.
+Consider a case where two threads use yield() for synchronization, and 
+there is
+some contention. Ideally, the two threads want to ping-pong the cpu between
+them. In the precence of other processes, they want to use up their fair 
+amount of
+cpu in this manner. If they busy-wait, then both the app and the system 
+overall gets
+slower.
 
-Regards,
-Nadia
+Now, consider what happens if yield() really do lower the priority, or 
+does something
+like "sleep(1)  unless there really is nothing else to run". 
+Busy-waiting will disappear,
+and the overall performance will be fine. The app running alone will 
+also seem fine.
+
+The app running with some contention - massive use of yield - on a machine
+with some other load will almost stop. Every yield will wait for all the 
+other
+processes on the system, not only the process/thread we needed to wait for.
+
+Ideally, yield() from a non-realtime process should cause a segfault, 
+that would
+crash all software abusing it, forcing a change. Too drastic though. :-/
+
+>> The users not understanding the limited scope where sched_yield()
+>> behaves deterministicly, seem to think that _yield() will yield() AND
+>> lower the thread's dynamic priority for SCHED_OTHER. Is downgrading
+>> the dynamic priority a behavioral option?
+>>     
+>
+> I expect it to be. It may cause lower-nice-level processes to run,
+> but the (lack of) definition allows it.
+>   
+And this is the problem - suddenly those niced cpu hogs trumps an
+interactive process that seems hopelessly stuck.
+
+Helge Hafting
