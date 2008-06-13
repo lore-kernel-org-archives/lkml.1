@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760472AbYFMACT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760757AbYFMAEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760472AbYFMACT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 20:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755781AbYFMACH
+	id S1760757AbYFMAEj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 20:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757323AbYFMAEa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 20:02:07 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49278 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754800AbYFMACG (ORCPT
+	Thu, 12 Jun 2008 20:04:30 -0400
+Received: from ik-out-1112.google.com ([66.249.90.181]:17437 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755781AbYFMAEa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 20:02:06 -0400
-Date: Thu, 12 Jun 2008 16:54:41 -0700
-From: Greg KH <greg@kroah.com>
-To: Will Newton <will.newton@gmail.com>
-Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org,
-       kernel-janitors@vger.kernel.org, linux-next@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [ANNOUNCE] linux-staging tree created
-Message-ID: <20080612235441.GC4792@kroah.com>
-References: <20080610190540.GA25066@kroah.com> <87a5b0800806110345v77529fc8r591f2fb4c95b5bdf@mail.gmail.com> <20080611162639.GE22134@kroah.com> <87a5b0800806120437n23602ba5raae500f5bd3d179f@mail.gmail.com>
+	Thu, 12 Jun 2008 20:04:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:x-x-sender:to:cc:subject:in-reply-to:message-id:references
+         :user-agent:mime-version:content-type:from;
+        b=K44bauQShT38BLMPbUBnSHSKIV0rvyYU2ZqIc+CenZkJNk7snWDi50TD2oVvzMftAx
+         K+0aH+K4rcRteNo7W2SvNwuTvkN2XFVhsweNfc/1pHpyPLbsyMUv4COccCQqayqse2UY
+         zuwnzibmi4K8LnYO9K71hxs+9zNZCzVKv5g1o=
+Date: Fri, 13 Jun 2008 01:04:25 +0100 (BST)
+X-X-Sender: bb3081@gamma
+To: Daniel Walker <dwalker@mvista.com>
+cc: Byron Bradley <byron.bbradley@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, linux-mm@kvack.org,
+       Hua Zhong <hzhong@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.26-rc5-mm3
+In-Reply-To: <1213314906.16459.90.camel@localhost.localdomain>
+Message-ID: <alpine.DEB.1.00.0806130100300.14928@gamma>
+References: <20080611225945.4da7bb7f.akpm@linux-foundation.org> <alpine.DEB.1.00.0806130006490.14928@gamma> <1213314906.16459.90.camel@localhost.localdomain>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87a5b0800806120437n23602ba5raae500f5bd3d179f@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Byron Bradley <byron.bbradley@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 12, 2008 at 12:37:56PM +0100, Will Newton wrote:
-> On Wed, Jun 11, 2008 at 5:26 PM, Greg KH <greg@kroah.com> wrote:
-> > On Wed, Jun 11, 2008 at 11:45:55AM +0100, Will Newton wrote:
-> >>
-> >> Would the linux-staging tree be an appropriate place to merge a new
-> >> architecture? Or would that be too large a change and should go via
-> >> its own tree?
-> >
-> > That is probably too big to go into -staging and should deserve its own
-> > tree based on the size of patches that have gone into creating a new
-> > architecture in the past.
+On Thu, 12 Jun 2008, Daniel Walker wrote:
+
 > 
-> Our tree is about 26000 lines of diff, including a few drivers.
-
-That's pretty sizable, I think it deserves its own tree.
-
-> > Do you have an example of one that is currently not included in the main
-> > kernel tree right now?
+> On Fri, 2008-06-13 at 00:32 +0100, Byron Bradley wrote:
+> > Looks like x86 and ARM both fail to boot if PROFILE_LIKELY, FTRACE and 
+> > DYNAMIC_FTRACE are selected. If any one of those three are disabled it 
+> > boots (or fails in some other way which I'm looking at now). The serial 
+> > console output from both machines when they fail to boot is below, let me 
+> > know if there is any other information I can provide.
 > 
-> I have a tree that is currently about half way to public consumption,
-> although I don't think there's any point pushing it until we have a
-> publically available toolchain.
+> Did you happen to check PROFILE_LIKELY and FTRACE alone?
 
-Yeah, that would help as well :)
+Yes, without DYNAMIC_FTRACE the arm box gets all the way to userspace and 
+the x86 box panics while registering a driver so most likely unrelated to 
+this problem.
 
-thanks,
-
-greg k-h
+-- 
+Byron Bradley
