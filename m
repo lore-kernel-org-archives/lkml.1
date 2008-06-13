@@ -1,160 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757602AbYFMOZS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758820AbYFMO0B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757602AbYFMOZS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 10:25:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbYFMOZG
+	id S1758820AbYFMO0B (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 10:26:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbYFMOZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 10:25:06 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:51048 "EHLO mail.screens.ru"
+	Fri, 13 Jun 2008 10:25:52 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:51096 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752355AbYFMOZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 10:25:04 -0400
-Date: Fri, 13 Jun 2008 18:26:58 +0400
+	id S1752208AbYFMOZw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 10:25:52 -0400
+Date: Fri, 13 Jun 2008 18:28:01 +0400
 From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jarek Poplawski <jarkao2@o2.pl>,
-       Max Krasnyansky <maxk@qualcomm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] workqueues: insert_work: use "list_head *" instead of "int tail"
-Message-ID: <20080613142658.GA9147@tv-sign.ru>
-References: <20080612165120.GA12177@tv-sign.ru> <20080612165550.GA12183@tv-sign.ru> <1213290074.31518.136.camel@twins> <20080612174433.GA12204@tv-sign.ru> <1213295939.31518.159.camel@twins>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jarek Poplawski <jarkao2@o2.pl>, Max Krasnyansky <maxk@qualcomm.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] workqueues: implement flush_work()
+Message-ID: <20080613142801.GA9165@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1213295939.31518.159.camel@twins>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/12, Peter Zijlstra wrote:
->
-> On Thu, 2008-06-12 at 21:44 +0400, Oleg Nesterov wrote:
->
-> > > Hence that idea of flush context and completions.
-> >
-> > Do you mean something like (just for example) below? If yes, then yes
-> > sure, flush_work() is limited. But I can't see how it is possible to
-> > "generalize" this idea.
-> >
-> > (hmm... actually, if we add flush_work(), we can speedup schedule_on_each_cpu(),
-> >  instead of flush_workqueue(keventd_wq) we can do
-> >
-> > 	for_each_online_cpu(cpu)
-> > 		flush_work(per_cpu_ptr(works, cpu));
-> >
-> >  not sure this really makes sense though).
->
-> Speedups are always nice ;-),
+(on top of [PATCH] workqueues: insert_work: use "list_head *" instead of "int tail"
+ http://marc.info/?l=linux-kernel&m=121328944230175)
 
-OK, I'm sending the patch.
+Most of users of flush_workqueue() can be changed to use cancel_work_sync(),
+but sometimes we really need to wait for the completion and cancelling is not
+an option. schedule_on_each_cpu() is good example.
 
-> but the below also gets us there.
+Add the new helper, flush_work(work), which waits for the completion of the
+specific work_struct.
 
-yeah, and it needs only 1 wakeup. But otoh it is much more complex :(
+By its nature it requires that this work must not be re-queued, and thus its
+usage is limited. For example, this code
 
-> > +struct xxx
-> > +{
-> > +	atomic_t count;
-> > +	struct completion done;
-> > +	work_func_t func;
-> > +};
-> > +
-> > +struct yyy
-> > +{
-> > +	struct work_struct work;
-> > +	struct xxx *xxx;
-> > +};
-> > +
-> > +static void yyy_func(struct work_struct *work)
-> > +{
-> > +	struct xxx *xxx = container_of(work, struct yyy, work)->xxx;
-> > +	xxx->func(work);
-> > +
-> > +	if (atomic_dec_and_test(&xxx->count))
-> > +		complete(&xxx->done);
-> > +}
-> > ...
->
-> Yes, along those lines.
->
-> you can call xxx a flush_context and create an interface like:
->
-> int queue_work_contex(struct workqueue_struct *wq,
-> 		      struct flush_context *fc, struct work_struct *work)
-> {
-> 	work->context = fc;
-> 	return queue_work(wq, work);
-> }
->
-> void flush_workqueue_context(struct workqueue_strucy *wq, t
-> 			     struct flush_context *fc)
-> {
-> 	if (atomic_read(&context->count))
-> 		wait_for_completion(&fc->completion);
-> 	/* except that the above is racy, wait_event() comes to mind */
-> }
->
-> of course run_workqueue() would then need to be augmented with something
-> like:
->
->   context = work->context;
->   ...
->   f(work);
->   ...
->   if (context && atomic_dec_and_test(&context->count))
->     complete(&context->done);
+	queue_work(wq, work);
+	/* WINDOW */
+	queue_work(wq, work);
 
-> also, I seem to have quitely ignored the fact that struct work doesn't
-> have the context pointer, and growing it unconditionally like this isn't
-> nice - hummm,. perhaps we have a bit left in data and can signify a
-> larger struct work_struct.. ?
+	flush_work(work);
 
-Yes, we have a free bit... but afaics we can do better.
+is not right. What can happen in the WINDOW above is
 
-	struct context_barrier {
-		struct work_struct   work;
-		struct flush_context *fc;
-		...
-	}
+	- wq starts the execution of work->func()
 
-	void context_barrier_barrier_func(struct work_struct *work)
-	{
-		struct flush_context *fc = container_of();
-		if (atomic_dec_and_test())
-			...
-	}
+	- the caller migrates to another CPU
 
-	void insert_context_barrier(work, barr)
-	{
-		...insert barr after work, like flush_work() does...
-	}
+now, after the 2nd queue_work() this work is active on the previous CPU, and
+at the same time it is queued on another. We can fix this limitation, but in
+that case we have to iterate over all CPUs like wait_on_work() does, this
+will depreciate the advantages of this helper.
 
-	queue_work_contex(struct workqueue_struct *wq,
-			  struct work_struct *work,
-			  struct flush_context *fc)
-	{
-		int ret = queue_work(wq, work);
-		if (ret)
-			insert_context_barrier(work, barr);
-		return ret;
-	}
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-this way we shouldn't change run_workqueue() and introduce a "parallel"
-larger work_struct which needs its own INIT_()/etc.
-
-However I'm a bit sceptical this will be widely used... I may be wrong.
-
-> making all this PI savvy for -rt is going to be fun though.. I guess we
-> can just queue a normal barrier of the flusher's priority, and cancel it
-> once we complete.. hey - that doesn't sound hard at all :-)
-
-Yes!!! I think this is much better (because _much_ simple) than re-ordering
-the pending work_struct's, we can just boost the whole ->worklist. We can
-implement flush_work_pi() in the same manner as queue_work_contex() above.
-That is why I said previously that flush_() should govern the priority,
-not queue.
-
-But we can also implement queue_work_pi(struct work_struct_pi *work).
-
-Oleg.
+--- 26-rc2/include/linux/workqueue.h~WQ_2_FLUSH_WORK	2008-05-18 15:42:34.000000000 +0400
++++ 26-rc2/include/linux/workqueue.h	2008-05-18 15:42:34.000000000 +0400
+@@ -198,6 +198,8 @@ extern int keventd_up(void);
+ extern void init_workqueues(void);
+ int execute_in_process_context(work_func_t fn, struct execute_work *);
+ 
++extern int flush_work(struct work_struct *work);
++
+ extern int cancel_work_sync(struct work_struct *work);
+ 
+ /*
+--- 26-rc2/kernel/workqueue.c~WQ_2_FLUSH_WORK	2008-06-12 21:28:13.000000000 +0400
++++ 26-rc2/kernel/workqueue.c	2008-06-13 17:31:54.000000000 +0400
+@@ -399,6 +399,52 @@ void flush_workqueue(struct workqueue_st
+ }
+ EXPORT_SYMBOL_GPL(flush_workqueue);
+ 
++/**
++ * flush_work - block until a work_struct's callback has terminated
++ * @work: the work which is to be flushed
++ *
++ * It is expected that, prior to calling flush_work(), the caller has
++ * arranged for the work to not be requeued, otherwise it doesn't make
++ * sense to use this function.
++ */
++int flush_work(struct work_struct *work)
++{
++	struct cpu_workqueue_struct *cwq;
++	struct list_head *prev;
++	struct wq_barrier barr;
++
++	might_sleep();
++	cwq = get_wq_data(work);
++	if (!cwq)
++		return 0;
++
++	prev = NULL;
++	spin_lock_irq(&cwq->lock);
++	if (unlikely(cwq->current_work == work)) {
++		prev = &cwq->worklist;
++	} else {
++		if (list_empty(&work->entry))
++			goto out;
++		/*
++		 * See the comment near try_to_grab_pending()->smp_rmb().
++		 * If it was re-queued under us we are not going to wait.
++		 */
++		smp_rmb();
++		if (cwq != get_wq_data(work))
++			goto out;
++		prev = &work->entry;
++	}
++	insert_wq_barrier(cwq, &barr, prev->next);
++out:
++	spin_unlock_irq(&cwq->lock);
++	if (!prev)
++		return 0;
++
++	wait_for_completion(&barr.done);
++	return 1;
++}
++EXPORT_SYMBOL_GPL(flush_work);
++
+ /*
+  * Upon a successful return (>= 0), the caller "owns" WORK_STRUCT_PENDING bit,
+  * so this work can't be re-armed in any way.
 
