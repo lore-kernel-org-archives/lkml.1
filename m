@@ -1,66 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759504AbYFMOoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758071AbYFMO4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759504AbYFMOoN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 10:44:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755621AbYFMOn6
+	id S1758071AbYFMO4Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 10:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755996AbYFMO4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 10:43:58 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:37667 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755549AbYFMOn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 10:43:58 -0400
-Date: Fri, 13 Jun 2008 18:46:05 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jarek Poplawski <jarkao2@o2.pl>, Max Krasnyansky <maxk@qualcomm.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] workqueues: implement flush_work()
-Message-ID: <20080613144605.GB9147@tv-sign.ru>
-References: <20080613142801.GA9165@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 13 Jun 2008 10:56:13 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:49720 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752355AbYFMO4M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 10:56:12 -0400
+From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>,
+       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-EWG" <ewg@lists.openfabrics.org>, general@lists.openfabrics.org
+Subject: [PATCH REPOST #2] IB/ehca: In case of lost interrupts, trigger EOI to reenable interrupts
+Date: Fri, 13 Jun 2008 16:55:41 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: fenkes@de.ibm.com, raisch@de.ibm.com, hnguyen@de.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080613142801.GA9165@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+Message-Id: <200806131655.43410.ossrosch@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/13, Oleg Nesterov wrote:
->
-> Add the new helper, flush_work(work), which waits for the completion of the
-> specific work_struct.
->
-> By its nature it requires that this work must not be re-queued, and thus its
-> usage is limited. For example, this code
->
-> 	queue_work(wq, work);
-> 	/* WINDOW */
-> 	queue_work(wq, work);
->
-> 	flush_work(work);
->
-> is not right. What can happen in the WINDOW above is
->
-> 	- wq starts the execution of work->func()
->
-> 	- the caller migrates to another CPU
->
-> now, after the 2nd queue_work() this work is active on the previous CPU, and
-> at the same time it is queued on another.
+During corner case testing, we noticed that some versions of ehca 
+do not properly transition to interrupt done in special load situations.
+This can be resolved by periodically triggering EOI through H_EOI, 
+if eqes are pending.
 
-To clarify, in the scenario above, flush_work() behaves correctly. It "flushes"
-the result of the last queue_work() which is visible to the caller. We can add
-another simple helper,
+Signed-off-by: Stefan Roscher <stefan.roscher@de.ibm.com>
+---
+As firmware team suggested I moved the call of the EOI h_call into 
+the handler function, this ensures that we will call EOI only when we 
+find a valid eqe on the event queue.
+Additionally I changed the calculation of the xirr value as Roland suggested.
 
-	int flush_work_sync(work)
-	{
-		return flush_work(work) || wait_on_work(work);
-	}
+ drivers/infiniband/hw/ehca/ehca_irq.c |    9 +++++++--
+ drivers/infiniband/hw/ehca/hcp_if.c   |   10 ++++++++++
+ drivers/infiniband/hw/ehca/hcp_if.h   |    1 +
+ 3 files changed, 18 insertions(+), 2 deletions(-)
 
-but I think it is not needed.
-
-In short: flush_work() should be use with care when it is really needed.
-
-Oleg.
+diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
+index ce1ab05..0792d93 100644
+--- a/drivers/infiniband/hw/ehca/ehca_irq.c
++++ b/drivers/infiniband/hw/ehca/ehca_irq.c
+@@ -531,7 +531,7 @@ void ehca_process_eq(struct ehca_shca *shca, int is_irq)
+ {
+ 	struct ehca_eq *eq = &shca->eq;
+ 	struct ehca_eqe_cache_entry *eqe_cache = eq->eqe_cache;
+-	u64 eqe_value;
++	u64 eqe_value, ret;
+ 	unsigned long flags;
+ 	int eqe_cnt, i;
+ 	int eq_empty = 0;
+@@ -583,8 +583,13 @@ void ehca_process_eq(struct ehca_shca *shca, int is_irq)
+ 			ehca_dbg(&shca->ib_device,
+ 				 "No eqe found for irq event");
+ 		goto unlock_irq_spinlock;
+-	} else if (!is_irq)
++	} else if (!is_irq) {
++		ret = hipz_h_eoi(eq->ist);
++		if (ret != H_SUCCESS)
++			ehca_err(&shca->ib_device,
++				 "bad return code EOI -rc = %ld\n", ret);
+ 		ehca_dbg(&shca->ib_device, "deadman found %x eqe", eqe_cnt);
++	}
+ 	if (unlikely(eqe_cnt == EHCA_EQE_CACHE_SIZE))
+ 		ehca_dbg(&shca->ib_device, "too many eqes for one irq event");
+ 	/* enable irq for new packets */
+diff --git a/drivers/infiniband/hw/ehca/hcp_if.c b/drivers/infiniband/hw/ehca/hcp_if.c
+index 5245e13..415d3a4 100644
+--- a/drivers/infiniband/hw/ehca/hcp_if.c
++++ b/drivers/infiniband/hw/ehca/hcp_if.c
+@@ -933,3 +933,13 @@ u64 hipz_h_error_data(const struct ipz_adapter_handle adapter_handle,
+ 				       r_cb,
+ 				       0, 0, 0, 0);
+ }
++
++u64 hipz_h_eoi(int irq)
++{
++	unsigned long xirr;
++
++	iosync();
++	xirr = (0xffULL << 24) | irq;
++
++	return plpar_hcall_norets(H_EOI, xirr);
++}
+diff --git a/drivers/infiniband/hw/ehca/hcp_if.h b/drivers/infiniband/hw/ehca/hcp_if.h
+index 60ce02b..2c3c6e0 100644
+--- a/drivers/infiniband/hw/ehca/hcp_if.h
++++ b/drivers/infiniband/hw/ehca/hcp_if.h
+@@ -260,5 +260,6 @@ u64 hipz_h_error_data(const struct ipz_adapter_handle adapter_handle,
+ 		      const u64 ressource_handle,
+ 		      void *rblock,
+ 		      unsigned long *byte_count);
++u64 hipz_h_eoi(int irq);
+ 
+ #endif /* __HCP_IF_H__ */
+-- 
+1.5.5
 
