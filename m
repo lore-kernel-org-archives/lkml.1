@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbYFMUUI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757454AbYFMUV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756695AbYFMUUI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 16:20:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYFMUT4
+	id S1757454AbYFMUV1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 16:21:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYFMUVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 16:19:56 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:46369 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753509AbYFMUTz (ORCPT
+	Fri, 13 Jun 2008 16:21:19 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:4578 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752096AbYFMUVS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 16:19:55 -0400
-Date: Fri, 13 Jun 2008 13:19:46 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Louis Rilling <Louis.Rilling@kerlabs.com>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: Re: [PATCH 1/3][BUGFIX] configfs: Introduce configfs_dirent_lock
-Message-ID: <20080613201946.GC20576@mail.oracle.com>
-Mail-Followup-To: Louis Rilling <Louis.Rilling@kerlabs.com>,
-	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-References: <20080612133126.335618468@kerlabs.com> <20080612134203.763166823@kerlabs.com> <20080612191348.GE5377@mail.oracle.com> <20080612222558.GA4012@localdomain> <20080613024130.GD20581@mail.oracle.com> <20080613104513.GI30804@localhost> <20080613120923.GJ30804@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080613120923.GJ30804@localhost>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 13 Jun 2008 16:21:18 -0400
+Subject: [PATCH] collect lru meminfo statistics from correct offset
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>,
+       linux-mm <linux-mm@kvack.org>
+In-Reply-To: <20080613134827.5dbac5ac@cuia.bos.redhat.com>
+References: <20080611184214.605110868@redhat.com>
+	 <20080611184339.159161465@redhat.com> <4851C1CC.7070607@ct.jp.nec.com>
+	 <20080613134827.5dbac5ac@cuia.bos.redhat.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Fri, 13 Jun 2008 16:21:47 -0400
+Message-Id: <1213388507.9670.35.camel@lts-notebook>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
 X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
 X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 13, 2008 at 02:09:23PM +0200, Louis Rilling wrote:
-> Oh, should probably provide some d_revalidate() also, which would return
-> -ENOENT for a dentry under a directory flagged with USET_DROPPING. But I'm
-> realizing that such "inconsistencies" (some default groups being valid in the
-> d_cache and some other ones not) already happen between the time detach_prep()
-> has flagged a default group with USET_DROPPING and the default
-> group is actually detached. Am I wrong?
+PATCH collect lru meminfo statistics from correct offset
 
-	We don't need d_revalidate().  As I stated at the end of my last
-email, USET_DROPPING does not mean 'It already went away'.  It just
-means we're safe to do so, because we prevent new children.  We actually
-make it go away underneath i_mutex.
-	The VFS handles inconsistencies between lookup and action.  It's
-part of normal operation.  Otherwise, they'd have to hold all the
-i_mutexes around lookup and action.
+Against:  2.6.26-rc5-mm3
 
-Joel
+Incremental fix to: vmscan-split-lru-lists-into-anon-file-sets.patch 
 
--- 
+Offset 'lru' by 'NR_LRU_BASE' to obtain global page state for
+lru list 'lru'.
 
-"When choosing between two evils, I always like to try the one
- I've never tried before."
-        - Mae West
+Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
 
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+ fs/proc/proc_misc.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6.26-rc5-mm3/fs/proc/proc_misc.c
+===================================================================
+--- linux-2.6.26-rc5-mm3.orig/fs/proc/proc_misc.c	2008-06-13 15:16:17.000000000 -0400
++++ linux-2.6.26-rc5-mm3/fs/proc/proc_misc.c	2008-06-13 15:44:24.000000000 -0400
+@@ -158,7 +158,7 @@ static int meminfo_read_proc(char *page,
+ 	get_vmalloc_info(&vmi);
+ 
+ 	for (lru = LRU_BASE; lru < NR_LRU_LISTS; lru++)
+-		pages[lru] = global_page_state(lru);
++		pages[lru] = global_page_state(NR_LRU_BASE + lru);
+ 
+ 	/*
+ 	 * Tagged format, for easy grepping and expansion.
+
+
