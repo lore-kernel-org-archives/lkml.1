@@ -1,109 +1,282 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759327AbYFMHDK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761506AbYFMHD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759327AbYFMHDK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 03:03:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbYFMHC4
+	id S1761506AbYFMHD1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 03:03:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759730AbYFMHDL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 03:02:56 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:46560 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752546AbYFMHCz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 03:02:55 -0400
-Message-ID: <48521BC8.5080801@bull.net>
-Date: Fri, 13 Jun 2008 09:03:36 +0200
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
+	Fri, 13 Jun 2008 03:03:11 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:46916 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757627AbYFMHDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 03:03:08 -0400
+Date: Fri, 13 Jun 2008 03:03:07 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patches] libata fixes
+Message-ID: <20080613070307.GA13997@havoc.gtf.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Manfred Spraul <manfred@colorfullife.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: repeatable slab corruption with LTP msgctl08
-References: <20080611221324.42270ef2.akpm@linux-foundation.org>
-In-Reply-To: <20080611221324.42270ef2.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> Running current mainline on my old 2-way PIII.  Distro is RH FC1.  LTP
-> version is ltp-full-20070228 (lots of retro-computing there).
-> 
-> Config is at http://userweb.kernel.org/~akpm/config-vmm.txt
-> 
-> 
-> ./testcases/bin/msgctl08 crashes after ten minutes or so:
-> 
-> slab: Internal list corruption detected in cache 'size-128'(26), slabp f2905000(20). Hexdump:
-> 
-> 000: 00 e0 12 f2 88 32 c0 f7 88 00 00 00 88 50 90 f2
-> 010: 14 00 00 00 0f 00 00 00 00 00 00 00 ff ff ff ff
-> 020: fd ff ff ff fd ff ff ff fd ff ff ff fd ff ff ff
-> 030: fd ff ff ff fd ff ff ff fd ff ff ff fd ff ff ff
-> 040: fd ff ff ff fd ff ff ff 00 00 00 00 fd ff ff ff
-> 050: fd ff ff ff fd ff ff ff 19 00 00 00 17 00 00 00
-> 060: fd ff ff ff fd ff ff ff 0b 00 00 00 fd ff ff ff
-> 070: fd ff ff ff fd ff ff ff fd ff ff ff fd ff ff ff
-> 080: 10 00 00 00
-> ------------[ cut here ]------------
-> kernel BUG at mm/slab.c:2949!
-> invalid opcode: 0000 [#1] SMP 
-> Modules linked in:
-> 
-> Pid: 3348, comm: msgctl08 Not tainted (2.6.26-rc5 #1)
-> EIP: 0060:[<c017a35b>] EFLAGS: 00010086 CPU: 0
-> EIP is at check_slabp+0xeb/0x100
-> EAX: 00000001 EBX: f2905083 ECX: 00000001 EDX: f20ee670
-> ESI: f2905000 EDI: 00000084 EBP: f4671e88 ESP: f4671e64
->  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> Process msgctl08 (pid: 3348, ti=f4670000 task=f20ee670 task.ti=f4670000)
-> Stack: c0472f2b 00000000 0000001a f2905000 00000014 f7c01500 ffffffff 0000000e 
->        f2905000 f4671eec c017b69f 00000010 000000d0 f20ee670 f7c032ac 000000d0 
->        f7c01500 0000000e f7c03288 f7c06df0 f29ec088 00000098 00000000 00000000 
-> Call Trace:
->  [<c017b69f>] ? cache_alloc_refill+0xcf/0x6b0
->  [<c017bdd4>] ? __kmalloc+0x154/0x160
->  [<c0257663>] ? load_msg+0x33/0x150
->  [<c0257663>] ? load_msg+0x33/0x150
->  [<c0257dfb>] ? do_msgsnd+0x17b/0x2e0
->  [<c0257cc9>] ? do_msgsnd+0x49/0x2e0
->  [<c0126f1f>] ? __do_softirq+0x6f/0x100
->  [<c0126e58>] ? _local_bh_enable+0x48/0xa0
->  [<c0257f92>] ? sys_msgsnd+0x32/0x40
->  [<c0106e12>] ? sys_ipc+0xb2/0x240
->  [<c0102f58>] ? sysenter_past_esp+0xa5/0xb1
->  [<c0102f1d>] ? sysenter_past_esp+0x6a/0xb1
->  =======================
-> Code: 86 fa ff 8b 55 f0 8b 42 38 8d 04 85 1c 00 00 00 39 f8 76 0b 43 f7 c7 0f 00 00 00 75 d2 eb bd c7 04 24 2b 2f 47 c0 e8 85 86 fa ff <0f> 0b eb fe 83 c4 18 5b 5e 5f 5d c3 8b 56 10 e9 6b ff ff ff 90 
-> EIP: [<c017a35b>] check_slabp+0xeb/0x100 SS:ESP 0068:f4671e64
-> ---[ end trace d7a2cbbb5a3654be ]---
-> 
-> 
-> Pekka (or Christoph): could you please decrypt the slab bits for us?
-> 
 
-Andrew,
+More code than I'd like for -rc6, but it's adding a hardware workaround
+for a specific chip (ATI SB600/SB700).
 
-Sorry for answering so late (I only saw you e-mail yesterday afternoon).
-I have just run msgctl08, setting msgmni to 1722 and turning on the SLAB 
-debug:
 
-CONFIG_SLAB=y
-CONFIG_SLABINFO=y
-CONFIG_DEBUG_SLAB=y
-CONFIG_DEBUG_SLAB_LEAK=y
+Please pull from 'upstream-linus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
 
-kernel: linux-2.6.26-rc5-mm1
-ltp: ltp-full-20080430
+to receive the following updates:
 
-But I could not reproduce the bug.
+ drivers/ata/ahci.c |  137 ++++++++++++++++++++++++++++++++++++++++++----------
+ 1 files changed, 112 insertions(+), 25 deletions(-)
 
-Will try to investigate more.
+Shane Huang (1):
+      ahci: Workaround HW bug for SB600/700 SATA controller PMP support
 
-Regards,
-Nadia
+Tejun Heo (1):
+      ahci: workarounds for mcp65
+
+diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
+index 544b7d6..966ab40 100644
+--- a/drivers/ata/ahci.c
++++ b/drivers/ata/ahci.c
+@@ -89,6 +89,7 @@ enum {
+ 	board_ahci_sb600	= 3,
+ 	board_ahci_mv		= 4,
+ 	board_ahci_sb700	= 5,
++	board_ahci_mcp65	= 6,
+ 
+ 	/* global controller registers */
+ 	HOST_CAP		= 0x00, /* host capabilities */
+@@ -190,6 +191,7 @@ enum {
+ 	AHCI_HFLAG_NO_PMP		= (1 << 6), /* no PMP */
+ 	AHCI_HFLAG_NO_HOTPLUG		= (1 << 7), /* ignore PxSERR.DIAG.N */
+ 	AHCI_HFLAG_SECT255		= (1 << 8), /* max 255 sectors */
++	AHCI_HFLAG_YES_NCQ		= (1 << 9), /* force NCQ cap on */
+ 
+ 	/* ap->flags bits */
+ 
+@@ -253,6 +255,8 @@ static void ahci_pmp_attach(struct ata_port *ap);
+ static void ahci_pmp_detach(struct ata_port *ap);
+ static int ahci_softreset(struct ata_link *link, unsigned int *class,
+ 			  unsigned long deadline);
++static int ahci_sb600_softreset(struct ata_link *link, unsigned int *class,
++			  unsigned long deadline);
+ static int ahci_hardreset(struct ata_link *link, unsigned int *class,
+ 			  unsigned long deadline);
+ static int ahci_vt8251_hardreset(struct ata_link *link, unsigned int *class,
+@@ -329,6 +333,12 @@ static struct ata_port_operations ahci_p5wdh_ops = {
+ 	.hardreset		= ahci_p5wdh_hardreset,
+ };
+ 
++static struct ata_port_operations ahci_sb600_ops = {
++	.inherits		= &ahci_ops,
++	.softreset		= ahci_sb600_softreset,
++	.pmp_softreset		= ahci_sb600_softreset,
++};
++
+ #define AHCI_HFLAGS(flags)	.private_data	= (void *)(flags)
+ 
+ static const struct ata_port_info ahci_port_info[] = {
+@@ -359,11 +369,11 @@ static const struct ata_port_info ahci_port_info[] = {
+ 	{
+ 		AHCI_HFLAGS	(AHCI_HFLAG_IGN_SERR_INTERNAL |
+ 				 AHCI_HFLAG_32BIT_ONLY | AHCI_HFLAG_NO_MSI |
+-				 AHCI_HFLAG_SECT255 | AHCI_HFLAG_NO_PMP),
++				 AHCI_HFLAG_SECT255),
+ 		.flags		= AHCI_FLAG_COMMON,
+ 		.pio_mask	= 0x1f, /* pio0-4 */
+ 		.udma_mask	= ATA_UDMA6,
+-		.port_ops	= &ahci_ops,
++		.port_ops	= &ahci_sb600_ops,
+ 	},
+ 	/* board_ahci_mv */
+ 	{
+@@ -377,8 +387,15 @@ static const struct ata_port_info ahci_port_info[] = {
+ 	},
+ 	/* board_ahci_sb700 */
+ 	{
+-		AHCI_HFLAGS	(AHCI_HFLAG_IGN_SERR_INTERNAL |
+-				 AHCI_HFLAG_NO_PMP),
++		AHCI_HFLAGS	(AHCI_HFLAG_IGN_SERR_INTERNAL),
++		.flags		= AHCI_FLAG_COMMON,
++		.pio_mask	= 0x1f, /* pio0-4 */
++		.udma_mask	= ATA_UDMA6,
++		.port_ops	= &ahci_sb600_ops,
++	},
++	/* board_ahci_mcp65 */
++	{
++		AHCI_HFLAGS	(AHCI_HFLAG_YES_NCQ),
+ 		.flags		= AHCI_FLAG_COMMON,
+ 		.pio_mask	= 0x1f, /* pio0-4 */
+ 		.udma_mask	= ATA_UDMA6,
+@@ -438,14 +455,14 @@ static const struct pci_device_id ahci_pci_tbl[] = {
+ 	{ PCI_VDEVICE(VIA, 0x6287), board_ahci_vt8251 }, /* VIA VT8251 */
+ 
+ 	/* NVIDIA */
+-	{ PCI_VDEVICE(NVIDIA, 0x044c), board_ahci },		/* MCP65 */
+-	{ PCI_VDEVICE(NVIDIA, 0x044d), board_ahci },		/* MCP65 */
+-	{ PCI_VDEVICE(NVIDIA, 0x044e), board_ahci },		/* MCP65 */
+-	{ PCI_VDEVICE(NVIDIA, 0x044f), board_ahci },		/* MCP65 */
+-	{ PCI_VDEVICE(NVIDIA, 0x045c), board_ahci },		/* MCP65 */
+-	{ PCI_VDEVICE(NVIDIA, 0x045d), board_ahci },		/* MCP65 */
+-	{ PCI_VDEVICE(NVIDIA, 0x045e), board_ahci },		/* MCP65 */
+-	{ PCI_VDEVICE(NVIDIA, 0x045f), board_ahci },		/* MCP65 */
++	{ PCI_VDEVICE(NVIDIA, 0x044c), board_ahci_mcp65 },	/* MCP65 */
++	{ PCI_VDEVICE(NVIDIA, 0x044d), board_ahci_mcp65 },	/* MCP65 */
++	{ PCI_VDEVICE(NVIDIA, 0x044e), board_ahci_mcp65 },	/* MCP65 */
++	{ PCI_VDEVICE(NVIDIA, 0x044f), board_ahci_mcp65 },	/* MCP65 */
++	{ PCI_VDEVICE(NVIDIA, 0x045c), board_ahci_mcp65 },	/* MCP65 */
++	{ PCI_VDEVICE(NVIDIA, 0x045d), board_ahci_mcp65 },	/* MCP65 */
++	{ PCI_VDEVICE(NVIDIA, 0x045e), board_ahci_mcp65 },	/* MCP65 */
++	{ PCI_VDEVICE(NVIDIA, 0x045f), board_ahci_mcp65 },	/* MCP65 */
+ 	{ PCI_VDEVICE(NVIDIA, 0x0550), board_ahci },		/* MCP67 */
+ 	{ PCI_VDEVICE(NVIDIA, 0x0551), board_ahci },		/* MCP67 */
+ 	{ PCI_VDEVICE(NVIDIA, 0x0552), board_ahci },		/* MCP67 */
+@@ -624,6 +641,12 @@ static void ahci_save_initial_config(struct pci_dev *pdev,
+ 		cap &= ~HOST_CAP_NCQ;
+ 	}
+ 
++	if (!(cap & HOST_CAP_NCQ) && (hpriv->flags & AHCI_HFLAG_YES_NCQ)) {
++		dev_printk(KERN_INFO, &pdev->dev,
++			   "controller can do NCQ, turning on CAP_NCQ\n");
++		cap |= HOST_CAP_NCQ;
++	}
++
+ 	if ((cap & HOST_CAP_PMP) && (hpriv->flags & AHCI_HFLAG_NO_PMP)) {
+ 		dev_printk(KERN_INFO, &pdev->dev,
+ 			   "controller can't do PMP, turning off CAP_PMP\n");
+@@ -1262,19 +1285,11 @@ static int ahci_exec_polled_cmd(struct ata_port *ap, int pmp,
+ 	return 0;
+ }
+ 
+-static int ahci_check_ready(struct ata_link *link)
+-{
+-	void __iomem *port_mmio = ahci_port_base(link->ap);
+-	u8 status = readl(port_mmio + PORT_TFDATA) & 0xFF;
+-
+-	return ata_check_ready(status);
+-}
+-
+-static int ahci_softreset(struct ata_link *link, unsigned int *class,
+-			  unsigned long deadline)
++static int ahci_do_softreset(struct ata_link *link, unsigned int *class,
++			     int pmp, unsigned long deadline,
++			     int (*check_ready)(struct ata_link *link))
+ {
+ 	struct ata_port *ap = link->ap;
+-	int pmp = sata_srst_pmp(link);
+ 	const char *reason = NULL;
+ 	unsigned long now, msecs;
+ 	struct ata_taskfile tf;
+@@ -1312,7 +1327,7 @@ static int ahci_softreset(struct ata_link *link, unsigned int *class,
+ 	ahci_exec_polled_cmd(ap, pmp, &tf, 0, 0, 0);
+ 
+ 	/* wait for link to become ready */
+-	rc = ata_wait_after_reset(link, deadline, ahci_check_ready);
++	rc = ata_wait_after_reset(link, deadline, check_ready);
+ 	/* link occupied, -ENODEV too is an error */
+ 	if (rc) {
+ 		reason = "device not ready";
+@@ -1328,6 +1343,72 @@ static int ahci_softreset(struct ata_link *link, unsigned int *class,
+ 	return rc;
+ }
+ 
++static int ahci_check_ready(struct ata_link *link)
++{
++	void __iomem *port_mmio = ahci_port_base(link->ap);
++	u8 status = readl(port_mmio + PORT_TFDATA) & 0xFF;
++
++	return ata_check_ready(status);
++}
++
++static int ahci_softreset(struct ata_link *link, unsigned int *class,
++			  unsigned long deadline)
++{
++	int pmp = sata_srst_pmp(link);
++
++	DPRINTK("ENTER\n");
++
++	return ahci_do_softreset(link, class, pmp, deadline, ahci_check_ready);
++}
++
++static int ahci_sb600_check_ready(struct ata_link *link)
++{
++	void __iomem *port_mmio = ahci_port_base(link->ap);
++	u8 status = readl(port_mmio + PORT_TFDATA) & 0xFF;
++	u32 irq_status = readl(port_mmio + PORT_IRQ_STAT);
++
++	/*
++	 * There is no need to check TFDATA if BAD PMP is found due to HW bug,
++	 * which can save timeout delay.
++	 */
++	if (irq_status & PORT_IRQ_BAD_PMP)
++		return -EIO;
++
++	return ata_check_ready(status);
++}
++
++static int ahci_sb600_softreset(struct ata_link *link, unsigned int *class,
++				unsigned long deadline)
++{
++	struct ata_port *ap = link->ap;
++	void __iomem *port_mmio = ahci_port_base(ap);
++	int pmp = sata_srst_pmp(link);
++	int rc;
++	u32 irq_sts;
++
++	DPRINTK("ENTER\n");
++
++	rc = ahci_do_softreset(link, class, pmp, deadline,
++			       ahci_sb600_check_ready);
++
++	/*
++	 * Soft reset fails on some ATI chips with IPMS set when PMP
++	 * is enabled but SATA HDD/ODD is connected to SATA port,
++	 * do soft reset again to port 0.
++	 */
++	if (rc == -EIO) {
++		irq_sts = readl(port_mmio + PORT_IRQ_STAT);
++		if (irq_sts & PORT_IRQ_BAD_PMP) {
++			ata_link_printk(link, KERN_WARNING,
++					"failed due to HW bug, retry pmp=0\n");
++			rc = ahci_do_softreset(link, class, 0, deadline,
++					       ahci_check_ready);
++		}
++	}
++
++	return rc;
++}
++
+ static int ahci_hardreset(struct ata_link *link, unsigned int *class,
+ 			  unsigned long deadline)
+ {
+@@ -2118,7 +2199,8 @@ static void ahci_p5wdh_workaround(struct ata_host *host)
+ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ {
+ 	static int printed_version;
+-	struct ata_port_info pi = ahci_port_info[ent->driver_data];
++	unsigned int board_id = ent->driver_data;
++	struct ata_port_info pi = ahci_port_info[board_id];
+ 	const struct ata_port_info *ppi[] = { &pi, NULL };
+ 	struct device *dev = &pdev->dev;
+ 	struct ahci_host_priv *hpriv;
+@@ -2167,6 +2249,11 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		return -ENOMEM;
+ 	hpriv->flags |= (unsigned long)pi.private_data;
+ 
++	/* MCP65 revision A1 and A2 can't do MSI */
++	if (board_id == board_ahci_mcp65 &&
++	    (pdev->revision == 0xa1 || pdev->revision == 0xa2))
++		hpriv->flags |= AHCI_HFLAG_NO_MSI;
++
+ 	if ((hpriv->flags & AHCI_HFLAG_NO_MSI) || pci_enable_msi(pdev))
+ 		pci_intx(pdev, 1);
+ 
