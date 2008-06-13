@@ -1,87 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759824AbYFMA4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760991AbYFMA5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759824AbYFMA4L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 20:56:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757108AbYFMAz6
+	id S1760991AbYFMA5S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 20:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757216AbYFMA5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 20:55:58 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45939 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752487AbYFMAz6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 20:55:58 -0400
-Date: Thu, 12 Jun 2008 17:55:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, arjan@infradead.org,
-       andreas.herrmann3@amd.com
-Subject: Re: [patch 6/6] x86: add c1e aware idle function
-Message-Id: <20080612175533.5b6c1736.akpm@linux-foundation.org>
-In-Reply-To: <20080610171712.465591661@linutronix.de>
-References: <20080610171639.551369443@linutronix.de>
-	<20080610171712.465591661@linutronix.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 12 Jun 2008 20:57:04 -0400
+Received: from mga11.intel.com ([192.55.52.93]:3120 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755615AbYFMA5D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 20:57:03 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,634,1204531200"; 
+   d="scan'208";a="339770597"
+Subject: Re: Confusions with reserve_early, reserve_bootmem, e820, efi, ...
+	on x86_64
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Paul Jackson <pj@sgi.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Bernhard Walle <bwalle@suse.de>, Johannes Weiner <hannes@saeurebad.de>,
+       linux-kernel@vger.kernel.org, Jack Steiner <steiner@sgi.com>
+In-Reply-To: <20080612050609.88a8cf7f.pj@sgi.com>
+References: <20080612050609.88a8cf7f.pj@sgi.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Fri, 13 Jun 2008 08:59:39 +0800
+Message-Id: <1213318779.20431.3.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+X-OriginalArrivalTime: 13 Jun 2008 00:56:59.0335 (UTC) FILETIME=[624ADD70:01C8CCF0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Jun 2008 10:29:00 -0000
-Thomas Gleixner <tglx@linutronix.de> wrote:
+On Thu, 2008-06-12 at 05:06 -0500, Paul Jackson wrote:
+> Bernhard, Johannes, Huang, and Yinghai:
+> 
+> I am running into some complications with reserve_bootmem vs
+> reserve_early, and a reserve_early of "EFI memmap" in the
+> efi_reserve_early() routine conflicting with reserve_early of
+> "BIOS reserved" in reserve_ebda_region().
+> 
+> This is on x86_64 arch, using Ingo's x86-latest, with possibly
+> still buggy EFI firmware in a lab system I'm helping to develop.
+> 
+> I have three concerns:
+> 
+>  1) The find_overlapped_early() check called from reserve_early is
+>     failing on my lab system , causing panic, when it tries to
+>     register "EFI memmap" at addresses <0xe0660, 0xe0778> that
+>     overlaps with the "BIOS reserved" early reserve at addresses
+>     <0x9f000, 0x100000>
 
-> +static void c1e_idle(void)
-> +{
-> +	static cpumask_t c1e_mask = CPU_MASK_NONE;
-> +	static int c1e_detected;
-> +
-> +	if (need_resched())
-> +		return;
-> +
-> +	if (!c1e_detected) {
-> +		u32 lo, hi;
-> +
-> +		rdmsr(MSR_K8_INT_PENDING_MSG, lo, hi);
-> +		if (lo & K8_INTP_C1E_ACTIVE_MASK) {
-> +			c1e_detected = 1;
-> +			mark_tsc_unstable("TSC halt in C1E");
-> +			printk(KERN_INFO "System has C1E enabled\n");
-> +		}
-> +	}
-> +
-> +	if (c1e_detected) {
-> +		int cpu = smp_processor_id();
-> +
-> +		if (!cpu_isset(cpu, c1e_mask)) {
-> +			cpu_set(cpu, c1e_mask);
-> +			/* Force broadcast so ACPI can not interfere */
-> +			clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_FORCE,
-> +					   &cpu);
-> +			printk(KERN_INFO "Switch to broadcast mode on CPU%d\n",
-> +			       cpu);
-> +		}
-> +		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
-> +		default_idle();
-> +		local_irq_disable();
-> +		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
-> +		local_irq_enable();
+I think this can be resolved by avoiding memory area <0x9f000, 0x100000>
+when allocating memory for EFI memory map in boot-loader.
 
-I worked it out!  It took me a while.
-
-This function is called with local irqs disabled.
-
-default_idle() is entered with local irqs disabled but returns with them
-enabled.
-
-clockevents_notify() is supposed to be called with local irqs disabled.
-
-This functions returns with local irqs enabled.
-
-Was I right?  None of any of that is documented anywhere.  But it should
-be.
+Best Regards,
+Huang Ying
 
 
-> +	} else
-> +		default_idle();
-> +}
