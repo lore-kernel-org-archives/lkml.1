@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761616AbYFMIyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761603AbYFMI5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761616AbYFMIyT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 04:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755049AbYFMIyK
+	id S1761603AbYFMI5n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 04:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754876AbYFMI5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 04:54:10 -0400
-Received: from hu-out-0506.google.com ([72.14.214.224]:51271 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755009AbYFMIyI (ORCPT
+	Fri, 13 Jun 2008 04:57:35 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:23180 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754668AbYFMI5f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 04:54:08 -0400
+	Fri, 13 Jun 2008 04:57:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:to:cc:subject:message-id:mime-version:content-type
          :content-disposition:user-agent:from;
-        b=Ucd2K7YKxV9gvRYo2pKLEKnXSUWLlEgHNIN0wWLc0lRSNljFiwu7nWKljtvQiDZNz8
-         n9+4FocKYKk8P5t4WyG2gdutT0Ny9c287ZHDed7VSFSV1QPufYyLMGadt9QyXqlZlGUi
-         Ww/dBOQfmNVv4+SRCwSTX8Fhvfwg+xeDHV+P0=
-Date: Fri, 13 Jun 2008 10:54:01 +0200
+        b=kfYFw+KZ1CFf/Yzjg7I1a9FtV2avLdg9yrycKABnUuAZaQG7hYEkFhbmE9Ld9G/v6z
+         a1Cx6Bo2eVC3No1GsNcX3CANnJtSOq8lALti1GaHecqEyvfFt8kvS8M8uTeRhoNRJvoi
+         4VGI4523DZ1gD2XaO+GzRr1dm7vP6wcX41YLs=
+Date: Fri, 13 Jun 2008 10:57:16 +0200
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] stacktrace: add saved stack traces to backtrace self-test
-Message-ID: <20080613085401.GA3139@damson.getinternet.no>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] kallsyms: unify 32- and 64-bit code
+Message-ID: <20080613085716.GB3139@damson.getinternet.no>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -32,92 +33,58 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Fri, 13 Jun 2008 10:26:44 +0200
-Subject: [PATCH] stacktrace: add saved stack traces to backtrace self-test
+Date: Fri, 13 Jun 2008 10:02:26 +0200
+Subject: [PATCH] kallsyms: unify 32- and 64-bit code
 
-This patch adds saved stack-traces to the backtrace suite of self-tests.
+Use the %p format string which already accounts for the padding you need
+with a pointer type on a particular architecture.
 
-Note that we don't unconditionally enable CONFIG_STACKTRACE because not
-all architectures may have it.
+Also replace the macro with a static inline function to match the rest of
+the file.
 
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
 Cc: Arjan van de Ven <arjan@infradead.org>
 Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
 ---
- kernel/backtracetest.c |   30 +++++++++++++++++++++++++++++-
- lib/Kconfig.debug      |    3 +++
- 2 files changed, 32 insertions(+), 1 deletions(-)
+ include/linux/kallsyms.h |   19 ++++++-------------
+ 1 files changed, 6 insertions(+), 13 deletions(-)
 
-diff --git a/kernel/backtracetest.c b/kernel/backtracetest.c
-index d1a7605..50f7abd 100644
---- a/kernel/backtracetest.c
-+++ b/kernel/backtracetest.c
-@@ -10,9 +10,10 @@
-  * of the License.
-  */
+diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
+index 00c1801..57aefa1 100644
+--- a/include/linux/kallsyms.h
++++ b/include/linux/kallsyms.h
+@@ -6,6 +6,7 @@
+ #define _LINUX_KALLSYMS_H
  
-+#include <linux/delay.h>
- #include <linux/module.h>
- #include <linux/sched.h>
--#include <linux/delay.h>
-+#include <linux/stacktrace.h>
+ #include <linux/errno.h>
++#include <linux/kernel.h>
+ #include <linux/stddef.h>
  
- static struct timer_list backtrace_timer;
- 
-@@ -22,6 +23,31 @@ static void backtrace_test_timer(unsigned long data)
- 	printk("The following trace is a kernel self test and not a bug!\n");
- 	dump_stack();
+ #define KSYM_NAME_LEN 128
+@@ -105,18 +106,10 @@ static inline void print_fn_descriptor_symbol(const char *fmt, void *addr)
+ 	print_symbol(fmt, (unsigned long)addr);
  }
-+
-+#ifdef CONFIG_STACKTRACE
-+static void backtrace_test_saved(void)
+ 
+-#ifndef CONFIG_64BIT
+-#define print_ip_sym(ip)		\
+-do {					\
+-	printk("[<%08lx>]", ip);	\
+-	print_symbol(" %s\n", ip);	\
+-} while(0)
+-#else
+-#define print_ip_sym(ip)		\
+-do {					\
+-	printk("[<%016lx>]", ip);	\
+-	print_symbol(" %s\n", ip);	\
+-} while(0)
+-#endif
++static inline void print_ip_sym(unsigned long ip)
 +{
-+	struct stack_trace trace;
-+	unsigned long entries[8];
-+
-+	printk("Testing a saved backtrace.\n");
-+	printk("The following trace is a kernel self test and not a bug!\n");
-+
-+	trace.nr_entries = 0;
-+	trace.max_entries = ARRAY_SIZE(entries);
-+	trace.entries = entries;
-+	trace.skip = 0;
-+
-+	save_stack_trace(&trace);
-+	print_stack_trace(&trace, 0);
++	printk("[<%p>]", (void *) ip);
++	print_symbol(" %s\n", ip);
 +}
-+#else
-+static void backtrace_test_saved(void)
-+{
-+	printk("Saved backtrace test skipped.\n");
-+}
-+#endif
-+
- static int backtrace_regression_test(void)
- {
- 	printk("====[ backtrace testing ]===========\n");
-@@ -29,6 +55,8 @@ static int backtrace_regression_test(void)
- 	printk("The following trace is a kernel self test and not a bug!\n");
- 	dump_stack();
  
-+	backtrace_test_saved();
-+
- 	init_timer(&backtrace_timer);
- 	backtrace_timer.function = backtrace_test_timer;
- 	mod_timer(&backtrace_timer, jiffies + 10);
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index d2099f4..4dac3c7 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -563,6 +563,9 @@ config BACKTRACE_SELF_TEST
- 	  for distributions or general kernels, but only for kernel
- 	  developers working on architecture code.
- 
-+	  Note that if you want to also test saved backtraces, you will
-+	  have to enable STACKTRACE as well.
-+
- 	  Say N if you are unsure.
- 
- config LKDTM
+ #endif /*_LINUX_KALLSYMS_H*/
 -- 
 1.5.4.1
 
