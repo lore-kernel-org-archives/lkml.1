@@ -1,64 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760357AbYFMPqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760280AbYFMPtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760357AbYFMPqH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 11:46:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756523AbYFMPp4
+	id S1760280AbYFMPtm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 11:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756601AbYFMPte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 11:45:56 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:48802 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756489AbYFMPpz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 11:45:55 -0400
-Date: Fri, 13 Jun 2008 08:44:55 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Henne <henne@nachtwindheim.de>
-Cc: eparis@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] audit:  kerneldoc fix for sessionid
-Message-Id: <20080613084455.6c390216.randy.dunlap@oracle.com>
-In-Reply-To: <48525074.9020907@nachtwindheim.de>
-References: <48525074.9020907@nachtwindheim.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 13 Jun 2008 11:49:34 -0400
+Received: from gate.crashing.org ([63.228.1.57]:59014 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756547AbYFMPte (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 11:49:34 -0400
+Cc: joseph@codesourcery.com, linux-kernel@vger.kernel.org,
+       libc-alpha@sourceware.org
+Message-Id: <B29DB594-4087-4AF9-BA39-2A6F55D8A659@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20080612.212457.01943346.davem@davemloft.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: math-emu issue with fp divide
+Date: Fri, 13 Jun 2008 10:49:04 -0500
+References: <Pine.LNX.4.64.0806042134020.32021@digraph.polyomino.org.uk> <20080604.144950.117343339.davem@davemloft.net> <Pine.LNX.4.64.0806050837230.24924@blarg.am.freescale.net> <20080612.212457.01943346.davem@davemloft.net>
+X-Mailer: Apple Mail (2.924)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jun 2008 12:48:20 +0200 Henne wrote:
 
-> Add sessionid kerneldoc to auditfilter.
-> 
-> Signed-off-by: Henrik Kretzschmar <henne@nachtwindheim.de>
+On Jun 12, 2008, at 11:24 PM, David Miller wrote:
 
-Ack, since I sent a similar patch on 2008-MAY-19.
+> From: Kumar Gala <galak@kernel.crashing.org>
+> Date: Thu, 5 Jun 2008 08:38:44 -0500 (CDT)
+>
+>> Now that I'm digging into this a bit I'm thinking my issue has to  
+>> do with
+>> the fix you put in place from back in Aug 2007 (commit
+>> 405849610fd96b4f34cd1875c4c033228fea6c0f):
+>>
+>> [MATH-EMU]: Fix underflow exception reporting.
+>>
+>>    2) we ended up rounding back up to normal (this is the case where
+>>       we set the exponent to 1 and set the fraction to zero), this
+>>       should set inexact too
+>> ...
+>>
+>>    Another example, "0x0.0000000000001p-1022 / 16.0", should signal  
+>> both
+>>    inexact and underflow.  The cpu implementations and ieee1754
+>>    literature is very clear about this.  This is case #2 above.
+>>
+>> I'm not clear from your commit comment on what actual number
+>> 0x0.0....01p-1022 is?
+>
+> I haven't been able to look closely at this yet but I think I
+> happened to stumble over the test case that lead me to that
+> changeset you are referencing here.
+>
+> The "actual number" is exactly as listed "0x0.0000000000001p-1022",
+> I don't know what's so confusing about it :-)))
 
+I don't think I've ever seen the notation before :)
 
-> ---
-> 
-> diff --git a/kernel/auditfilter.c b/kernel/auditfilter.c
-> index 0e0bd27..e49c2d7 100644
-> --- a/kernel/auditfilter.c
-> +++ b/kernel/auditfilter.c
-> @@ -1544,6 +1544,7 @@ static void audit_log_rule_change(uid_t loginuid, u32 sessionid, u32 sid,
->   * @data: payload data
->   * @datasz: size of payload data
->   * @loginuid: loginuid of sender
-> + * @sessionid: sessionid of sender
->   * @sid: SE Linux Security ID of sender
->   */
->  int audit_receive_filter(int type, int pid, int uid, int seq, void *data,
+> I think this was distilled by Jakub Jelinek from some glibc test case.
+>
+> #include <float.h>
+> #include <fenv.h>
+> #include <stdio.h>
+>
+> volatile double d = DBL_MIN;
+> volatile double e = 0x0.0000000000001p-1022;
+> volatile double f = 16.0;
+> int
+> main (void)
+> {
+>  printf ("%x\n", fetestexcept (FE_UNDERFLOW));
+>  d /= f;
+>  printf ("%x\n", fetestexcept (FE_UNDERFLOW));
+>  e /= f;
+>  printf ("%x\n", fetestexcept (FE_UNDERFLOW));
+>  return 0;
+> }
 
+Cool, I'll try this out and see what it does on PPC HW and w/my  
+current EMU.  I'll also see if I can work up a test case to show the  
+issue I've set a patch for.
 
-
----
-~Randy
-'"Daemon' is an old piece of jargon from the UNIX operating system,
-where it referred to a piece of low-level utility software, a
-fundamental part of the operating system."
+- k
