@@ -1,73 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761347AbYFMBJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761514AbYFMBK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761347AbYFMBJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 21:09:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757918AbYFMBJw
+	id S1761514AbYFMBK2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 21:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761095AbYFMBKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 21:09:52 -0400
-Received: from [194.117.236.238] ([194.117.236.238]:41429 "EHLO
+	Thu, 12 Jun 2008 21:10:11 -0400
+Received: from [194.117.236.238] ([194.117.236.238]:41475 "EHLO
 	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1757634AbYFMBJv (ORCPT
+	with ESMTP id S1757918AbYFMBKK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 21:09:51 -0400
-Date: Fri, 13 Jun 2008 04:09:11 +0300
+	Thu, 12 Jun 2008 21:10:10 -0400
+Date: Fri, 13 Jun 2008 04:09:47 +0300
 From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 To: tzanussi@gmail.com
 Cc: penberg@cs.helsinki.fi, akpm@linux-foundation.org,
        compudj@krystal.dyndns.org, linux-kernel@vger.kernel.org,
        righi.andrea@gmail.com
-Subject: [PATCH 0/3] (resubmit) relay interface bugfixes and early logging
- support
-Message-ID: <20080613040911.7558618c@linux360.ro>
+Subject: [PATCH 1/3] relay: Fix 4 off-by-one errors occuring when writing to
+ a CPU buffer.
+Message-ID: <20080613040947.7465b9a5@linux360.ro>
 X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/aO748ZJ54GdFJX1uva/fZ_U";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/aO748ZJ54GdFJX1uva/fZ_U
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Semantically, start + offset is always lower than the total size in bytes,
+so the code should check against equality to size, not size + 1. When
+userspace did read() (but not necessarily restricted to this), this
+resulted in all-zeros data at the end of the buffer.
 
-Thanks to Andrea Righi for pointing out an error in patch number 2. I
-resubmitted the whole patch series because there were some problems
-reported by scripts/checkpatch.pl.
+Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+---
+ include/linux/relay.h |    4 ++--
+ kernel/relay.c        |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-I apologize for any inconvenience caused.
+diff --git a/include/linux/relay.h b/include/linux/relay.h
+index 6cd8c44..8593ca1 100644
+--- a/include/linux/relay.h
++++ b/include/linux/relay.h
+@@ -202,7 +202,7 @@ static inline void relay_write(struct rchan *chan,
+ 
+ 	local_irq_save(flags);
+ 	buf = chan->buf[smp_processor_id()];
+-	if (unlikely(buf->offset + length > chan->subbuf_size))
++	if (unlikely(buf->offset + length >= chan->subbuf_size))
+ 		length = relay_switch_subbuf(buf, length);
+ 	memcpy(buf->data + buf->offset, data, length);
+ 	buf->offset += length;
+@@ -228,7 +228,7 @@ static inline void __relay_write(struct rchan *chan,
+ 	struct rchan_buf *buf;
+ 
+ 	buf = chan->buf[get_cpu()];
+-	if (unlikely(buf->offset + length > buf->chan->subbuf_size))
++	if (unlikely(buf->offset + length >= buf->chan->subbuf_size))
+ 		length = relay_switch_subbuf(buf, length);
+ 	memcpy(buf->data + buf->offset, data, length);
+ 	buf->offset += length;
+diff --git a/kernel/relay.c b/kernel/relay.c
+index 7de644c..07f25e7 100644
+--- a/kernel/relay.c
++++ b/kernel/relay.c
+@@ -622,7 +622,7 @@ size_t relay_switch_subbuf(struct rchan_buf *buf, size_t length)
+ 	if (unlikely(length > buf->chan->subbuf_size))
+ 		goto toobig;
+ 
+-	if (buf->offset != buf->chan->subbuf_size + 1) {
++	if (buf->offset != buf->chan->subbuf_size) {
+ 		buf->prev_padding = buf->chan->subbuf_size - buf->offset;
+ 		old_subbuf = buf->subbufs_produced % buf->chan->n_subbufs;
+ 		buf->padding[old_subbuf] = buf->prev_padding;
+@@ -645,7 +645,7 @@ size_t relay_switch_subbuf(struct rchan_buf *buf, size_t length)
+ 	new = buf->start + new_subbuf * buf->chan->subbuf_size;
+ 	buf->offset = 0;
+ 	if (!buf->chan->cb->subbuf_start(buf, new, old, buf->prev_padding)) {
+-		buf->offset = buf->chan->subbuf_size + 1;
++		buf->offset = buf->chan->subbuf_size;
+ 		return 0;
+ 	}
+ 	buf->data = new;
+-- 
+1.5.5.4
 
-Eduard - Gabriel Munteanu (3):
-  relay: Fix 4 off-by-one errors occuring when writing to a CPU buffer.
-  relay: Fix race condition which occurs when reading across CPUs.
-  relay: Add buffer-only channels; useful for early logging.
-
- Documentation/filesystems/relay.txt |   11 +++
- include/linux/relay.h               |   19 ++++--
- kernel/relay.c                      |  136 ++++++++++++++++++++++++++-----=
-----
- 3 files changed, 127 insertions(+), 39 deletions(-)
-
---Sig_/aO748ZJ54GdFJX1uva/fZ_U
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iQIVAwUBSFHIvNxcOkuRpXptAQIt9g//bWir1jR/p5mXYWc2Nz1h6aLUReFfQFoy
-imu/kx0wKm/HBrACqgOmJYc0rVkDhiSjRsCGOsfYCqEn1tWORVV+XMdasqvjEBlH
-eMwEeBtO6in+E8eIVXVniSeC2ns7ivuh6xbty8xaTuAVeUvYhPS538Nb/v4C18n/
-WQOLKIf4Ds1XCron17eLwPO5xFGquABZb6E8hsAC+VWvsfGI4lvtuh//SZTs9Vrr
-Ga2Lfmap1H0UaWzLUsMmbCmrXwjXCbtQjnlao/VED/eXlW7MlddrXQn0gNgt6Zxf
-C88RjggvWEWH/fr5m5+SluP+BCZHWeydM2JSKhJsHOssX7WAmGrR5ry/EqP7+FoI
-6iG98VdgZ74uOkp2J+gTgVnQzulog0a0a9vIh94L77xeFVVsprD9ky1LFek7wx+t
-oR6CorX6XDA7kbFp5QJm3lDcrs4Q/ep8HDmmIbsmFhZYVk+/U0LlvKGo+a5YucqW
-qjMnVlXZsB0GNDGyqvgFbf5jjqSv17ucz3yzPU6KNYGJtp7P38lNtL57WPM/wP5A
-BnpyADFFf3w3k8DQOvR5WCGbMAh91w1onspSPL6LB35IWBG4O1gRNWkq6knJsaho
-QCENrHSfqan8qRMEgnB+UdTWSLuKEwfgEME3bF3hz04brWE9qGF7ztV8XLd0Du8q
-jnILqLouyW4=
-=2KFS
------END PGP SIGNATURE-----
-
---Sig_/aO748ZJ54GdFJX1uva/fZ_U--
