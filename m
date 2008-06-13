@@ -1,54 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753397AbYFMRtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753644AbYFMRxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753397AbYFMRtW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 13:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbYFMRtN
+	id S1753644AbYFMRxe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 13:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbYFMRxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 13:49:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38234 "EHLO mx1.redhat.com"
+	Fri, 13 Jun 2008 13:53:25 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:37010 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751359AbYFMRtM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 13:49:12 -0400
-Date: Fri, 13 Jun 2008 13:48:27 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: [PATCH] fix printk in show_free_areas
-Message-ID: <20080613134827.5dbac5ac@cuia.bos.redhat.com>
-In-Reply-To: <4851C1CC.7070607@ct.jp.nec.com>
-References: <20080611184214.605110868@redhat.com>
-	<20080611184339.159161465@redhat.com>
-	<4851C1CC.7070607@ct.jp.nec.com>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751196AbYFMRxY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 13:53:24 -0400
+Date: Fri, 13 Jun 2008 13:53:16 -0400
+To: Jeff Layton <jlayton@redhat.com>
+Cc: trond.myklebust@fys.uio.no, linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] lockd: close potential race with rapid
+	lockd_up/lockd_down cycle
+Message-ID: <20080613175316.GB8501@fieldses.org>
+References: <1213192992-7635-1-git-send-email-jlayton@redhat.com> <1213192992-7635-2-git-send-email-jlayton@redhat.com> <1213192992-7635-3-git-send-email-jlayton@redhat.com> <1213192992-7635-4-git-send-email-jlayton@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1213192992-7635-4-git-send-email-jlayton@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OFix typo in show_free_areas.
+On Wed, Jun 11, 2008 at 10:03:12AM -0400, Jeff Layton wrote:
+> If lockd_down is called very rapidly after lockd_up returns, then
+> there is a slim chance that lockd() will never be called. kthread()
+> will return before calling the function, so we'll end up never
+> actually calling the cleanup functions for the thread.
 
-Debugged-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Signed-off-by: Rik van Riel <riel@redhat.com>
+Looks OK to me, thanks.  Applied (for 2.6.27, unless someone wants to
+argue it's more urgent.)
 
----
- mm/page_alloc.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+--b.
 
-Index: linux-2.6.26-rc5-mm2/mm/page_alloc.c
-===================================================================
---- linux-2.6.26-rc5-mm2.orig/mm/page_alloc.c	2008-06-12 13:48:54.000000000 -0400
-+++ linux-2.6.26-rc5-mm2/mm/page_alloc.c	2008-06-13 13:46:43.000000000 -0400
-@@ -1929,7 +1929,7 @@ void show_free_areas(void)
- 		}
- 	}
- 
--	printk("Active_anon:%lu active_file:%lu inactive_anon%lu\n"
-+	printk("Active_anon:%lu active_file:%lu inactive_anon:%lu\n"
- 		" inactive_file:%lu"
- //TODO:  check/adjust line lengths
- #ifdef CONFIG_UNEVICTABLE_LRU
+> 
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> ---
+>  fs/lockd/svc.c |   33 +++++++++++++--------------------
+>  1 files changed, 13 insertions(+), 20 deletions(-)
+> 
+> diff --git a/fs/lockd/svc.c b/fs/lockd/svc.c
+> index 2169af4..5bd9bf0 100644
+> --- a/fs/lockd/svc.c
+> +++ b/fs/lockd/svc.c
+> @@ -50,7 +50,7 @@ EXPORT_SYMBOL(nlmsvc_ops);
+>  static DEFINE_MUTEX(nlmsvc_mutex);
+>  static unsigned int		nlmsvc_users;
+>  static struct task_struct	*nlmsvc_task;
+> -static struct svc_serv		*nlmsvc_serv;
+> +static struct svc_rqst		*nlmsvc_rqst;
+>  int				nlmsvc_grace_period;
+>  unsigned long			nlmsvc_timeout;
+>  
+> @@ -194,20 +194,11 @@ lockd(void *vrqstp)
+>  
+>  		svc_process(rqstp);
+>  	}
+> -
+>  	flush_signals(current);
+>  	if (nlmsvc_ops)
+>  		nlmsvc_invalidate_all();
+>  	nlm_shutdown_hosts();
+> -
+>  	unlock_kernel();
+> -
+> -	nlmsvc_task = NULL;
+> -	nlmsvc_serv = NULL;
+> -
+> -	/* Exit the RPC thread */
+> -	svc_exit_thread(rqstp);
+> -
+>  	return 0;
+>  }
+>  
+> @@ -254,16 +245,15 @@ int
+>  lockd_up(int proto) /* Maybe add a 'family' option when IPv6 is supported ?? */
+>  {
+>  	struct svc_serv *serv;
+> -	struct svc_rqst *rqstp;
+>  	int		error = 0;
+>  
+>  	mutex_lock(&nlmsvc_mutex);
+>  	/*
+>  	 * Check whether we're already up and running.
+>  	 */
+> -	if (nlmsvc_serv) {
+> +	if (nlmsvc_rqst) {
+>  		if (proto)
+> -			error = make_socks(nlmsvc_serv, proto);
+> +			error = make_socks(nlmsvc_rqst->rq_server, proto);
+>  		goto out;
+>  	}
+>  
+> @@ -288,9 +278,10 @@ lockd_up(int proto) /* Maybe add a 'family' option when IPv6 is supported ?? */
+>  	/*
+>  	 * Create the kernel thread and wait for it to start.
+>  	 */
+> -	rqstp = svc_prepare_thread(serv, &serv->sv_pools[0]);
+> -	if (IS_ERR(rqstp)) {
+> -		error = PTR_ERR(rqstp);
+> +	nlmsvc_rqst = svc_prepare_thread(serv, &serv->sv_pools[0]);
+> +	if (IS_ERR(nlmsvc_rqst)) {
+> +		error = PTR_ERR(nlmsvc_rqst);
+> +		nlmsvc_rqst = NULL;
+>  		printk(KERN_WARNING
+>  			"lockd_up: svc_rqst allocation failed, error=%d\n",
+>  			error);
+> @@ -298,16 +289,15 @@ lockd_up(int proto) /* Maybe add a 'family' option when IPv6 is supported ?? */
+>  	}
+>  
+>  	svc_sock_update_bufs(serv);
+> -	nlmsvc_serv = rqstp->rq_server;
+>  
+> -	nlmsvc_task = kthread_run(lockd, rqstp, serv->sv_name);
+> +	nlmsvc_task = kthread_run(lockd, nlmsvc_rqst, serv->sv_name);
+>  	if (IS_ERR(nlmsvc_task)) {
+>  		error = PTR_ERR(nlmsvc_task);
+> +		svc_exit_thread(nlmsvc_rqst);
+>  		nlmsvc_task = NULL;
+> -		nlmsvc_serv = NULL;
+> +		nlmsvc_rqst = NULL;
+>  		printk(KERN_WARNING
+>  			"lockd_up: kthread_run failed, error=%d\n", error);
+> -		svc_exit_thread(rqstp);
+>  		goto destroy_and_out;
+>  	}
+>  
+> @@ -346,6 +336,9 @@ lockd_down(void)
+>  		BUG();
+>  	}
+>  	kthread_stop(nlmsvc_task);
+> +	svc_exit_thread(nlmsvc_rqst);
+> +	nlmsvc_task = NULL;
+> +	nlmsvc_rqst = NULL;
+>  out:
+>  	mutex_unlock(&nlmsvc_mutex);
+>  }
+> -- 
+> 1.5.3.6
+> 
