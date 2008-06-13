@@ -1,93 +1,243 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758042AbYFMVmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758040AbYFMVxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758042AbYFMVmq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 17:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbYFMVmi
+	id S1758040AbYFMVxv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 17:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754383AbYFMVxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 17:42:38 -0400
-Received: from mout.perfora.net ([74.208.4.194]:50217 "EHLO mout.perfora.net"
+	Fri, 13 Jun 2008 17:53:40 -0400
+Received: from mailman2.ppco.com ([138.32.41.14]:49959 "EHLO mailman2.ppco.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751062AbYFMVmh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 17:42:37 -0400
-X-Greylist: delayed 306 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Jun 2008 17:42:37 EDT
-Date: Fri, 13 Jun 2008 16:36:43 -0500 (CDT)
-From: "R.L. Horn" <lists@eastcheap.org>
-X-X-Sender: rlhorn@hani.compact.internal
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25.3: serial problem (minicom)
-Message-ID: <alpine.LNX.1.00.0806131635260.1294@hani.compact.internal>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
+	id S1754329AbYFMVxi convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 17:53:38 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Provags-ID: V01U2FsdGVkX1+GvTQa9XC6MrUskVU3TI7ExNyefLbj3N4Ah9u
- amUVE9IxoXqhhWyCuuja4OxTh2AcCSmXvQ3COgbzNC3IqR+PsB
- fLOIqMImxATVoz2bnsW5w==
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
+Date: Fri, 13 Jun 2008 16:53:31 -0500
+Message-ID: <0122F800A3B64C449565A9E8C297701002D75DB6@hoexmb9.conoco.net>
+In-Reply-To: <20080613201552.GH8501@fieldses.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
+Thread-Index: AcjNklc1afDMJ+64TfqrXvxh2JA/DAADJSQA
+References: <0122F800A3B64C449565A9E8C297701002D75D9F@hoexmb9.conoco.net> <20080610171602.GG20184@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DA3@hoexmb9.conoco.net> <20080611184613.GM15380@fieldses.org> <20080611195222.GP15380@fieldses.org> <20080611160947.5f08fb16@tleilax.poochiereds.net> <20080611205749.GA25194@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DAA@hoexmb9.conoco.net> <20080611225431.GD25194@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DAE@hoexmb9.conoco.net> <20080613201552.GH8501@fieldses.org>
+From: "Weathers, Norman R." <Norman.R.Weathers@conocophillips.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: "Jeff Layton" <jlayton@poochiereds.net>, <linux-kernel@vger.kernel.org>,
+       <linux-nfs@vger.kernel.org>, "Neil Brown" <neilb@suse.de>
+X-OriginalArrivalTime: 13 Jun 2008 21:53:32.0194 (UTC) FILETIME=[EBF03020:01C8CD9F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is kind of an old thread, but I'm seeing something similar and, perhaps, 
-can throw some light on the subject.
+ 
 
-On Fri, 16 May 2008, Andrew Morton wrote:
+> -----Original Message-----
+> From: linux-nfs-owner@vger.kernel.org 
+> [mailto:linux-nfs-owner@vger.kernel.org] On Behalf Of J. Bruce Fields
+> Sent: Friday, June 13, 2008 3:16 PM
+> To: Weathers, Norman R.
+> Cc: Jeff Layton; linux-kernel@vger.kernel.org; 
+> linux-nfs@vger.kernel.org; Neil Brown
+> Subject: Re: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
+> 
+> On Thu, Jun 12, 2008 at 02:54:09PM -0500, Weathers, Norman R. wrote:
+> >  
+> > 
+> > > -----Original Message-----
+> > > From: linux-nfs-owner@vger.kernel.org 
+> > > [mailto:linux-nfs-owner@vger.kernel.org] On Behalf Of J. 
+> Bruce Fields
+> > > Sent: Wednesday, June 11, 2008 5:55 PM
+> > > To: Weathers, Norman R.
+> > > Cc: Jeff Layton; linux-kernel@vger.kernel.org; 
+> > > linux-nfs@vger.kernel.org
+> > > Subject: Re: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
+> > > 
+> > > On Wed, Jun 11, 2008 at 05:46:13PM -0500, Weathers, 
+> Norman R. wrote:
+> > > > I will try and get it patched and retested, but it may be a 
+> > > day or two
+> > > > before I can get back the information due to production jobs now
+> > > > running.  Once they finish up, I will get back with the info.
+> > > 
+> > > Understood.
+> > > 
+> > 
+> > 
+> > I was able to get my big user to cooperate and let me in to 
+> be able to
+> > get the information that you were needing.  The full output from the
+> > /proc/slab_allocator file is at
+> > http://www.shashi-weathers.net/linux/cluster/NFS_DEBUG_2 .  The 16
+> > thread case is very interesting.  Also, there is a small 
+> txt file in the
+> > directory that has some rpc errors, but I imagine the way that I am
+> > running the box (oversubscribed threads) has more to do with the rpc
+> > errors than anything else.  For those of you wanting the gist of the
+> > story, the size-4096 slab has the following very large allocation:
+> > 
+> > size-4096: 2 sys_init_module+0x140b/0x1980
+> > size-4096: 1 __vmalloc_area_node+0x188/0x1b0
+> > size-4096: 1 seq_read+0x1d9/0x2e0
+> > size-4096: 1 slabstats_open+0x2b/0x80
+> > size-4096: 5 vc_allocate+0x167/0x190
+> > size-4096: 3 input_allocate_device+0x12/0x80
+> > size-4096: 1 hid_add_field+0x122/0x290
+> > size-4096: 9 reqsk_queue_alloc+0x5f/0xf0
+> > size-4096: 1846825 __alloc_skb+0x7d/0x170
+> > size-4096: 3 alloc_netdev+0x33/0xa0
+> > size-4096: 10 neigh_sysctl_register+0x52/0x2b0
+> > size-4096: 5 devinet_sysctl_register+0x28/0x110
+> > size-4096: 1 pidmap_init+0x15/0x60
+> > size-4096: 1 netlink_proto_init+0x44/0x190
+> > size-4096: 1 ip_rt_init+0xfd/0x2f0
+> > size-4096: 1 cipso_v4_init+0x13/0x70
+> > size-4096: 3 journal_init_revoke+0xe7/0x270 [jbd]
+> > size-4096: 3 journal_init_revoke+0x18a/0x270 [jbd]
+> > size-4096: 2 journal_init_inode+0x84/0x150 [jbd]
+> > size-4096: 2 bnx2_alloc_mem+0x18/0x1f0 [bnx2]
+> > size-4096: 1 joydev_connect+0x53/0x390 [joydev]
+> > size-4096: 13 kmem_alloc+0xb3/0x100 [xfs]
+> > size-4096: 5 addrconf_sysctl_register+0x31/0x130 [ipv6]
+> > size-4096: 7 rpc_clone_client+0x84/0x140 [sunrpc]
+> > size-4096: 3 rpc_create+0x254/0x4d0 [sunrpc]
+> > size-4096: 16 __svc_create_thread+0x53/0x1f0 [sunrpc]
+> > size-4096: 16 __svc_create_thread+0x72/0x1f0 [sunrpc]
+> > size-4096: 1 nfsd_racache_init+0x2e/0x140 [nfsd]
+> > 
+> > The big one seems to be the __alloc_skb. (This is with 16 
+> threads, and
+> > it says that we are using up somewhere between 12 and 14 GB 
+> of memory,
+> > about 2 to 3 gig of that is disk cache).  If I were to put anymore
+> > threads out there, the server would become almost 
+> unresponsive (it was
+> > bad enough as it was).   
+> > 
+> > At the same time, I also noticed this:
+> > 
+> > skbuff_fclone_cache: 1842524 __alloc_skb+0x50/0x170
+> > 
+> > Don't know for sure if that is meaningful or not....
+> 
+> OK, so, starting at net/core/skbuff.c, this means that this memory was
+> allocated by __alloc_skb() calls with something nonzero in the third
+> ("fclone") argument.  The only such caller is alloc_skb_fclone().
+> Callers of alloc_skb_fclone() include:
+> 
+> 	sk_stream_alloc_skb:
+> 		do_tcp_sendpages
+> 		tcp_sendmsg
+> 		tcp_fragment
+> 		tso_fragment
 
-> On Thu, 15 May 2008 20:06:23 +0100 (BST) Chris Rankin <rankincj@yahoo.com> 
-> wrote:
+Interesting you should mention the tso...  We recently went through and
+turned on TSO on all of our systems, trying it out to see if it helped
+with performance...  This could be something to do with that.  I can try
+disabling the tso on all of the servers and see if that helps with the
+memory.  Actually, I think I will, and I will monitor the situation.  I
+think it might help some, but I still think there may be something else
+going on in a deep corner...
 
->> I have two Linux boxes connected by a null-modem cable between their serial 
->> ports; one box exports a serial console, which the other reads using the 
->> minicom program. However, I have noticed that minicom can no longer use the 
->> serial console when it is running on a 2.6.25.3 kernel, although it works 
->> fine running on a 2.6.24.4 kernel.
+> 		tcp_mtu_probe
+> 	tcp_send_fin
+> 	tcp_connect
+> 	buf_acquire:
+> 		lots of callers in tipc code (whatever that is).
+> 
+> So unless you're using tipc, or you have something in userspace going
+> haywire (perhaps netstat would help rule that out?), then I suppose
+> there's something wrong with knfsd's tcp code.  Which makes sense, I
+> guess.
+> 
 
->> Specifically, with minicom running on 2.6.25.3, the console does not accept 
->> keystrokes although it does receive the boot log from the remote machine.
+Not for sure what tipc is either....
 
->> The serial console is being exported by a 2.6.25.3 kernel, and appears to be 
->> working correctly.
+> I'd think this sort of allocation would be limited by the number of
+> sockets times the size of the send and receive buffers.
+> svc_xprt.c:svc_check_conn_limits() claims to be limiting the number of
+> sockets to (nrthreads+3)*20.  (You aren't hitting the "too many open
+> connections" printk there, are you?)  The total buffer size should be
+> bounded by something like 4 megs.
+> 
+> --b.
+> 
 
-> We did make some changes to serial_core.c in that timeframe which might have 
-> caused this, such as:
-
-...
-
-> Author: Yinghai Lu <Yinghai.Lu@Sun.COM>  2008-02-04 22:27:46
-> Committer: Linus Torvalds <torvalds@woody.linux-foundation.org> 2008-02-05 
-> 09:44:09
-> Parent: 149b36eae2ab6aa6056664f4bc461f3d3affc9c1 (serial: stop passing
->         NULL to functions that expect data)
-> Child:  9d778a69370cc1b643b13648df971c83ff5654ef (serial: avoid waking
->         up closed serial ports on resume)
-> Branches: many (89)
-> Follows: v2.6.24
-> Precedes: v2.6.25-rc1
->
->     serial: keep the DTR setting for serial console.
-
-That looks like a possibility.  minicom has a DTR toggle function that drops 
-DTR by setting the baud rate to B0 (thereby clearing both DTR and RTS) and then 
-restoring the previous rate.  It's called pretty early upon execution.
-
-With kernels prior to 2.6.25 or so, resetting the baud rate would again raise 
-DTR and RTS, but I'm not seeing this with the current stable version (2.6.25.6 
-as of this writing).
-
-Specifically:
-
-   Opening a serial device (e.g. 16550 as ttyS0) raises DTR and RTS.
-
-   Setting the baud rate to B0 clears both (as per SUS).
-
-   Subsequently setting the baud rate to something other than B0 leaves the
-   control lines low.
-
-As it happens, apart from the fact that it breaks minicom, I actually prefer 
-this behavior.
-
-Right now I have a patch that will fix minicom and I'm trying to convince the 
-maintainers to accept it.  I need a definitive answer, though, as to whether 
-I'm seeing a bug or a feature.
+Yes, we are getting a continuous stream of the too many open connections
+scrolling across our logs.  
 
 
-If it's not too much trouble, please CC: to my address.  The volume of this 
-list is a little overwhelming...
+> > 
+> > 
+> > 
+> > > > Thanks everyone for looking at this, by the way!
+> > > 
+> > > And thanks for your persistence.
+> > > 
+> > > --b.
+> > > 
+> > 
+> > 
+> > Anytime.  This is the part of the job that is fun (except for my
+> > users...).  Anyone can watch a system run, it's dealing 
+> with the unknown
+> > that makes it interesting.
+> 
+> OK!  Because I'm a bit stuck, so this will take some more work....
+> 
+> --b.
+> 
+
+No problems.  I feel good if I exercised some deep corner of the code
+and found something that needed flushed out, that's what the experience
+is all about, isn't it?
+
+
+> > 
+> > 
+> > Norman Weathers
+> > 
+> > 
+> > > > 
+> > > > > 
+> > > > > 
+> > > > > diff --git a/mm/slab.c b/mm/slab.c
+> > > > > index 06236e4..b379e31 100644
+> > > > > --- a/mm/slab.c
+> > > > > +++ b/mm/slab.c
+> > > > > @@ -2202,7 +2202,7 @@ kmem_cache_create (const char *name, 
+> > > > > size_t size, size_t align,
+> > > > >  	 * above the next power of two: caches with object 
+> > > > > sizes just above a
+> > > > >  	 * power of two have a significant amount of internal 
+> > > > > fragmentation.
+> > > > >  	 */
+> > > > > -	if (size < 4096 || fls(size - 1) == fls(size-1 
+> + REDZONE_ALIGN +
+> > > > > +	if (size < 8192 || fls(size - 1) == fls(size-1 
+> + REDZONE_ALIGN +
+> > > > >  						2 * 
+> > > > > sizeof(unsigned long long)))
+> > > > >  		flags |= SLAB_RED_ZONE | SLAB_STORE_USER;
+> > > > >  	if (!(flags & SLAB_DESTROY_BY_RCU))
+> > > > > 
+> > > > 
+> > > > 
+> > > > Norman Weathers
+> > > --
+> > > To unsubscribe from this list: send the line "unsubscribe 
+> > > linux-nfs" in
+> > > the body of a message to majordomo@vger.kernel.org
+> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-nfs" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
