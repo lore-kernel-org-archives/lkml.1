@@ -1,156 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762014AbYFMJAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761474AbYFMJWK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762014AbYFMJAp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 05:00:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755998AbYFMJAX
+	id S1761474AbYFMJWK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 05:22:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431AbYFMJV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 05:00:23 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:51150 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755271AbYFMJAV (ORCPT
+	Fri, 13 Jun 2008 05:21:58 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44277 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752269AbYFMJV5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 05:00:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :message-id;
-        b=Elgb5iYCJb+MNESneK5dJveLOQZ8vAybEnYQ68slGx7x316sNw+9mVW8M4URYSjWgt
-         OxBhGEss+NfFZmOuCIYkP2qGkona5yEBgMwQIIvEpkJtX1FkhAf79ehQfT30SdBunDLk
-         lVqqlci4qr+PPUIIn5O97iOXbKu37gFWq5hKk=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: clean up reserve_bootmem_generic
-Date: Fri, 13 Jun 2008 02:00:56 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Fri, 13 Jun 2008 05:21:57 -0400
+Date: Fri, 13 Jun 2008 18:27:14 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "menage@google.com" <menage@google.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
+Subject: [PATCH 0/6] memcg: hierarchy updates  (v4)
+Message-Id: <20080613182714.265fe6d2.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806130200.56822.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi, this is memcg hierarchy series v4. but I changed the title.
+Thank you for many replies to v3. 
 
-1. add reserve_bootmem_generic for 32bit
-2. change len to unsigned long
-3. make early_res_to_bootmem to use it
+This is against 2.6.26-rc5-mm3. 
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+I rearranged the patch stack and much amount of codes are rewritten.
+I think I answers most of advices in this version. If I misses, please
+point out again, sorry. 
 
-Index: linux-2.6/arch/x86/kernel/e820.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820.c
-+++ linux-2.6/arch/x86/kernel/e820.c
-@@ -635,7 +635,7 @@ void __init early_res_to_bootmem(u64 sta
- 			continue;
- 		printk(KERN_INFO "  early res: %d [%llx-%llx] %s\n", i,
- 			final_start, final_end - 1, r->name);
--		reserve_bootmem(final_start, final_end - final_start,
-+		reserve_bootmem_generic(final_start, final_end - final_start,
- 				BOOTMEM_DEFAULT);
- 	}
- }
-Index: linux-2.6/arch/x86/kernel/mpparse.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/mpparse.c
-+++ linux-2.6/arch/x86/kernel/mpparse.c
-@@ -859,10 +859,11 @@ static int __init smp_scan_config(unsign
- 
- 			if (!reserve)
- 				return 1;
--#ifdef CONFIG_X86_32
--			reserve_bootmem(virt_to_phys(mpf), PAGE_SIZE,
-+			reserve_bootmem_generic(virt_to_phys(mpf), PAGE_SIZE,
- 					BOOTMEM_DEFAULT);
- 			if (mpf->mpf_physptr) {
-+				unsigned long size = PAGE_SIZE;
-+#ifdef CONFIG_X86_32
- 				/*
- 				 * We cannot access to MPC table to compute
- 				 * table size yet, as only few megabytes from
-@@ -872,22 +873,15 @@ static int __init smp_scan_config(unsign
- 				 * PAGE_SIZE from mpg->mpf_physptr yields BUG()
- 				 * in reserve_bootmem.
- 				 */
--				unsigned long size = PAGE_SIZE;
- 				unsigned long end = max_low_pfn * PAGE_SIZE;
- 				if (mpf->mpf_physptr + size > end)
- 					size = end - mpf->mpf_physptr;
--				reserve_bootmem(mpf->mpf_physptr, size,
-+#endif
-+				reserve_bootmem_generic(mpf->mpf_physptr, size,
- 						BOOTMEM_DEFAULT);
- 			}
- 
--#else
--			reserve_bootmem_generic(virt_to_phys(mpf), PAGE_SIZE,
--				BOOTMEM_DEFAULT);
--			if (mpf->mpf_physptr)
--				reserve_bootmem_generic(mpf->mpf_physptr,
--					PAGE_SIZE, BOOTMEM_DEFAULT);
--#endif
--		return 1;
-+			return 1;
- 		}
- 		bp += 4;
- 		length -= 16;
-Index: linux-2.6/arch/x86/mm/init_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/init_32.c
-+++ linux-2.6/arch/x86/mm/init_32.c
-@@ -781,3 +781,9 @@ void free_initrd_mem(unsigned long start
- 	free_init_pages("initrd memory", start, end);
- }
- #endif
-+
-+int __init reserve_bootmem_generic(unsigned long phys, unsigned long len,
-+				   int flags)
-+{
-+	return reserve_bootmem(phys, len, flags);
-+}
-Index: linux-2.6/arch/x86/mm/init_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/init_64.c
-+++ linux-2.6/arch/x86/mm/init_64.c
-@@ -827,7 +827,8 @@ void free_initrd_mem(unsigned long start
- }
- #endif
- 
--int __init reserve_bootmem_generic(unsigned long phys, unsigned len, int flags)
-+int __init reserve_bootmem_generic(unsigned long phys, unsigned long len,
-+				   int flags)
- {
- #ifdef CONFIG_NUMA
- 	int nid, next_nid;
-Index: linux-2.6/include/asm-x86/proto.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/proto.h
-+++ linux-2.6/include/asm-x86/proto.h
-@@ -14,8 +14,6 @@ extern void ia32_syscall(void);
- extern void ia32_cstar_target(void);
- extern void ia32_sysenter_target(void);
- 
--extern int reserve_bootmem_generic(unsigned long phys, unsigned len, int flags);
--
- extern void syscall32_cpu_init(void);
- 
- extern void check_efer(void);
-Index: linux-2.6/include/linux/bootmem.h
-===================================================================
---- linux-2.6.orig/include/linux/bootmem.h
-+++ linux-2.6/include/linux/bootmem.h
-@@ -84,6 +84,8 @@ extern int reserve_bootmem(unsigned long
- 	__alloc_bootmem_low(x, PAGE_SIZE, 0)
- #endif /* !CONFIG_HAVE_ARCH_BOOTMEM_NODE */
- 
-+extern int reserve_bootmem_generic(unsigned long addr, unsigned long size,
-+				   int flags);
- extern unsigned long free_all_bootmem(void);
- extern unsigned long free_all_bootmem_node(pg_data_t *pgdat);
- extern void *__alloc_bootmem_node(pg_data_t *pgdat,
+Balbir, I'd like to write a generic infrastructure to allow me and you to
+implement what we want. So, please check patches in the view, 
+how res_counter is used and whether my codes can have a bad effect to
+what you want or not.
+
+Changelog:
+ - rearranged patch stack.
+ - "limit change" handling is divided.
+ - moves basic res_counter handling to res_counter from memcg.
+
+Short description of patches.
+ - [1/6] ...a callback for change-of-limit support to res_counter.
+ - [2/6] ...make use of change-of-limit support in memcg.
+ - [3/6] ...a special case of implicit change-of-limit at rmdir()
+ - [4/6] ...a hierarchy support infrastructure for res_counter.
+ - [5/6] ...HARDWALL hierarchy support in res_counter.
+ - [6/6] ...HARDWALL hierarhcy in memcg.
+
+It seems rc5-mm3 needs more test and I  will not be able to answer e-mail quickly.
+please check when you have free time ;)
+
+Anyway, I'd like to push [1/6] and [2/6] , at first. Others will be scheduled
+later.
+
+Thanks,
+-Kame
+
+
+
+
