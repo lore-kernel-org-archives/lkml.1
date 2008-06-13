@@ -1,92 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758081AbYFMOl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbYFMOn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758081AbYFMOl4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 10:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753315AbYFMOls
+	id S1758749AbYFMOn1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 10:43:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755475AbYFMOnT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 10:41:48 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:39411 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752677AbYFMOlr convert rfc822-to-8bit (ORCPT
+	Fri, 13 Jun 2008 10:43:19 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:39411 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754859AbYFMOnS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 10:41:47 -0400
-Message-Id: <48524EE30200005A00038BA7@sinclair.provo.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Fri, 13 Jun 2008 08:41:39 -0600
-From: "Gregory Haskins" <GHaskins@novell.com>
-To: <a.p.zijlstra@chello.nl>, <dmitry.adamushko@gmail.com>
-Cc: <mingo@elte.hu>, <rostedt@goodmis.org>, <tglx@linutronix.de>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [sched-devel, patch-rfc] rework of "prioritize
-	non-migratabletasks over migratable ones"
-References: <48524EDA0200005A00038BA4@sinclair.provo.novell.com>
- <48524EE30200005A00038BA7@sinclair.provo.novell.com>
-In-Reply-To: <48524EE30200005A00038BA7@sinclair.provo.novell.com>
+	Fri, 13 Jun 2008 10:43:18 -0400
+Subject: Re: [PATCH] workqueues: insert_work: use "list_head *" instead of
+	"int tail"
+From: Peter Zijlstra <peterz@infradead.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jarek Poplawski <jarkao2@o2.pl>,
+       Max Krasnyansky <maxk@qualcomm.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080613142658.GA9147@tv-sign.ru>
+References: <20080612165120.GA12177@tv-sign.ru>
+	 <20080612165550.GA12183@tv-sign.ru> <1213290074.31518.136.camel@twins>
+	 <20080612174433.GA12204@tv-sign.ru> <1213295939.31518.159.camel@twins>
+	 <20080613142658.GA9147@tv-sign.ru>
+Content-Type: text/plain
+Date: Fri, 13 Jun 2008 16:43:04 +0200
+Message-Id: <1213368184.16944.20.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for topposting....still on vaca via blackberry..
-
-I am in favor of dropping too...this patch was really just an RFC in response to Dmity's observation....its probably too premature to include this type of thing, if ever at all..
-
--Greg 
------Original Message-----
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Gregory Haskins <GHaskins@novell.com>
-Cc:  <linux-kernel@vger.kernel.org>
-
-Sent: 6/13/2008 7:08:04 AM
-Subject: Re: [sched-devel, patch-rfc] rework of "prioritize non-migratabletasks over migratable ones"
-
-On Wed, 2008-06-11 at 12:05 +0200, Dmitry Adamushko wrote:
-> 2008/6/11 Peter Zijlstra <a.p.zijlstra@chello.nl>:
-> > On Wed, 2008-06-11 at 00:58 +0200, Dmitry Adamushko wrote:
-> >> Hi Gregory,
-> >>
-> >>
-> >> regarding this commit: 45c01e824991b2dd0a332e19efc4901acb31209f
-> >>
-> >>
-> >> I think we can do it simpler. Please take a look at the patch below.
-> >>
-> >> Instead of having 2 separate arrays (which is + ~800 bytes on x86_32 and twice so on x86_64),
-> >> let's add "exclusive" (the ones that are bound to this CPU) tasks to the head of the queue
-> >> and "shared" ones -- to the end.
-> >>
-> >> In case of a few newly woken up "exclusive" tasks, they are 'stacked' (not queued as now), meaning that
-> >> a task {i+1} is being placed in front of the previously woken up task {i}. But I don't think that
-> >> this behavior may cause any realistic problems.
+On Fri, 2008-06-13 at 18:26 +0400, Oleg Nesterov wrote:
+> On 06/12, Peter Zijlstra wrote:
 > >
-> > Doesn't this violate POSIX ?
+> > On Thu, 2008-06-12 at 21:44 +0400, Oleg Nesterov wrote:
 > >
+> > > > Hence that idea of flush context and completions.
+> > >
+> > > Do you mean something like (just for example) below? If yes, then yes
+> > > sure, flush_work() is limited. But I can't see how it is possible to
+> > > "generalize" this idea.
+> > >
+> > > (hmm... actually, if we add flush_work(), we can speedup schedule_on_each_cpu(),
+> > >  instead of flush_workqueue(keventd_wq) we can do
+> > >
+> > > 	for_each_online_cpu(cpu)
+> > > 		flush_work(per_cpu_ptr(works, cpu));
+> > >
+> > >  not sure this really makes sense though).
+> >
+> > Speedups are always nice ;-),
 > 
-> If so, then the idea of "prioritize non-migratable tasks over
-> migratable ones" violates it, not just an artefact of this particular
-> implementation.
+> OK, I'm sending the patch.
 > 
-> No matter which implementation is used, we have a situation when a
-> woken-up single-CPU-bound task (let's call it 'p') can preempt a
-> current task with effects as follows:
+> > but the below also gets us there.
 > 
-> - 'current' is not guaranteed to get another CPU;
+> yeah, and it needs only 1 wakeup. But otoh it is much more complex :(
 > 
-> - there might have been other pending tasks (of equal prio) on this
-> queue. As a result, 'p' starts running before them violating currently
-> used (explicitly requested by POSIX?) round-robin behavior.
+> > > +struct xxx
+> > > +{
+> > > +	atomic_t count;
+> > > +	struct completion done;
+> > > +	work_func_t func;
+> > > +};
+> > > +
+> > > +struct yyy
+> > > +{
+> > > +	struct work_struct work;
+> > > +	struct xxx *xxx;
+> > > +};
+> > > +
+> > > +static void yyy_func(struct work_struct *work)
+> > > +{
+> > > +	struct xxx *xxx = container_of(work, struct yyy, work)->xxx;
+> > > +	xxx->func(work);
+> > > +
+> > > +	if (atomic_dec_and_test(&xxx->count))
+> > > +		complete(&xxx->done);
+> > > +}
+> > > ...
+> >
+> > Yes, along those lines.
+> >
+> > you can call xxx a flush_context and create an interface like:
+> >
+> > int queue_work_contex(struct workqueue_struct *wq,
+> > 		      struct flush_context *fc, struct work_struct *work)
+> > {
+> > 	work->context = fc;
+> > 	return queue_work(wq, work);
+> > }
+> >
+> > void flush_workqueue_context(struct workqueue_strucy *wq, t
+> > 			     struct flush_context *fc)
+> > {
+> > 	if (atomic_read(&context->count))
+> > 		wait_for_completion(&fc->completion);
+> > 	/* except that the above is racy, wait_event() comes to mind */
+> > }
+> >
+> > of course run_workqueue() would then need to be augmented with something
+> > like:
+> >
+> >   context = work->context;
+> >   ...
+> >   f(work);
+> >   ...
+> >   if (context && atomic_dec_and_test(&context->count))
+> >     complete(&context->done);
+> 
+> > also, I seem to have quitely ignored the fact that struct work doesn't
+> > have the context pointer, and growing it unconditionally like this isn't
+> > nice - hummm,. perhaps we have a bit left in data and can signify a
+> > larger struct work_struct.. ?
+> 
+> Yes, we have a free bit... but afaics we can do better.
+> 
+> 	struct context_barrier {
+> 		struct work_struct   work;
+> 		struct flush_context *fc;
+> 		...
+> 	}
+> 
+> 	void context_barrier_barrier_func(struct work_struct *work)
+> 	{
+> 		struct flush_context *fc = container_of();
+> 		if (atomic_dec_and_test())
+> 			...
+> 	}
+> 
+> 	void insert_context_barrier(work, barr)
+> 	{
+> 		...insert barr after work, like flush_work() does...
+> 	}
+> 
+> 	queue_work_contex(struct workqueue_struct *wq,
+> 			  struct work_struct *work,
+> 			  struct flush_context *fc)
+> 	{
+> 		int ret = queue_work(wq, work);
+> 		if (ret)
+> 			insert_context_barrier(work, barr);
+> 		return ret;
+> 	}
+> 
+> this way we shouldn't change run_workqueue() and introduce a "parallel"
+> larger work_struct which needs its own INIT_()/etc.
 
-> We may just consider dropping this idea completely.
-> (my 0.02$)
+Where does do the context_barrier instances come from, are they
+allocated in insert_context_barrier() ?
 
-If we cannot guarantee POSIX compliant scheduling I think we should get
-rid of this.
+> However I'm a bit sceptical this will be widely used... I may be wrong.
 
+I have no idea either - but it doesn't seem weird to have multiple
+worklets outstanding without knowing which.
+
+> > making all this PI savvy for -rt is going to be fun though.. I guess we
+> > can just queue a normal barrier of the flusher's priority, and cancel it
+> > once we complete.. hey - that doesn't sound hard at all :-)
+> 
+> Yes!!! I think this is much better (because _much_ simple) than re-ordering
+> the pending work_struct's, we can just boost the whole ->worklist. We can
+> implement flush_work_pi() in the same manner as queue_work_contex() above.
+> That is why I said previously that flush_() should govern the priority,
+> not queue.
+> 
+> But we can also implement queue_work_pi(struct work_struct_pi *work).
+
+in -rt all the workqueue stuff is PI already, we replaced the list_head
+in work_struct with a plist_node and queue_work() enqueues worklets at
+the ->normal_prio of the calling task.
+
+Hmm, the required barrier might still spoil - or at least complicate the
+matter.
+
+In order to boost the pending work, we'd need to enqueue a barrer before
+the high prio worklet - otherwise the high prio worklet will complete
+before the work we're waiting on.
+
+And we can cancel the high prio worklet once all our worklets of
+interrest are done, but we cannot cancel the barrier.
+
+So it would leave a barrier behind.
+
+It comes back to me, PI workqueues was comlicated..
 
