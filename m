@@ -1,80 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761464AbYFMQma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761941AbYFMQmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761464AbYFMQma (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 12:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758419AbYFMQmT
+	id S1761941AbYFMQmn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 12:42:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759194AbYFMQmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 12:42:19 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:22690 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758200AbYFMQmS (ORCPT
+	Fri, 13 Jun 2008 12:42:23 -0400
+Received: from hpsmtp-eml11.kpnxchange.com ([213.75.38.111]:43928 "EHLO
+	hpsmtp-eml11.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758749AbYFMQmV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 12:42:18 -0400
-Date: Fri, 13 Jun 2008 09:38:35 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       davem@daveloft.org
-Subject: Re: [PATCH] [UPDATED] ixgbe: add LRO support
-Message-Id: <20080613093835.4b092360.randy.dunlap@oracle.com>
-In-Reply-To: <20080613162643.27996.32104.stgit@localhost.localdomain>
-References: <20080613162643.27996.32104.stgit@localhost.localdomain>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 13 Jun 2008 12:42:21 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Jesse Barnes <jesse.barnes@intel.com>
+Subject: Re: fb layer & ioremap_wc
+Date: Fri, 13 Jun 2008 18:42:15 +0200
+User-Agent: KMail/1.9.9
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
+       "Packard, Keith" <keith.packard@intel.com>,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>,
+       linux-fbdev-devel@lists.sourceforge.net
+References: <200805022122.03576.elendil@planet.nl> <200805052059.01535.elendil@planet.nl> <200805051204.49135.jesse.barnes@intel.com>
+In-Reply-To: <200805051204.49135.jesse.barnes@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200806131842.16619.elendil@planet.nl>
+X-OriginalArrivalTime: 13 Jun 2008 16:42:19.0129 (UTC) FILETIME=[71EC9690:01C8CD74]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jun 2008 09:30:29 -0700 Jeff Kirsher wrote:
+On Monday 05 May 2008, Jesse Barnes wrote:
+> On Monday, May 05, 2008 11:59 am Frans Pop wrote:
+> > On Monday 05 May 2008, you wrote:
+> > > On Monday, May 05, 2008 10:32 am Frans Pop wrote:
+> > > > I suspect it could be vesafb/fbcon related instead. Normally I
+> > > > boot my system with 'quiet vga=791', i.e. with vesafb. I then see
+> > > > the artifacts.
+> > > >
+> > > > When I boot with 'video=vfb:off', I do _not_ get the artifacts
+> > > > when X exits.
+> > >
+> > > Ahhh, I missed that part of your config.  That could definitely
+> > > have an effect on things...  You'll probably want something like
+> > > the attached
+> >
+> > Not sure what to make of this.
+> > With your patch I still get the artifacts, but they are displayed a
+> > lot shorter. I get only a flash instead of a-2 seconds.
+>
+> Hm, so I guess some other user is still using UC on the region.  [Note
+> to fb list:  the patch just made vesafb use ioremap_wc instead of
+> ioremap).
 
-> From: Mallikarjuna R Chilakala <mallikarjuna.chilakala@intel.com>
-> 
-> Support for in-kernel LRO with the ability to enable/disable via ethtool
-> based on comments from Ben Hutchings and Randy Dunlap.
-> 
-> 
-> Signed-off-by: Mallikarjuna R Chilakala <mallikarjuna.chilakala@intel.com>
-> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> Signed-off-by: PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>
-> ---
-> 
->  drivers/net/Kconfig               |    1 
->  drivers/net/ixgbe/ixgbe.h         |    9 +++
->  drivers/net/ixgbe/ixgbe_ethtool.c |   11 ++++
->  drivers/net/ixgbe/ixgbe_main.c    |  111 ++++++++++++++++++++++++++++++-------
->  4 files changed, 111 insertions(+), 21 deletions(-)
-> 
-> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-> index af46341..f6a15ed 100644
-> --- a/drivers/net/Kconfig
-> +++ b/drivers/net/Kconfig
-> @@ -2451,6 +2451,7 @@ config EHEA
->  config IXGBE
->  	tristate "Intel(R) 10GbE PCI Express adapters support"
->  	depends on PCI
+AFAIK there has been no progress on this issue, which is now listed on the 
+regression list for .26 [1]. As there has been no response from any fb 
+devs, is someone else maybe willing to have a closer look at this?
 
-+	depends on PCI && INET
+I'm still seeing the artifacts with -rc6 and the severity seems to depend 
+on what was last displayed: sometimes the whole display is covered with 
+colored nonsense, artistic maybe but not desired...
 
-> +	select INET_LRO
+Cheers,
+FJP
 
-If INET is not enabled, selecting INET_LRO still won't enable INET and
-build errors will result.  See the other drivers that select INET_LRO...
-
-
->  	---help---
->  	  This driver supports Intel(R) 10GbE PCI Express family of
->  	  adapters.  For more information on how to identify your adapter, go
-
-
----
-~Randy
-'"Daemon' is an old piece of jargon from the UNIX operating system,
-where it referred to a piece of low-level utility software, a
-fundamental part of the operating system."
+[1] http://bugzilla.kernel.org/show_bug.cgi?id=10843
