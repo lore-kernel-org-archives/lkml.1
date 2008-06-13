@@ -1,22 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752106AbYFMEUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759567AbYFMEZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752106AbYFMEUV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 00:20:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753328AbYFMEUB
+	id S1759567AbYFMEZO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 00:25:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbYFMEZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 00:20:01 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45884
+	Fri, 13 Jun 2008 00:25:00 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35440
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752415AbYFMET7 (ORCPT
+	by vger.kernel.org with ESMTP id S1751964AbYFMEY5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 00:19:59 -0400
-Date: Thu, 12 Jun 2008 21:19:59 -0700 (PDT)
-Message-Id: <20080612.211959.52937006.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
+	Fri, 13 Jun 2008 00:24:57 -0400
+Date: Thu, 12 Jun 2008 21:24:57 -0700 (PDT)
+Message-Id: <20080612.212457.01943346.davem@davemloft.net>
+To: galak@kernel.crashing.org
+Cc: joseph@codesourcery.com, linux-kernel@vger.kernel.org,
+       libc-alpha@sourceware.org
+Subject: Re: math-emu issue with fp divide
 From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0806050837230.24924@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0806042134020.32021@digraph.polyomino.org.uk>
+	<20080604.144950.117343339.davem@davemloft.net>
+	<Pine.LNX.4.64.0806050837230.24924@blarg.am.freescale.net>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -25,120 +29,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Kumar Gala <galak@kernel.crashing.org>
+Date: Thu, 5 Jun 2008 08:38:44 -0500 (CDT)
 
-As the bug fixes keep flowing:
+> Now that I'm digging into this a bit I'm thinking my issue has to do with
+> the fix you put in place from back in Aug 2007 (commit
+> 405849610fd96b4f34cd1875c4c033228fea6c0f):
+> 
+> [MATH-EMU]: Fix underflow exception reporting.
+> 
+>     2) we ended up rounding back up to normal (this is the case where
+>        we set the exponent to 1 and set the fraction to zero), this
+>        should set inexact too
+> ...
+> 
+>     Another example, "0x0.0000000000001p-1022 / 16.0", should signal both
+>     inexact and underflow.  The cpu implementations and ieee1754
+>     literature is very clear about this.  This is case #2 above.
+> 
+> I'm not clear from your commit comment on what actual number
+> 0x0.0....01p-1022 is?
 
-1) Revert one of the deferred-accept TCP changes as it
-   has tons of bugs with no imminent cures and the feature
-   itself can wait to 2.6.27 if at all.
+I haven't been able to look closely at this yet but I think I
+happened to stumble over the test case that lead me to that
+changeset you are referencing here.
 
-   This clears up an entry on the regression list.
+The "actual number" is exactly as listed "0x0.0000000000001p-1022",
+I don't know what's so confusing about it :-)))
 
-2) Eliminate flush_scheduled_work() calls in network driver close
-   methods as this is deadlock prone.  This should close an issue
-   which has been reported by Dave Jones and others for quite some
-   time now.
+I think this was distilled by Jakub Jelinek from some glibc test case.
 
-3) rawv6_prot has two assignment to it's destruct method, noticed by
-   Al Viro.
+#include <float.h>
+#include <fenv.h>
+#include <stdio.h>
 
-4) Several other ipv6 bug fixes via YOSHIFUJI Hideaki.
-
-5) DCCP bug fixes via Gerrit Renker.
-
-6) Wired driver bug fixes via Jeff Garzik.
-
-7) Two netfilter bug fixes from Eric Leblond and Patrick MacHardy
-
-Please pull, thanks a lot!
-
-The following changes since commit 513fd370e6832f81ab717df4645f5ce679e44f14:
-  David S. Miller (1):
-        Merge branch 'davem-fixes' of master.kernel.org:/.../jgarzik/netdev-2.6
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Christophe Jaillet (1):
-      drivers/net/r6040.c: correct bad use of round_jiffies()
-
-David S. Miller (6):
-      Merge branch 'master' of git://eden-feed.erg.abdn.ac.uk/net-2.6
-      Merge branch 'net-2.6-misc-20080611a' of git://git.linux-ipv6.org/gitroot/yoshfuji/linux-2.6-fix
-      Merge branch 'davem-fixes' of master.kernel.org:/.../jgarzik/netdev-2.6
-      net: Eliminate flush_scheduled_work() calls while RTNL is held.
-      ipv6: Fix duplicate initialization of rawv6_prot.destroy
-      tcp: Revert 'process defer accept as established' changes.
-
-Eilon Greenstein (1):
-      bnx2x: Updating the Maintainer
-
-Eric Leblond (1):
-      netfilter: Make nflog quiet when no one listen in userspace.
-
-Gerrit Renker (6):
-      dccp ccid-3: Bug-Fix - Zero RTT is possible
-      dccp: Fix sparse warnings
-      dccp ccid-2: Bug-Fix - Ack Vectors need to be ignored on request sockets
-      dccp ccid-3: TFRC reverse-lookup Bug-Fix
-      dccp ccid-3: X truncated due to type conversion
-      dccp: Bug in initial acknowledgment number assignment
-
-Patrick McHardy (1):
-      netfilter: nf_conntrack: fix ctnetlink related crash in nf_nat_setup_info()
-
-Roel Kluin (2):
-      ipg: fix receivemode IPG_RM_RECEIVEMULTICAST{,HASH} in ipg_nic_set_multicast_list()
-      fec_mpc52xx: MPC52xx_MESSAGES_DEFAULT: 2nd NETIF_MSG_IFDOWN => IFUP
-
-Shan Wei (1):
-      ipv6: Check the hop limit setting in ancillary data.
-
-YOSHIFUJI Hideaki (4):
-      ipv6 mcast: Check address family of gf_group in getsockopt(MS_FILTER).
-      ipv6 route: Fix route lifetime in netlink message.
-      ipv6: Check IPV6_MULTICAST_LOOP option value.
-      ipv6: Fail with appropriate error code when setting not-applicable sockopt.
-
- MAINTAINERS                               |    4 +-
- drivers/net/bnx2.c                        |    9 +-----
- drivers/net/bnx2.h                        |    1 -
- drivers/net/bnx2x.c                       |    5 ++-
- drivers/net/bnx2x.h                       |    3 +-
- drivers/net/bnx2x_init.h                  |    3 +-
- drivers/net/ehea/ehea_main.c              |    3 +-
- drivers/net/fec_mpc52xx.c                 |    2 +-
- drivers/net/hamradio/baycom_epp.c         |    2 +-
- drivers/net/ipg.c                         |    4 +-
- drivers/net/r6040.c                       |    2 +-
- drivers/net/smc911x.c                     |   24 +++------------
- drivers/net/smc91x.c                      |   17 ++---------
- drivers/net/tulip/tulip_core.c            |    2 +-
- drivers/net/usb/kaweth.c                  |    2 +-
- drivers/net/wireless/hostap/hostap_main.c |    8 ++++-
- include/linux/tcp.h                       |    7 ----
- include/net/request_sock.h                |    4 +-
- include/net/tcp.h                         |    1 -
- net/dccp/ackvec.c                         |   29 +-----------------
- net/dccp/ccids/ccid3.c                    |   14 ++++++--
- net/dccp/ccids/lib/tfrc.c                 |    8 -----
- net/dccp/ccids/lib/tfrc.h                 |   25 +++++++++------
- net/dccp/ccids/lib/tfrc_equation.c        |    8 ++--
- net/dccp/minisocks.c                      |    8 ++--
- net/dccp/options.c                        |    4 ++-
- net/dccp/output.c                         |    2 +
- net/dccp/probe.c                          |    2 +-
- net/ipv4/inet_connection_sock.c           |   11 +++++--
- net/ipv4/tcp.c                            |   18 +++++++----
- net/ipv4/tcp_input.c                      |   45 -----------------------------
- net/ipv4/tcp_ipv4.c                       |    8 -----
- net/ipv4/tcp_minisocks.c                  |   32 ++++++++-------------
- net/ipv4/tcp_timer.c                      |    5 ---
- net/ipv6/datagram.c                       |    5 +++
- net/ipv6/ipv6_sockglue.c                  |   12 +++++--
- net/ipv6/raw.c                            |    4 +-
- net/ipv6/route.c                          |    8 ++++-
- net/netfilter/nf_conntrack_core.c         |    3 +-
- net/netfilter/nf_log.c                    |    4 --
- 40 files changed, 130 insertions(+), 228 deletions(-)
+volatile double d = DBL_MIN;
+volatile double e = 0x0.0000000000001p-1022;
+volatile double f = 16.0;
+int
+main (void)
+{
+  printf ("%x\n", fetestexcept (FE_UNDERFLOW));
+  d /= f;
+  printf ("%x\n", fetestexcept (FE_UNDERFLOW));
+  e /= f;
+  printf ("%x\n", fetestexcept (FE_UNDERFLOW));
+  return 0;
+}
