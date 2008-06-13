@@ -1,243 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758040AbYFMVxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758633AbYFMVyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758040AbYFMVxv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 17:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754383AbYFMVxk
+	id S1758633AbYFMVyX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 17:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754694AbYFMVyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 17:53:40 -0400
-Received: from mailman2.ppco.com ([138.32.41.14]:49959 "EHLO mailman2.ppco.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754329AbYFMVxi convert rfc822-to-8bit (ORCPT
+	Fri, 13 Jun 2008 17:54:09 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:34282 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754383AbYFMVyH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 17:53:38 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
-Date: Fri, 13 Jun 2008 16:53:31 -0500
-Message-ID: <0122F800A3B64C449565A9E8C297701002D75DB6@hoexmb9.conoco.net>
-In-Reply-To: <20080613201552.GH8501@fieldses.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
-Thread-Index: AcjNklc1afDMJ+64TfqrXvxh2JA/DAADJSQA
-References: <0122F800A3B64C449565A9E8C297701002D75D9F@hoexmb9.conoco.net> <20080610171602.GG20184@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DA3@hoexmb9.conoco.net> <20080611184613.GM15380@fieldses.org> <20080611195222.GP15380@fieldses.org> <20080611160947.5f08fb16@tleilax.poochiereds.net> <20080611205749.GA25194@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DAA@hoexmb9.conoco.net> <20080611225431.GD25194@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DAE@hoexmb9.conoco.net> <20080613201552.GH8501@fieldses.org>
-From: "Weathers, Norman R." <Norman.R.Weathers@conocophillips.com>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: "Jeff Layton" <jlayton@poochiereds.net>, <linux-kernel@vger.kernel.org>,
-       <linux-nfs@vger.kernel.org>, "Neil Brown" <neilb@suse.de>
-X-OriginalArrivalTime: 13 Jun 2008 21:53:32.0194 (UTC) FILETIME=[EBF03020:01C8CD9F]
+	Fri, 13 Jun 2008 17:54:07 -0400
+Date: Fri, 13 Jun 2008 23:54:01 +0200
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: Joel.Becker@oracle.com
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: Re: [PATCH 1/3][BUGFIX] configfs: Introduce configfs_dirent_lock
+Message-ID: <20080613215401.GA4153@localdomain>
+Reply-To: Louis.Rilling@kerlabs.com
+References: <20080612133126.335618468@kerlabs.com> <20080612134203.763166823@kerlabs.com> <20080612191348.GE5377@mail.oracle.com> <20080612222558.GA4012@localdomain> <20080613024130.GD20581@mail.oracle.com> <20080613104513.GI30804@localhost> <20080613201746.GB20576@mail.oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080613201746.GB20576@mail.oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+On Fri, Jun 13, 2008 at 01:17:46PM -0700, Joel Becker wrote:
+> Louis,
+> 	Can I just say, you're the first person to do serious review
+> other than myself, and I really appreciate it :-)
 
-> -----Original Message-----
-> From: linux-nfs-owner@vger.kernel.org 
-> [mailto:linux-nfs-owner@vger.kernel.org] On Behalf Of J. Bruce Fields
-> Sent: Friday, June 13, 2008 3:16 PM
-> To: Weathers, Norman R.
-> Cc: Jeff Layton; linux-kernel@vger.kernel.org; 
-> linux-nfs@vger.kernel.org; Neil Brown
-> Subject: Re: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
-> 
-> On Thu, Jun 12, 2008 at 02:54:09PM -0500, Weathers, Norman R. wrote:
-> >  
-> > 
-> > > -----Original Message-----
-> > > From: linux-nfs-owner@vger.kernel.org 
-> > > [mailto:linux-nfs-owner@vger.kernel.org] On Behalf Of J. 
-> Bruce Fields
-> > > Sent: Wednesday, June 11, 2008 5:55 PM
-> > > To: Weathers, Norman R.
-> > > Cc: Jeff Layton; linux-kernel@vger.kernel.org; 
-> > > linux-nfs@vger.kernel.org
-> > > Subject: Re: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
-> > > 
-> > > On Wed, Jun 11, 2008 at 05:46:13PM -0500, Weathers, 
-> Norman R. wrote:
-> > > > I will try and get it patched and retested, but it may be a 
-> > > day or two
-> > > > before I can get back the information due to production jobs now
-> > > > running.  Once they finish up, I will get back with the info.
-> > > 
-> > > Understood.
-> > > 
-> > 
-> > 
-> > I was able to get my big user to cooperate and let me in to 
-> be able to
-> > get the information that you were needing.  The full output from the
-> > /proc/slab_allocator file is at
-> > http://www.shashi-weathers.net/linux/cluster/NFS_DEBUG_2 .  The 16
-> > thread case is very interesting.  Also, there is a small 
-> txt file in the
-> > directory that has some rpc errors, but I imagine the way that I am
-> > running the box (oversubscribed threads) has more to do with the rpc
-> > errors than anything else.  For those of you wanting the gist of the
-> > story, the size-4096 slab has the following very large allocation:
-> > 
-> > size-4096: 2 sys_init_module+0x140b/0x1980
-> > size-4096: 1 __vmalloc_area_node+0x188/0x1b0
-> > size-4096: 1 seq_read+0x1d9/0x2e0
-> > size-4096: 1 slabstats_open+0x2b/0x80
-> > size-4096: 5 vc_allocate+0x167/0x190
-> > size-4096: 3 input_allocate_device+0x12/0x80
-> > size-4096: 1 hid_add_field+0x122/0x290
-> > size-4096: 9 reqsk_queue_alloc+0x5f/0xf0
-> > size-4096: 1846825 __alloc_skb+0x7d/0x170
-> > size-4096: 3 alloc_netdev+0x33/0xa0
-> > size-4096: 10 neigh_sysctl_register+0x52/0x2b0
-> > size-4096: 5 devinet_sysctl_register+0x28/0x110
-> > size-4096: 1 pidmap_init+0x15/0x60
-> > size-4096: 1 netlink_proto_init+0x44/0x190
-> > size-4096: 1 ip_rt_init+0xfd/0x2f0
-> > size-4096: 1 cipso_v4_init+0x13/0x70
-> > size-4096: 3 journal_init_revoke+0xe7/0x270 [jbd]
-> > size-4096: 3 journal_init_revoke+0x18a/0x270 [jbd]
-> > size-4096: 2 journal_init_inode+0x84/0x150 [jbd]
-> > size-4096: 2 bnx2_alloc_mem+0x18/0x1f0 [bnx2]
-> > size-4096: 1 joydev_connect+0x53/0x390 [joydev]
-> > size-4096: 13 kmem_alloc+0xb3/0x100 [xfs]
-> > size-4096: 5 addrconf_sysctl_register+0x31/0x130 [ipv6]
-> > size-4096: 7 rpc_clone_client+0x84/0x140 [sunrpc]
-> > size-4096: 3 rpc_create+0x254/0x4d0 [sunrpc]
-> > size-4096: 16 __svc_create_thread+0x53/0x1f0 [sunrpc]
-> > size-4096: 16 __svc_create_thread+0x72/0x1f0 [sunrpc]
-> > size-4096: 1 nfsd_racache_init+0x2e/0x140 [nfsd]
-> > 
-> > The big one seems to be the __alloc_skb. (This is with 16 
-> threads, and
-> > it says that we are using up somewhere between 12 and 14 GB 
-> of memory,
-> > about 2 to 3 gig of that is disk cache).  If I were to put anymore
-> > threads out there, the server would become almost 
-> unresponsive (it was
-> > bad enough as it was).   
-> > 
-> > At the same time, I also noticed this:
-> > 
-> > skbuff_fclone_cache: 1842524 __alloc_skb+0x50/0x170
-> > 
-> > Don't know for sure if that is meaningful or not....
-> 
-> OK, so, starting at net/core/skbuff.c, this means that this memory was
-> allocated by __alloc_skb() calls with something nonzero in the third
-> ("fclone") argument.  The only such caller is alloc_skb_fclone().
-> Callers of alloc_skb_fclone() include:
-> 
-> 	sk_stream_alloc_skb:
-> 		do_tcp_sendpages
-> 		tcp_sendmsg
-> 		tcp_fragment
-> 		tso_fragment
+It's just that I use configfs in my own work, and I'm playing hard with
+it, especially with modules. So I need to understand exactly what it
+does, and what is possible with it.
 
-Interesting you should mention the tso...  We recently went through and
-turned on TSO on all of our systems, trying it out to see if it helped
-with performance...  This could be something to do with that.  I can try
-disabling the tso on all of the servers and see if that helps with the
-memory.  Actually, I think I will, and I will monitor the situation.  I
-think it might help some, but I still think there may be something else
-going on in a deep corner...
-
-> 		tcp_mtu_probe
-> 	tcp_send_fin
-> 	tcp_connect
-> 	buf_acquire:
-> 		lots of callers in tipc code (whatever that is).
 > 
-> So unless you're using tipc, or you have something in userspace going
-> haywire (perhaps netstat would help rule that out?), then I suppose
-> there's something wrong with knfsd's tcp code.  Which makes sense, I
-> guess.
+> On Fri, Jun 13, 2008 at 12:45:13PM +0200, Louis Rilling wrote:
+> > On Thu, Jun 12, 2008 at 07:41:31PM -0700, Joel Becker wrote:
+> > Unfortunately, thinking a bit more about it I found some issues with
+> > i_mutex lock free detach_prep(), but nothing that can't be fixed ;)
+> > 	Between detach_prep() in A and mkdir() in a default group A/B:
+> > detach_prep() can be called in the middle of attach_group(), for instance after
+> > having attached A/B/C, but attach_group() may then fail (because of memory
+> > pressure for instance) while attaching C's default group A/B/C/D. This would
+> > lead to both mkdir(A/B/C) and rmdir(A) failing, the reason for rmdir failure
+> > being at best obscure: the user would have expected to either see mkdir succeed
+> > and rmdir fail because of the new A/B/C group, or see mkdir fail and rmdir
+> > succeed because no user-created group lived under A. Solution: tag A/B with
+> > USET_IN_MKDIR on mkdir entrance, remove that tag on mkdir exit, and retry
+> > detach_prep() as long as USET_IN_MKDIR is found under A/*.
 > 
+> 	I see what you are saying here.  I'm not sure if that is worth
+> the complexity - we can say "it was kind of there".  No one will ever
+> hit it :-)  But let me think about it more.
 
-Not for sure what tipc is either....
+To me it's an issue only if we want to provide some atomic view to
+userspace: either userspace sees a group with all of its default groups,
+or it sees none. So the question is: does userspace need such atomicity?
+Currently configfs provides it, so this would be a userspace visible
+change if we break it.
 
-> I'd think this sort of allocation would be limited by the number of
-> sockets times the size of the send and receive buffers.
-> svc_xprt.c:svc_check_conn_limits() claims to be limiting the number of
-> sockets to (nrthreads+3)*20.  (You aren't hitting the "too many open
-> connections" printk there, are you?)  The total buffer size should be
-> bounded by something like 4 megs.
 > 
-> --b.
+> > 	Between rmdir() and readdir(): dir_open() might add a configfs_dirent
+> > to a default group A/B that detach_prep() already marked with USET_DROPPING.
+> > This could result in detach_groups() dropping the dirent and make readdir() in
+> > A/B crash afterwards. Solution: check USET_DROPPING in dir_open() and fail if
+> > it is set.
 > 
-
-Yes, we are getting a continuous stream of the too many open connections
-scrolling across our logs.  
-
-
-> > 
-> > 
-> > 
-> > > > Thanks everyone for looking at this, by the way!
-> > > 
-> > > And thanks for your persistence.
-> > > 
-> > > --b.
-> > > 
-> > 
-> > 
-> > Anytime.  This is the part of the job that is fun (except for my
-> > users...).  Anyone can watch a system run, it's dealing 
-> with the unknown
-> > that makes it interesting.
+> 	I was trying to see why this could happen, given that we can
+> come to this from other places - the dir could have been open before we
+> set USET_DROPPING.  Oh!  We actually fail rmdir with ENOTEMPTY when the
+> dir is open?  That's wrong.  Ignore it though - we'll fix it later.
+> 	But back to your concern.  configfs_readdir() can't crash for
+> two reasons.  First, detach_groups() won't remove this dirent.  A
+> readdir placeholder has s_element==NULL.  Note the check in
+> detach_groups():
 > 
-> OK!  Because I'm a bit stuck, so this will take some more work....
+> 	if (!sd->s_element ||
+> 	    !(sd->s_type & CONFIGFS_USET_DEFAULT))
+> 		continue;
 > 
-> --b.
+> It skips our readdir placeholder, allowing us to free it in dir_close().
+
+I had not noticed this. Thanks for pointed it out.
+
+> 	There's another reason this can't be a problem.  If we get into
+> detach_groups(), we take i_mutex, locking out readdir().  Then we delete
+> the directory, setting S_DEAD.  In vfs_readdir(), they check
+> IS_DEADDIR() after getting i_mutex.  So they will see S_DEAD and not
+> call our ->readdir().  S_DEAD is important.  Someone could actually have
+> our default_group as their cwd.  S_DEAD prevents them from doing
+> anything :-)
+
+As I told you in a previous email, I'm missing some VFS skills, so
+thanks again for the explanation.
+
 > 
-
-No problems.  I feel good if I exercised some deep corner of the code
-and found something that needed flushed out, that's what the experience
-is all about, isn't it?
-
-
-> > 
-> > 
-> > Norman Weathers
-> > 
-> > 
-> > > > 
-> > > > > 
-> > > > > 
-> > > > > diff --git a/mm/slab.c b/mm/slab.c
-> > > > > index 06236e4..b379e31 100644
-> > > > > --- a/mm/slab.c
-> > > > > +++ b/mm/slab.c
-> > > > > @@ -2202,7 +2202,7 @@ kmem_cache_create (const char *name, 
-> > > > > size_t size, size_t align,
-> > > > >  	 * above the next power of two: caches with object 
-> > > > > sizes just above a
-> > > > >  	 * power of two have a significant amount of internal 
-> > > > > fragmentation.
-> > > > >  	 */
-> > > > > -	if (size < 4096 || fls(size - 1) == fls(size-1 
-> + REDZONE_ALIGN +
-> > > > > +	if (size < 8192 || fls(size - 1) == fls(size-1 
-> + REDZONE_ALIGN +
-> > > > >  						2 * 
-> > > > > sizeof(unsigned long long)))
-> > > > >  		flags |= SLAB_RED_ZONE | SLAB_STORE_USER;
-> > > > >  	if (!(flags & SLAB_DESTROY_BY_RCU))
-> > > > > 
-> > > > 
-> > > > 
-> > > > Norman Weathers
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe 
-> > > linux-nfs" in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > 	Between rmdir() and lookup(): several lookup() called under A/* while
+> > rmdir(A) in the middle of detach_groups() could return inconsistent results (for
+> > instance some default groups being there and some other ones not). Solution:
+> > lock dirent_lock for the whole lookup() duration, check USET_DROPPING of current
+> > dir, and fail with ENOENT if it is set.
 > 
+> 	Nah, we don't care about the spurious lookups.  This is a normal
+> race of i_mutex.  USET_DROPPING is not a way to prevent VFS views from
+> changing - it's only a way to prevent new children.
+> 	Remember, ->lookup() comes with i_mutex locking.  We hold
+> i_mutex during the entire delete, so they can't call ->lookup() until
+> we're done with a directory.  Conversely, if they win i_mutex and ->lookup()
+> a default group, then try to use it after we've removed it, they'll just
+> ENOENT.  This is evident back in do_rename().  They call lookup, which
+> takes and drops locks, then call lock_rename() to get the locks back.
+> And they can handle ENOENT at that point.
+
+Sure, my only concern is the atomic view of userspace: can userspace
+tolerate that (pwd=A/B, with B a default group of A, B having default groups C
+and D, and A being removed) 'ls C' returns error because default group C is
+already removed and 'ls D' is ok because default group D is not removed yet?
+
+> 
+> > I was speaking as if we replaced i_mutex protection with dirent_lock
+> > protection for a whole mkdir(), that is taking the lock before attach_* and
+> > releasing it after.
+> 
+> 	Ok.  I think that's not the way to go, what you currently have
+> is better.
+
+Agreed.
+
+> 
+> > The intermediate conditions that really matter are:
+> > 1/ the existence of partial default groups trees (I mean configfs_dirent trees)
+> >    in the middle of attach_group() and detach_group(),
+> 
+> 	This is your first case, the mkdir ENOMEM vs rmdir ENOTEMPTY.
+
+Exactly.
+
+> 
+> > 2/ the existence of default group trees that are tagged as USET_DROPPING and
+> >    should be treated as not existing anymore.
+> 
+> 	This is not an issue.  USET_DROPPING does *not* mean it went
+> away.  It means we're safe to make it go away.  We protect the actual
+> going-away with i_mutex.  And that's normal VFS behavior.
+
+Again this is the concern of atomicity from userspace point of view: to
+provide such atomic view, mkdir(), lookup(), readdir(), and probably
+attributes open() should just fail when done in a default group flagged with
+USET_DROPPING.
+
+Anyway, if atomicity from userspace point of view is not a concern, this
+just makes things simpler, and I'm ok with it.
+
+Louis
+
+-- 
+Dr Louis Rilling			Kerlabs - IRISA
+Skype: louis.rilling			Campus Universitaire de Beaulieu
+Phone: (+33|0) 2 99 84 71 52		Avenue du General Leclerc
+Fax: (+33|0) 2 99 84 71 71		35042 Rennes CEDEX - France
+http://www.kerlabs.com/
