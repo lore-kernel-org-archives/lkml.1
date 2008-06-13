@@ -1,71 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760931AbYFMAIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760314AbYFMAXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760931AbYFMAIo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Jun 2008 20:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755876AbYFMAId
+	id S1760314AbYFMAXZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Jun 2008 20:23:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756349AbYFMAXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 20:08:33 -0400
-Received: from gate.crashing.org ([63.228.1.57]:44381 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757454AbYFMAIc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 20:08:32 -0400
-Subject: Re: MMIO and gcc re-ordering issue
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Jes Sorensen <jes@sgi.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Jeremy Higdon <jeremy@sgi.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tpiepho@freescale.com,
-       linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-       torvalds@linux-foundation.org, David Miller <davem@davemloft.net>,
-       alan@lxorguk.ukuu.org.uk
-In-Reply-To: <20080612150716.GX30405@parisc-linux.org>
-References: <1211852026.3286.36.camel@pasglop> <4843C3D7.7000609@sgi.com>
-	 <200806031433.12460.nickpiggin@yahoo.com.au>
-	 <200806030952.10360.jbarnes@virtuousgeek.org> <4847A690.302@sgi.com>
-	 <1212655433.9496.109.camel@pasglop>
-	 <20080612150716.GX30405@parisc-linux.org>
-Content-Type: text/plain
-Date: Fri, 13 Jun 2008 10:07:04 +1000
-Message-Id: <1213315624.14478.56.camel@pasglop>
+	Thu, 12 Jun 2008 20:23:15 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48440 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755427AbYFMAXO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Jun 2008 20:23:14 -0400
+Date: Fri, 13 Jun 2008 09:25:20 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       linux-mm@kvack.org, Nick Piggin <npiggin@suse.de>,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [BUG] 2.6.26-rc5-mm3 kernel BUG at mm/filemap.c:575!
+Message-Id: <20080613092520.fb35cd70.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <200806122138.59969.nickpiggin@yahoo.com.au>
+References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
+	<4850E1E5.90806@linux.vnet.ibm.com>
+	<20080612015746.172c4b56.akpm@linux-foundation.org>
+	<200806122138.59969.nickpiggin@yahoo.com.au>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-06-12 at 09:07 -0600, Matthew Wilcox wrote:
-> On Thu, Jun 05, 2008 at 06:43:53PM +1000, Benjamin Herrenschmidt wrote:
-> > Note that the powerpc implementation currently clears the flag
-> > on spin_lock and tests it on unlock. We are considering changing
-> > that to not touch the flag on spin_lock and just clear it whenever
-> > we do a sync (ie, on unlock, on explicit mmiowb, and possibly even
-> > on readl's where we happen to do sync's).
+On Thu, 12 Jun 2008 21:38:59 +1000
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+
+> +int putback_lru_page(struct page *page)
+> +{
+> +       int lru;
+> +       int ret = 1;
+> +       int was_unevictable;
+> +
+> +       VM_BUG_ON(!PageLocked(page));
+> +       VM_BUG_ON(PageLRU(page));
+> +
+> +       lru = !!TestClearPageActive(page);
+> +       was_unevictable = TestClearPageUnevictable(page); /* for 
+> page_evictable() */
+> +
+> +       if (unlikely(!page->mapping)) {
+> +               /*
+> +                * page truncated.  drop lock as put_page() will
+> +                * free the page.
+> +                */
+> +               VM_BUG_ON(page_count(page) != 1);
+> +               unlock_page(page);
+>                 ^^^^^^^^^^^^^^^^^^
 > 
-> Your current scheme sounds like it's broken for
 > 
-> spin_lock(a)
-> writel();
-> spin_lock(b);
-> spin_unlock(b);
-> spin_unlock(a);
+> This is a rather wild thing to be doing. It's a really bad idea
+> to drop a lock that's taken several function calls distant and
+> across different files...
+> 
+I agree and strongly hope this unlock should be removed.
+The caller can do unlock by itself, I think.
 
-Which is why we are considering changing it :-)
-
-But as Paulus said before, he did some measurement and we came to the
-conclusion that (pending more measurements on a wider range of HW) we
-may as well drop the whole scheme and make writel fully synchronous
-instead.
-
-Then, we can get some nice weakly ordered accessors and start adding
-them with appropriate explicit barriers to the hot path of perf.
-critical drivers we care about.
-
-Cheers,
-Ben.
-
-
+Thanks,
+-Kame
 
