@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761426AbYFMHYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761767AbYFMHY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761426AbYFMHYn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 03:24:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754118AbYFMHYe
+	id S1761767AbYFMHY7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 03:24:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761218AbYFMHYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 03:24:34 -0400
-Received: from mga02.intel.com ([134.134.136.20]:23442 "EHLO mga02.intel.com"
+	Fri, 13 Jun 2008 03:24:40 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47178 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753852AbYFMHYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 03:24:33 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,637,1204531200"; 
-   d="scan'208";a="292510611"
-Subject: Re: [BUGFIX] lockdep: output lock_class key instead of address for
-	forward dependency output
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080613065809.GA28810@elte.hu>
-References: <1213339217.17201.6.camel@caritas-dev.intel.com>
-	 <20080613065809.GA28810@elte.hu>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 13 Jun 2008 15:26:05 +0800
-Message-Id: <1213341965.17201.15.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-X-OriginalArrivalTime: 13 Jun 2008 07:24:04.0609 (UTC) FILETIME=[75A26F10:01C8CD26]
+	id S1761092AbYFMHYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 03:24:39 -0400
+Date: Fri, 13 Jun 2008 09:24:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Jan Beulich <jbeulich@novell.com>, Stable Kernel <stable@kernel.org>,
+       x86@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH UPDATED] x86: set PAE PHYSICAL_MASK_SHIFT to 44 bits.
+Message-ID: <20080613072424.GB11976@elte.hu>
+References: <4848046A.5060006@goop.org> <484823BD.76E4.0078.0@novell.com> <484901A3.3040401@goop.org> <20080610103151.GG19136@elte.hu> <484E7C5D.50701@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <484E7C5D.50701@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-06-13 at 08:58 +0200, Ingo Molnar wrote:
-> * Huang, Ying <ying.huang@intel.com> wrote:
-> 
-> > The key instead of address of lock_class should be output in
-> > /proc/lockdep when forward dependency is output, because key is
-> > output for lock_class itself as identifier too.
-> > 
-> > This patch is based on x86/auto-latest branch of git-x86 tree, and has
-> > been tested on x86_64 platform.
-> 
-> applied to tip/core/locking - thanks Ying.
-> 
-> i'm wondering, can entry->class never be NULL here?
 
-As far as I know, it can never be NULL. Because entry is added into
-class->locks_after in following call chain:
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-lock_acquire -> __lock_acquire -> validate_chain -> check_prevs_add ->
-check_prev_add -> add_lock_to_list
+> Ingo Molnar wrote:
+>>> When a 64-bit x86 processor runs in 32-bit PAE mode, a pte can  
+>>> potentially have the same number of physical address bits as the  
+>>> 64-bit host ("Enhanced Legacy PAE Paging").  This means, in theory, 
+>>> we could have up to 52 bits of physical address in a pte.
+>>>
+>>> The 32-bit kernel uses a 32-bit unsigned long to represent a pfn. 
+>>> This means that it can only represent physical addresses up to 
+>>> 32+12=44 bits wide.  Rather than widening pfns everywhere, just set 
+>>> 2^44 as the Linux x86_32-PAE architectural limit for physical address 
+>>> size.
+>>>     
+>>
+>> applied to tip/x86/cleanups - thanks Jeremy. No urgency for v2.6.26, 
+>> right?
+>
+> Not urgent, but it would be nice to have.
 
-in __lock_acquire the lock_class is look up or registered from
-lockdep_map and put in held_lock, which is used in following function in
-call chain.
+ok, cherry-picked it into x86/urgent. This aspect makes it eligible for 
+v2.6.26:
 
-Best Regards,
-Huang Ying
+| This is a bugfix for two cases:
+| 1. running a 32-bit PAE kernel on a machine with
+|   more than 64GB RAM.
+| 2. running a 32-bit PAE Xen guest on a host machine with
+|   more than 64GB RAM
+|
+| In both cases, a pte could need to have more than 36 bits of physical,
+| and masking it to 36-bits will cause fairly severe havoc.
 
+also added a stable@kernel.org Cc: to the commit, so it will be picked 
+up in stable as well.
+
+	Ingo
