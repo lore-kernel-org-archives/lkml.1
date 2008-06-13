@@ -1,110 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759813AbYFMWEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758676AbYFMWRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759813AbYFMWEl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 18:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbYFMWE2
+	id S1758676AbYFMWRi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 18:17:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562AbYFMWR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 18:04:28 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:41476 "EHLO fieldses.org"
+	Fri, 13 Jun 2008 18:17:27 -0400
+Received: from gw.goop.org ([64.81.55.164]:51161 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754647AbYFMWE0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 18:04:26 -0400
-Date: Fri, 13 Jun 2008 18:04:22 -0400
-To: "Weathers, Norman R." <Norman.R.Weathers@conocophillips.com>
-Cc: Jeff Layton <jlayton@poochiereds.net>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, Neil Brown <neilb@suse.de>
-Subject: Re: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
-Message-ID: <20080613220422.GC14338@fieldses.org>
-References: <0122F800A3B64C449565A9E8C297701002D75DA3@hoexmb9.conoco.net> <20080611184613.GM15380@fieldses.org> <20080611195222.GP15380@fieldses.org> <20080611160947.5f08fb16@tleilax.poochiereds.net> <20080611205749.GA25194@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DAA@hoexmb9.conoco.net> <20080611225431.GD25194@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DAE@hoexmb9.conoco.net> <20080613201552.GH8501@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DB6@hoexmb9.conoco.net>
+	id S1754515AbYFMWR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 18:17:26 -0400
+Message-ID: <4852F1C8.7060904@goop.org>
+Date: Fri, 13 Jun 2008 23:16:40 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0122F800A3B64C449565A9E8C297701002D75DB6@hoexmb9.conoco.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, chrisw@sous-sol.org,
+       virtualization@lists.osdl.org, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: linux-next: Tree for June 13 (XEN)
+References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <20080613101316.1c228fe7.randy.dunlap@oracle.com>
+In-Reply-To: <20080613101316.1c228fe7.randy.dunlap@oracle.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 13, 2008 at 04:53:31PM -0500, Weathers, Norman R. wrote:
->  
-> 
-> > > The big one seems to be the __alloc_skb. (This is with 16 
-> > threads, and
-> > > it says that we are using up somewhere between 12 and 14 GB 
-> > of memory,
-> > > about 2 to 3 gig of that is disk cache).  If I were to put anymore
-> > > threads out there, the server would become almost 
-> > unresponsive (it was
-> > > bad enough as it was).   
-> > > 
-> > > At the same time, I also noticed this:
-> > > 
-> > > skbuff_fclone_cache: 1842524 __alloc_skb+0x50/0x170
-> > > 
-> > > Don't know for sure if that is meaningful or not....
-> > 
-> > OK, so, starting at net/core/skbuff.c, this means that this memory was
-> > allocated by __alloc_skb() calls with something nonzero in the third
-> > ("fclone") argument.  The only such caller is alloc_skb_fclone().
-> > Callers of alloc_skb_fclone() include:
-> > 
-> > 	sk_stream_alloc_skb:
-> > 		do_tcp_sendpages
-> > 		tcp_sendmsg
-> > 		tcp_fragment
-> > 		tso_fragment
-> 
-> Interesting you should mention the tso...  We recently went through and
-> turned on TSO on all of our systems, trying it out to see if it helped
-> with performance...  This could be something to do with that.  I can try
-> disabling the tso on all of the servers and see if that helps with the
-> memory.  Actually, I think I will, and I will monitor the situation.  I
-> think it might help some, but I still think there may be something else
-> going on in a deep corner...
+Randy Dunlap wrote:
+> next-20080613 on x86_32 has lots of xen build errors like this:
+>
+> linux-next-20080613/arch/x86/xen/mmu.c: In function 'drop_mm_ref':
+> linux-next-20080613/arch/x86/xen/mmu.c:759: error: implicit declaration of function 'xen_smp_call_function_mask'
+> make[2]: *** [arch/x86/xen/mmu.o] Error 1
+>
+>   
 
-I'll plead total ignorance about TSO, and it sounds like a long
-shot--but sure, it'd be worth trying, thanks.
+Ooh, first time I've seen that.  Sounds like Jens' patches are missing 
+the appropriate update there (though it's certainly had it in the past).
 
-> 
-> > 		tcp_mtu_probe
-> > 	tcp_send_fin
-> > 	tcp_connect
-> > 	buf_acquire:
-> > 		lots of callers in tipc code (whatever that is).
-> > 
-> > So unless you're using tipc, or you have something in userspace going
-> > haywire (perhaps netstat would help rule that out?), then I suppose
-> > there's something wrong with knfsd's tcp code.  Which makes sense, I
-> > guess.
-> > 
-> 
-> Not for sure what tipc is either....
-> 
-> > I'd think this sort of allocation would be limited by the number of
-> > sockets times the size of the send and receive buffers.
-> > svc_xprt.c:svc_check_conn_limits() claims to be limiting the number of
-> > sockets to (nrthreads+3)*20.  (You aren't hitting the "too many open
-> > connections" printk there, are you?)  The total buffer size should be
-> > bounded by something like 4 megs.
-> > 
-> > --b.
-> > 
-> 
-> Yes, we are getting a continuous stream of the too many open connections
-> scrolling across our logs.  
+    J
 
-That's interesting!  So we should probably look more closely at the
-svc_check_conn_limits() behavior.  I wonder whether some pathological
-behavior is triggered in the case where you're constantly over the limit
-it's trying to enforce.
-
-(Remind me how many active clients you have?)
-
-> No problems.  I feel good if I exercised some deep corner of the code
-> and found something that needed flushed out, that's what the experience
-> is all about, isn't it?
-
-Yep!
-
---b.
