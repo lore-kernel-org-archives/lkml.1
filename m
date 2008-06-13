@@ -1,68 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760932AbYFMMbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758985AbYFMMi7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760932AbYFMMbn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 08:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbYFMMbe
+	id S1758985AbYFMMi7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 08:38:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755529AbYFMMit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 08:31:34 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40953 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759257AbYFMMbK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 08:31:10 -0400
-Date: Fri, 13 Jun 2008 13:07:26 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       "Dunlap, Randy" <rdunlap@xenotime.net>
-Subject: fix stale references in Doc*/kernel-parameters.txt
-Message-ID: <20080613110726.GA5267@elf.ucw.cz>
+	Fri, 13 Jun 2008 08:38:49 -0400
+Received: from www.tglx.de ([62.245.132.106]:39537 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755460AbYFMMit (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 08:38:49 -0400
+Date: Fri, 13 Jun 2008 14:38:30 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Veen <arjan@infradead.org>
+Subject: Re: [patch 3/6] x86: use cpuinfo to check for interrupt pending
+ message msr
+In-Reply-To: <20080613065524.GE7763@alberich.amd.com>
+Message-ID: <alpine.LFD.1.10.0806131436510.5735@apollo.tec.linutronix.de>
+References: <20080610171639.551369443@linutronix.de> <20080610171712.304283554@linutronix.de> <20080613065524.GE7763@alberich.amd.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 13 Jun 2008, Andreas Herrmann wrote:
+> > +	/* Family 0x0f models < rev F do not have this MSR */
+> > +	if (c->x86 == 0x0f && c->x86_model < 0x40)
+> > +		return 0;
+> 
+> Just some minor nitpicking.
+> Older AMD family 0xf CPUs have this Interrupt Pending Message
+> Register. But they do not support C1E and thus bits 27 and 28 of this
+> MSR are reserved.
 
-Fix stale references to source files in kernel-parameters.txt.
+So the check can be simplified to always check the MSR for all 
+family >= 0x0f CPUs ?
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+Thanks,
 
----
-commit 9d0651da52b63d692a2dc461d9225464a89e090d
-tree d4b5f4a63b96692d55b5d723435e5283b3ac12d9
-parent 1ae7f5d9d8c869ca647936cc8b07316aa1438314
-author Pavel <pavel@amd.ucw.cz> Fri, 13 Jun 2008 13:06:32 +0200
-committer Pavel <pavel@amd.ucw.cz> Fri, 13 Jun 2008 13:06:32 +0200
-
- Documentation/kernel-parameters.txt |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index e07c432..85c6f57 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -295,7 +295,7 @@ and is between 256 and 4096 characters. 
- 			when initialising the APIC and IO-APIC components.
- 
- 	apm=		[APM] Advanced Power Management
--			See header of arch/i386/kernel/apm.c.
-+			See header of arch/x86/kernel/apm_32.c.
- 
- 	arcrimi=	[HW,NET] ARCnet - "RIM I" (entirely mem-mapped) cards
- 			Format: <io>,<irq>,<nodeID>
-@@ -638,7 +638,7 @@ and is between 256 and 4096 characters. 
- 
- 	elanfreq=	[X86-32]
- 			See comment before function elanfreq_setup() in
--			arch/i386/kernel/cpu/cpufreq/elanfreq.c.
-+			arch/x86/kernel/cpu/cpufreq/elanfreq.c.
- 
- 	elevator=	[IOSCHED]
- 			Format: {"anticipatory" | "cfq" | "deadline" | "noop"}
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	tglx
