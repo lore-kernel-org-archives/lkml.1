@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756675AbYFMKfF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbYFMKgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756675AbYFMKfF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 06:35:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbYFMKex
+	id S1757448AbYFMKgo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 06:36:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbYFMKgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 06:34:53 -0400
-Received: from 82-69-137-158.dsl.in-addr.zen.co.uk ([82.69.137.158]:38844 "EHLO
-	uklogin.uk.level5networks.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753092AbYFMKew (ORCPT
+	Fri, 13 Jun 2008 06:36:36 -0400
+Received: from antispam.upcomillas.es ([130.206.70.245]:39967 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753752AbYFMKgf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 06:34:52 -0400
-X-Greylist: delayed 1111 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Jun 2008 06:34:52 EDT
-Date: Fri, 13 Jun 2008 11:15:40 +0100
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: [PATCH] cputopology: Always define CPU topology information [5th try]
-Message-ID: <20080613101539.GV11300@solarflare.com>
-References: <20080604154454.GD11300@solarflare.com> <20080604214715.bbebe325.akpm@linux-foundation.org> <20080605120829.GI11300@solarflare.com> <20080605092831.a77d164d.akpm@linux-foundation.org> <20080605163714.GO11300@solarflare.com> <20080613051654.GC21586@elte.hu>
+	Fri, 13 Jun 2008 06:36:35 -0400
+Subject: Re: [regression?] Sometime (often) X come out blank (black screen)
+	on cold boot - Intel chipset
+From: Romano Giannetti <romanol@upcomillas.es>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Justin Madru <jdm64@gawab.com>
+In-Reply-To: <200806110912.59819.jbarnes@virtuousgeek.org>
+References: <1213101501.21041.9.camel@pern>
+	 <200806101106.23899.jbarnes@virtuousgeek.org>
+	 <1213160635.9453.15.camel@localhost>
+	 <200806110912.59819.jbarnes@virtuousgeek.org>
+Content-Type: text/plain; charset=ISO-8859-15
+Date: Fri, 13 Jun 2008 12:36:32 +0200
+Message-Id: <1213353392.7505.4.camel@pern>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080613051654.GC21586@elte.hu>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> 
-> * Ben Hutchings <bhutchings@solarflare.com> wrote:
-> 
-> > Not all architectures and configurations define CPU topology 
-> > information. This can result in an empty topology directory in sysfs, 
-> > and requires in-kernel users to protect all uses with #ifdef - see 
-> > <http://marc.info/?l=linux-netdev&m=120639033904472&w=2>.
-> > 
-> > The documentation of CPU topology specifies what the defaults should 
-> > be if only partial information is available from the hardware.  So we 
-> > can provide these defaults as a fallback.
-> > 
-> > This patch:
-> > 
-> > - Adds default definitions of the 4 topology macros to <linux/topology.h>
-> > - Changes drivers/base/topology.c to use the topology macros unconditionally
-> > - Updates documentation accordingly
-> 
-> applied to tip/core/topology - thanks Ben.
 
-Unfortunately you lost the first paragraph of the commit message, then
-created a second commit (difference between 4th and 5th versions) with
-your own commit message and me as the author.  Maybe it's nitpicking but I
-would prefer to have strictly accurate metadata in the commit log.
+On Wed, 2008-06-11 at 09:12 -0700, Jesse Barnes wrote:
+> Check out http://www.intellinuxgraphics.org/ for instructions on building the 
+> driver.  You may also want to check out Freedesktop bug 15602 which Justin 
+> filed upstream (https://bugs.freedesktop.org/show_bug.cgi?id=15602).
 
-Ben.
+I will try to look at it --- RL entered in the game this week and
+overwhelmed me a bit. 
 
+Maybe it's related, maybe not, but as an hint I can say that the X
+screen also used to go black everytime I switch from AC supply to
+battery. This morning I did a ubuntu x-intel-driver update, and it seems
+that now I can't reproduce that glitch anymore. 
+
+Romano  
 -- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
+Sorry for the disclaimer --- ¡I cannot stop it!
+
+
+
+--
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
