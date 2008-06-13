@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbYFMKgo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757654AbYFMKij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757448AbYFMKgo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 06:36:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbYFMKgg
+	id S1757654AbYFMKij (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 06:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbYFMKic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 06:36:36 -0400
-Received: from antispam.upcomillas.es ([130.206.70.245]:39967 "EHLO
+	Fri, 13 Jun 2008 06:38:32 -0400
+Received: from ic0245.upco.es ([130.206.70.245]:40049 "EHLO
 	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753752AbYFMKgf (ORCPT
+	with ESMTP id S1753876AbYFMKib (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 06:36:35 -0400
-Subject: Re: [regression?] Sometime (often) X come out blank (black screen)
-	on cold boot - Intel chipset
-From: Romano Giannetti <romanol@upcomillas.es>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Justin Madru <jdm64@gawab.com>
-In-Reply-To: <200806110912.59819.jbarnes@virtuousgeek.org>
-References: <1213101501.21041.9.camel@pern>
-	 <200806101106.23899.jbarnes@virtuousgeek.org>
-	 <1213160635.9453.15.camel@localhost>
-	 <200806110912.59819.jbarnes@virtuousgeek.org>
+	Fri, 13 Jun 2008 06:38:31 -0400
+Subject: Re: ALC883 recording troubles...
+From: Romano Giannetti <romano@dea.icai.upcomillas.es>
+To: Daniel J Blueman <daniel.blueman@gmail.com>
+Cc: Takashi Iwai <tiwai@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+In-Reply-To: <6278d2220806121450h39280637udbe06ffb92fbb0d1@mail.gmail.com>
+References: <6278d2220806091259t47c9b070v269da0f5855ef014@mail.gmail.com>
+	 <s5habhtesoq.wl%tiwai@suse.de>
+	 <6278d2220806111200g4f802885wfc5f0fd6c0405efb@mail.gmail.com>
+	 <s5hiqwf0vyr.wl%tiwai@suse.de>
+	 <6278d2220806121450h39280637udbe06ffb92fbb0d1@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-15
-Date: Fri, 13 Jun 2008 12:36:32 +0200
-Message-Id: <1213353392.7505.4.camel@pern>
+Date: Fri, 13 Jun 2008 12:38:26 +0200
+Message-Id: <1213353506.7505.7.camel@pern>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 8bit
@@ -32,23 +32,25 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 2008-06-11 at 09:12 -0700, Jesse Barnes wrote:
-> Check out http://www.intellinuxgraphics.org/ for instructions on building the 
-> driver.  You may also want to check out Freedesktop bug 15602 which Justin 
-> filed upstream (https://bugs.freedesktop.org/show_bug.cgi?id=15602).
+On Thu, 2008-06-12 at 22:50 +0100, Daniel J Blueman wrote:
+> Another smoking gun, is when changing certain mixer settings (both on
+> gnome-mixer and alsamixer), eg playback->front mic amplitude, moving
+> the slider up and down, the L/R linking seems to be almost randomly
+> unlinked and the other L/R channel jumps to a different value. When
+> re-linking the L/R channels, often, it'll unlink again and change both
+> value after reading back the change; mute can be erratic too.
+> Confirmed with 2.6.26-r5.
 
-I will try to look at it --- RL entered in the game this week and
-overwhelmed me a bit. 
+This seems: http://bugzilla.kernel.org/show_bug.cgi?id=10300
 
-Maybe it's related, maybe not, but as an hint I can say that the X
-screen also used to go black everytime I switch from AC supply to
-battery. This morning I did a ubuntu x-intel-driver update, and it seems
-that now I can't reproduce that glitch anymore. 
+I do not think it's related, I had the mic problem *before* seeing this.
+It's not fixed as 2.6.26-rc5, btw.
 
-Romano  
+Romano 
 -- 
-Sorry for the disclaimer --- ¡I cannot stop it!
 
+Romano Giannetti                            Dep. de Electrónica y Automática
+http://www.dea.icai.upcomillas.es/romano    Univ. Pontificia Comillas (MADRID)
 
 
 --
