@@ -1,97 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758111AbYFMETd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752690AbYFMETu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758111AbYFMETd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 00:19:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbYFMETZ
+	id S1752690AbYFMETu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 00:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbYFMETi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 00:19:25 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56466 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750701AbYFMETY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 00:19:24 -0400
-From: "Takashi Nishiie" <t-nishiie@np.css.fujitsu.com>
-To: "'Masami Hiramatsu'" <mhiramat@redhat.com>,
-       "'Frank Ch. Eigler'" <fche@redhat.com>
-Cc: "'Peter Zijlstra'" <peterz@infradead.org>,
-       "'Mathieu Desnoyers'" <mathieu.desnoyers@polymtl.ca>,
-       "'Hideo AOKI'" <haoki@redhat.com>, <mingo@elte.hu>,
-       <linux-kernel@vger.kernel.org>,
-       "'Steven Rostedt'" <rostedt@goodmis.org>
-References: <20080602232135.GA20173@Krystal> <1212618449.19205.35.camel@lappy.programming.kicks-ass.net> <20080604232241.GA8488@Krystal> <1212653539.19205.47.camel@lappy.programming.kicks-ass.net> <20080612135319.GB22348@Krystal> <1213280823.31518.114.camel@twins> <20080612155332.GA16658@redhat.com> <48514BE3.3000506@redhat.com> <20080612164318.GB17814@redhat.com> <48515770.4020002@redhat.com> <20080612174834.GB22454@redhat.com> <48517A56.20603@redhat.com>
-In-Reply-To: <48517A56.20603@redhat.com>
-Subject: RE: Kernel marker has no performance impact on ia64.
-Date: Fri, 13 Jun 2008 13:19:25 +0900
-Message-ID: <004101c8cd0c$aa093190$fe1b94b0$@css.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+	Fri, 13 Jun 2008 00:19:38 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:40495 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758585AbYFMETf (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 00:19:35 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, linux-mm@kvack.org,
+       Nick Piggin <npiggin@suse.de>, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [BUG] 2.6.26-rc5-mm3 kernel BUG at mm/filemap.c:575!
+In-Reply-To: Your message of "Thu, 12 Jun 2008 14:14:21 +0530."
+             <4850E1E5.90806@linux.vnet.ibm.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
+            <4850E1E5.90806@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1213330723_2983P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Content-Language: ja
-Thread-Index: AcjMxJcOnvU02VETTii74XR3RAzPHQARxPFA
+Date: Fri, 13 Jun 2008 00:18:43 -0400
+Message-ID: <4041.1213330723@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,Hiramatsu
+--==_Exmh_1213330723_2983P
+Content-Type: text/plain; charset=us-ascii
 
- Hiramatsu wrote:
+On Thu, 12 Jun 2008 14:14:21 +0530, Kamalesh Babulal said:
+> Hi Andrew,
+> 
+> 2.6.26-rc5-mm3 kernel panics while booting up on the x86_64
+> machine. Sorry the console is bit overwritten for the first few lines.
 
->I think if someone changes the trace point in the kernel,
->Module.markers is also changed.
->
->ex.)
-> DEFINE_TRACE(sched_switch, (struct task_struct * next, struct task_struct
-* prev),
->	     next, prev);
->
->if someone changes above to below,
->
-> DEFINE_TRACE(sched_switch, (int prev_pid, int next_pid), prev_pid,
-next_pid);
->
->Module.markers also change like
->
-> sched_switch	vmlinux	(struct task_struct * next, struct task_struct *
-prev)
->
->to
->
-> sched_switch	vmlinux	(int prev_pid, int next_pid)
->
->In this case, the below entry never matches to new Module.markers.
->
->"sched_switch(struct task_struct * next, struct task_struct * prev)":"next
-%p prev %p"
->
->Thus, we can find an error.
->However, of cause, we should take care of the task_struct changes.
+> no fstab.kernel BUG at mm/filemap.c:575!
 
-  The one expected of markers with SystemTap and LTTng is only 
-different the foundation of this discussion. 
+For whatever it's worth, I'm seeing the same thing on my x86_64 laptop.
+-rc5-mm2 works OK, I'm going to try to bisect it tonight.
 
-SystemTap:
-  Because the output format is basically defined with user script in 
-systemtap script, "format information" is unnecessary. It can do 
-nothing but guess from "format information" in present markers though 
-the type of the argument is indispensable for SystemTap on the other 
-hand. If the type of an accurate argument is understood, correct 
-processing can be executed. Moreover, being able to refer to the 
-member of the structure if the argument is a pointer of the structure 
-becomes possible, and it is convenient. 
+% diff -u /usr/src/linux-2.6.26-rc5-mm[23]/.config
+--- /usr/src/linux-2.6.26-rc5-mm2/.config       2008-06-10 22:21:13.000000000 -0400
++++ /usr/src/linux-2.6.26-rc5-mm3/.config       2008-06-12 22:20:25.000000000 -0400
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.26-rc5-mm2
+-# Tue Jun 10 22:21:13 2008
++# Linux kernel version: 2.6.26-rc5-mm3
++# Thu Jun 12 22:20:25 2008
+ #
+ CONFIG_64BIT=y
+ # CONFIG_X86_32 is not set
+@@ -275,7 +275,7 @@
+ CONFIG_ZONE_DMA_FLAG=1
+ CONFIG_BOUNCE=y
+ CONFIG_VIRT_TO_BUS=y
+-# CONFIG_NORECLAIM_LRU is not set
++CONFIG_UNEVICTABLE_LRU=y
+ CONFIG_MTRR=y
+ CONFIG_MTRR_SANITIZER=y
+ CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=0
 
-LTTng:
-  Because the output format is not originally defined in LTTng, "format 
-information" is indispensable. 
-
-  I think that I only have to add the item that shows the type of an 
-accurate argument if the format of "Module.markers" is changed. 
-
-Thank you,
-
---
-Takashi Nishiie
+Not much changed there...
 
 
+--==_Exmh_1213330723_2983P
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFIUfUjcC3lWbTT17ARAkfUAJ0WQuV/bFRJGjGypxnucvdZEPw12QCeK3tg
+zb9aq6aIr8XgW+lmCicdQ/Y=
+=aeWO
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1213330723_2983P--
