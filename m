@@ -1,104 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757776AbYFMVQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757893AbYFMVUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757776AbYFMVQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 17:16:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbYFMVQV
+	id S1757893AbYFMVUd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 17:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbYFMVU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 17:16:21 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:45146 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751062AbYFMVQT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 17:16:19 -0400
-Date: Fri, 13 Jun 2008 22:15:01 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Rik van Riel <riel@redhat.com>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: 2.6.26-rc5-mm2 (swap_state.c:77)
-In-Reply-To: <20080613134507.3f08820e@cuia.bos.redhat.com>
-Message-ID: <Pine.LNX.4.64.0806132135460.10183@blonde.site>
-References: <20080609223145.5c9a2878.akpm@linux-foundation.org>
- <200806101848.22237.nickpiggin@yahoo.com.au> <20080611140902.544e59ec@bree.surriel.com>
- <200806120958.38545.nickpiggin@yahoo.com.au> <20080612152905.6cb294ae@cuia.bos.redhat.com>
- <Pine.LNX.4.64.0806122131330.10415@blonde.site> <20080613134507.3f08820e@cuia.bos.redhat.com>
+	Fri, 13 Jun 2008 17:20:26 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:48941 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752392AbYFMVUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 17:20:24 -0400
+Date: Sat, 14 Jun 2008 00:20:23 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Lior Dotan <liodot@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       David Brownell <dbrownell@users.sourceforge.net>, a.zummo@towertech.it,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       bugme-daemon@bugzilla.kernel.org, rtc-linux@googlegroups.com
+Subject: Re: [Bug 10866] /dev/rtc was missing until I disabled
+	CONFIG_RTC_CLASS
+Message-ID: <20080613212023.GB1716@cs181133002.pp.htv.fi>
+References: <GIilET9wkhI.A.JzB.81vSIB@albercik> <dCRO4tbfLzK.A.rFC.L2vSIB@albercik> <20080613193302.GA1716@cs181133002.pp.htv.fi> <a5bf86a80806131255w704745d7mc109c13669ac9c68@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <a5bf86a80806131255w704745d7mc109c13669ac9c68@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jun 2008, Rik van Riel wrote:
-> On Thu, 12 Jun 2008 22:15:54 +0100 (BST)
-> Hugh Dickins <hugh@veritas.com> wrote:
-> > 
-> > I don't know how to fix this problem in a nice way.  For the moment,
-> > to proceed with testing, I'm using the hack below.  But perhaps that
-> > screws things up for the other !mapping_cap_account_dirty filesystems
-> > e.g. ramfs, I just haven't tried them yet - nor shall in the next
-> > couple of days.
+On Fri, Jun 13, 2008 at 10:55:38PM +0300, Lior Dotan wrote:
+> On Fri, Jun 13, 2008 at 10:33 PM, Adrian Bunk <bunk@kernel.org> wrote:
+> > On Sat, Jun 07, 2008 at 10:42:57PM +0200, Rafael J. Wysocki wrote:
+> >> This message has been generated automatically as a part of a report
+> >> of recent regressions.
+> >>
+> >> The following bug entry is on the current list of known regressions
+> >> from 2.6.25.  Please verify if it still should be listed.
+> >>
+> >>
+> >> Bug-Entry     : http://bugzilla.kernel.org/show_bug.cgi?id=10866
+> >> Subject               : /dev/rtc was missing until I disabled CONFIG_RTC_CLASS
+> >> Submitter     : Lior Dotan <liodot@gmail.com>
+> >> Date          : 2008-06-05 15:04 (3 days old)
+> >> References    : http://marc.info/?l=linux-kernel&amp;m=121267834521432&amp;w=4
+> >
+> > Where are we regarding this entry in the 2.6.26-rc regression list?
+> >
+> > I'd agree with David that CONFIG_RTC_CLASS disabling CONFIG_RTC is a fix
+> > and not a 2.6.26-rc regression.
+> >
+> > Does anyone disagree with this?
+> >
+> >
+> > I'm not sure whether this was Lior's problem or another issue I'm seeing
+> > on my computer (static /dev, no udev):
+> >
+> > /dev/rtc (major 10, minor 135) does not seem to exist, and I'd call this
+> > a functional regression of the new drivers.
+> >
+> > Could this be fixed?
 > 
-> Yeah, it will break ramfs.  Also, we need to take care of
-> splice going in the opposite direction (moving a page from
-> SwapBacked to filesystem backed).
+> I don't know if it helps you to decide but the way I got to this 
+> configuration is by copying my working 2.6.25 .config file and running 
+> make oldconfig. I think this scenario is common when upgrading to a 
+> newer version so you should make sure it doesn't generate an invalid 
+> configuration.
 
-No, that's a different, and blessedly non-existent, problem.
+What is the output of "grep RTC_ .config" on your old .config?
 
-The swap_state.c:77s we're seeing with loop-on-tmpfs-file just comes
-from __generic_file_splice_read doing add_to_page_cache_lru without
-knowing that the filesystem it's dealing with is tmpfs, which unlike
-every other filesystem sets and expects PageSwapBacked on its pages.
-(I expect you started out without that, then hit problems when tmpfs
-moved its file pages to swap cache, so you therefore elected to make
-them SwapBacked from the start.)
+> Lior.
 
-You could certainly argue that tmpfs should therefore have its own
-shmem_file_splice_read instead of using generic_file_splice_read;
-but I'd rather hate to duplicate that splice code within shmem.c just
-for this reason, would prefer that __generic_file_splice_read deduce it's
-dealing with tmpfs and SetPageSwapBacked before add_to_page_cache_lru
-(probably better that way than within add_to_page_cache_lru as I did).
+cu
+Adrian
 
-Though I'd even more prefer to find a way of avoiding it altogether:
-I've yet to think through on that.
+-- 
 
-But this is hardly a splice problem, it's just that splice is the
-only thing which ever goes the problematic shmem_readpage route.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-When above you say that we also need to take care of going the
-opposite direction, you're thinking about splice stealing pages
-from one mapping and giving them to another, the essence of splice.
-But see Nick's year-old 485ddb4b9741bafb70b22e5c1f9b4f37dc3e85bd
-"splice: dont steal" patch: that stealing is currently dead code,
-so you shouldn't spend time worrying about how to deal with it.
-Though we've all forgotten to either remove or correct that code.
-
-> I guess we'll need per-mapping flags to help determine where
-> a page goes at add_to_page_cache_lru() time.
-
-The better way would be to add a backing_dev_info flag.  (At one
-point I had been going to criticize your per-mapping AS_UNEVICTABLE,
-to say that one should be a backing_dev_info flag; but no, you're
-right, you've the SHM_LOCK case where it has to be per-mapping.)
-
-> This does not remove our need for the page flags, because
-> those need to survive until the del_page_from_lru() call
-> in __page_cache_release(), by which time the page->mapping
-> will be long gone.
-
-Yes, I see that.
-
-> > Am I right to think that the memcontrol stuff is now all broken,
-> > because memcontrol.c hasn't yet been converted to the more LRUs?
-> > Certainly I'm now hanging when trying to run in a restricted memcg.
-> 
-> I believe memcontrol has been converted.  Of course, maybe
-> they changed some stuff under me that I didn't notice :(
-
-Ah, yes, there are NR_LRU_LISTS arrays in there now, so it has
-the appearance of having been converted.  Fine, then it's worth
-my looking into why it isn't actually working as intended.
-
-Hugh
