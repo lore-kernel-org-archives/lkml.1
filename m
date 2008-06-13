@@ -1,67 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758720AbYFMOP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756437AbYFMOTG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758720AbYFMOP3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 10:15:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754978AbYFMOPR
+	id S1756437AbYFMOTG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 10:19:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbYFMOSz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 10:15:17 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:44711 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753063AbYFMOPQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 10:15:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Hg5zHi8ljSg/2FIKM8Ztd98NoNlaYzT0slyhxrqOZJrr2os6GA0EmPkzU41AMqHZcU
-         HHdn+VsevYWi7o+FK5FAeZLwbTsss9U8bP6RdTayL3+lcUCtcyZ69cNgGxy8NsuDd+ui
-         i8qJbkIJzRZS1facPqJu29Z+NpKVMHyE5Hg7o=
-Message-ID: <c4e36d110806130715v4126d9b6vef69746e3b4e493b@mail.gmail.com>
-Date: Fri, 13 Jun 2008 16:15:15 +0200
-From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Problem: Out of memory after 2days with 2GB RAM
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       riel@redhat.com
-In-Reply-To: <200806131608.31803.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Jun 2008 10:18:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54999 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751838AbYFMOSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 10:18:54 -0400
+Date: Fri, 13 Jun 2008 10:17:04 -0400
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Hideo AOKI <haoki@redhat.com>, mingo@elte.hu,
+       Masami Hiramatsu <mhiramat@redhat.com>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: Kernel marker has no performance impact on ia64.
+Message-ID: <20080613141704.GA25372@redhat.com>
+References: <20080602232135.GA20173@Krystal> <1212618449.19205.35.camel@lappy.programming.kicks-ass.net> <20080604232241.GA8488@Krystal> <1212653539.19205.47.camel@lappy.programming.kicks-ass.net> <20080612135319.GB22348@Krystal> <1213280823.31518.114.camel@twins> <20080612155332.GA16658@redhat.com> <1213289621.31518.128.camel@twins> <20080612173858.GA22454@redhat.com> <1213354872.31518.193.camel@twins>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <c4e36d110806120307n20cce692s9c136f11596f5ab0@mail.gmail.com>
-	 <200806131608.31803.rjw@sisk.pl>
+In-Reply-To: <1213354872.31518.193.camel@twins>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/6/13 Rafael J. Wysocki <rjw@sisk.pl>:
-> On Thursday, 12 of June 2008, Zdenek Kabelac wrote:
->> Hello
->>
->> I'm attaching a trace where my machine has got into big troubles after
->> 2 day usage and several successful suspend/resumes (this seems to be
->> finally getting better now :))
->>
->> It looks like while there was a huge amount of buffers and caches -
->> system was unable to allocate few pages for kmalloc in iwl3945 driver
->> after resume.
->>
->> I've even tried to 3 > drop_cache  and reinsert iwl driver - but this
->> had fatal results - machine died completely with blinking caps lock -
->> and no oops in the log for this case:
->>
->> This is the commit aab2545fdd6641b76af0ae96456c4ca9d1e50dad  for the
->> 2.6.26-rc5 I've been in this case.
->
-> Is this a regression from 2.6.25, BTW?
+Hi -
 
-Well I've never seen this with 2.6.25 kernel - on the other hand
-usually I've not been running machine for a longer period of time,
-because suspend was failing too often I guess. Now it's more stable so
-this bug has shown up.
+On Fri, Jun 13, 2008 at 01:01:12PM +0200, Peter Zijlstra wrote:
+> [...]
+> > > The trace point need not be concerned with which data, nor into what
+> > > buffer.
+> > 
+> > The "which data" is definitely a trace point concern.  It communicates
+> > from the developer to users as to what values are likely to be of
+> > interest.
+> 
+> But that is tracer specific - I might write a scheduler tracer that
+> looks at the quality of scheduling decisions and thus wants to look at
+> the virtual timeline variables and the scheduling class of the tasks
+> involved.
 
-It might be related to this issue as well http://lkml.org/lkml/2008/5/22/308
+> That's a whole different context, but the trace points are the same. Are
+> you saying trace points are not to allow me to do that?
 
-Zdenek
+Of course markers can allow you to do that.  You can add two markers
+in one spot if you really want to, one with far more details than the
+other.  You can still write your own "tracer" kernel-side code to
+attach to that if you wish.  But you might find that you don't have
+to, if a more general tool can get you the same data (and more).
+
+(A separate issue, brought up some number of times here, has been
+whether even detailed debugging-oriented markers would be worth
+keeping in the code.  I've argued that, yes, it's worthwhile, since
+they cost nearly nothing, and in exchange would allow your
+users/customers to gather the same debugging data for bug reports, in
+situ on a live system.)
+
+
+
+> > > > (a) rely on debugging information?  Even assuming we could get proper
+> > > >     anchors (PC addresses or unambiguous type names) to start
+> > > >     searching dwarf data, we lose a key attractions of markers: that
+> > > >     it can robustly transfer data *without* dwarf data kept around.
+> > > 
+> > > Perhaps you can ship a reduced set of dwarf info [...]
+> > 
+> > "I" don't ship or generate dwarf data.  Distributors do.
+> 
+> That's ignoring the point - 'someone' could generate reduced debug info
+> to allow you to easily get what you want.
+
+But is there clear benefit to blocking potential incremental progress,
+waiting for newer technology?  What if one can transition smoothly
+once godot does show up?
+
+
+> [...]
+> > > Get your own tracer in kernel - that provides exactly what stap needs?
+> > 
+> > You are missing that (a) this is the point of markers - to allow the
+> > the gajillion tracers a single place per event to hook through, and
+> > (b) we would like to leave to subsystem developers and/or end-users as
+> > to what data should be available.  We don't want to get into the
+> > middle of it.
+> 
+> I think a) and b) contradict each other, you cannot cater for all
+> tracers and limit the data they can use.
+
+We are not talking about "limiting".  Markers are about identifying
+the large intersection of interest (events + data) amongst multiple
+tracing-type tools, and letting them share an single efficient hooking
+mechanism for getting at that.  No one said it must to be the solitary
+tracing-hook mechanism.
+
+My (b) point was that systemtap per se does not want to specify what
+subset of data should be available to an end user -- so we don't want
+systemtap-specific markers or hooks or whatever.  We want to expose
+whatever the developer deemed appropriate.  I merely lobby that this
+set should include some values that tools can use without heroic
+measures.
+
+
+- FChE
