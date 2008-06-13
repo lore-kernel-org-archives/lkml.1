@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754475AbYFMSNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751221AbYFMSOH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754475AbYFMSNv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 14:13:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYFMSNl
+	id S1751221AbYFMSOH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 14:14:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbYFMSNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 14:13:41 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47296 "EHLO mx1.redhat.com"
+	Fri, 13 Jun 2008 14:13:43 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:59194 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750701AbYFMSNk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 14:13:40 -0400
-Date: Fri, 13 Jun 2008 14:05:55 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: Len Brown <lenb@kernel.org>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [linux-pm] [PATCH -mm 2/2] kexec jump -v11: save/restore
-	device state
-Message-ID: <20080613180555.GB4906@redhat.com>
-References: <1213082106.22608.30.camel@caritas-dev.intel.com> <alpine.LFD.1.10.0806101400090.14381@localhost.localdomain> <1213146074.21923.10.camel@caritas-dev.intel.com>
-MIME-Version: 1.0
+	id S1751221AbYFMSNl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 14:13:41 -0400
+Date: Fri, 13 Jun 2008 20:14:23 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andres Salomon <dilinger@queued.net>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@codemonkey.org.uk>,
+       Roland McGrath <roland@redhat.com>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: Additional kconfig targets (cloneconfig, nonint_oldconfig etc)
+Message-ID: <20080613181423.GA17930@uranus.ravnborg.org>
+References: <20080429183531.GB19652@uranus.ravnborg.org> <20080502190949.GA30270@uranus.ravnborg.org> <20080521164703.61c7d715@ephemeral> <20080521214723.GB15136@uranus.ravnborg.org> <20080613141049.0fb3a770@ephemeral>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1213146074.21923.10.camel@caritas-dev.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080613141049.0fb3a770@ephemeral>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 11, 2008 at 09:01:14AM +0800, Huang, Ying wrote:
-> On Tue, 2008-06-10 at 14:01 -0400, Len Brown wrote:
-> > 
-> > On Tue, 10 Jun 2008, Huang, Ying wrote:
-> > 
-> > > This patch implements devices state save/restore before after kexec.
-> > > 
-> > > 
-> > > This patch together with features in kexec_jump patch can be used for
-> > > following:
-> > > 
-> > > - A simple hibernation implementation without ACPI support. You can
-> > >   kexec a hibernating kernel, save the memory image of original system
-> > >   and shutdown the system. When resuming, you restore the memory image
-> > >   of original system via ordinary kexec load then jump back.
-> > 
-> > What part of ACPI's role in hibernation are you trying to avoid
-> > 1. enabling wake devices
-> > 2. removing power from the system
-> > 3. something else?
+On Fri, Jun 13, 2008 at 02:10:49PM -0400, Andres Salomon wrote:
+> On Wed, 21 May 2008 23:47:23 +0200
+> Sam Ravnborg <sam@ravnborg.org> wrote:
 > 
-> ACPI S5 is used instead of S4 for this simple hibernation
-> implementation. That is, before creating the hibernation image, the ACPI
-> _PTS is not executed, devices are not put into low power state and wake
-> devices are not enabled. After creating the hibernation image, the image
-> is saved to disk and system is shutdown (go to S5). When resuming from
-> hibernated image, ACPI _BFS and _WAK are not executed too.
+> > On Wed, May 21, 2008 at 04:47:03PM -0400, Andres Salomon wrote:
+> > > On Fri, 2 May 2008 21:09:49 +0200
+> > > Sam Ravnborg <sam@ravnborg.org> wrote:
+> > > 
+> > > > With the attached patch you can do:
+> > > > 
+> > > > make K=my_favourite_config defconfig
+> > > > 
+> > > > kconfig will read all config values form 'my_favourite_config'
+> > > > and set all other symbols to their default value.
+> > > > The output is now dense like this:
+> > > > # configuration is based on 'my_favourite_config'
+> > > > #
+> > > > # configuration written to .config
+> > > > #
+> > > > 
+> > > 
+> > > 
+> > > Is this slated for 2.6.27?
+> > 
+> > Been busy and got sidetracked after my first version proved broken.
+> > Will try to look at it in the weekend.
+> > 
+> > 	Sam
+> 
+> 
+> Any updates on this?  I've been forced to use a workaround in the
+> meantime..
+Nope. I have been busy with other stuff and need to close this first.
+Pending stuff before this:
 
-Hi huang,
+-> Simplify link of vmlinux (about to be dropped for now as I cannot solve um issue)
+-> Kill need for ALTARCH in sparc (almost finished)
+-> Optimize make headers_* (almost finished)
 
-Can't we implement ACPI S5 state as an option in current hibernation
-framework? Or kexec jump is a requirement for that? 
+And a few more things that I cannot remember atm
 
-Thanks
-Vivek
+	Sam
