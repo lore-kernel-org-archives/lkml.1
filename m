@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175AbYFMRdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753246AbYFMRhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753175AbYFMRdT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 13:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbYFMRdE
+	id S1753246AbYFMRhc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 13:37:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbYFMRhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 13:33:04 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:54063 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750991AbYFMRdD (ORCPT
+	Fri, 13 Jun 2008 13:37:23 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:24842 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751091AbYFMRhW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 13:33:03 -0400
-Date: Fri, 13 Jun 2008 19:33:00 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
-cc: David Martin <tasio@hierro.tasio.net>, linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Maarten Bressers <mbres@gentoo.org>, Daniel Drake <dsd@gentoo.org>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>
-Subject: Re: [Cbe-oss-dev] [regression/bisected] corrupt CD data after media
- change and delay
-In-Reply-To: <Pine.LNX.4.64.0806061458300.6228@vixen.sonytel.be>
-Message-ID: <Pine.LNX.4.64.0806131932350.30730@vixen.sonytel.be>
-References: <Pine.LNX.4.64.0806061458300.6228@vixen.sonytel.be>
+	Fri, 13 Jun 2008 13:37:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=organization:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id:from;
+        b=BO0yUUjH7CZERHf6fjTQ+apa3dc+pzoixk6niLdHCOd62IqJ3gkkQPC8cdJOGwQmqZ
+         OY3vb0yKAHQ6+EvYuVr6RcCAxlNl6jLWbbsUeaZUvGeI0mxogUdEZom6rGsFnjYKSTry
+         aU6iKW/JpiO5AoGIBa0/DkoWLiSKrpAXJsfns=
+Organization: M1K0
+To: Zhu Yi <yi.zhu@intel.com>
+Subject: Re: [2.6.26-rc5] iwlwifi 4965 not working - last on 2.6.23
+Date: Fri, 13 Jun 2008 19:37:03 +0200
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+References: <200806060039.48488.m1k0@wp.pl> <20080606034738.9835782d.akpm@linux-foundation.org> <1213151464.7814.630.camel@debian.sh.intel.com>
+In-Reply-To: <1213151464.7814.630.camel@debian.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1094079654-1213378380=:30730"
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200806131937.03680.Michal.Kudla@gmail.com>
+From: =?utf-8?q?Micha=C5=82_Kud=C5=82a?= <michal.kudla@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi,
 
----584349381-1094079654-1213378380=:30730
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+laptok ~ # modprobe -rv iwl4965
+laptok ~ # modprobe -v iwl4965 debug=0x20002
+laptok ~ # dmesg >dmesg-`uname -r`_`date +%F`.txt
+laptok iwlwifi # ls -1
+dmesg-2.6.23-gentoo-r2_2008-06-13.txt
+dmesg-2.6.24.7_2008-06-13.txt
+dmesg-2.6.25-gentoo-r4_2008-06-13.txt
+dmesg-2.6.26-rc5_2008-06-13.txt
 
-On Fri, 6 Jun 2008, Geert Uytterhoeven wrote:
-> When mounting a CD/DVD more than 30 seconds after inserting it, and reading
-> from it, we get:
+results:
+http://michal.kudla.googlepages.com/dmesg-debug0x20002.tar.gz
 
-Apparently the fix didn't make it to all the CCed lists...
+W liście datowanym na środa, 11 czerwca 2008, Zhu Yi pisze:
+>ZY On Fri, 2008-06-06 at 03:47 -0700, Andrew Morton wrote:
+>ZY > > ADDRCONF(NETDEV_UP): wlan0: link is not ready
+>ZY > > iwl4965: Error sending REPLY_WEPKEY: enqueue_hcmd failed: -5
+>ZY > > mac80211-phy0: failed to remove key (0, ff:ff:ff:ff:ff:ff) from
+>ZY > hardware (-5)
+>ZY > > iwl4965: Error sending REPLY_TX_PWR_TABLE_CMD: enqueue_hcmd failed:
+>ZY > -5
+>ZY > > iwl4965: WARNING: Requesting MAC access during RFKILL wakes up NIC
+>ZY > > iwl4965: WARNING: Requesting MAC access during RFKILL wakes up NIC
+>ZY
+>ZY Looks like a rfkill related problem. Can you please try this patch?
+>ZY http://www.intellinuxwireless.org/bugzilla/show_bug.cgi?id=1673
+>ZY
+>ZY Thanks,
+>ZY -yi
+>ZY
+>ZY
 
-http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fjejb%2Fscsi-rc-fixes-2.6.git;a=commitdiff_plain;h=d1daeabf0da5bfa1943272ce508e2ba785730bf0
 
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-Sony Technology and Software Centre Europe
-A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
-VAT BE 0413.825.160 · RPR Brussels
-Fortis 293-0376800-10 GEBA-BE-BB
----584349381-1094079654-1213378380=:30730--
