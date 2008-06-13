@@ -1,57 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752677AbYFMSCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755026AbYFMSCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752677AbYFMSCU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 14:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbYFMSCD
+	id S1755026AbYFMSCd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 14:02:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754566AbYFMSCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 14:02:03 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:11179 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751836AbYFMSCB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 14:02:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=U56i15H73MFF5eRG8v1BwAr6nt14KCSeItTh1cfgIKtzZCubggSh4bVE22p+tXvYX7
-         AsJXUBYYs9VbNL5JwRmeamYPPpZnMIHrxMhwq5bX10D7EDRXSbLhd7ZLVl30c1bKM/tn
-         neY4UvMIOiKMiXOQHyB8rdswT1/SLOxcWYyu0=
-Message-ID: <86802c440806131102s44d4b909jadc21cec89d0cc11@mail.gmail.com>
-Date: Fri, 13 Jun 2008 11:02:00 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: clean up reserve_bootmem_generic
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080613112256.GE9867@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 13 Jun 2008 14:02:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37464 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754525AbYFMSCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 14:02:19 -0400
+Date: Fri, 13 Jun 2008 14:02:09 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Benjamin Kidwell <benjkidwell@yahoo.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       benjkidwell@yahoo.com, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: [PATCH] fix UNEVICTABLE_LRU + !PROC_PAGE_MONITOR build
+Message-ID: <20080613140209.044ecfef@cuia.bos.redhat.com>
+In-Reply-To: <636055.3698.qm@web53712.mail.re2.yahoo.com>
+References: <20080612180642.f92c3538.akpm@linux-foundation.org>
+	<636055.3698.qm@web53712.mail.re2.yahoo.com>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200806130200.56822.yhlu.kernel@gmail.com>
-	 <20080613112256.GE9867@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 13, 2008 at 4:22 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
->> 1. add reserve_bootmem_generic for 32bit
->> 2. change len to unsigned long
->> 3. make early_res_to_bootmem to use it
->
-> applied to tip/x86/mpparse - thanks Yinghai.
->
-> This does properly finish my band-aid:
->
-> # x86/mpparse: f245905: x86: unify the reserve_bootmem() behavior of early_res_to_bootmem()
->
-> correct?
+Both CONFIG_PROC_PAGE_MONITOR and CONFIG_UNEVICTABLE_LRU depend on
+mm/pagewalk.c being built.  Create a CONFIG_PAGE_WALKER Kconfig
+variable that is automatically selected if needed.
 
-yes. restore the original behavior of that for 64bit.
+Debugged-by: Benjamin Kidwell <benjkidwell@yahoo.com>
+Signed-off-by: Rik van Riel <riel@redhat.com>
 
-YH
+---
+ init/Kconfig |    1 +
+ mm/Kconfig   |    5 +++++
+ mm/Makefile  |    2 +-
+ 3 files changed, 7 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.26-rc5-mm2/init/Kconfig
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/init/Kconfig	2008-06-10 10:46:29.000000000 -0400
++++ linux-2.6.26-rc5-mm2/init/Kconfig	2008-06-13 13:57:11.000000000 -0400
+@@ -803,6 +803,7 @@ source "arch/Kconfig"
+ config PROC_PAGE_MONITOR
+  	default y
+ 	depends on PROC_FS && MMU
++	select PAGE_WALKER
+ 	bool "Enable /proc page monitoring" if EMBEDDED
+  	help
+ 	  Various /proc files exist to monitor process memory utilization:
+Index: linux-2.6.26-rc5-mm2/mm/Kconfig
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/mm/Kconfig	2008-06-11 14:39:43.000000000 -0400
++++ linux-2.6.26-rc5-mm2/mm/Kconfig	2008-06-13 13:58:24.000000000 -0400
+@@ -206,9 +206,14 @@ config VIRT_TO_BUS
+ 	def_bool y
+ 	depends on !ARCH_NO_VIRT_TO_BUS
+ 
++# automatically selected by UNEVICTABLE_LRU or PROC_PAGE_MONITOR
++config PAGE_WALKER
++	def_bool n
++
+ config UNEVICTABLE_LRU
+ 	bool "Add LRU list to track non-evictable pages"
+ 	default y
++	select PAGE_WALKER
+ 	help
+ 	  Keeps unevictable pages off of the active and inactive pageout
+ 	  lists, so kswapd will not waste CPU time or have its balancing
+Index: linux-2.6.26-rc5-mm2/mm/Makefile
+===================================================================
+--- linux-2.6.26-rc5-mm2.orig/mm/Makefile	2008-06-10 10:46:29.000000000 -0400
++++ linux-2.6.26-rc5-mm2/mm/Makefile	2008-06-13 13:58:42.000000000 -0400
+@@ -13,7 +13,7 @@ obj-y			:= bootmem.o filemap.o mempool.o
+ 			   prio_tree.o util.o mmzone.o vmstat.o backing-dev.o \
+ 			   page_isolation.o $(mmu-y)
+ 
+-obj-$(CONFIG_PROC_PAGE_MONITOR) += pagewalk.o
++obj-$(CONFIG_PAGE_WALKER) += pagewalk.o
+ obj-$(CONFIG_BOUNCE)	+= bounce.o
+ obj-$(CONFIG_SWAP)	+= page_io.o swap_state.o swapfile.o thrash.o
+ obj-$(CONFIG_HAS_DMA)	+= dmapool.o
+
