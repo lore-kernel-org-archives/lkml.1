@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751877AbYFMQxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752634AbYFMQyC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751877AbYFMQxl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 12:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750793AbYFMQx2
+	id S1752634AbYFMQyC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 12:54:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbYFMQxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 12:53:28 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:46553 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750701AbYFMQx1 (ORCPT
+	Fri, 13 Jun 2008 12:53:35 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:43190 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750813AbYFMQxa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 12:53:27 -0400
-Message-Id: <20080613165209.507694130@ldl.fc.hp.com>
+	Fri, 13 Jun 2008 12:53:30 -0400
+Message-Id: <20080613165304.438740663@ldl.fc.hp.com>
+References: <20080613165209.507694130@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 13 Jun 2008 10:52:09 -0600
+Date: Fri, 13 Jun 2008 10:52:12 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 To: Jesse Barnes <jbarnes@virtuousgeek.org>
@@ -23,17 +24,137 @@ Cc: linux-acpi@vger.kernel.org
 Cc: linux-pci@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 0/5] dev_printk() conversions
+Subject: [patch 3/5] PCIE: aer: use dev_printk when possible
+Content-Disposition: inline; filename=pci-aer-dev_printk
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These convert some printks to dev_printks.  They are completely
-independent of each other; I'm just posting them together because
-it probably makes sense to review them together.
+Convert printks to use dev_printk().
 
-It'd be nice if a PCI person looked at pci_request_region().  To
-me, it looks like it prints the wrong BAR number (it prints "bar + 1").
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Bjorn
+---
+ drivers/pci/pcie/aer/aerdrv.c      |    8 +++-----
+ drivers/pci/pcie/aer/aerdrv_acpi.c |    8 ++++----
+ drivers/pci/pcie/aer/aerdrv_core.c |   24 ++++++++++++------------
+ 3 files changed, 19 insertions(+), 21 deletions(-)
+
+Index: work11/drivers/pci/pcie/aer/aerdrv.c
+===================================================================
+--- work11.orig/drivers/pci/pcie/aer/aerdrv.c	2008-06-13 09:28:29.000000000 -0600
++++ work11/drivers/pci/pcie/aer/aerdrv.c	2008-06-13 09:45:25.000000000 -0600
+@@ -219,8 +219,7 @@ static int __devinit aer_probe (struct p
+ 
+ 	/* Alloc rpc data structure */
+ 	if (!(rpc = aer_alloc_rpc(dev))) {
+-		printk(KERN_DEBUG "%s: Alloc rpc fails on PCIE device[%s]\n",
+-			__func__, device->bus_id);
++		dev_printk(KERN_DEBUG, device, "alloc rpc failed\n");
+ 		aer_remove(dev);
+ 		return -ENOMEM;
+ 	}
+@@ -228,8 +227,7 @@ static int __devinit aer_probe (struct p
+ 	/* Request IRQ ISR */
+ 	if ((status = request_irq(dev->irq, aer_irq, IRQF_SHARED, "aerdrv",
+ 				dev))) {
+-		printk(KERN_DEBUG "%s: Request ISR fails on PCIE device[%s]\n",
+-			__func__, device->bus_id);
++		dev_printk(KERN_DEBUG, device, "request IRQ failed\n");
+ 		aer_remove(dev);
+ 		return status;
+ 	}
+@@ -273,7 +271,7 @@ static pci_ers_result_t aer_root_reset(s
+ 	 * to issue Configuration Requests to those devices.
+ 	 */
+ 	msleep(200);
+-	printk(KERN_DEBUG "Complete link reset at Root[%s]\n", dev->dev.bus_id);
++	dev_printk(KERN_DEBUG, &dev->dev, "Root Port link has been reset\n");
+ 
+ 	/* Enable Root Port's interrupt in response to error messages */
+ 	pci_read_config_dword(dev, pos + PCI_ERR_ROOT_STATUS, &status);
+Index: work11/drivers/pci/pcie/aer/aerdrv_acpi.c
+===================================================================
+--- work11.orig/drivers/pci/pcie/aer/aerdrv_acpi.c	2008-06-13 09:28:29.000000000 -0600
++++ work11/drivers/pci/pcie/aer/aerdrv_acpi.c	2008-06-13 09:44:26.000000000 -0600
+@@ -50,10 +50,10 @@ int aer_osc_setup(struct pcie_device *pc
+ 	}
+ 
+ 	if (ACPI_FAILURE(status)) {
+-		printk(KERN_DEBUG "AER service couldn't init device %s - %s\n",
+-		    pciedev->device.bus_id,
+-		    (status == AE_SUPPORT || status == AE_NOT_FOUND) ?
+-		    "no _OSC support" : "Run ACPI _OSC fails");
++		dev_printk(KERN_DEBUG, &pciedev->device, "AER service couldn't "
++			   "init device: %s\n",
++			   (status == AE_SUPPORT || status == AE_NOT_FOUND) ?
++			   "no _OSC support" : "_OSC failed");
+ 		return -1;
+ 	}
+ 
+Index: work11/drivers/pci/pcie/aer/aerdrv_core.c
+===================================================================
+--- work11.orig/drivers/pci/pcie/aer/aerdrv_core.c	2008-06-13 09:28:29.000000000 -0600
++++ work11/drivers/pci/pcie/aer/aerdrv_core.c	2008-06-13 09:44:26.000000000 -0600
+@@ -221,9 +221,9 @@ static void report_error_detected(struct
+ 			 * of a driver for this device is unaware of
+ 			 * its hw state.
+ 			 */
+-			printk(KERN_DEBUG "Device ID[%s] has %s\n",
+-					dev->dev.bus_id, (dev->driver) ?
+-					"no AER-aware driver" : "no driver");
++			dev_printk(KERN_DEBUG, &dev->dev, "device has %s\n",
++				   dev->driver ?
++				   "no AER-aware driver" : "no driver");
+ 		}
+ 		return;
+ 	}
+@@ -304,7 +304,7 @@ static pci_ers_result_t broadcast_error_
+ {
+ 	struct aer_broadcast_data result_data;
+ 
+-	printk(KERN_DEBUG "Broadcast %s message\n", error_mesg);
++	dev_printk(KERN_DEBUG, &dev->dev, "broadcast %s message\n", error_mesg);
+ 	result_data.state = state;
+ 	if (cb == report_error_detected)
+ 		result_data.result = PCI_ERS_RESULT_CAN_RECOVER;
+@@ -404,18 +404,16 @@ static pci_ers_result_t reset_link(struc
+ 			data.aer_driver =
+ 				to_service_driver(aerdev->device.driver);
+ 		} else {
+-			printk(KERN_DEBUG "No link-reset support to Device ID"
+-				"[%s]\n",
+-				dev->dev.bus_id);
++			dev_printk(KERN_DEBUG, &dev->dev, "no link-reset "
++				   "support\n");
+ 			return PCI_ERS_RESULT_DISCONNECT;
+ 		}
+ 	}
+ 
+ 	status = data.aer_driver->reset_link(udev);
+ 	if (status != PCI_ERS_RESULT_RECOVERED) {
+-		printk(KERN_DEBUG "Link reset at upstream Device ID"
+-			"[%s] failed\n",
+-			udev->dev.bus_id);
++		dev_printk(KERN_DEBUG, &dev->dev, "link reset at upstream "
++			   "device %s failed\n", pci_name(udev));
+ 		return PCI_ERS_RESULT_DISCONNECT;
+ 	}
+ 
+@@ -511,10 +509,12 @@ static void handle_error_source(struct p
+ 	} else {
+ 		status = do_recovery(aerdev, dev, info.severity);
+ 		if (status == PCI_ERS_RESULT_RECOVERED) {
+-			printk(KERN_DEBUG "AER driver successfully recovered\n");
++			dev_printk(KERN_DEBUG, &dev->dev, "AER driver "
++				   "successfully recovered\n");
+ 		} else {
+ 			/* TODO: Should kernel panic here? */
+-			printk(KERN_DEBUG "AER driver didn't recover\n");
++			dev_printk(KERN_DEBUG, &dev->dev, "AER driver didn't "
++				   "recover\n");
+ 		}
+ 	}
+ }
+
 -- 
