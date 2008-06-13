@@ -1,63 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757454AbYFMUV1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756727AbYFMU0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757454AbYFMUV1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 16:21:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYFMUVT
+	id S1756727AbYFMU0k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 16:26:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753687AbYFMU0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 16:21:19 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:4578 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752096AbYFMUVS (ORCPT
+	Fri, 13 Jun 2008 16:26:30 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:44814 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753683AbYFMU02 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 16:21:18 -0400
-Subject: [PATCH] collect lru meminfo statistics from correct offset
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>,
-       linux-mm <linux-mm@kvack.org>
-In-Reply-To: <20080613134827.5dbac5ac@cuia.bos.redhat.com>
-References: <20080611184214.605110868@redhat.com>
-	 <20080611184339.159161465@redhat.com> <4851C1CC.7070607@ct.jp.nec.com>
-	 <20080613134827.5dbac5ac@cuia.bos.redhat.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Fri, 13 Jun 2008 16:21:47 -0400
-Message-Id: <1213388507.9670.35.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Jun 2008 16:26:28 -0400
+Date: Fri, 13 Jun 2008 13:26:05 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Louis Rilling <Louis.Rilling@kerlabs.com>
+Cc: ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] configfs: module reference counting rules
+Message-ID: <20080613202605.GD20576@mail.oracle.com>
+Mail-Followup-To: Louis Rilling <Louis.Rilling@kerlabs.com>,
+	ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org
+References: <20080612235410.GC4012@localdomain> <20080613033309.GE20581@mail.oracle.com> <20080613095159.GH30804@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080613095159.GH30804@localhost>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PATCH collect lru meminfo statistics from correct offset
+On Fri, Jun 13, 2008 at 11:51:59AM +0200, Louis Rilling wrote:
+> On Thu, Jun 12, 2008 at 08:33:12PM -0700, Joel Becker wrote:
+> Ok, got it. The race is between unregister_subsystem() and mkdir() at the root
+> of the subsystem (or one of its default groups). In deeper, user-created groups,
+> this would be a design bug of the subsystem if this race could occur.
 
-Against:  2.6.26-rc5-mm3
+	Exactly.
 
-Incremental fix to: vmscan-split-lru-lists-into-anon-file-sets.patch 
+> > 	This is hard logic, and not something we want each and every
+> > client module to have to figure out.  Your change has them explicitly
+> > __module_get() in ->make_item/group(), which isn't safe because of this
+> > race!
+> 
+> Well, this remains hard logic for the modules. But I agree that they should not
+> impact the logic that deals with racing mkdir() and unregister_subsystem().
 
-Offset 'lru' by 'NR_LRU_BASE' to obtain global page state for
-lru list 'lru'.
+	It is, but most modules don't have to deal with it.  Most
+modules (all in-kernel configfs users) have a single refrence on it.
+When they take an additional one, it's for the duration of a function
+call.  They have to make sure that it's safe to call the function in the
+first place, so it's clearly safe to get/put the item.
+	Forget about the configfs view that is presented to userspace.
+If you were a module with inter-linked structures, you'd have to make
+sure they were freed cleanly.  For simple things, you create and drop
+them.  If a module has a complex interlinkage, they have a mechanism to
+handle it.
+	Example: filesystems can hang whatever they want off of VFS
+structures like inodes and superblocks - a mounted filesystem prevents
+rmmod.  Everything is safe, *everything*, as long as it is all cleaned
+up when put_super() returns.
+	So for the simple case, we provide plenty of protection.  If
+someone wants to do something fancier, they have to provide their own
+protection, but they would anyway.  And we can't know their complex
+lifecycle, so we can't really help anyway.
 
-Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
+> Sure. I was thinking that configfs helped subsystems with such module reference
+> counting issues, but I was wrong.
 
- fs/proc/proc_misc.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+	We only help with the ones we have enough information to help
+with.
 
-Index: linux-2.6.26-rc5-mm3/fs/proc/proc_misc.c
-===================================================================
---- linux-2.6.26-rc5-mm3.orig/fs/proc/proc_misc.c	2008-06-13 15:16:17.000000000 -0400
-+++ linux-2.6.26-rc5-mm3/fs/proc/proc_misc.c	2008-06-13 15:44:24.000000000 -0400
-@@ -158,7 +158,7 @@ static int meminfo_read_proc(char *page,
- 	get_vmalloc_info(&vmi);
- 
- 	for (lru = LRU_BASE; lru < NR_LRU_LISTS; lru++)
--		pages[lru] = global_page_state(lru);
-+		pages[lru] = global_page_state(NR_LRU_BASE + lru);
- 
- 	/*
- 	 * Tagged format, for easy grepping and expansion.
+> Thanks for these explanations.
+
+	No problem.  The more questions you ask, the more I refresh my
+memory.  And as you've seen on other points, we sometimes find bugs :-)
+
+Joel
 
 
+-- 
+
+"The trouble with being punctual is that nobody's there to
+ appreciate it."
+	- Franklin P. Jones
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
