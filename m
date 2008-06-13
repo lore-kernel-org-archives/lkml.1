@@ -1,51 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761554AbYFMOHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758133AbYFMONI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761554AbYFMOHi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 10:07:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755896AbYFMOHb
+	id S1758133AbYFMONI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 10:13:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbYFMOM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 10:07:31 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44681 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755173AbYFMOHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 10:07:30 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-Subject: Re: Problem: Out of memory after 2days with 2GB RAM
-Date: Fri, 13 Jun 2008 16:08:31 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       riel@redhat.com
-References: <c4e36d110806120307n20cce692s9c136f11596f5ab0@mail.gmail.com>
-In-Reply-To: <c4e36d110806120307n20cce692s9c136f11596f5ab0@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 13 Jun 2008 10:12:58 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:46647 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752677AbYFMOM5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 10:12:57 -0400
+Subject: Re: 2,6.26-rc4-git2 - long pause during boot
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: chris2553@googlemail.com
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       Hannes Reinecke <hare@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-usb@vger.kernel.org
+In-Reply-To: <200806130656.43016.chris2553@googlemail.com>
+References: <200806010415.05290.chris2553@googlemail.com>
+	 <485027AC.6060901@s5r6.in-berlin.de>
+	 <1213212965.3461.12.camel@localhost.localdomain>
+	 <200806130656.43016.chris2553@googlemail.com>
+Content-Type: text/plain
+Date: Fri, 13 Jun 2008 09:12:50 -0500
+Message-Id: <1213366370.3434.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806131608.31803.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 12 of June 2008, Zdenek Kabelac wrote:
-> Hello
+On Fri, 2008-06-13 at 06:56 +0000, Chris Clayton wrote:
+> Hi James,
 > 
-> I'm attaching a trace where my machine has got into big troubles after
-> 2 day usage and several successful suspend/resumes (this seems to be
-> finally getting better now :))
+> On Wednesday 11 June 2008, James Bottomley wrote:
+> > On Wed, 2008-06-11 at 21:29 +0200, Stefan Richter wrote:
+> > > James Bottomley wrote:
+> > > > On Wed, 2008-06-11 at 12:15 -0700, Greg KH wrote:
+> > > >> On Wed, Jun 11, 2008 at 06:58:05PM +0000, Chris Clayton wrote:
+> > > >>> Jun 11 17:48:13 upstairs udevd-event[1457]: wait_for_sysfs: wait for
+> > > >>> '/sys/devices/pci0000:00/0000:00:1e.0/0000:02:0a.2/usb11/11-2/11-2:1.
+> > > >>>0/host4/ioerr_cnt' for 20 mseconds Jun 11 17:48:18 upstairs last
+> > > >>> message repeated 236 times
+> > > >>
+> > > >> This doesn't look good.  It looks like a udev rule in your system is
+> > > >> looking for a file that will never show up.  That's a short way to a
+> > > >> long delay time :)
+> > > >>
+> > > >> Try commenting out the rule that does this and see if things are
+> > > >> fixed.
+> > > >
+> > > > Actually, there's something seriously wrong here:  ioerr_cnt is a
+> > > > property of the device, not of the host (as in it will never appear
+> > > > under .../host4 but under .../host4/targetX:X:X/4:X:X:X/ioerr_cnt).
+> > > > Perhaps an investigation of why udevd-event is looking under host4/ is
+> > > > in order.
+> > >
+> > > So the change which commit b0ed43360fdca227048d88a08290365cb681c1a8
+> > > "[SCSI] add scsi_host and scsi_target to scsi_bus" introduced is leading
+> > > the udev scripts onto a wrong trail?
+> >
+> > Yes, I think so ... what it does is make us get bus events for the
+> > target as well as the lun, whereas without it we only get them for the
+> > lun.  I think something is misparsing the new target event and this is
+> > where the trouble is coming from.
+> >
 > 
-> It looks like while there was a huge amount of buffers and caches -
-> system was unable to allocate few pages for kmalloc in iwl3945 driver
-> after resume.
-> 
-> I've even tried to 3 > drop_cache  and reinsert iwl driver - but this
-> had fatal results - machine died completely with blinking caps lock -
-> and no oops in the log for this case:
-> 
-> This is the commit aab2545fdd6641b76af0ae96456c4ca9d1e50dad  for the
-> 2.6.26-rc5 I've been in this case.
+> I assume that since we now the source of this problem, you can create it at 
+> will. I only mention because if you need me to test a patch, it will have to be 
+> before Tuesday, June 17 - I go on holiday (vacation) on that day.
 
-Is this a regression from 2.6.25, BTW?
+Yes, we can; thanks!
 
-Rafael
+The problem though is that it's in the udev scripts, so there's nothing
+we can fix in the kernel, we now need to persuade the various distros to
+fix it (if they're actually broken), so it might take a while.
+
+James
+
+
