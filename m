@@ -1,124 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbYFMLBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758429AbYFMLC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757474AbYFMLBi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 07:01:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbYFMLB2
+	id S1758429AbYFMLC7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 07:02:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbYFMLCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 07:01:28 -0400
-Received: from casper.infradead.org ([85.118.1.10]:40101 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752407AbYFMLB1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 07:01:27 -0400
-Subject: Re: Kernel marker has no performance impact on ia64.
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Hideo AOKI <haoki@redhat.com>, mingo@elte.hu,
-       Masami Hiramatsu <mhiramat@redhat.com>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <20080612173858.GA22454@redhat.com>
-References: <48447052.3030300@redhat.com>
-	 <1212445965.6269.22.camel@lappy.programming.kicks-ass.net>
-	 <20080602232135.GA20173@Krystal>
-	 <1212618449.19205.35.camel@lappy.programming.kicks-ass.net>
-	 <20080604232241.GA8488@Krystal>
-	 <1212653539.19205.47.camel@lappy.programming.kicks-ass.net>
-	 <20080612135319.GB22348@Krystal> <1213280823.31518.114.camel@twins>
-	 <20080612155332.GA16658@redhat.com> <1213289621.31518.128.camel@twins>
-	 <20080612173858.GA22454@redhat.com>
-Content-Type: text/plain
-Date: Fri, 13 Jun 2008 13:01:12 +0200
-Message-Id: <1213354872.31518.193.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Jun 2008 07:02:52 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47886 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753914AbYFMLCv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 07:02:51 -0400
+Date: Fri, 13 Jun 2008 13:02:36 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Ben Hutchings <bhutchings@solarflare.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [PATCH] cputopology: Always define CPU topology information
+	[5th try]
+Message-ID: <20080613110236.GA9867@elte.hu>
+References: <20080604154454.GD11300@solarflare.com> <20080604214715.bbebe325.akpm@linux-foundation.org> <20080605120829.GI11300@solarflare.com> <20080605092831.a77d164d.akpm@linux-foundation.org> <20080605163714.GO11300@solarflare.com> <20080613051654.GC21586@elte.hu> <20080613101539.GV11300@solarflare.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080613101539.GV11300@solarflare.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.3
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-06-12 at 13:38 -0400, Frank Ch. Eigler wrote:
-> Hi -
-> 
-> On Thu, Jun 12, 2008 at 06:53:41PM +0200, Peter Zijlstra wrote:
-> > [...]
-> > > Think this through.  How should systemtap (or another user-space
-> > > separate-compiled tool like lttng) do this exactly?
+
+* Ben Hutchings <bhutchings@solarflare.com> wrote:
+
+> > > This patch:
+> > > 
+> > > - Adds default definitions of the 4 topology macros to <linux/topology.h>
+> > > - Changes drivers/base/topology.c to use the topology macros unconditionally
+> > > - Updates documentation accordingly
 > > 
-> > lttng has trace handlers to write data into some buffer, right?
-> > The trace point need not be concerned with which data, nor into what
-> > buffer.
+> > applied to tip/core/topology - thanks Ben.
 > 
-> The "which data" is definitely a trace point concern.  It communicates
-> from the developer to users as to what values are likely to be of
-> interest.
+> Unfortunately you lost the first paragraph of the commit message, then 
+> created a second commit (difference between 4th and 5th versions) with 
+> your own commit message and me as the author.  Maybe it's nitpicking 
+> but I would prefer to have strictly accurate metadata in the commit 
+> log.
 
-But that is tracer specific - I might write a scheduler tracer that
-looks at the quality of scheduling decisions and thus wants to look at
-the virtual timeline variables and the scheduling class of the tasks
-involved.
+that's OK, see the delta patch below, it's rather trivial. It's better 
+to do these small delta patches where each change stands on its own than 
+to review a more complex combo patch. (Suggest me any other commit 
+metadata for this delta if you prefer, we can still change it.)
 
-That's a whole different context, but the trace points are the same. Are
-you saying trace points are not to allow me to do that?
+	Ingo
 
-> > > (a) rely on debugging information?  Even assuming we could get proper
-> > >     anchors (PC addresses or unambiguous type names) to start
-> > >     searching dwarf data, we lose a key attractions of markers: that
-> > >     it can robustly transfer data *without* dwarf data kept around.
-> > 
-> > Perhaps you can ship a reduced set of dwarf info [...]
-> 
-> "I" don't ship or generate dwarf data.  Distributors do.
+-------------->
+commit 131b943ae643b1ad6febd67cdbb31d955706ecf4
+Author: Ben Hutchings <bhutchings@solarflare.com>
+Date:   Thu Jun 5 17:37:15 2008 +0100
 
-That's ignoring the point - 'someone' could generate reduced debug info
-to allow you to easily get what you want.
+    cputopology: always define CPU topology information, clean up
+    
+    simplify drivers/base/topology.c a bit.
+    
+    Signed-off-by: Ben Hutchings <bhutchings@solarflare.com>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-> > > (b) rely on hand-written C code (prototypes, pointer derefrencing
-> > >     wrappers) distributed with systemtap?  Not only would this be a
-> > >     brittle maintenance pain in the form of cude duplication, but then
-> > >     errors in it couldn't even be detected until the final C
-> > >     compilation stage.  That would make a lousy user experience.
-> >
-> > Not really sure what you mean here - I throught compile time errors
-> > were the goal?!
-> 
-> For us, it's too late.  In systemtap, we try to give people useful
-> information when they make mistakes.  For probes of whatever sort, we
-> want to know the available data types and names, while just starting
-> to process their script, so that we can check types and suggest
-> alternatives.  C code compilation is quite some way removed and is
-> supposed to be a systemtap internal implementation detail.
-
-Sounds like you have an incomplete Native-Interface system then. You
-should be able to match a native function description back to your
-script language.
-
-> > > (c) have systemtap try to parse the mhiramat-proposed "(struct
-> > >     task_struct * next, struct task_struct * prev)" format strings?
-> > >     Then we're asking systemtap to parse potentially general C type
-> > >     expressions, find the kernel headers that declare the types?
-> > >     Parse available subfields?  That seems too much to ask for.
-> > 
-> > tcc and sourcefs sound like way fun ;-)
-> 
-> Really...
-
-Yeah, wouldn't it be cool if the kernel came with an embedded compiler
-and a filesystem that included its exact source code? Together with the
-entry instrumentation site and dynamic jump patches you can do really
-weird stuff... /me dreams on :-)
-
-> > > (d) or another way?
-> > 
-> > Get your own tracer in kernel - that provides exactly what stap needs?
-> 
-> You are missing that (a) this is the point of markers - to allow the
-> the gajillion tracers a single place per event to hook through, and
-> (b) we would like to leave to subsystem developers and/or end-users as
-> to what data should be available.  We don't want to get into the
-> middle of it.
-
-I think a) and b) contradict each other, you cannot cater for all
-tracers and limit the data they can use.
-
-
+diff --git a/drivers/base/topology.c b/drivers/base/topology.c
+index 24d29a9..f0cb270 100644
+--- a/drivers/base/topology.c
++++ b/drivers/base/topology.c
+@@ -59,16 +59,14 @@ static ssize_t show_cpumap(int type, cpumask_t *mask, char *buf)
+ static inline ssize_t show_##name(struct sys_device *dev, char *buf)	\
+ {									\
+ 	unsigned int cpu = dev->id;					\
+-	cpumask_t siblings = topology_##name(cpu);			\
+-	return show_cpumap(0, &siblings, buf);				\
++	return show_cpumap(0, &(topology_##name(cpu)), buf);		\
+ }
+ 
+ #define define_siblings_show_list(name)					\
+ static inline ssize_t show_##name##_list(struct sys_device *dev, char *buf) \
+ {									\
+ 	unsigned int cpu = dev->id;					\
+-	cpumask_t siblings = topology_##name(cpu);			\
+-	return show_cpumap(1, &siblings, buf);				\
++	return show_cpumap(1, &(topology_##name(cpu)), buf);		\
+ }
+ 
+ #define define_siblings_show_func(name)		\
