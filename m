@@ -1,209 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760690AbYFMEkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760152AbYFMEmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760690AbYFMEkZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 00:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbYFMEjo
+	id S1760152AbYFMEmg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 00:42:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750917AbYFMEm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 00:39:44 -0400
-Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:38976 "HELO
-	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751627AbYFMEjm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 00:39:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:To:Subject:Cc:Content-Disposition:From:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=hAScdBKW9X9xR43pvpcW/RDfJo7eck5pqZbnugQKzYAjWQ48sFUzwUqX/kmy+fflzUvahBu1PJiggDMRvC6pPS5Y+mZVTM0Xb9osCBdIFHn59HvBKSIr2PDrT7hWhySU8YmxE/t29NSQ5CKE1hxwPYR74re7MIutJJsMmVOhITo=  ;
-X-YMail-OSG: FlmOz8wVM1kNi0ufz53CFMigDk5E1CwtQ6jSNWcZrCdXH0hsFnvp42rgZJML_Y9Dt4Ncklxh3OcwtngZssPYGvmm7mN69urRbl5aiDQENnMIubyesYKiEE3mJ1FLhSwGxhfjKKTZLj3hr1ZR9koiM1ak
-X-Yahoo-Newman-Property: ymail-3
-To: netdev@vger.kernel.org
-Subject: [RESEND #3/patch 2.6.26-rc6] net/enc28j60: low power mode
-Cc: Claudio Lanconelli <lanconelli.claudio@eptar.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
-From: David Brownell <david-b@pacbell.net>
-Date: Thu, 12 Jun 2008 21:38:06 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 13 Jun 2008 00:42:28 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:49300 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750699AbYFMEm1 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 00:42:27 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       linux-mm@kvack.org, Nick Piggin <npiggin@suse.de>,
+       Andy Whitcroft <apw@shadowen.org>, "riel@redhat.com" <riel@redhat.com>,
+       "Lee.Schermerhorn@hp.com" <Lee.Schermerhorn@hp.com>
+Subject: Re: [PATCH] fix double unlock_page() in 2.6.26-rc5-mm3 kernel BUG at mm/filemap.c:575!
+In-Reply-To: Your message of "Fri, 13 Jun 2008 10:44:44 +0900."
+             <20080613104444.63bd242f.kamezawa.hiroyu@jp.fujitsu.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20080611225945.4da7bb7f.akpm@linux-foundation.org> <4850E1E5.90806@linux.vnet.ibm.com> <20080612015746.172c4b56.akpm@linux-foundation.org> <20080612202003.db871cac.kamezawa.hiroyu@jp.fujitsu.com>
+            <20080613104444.63bd242f.kamezawa.hiroyu@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1213331673_4969P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200806122138.06674.david-b@pacbell.net>
+Date: Fri, 13 Jun 2008 00:34:33 -0400
+Message-ID: <5289.1213331673@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Keep enc28j60 chips in low-power mode when they're not in use.
-At typically 120 mA, these chips run hot even when idle; this
-low power mode cuts that power usage by a factor of around 100.
+--==_Exmh_1213331673_4969P
+Content-Type: text/plain; charset=us-ascii
 
-This version provides a generic routine to poll a register until
-its masked value equals some value ... e.g. bit set or cleared.
-It's basically what the previous wait_phy_ready() did, but this
-version is generalized to support the handshaking needed to
-enter and exit low power mode.
+On Fri, 13 Jun 2008 10:44:44 +0900, KAMEZAWA Hiroyuki said:
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-Signed-off-by: Claudio Lanconelli <lanconelli.claudio@eptar.com>
----
-Previously sent:  18-May, 19-February; there were several
-previous iterations too ...
+> quick fix for double unlock_page();
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamewzawa.hiroyu@jp.fujitsu.com>
+> Index: linux-2.6.26-rc5-mm3/mm/truncate.c
+> ===================================================================
+> --- linux-2.6.26-rc5-mm3.orig/mm/truncate.c
+> +++ linux-2.6.26-rc5-mm3/mm/truncate.c
+> @@ -104,8 +104,8 @@ truncate_complete_page(struct address_sp
+>  
+>  	cancel_dirty_page(page, PAGE_CACHE_SIZE);
+>  
+> -	remove_from_page_cache(page);
+>  	clear_page_mlock(page);
+> +	remove_from_page_cache(page);
+>  	ClearPageUptodate(page);
+>  	ClearPageMappedToDisk(page);
+>  	page_cache_release(page);	/* pagecache ref */
 
- drivers/net/enc28j60.c |   82 ++++++++++++++++++++++++++++++++++---------------
- 1 file changed, 58 insertions(+), 24 deletions(-)
+Confirming this quick fix works on my laptop that was hitting this crash -
+am now up and running on -rc5-mm3.
 
---- g26.orig/drivers/net/enc28j60.c	2008-02-22 19:48:14.000000000 -0800
-+++ g26/drivers/net/enc28j60.c	2008-02-22 19:48:21.000000000 -0800
-@@ -400,26 +400,31 @@ enc28j60_packet_write(struct enc28j60_ne
- 	mutex_unlock(&priv->lock);
- }
- 
--/*
-- * Wait until the PHY operation is complete.
-- */
--static int wait_phy_ready(struct enc28j60_net *priv)
-+static unsigned long msec20_to_jiffies;
-+
-+static int poll_ready(struct enc28j60_net *priv, u8 reg, u8 mask, u8 val)
- {
--	unsigned long timeout = jiffies + 20 * HZ / 1000;
--	int ret = 1;
-+	unsigned long timeout = jiffies + msec20_to_jiffies;
- 
- 	/* 20 msec timeout read */
--	while (nolock_regb_read(priv, MISTAT) & MISTAT_BUSY) {
-+	while ((nolock_regb_read(priv, reg) & mask) != val) {
- 		if (time_after(jiffies, timeout)) {
- 			if (netif_msg_drv(priv))
--				printk(KERN_DEBUG DRV_NAME
--					": PHY ready timeout!\n");
--			ret = 0;
--			break;
-+				dev_dbg(&priv->spi->dev,
-+					"reg %02x ready timeout!\n", reg);
-+			return -ETIMEDOUT;
- 		}
- 		cpu_relax();
- 	}
--	return ret;
-+	return 0;
-+}
-+
-+/*
-+ * Wait until the PHY operation is complete.
-+ */
-+static int wait_phy_ready(struct enc28j60_net *priv)
-+{
-+	return poll_ready(priv, MISTAT, MISTAT_BUSY, 0) ? 0 : 1;
- }
- 
- /*
-@@ -594,6 +599,32 @@ static void nolock_txfifo_init(struct en
- 	nolock_regw_write(priv, ETXNDL, end);
- }
- 
-+/*
-+ * Low power mode shrinks power consumption about 100x, so we'd like
-+ * the chip to be in that mode whenever it's inactive.  (However, we
-+ * can't stay in lowpower mode during suspend with WOL active.)
-+ */
-+static void enc28j60_lowpower(struct enc28j60_net *priv, bool is_low)
-+{
-+	if (netif_msg_drv(priv))
-+		dev_dbg(&priv->spi->dev, "%s power...\n",
-+				is_low ? "low" : "high");
-+
-+	mutex_lock(&priv->lock);
-+	if (is_low) {
-+		nolock_reg_bfclr(priv, ECON1, ECON1_RXEN);
-+		poll_ready(priv, ESTAT, ESTAT_RXBUSY, 0);
-+		poll_ready(priv, ECON1, ECON1_TXRTS, 0);
-+		/* ECON2_VRPS was set during initialization */
-+		nolock_reg_bfset(priv, ECON2, ECON2_PWRSV);
-+	} else {
-+		nolock_reg_bfclr(priv, ECON2, ECON2_PWRSV);
-+		poll_ready(priv, ESTAT, ESTAT_CLKRDY, ESTAT_CLKRDY);
-+		/* caller sets ECON1_RXEN */
-+	}
-+	mutex_unlock(&priv->lock);
-+}
-+
- static int enc28j60_hw_init(struct enc28j60_net *priv)
- {
- 	u8 reg;
-@@ -612,8 +643,8 @@ static int enc28j60_hw_init(struct enc28
- 	priv->tx_retry_count = 0;
- 	priv->max_pk_counter = 0;
- 	priv->rxfilter = RXFILTER_NORMAL;
--	/* enable address auto increment */
--	nolock_regb_write(priv, ECON2, ECON2_AUTOINC);
-+	/* enable address auto increment and voltage regulator powersave */
-+	nolock_regb_write(priv, ECON2, ECON2_AUTOINC | ECON2_VRPS);
- 
- 	nolock_rxfifo_init(priv, RXSTART_INIT, RXEND_INIT);
- 	nolock_txfifo_init(priv, TXSTART_INIT, TXEND_INIT);
-@@ -690,7 +721,7 @@ static int enc28j60_hw_init(struct enc28
- 
- static void enc28j60_hw_enable(struct enc28j60_net *priv)
- {
--	/* enable interrutps */
-+	/* enable interrupts */
- 	if (netif_msg_hw(priv))
- 		printk(KERN_DEBUG DRV_NAME ": %s() enabling interrupts.\n",
- 			__FUNCTION__);
-@@ -726,15 +757,12 @@ enc28j60_setlink(struct net_device *ndev
- 	int ret = 0;
- 
- 	if (!priv->hw_enable) {
--		if (autoneg == AUTONEG_DISABLE && speed == SPEED_10) {
-+		/* link is in low power mode now; duplex setting
-+		 * will take effect on next enc28j60_hw_init().
-+		 */
-+		if (autoneg == AUTONEG_DISABLE && speed == SPEED_10)
- 			priv->full_duplex = (duplex == DUPLEX_FULL);
--			if (!enc28j60_hw_init(priv)) {
--				if (netif_msg_drv(priv))
--					dev_err(&ndev->dev,
--						"hw_reset() failed\n");
--				ret = -EINVAL;
--			}
--		} else {
-+		else {
- 			if (netif_msg_link(priv))
- 				dev_warn(&ndev->dev,
- 					"unsupported link setting\n");
-@@ -1307,7 +1335,8 @@ static int enc28j60_net_open(struct net_
- 		}
- 		return -EADDRNOTAVAIL;
- 	}
--	/* Reset the hardware here */
-+	/* Reset the hardware here (and take it out of low power mode) */
-+	enc28j60_lowpower(priv, false);
- 	enc28j60_hw_disable(priv);
- 	if (!enc28j60_hw_init(priv)) {
- 		if (netif_msg_ifup(priv))
-@@ -1337,6 +1366,7 @@ static int enc28j60_net_close(struct net
- 		printk(KERN_DEBUG DRV_NAME ": %s() enter\n", __FUNCTION__);
- 
- 	enc28j60_hw_disable(priv);
-+	enc28j60_lowpower(priv, true);
- 	netif_stop_queue(dev);
- 
- 	return 0;
-@@ -1537,6 +1567,8 @@ static int __devinit enc28j60_probe(stru
- 	dev->watchdog_timeo = TX_TIMEOUT;
- 	SET_ETHTOOL_OPS(dev, &enc28j60_ethtool_ops);
- 
-+	enc28j60_lowpower(priv, true);
-+
- 	ret = register_netdev(dev);
- 	if (ret) {
- 		if (netif_msg_probe(priv))
-@@ -1581,6 +1613,8 @@ static struct spi_driver enc28j60_driver
- 
- static int __init enc28j60_init(void)
- {
-+	msec20_to_jiffies = msecs_to_jiffies(20);
-+
- 	return spi_register_driver(&enc28j60_driver);
- }
- 
+--==_Exmh_1213331673_4969P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFIUfjZcC3lWbTT17ARAl94AJkBoB3dPLHaq1a+dfK29jmkGakJigCfaIDJ
+B55Awuo3IiE4YPeXEEoK928=
+=ioU1
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1213331673_4969P--
