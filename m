@@ -1,114 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758823AbYFMW2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758938AbYFMWbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758823AbYFMW2B (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 18:28:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954AbYFMW1u
+	id S1758938AbYFMWbv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 18:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755009AbYFMWbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 18:27:50 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:40968 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754942AbYFMW1t (ORCPT
+	Fri, 13 Jun 2008 18:31:42 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:1234 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754981AbYFMWbl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 18:27:49 -0400
-Date: Sat, 14 Jun 2008 00:27:44 +0200
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: Joel.Becker@oracle.com
-Cc: ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] configfs: module reference counting rules
-Message-ID: <20080613222744.GB4153@localdomain>
-Reply-To: Louis.Rilling@kerlabs.com
-References: <20080612235410.GC4012@localdomain> <20080613033309.GE20581@mail.oracle.com> <20080613095159.GH30804@localhost> <20080613202605.GD20576@mail.oracle.com>
+	Fri, 13 Jun 2008 18:31:41 -0400
+Subject: Re: [PATCH 2/8] dynamic debug - core infrastructure
+From: Joe Perches <joe@perches.com>
+To: Jason Baron <jbaron@redhat.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, greg@kroah.com,
+       nick@nick-andrew.net, randy.dunlap@oracle.com
+In-Reply-To: <20080613190039.GC8813@redhat.com>
+References: <20080613190039.GC8813@redhat.com>
+Content-Type: text/plain
+Date: Fri, 13 Jun 2008 15:30:18 -0700
+Message-Id: <1213396218.5463.48.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20080613202605.GD20576@mail.oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 13, 2008 at 01:26:05PM -0700, Joel Becker wrote:
-> On Fri, Jun 13, 2008 at 11:51:59AM +0200, Louis Rilling wrote:
-> > On Thu, Jun 12, 2008 at 08:33:12PM -0700, Joel Becker wrote:
-> > Ok, got it. The race is between unregister_subsystem() and mkdir() at the root
-> > of the subsystem (or one of its default groups). In deeper, user-created groups,
-> > this would be a design bug of the subsystem if this race could occur.
-> 
-> 	Exactly.
+On Fri, 2008-06-13 at 15:00 -0400, Jason Baron wrote:
+> This is the core patch that implements a new dynamic debug
+> infrastructure.
 
-A few more thoughts:
+Some general and specific comments.
 
-1/ taking the module reference is only needed if mkdir() is called under
-a subsystem root or one of its default group, right? Of course this is a
-bit complex to check for this condition, and it does not hurt to take
-module references in all cases of mkdir().
+> +int dynamic_printk_enabled[NR_CPUS];
 
-2/ this module reference counting makes unregister_subsystem() win
-against mkdir(), but only if unregister_subsystem() is called in
-module_cleanup(), because otherwise try_module_get() would succeed,
-right? If so, this means that after having called register_subsystem(),
-a module_init() cannot cleanly fail. Perhaps this should be documented
-in that case.
+I don't understand why you use NR_CPUS.
 
-3/ to make unregister_subsystem() win against mkdir(), mkdir() should
-try_module_get() on the subsystem's owner, not on the new item owner (as
-is done by the current code), right? Maybe there is a bug here...
+Also, I think the major use cases are 1 or 2 modules enabled,
+no modules enabled, or all modules enabled, so the hashing of
+module names is particularly not useful.
 
-> 
-> > > 	This is hard logic, and not something we want each and every
-> > > client module to have to figure out.  Your change has them explicitly
-> > > __module_get() in ->make_item/group(), which isn't safe because of this
-> > > race!
-> > 
-> > Well, this remains hard logic for the modules. But I agree that they should not
-> > impact the logic that deals with racing mkdir() and unregister_subsystem().
-> 
-> 	It is, but most modules don't have to deal with it.  Most
-> modules (all in-kernel configfs users) have a single refrence on it.
-> When they take an additional one, it's for the duration of a function
-> call.  They have to make sure that it's safe to call the function in the
-> first place, so it's clearly safe to get/put the item.
-> 	Forget about the configfs view that is presented to userspace.
-> If you were a module with inter-linked structures, you'd have to make
-> sure they were freed cleanly.  For simple things, you create and drop
-> them.  If a module has a complex interlinkage, they have a mechanism to
-> handle it.
-> 	Example: filesystems can hang whatever they want off of VFS
-> structures like inodes and superblocks - a mounted filesystem prevents
-> rmmod.  Everything is safe, *everything*, as long as it is all cleaned
-> up when put_super() returns.
-> 	So for the simple case, we provide plenty of protection.  If
-> someone wants to do something fancier, they have to provide their own
-> protection, but they would anyway.  And we can't know their complex
-> lifecycle, so we can't really help anyway.
+Any pr_debug or dev_dbg is in a slow path.
 
-Actually, I'm developing a framework based on configfs, with which many
-modules can be linked together through mkdir() and symlink() operations.
-So I'm already managing such reference holding, but the fact that
-configfs does not hold a reference until the last config_item_put()
-imposes limitations (with which I can live though) to the framework:
-plugins of the framework provide custom config_item_types, but cannot define
-their own config_item_operations (especially release()), because
-release() must be called with a reference held on the module, and once
-release() is called somebody (not the module itself) has to drop this reference.
-	For instance, A is a group of the framework, and mkdir A/B creates an
-object implemented by module "mod_b". Before calling mod_b's
-constructor, A's make_item() has to grab a reference on mod_b, and fail
-if not successful. Then this reference cannot be dropped before B's last
-reference is dropped, which can happen a long time after rmdir A/B. So
-A's drop_item() cannot drop mod_b's reference, and A has to provide
-the release() config_item_operation for B, which will call B's
-destructor and finally drop mod_b's reference.
-	So I'd hoped that configfs could help me with this reference
-counting, for instance by keeping a reference until last
-config_item_cleanup(). But I can live without it, so don't care.
+I think a list and a direct comparison to KBUILD_MODNAME
+would be simpler and as fast as necessary.
 
-Louis
+> +         To set the level or flag value for type 'level' or 'flag': 
+> +
+> +               $echo "set level=<#> <module_name>" > dynamic_printk/modules
+> +
 
--- 
-Dr Louis Rilling			Kerlabs - IRISA
-Skype: louis.rilling			Campus Universitaire de Beaulieu
-Phone: (+33|0) 2 99 84 71 52		Avenue du General Leclerc
-Fax: (+33|0) 2 99 84 71 71		35042 Rennes CEDEX - France
-http://www.kerlabs.com/
+I think that set level=<#> should also work for "all"
+
+Perhaps a simpler interface would be to use
+	enable <module> <level>
+where <level> not specified is 0.
+
+> +int unregister_debug_module(char *mod_name)
+> +{
+> +	struct debug_name *element;
+> +	struct debug_name *parent = NULL;
+> +	int ret = 0;
+> +	int i;
+> +
+> +	down(&debug_list_mutex);
+> +	element = find_debug_module(mod_name);
+> +	if (!element) {
+> +		ret = -EINVAL;
+> +		goto out;
+> +	}
+
+[]
+
+> +out:
+> +	up(&debug_list_mutex);
+> +	return 0;
+> +}
+
+Because the return values aren't used,
+the functions might as well be declared void
+
+You should probably add a sprinkling of "const"
+to the argument lists.
+
++extern void dynamic_printk(char *, char *, ...);
+
++	dynamic_printk(KBUILD_MODNAME,                     \
++			KERN_DEBUG KBUILD_MODNAME ": " fmt,\
+
+Instead of prefixing every fmt with KBUILD_MODNAME ": ",
+why not change this to something like:
+
+extern void dynamic_printk(const char *level, const char *module,
+			   const char *fmt, ...);
+
+and just do the printk in 2 parts?
+
+	if (module_enabled) {
+		printk("%s%s: ", level, module);
+		vprintk(fmt, args);
+	}
+
+If not that, why should dynamic_printk prefix a KBUILD_MODNAME
+at all?  Why not just check if the module is enabled, then
+output what the code specifies?
+
+trivial:  The dynamic versions of the dev_dbg and pr_debug macros
+don't return the number of chars output, but always return 0.
+
+
