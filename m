@@ -1,146 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753644AbYFMRxe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753784AbYFMR4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753644AbYFMRxe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 13:53:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbYFMRxZ
+	id S1753784AbYFMR4S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 13:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbYFMR4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 13:53:25 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:37010 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751196AbYFMRxY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 13:53:24 -0400
-Date: Fri, 13 Jun 2008 13:53:16 -0400
-To: Jeff Layton <jlayton@redhat.com>
-Cc: trond.myklebust@fys.uio.no, linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] lockd: close potential race with rapid
-	lockd_up/lockd_down cycle
-Message-ID: <20080613175316.GB8501@fieldses.org>
-References: <1213192992-7635-1-git-send-email-jlayton@redhat.com> <1213192992-7635-2-git-send-email-jlayton@redhat.com> <1213192992-7635-3-git-send-email-jlayton@redhat.com> <1213192992-7635-4-git-send-email-jlayton@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1213192992-7635-4-git-send-email-jlayton@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	Fri, 13 Jun 2008 13:56:04 -0400
+Received: from www17.your-server.de ([213.133.104.17]:54917 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751527AbYFMR4C (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 13:56:02 -0400
+Subject: Re: linux-next: Tree for June 12
+From: Thomas Meyer <thomas@m3y3r.de>
+To: tiwai@suse.de
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080612175307.8e4e3e08.sfr@canb.auug.org.au>
+References: <20080612175307.8e4e3e08.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Fri, 13 Jun 2008 21:56:31 +0200
+Message-Id: <1213386991.3455.9.camel@dhcppc4>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 11, 2008 at 10:03:12AM -0400, Jeff Layton wrote:
-> If lockd_down is called very rapidly after lockd_up returns, then
-> there is a slim chance that lockd() will never be called. kthread()
-> will return before calling the function, so we'll end up never
-> actually calling the cleanup functions for the thread.
+Am Donnerstag, den 12.06.2008, 17:53 +1000 schrieb Stephen Rothwell:
 
-Looks OK to me, thanks.  Applied (for 2.6.27, unless someone wants to
-argue it's more urgent.)
+> Changes since next-20080611:
+> 
 
---b.
+Beginning with next-20080612 i've got no sound!
 
-> 
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> ---
->  fs/lockd/svc.c |   33 +++++++++++++--------------------
->  1 files changed, 13 insertions(+), 20 deletions(-)
-> 
-> diff --git a/fs/lockd/svc.c b/fs/lockd/svc.c
-> index 2169af4..5bd9bf0 100644
-> --- a/fs/lockd/svc.c
-> +++ b/fs/lockd/svc.c
-> @@ -50,7 +50,7 @@ EXPORT_SYMBOL(nlmsvc_ops);
->  static DEFINE_MUTEX(nlmsvc_mutex);
->  static unsigned int		nlmsvc_users;
->  static struct task_struct	*nlmsvc_task;
-> -static struct svc_serv		*nlmsvc_serv;
-> +static struct svc_rqst		*nlmsvc_rqst;
->  int				nlmsvc_grace_period;
->  unsigned long			nlmsvc_timeout;
->  
-> @@ -194,20 +194,11 @@ lockd(void *vrqstp)
->  
->  		svc_process(rqstp);
->  	}
-> -
->  	flush_signals(current);
->  	if (nlmsvc_ops)
->  		nlmsvc_invalidate_all();
->  	nlm_shutdown_hosts();
-> -
->  	unlock_kernel();
-> -
-> -	nlmsvc_task = NULL;
-> -	nlmsvc_serv = NULL;
-> -
-> -	/* Exit the RPC thread */
-> -	svc_exit_thread(rqstp);
-> -
->  	return 0;
->  }
->  
-> @@ -254,16 +245,15 @@ int
->  lockd_up(int proto) /* Maybe add a 'family' option when IPv6 is supported ?? */
->  {
->  	struct svc_serv *serv;
-> -	struct svc_rqst *rqstp;
->  	int		error = 0;
->  
->  	mutex_lock(&nlmsvc_mutex);
->  	/*
->  	 * Check whether we're already up and running.
->  	 */
-> -	if (nlmsvc_serv) {
-> +	if (nlmsvc_rqst) {
->  		if (proto)
-> -			error = make_socks(nlmsvc_serv, proto);
-> +			error = make_socks(nlmsvc_rqst->rq_server, proto);
->  		goto out;
->  	}
->  
-> @@ -288,9 +278,10 @@ lockd_up(int proto) /* Maybe add a 'family' option when IPv6 is supported ?? */
->  	/*
->  	 * Create the kernel thread and wait for it to start.
->  	 */
-> -	rqstp = svc_prepare_thread(serv, &serv->sv_pools[0]);
-> -	if (IS_ERR(rqstp)) {
-> -		error = PTR_ERR(rqstp);
-> +	nlmsvc_rqst = svc_prepare_thread(serv, &serv->sv_pools[0]);
-> +	if (IS_ERR(nlmsvc_rqst)) {
-> +		error = PTR_ERR(nlmsvc_rqst);
-> +		nlmsvc_rqst = NULL;
->  		printk(KERN_WARNING
->  			"lockd_up: svc_rqst allocation failed, error=%d\n",
->  			error);
-> @@ -298,16 +289,15 @@ lockd_up(int proto) /* Maybe add a 'family' option when IPv6 is supported ?? */
->  	}
->  
->  	svc_sock_update_bufs(serv);
-> -	nlmsvc_serv = rqstp->rq_server;
->  
-> -	nlmsvc_task = kthread_run(lockd, rqstp, serv->sv_name);
-> +	nlmsvc_task = kthread_run(lockd, nlmsvc_rqst, serv->sv_name);
->  	if (IS_ERR(nlmsvc_task)) {
->  		error = PTR_ERR(nlmsvc_task);
-> +		svc_exit_thread(nlmsvc_rqst);
->  		nlmsvc_task = NULL;
-> -		nlmsvc_serv = NULL;
-> +		nlmsvc_rqst = NULL;
->  		printk(KERN_WARNING
->  			"lockd_up: kthread_run failed, error=%d\n", error);
-> -		svc_exit_thread(rqstp);
->  		goto destroy_and_out;
->  	}
->  
-> @@ -346,6 +336,9 @@ lockd_down(void)
->  		BUG();
->  	}
->  	kthread_stop(nlmsvc_task);
-> +	svc_exit_thread(nlmsvc_rqst);
-> +	nlmsvc_task = NULL;
-> +	nlmsvc_rqst = NULL;
->  out:
->  	mutex_unlock(&nlmsvc_mutex);
->  }
-> -- 
-> 1.5.3.6
-> 
+git bisect told me that, the offending commit is cbc5a5b7d12b4d461bff132f76abc0d4f9f3d8fc (ALSA: hda - Add bdl_pos_adj option):
+
+I need to add the option bdl_pos_adj=0, to make sound work again, which gives this dmesg entry:
+
+[   64.697747] hda-intel: IRQ timing workaround is activated for card #0. Suggest a bigger bdl_pos_adj.
+
+The sound card is:
+
+$ cat /proc/asound/cards
+ 0 [NVidia         ]: HDA-Intel - HDA NVidia
+                      HDA NVidia at 0xfbff0000 irq 21
+
+
+$ /sbin/lspci -vv -s 00:06.1
+00:06.1 Audio device: nVidia Corporation MCP55 High Definition Audio (rev a2)
+	Subsystem: Micro-Star International Co., Ltd. Unknown device 7250
+	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0 (500ns min, 1250ns max)
+	Interrupt: pin B routed to IRQ 21
+	Region 0: Memory at fbff0000 (32-bit, non-prefetchable) [size=16K]
+	Capabilities: <access denied>
+	Kernel driver in use: HDA Intel
+	Kernel modules: snd-hda-intel
+
+What makes me wonder is, that the commit says:
+"    The new option adds the size of the delay in frames.  As default,
+    it's set to 1 -- that is, one sample delay.  Even the hardware is
+    really correct, one sample delay is relatively harmless in comparison
+    with reporting wrong positions."
+
+Maybe my definition of "harmless" is not "no sound".
+
+Would you please check this problem?
+
+greets
+thomas
+
+
