@@ -1,85 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbYFMWcN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759452AbYFMWfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758934AbYFMWcN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 18:32:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756003AbYFMWbp
+	id S1759452AbYFMWfT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 18:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbYFMWfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 18:31:45 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:38320 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755326AbYFMWbo (ORCPT
+	Fri, 13 Jun 2008 18:35:05 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:31336 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755009AbYFMWfD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 18:31:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=irsbCoqb+24x5hY3Rw9fplhDa2YIPR4UXkoOYQ2+xobE+IO/2TFpoJA6dnN1IPAZ1j
-         5D4DuPVQc4vLJNnV5MfaCzpdhcXK1tGYNO0ARzaVRwhZVaGzwhffGWGUaTai5mz4Px7U
-         S8TEClACBUGjY9uFtg9wX+GCi4H2ekLsBiJMg=
-Message-ID: <7c86c4470806131531n4b24bc4dmc22d4b2277e75f24@mail.gmail.com>
-Date: Sat, 14 Jun 2008 00:31:43 +0200
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [patch 12/21] perfmon2 minimal: sysfs interface
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080613035339.GE17872@kroah.com>
+	Fri, 13 Jun 2008 18:35:03 -0400
+Date: Fri, 13 Jun 2008 15:34:41 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Louis Rilling <Louis.Rilling@kerlabs.com>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: Re: [PATCH 1/3][BUGFIX] configfs: Introduce configfs_dirent_lock
+Message-ID: <20080613223441.GE20576@mail.oracle.com>
+Mail-Followup-To: Louis Rilling <Louis.Rilling@kerlabs.com>,
+	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+References: <20080612133126.335618468@kerlabs.com> <20080612134203.763166823@kerlabs.com> <20080612191348.GE5377@mail.oracle.com> <20080612222558.GA4012@localdomain> <20080613024130.GD20581@mail.oracle.com> <20080613104513.GI30804@localhost> <20080613201746.GB20576@mail.oracle.com> <20080613215401.GA4153@localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <484daff1.1358560a.0808.0267@mx.google.com>
-	 <20080611144955.GA20145@kroah.com>
-	 <7c86c4470806110800w465f1c91k7e8f0bb8fba18ca3@mail.gmail.com>
-	 <7c86c4470806120554w38a11307qa34511cf4f8b4aba@mail.gmail.com>
-	 <20080613035339.GE17872@kroah.com>
+In-Reply-To: <20080613215401.GA4153@localdomain>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg,
+On Fri, Jun 13, 2008 at 11:54:01PM +0200, Louis Rilling wrote:
+> On Fri, Jun 13, 2008 at 01:17:46PM -0700, Joel Becker wrote:
+> > Louis,
+> > 	Can I just say, you're the first person to do serious review
+> > other than myself, and I really appreciate it :-)
+> 
+> It's just that I use configfs in my own work, and I'm playing hard with
+> it, especially with modules. So I need to understand exactly what it
+> does, and what is possible with it.
 
+	I'm all for it.  And see my other email responding to Luis about
+the current concerns with configfs.
 
+> > 	I see what you are saying here.  I'm not sure if that is worth
+> > the complexity - we can say "it was kind of there".  No one will ever
+> > hit it :-)  But let me think about it more.
+> 
+> To me it's an issue only if we want to provide some atomic view to
+> userspace: either userspace sees a group with all of its default groups,
+> or it sees none. So the question is: does userspace need such atomicity?
+> Currently configfs provides it, so this would be a userspace visible
+> change if we break it.
 
-On Fri, Jun 13, 2008 at 5:53 AM, Greg KH <greg@kroah.com> wrote:
-> On Thu, Jun 12, 2008 at 02:54:15PM +0200, stephane eranian wrote:
->>
->> In any case, let me know if there are still things that must be
->> changed/simplified in my file.
->
-> This looks much better.  I wonder if you could use the "default" kobject
-> attributes, which might allow you to remove some of your show/store
-> wrappers, but in general, it's much better than before.
->
-Well, I wondered about that myself, but I think I am missing one piece.
-The difference between some of the show/store functions and others
-is that if you look closely, you see that some make reference to global
-structures, e.g., pfm_controls, or call out to routines in others modules.
-For those, I have switched to the default attribute. But the other show/store
-functions need to access the particular object where the kobj is embedded.
-And for that, it seems you need to glue function:
+	People *won't* see that.  default groups are populated and
+cleaned under i_mutex.  The race of mkdir vs rmdir isn't about seeing
+partial default groups, it's about the ENOMEM racing the ENOTEMPTY.  It
+doesn't impact lookup or other operations.  We can fix it.  I'm just not
+sure it's worth the complexity (and this is an open question).
 
-#define to_pmu(n) container_of(n, struct pfm_pmu_config, kobj)
+> > 	There's another reason this can't be a problem.  If we get into
+> > detach_groups(), we take i_mutex, locking out readdir().  Then we delete
+> > the directory, setting S_DEAD.  In vfs_readdir(), they check
+> > IS_DEADDIR() after getting i_mutex.  So they will see S_DEAD and not
+> > call our ->readdir().  S_DEAD is important.  Someone could actually have
+> > our default_group as their cwd.  S_DEAD prevents them from doing
+> > anything :-)
+> 
+> As I told you in a previous email, I'm missing some VFS skills, so
+> thanks again for the explanation.
 
-static ssize_t pfm_pmu_attr_show(struct kobject *kobj,
-                struct attribute *attr, char *buf)
-{
-        struct pfm_pmu_config *pmu = to_pmu(kobj);
-        struct pfm_attribute *attribute = to_attr(attr);
-        return attribute->show ? attribute->show(pmu, attribute, buf) : -EIO;
-}
+	Oh, don't worry about that.  There's nothing wrong with not
+knowing - that's why you asked me.  Now you do :-)
 
-which basically calls the container_of() routine..
+> Sure, my only concern is the atomic view of userspace: can userspace
+> tolerate that (pwd=A/B, with B a default group of A, B having default groups C
+> and D, and A being removed) 'ls C' returns error because default group C is
+> already removed and 'ls D' is ok because default group D is not removed yet?
 
-Yet, I get the feeling that is the show routein gets the same kobj,
-then I could as well do the
-to_pmu() there. And the attr (use the the strcmp()) would be the default.
+	They can't see that.  We take i_mutex in detach_group.  This
+locks out lookup and readdir.  When we're done with detach_group, all
+default groups are gone.
 
-If you tell me this is the way to go, I will certainly be happy to
-make the change and remove even
-more code!
+> > > 2/ the existence of default group trees that are tagged as USET_DROPPING and
+> > >    should be treated as not existing anymore.
+> > 
+> > 	This is not an issue.  USET_DROPPING does *not* mean it went
+> > away.  It means we're safe to make it go away.  We protect the actual
+> > going-away with i_mutex.  And that's normal VFS behavior.
+> 
+> Again this is the concern of atomicity from userspace point of view: to
+> provide such atomic view, mkdir(), lookup(), readdir(), and probably
+> attributes open() should just fail when done in a default group flagged with
+> USET_DROPPING.
 
+	It's not atomic, though, and never has been.  I'm not quite sure
+what you are unsure of here.  Let me try to clarify a little.
+	Are you worried about two separate runs of the ls(1) command?
 
-Thanks.
+  # ls A/B/C
+  # ls A/B/D
+
+These can't be atomic, because someone else could rmdir(1) in the
+middle:
+
+  # ls A/B/C
+  # rmdir A/B
+  # ls A/B/D
+  ls: No such file or directory
+
+This is perfectly normal, and there is no way to prevent it - it is
+separate entrances to the system call.
+	Do you mean inside one call?  That is "ls A/B" would print "C"
+but not "D"?  That cannot happen, because we hold B's i_mutex during
+detach_group.  So, if readdir beat us to i_mutex, it lists "C D".  If we
+win, we remove both before releasing B's i_Mutex, and readdir errors
+with ENOENT - we removed B.
+	I'm not quite sure what inconsistency you are asking about here.
+
+Joel
+
+-- 
+
+"The one important thing i have learned over the years is the
+ difference between taking one's work seriously and taking one's self
+ seriously.  The first is imperative and the second is disastrous."
+	-Margot Fonteyn
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
