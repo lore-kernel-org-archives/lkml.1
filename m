@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758435AbYFNJqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759158AbYFNJt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758435AbYFNJqt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 05:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756106AbYFNJqm
+	id S1759158AbYFNJt3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 05:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756471AbYFNJtR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 05:46:42 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55089 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755615AbYFNJql (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 05:46:41 -0400
-Date: Sat, 14 Jun 2008 10:29:00 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "R.L. Horn" <lists@eastcheap.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25.3: serial problem (minicom)
-Message-ID: <20080614102900.6830ed46@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LNX.1.00.0806131635260.1294@hani.compact.internal>
-References: <alpine.LNX.1.00.0806131635260.1294@hani.compact.internal>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 14 Jun 2008 05:49:17 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:56546 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754972AbYFNJtQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jun 2008 05:49:16 -0400
+Message-ID: <48539410.30804@garzik.org>
+Date: Sat, 14 Jun 2008 05:49:04 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+CC: Jamie Lokier <jamie@shareable.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [2/3] POHMELFS: Documentation.
+References: <20080613163700.GA25860@2ka.mipt.ru> <20080613164110.GB26166@2ka.mipt.ru> <20080614021547.GC32232@shareable.org> <20080614065616.GA32585@2ka.mipt.ru>
+In-Reply-To: <20080614065616.GA32585@2ka.mipt.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->    Setting the baud rate to B0 clears both (as per SUS).
-> 
->    Subsequently setting the baud rate to something other than B0 leaves the
->    control lines low.
-> 
-> As it happens, apart from the fact that it breaks minicom, I actually prefer 
-> this behavior.
+Evgeniy Polyakov wrote:
+> Oplocks and leases are essentially lock on given file, which allows one
+> client to operate on it. POHMELFS does not have locks now, and they will
+> be created depending on how distributed server will require them. In the
+> simplesst case it can just lock file for writing and do not allow its
+> updates from other clients. Lock aciquite can be done at write_begin
+> time. Without lock and writeback cache in your case writeback for file Y
+> can happen before writeback for file X, but if client does not only
+> write, but also sync after its write, then yes, client will see later
+> updates after more earlier. POHMELFS does not broadcast its interest in
+> the file content until real writing happens, i.e. at writeback time.
+> Although I can add a mode, when the same will be done during
+> write_begin() time. In that case your example will work without sync.
 
-What happens after you go from B0->Banythingelse should depend on the
-termios settings at that point. This sounds like a bug therefore.
 
-If you want that behaviour intentionally set B0, after this termios
-call then set CLOCAL before changing the baud back.
+For /locking/, life is easy, you don't have to worry about disallowing 
+client updates, because locking is advisory.  However, there are some 
+guarantees you need for locking WRT write commit, and of course leases 
+are a totally different animal where you do block client updates.
 
-I'll take a look at this next week.
+	Jeff
 
-Alan
+
