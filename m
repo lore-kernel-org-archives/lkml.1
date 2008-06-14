@@ -1,16 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758280AbYFNV0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758118AbYFNV1N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758280AbYFNV0u (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 17:26:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755989AbYFNVUO
+	id S1758118AbYFNV1N (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 17:27:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754934AbYFNVUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 17:20:14 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50324 "EHLO ogre.sisk.pl"
+	Sat, 14 Jun 2008 17:20:15 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50327 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755040AbYFNVUM convert rfc822-to-8bit (ORCPT
+	id S1755983AbYFNVUM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 14 Jun 2008 17:20:12 -0400
-Cc: "Frans Pop" <elendil@planet.nl>
+Cc: =?utf-8?q?Alejandro=20Riveira=20Fern=C3=A1ndez?= 
+	<alejandro.riveira@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Johannes Berg" <johannes@sipsolutions.net>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
 References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
 In-Reply-To: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -18,8 +22,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <Jn7irxIunJK.A._5D.LJDVIB@albercik>
-Subject: [Bug 10843] Display artifacts on XOrg logout with PAT kernel and VESA framebuffer
+Message-ID: <Jn7irxIunJK.A.gBE.SJDVIB@albercik>
+Subject: [Bug 10830] two different oopses with 2.6.26-rc4
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sat, 14 Jun 2008 22:12:03 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -33,10 +37,14 @@ The following bug entry is on the current list of known regressions
 from 2.6.25.  Please verify if it still should be listed.
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10843
-Subject		: Display artifacts on XOrg logout with PAT kernel and VESA framebuffer
-Submitter	: Frans Pop <elendil@planet.nl>
-Date		: 2008-05-31 14:04 (15 days old)
-References	: http://lkml.org/lkml/2008/6/7/206
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10830
+Subject		: two different oopses with 2.6.26-rc4
+Submitter	: Alejandro Riveira Fernández <alejandro.riveira@gmail.com>
+Date		: 2008-05-28 9:50 (18 days old)
+References	: http://marc.info/?l=linux-kernel&m=121196833026310&w=4
+Handled-By	: Johannes Berg <johannes@sipsolutions.net>
+		  Andrew Morton <akpm@linux-foundation.org>
+		  Peter Zijlstra <a.p.zijlstra@chello.nl>
+Patch		: http://lkml.org/lkml/2008/5/20/683
 
 
