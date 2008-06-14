@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764103AbYFNAZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763517AbYFNAZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764103AbYFNAZA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 20:25:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760258AbYFNAPJ
+	id S1763517AbYFNAZe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 20:25:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761006AbYFNAPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 20:15:09 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:52148 "EHLO mx2.suse.de"
+	Fri, 13 Jun 2008 20:15:11 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52171 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762247AbYFNAPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 20:15:04 -0400
-Date: Fri, 13 Jun 2008 17:12:02 -0700
+	id S1761253AbYFNAPI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 20:15:08 -0400
+Date: Fri, 13 Jun 2008 17:12:04 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -20,17 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Ilpo =?utf-8?B?SsOD4oKscnZpbmVu?= <ilpo.jarvinen@helsinki.fi>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 38/47] tcp: Fix inconsistency source (CA_Open only when
-	!tcp_left_out(tp))
-Message-ID: <20080614001202.GL24698@suse.de>
+       alan@lxorguk.ukuu.org.uk, Roland Dreier <rolandd@cisco.com>
+Subject: [patch 39/47] IB/umem: Avoid sign problems when demoting npages to
+	integer
+Message-ID: <20080614001204.GM24698@suse.de>
 References: <20080613234753.235721454@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline; filename="tcp-fix-inconsistency-source.patch"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="ib-umem-avoid-sign-problems-when-demoting-npages-to-integer.patch"
 In-Reply-To: <20080614000840.GA24659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,98 +37,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+From: Roland Dreier <rolandd@cisco.com>
 
-[ upstream commit: 8aca6cb1179ed9bef9351028c8d8af852903eae2 ]
+commit 8079ffa0e18baaf2940e52e0c118eef420a473a4 upstream
 
-It is possible that this skip path causes TCP to end up into an
-invalid state where ca_state was left to CA_Open while some
-segments already came into sacked_out. If next valid ACK doesn't
-contain new SACK information TCP fails to enter into
-tcp_fastretrans_alert(). Thus at least high_seq is set
-incorrectly to a too high seqno because some new data segments
-could be sent in between (and also, limited transmit is not
-being correctly invoked there). Reordering in both directions
-can easily cause this situation to occur.
+On a 64-bit architecture, if ib_umem_get() is called with a size value
+that is so big that npages is negative when cast to int, then the
+length of the page list passed to get_user_pages(), namely
 
-I guess we would want to use tcp_moderate_cwnd(tp) there as well
-as it may be possible to use this to trigger oversized burst to
-network by sending an old ACK with huge amount of SACK info, but
-I'm a bit unsure about its effects (mainly to FlightSize), so to
-be on the safe side I just currently fixed it minimally to keep
-TCP's state consistent (obviously, such nasty ACKs have been
-possible this far). Though it seems that FlightSize is already
-underestimated by some amount, so probably on the long term we
-might want to trigger recovery there too, if appropriate, to make
-FlightSize calculation to resemble reality at the time when the
-losses where discovered (but such change scares me too much now
-and requires some more thinking anyway how to do that as it
-likely involves some code shuffling).
+	min_t(int, npages, PAGE_SIZE / sizeof (struct page *))
 
-This bug was found by Brian Vowell while running my TCP debug
-patch to find cause of another TCP issue (fackets_out
-miscount).
+will be negative, and get_user_pages() will immediately return 0 (at
+least since 900cf086, "Be more robust about bad arguments in
+get_user_pages()").  This leads to an infinite loop in ib_umem_get(),
+since the code boils down to:
 
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+	while (npages) {
+		ret = get_user_pages(...);
+		npages -= ret;
+	}
+
+Fix this by taking the minimum as unsigned longs, so that the value of
+npages is never truncated.
+
+The impact of this bug isn't too severe, since the value of npages is
+checked against RLIMIT_MEMLOCK, so a process would need to have an
+astronomical limit or have CAP_IPC_LOCK to be able to trigger this,
+and such a process could already cause lots of mischief.  But it does
+let buggy userspace code cause a kernel lock-up; for example I hit
+this with code that passes a negative value into a memory registartion
+function where it is promoted to a huge u64 value.
+
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/tcp_input.c |   29 +++++++++++++++++++----------
- 1 file changed, 19 insertions(+), 10 deletions(-)
+ drivers/infiniband/core/umem.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -2469,6 +2469,20 @@ static inline void tcp_complete_cwr(stru
- 	tcp_ca_event(sk, CA_EVENT_COMPLETE_CWR);
- }
+--- a/drivers/infiniband/core/umem.c
++++ b/drivers/infiniband/core/umem.c
+@@ -144,7 +144,7 @@ struct ib_umem *ib_umem_get(struct ib_uc
+ 	ret = 0;
+ 	while (npages) {
+ 		ret = get_user_pages(current, current->mm, cur_base,
+-				     min_t(int, npages,
++				     min_t(unsigned long, npages,
+ 					   PAGE_SIZE / sizeof (struct page *)),
+ 				     1, !umem->writable, page_list, vma_list);
  
-+static void tcp_try_keep_open(struct sock *sk)
-+{
-+	struct tcp_sock *tp = tcp_sk(sk);
-+	int state = TCP_CA_Open;
-+
-+	if (tcp_left_out(tp) || tp->retrans_out || tp->undo_marker)
-+		state = TCP_CA_Disorder;
-+
-+	if (inet_csk(sk)->icsk_ca_state != state) {
-+		tcp_set_ca_state(sk, state);
-+		tp->high_seq = tp->snd_nxt;
-+	}
-+}
-+
- static void tcp_try_to_open(struct sock *sk, int flag)
- {
- 	struct tcp_sock *tp = tcp_sk(sk);
-@@ -2482,15 +2496,7 @@ static void tcp_try_to_open(struct sock 
- 		tcp_enter_cwr(sk, 1);
- 
- 	if (inet_csk(sk)->icsk_ca_state != TCP_CA_CWR) {
--		int state = TCP_CA_Open;
--
--		if (tcp_left_out(tp) || tp->retrans_out || tp->undo_marker)
--			state = TCP_CA_Disorder;
--
--		if (inet_csk(sk)->icsk_ca_state != state) {
--			tcp_set_ca_state(sk, state);
--			tp->high_seq = tp->snd_nxt;
--		}
-+		tcp_try_keep_open(sk);
- 		tcp_moderate_cwnd(tp);
- 	} else {
- 		tcp_cwnd_down(sk, flag);
-@@ -3296,8 +3302,11 @@ no_queue:
- 	return 1;
- 
- old_ack:
--	if (TCP_SKB_CB(skb)->sacked)
-+	if (TCP_SKB_CB(skb)->sacked) {
- 		tcp_sacktag_write_queue(sk, skb, prior_snd_una);
-+		if (icsk->icsk_ca_state == TCP_CA_Open)
-+			tcp_try_keep_open(sk);
-+	}
- 
- uninteresting_ack:
- 	SOCK_DEBUG(sk, "Ack %u out of %u:%u\n", ack, tp->snd_una, tp->snd_nxt);
 
 -- 
