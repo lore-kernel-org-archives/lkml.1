@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753689AbYFNISQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757366AbYFNIYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753689AbYFNISQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 04:18:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757043AbYFNIRz
+	id S1757366AbYFNIYS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 04:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbYFNIYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 04:17:55 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50426 "EHLO mx3.mail.elte.hu"
+	Sat, 14 Jun 2008 04:24:06 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57167 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754120AbYFNIRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 04:17:12 -0400
-Date: Sat, 14 Jun 2008 10:16:56 +0200
+	id S1753604AbYFNIYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jun 2008 04:24:04 -0400
+Date: Sat, 14 Jun 2008 10:23:43 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@sisk.pl
-Subject: Re: [GIT]: Networking
-Message-ID: <20080614081656.GA27820@elte.hu>
-References: <20080612.211959.52937006.davem@davemloft.net> <20080614060320.GA18454@elte.hu> <20080614062758.GA23803@elte.hu> <20080614.001428.26649070.davem@davemloft.net>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ying Huang <ying.huang@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: use add_highpages_with_active_regions for high
+	pages init
+Message-ID: <20080614082343.GB11277@elte.hu>
+References: <200806132005.45836.yhlu.kernel@gmail.com> <200806140056.32601.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080614.001428.26649070.davem@davemloft.net>
+In-Reply-To: <200806140056.32601.yhlu.kernel@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,39 +38,30 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* David Miller <davem@davemloft.net> wrote:
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-> > just to clarify the bug pattern: the box was still accessible after 
-> > the warning. So this is a far less serious problem and i'd suggest 
-> > we open up a separate regression entry for it and consider the 
-> > hung-TCP problem closed. (i havent seen the hang in the last week, 
-> > with either version of the tcp-accept reverts)
+> use early_node_map to init high pages, so can remove page_is_ram and 
+> page_is_reserved_early in the big loop with add_one_highpage
 > 
-> It is a warning that just means the transmitted on the network device 
-> stalled for an unusually long period of time.  Is your subnet flooded 
-> when these warnings occur?  Is the remove side system wedged or at a 
-> very high load when the message triggers?
+> also remove the page_is_reserved_early that is not needed.
 
-yes, both the network and the testbox is at relatively high load, it's a 
-distcc kernel build over the network. Thousands of such iterations were 
-done successfully without this warning ever triggering - it triggered 
-for the first time in about 10,000 bootups the moment i applied your 
-version of the reverts. When i applied the small diff the warning did 
-not come back.
+applied to tip/x86/mpparse for testing, thanks.
 
-> All of these would be useful points of information to determine if 
-> this might be normal or not.
-> 
-> In theory, if the remove port the device is connected to gets 
-> extremely congested, emits a pause frame to your machine, but never 
-> releases that pause, this (new) warning could trigger.
-> 
-> This warning was added by Arjan in 2.6.25 FYI in order to diagnose the 
-> not-normal cases better.
+Andrew: mm/page_alloc.c modification.
 
-ok, should we then remove that warning, if it's spurious? kerneloops.org 
-has picked up a few other instances of this warning as well:
+two small nits:
 
-  http://www.kerneloops.org/searchfile.php?search=net%2Fsched%2Fsch_generic.c&btnG=Filename+Search
+checkpatch warned about:
+
+> +	for_each_active_range_index_in_nid(i, nid){
+
+that should be ') {' (note the extra space).
+
+another thing checkpatch noticed:
+
+> +extern void add_one_highpage_init(struct page *, int, int);
+> +void __init add_highpages_with_active_regions(int nid, unsigned long start_p$
+
+we want externs in header files.
 
 	Ingo
