@@ -1,101 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759161AbYFNMlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759495AbYFNMqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759161AbYFNMlT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 08:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbYFNMlC
+	id S1759495AbYFNMqV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 08:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbYFNMqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 08:41:02 -0400
-Received: from userg500.nifty.com ([202.248.238.80]:57161 "EHLO
-	userg500.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752925AbYFNMlA (ORCPT
+	Sat, 14 Jun 2008 08:46:10 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:57190 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753726AbYFNMqI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 08:41:00 -0400
-DomainKey-Signature: a=rsa-sha1; s=userg500; d=nifty.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:in-reply-to:references:
-	x-mailer:mime-version:content-type:content-transfer-encoding;
-	b=h6vU4SQsU0BPVsHEUDvt9ke0VvaN6CkiE4yBra9CbblZmpJG032HSgqwAa43X7qOO
-	+lvTpnpHMwfKMzq/ZThNw==
-X-Nifty-SrcIP: [218.226.24.69]
-Date: Sat, 14 Jun 2008 21:36:12 +0900
-From: Komuro <komurojun-mbn@nifty.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Tejun Heo <htejun@gmail.com>,
-       Dominik Brodowski <linux@dominikbrodowski.net>, jgarzik@redhat.com,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-pcmcia <linux-pcmcia@lists.infradead.org>,
-       Kristoffer Ericson <kristoffer.ericson@gmail.com>
-Subject: Re: [KERNEL 2.6.26-rc4]  bugreport : pata_pcmcia with Sandisk
- Extreme III 8GB
-Message-Id: <20080614213612.96873c25.komurojun-mbn@nifty.com>
-In-Reply-To: <48537149.4040102@garzik.org>
-References: <20080528225049.9a134e0d.Kristoffer.Ericson@Gmail.com>
-	<20080528222740.GB20893@isilmar.linta.de>
-	<20080530135728.be02d3dc.Kristoffer.Ericson@Gmail.com>
-	<20080607223716.7d142072.komurojun-mbn@nifty.com>
-	<20080611072029.GB28692@comet.dominikbrodowski.net>
-	<20080614120055.ad8fbee0.komurojun-mbn@nifty.com>
-	<48537149.4040102@garzik.org>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 14 Jun 2008 08:46:08 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sat, 14 Jun 2008 14:45:59 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH resend] scsi: sd: optionally set power condition in START STOP
+ UNIT
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: linux-scsi@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Message-ID: <tkrat.e11d1535986dbc62@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Jun 2008 03:20:41 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
+James,
+
+this is a reminder that linux1394-2.6.git currently tramples on SCSI
+territory with the following small patch.  The patch has already been in
+my -next branch for a while, and hence in Stephen's linux-next tree,
+without causing trouble.  I intend to submit it to Linus after 2.6.26
+unless you want to do so yourself. I have four firewire-specific patches
+which depend on this sd patch.
+
+Please pick up the patch or ACK or NAK it at your discretion.
 
 
-After removing the 3-lines below in ata_eh_reset
-the pata_pcmcia works properly.
+Date: Sun, 11 May 2008 00:34:07 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: scsi: sd: optionally set power condition in START STOP UNIT
 
+Adds a new scsi_device flag, start_stop_pwr_cond:  If enabled, the sd
+driver will not send plain START STOP UNIT commands but ones with the
+power condition field set to 3 (standby) or 1 (active) respectively.
 
--       spin_lock_irqsave(link->ap->lock, flags);
--       link->eh_info.serror = 0;
--       spin_unlock_irqrestore(link->ap->lock, flags);
+Some FireWire disk firmwares do not stop the motor if power condition is
+zero.  Or worse, they become unresponsive after a START STOP UNIT with
+power condition = 0 and start = 0.
 
-Please fix this problem.
+http://lkml.org/lkml/2008/4/29/704
 
-Best Regards
-Komuro
+This patch only adds the necessary code to sd_mod but doesn't activate
+it.  Follow-up patches to the FireWire drivers will add detection of
+affected devices and enable the code for them.
 
+I did not add power condition values to scsi_error.c::scsi_eh_try_stu()
+for now.  The three firmwares which suffer from above mentioned problems
+do not need START STOP UNIT in the error handler, and they are not
+adversely affected by START STOP UNIT with power condition = 0 and start
+= 1 (like scsi_eh_try_stu() sends it if scsi_device.allow_restart is
+enabled).
 
-> > 
-> >>>>>> pcmcia: registering new device pcmcia1.1
-> >>>>>> 1.1: GetNextTuple: No more items
-> >>>>>> pata_pcmcia: probe of 1.1 failed with error -12
-> > 
-> > The patch "libata: kill hotplug related race condition"
-> > introduced the pata_pcmcia error.
-> > 
-> > Please fix this problem.
-> > 
-> > 
-> > Best Regards
-> > Komuro
-> > 
-> >>> f046519fc85a8fdf6a058b4ac9d897cdee6f3e52 is first bad commit
-> > commit f046519fc85a8fdf6a058b4ac9d897cdee6f3e52
-> > Author: Tejun Heo <htejun@gmail.com>
-> > Date:   Mon May 19 01:15:08 2008 +0900
-> > 
-> >     libata: kill hotplug related race condition
-> >     
-> >     Originally, whole reset processing was done while the port is frozen
-> >     and SError was cleared during @postreset().  This had two race
-> >     conditions.  1: hotplug could occur after reset but before SError is
-> >     cleared and libata won't know about it.  2: hotplug could occur after
-> >     all the reset is complete but before the port is thawed.  As all
-> >     events are cleared on thaw, the hotplug event would be lost.
-> 
-> Interesting!  Thanks for the diagnosis...
-> 
-> 	Jeff
-> 
-> 
-> 
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Tested-by: Tino Keitel <tino.keitel@gmx.de>
+---
+ drivers/scsi/sd.c          |    5 +++++
+ include/scsi/scsi_device.h |    1 +
+ 2 files changed, 6 insertions(+)
 
+Index: linux-2.6.26-rc2/drivers/scsi/sd.c
+===================================================================
+--- linux-2.6.26-rc2.orig/drivers/scsi/sd.c
++++ linux-2.6.26-rc2/drivers/scsi/sd.c
+@@ -1124,6 +1124,8 @@ sd_spinup_disk(struct scsi_disk *sdkp)
+ 				cmd[1] = 1;	/* Return immediately */
+ 				memset((void *) &cmd[2], 0, 8);
+ 				cmd[4] = 1;	/* Start spin cycle */
++				if (sdkp->device->start_stop_pwr_cond)
++					cmd[4] |= 1 << 4;
+ 				scsi_execute_req(sdkp->device, cmd, DMA_NONE,
+ 						 NULL, 0, &sshdr,
+ 						 SD_TIMEOUT, SD_MAX_RETRIES);
+@@ -1790,6 +1792,9 @@ static int sd_start_stop_device(struct s
+ 	if (start)
+ 		cmd[4] |= 1;	/* START */
+ 
++	if (sdp->start_stop_pwr_cond)
++		cmd[4] |= start ? 1 << 4 : 3 << 4;	/* Active or Standby */
++
+ 	if (!scsi_device_online(sdp))
+ 		return -ENODEV;
+ 
+Index: linux-2.6.26-rc2/include/scsi/scsi_device.h
+===================================================================
+--- linux-2.6.26-rc2.orig/include/scsi/scsi_device.h
++++ linux-2.6.26-rc2/include/scsi/scsi_device.h
+@@ -134,6 +134,7 @@ struct scsi_device {
+ 	unsigned no_start_on_add:1;	/* do not issue start on add */
+ 	unsigned allow_restart:1; /* issue START_UNIT in error handler */
+ 	unsigned manage_start_stop:1;	/* Let HLD (sd) manage start/stop */
++	unsigned start_stop_pwr_cond:1;	/* Set power cond. in START_STOP_UNIT */
+ 	unsigned no_uld_attach:1; /* disable connecting to upper level drivers */
+ 	unsigned select_no_atn:1;
+ 	unsigned fix_capacity:1;	/* READ_CAPACITY is too high by 1 */
 
 -- 
-Komuro <komurojun-mbn@nifty.com>
+Stefan Richter
+-=====-==--- -==- -===-
+http://arcgraph.de/sr/
+
