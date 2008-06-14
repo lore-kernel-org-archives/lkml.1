@@ -1,53 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757028AbYFNGdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754108AbYFNG43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757028AbYFNGdX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 02:33:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbYFNGdQ
+	id S1754108AbYFNG43 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 02:56:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbYFNG4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 02:33:16 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52087 "EHLO mx2.mail.elte.hu"
+	Sat, 14 Jun 2008 02:56:12 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:46474 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751634AbYFNGdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 02:33:15 -0400
-Date: Sat, 14 Jun 2008 08:33:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Abhishek Sagar <sagar.abhishek@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ftrace: fix "notrace" filtering priority
-Message-ID: <20080614063302.GB24188@elte.hu>
-References: <48536553.8020601@gmail.com>
-MIME-Version: 1.0
+	id S1750832AbYFNG4K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jun 2008 02:56:10 -0400
+Date: Sat, 14 Jun 2008 10:56:17 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [2/3] POHMELFS: Documentation.
+Message-ID: <20080614065616.GA32585@2ka.mipt.ru>
+References: <20080613163700.GA25860@2ka.mipt.ru> <20080613164110.GB26166@2ka.mipt.ru> <20080614021547.GC32232@shareable.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48536553.8020601@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0008]
+In-Reply-To: <20080614021547.GC32232@shareable.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Abhishek Sagar <sagar.abhishek@gmail.com> wrote:
-
-> Hi Steven,
+On Sat, Jun 14, 2008 at 03:15:47AM +0100, Jamie Lokier (jamie@shareable.org) wrote:
+> > * Fast and scalable multithreaded userspace server. Being in
+> >   userspace it works with any underlying filesystem and still is
+> >   much faster than async in-kernel NFS one.
 > 
-> This is a fix to give notrace filter rules priority over 
-> "set_ftrace_filter" rules. This way functions set to be filtered and 
-> also in the notrace list will not get traced.
+> That's interesting :-)
+
+Noreover, that's true :)
+I regulary run and post various benchmarks comparing POHMELFS, NFS,
+XFS and Ext4, main goal of POHMELFS at this stage is to be
+essentially as fast as underlying local filesystem. And it is...
+Though there is a single place (random reading, all others reached
+FS speed, so it is from 10 to 300% faster than NFS in various loads :),
+but I'm working on it, I think it is not server's side though.
+
+> That sounds great, but what do you mean by 'novel'?  Don't other
+> modern network filesystems use asynchronous requests and replies in
+> some form?  It seems like the obvious thing.
+
+Maybe it was a bit naive though :)
+But I checked lots of implementation, all of them use send()/recv()
+approach. NFSv4 uses a bit different, but it is a cryptic, and at least
+from its names it is not clear:
+like nfs_pagein_multi() -> nfs_pageio_complete() -> add_stats. Presumably
+we add stats when we have data handy...
+CIFS/SMB use synchronous approach.
+
+>From those projects, which are not in kernel, like CRFS and CEPH, the
+former uses async receiving thread, while the latter is synchronous,
+but can select different servers for reading, more like NFSv4.1 leases.
+
+> > * Transactions support. Full failover for all operations.
+> >   Resending transactions to different servers on timeout or error.
 > 
-> This fix ensures that functions which are set to be filetered and are 
-> concurrently marked as "notrace" don't get recorded. As of now, if a 
-> record is marked as FTRACE_FL_FILTER and is enabled, then the notrace 
-> flag is not checked. Tested on x86-32.
+> By transactions, do you mean an atomic set of writes/changes?
+> Or do you trace read dependencies too?
 
-applied to tip/tracing/ftrace - thanks Abhishek.
+It covers all operations, including reading, directory listing, lookups,
+attribite changes and so on. Its main goal is to allow transaparent
+failover, so it has to be done for reading too.
 
-	Ingo
+> > Main feature of the POHMELFS is writeback data and metadata cache.
+> > [...] Creation and removal of objects, as long as writing, are
+> > asynchronous and are sent to the server during system writeback.
+> > When server receives some request for given object in the system
+> > (like data reading, or file creation or whatever else), it stores
+> > appropriate client information in own cache, so when subsequent
+> > request comes from different client, all previous could be notified
+> > (for example when several clients read data from file, and then new
+> > client writes there, appropriate pages on clients will be
+> > invalidated, so subsequent write will force them to read page from
+> > the server). Because of this feature POHMELFS is extremely fast in
+> > metadata intensive workloads, and can fully utilize bandwidth to
+> > servers when doing bulk data transafers.
+> 
+> This is extremely cool, and obviously the right thing to do.  No sane
+> network filesystem would be without it, one naively hopes :-)
+> 
+> How is it different from NFSv4 leases and SMB oplocks?  Or are they
+> the same basic idea?
+> 
+> With all those asynchronous requests, are your writeback caches fully
+> coherent?  Example.  Client A reads file X (data: x0), then writes X
+> (new data: x1), then reads Y (data: y0), then writes Y (data: y1).
+> Client B reads Y then reads X.  Is it guaranteed that client B cannot
+> ever get data y1 and x0?  A fully coherent system (meaning behaves
+> like a local filesystem) does guarantee that.  If cache requests for
+> file X and file Y are independent, this is not guaranteed.
+
+Oplocks and leases are essentially lock on given file, which allows one
+client to operate on it. POHMELFS does not have locks now, and they will
+be created depending on how distributed server will require them. In the
+simplesst case it can just lock file for writing and do not allow its
+updates from other clients. Lock aciquite can be done at write_begin
+time. Without lock and writeback cache in your case writeback for file Y
+can happen before writeback for file X, but if client does not only
+write, but also sync after its write, then yes, client will see later
+updates after more earlier. POHMELFS does not broadcast its interest in
+the file content until real writing happens, i.e. at writeback time.
+Although I can add a mode, when the same will be done during
+write_begin() time. In that case your example will work without sync.
+
+> -- Jamie
+
+-- 
+	Evgeniy Polyakov
