@@ -1,137 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758490AbYFNKyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757302AbYFNLSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758490AbYFNKyS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 06:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbYFNKyH
+	id S1757302AbYFNLSw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 07:18:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYFNLSk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 06:54:07 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:55691 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752392AbYFNKyD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 06:54:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=UrC9qM8Hnp26GKwScoIOEfZgGReVuNI6JjsldnLWPHMEZg1e9vW5TWPQRbtF7Oe2xv
-         YrdtPur4YwaVhyTbC0afwvpw3It2WEKXQ4AqRPieOdnCpLaBG5VFmx3RfRsH5uRIi9nM
-         mmQmAJdg43kfKWuHuEkD/ywFdY78r0cK8vWhg=
-Message-ID: <6278d2220806140354i7f163086i6127664d8c2d88a9@mail.gmail.com>
-Date: Sat, 14 Jun 2008 11:54:02 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Christoph Lameter" <clameter@sgi.com>
-Subject: 2.6.26-rc5: SLUB debug, lockdep warning...
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+	Sat, 14 Jun 2008 07:18:40 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:44050 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752861AbYFNLSL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jun 2008 07:18:11 -0400
+Date: Sat, 14 Jun 2008 14:18:06 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Cc: rtc-linux@googlegroups.com, david-b@pacbell.net,
+       Ingo Molnar <mingo@elte.hu>, Lior Dotan <liodot@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [rtc-linux] Re: [Bug 10866] /dev/rtc was missing until I
+	disabled CONFIG_RTC_CLASS
+Message-ID: <20080614111806.GF1716@cs181133002.pp.htv.fi>
+References: <GIilET9wkhI.A.JzB.81vSIB@albercik> <200806131343.41213.david-b@pacbell.net> <20080613210257.GA529@elte.hu> <200806131538.54254.david-b@pacbell.net> <20080614113535.4d611e07@i1501.lan.towertech.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <20080614113535.4d611e07@i1501.lan.towertech.it>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When enabling lockdep + SLUB debugging, I spotted this recursive
-lock-acquisition warning [1] when booting, however it doesn't always
-pop out.
+On Sat, Jun 14, 2008 at 11:35:35AM +0200, Alessandro Zummo wrote:
+> On Fri, 13 Jun 2008 15:38:54 -0700
+> David Brownell <david-b@pacbell.net> wrote:
+> 
+> > They can continue working just fine with *only* the legacy RTC.
+> > If they stuck with defaults, no problems appear.  (Modulo the
+> > fact that bitrot is setting in.)
+> > 
+> > The only thing that causes the least hiccup is someone who was
+> > for a while using a bogus (and non-default) configuration.
+> > 
+> > Given a bogus configuration, how should it be fixed?  There
+> > can be several solutions, and the right answer for one system
+> > will always be the right one for another.  So any approach
+> > that doesn't expect a human to select options sometimes will
+> > be inherently wrong in various cases.
+> 
+>  I agree with david. oldconfig cannot be made to fix every possible
+>  manual misconfiguration that has been introduced by the user, even
+>  those that, by chance, just worked.
+> 
+>  The actual Kconfig will handle pretty well the transition from
+>  a good config. where good is different from working-by-chance.
+> 
+>  There are far too many people that just keep pressing Y
+>  when a new kernel option appears without even considering what would
+>  happen or reading the help.
 
-Let me know if you need further information etc.
+If Lior's problem was due to something like CONFIG_RTC_CLASS=y, 
+CONFIG_RTC_DRV_CMOS=n that's a kernel configuration that would
+anyway break when the old driver gets removed, and it just broke
+earlier.
 
-Daniel
+Everyone seems to focus on this kconfig related case, what about my 
+point of no /dev/rtc with a static /dev ? When talking about existing 
+setups and embedded systems that's a real issue for some systems.
 
---- [1]
+>  Best regards,
+> 
+>  Alessandro Zummo,
 
-=======================================================
-[ INFO: possible circular locking dependency detected ]
-2.6.26-rc5-201c #1
--------------------------------------------------------
-nscd/3669 is trying to acquire lock:
- (&n->list_lock){.+..}, at: [<ffffffff802bab03>] deactivate_slab+0x173/0x1e0
+cu
+Adrian
 
-but task is already holding lock:
- (&obj_hash[i].lock){++..}, at: [<ffffffff803fa56f>]
-__debug_object_init+0x2f/0x350
-
-which lock already depends on the new lock.
-
-the existing dependency chain (in reverse order) is:
-
--> #1 (&obj_hash[i].lock){++..}:
-       [<ffffffff80278dad>] __lock_acquire+0xbdd/0x1020
-       [<ffffffff80279255>] lock_acquire+0x65/0x90
-       [<ffffffff805e1027>] _spin_lock_irqsave+0x47/0x80
-       [<ffffffff803f9eec>] __debug_check_no_obj_freed+0x6c/0x160
-       [<ffffffff803f9ff5>] debug_check_no_obj_freed+0x15/0x20
-       [<ffffffff80296b6d>] free_hot_cold_page+0x10d/0x250
-       [<ffffffff80296cfb>] free_hot_page+0xb/0x10
-       [<ffffffff80296d25>] __free_pages+0x25/0x40
-       [<ffffffff802ba886>] __free_slab+0x96/0x150
-       [<ffffffff802ba96f>] discard_slab+0x2f/0x50
-       [<ffffffff802bebe0>] kmem_cache_shrink+0x150/0x280
-       [<ffffffff8040a8ae>] acpi_os_purge_cache+0x9/0xd
-       [<ffffffff804217b0>] acpi_purge_cached_objects+0x10/0x38
-       [<ffffffff80421836>] acpi_initialize_objects+0x49/0x54
-       [<ffffffff8082ba27>] acpi_init+0x8c/0x221
-       [<ffffffff80812a98>] kernel_init+0x138/0x320
-       [<ffffffff80227418>] child_rip+0xa/0x12
-       [<ffffffffffffffff>] 0xffffffffffffffff
-
--> #0 (&n->list_lock){.+..}:
-       [<ffffffff80278c17>] __lock_acquire+0xa47/0x1020
-       [<ffffffff80279255>] lock_acquire+0x65/0x90
-       [<ffffffff805e0c41>] _spin_lock+0x31/0x60
-       [<ffffffff802bab03>] deactivate_slab+0x173/0x1e0
-       [<ffffffff802bbb12>] __slab_alloc+0x132/0x550
-       [<ffffffff802bc0d0>] kmem_cache_alloc+0xc0/0xd0
-       [<ffffffff803fa7f4>] __debug_object_init+0x2b4/0x350
-       [<ffffffff803fa8ac>] debug_object_init_on_stack+0x1c/0x30
-       [<ffffffff8026ce59>] hrtimer_init_on_stack+0x29/0x50
-       [<ffffffff8027ae09>] futex_wait+0x249/0x480
-       [<ffffffff8027c248>] do_futex+0xb8/0xad0
-       [<ffffffff8027cd05>] sys_futex+0xa5/0x120
-       [<ffffffff802264ab>] system_call_after_swapgs+0x7b/0x80
-       [<ffffffffffffffff>] 0xffffffffffffffff
-
-other info that might help us debug this:
-
-1 lock held by nscd/3669:
- #0:  (&obj_hash[i].lock){++..}, at: [<ffffffff803fa56f>]
-__debug_object_init+0x2f/0x350
-
-stack backtrace:
-Pid: 3669, comm: nscd Not tainted 2.6.26-rc5-201c #1
-
-Call Trace:
- [<ffffffff80276683>] print_circular_bug_tail+0x83/0x90
- [<ffffffff80278c17>] __lock_acquire+0xa47/0x1020
- [<ffffffff80279255>] lock_acquire+0x65/0x90
- [<ffffffff802bab03>] ? deactivate_slab+0x173/0x1e0
- [<ffffffff805e0c41>] _spin_lock+0x31/0x60
- [<ffffffff802bab03>] deactivate_slab+0x173/0x1e0
- [<ffffffff802bbb12>] __slab_alloc+0x132/0x550
- [<ffffffff803fa7f4>] ? __debug_object_init+0x2b4/0x350
- [<ffffffff803fa7f4>] ? __debug_object_init+0x2b4/0x350
- [<ffffffff802bc0d0>] kmem_cache_alloc+0xc0/0xd0
- [<ffffffff803fa7f4>] __debug_object_init+0x2b4/0x350
- [<ffffffff803fa8ac>] debug_object_init_on_stack+0x1c/0x30
- [<ffffffff8026ce59>] hrtimer_init_on_stack+0x29/0x50
- [<ffffffff8027ae09>] futex_wait+0x249/0x480
- [<ffffffff80275103>] ? get_lock_stats+0x23/0x70
- [<ffffffff8023c815>] ? flat_send_IPI_mask+0x55/0x90
- [<ffffffff8023711e>] ? native_smp_send_reschedule+0x2e/0x50
- [<ffffffff8024740b>] ? __resched_task+0x6b/0x80
- [<ffffffff8024782c>] ? hrtick_start_fair+0x11c/0x160
- [<ffffffff80249e20>] ? default_wake_function+0x0/0x10
- [<ffffffff8027c248>] do_futex+0xb8/0xad0
- [<ffffffff80275103>] ? get_lock_stats+0x23/0x70
- [<ffffffff802751e6>] ? lock_release_holdtime+0x66/0x80
- [<ffffffff803f246d>] ? __up_read+0x4d/0xb0
- [<ffffffff805e1475>] ? _spin_unlock_irqrestore+0x65/0x80
- [<ffffffff80277c8f>] ? trace_hardirqs_on+0xbf/0x150
- [<ffffffff8022d059>] ? read_tsc+0x9/0x20
- [<ffffffff8026f266>] ? getnstimeofday+0x36/0xb0
- [<ffffffff8026d04a>] ? ktime_get_ts+0x4a/0x60
- [<ffffffff8027cd05>] sys_futex+0xa5/0x120
- [<ffffffff802264ab>] system_call_after_swapgs+0x7b/0x80
 -- 
-Daniel J Blueman
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
