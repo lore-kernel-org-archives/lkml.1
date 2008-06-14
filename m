@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756769AbYFNVr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756068AbYFNVxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756769AbYFNVr6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 17:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756162AbYFNVrm
+	id S1756068AbYFNVxo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 17:53:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755099AbYFNVxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 17:47:42 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51012 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755795AbYFNVrl (ORCPT
+	Sat, 14 Jun 2008 17:53:34 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:57345 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755032AbYFNVxd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 17:47:41 -0400
-Date: Sat, 14 Jun 2008 22:26:21 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Adam Williamson" <awilliamson@mandriva.com>,
-       "Alan Cox" <alan@redhat.com>
-Subject: Re: [Bug 10868] Oops on loading ipaq module since 2.6.26, prevents
- use of device
-Message-ID: <20080614222621.084522fe@lxorguk.ukuu.org.uk>
-In-Reply-To: <Jn7irxIunJK.A.hXD.3IDVIB@albercik>
-References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
-	<Jn7irxIunJK.A.hXD.3IDVIB@albercik>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 14 Jun 2008 17:53:33 -0400
+Date: Sat, 14 Jun 2008 23:23:41 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: =?unknown-8bit?B?U8OpZ3VpZXIgUsOpZ2lz?= <rseguier@e-teleport.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, alan@redhat.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] net: via-velocity.c fix sleep-with-spinlock bug during
+	MTU change
+Message-ID: <20080614212341.GA12976@electric-eye.fr.zoreil.com>
+References: <20080531184615.350bac00@infradead.org> <20080603134019.df2f51d4.akpm@linux-foundation.org> <20080603215155.GA9712@electric-eye.fr.zoreil.com> <20080604215909.GA17446@electric-eye.fr.zoreil.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=unknown-8bit
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080604215909.GA17446@electric-eye.fr.zoreil.com>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Jun 2008 22:12:04 +0200 (CEST)
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Francois Romieu <romieu@fr.zoreil.com> :
+[...context available from http://lkml.org/lkml/2008/5/31/251 ...]
 
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.25.  Please verify if it still should be listed.
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10868
-> Subject		: Oops on loading ipaq module since 2.6.26, prevents use of device
-> Submitter	: Adam Williamson <awilliamson@mandriva.com>
-> Date		: 2008-06-05 17:39 (10 days old)
-> Handled-By	: Alan Cox <alan@redhat.com>
+Régis, I need your help.
 
-Still waiting for the actual attached result of the test patch to debug
-this further. Guess it will miss 2.6.26
+Can you give the patchkit below a try and check if the change of mtu
+works correctly ?
+
+http://userweb.kernel.org/~romieu/via-velocity/2.6.26-rc6/
+
+or:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/romieu/netdev-2.6.git velocity
+
+-- 
+Ueimor
