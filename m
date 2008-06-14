@@ -1,113 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759495AbYFNMqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759585AbYFNMvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759495AbYFNMqV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 08:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbYFNMqK
+	id S1759585AbYFNMvr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 08:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbYFNMvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 08:46:10 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:57190 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753726AbYFNMqI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 08:46:08 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 14 Jun 2008 14:45:59 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH resend] scsi: sd: optionally set power condition in START STOP
- UNIT
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: linux-scsi@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Message-ID: <tkrat.e11d1535986dbc62@s5r6.in-berlin.de>
+	Sat, 14 Jun 2008 08:51:37 -0400
+Received: from japan.chezphil.org ([77.240.5.4]:3611 "EHLO japan.chezphil.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754213AbYFNMvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jun 2008 08:51:36 -0400
+To: "Paul Collins" <paul@burly.ondioline.org>
+Cc: <jkosina@suse.cz>, <linux-input@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>,
+       "Marcel Holtmann" <marcel@holtmann.org>
+Date: Sat, 14 Jun 2008 13:51:33 +0100
+Subject: Re: [PATCH] [RESEND] fix HID quirks for aluminium apple wireless
+	keyboards
+Message-ID: <1213447893811@dmwebmail.dmwebmail.chezphil.org>
+In-Reply-To: <87tzfwiguc.fsf@burly.wgtn.ondioline.org>
+References: <87tzfwiguc.fsf@burly.wgtn.ondioline.org>
+X-Mailer: Decimail Webmail 3alpha16
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; format="flowed"
+From: "Phil Endecott" <phil_wueww_endecott@chezphil.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James,
+Paul Collins wrote:
+> Here is a new version of the patch that just adds the entries to
+> hidp_blacklist using your suggested style.  I'm leaving the USB HID's
+> table alone based on Phil Endecott's remarks regarding HID proxy mode,
+> so now this patch only touches Bluetooth code.
+>
+>
+> bluetooth: fix Fn on Apple Wireless Keyboard
+>
+> Enable the HID quirks for Apple Wireless Keyboards, based on the quirk
+> table entries in the USB HID.  With this patch applied the Fn key on my
+> keyboard now functions as expected.
+>
+> diff --git a/net/bluetooth/hidp/core.c b/net/bluetooth/hidp/core.c
+> index 519cdb9..62f174a 100644
+> --- a/net/bluetooth/hidp/core.c
+> +++ b/net/bluetooth/hidp/core.c
+> @@ -676,6 +676,12 @@ static const struct {
+>  	__u16 idProduct;
+>  	unsigned quirks;
+>  } hidp_blacklist[] = {
+> +	/* Apple Wireless Keyboard, ANSI layout */
+> +	{ 0x05ac, 0x022c, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
+> +	/* Apple Wireless Keyboard, ISO layout */
+> +	{ 0x05ac, 0x022d, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_APPLE_ISO_KEYBOARD },
+> +	/* Apple Wireless Keyboard, JIS layout */
+> +	{ 0x05ac, 0x022e, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
+>  	/* Apple wireless Mighty Mouse */
+>  	{ 0x05ac, 0x030c, HID_QUIRK_MIGHTYMOUSE | HID_QUIRK_INVERT_HWHEEL },
 
-this is a reminder that linux1394-2.6.git currently tramples on SCSI
-territory with the following small patch.  The patch has already been in
-my -next branch for a while, and hence in Stephen's linux-next tree,
-without causing trouble.  I intend to submit it to Linus after 2.6.26
-unless you want to do so yourself. I have four firewire-specific patches
-which depend on this sd patch.
-
-Please pick up the patch or ACK or NAK it at your discretion.
+Why do you set HID_QUIRK_APPLE_NUMLOCK_EMULATION ?  I don't know what 
+that quirk really does, but since these keyboards have neither a 
+numeric keypad nor a numlock key I can't see any benefit.
 
 
-Date: Sun, 11 May 2008 00:34:07 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: scsi: sd: optionally set power condition in START STOP UNIT
+Phil.
 
-Adds a new scsi_device flag, start_stop_pwr_cond:  If enabled, the sd
-driver will not send plain START STOP UNIT commands but ones with the
-power condition field set to 3 (standby) or 1 (active) respectively.
 
-Some FireWire disk firmwares do not stop the motor if power condition is
-zero.  Or worse, they become unresponsive after a START STOP UNIT with
-power condition = 0 and start = 0.
-
-http://lkml.org/lkml/2008/4/29/704
-
-This patch only adds the necessary code to sd_mod but doesn't activate
-it.  Follow-up patches to the FireWire drivers will add detection of
-affected devices and enable the code for them.
-
-I did not add power condition values to scsi_error.c::scsi_eh_try_stu()
-for now.  The three firmwares which suffer from above mentioned problems
-do not need START STOP UNIT in the error handler, and they are not
-adversely affected by START STOP UNIT with power condition = 0 and start
-= 1 (like scsi_eh_try_stu() sends it if scsi_device.allow_restart is
-enabled).
-
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Tested-by: Tino Keitel <tino.keitel@gmx.de>
----
- drivers/scsi/sd.c          |    5 +++++
- include/scsi/scsi_device.h |    1 +
- 2 files changed, 6 insertions(+)
-
-Index: linux-2.6.26-rc2/drivers/scsi/sd.c
-===================================================================
---- linux-2.6.26-rc2.orig/drivers/scsi/sd.c
-+++ linux-2.6.26-rc2/drivers/scsi/sd.c
-@@ -1124,6 +1124,8 @@ sd_spinup_disk(struct scsi_disk *sdkp)
- 				cmd[1] = 1;	/* Return immediately */
- 				memset((void *) &cmd[2], 0, 8);
- 				cmd[4] = 1;	/* Start spin cycle */
-+				if (sdkp->device->start_stop_pwr_cond)
-+					cmd[4] |= 1 << 4;
- 				scsi_execute_req(sdkp->device, cmd, DMA_NONE,
- 						 NULL, 0, &sshdr,
- 						 SD_TIMEOUT, SD_MAX_RETRIES);
-@@ -1790,6 +1792,9 @@ static int sd_start_stop_device(struct s
- 	if (start)
- 		cmd[4] |= 1;	/* START */
- 
-+	if (sdp->start_stop_pwr_cond)
-+		cmd[4] |= start ? 1 << 4 : 3 << 4;	/* Active or Standby */
-+
- 	if (!scsi_device_online(sdp))
- 		return -ENODEV;
- 
-Index: linux-2.6.26-rc2/include/scsi/scsi_device.h
-===================================================================
---- linux-2.6.26-rc2.orig/include/scsi/scsi_device.h
-+++ linux-2.6.26-rc2/include/scsi/scsi_device.h
-@@ -134,6 +134,7 @@ struct scsi_device {
- 	unsigned no_start_on_add:1;	/* do not issue start on add */
- 	unsigned allow_restart:1; /* issue START_UNIT in error handler */
- 	unsigned manage_start_stop:1;	/* Let HLD (sd) manage start/stop */
-+	unsigned start_stop_pwr_cond:1;	/* Set power cond. in START_STOP_UNIT */
- 	unsigned no_uld_attach:1; /* disable connecting to upper level drivers */
- 	unsigned select_no_atn:1;
- 	unsigned fix_capacity:1;	/* READ_CAPACITY is too high by 1 */
-
--- 
-Stefan Richter
--=====-==--- -==- -===-
-http://arcgraph.de/sr/
 
