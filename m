@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763321AbYFNAT6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762822AbYFNAUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763321AbYFNAT6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 20:19:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760901AbYFNAOF
+	id S1762822AbYFNAUp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 20:20:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761646AbYFNAOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 20:14:05 -0400
-Received: from ns2.suse.de ([195.135.220.15]:51897 "EHLO mx2.suse.de"
+	Fri, 13 Jun 2008 20:14:11 -0400
+Received: from mail.suse.de ([195.135.220.2]:34413 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761554AbYFNAOB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 20:14:01 -0400
-Date: Fri, 13 Jun 2008 17:11:24 -0700
+	id S1761615AbYFNAOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 20:14:09 -0400
+Date: Fri, 13 Jun 2008 17:11:29 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,15 +20,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, James Chapman <jchapman@katalix.com>,
+       alan@lxorguk.ukuu.org.uk, Sridhar Samudrala <sri@us.ibm.com>,
        "David S. Miller" <davem@davemloft.net>,
        Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 23/47] l2tp: avoid skb truesize bug if headroom is increased
-Message-ID: <20080614001124.GW24698@suse.de>
+Subject: [patch 25/47] tcp: TCP connection times out if ICMP frag needed is
+	delayed
+Message-ID: <20080614001129.GY24698@suse.de>
 References: <20080613234753.235721454@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="l2tp-avoid-skb-truesize-bug-if-headroom-is-increased.patch"
+Content-Disposition: inline; filename="tcp-tcp-connection-times-out-if-icmp-frag-needed-is-delayed.patch"
 In-Reply-To: <20080614000840.GA24659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,74 +39,73 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: James Chapman <jchapman@katalix.com>
+From: Sridhar Samudrala <sri@us.ibm.com>
 
-[ upstream commit: 090c48d3dd5ea90b37350334aaed9a93b0c1e0a1 ]
+[ upstream commit: 7d227cd235c809c36c847d6a597956ad9e9d2bae ]
 
-A user reported seeing occasional bugs such as the following when
-using the L2TP driver.
+We are seeing an issue with TCP in handling an ICMP frag needed
+message that is received after net.ipv4.tcp_retries1 retransmits.
+The default value of retries1 is 3. So if the path mtu changes
+and ICMP frag needed is lost for the first 3 retransmits or if
+it gets delayed until 3 retransmits are done, TCP doesn't update
+MSS correctly and continues to retransmit the orginal message
+until it timesout after tcp_retries2 retransmits.
 
-  SKB BUG: Invalid truesize (272) len=72, sizeof(sk_buff)=208
+I am seeing this issue even with the latest 2.6.25.4 kernel.
 
-When L2TP adds its header in the transmit path, it might need to
-increase the headroom of the skb. In some cases, the increased
-headroom trips a kernel bug when the skb is freed because the skb has
-grown beyond its truesize value. The fix is to increase the truesize
-by the amount of headroom added, after orphaning the skb.
+In tcp_retransmit_timer(), when retransmits counter exceeds
+tcp_retries1 value, the dst cache entry of the socket is reset.
+At this time, if we receive an ICMP frag needed message, the
+dst entry gets updated with the new MTU, but the TCP sockets
+dst_cache entry remains NULL.
 
-While here, fix a misleading comment.
+So the next time when we try to retransmit after the ICMP frag
+needed is received, tcp_retransmit_skb() gets called. Here the
+cur_mss value is calculated at the start of the routine with
+a NULL sk_dst_cache. Instead we should call tcp_current_mss after
+the rebuild_header that caches the dst entry with the updated mtu.
+Also the rebuild_header should be called before tcp_fragment
+so that skb is fragmented if the mss goes down.
 
-Thanks to Iouri Kharon <bc-info@styx.cabel.net> for the initial
-report and testing the fix.
-
-Signed-off-by: James Chapman <jchapman@katalix.com>
+Signed-off-by: Sridhar Samudrala <sri@us.ibm.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/net/pppol2tp.c |   13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ net/ipv4/tcp_output.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
---- a/drivers/net/pppol2tp.c
-+++ b/drivers/net/pppol2tp.c
-@@ -980,6 +980,8 @@ static int pppol2tp_xmit(struct ppp_chan
- 	__wsum csum = 0;
- 	struct udphdr *uh;
- 	unsigned int len;
-+	int old_headroom;
-+	int new_headroom;
+--- a/net/ipv4/tcp_output.c
++++ b/net/ipv4/tcp_output.c
+@@ -1836,7 +1836,7 @@ int tcp_retransmit_skb(struct sock *sk, 
+ {
+ 	struct tcp_sock *tp = tcp_sk(sk);
+ 	struct inet_connection_sock *icsk = inet_csk(sk);
+-	unsigned int cur_mss = tcp_current_mss(sk, 0);
++	unsigned int cur_mss;
+ 	int err;
  
- 	if (sock_flag(sk, SOCK_DEAD) || !(sk->sk_state & PPPOX_CONNECTED))
- 		goto abort;
-@@ -1001,16 +1003,18 @@ static int pppol2tp_xmit(struct ppp_chan
+ 	/* Inconslusive MTU probe */
+@@ -1858,6 +1858,11 @@ int tcp_retransmit_skb(struct sock *sk, 
+ 			return -ENOMEM;
+ 	}
  
- 	/* Check that there's enough headroom in the skb to insert IP,
- 	 * UDP and L2TP and PPP headers. If not enough, expand it to
--	 * make room. Note that a new skb (or a clone) is
--	 * allocated. If we return an error from this point on, make
--	 * sure we free the new skb but do not free the original skb
--	 * since that is done by the caller for the error case.
-+	 * make room. Adjust truesize.
- 	 */
- 	headroom = NET_SKB_PAD + sizeof(struct iphdr) +
- 		sizeof(struct udphdr) + hdr_len + sizeof(ppph);
-+	old_headroom = skb_headroom(skb);
- 	if (skb_cow_head(skb, headroom))
- 		goto abort;
- 
-+	new_headroom = skb_headroom(skb);
-+	skb_orphan(skb);
-+	skb->truesize += new_headroom - old_headroom;
++	if (inet_csk(sk)->icsk_af_ops->rebuild_header(sk))
++		return -EHOSTUNREACH; /* Routing failure or similar. */
 +
- 	/* Setup PPP header */
- 	__skb_push(skb, sizeof(ppph));
- 	skb->data[0] = ppph[0];
-@@ -1065,7 +1069,6 @@ static int pppol2tp_xmit(struct ppp_chan
- 	/* Get routing info from the tunnel socket */
- 	dst_release(skb->dst);
- 	skb->dst = dst_clone(__sk_dst_get(sk_tun));
--	skb_orphan(skb);
- 	skb->sk = sk_tun;
++	cur_mss = tcp_current_mss(sk, 0);
++
+ 	/* If receiver has shrunk his window, and skb is out of
+ 	 * new window, do not retransmit it. The exception is the
+ 	 * case, when window is shrunk to zero. In this case
+@@ -1884,9 +1889,6 @@ int tcp_retransmit_skb(struct sock *sk, 
+ 	    (sysctl_tcp_retrans_collapse != 0))
+ 		tcp_retrans_try_collapse(sk, skb, cur_mss);
  
- 	/* Queue the packet to IP for output */
+-	if (inet_csk(sk)->icsk_af_ops->rebuild_header(sk))
+-		return -EHOSTUNREACH; /* Routing failure or similar. */
+-
+ 	/* Some Solaris stacks overoptimize and ignore the FIN on a
+ 	 * retransmit when old data is attached.  So strip it off
+ 	 * since it is cheap to do so and saves bytes on the network.
 
 -- 
