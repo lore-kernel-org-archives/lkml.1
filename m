@@ -1,114 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754108AbYFNG43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbYFNHHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754108AbYFNG43 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 02:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbYFNG4M
+	id S1754213AbYFNHHe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 03:07:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131AbYFNHHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 02:56:12 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:46474 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750832AbYFNG4K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 02:56:10 -0400
-Date: Sat, 14 Jun 2008 10:56:17 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [2/3] POHMELFS: Documentation.
-Message-ID: <20080614065616.GA32585@2ka.mipt.ru>
-References: <20080613163700.GA25860@2ka.mipt.ru> <20080613164110.GB26166@2ka.mipt.ru> <20080614021547.GC32232@shareable.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080614021547.GC32232@shareable.org>
-User-Agent: Mutt/1.5.9i
+	Sat, 14 Jun 2008 03:07:22 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:53383 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752077AbYFNHHU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jun 2008 03:07:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=nmxoknv0pV5tWxyikjShLw9bId6MUEvCqUxh8lGpVwuDJG8OOsy1ht/CB0tjbZmG7f
+         b0HYEqgEkS5vtJKJzvsPoS4loS56O+a9vc/cUXjFVXXK+bpOrE9kWdMTfY5iJ5wxxd0X
+         d576zd90H26HeC6D/U1gHLJamD7nNjj29bWkw=
+Message-ID: <48536E3B.4000703@gmail.com>
+Date: Sat, 14 Jun 2008 11:07:39 +0400
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: webmaster@dragonslave.de
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-acpi@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: linux-next Regression: Unable to locate IOAPIC
+References: <200806051100.12885.dex@dragonslave.de> <200806102229.10512.dex@dragonslave.de> <4851AA24.7060906@gmail.com> <200806131307.39807.dex@dragonslave.de>
+In-Reply-To: <200806131307.39807.dex@dragonslave.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 14, 2008 at 03:15:47AM +0100, Jamie Lokier (jamie@shareable.org) wrote:
-> > * Fast and scalable multithreaded userspace server. Being in
-> >   userspace it works with any underlying filesystem and still is
-> >   much faster than async in-kernel NFS one.
-> 
-> That's interesting :-)
+Hi Ingo, Yinghai,
 
-Noreover, that's true :)
-I regulary run and post various benchmarks comparing POHMELFS, NFS,
-XFS and Ext4, main goal of POHMELFS at this stage is to be
-essentially as fast as underlying local filesystem. And it is...
-Though there is a single place (random reading, all others reached
-FS speed, so it is from 10 to 300% faster than NFS in various loads :),
-but I'm working on it, I think it is not server's side though.
+It looks like the code introduced by 
+2944e16b25e7fb8b5ee0dd9dc7197a0f9e523cfd
+is causing this problem. At least it is new between -rc5 (working) and 
+linux-next (not working).
 
-> That sounds great, but what do you mean by 'novel'?  Don't other
-> modern network filesystems use asynchronous requests and replies in
-> some form?  It seems like the obvious thing.
+Regards,
+Alex.
 
-Maybe it was a bit naive though :)
-But I checked lots of implementation, all of them use send()/recv()
-approach. NFSv4 uses a bit different, but it is a cryptic, and at least
-from its names it is not clear:
-like nfs_pagein_multi() -> nfs_pageio_complete() -> add_stats. Presumably
-we add stats when we have data handy...
-CIFS/SMB use synchronous approach.
 
->From those projects, which are not in kernel, like CRFS and CEPH, the
-former uses async receiving thread, while the latter is synchronous,
-but can select different servers for reading, more like NFSv4.1 leases.
+Daniel Exner wrote:
+> Hi all,
+>
+> Alexey Starikovskiy wrote:
+>   
+>> Hi Daniel,
+>>
+>> Could you please provide full dmesg and acpidump outputs?
+>>     
+> I attached dmesg and config , both from working 2.6.26-rc5 with git-acpi patch 
+> below and from linux-next snapshot 20080604.
+> I also attached acpidump that was done while using stock 2.6.25-fw5 from my 
+> distro. (But I think that doesnt matter, at least it shouldn't ;)
+>
+>   
+>> Daniel Exner wrote:
+>>     
+>>> Andrew Morton wrote:
+>>>       
+>>>> On Fri, 6 Jun 2008 19:30:28 +0200 Daniel Exner <dex@dragonslave.de> 
+>>>>         
+> wrote:
+>   
+>>>>> Andrew Morton wrote:
+>>>>>           
+>>>>>> (cc linux-acpi)
+>>>>>>
+>>>>>> On Thu, 5 Jun 2008 11:00:12 +0200 Daniel Exner <dex@dragonslave.de>
+>>>>>>             
+>>> wrote:
+>>>       
+>>>>>>> Hi!
+>>>>>>>
+>>>>>>> (Added myself to CC, because I'm not subscribed)
+>>>>>>>
+>>>>>>> with linux-next snapshot 20080604 my Laptop morphes into sitting duck
+>>>>>>> and I think this is due to this:
+>>>>>>>               
+>>>>>> I assume 2.6.26-rc5 is OK?
+>>>>>>             
+>>>>> Indeed.. just tried it with (nearly) the same config: no unable to
+>>>>> locate IOAPIC
+>>>>>
+>>>>> Will try todays next snapshot above -rc5 now.
+>>>>>           
+>>>> OK, thanks.
+>>>>
+>>>> It would be great if you could test 2.6.26-rc5 plus
+>>>> http://userweb.kernel.org/~akpm/git-acpi.patch.  That'll allow us to
+>>>> confirm that the regression is due to changes in the acpi tree.
+>>>>         
+>>> Sorry for the delay.. real-life you know ;)
+>>>
+>>> I guess you'd expect me to confirm the behavior on rc5 with this patch
+>>> aplied, but .. well this Kernel works!
+>>>       
+> To clarify myself:
+> 2.6.25.5:  --> relatively fast no IOAPIC Errors in dmesg
+> 2.6.26-rc5:   --> relatively  no IOAPIC Errors in dmesg
+> 2.6.26-rc5 + git-acpi Patch:   --> relatively  no IOAPIC Errors in dmesg
+> 2.6.26-rc5 +  linux-next snapshot 20080604 --> even slower than before my ide 
+> Patch many "unable to locate IOAPIC" Errors
+>
+>
+> So I think the problem lies not in the acpi tree but somewhre else.
+>
+> Is it possible to tell git to explicitly _exclude_ a specific tree while 
+> bisecting?
+>
+> --
+> Greetings
+> Daniel Exner
+>   
 
-> > * Transactions support. Full failover for all operations.
-> >   Resending transactions to different servers on timeout or error.
-> 
-> By transactions, do you mean an atomic set of writes/changes?
-> Or do you trace read dependencies too?
-
-It covers all operations, including reading, directory listing, lookups,
-attribite changes and so on. Its main goal is to allow transaparent
-failover, so it has to be done for reading too.
-
-> > Main feature of the POHMELFS is writeback data and metadata cache.
-> > [...] Creation and removal of objects, as long as writing, are
-> > asynchronous and are sent to the server during system writeback.
-> > When server receives some request for given object in the system
-> > (like data reading, or file creation or whatever else), it stores
-> > appropriate client information in own cache, so when subsequent
-> > request comes from different client, all previous could be notified
-> > (for example when several clients read data from file, and then new
-> > client writes there, appropriate pages on clients will be
-> > invalidated, so subsequent write will force them to read page from
-> > the server). Because of this feature POHMELFS is extremely fast in
-> > metadata intensive workloads, and can fully utilize bandwidth to
-> > servers when doing bulk data transafers.
-> 
-> This is extremely cool, and obviously the right thing to do.  No sane
-> network filesystem would be without it, one naively hopes :-)
-> 
-> How is it different from NFSv4 leases and SMB oplocks?  Or are they
-> the same basic idea?
-> 
-> With all those asynchronous requests, are your writeback caches fully
-> coherent?  Example.  Client A reads file X (data: x0), then writes X
-> (new data: x1), then reads Y (data: y0), then writes Y (data: y1).
-> Client B reads Y then reads X.  Is it guaranteed that client B cannot
-> ever get data y1 and x0?  A fully coherent system (meaning behaves
-> like a local filesystem) does guarantee that.  If cache requests for
-> file X and file Y are independent, this is not guaranteed.
-
-Oplocks and leases are essentially lock on given file, which allows one
-client to operate on it. POHMELFS does not have locks now, and they will
-be created depending on how distributed server will require them. In the
-simplesst case it can just lock file for writing and do not allow its
-updates from other clients. Lock aciquite can be done at write_begin
-time. Without lock and writeback cache in your case writeback for file Y
-can happen before writeback for file X, but if client does not only
-write, but also sync after its write, then yes, client will see later
-updates after more earlier. POHMELFS does not broadcast its interest in
-the file content until real writing happens, i.e. at writeback time.
-Although I can add a mode, when the same will be done during
-write_begin() time. In that case your example will work without sync.
-
-> -- Jamie
-
--- 
-	Evgeniy Polyakov
