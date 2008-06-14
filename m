@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756204AbYFNWPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbYFNWXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756204AbYFNWPt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 18:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754953AbYFNWPk
+	id S1756087AbYFNWXS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 18:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755250AbYFNWXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 18:15:40 -0400
-Received: from smtprelay08.ispgateway.de ([80.67.29.8]:40354 "EHLO
-	smtprelay08.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754493AbYFNWPj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 18:15:39 -0400
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] final PCI patches for 2.6.26
-Date: Sun, 15 Jun 2008 00:15:33 +0200
-User-Agent: KMail/1.9.9
-Cc: Jeff Garzik <jeff@garzik.org>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200806121334.01562.jbarnes@virtuousgeek.org> <485198E5.80109@garzik.org> <200806121519.24194.jbarnes@virtuousgeek.org>
-In-Reply-To: <200806121519.24194.jbarnes@virtuousgeek.org>
+	Sat, 14 Jun 2008 18:23:00 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:62323 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755117AbYFNWW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jun 2008 18:22:59 -0400
+Date: Sat, 14 Jun 2008 23:00:03 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: 2.6.26-rc6-git2: Reported regressions from 2.6.25
+In-Reply-To: <alpine.LFD.1.10.0806141423500.2949@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.55.0806142249090.3771@cliff.in.clinika.pl>
+References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
+ <alpine.LFD.1.10.0806141423500.2949@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806150015.33758.ioe-lkml@rameria.de>
-X-Df-Sender: 849595
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jesse,
+On Sat, 14 Jun 2008, Linus Torvalds wrote:
 
-On Friday 13 June 2008, Jesse Barnes wrote:
-> Right, I probably should have used one of the git mail scripts... but this 
-> wasn't a real git pull request either, more of a "hey please sanity check 
-> this" type thing.  I figured in this case keeping the changelogs was 
-> important, but didn't want to spam people with a bunch of messages when the 
-> total size really wasn't that big...
+> I don't believe this is a regression, at least the 8GB thing. The 
+> HIGHMEM64G config option has had a
+> 
+> 	depends on !M386 && !M486
+> 
+> for quite a while now. It certainly was in 2.6.25 already.
+> 
+> So if you want PAE support, we do require that you ask for a kernel that 
+> has cmpxchg8b support (needed for the atomic 64-bit clearing of a PAE page 
+> table entry). Not to mention a CPU that supports PAE. And that is simply 
+> incompatible with "I want it to work on an i486 too".
+> 
+> So saying "I want a kernel that uses PAE _and_ works on an i486" is simply 
+> nonsensical. If we ever supported it, it was a mistake, and wouldn't have 
+> actually worked on an i486 anyway.
 
-A bunch of THREADED messages are quite easy to skip (single keystroke for me).
+ From what you have written it looks the dependency should actually be:
 
-So just use one of those git mail scripts, which can do threading 
-and everyone is happy.
+	depends on !M386 && !M486 && !M586 && !M586TSC && !M586MMX
 
-Best Regards
+as none of the pre-Pentium-Pro processors had the PAE feature (I am not
+sure about non-Intel implementations, so the case of M586 would have to be
+investigated).  It was originally planned for the Pentium, but abandoned
+because of the die size required -- the details behind the story were
+obviously never very well known, but it was definitely related to some
+cost implications.  The feature was reportedly documented in the earlier
+not-so-widely-available revisions of the Pentium manuals and later on
+removed while some of the other stuff was migrated to the (in)famous
+Appendix H.  This also explains the odd location of the PAE bits among the
+CPUID flags and in the CR4 register, which was initially marked as
+reserved.
 
-Ingo Oeser, wading through lkml since >10 years.
+  Maciej
