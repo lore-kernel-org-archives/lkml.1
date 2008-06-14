@@ -1,42 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757654AbYFNNfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754987AbYFNNfj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757654AbYFNNfU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 09:35:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbYFNNfF
+	id S1754987AbYFNNfj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 09:35:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755549AbYFNNfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 09:35:05 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:57842 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752614AbYFNNfE (ORCPT
+	Sat, 14 Jun 2008 09:35:12 -0400
+Received: from tomts24.bellnexxia.net ([209.226.175.187]:45308 "EHLO
+	tomts24-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755077AbYFNNfK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 09:35:04 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4853C8AD.9020407@s5r6.in-berlin.de>
-Date: Sat, 14 Jun 2008 15:33:33 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
+	Sat, 14 Jun 2008 09:35:10 -0400
+Message-Id: <6tlqem$1fq6sd@toip36-bus.srvr.bell.ca>
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgBTALBhU0jR4q+G/2dsb2JhbACLTYVR
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [217.218.121.12]
+From: <by-joc@sympatico.ca>
+Reply-To: brl342768764@googlemail.com
+To: <info@winner.co.uk>
+Subject: File Your Claim
+Date: Sat, 14 Jun 2008 9:35:08 -0400
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-CC: Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
-       Trivial Patch Monkey <trivial@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] 8139too: clean up spaces and TABs
-References: <4853BB62.1060109@freemail.hu>
-In-Reply-To: <4853BB62.1060109@freemail.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Németh Márton wrote:
-> -/* The following settings are log_2(bytes)-4:  0 == 16 bytes .. 6==1024, 7==end of packet. */
-> +/* The following settings are log_2(bytes)-4:
-> +   0 == 16 bytes .. 6==1024, 7==end of packet. */
+Your Email ID won 1,000,000 GBP in our annual Draw. Contact(brl342768764@googlemail.com) for claims 
 
-We don't write comments like this.
--- 
-Stefan Richter
--=====-==--- -==- -===-
-http://arcgraph.de/sr/
+Claims Form 
+
+1.full name: 
+2.Home Address: 
+3.Tel:
+
+Regards.
