@@ -1,42 +1,33 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753734AbYFLQqW (ORCPT <rfc822;ralf@linux-mips.org>);
-	Thu, 12 Jun 2008 12:46:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbYFLQqJ
+	id S1758604AbYFNMeS (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sat, 14 Jun 2008 08:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753452AbYFNMd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Jun 2008 12:46:09 -0400
-Received: from tomts8-srv.bellnexxia.net ([209.226.175.52]:39532 "EHLO
-	tomts8-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751080AbYFLQqI convert rfc822-to-8bit (ORCPT
+	Sat, 14 Jun 2008 08:33:57 -0400
+Received: from tomts28.bellnexxia.net ([209.226.175.102]:63141 "EHLO
+	tomts28-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753325AbYFNMd4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Jun 2008 12:46:08 -0400
-Message-Id: <6unltd$19bt1p@toip37-bus.srvr.bell.ca>
+	Sat, 14 Jun 2008 08:33:56 -0400
+X-Greylist: delayed 2677 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Jun 2008 08:33:55 EDT
+Message-Id: <6t0pti$1gigia@toip35-bus.srvr.bell.ca>
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEADncUEjR4q/5/2dsb2JhbAA
+X-IronPort-Anti-Spam-Result: Amw6AOhSU0jR4q+G/2dsb2JhbACLFiWFYw
 X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
-X-Originating-IP: [203.172.176.5]
-From: Bmw Online Promo <by-joc@sympatico.ca>
-Reply-To: bmwunits09@btinternet.com
-Organization: Bmw Online Promo
-To: <info@bmw.com>
-Subject: Confirm Your Bmw Prize...........
-Date: Thu, 12 Jun 2008 11:45:41 -0400
+X-Originating-IP: [193.202.63.20]
+From: <by-joc@sympatico.ca>
+Reply-To: contactrichardsmith01@gmail.com
+To: <info@winners.co.uk>
+Subject: Confirm Receipt
+Date: Sat, 14 Jun 2008 8:33:41 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753734AbYFLQqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1758604AbYFNMeS@vger.kernel.org>
 
-Attn: We are please to inform You won the sum of =A3750,000.00 GBP and =
-BMW 5 Series Car in our Seasonal E-mail Programme Award.Fill the detail=
-s:Full Name,Country,Tel,Sex,Occupation Email:
-bmwoffice.uk@btinternet.com for claims
-Regards
-Mr.Kamaiu Davidson
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Contact Mr Richard Smith for the claim of $2,000,000 which you have won in WEEKLY DRAWS
+
+Provide your Name: Address: Country. Send to E_mail:contactrichardsmith01@gmail.com
