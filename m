@@ -1,29 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756098AbYFNMTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757055AbYFNMXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756098AbYFNMTz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 08:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbYFNMTo
+	id S1757055AbYFNMXa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 08:23:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbYFNMXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 08:19:44 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:34492 "EHLO
+	Sat, 14 Jun 2008 08:23:21 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:60728 "EHLO
 	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752528AbYFNMTm (ORCPT
+	with ESMTP id S1752528AbYFNMXU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 08:19:42 -0400
-Subject: Re: [PATCH] [RESEND] fix HID quirks for aluminium apple wireless
-	keyboards
+	Sat, 14 Jun 2008 08:23:20 -0400
+Subject: Re: [patch 16/47] bluetooth: fix locking bug in the rfcomm socket
+	cleanup handling
 From: Marcel Holtmann <marcel@holtmann.org>
-To: Paul Collins <paul@burly.ondioline.org>
-Cc: jkosina@suse.cz, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-In-Reply-To: <87tzfwiguc.fsf@burly.wgtn.ondioline.org>
-References: <87iqweltzo.fsf@burly.wgtn.ondioline.org>
-	 <874p7ylsj0.fsf@burly.wgtn.ondioline.org>
-	 <1213301289.17870.72.camel@violet.holtmann.net>
-	 <87tzfwiguc.fsf@burly.wgtn.ondioline.org>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@linux.intel.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Chris Wright <chrisw@sous-sol.org>
+In-Reply-To: <a8e1da0806131950i4eb0ea48q5cc34ea07cfd523a@mail.gmail.com>
+References: <20080613234753.235721454@mini.kroah.org>
+	 <20080614000840.GA24659@suse.de> <20080614001058.GP24698@suse.de>
+	 <a8e1da0806131950i4eb0ea48q5cc34ea07cfd523a@mail.gmail.com>
 Content-Type: text/plain
-Date: Sat, 14 Jun 2008 14:22:40 +0200
-Message-Id: <1213446160.17870.145.camel@violet.holtmann.net>
+Date: Sat, 14 Jun 2008 14:26:26 +0200
+Message-Id: <1213446386.17870.146.camel@violet.holtmann.net>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
@@ -31,48 +40,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paul,
+Hi Dave,
 
-> >> I also took the liberty of adding defines for the vendor and for the
-> >> existing Mighty Mouse quirk.
+> > Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> > Acked-by: Marcel Holtmann <marcel@holtmann.org>
+> > Signed-off-by: David S. Miller <davem@davemloft.net>
+> > Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+> > ---
+> >  net/bluetooth/rfcomm/core.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
 > >
-> > I prefer not to do this. I don't see any benefit or readability coming
-> > out of it. Leave it as it is. Add the numeric ids and then a line on top
-> > of it describing the devices.
-> 
-> Here is a new version of the patch that just adds the entries to
-> hidp_blacklist using your suggested style.  I'm leaving the USB HID's
-> table alone based on Phil Endecott's remarks regarding HID proxy mode,
-> so now this patch only touches Bluetooth code.
-> 
-> 
-> bluetooth: fix Fn on Apple Wireless Keyboard
-> 
-> Enable the HID quirks for Apple Wireless Keyboards, based on the quirk
-> table entries in the USB HID.  With this patch applied the Fn key on my
-> keyboard now functions as expected.
-> 
-> diff --git a/net/bluetooth/hidp/core.c b/net/bluetooth/hidp/core.c
-> index 519cdb9..62f174a 100644
-> --- a/net/bluetooth/hidp/core.c
-> +++ b/net/bluetooth/hidp/core.c
-> @@ -676,6 +676,12 @@ static const struct {
->  	__u16 idProduct;
->  	unsigned quirks;
->  } hidp_blacklist[] = {
-> +	/* Apple Wireless Keyboard, ANSI layout */
-> +	{ 0x05ac, 0x022c, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
-> +	/* Apple Wireless Keyboard, ISO layout */
-> +	{ 0x05ac, 0x022d, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_APPLE_ISO_KEYBOARD },
-> +	/* Apple Wireless Keyboard, JIS layout */
-> +	{ 0x05ac, 0x022e, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
->  	/* Apple wireless Mighty Mouse */
->  	{ 0x05ac, 0x030c, HID_QUIRK_MIGHTYMOUSE | HID_QUIRK_INVERT_HWHEEL },
+> > --- a/net/bluetooth/rfcomm/core.c
+> > +++ b/net/bluetooth/rfcomm/core.c
+> > @@ -423,8 +423,8 @@ static int __rfcomm_dlc_close(struct rfc
+> >
+> >                rfcomm_dlc_lock(d);
+> >                d->state = BT_CLOSED;
+> > -               rfcomm_dlc_unlock(d);
+> >                d->state_change(d, err);
+> > +               rfcomm_dlc_unlock(d);
+> >
+> >                skb_queue_purge(&d->tx_queue);
+> >                rfcomm_dlc_unlink(d);
 
-Acked-by: Marcel Holtmann <marcel@holtmann.org>
-
-However depending on if Jiri's changes for the HID bus are ready, this
-patch might become obsolete.
+did we screw up the tabs during the review process here.
 
 Regards
 
