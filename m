@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759102AbYFNKjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758330AbYFNKke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759102AbYFNKjd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 06:39:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757593AbYFNKiu
+	id S1758330AbYFNKke (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 06:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbYFNKkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 06:38:50 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55917
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754728AbYFNKii (ORCPT
+	Sat, 14 Jun 2008 06:40:16 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:55071 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753255AbYFNKkO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 06:38:38 -0400
-Date: Sat, 14 Jun 2008 03:38:38 -0700 (PDT)
-Message-Id: <20080614.033838.207353824.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@sisk.pl
-Subject: Re: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080614081656.GA27820@elte.hu>
-References: <20080614062758.GA23803@elte.hu>
-	<20080614.001428.26649070.davem@davemloft.net>
-	<20080614081656.GA27820@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sat, 14 Jun 2008 06:40:14 -0400
+Message-ID: <485382EA.9080809@keyaccess.nl>
+Date: Sat, 14 Jun 2008 10:35:54 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
+       Adam M Belay <abelay@mit.edu>, Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>
+Subject: Re: [patch 16/18] PNP: remove extra 0x100 bit from option priority
+References: <20080604220933.168145536@ldl.fc.hp.com> <20080604221129.955112741@ldl.fc.hp.com>
+In-Reply-To: <20080604221129.955112741@ldl.fc.hp.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: 1.0 (+)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Sat, 14 Jun 2008 10:16:56 +0200
+On 05-06-08 00:09, Bjorn Helgaas wrote:
 
-> * David Miller <davem@davemloft.net> wrote:
+> When building resource options, ISAPNP and PNPBIOS set the priority
+> to something like "0x100 | PNP_RES_PRIORITY_ACCEPTABLE", but we 
+> immediately mask off the 0x100 again in pnp_build_option(), so that
+> bit looks superfluous.
 > 
-> > This warning was added by Arjan in 2.6.25 FYI in order to diagnose the 
-> > not-normal cases better.
+> Thanks to Rene Herman <rene.herman@gmail.com> for pointing this out.
 > 
-> ok, should we then remove that warning, if it's spurious? kerneloops.org 
-> has picked up a few other instances of this warning as well:
-> 
->   http://www.kerneloops.org/searchfile.php?search=net%2Fsched%2Fsch_generic.c&btnG=Filename+Search
+> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Sorry, I misphrased that.
+Acked-by: Rene Herman <rene.herman@gmail.com>
 
-It always has warned.
+Rene
 
-The change is that it also now gives a stack backtrace.
