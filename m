@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763911AbYFNAXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763971AbYFNAX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763911AbYFNAXm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 20:23:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762123AbYFNAOr
+	id S1763971AbYFNAX7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 20:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762165AbYFNAOx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 20:14:47 -0400
-Received: from cantor.suse.de ([195.135.220.2]:34498 "EHLO mx1.suse.de"
+	Fri, 13 Jun 2008 20:14:53 -0400
+Received: from cantor.suse.de ([195.135.220.2]:34527 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762114AbYFNAOq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 20:14:46 -0400
-Date: Fri, 13 Jun 2008 17:11:52 -0700
+	id S1762158AbYFNAOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 20:14:51 -0400
+Date: Fri, 13 Jun 2008 17:11:54 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,14 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Pierre Ossman <drzeus@drzeus.cx>
-Subject: [patch 34/47] mmc: wbsd: initialize tasklets before requesting
-	interrupt
-Message-ID: <20080614001152.GH24698@suse.de>
+       alan@lxorguk.ukuu.org.uk, Mike Miller <mike.miller@hp.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: [patch 35/47] cciss: add new hardware support
+Message-ID: <20080614001154.GI24698@suse.de>
 References: <20080613234753.235721454@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mmc-wbsd-initialize-tasklets-before-requesting-interrupt.patch"
+Content-Disposition: inline; filename="cciss-add-new-hardware-support.patch"
 In-Reply-To: <20080614000840.GA24659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,64 +37,101 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Chuck Ebbert <cebbert@redhat.com>
+From: Mike Miller <mike.miller@hp.com>
 
-commit cef33400d0349fb24b6f8b7dea79b66e3144fd8b upstream
+commit 24aac480e76c6f5d1391ac05c5e9c0eb9b0cd302 upstream
+Date: Thu, 12 Jun 2008 15:21:34 -0700
+Subject: [patch 35/47] cciss: add new hardware support
 
-With CONFIG_DEBUG_SHIRQ set we will get an interrupt as soon as we
-allocate one.  Tasklets may be scheduled in the interrupt handler but they
-will be initialized after the handler returns, causing a BUG() in
-kernel/softirq.c when they run.
+Add support for the next generation of HP Smart Array SAS/SATA
+controllers.  Shipping date is late Fall 2008.
 
-Should fix this Fedora bug report:
-https://bugzilla.redhat.com/show_bug.cgi?id=449817
+Bump the driver version to 3.6.20 to reflect the new hardware support from
+patch 1 of this set.
 
-Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
-Acked-by: Pierre Ossman <drzeus@drzeus.cx>
+Signed-off-by: Mike Miller <mike.miller@hp.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/mmc/host/wbsd.c |   21 ++++++++++-----------
- 1 file changed, 10 insertions(+), 11 deletions(-)
+ Documentation/cciss.txt |    5 +++++
+ drivers/block/cciss.c   |   21 ++++++++++++++++-----
+ include/linux/pci_ids.h |    1 +
+ 3 files changed, 22 insertions(+), 5 deletions(-)
 
---- a/drivers/mmc/host/wbsd.c
-+++ b/drivers/mmc/host/wbsd.c
-@@ -1457,17 +1457,7 @@ static int __devinit wbsd_request_irq(st
- 	int ret;
+--- a/Documentation/cciss.txt
++++ b/Documentation/cciss.txt
+@@ -21,6 +21,11 @@ This driver is known to work with the fo
+ 	* SA E200
+ 	* SA E200i
+ 	* SA E500
++	* SA P212
++	* SA P410
++	* SA P410i
++	* SA P411
++	* SA P812
  
- 	/*
--	 * Allocate interrupt.
--	 */
--
--	ret = request_irq(irq, wbsd_irq, IRQF_SHARED, DRIVER_NAME, host);
--	if (ret)
--		return ret;
--
--	host->irq = irq;
--
--	/*
--	 * Set up tasklets.
-+	 * Set up tasklets. Must be done before requesting interrupt.
- 	 */
- 	tasklet_init(&host->card_tasklet, wbsd_tasklet_card,
- 			(unsigned long)host);
-@@ -1480,6 +1470,15 @@ static int __devinit wbsd_request_irq(st
- 	tasklet_init(&host->finish_tasklet, wbsd_tasklet_finish,
- 			(unsigned long)host);
+ Detecting drive failures:
+ -------------------------
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -53,15 +53,16 @@
+ #include <linux/scatterlist.h>
  
-+	/*
-+	 * Allocate interrupt.
-+	 */
-+	ret = request_irq(irq, wbsd_irq, IRQF_SHARED, DRIVER_NAME, host);
-+	if (ret)
-+		return ret;
-+
-+	host->irq = irq;
-+
- 	return 0;
- }
+ #define CCISS_DRIVER_VERSION(maj,min,submin) ((maj<<16)|(min<<8)|(submin))
+-#define DRIVER_NAME "HP CISS Driver (v 3.6.14)"
+-#define DRIVER_VERSION CCISS_DRIVER_VERSION(3,6,14)
++#define DRIVER_NAME "HP CISS Driver (v 3.6.20)"
++#define DRIVER_VERSION CCISS_DRIVER_VERSION(3, 6, 20)
  
+ /* Embedded module documentation macros - see modules.h */
+ MODULE_AUTHOR("Hewlett-Packard Company");
+-MODULE_DESCRIPTION("Driver for HP Controller SA5xxx SA6xxx version 3.6.14");
++MODULE_DESCRIPTION("Driver for HP Smart Array Controllers");
+ MODULE_SUPPORTED_DEVICE("HP SA5i SA5i+ SA532 SA5300 SA5312 SA641 SA642 SA6400"
+-			" SA6i P600 P800 P400 P400i E200 E200i E500");
+-MODULE_VERSION("3.6.14");
++			" SA6i P600 P800 P400 P400i E200 E200i E500 P700m"
++			" Smart Array G2 Series SAS/SATA Controllers");
++MODULE_VERSION("3.6.20");
+ MODULE_LICENSE("GPL");
+ 
+ #include "cciss_cmd.h"
+@@ -90,6 +91,11 @@ static const struct pci_device_id cciss_
+ 	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSD,     0x103C, 0x3215},
+ 	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSC,     0x103C, 0x3237},
+ 	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSC,     0x103C, 0x323D},
++	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSE,     0x103C, 0x3241},
++	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSE,     0x103C, 0x3243},
++	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSE,     0x103C, 0x3245},
++	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSE,     0x103C, 0x3247},
++	{PCI_VENDOR_ID_HP,     PCI_DEVICE_ID_HP_CISSE,     0x103C, 0x3249},
+ 	{PCI_VENDOR_ID_HP,     PCI_ANY_ID,	PCI_ANY_ID, PCI_ANY_ID,
+ 		PCI_CLASS_STORAGE_RAID << 8, 0xffff << 8, 0},
+ 	{0,}
+@@ -123,6 +129,11 @@ static struct board_type products[] = {
+ 	{0x3215103C, "Smart Array E200i", &SA5_access, 120},
+ 	{0x3237103C, "Smart Array E500", &SA5_access, 512},
+ 	{0x323D103C, "Smart Array P700m", &SA5_access, 512},
++	{0x3241103C, "Smart Array P212", &SA5_access, 384},
++	{0x3243103C, "Smart Array P410", &SA5_access, 384},
++	{0x3245103C, "Smart Array P410i", &SA5_access, 384},
++	{0x3247103C, "Smart Array P411", &SA5_access, 384},
++	{0x3249103C, "Smart Array P812", &SA5_access, 384},
+ 	{0xFFFF103C, "Unknown Smart Array", &SA5_access, 120},
+ };
+ 
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -716,6 +716,7 @@
+ #define PCI_DEVICE_ID_HP_CISSA		0x3220
+ #define PCI_DEVICE_ID_HP_CISSC		0x3230
+ #define PCI_DEVICE_ID_HP_CISSD		0x3238
++#define PCI_DEVICE_ID_HP_CISSE		0x323a
+ #define PCI_DEVICE_ID_HP_ZX2_IOC	0x4031
+ 
+ #define PCI_VENDOR_ID_PCTECH		0x1042
 
 -- 
