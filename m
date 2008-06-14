@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759564AbYFNAKL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760018AbYFNAMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759564AbYFNAKL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 20:10:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757558AbYFNAJ6
+	id S1760018AbYFNAMd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 20:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757621AbYFNAMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 20:09:58 -0400
-Received: from ns1.suse.de ([195.135.220.2]:33930 "EHLO mx1.suse.de"
+	Fri, 13 Jun 2008 20:12:22 -0400
+Received: from ns2.suse.de ([195.135.220.15]:51582 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757554AbYFNAJ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 20:09:57 -0400
-Date: Fri, 13 Jun 2008 17:08:40 -0700
+	id S1757558AbYFNAMV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 20:12:21 -0400
+Date: Fri, 13 Jun 2008 17:10:16 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,86 +20,141 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/47] 2.6.25-stable review
-Message-ID: <20080614000840.GA24659@suse.de>
+       alan@lxorguk.ukuu.org.uk, David Sterba <dsterba@suse.cz>,
+       Jiri Kosina <jkosina@suse.cz>, Chris Wright <chrisw@sous-sol.org>
+Subject: [patch 02/47] ipwireless: Fix blocked sending
+Message-ID: <20080614001016.GB24698@suse.de>
+References: <20080613234753.235721454@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Disposition: inline; filename="ipwireless-fix-blocked-sending.patch"
+In-Reply-To: <20080614000840.GA24659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.25.7 release.
-There are 47 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+-stable review patch.  If anyone has any objections, please let us know.
 
-These patches are sent out with a number of different people on the Cc:
-line.  If you wish to be a reviewer, please email stable@kernel.org to
-add your name to the list.  If you want to be off the reviewer list,
-also email us.
+------------------
+From: David Sterba <dsterba@suse.cz>
 
-Responses should be made by Monday, Jun 16, 20:00:00 UTC.  Anything
-received after that time might be too late.
+upstream commit: eb4e545d4ac82d9018487edb4419b33b9930c857
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.25.7-rc1.gz
-and the diffstat can be found below.
+Packet sending is driven by two flags, tx_ready and tx_queued.
+It was possible, that there were queued data for sending and
+hardware was flagged as blocked but in fact it was not.
 
+The tx_queued was indicator but should be really a counter else
+first fragmented packet resets tx_queued flag, but there may be
+pending packets which do not get sent.
 
-thanks,
+New semantics:
+tx_ready - set, if hw is ready to send packet, no packet is being
+           transferred right now
+           set the flag right at the place where data are copied
+           into hw memory and not earlier without checking if it
+           was succesful
+tx_queued - count of enqueued packets, including fragments
 
-the -stable release team
+Tested-by: Michal Rokos <michal.rokos@gmail.com>
+Signed-off-by: David Sterba <dsterba@suse.cz>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+---
+ drivers/char/pcmcia/ipwireless/hardware.c |   20 ++++++++++++--------
+ 1 file changed, 12 insertions(+), 8 deletions(-)
 
-----------
+--- a/drivers/char/pcmcia/ipwireless/hardware.c
++++ b/drivers/char/pcmcia/ipwireless/hardware.c
+@@ -251,10 +251,11 @@ struct ipw_hardware {
+ 	int init_loops;
+ 	struct timer_list setup_timer;
+ 
++	/* Flag if hw is ready to send next packet */
+ 	int tx_ready;
+-	struct list_head tx_queue[NL_NUM_OF_PRIORITIES];
+-	/* True if any packets are queued for transmission */
++	/* Count of pending packets to be sent */
+ 	int tx_queued;
++	struct list_head tx_queue[NL_NUM_OF_PRIORITIES];
+ 
+ 	int rx_bytes_queued;
+ 	struct list_head rx_queue;
+@@ -430,6 +431,8 @@ static int do_send_fragment(struct ipw_h
+ 
+ 	spin_lock_irqsave(&hw->spinlock, flags);
+ 
++	hw->tx_ready = 0;
++
+ 	if (hw->hw_version == HW_VERSION_1) {
+ 		outw((unsigned short) length, hw->base_port + IODWR);
+ 
+@@ -518,6 +521,7 @@ static int do_send_packet(struct ipw_har
+ 
+ 		spin_lock_irqsave(&hw->spinlock, flags);
+ 		list_add(&packet->queue, &hw->tx_queue[0]);
++		hw->tx_queued++;
+ 		spin_unlock_irqrestore(&hw->spinlock, flags);
+ 	} else {
+ 		if (packet->packet_callback)
+@@ -975,12 +979,10 @@ static int send_pending_packet(struct ip
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&hw->spinlock, flags);
+-	if (hw->tx_queued && hw->tx_ready != 0) {
++	if (hw->tx_queued && hw->tx_ready) {
+ 		int priority;
+ 		struct ipw_tx_packet *packet = NULL;
+ 
+-		hw->tx_ready--;
+-
+ 		/* Pick a packet */
+ 		for (priority = 0; priority < priority_limit; priority++) {
+ 			if (!list_empty(&hw->tx_queue[priority])) {
+@@ -989,6 +991,7 @@ static int send_pending_packet(struct ip
+ 						struct ipw_tx_packet,
+ 						queue);
+ 
++				hw->tx_queued--;
+ 				list_del(&packet->queue);
+ 
+ 				break;
+@@ -999,6 +1002,7 @@ static int send_pending_packet(struct ip
+ 			spin_unlock_irqrestore(&hw->spinlock, flags);
+ 			return 0;
+ 		}
++
+ 		spin_unlock_irqrestore(&hw->spinlock, flags);
+ 
+ 		/* Send */
+@@ -1089,7 +1093,7 @@ static irqreturn_t ipwireless_handle_v1_
+ 		if (irqn & IR_TXINTR) {
+ 			ack |= IR_TXINTR;
+ 			spin_lock_irqsave(&hw->spinlock, flags);
+-			hw->tx_ready++;
++			hw->tx_ready = 1;
+ 			spin_unlock_irqrestore(&hw->spinlock, flags);
+ 		}
+ 		/* Received data */
+@@ -1196,7 +1200,7 @@ static irqreturn_t ipwireless_handle_v2_
+ 	if (memrxdone & MEMRX_RX_DONE) {
+ 		writew(0, &hw->memory_info_regs->memreg_rx_done);
+ 		spin_lock_irqsave(&hw->spinlock, flags);
+-		hw->tx_ready++;
++		hw->tx_ready = 1;
+ 		spin_unlock_irqrestore(&hw->spinlock, flags);
+ 		tx = 1;
+ 	}
+@@ -1260,7 +1264,7 @@ static void send_packet(struct ipw_hardw
+ 
+ 	spin_lock_irqsave(&hw->spinlock, flags);
+ 	list_add_tail(&packet->queue, &hw->tx_queue[priority]);
+-	hw->tx_queued = 1;
++	hw->tx_queued++;
+ 	spin_unlock_irqrestore(&hw->spinlock, flags);
+ 
+ 	flush_packets_to_hw(hw);
 
-
- Documentation/cciss.txt                   |    5 +
- Makefile                                  |    2 
- arch/x86/Kconfig                          |   23 +----
- drivers/block/brd.c                       |    1 
- drivers/block/cciss.c                     |   21 +++--
- drivers/char/pcmcia/ipwireless/hardware.c |   20 ++--
- drivers/cpufreq/cpufreq.c                 |    2 
- drivers/infiniband/core/umem.c            |    2 
- drivers/media/video/bt8xx/bttv-driver.c   |    2 
- drivers/media/video/videobuf-core.c       |    3 
- drivers/mmc/host/wbsd.c                   |   21 ++---
- drivers/net/cassini.c                     |   11 +-
- drivers/net/forcedeth.c                   |   20 ++++
- drivers/net/pppol2tp.c                    |  124 +++++++++++++++++++++++-------
- drivers/net/wireless/b43/main.c           |   12 ++
- drivers/serial/serial_core.c              |    5 -
- drivers/serial/sunhv.c                    |    1 
- drivers/ssb/driver_pcicore.c              |    4 
- drivers/video/hgafb.c                     |   26 +++---
- drivers/video/modedb.c                    |    1 
- fs/cifs/cifsfs.c                          |   21 ++---
- fs/ecryptfs/crypto.c                      |    2 
- fs/ecryptfs/file.c                        |    2 
- fs/ecryptfs/inode.c                       |   15 +--
- fs/pipe.c                                 |    3 
- include/asm-m68k/bitops.h                 |   46 ++++++++++-
- include/linux/pci_ids.h                   |    1 
- include/media/videobuf-core.h             |    3 
- include/net/netlink.h                     |   11 +-
- init/Kconfig                              |    1 
- net/8021q/vlan.c                          |    4 
- net/ax25/ax25_subr.c                      |   11 --
- net/bluetooth/rfcomm/core.c               |    2 
- net/can/raw.c                             |   21 ++---
- net/core/dev.c                            |    2 
- net/ipv4/route.c                          |    2 
- net/ipv4/tcp_cong.c                       |   12 +-
- net/ipv4/tcp_input.c                      |   65 ++++++++++-----
- net/ipv4/tcp_output.c                     |   10 +-
- net/ipv6/route.c                          |    2 
- net/key/af_key.c                          |    2 
- net/mac80211/ieee80211_sta.c              |    5 +
- net/sched/cls_api.c                       |    2 
- sound/pci/emu10k1/emu10k1_main.c          |   15 +--
- sound/pci/hda/patch_realtek.c             |    1 
- 45 files changed, 375 insertions(+), 192 deletions(-)
+-- 
