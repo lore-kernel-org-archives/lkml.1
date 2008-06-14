@@ -1,76 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764017AbYFNA2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762829AbYFNA3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764017AbYFNA2h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 20:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762319AbYFNAPo
+	id S1762829AbYFNA3m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 20:29:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758704AbYFNA32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 20:15:44 -0400
-Received: from cantor.suse.de ([195.135.220.2]:34701 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762312AbYFNAPm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 20:15:42 -0400
-Date: Fri, 13 Jun 2008 17:12:23 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dan Williams <dcbw@redhat.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 47/47] mac80211: send association event on IBSS create
-Message-ID: <20080614001223.GU24698@suse.de>
-References: <20080613234753.235721454@mini.kroah.org>
+	Fri, 13 Jun 2008 20:29:28 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:43045 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757918AbYFNA31 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 20:29:27 -0400
+Date: Fri, 13 Jun 2008 17:27:22 -0700
+From: Greg KH <greg@kroah.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org,
+       linux-next@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+Subject: Re: [ANNOUNCE] linux-staging tree created
+Message-ID: <20080614002722.GC25585@kroah.com>
+References: <20080610190540.GA25066@kroah.com> <43e72e890806130714k535b041evaf750209ea492c47@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mac80211-send-association-event-on-ibss-create.patch"
-In-Reply-To: <20080614000840.GA24659@suse.de>
+Content-Disposition: inline
+In-Reply-To: <43e72e890806130714k535b041evaf750209ea492c47@mail.gmail.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
+On Fri, Jun 13, 2008 at 07:14:32AM -0700, Luis R. Rodriguez wrote:
+> This is great. To let this be useful for wireless we'll need
+> wireless-testing.git merged as we rely on it for the latest and
+> greatest. Is this a possibility?
 
-------------------
-From: Dan Williams <dcbw@redhat.com>
+Hm, why?  Is it really needed for you to have this pulled in?  What is
+keeping these drivers from being added to the -next tree today?
 
-patch 507b06d0622480f8026d49a94f86068bb0fd6ed6 upstream
+> We have a few drivers which are not yet ready for
+> wireless-testing.git. Airgo is one.
 
-Otherwise userspace has no idea the IBSS creation succeeded.
+If you have individual drivers, I'd be glad to take them into the tree
+if you think it will help out.  Just send me a patch that can build
+properly.
 
-Signed-off-by: Dan Williams <dcbw@redhat.com>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+thanks,
 
----
- net/mac80211/ieee80211_sta.c |    5 +++++
- 1 file changed, 5 insertions(+)
-
---- a/net/mac80211/ieee80211_sta.c
-+++ b/net/mac80211/ieee80211_sta.c
-@@ -2723,6 +2723,7 @@ static int ieee80211_sta_join_ibss(struc
- 	struct rate_selection ratesel;
- 	u8 *pos;
- 	struct ieee80211_sub_if_data *sdata;
-+	union iwreq_data wrqu;
- 
- 	/* Remove possible STA entries from other IBSS networks. */
- 	sta_info_flush(local, NULL);
-@@ -2863,6 +2864,10 @@ static int ieee80211_sta_join_ibss(struc
- 
- 	ieee80211_rx_bss_put(dev, bss);
- 
-+	memset(&wrqu, 0, sizeof(wrqu));
-+	memcpy(wrqu.ap_addr.sa_data, bss->bssid, ETH_ALEN);
-+	wireless_send_event(dev, SIOCGIWAP, &wrqu, NULL);
-+
- 	return res;
- }
- 
-
--- 
+greg k-h
