@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754584AbYFNSMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbYFNSm0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754584AbYFNSMw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 14:12:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbYFNSMl
+	id S1754560AbYFNSm0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 14:42:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753626AbYFNSmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 14:12:41 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:57786 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753533AbYFNSMl (ORCPT
+	Sat, 14 Jun 2008 14:42:16 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:41863 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753543AbYFNSmP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 14:12:41 -0400
-Date: Sat, 14 Jun 2008 11:12:12 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Adrian Bunk <bunk@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Bug #10815] 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
-Message-ID: <20080614181212.GB26421@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <GIilET9wkhI.A.JzB.81vSIB@albercik> <dCRO4tbfLzK.A.BVD.E3vSIB@albercik> <20080613135255.GB21341@cs181133002.pp.htv.fi> <20080614144200.GA26421@linux.vnet.ibm.com> <20080614145839.GA10523@tv-sign.ru>
+	Sat, 14 Jun 2008 14:42:15 -0400
+Message-ID: <485410E8.5050904@zytor.com>
+Date: Sat, 14 Jun 2008 11:41:44 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080614145839.GA10523@tv-sign.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: cleanup reloated_initrd
+References: <200806132005.45836.yhlu.kernel@gmail.com> <200806132007.03576.yhlu.kernel@gmail.com>
+In-Reply-To: <200806132007.03576.yhlu.kernel@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 14, 2008 at 06:58:39PM +0400, Oleg Nesterov wrote:
-> On 06/14, Paul E. McKenney wrote:
-> >
-> > On Fri, Jun 13, 2008 at 04:52:55PM +0300, Adrian Bunk wrote:
-> > > On Sat, Jun 07, 2008 at 10:42:57PM +0200, Rafael J. Wysocki wrote:
-> > > > This message has been generated automatically as a part of a report
-> > > > of recent regressions.
-> > > > 
-> > > > The following bug entry is on the current list of known regressions
-> > > > from 2.6.25.  Please verify if it still should be listed.
-> > > > 
-> > > > 
-> > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10815
-> > > > Subject		: 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
-> > > > Submitter	: Alexey Dobriyan <adobriyan@gmail.com>
-> > > > Date		: 2008-05-27 09:23 (12 days old)
-> > > > References	: http://lkml.org/lkml/2008/5/27/9
-> > > > Handled-By	: Oleg Nesterov <oleg@tv-sign.ru>
-> > > > 		  Linus Torvalds <torvalds@linux-foundation.org>
-> > > > 		  Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > > Patch		: http://lkml.org/lkml/2008/5/28/16
-> > > 
-> > > What happened with this issue?
-> > 
-> > The patch listed above works for me, passes rcutorture, &c.  However,
-> > I never have been able to reproduce the original problem, so cannot say
-> > whether it qualifies as a fix.
+Yinghai Lu wrote:
+> 1. move that before zone_sizes_init ...
+> 2. add free_early for one old one, otherwise it will be be reserved again when
+>    init highmem.
 > 
-> I doubt very much RCU was the reason of this problem.
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> 
+> Index: linux-2.6/arch/x86/kernel/setup_32.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/setup_32.c
+> +++ linux-2.6/arch/x86/kernel/setup_32.c
+> @@ -585,6 +585,9 @@ static void __init relocate_initrd(void)
+>  	printk(KERN_INFO "Copied RAMDISK from %016llx - %016llx to %08llx - %08llx\n",
+>  		ramdisk_image, ramdisk_image + ramdisk_size - 1,
+>  		ramdisk_here, ramdisk_here + ramdisk_size - 1);
+> +
+> +	/* need to free that, otherwise init highmem will reserve it again */
+> +	free_early(ramdisk_image, ramdisk_image+ramdisk_size);
+>  }
+>  
 
-Although I very much appreciate your confidence in my code, it is new
-code, so therefore under suspicion.
+I'm somewhat confused by this... you realize that the old location and 
+the new location of the initrd will overlap, right?
 
-> Alexey, how did you trigger this problem?
-
-One of them involved running LTP while doing 170 kernel builds in
-parallel.
-
-						Thanx, Paul
+	-hpa
