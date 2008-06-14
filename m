@@ -1,87 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbYFNLdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755806AbYFNL4y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757355AbYFNLdk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 07:33:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbYFNLda
+	id S1755806AbYFNL4y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 07:56:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbYFNL4n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 07:33:30 -0400
-Received: from mx0.towertech.it ([213.215.222.73]:59131 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750771AbYFNLda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 07:33:30 -0400
-Date: Sat, 14 Jun 2008 13:33:27 +0200
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: rtc-linux@googlegroups.com
-Cc: bunk@kernel.org, david-b@pacbell.net, Ingo Molnar <mingo@elte.hu>,
-       Lior Dotan <liodot@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [rtc-linux] Re: [Bug 10866] /dev/rtc was missing until I
- disabled CONFIG_RTC_CLASS
-Message-ID: <20080614133327.3d66d529@i1501.lan.towertech.it>
-In-Reply-To: <20080614111806.GF1716@cs181133002.pp.htv.fi>
-References: <GIilET9wkhI.A.JzB.81vSIB@albercik>
-	<200806131343.41213.david-b@pacbell.net>
-	<20080613210257.GA529@elte.hu>
-	<200806131538.54254.david-b@pacbell.net>
-	<20080614113535.4d611e07@i1501.lan.towertech.it>
-	<20080614111806.GF1716@cs181133002.pp.htv.fi>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 14 Jun 2008 07:56:43 -0400
+Received: from mu-out-0910.google.com ([209.85.134.186]:35791 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750982AbYFNL4m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jun 2008 07:56:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=YjgdKhCKOXQ7UV+pQqsMLMIBkuxVDtx/XEMORsRYzo7nxYNCK7NItglSbpfArcNXjh
+         fA/Ezhr+fk1fhsFmYqPiCjHpx9aLpjK1pfD1t6nYnsXSAkBqQKcvJdcYwhm9yyVvTJig
+         YumWJDI1ZebORXcG/Biccml1bPtVCRz22uXMA=
+Message-ID: <a5bf86a80806140456x271dfc31m2ba0583275d8adb0@mail.gmail.com>
+Date: Sat, 14 Jun 2008 13:56:40 +0200
+From: "Lior Dotan" <liodot@gmail.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: [Bug 10866] /dev/rtc was missing until I disabled CONFIG_RTC_CLASS
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "David Brownell" <dbrownell@users.sourceforge.net>,
+       a.zummo@towertech.it,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       bugme-daemon@bugzilla.kernel.org, rtc-linux@googlegroups.com
+In-Reply-To: <20080613212023.GB1716@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <GIilET9wkhI.A.JzB.81vSIB@albercik>
+	 <dCRO4tbfLzK.A.rFC.L2vSIB@albercik>
+	 <20080613193302.GA1716@cs181133002.pp.htv.fi>
+	 <a5bf86a80806131255w704745d7mc109c13669ac9c68@mail.gmail.com>
+	 <20080613212023.GB1716@cs181133002.pp.htv.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Jun 2008 14:18:06 +0300
-Adrian Bunk <bunk@kernel.org> wrote:
+On Fri, Jun 13, 2008 at 11:20 PM, Adrian Bunk <bunk@kernel.org> wrote:
+> On Fri, Jun 13, 2008 at 10:55:38PM +0300, Lior Dotan wrote:
+>> On Fri, Jun 13, 2008 at 10:33 PM, Adrian Bunk <bunk@kernel.org> wrote:
+>> > On Sat, Jun 07, 2008 at 10:42:57PM +0200, Rafael J. Wysocki wrote:
+>> >
+>> > /dev/rtc (major 10, minor 135) does not seem to exist, and I'd call this
+>> > a functional regression of the new drivers.
+>> >
+>> > Could this be fixed?
+>>
+>> I don't know if it helps you to decide but the way I got to this
+>> configuration is by copying my working 2.6.25 .config file and running
+>> make oldconfig. I think this scenario is common when upgrading to a
+>> newer version so you should make sure it doesn't generate an invalid
+>> configuration.
+>
+> What is the output of "grep RTC_ .config" on your old .config?
 
-> 
-> If Lior's problem was due to something like CONFIG_RTC_CLASS=y, 
-> CONFIG_RTC_DRV_CMOS=n that's a kernel configuration that would
-> anyway break when the old driver gets removed, and it just broke
-> earlier.
+I don't have access to that machine right now so I'll post it tomorrow.
 
- I haven't seen the .config, but CONFIG_RTC_CLASS=y
- and CONFIG_RTC_DRV_CMOS=n is perfectly legal.
+> cu
+> Adrian
+>
 
- It just don't have to be put in the default x86 config maybe,
- but it's legal..
- 
-> Everyone seems to focus on this kconfig related case, what about my 
-> point of no /dev/rtc with a static /dev ? When talking about existing 
-> setups and embedded systems that's a real issue for some systems.
-
- the device node creation is yet another option of the
- rtc class. it should be on by default in any defconfig, I'd guess.
-
- But then you'll get /dev/rtc0 without any specific device node.
-
- As I said in the past, I'd accept a patch to handle this special
- case of having /dev/rtc with a specific major and minor, but I'm against
- it.
-
- It would be better to upgrade your userspace when such big changes
- happens in the kernel. In fact, it the first time that the rtc
- has been touched in the last.. 10 year? I think it's not unreasonable to
- ask to upgrade userspace.
-
- wrto embedded systems, having worked with them for years, you are expected
- to check every detail of every new kernel you want to use before releasing
- it or, say, uploading it to your lander on the moon :)
- 
-
-
-
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+Cheers,
+Lior
