@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763765AbYFNAXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763780AbYFNAX1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763765AbYFNAXA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 20:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760946AbYFNAOn
+	id S1763780AbYFNAX1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 20:23:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757928AbYFNAOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 20:14:43 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:52052 "EHLO mx2.suse.de"
+	Fri, 13 Jun 2008 20:14:44 -0400
+Received: from ns2.suse.de ([195.135.220.15]:52077 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762034AbYFNAOi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 20:14:38 -0400
-Date: Fri, 13 Jun 2008 17:11:47 -0700
+	id S1762076AbYFNAOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 20:14:42 -0400
+Date: Fri, 13 Jun 2008 17:11:49 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,13 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Ilpo =?utf-8?B?SsOD4oKscnZpbmVu?= <ilpo.jarvinen@helsinki.fi>,
        "David S. Miller" <davem@davemloft.net>,
        Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 32/47] tcp FRTO: SACK variant is errorneously used with
-	NewReno
-Message-ID: <20080614001147.GF24698@suse.de>
+Subject: [patch 33/47] tcp FRTO: work-around inorder receivers
+Message-ID: <20080614001149.GG24698@suse.de>
 References: <20080613234753.235721454@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline; filename="tcp-frto-sack-variant-is-errorneously-used-with-newreno.patch"
+Content-Disposition: inline; filename="tcp-frto-work-around-inorder-receivers.patch"
 Content-Transfer-Encoding: 8bit
 In-Reply-To: <20080614000840.GA24659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
@@ -43,102 +42,65 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
 
-[ upstream commit: 62ab22278308a40bcb7f4079e9719ab8b7fe11b5 ]
+[ upstream commit: 79d44516b4b178ffb6e2159c75584cfcfc097914 ]
 
-Note: there's actually another bug in FRTO's SACK variant, which
-is the causing failure in NewReno case because of the error
-that's fixed here. I'll fix the SACK case separately (it's
-a separate bug really, though related, but in order to fix that
-I need to audit tp->snd_nxt usage a bit).
+If receiver consumes segments successfully only in-order, FRTO
+fallback to conventional recovery produces RTO loop because
+FRTO's forward transmissions will always get dropped and need to
+be resent, yet by default they're not marked as lost (which are
+the only segments we will retransmit in CA_Loss).
 
-There were two places where SACK variant of FRTO is getting
-incorrectly used even if SACK wasn't negotiated by the TCP flow.
-This leads to incorrect setting of frto_highmark with NewReno
-if a previous recovery was interrupted by another RTO.
+Price to pay about this is occassionally unnecessarily
+retransmitting the forward transmission(s). SACK blocks help
+a bit to avoid this, so it's mainly a concern for NewReno case
+though SACK is not fully immune either.
 
-An eventual fallback to conventional recovery then incorrectly
-considers one or couple of segments as forward transmissions
-though they weren't, which then are not LOST marked during
-fallback making them "non-retransmittable" until the next RTO.
-In a bad case, those segments are really lost and are the only
-one left in the window. Thus TCP needs another RTO to continue.
-The next FRTO, however, could again repeat the same events
-making the progress of the TCP flow extremely slow.
-
-In order for these events to occur at all, FRTO must occur
-again in FRTOs step 3 while the key segments must be lost as
-well, which is not too likely in practice. It seems to most
-frequently with some small devices such as network printers
-that *seem* to accept TCP segments only in-order. In cases
-were key segments weren't lost, things get automatically
-resolved because those wrongly marked segments don't need to be
-retransmitted in order to continue.
-
-I found a reproducer after digging up relevant reports (few
-reports in total, none at netdev or lkml I know of), some
-cases seemed to indicate middlebox issues which seems now
-to be a false assumption some people had made. Bugzilla
-#10063 _might_ be related. Damon L. Chesser <damon@damtek.com>
-had a reproducable case and was kind enough to tcpdump it
-for me. With the tcpdump log it was quite trivial to figure
-out.
+This change has a side-effect of fixing SACKFRTO problem where
+it didn't have snd_nxt of the RTO time available anymore when
+fallback become necessary (this problem would have only occured
+when RTO would occur for two or more segments and ECE arrives
+in step 3; no need to figure out how to fix that unless the
+TODO item of selective behavior is considered in future).
 
 Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+Reported-by: Damon L. Chesser <damon@damtek.com>
+Tested-by: Damon L. Chesser <damon@damtek.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- net/ipv4/tcp_input.c |   13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ net/ipv4/tcp_input.c |   15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
 --- a/net/ipv4/tcp_input.c
 +++ b/net/ipv4/tcp_input.c
-@@ -113,8 +113,6 @@ int sysctl_tcp_abc __read_mostly;
- #define FLAG_FORWARD_PROGRESS	(FLAG_ACKED|FLAG_DATA_SACKED)
- #define FLAG_ANY_PROGRESS	(FLAG_FORWARD_PROGRESS|FLAG_SND_UNA_ADVANCED)
+@@ -1841,9 +1841,16 @@ static void tcp_enter_frto_loss(struct s
+ 			TCP_SKB_CB(skb)->sacked &= ~TCPCB_SACKED_RETRANS;
+ 		}
  
--#define IsSackFrto() (sysctl_tcp_frto == 0x2)
--
- #define TCP_REMNANT (TCP_FLAG_FIN|TCP_FLAG_URG|TCP_FLAG_SYN|TCP_FLAG_PSH)
- #define TCP_HP_BITS (~(TCP_RESERVED_BITS|TCP_FLAG_PSH))
+-		/* Don't lost mark skbs that were fwd transmitted after RTO */
+-		if (!(TCP_SKB_CB(skb)->sacked & TCPCB_SACKED_ACKED) &&
+-		    !after(TCP_SKB_CB(skb)->end_seq, tp->frto_highmark)) {
++		/* Marking forward transmissions that were made after RTO lost
++		 * can cause unnecessary retransmissions in some scenarios,
++		 * SACK blocks will mitigate that in some but not in all cases.
++		 * We used to not mark them but it was causing break-ups with
++		 * receivers that do only in-order receival.
++		 *
++		 * TODO: we could detect presence of such receiver and select
++		 * different behavior per flow.
++		 */
++		if (!(TCP_SKB_CB(skb)->sacked & TCPCB_SACKED_ACKED)) {
+ 			TCP_SKB_CB(skb)->sacked |= TCPCB_LOST;
+ 			tp->lost_out += tcp_skb_pcount(skb);
+ 		}
+@@ -1859,7 +1866,7 @@ static void tcp_enter_frto_loss(struct s
+ 	tp->reordering = min_t(unsigned int, tp->reordering,
+ 			       sysctl_tcp_reordering);
+ 	tcp_set_ca_state(sk, TCP_CA_Loss);
+-	tp->high_seq = tp->frto_highmark;
++	tp->high_seq = tp->snd_nxt;
+ 	TCP_ECN_queue_cwr(tp);
  
-@@ -1685,6 +1683,11 @@ static inline void tcp_reset_reno_sack(s
- 	tp->sacked_out = 0;
- }
- 
-+static int tcp_is_sackfrto(const struct tcp_sock *tp)
-+{
-+	return (sysctl_tcp_frto == 0x2) && !tcp_is_reno(tp);
-+}
-+
- /* F-RTO can only be used if TCP has never retransmitted anything other than
-  * head (SACK enhanced variant from Appendix B of RFC4138 is more robust here)
-  */
-@@ -1701,7 +1704,7 @@ int tcp_use_frto(struct sock *sk)
- 	if (icsk->icsk_mtup.probe_size)
- 		return 0;
- 
--	if (IsSackFrto())
-+	if (tcp_is_sackfrto(tp))
- 		return 1;
- 
- 	/* Avoid expensive walking of rexmit queue if possible */
-@@ -1791,7 +1794,7 @@ void tcp_enter_frto(struct sock *sk)
- 	/* Earlier loss recovery underway (see RFC4138; Appendix B).
- 	 * The last condition is necessary at least in tp->frto_counter case.
- 	 */
--	if (IsSackFrto() && (tp->frto_counter ||
-+	if (tcp_is_sackfrto(tp) && (tp->frto_counter ||
- 	    ((1 << icsk->icsk_ca_state) & (TCPF_CA_Recovery|TCPF_CA_Loss))) &&
- 	    after(tp->high_seq, tp->snd_una)) {
- 		tp->frto_highmark = tp->high_seq;
-@@ -3110,7 +3113,7 @@ static int tcp_process_frto(struct sock 
- 		return 1;
- 	}
- 
--	if (!IsSackFrto() || tcp_is_reno(tp)) {
-+	if (!tcp_is_sackfrto(tp)) {
- 		/* RFC4138 shortcoming in step 2; should also have case c):
- 		 * ACK isn't duplicate nor advances window, e.g., opposite dir
- 		 * data, winupdate
+ 	tcp_clear_retrans_hints_partial(tp);
 
 -- 
