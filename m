@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762818AbYFNAYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764103AbYFNAZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762818AbYFNAYo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 20:24:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761680AbYFNAPC
+	id S1764103AbYFNAZA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 20:25:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760258AbYFNAPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 20:15:02 -0400
-Received: from mail.suse.de ([195.135.220.2]:34544 "EHLO mx1.suse.de"
+	Fri, 13 Jun 2008 20:15:09 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52148 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762213AbYFNAPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 20:15:00 -0400
-Date: Fri, 13 Jun 2008 17:11:59 -0700
+	id S1762247AbYFNAPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 20:15:04 -0400
+Date: Fri, 13 Jun 2008 17:12:02 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -20,15 +20,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Ayaz Abdulla <aabdulla@nvidia.com>,
-       Manfred Spraul <manfred@colorfullife.com>,
-       Jeff Garzik <jeff@garzik.org>, Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 37/47] forcedeth: msi interrupts
-Message-ID: <20080614001159.GK24698@suse.de>
+       alan@lxorguk.ukuu.org.uk,
+       Ilpo =?utf-8?B?SsOD4oKscnZpbmVu?= <ilpo.jarvinen@helsinki.fi>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 38/47] tcp: Fix inconsistency source (CA_Open only when
+	!tcp_left_out(tp))
+Message-ID: <20080614001202.GL24698@suse.de>
 References: <20080613234753.235721454@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="forcedeth-msi-interrupts.patch"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline; filename="tcp-fix-inconsistency-source.patch"
+Content-Transfer-Encoding: 8bit
 In-Reply-To: <20080614000840.GA24659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,76 +40,98 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Ayaz Abdulla <aabdulla@nvidia.com>
+From: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
 
-commit 4db0ee176e256444695ee2d7b004552e82fec987 upstream
+[ upstream commit: 8aca6cb1179ed9bef9351028c8d8af852903eae2 ]
 
-Add a workaround for lost MSI interrupts.  There is a race condition in
-the HW in which future interrupts could be missed.  The workaround is to
-toggle the MSI irq mask.
+It is possible that this skip path causes TCP to end up into an
+invalid state where ca_state was left to CA_Open while some
+segments already came into sacked_out. If next valid ACK doesn't
+contain new SACK information TCP fails to enter into
+tcp_fastretrans_alert(). Thus at least high_seq is set
+incorrectly to a too high seqno because some new data segments
+could be sent in between (and also, limited transmit is not
+being correctly invoked there). Reordering in both directions
+can easily cause this situation to occur.
 
-Added cleanup based on comments from Andrew Morton.
+I guess we would want to use tcp_moderate_cwnd(tp) there as well
+as it may be possible to use this to trigger oversized burst to
+network by sending an old ACK with huge amount of SACK info, but
+I'm a bit unsure about its effects (mainly to FlightSize), so to
+be on the safe side I just currently fixed it minimally to keep
+TCP's state consistent (obviously, such nasty ACKs have been
+possible this far). Though it seems that FlightSize is already
+underestimated by some amount, so probably on the long term we
+might want to trigger recovery there too, if appropriate, to make
+FlightSize calculation to resemble reality at the time when the
+losses where discovered (but such change scares me too much now
+and requires some more thinking anyway how to do that as it
+likely involves some code shuffling).
 
-Signed-off-by: Ayaz Abdulla <aabdulla@nvidia.com>
-Cc: Manfred Spraul <manfred@colorfullife.com>
-Cc: Jeff Garzik <jeff@garzik.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+This bug was found by Brian Vowell while running my TCP debug
+patch to find cause of another TCP issue (fackets_out
+miscount).
+
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/forcedeth.c |   20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ net/ipv4/tcp_input.c |   29 +++++++++++++++++++----------
+ 1 file changed, 19 insertions(+), 10 deletions(-)
 
---- a/drivers/net/forcedeth.c
-+++ b/drivers/net/forcedeth.c
-@@ -3111,6 +3111,20 @@ static void nv_link_irq(struct net_devic
- 	dprintk(KERN_DEBUG "%s: link change notification done.\n", dev->name);
+--- a/net/ipv4/tcp_input.c
++++ b/net/ipv4/tcp_input.c
+@@ -2469,6 +2469,20 @@ static inline void tcp_complete_cwr(stru
+ 	tcp_ca_event(sk, CA_EVENT_COMPLETE_CWR);
  }
  
-+static void nv_msi_workaround(struct fe_priv *np)
++static void tcp_try_keep_open(struct sock *sk)
 +{
++	struct tcp_sock *tp = tcp_sk(sk);
++	int state = TCP_CA_Open;
 +
-+	/* Need to toggle the msi irq mask within the ethernet device,
-+	 * otherwise, future interrupts will not be detected.
-+	 */
-+	if (np->msi_flags & NV_MSI_ENABLED) {
-+		u8 __iomem *base = np->base;
++	if (tcp_left_out(tp) || tp->retrans_out || tp->undo_marker)
++		state = TCP_CA_Disorder;
 +
-+		writel(0, base + NvRegMSIIrqMask);
-+		writel(NVREG_MSI_VECTOR_0_ENABLED, base + NvRegMSIIrqMask);
++	if (inet_csk(sk)->icsk_ca_state != state) {
++		tcp_set_ca_state(sk, state);
++		tp->high_seq = tp->snd_nxt;
 +	}
 +}
 +
- static irqreturn_t nv_nic_irq(int foo, void *data)
+ static void tcp_try_to_open(struct sock *sk, int flag)
  {
- 	struct net_device *dev = (struct net_device *) data;
-@@ -3133,6 +3147,8 @@ static irqreturn_t nv_nic_irq(int foo, v
- 		if (!(events & np->irqmask))
- 			break;
+ 	struct tcp_sock *tp = tcp_sk(sk);
+@@ -2482,15 +2496,7 @@ static void tcp_try_to_open(struct sock 
+ 		tcp_enter_cwr(sk, 1);
  
-+		nv_msi_workaround(np);
-+
- 		spin_lock(&np->lock);
- 		nv_tx_done(dev);
- 		spin_unlock(&np->lock);
-@@ -3248,6 +3264,8 @@ static irqreturn_t nv_nic_irq_optimized(
- 		if (!(events & np->irqmask))
- 			break;
+ 	if (inet_csk(sk)->icsk_ca_state != TCP_CA_CWR) {
+-		int state = TCP_CA_Open;
+-
+-		if (tcp_left_out(tp) || tp->retrans_out || tp->undo_marker)
+-			state = TCP_CA_Disorder;
+-
+-		if (inet_csk(sk)->icsk_ca_state != state) {
+-			tcp_set_ca_state(sk, state);
+-			tp->high_seq = tp->snd_nxt;
+-		}
++		tcp_try_keep_open(sk);
+ 		tcp_moderate_cwnd(tp);
+ 	} else {
+ 		tcp_cwnd_down(sk, flag);
+@@ -3296,8 +3302,11 @@ no_queue:
+ 	return 1;
  
-+		nv_msi_workaround(np);
-+
- 		spin_lock(&np->lock);
- 		nv_tx_done_optimized(dev, TX_WORK_PER_LOOP);
- 		spin_unlock(&np->lock);
-@@ -3588,6 +3606,8 @@ static irqreturn_t nv_nic_irq_test(int f
- 	if (!(events & NVREG_IRQ_TIMER))
- 		return IRQ_RETVAL(0);
+ old_ack:
+-	if (TCP_SKB_CB(skb)->sacked)
++	if (TCP_SKB_CB(skb)->sacked) {
+ 		tcp_sacktag_write_queue(sk, skb, prior_snd_una);
++		if (icsk->icsk_ca_state == TCP_CA_Open)
++			tcp_try_keep_open(sk);
++	}
  
-+	nv_msi_workaround(np);
-+
- 	spin_lock(&np->lock);
- 	np->intr_test = 1;
- 	spin_unlock(&np->lock);
+ uninteresting_ack:
+ 	SOCK_DEBUG(sk, "Ack %u out of %u:%u\n", ack, tp->snd_una, tp->snd_nxt);
 
 -- 
