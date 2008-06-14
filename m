@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761107AbYFNANe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760802AbYFNANt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761107AbYFNANe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 20:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759732AbYFNAM3
+	id S1760802AbYFNANt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 20:13:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760039AbYFNAMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 20:12:29 -0400
-Received: from ns2.suse.de ([195.135.220.15]:51612 "EHLO mx2.suse.de"
+	Fri, 13 Jun 2008 20:12:34 -0400
+Received: from mx2.suse.de ([195.135.220.15]:51643 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758975AbYFNAM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 20:12:28 -0400
-Date: Fri, 13 Jun 2008 17:10:23 -0700
+	id S1759991AbYFNAMc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 20:12:32 -0400
+Date: Fri, 13 Jun 2008 17:10:26 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,17 +20,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, netdev@vger.kernel.org,
-       Michael Buesch <mb@bu3sch.de>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 04/47] ssb: Fix context assertion in
-	ssb_pcicore_dev_irqvecs_enable
-Message-ID: <20080614001023.GD24698@suse.de>
+       alan@lxorguk.ukuu.org.uk, Sami Liedes <sliedes@cc.hut.fi>,
+       Al Viro <viro@zeniv.linux.org.uk>, Chris Wright <chrisw@sous-sol.org>
+Subject: [patch 05/47] double-free of inode on alloc_file() failure exit in
+	create_write_pipe()
+Message-ID: <20080614001026.GE24698@suse.de>
 References: <20080613234753.235721454@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ssb-fix-context-assertion-in-ssb_pcicore_dev_irqvecs_enable.patch"
+Content-Disposition: inline; filename="double-free-of-inode-on-alloc_file-failure-exit-in-create_write_pipe.patch"
 In-Reply-To: <20080614000840.GA24659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,41 +38,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Michael Buesch <mb@bu3sch.de>
+From: Al Viro <viro@zeniv.linux.org.uk>
 
-upstream commit: a3bafeedfff2ac5fa0a316bea4570e27900b6fcc
+upstream commit: ed1524371716466e9c762808b02601d0d0276a92
 
-This fixes a context assertion in ssb that makes b44 print
-out warnings on resume.
+Duh...  Fortunately, the bug is quite recent (post-2.6.25) and, embarrassingly,
+mine ;-/
 
-This fixes the following kernel oops:
-http://www.kerneloops.org/oops.php?number=12732
-http://www.kerneloops.org/oops.php?number=11410
+http://bugzilla.kernel.org/show_bug.cgi?id=10878
 
-Signed-off-by: Michael Buesch <mb@bu3sch.de>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-
 ---
- drivers/ssb/driver_pcicore.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ fs/pipe.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/drivers/ssb/driver_pcicore.c
-+++ b/drivers/ssb/driver_pcicore.c
-@@ -519,12 +519,12 @@ int ssb_pcicore_dev_irqvecs_enable(struc
- 	int err = 0;
- 	u32 tmp;
+--- a/fs/pipe.c
++++ b/fs/pipe.c
+@@ -988,7 +988,10 @@ struct file *create_write_pipe(void)
+ 	return f;
  
--	might_sleep();
--
- 	if (!pdev)
- 		goto out;
- 	bus = pdev->bus;
- 
-+	might_sleep_if(pdev->id.coreid != SSB_DEV_PCI);
+  err_dentry:
++	free_pipe_info(inode);
+ 	dput(dentry);
++	return ERR_PTR(err);
 +
- 	/* Enable interrupts for this device. */
- 	if (bus->host_pci &&
- 	    ((pdev->id.revision >= 6) || (pdev->id.coreid == SSB_DEV_PCIE))) {
+  err_inode:
+ 	free_pipe_info(inode);
+ 	iput(inode);
 
 -- 
