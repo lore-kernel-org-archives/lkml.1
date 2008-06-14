@@ -1,113 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756866AbYFNNdD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757654AbYFNNfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756866AbYFNNdD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 09:33:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbYFNNcw
+	id S1757654AbYFNNfU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 09:35:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbYFNNfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 09:32:52 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:60427 "EHLO
-	e28esmtp01.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753736AbYFNNcu (ORCPT
+	Sat, 14 Jun 2008 09:35:05 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:57842 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752614AbYFNNfE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 09:32:50 -0400
-Message-ID: <4853C87B.7050602@linux.vnet.ibm.com>
-Date: Sat, 14 Jun 2008 19:02:43 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080505)
+	Sat, 14 Jun 2008 09:35:04 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4853C8AD.9020407@s5r6.in-berlin.de>
+Date: Sat, 14 Jun 2008 15:33:33 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, linux-mm@kvack.org,
-       Nick Piggin <npiggin@suse.de>, Andy Whitcroft <apw@shadowen.org>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "Lee.Schermerhorn@hp.com" <Lee.Schermerhorn@hp.com>
-Subject: Re: [PATCH] fix double unlock_page() in 2.6.26-rc5-mm3 kernel BUG
- at mm/filemap.c:575!
-References: <20080611225945.4da7bb7f.akpm@linux-foundation.org> <4850E1E5.90806@linux.vnet.ibm.com> <20080612015746.172c4b56.akpm@linux-foundation.org> <20080612202003.db871cac.kamezawa.hiroyu@jp.fujitsu.com> <20080613104444.63bd242f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080613104444.63bd242f.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+CC: Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
+       Trivial Patch Monkey <trivial@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] 8139too: clean up spaces and TABs
+References: <4853BB62.1060109@freemail.hu>
+In-Reply-To: <4853BB62.1060109@freemail.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> This is reproducer of panic. "quick fix" is attached.
-> But I think putback_lru_page() should be re-designed.
-> 
-> ==
-> #include <stdio.h>
-> #include <sys/types.h>
-> #include <sys/stat.h>
-> #include <fcntl.h>
-> #include <sys/mman.h>
-> #include <unistd.h>
-> #include <errno.h>
-> 
-> int main(int argc, char *argv[])
-> {
->         int fd;
->         char *filename = argv[1];
->         char buffer[4096];
->         char *addr;
->         int len;
-> 
->         fd = open(filename, O_CREAT | O_EXCL | O_RDWR, S_IRWXU);
-> 
->         if (fd < 0) {
->                 perror("open");
->                 exit(1);
->         }
->         len = write(fd, buffer, sizeof(buffer));
-> 
->         if (len < 0) {
->                 perror("write");
->                 exit(1);
->         }
-> 
->         addr = mmap(NULL, 4096, PROT_WRITE, MAP_SHARED|MAP_LOCKED, fd, 0);
->         if (addr == MAP_FAILED) {
->                 perror("mmap");
->                 exit(1);
->         }
->         munmap(addr, 4096);
->         close(fd);
-> 
->         unlink(filename);
-> }
-> ==
-> you'll see panic.
-> 
-> Fix is here
-> ==
-Hi Kame,
+Németh Márton wrote:
+> -/* The following settings are log_2(bytes)-4:  0 == 16 bytes .. 6==1024, 7==end of packet. */
+> +/* The following settings are log_2(bytes)-4:
+> +   0 == 16 bytes .. 6==1024, 7==end of packet. */
 
-Thanks, The patch fixes the kernel panic.
-
-Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> 
-> quick fix for double unlock_page();
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamewzawa.hiroyu@jp.fujitsu.com>
-> Index: linux-2.6.26-rc5-mm3/mm/truncate.c
-> ===================================================================
-> --- linux-2.6.26-rc5-mm3.orig/mm/truncate.c
-> +++ linux-2.6.26-rc5-mm3/mm/truncate.c
-> @@ -104,8 +104,8 @@ truncate_complete_page(struct address_sp
-> 
->  	cancel_dirty_page(page, PAGE_CACHE_SIZE);
-> 
-> -	remove_from_page_cache(page);
->  	clear_page_mlock(page);
-> +	remove_from_page_cache(page);
->  	ClearPageUptodate(page);
->  	ClearPageMappedToDisk(page);
->  	page_cache_release(page);	/* pagecache ref */
-> 
-
-
+We don't write comments like this.
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Stefan Richter
+-=====-==--- -==- -===-
+http://arcgraph.de/sr/
