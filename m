@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759330AbYFNJwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757256AbYFNKLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759330AbYFNJwz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 05:52:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756188AbYFNJwn
+	id S1757256AbYFNKLP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 06:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbYFNKLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 05:52:43 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:56567 "EHLO mail.dvmed.net"
+	Sat, 14 Jun 2008 06:11:00 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:45162 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756023AbYFNJwm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 05:52:42 -0400
-Message-ID: <485394E6.9080809@garzik.org>
-Date: Sat, 14 Jun 2008 05:52:38 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	id S1753246AbYFNKK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jun 2008 06:10:59 -0400
+Date: Sat, 14 Jun 2008 14:10:55 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
        linux-fsdevel@vger.kernel.org
-Subject: Re: [0/3] POHMELFS high performance network filesystem. First steps
- in parallel processing.
-References: <20080613163700.GA25860@2ka.mipt.ru>
-In-Reply-To: <20080613163700.GA25860@2ka.mipt.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Subject: Re: [0/3] POHMELFS high performance network filesystem. First steps in parallel processing.
+Message-ID: <20080614101055.GB8857@2ka.mipt.ru>
+References: <20080613163700.GA25860@2ka.mipt.ru> <485394E6.9080809@garzik.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <485394E6.9080809@garzik.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov wrote:
-> Hi.
-> 
-> I'm pleased to announce POHMEL high performance network parallel
-> distributed filesystem.
-> POHMELFS stands for Parallel Optimized Host Message Exchange Layered File System.
-> 
-> Development status can be tracked in filesystem section [1].
-> 
-> This is a high performance network filesystem with local coherent cache of data
-> and metadata. Its main goal is distributed parallel processing of data.
-> 
-> This release brings following features:
->  * Read requests (data read, directory listing, lookup requests) balancing
->  	between multiple servers.
->  * Write requests are sent to multiple servers and completed only
->  	when all of them sent an ack.
->  * Ability to add and/or remove servers from working set at run-time from
-> 	 userspace (via netlink, so the same command can be processed from
-> 	 real network though, but since server does not support it yet,
-> 	 I dropped network part).
->  * Documentation (overall view and protocol commands)!
->  * Rename command (oops, forgot it in previous releases :)
->  * Several new mount options to control client behaviour instead of
-> 	hardcoded numbers.
->  * Bug fixes.
+On Sat, Jun 14, 2008 at 05:52:38AM -0400, Jeff Garzik (jeff@garzik.org) wrote:
+> Neat :)  Thanks for protocol documentation, too.  Do you plan to add 
+> write-pages in addition to write-page?  Also, write-page does not appear 
+> to be documented.
 
-Neat :)  Thanks for protocol documentation, too.  Do you plan to add 
-write-pages in addition to write-page?  Also, write-page does not appear 
-to be documented.
+->writepage() is not needed at all (it does not even exist anymore :),
+and only ->writepages() is used.
 
-Is race-across-directories race-free?  That is a sticky area, see 
-Documentation/filesystems/directory-locking in particular.
+> Is race-across-directories race-free?  That is a sticky area, see 
+> Documentation/filesystems/directory-locking in particular.
 
-With the exception of encryption, do you think the POHMELFS client is 
-mostly complete, at this point?
+POHMELFS relies on VFS to handle that cases, it does not invent own stuff here.
+Although there is kind of a path/name cache, it is very trivial and small.
 
-	Jeff
+> With the exception of encryption, do you think the POHMELFS client is
+> mostly complete, at this point?
 
+I think I will extend its command structure to support checksum (i.e.
+add 64bit field unused for now), all other protocol changes are supposed
+to be on the highest level (like new commands), so it should not hurt others.
 
+I have to think about locking (file locks on server, not POHMELFS internal
+locking :) some more, but so far I do not see, how it can change the picture.
+
+Another task is to move from slab allocation (kmalloc and friends) to
+memory pools, like it was done for transaction destinations.
+
+I do not plan serious changes in client (I frankly do not know, what
+else I want there :), so, yes, I think that most of the client side is ready.
+
+-- 
+	Evgeniy Polyakov
