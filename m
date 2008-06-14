@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbYFNI2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758013AbYFNIcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758729AbYFNI2b (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 04:28:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbYFNI2V
+	id S1758013AbYFNIcW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 04:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938AbYFNIcN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 04:28:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38255 "EHLO mx3.mail.elte.hu"
+	Sat, 14 Jun 2008 04:32:13 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44466 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753683AbYFNI2U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 04:28:20 -0400
-Date: Sat, 14 Jun 2008 10:28:07 +0200
+	id S1753625AbYFNIcL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jun 2008 04:32:11 -0400
+Date: Sat, 14 Jun 2008 10:31:59 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: cleanup reloated_initrd
-Message-ID: <20080614082807.GC11277@elte.hu>
-References: <200806132005.45836.yhlu.kernel@gmail.com> <200806132007.03576.yhlu.kernel@gmail.com>
+Cc: Alexey Starikovskiy <aystarik@gmail.com>, webmaster@dragonslave.de,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: linux-next Regression: Unable to locate IOAPIC
+Message-ID: <20080614083159.GA29894@elte.hu>
+References: <200806051100.12885.dex@dragonslave.de> <200806102229.10512.dex@dragonslave.de> <4851AA24.7060906@gmail.com> <200806131307.39807.dex@dragonslave.de> <48536E3B.4000703@gmail.com> <86802c440806140126l7a949783of0fb08d11ae07bef@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200806132007.03576.yhlu.kernel@gmail.com>
+In-Reply-To: <86802c440806140126l7a949783of0fb08d11ae07bef@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,10 +38,9 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-> 1. move that before zone_sizes_init ...
-> 2. add free_early for one old one, otherwise it will be be reserved again when
->    init highmem.
+> can you check if the attached patch fix the problem?
+> it will not check entries before MP_intsrc_info...
 
-applied to tip/x86/mpparse, thanks.
+applied to tip/x86/mpparse for more testing.
 
 	Ingo
