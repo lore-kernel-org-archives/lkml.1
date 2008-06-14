@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754746AbYFNPMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754319AbYFNPbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754746AbYFNPMG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 11:12:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbYFNPLy
+	id S1754319AbYFNPbb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 11:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbYFNPbU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 11:11:54 -0400
-Received: from [194.117.236.238] ([194.117.236.238]:46444 "EHLO
-	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752378AbYFNPLx (ORCPT
+	Sat, 14 Jun 2008 11:31:20 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:24841 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752377AbYFNPbT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 11:11:53 -0400
-Date: Sat, 14 Jun 2008 18:11:03 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: penberg@cs.helsinki.fi, akpm@linux-foundation.org,
-       compudj@krystal.dyndns.org, linux-kernel@vger.kernel.org,
-       righi.andrea@gmail.com
-Subject: Re: [PATCH 2/3] relay: Fix race condition which occurs when reading
- across CPUs.
-Message-ID: <20080614181103.17617db1@linux360.ro>
-In-Reply-To: <1213417601.8237.37.camel@charm-linux>
-References: <20080613040958.4f52ee29@linux360.ro>
-	<1213417601.8237.37.camel@charm-linux>
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 14 Jun 2008 11:31:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=PWegfW24aapURGc+l+0W83Cib9AG0YnN28YrF9eUSASax5nwZo7sam3hjiYhATVvh2
+         gZzY6gRsoJI9syv54+SGRdQwV2yJN5EYKco5ls5OhD69O7beG1DogcZtNtt8HWB5svyf
+         B+5rWtxj3QgOko4pTLPHgXXcwXPm9HW80I8CA=
+Message-ID: <e2e108260806140831s40f36a95s1a412cec4dc47f31@mail.gmail.com>
+Date: Sat, 14 Jun 2008 17:31:18 +0200
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Marco Barbero" <marco.barbero@gmail.com>
+Subject: Re: OOM killer invoked on 2.6.24.4
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <e1aa27e00806140313o5a62c618kb41b892b7b29e235@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <e1aa27e00806140313o5a62c618kb41b892b7b29e235@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jun 2008 23:26:41 -0500
-Tom Zanussi <tzanussi@gmail.com> wrote:
+On Sat, Jun 14, 2008 at 12:13 PM, Marco Barbero <marco.barbero@gmail.com> wrote:
+> samba/slapd/heartbeat/drbd/mon
+...
+> Jun 14 01:00:17 pippo kernel: Out of memory: kill process 6873 (slapd)
+> score 5003 or a child
+> Jun 14 01:00:17 pippo kernel: Killed process 6873 (slapd)
+>
+> Anyone can help me in understanding what went wrong? And if I need to
+> upgrade to last kernel version?
 
-> Alternatively, you could get rid of the problem by making sure CPU0
-> never reads CPU1's data, by having the userspace reader use per-cpu
-> threads and using sched_setaffinity() to pin each thread to a given
-> cpu. See for example, the blktrace code, which does this.
+One or more processes on your system used too much memory. Dumping the
+output of the following command periodically (e.g. every 10 minutes)
+to a file will tell you which process is using too much memory:
 
-Yes, and performance-wise this is better. Though I'm not sure setting
-affinity is 100% safe. Will the thread be migrated soon enough, so we
-don't read cross-CPU? The point is I'm not sure how hard this is
-enforced.
+{ ps aux | head -n 1; ps aux | sort -n +4 | tail -n 10; }
 
-However, I suggest this patch should go in, for two reasons:
-1. It provides expected behavior in any such situation.
-2. It adds (almost) no overhead when used in conjuction with setting CPU
-affinity. When the writer acquires the spinlock, it does not busy-wait,
-so the spinlock just disables IRQs (relay_write()).
- 
-> Actually, in a few days or so I'm planning on releasing the first cut
-> of a library that makes this and all the rest of the nice blktrace
-> userspace code available to other tracing applications, not just
-> blktrace.  Hopefully it would be something that you'd be able to use
-> for kmemtrace as well; in that case, you'd just use the library and
-> not have to worry about these details.
-
-Sounds good. Thanks for letting me know.
-
-
-	Eduard
+Bart.
