@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763295AbYFNA12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763855AbYFNA1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763295AbYFNA12 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 20:27:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762294AbYFNAPc
+	id S1763855AbYFNA1q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 20:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762307AbYFNAPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 20:15:32 -0400
-Received: from mx1.suse.de ([195.135.220.2]:34641 "EHLO mx1.suse.de"
+	Fri, 13 Jun 2008 20:15:36 -0400
+Received: from ns1.suse.de ([195.135.220.2]:34661 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761325AbYFNAPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 20:15:30 -0400
-Date: Fri, 13 Jun 2008 17:12:16 -0700
+	id S1762300AbYFNAPf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 20:15:35 -0400
+Date: Fri, 13 Jun 2008 17:12:18 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,15 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Sam Ravnborg <sam@ravnborg.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [patch 44/47] Kconfig: introduce ARCH_DEFCONFIG to DEFCONFIG_LIST
-Message-ID: <20080614001216.GR24698@suse.de>
+       alan@lxorguk.ukuu.org.uk, Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: [patch 45/47] bttv: Fix a deadlock in the bttv driver
+Message-ID: <20080614001218.GS24698@suse.de>
 References: <20080613234753.235721454@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="kconfig-introduce-arch_defconfig-to-defconfig_list.patch"
+Content-Disposition: inline; filename="bttv-fix-a-deadlock-in-the-bttv-driver.patch"
 In-Reply-To: <20080614000840.GA24659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,64 +37,78 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Sam Ravnborg <sam@ravnborg.org>
+From: Arjan van de Ven <arjan@linux.intel.com>
 
-commit 73531905ed53576d9e8707659a761e7046a60497 in mainline.
+commit 81b2dbcad86732ffc02bad87aa25c4651199fc77 in mainline.
 
-init/Kconfig contains a list of configs that are searched
-for if 'make *config' are used with no .config present.
-Extend this list to look at the config identified by
-ARCH_DEFCONFIG.
+vidiocgmbuf() does this:
+        mutex_lock(&fh->cap.vb_lock);
+        retval = videobuf_mmap_setup(&fh->cap, gbuffers, gbufsize,
+                                     V4L2_MEMORY_MMAP);
 
-With this change we now try the defconfig targets last.
+and videobuf_mmap_setup() then just does
+        mutex_lock(&q->vb_lock);
+        ret = __videobuf_mmap_setup(q, bcount, bsize, memory);
+        mutex_unlock(&q->vb_lock);
 
-This fixes a regression reported
-by: Linus Torvalds <torvalds@linux-foundation.org>
+which is an obvious double-take deadlock.
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
+This patch fixes this by having vidiocgmbuf() just call the
+__videobuf_mmap_setup function instead.
+
+Acked-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+Reported-by: Koos Vriezen <koos.vriezen@gmail.com>
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/Kconfig |   13 +++----------
- init/Kconfig     |    1 +
- 2 files changed, 4 insertions(+), 10 deletions(-)
+ drivers/media/video/bt8xx/bttv-driver.c |    2 +-
+ drivers/media/video/videobuf-core.c     |    3 ++-
+ include/media/videobuf-core.h           |    3 +++
+ 3 files changed, 6 insertions(+), 2 deletions(-)
 
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -24,17 +24,10 @@ config X86
- 	select HAVE_KRETPROBES
- 	select HAVE_KVM if ((X86_32 && !X86_VOYAGER && !X86_VISWS && !X86_NUMAQ) || X86_64)
+--- a/drivers/media/video/bt8xx/bttv-driver.c
++++ b/drivers/media/video/bt8xx/bttv-driver.c
+@@ -2613,7 +2613,7 @@ static int vidiocgmbuf(struct file *file
+ 	struct bttv_fh *fh = priv;
  
--config DEFCONFIG_LIST
-+config ARCH_DEFCONFIG
- 	string
--	depends on X86_32
--	option defconfig_list
--	default "arch/x86/configs/i386_defconfig"
--
--config DEFCONFIG_LIST
--	string
--	depends on X86_64
--	option defconfig_list
--	default "arch/x86/configs/x86_64_defconfig"
-+	default "arch/x86/configs/i386_defconfig" if X86_32
-+	default "arch/x86/configs/x86_64_defconfig" if X86_64
+ 	mutex_lock(&fh->cap.vb_lock);
+-	retval = videobuf_mmap_setup(&fh->cap, gbuffers, gbufsize,
++	retval = __videobuf_mmap_setup(&fh->cap, gbuffers, gbufsize,
+ 				     V4L2_MEMORY_MMAP);
+ 	if (retval < 0) {
+ 		mutex_unlock(&fh->cap.vb_lock);
+--- a/drivers/media/video/videobuf-core.c
++++ b/drivers/media/video/videobuf-core.c
+@@ -335,7 +335,7 @@ int videobuf_mmap_free(struct videobuf_q
+ }
  
+ /* Locking: Caller holds q->vb_lock */
+-static int __videobuf_mmap_setup(struct videobuf_queue *q,
++int __videobuf_mmap_setup(struct videobuf_queue *q,
+ 			unsigned int bcount, unsigned int bsize,
+ 			enum v4l2_memory memory)
+ {
+@@ -1093,6 +1093,7 @@ EXPORT_SYMBOL_GPL(videobuf_read_stream);
+ EXPORT_SYMBOL_GPL(videobuf_read_one);
+ EXPORT_SYMBOL_GPL(videobuf_poll_stream);
  
- config GENERIC_LOCKBREAK
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -13,6 +13,7 @@ config DEFCONFIG_LIST
- 	default "/lib/modules/$UNAME_RELEASE/.config"
- 	default "/etc/kernel-config"
- 	default "/boot/config-$UNAME_RELEASE"
-+	default "$ARCH_DEFCONFIG"
- 	default "arch/$ARCH/defconfig"
- 
- menu "General setup"
++EXPORT_SYMBOL_GPL(__videobuf_mmap_setup);
+ EXPORT_SYMBOL_GPL(videobuf_mmap_setup);
+ EXPORT_SYMBOL_GPL(videobuf_mmap_free);
+ EXPORT_SYMBOL_GPL(videobuf_mmap_mapper);
+--- a/include/media/videobuf-core.h
++++ b/include/media/videobuf-core.h
+@@ -227,6 +227,9 @@ unsigned int videobuf_poll_stream(struct
+ int videobuf_mmap_setup(struct videobuf_queue *q,
+ 			unsigned int bcount, unsigned int bsize,
+ 			enum v4l2_memory memory);
++int __videobuf_mmap_setup(struct videobuf_queue *q,
++			unsigned int bcount, unsigned int bsize,
++			enum v4l2_memory memory);
+ int videobuf_mmap_free(struct videobuf_queue *q);
+ int videobuf_mmap_mapper(struct videobuf_queue *q,
+ 			 struct vm_area_struct *vma);
 
 -- 
