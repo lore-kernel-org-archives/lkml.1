@@ -1,90 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759822AbYFMXJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759564AbYFNAKL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759822AbYFMXJh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 19:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755780AbYFMXJ3
+	id S1759564AbYFNAKL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 20:10:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757558AbYFNAJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 19:09:29 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:31806 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755308AbYFMXJ1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 19:09:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=h9RD60YGoZF0mmcWhlvAmIYqtk9pA2H9FPhtO2dLVTmDGGnF55ralj4baY4k/rLilT
-         4AzdHCls1lKuFqR0crMgiD3lsW72QWfEbAqF2Arkd/C/D+60klKkan8QP65aUnYNVu7c
-         loTD4Cp+pVy3KVn40KQk9vGuUC3aDeKjpKLPI=
-Message-ID: <4852FDFC.1020403@googlemail.com>
-Date: Sat, 14 Jun 2008 01:08:44 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+	Fri, 13 Jun 2008 20:09:58 -0400
+Received: from ns1.suse.de ([195.135.220.2]:33930 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757554AbYFNAJ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 20:09:57 -0400
+Date: Fri, 13 Jun 2008 17:08:40 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/47] 2.6.25-stable review
+Message-ID: <20080614000840.GA24659@suse.de>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Jeff Dike <jdike@addtoit.com>, linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kbuild breaks um - fails to find util when linking
-References: <20080610190307.GA15983@uranus.ravnborg.org> <20080611154816.GA8167@c2.user-mode-linux.org> <20080612180859.GA2271@uranus.ravnborg.org> <20080612201315.GA10879@c2.user-mode-linux.org> <20080612210615.GA7558@uranus.ravnborg.org>
-In-Reply-To: <20080612210615.GA7558@uranus.ravnborg.org>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
+This is the start of the stable review cycle for the 2.6.25.7 release.
+There are 47 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-Hi Sam , Jeff ,
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-> On Thu, Jun 12, 2008 at 04:13:15PM -0400, Jeff Dike wrote:
->> On Thu, Jun 12, 2008 at 08:08:59PM +0200, Sam Ravnborg wrote:
->>> Following patch will result in a building ARCH=um kernel.
->>> If it works I dunno.
->> You can just try running it.  Given its behavior with this patch so
->> far, it would be an excellent sign for it to figure out that it has no
->> root filesystem and panic.
->>
->> Anyway, I can't get it to give me a UML binary.  I see this in the
->> build output (and V=3 doesn't make it any more verbose):
->>
->>
->> 	  CHK     include/linux/compile.h
->> 	  LINK linux
->>
->> 	Compilation finished at Thu Jun 12 16:11:15
->>
->> but no linux or vmlinux in my output directory.
-> 
-> So appearantly kbuild thinks you have a vmlinux
-> so no need to relink.
-> And the line "LINK linux" implies this as well.
-> 
-> Please double check that you do not have a vmlinux,
-> and try V=2" to see where LINK picks up the vmlinux.
-> 
-> My build finised:
-> $ ./linux
->  ./linux: /usr/lib/libc.so.1: bad ELF interpreter: No such file or directory
+Responses should be made by Monday, Jun 16, 20:00:00 UTC.  Anything
+received after that time might be too late.
+
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.25.7-rc1.gz
+and the diffstat can be found below.
 
 
-I didn't tested this patch but I think LINK-$(CONFIG_LD_SCRIPT_DYN) should have -rpath / -rpath-link too since 
-libc.so.* is usually in /lib and not /usr/lib.
+thanks,
 
-Another thing I noticed is this hunk :
+the -stable release team
 
-+$(shell $(CC) -print-file-name=ld-linux.so.2) \
-
-On 64bit that should not work since it is ld-linux-x86-64.so.2 and not ld-linux.so.2
-
-> 
-
-> So I will take an additional look tomorrow.
-> 
-> 	Sam
+----------
 
 
-Regards ,
-
-Gabriel
+ Documentation/cciss.txt                   |    5 +
+ Makefile                                  |    2 
+ arch/x86/Kconfig                          |   23 +----
+ drivers/block/brd.c                       |    1 
+ drivers/block/cciss.c                     |   21 +++--
+ drivers/char/pcmcia/ipwireless/hardware.c |   20 ++--
+ drivers/cpufreq/cpufreq.c                 |    2 
+ drivers/infiniband/core/umem.c            |    2 
+ drivers/media/video/bt8xx/bttv-driver.c   |    2 
+ drivers/media/video/videobuf-core.c       |    3 
+ drivers/mmc/host/wbsd.c                   |   21 ++---
+ drivers/net/cassini.c                     |   11 +-
+ drivers/net/forcedeth.c                   |   20 ++++
+ drivers/net/pppol2tp.c                    |  124 +++++++++++++++++++++++-------
+ drivers/net/wireless/b43/main.c           |   12 ++
+ drivers/serial/serial_core.c              |    5 -
+ drivers/serial/sunhv.c                    |    1 
+ drivers/ssb/driver_pcicore.c              |    4 
+ drivers/video/hgafb.c                     |   26 +++---
+ drivers/video/modedb.c                    |    1 
+ fs/cifs/cifsfs.c                          |   21 ++---
+ fs/ecryptfs/crypto.c                      |    2 
+ fs/ecryptfs/file.c                        |    2 
+ fs/ecryptfs/inode.c                       |   15 +--
+ fs/pipe.c                                 |    3 
+ include/asm-m68k/bitops.h                 |   46 ++++++++++-
+ include/linux/pci_ids.h                   |    1 
+ include/media/videobuf-core.h             |    3 
+ include/net/netlink.h                     |   11 +-
+ init/Kconfig                              |    1 
+ net/8021q/vlan.c                          |    4 
+ net/ax25/ax25_subr.c                      |   11 --
+ net/bluetooth/rfcomm/core.c               |    2 
+ net/can/raw.c                             |   21 ++---
+ net/core/dev.c                            |    2 
+ net/ipv4/route.c                          |    2 
+ net/ipv4/tcp_cong.c                       |   12 +-
+ net/ipv4/tcp_input.c                      |   65 ++++++++++-----
+ net/ipv4/tcp_output.c                     |   10 +-
+ net/ipv6/route.c                          |    2 
+ net/key/af_key.c                          |    2 
+ net/mac80211/ieee80211_sta.c              |    5 +
+ net/sched/cls_api.c                       |    2 
+ sound/pci/emu10k1/emu10k1_main.c          |   15 +--
+ sound/pci/hda/patch_realtek.c             |    1 
+ 45 files changed, 375 insertions(+), 192 deletions(-)
