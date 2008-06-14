@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760535AbYFNAMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760226AbYFNANK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760535AbYFNAMv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 20:12:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757646AbYFNAMW
+	id S1760226AbYFNANK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Jun 2008 20:13:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758374AbYFNAMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 20:12:22 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:51570 "EHLO mx2.suse.de"
+	Fri, 13 Jun 2008 20:12:25 -0400
+Received: from ns.suse.de ([195.135.220.2]:34070 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757588AbYFNAMV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 20:12:21 -0400
-Date: Fri, 13 Jun 2008 17:10:12 -0700
+	id S1758181AbYFNAMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Jun 2008 20:12:24 -0400
+Date: Fri, 13 Jun 2008 17:10:19 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,15 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Michael Buesch <mb@bu3sch.de>,
-       "John W. Linville" <linville@tuxdriver.com>,
+       alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>,
        Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 01/47] b43: Fix controller restart crash
-Message-ID: <20080614001012.GA24698@suse.de>
+Subject: [patch 03/47] Add rd alias to new brd ramdisk driver
+Message-ID: <20080614001019.GC24698@suse.de>
 References: <20080613234753.235721454@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="b43-fix-controller-restart-crash.patch"
+Content-Disposition: inline; filename="add-rd-alias-to-new-brd-ramdisk-driver.patch"
 In-Reply-To: <20080614000840.GA24659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,56 +37,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Michael Buesch <mb@bu3sch.de>
+From: Nick Piggin <npiggin@suse.de>
 
-upstream commit: 3bf0a32e22fedc0b46443699db2d61ac2a883ac4
+upstream commit: efedf51c866130945b5db755cb58670e60205d83
 
-This fixes a kernel crash on rmmod, in the case where the controller
-was restarted before doing the rmmod.
+Alias brd to rd in the hope of helping legacy users. Suggested by Jan.
 
-Signed-off-by: Michael Buesch <mb@bu3sch.de>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/net/wireless/b43/main.c |   12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+ drivers/block/brd.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/net/wireless/b43/main.c
-+++ b/drivers/net/wireless/b43/main.c
-@@ -3818,7 +3818,9 @@ static void b43_chip_reset(struct work_s
- 			goto out;
- 		}
- 	}
--      out:
-+out:
-+	if (err)
-+		wl->current_dev = NULL; /* Failed to init the dev. */
- 	mutex_unlock(&wl->mutex);
- 	if (err)
- 		b43err(wl, "Controller restart FAILED\n");
-@@ -3967,9 +3969,11 @@ static void b43_one_core_detach(struct s
- 	struct b43_wldev *wldev;
- 	struct b43_wl *wl;
+--- a/drivers/block/brd.c
++++ b/drivers/block/brd.c
+@@ -392,6 +392,7 @@ module_param(rd_size, int, 0);
+ MODULE_PARM_DESC(rd_size, "Size of each RAM disk in kbytes.");
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS_BLOCKDEV_MAJOR(RAMDISK_MAJOR);
++MODULE_ALIAS("rd");
  
-+	/* Do not cancel ieee80211-workqueue based work here.
-+	 * See comment in b43_remove(). */
-+
- 	wldev = ssb_get_drvdata(dev);
- 	wl = wldev->wl;
--	cancel_work_sync(&wldev->restart_work);
- 	b43_debugfs_remove_device(wldev);
- 	b43_wireless_core_detach(wldev);
- 	list_del(&wldev->list);
-@@ -4152,6 +4156,10 @@ static void b43_remove(struct ssb_device
- 	struct b43_wl *wl = ssb_get_devtypedata(dev);
- 	struct b43_wldev *wldev = ssb_get_drvdata(dev);
- 
-+	/* We must cancel any work here before unregistering from ieee80211,
-+	 * as the ieee80211 unreg will destroy the workqueue. */
-+	cancel_work_sync(&wldev->restart_work);
-+
- 	B43_WARN_ON(!wl);
- 	if (wl->current_dev == wldev)
- 		ieee80211_unregister_hw(wl->hw);
+ #ifndef MODULE
+ /* Legacy boot options - nonmodular */
 
 -- 
