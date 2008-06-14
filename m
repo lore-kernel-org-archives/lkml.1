@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756228AbYFNVUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755946AbYFNVVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756228AbYFNVUp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 17:20:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754853AbYFNVTs
+	id S1755946AbYFNVVA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 17:21:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754987AbYFNVTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 17:19:48 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50277 "EHLO ogre.sisk.pl"
+	Sat, 14 Jun 2008 17:19:49 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50279 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754788AbYFNVTr convert rfc822-to-8bit (ORCPT
+	id S1754810AbYFNVTr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 14 Jun 2008 17:19:47 -0400
-Cc: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>
 References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
 In-Reply-To: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -18,10 +18,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <Jn7irxIunJK.A.DrF.wLDVIB@albercik>
-Subject: [Bug 10642] general protection fault: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
+Message-ID: <Jn7irxIunJK.A.ggF.4KDVIB@albercik>
+Subject: [Bug 10714] Badness seen on 2.6.26-rc2 with lockdep enabled
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat, 14 Jun 2008 22:12:01 +0200 (CEST)
+Date: Sat, 14 Jun 2008 22:12:02 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,10 +33,10 @@ The following bug entry is on the current list of known regressions
 from 2.6.25.  Please verify if it still should be listed.
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10642
-Subject		: general protection fault: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
-Submitter	: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Date		: 2008-05-07 16:03 (39 days old)
-References	: http://lkml.org/lkml/2008/5/7/48
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10714
+Subject		: Badness seen on 2.6.26-rc2 with lockdep enabled
+Submitter	: Balbir Singh <balbir@linux.vnet.ibm.com>
+Date		: 2008-05-14 12:57 (32 days old)
+References	: http://marc.info/?l=linux-kernel&m=121076917429133&w=4
 
 
