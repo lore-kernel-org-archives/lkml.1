@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759114AbYFNJAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758435AbYFNJGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759114AbYFNJAq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 05:00:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbYFNJAf
+	id S1758435AbYFNJGO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 05:06:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754383AbYFNJF6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 05:00:35 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41108 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754383AbYFNJAe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 05:00:34 -0400
-Date: Sat, 14 Jun 2008 11:00:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] kmemcheck: divide and conquer
-Message-ID: <20080614090023.GA13798@elte.hu>
-References: <20080613140057.GA25833@damson.getinternet.no> <20080614063114.GA24188@elte.hu> <19f34abd0806140139i70a5056ehbd8a6f5df81549e4@mail.gmail.com>
+	Sat, 14 Jun 2008 05:05:58 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:27746 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754211AbYFNJF5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jun 2008 05:05:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=BPhD0Vxt7mW5IEl+CTyq7ozln5Z64kdvMOzp0ZEEs6dA03lVpx+v3D3sgeI16luGo9
+         oF4mDHH9ZKUYlVNHBR8sUcXoPKxolyaD5oWhyrEfVE70aCClnoetj3xE+xA9upy1wMp0
+         ADtZ29hooi/QuLY1dYw6JIZc9r2zuSJFpyZeM=
+Message-ID: <86802c440806140205g3ff113ffq39272c18ef5b9654@mail.gmail.com>
+Date: Sat, 14 Jun 2008 02:05:56 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>, "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATCH] x86: use add_highpages_with_active_regions for high pages init
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080614082343.GB11277@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <19f34abd0806140139i70a5056ehbd8a6f5df81549e4@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <200806132005.45836.yhlu.kernel@gmail.com>
+	 <200806140056.32601.yhlu.kernel@gmail.com>
+	 <20080614082343.GB11277@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Jun 14, 2008 at 1:23 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>
+>> use early_node_map to init high pages, so can remove page_is_ram and
+>> page_is_reserved_early in the big loop with add_one_highpage
+>>
+>> also remove the page_is_reserved_early that is not needed.
+>
+> applied to tip/x86/mpparse for testing, thanks.
+>
+> Andrew: mm/page_alloc.c modification.
 
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
+Ying Huang,
 
-> http://git.kernel.org/?p=linux/kernel/git/vegard/kmemcheck.git;a=commit;h=8c67b9b8005a518ce003943a64c37a9fc2c84485
-> 
-> But for the newer versions, I've merged it into the "kmemcheck core" 
-> commit. To pick up the whole series, you can either check out the 
-> against-v2.6.26-rc5 branch (which is frozen), or you can check out the 
-> "current" branch which is the most recent rebase (against v2.6.26-rc6, 
-> but not yet frozen):
+I removed page_is_reserved_early....it cause init highmem take extra
+time on my big box.
 
-a small workflow request: could you please start adding append-only 
-commits to that tree, if possible? For example right now as it looks the 
-kmemcheck tree says:
+please check efi_reserve_early that is calling reserve_early. so need
+to make sure "EFI memmap" is reserved in itself...otherwise you may
+need to update e820 table by add_memory_region (....,
+E820_RESERVED)...
 
- commit 385e31b9eae0528bada07d16a189f3f40df23961
- Author: Vegard Nossum <vegard.nossum@gmail.com>
- Date:   Fri Apr 4 00:51:41 2008 +0200
-
-     kmemcheck: add the kmemcheck core
-
-i had to look around for a few minutes to make sure i got the right 
-branch until i realized that "Apr 4" is not the correct date - this 
-commit got updated by you just today.
-
-it would be much better if you stopped rebasing kmemcheck from now on, 
-and did append-only updates only - that way i could pick up your updates 
-into tip/kmemcheck by doing pulls. It does not matter if the result 
-looks a bit messier - most of the fundamentals should be in place 
-already.
-
-	Ingo
+YH
