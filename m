@@ -1,120 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbYFNRnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754583AbYFNRrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754417AbYFNRnp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 13:43:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYFNRnf
+	id S1754583AbYFNRrV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 13:47:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbYFNRrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 13:43:35 -0400
-Received: from shadow.wildlava.net ([67.40.138.81]:54497 "EHLO
-	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752524AbYFNRne (ORCPT
+	Sat, 14 Jun 2008 13:47:04 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:9214 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752677AbYFNRrB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 13:43:34 -0400
-Message-ID: <48540343.4010200@skyrush.com>
-Date: Sat, 14 Jun 2008 11:43:31 -0600
-From: Joe Peterson <joe@skyrush.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Sat, 14 Jun 2008 13:47:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=vQzigB/GcJ+Y0VxSPvPDyiBBO16MKY2Hry6GEYJsQYVxH7GQakoTp1VlA18p3Sg9YN
+         mLYvk4TaXhERaGkRe8dt0S1d7L8F3XrHzEjq39pkKLgCd7dBs2r5tgrsmZV9ZBfiXd0I
+         1pEo2jkZVXyxTeFZXB7ajLBkk12dNNOKxZfew=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Subject: Re: [PATCH 00/18] misc generic ide stuff
+Date: Sat, 14 Jun 2008 19:29:00 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Borislav Petkov <petkovbb@gmail.com>
+References: <1213252870-20474-1-git-send-email-petkovbb@gmail.com>
+In-Reply-To: <1213252870-20474-1-git-send-email-petkovbb@gmail.com>
 MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Alan Cox <alan@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Newall <davidn@davidnewall.com>, Willy Tarreau <w@1wt.eu>,
-       Harald Dunkel <harald.dunkel@t-online.de>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25.3: su gets stuck for root
-References: <48438126.3080308@t-online.de>	 <20080602155133.GC933@devserv.devel.redhat.com>	 <4846A9F4.40003@skyrush.com>	 <20080604151649.GB12625@devserv.devel.redhat.com>	 <4846C85E.7080309@skyrush.com>	 <20080604171056.GB17875@devserv.devel.redhat.com>	 <4846FBF2.9010206@skyrush.com> <484FDB63.6050504@skyrush.com>	 <19f34abd0806120452w433e9763v2ee92e2f278ae988@mail.gmail.com>	 <485323C5.4030002@skyrush.com> <19f34abd0806140045l259bcb93ie4b7bfa2d73bd4d@mail.gmail.com>
-In-Reply-To: <19f34abd0806140045l259bcb93ie4b7bfa2d73bd4d@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/mixed;
- boundary="------------080301080304040102060609"
+Content-Disposition: inline
+Message-Id: <200806141929.00459.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080301080304040102060609
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 
-Vegard Nossum wrote:
-> So this clearly shows what's wrong; 7036 is the "controlling process"
-> group id. But only "su foo" is in this group, the bash and stty
-> processes have their own group, 7037.
+Hi,
+
+On Thursday 12 June 2008, Borislav Petkov wrote:
+> Hi Bart,
 > 
-> On my own system, when I do "su", I get this:
->  2891  2891  2892 root     su temp
->  2892  2892  2892 temp     bash
+> here are some generic ide conversion patches. The first 12 are what i thought
+> you suggested :) concerning prepping the ide-cd code for the generic layer. The
+> remaining 6 are what i've done so far wrt removing ide_atapi_pc from the ide
+> drivers. It is obvious that this is not trivial and I basically tiptoe around the
+
+Thanks.
+
+I applied patches #1-2, #5-12 and #14-15.
+
+I skipped patches #3-4, #13 and #16-18 for now
+(more details in replies to corresponding mails).
+
+> landmines in the IRQ handler and request issue paths :). This raises also
+> several questions:
 > 
-> ...and here the "bash" process is in the right group, 2892, while "su"
-> is the one in the background!
+> 1. ide-cd uses the cdrom_info struct for e.g. dma status notification, the other
+> ide drivers use it per packet command in pc->flags. Well the last are kinda too
+> much to carry for _each_ command and i'm thinking maybe put all that in the
+> ide_drive_t and make it generic enough to fit all drivers. This way
+> pc->callback() can also be harboured there. One concern might be when a flag is
+> strictly per packet command which could be put somewhere else (maybe in the
+> struct request since it already has members when it is used as a packet
+> command).
 
-Hmm.
+Some pc->flags describe device's properties and thus should be moved to
+ide_drive_t (->dev_flags) while some other correspond to the queued command
+and moving them to ide_drive_t would be a bad idea IMO.
 
-> Can you try to run strace on the su to see where things go wrong, i.e.
-> 
->     $ strace -f -e trace=process su foo
-> 
-> ...and we're only interested in what happens up to the point where it
-> hangs. That should hopefully tell us which process is doing the wrong
-> thing. In either case, as Alan pointed out, this seems unlikely to be
-> a kernel problem.
+For ATA commands I was planning to put taskfile flags into rq->special field
+(well, I actually implemented it in draft patch and it looks OK) so maybe we
+can do something similar for packet commands.
+ 
+> 2. Can all that pc->xferred, pc->b_count, pc->errors and pc->cur_pos accounting
+> be safely mapped to a rq? I see some discrepancies like is pc->buf_size ==
+> rq->data_len, what about pc->req_xfer? I'll have a more detailed look at those
+> when i have more spare time later.
 
-OK, I attached this as a text file at the end.  But (*bummer*), using
-strace makes it impossible to reproduce the hang (figures, and I believe
-someone earlier in the thread also had this problem).
+If you ask if they can be mapped 'directly' then the answer is: "probably no"
+but if the question is whether it is possible to do it after some changes then
+the answer is: "probably yes". :)
 
-As for whether the kernel is at fault, not sure (i.e. does this hang
-behavior implicate the kernel automatically or can a user-space process
-cause itself such an issue?).  But I *do* see different behavior
-depending on the kernel version.  There were a couple of git kernels in
-which I could not reproduce it.  Still, if it is a race or something, it
-might be that the conditions were just slightly perturbed.
+[ However it may be necessary to convert ATAPI drivers to use scatterlists
+  instead of open-coded ->bio walking for PIO transfers first. ]
 
-I attached the strace log just in case it is of help.
-
-					-Joe
-
---------------080301080304040102060609
-Content-Type: text/x-log;
- name="su_strace.log"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="su_strace.log"
-
-7009  execve("/bin/su", ["su", "foo"], [/* 32 vars */]) = 0
-7009  clone(child_stack=0, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0xb7e3d708) = 7010
-7010  execve("/bin/bash", ["bash"], [/* 31 vars */]) = 0
-7010  clone( <unfinished ...>
-7009  waitpid(-1,  <unfinished ...>
-7010  <... clone resumed> child_stack=0, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0xb7db0708) = 7011
-7011  exit_group(0)                     = ?
-7010  --- SIGCHLD (Child exited) @ 0 (0) ---
-7010  waitpid(-1, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], WNOHANG) = 7011
-7010  waitpid(-1, 0xbff58cec, WNOHANG)  = -1 ECHILD (No child processes)
-7010  clone(child_stack=0, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0xb7db0708) = 7012
-7012  clone(child_stack=0, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0xb7db0708) = 7013
-7013  execve("/usr/bin/dircolors", ["dircolors", "-b", "/etc/DIR_COLORS"], [/* 31 vars */]) = 0
-7013  exit_group(0)                     = ?
-7012  --- SIGCHLD (Child exited) @ 0 (0) ---
-7012  waitpid(-1, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], WNOHANG) = 7013
-7012  waitpid(-1, 0xbff585ec, WNOHANG)  = -1 ECHILD (No child processes)
-7012  exit_group(0)                     = ?
-7010  waitpid(-1, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], 0) = 7012
-7010  --- SIGCHLD (Child exited) @ 0 (0) ---
-7010  waitpid(-1, 0xbff5873c, WNOHANG)  = -1 ECHILD (No child processes)
-7010  clone(child_stack=0, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0xb7db0708) = 7014
-7014  execve("/bin/sleep", ["sleep", "2"], [/* 31 vars */]) = 0
-7010  waitpid(-1,  <unfinished ...>
-7014  exit_group(0)                     = ?
-7010  <... waitpid resumed> [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], 0) = 7014
-7010  --- SIGCHLD (Child exited) @ 0 (0) ---
-7010  waitpid(-1, 0xbff593dc, WNOHANG)  = -1 ECHILD (No child processes)
-7010  clone(child_stack=0, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0xb7db0708) = 7015
-7015  execve("/bin/stty", ["stty", "-ixany"], [/* 31 vars */]) = 0
-7015  exit_group(0)                     = ?
-7010  --- SIGCHLD (Child exited) @ 0 (0) ---
-7010  waitpid(-1, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], WNOHANG) = 7015
-7010  waitpid(-1, 0xbff5936c, WNOHANG)  = -1 ECHILD (No child processes)
-7010  exit_group(0)                     = ?
-7009  <... waitpid resumed> [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], WSTOPPED) = 7010
-7009  exit_group(0)                     = ?
-
---------------080301080304040102060609--
+Thanks,
+Bart
