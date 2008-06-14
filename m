@@ -1,86 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbYFNTrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbYFNTyJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755088AbYFNTrq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 15:47:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbYFNTrg
+	id S1755239AbYFNTyJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 15:54:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbYFNTxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 15:47:36 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:31050 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754094AbYFNTrf (ORCPT
+	Sat, 14 Jun 2008 15:53:53 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:33515 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754369AbYFNTxw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 15:47:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=G5WLiu0HkLD4I5irMKjObLojGw9mbwMMkzX7JIqMqUlOiOmaJ+U3ouWbZbdpfaL259
-         5ksI1K7KMDifEgrKtQJIHpH55SBcnQgE0Wh8VyB6FjiSSVmxS3utsL3r+u1SboQ0WUTF
-         wuzTpovmoNBWlZSFBJn2zcAQ9v3RTYlm7GPmI=
-Date: Sat, 14 Jun 2008 23:43:38 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Adrian Bunk <bunk@kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Bug #10815] 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
-Message-ID: <20080614194338.GA4820@martell.zuzino.mipt.ru>
-References: <GIilET9wkhI.A.JzB.81vSIB@albercik> <dCRO4tbfLzK.A.BVD.E3vSIB@albercik> <20080613135255.GB21341@cs181133002.pp.htv.fi> <20080614144200.GA26421@linux.vnet.ibm.com> <20080614145839.GA10523@tv-sign.ru> <20080614181212.GB26421@linux.vnet.ibm.com>
+	Sat, 14 Jun 2008 15:53:52 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <485421C1.8010102@s5r6.in-berlin.de>
+Date: Sat, 14 Jun 2008 21:53:37 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080614181212.GB26421@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+CC: Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
+       Trivial Patch Monkey <trivial@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] 8139too: clean up spaces and TABs
+References: <4853BB62.1060109@freemail.hu> <4853C8AD.9020407@s5r6.in-berlin.de> <48541165.7050304@freemail.hu>
+In-Reply-To: <48541165.7050304@freemail.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 14, 2008 at 11:12:12AM -0700, Paul E. McKenney wrote:
-> On Sat, Jun 14, 2008 at 06:58:39PM +0400, Oleg Nesterov wrote:
-> > On 06/14, Paul E. McKenney wrote:
-> > >
-> > > On Fri, Jun 13, 2008 at 04:52:55PM +0300, Adrian Bunk wrote:
-> > > > On Sat, Jun 07, 2008 at 10:42:57PM +0200, Rafael J. Wysocki wrote:
-> > > > > This message has been generated automatically as a part of a report
-> > > > > of recent regressions.
-> > > > > 
-> > > > > The following bug entry is on the current list of known regressions
-> > > > > from 2.6.25.  Please verify if it still should be listed.
-> > > > > 
-> > > > > 
-> > > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10815
-> > > > > Subject		: 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
-> > > > > Submitter	: Alexey Dobriyan <adobriyan@gmail.com>
-> > > > > Date		: 2008-05-27 09:23 (12 days old)
-> > > > > References	: http://lkml.org/lkml/2008/5/27/9
-> > > > > Handled-By	: Oleg Nesterov <oleg@tv-sign.ru>
-> > > > > 		  Linus Torvalds <torvalds@linux-foundation.org>
-> > > > > 		  Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > > > Patch		: http://lkml.org/lkml/2008/5/28/16
-> > > > 
-> > > > What happened with this issue?
-> > > 
-> > > The patch listed above works for me, passes rcutorture, &c.  However,
-> > > I never have been able to reproduce the original problem, so cannot say
-> > > whether it qualifies as a fix.
-> > 
-> > I doubt very much RCU was the reason of this problem.
+Németh Márton wrote:
+> From: Márton Németh <nm127@freemail.hu>
 > 
-> Although I very much appreciate your confidence in my code, it is new
-> code, so therefore under suspicion.
+> Clean up the following errors and warnings reported by checkpatch.pl:
+
+Is 8139too in active development or are there people actively fixing 
+current bugs in it?  If not, a whitespace cleanup may be considered a 
+waste of time.  There are even a few valid arguments that such changes 
+are harmful then.
+
+>  - space prohibited between function name and open parenthesis '('
+>  - space required before the open brace '{'
+>  - code indent should use tabs where possible
+>  - line over 80 characters
+>  - spaces required around that '=' (ctx:VxW)
+
+Did you check that your whitespace changes are indeed only whitespace 
+changes, i.e. that resulting assembler is unchanged?  If you checked it, 
+it's worth mentioning in the submission.
+
+> Signed-off-by: Márton Németh <nm127@freemail.hu>
+> ---
+> --- a/drivers/net/8139too.c	2008-06-14 00:20:47.000000000 +0200
+> +++ b/drivers/net/8139too.c	2008-06-14 20:32:45.000000000 +0200
+> @@ -11,7 +11,7 @@
 > 
-> > Alexey, how did you trigger this problem?
+>  	-----<snip>-----
 > 
-> One of them involved running LTP while doing 170 kernel builds in
-> parallel.
+> -        	Written 1997-2001 by Donald Becker.
+> +		Written 1997-2001 by Donald Becker.
+>  		This software may be used and distributed according to the
+>  		terms of the GNU General Public License (GPL), incorporated
+>  		herein by reference.  Drivers based on or derived from this
 
-My gut feeling is that find_pid_ns oops, __d_lookup oops and
-__call_for_each_cic oops are the same bug.
+This is not the canonical multi-line comment style.
 
-And rcutorture failures I've mentioned to Paul privately.
+> @@ -116,8 +116,8 @@
+> 
+>  /* Default Message level */
+>  #define RTL8139_DEF_MSG_ENABLE   (NETIF_MSG_DRV   | \
+> -                                 NETIF_MSG_PROBE  | \
+> -                                 NETIF_MSG_LINK)
+> +				  NETIF_MSG_PROBE | \
+> +				  NETIF_MSG_LINK)
+> 
+> 
 
-Oleg, debugging you've posted never triggered.
+Why change this?
 
-kerneloops suggests that I'm alone. :-(
+(Besides for the reason that checkpatch says that new patches /should/ 
+use tabs at such occasions, which also isn't universally agreed upon.)
 
+>  /* enable PIO instead of MMIO, if CONFIG_8139TOO_PIO is selected */
+> @@ -134,7 +134,8 @@
+> 
+>  #if RTL8139_DEBUG
+>  /* note: prints function name for you */
+> -#  define DPRINTK(fmt, args...) printk(KERN_DEBUG "%s: " fmt, __FUNCTION__ , ## args)
+> +#  define DPRINTK(fmt, args...) \
+> +	printk(KERN_DEBUG "%s: " fmt, __FUNCTION__ , ## args)
+>  #else
+>  #  define DPRINTK(fmt, args...)
+>  #endif
+
+This line is merely 6 characters too long and does not contain anything 
+particularly important.  Why bother?
+
+> @@ -143,10 +144,10 @@
+>  #  define assert(expr) do {} while (0)
+>  #else
+>  #  define assert(expr) \
+> -        if(unlikely(!(expr))) {				        \
+> -        printk(KERN_ERR "Assertion failed! %s,%s,%s,line=%d\n",	\
+> -        #expr,__FILE__,__FUNCTION__,__LINE__);		        \
+> -        }
+> +	if (unlikely(!(expr))) {					\
+> +		printk(KERN_ERR "Assertion failed! %s,%s,%s,line=%d\n",	\
+> +		       #expr, __FILE__, __FUNCTION__, __LINE__);	\
+> +	}
+>  #endif
+> 
+> 
+> @@ -196,7 +197,9 @@ static int debug = -1;
+>     Threshold is bytes transferred to chip before transmission starts. */
+>  #define TX_FIFO_THRESH 256	/* In bytes, rounded down to 32 byte units. */
+> 
+> -/* The following settings are log_2(bytes)-4:  0 == 16 bytes .. 6==1024, 7==end of packet. */
+> +/* The following settings are log_2(bytes)-4:
+> + * 0 == 16 bytes .. 6==1024, 7==end of packet.
+> + */
+>  #define RX_FIFO_THRESH	7	/* Rx buffer level before first PCI xfer.  */
+>  #define RX_DMA_BURST	7	/* Maximum PCI burst, '6' is 1024 */
+>  #define TX_DMA_BURST	6	/* Maximum PCI burst, '6' is 1024 */
+
+This is not Linux multi-line comment style.  (It comes close to the 
+present style of 8139too.c though and may therefore be acceptable.)
+
+[...]
+> @@ -1253,57 +1280,59 @@ static int mdio_read (struct net_device
+>  }
+> 
+> 
+> -static void mdio_write (struct net_device *dev, int phy_id, int location,
+> -			int value)
+> +static void mdio_write(struct net_device *dev, int phy_id, int location,
+> +		       int value)
+>  {
+>  	struct rtl8139_private *tp = netdev_priv(dev);
+>  #ifdef CONFIG_8139TOO_8129
+>  	void __iomem *ioaddr = tp->mmio_addr;
+> -	int mii_cmd = (0x5002 << 16) | (phy_id << 23) | (location << 18) | value;
+> +	int mii_cmd = (0x5002 << 16) | (phy_id << 23) | (location << 18) |
+> +		      value;
+>  	int i;
+
+This decreases readability.  You could leave this merely 81 columns long 
+line as is.  Or remove the superfluous parentheses.
+
+[...]
+> @@ -1945,22 +1978,22 @@ static int rtl8139_rx(struct net_device
+>  		rmb();
+> 
+>  		/* read size+status of next frame from DMA ring buffer */
+> -		rx_status = le32_to_cpu (*(__le32 *) (rx_ring + ring_offset));
+> +		rx_status = le32_to_cpu(*(__le32 *) (rx_ring + ring_offset));
+>  		rx_size = rx_status >> 16;
+>  		pkt_size = rx_size - 4;
+> 
+>  		if (netif_msg_rx_status(tp))
+> -			printk(KERN_DEBUG "%s:  rtl8139_rx() status %4.4x, size %4.4x,"
+> -				" cur %4.4x.\n", dev->name, rx_status,
+> -			 rx_size, cur_rx);
+> +			printk(KERN_DEBUG "%s:  rtl8139_rx() status %4.4x, "
+> +			       "size %4.4x, cur %4.4x.\n",
+> +			       dev->name, rx_status, rx_size, cur_rx);
+>  #if RTL8139_DEBUG > 2
+>  		{
+>  			int i;
+> -			DPRINTK ("%s: Frame contents ", dev->name);
+> +			DPRINTK("%s: Frame contents ", dev->name);
+>  			for (i = 0; i < 70; i++)
+> -				printk (" %2.2x",
+> -					rx_ring[ring_offset + i]);
+> -			printk (".\n");
+> +				printk(" %2.2x",
+> +				       rx_ring[ring_offset + i]);
+> +			printk(".\n");
+>  		}
+>  #endif
+> 
+
+This printk trick does not work BTW.  But it should of course not be 
+fixed in a patch which is meant to be a whitespace change only.
+
+[...]
+-- 
+Stefan Richter
+-=====-==--- -==- -===-
+http://arcgraph.de/sr/
