@@ -1,118 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282AbYFNSoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755489AbYFNSpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755282AbYFNSoz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 14:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbYFNSoW
+	id S1755489AbYFNSpS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 14:45:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbYFNSpB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 14:44:22 -0400
-Received: from mail01d.mail.t-online.hu ([84.2.42.6]:58247 "EHLO
-	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751001AbYFNSoS (ORCPT
+	Sat, 14 Jun 2008 14:45:01 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:18547 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755352AbYFNSo7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 14:44:18 -0400
-Message-ID: <48541173.7040905@freemail.hu>
-Date: Sat, 14 Jun 2008 20:44:03 +0200
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@pobox.com>
-CC: netdev@vger.kernel.org, Trivial Patch Monkey <trivial@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] 8139too: different style cleanups
-References: <4853BB7B.4030905@freemail.hu>
-In-Reply-To: <4853BB7B.4030905@freemail.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC--Metrics: mail01d.mail.t-online.hu 0; Body=4 Fuz1=4 Fuz2=4
+	Sat, 14 Jun 2008 14:44:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=aa5/Q4CqmvaheALSo+nWtHCxxjDnc6saHszueACwcBAPyXcLYnAOmF6pGecqSwsaml
+         QzJD/eN331mU30OAYDS7PaXLELAYkbhNzKAvRWYnaFw6jEygSvENC0bvMf97B1cUbkB/
+         mM48qj/oaK2y5taZ5tUffn9OeOD9Pzhxfyo4w=
+Date: Sat, 14 Jun 2008 20:44:52 +0200
+From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, tglx <tglx@linutronix.de>,
+       hpa <hpa@zytor.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: coding style fixes to arch/x86/math-emu/reg_constant
+Message-ID: <20080614204452.25378bd0@paolo-desktop>
+X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+Before:
+total: 6 errors, 1 warnings, 117 lines checked
 
-Clean up the following errors and warnings reported by checkpatch.pl:
- - Use #include <linux/io.h> instead of <asm/io.h>
- - Use #include <linux/uaccess.h> instead of <asm/uaccess.h>
- - __func__ should be used instead of gcc specific __FUNCTION__
- - Macros with complex values should be enclosed in parenthesis
- - do not add new typedefs
- - trailing statements should be on next line
- - braces {} are not necessary for single statement blocks
- - plain inline is preferred over __inline__
+After:
+total: 0 errors, 1 warnings, 117 lines checked
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
+paolo@paolo-desktop:~/linux.trees.git$ md5sum /tmp/reg_constant.o.*
+780388a3056d58fb759efaf190d5d3d1  /tmp/reg_constant.o.after
+780388a3056d58fb759efaf190d5d3d1  /tmp/reg_constant.o.before
+
+paolo@paolo-desktop:~/linux.trees.git$ size /tmp/reg_constant.o.*
+   text    data     bss     dec     hex filename
+    457       0       0     457     1c9 /tmp/reg_constant.o.after
+    457       0       0     457     1c9 /tmp/reg_constant.o.before
+
+
+Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
 ---
---- b/drivers/net/8139too.c	2008-06-14 20:32:45.000000000 +0200
-+++ c/drivers/net/8139too.c	2008-06-14 20:38:24.000000000 +0200
-@@ -107,8 +107,8 @@
- #include <linux/mii.h>
- #include <linux/completion.h>
- #include <linux/crc32.h>
--#include <asm/io.h>
--#include <asm/uaccess.h>
-+#include <linux/io.h>
-+#include <linux/uaccess.h>
- #include <asm/irq.h>
+ arch/x86/math-emu/reg_constant.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
- #define RTL8139_DRIVER_NAME   DRV_NAME " Fast Ethernet driver " DRV_VERSION
-@@ -135,7 +135,7 @@
- #if RTL8139_DEBUG
- /* note: prints function name for you */
- #  define DPRINTK(fmt, args...) \
--	printk(KERN_DEBUG "%s: " fmt, __FUNCTION__ , ## args)
-+	printk(KERN_DEBUG "%s: " fmt, __func__ , ## args)
- #else
- #  define DPRINTK(fmt, args...)
- #endif
-@@ -146,7 +146,7 @@
- #  define assert(expr) \
- 	if (unlikely(!(expr))) {					\
- 		printk(KERN_ERR "Assertion failed! %s,%s,%s,line=%d\n",	\
--		       #expr, __FILE__, __FUNCTION__, __LINE__);	\
-+		       #expr, __FILE__, __func__, __LINE__);	\
- 	}
- #endif
-
-@@ -222,9 +222,9 @@ enum {
- #define RTL8139B_IO_SIZE 256
-
- #define RTL8129_CAPS	HAS_MII_XCVR
--#define RTL8139_CAPS	HAS_CHIP_XCVR|HAS_LNK_CHNG
-+#define RTL8139_CAPS	(HAS_CHIP_XCVR|HAS_LNK_CHNG)
-
--typedef enum {
-+enum {
- 	RTL8139 = 0,
- 	RTL8129,
- } board_t;
-@@ -1035,7 +1035,8 @@ static int __devinit rtl8139_init_one(st
- 	/* dev is fully set up and ready to use now */
- 	DPRINTK("about to register device named %s (%p)...\n", dev->name, dev);
- 	i = register_netdev(dev);
--	if (i) goto err_out;
-+	if (i)
-+		goto err_out;
-
- 	pci_set_drvdata(pdev, dev);
-
-@@ -1380,9 +1381,9 @@ static void rtl_check_media(struct net_d
+diff --git a/arch/x86/math-emu/reg_constant.c b/arch/x86/math-emu/reg_constant.c
+index 04869e6..0054835 100644
+--- a/arch/x86/math-emu/reg_constant.c
++++ b/arch/x86/math-emu/reg_constant.c
+@@ -16,8 +16,8 @@
+ #include "reg_constant.h"
+ #include "control_w.h"
+ 
+-#define MAKE_REG(s,e,l,h) { l, h, \
+-                            ((EXTENDED_Ebias+(e)) | ((SIGN_##s != 0)*0x8000)) }
++#define MAKE_REG(s, e, l, h) { l, h, \
++		((EXTENDED_Ebias+(e)) | ((SIGN_##s != 0)*0x8000)) }
+ 
+ FPU_REG const CONST_1 = MAKE_REG(POS, 0, 0x00000000, 0x80000000);
+ #if 0
+@@ -40,7 +40,7 @@ FPU_REG const CONST_PI2extra = MAKE_REG(NEG, -66,
+ FPU_REG const CONST_Z = MAKE_REG(POS, EXP_UNDER, 0x0, 0x0);
+ 
+ /* Only the sign and significand (and tag) are used in internal NaNs */
+-/* The 80486 never generates one of these 
++/* The 80486 never generates one of these
+ FPU_REG const CONST_SNAN = MAKE_REG(POS, EXP_OVER, 0x00000001, 0x80000000);
+  */
+ /* This is the real indefinite QNaN */
+@@ -49,7 +49,7 @@ FPU_REG const CONST_QNaN = MAKE_REG(NEG, EXP_OVER, 0x00000000, 0xC0000000);
+ /* Only the sign (and tag) is used in internal infinities */
+ FPU_REG const CONST_INF = MAKE_REG(POS, EXP_OVER, 0x00000000, 0x80000000);
+ 
+-static void fld_const(FPU_REG const *c, int adj, u_char tag)
++static void fld_const(FPU_REG const * c, int adj, u_char tag)
  {
- 	struct rtl8139_private *tp = netdev_priv(dev);
+ 	FPU_REG *st_new_ptr;
+ 
+-- 
+1.5.6.rc1.21.g03300
 
--	if (tp->phys[0] >= 0) {
-+	if (tp->phys[0] >= 0)
- 		mii_check_media(&tp->mii, netif_msg_link(tp), init_media);
--	}
-+
- }
-
- /* Start the hardware at open or resume. */
-@@ -1923,7 +1924,7 @@ static void rtl8139_rx_err(u32 rx_status
- }
-
- #if RX_BUF_IDX == 3
--static __inline__ void wrap_copy(struct sk_buff *skb, const unsigned char *ring,
-+static inline void wrap_copy(struct sk_buff *skb, const unsigned char *ring,
- 				 u32 offset, unsigned int size)
- {
- 	u32 left = RX_BUF_LEN - offset;
