@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbYFNOxK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755741AbYFNO5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755936AbYFNOxK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 10:53:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbYFNOw4
+	id S1755741AbYFNO5S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 10:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbYFNO5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 10:52:56 -0400
-Received: from [194.117.236.238] ([194.117.236.238]:46843 "EHLO
-	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751164AbYFNOwz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 10:52:55 -0400
-Date: Sat, 14 Jun 2008 17:52:23 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: penberg@cs.helsinki.fi, akpm@linux-foundation.org,
-       compudj@krystal.dyndns.org, linux-kernel@vger.kernel.org,
-       righi.andrea@gmail.com
-Subject: Re: [PATCH 1/3] relay: Fix 4 off-by-one errors occuring when
- writing to a CPU buffer.
-Message-ID: <20080614175223.4d3c6084@linux360.ro>
-In-Reply-To: <1213418437.8237.51.camel@charm-linux>
-References: <20080613040947.7465b9a5@linux360.ro>
-	<1213418437.8237.51.camel@charm-linux>
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
+	Sat, 14 Jun 2008 10:57:07 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:36938 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752166AbYFNO5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jun 2008 10:57:05 -0400
+Date: Sat, 14 Jun 2008 18:58:39 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Adrian Bunk <bunk@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [Bug #10815] 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
+Message-ID: <20080614145839.GA10523@tv-sign.ru>
+References: <GIilET9wkhI.A.JzB.81vSIB@albercik> <dCRO4tbfLzK.A.BVD.E3vSIB@albercik> <20080613135255.GB21341@cs181133002.pp.htv.fi> <20080614144200.GA26421@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080614144200.GA26421@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jun 2008 23:40:37 -0500
-Tom Zanussi <tzanussi@gmail.com> wrote:
+On 06/14, Paul E. McKenney wrote:
+>
+> On Fri, Jun 13, 2008 at 04:52:55PM +0300, Adrian Bunk wrote:
+> > On Sat, Jun 07, 2008 at 10:42:57PM +0200, Rafael J. Wysocki wrote:
+> > > This message has been generated automatically as a part of a report
+> > > of recent regressions.
+> > > 
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.25.  Please verify if it still should be listed.
+> > > 
+> > > 
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10815
+> > > Subject		: 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
+> > > Submitter	: Alexey Dobriyan <adobriyan@gmail.com>
+> > > Date		: 2008-05-27 09:23 (12 days old)
+> > > References	: http://lkml.org/lkml/2008/5/27/9
+> > > Handled-By	: Oleg Nesterov <oleg@tv-sign.ru>
+> > > 		  Linus Torvalds <torvalds@linux-foundation.org>
+> > > 		  Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > > Patch		: http://lkml.org/lkml/2008/5/28/16
+> > 
+> > What happened with this issue?
+> 
+> The patch listed above works for me, passes rcutorture, &c.  However,
+> I never have been able to reproduce the original problem, so cannot say
+> whether it qualifies as a fix.
 
-> I'm wondering if the all-zeroes at the end of the buffer might be
-> another case of the all-zeroes you were seeing due to cross-cpu
-> reading you decribed in the other patch.  In any case, I'm pretty
-> sure this patch isn't doing what you think it is, and don't see how
-> it could have fixed the problem (see below).  There may still be a
-> bug somewhere, but it would be good to be able to reproduce it.  Does
-> it happen even when running on a single cpu?
+I doubt very much RCU was the reason of this problem.
 
-Hi,
+Alexey, how did you trigger this problem?
 
-I noticed this problem after adding those spinlocks. As far as I can
-tell, having (offset == subbuf_size + 1) at any given moment allows the
-read() handler to see inconsistent offsets:
-1. writer sets offset = subbuf_size + 1
-2. writer releases spinlock
-3. read() acquires spinlock and reads the wrong offset
-4. read() releases spinlock
-5. next writer corrects the offset at the next write
- 
-> This case, offset being 1 larger than the subbuf size, is how we note
-> a full sub-buffer, so changing this will break full-subbuffer cases. 
+Oleg.
 
-No, it won't. Maximum length messages result in the following condition:
-start + offset == subbuf_size
-This happens because a buffer of length subbuf_size actually ranges
-from zero to (subbuf_size - 1) in regard to how it is addressed. Then,
-subbuf_size + 1 isn't just outside the bounds, but one more byte off.
-"Visual" example:
-subbuf_size = 4
-|[ ][ ][ ][ ]|[ ]
-  0  1  2  3   subbuf_size
-
-So, a full subbufer means offset equals subbuf_size, that is, the next
-empty slot is just outside the subbuffer.
-
-
-	Eduard
