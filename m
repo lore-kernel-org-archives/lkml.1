@@ -1,118 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760222AbYFNMiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759161AbYFNMlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760222AbYFNMiR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 08:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759114AbYFNMhi
+	id S1759161AbYFNMlT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 08:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbYFNMlC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 08:37:38 -0400
-Received: from mail00a.mail.t-online.hu ([84.2.40.5]:59015 "EHLO
-	mail00a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758990AbYFNMhg (ORCPT
+	Sat, 14 Jun 2008 08:41:02 -0400
+Received: from userg500.nifty.com ([202.248.238.80]:57161 "EHLO
+	userg500.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752925AbYFNMlA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 08:37:36 -0400
-Message-ID: <4853BB7B.4030905@freemail.hu>
-Date: Sat, 14 Jun 2008 14:37:15 +0200
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@pobox.com>
-CC: netdev@vger.kernel.org, Trivial Patch Monkey <trivial@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] 8139too: different style cleanups
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail00a.mail.t-online.hu 32710; Body=4 Fuz1=4
-	Fuz2=4
+	Sat, 14 Jun 2008 08:41:00 -0400
+DomainKey-Signature: a=rsa-sha1; s=userg500; d=nifty.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:in-reply-to:references:
+	x-mailer:mime-version:content-type:content-transfer-encoding;
+	b=h6vU4SQsU0BPVsHEUDvt9ke0VvaN6CkiE4yBra9CbblZmpJG032HSgqwAa43X7qOO
+	+lvTpnpHMwfKMzq/ZThNw==
+X-Nifty-SrcIP: [218.226.24.69]
+Date: Sat, 14 Jun 2008 21:36:12 +0900
+From: Komuro <komurojun-mbn@nifty.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Tejun Heo <htejun@gmail.com>,
+       Dominik Brodowski <linux@dominikbrodowski.net>, jgarzik@redhat.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-pcmcia <linux-pcmcia@lists.infradead.org>,
+       Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Subject: Re: [KERNEL 2.6.26-rc4]  bugreport : pata_pcmcia with Sandisk
+ Extreme III 8GB
+Message-Id: <20080614213612.96873c25.komurojun-mbn@nifty.com>
+In-Reply-To: <48537149.4040102@garzik.org>
+References: <20080528225049.9a134e0d.Kristoffer.Ericson@Gmail.com>
+	<20080528222740.GB20893@isilmar.linta.de>
+	<20080530135728.be02d3dc.Kristoffer.Ericson@Gmail.com>
+	<20080607223716.7d142072.komurojun-mbn@nifty.com>
+	<20080611072029.GB28692@comet.dominikbrodowski.net>
+	<20080614120055.ad8fbee0.komurojun-mbn@nifty.com>
+	<48537149.4040102@garzik.org>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+On Sat, 14 Jun 2008 03:20:41 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
 
-Clean up the following errors and warnings reported by checkpatch.pl:
- - Use #include <linux/io.h> instead of <asm/io.h>
- - Use #include <linux/uaccess.h> instead of <asm/uaccess.h>
- - __func__ should be used instead of gcc specific __FUNCTION__
- - Macros with complex values should be enclosed in parenthesis
- - do not add new typedefs
- - trailing statements should be on next line
- - braces {} are not necessary for single statement blocks
- - plain inline is preferred over __inline__
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
----
---- b/drivers/net/8139too.c	2008-06-14 14:08:18.000000000 +0200
-+++ c/drivers/net/8139too.c	2008-06-14 14:16:49.000000000 +0200
-@@ -107,8 +107,8 @@
- #include <linux/mii.h>
- #include <linux/completion.h>
- #include <linux/crc32.h>
--#include <asm/io.h>
--#include <asm/uaccess.h>
-+#include <linux/io.h>
-+#include <linux/uaccess.h>
- #include <asm/irq.h>
+After removing the 3-lines below in ata_eh_reset
+the pata_pcmcia works properly.
 
- #define RTL8139_DRIVER_NAME   DRV_NAME " Fast Ethernet driver " DRV_VERSION
-@@ -135,7 +135,7 @@
- #if RTL8139_DEBUG
- /* note: prints function name for you */
- #  define DPRINTK(fmt, args...) \
--	printk(KERN_DEBUG "%s: " fmt, __FUNCTION__ , ## args)
-+	printk(KERN_DEBUG "%s: " fmt, __func__ , ## args)
- #else
- #  define DPRINTK(fmt, args...)
- #endif
-@@ -146,7 +146,7 @@
- #  define assert(expr) \
- 	if (unlikely(!(expr))) {					\
- 		printk(KERN_ERR "Assertion failed! %s,%s,%s,line=%d\n",	\
--		       #expr, __FILE__, __FUNCTION__, __LINE__);	\
-+		       #expr, __FILE__, __func__, __LINE__);	\
- 	}
- #endif
 
-@@ -221,9 +221,9 @@ enum {
- #define RTL8139B_IO_SIZE 256
+-       spin_lock_irqsave(link->ap->lock, flags);
+-       link->eh_info.serror = 0;
+-       spin_unlock_irqrestore(link->ap->lock, flags);
 
- #define RTL8129_CAPS	HAS_MII_XCVR
--#define RTL8139_CAPS	HAS_CHIP_XCVR|HAS_LNK_CHNG
-+#define RTL8139_CAPS	(HAS_CHIP_XCVR|HAS_LNK_CHNG)
+Please fix this problem.
 
--typedef enum {
-+enum {
- 	RTL8139 = 0,
- 	RTL8129,
- } board_t;
-@@ -1033,7 +1033,8 @@ static int __devinit rtl8139_init_one(st
- 	/* dev is fully set up and ready to use now */
- 	DPRINTK("about to register device named %s (%p)...\n", dev->name, dev);
- 	i = register_netdev(dev);
--	if (i) goto err_out;
-+	if (i)
-+		goto err_out;
+Best Regards
+Komuro
 
- 	pci_set_drvdata(pdev, dev);
 
-@@ -1378,9 +1379,9 @@ static void rtl_check_media(struct net_d
- {
- 	struct rtl8139_private *tp = netdev_priv(dev);
+> > 
+> >>>>>> pcmcia: registering new device pcmcia1.1
+> >>>>>> 1.1: GetNextTuple: No more items
+> >>>>>> pata_pcmcia: probe of 1.1 failed with error -12
+> > 
+> > The patch "libata: kill hotplug related race condition"
+> > introduced the pata_pcmcia error.
+> > 
+> > Please fix this problem.
+> > 
+> > 
+> > Best Regards
+> > Komuro
+> > 
+> >>> f046519fc85a8fdf6a058b4ac9d897cdee6f3e52 is first bad commit
+> > commit f046519fc85a8fdf6a058b4ac9d897cdee6f3e52
+> > Author: Tejun Heo <htejun@gmail.com>
+> > Date:   Mon May 19 01:15:08 2008 +0900
+> > 
+> >     libata: kill hotplug related race condition
+> >     
+> >     Originally, whole reset processing was done while the port is frozen
+> >     and SError was cleared during @postreset().  This had two race
+> >     conditions.  1: hotplug could occur after reset but before SError is
+> >     cleared and libata won't know about it.  2: hotplug could occur after
+> >     all the reset is complete but before the port is thawed.  As all
+> >     events are cleared on thaw, the hotplug event would be lost.
+> 
+> Interesting!  Thanks for the diagnosis...
+> 
+> 	Jeff
+> 
+> 
+> 
 
--	if (tp->phys[0] >= 0) {
-+	if (tp->phys[0] >= 0)
- 		mii_check_media(&tp->mii, netif_msg_link(tp), init_media);
--	}
-+
- }
 
- /* Start the hardware at open or resume. */
-@@ -1921,7 +1922,7 @@ static void rtl8139_rx_err(u32 rx_status
- }
-
- #if RX_BUF_IDX == 3
--static __inline__ void wrap_copy(struct sk_buff *skb, const unsigned char *ring,
-+static inline void wrap_copy(struct sk_buff *skb, const unsigned char *ring,
- 				 u32 offset, unsigned int size)
- {
- 	u32 left = RX_BUF_LEN - offset;
-
+-- 
+Komuro <komurojun-mbn@nifty.com>
