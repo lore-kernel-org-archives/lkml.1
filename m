@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbYFNWXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756070AbYFNW3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756087AbYFNWXS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 18:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755250AbYFNWXA
+	id S1756070AbYFNW3T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 18:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755018AbYFNW3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 18:23:00 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:62323 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755117AbYFNWW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 18:22:59 -0400
-Date: Sat, 14 Jun 2008 23:00:03 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: 2.6.26-rc6-git2: Reported regressions from 2.6.25
-In-Reply-To: <alpine.LFD.1.10.0806141423500.2949@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.55.0806142249090.3771@cliff.in.clinika.pl>
-References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
- <alpine.LFD.1.10.0806141423500.2949@woody.linux-foundation.org>
+	Sat, 14 Jun 2008 18:29:08 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:65306 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754914AbYFNW3G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jun 2008 18:29:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=mTBJMuPhTBDXF++xDP24FU6dkLpPugNsI+M+NJ9hce5aSK1ddy1tyqKSHttsoEX9E/
+         9BybLzS6krS3OEP4VHIbzGsSBvMArYfY19sf537KsfxCVJFGut3qjdl+jafZgI+tnupQ
+         nsihN93ukrBfu2nsOkAr5TGs3bHj+wVzJh9Qo=
+Message-ID: <dd18b0c30806141529xe0a4078m78f52d206c7ae40d@mail.gmail.com>
+Date: Sat, 14 Jun 2008 22:29:04 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug 10724] ACPI: EC: GPE storm detected, disabling EC GPE
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Alexey Starikovskiy" <astarikovskiy@suse.de>
+In-Reply-To: <Jn7irxIunJK.A.XcF.vKDVIB@albercik>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
+	 <Jn7irxIunJK.A.XcF.vKDVIB@albercik>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Jun 2008, Linus Torvalds wrote:
+On Sat, Jun 14, 2008 at 8:12 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10724
+> Subject         : ACPI: EC: GPE storm detected, disabling EC GPE
+> Submitter       : Justin Mattock <justinmattock@gmail.com>
+> Date            : 2008-05-16 6:17 (30 days old)
+> References      : http://marc.info/?l=linux-kernel&m=121091875711824&w=4
+>                  http://lkml.org/lkml/2008/5/18/168
+>                  http://lkml.org/lkml/2008/5/25/195
+>                  http://lkml.org/lkml/2008/5/25/195
+> Patch           :  debug EC GPE
+>                   debug EC GPE
+>                   debug EC GPE
+>                   debug EC GPE
+>                  http://bugzilla.kernel.org/attachment.cgi?id=16364&action=view
+>                  http://bugzilla.kernel.org/attachment.cgi?id=16365&action=view
+>                  http://bugzilla.kernel.org/attachment.cgi?id=16364&action=view
+>                  http://bugzilla.kernel.org/attachment.cgi?id=16365&action=view
+>                   debug EC GPE</a>
+>
+>
+>
 
-> I don't believe this is a regression, at least the 8GB thing. The 
-> HIGHMEM64G config option has had a
-> 
-> 	depends on !M386 && !M486
-> 
-> for quite a while now. It certainly was in 2.6.25 already.
-> 
-> So if you want PAE support, we do require that you ask for a kernel that 
-> has cmpxchg8b support (needed for the atomic 64-bit clearing of a PAE page 
-> table entry). Not to mention a CPU that supports PAE. And that is simply 
-> incompatible with "I want it to work on an i486 too".
-> 
-> So saying "I want a kernel that uses PAE _and_ works on an i486" is simply 
-> nonsensical. If we ever supported it, it was a mistake, and wouldn't have 
-> actually worked on an i486 anyway.
+I've just pulled the latest git, and applied the latest patch that was
+sent to me, I'm not seeing this message at the moment.
+I am unsure if the problem is fixed or not.
 
- From what you have written it looks the dependency should actually be:
 
-	depends on !M386 && !M486 && !M586 && !M586TSC && !M586MMX
-
-as none of the pre-Pentium-Pro processors had the PAE feature (I am not
-sure about non-Intel implementations, so the case of M586 would have to be
-investigated).  It was originally planned for the Pentium, but abandoned
-because of the die size required -- the details behind the story were
-obviously never very well known, but it was definitely related to some
-cost implications.  The feature was reportedly documented in the earlier
-not-so-widely-available revisions of the Pentium manuals and later on
-removed while some of the other stuff was migrated to the (in)famous
-Appendix H.  This also explains the odd location of the PAE bits among the
-CPUID flags and in the CR4 register, which was initially marked as
-reserved.
-
-  Maciej
+-- 
+Justin P. Mattock
