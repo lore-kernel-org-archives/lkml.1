@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755741AbYFNO5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754746AbYFNPMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755741AbYFNO5S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 10:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbYFNO5H
+	id S1754746AbYFNPMG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 11:12:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbYFNPLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 10:57:07 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:36938 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752166AbYFNO5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 10:57:05 -0400
-Date: Sat, 14 Jun 2008 18:58:39 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Adrian Bunk <bunk@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Bug #10815] 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
-Message-ID: <20080614145839.GA10523@tv-sign.ru>
-References: <GIilET9wkhI.A.JzB.81vSIB@albercik> <dCRO4tbfLzK.A.BVD.E3vSIB@albercik> <20080613135255.GB21341@cs181133002.pp.htv.fi> <20080614144200.GA26421@linux.vnet.ibm.com>
+	Sat, 14 Jun 2008 11:11:54 -0400
+Received: from [194.117.236.238] ([194.117.236.238]:46444 "EHLO
+	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752378AbYFNPLx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jun 2008 11:11:53 -0400
+Date: Sat, 14 Jun 2008 18:11:03 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Tom Zanussi <tzanussi@gmail.com>
+Cc: penberg@cs.helsinki.fi, akpm@linux-foundation.org,
+       compudj@krystal.dyndns.org, linux-kernel@vger.kernel.org,
+       righi.andrea@gmail.com
+Subject: Re: [PATCH 2/3] relay: Fix race condition which occurs when reading
+ across CPUs.
+Message-ID: <20080614181103.17617db1@linux360.ro>
+In-Reply-To: <1213417601.8237.37.camel@charm-linux>
+References: <20080613040958.4f52ee29@linux360.ro>
+	<1213417601.8237.37.camel@charm-linux>
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080614144200.GA26421@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/14, Paul E. McKenney wrote:
->
-> On Fri, Jun 13, 2008 at 04:52:55PM +0300, Adrian Bunk wrote:
-> > On Sat, Jun 07, 2008 at 10:42:57PM +0200, Rafael J. Wysocki wrote:
-> > > This message has been generated automatically as a part of a report
-> > > of recent regressions.
-> > > 
-> > > The following bug entry is on the current list of known regressions
-> > > from 2.6.25.  Please verify if it still should be listed.
-> > > 
-> > > 
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10815
-> > > Subject		: 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
-> > > Submitter	: Alexey Dobriyan <adobriyan@gmail.com>
-> > > Date		: 2008-05-27 09:23 (12 days old)
-> > > References	: http://lkml.org/lkml/2008/5/27/9
-> > > Handled-By	: Oleg Nesterov <oleg@tv-sign.ru>
-> > > 		  Linus Torvalds <torvalds@linux-foundation.org>
-> > > 		  Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > Patch		: http://lkml.org/lkml/2008/5/28/16
-> > 
-> > What happened with this issue?
-> 
-> The patch listed above works for me, passes rcutorture, &c.  However,
-> I never have been able to reproduce the original problem, so cannot say
-> whether it qualifies as a fix.
+On Fri, 13 Jun 2008 23:26:41 -0500
+Tom Zanussi <tzanussi@gmail.com> wrote:
 
-I doubt very much RCU was the reason of this problem.
+> Alternatively, you could get rid of the problem by making sure CPU0
+> never reads CPU1's data, by having the userspace reader use per-cpu
+> threads and using sched_setaffinity() to pin each thread to a given
+> cpu. See for example, the blktrace code, which does this.
 
-Alexey, how did you trigger this problem?
+Yes, and performance-wise this is better. Though I'm not sure setting
+affinity is 100% safe. Will the thread be migrated soon enough, so we
+don't read cross-CPU? The point is I'm not sure how hard this is
+enforced.
 
-Oleg.
+However, I suggest this patch should go in, for two reasons:
+1. It provides expected behavior in any such situation.
+2. It adds (almost) no overhead when used in conjuction with setting CPU
+affinity. When the writer acquires the spinlock, it does not busy-wait,
+so the spinlock just disables IRQs (relay_write()).
+ 
+> Actually, in a few days or so I'm planning on releasing the first cut
+> of a library that makes this and all the rest of the nice blktrace
+> userspace code available to other tracing applications, not just
+> blktrace.  Hopefully it would be something that you'd be able to use
+> for kmemtrace as well; in that case, you'd just use the library and
+> not have to worry about these details.
 
+Sounds good. Thanks for letting me know.
+
+
+	Eduard
