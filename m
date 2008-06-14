@@ -1,68 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759585AbYFNMvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756866AbYFNNdD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759585AbYFNMvr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 08:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbYFNMvh
+	id S1756866AbYFNNdD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 09:33:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbYFNNcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 08:51:37 -0400
-Received: from japan.chezphil.org ([77.240.5.4]:3611 "EHLO japan.chezphil.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754213AbYFNMvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 08:51:36 -0400
-To: "Paul Collins" <paul@burly.ondioline.org>
-Cc: <jkosina@suse.cz>, <linux-input@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>,
-       "Marcel Holtmann" <marcel@holtmann.org>
-Date: Sat, 14 Jun 2008 13:51:33 +0100
-Subject: Re: [PATCH] [RESEND] fix HID quirks for aluminium apple wireless
-	keyboards
-Message-ID: <1213447893811@dmwebmail.dmwebmail.chezphil.org>
-In-Reply-To: <87tzfwiguc.fsf@burly.wgtn.ondioline.org>
-References: <87tzfwiguc.fsf@burly.wgtn.ondioline.org>
-X-Mailer: Decimail Webmail 3alpha16
+	Sat, 14 Jun 2008 09:32:52 -0400
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:60427 "EHLO
+	e28esmtp01.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753736AbYFNNcu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jun 2008 09:32:50 -0400
+Message-ID: <4853C87B.7050602@linux.vnet.ibm.com>
+Date: Sat, 14 Jun 2008 19:02:43 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; format="flowed"
-From: "Phil Endecott" <phil_wueww_endecott@chezphil.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, linux-mm@kvack.org,
+       Nick Piggin <npiggin@suse.de>, Andy Whitcroft <apw@shadowen.org>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "Lee.Schermerhorn@hp.com" <Lee.Schermerhorn@hp.com>
+Subject: Re: [PATCH] fix double unlock_page() in 2.6.26-rc5-mm3 kernel BUG
+ at mm/filemap.c:575!
+References: <20080611225945.4da7bb7f.akpm@linux-foundation.org> <4850E1E5.90806@linux.vnet.ibm.com> <20080612015746.172c4b56.akpm@linux-foundation.org> <20080612202003.db871cac.kamezawa.hiroyu@jp.fujitsu.com> <20080613104444.63bd242f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080613104444.63bd242f.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Collins wrote:
-> Here is a new version of the patch that just adds the entries to
-> hidp_blacklist using your suggested style.  I'm leaving the USB HID's
-> table alone based on Phil Endecott's remarks regarding HID proxy mode,
-> so now this patch only touches Bluetooth code.
->
->
-> bluetooth: fix Fn on Apple Wireless Keyboard
->
-> Enable the HID quirks for Apple Wireless Keyboards, based on the quirk
-> table entries in the USB HID.  With this patch applied the Fn key on my
-> keyboard now functions as expected.
->
-> diff --git a/net/bluetooth/hidp/core.c b/net/bluetooth/hidp/core.c
-> index 519cdb9..62f174a 100644
-> --- a/net/bluetooth/hidp/core.c
-> +++ b/net/bluetooth/hidp/core.c
-> @@ -676,6 +676,12 @@ static const struct {
->  	__u16 idProduct;
->  	unsigned quirks;
->  } hidp_blacklist[] = {
-> +	/* Apple Wireless Keyboard, ANSI layout */
-> +	{ 0x05ac, 0x022c, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
-> +	/* Apple Wireless Keyboard, ISO layout */
-> +	{ 0x05ac, 0x022d, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_APPLE_ISO_KEYBOARD },
-> +	/* Apple Wireless Keyboard, JIS layout */
-> +	{ 0x05ac, 0x022e, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
->  	/* Apple wireless Mighty Mouse */
->  	{ 0x05ac, 0x030c, HID_QUIRK_MIGHTYMOUSE | HID_QUIRK_INVERT_HWHEEL },
+KAMEZAWA Hiroyuki wrote:
+> This is reproducer of panic. "quick fix" is attached.
+> But I think putback_lru_page() should be re-designed.
+> 
+> ==
+> #include <stdio.h>
+> #include <sys/types.h>
+> #include <sys/stat.h>
+> #include <fcntl.h>
+> #include <sys/mman.h>
+> #include <unistd.h>
+> #include <errno.h>
+> 
+> int main(int argc, char *argv[])
+> {
+>         int fd;
+>         char *filename = argv[1];
+>         char buffer[4096];
+>         char *addr;
+>         int len;
+> 
+>         fd = open(filename, O_CREAT | O_EXCL | O_RDWR, S_IRWXU);
+> 
+>         if (fd < 0) {
+>                 perror("open");
+>                 exit(1);
+>         }
+>         len = write(fd, buffer, sizeof(buffer));
+> 
+>         if (len < 0) {
+>                 perror("write");
+>                 exit(1);
+>         }
+> 
+>         addr = mmap(NULL, 4096, PROT_WRITE, MAP_SHARED|MAP_LOCKED, fd, 0);
+>         if (addr == MAP_FAILED) {
+>                 perror("mmap");
+>                 exit(1);
+>         }
+>         munmap(addr, 4096);
+>         close(fd);
+> 
+>         unlink(filename);
+> }
+> ==
+> you'll see panic.
+> 
+> Fix is here
+> ==
+Hi Kame,
 
-Why do you set HID_QUIRK_APPLE_NUMLOCK_EMULATION ?  I don't know what 
-that quirk really does, but since these keyboards have neither a 
-numeric keypad nor a numlock key I can't see any benefit.
+Thanks, The patch fixes the kernel panic.
+
+Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> 
+> quick fix for double unlock_page();
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamewzawa.hiroyu@jp.fujitsu.com>
+> Index: linux-2.6.26-rc5-mm3/mm/truncate.c
+> ===================================================================
+> --- linux-2.6.26-rc5-mm3.orig/mm/truncate.c
+> +++ linux-2.6.26-rc5-mm3/mm/truncate.c
+> @@ -104,8 +104,8 @@ truncate_complete_page(struct address_sp
+> 
+>  	cancel_dirty_page(page, PAGE_CACHE_SIZE);
+> 
+> -	remove_from_page_cache(page);
+>  	clear_page_mlock(page);
+> +	remove_from_page_cache(page);
+>  	ClearPageUptodate(page);
+>  	ClearPageMappedToDisk(page);
+>  	page_cache_release(page);	/* pagecache ref */
+> 
 
 
-Phil.
-
-
-
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
