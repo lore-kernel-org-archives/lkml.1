@@ -1,53 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757548AbYFNDqk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbYFNEDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757548AbYFNDqk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Jun 2008 23:46:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbYFNDq3
+	id S1756020AbYFNEDZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 00:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750774AbYFNEDI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Jun 2008 23:46:29 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40153
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753027AbYFNDq2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Jun 2008 23:46:28 -0400
-Date: Fri, 13 Jun 2008 20:46:28 -0700 (PDT)
-Message-Id: <20080613.204628.137971521.davem@davemloft.net>
-To: hidave.darkstar@gmail.com
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, stable@kernel.org,
-       jmforbes@linuxtx.org, zwane@arm.linux.org.uk, tytso@mit.edu,
-       rdunlap@xenotime.net, davej@redhat.com, chuckw@quantumlinux.com,
-       reviews@ml.cw.f00f.org, mkrufky@linuxtv.org, cebbert@redhat.com,
-       cavokz@gmail.com, w@1wt.eu, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       arjan@linux.intel.com, marcel@holtmann.org, chrisw@sous-sol.org
-Subject: Re: [patch 16/47] bluetooth: fix locking bug in the rfcomm socket
- cleanup handling
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <a8e1da0806131950i4eb0ea48q5cc34ea07cfd523a@mail.gmail.com>
-References: <20080614000840.GA24659@suse.de>
-	<20080614001058.GP24698@suse.de>
-	<a8e1da0806131950i4eb0ea48q5cc34ea07cfd523a@mail.gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sat, 14 Jun 2008 00:03:08 -0400
+Received: from ozlabs.org ([203.10.76.45]:43293 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750755AbYFNECr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jun 2008 00:02:47 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mark McLoughlin <markmc@redhat.com>
+Subject: Re: [PATCH 1/2] virtio: Use bus_type probe and remove methods
+Date: Sat, 14 Jun 2008 14:02:26 +1000
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org
+References: <1213361201-10854-1-git-send-email-markmc@redhat.com>
+In-Reply-To: <1213361201-10854-1-git-send-email-markmc@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806141402.27175.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Dave Young" <hidave.darkstar@gmail.com>
-Date: Sat, 14 Jun 2008 10:50:51 +0800
+On Friday 13 June 2008 22:46:40 Mark McLoughlin wrote:
+> Hook up to the probe() and remove() methods in bus_type
+> rather than device_driver. The latter has been preferred
+> since 2.6.16.
+>
+> Signed-off-by: Mark McLoughlin <markmc@redhat.com>
 
-> On Sat, Jun 14, 2008 at 8:10 AM, Greg KH <gregkh@suse.de> wrote:
-> > -stable review patch.  If anyone has any objections, please let us know.
-> >
-> > ------------------
-> > From: Arjan van de Ven <arjan@linux.intel.com>
-> >
-> > [ Upstream commit: 7dccf1f4e1696c79bff064c3770867cc53cbc71c ]
-> 
-> Hi greg
-> Please including following commit as well because it will cause another bug:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=537d59af73d894750cff14f90fe2b6d77fbab15b
+Thanks, applied.
 
-Acked-by: David S. Miller <davem@davemloft.net>
+Cheers,
+Rusty.
