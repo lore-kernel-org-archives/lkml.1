@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756527AbYFNXiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756443AbYFNXuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756527AbYFNXiX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 19:38:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755656AbYFNXiP
+	id S1756443AbYFNXuh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 19:50:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755656AbYFNXu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 19:38:15 -0400
-Received: from gate.crashing.org ([63.228.1.57]:42674 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755322AbYFNXiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 19:38:14 -0400
-Subject: Re: [Bug 10714] Badness seen on 2.6.26-rc2 with lockdep enabled
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Adrian Bunk <bunk@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
-       bugme-daemon@bugzilla.kernel.org
-In-Reply-To: <20080614230424.GA21168@cs181133002.pp.htv.fi>
-References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
-	 <Jn7irxIunJK.A.ggF.4KDVIB@albercik>
-	 <20080614230424.GA21168@cs181133002.pp.htv.fi>
-Content-Type: text/plain
-Date: Sun, 15 Jun 2008 09:29:21 +1000
-Message-Id: <1213486161.8129.89.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Sat, 14 Jun 2008 19:50:26 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:31587 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755627AbYFNXuZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jun 2008 19:50:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=K2rJM06nPyJZ2tV2UB1pT6nGFzMYdb7OC80SBjw5ZcQIkykNjLvc1GxrheqvZpdLhn
+         IsWZgTR1/Fx9IdFPyPI87l5cDUPWyiNSM8CJrVEsjiGA6fIddsH5tDAzYvUaFfMz6vo/
+         hF8Woqe2SCfEmya7Q4zTb3iOWyE/OutQaTL3A=
+Message-ID: <6278d2220806141650t520027ccw46d4ee936d101501@mail.gmail.com>
+Date: Sun, 15 Jun 2008 00:50:24 +0100
+From: "Daniel J Blueman" <daniel.blueman@gmail.com>
+To: "Vegard Nossum" <vegard.nossum@gmail.com>
+Subject: Re: 2.6.26-rc5: SLUB debug, lockdep warning...
+Cc: "Christoph Lameter" <clameter@sgi.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>
+In-Reply-To: <19f34abd0806141423m18e35f29qb736d44460d70785@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6278d2220806140354i7f163086i6127664d8c2d88a9@mail.gmail.com>
+	 <19f34abd0806141423m18e35f29qb736d44460d70785@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-06-15 at 02:04 +0300, Adrian Bunk wrote:
-> On Sat, Jun 14, 2008 at 10:12:02PM +0200, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.25.  Please verify if it still should be listed.
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10714
-> > Subject		: Badness seen on 2.6.26-rc2 with lockdep enabled
-> > Submitter	: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > Date		: 2008-05-14 12:57 (32 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=121076917429133&w=4
-> 
-> Benjamin, you said you wanted to have a look at this?
+On Sat, Jun 14, 2008 at 10:23 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> On Sat, Jun 14, 2008 at 12:54 PM, Daniel J Blueman
+> <daniel.blueman@gmail.com> wrote:
+>> When enabling lockdep + SLUB debugging, I spotted this recursive
+>> lock-acquisition warning [1] when booting, however it doesn't always
+>> pop out.
+>
+> This seems to be the work of
+>
+> commit 3ac7fe5a4aab409bd5674d0b070bce97f9d20872
+> Author: Thomas Gleixner <tglx@linutronix.de>
+> Date:   Wed Apr 30 00:55:01 2008 -0700
+>
+>    infrastructure to debug (dynamic) objects
+>
+> ...which by the way changed SLUB without any SOBs from any of the SLUB
+> maintainers?
 
-Ah yes, slipped out of my mind. It's probably a missing annotation in
-the RTAS code, I'll have a look tomorrow.
+> Anyway, adding some Ccs.
 
-Thanks,
-Ben.
+Thanks for the detective work Vegard!
 
+>> Let me know if you need further information etc.
+>
+> Exact kernel version and your config file would be useful (please post
+> it online somewhere if possible). Thanks!
 
+2.6.26-rc5 mainline, x86-64 dual-core with maximal debug, running
+stock Ubuntu 8.04 desktop, NFSv4 home; seems to trigger always with
+nscd loading on boot. Config at:
+
+http://quora.org/slub-lockdep-config
+-- 
+Daniel J Blueman
