@@ -1,74 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbYFNIG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756486AbYFNIRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755950AbYFNIG3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 04:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbYFNIGP
+	id S1756486AbYFNIRU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Jun 2008 04:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbYFNIRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 04:06:15 -0400
-Received: from jenny.ondioline.org ([66.220.1.122]:56095 "EHLO
-	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752968AbYFNIGL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 04:06:11 -0400
-From: Paul Collins <paul@burly.ondioline.org>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: jkosina@suse.cz, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: [PATCH] [RESEND] fix HID quirks for aluminium apple wireless keyboards
-References: <87iqweltzo.fsf@burly.wgtn.ondioline.org>
-	<874p7ylsj0.fsf@burly.wgtn.ondioline.org>
-	<1213301289.17870.72.camel@violet.holtmann.net>
-Date: Sat, 14 Jun 2008 20:03:07 +1200
-Message-ID: <87tzfwiguc.fsf@burly.wgtn.ondioline.org>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 14 Jun 2008 04:17:07 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:42822 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753459AbYFNIRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Jun 2008 04:17:05 -0400
+Date: Sat, 14 Jun 2008 18:16:46 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for June 13 (x86_64: panic)
+Message-Id: <20080614181646.d91dcbda.sfr@canb.auug.org.au>
+In-Reply-To: <20080613155809.7699fc11.randy.dunlap@oracle.com>
+References: <20080613232214.394fd6fd.sfr@canb.auug.org.au>
+	<20080613155809.7699fc11.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.10; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__14_Jun_2008_18_16_46_+1000_V9ctqLLaxCQGKoHr"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marcel Holtmann <marcel@holtmann.org> writes:
+--Signature=_Sat__14_Jun_2008_18_16_46_+1000_V9ctqLLaxCQGKoHr
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->> I also took the liberty of adding defines for the vendor and for the
->> existing Mighty Mouse quirk.
+Hi Randy,
+
+On Fri, 13 Jun 2008 15:58:09 -0700 Randy Dunlap <randy.dunlap@oracle.com> w=
+rote:
 >
-> I prefer not to do this. I don't see any benefit or readability coming
-> out of it. Leave it as it is. Add the numeric ids and then a line on top
-> of it describing the devices.
+> When booting linux-next-20080613, I'm seeing a panic (on x86_64):
+>=20
+>=20
+> Freeing unused kernel memory: 380k freed
+> Write protecting the kernel read-only data: 4616k
+> uhci_hcd: version magic '2.6.26-rc6 SMP mod_unload ' should be '2.6.26-rc=
+6-next-20080613 SMP mod_unload '
+> ohci_hcd: version magic '2.6.26-rc6 SMP mod_unload ' should be '2.6.26-rc=
+6-next-20080613 SMP mod_unload '
+> ehci_hcd: version magic '2.6.26-rc6 SMP mod_unload ' should be '2.6.26-rc=
+6-next-20080613 SMP mod_unload '
+> cciss: version magic '2.6.26-rc6 SMP mod_unload ' should be '2.6.26-rc6-n=
+ext-20080613 SMP mod_unload '
 
-Here is a new version of the patch that just adds the entries to
-hidp_blacklist using your suggested style.  I'm leaving the USB HID's
-table alone based on Phil Endecott's remarks regarding HID proxy mode,
-so now this patch only touches Bluetooth code.
+These look strange.  Are you sure you rebuilt and installed all your
+modules and removed any old ones lying around?
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-bluetooth: fix Fn on Apple Wireless Keyboard
+--Signature=_Sat__14_Jun_2008_18_16_46_+1000_V9ctqLLaxCQGKoHr
+Content-Type: application/pgp-signature
 
-Enable the HID quirks for Apple Wireless Keyboards, based on the quirk
-table entries in the USB HID.  With this patch applied the Fn key on my
-keyboard now functions as expected.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-diff --git a/net/bluetooth/hidp/core.c b/net/bluetooth/hidp/core.c
-index 519cdb9..62f174a 100644
---- a/net/bluetooth/hidp/core.c
-+++ b/net/bluetooth/hidp/core.c
-@@ -676,6 +676,12 @@ static const struct {
- 	__u16 idProduct;
- 	unsigned quirks;
- } hidp_blacklist[] = {
-+	/* Apple Wireless Keyboard, ANSI layout */
-+	{ 0x05ac, 0x022c, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
-+	/* Apple Wireless Keyboard, ISO layout */
-+	{ 0x05ac, 0x022d, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_APPLE_ISO_KEYBOARD },
-+	/* Apple Wireless Keyboard, JIS layout */
-+	{ 0x05ac, 0x022e, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
- 	/* Apple wireless Mighty Mouse */
- 	{ 0x05ac, 0x030c, HID_QUIRK_MIGHTYMOUSE | HID_QUIRK_INVERT_HWHEEL },
- 
+iEYEARECAAYFAkhTfm4ACgkQTgG2atn1QN9yTQCfR87Suz4+KMNiKAdprSprxc7F
+/G8AnjRRkh4PVyqMi2JejsIk2vLyv8V+
+=2gSA
+-----END PGP SIGNATURE-----
 
-
--- 
-Paul Collins
-Wellington, New Zealand
-
-Dag vijandelijk luchtschip de huismeester is dood
+--Signature=_Sat__14_Jun_2008_18_16_46_+1000_V9ctqLLaxCQGKoHr--
