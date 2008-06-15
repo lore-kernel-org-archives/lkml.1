@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758692AbYFOOiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758794AbYFOOjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758692AbYFOOiA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 10:38:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757692AbYFOOhx
+	id S1758794AbYFOOjz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 10:39:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757934AbYFOOjq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 10:37:53 -0400
-Received: from host102-127-dynamic.20-87-r.retail.telecomitalia.it ([87.20.127.102]:29036
-	"EHLO linux.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757667AbYFOOhw (ORCPT
+	Sun, 15 Jun 2008 10:39:46 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:56990 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758056AbYFOOjp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 10:37:52 -0400
-X-Greylist: delayed 559 seconds by postgrey-1.27 at vger.kernel.org; Sun, 15 Jun 2008 10:37:52 EDT
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <david-b@pacbell.net>
-Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@suse.cz>,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Andrea Righi <righi.andrea@gmail.com>
-Subject: [PATCH -mm] PM: fix 2.6.26-rc5-mm3 build error with CONFIG_PM_TEST_SUSPEND=y
-Date: Sun, 15 Jun 2008 16:28:32 +0200
-Message-Id: <1213540112-2918-1-git-send-email-righi.andrea@gmail.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
-References: <>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+	Sun, 15 Jun 2008 10:39:45 -0400
+Subject: Re: [regression] CD-DA delay needed after insertion
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: linux-scsi@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
+References: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
+Content-Type: text/plain
+Date: Sun, 15 Jun 2008 09:39:41 -0500
+Message-Id: <1213540781.3517.18.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kernel/power/main.c: In function ‘test_suspend’:
-kernel/power/main.c:688: warning: passing argument 2 of ‘class_find_device’ from incompatible pointer type
-kernel/power/main.c:688: error: too few arguments to function ‘class_find_device’
-make[2]: *** [kernel/power/main.o] Error 1
-make[1]: *** [kernel/power] Error 2
-make: *** [kernel] Error 2
+On Fri, 2008-06-13 at 13:57 +0200, Geert Uytterhoeven wrote:
+> We've found another regression in 2.6.25 w.r.t. CD media change on PS3.
+> 
+> It can easily be reproduced by:
+> 
+>   1. Inserting an audio CD
+>   2. Running the following command as soon as the blue CD/DVD/BD drive LED
+>      stops blinking and is lit continuously:
+>       
+> 	 cdparanoia -Z -q 1-1[:1] /dev/null || echo failed
+> 
+> On 2.6.25 (and current mainline), you have to wait ca. 10 seconds after
+> insertion, or it will fail.
+> On 2.6.24 and older, it just works immediately.
+> 
+> It does not matter whether
+> http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fjejb%2Fscsi-rc-fixes-2.6.git;a=commitdiff_plain;h=d1daeabf0da5bfa1943272ce508e2ba785730bf0
+> is applied or not.
+> 
+> We haven't bisected it yet.
 
-Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
----
- kernel/power/main.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+There aren't that many commits affecting sr between 2.6.24 and 2.6.25,
+so I'd bet on the previous culprits.
 
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index e937cc8..2bf3d5b 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -685,7 +685,7 @@ static int __init test_suspend(void)
- 	}
- 
- 	/* RTCs have initialized by now too ... can we use one? */
--	class_find_device(rtc_class, &pony, has_wakealarm);
-+	class_find_device(rtc_class, NULL, &pony, has_wakealarm);
- 	if (pony)
- 		rtc = rtc_class_open(pony);
- 	if (!rtc) {
--- 
-1.5.4.3
+This time, the taxonomy looks like NOT_READY isn't being waited for
+properly.  I'd still tend to blame
+210ba1d1724f5c4ed87a2ab1a21ca861a915f734 it's just that this time I
+suspect this to be the problem line:
+
+	if (sshdr.sense_key == NOT_READY && sshdr.asc == 0x04)
+		return CDS_DISC_OK;
+
+Previously the code would have returned CDS_NO_DISC for the not ready
+case.  The CD would have tried to close the door but (and this is the
+key) it would have waited for the door to close before trying again.
+
+James
+
 
