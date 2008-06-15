@@ -1,66 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757064AbYFOHuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbYFOHut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757064AbYFOHuh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 03:50:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755906AbYFOHu1
+	id S1757357AbYFOHut (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 03:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756581AbYFOHub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 03:50:27 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60183 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755904AbYFOHu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 03:50:27 -0400
-Date: Sun, 15 Jun 2008 09:50:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug 10864] [regression][bisected] ~90,000 wakeups as of
-	2.6.26-rc3
-Message-ID: <20080615075008.GD29552@elte.hu>
-References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik> <Jn7irxIunJK.A.UoD.BJDVIB@albercik> <4854B71D.9080801@freemail.hu>
+	Sun, 15 Jun 2008 03:50:31 -0400
+Received: from mail01d.mail.t-online.hu ([84.2.42.6]:53334 "EHLO
+	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755940AbYFOHu2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 03:50:28 -0400
+Message-ID: <4854C9BF.8040900@freemail.hu>
+Date: Sun, 15 Jun 2008 09:50:23 +0200
+From: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       David Newall <davidn@davidnewall.com>
+CC: Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
+       Trivial Patch Monkey <trivial@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] 8139too: clean up spaces and TABs
+References: <4853BB62.1060109@freemail.hu> <4853C8AD.9020407@s5r6.in-berlin.de> <48541165.7050304@freemail.hu> <485421C1.8010102@s5r6.in-berlin.de>
+In-Reply-To: <485421C1.8010102@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <4854B71D.9080801@freemail.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-DCC--Metrics: mail01d.mail.t-online.hu 0; Body=6 Fuz1=6 Fuz2=6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Németh Márton <nm127@freemail.hu> wrote:
-
-> Hi,
+Stefan Richter wrote:
+> Németh Márton wrote:
+>> From: Márton Németh <nm127@freemail.hu>
+>>
+>> Clean up the following errors and warnings reported by checkpatch.pl:
 > 
-> I already mentioned at the bug report that 2.6.26-rc6 this is fixed.
+> Is 8139too in active development or are there people actively fixing 
+> current bugs in it?  If not, a whitespace cleanup may be considered a 
+> waste of time.  There are even a few valid arguments that such changes 
+> are harmful then.
 > 
-> Maybe tell your robot to first check the latest activities in the bug 
-> report since the last -rc release. What I want also to tell your robot 
-> that it should mention what actions should be taken in case the bug 
-> should be still listed or when the bug can be closed.
+>>  - space prohibited between function name and open parenthesis '('
+>>  - space required before the open brace '{'
+>>  - code indent should use tabs where possible
+>>  - line over 80 characters
+>>  - spaces required around that '=' (ctx:VxW)
+> 
+> Did you check that your whitespace changes are indeed only whitespace 
+> changes, i.e. that resulting assembler is unchanged?  If you checked it, 
+> it's worth mentioning in the submission.
 
-i think the current regression tracking methods that Rafael uses work 
-very well and i'd like to thank Rafael for those efforts - to me as a 
-subsystem maintainer it is a _very_ useful thing.
+Yes, I checked this. When I compared the "objdump -d" output I found that
+only the function calls are changed where the __LINE__ is a parameter.
 
-In this case there was no real harm from the "this bug is already fixed" 
-condition - just an extra email. Real harm would only come from missed 
-regressions or from incorrectly closed regressions - but those are not 
-happening.
+Sorry about taking your time. My intention was to make the 8139too source
+code better as I am using this driver actively to communicate with the
+digital world. I have chosen the checkpatch.pl's output to compare the
+whether the old and the new code are better or not. Maybe that was a mistake.
 
-note that there is no "robot" involved in changing the state of bugs - 
-the real important work here is done by Rafael and checking whether a 
-bug is still relevant is an inevitably manual work. The mails and 
-reports are auto-generated but crawling discussions and determining the 
-status of a regression is very hard to automate.
+I would like to try it again, but in a different way. I collected here
+the different problems reported by checkpatch.pl. I divided it to two
+groups according to your comments which I think it worth to deal with:
 
-	Ingo
+ + ERROR: Macros with complex values should be enclosed in parenthesis
+ + WARNING: __func__ should be used instead of gcc specific __FUNCTION__
+ + WARNING: plain inline is preferred over __inline__
+ + WARNING: Use #include <linux/io.h> instead of <asm/io.h>
+ + WARNING: Use #include <linux/uaccess.h> instead of <asm/uaccess.h>
+
+and the second group which it seems that may hurt somebody:
+
+ - ERROR: code indent should use tabs where possible
+ - ERROR: space required after that ',' (ctx:VxV)
+ - ERROR: space required before the open brace '{'
+ - ERROR: space required before the open parenthesis '('
+ - ERROR: spaces required around that '=' (ctx:VxW)
+ - ERROR: trailing statements should be on next line
+ - WARNING: braces {} are not necessary for single statement blocks
+ - WARNING: do not add new typedefs
+ - WARNING: line over 80 characters
+ - WARNING: space prohibited between function name and open parenthesis '('
+
+This is a much smaller set of changes. What do you think?
+
+Regards,
+
+	Márton Németh
+
