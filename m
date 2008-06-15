@@ -1,81 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756575AbYFODf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751612AbYFOEAM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756575AbYFODf1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Jun 2008 23:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755605AbYFODfT
+	id S1751612AbYFOEAM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 00:00:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755736AbYFOD75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 23:35:19 -0400
-Received: from ti-out-0910.google.com ([209.85.142.185]:25230 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755587AbYFODfR (ORCPT
+	Sat, 14 Jun 2008 23:59:57 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:48604 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755669AbYFOD7z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 23:35:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=t0hODD67NNe79vYIyqNoLN6okrSreLEMKBEvhGo7O6EHIWgWQaaaD4wcjD0+TT7X1q
-         Rz/HM3dFDS7VyH16Uq/PhMz8JnJxpt/geuGeh0aJq8OD9tvnMKmChSd4WV5NrlLdhc5V
-         2PFqE//oBR8AsAmaSCZLIdyNPEIXKAeSuO5So=
-Message-ID: <a8e1da0806142035i6212a079m151aea73bec34cd6@mail.gmail.com>
-Date: Sun, 15 Jun 2008 11:35:15 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Marcel Holtmann" <marcel@holtmann.org>
-Subject: Re: [patch 16/47] bluetooth: fix locking bug in the rfcomm socket cleanup handling
-Cc: "Greg KH" <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, "Justin Forbes" <jmforbes@linuxtx.org>,
-       "Zwane Mwaikambo" <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, "Randy Dunlap" <rdunlap@xenotime.net>,
-       "Dave Jones" <davej@redhat.com>,
-       "Chuck Wolber" <chuckw@quantumlinux.com>,
-       "Chris Wedgwood" <reviews@ml.cw.f00f.org>,
-       "Michael Krufky" <mkrufky@linuxtv.org>,
-       "Chuck Ebbert" <cebbert@redhat.com>,
-       "Domenico Andreoli" <cavokz@gmail.com>, "Willy Tarreau" <w@1wt.eu>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Arjan van de Ven" <arjan@linux.intel.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Chris Wright" <chrisw@sous-sol.org>
-In-Reply-To: <1213446386.17870.146.camel@violet.holtmann.net>
+	Sat, 14 Jun 2008 23:59:55 -0400
+Message-ID: <485493B3.8080001@linux.vnet.ibm.com>
+Date: Sun, 15 Jun 2008 09:29:47 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       linux-mm@kvack.org, Nick Piggin <npiggin@suse.de>,
+       Andy Whitcroft <apw@shadowen.org>, "riel@redhat.com" <riel@redhat.com>
+Subject: Re: [PATCH] fix double unlock_page() in 2.6.26-rc5-mm3 kernel BUG
+ at mm/filemap.c:575!
+References: <20080611225945.4da7bb7f.akpm@linux-foundation.org> <4850E1E5.90806@linux.vnet.ibm.com> <20080612015746.172c4b56.akpm@linux-foundation.org> <20080612202003.db871cac.kamezawa.hiroyu@jp.fujitsu.com> <20080613104444.63bd242f.kamezawa.hiroyu@jp.fujitsu.com> <20080612191311.1331f337.akpm@linux-foundation.org> <1213371046.9670.12.camel@lts-notebook>
+In-Reply-To: <1213371046.9670.12.camel@lts-notebook>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080613234753.235721454@mini.kroah.org>
-	 <20080614000840.GA24659@suse.de> <20080614001058.GP24698@suse.de>
-	 <a8e1da0806131950i4eb0ea48q5cc34ea07cfd523a@mail.gmail.com>
-	 <1213446386.17870.146.camel@violet.holtmann.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 14, 2008 at 8:26 PM, Marcel Holtmann <marcel@holtmann.org> wrote:
-> Hi Dave,
->
->> > Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
->> > Acked-by: Marcel Holtmann <marcel@holtmann.org>
->> > Signed-off-by: David S. Miller <davem@davemloft.net>
->> > Signed-off-by: Chris Wright <chrisw@sous-sol.org>
->> > ---
->> >  net/bluetooth/rfcomm/core.c |    2 +-
->> >  1 file changed, 1 insertion(+), 1 deletion(-)
->> >
->> > --- a/net/bluetooth/rfcomm/core.c
->> > +++ b/net/bluetooth/rfcomm/core.c
->> > @@ -423,8 +423,8 @@ static int __rfcomm_dlc_close(struct rfc
->> >
->> >                rfcomm_dlc_lock(d);
->> >                d->state = BT_CLOSED;
->> > -               rfcomm_dlc_unlock(d);
->> >                d->state_change(d, err);
->> > +               rfcomm_dlc_unlock(d);
->> >
->> >                skb_queue_purge(&d->tx_queue);
->> >                rfcomm_dlc_unlink(d);
->
-> did we screw up the tabs during the review process here.
+Lee Schermerhorn wrote:
+> On Thu, 2008-06-12 at 19:13 -0700, Andrew Morton wrote:
+>> On Fri, 13 Jun 2008 10:44:44 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>>
+>>> This is reproducer of panic. "quick fix" is attached.
+>> Thanks - I put that in
+>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc5/2.6.26-rc5-mm3/hot-fixes/
+>>
+>>> But I think putback_lru_page() should be re-designed.
+>> Yes, it sounds that way.
+> 
+> Here's a proposed replacement patch that reworks putback_lru_page()
+> slightly and cleans up the call sites.  I still want to balance the
+> get_page() in isolate_lru_page() with a put_page() in putback_lru_page()
+> for the primary users--vmscan and page migration.  So, I need to drop
+> the lock before the put_page() when handed a page with null mapping and
+> a single reference count as the page will be freed on put_page() and a
+> locked page would bug out in free_pages_check()/bad_page().  
+> 
+> Lee
+> 
+> PATCH fix page unlocking protocol for putback_lru_page()
+> 
+> Against:  2.6.26-rc5-mm3
+> 
+> Replaces Kame-san's hotfix:
+> fix-double-unlock_page-in-2626-rc5-mm3-kernel-bug-at-mm-filemapc-575.patch
+> 
+> Applies at end of vmscan/unevictable/mlock series to avoid patch conflicts.
+> 
+> 1)  modified putback_lru_page() to drop page lock only if both page_mapping()
+>     NULL and page_count() == 1 [rather than VM_BUG_ON(page_count(page) != 1].
+>     I want to balance the put_page() from isolate_lru_page() here for vmscan
+>     and, e.g., page migration rather than requiring explicit checks of the
+>     page_mapping() and explicit put_page() in these areas.  However, the page
+>     could be truncated while one of these subsystems holds it isolated from
+>     the LRU.  So, need to handle this case.  Callers of putback_lru_page()
+>     need to be aware of this and only call it with a page with NULL
+>     page_mapping() when they will no longer reference the page afterwards.
+>     This is the case for vmscan and page migration.
+> 
+> 2)  m[un]lock_vma_page() already will not be called for page with NULL
+>     mapping.  Added VM_BUG_ON() to assert this.
+> 
+> 3)  modified clear_page_lock() to skip the isolate/putback shuffle for
+>     pages with NULL mapping, as they are being truncated/freed.  Thus,
+>     any future callers of clear_page_lock() need not be concerned about
+>     the putback_lru_page() semantics for truncated pages.
+> 
+Hi Lee,
 
-Yes, it's due to my use of gmail web interface.
-But please don't worry. I usually post patches by mutt, and reply by
-gmail web client to easily quote the original message.
+Thanks, After applying the patch, the kernel does not panic's while
+bootup.
+
+Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+
+> Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
+> 
+>  mm/mlock.c  |   29 +++++++++++++++++++----------
+>  mm/vmscan.c |   12 +++++++-----
+>  2 files changed, 26 insertions(+), 15 deletions(-)
+> 
+> Index: linux-2.6.26-rc5-mm3/mm/mlock.c
+> ===================================================================
+> --- linux-2.6.26-rc5-mm3.orig/mm/mlock.c	2008-06-12 11:42:59.000000000 -0400
+> +++ linux-2.6.26-rc5-mm3/mm/mlock.c	2008-06-13 09:47:14.000000000 -0400
+> @@ -59,27 +59,33 @@ void __clear_page_mlock(struct page *pag
+> 
+>  	dec_zone_page_state(page, NR_MLOCK);
+>  	count_vm_event(NORECL_PGCLEARED);
+> -	if (!isolate_lru_page(page)) {
+> -		putback_lru_page(page);
+> -	} else {
+> -		/*
+> -		 * Page not on the LRU yet.  Flush all pagevecs and retry.
+> -		 */
+> -		lru_add_drain_all();
+> -		if (!isolate_lru_page(page))
+> +	if (page->mapping) {	/* truncated ? */
+> +		if (!isolate_lru_page(page)) {
+>  			putback_lru_page(page);
+> -		else if (PageUnevictable(page))
+> -			count_vm_event(NORECL_PGSTRANDED);
+> +		} else {
+> +			/*
+> +			 * Page not on the LRU yet.
+> +			 * Flush all pagevecs and retry.
+> +			 */
+> +			lru_add_drain_all();
+> +			if (!isolate_lru_page(page))
+> +				putback_lru_page(page);
+> +			else if (PageUnevictable(page))
+> +				count_vm_event(NORECL_PGSTRANDED);
+> +		}
+>  	}
+>  }
+> 
+>  /*
+>   * Mark page as mlocked if not already.
+>   * If page on LRU, isolate and putback to move to unevictable list.
+> + *
+> + * Called with page locked and page_mapping() != NULL.
+>   */
+>  void mlock_vma_page(struct page *page)
+>  {
+>  	BUG_ON(!PageLocked(page));
+> +	VM_BUG_ON(!page_mapping(page));
+> 
+>  	if (!TestSetPageMlocked(page)) {
+>  		inc_zone_page_state(page, NR_MLOCK);
+> @@ -92,6 +98,8 @@ void mlock_vma_page(struct page *page)
+>  /*
+>   * called from munlock()/munmap() path with page supposedly on the LRU.
+>   *
+> + * Called with page locked and page_mapping() != NULL.
+> + *
+>   * Note:  unlike mlock_vma_page(), we can't just clear the PageMlocked
+>   * [in try_to_munlock()] and then attempt to isolate the page.  We must
+>   * isolate the page to keep others from messing with its unevictable
+> @@ -110,6 +118,7 @@ void mlock_vma_page(struct page *page)
+>  static void munlock_vma_page(struct page *page)
+>  {
+>  	BUG_ON(!PageLocked(page));
+> +	VM_BUG_ON(!page_mapping(page));
+> 
+>  	if (TestClearPageMlocked(page)) {
+>  		dec_zone_page_state(page, NR_MLOCK);
+> Index: linux-2.6.26-rc5-mm3/mm/vmscan.c
+> ===================================================================
+> --- linux-2.6.26-rc5-mm3.orig/mm/vmscan.c	2008-06-12 11:39:09.000000000 -0400
+> +++ linux-2.6.26-rc5-mm3/mm/vmscan.c	2008-06-13 09:44:44.000000000 -0400
+> @@ -1,4 +1,4 @@
+> -/*
+> + /*
+>   *  linux/mm/vmscan.c
+>   *
+>   *  Copyright (C) 1991, 1992, 1993, 1994  Linus Torvalds
+> @@ -488,6 +488,9 @@ int remove_mapping(struct address_space 
+>   * lru_lock must not be held, interrupts must be enabled.
+>   * Must be called with page locked.
+>   *
+> + * If page truncated [page_mapping() == NULL] and we hold the last reference,
+> + * the page will be freed here.  For vmscan and page migration.
+> + *
+>   * return 1 if page still locked [not truncated], else 0
+>   */
+>  int putback_lru_page(struct page *page)
+> @@ -502,12 +505,11 @@ int putback_lru_page(struct page *page)
+>  	lru = !!TestClearPageActive(page);
+>  	was_unevictable = TestClearPageUnevictable(page); /* for page_evictable() */
+> 
+> -	if (unlikely(!page->mapping)) {
+> +	if (unlikely(!page->mapping && page_count(page) == 1)) {
+>  		/*
+> -		 * page truncated.  drop lock as put_page() will
+> -		 * free the page.
+> +		 * page truncated and we hold last reference.
+> +		 * drop lock as put_page() will free the page.
+>  		 */
+> -		VM_BUG_ON(page_count(page) != 1);
+>  		unlock_page(page);
+>  		ret = 0;
+>  	} else if (page_evictable(page, NULL)) {
+> 
+> 
+
+
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
