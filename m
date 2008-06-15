@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbYFOU5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754403AbYFOVHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754493AbYFOU5w (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 16:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbYFOU5l
+	id S1754403AbYFOVHn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 17:07:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbYFOVHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 16:57:41 -0400
-Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:44309 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752070AbYFOU5k (ORCPT
+	Sun, 15 Jun 2008 17:07:31 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:21673 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752234AbYFOVHF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 16:57:40 -0400
-Message-ID: <4855823F.40208@davidnewall.com>
-Date: Mon, 16 Jun 2008 06:27:35 +0930
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: OBATA Noboru <noboru.obata.ar@hitachi.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-net@vger.kernel.org
-Subject: Feedback on TCP: Make TCP_RTO_MAX a variable
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 15 Jun 2008 17:07:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:sender;
+        b=pIFTPJRRtAHZm2CHN47xvOhF/aXs77RztS/SP1DRdVq1ZaGwC/kVBPTQdUNlZvhl58
+         IStP04VF/jV5T7xzIUfS7i3CAcDavvs5TCqZVxsw6GqEIYsH+rmKzFuncE/hbX+kXCVu
+         CQowDiU30NnbwxD0CwCE6S1ej1BHQMUWNX39I=
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: linux-kernel@vger.kernel.org, dwmw2@infradead.org, sam@ravnborg.org
+Cc: Peter Korsgaard <jacmet@sunsite.dk>
+Subject: [PATCH] export linux/a.out.h
+Date: Sun, 15 Jun 2008 23:07:01 +0200
+Message-Id: <1213564021-5195-1-git-send-email-jacmet@sunsite.dk>
+X-Mailer: git-send-email 1.5.5.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Last year, Obata Noboru sent a patch to permit adjustment of
-TCP_RTO_MAX, which I have found useful.  Refer to
-http://marc.info/?l=linux-netdev&m=118422471428855 for details.
+Export linux/a.out.h like we do for asm/a.out.h as some applications needs
+it (E.G. valgrind). One minor complication is that the interesting stuff is
+protected by an CONFIG_ARCH_SUPPORTS_AOUT ifdef, so make sure that gets
+defined for unifdef.
 
-A customer reported that their internet-connected POS terminals were
-regularly "freezing" for extended periods, sometimes for as long as a
-few minutes.  My analysis, such as it was, suggested that those
-occasions were caused by floods of packets directed towards the internet
-link at one end or the other (i.e. POS terminal or central server),
-leading to severe packet loss and maximum packet retransmit times during
-which no session data could be transmitted.  I believe those floods were
-caused by anonymous third parties scanning the internet, and attempting
-to break through my client's routers.  I also believe that to be an
-unavoidable social quality of the internet; I have to live with it.
+Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+---
+ include/linux/Kbuild |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Having a "cash register" randomly freeze for minutes at a time is not
-acceptable, and neither does it seem necessary.  Using Obata Noboru's
-patch, I set TCP_RTO_MAX to 5 seconds at both ends.  The system has been
-running thus for five weeks, and I have not been called by my customer
-since.  While this change obviously did nothing to solve the underlying
-problem of temporary link congestion (it has no solution), it did remove
-a frequent, multi-minute pause.  Perhaps surprisingly, I have not heard
-of sessions being dropped, which could be expected to occur as a
-consequence of the substantially reduced retransmit times.  This might
-be luck, and sessions aren't dropping; or it might be insufficiently
-important (annoying) for my client to report; the application would
-restart quickly.  Either way, apparently my client no longer has a problem.
+diff --git a/include/linux/Kbuild b/include/linux/Kbuild
+index 93b9885..d998fc7 100644
+--- a/include/linux/Kbuild
++++ b/include/linux/Kbuild
+@@ -162,6 +162,8 @@ header-y += video_encoder.h
+ header-y += videotext.h
+ header-y += x25.h
+ 
++UNIFDEF += -DCONFIG_ARCH_SUPPORTS_AOUT
++unifdef-y += a.out.h
+ unifdef-y += acct.h
+ unifdef-y += adb.h
+ unifdef-y += adfs_fs.h
+-- 
+1.5.5.1
 
-I acknowledge that this patch must exacerbate an already hopeless
-situation: A link is congested and I am causing packets to be sent at
-five second intervals instead of 10, 20, 40, 80 or 120.  I am
-unconcerned by this because the number of additional packets is
-miniscule when compared to the number of packets that caused the problem
-in the initial instance.  I do not know how 120 seconds was chosen for
-the RTO maximum but I observe that network bandwidth has increased by
-orders of magnitude since it was, and feel that a corresponding decrease
-in RTO is fair.  I put it to administrators everywhere to consider this
-when faced with similar problems.
-
-It's a pity that Obata Noboru's patch was rejected.
-
-Thank you, Noboru.
