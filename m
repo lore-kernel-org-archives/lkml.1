@@ -1,95 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753163AbYFOSwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753031AbYFOTO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753163AbYFOSwz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 14:52:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750744AbYFOSwp
+	id S1753031AbYFOTO5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 15:14:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750933AbYFOTOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 14:52:45 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:63167 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750699AbYFOSwo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 14:52:44 -0400
+	Sun, 15 Jun 2008 15:14:45 -0400
+Received: from server009.webpack.hosteurope.de ([80.237.130.17]:54830 "EHLO
+	server009.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750915AbYFOTOn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 15:14:43 -0400
+From: Daniel Exner <dex@dragonslave.de>
+Reply-To: webmaster@dragonslave.de
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Subject: Re: linux-next Regression: Unable to locate IOAPIC
+Date: Sun, 15 Jun 2008 21:14:32 +0200
+User-Agent: KMail/1.9.9
+Cc: "Alexey Starikovskiy" <aystarik@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-acpi@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>
+References: <200806051100.12885.dex@dragonslave.de> <48536E3B.4000703@gmail.com> <86802c440806140126l7a949783of0fb08d11ae07bef@mail.gmail.com>
+In-Reply-To: <86802c440806140126l7a949783of0fb08d11ae07bef@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-ID: <18517.25839.523939.668307@harpo.it.uu.se>
-Date: Sun, 15 Jun 2008 20:52:31 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [BUG] IDE: 2.6.26-rc5-git5 ide_generic leaks resources breaking my NE2000 NIC
-In-Reply-To: <200806151612.21248.bzolnier@gmail.com>
-References: <200806151155.m5FBtoou029056@harpo.it.uu.se>
-	<200806151612.21248.bzolnier@gmail.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Content-Disposition: inline
+Message-Id: <200806152114.33007.dex@dragonslave.de>
+X-bounce-key: webpack.hosteurope.de;dex@dragonslave.de;1213557283;1f656645;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz writes:
- > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
- > Subject: [PATCH] ide-generic: don't probe all legacy ISA IDE ports by default
- > 
- > We can't probe all legacy ISA IDE ports by default as the resources may be
- > occupied by other ISA devices.  Add "probe_mask" module parameter and probe
- > only first two ISA IDE ports by default leaving the decision about probing
- > the rest to the user (systems with ISA ide2-6 should be very, very rare).
- > 
- > This fixes a regression caused by:
- > 
- > commit 343a3451e20314d5959b59b992e33fbaadfe52bf
- > Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
- > Date:   Tue Jun 10 20:56:36 2008 +0200
- > 
- >     ide-generic: add missing hwif->chipset setup
- > ...
- > 
- > Reported-by: Mikael Pettersson <mikpe@it.uu.se>
- > Bisected-by: Mikael Pettersson <mikpe@it.uu.se>
- > Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
- > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Hi all,
 
-This fixes the regression on my old box. Thanks.
+Yinghai Lu wrote:
+> >> To clarify myself:
+> >> 2.6.25.5:  --> relatively fast no IOAPIC Errors in dmesg
+> >> 2.6.26-rc5:   --> relatively  no IOAPIC Errors in dmesg
+> >> 2.6.26-rc5 + git-acpi Patch:   --> relatively  no IOAPIC Errors in dmesg
+> >> 2.6.26-rc5 +  linux-next snapshot 20080604 --> even slower than before
+> >> my ide Patch many "unable to locate IOAPIC" Errors
+> >>
+> >>
+> >> So I think the problem lies not in the acpi tree but somewhre else.
+> >>
+> >> Is it possible to tell git to explicitly _exclude_ a specific tree while
+> >> bisecting?
+>
+> can you check if the attached patch fix the problem?
+> it will not check entries before MP_intsrc_info...
+This fixed it, thanks :)
 
-Tested-by: Mikael Pettersson <mikpe@it.uu.se>
+Also maschine feels not as fast as with 2.6.25.x but noticeable faster :)
 
- > ---
- >  drivers/ide/ide-generic.c |    9 ++++++++-
- >  1 file changed, 8 insertions(+), 1 deletion(-)
- > 
- > Index: b/drivers/ide/ide-generic.c
- > ===================================================================
- > --- a/drivers/ide/ide-generic.c
- > +++ b/drivers/ide/ide-generic.c
- > @@ -22,6 +22,10 @@
- >  
- >  #define DRV_NAME	"ide_generic"
- >  
- > +static int probe_mask = 0x03;
- > +module_param(probe_mask, int, 0);
- > +MODULE_PARM_DESC(probe_mask, "probe mask for legacy ISA IDE ports");
- > +
- >  static ssize_t store_add(struct class *cls, const char *buf, size_t n)
- >  {
- >  	ide_hwif_t *hwif;
- > @@ -89,6 +93,9 @@ static int __init ide_generic_init(void)
- >  	u8 idx[MAX_HWIFS];
- >  	int i;
- >  
- > +	printk(KERN_INFO DRV_NAME ": please use \"probe_mask=0x3f\" module "
- > +			 "parameter for probing all legacy ISA IDE ports\n");
- > +
- >  	for (i = 0; i < MAX_HWIFS; i++) {
- >  		ide_hwif_t *hwif;
- >  		unsigned long io_addr = ide_default_io_base(i);
- > @@ -96,7 +103,7 @@ static int __init ide_generic_init(void)
- >  
- >  		idx[i] = 0xff;
- >  
- > -		if (io_addr) {
- > +		if ((probe_mask & (1 << i)) && io_addr) {
- >  			if (!request_region(io_addr, 8, DRV_NAME)) {
- >  				printk(KERN_ERR "%s: I/O resource 0x%lX-0x%lX "
- >  						"not free.\n",
- > 
+I guss you no longer need the complete dmesg output?
+
+Greetings
+Daniel Exner
