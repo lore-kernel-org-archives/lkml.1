@@ -1,34 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757597AbYFOKjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757912AbYFOKlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757597AbYFOKjh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 06:39:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755900AbYFOKja
+	id S1757912AbYFOKlA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 06:41:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756654AbYFOKkx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 06:39:30 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:52269 "EHLO ogre.sisk.pl"
+	Sun, 15 Jun 2008 06:40:53 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:58093 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752293AbYFOKj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 06:39:29 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	id S1756021AbYFOKkw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 06:40:52 -0400
+Date: Sun, 15 Jun 2008 13:39:35 +0300
+From: Adrian Bunk <bunk@kernel.org>
 To: Romano Giannetti <romano@dea.icai.upcomillas.es>
-Subject: Re: [Bug 10843] Display artifacts on XOrg logout with PAT kernel and VESA framebuffer
-Date: Sun, 15 Jun 2008 12:40:53 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Frans Pop <elendil@planet.nl>,
+Cc: Frans Pop <elendil@planet.nl>, "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik> <200806142359.36613.elendil@planet.nl> <1213525379.15067.3.camel@localhost>
-In-Reply-To: <1213525379.15067.3.camel@localhost>
+Subject: Re: [Bug 10843] Display artifacts on XOrg logout with PAT kernel
+	and VESA framebuffer
+Message-ID: <20080615103934.GB21168@cs181133002.pp.htv.fi>
+References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik> <Jn7irxIunJK.A._5D.LJDVIB@albercik> <200806142359.36613.elendil@planet.nl> <1213525379.15067.3.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200806151240.53953.rjw@sisk.pl>
+In-Reply-To: <1213525379.15067.3.camel@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 15 of June 2008, Romano Giannetti wrote:
+On Sun, Jun 15, 2008 at 12:22:59PM +0200, Romano Giannetti wrote:
 > 
 > On Sat, 2008-06-14 at 23:59 +0200, Frans Pop wrote:
 > > \>
@@ -45,6 +44,17 @@ On Sunday, 15 of June 2008, Romano Giannetti wrote:
 > It happens to me too. Do you see
 > http://bugzilla.kernel.org/show_bug.cgi?id=10892 ?
 
-Do these two bug entries refer to the same problem?
+Does disabling CONFIG_X86_PAT also fix it for you?
 
-Rafael
+> Romano
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
