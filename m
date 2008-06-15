@@ -1,85 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757273AbYFOJ0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757376AbYFOJ20@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757273AbYFOJ0t (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 05:26:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756706AbYFOJ0j
+	id S1757376AbYFOJ20 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 05:28:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756711AbYFOJ2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 05:26:39 -0400
-Received: from rv-out-0506.google.com ([209.85.198.225]:34685 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756456AbYFOJ0h (ORCPT
+	Sun, 15 Jun 2008 05:28:17 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:14922 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756706AbYFOJ2Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 05:26:37 -0400
+	Sun, 15 Jun 2008 05:28:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=WrO1+gPDOA++cu1MWw4rKyrilFT67XNohCuirHh+0kBNjbYwRWrsc5/NT4NTp1b0B/
-         8Je1WKW71/1PdEQxFPQFGJmBm5EAQ6v7RU1ICIgDx0+uh729yeNjF7N0/IeWdv9tlDCk
-         uBAXXNUSRNWqh8/RZ8mZ/rgbFg+lbBuFl7cBY=
-Message-ID: <3877989d0806150226x62fc1d1bk96131430f55848e1@mail.gmail.com>
-Date: Sun, 15 Jun 2008 17:26:36 +0800
-From: "Luming Yu" <luming.yu@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>, andrew.patterson@hp.com
-Subject: Re: kdump regression: /proc/vmcore is 0 after kdump
-Cc: linux-ia64@vger.kernel.org, "Petr Tesarik" <ptesarik@suse.cz>,
-       "Roland McGrath" <roland@redhat.com>,
-       "Kexec Mailing List" <kexec@lists.infradead.org>,
-       "Simon Horman" <horms@verge.net.au>
-In-Reply-To: <3877989d0806130922p1f36a3bes9914144ac8c42266@mail.gmail.com>
+        d=googlemail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
+         :mime-version:content-type:content-disposition
+         :content-transfer-encoding:in-reply-to:user-agent:from;
+        b=YyIgI2VCxlsBWKHBea9WJmy/+811CGtV/od6fIC0aMuvR8KhM/SoJ01ECt3peYTRmk
+         JYHnrqiayRu3b7CBZmDwUA1a9Ye9A05RGhRU6BF8fu5UPuU4Q7IgcJpuEqXyFG6CyFdo
+         aEX6ajJUmNRDCimwBNk5woyaB2E92QXw+1wcg=
+Date: Sun, 15 Jun 2008 11:28:08 +0200
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 02/18] ide-cd: remove ide_cd_drain_data and
+	ide_cd_pad_transfer
+Message-ID: <20080615092808.GA7622@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <1213252870-20474-1-git-send-email-petkovbb@gmail.com> <1213252870-20474-3-git-send-email-petkovbb@gmail.com> <200806141929.05834.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <3877989d0806050058u3159e7b5x3113f63b3e0f3d8f@mail.gmail.com>
-	 <20080605081633.GA6713@verge.net.au>
-	 <3877989d0806130922p1f36a3bes9914144ac8c42266@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200806141929.05834.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 14, 2008 at 12:22 AM, Luming Yu <luming.yu@gmail.com> wrote:
-> On Thu, Jun 5, 2008 at 4:16 PM, Simon Horman <horms@verge.net.au> wrote:
->> On Thu, Jun 05, 2008 at 03:58:40PM +0800, Luming Yu wrote:
->>> On Tue, Jun 3, 2008 at 2:02 PM, Luming Yu <luming.yu@gmail.com> wrote:
->>> >> I'm trying upstream kdump to get more detailed data for help analysis
->>> >> the scenario..
->>> > Upstream kdump doesn't work! don't know what cause the regression,
->>> > possibly kexec-tools...
->>> > Need investigation here!
->>> >
->>>
->>> I tested mainline kernel from 2.6.20 to 2.6.26-rc4 on my tiger4..
->>> whatever I try, /proc/vmcore is always 0 !
->>>
->>> Then I managed to get Nan hai's original patch against 2.6.19..
->>> http://marc.info/?l=linux-ia64&m=116521104831321&w=2
->>> This patch doesn't have zero-vmcore problem.
->>>
->>> Given the age of the kdump feature and so many upstream releases since
->>> 2.6.20, I'm in doubt why I don't see this kind of bug report on ia64
->>> mailing list before?
->>>
->>> PS. Now I can start to capture info for the strace problem with 2.6.19
->>> kernel +Nahai's 2.6.19 kdump patch, hope the problem is still
->>> reproducible.
->>
->> Which version of kexec-tools are you using?
->> If you haven't done so already, could you try the latest version, 20080324.
->>
->> http://www.eu.kernel.org/pub/linux/kernel/people/horms/kexec-tools/
->>
->
-> Yes, this resolves one of my kdump problem.
-> But there seems to have a regression introduced into upstream probably
-> starting from 2.6.25.
-> The last kernel with kdump working on this box is 2.6.24. I don't have
-> time to start bisection to find out which patch causes that regression
-> right now.Maybe someone on this list can give me some hint..
+On Sat, Jun 14, 2008 at 07:29:05PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> On Thursday 12 June 2008, Borislav Petkov wrote:
+> > Use the generic ide_pad_transfer() helper instead
+> > 
+> > Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+> 
+> applied w/ ide_cd_drain_data() -> ide_pad_transfer() conversion fixup
+> 
+> [...]
+> 
+> > @@ -1006,7 +981,7 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
+> >  					   - bio_cur_sectors(rq->bio),
+> >  					   thislen >> 9);
+> >  			if (nskip > 0) {
+> > -				ide_cd_drain_data(drive, nskip);
+> > +				ide_pad_transfer(drive, write, nskip);
+> >  				rq->current_nr_sectors -= nskip;
+> >  				thislen -= (nskip << 9);
+> >  			}
+> 
+> ide_cd_drain_data() took number for _sectors_ as an argument
+> while ide_pad_transfer() wants to be given number of _bytes_
 
-My git bisection result indicates the following commit causes the
-kdump regression in 2.6.25-rc1:
-commit 3c75e23784e6ed5f4841de43d0750fd9b37bafcb
-Author: Andrew Patterson <andrew.patterson@hp.com>
-Date:   Tue Jan 22 17:18:27 2008 -0700
+/me crawls ashamed back into the black place behind the wall cardboard ... :)
+> 
+> > @@ -1043,7 +1018,7 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
+> >  				 * If the buffers are full, pipe the rest into
+> >  				 * oblivion.
+> >  				 */
+> > -				ide_cd_drain_data(drive, thislen >> 9);
+> > +				ide_pad_transfer(drive, 0, thislen >> 9);
+> 
+> ditto
+
+-- 
+Regards/Gruﬂ,
+    Boris.
