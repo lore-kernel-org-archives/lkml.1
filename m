@@ -1,81 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759288AbYFOPGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759524AbYFOPGd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759288AbYFOPGS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 11:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758283AbYFOPFu
+	id S1759524AbYFOPGd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 11:06:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759266AbYFOPGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 11:05:50 -0400
-Received: from [194.117.236.238] ([194.117.236.238]:54301 "EHLO
+	Sun, 15 Jun 2008 11:06:10 -0400
+Received: from [194.117.236.238] ([194.117.236.238]:54306 "EHLO
 	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1758210AbYFOPFt (ORCPT
+	with ESMTP id S1759239AbYFOPGI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 11:05:49 -0400
-Date: Sun, 15 Jun 2008 18:04:46 +0300
+	Sun, 15 Jun 2008 11:06:08 -0400
+Date: Sun, 15 Jun 2008 18:05:08 +0300
 From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 To: tzanussi@gmail.com, linux-kernel@vger.kernel.org
 Cc: penberg@cs.helsinki.fi, akpm@linux-foundation.org,
        torvalds@linux-foundation.org, compudj@krystal.dyndns.org
-Subject: [PATCH 0/3] relay buffer-only channels (resubmit)
-Message-ID: <20080615180446.5af80e85@linux360.ro>
+Subject: [PATCH 2/3] Better interface for hooking early initcalls.
+Message-ID: <20080615180508.71d1cbcc@linux360.ro>
 X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/Ai9+BvA/.Ib8LZQiQkg3yHP";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/Ai9+BvA/.Ib8LZQiQkg3yHP
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Added early initcall (pre-SMP) support, using an identical interface to
+that of regular initcalls. Functions called from do_pre_smp_initcalls()
+could be converted to use this cleaner interface.
 
-Hello,
+This is required by CPU hotplug, because early users have to register
+notifiers before going SMP. One such CPU hotplug user is the relay
+interface with buffer-only channels, which needs to register such a
+notifier, to be usable in early code. This in turn is used by kmemtrace.
 
-This is a resubmit of the buffer-only channels implementation for
-relay. Basically I followed Pekka Enberg's suggestion of doing things
-CPU-hotplug-aware.
+Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+---
+ include/asm-generic/vmlinux.lds.h |    2 ++
+ include/linux/init.h              |    7 +++++++
+ init/main.c                       |   13 +++++++++++--
+ 3 files changed, 20 insertions(+), 2 deletions(-)
 
-The first two patches allow relay to set up an early initcall for
-registering a CPU hotplug notifier. This has to run before SMP is up,
-so non-boot CPUs get a buffer as soon as they're up.
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index f054778..4a318e5 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -326,6 +326,8 @@
+ 	}
+ 
+ #define INITCALLS							\
++	*(.initcallearly.init)						\
++	__early_initcall_end = .;					\
+   	*(.initcall0.init)						\
+   	*(.initcall0s.init)						\
+   	*(.initcall1.init)						\
+diff --git a/include/linux/init.h b/include/linux/init.h
+index 21d658c..bd12a4c 100644
+--- a/include/linux/init.h
++++ b/include/linux/init.h
+@@ -170,6 +170,13 @@ extern void (*late_time_init)(void);
+ 	__attribute__((__section__(".initcall" level ".init"))) = fn
+ 
+ /*
++ * Early initcalls run before initializing SMP.
++ *
++ * Only for built-in code, not modules.
++ */
++#define early_initcall(fn)		__define_initcall("early",fn,early)
++
++/*
+  * A "pure" initcall has no dependencies on anything else, and purely
+  * initializes variables that couldn't be statically initialized.
+  *
+diff --git a/init/main.c b/init/main.c
+index f7fb200..bd5df3e 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -736,13 +736,13 @@ static void __init do_one_initcall(initcall_t fn)
+ }
+ 
+ 
+-extern initcall_t __initcall_start[], __initcall_end[];
++extern initcall_t __initcall_start[], __initcall_end[], __early_initcall_end[];
+ 
+ static void __init do_initcalls(void)
+ {
+ 	initcall_t *call;
+ 
+-	for (call = __initcall_start; call < __initcall_end; call++)
++	for (call = __early_initcall_end; call < __initcall_end; call++)
+ 		do_one_initcall(*call);
+ 
+ 	/* Make sure there is no pending stuff from the initcall sequence */
+@@ -775,6 +775,14 @@ static int __init nosoftlockup_setup(char *str)
+ }
+ __setup("nosoftlockup", nosoftlockup_setup);
+ 
++static void __init __do_pre_smp_initcalls(void)
++{
++	initcall_t *call;
++
++	for (call = __initcall_start; call < __early_initcall_end; call++)
++		(*call)();
++}
++
+ static void __init do_pre_smp_initcalls(void)
+ {
+ 	extern int spawn_ksoftirqd(void);
+@@ -856,6 +864,7 @@ static int __init kernel_init(void * unused)
+ 
+ 	smp_prepare_cpus(setup_max_cpus);
+ 
++	__do_pre_smp_initcalls();
+ 	do_pre_smp_initcalls();
+ 
+ 	smp_init();
+-- 
+1.5.5.4
 
-Feel free to ask any questions or suggest anything.
-
-Eduard - Gabriel Munteanu (3):
-  Unignore vmlinux.lds.h from Git.
-  Better interface for hooking early initcalls.
-  relay: Add buffer-only channels; useful for early logging.
-
- .gitignore                          |    1 +
- Documentation/filesystems/relay.txt |   11 +++
- include/asm-generic/vmlinux.lds.h   |    2 +
- include/linux/init.h                |    7 ++
- include/linux/relay.h               |    5 +
- init/main.c                         |   13 +++-
- kernel/relay.c                      |  141 +++++++++++++++++++++++++++----=
-----
- 7 files changed, 147 insertions(+), 33 deletions(-)
-
---Sig_/Ai9+BvA/.Ib8LZQiQkg3yHP
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iQIVAwUBSFUvkdxcOkuRpXptAQKxtw//VqHQdzD36x4N/xJdEaAA/Lf+4NeuFZU9
-O9Hx81OuhKSyXz/yx+BVt0S8gDWxCRVFPZnVl3557T9z4BtWuQ4/om+KyRimUpVJ
-mq6jTE8nZH3RbVJgxEA2oeRHC4oa5JMTfwqjPOv/Lks3c+WIRPSrP6aTpzvbyja+
-Rrm+VPG2oAuqb9hs+DbkwqMEFl12BX8vBBSIXGyUKTr4A5NIgcJ+4UJGlILyawpb
-uTY9fAXYY35jSdeH+lVbCAD5GQcRg+Z0yZhrpi6Ku5BiSSglDkZHLM2Qw4Vgukqj
-jXryzh6LdxUIadzciUVfz6CC7AnqTAXYjDGfq+NMOPyRsgjz89unH9K75LKA4cZj
-vC9uv5lDFuu25Db730fOobsuxkyiBO0kU4ZAP6ikSC3NdJlgvZ6rtUVXHPTsgXe1
-DGZAXKzYDXp92UCFWIfrDIdPQtCPPHL/vYE6WbfImP6ISmjiyIyhHxivNy1PHWhM
-KU2G6a7EfrUsr5KQ/XOw9LOJEBeKBnU5MCTgX/DGQG1PuwJDdBkhQweDkIG7kEiw
-1u0YO8cO+Cufzt9RWa2kkJKksON8PM8RV68sSjbM25MHtKB4o/tGMOJZfv2z1yhM
-jLHAasnhmRdd6Wqy+tsGiQYBmM+dxUEsfo4iH3tEruZliPO6QGwtg+8Zk5ADuzhe
-pbVpNNrQWLQ=
-=+6tm
------END PGP SIGNATURE-----
-
---Sig_/Ai9+BvA/.Ib8LZQiQkg3yHP--
