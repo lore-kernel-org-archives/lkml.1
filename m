@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757495AbYFOJ4M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457AbYFOKVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757495AbYFOJ4M (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 05:56:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756907AbYFOJz5
+	id S1757457AbYFOKVA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 06:21:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757013AbYFOKUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 05:55:57 -0400
-Received: from ns2.suse.de ([195.135.220.15]:33694 "EHLO mx2.suse.de"
+	Sun, 15 Jun 2008 06:20:50 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:33839 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756901AbYFOJz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 05:55:56 -0400
-Date: Sun, 15 Jun 2008 11:55:53 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: "Luming Yu" <luming.yu@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, andrew.patterson@hp.com,
-       Petr Tesarik <ptesarik@suse.cz>, Simon Horman <horms@verge.net.au>,
-       linux-ia64@vger.kernel.org,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: kdump regression: /proc/vmcore is 0 after kdump
-Message-ID: <20080615115553.594e4ad7@kopernikus.site>
-In-Reply-To: <3877989d0806150226x62fc1d1bk96131430f55848e1@mail.gmail.com>
-References: <3877989d0806050058u3159e7b5x3113f63b3e0f3d8f@mail.gmail.com>
-	<20080605081633.GA6713@verge.net.au>
-	<3877989d0806130922p1f36a3bes9914144ac8c42266@mail.gmail.com>
-	<3877989d0806150226x62fc1d1bk96131430f55848e1@mail.gmail.com>
-Organization: SUSE LINUX Products GmbH
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i686-pc-linux-gnu)
+	id S1756945AbYFOKUu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 06:20:50 -0400
+Date: Sun, 15 Jun 2008 14:22:52 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jarek Poplawski <jarkao2@o2.pl>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] workqueues: implement flush_work()
+Message-ID: <20080615102252.GB156@tv-sign.ru>
+References: <20080613142801.GA9165@tv-sign.ru> <20080614091339.GA2466@ami.dom.local> <20080614135951.GA4502@tv-sign.ru> <20080614185107.GA2470@ami.dom.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080614185107.GA2470@ami.dom.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* "Luming Yu" <luming.yu@gmail.com> [2008-06-15 17:26]:
+On 06/14, Jarek Poplawski wrote:
 >
-> My git bisection result indicates the following commit causes the
-> kdump regression in 2.6.25-rc1:
-> commit 3c75e23784e6ed5f4841de43d0750fd9b37bafcb
-> Author: Andrew Patterson <andrew.patterson@hp.com>
-> Date:   Tue Jan 22 17:18:27 2008 -0700
+> On Sat, Jun 14, 2008 at 05:59:51PM +0400, Oleg Nesterov wrote:
+> > On 06/14, Jarek Poplawski wrote:
+> ...
+> > > Another question is if schedule_on_each_cpu() is really such a good
+> > > example here: it seems these "xxx && yyy" examples could be faster,
+> > > but I've lost track of this earlier thread.
+> > 
+> > schedule_on_each_cpu() can't use cancel_ + ->func(), the code should
+> > be executed on the remote CPU.
+> 
+> ???
+> Actually I meant this "xxx && yyy" schedule_on_each_cpu():
+> 
+> http://marc.info/?l=linux-kernel&m=121329259203187&w=2
 
-Can you verify that reverting that commit indeed fixes kdump at your
-site?
+Ah, sorry, I misunderstood.
 
+Yes, "xxx && yyy" needs only 1 wakeup, so it needs less CPU. But it also
+more complex, and it is not easy to generalize this.
 
+Oleg.
 
-Bernhard
--- 
-Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
