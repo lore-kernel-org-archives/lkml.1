@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbYFOX2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756261AbYFOXds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756731AbYFOX2V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 19:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbYFOX2B
+	id S1756261AbYFOXds (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 19:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbYFOXdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 19:28:01 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:49892 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751910AbYFOX2B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 19:28:01 -0400
-Date: Sun, 15 Jun 2008 16:27:54 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+	Sun, 15 Jun 2008 19:33:40 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:65052 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751644AbYFOXdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 19:33:39 -0400
+Date: Mon, 16 Jun 2008 00:31:52 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Adrian Bunk <bunk@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug #10815] 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
-Message-ID: <20080615232754.GD17915@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <dCRO4tbfLzK.A.BVD.E3vSIB@albercik> <20080613135255.GB21341@cs181133002.pp.htv.fi> <20080614144200.GA26421@linux.vnet.ibm.com> <20080614145839.GA10523@tv-sign.ru> <20080614181212.GB26421@linux.vnet.ibm.com> <20080614194338.GA4820@martell.zuzino.mipt.ru> <20080615033001.GE26421@linux.vnet.ibm.com> <20080615162150.GA8289@martell.zuzino.mipt.ru> <20080615181710.GA17915@linux.vnet.ibm.com> <alpine.LFD.1.10.0806151323101.2949@woody.linux-foundation.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: 2.6.26-rc6-git2: Reported regressions from 2.6.25
+In-Reply-To: <alpine.LFD.1.10.0806141654280.2949@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.55.0806160001430.11995@cliff.in.clinika.pl>
+References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
+ <alpine.LFD.1.10.0806141423500.2949@woody.linux-foundation.org>
+ <Pine.LNX.4.55.0806142249090.3771@cliff.in.clinika.pl>
+ <alpine.LFD.1.10.0806141654280.2949@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0806151323101.2949@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 15, 2008 at 01:32:48PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Sun, 15 Jun 2008, Paul E. McKenney wrote:
-> > > 
-> > > Both patches (independently) do not help with rcutortures failures:
-> > > 
-> > > [   58.968404] rcu-torture:--- Start of test: nreaders=4 nfakewriters=4 stat_interval=0 verbose=0 test_no_idle_hz=0 shuffle_interval = 5
-> > > [  159.044524] rcu-torture: rtc: 0000000000000000 ver: 53859 tfle: 0 rta: 53859 rtaf: 18 rtf: 53797 rtmbe: 0
-> > > [  159.044527] rcu-torture: !!! Reader Pipe:  65565142 4275 1 0 0 0 0 0 0 0 0
-> > > [  159.044529] rcu-torture: Reader Batch:  65564196 5207 7 3 1 1 0 1 1 0 1
-> > > [  159.044530] rcu-torture: Free-Block Circulation:  53858 53853 53846 53843 53834 53825 53816 53808 53803 53797 0
-> > > [  159.044976] rcu-torture:--- End of test: FAILURE: nreaders=4 nfakewriters=4 stat_interval=0 verbose=0 test_no_idle_hz=0 shuffle_interval = 5
+On Sat, 14 Jun 2008, Linus Torvalds wrote:
+
+> >  From what you have written it looks the dependency should actually be:
 > > 
-> > And the repeat-by is simply running LTP in parallel with rcutorture?
-> > This is a one-hour run of rcutorture or thereabouts?
+> > 	depends on !M386 && !M486 && !M586 && !M586TSC && !M586MMX
+> > 
+> > as none of the pre-Pentium-Pro processors had the PAE feature (I am not
+> > sure about non-Intel implementations, so the case of M586 would have to be
+> > investigated).
 > 
-> Should we mark PREEMPT_RCU as BROKEN for now? I don't know if anybody 
-> really enables it, but it might be a good idea to make sure people don't 
-> do so thinking it's good..
+> Yes, it's the non-intel ones that would keep me from saying !M586.
+> 
+> For intel, PAE was a PPro feature (at least officially, as you point out), 
+> but I do not know about various other manufacturers. From personal 
+> experience, the line between Pentium and PPro features doesn't tend to be 
+> totally black-and-white (although I suspect that when it comes to PAE it 
+> _may_ be).
 
-If that is the right thing to do.  I would feel better about it if I
-could reproduce the failure.
+ Well, PAE is quite a significant block to implement and Intel kept it
+hidden until they published the long awaited PentiumPro manual sometime in
+1996.  I am fairly sure the K5 did not implement it (it may have had PSE 
+and VME, especially in the later revisions) and Google does not show up 
+any Cyrix processors with PAE.  I may have a K5 manual somewhere, so I can 
+see if I can verify it.
 
-							Thanx, Paul
+ Please also note these processors tried to compete with Intel on the
+desktop market where 4GB of RAM was completely unreasonable in late 90s.  
+I think unless someone can recall a counter-example, it can be safely
+assumed these chips did not have the PAE.  We could try to extend the
+dependency and see if anybody screams.
+
+  Maciej
