@@ -1,77 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758193AbYFOM0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758070AbYFOMql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758193AbYFOM0Q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 08:26:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757336AbYFOM0B
+	id S1758070AbYFOMql (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 08:46:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbYFOMqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 08:26:01 -0400
-Received: from monty.telenet-ops.be ([195.130.132.56]:33992 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757307AbYFOMZ7 (ORCPT
+	Sun, 15 Jun 2008 08:46:31 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:4437 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752234AbYFOMq3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 08:25:59 -0400
-Date: Sun, 15 Jun 2008 14:25:57 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Adrian Bunk <bunk@kernel.org>, Peter De Schrijver <p2@debian.org>
-cc: Roman Zippel <zippel@linux-m68k.org>, linux-m68k@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: m68k: could the Apollo support possibly work?
-In-Reply-To: <Pine.LNX.4.64.0806090842490.25145@anakin>
-Message-ID: <Pine.LNX.4.64.0806151425410.5736@anakin>
-References: <20080608190513.GE4048@cs181133002.pp.htv.fi>
- <Pine.LNX.4.64.0806090842490.25145@anakin>
+	Sun, 15 Jun 2008 08:46:29 -0400
+Message-ID: <48550F0C.8030907@panasas.com>
+Date: Sun, 15 Jun 2008 15:46:04 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+CC: linux-scsi@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [regression] CD-DA delay needed after insertion
+References: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
+In-Reply-To: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 15 Jun 2008 12:46:06.0456 (UTC) FILETIME=[C72DCF80:01C8CEE5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Jun 2008, Geert Uytterhoeven wrote:
-> On Sun, 8 Jun 2008, Adrian Bunk wrote:
-> > Nothing seems to set apollo_model (apollo_parse_bootinfo() has no caller).
-> > 
-> > Therefore trying to boot an Apollo machine seems to do:
-> >   arch/m68k/kernel/setup.c:setup_arch()
-> >     arch/m68k/apollo/config.c:config_apollo()
-> >       arch/m68k/apollo/config.c:dn_setup_model() 
-> >         panic()
-> > 
-> > Do I miss anything?
+Geert Uytterhoeven wrote:
+> We've found another regression in 2.6.25 w.r.t. CD media change on PS3.
 > 
-> Obviously it should be called from m68k_parse_bootinfo(), but there's no
-> MACH_IS_APOLLO case there. Strange...
+> It can easily be reproduced by:
+> 
+>   1. Inserting an audio CD
+>   2. Running the following command as soon as the blue CD/DVD/BD drive LED
+>      stops blinking and is lit continuously:
+>       
+> 	 cdparanoia -Z -q 1-1[:1] /dev/null || echo failed
+> 
+> On 2.6.25 (and current mainline), you have to wait ca. 10 seconds after
+> insertion, or it will fail.
+> On 2.6.24 and older, it just works immediately.
+> 
+> It does not matter whether
+> http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fjejb%2Fscsi-rc-fixes-2.6.git;a=commitdiff_plain;h=d1daeabf0da5bfa1943272ce508e2ba785730bf0
+> is applied or not.
+> 
+> We haven't bisected it yet.
+> 
+> With kind regards,
+> 
+> Geert Uytterhoeven
+> Software Architect
+> 
+> Sony Techsoft Centre
+> The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+> 
+> Phone:    +32 (0)2 700 8453
+> Fax:      +32 (0)2 700 8622
+> E-mail:   Geert.Uytterhoeven@sonycom.com
+> Internet: http://www.sony-europe.com/
+> 
+> Sony Technology and Software Centre Europe
+> A division of Sony Service Centre (Europe) N.V.
+> Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
+> VAT BE 0413.825.160 · RPR Brussels
+> Fortis 293-0376800-10 GEBA-BE-BB
 
-Subject: [PATCH] m68k/apollo: Add missing call to apollo_parse_bootinfo()
+James hi.
 
-Add the missing call to apollo_parse_bootinfo(), which had been lost from a
-big Apollo support patch by Peter De Schrijver in 1999.
+It looks like the same problem as before. Any BLOCK_PC command will 
+eat the UNIT_ATTENTION notification. Which is what I was afraid of. 
+I was thinking of something like below.
 
-Thanks to Adrian Bunk for noticing!
+Totally untested, never even booted. It is just to demonstrate the concept.
+Please tell me if it is at all desirable and I'll spend some time to see
+if it runs, and test it.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Boaz
 ---
- arch/m68k/kernel/setup.c |    2 ++
- 1 file changed, 2 insertions(+)
+>From 8cd166b76100a2830f0f973df866f5509398f6cc Mon Sep 17 00:00:00 2001
+From: Boaz Harrosh <bharrosh@panasas.com>
+Date: Tue, 10 Jun 2008 20:09:43 +0300
+Subject: [PATCH] scsi: Proccess UNIT_ATTENTION on any type command
 
---- a/arch/m68k/kernel/setup.c
-+++ b/arch/m68k/kernel/setup.c
-@@ -190,6 +190,8 @@ static void __init m68k_parse_bootinfo(c
- 				unknown = mvme147_parse_bootinfo(record);
- 			else if (MACH_IS_HP300)
- 				unknown = hp300_parse_bootinfo(record);
-+			else if (MACH_IS_APOLLO)
-+				unknown = apollo_parse_bootinfo(record);
- 			else
- 				unknown = 1;
- 		}
+Let scsi_check_sense() report UNIT_ATTENTION media
+changes for any type of command. Currently only FS
+commands are reported.
 
-Gr{oetje,eeting}s,
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+---
+ drivers/scsi/scsi_error.c |    4 ++++
+ drivers/scsi/scsi_lib.c   |    3 +--
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
-						Geert
+diff --git a/drivers/scsi/scsi_error.c b/drivers/scsi/scsi_error.c
+index 006a959..7039d11 100644
+--- a/drivers/scsi/scsi_error.c
++++ b/drivers/scsi/scsi_error.c
+@@ -370,6 +370,10 @@ static int scsi_check_sense(struct scsi_cmnd *scmd)
+ 		if (scmd->device->allow_restart &&
+ 		    (sshdr.asc == 0x04) && (sshdr.ascq == 0x02))
+ 			return FAILED;
++
++		/* Detected disc change.*/
++		if (scmd->device->removable)
++			scmd->device->changed = 1;
+ 		return SUCCESS;
+ 
+ 		/* these three are not supported */
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index 033c58a..efd3e09 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -903,11 +903,10 @@ void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
+ 	if (sense_valid && !sense_deferred) {
+ 		switch (sshdr.sense_key) {
+ 		case UNIT_ATTENTION:
+-			if (cmd->device->removable) {
++			if (cmd->device->changed) {
+ 				/* Detected disc change.  Set a bit
+ 				 * and quietly refuse further access.
+ 				 */
+-				cmd->device->changed = 1;
+ 				scsi_end_request(cmd, -EIO, this_count, 1);
+ 				return;
+ 			} else {
+-- 
+1.5.6.rc1.5.gadf6
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
