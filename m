@@ -1,77 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbYFOGMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbYFOGPD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755929AbYFOGMS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 02:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbYFOGMH
+	id S1756275AbYFOGPD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 02:15:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbYFOGOz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 02:12:07 -0400
-Received: from gw.goop.org ([64.81.55.164]:46580 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751278AbYFOGMG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 02:12:06 -0400
-Message-ID: <4854B284.7030709@goop.org>
-Date: Sun, 15 Jun 2008 07:11:16 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 15 Jun 2008 02:14:55 -0400
+Received: from ik-out-1112.google.com ([66.249.90.177]:3822 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751316AbYFOGOx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 02:14:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=n0y+lpcTJIs4SqPeVX8JLfnqTUwPT1cLOLa4+vgxJGKWEx0dVOUIuS9puPJZFoDl4H
+         eBzLOMEs9SnP+SyqJ32pc0DS6Vcp/G+agoZ4XBCX6LsxL26CQ18vHEcczPZKegVTbUfM
+         4OKnhrh/IAYIhhuuTzM7hnrYhSlYxMN8fef7c=
+From: Chris Clayton <chris2553@googlemail.com>
+Reply-To: chris2553@googlemail.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug 10861] 2.6.26-rc4-git2 - long pause during boot
+Date: Sun, 15 Jun 2008 06:12:17 +0000
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Hannes Reinecke" <hare@suse.de>,
+       "James Bottomley" <James.Bottomley@hansenpartnership.com>,
+       "Kay Sievers" <kay.sievers@vrfy.org>
+References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik> <Jn7irxIunJK.A.71D.HJDVIB@albercik>
+In-Reply-To: <Jn7irxIunJK.A.71D.HJDVIB@albercik>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, chrisw@sous-sol.org,
-       virtualization@lists.osdl.org, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for June 13 (XEN)
-References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <20080613101316.1c228fe7.randy.dunlap@oracle.com> <4852F1C8.7060904@goop.org> <20080614203109.GH20851@kernel.dk>
-In-Reply-To: <20080614203109.GH20851@kernel.dk>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806150612.17215.chris2553@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Fri, Jun 13 2008, Jeremy Fitzhardinge wrote:
->   
->> Randy Dunlap wrote:
->>     
->>> next-20080613 on x86_32 has lots of xen build errors like this:
->>>
->>> linux-next-20080613/arch/x86/xen/mmu.c: In function 'drop_mm_ref':
->>> linux-next-20080613/arch/x86/xen/mmu.c:759: error: implicit declaration of 
->>> function 'xen_smp_call_function_mask'
->>> make[2]: *** [arch/x86/xen/mmu.o] Error 1
->>>
->>>  
->>>       
->> Ooh, first time I've seen that.  Sounds like Jens' patches are missing 
->> the appropriate update there (though it's certainly had it in the past).
->>     
+On Saturday 14 June 2008, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 >
-> Hmm, will this work or do we need to force xen smp_ops for this one? I
-> wonder if this is new code and was missed, or what happened in this
-> case.
->   
-
-Yes, using smp_call_function_mask is perfectly OK.  The old code was 
-just a micro-optimisation.  I'm pretty sure this chunk was in one of 
-your patchsets (or perhaps I sent it to you at some point).
-
-> diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-> index 3525ef5..8baef77 100644
-> --- a/arch/x86/xen/mmu.c
-> +++ b/arch/x86/xen/mmu.c
-> @@ -569,7 +569,7 @@ static void drop_mm_ref(struct mm_struct *mm)
->  	}
->  
->  	if (!cpus_empty(mask))
-> -		xen_smp_call_function_mask(mask, drop_other_mm_ref, mm, 1);
-> +		smp_call_function_mask(mask, drop_other_mm_ref, mm, 1);
->  }
->  #else
->  static void drop_mm_ref(struct mm_struct *mm)
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
 >
->   
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10861
+> Subject		: 2.6.26-rc4-git2 - long pause during boot
+> Submitter	: Chris Clayton <chris2553@googlemail.com>
+> Date		: 2008-06-01 4:15 (14 days old)
+> References	: http://marc.info/?l=linux-kernel&m=121229382917834&w=4
 
-Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Well, we know how to create (and to avoid) the problem. Since the original patch 
+adversely affects existing user space, it could be argued that it is a 
+regression, but I see that there is a counter argument that the udev rule that 
+triggers the problem is quite simply a bad rule.
 
-    J
+I'll leave to those more closely concerned that rule on that.
+
+Thanks
+
+Chris
+
+-- 
+Beauty is in the eye of the beerholder.
