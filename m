@@ -1,205 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751612AbYFOEAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755900AbYFOEB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751612AbYFOEAM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 00:00:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755736AbYFOD75
+	id S1755900AbYFOEB1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 00:01:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750852AbYFOEBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Jun 2008 23:59:57 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:48604 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755669AbYFOD7z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Jun 2008 23:59:55 -0400
-Message-ID: <485493B3.8080001@linux.vnet.ibm.com>
-Date: Sun, 15 Jun 2008 09:29:47 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080505)
+	Sun, 15 Jun 2008 00:01:19 -0400
+Received: from slackware.com ([64.57.102.34]:33939 "EHLO bob.slackware.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751112AbYFOEBS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 00:01:18 -0400
+X-Greylist: delayed 3659 seconds by postgrey-1.27 at vger.kernel.org; Sun, 15 Jun 2008 00:01:18 EDT
+Date: Sat, 14 Jun 2008 20:00:15 -0700 (PDT)
+From: Piter PUNK <piterpunk@slackware.com>
+To: htejun@gmail.com
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Regression: kernel 2.6.24{,.1} ahci problem, does not boot
+Message-ID: <Pine.LNX.4.63.0806141945270.2761@bob.slackware.com>
 MIME-Version: 1.0
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       linux-mm@kvack.org, Nick Piggin <npiggin@suse.de>,
-       Andy Whitcroft <apw@shadowen.org>, "riel@redhat.com" <riel@redhat.com>
-Subject: Re: [PATCH] fix double unlock_page() in 2.6.26-rc5-mm3 kernel BUG
- at mm/filemap.c:575!
-References: <20080611225945.4da7bb7f.akpm@linux-foundation.org> <4850E1E5.90806@linux.vnet.ibm.com> <20080612015746.172c4b56.akpm@linux-foundation.org> <20080612202003.db871cac.kamezawa.hiroyu@jp.fujitsu.com> <20080613104444.63bd242f.kamezawa.hiroyu@jp.fujitsu.com> <20080612191311.1331f337.akpm@linux-foundation.org> <1213371046.9670.12.camel@lts-notebook>
-In-Reply-To: <1213371046.9670.12.camel@lts-notebook>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="960504422-1551803131-1213498815=:2761"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lee Schermerhorn wrote:
-> On Thu, 2008-06-12 at 19:13 -0700, Andrew Morton wrote:
->> On Fri, 13 Jun 2008 10:44:44 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
->>
->>> This is reproducer of panic. "quick fix" is attached.
->> Thanks - I put that in
->> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc5/2.6.26-rc5-mm3/hot-fixes/
->>
->>> But I think putback_lru_page() should be re-designed.
->> Yes, it sounds that way.
-> 
-> Here's a proposed replacement patch that reworks putback_lru_page()
-> slightly and cleans up the call sites.  I still want to balance the
-> get_page() in isolate_lru_page() with a put_page() in putback_lru_page()
-> for the primary users--vmscan and page migration.  So, I need to drop
-> the lock before the put_page() when handed a page with null mapping and
-> a single reference count as the page will be freed on put_page() and a
-> locked page would bug out in free_pages_check()/bad_page().  
-> 
-> Lee
-> 
-> PATCH fix page unlocking protocol for putback_lru_page()
-> 
-> Against:  2.6.26-rc5-mm3
-> 
-> Replaces Kame-san's hotfix:
-> fix-double-unlock_page-in-2626-rc5-mm3-kernel-bug-at-mm-filemapc-575.patch
-> 
-> Applies at end of vmscan/unevictable/mlock series to avoid patch conflicts.
-> 
-> 1)  modified putback_lru_page() to drop page lock only if both page_mapping()
->     NULL and page_count() == 1 [rather than VM_BUG_ON(page_count(page) != 1].
->     I want to balance the put_page() from isolate_lru_page() here for vmscan
->     and, e.g., page migration rather than requiring explicit checks of the
->     page_mapping() and explicit put_page() in these areas.  However, the page
->     could be truncated while one of these subsystems holds it isolated from
->     the LRU.  So, need to handle this case.  Callers of putback_lru_page()
->     need to be aware of this and only call it with a page with NULL
->     page_mapping() when they will no longer reference the page afterwards.
->     This is the case for vmscan and page migration.
-> 
-> 2)  m[un]lock_vma_page() already will not be called for page with NULL
->     mapping.  Added VM_BUG_ON() to assert this.
-> 
-> 3)  modified clear_page_lock() to skip the isolate/putback shuffle for
->     pages with NULL mapping, as they are being truncated/freed.  Thus,
->     any future callers of clear_page_lock() need not be concerned about
->     the putback_lru_page() semantics for truncated pages.
-> 
-Hi Lee,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Thanks, After applying the patch, the kernel does not panic's while
-bootup.
-
-Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-
-> Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
-> 
->  mm/mlock.c  |   29 +++++++++++++++++++----------
->  mm/vmscan.c |   12 +++++++-----
->  2 files changed, 26 insertions(+), 15 deletions(-)
-> 
-> Index: linux-2.6.26-rc5-mm3/mm/mlock.c
-> ===================================================================
-> --- linux-2.6.26-rc5-mm3.orig/mm/mlock.c	2008-06-12 11:42:59.000000000 -0400
-> +++ linux-2.6.26-rc5-mm3/mm/mlock.c	2008-06-13 09:47:14.000000000 -0400
-> @@ -59,27 +59,33 @@ void __clear_page_mlock(struct page *pag
-> 
->  	dec_zone_page_state(page, NR_MLOCK);
->  	count_vm_event(NORECL_PGCLEARED);
-> -	if (!isolate_lru_page(page)) {
-> -		putback_lru_page(page);
-> -	} else {
-> -		/*
-> -		 * Page not on the LRU yet.  Flush all pagevecs and retry.
-> -		 */
-> -		lru_add_drain_all();
-> -		if (!isolate_lru_page(page))
-> +	if (page->mapping) {	/* truncated ? */
-> +		if (!isolate_lru_page(page)) {
->  			putback_lru_page(page);
-> -		else if (PageUnevictable(page))
-> -			count_vm_event(NORECL_PGSTRANDED);
-> +		} else {
-> +			/*
-> +			 * Page not on the LRU yet.
-> +			 * Flush all pagevecs and retry.
-> +			 */
-> +			lru_add_drain_all();
-> +			if (!isolate_lru_page(page))
-> +				putback_lru_page(page);
-> +			else if (PageUnevictable(page))
-> +				count_vm_event(NORECL_PGSTRANDED);
-> +		}
->  	}
->  }
-> 
->  /*
->   * Mark page as mlocked if not already.
->   * If page on LRU, isolate and putback to move to unevictable list.
-> + *
-> + * Called with page locked and page_mapping() != NULL.
->   */
->  void mlock_vma_page(struct page *page)
->  {
->  	BUG_ON(!PageLocked(page));
-> +	VM_BUG_ON(!page_mapping(page));
-> 
->  	if (!TestSetPageMlocked(page)) {
->  		inc_zone_page_state(page, NR_MLOCK);
-> @@ -92,6 +98,8 @@ void mlock_vma_page(struct page *page)
->  /*
->   * called from munlock()/munmap() path with page supposedly on the LRU.
->   *
-> + * Called with page locked and page_mapping() != NULL.
-> + *
->   * Note:  unlike mlock_vma_page(), we can't just clear the PageMlocked
->   * [in try_to_munlock()] and then attempt to isolate the page.  We must
->   * isolate the page to keep others from messing with its unevictable
-> @@ -110,6 +118,7 @@ void mlock_vma_page(struct page *page)
->  static void munlock_vma_page(struct page *page)
->  {
->  	BUG_ON(!PageLocked(page));
-> +	VM_BUG_ON(!page_mapping(page));
-> 
->  	if (TestClearPageMlocked(page)) {
->  		dec_zone_page_state(page, NR_MLOCK);
-> Index: linux-2.6.26-rc5-mm3/mm/vmscan.c
-> ===================================================================
-> --- linux-2.6.26-rc5-mm3.orig/mm/vmscan.c	2008-06-12 11:39:09.000000000 -0400
-> +++ linux-2.6.26-rc5-mm3/mm/vmscan.c	2008-06-13 09:44:44.000000000 -0400
-> @@ -1,4 +1,4 @@
-> -/*
-> + /*
->   *  linux/mm/vmscan.c
->   *
->   *  Copyright (C) 1991, 1992, 1993, 1994  Linus Torvalds
-> @@ -488,6 +488,9 @@ int remove_mapping(struct address_space 
->   * lru_lock must not be held, interrupts must be enabled.
->   * Must be called with page locked.
->   *
-> + * If page truncated [page_mapping() == NULL] and we hold the last reference,
-> + * the page will be freed here.  For vmscan and page migration.
-> + *
->   * return 1 if page still locked [not truncated], else 0
->   */
->  int putback_lru_page(struct page *page)
-> @@ -502,12 +505,11 @@ int putback_lru_page(struct page *page)
->  	lru = !!TestClearPageActive(page);
->  	was_unevictable = TestClearPageUnevictable(page); /* for page_evictable() */
-> 
-> -	if (unlikely(!page->mapping)) {
-> +	if (unlikely(!page->mapping && page_count(page) == 1)) {
->  		/*
-> -		 * page truncated.  drop lock as put_page() will
-> -		 * free the page.
-> +		 * page truncated and we hold last reference.
-> +		 * drop lock as put_page() will free the page.
->  		 */
-> -		VM_BUG_ON(page_count(page) != 1);
->  		unlock_page(page);
->  		ret = 0;
->  	} else if (page_evictable(page, NULL)) {
-> 
-> 
+--960504422-1551803131-1213498815=:2761
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Hi,
+
+I have a notebook with SiS968. It works with 2.6.23.x
+kernels but not with 2.6.24+ kernels. Probably my
+problem is the same of this old thread:
+
+http://lkml.org/lkml/2008/2/14/263
+
+The error is exactly the same.
+
+Looking the changes from 2.6.23 to 2.6.24 in
+
+http://kernelnewbies.org/Linux_2_6_24#head-f29764e7ef293be84e2f8aa1b08b8816b15ebfca
+
+I try to revert two commits to see which one brokes
+my SATA device support. The guilt is this one:
+
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=7d50b60b5e38f910ad69f0187af00f5d6a8970d4
+
+It implements PMP support. In attached patch, I
+disable PMP support in ahci.c to SiS SATA controllers.
+
+I hope i am sending the patch to correct place and
+it works fine to others (well, it's working to me).
+
+The patch is against 2.6.24.5, but i think it's easy
+to adapt to 2.6.25+
+
+Thanks
+
+Piter PUNK
+
+--960504422-1551803131-1213498815=:2761
+Content-Type: TEXT/PLAIN; charset=US-ASCII; name=sis96x_nopmp.patch
+Content-Transfer-Encoding: BASE64
+Content-ID: <Pine.LNX.4.63.0806142000150.2761@bob.slackware.com>
+Content-Description: 
+Content-Disposition: attachment; filename=sis96x_nopmp.patch
+
+LS0tIGxpbnV4LTIuNi4yNC41L2RyaXZlcnMvYXRhL2FoY2kuYwkyMDA4LTA0
+LTE4IDIyOjUzOjM5LjAwMDAwMDAwMCAtMDMwMA0KKysrIGxpbnV4LTIuNi4y
+NC41X3Npcy1maXhlZC9kcml2ZXJzL2F0YS9haGNpLmMJMjAwOC0wNi0xNCAy
+Mjo1ODoyMi4wMDAwMDAwMDAgLTAzMDANCkBAIC04NSw2ICs4NSw3IEBADQog
+CWJvYXJkX2FoY2lfaWduX2lmZXJyCT0gMiwNCiAJYm9hcmRfYWhjaV9zYjYw
+MAk9IDMsDQogCWJvYXJkX2FoY2lfbXYJCT0gNCwNCisJYm9hcmRfYWhjaV9z
+aXMJCT0gNSwNCiANCiAJLyogZ2xvYmFsIGNvbnRyb2xsZXIgcmVnaXN0ZXJz
+ICovDQogCUhPU1RfQ0FQCQk9IDB4MDAsIC8qIGhvc3QgY2FwYWJpbGl0aWVz
+ICovDQpAQCAtNDQyLDYgKzQ0MywxNSBAQA0KIAkJLnVkbWFfbWFzawk9IEFU
+QV9VRE1BNiwNCiAJCS5wb3J0X29wcwk9ICZhaGNpX29wcywNCiAJfSwNCisJ
+LyogYm9hcmRfYWhjaV9zaXMgKi8NCisJew0KKwkJQUhDSV9IRkxBR1MJKEFI
+Q0lfSEZMQUdfTk9fUE1QKSwNCisJCS5mbGFncwkJPSBBSENJX0ZMQUdfQ09N
+TU9OLA0KKwkJLmxpbmtfZmxhZ3MJPSBBSENJX0xGTEFHX0NPTU1PTiB8IEFU
+QV9MRkxBR19IUlNUX1RPX1JFU1VNRSwNCisJCS5waW9fbWFzawk9IDB4MWYs
+IC8qIHBpbzAtNCAqLw0KKwkJLnVkbWFfbWFzawk9IEFUQV9VRE1BNiwNCisJ
+CS5wb3J0X29wcwk9ICZhaGNpX3Z0ODI1MV9vcHMsDQorCX0sDQogfTsNCiAN
+CiBzdGF0aWMgY29uc3Qgc3RydWN0IHBjaV9kZXZpY2VfaWQgYWhjaV9wY2lf
+dGJsW10gPSB7DQpAQCAtNTUyLDkgKzU2Miw5IEBADQogCXsgUENJX1ZERVZJ
+Q0UoTlZJRElBLCAweDBhYmYpLCBib2FyZF9haGNpIH0sCQkvKiBNQ1A3OSAq
+Lw0KIA0KIAkvKiBTaVMgKi8NCi0JeyBQQ0lfVkRFVklDRShTSSwgMHgxMTg0
+KSwgYm9hcmRfYWhjaSB9LCAvKiBTaVMgOTY2ICovDQotCXsgUENJX1ZERVZJ
+Q0UoU0ksIDB4MTE4NSksIGJvYXJkX2FoY2kgfSwgLyogU2lTIDk2NiAqLw0K
+LQl7IFBDSV9WREVWSUNFKFNJLCAweDAxODYpLCBib2FyZF9haGNpIH0sIC8q
+IFNpUyA5NjggKi8NCisJeyBQQ0lfVkRFVklDRShTSSwgMHgxMTg0KSwgYm9h
+cmRfYWhjaV9zaXMgfSwgLyogU2lTIDk2NiAqLw0KKwl7IFBDSV9WREVWSUNF
+KFNJLCAweDExODUpLCBib2FyZF9haGNpX3NpcyB9LCAvKiBTaVMgOTY4ICov
+DQorCXsgUENJX1ZERVZJQ0UoU0ksIDB4MDE4NiksIGJvYXJkX2FoY2lfc2lz
+IH0sIC8qIFNpUyA5NjggKi8NCiANCiAJLyogTWFydmVsbCAqLw0KIAl7IFBD
+SV9WREVWSUNFKE1BUlZFTEwsIDB4NjE0NSksIGJvYXJkX2FoY2lfbXYgfSwJ
+LyogNjE0NSAqLw0K
+
+--960504422-1551803131-1213498815=:2761--
