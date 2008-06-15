@@ -1,122 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756888AbYFOHrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757064AbYFOHuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756888AbYFOHrW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 03:47:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755904AbYFOHrJ
+	id S1757064AbYFOHuh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 03:50:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755906AbYFOHu1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 03:47:09 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:57077 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755803AbYFOHrF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 03:47:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=gsGv1ME8lyPzss9AyzNWGr0ZKvqmY4v96N56C/QILDpADm9XDJlqH6tidPL9vUzVzW
-         5TqPNv096L+SDF014tFYYhbLBv9fLDWOa8eYp6/NfUXPPYOQ26vFVHVbAl/dsEgWlJQb
-         wP36+10x/h6AZ5UeUI06EsKqg+F4y+U/T3rpU=
-Message-ID: <19f34abd0806150047w4338502en9a75681fb0c95438@mail.gmail.com>
-Date: Sun, 15 Jun 2008 09:47:03 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>
-Subject: Re: [3/3] POHMELFS high performance network filesystem.
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <20080613164241.GC26166@2ka.mipt.ru>
+	Sun, 15 Jun 2008 03:50:27 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60183 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755904AbYFOHu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 03:50:27 -0400
+Date: Sun, 15 Jun 2008 09:50:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug 10864] [regression][bisected] ~90,000 wakeups as of
+	2.6.26-rc3
+Message-ID: <20080615075008.GD29552@elte.hu>
+References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik> <Jn7irxIunJK.A.UoD.BJDVIB@albercik> <4854B71D.9080801@freemail.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <20080613163700.GA25860@2ka.mipt.ru>
-	 <20080613164241.GC26166@2ka.mipt.ru>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4854B71D.9080801@freemail.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I have just one question yet :-)
+* Németh Márton <nm127@freemail.hu> wrote:
 
-On Fri, Jun 13, 2008 at 6:42 PM, Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
-> +int pohmelfs_copy_config(struct pohmelfs_sb *psb)
-> +{
-> +       struct pohmelfs_config *c, *dst;
-> +       int err = -ENODEV;
-> +
-> +       mutex_lock(&pohmelfs_config_lock);
-> +       list_for_each_entry(c, &pohmelfs_config_list, config_entry) {
-> +               if (c->state.ctl.idx != psb->idx)
-> +                       continue;
-> +
-> +               err = 0;
-> +               list_for_each_entry(dst, &psb->state_list, config_entry) {
-> +                       if (pohmelfs_config_eql(&dst->state.ctl, &c->state.ctl)) {
-> +                               err = -EEXIST;
-> +                               break;
-> +                       }
-> +               }
-> +
-> +               if (err)
-> +                       continue;
-> +
-> +               dst = kzalloc(sizeof(struct pohmelfs_config), GFP_KERNEL);
-> +               if (!dst) {
-> +                       err = -ENOMEM;
-> +                       goto err_out_unlock;
-> +               }
-> +
-> +               memcpy(&dst->state.ctl, &c->state.ctl, sizeof(struct pohmelfs_ctl));
-> +
-> +               list_add_tail(&dst->config_entry, &psb->state_list);
-> +
-> +               err = pohmelfs_state_init_one(psb, dst);
-> +               if (err) {
-> +                       list_del(&dst->config_entry);
-> +                       kfree(dst);
-> +               }
-> +       }
-> +       mutex_unlock(&pohmelfs_config_lock);
-> +
-> +       return err;
-> +
-> +err_out_unlock:
-> +       mutex_unlock(&pohmelfs_config_lock);
-> +
-> +       mutex_lock(&psb->state_lock);
-> +       list_for_each_entry_safe(dst, c, &psb->state_list, config_entry) {
-> +               list_del(&dst->config_entry);
-> +               kfree(dst);
-> +       }
-> +       mutex_unlock(&psb->state_lock);
-> +
-> +       return err;
-> +}
+> Hi,
+> 
+> I already mentioned at the bug report that 2.6.26-rc6 this is fixed.
+> 
+> Maybe tell your robot to first check the latest activities in the bug 
+> report since the last -rc release. What I want also to tell your robot 
+> that it should mention what actions should be taken in case the bug 
+> should be still listed or when the bug can be closed.
 
-I'm having a hard time convincing myself that the error handling here
-is correct. You have this kind of setup:
+i think the current regression tracking methods that Rafael uses work 
+very well and i'd like to thank Rafael for those efforts - to me as a 
+subsystem maintainer it is a _very_ useful thing.
 
-1. for each config in config list {
-    2. for each config in superblock state list {
-        pohmelfs_config_eql();
-        ...
-    }
-}
+In this case there was no real harm from the "this bug is already fixed" 
+condition - just an extra email. Real harm would only come from missed 
+regressions or from incorrectly closed regressions - but those are not 
+happening.
 
-And according to your code, if pohmelfs_config_eql returns non-zero in
-the last iteration of #1, then -EEXISTS will be the return value of
-the whole function (but the config _will_ be copied; it is not undone
-in this case). But if pohmenlfs_config_eql returns non-zero in any but
-the last iteration of #1, then 0 will be the return value. Is this
-your intention?
+note that there is no "robot" involved in changing the state of bugs - 
+the real important work here is done by Rafael and checking whether a 
+bug is still relevant is an inevitably manual work. The mails and 
+reports are auto-generated but crawling discussions and determining the 
+status of a regression is very hard to automate.
 
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+	Ingo
