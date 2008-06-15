@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758025AbYFOMYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758193AbYFOM0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758025AbYFOMYi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 08:24:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757336AbYFOMY3
+	id S1758193AbYFOM0Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 08:26:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757336AbYFOM0B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 08:24:29 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:33711 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757311AbYFOMY3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 08:24:29 -0400
-Date: Sun, 15 Jun 2008 15:23:11 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Romano Giannetti <romano@dea.icai.upcomillas.es>
-Cc: Frans Pop <elendil@planet.nl>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug 10843] Display artifacts on XOrg logout with PAT kernel
-	and VESA framebuffer
-Message-ID: <20080615122311.GD21168@cs181133002.pp.htv.fi>
-References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik> <Jn7irxIunJK.A._5D.LJDVIB@albercik> <200806142359.36613.elendil@planet.nl> <1213525379.15067.3.camel@localhost> <20080615103934.GB21168@cs181133002.pp.htv.fi> <1213529117.7003.1.camel@localhost>
+	Sun, 15 Jun 2008 08:26:01 -0400
+Received: from monty.telenet-ops.be ([195.130.132.56]:33992 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757307AbYFOMZ7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 08:25:59 -0400
+Date: Sun, 15 Jun 2008 14:25:57 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Adrian Bunk <bunk@kernel.org>, Peter De Schrijver <p2@debian.org>
+cc: Roman Zippel <zippel@linux-m68k.org>, linux-m68k@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: m68k: could the Apollo support possibly work?
+In-Reply-To: <Pine.LNX.4.64.0806090842490.25145@anakin>
+Message-ID: <Pine.LNX.4.64.0806151425410.5736@anakin>
+References: <20080608190513.GE4048@cs181133002.pp.htv.fi>
+ <Pine.LNX.4.64.0806090842490.25145@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1213529117.7003.1.camel@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 15, 2008 at 01:25:17PM +0200, Romano Giannetti wrote:
-> 
-> On Sun, 2008-06-15 at 13:39 +0300, Adrian Bunk wrote:
-> > On Sun, Jun 15, 2008 at 12:22:59PM +0200, Romano Giannetti wrote:
-> > > 
-> 
-> > > > Yes. See also: http://lkml.org/lkml/2008/6/13/159
-> > > > -
-> > > 
-> > > It happens to me too. Do you see
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=10892 ?
+On Mon, 9 Jun 2008, Geert Uytterhoeven wrote:
+> On Sun, 8 Jun 2008, Adrian Bunk wrote:
+> > Nothing seems to set apollo_model (apollo_parse_bootinfo() has no caller).
 > > 
-> > Does disabling CONFIG_X86_PAT also fix it for you?
+> > Therefore trying to boot an Apollo machine seems to do:
+> >   arch/m68k/kernel/setup.c:setup_arch()
+> >     arch/m68k/apollo/config.c:config_apollo()
+> >       arch/m68k/apollo/config.c:dn_setup_model() 
+> >         panic()
+> > 
+> > Do I miss anything?
 > 
-> Dunno. Do I need to recompile or there is some boot option to disable
-> it?
+> Obviously it should be called from m68k_parse_bootinfo(), but there's no
+> MACH_IS_APOLLO case there. Strange...
 
-There's a nopat boot option.
+Subject: [PATCH] m68k/apollo: Add missing call to apollo_parse_bootinfo()
 
-> Rmano
+Add the missing call to apollo_parse_bootinfo(), which had been lost from a
+big Apollo support patch by Peter De Schrijver in 1999.
 
-cu
-Adrian
+Thanks to Adrian Bunk for noticing!
 
--- 
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ arch/m68k/kernel/setup.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+--- a/arch/m68k/kernel/setup.c
++++ b/arch/m68k/kernel/setup.c
+@@ -190,6 +190,8 @@ static void __init m68k_parse_bootinfo(c
+ 				unknown = mvme147_parse_bootinfo(record);
+ 			else if (MACH_IS_HP300)
+ 				unknown = hp300_parse_bootinfo(record);
++			else if (MACH_IS_APOLLO)
++				unknown = apollo_parse_bootinfo(record);
+ 			else
+ 				unknown = 1;
+ 		}
 
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
