@@ -1,146 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753745AbYFOTpH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754990AbYFOTqI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753745AbYFOTpH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 15:45:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751089AbYFOTox
+	id S1754990AbYFOTqI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 15:46:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbYFOToz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 15:44:53 -0400
-Received: from yumi.tdiedrich.de ([85.10.210.183]:33177 "EHLO mx.tdiedrich.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751080AbYFOTov (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 15:44:51 -0400
-Date: Sun, 15 Jun 2008 21:44:15 +0200
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ayaz Abdulla <aabdulla@nvidia.com>
-Subject: [PATCH] Re: forcedeth: lockdep warning on ethtool -s
-Message-ID: <20080615194415.GB2824@yamamaya.is-a-geek.org>
-Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-	Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Ayaz Abdulla <aabdulla@nvidia.com>
-References: <20080601083700.GA3036@yamamaya.is-a-geek.org> <20080605221842.a444ec9d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080605221842.a444ec9d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Sun, 15 Jun 2008 15:44:55 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:46318 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751069AbYFOTow (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 15:44:52 -0400
+X-Trace: 28678560/mk-filter-4.mail.uk.tiscali.com/B2C/$THROTTLED-DYNAMIC/CUSTOMER-DYNAMIC-IP/81.1.82.193
+X-SBRS: None
+X-RemoteIP: 81.1.82.193
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhIFACAOVUhRAVLB/2dsb2JhbACBW6ob
+X-IronPort-AV: E=Sophos;i="4.27,648,1204502400"; 
+   d="scan'208";a="28678560"
+Subject: [PATCH] input: Clean up maple keyboard driver
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       linux-input <linux-input@vger.kernel.org>,
+       linux-sh <linux-sh@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>
+Content-Type: text/plain
+Date: Sun, 15 Jun 2008 20:43:39 +0100
+Message-Id: <1213559019.22707.12.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Sun, 1 Jun 2008 10:37:01 +0200 Tobias Diedrich <ranma+kernel@tdiedrich.de> wrote:
-> 
-> > Hi,
-> > 
-> > After enabling CONFIG_LOCKDEP and CONFIG_PROVE_LOCKING I get the
-> > following warning when ethtool -s is first called on one of the
-> > forcedeth ports:
-> > 
-> > =================================
-> > [ INFO: inconsistent lock state ]
-> > 2.6.26-rc4 #28
-> > ---------------------------------
-> > inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
-> > ethtool/1985 [HC0[0]:SC0[1]:HE1:SE0] takes:
-> >  (&np->lock){++..}, at: [<ffffffffa000c5fd>] nv_set_settings+0xc8/0x3de [forcedeth]
-> > {in-hardirq-W} state was registered at:
-> >   [<ffffffffffffffff>] 0xffffffffffffffff
-> > irq event stamp: 3606
-> > hardirqs last  enabled at (3605): [<ffffffff8068106f>] _spin_unlock_irqrestore+0x3f/0x68
-> > hardirqs last disabled at (3604): [<ffffffff80680d38>] _spin_lock_irqsave+0x13/0x46
-> > softirqs last  enabled at (3534): [<ffffffff80246ba5>] __do_softirq+0xbc/0xc5
-> > softirqs last disabled at (3606): [<ffffffff80680b33>] _spin_lock_bh+0x11/0x41
-> > 
-> > other info that might help us debug this:
-> > 2 locks held by ethtool/1985:
-> >  #0:  (rtnl_mutex){--..}, at: [<ffffffff80596072>] rtnl_lock+0x12/0x14
-> >  #1:  (_xmit_ETHER){-+..}, at: [<ffffffffa000c5e8>] nv_set_settings+0xb3/0x3de [forcedeth]
-> > 
-> > stack backtrace:
-> > Pid: 1985, comm: ethtool Not tainted 2.6.26-rc4 #28
-> > 
-> > Call Trace:
-> >  [<ffffffff8025f190>] print_usage_bug+0x162/0x173
-> >  [<ffffffff8025fa8b>] mark_lock+0x231/0x41f
-> >  [<ffffffff802607cf>] __lock_acquire+0x4e7/0xcac
-> >  [<ffffffff8025fe64>] ? trace_hardirqs_on+0xf1/0x115
-> >  [<ffffffff80272c3a>] ? disable_irq_nosync+0x6f/0x7b
-> >  [<ffffffff80261375>] lock_acquire+0x55/0x6e
-> >  [<ffffffffa000c5fd>] ? :forcedeth:nv_set_settings+0xc8/0x3de
-> >  [<ffffffff80680b15>] _spin_lock+0x2f/0x3c
-> >  [<ffffffffa000c5fd>] :forcedeth:nv_set_settings+0xc8/0x3de
-> >  [<ffffffff8058f8bb>] dev_ethtool+0x186/0xea3
-> >  [<ffffffff8067f446>] ? mutex_lock_nested+0x243/0x275
-> >  [<ffffffff8025df2b>] ? debug_mutex_free_waiter+0x46/0x4a
-> >  [<ffffffff8067f469>] ? mutex_lock_nested+0x266/0x275
-> >  [<ffffffff8058e1ce>] dev_ioctl+0x4eb/0x600
-> >  [<ffffffff8068106f>] ? _spin_unlock_irqrestore+0x3f/0x68
-> >  [<ffffffff80580f91>] sock_ioctl+0x1f5/0x202
-> >  [<ffffffff802a322e>] vfs_ioctl+0x2a/0x77
-> >  [<ffffffff802a34d6>] do_vfs_ioctl+0x25b/0x270
-> >  [<ffffffff806807b6>] ? trace_hardirqs_on_thunk+0x35/0x3a
-> >  [<ffffffff802a352d>] sys_ioctl+0x42/0x65
-> >  [<ffffffff8021fffb>] system_call_after_swapgs+0x7b/0x80
-> > 
-> > 
-> > I think this is caused by the following snippet in nv_set_settings:
-> > 
-> > 	netif_carrier_off(dev);
-> > 	if (netif_running(dev)) {
-> > 		nv_disable_irq(dev);
-> > 		netif_tx_lock_bh(dev);
-> > 		spin_lock(&np->lock);
-> > 		/* stop engines */
-> > 		nv_stop_rxtx(dev);
-> > 		spin_unlock(&np->lock);
-> > 		netif_tx_unlock_bh(dev);
-> > 	}
-> > 
-> > 
-> > Because of nv_disable_irq this is probably not really a problem
-> > though (I guess) and replacing the spin_lock with spin_lock_irqsave
-> > could keep interrupts disabled for a longer period of time because
-> > of delays in nv_stop_rx and nv_stop_tx.
-> 
-> Could you please try that and if it works, send the patch?
+Have a single probe function instead of a probe and a connect function.
+Also tidy a comment.
+1 files changed, 33 insertions(+), 48 deletions(-)
 
-Here you go, with this patch applied I get no warning:
 
-Signed-Off-By: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+---
 
-Index: linux-2.6.26-rc4.forcedwol/drivers/net/forcedeth.c
-===================================================================
---- linux-2.6.26-rc4.forcedwol.orig/drivers/net/forcedeth.c	2008-06-15 20:45:32.000000000 +0200
-+++ linux-2.6.26-rc4.forcedwol/drivers/net/forcedeth.c	2008-06-15 20:55:27.000000000 +0200
-@@ -4198,12 +4198,23 @@
+
+
+diff --git a/drivers/input/keyboard/maple_keyb.c b/drivers/input/keyboard/maple_keyb.c
+index 94e9b3f..37ad346 100644
+--- a/drivers/input/keyboard/maple_keyb.c
++++ b/drivers/input/keyboard/maple_keyb.c
+@@ -144,8 +144,8 @@ static void dc_kbd_callback(struct mapleq *mq)
+ 	unsigned long *buf = mq->recvbuf;
  
- 	netif_carrier_off(dev);
- 	if (netif_running(dev)) {
-+		unsigned long flags;
-+
- 		nv_disable_irq(dev);
- 		netif_tx_lock_bh(dev);
--		spin_lock(&np->lock);
-+		/* with plain spinlock lockdep complains */
-+		spin_lock_irqsave(&np->lock, flags);
- 		/* stop engines */
-+		/* FIXME:
-+		 * this can take some time, and interrupts are disabled
-+		 * due to spin_lock_irqsave, but let's hope no daemon
-+		 * is going to change the settings very often...
-+		 * Worst case:
-+		 * NV_RXSTOP_DELAY1MAX + NV_TXSTOP_DELAY1MAX 
-+		 * + some minor delays, which is up to a second approximately
-+		 */
- 		nv_stop_rxtx(dev);
--		spin_unlock(&np->lock);
-+		spin_unlock_irqrestore(&np->lock, flags);
- 		netif_tx_unlock_bh(dev);
+ 	/*
+-	 * We should always be getting the lock because the only
+-	 * time it may be locked if driver is in cleanup phase.
++	 * We should always get the lock because the only
++	 * time it may be locked is if driver is in cleanup phase.
+ 	 */
+ 	if (likely(mutex_trylock(&maple_keyb_mutex))) {
+ 
+@@ -158,63 +158,73 @@ static void dc_kbd_callback(struct mapleq *mq)
  	}
+ }
+ 
+-static int dc_kbd_connect(struct maple_device *mdev)
++
++/* allow the keyboard to be used */
++static int probe_maple_kbd(struct device *dev)
+ {
+-	int i, error;
++	struct maple_device *mdev = to_maple_dev(dev);
++	struct maple_driver *mdrv = to_maple_driver(dev->driver);
+ 	struct dc_kbd *kbd;
+-	struct input_dev *dev;
++	struct input_dev *idev;
++	int error, i;
+ 
+ 	kbd = kzalloc(sizeof(struct dc_kbd), GFP_KERNEL);
+ 	if (!kbd) {
+ 		error = -ENOMEM;
+ 		goto fail_kbd;
+ 	}
+-	dev = input_allocate_device();
+-	if (!dev) {
++
++	idev = input_allocate_device();
++	if (!idev) {
+ 		error = -ENOMEM;
+ 		goto fail_dev;
+ 	}
+ 
+ 	mdev->private_data = kbd;
+ 
+-	kbd->dev = dev;
++	kbd->dev = idev;
+ 	memcpy(kbd->keycode, dc_kbd_keycode, sizeof(kbd->keycode));
+ 
+-	dev->name = mdev->product_name;
+-	dev->evbit[0] = BIT(EV_KEY) | BIT(EV_REP);
+-	dev->keycode = kbd->keycode;
+-	dev->keycodesize = sizeof(unsigned short);
+-	dev->keycodemax = ARRAY_SIZE(kbd->keycode);
+-	dev->id.bustype = BUS_HOST;
+-	dev->dev.parent = &mdev->dev;
++	idev->name = mdev->product_name;
++	idev->evbit[0] = BIT(EV_KEY) | BIT(EV_REP);
++	idev->keycode = kbd->keycode;
++	idev->keycodesize = sizeof(unsigned short);
++	idev->keycodemax = ARRAY_SIZE(kbd->keycode);
++	idev->id.bustype = BUS_HOST;
++	idev->dev.parent = &mdev->dev;
+ 
+ 	for (i = 0; i < NR_SCANCODES; i++)
+-		__set_bit(dc_kbd_keycode[i], dev->keybit);
+-	__clear_bit(KEY_RESERVED, dev->keybit);
++		__set_bit(dc_kbd_keycode[i], idev->keybit);
++	__clear_bit(KEY_RESERVED, idev->keybit);
+ 
+-	input_set_capability(dev, EV_MSC, MSC_SCAN);
+-	input_set_drvdata(dev, kbd);
++	input_set_capability(idev, EV_MSC, MSC_SCAN);
++	input_set_drvdata(idev, kbd);
+ 
+-	error = input_register_device(dev);
++	error = input_register_device(idev);
+ 	if (error)
+ 		goto fail;
+ 
+ 	/* Maple polling is locked to VBLANK - which may be just 50/s */
+ 	maple_getcond_callback(mdev, dc_kbd_callback, HZ/50,
+ 		MAPLE_FUNC_KEYBOARD);
+-	return 0;
++
++	mdev->driver = mdrv;
++
++	return error;
+ 
+ fail:
+-	input_free_device(dev);
++	input_free_device(idev);
+ fail_dev:
+ 	kfree(kbd);
+ fail_kbd:
+ 	mdev->private_data = NULL;
+ 	return error;
++
+ }
+ 
+-static void dc_kbd_disconnect(struct maple_device *mdev)
++static int remove_maple_kbd(struct device *dev)
+ {
++	struct maple_device *mdev = to_maple_dev(dev);
+ 	struct dc_kbd *kbd;
+ 
+ 	mutex_lock(&maple_keyb_mutex);
+@@ -225,36 +235,11 @@ static void dc_kbd_disconnect(struct maple_device *mdev)
+ 	kfree(kbd);
+ 
+ 	mutex_unlock(&maple_keyb_mutex);
+-}
+-
+-/* allow the keyboard to be used */
+-static int probe_maple_kbd(struct device *dev)
+-{
+-	struct maple_device *mdev = to_maple_dev(dev);
+-	struct maple_driver *mdrv = to_maple_driver(dev->driver);
+-	int error;
+-
+-	error = dc_kbd_connect(mdev);
+-	if (error)
+-		return error;
+-
+-	mdev->driver = mdrv;
+-
+-	return 0;
+-}
+-
+-static int remove_maple_kbd(struct device *dev)
+-{
+-	struct maple_device *mdev = to_maple_dev(dev);
+-
+-	dc_kbd_disconnect(mdev);
+ 	return 0;
+ }
+ 
+ static struct maple_driver dc_kbd_driver = {
+ 	.function = MAPLE_FUNC_KEYBOARD,
+-	.connect = dc_kbd_connect,
+-	.disconnect = dc_kbd_disconnect,
+ 	.drv = {
+ 		.name = "Dreamcast_keyboard",
+ 		.probe = probe_maple_kbd,
 
--- 
-Tobias						PGP: http://9ac7e0bc.uguu.de
-このメールは十割再利用されたビットで作られています。
