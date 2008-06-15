@@ -1,46 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759389AbYFOPHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759035AbYFOPPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759389AbYFOPHp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 11:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758227AbYFOPHh
+	id S1759035AbYFOPPT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 11:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758056AbYFOPPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 11:07:37 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:27070 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758146AbYFOPHg (ORCPT
+	Sun, 15 Jun 2008 11:15:07 -0400
+Received: from impaqm1.telefonica.net ([213.4.149.61]:20505 "EHLO
+	IMPaqm1.telefonica.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757684AbYFOPPG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 11:07:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=bs0d6NIjfLju7SalzVqljqq7s2aLQGG7AdI3LQpL1nenUAckTWpeXMdHH9sT9n6Tax
-         OE11WefSDBDrpDWs7znByWwMMZt1BQYgT8p8I+G+ZO+RtWCblc3GxGQhdlrb/5YNc+a1
-         lZ9eaR9nxu/8QxY/gqy0zwLPFZuDy0KAjofpk=
-Message-ID: <2f11576a0806150807v2130cfbdl7a6f556c4bebaa62@mail.gmail.com>
-Date: Mon, 16 Jun 2008 00:07:34 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Rik van Riel" <riel@redhat.com>
-Subject: Re: [PATCH] fix printk in show_free_areas
-Cc: "Hiroshi Shimamoto" <h-shimamoto@ct.jp.nec.com>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Lee Schermerhorn" <lee.schermerhorn@hp.com>
-In-Reply-To: <20080613134827.5dbac5ac@cuia.bos.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080611184214.605110868@redhat.com>
-	 <20080611184339.159161465@redhat.com> <4851C1CC.7070607@ct.jp.nec.com>
-	 <20080613134827.5dbac5ac@cuia.bos.redhat.com>
-X-Google-Sender-Auth: ed46bbdb0229c793
+	Sun, 15 Jun 2008 11:15:06 -0400
+Date: Sun, 15 Jun 2008 17:15:01 +0200
+From: =?ISO-8859-1?Q?Jes=FAs?= Guerrero <i92guboj@terra.es>
+To: linux kernel <linux-kernel@vger.kernel.org>
+Subject: update ntfs help text
+Message-Id: <20080615171501.8b3a18f5.i92guboj@terra.es>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.10; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sun__15_Jun_2008_17_15_01_+0200_vuMANE3ML5XQpC1A"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -       printk("Active_anon:%lu active_file:%lu inactive_anon%lu\n"
-> +       printk("Active_anon:%lu active_file:%lu inactive_anon:%lu\n"
+--Signature=_Sun__15_Jun_2008_17_15_01_+0200_vuMANE3ML5XQpC1A
+Content-Type: multipart/mixed;
+ boundary="Multipart=_Sun__15_Jun_2008_17_15_01_+0200_bitpAx/E=vjLBQBR"
 
-Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+
+--Multipart=_Sun__15_Jun_2008_17_15_01_+0200_bitpAx/E=vjLBQBR
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hello,=20
+
+I think that the url in the help text for ntfs should be updated.
+
+Trivial patch attached.
+
+--=20
+Jes=FAs Guerrero <i92guboj@terra.es>
+
+--Multipart=_Sun__15_Jun_2008_17_15_01_+0200_bitpAx/E=vjLBQBR
+Content-Type: text/x-patch;
+ name="ntfs-linux.patch"
+Content-Disposition: attachment;
+ filename="ntfs-linux.patch"
+Content-Transfer-Encoding: quoted-printable
+
+--- fs/Kconfig.orig	2008-06-15 17:11:04.000000000 +0200
++++ fs/Kconfig	2008-06-15 17:11:40.000000000 +0200
+@@ -803,7 +803,7 @@
+ 	  from the project web site.
+=20
+ 	  For more information see <file:Documentation/filesystems/ntfs.txt>
+-	  and <http://linux-ntfs.sourceforge.net/>.
++	  and <http://www.linux-ntfs.org/doku.php>.
+=20
+ 	  To compile this file system support as a module, choose M here: the
+ 	  module will be called ntfs.
+
+--Multipart=_Sun__15_Jun_2008_17_15_01_+0200_bitpAx/E=vjLBQBR--
+
+--Signature=_Sun__15_Jun_2008_17_15_01_+0200_vuMANE3ML5XQpC1A
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkhVMfoACgkQXJ+pkIOP8Dw9TQCfTidliA6N55L5JovkoHm/dvL3
+x5YAn3R019VBIheFUGH/H379rqdg277W
+=vVr3
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__15_Jun_2008_17_15_01_+0200_vuMANE3ML5XQpC1A--
