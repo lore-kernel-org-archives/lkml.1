@@ -1,352 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760003AbYFOSCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759977AbYFOSKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760003AbYFOSCc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 14:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758837AbYFOSCZ
+	id S1759977AbYFOSKo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 14:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758960AbYFOSKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 14:02:25 -0400
-Received: from woodchuck.wormnet.eu ([77.75.105.223]:55409 "EHLO
-	woodchuck.wormnet.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758802AbYFOSCY (ORCPT
+	Sun, 15 Jun 2008 14:10:32 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:32871 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758942AbYFOSKa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 14:02:24 -0400
-X-Greylist: delayed 1876 seconds by postgrey-1.27 at vger.kernel.org; Sun, 15 Jun 2008 14:02:23 EDT
-Date: Sun, 15 Jun 2008 18:31:05 +0100
-From: Alexander Clouter <alex@digriz.org.uk>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH,RFC] timer iomem hwrng driver
-Message-ID: <20080615173105.GJ1098@inskipp.digriz.org.uk>
+	Sun, 15 Jun 2008 14:10:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=T9U43khmC5Ym9YHW2tOrEyN3G8BdZtqFZ32Du1niDY7+VIWWH3SlxU7KHwgSZbLL8T
+         rGP4g7qgSDmaQp4NeXs3711Q22I18o9fnLzVcvAoPmC41GVzicgZ4X0lqfFZI0aUomHJ
+         1qZoWBNyUhkGeOrSFSf3KtCDSnjIn2K+Qg5D0=
+Message-ID: <6278d2220806151110x68ee91fej8cf8e6b591ce1319@mail.gmail.com>
+Date: Sun, 15 Jun 2008 19:10:27 +0100
+From: "Daniel J Blueman" <daniel.blueman@gmail.com>
+To: chucklever@gmail.com
+Subject: Re: [2.6.26-rc4] mount.nfsv4/memory poisoning issues...
+Cc: linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       "Trond Myklebust" <trond.myklebust@fys.uio.no>,
+       "Jeff Layton" <jlayton@redhat.com>
+In-Reply-To: <76bd70e30806041643j4d632a6exf64b29c34173d40f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Organization: diGriz
-X-URL: http://www.digriz.org.uk/
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <6278d2220806041633n3bfe3dd2ke9602697697228b@mail.gmail.com>
+	 <76bd70e30806041643j4d632a6exf64b29c34173d40f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Jun 5, 2008 at 12:43 AM, Chuck Lever <chuck.lever@oracle.com> wrote:
+> Hi Daniel-
+>
+> On Wed, Jun 4, 2008 at 7:33 PM, Daniel J Blueman
+> <daniel.blueman@gmail.com> wrote:
+>> Having experienced 'mount.nfs4: internal error' when mounting nfsv4 in
+>> the past, I have a minimal test-case I sometimes run:
+>>
+>> $ while :; do mount -t nfs4 filer:/store /store; umount /store; done
+>>
+>> After ~100 iterations, I saw the 'mount.nfs4: internal error',
+>> followed by symptoms of memory corruption [1], a locking issue with
+>> the reporting [2] and another (related?) memory-corruption issue
+>> (off-by-1?) [3]. A little analysis shows memory being overwritten by
+>> (likely) a poison value, which gets complicated if it's not
+>> use-after-free...
+>>
+>> Anyone dare confirm this issue? NFSv4 server is x86-64 Ubuntu 8.04
+>> 2.6.24-18, client U8.04 2.6.26-rc4; batteries included [4].
+>
+> We have some other reports of late model kernels with memory
+> corruption issues during NFS mount.  The problem is that by the time
+> these canaries start singing, the evidence of what did the corrupting
+> is long gone.
+>
+>> I'm happy to decode addresses, test patches etc.
+>
+> If these crashes are more or less reliably reproduced, it would be
+> helpful if you could do a 'git bisect' on the client to figure out at
+> what point in the kernel revision history this problem was introduced.
+>
+> Have you seen the problem on client kernels earlier than 2.6.25?
 
-I've noticed that the HW RNG core is orphaned so I'm posted this here...
+Firstly, I had omitted that I'd booted the kernel with
+debug_objects=1, which provides the canary here.
 
-I have been putting together some patches[1] for mainline support for the 
-Technologic Systems TS-7800 which also includes a HW RNG generator; 32 bits 
-of entropy a second is not great but hell if it's there, why not use it?
+The primary failure I see is 'mount.nfs4: internal error', and always
+after 358 umount/mount cycles (plus 1 initial mount) which gives us a
+clue; 'netstat' shows all these connections in a TIME_WAIT state, thus
+the bug relates to the inability to allocate a socket error path. I
+found that after the connection lifetime expired, you can mount again,
+which corroborates this theory.
 
-So I started slapping a driver together and realised it might be handy to 
-generalise the driver a bit as in the case of the TS-7800 you just yank data 
-once a second from a memory address and that's it; I imagine there are other 
-boards out there that provision this kind of thing too.  Nosing around in 
-drivers/char/hw_random I noticed that ixp4xx-rng.c could trivially be 
-replaced with my driver too.
+In this case, we saw the mount() syscall result in the mount.nfsv4
+process being SEGV'd when booted with 'debug_object=1', without this
+option, we see:
 
-So what's the consensus?  The only possibly 'offencive' bit I can think of is 
-that the ioremap'ing is done in the platform code.  After a lot of head 
-scratched I managed to get it to use a timer queue so hopefully it's rather 
-lightweight; saving me the stack of 64bit calculations on an ARM chip I had 
-before I got it using the timer queue.
+# strace /sbin/mount.nfs4 x1:/ /store
+...
+mount("x1:/", "/store", "nfs4", 0,
+"addr=192.168.0.250,clientaddr=19"...) = -1 EIO (Input/output error)
 
-Comments, flames, suggestions for improvement all welcomed.
+So, it's impossible to tell when the corruption was introduced, as it
+has only become detectable recently.
 
-Cheers
+It's worth a look-over of the socket-allocation error path, if someone
+can check, and reproduces 100% with the 'debug_object=1' param,
+available since 2.6.26-rc1 and 359 mounts in quick succession.
 
-Alex
-
-P.S. I'm not subscribed to LKML so please CC me in on your replies, the FAQ 
-	said this was not a 'faux par'...
-
-[1] http://marc.info/?l=linux-arm-kernel&m=121280018602505&w=2
-
+Thanks!
+  Daniel
 -- 
- ________________________________________
-/ You may be marching to the beat of a   \
-| different drummer, but you're still in |
-\ the parade.                            /
- ----------------------------------------
-        \   ^__^
-         \  (oo)\_______
-            (__)\       )\/\
-                ||----w |
-                ||     ||
-
-diff --git a/arch/arm/mach-orion5x/ts78xx-setup.c b/arch/arm/mach-orion5x/ts78xx-setup.c
-index bbf87a4..6599bd9 100644
---- a/arch/arm/mach-orion5x/ts78xx-setup.c
-+++ b/arch/arm/mach-orion5x/ts78xx-setup.c
-@@ -15,6 +15,7 @@
- #include <linux/mv643xx_eth.h>
- #include <linux/ata_platform.h>
- #include <linux/m48t86.h>
-+#include <linux/timeriomem-rng.h>
- #include <asm/mach-types.h>
- #include <asm/mach/arch.h>
- #include <asm/mach/map.h>
-@@ -37,6 +38,8 @@
- #define TS78XX_FPGA_REGS_SYSCON_LCDI	(TS78XX_FPGA_REGS_VIRT_BASE | 0x004)
- #define TS78XX_FPGA_REGS_SYSCON_LCDO	(TS78XX_FPGA_REGS_VIRT_BASE | 0x008)
- 
-+#define TS78XX_FPGA_REGS_SYSCON_RNG	(TS78XX_FPGA_REGS_VIRT_BASE | 0x044)
-+
- #define TS78XX_FPGA_REGS_RTC_CTRL	(TS78XX_FPGA_REGS_VIRT_BASE | 0x808)
- #define TS78XX_FPGA_REGS_RTC_DATA	(TS78XX_FPGA_REGS_VIRT_BASE | 0x80c)
- 
-@@ -108,6 +111,27 @@ static struct mv643xx_eth_platform_data ts78xx_eth_data = {
- };
- 
- /*****************************************************************************
-+ * RNG
-+ ****************************************************************************/
-+#ifdef CONFIG_HW_RANDOM_TIMERIOMEM
-+static struct timeriomem_rng_data ts78xx_rng_data = {
-+	.address	= (u32 *__iomem) TS78XX_FPGA_REGS_SYSCON_RNG,
-+	.width		= 32,
-+	.mask		= 0,
-+	.period		= 1000000,
-+};
-+
-+static struct platform_device ts78xx_rng_device = {
-+	.name		= "timeriomem_rng",
-+	.id		= -1,
-+	.dev		= {
-+		.platform_data	= &ts78xx_rng_data,
-+	},
-+	.num_resources	= 0,
-+};
-+#endif
-+
-+/*****************************************************************************
-  * RTC M48T86 - nicked^Wborrowed from arch/arm/mach-ep93xx/ts72xx.c
-  ****************************************************************************/
- #ifdef CONFIG_RTC_DRV_M48T86
-@@ -258,6 +282,9 @@ static void __init ts78xx_init(void)
- 
- 	if (!ts78xx_rtc_init())
- 		printk(KERN_INFO "TS-78xx RTC not detected or enabled\n");
-+#ifdef CONFIG_HW_RANDOM_TIMERIOMEM
-+	platform_device_register(&ts78xx_rng_device);
-+#endif
- }
- 
- MACHINE_START(TS78XX, "Technologic Systems TS-78xx SBC")
-diff --git a/drivers/char/hw_random/Kconfig b/drivers/char/hw_random/Kconfig
-index 8d6c208..3eff545 100644
---- a/drivers/char/hw_random/Kconfig
-+++ b/drivers/char/hw_random/Kconfig
-@@ -20,6 +20,19 @@ config HW_RANDOM
- 
- 	  If unsure, say Y.
- 
-+config HW_RANDOM_TIMERIOMEM
-+	tristate "Timer IOMEM HW Random Number Generator support"
-+	depends on HW_RANDOM
-+	---help---
-+	  This driver provides kernel-side support for a generic Random
-+	  Number Generator provisioned by hardware through a dumb iomem
-+	  address; for example the TS-7800 is such a device.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called timeriomem-rng.
-+
-+	  If unsure, say Y.
-+
- config HW_RANDOM_INTEL
- 	tristate "Intel HW Random Number Generator support"
- 	depends on HW_RANDOM && (X86 || IA64) && PCI
-diff --git a/drivers/char/hw_random/Makefile b/drivers/char/hw_random/Makefile
-index c8b7300..490bec0 100644
---- a/drivers/char/hw_random/Makefile
-+++ b/drivers/char/hw_random/Makefile
-@@ -4,6 +4,7 @@
- 
- obj-$(CONFIG_HW_RANDOM) += rng-core.o
- rng-core-y := core.o
-+obj-$(CONFIG_HW_RANDOM_TIMERIOMEM) += timeriomem-rng.o
- obj-$(CONFIG_HW_RANDOM_INTEL) += intel-rng.o
- obj-$(CONFIG_HW_RANDOM_AMD) += amd-rng.o
- obj-$(CONFIG_HW_RANDOM_GEODE) += geode-rng.o
-diff --git a/drivers/char/hw_random/timeriomem-rng.c b/drivers/char/hw_random/timeriomem-rng.c
-new file mode 100644
-index 0000000..f88fd1d
---- /dev/null
-+++ b/drivers/char/hw_random/timeriomem-rng.c
-@@ -0,0 +1,152 @@
-+/*
-+ * drivers/char/hw_random/timerioport-rng.c
-+ *
-+ * Copyright (C) 2008 Alexander Clouter <alex@digriz.org.uk>
-+ *
-+ * Derived from drivers/char/hw_random/omap-rng.c
-+ *   Copyright 2005 (c) MontaVista Software, Inc.
-+ *   Author: Deepak Saxena <dsaxena@plexity.net>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * Overview:
-+ *   This driver is useful for platforms that have an IO range that provides
-+ *   periodic random data from a single IO memory address.  All the platform
-+ *   has to do is provide the address, width, shift and 'wait time' that new
-+ *   data becomes available
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/platform_device.h>
-+#include <linux/hw_random.h>
-+#include <linux/io.h>
-+#include <linux/timeriomem-rng.h>
-+#include <linux/jiffies.h>
-+#include <linux/sched.h>
-+#include <linux/timer.h>
-+
-+static struct timeriomem_rng_data *timeriomem_rng_data;
-+
-+static void timeriomem_rng_trigger(unsigned long);
-+static DEFINE_TIMER(timeriomem_rng_timer, &timeriomem_rng_trigger, 0, 0);
-+
-+/*
-+ * have data return 1, however return 0 if we have nothing
-+ */
-+static int timeriomem_rng_data_present(struct hwrng *rng, int wait)
-+{
-+	unsigned int delay;
-+
-+	if (rng->priv == 0)
-+		return 1;
-+
-+	if (timer_pending(&timeriomem_rng_timer)) {
-+		if (!wait)
-+			return 0;
-+
-+		del_timer(&timeriomem_rng_timer);
-+		delay = timeriomem_rng_timer.expires - get_jiffies_64();
-+
-+		schedule_timeout_uninterruptible(delay);
-+	}
-+
-+	return 1;
-+}
-+
-+/* FIXME: add width/mask support (must be endian safe too) */
-+static int timeriomem_rng_data_read(struct hwrng *rng, u32 *data)
-+{
-+	u64 cur;
-+	unsigned int delay;
-+
-+	*data = *timeriomem_rng_data->address;
-+
-+	if (rng->priv != 0) {
-+		cur = get_jiffies_64();
-+
-+		delay = cur - timeriomem_rng_timer.expires;
-+		delay = rng->priv - (delay % rng->priv);
-+
-+		timeriomem_rng_timer.expires = cur + delay;
-+		add_timer(&timeriomem_rng_timer);
-+	}
-+
-+	return 4;
-+}
-+
-+static void timeriomem_rng_trigger(unsigned long dummy)
-+{
-+  del_timer(&timeriomem_rng_timer);
-+}
-+
-+static struct hwrng timeriomem_rng_ops = {
-+	.name		= "timeriomem",
-+	.data_present	= timeriomem_rng_data_present,
-+	.data_read	= timeriomem_rng_data_read,
-+	.priv		= 0,
-+};
-+
-+static int __init timeriomem_rng_probe(struct platform_device *pdev)
-+{
-+	int ret;
-+
-+	timeriomem_rng_data = pdev->dev.platform_data;
-+
-+	if (timeriomem_rng_data->period != 0
-+		&& usecs_to_jiffies(timeriomem_rng_data->period) > 0) {
-+		timeriomem_rng_timer.expires = get_jiffies_64();
-+		init_timer(&timeriomem_rng_timer);
-+
-+		timeriomem_rng_ops.priv = usecs_to_jiffies(
-+						timeriomem_rng_data->period);
-+	}
-+
-+	ret = hwrng_register(&timeriomem_rng_ops);
-+	if (ret) {
-+		dev_err(&pdev->dev, "problem registering\n");
-+		return ret;
-+	}
-+
-+	dev_info(&pdev->dev, "%dbits from 0x%p period %d usecs\n",
-+			timeriomem_rng_data->width,
-+			timeriomem_rng_data->address,
-+			timeriomem_rng_data->period);
-+
-+	return 0;
-+}
-+
-+static int __exit timeriomem_rng_remove(struct platform_device *pdev)
-+{
-+	del_timer(&timeriomem_rng_timer);
-+	hwrng_unregister(&timeriomem_rng_ops);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver timeriomem_rng_driver = {
-+	.driver = {
-+		.name		= "timeriomem_rng",
-+		.owner		= THIS_MODULE,
-+	},
-+	.probe		= timeriomem_rng_probe,
-+};
-+
-+static int __init timeriomem_rng_init(void)
-+{
-+	return platform_driver_register(&timeriomem_rng_driver);
-+}
-+
-+static void __exit timeriomem_rng_exit(void)
-+{
-+	platform_driver_unregister(&timeriomem_rng_driver);
-+}
-+
-+module_init(timeriomem_rng_init);
-+module_exit(timeriomem_rng_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Alexander Clouter <alex@digriz.org.uk>");
-+MODULE_DESCRIPTION("Timer IOMEM H/W RNG driver");
-diff --git a/include/linux/timeriomem-rng.h b/include/linux/timeriomem-rng.h
-new file mode 100644
-index 0000000..f7f2905
---- /dev/null
-+++ b/include/linux/timeriomem-rng.h
-@@ -0,0 +1,21 @@
-+/*
-+ * linux/include/linux/timeriomem-rng.h
-+ *
-+ * Copyright (c) 2008 Alexander Clouter <alex@digriz.org.uk>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+struct timeriomem_rng_data {
-+	u32 __iomem	*address;
-+
-+	/* width in bits */
-+	unsigned int	width;
-+	/* if non-zero the mask to apply to get the bits we want */
-+	unsigned int	mask;
-+
-+	/* measures in usecs */
-+	unsigned int	period;
-+};
+Daniel J Blueman
