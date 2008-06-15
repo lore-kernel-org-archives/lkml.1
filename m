@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756790AbYFOGpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756801AbYFOGuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756790AbYFOGpZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 02:45:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbYFOGpJ
+	id S1756801AbYFOGuu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 02:50:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752732AbYFOGug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 02:45:09 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:19476 "EHLO
-	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752644AbYFOGpI (ORCPT
+	Sun, 15 Jun 2008 02:50:36 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:31327 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752097AbYFOGuf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 02:45:08 -0400
-Date: Sat, 14 Jun 2008 23:44:51 -0700
-From: Adam Williamson <awilliamson@mandriva.com>
-Subject: Re: [Bug 10868] Oops on loading ipaq module since 2.6.26,
- prevents	use of device
-In-reply-to: <20080614222621.084522fe@lxorguk.ukuu.org.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@redhat.com>
-Message-id: <1213512291.7393.0.camel@lenovo.local.net>
-Organization: Mandriva
-MIME-version: 1.0
-X-Mailer: Evolution 2.22.2-2mdv2009.0
-Content-type: text/plain
-Content-transfer-encoding: 7bit
-References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
- <Jn7irxIunJK.A.hXD.3IDVIB@albercik>
- <20080614222621.084522fe@lxorguk.ukuu.org.uk>
+	Sun, 15 Jun 2008 02:50:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=IE+PWrN5Yddn5VMw3zWyxY1wUzREFjKnxGu6+fKg9ZBqHMcwKv1QWqmSreYIPYZ1qT
+         V3eHlWwYQiozMHcedf+IBVfrMJD/1OQol5YaAvMp1R2YgpylWxvxCdftjyNS9kr0vpN2
+         MsomgG4HtJcGtYXuJuPoWvJBKsJE2gYQ0gx/g=
+Subject: Re: [PATCH 2/2] 8139too: different style cleanups
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: David Newall <davidn@davidnewall.com>
+Cc: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>,
+       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
+       Trivial Patch Monkey <trivial@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4854B604.6080900@davidnewall.com>
+References: <4853BB7B.4030905@freemail.hu> <48541173.7040905@freemail.hu>
+	 <4854B604.6080900@davidnewall.com>
+Content-Type: text/plain; charset=utf-8
+Date: Sat, 14 Jun 2008 23:50:37 -0700
+Message-Id: <1213512637.11544.36.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-06-14 at 22:26 +0100, Alan Cox wrote:
-> On Sat, 14 Jun 2008 22:12:04 +0200 (CEST)
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Sun, 2008-06-15 at 15:56 +0930, David Newall wrote:
+> Németh Márton wrote:
+> >  #  define DPRINTK(fmt, args...) \
+> > -	printk(KERN_DEBUG "%s: " fmt, __FUNCTION__ , ## args)
+> > +	printk(KERN_DEBUG "%s: " fmt, __func__ , ## args)
+> >   
 > 
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.25.  Please verify if it still should be listed.
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10868
-> > Subject		: Oops on loading ipaq module since 2.6.26, prevents use of device
-> > Submitter	: Adam Williamson <awilliamson@mandriva.com>
-> > Date		: 2008-06-05 17:39 (10 days old)
-> > Handled-By	: Alan Cox <alan@redhat.com>
-> 
-> Still waiting for the actual attached result of the test patch to debug
-> this further. Guess it will miss 2.6.26
+> Why change __FUNCTION__ to __func__?  I don't even know where __func__
+> come from?  Assuming that it isn't totally broken, and I'll believe that
+> it isn't, then would it be compiler-specific?   __FUNCTION__ is standard
+> and that's more than enough reason to prefer that form to any
+> non-standard variation.
 
-I replied via email - as you requested earlier in the thread - and
-attached the result to that email. Did you not get it?
--- 
-adamw
+__FUNCTION__ is gcc-specific, __func__ is C99.
+
+Harvey
 
