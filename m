@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757643AbYFOLNx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbYFOL0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757643AbYFOLNx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 07:13:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756997AbYFOLNo
+	id S1758205AbYFOL0a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 07:26:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757247AbYFOL0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 07:13:44 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:52431 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756654AbYFOLNn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 07:13:43 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Subject: Re: 2.6.26-rc6-git2: Reported regressions from 2.6.25
-Date: Sun, 15 Jun 2008 13:14:42 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Adrian Bunk" <bunk@kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Natalie Protasevich" <protasnb@gmail.com>,
-       "Daniel J Blueman" <daniel.blueman@gmail.com>
-References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik> <19f34abd0806141509m18f9f959v94fbeb27e42aa0ed@mail.gmail.com>
-In-Reply-To: <19f34abd0806141509m18f9f959v94fbeb27e42aa0ed@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806151314.43568.rjw@sisk.pl>
+	Sun, 15 Jun 2008 07:26:21 -0400
+Received: from antispam.upcomillas.es ([130.206.70.245]:52137 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757232AbYFOL0U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 07:26:20 -0400
+Subject: Re: [Bug 10843] Display artifacts on XOrg logout with PAT kernel
+	and VESA framebuffer
+From: Romano Giannetti <romano@dea.icai.upcomillas.es>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Frans Pop <elendil@planet.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <200806151240.53953.rjw@sisk.pl>
+References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
+	 <200806142359.36613.elendil@planet.nl> <1213525379.15067.3.camel@localhost>
+	 <200806151240.53953.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: Sun, 15 Jun 2008 13:26:18 +0200
+Message-Id: <1213529178.7003.3.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 15 of June 2008, Vegard Nossum wrote:
-> On Sat, Jun 14, 2008 at 10:04 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > If you know of any other unresolved regressions from 2.6.25, please let me know
-> > either and I'll add them to the list.  Also, please let me know if any of the
-> > entries below are invalid.
-> 
-> http://lkml.org/lkml/2008/6/14/62
-> 
-> was just reported today. Seems to have been caused by
-> 
-> commit 3ac7fe5a4aab409bd5674d0b070bce97f9d20872
-> Author: Thomas Gleixner <tglx@linutronix.de>
-> Date:   Wed Apr 30 00:55:01 2008 -0700
-> 
->     infrastructure to debug (dynamic) objects
-> 
-> which was introduced just after v2.6.25, but not discovered until now,
-> probably because it requires the (admittedly obscure) combination of
-> lockdep and slub/object debugging.
 
-Added to the list as http://bugzilla.kernel.org/show_bug.cgi?id=10918 .
+On Sun, 2008-06-15 at 12:40 +0200, Rafael J. Wysocki wrote:
+> On Sunday, 15 of June 2008, Romano Giannetti wrote:
+> > 
+> > On Sat, 2008-06-14 at 23:59 +0200, Frans Pop wrote:
+> > > \>
+> > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10843
+> > > > Subject	: Display artifacts on XOrg logout with PAT kernel and VESA
+> > > > 		  framebuffer
+> > > > Submitter	: Frans Pop <elendil@planet.nl> 
+> > > > Date		: 2008-05-31 14:04 (15 days old)
+> > > > References	: http://lkml.org/lkml/2008/6/7/206
+> > > 
+> > > Yes. See also: http://lkml.org/lkml/2008/6/13/159
+> > > -
+> > 
+> > It happens to me too. Do you see
+> > http://bugzilla.kernel.org/show_bug.cgi?id=10892 ?
+> 
+> Do these two bug entries refer to the same problem?
+> 
+> Rafael
 
-Thanks,
-Rafael
+I do not know, just a wild guess. I noticed the flashing color when
+doing shutdown, and being Intel the common chipset...
+
+-- 
+Romano Giannetti                            Dep. de Electrónica y Automática
+http://www.dea.icai.upcomillas.es/romano    Univ. Pontificia Comillas (MADRID)
+
+
+--
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
