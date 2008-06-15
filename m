@@ -1,88 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753466AbYFOE2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753542AbYFOFDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753466AbYFOE2U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 00:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750847AbYFOE16
+	id S1753542AbYFOFDo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 01:03:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750926AbYFOFDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 00:27:58 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:40902 "EHLO
-	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750839AbYFOE14 (ORCPT
+	Sun, 15 Jun 2008 01:03:35 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:34304 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750778AbYFOFDe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 00:27:56 -0400
-Date: Sat, 14 Jun 2008 21:27:55 -0700 (PDT)
-From: Sage Weil <sage@newdream.net>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Jamie Lokier <jamie@shareable.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [2/3] POHMELFS: Documentation.
-In-Reply-To: <20080614065616.GA32585@2ka.mipt.ru>
-Message-ID: <Pine.LNX.4.64.0806142102550.3341@cobra.newdream.net>
-References: <20080613163700.GA25860@2ka.mipt.ru> <20080613164110.GB26166@2ka.mipt.ru>
- <20080614021547.GC32232@shareable.org> <20080614065616.GA32585@2ka.mipt.ru>
+	Sun, 15 Jun 2008 01:03:34 -0400
+Message-ID: <4854A2A4.7090900@keyaccess.nl>
+Date: Sun, 15 Jun 2008 07:03:32 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Arjan van de Ven <arjan@infradead.org>
+CC: werner <werner@sys-linux.yi.org>, linux-kernel@vger.kernel.org
+Subject: Re: Regressions in the last kernels
+References: <1213467969.31034@sys-linux.yi.org> <20080614141805.30cf74f0@infradead.org>
+In-Reply-To: <20080614141805.30cf74f0@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Evgeniy,
+On 14-06-08 23:18, Arjan van de Ven wrote:
 
-On Sat, 14 Jun 2008, Evgeniy Polyakov wrote:
-> > That sounds great, but what do you mean by 'novel'?  Don't other
-> > modern network filesystems use asynchronous requests and replies in
-> > some form?  It seems like the obvious thing.
+> On Sat, 14 Jun 2008 15:26:09 -0300 (GFT)
+> "werner" <werner@sys-linux.yi.org> wrote:
+
+>> 1) When compiling for i486,  one cannot select/configurate more
+>> memory than 4 GB, menuconfig don't show items with higher values.  My
+>> own computer/server has 8 GB, but when I compile the kernel with 4 GB
+>> and i486 then 'free' shows only 3.2 GB (no shared grafics, the grafic
+>> card has its own memory) ...
 > 
-> Maybe it was a bit naive though :)
-> But I checked lots of implementation, all of them use send()/recv()
-> approach. NFSv4 uses a bit different, but it is a cryptic, and at least
-> from its names it is not clear:
-> like nfs_pagein_multi() -> nfs_pageio_complete() -> add_stats. Presumably
-> we add stats when we have data handy...
-> CIFS/SMB use synchronous approach.
-
-By synchronous/asynchronous, are you talking about whether writepages() 
-blocks until the write is acked by the server?  (Really, any FS that does 
-writeback is writing asynchronously...)
-
-> >From those projects, which are not in kernel, like CRFS and CEPH, the
-> former uses async receiving thread, while the latter is synchronous,
-> but can select different servers for reading, more like NFSv4.1 leases.
-
-Well... Ceph writes synchronously (i.e. waits for ack in write()) only 
-when write-sharing on a single file between multiple clients, when it is 
-needed to preserve proper write ordering semantics.  The rest of the time, 
-it generates nice big writes via writepages().  The main performance issue 
-is with small files... the fact that writepages() waits for an ack and is 
-usually called from only a handful of threads limits overall throughput.  
-If the writeback path was asynchronous as well that would definitely help 
-(provided writeback is still appropriately throttled).  Is that what 
-you're doing in POHMELFS?
-
-> > > * Transactions support. Full failover for all operations.
-> > >   Resending transactions to different servers on timeout or error.
-> > 
-> > By transactions, do you mean an atomic set of writes/changes?
-> > Or do you trace read dependencies too?
 > 
-> It covers all operations, including reading, directory listing, lookups,
-> attribite changes and so on. Its main goal is to allow transaparent
-> failover, so it has to be done for reading too.
+> interesting problem... 486's didn't have PAE so are limited to 4Gb of
+> memory... makes this a policy question more than a bug...
+> (in fact, if you configure for > 4Gb a 486 CPU will not boot... so
+> arguably the new behavior is correct!!!)
 
-Your meaning of "transaction" confused me as well.  It sounds like you 
-just mean that the read/write operation is retried (asynchronously), and 
-may be redirected at another server if need be.  And that writes can be 
-directed at multiple servers, waiting for an ack from both.  Is that 
-right?
+What's arguable about it?
 
-I my view the writeback metadata cache is definitely the most exciting 
-part about this project.  Is there a document that describes where the 
-design ended up?  I seem to remember a string of posts describing your 
-experiements with client-side inode number assignment and how that is 
-reconciled with the server.  Keeping things consistent between clients is 
-definitely the tricky part, although I suspect that even something with 
-very coarse granularity (e.g., directory/subtree-based locking/leasing) 
-will capture most of the performance benefits for most workloads.
-
-Cheers-
-sage
+Rene.
