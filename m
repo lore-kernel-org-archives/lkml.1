@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbYFONMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758200AbYFONhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758166AbYFONMY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 09:12:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757424AbYFONMO
+	id S1758200AbYFONhq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 09:37:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757457AbYFONhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 09:12:14 -0400
-Received: from po-out-1718.google.com ([72.14.252.159]:53193 "EHLO
-	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757398AbYFONMN (ORCPT
+	Sun, 15 Jun 2008 09:37:34 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:45414 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757424AbYFONhd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 09:12:13 -0400
-Message-ID: <48551524.7050307@devslashzero.com>
-Date: Sun, 15 Jun 2008 18:42:04 +0530
-From: Abhijit Bhopatkar <bain@devslashzero.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org,
-       linux-dvb@linuxtv.org
-Subject: [PATCH] DVB-USB UMT-010 driver oops on install
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 15 Jun 2008 09:37:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=SfUfAJexfS9x63sMZu0DUOJorBW172mPOiw720wYjJ5nQvNgzGbKYpuEnP93zIAR4u
+         fTSuDeHPmkQefIxC3YF7+PCpEaE/7P73sgfHnvpJNbB1D3yGkOZOHp9Vgno9a6Jrb5tI
+         PbVYa0YJgLxsCa5+SvRm45QOeOrnrnk5TovQU=
+Subject: Re: how to find when a symbol introduced into the kernel
+From: Calvin Walton <calvin.walton@gmail.com>
+To: Zhaohui Wang <zwange@gmu.edu>
+Cc: linux-newbie@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <000b01c8ce6b$a7bfda50$f73f8ef0$@edu>
+References: <000b01c8ce6b$a7bfda50$f73f8ef0$@edu>
+Content-Type: text/plain
+Date: Sun, 15 Jun 2008 09:37:24 -0400
+Message-Id: <1213537044.25647.4.camel@zem>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.23.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 2008-06-14 at 18:11 -0400, Zhaohui Wang wrote:
+> 
+> Hi all
+> 
+> To write multiple kernel version compatible programs, I need to know when a specific symbol (a struct or a function)were introduced in to the kernel tree
+> 
+> Binary search against multiple kernel sources is a way,but is still slow.Is there any fast way to use modern git technology to make my life easier?
+> 
+> Many thanks.
 
-Initialize stream count using MAX_NO_URBS_FOR_DATA_STREAM.
+You're probably looking for the command
+  git log -S functionname
+a.k.a. the git pickaxe.
 
-Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
-Signed-off-by: Abhijit Bhopatkar <bain@devslashzero.com>
----
- drivers/media/dvb/dvb-usb/umt-010.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+That will show you all of the commits that added or removed a line
+containing the name you're interested in, and you can then check just
+those changes to see what compatibility may have changed.
 
-diff --git a/drivers/media/dvb/dvb-usb/umt-010.c
-b/drivers/media/dvb/dvb-usb/umt-010.c
-index 9e7653b..118aab1 100644
---- a/drivers/media/dvb/dvb-usb/umt-010.c
-+++ b/drivers/media/dvb/dvb-usb/umt-010.c
-@@ -107,7 +107,7 @@ static struct dvb_usb_device_properties
-umt_properties = {
- 			/* parameter for the MPEG2-data transfer */
- 			.stream = {
- 				.type = USB_BULK,
--				.count = 20,
-+				.count = MAX_NO_URBS_FOR_DATA_STREAM,
- 				.endpoint = 0x06,
- 				.u = {
- 					.bulk = {
+To find out what kernel release one of those commits went into, you can
+use
+  git describe <sha1-hash>
+and it will report the last tagged kernel version before that commit was
+added.
+
+Hope that helps!
+
 -- 
-1.5.5.29.g7134
+Calvin Walton <calvin.walton@gmail.com>
+
