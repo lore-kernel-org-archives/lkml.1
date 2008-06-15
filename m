@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757230AbYFOIyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbYFOJOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757230AbYFOIyy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 04:54:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756605AbYFOIyo
+	id S1757279AbYFOJOg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 05:14:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756646AbYFOJOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 04:54:44 -0400
-Received: from mail01a.mail.t-online.hu ([84.2.40.6]:51596 "EHLO
-	mail01a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756581AbYFOIyn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 04:54:43 -0400
-X-Authuid: nmarci
-Message-ID: <4854D8C8.8080006@freemail.hu>
-Date: Sun, 15 Jun 2008 10:54:32 +0200
-From: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug 10864] [regression][bisected] ~90,000 wakeups as of 2.6.26-rc3
-References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik> <Jn7irxIunJK.A.UoD.BJDVIB@albercik> <4854B71D.9080801@freemail.hu> <20080615075008.GD29552@elte.hu>
-In-Reply-To: <20080615075008.GD29552@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-DCC--Metrics: mail01a.mail.t-online.hu 0; Body=3 Fuz1=3 Fuz2=3
+	Sun, 15 Jun 2008 05:14:12 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:47614 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756613AbYFOJOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 05:14:09 -0400
+Date: Sun, 15 Jun 2008 13:14:08 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [3/3] POHMELFS high performance network filesystem.
+Message-ID: <20080615091407.GA4468@2ka.mipt.ru>
+References: <20080613163700.GA25860@2ka.mipt.ru> <20080613164241.GC26166@2ka.mipt.ru> <19f34abd0806150047w4338502en9a75681fb0c95438@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19f34abd0806150047w4338502en9a75681fb0c95438@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Németh Márton <nm127@freemail.hu> wrote:
+Hi Vegard.
+
+On Sun, Jun 15, 2008 at 09:47:03AM +0200, Vegard Nossum (vegard.nossum@gmail.com) wrote:
+> I'm having a hard time convincing myself that the error handling here
+> is correct. You have this kind of setup:
 > 
->> Hi,
->>
->> I already mentioned at the bug report that 2.6.26-rc6 this is fixed.
->>
->> Maybe tell your robot to first check the latest activities in the bug 
->> report since the last -rc release. What I want also to tell your robot 
->> that it should mention what actions should be taken in case the bug 
->> should be still listed or when the bug can be closed.
+> 1. for each config in config list {
+>     2. for each config in superblock state list {
+>         pohmelfs_config_eql();
+>         ...
+>     }
+> }
 > 
-> i think the current regression tracking methods that Rafael uses work 
-> very well and i'd like to thank Rafael for those efforts - to me as a 
-> subsystem maintainer it is a _very_ useful thing.
-> 
-> In this case there was no real harm from the "this bug is already fixed" 
-> condition - just an extra email. Real harm would only come from missed 
-> regressions or from incorrectly closed regressions - but those are not 
-> happening.
-> 
-> note that there is no "robot" involved in changing the state of bugs - 
-> the real important work here is done by Rafael and checking whether a 
-> bug is still relevant is an inevitably manual work. The mails and 
-> reports are auto-generated but crawling discussions and determining the 
-> status of a regression is very hard to automate.
+> And according to your code, if pohmelfs_config_eql returns non-zero in
+> the last iteration of #1, then -EEXISTS will be the return value of
+> the whole function (but the config _will_ be copied; it is not undone
+> in this case). But if pohmenlfs_config_eql returns non-zero in any but
+> the last iteration of #1, then 0 will be the return value. Is this
+> your intention?
 
-Sorry, I thought a robot missed my comments in the bug tracking system for
-the second time:
+Task of this function is to copy as much new configs added by user (or
+by remote server) as we can. 
+If config already exists (was copied in previous iterations) we skip it.
+If it does not, we allocate new structure and initialize it. If
+allocation fails, it is a serious error and unlikely we want to proceed,
+so we jump out of the loop and drop all states and return error. If we
+just failed to initialie new state (like connection was refused by
+remote server), we simply drop that failed case and proceed further. In
+theory we still can leave that half-initialized states in the list, and
+any attempt to send request via them will try to initialize its network
+part, but thread creation and allocation itself will be tried to
+recover, so I just drop such state here. I think initialization function
+should not return error if it failed to connect or create a socket,
+since it can/will be recovered later if needed.
 
-1.
-Comment was on 2008-06-06 13:27:16 ( http://bugzilla.kernel.org/show_bug.cgi?id=10864#c3 )
-The mail was coming: 7 Jun 2008 22:42:57 +0200 (CEST) ( http://lkml.org/lkml/2008/6/7/193 )
+We should not return eexist, from non-error label, but at the only
+place, where this return value is checked (mount time initialization),
+superblock list is empty and thus this error can not happen.
 
-2.
-Comment was on 2008-06-13 23:19:53 ( http://bugzilla.kernel.org/show_bug.cgi?id=10864#c4 )
-The mail was coming: 14 Jun 2008 22:12:04 +0200 (CEST) ( http://lkml.org/lkml/2008/6/14/160 )
-
-Nevertheless the bug #10864 can be closed I think.
-
-Regards,
-
-	Márton Németh
+-- 
+	Evgeniy Polyakov
