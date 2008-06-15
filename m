@@ -1,249 +1,352 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760063AbYFOR7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760003AbYFOSCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760063AbYFOR7Z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 13:59:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758802AbYFOR7P
+	id S1760003AbYFOSCc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 14:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758837AbYFOSCZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 13:59:15 -0400
-Received: from mail.issp.bas.bg ([195.96.236.10]:55493 "EHLO mail.issp.bas.bg"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758794AbYFOR7O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 13:59:14 -0400
-From: Marin Mitov <mitov@issp.bas.bg>
-Organization: Institute of Solid State Physics
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH][resubmit] x86: enable preemption in delay
-Date: Sun, 15 Jun 2008 20:58:16 +0300
-User-Agent: KMail/1.9.9
-Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>, akpm@osdl.org,
-       Clark Williams <clark.williams@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi-suse@firstfloor.org>
-References: <200805252108.25011.mitov@issp.bas.bg> <200806091911.21850.mitov@issp.bas.bg> <20080609161606.GA24841@elte.hu>
-In-Reply-To: <20080609161606.GA24841@elte.hu>
+	Sun, 15 Jun 2008 14:02:25 -0400
+Received: from woodchuck.wormnet.eu ([77.75.105.223]:55409 "EHLO
+	woodchuck.wormnet.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758802AbYFOSCY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 14:02:24 -0400
+X-Greylist: delayed 1876 seconds by postgrey-1.27 at vger.kernel.org; Sun, 15 Jun 2008 14:02:23 EDT
+Date: Sun, 15 Jun 2008 18:31:05 +0100
+From: Alexander Clouter <alex@digriz.org.uk>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH,RFC] timer iomem hwrng driver
+Message-ID: <20080615173105.GJ1098@inskipp.digriz.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806152058.17142.mitov@issp.bas.bg>
+Organization: diGriz
+X-URL: http://www.digriz.org.uk/
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 June 2008 07:16:06 pm Ingo Molnar wrote:
-> > There is no principal difference between both patches. I have seen 
-> > Steven's one as merged in linux-2.6.26-rc5. The only difference (if it 
-> > matters of all) is that in mine patch 
-> > preempt_disable()/preempt_enable() sections are shorter and protect 
-> > only the code that must be protected:
-> > 
-> > preempt_disable()
-> > rdtscl()
-> > smp_processor_id()
-> > preempt_enable()
-> > 
-> > As far as Steven's patch is already merged - let it be :-)
-> 
-> we could still merge your enhancements as well ontop of Steven's, if you 
-> would like to pursue it. If so then please send a patch against -rc5 or 
-> against -tip. Reducing the length of preempt-off sections is a fair 
-> goal.
-> 
-> 	Ingo
-> 
-Well, the patch is bellow (against 2.6.26-rc6), but I would really 
-appreciate your comments. 
+Hi,
 
-The difference is that in Steven's version the loop is running 
-mainly with preemption disabled, except for: 
+I've noticed that the HW RNG core is orphaned so I'm posted this here...
 
-		preempt_enable();
-		rep_nop();
-		preempt_disable();
+I have been putting together some patches[1] for mainline support for the 
+Technologic Systems TS-7800 which also includes a HW RNG generator; 32 bits 
+of entropy a second is not great but hell if it's there, why not use it?
 
-while in the proposed version the loop is running with
-preemption enabled, except for the part:
+So I started slapping a driver together and realised it might be handy to 
+generalise the driver a bit as in the case of the TS-7800 you just yank data 
+once a second from a memory address and that's it; I imagine there are other 
+boards out there that provision this kind of thing too.  Nosing around in 
+drivers/char/hw_random I noticed that ixp4xx-rng.c could trivially be 
+replaced with my driver too.
 
-		preempt_disable();
-		rdtscl(prev_1);
-		cpu = smp_processor_id();
-		rdtscl(now);
-		preempt_enable();
+So what's the consensus?  The only possibly 'offencive' bit I can think of is 
+that the ioremap'ing is done in the platform code.  After a lot of head 
+scratched I managed to get it to use a timer queue so hopefully it's rather 
+lightweight; saving me the stack of 64bit calculations on an ARM chip I had 
+before I got it using the timer queue.
 
-I do realize that this is not a big difference as far as 
-the time of loop execution is quite short.
+Comments, flames, suggestions for improvement all welcomed.
 
-In fact in the case of TSCs the problem is not the preemption 
-itself, but the migration to another cpu after the preemption.
+Cheers
 
-Why not something like that (do keep in mind I am not
-an expert :-):
+Alex
 
-static void delay_tsc(unsigned long loops)
-{
-	get and store the mask of allowed cpus;
-	/*     prevent the migration   */
-	set the mask of allowed cpus to the current cpu only;
-	/*     is it possible? could it be guaranteed?    */
-	loop for the delay;
-	restore the old mask of allowed cpus;
-}
+P.S. I'm not subscribed to LKML so please CC me in on your replies, the FAQ 
+	said this was not a 'faux par'...
 
-You have got the idea. Could it be realized? Is it more expensive
-than the current realization? So, comments, please.
+[1] http://marc.info/?l=linux-arm-kernel&m=121280018602505&w=2
 
-Regards,
+-- 
+ ________________________________________
+/ You may be marching to the beat of a   \
+| different drummer, but you're still in |
+\ the parade.                            /
+ ----------------------------------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
 
-Marin Mitov
-
-
-Signed-off-by: Marin Mitov <mitov@issp.bas.bg>
-
-=========================================
---- a/arch/x86/lib/delay_32.c	2008-06-15 11:04:05.000000000 +0300
-+++ b/arch/x86/lib/delay_32.c	2008-06-15 11:09:45.000000000 +0300
-@@ -40,41 +40,42 @@ static void delay_loop(unsigned long loo
- 		:"0" (loops));
+diff --git a/arch/arm/mach-orion5x/ts78xx-setup.c b/arch/arm/mach-orion5x/ts78xx-setup.c
+index bbf87a4..6599bd9 100644
+--- a/arch/arm/mach-orion5x/ts78xx-setup.c
++++ b/arch/arm/mach-orion5x/ts78xx-setup.c
+@@ -15,6 +15,7 @@
+ #include <linux/mv643xx_eth.h>
+ #include <linux/ata_platform.h>
+ #include <linux/m48t86.h>
++#include <linux/timeriomem-rng.h>
+ #include <asm/mach-types.h>
+ #include <asm/mach/arch.h>
+ #include <asm/mach/map.h>
+@@ -37,6 +38,8 @@
+ #define TS78XX_FPGA_REGS_SYSCON_LCDI	(TS78XX_FPGA_REGS_VIRT_BASE | 0x004)
+ #define TS78XX_FPGA_REGS_SYSCON_LCDO	(TS78XX_FPGA_REGS_VIRT_BASE | 0x008)
+ 
++#define TS78XX_FPGA_REGS_SYSCON_RNG	(TS78XX_FPGA_REGS_VIRT_BASE | 0x044)
++
+ #define TS78XX_FPGA_REGS_RTC_CTRL	(TS78XX_FPGA_REGS_VIRT_BASE | 0x808)
+ #define TS78XX_FPGA_REGS_RTC_DATA	(TS78XX_FPGA_REGS_VIRT_BASE | 0x80c)
+ 
+@@ -108,6 +111,27 @@ static struct mv643xx_eth_platform_data ts78xx_eth_data = {
+ };
+ 
+ /*****************************************************************************
++ * RNG
++ ****************************************************************************/
++#ifdef CONFIG_HW_RANDOM_TIMERIOMEM
++static struct timeriomem_rng_data ts78xx_rng_data = {
++	.address	= (u32 *__iomem) TS78XX_FPGA_REGS_SYSCON_RNG,
++	.width		= 32,
++	.mask		= 0,
++	.period		= 1000000,
++};
++
++static struct platform_device ts78xx_rng_device = {
++	.name		= "timeriomem_rng",
++	.id		= -1,
++	.dev		= {
++		.platform_data	= &ts78xx_rng_data,
++	},
++	.num_resources	= 0,
++};
++#endif
++
++/*****************************************************************************
+  * RTC M48T86 - nicked^Wborrowed from arch/arm/mach-ep93xx/ts72xx.c
+  ****************************************************************************/
+ #ifdef CONFIG_RTC_DRV_M48T86
+@@ -258,6 +282,9 @@ static void __init ts78xx_init(void)
+ 
+ 	if (!ts78xx_rtc_init())
+ 		printk(KERN_INFO "TS-78xx RTC not detected or enabled\n");
++#ifdef CONFIG_HW_RANDOM_TIMERIOMEM
++	platform_device_register(&ts78xx_rng_device);
++#endif
  }
  
--/* TSC based delay: */
-+/* TSC based delay:
+ MACHINE_START(TS78XX, "Technologic Systems TS-78xx SBC")
+diff --git a/drivers/char/hw_random/Kconfig b/drivers/char/hw_random/Kconfig
+index 8d6c208..3eff545 100644
+--- a/drivers/char/hw_random/Kconfig
++++ b/drivers/char/hw_random/Kconfig
+@@ -20,6 +20,19 @@ config HW_RANDOM
+ 
+ 	  If unsure, say Y.
+ 
++config HW_RANDOM_TIMERIOMEM
++	tristate "Timer IOMEM HW Random Number Generator support"
++	depends on HW_RANDOM
++	---help---
++	  This driver provides kernel-side support for a generic Random
++	  Number Generator provisioned by hardware through a dumb iomem
++	  address; for example the TS-7800 is such a device.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called timeriomem-rng.
++
++	  If unsure, say Y.
++
+ config HW_RANDOM_INTEL
+ 	tristate "Intel HW Random Number Generator support"
+ 	depends on HW_RANDOM && (X86 || IA64) && PCI
+diff --git a/drivers/char/hw_random/Makefile b/drivers/char/hw_random/Makefile
+index c8b7300..490bec0 100644
+--- a/drivers/char/hw_random/Makefile
++++ b/drivers/char/hw_random/Makefile
+@@ -4,6 +4,7 @@
+ 
+ obj-$(CONFIG_HW_RANDOM) += rng-core.o
+ rng-core-y := core.o
++obj-$(CONFIG_HW_RANDOM_TIMERIOMEM) += timeriomem-rng.o
+ obj-$(CONFIG_HW_RANDOM_INTEL) += intel-rng.o
+ obj-$(CONFIG_HW_RANDOM_AMD) += amd-rng.o
+ obj-$(CONFIG_HW_RANDOM_GEODE) += geode-rng.o
+diff --git a/drivers/char/hw_random/timeriomem-rng.c b/drivers/char/hw_random/timeriomem-rng.c
+new file mode 100644
+index 0000000..f88fd1d
+--- /dev/null
++++ b/drivers/char/hw_random/timeriomem-rng.c
+@@ -0,0 +1,152 @@
++/*
++ * drivers/char/hw_random/timerioport-rng.c
 + *
-+ * We are careful about preemption as TSC's are per-CPU.
-+ */
- static void delay_tsc(unsigned long loops)
- {
--	unsigned long bclock, now;
--	int cpu;
-+	unsigned prev, prev_1, now;
-+	unsigned left = loops;
-+	unsigned prev_cpu, cpu;
- 
- 	preempt_disable();
--	cpu = smp_processor_id();
--	rdtscl(bclock);
--	for (;;) {
--		rdtscl(now);
--		if ((now - bclock) >= loops)
--			break;
-+	rdtscl(prev);
-+	prev_cpu = smp_processor_id();
-+	preempt_enable();
-+	now = prev;
- 
--		/* Allow RT tasks to run */
--		preempt_enable();
-+	do {
- 		rep_nop();
-+
-+		left -= now - prev;
-+		prev = now;
-+
- 		preempt_disable();
-+		rdtscl(prev_1);
-+		cpu = smp_processor_id();
-+		rdtscl(now);
-+		preempt_enable();
- 
--		/*
--		 * It is possible that we moved to another CPU, and
--		 * since TSC's are per-cpu we need to calculate
--		 * that. The delay must guarantee that we wait "at
--		 * least" the amount of time. Being moved to another
--		 * CPU could make the wait longer but we just need to
--		 * make sure we waited long enough. Rebalance the
--		 * counter for this CPU.
--		 */
--		if (unlikely(cpu != smp_processor_id())) {
--			loops -= (now - bclock);
--			cpu = smp_processor_id();
--			rdtscl(bclock);
-+		if (prev_cpu != cpu) {
-+			/*
-+			 * We have migrated, forget prev_cpu's tsc reading
-+			 */
-+			prev = prev_1;
-+			prev_cpu = cpu;
- 		}
--	}
--	preempt_enable();
-+	} while ((now-prev) < left);
- }
- 
- /*
---- a/arch/x86/lib/delay_64.c	2008-06-15 11:04:17.000000000 +0300
-+++ b/arch/x86/lib/delay_64.c	2008-06-15 11:09:52.000000000 +0300
-@@ -28,40 +28,42 @@ int __devinit read_current_timer(unsigne
- 	return 0;
- }
- 
-+/* TSC based delay:
++ * Copyright (C) 2008 Alexander Clouter <alex@digriz.org.uk>
 + *
-+ * We are careful about preemption as TSC's are per-CPU.
++ * Derived from drivers/char/hw_random/omap-rng.c
++ *   Copyright 2005 (c) MontaVista Software, Inc.
++ *   Author: Deepak Saxena <dsaxena@plexity.net>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * Overview:
++ *   This driver is useful for platforms that have an IO range that provides
++ *   periodic random data from a single IO memory address.  All the platform
++ *   has to do is provide the address, width, shift and 'wait time' that new
++ *   data becomes available
 + */
- void __delay(unsigned long loops)
- {
--	unsigned bclock, now;
--	int cpu;
-+	unsigned prev, prev_1, now;
-+	unsigned left = loops;
-+	unsigned prev_cpu, cpu;
- 
- 	preempt_disable();
--	cpu = smp_processor_id();
--	rdtscl(bclock);
--	for (;;) {
--		rdtscl(now);
--		if ((now - bclock) >= loops)
--			break;
-+	rdtscl(prev);
-+	prev_cpu = smp_processor_id();
-+	preempt_enable();
-+	now = prev;
- 
--		/* Allow RT tasks to run */
--		preempt_enable();
-+	do {
- 		rep_nop();
 +
-+		left -= now - prev;
-+		prev = now;
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/platform_device.h>
++#include <linux/hw_random.h>
++#include <linux/io.h>
++#include <linux/timeriomem-rng.h>
++#include <linux/jiffies.h>
++#include <linux/sched.h>
++#include <linux/timer.h>
 +
- 		preempt_disable();
-+		rdtscl(prev_1);
-+		cpu = smp_processor_id();
-+		rdtscl(now);
-+		preempt_enable();
- 
--		/*
--		 * It is possible that we moved to another CPU, and
--		 * since TSC's are per-cpu we need to calculate
--		 * that. The delay must guarantee that we wait "at
--		 * least" the amount of time. Being moved to another
--		 * CPU could make the wait longer but we just need to
--		 * make sure we waited long enough. Rebalance the
--		 * counter for this CPU.
--		 */
--		if (unlikely(cpu != smp_processor_id())) {
--			loops -= (now - bclock);
--			cpu = smp_processor_id();
--			rdtscl(bclock);
-+		if (prev_cpu != cpu) {
-+			/*
-+			 * We have migrated, forget prev_cpu's tsc reading
-+			 */
-+			 prev = prev_1;
-+			 prev_cpu = cpu;
- 		}
--	}
--	preempt_enable();
-+	} while ((now-prev) < left);
- }
- EXPORT_SYMBOL(__delay);
- 
++static struct timeriomem_rng_data *timeriomem_rng_data;
++
++static void timeriomem_rng_trigger(unsigned long);
++static DEFINE_TIMER(timeriomem_rng_timer, &timeriomem_rng_trigger, 0, 0);
++
++/*
++ * have data return 1, however return 0 if we have nothing
++ */
++static int timeriomem_rng_data_present(struct hwrng *rng, int wait)
++{
++	unsigned int delay;
++
++	if (rng->priv == 0)
++		return 1;
++
++	if (timer_pending(&timeriomem_rng_timer)) {
++		if (!wait)
++			return 0;
++
++		del_timer(&timeriomem_rng_timer);
++		delay = timeriomem_rng_timer.expires - get_jiffies_64();
++
++		schedule_timeout_uninterruptible(delay);
++	}
++
++	return 1;
++}
++
++/* FIXME: add width/mask support (must be endian safe too) */
++static int timeriomem_rng_data_read(struct hwrng *rng, u32 *data)
++{
++	u64 cur;
++	unsigned int delay;
++
++	*data = *timeriomem_rng_data->address;
++
++	if (rng->priv != 0) {
++		cur = get_jiffies_64();
++
++		delay = cur - timeriomem_rng_timer.expires;
++		delay = rng->priv - (delay % rng->priv);
++
++		timeriomem_rng_timer.expires = cur + delay;
++		add_timer(&timeriomem_rng_timer);
++	}
++
++	return 4;
++}
++
++static void timeriomem_rng_trigger(unsigned long dummy)
++{
++  del_timer(&timeriomem_rng_timer);
++}
++
++static struct hwrng timeriomem_rng_ops = {
++	.name		= "timeriomem",
++	.data_present	= timeriomem_rng_data_present,
++	.data_read	= timeriomem_rng_data_read,
++	.priv		= 0,
++};
++
++static int __init timeriomem_rng_probe(struct platform_device *pdev)
++{
++	int ret;
++
++	timeriomem_rng_data = pdev->dev.platform_data;
++
++	if (timeriomem_rng_data->period != 0
++		&& usecs_to_jiffies(timeriomem_rng_data->period) > 0) {
++		timeriomem_rng_timer.expires = get_jiffies_64();
++		init_timer(&timeriomem_rng_timer);
++
++		timeriomem_rng_ops.priv = usecs_to_jiffies(
++						timeriomem_rng_data->period);
++	}
++
++	ret = hwrng_register(&timeriomem_rng_ops);
++	if (ret) {
++		dev_err(&pdev->dev, "problem registering\n");
++		return ret;
++	}
++
++	dev_info(&pdev->dev, "%dbits from 0x%p period %d usecs\n",
++			timeriomem_rng_data->width,
++			timeriomem_rng_data->address,
++			timeriomem_rng_data->period);
++
++	return 0;
++}
++
++static int __exit timeriomem_rng_remove(struct platform_device *pdev)
++{
++	del_timer(&timeriomem_rng_timer);
++	hwrng_unregister(&timeriomem_rng_ops);
++
++	return 0;
++}
++
++static struct platform_driver timeriomem_rng_driver = {
++	.driver = {
++		.name		= "timeriomem_rng",
++		.owner		= THIS_MODULE,
++	},
++	.probe		= timeriomem_rng_probe,
++};
++
++static int __init timeriomem_rng_init(void)
++{
++	return platform_driver_register(&timeriomem_rng_driver);
++}
++
++static void __exit timeriomem_rng_exit(void)
++{
++	platform_driver_unregister(&timeriomem_rng_driver);
++}
++
++module_init(timeriomem_rng_init);
++module_exit(timeriomem_rng_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Alexander Clouter <alex@digriz.org.uk>");
++MODULE_DESCRIPTION("Timer IOMEM H/W RNG driver");
+diff --git a/include/linux/timeriomem-rng.h b/include/linux/timeriomem-rng.h
+new file mode 100644
+index 0000000..f7f2905
+--- /dev/null
++++ b/include/linux/timeriomem-rng.h
+@@ -0,0 +1,21 @@
++/*
++ * linux/include/linux/timeriomem-rng.h
++ *
++ * Copyright (c) 2008 Alexander Clouter <alex@digriz.org.uk>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++struct timeriomem_rng_data {
++	u32 __iomem	*address;
++
++	/* width in bits */
++	unsigned int	width;
++	/* if non-zero the mask to apply to get the bits we want */
++	unsigned int	mask;
++
++	/* measures in usecs */
++	unsigned int	period;
++};
