@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757593AbYFOKgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757597AbYFOKjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757593AbYFOKgy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 06:36:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbYFOKgq
+	id S1757597AbYFOKjh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 06:39:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755900AbYFOKja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 06:36:46 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:52254 "EHLO ogre.sisk.pl"
+	Sun, 15 Jun 2008 06:39:30 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:52269 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751973AbYFOKgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 06:36:45 -0400
+	id S1752293AbYFOKj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 06:39:29 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "werner" <werner@copaya.yi.org>
-Subject: Re: Regressions in the last kernels
-Date: Sun, 15 Jun 2008 12:37:44 +0200
+To: Romano Giannetti <romano@dea.icai.upcomillas.es>
+Subject: Re: [Bug 10843] Display artifacts on XOrg logout with PAT kernel and VESA framebuffer
+Date: Sun, 15 Jun 2008 12:40:53 +0200
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: LKML <linux-kernel@vger.kernel.org>
-References: <1213483422.8768@copaya.yi.org>
-In-Reply-To: <1213483422.8768@copaya.yi.org>
+Cc: Frans Pop <elendil@planet.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik> <200806142359.36613.elendil@planet.nl> <1213525379.15067.3.camel@localhost>
+In-Reply-To: <1213525379.15067.3.camel@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806151237.44345.rjw@sisk.pl>
+Message-Id: <200806151240.53953.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please don't drop the CC list from your replies and please don't top-post.
-
-On Sunday, 15 of June 2008, werner wrote:
-> The 2nd problem anyway is present with the 2.6.26-rc5 and -rc4 kernels.
-> It was NOT presend with 2.6.25-rc9, at least not on 1 IBM laptop what I had
-> before-yesterday, which had the problem with 2.6.26-rc5/4 but not with
-> 2.6.25-rc9 (all other config was the same).  It did NOT help change edd from
-> off to on, so that is a new problem.   With -rc6, I donk know because I couldnt
-> test it yet, the man had gone away with his laptop already.
-
-Okay, so this issue seems to be a recent regression.
-
-> Many people bring me old computers to repair. I always throw out Windows and
-> install Linux.  So I see plenty kernel errors. But I dont have time to report them
-> all, only some.  And normally I dont have long time the computers because
-> later the people come and go away with them computers.              
+On Sunday, 15 of June 2008, Romano Giannetti wrote:
 > 
-> I make all my kernel packages for i486 because here in the 3rd world many
-> people have old computers ftp://ftp5.gwdg.de/pub/linux/install/sys/   
-> However these kernels should work on newer computers too, like on my server
-> what has 8 GB memory.  With i486, all the last kernels 2.6.26 cannot be
-> configured to more than 4 GB and, running, nor that is working correctly.  
+> On Sat, 2008-06-14 at 23:59 +0200, Frans Pop wrote:
+> > \>
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10843
+> > > Subject	: Display artifacts on XOrg logout with PAT kernel and VESA
+> > > 		  framebuffer
+> > > Submitter	: Frans Pop <elendil@planet.nl> 
+> > > Date		: 2008-05-31 14:04 (15 days old)
+> > > References	: http://lkml.org/lkml/2008/6/7/206
+> > 
+> > Yes. See also: http://lkml.org/lkml/2008/6/13/159
+> > -
+> 
+> It happens to me too. Do you see
+> http://bugzilla.kernel.org/show_bug.cgi?id=10892 ?
 
-This is intentional, as i486 processors cannot handle more than 4 GB of RAM.
+Do these two bug entries refer to the same problem?
 
-Thanks,
 Rafael
