@@ -1,108 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757575AbYFOK13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757466AbYFOKd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757575AbYFOK13 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 06:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757027AbYFOK1U
+	id S1757466AbYFOKd2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 06:33:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbYFOKdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 06:27:20 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:45235 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756907AbYFOK1T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 06:27:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
-         :mime-version:content-type:content-disposition
-         :content-transfer-encoding:in-reply-to:user-agent:from;
-        b=Ox68na2zNtfrNmDxYRqx7lZMaN5TOZI8LR1rpbG9I0OfteksDOh65MrFEIk7EQ1wTM
-         ipkjPVAkKPB1XEzH0vNYEaMZq+PVO26zoxJUyByKjiXMrhudLsQhWCEB7FNKm/vZkQuH
-         kYmcEvV7A/tujE9e/EugtEqMIR3ePex7IPk1o=
-Date: Sun, 15 Jun 2008 12:27:13 +0200
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 00/18] misc generic ide stuff
-Message-ID: <20080615102713.GC7622@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <1213252870-20474-1-git-send-email-petkovbb@gmail.com> <200806141929.00459.bzolnier@gmail.com>
+	Sun, 15 Jun 2008 06:33:17 -0400
+Received: from ozlabs.org ([203.10.76.45]:59779 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751431AbYFOKdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 06:33:16 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch 04/41] cpu ops: Core piece for generic atomic per cpu operations
+Date: Sun, 15 Jun 2008 20:33:02 +1000
+User-Agent: KMail/1.9.9
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Martin Peschke <mp3@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Peter Zijlstra <peterz@infradead.org>, Mike Travis <travis@sgi.com>
+References: <20080530035620.587204923@sgi.com> <200806131038.12987.rusty@rustcorp.com.au> <Pine.LNX.4.64.0806121921260.4570@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0806121921260.4570@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200806141929.00459.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: Borislav Petkov <petkovbb@googlemail.com>
+Message-Id: <200806152033.02891.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 14, 2008 at 07:29:00PM +0200, Bartlomiej Zolnierkiewicz wrote:
+On Friday 13 June 2008 12:27:07 Christoph Lameter wrote:
+> On Fri, 13 Jun 2008, Rusty Russell wrote:
+> > cpu_possible_map should definitely be minimal, but your point is well
+> > made: dynamic percpu could actually cut memory allocation.  If we go for
+> > a hybrid scheme where static percpu is always allocated from the initial
+> > chunk, however, we still need the current pessimistic overallocation.
+>
+> The initial chunk would mean that the percpu areas all come from the same
+> NUMA node. We really need to allocate from the node that is nearest to a
+> processor (not all processors have processor local memory!).
 
-Hi,
+Yes, this is where it gets nasty.  We shouldn't even allocate the initial 
+chunk in a non-NUMA aware way (I'm using the term chunk loosely, it's a chunk 
+per cpu of course).
 
-> 
-> Hi,
-> 
-> On Thursday 12 June 2008, Borislav Petkov wrote:
-> > Hi Bart,
-> > 
-> > here are some generic ide conversion patches. The first 12 are what i thought
-> > you suggested :) concerning prepping the ide-cd code for the generic layer. The
-> > remaining 6 are what i've done so far wrt removing ide_atapi_pc from the ide
-> > drivers. It is obvious that this is not trivial and I basically tiptoe around the
-> 
-> Thanks.
-> 
-> I applied patches #1-2, #5-12 and #14-15.
-> 
-> I skipped patches #3-4, #13 and #16-18 for now
-> (more details in replies to corresponding mails).
-> 
-> > landmines in the IRQ handler and request issue paths :). This raises also
-> > several questions:
-> > 
-> > 1. ide-cd uses the cdrom_info struct for e.g. dma status notification, the other
-> > ide drivers use it per packet command in pc->flags. Well the last are kinda too
-> > much to carry for _each_ command and i'm thinking maybe put all that in the
-> > ide_drive_t and make it generic enough to fit all drivers. This way
-> > pc->callback() can also be harboured there. One concern might be when a flag is
-> > strictly per packet command which could be put somewhere else (maybe in the
-> > struct request since it already has members when it is used as a packet
-> > command).
-> 
-> Some pc->flags describe device's properties and thus should be moved to
-> ide_drive_t (->dev_flags) while some other correspond to the queued command
-> and moving them to ide_drive_t would be a bad idea IMO.
+> It would be good to standardize the way that percpu areas are allocated.
+> We have various ways of allocation now in various arches.
+> init/main.c:setup_per_cpu_ares() needs to be generalized:
+>
+> 1. Allocate the per cpu areas in a NUMA aware fashions.
 
-With "the last" i meant pc->flags and not "per packet" so i completely agree:
-per-packet commands go somewhere in rq and the others land in ide_drive_t.
+Definitely.  We also need to reserve virtual address space to create more 
+areas with congruent mappings; that's the fun part.
 
-> For ATA commands I was planning to put taskfile flags into rq->special field
-> (well, I actually implemented it in draft patch and it looks OK) so maybe we
-> can do something similar for packet commands.
+Maybe a simpler non-NUMA variant too, but it's trivial if we want it.
 
-Yep, i was looking for a field to put all those per-command flags into so
-rq->special sounds good. Will prepare some patches for that later.
+> 2. Have a function for instantiating a single per cpu area that
+>    can be used during cpu hotplug.
 
-> > 2. Can all that pc->xferred, pc->b_count, pc->errors and pc->cur_pos accounting
-> > be safely mapped to a rq? I see some discrepancies like is pc->buf_size ==
-> > rq->data_len, what about pc->req_xfer? I'll have a more detailed look at those
-> > when i have more spare time later.
-> 
-> If you ask if they can be mapped 'directly' then the answer is: "probably no"
-> but if the question is whether it is possible to do it after some changes then
-> the answer is: "probably yes". :)
-> 
-> [ However it may be necessary to convert ATAPI drivers to use scatterlists
->   instead of open-coded ->bio walking for PIO transfers first. ]
+Unfortunately this breaks the current percpu semantics: that if you iterate 
+over all possible cpus you can access percpu vars.  This means you don't need 
+to have hotplug CPU notifiers for simple percpu counters.  We could do this 
+with helpers, but AFAICT it's orthogonal to the other plans.
 
-Looking into it right now...
+> 3. Some hooks for arches to override particular behavior as needed.
+>    F.e. IA64 allocates percpu structures in a special way. x86_64
+>    needs to do some tricks for the pda etc etc.
 
-Thanks.
+IA64 is going to need some work, since dynamic percpu addresses won't be able 
+to use their pinned TLB trick to get the local version.
 
--- 
-Regards/Gruß,
-    Boris.
+> > Mike's a clever guy, I'm sure he'll think of something :)
+>
+> Hopefully. Otherwise he will ask me =-).
+
+And as always, lkml will offer feedback; useful and otherwise :)
+
+Cheers,
+Rusty.
