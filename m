@@ -1,97 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757940AbYFOLcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757993AbYFOLqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757940AbYFOLcZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 07:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757247AbYFOLcQ
+	id S1757993AbYFOLqc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 07:46:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757282AbYFOLqX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 07:32:16 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:39927 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756997AbYFOLcP (ORCPT
+	Sun, 15 Jun 2008 07:46:23 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:28956 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757281AbYFOLqW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 07:32:15 -0400
+	Sun, 15 Jun 2008 07:46:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=mogR0VLNRBVKSq7p5yBEjNEvubV3XtLvlAqUYos4n/PJcKTySbZ/BY4L7+xd5As5zx
-         AweYUONf3GZveMxGeBQEbyMKcXCwgPVcACuDYxxmrTm7hzDc45bRl9zWAo60KF4/mfR8
-         57ty8/ZQqKdHFH0DTHonX6E/VmxJe8Wpv+LeY=
-Message-ID: <6278d2220806150432i6f8265bfra7d0e5ff6e130303@mail.gmail.com>
-Date: Sun, 15 Jun 2008 12:32:15 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: [2.6.26-rc6] section/warning fixes...
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=fM+aWei5SuVJskOPJkVsUx5OR0DEJAWjDO3YP1ctd0aCxeJ1hMLvADsG3q4Juk7sQ2
+         /aG2oazUMpsOX79rk5BtWUbLnhZ4hi+8+leWwL+kUKlNrazKnU+txM7IzhrKaIcJdNgd
+         UloBwY+t78KvspEhKet76eKX1f5I14vcUyjJc=
+Message-ID: <19f34abd0806150446s35ed1ffib9a7ab459f00e870@mail.gmail.com>
+Date: Sun, 15 Jun 2008 13:46:21 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Daniel J Blueman" <daniel.blueman@gmail.com>
+Subject: Re: [PATCH] debugobjects: fix lockdep warning
+Cc: "Thomas Gleixner" <tglx@linutronix.de>,
+       "Christoph Lameter" <clameter@sgi.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+In-Reply-To: <6278d2220806150252h10230d2s775913c75d16b793@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <20080614225826.GA8211@damson.getinternet.no>
+	 <6278d2220806150252h10230d2s775913c75d16b793@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes [2] some warnings [1] introduced in recent -rc series; please apply.
+On Sun, Jun 15, 2008 at 11:52 AM, Daniel J Blueman
+<daniel.blueman@gmail.com> wrote:
+> On Sat, Jun 14, 2008 at 11:58 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+>> Hi,
+>>
+>> I don't know whether this is truly the Right Fix; if it isn't, feel free
+>> to re-use my commit template for when the RF appears... ;-)
+>>
+>> Daniel, is there any chance you can try it out? Thanks.
+>
+> I get a warning [1] about pool-lock being IRQ-unsafe as-is.
+> Additionally promoting pool_lock to be IRQ-safe [2] resolves the
+> issue, but this may not be desired. Ping me for further tests and
+> thanks!
 
-Signed-off-by: Daniel J Blueman <daniel.blueman@gmail.com>
+Ah, yes. Thanks for testing! I thought it might introduce some other
+badness. I can't really comment on your new changes (I am not sure
+what the implications are exactly), but if it fixes the regression,
+then it sounds correct :-)
 
---- [1]
+(I also think this needs Thomas's SOB rather than mine. I am not sure
+he's fine with kicking out the retry code :-P)
 
-WARNING: arch/x86/mm/built-in.o(.text+0x3a1): Section mismatch in
-reference from the function set_pte_phys() to the function
-.init.text:spp_getpage()
-The function set_pte_phys() references
-the function __init spp_getpage().
-This is often because set_pte_phys lacks a __init
-annotation or the annotation of spp_getpage is wrong.
 
-arch/x86/mm/init_64.c: In function 'early_memtest':
-arch/x86/mm/init_64.c:520: warning: passing argument 2 of
-'find_e820_area_size' from incompatible pointer type
+Vegard
 
---- [2]
-
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 156e6d7..f6d20be 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -135,7 +135,7 @@ static __init void *spp_getpage(void)
- 	return ptr;
- }
-
--static void
-+static __init void
- set_pte_phys(unsigned long vaddr, unsigned long phys, pgprot_t prot)
- {
- 	pgd_t *pgd;
-@@ -214,7 +214,7 @@ void __init cleanup_highmap(void)
- }
-
- /* NOTE: this is meant to be run only at boot */
--void __set_fixmap(enum fixed_addresses idx, unsigned long phys, pgprot_t prot)
-+void __init __set_fixmap(enum fixed_addresses idx, unsigned long
-phys, pgprot_t prot)
- {
- 	unsigned long address = __fix_to_virt(idx);
-
-@@ -506,7 +506,7 @@ early_param("memtest", parse_memtest);
-
- static void __init early_memtest(unsigned long start, unsigned long end)
- {
--	u64 t_start, t_size;
-+	unsigned long t_start, t_size;
- 	unsigned pattern;
-
- 	if (!memtest_pattern)
-@@ -525,7 +525,7 @@ static void __init early_memtest(unsigned long
-start, unsigned long end)
- 			if (t_start + t_size > end)
- 				t_size = end - t_start;
-
--			printk(KERN_CONT "\n  %016llx - %016llx pattern %d",
-+			printk(KERN_CONT "\n  %016lx - %016lx pattern %d",
- 				t_start, t_start + t_size, pattern);
-
- 			memtest(t_start, t_size, pattern);
 -- 
-Daniel J Blueman
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
