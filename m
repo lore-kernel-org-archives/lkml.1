@@ -1,59 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757872AbYFOKXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757575AbYFOK13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757872AbYFOKXS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 06:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757098AbYFOKXF
+	id S1757575AbYFOK13 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 06:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757027AbYFOK1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 06:23:05 -0400
-Received: from antispam.upcomillas.es ([130.206.70.245]:51995 "EHLO
-	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757054AbYFOKXD (ORCPT
+	Sun, 15 Jun 2008 06:27:20 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:45235 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756907AbYFOK1T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 06:23:03 -0400
-Subject: Re: [Bug 10843] Display artifacts on XOrg logout with PAT kernel
-	and VESA framebuffer
-From: Romano Giannetti <romano@dea.icai.upcomillas.es>
-To: Frans Pop <elendil@planet.nl>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <200806142359.36613.elendil@planet.nl>
-References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
-	 <Jn7irxIunJK.A._5D.LJDVIB@albercik>  <200806142359.36613.elendil@planet.nl>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: Sun, 15 Jun 2008 12:22:59 +0200
-Message-Id: <1213525379.15067.3.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Sun, 15 Jun 2008 06:27:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
+         :mime-version:content-type:content-disposition
+         :content-transfer-encoding:in-reply-to:user-agent:from;
+        b=Ox68na2zNtfrNmDxYRqx7lZMaN5TOZI8LR1rpbG9I0OfteksDOh65MrFEIk7EQ1wTM
+         ipkjPVAkKPB1XEzH0vNYEaMZq+PVO26zoxJUyByKjiXMrhudLsQhWCEB7FNKm/vZkQuH
+         kYmcEvV7A/tujE9e/EugtEqMIR3ePex7IPk1o=
+Date: Sun, 15 Jun 2008 12:27:13 +0200
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 00/18] misc generic ide stuff
+Message-ID: <20080615102713.GC7622@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <1213252870-20474-1-git-send-email-petkovbb@gmail.com> <200806141929.00459.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <200806141929.00459.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Jun 14, 2008 at 07:29:00PM +0200, Bartlomiej Zolnierkiewicz wrote:
 
-On Sat, 2008-06-14 at 23:59 +0200, Frans Pop wrote:
-> \>
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10843
-> > Subject	: Display artifacts on XOrg logout with PAT kernel and VESA
-> > 		  framebuffer
-> > Submitter	: Frans Pop <elendil@planet.nl> 
-> > Date		: 2008-05-31 14:04 (15 days old)
-> > References	: http://lkml.org/lkml/2008/6/7/206
+Hi,
+
 > 
-> Yes. See also: http://lkml.org/lkml/2008/6/13/159
-> -
+> Hi,
+> 
+> On Thursday 12 June 2008, Borislav Petkov wrote:
+> > Hi Bart,
+> > 
+> > here are some generic ide conversion patches. The first 12 are what i thought
+> > you suggested :) concerning prepping the ide-cd code for the generic layer. The
+> > remaining 6 are what i've done so far wrt removing ide_atapi_pc from the ide
+> > drivers. It is obvious that this is not trivial and I basically tiptoe around the
+> 
+> Thanks.
+> 
+> I applied patches #1-2, #5-12 and #14-15.
+> 
+> I skipped patches #3-4, #13 and #16-18 for now
+> (more details in replies to corresponding mails).
+> 
+> > landmines in the IRQ handler and request issue paths :). This raises also
+> > several questions:
+> > 
+> > 1. ide-cd uses the cdrom_info struct for e.g. dma status notification, the other
+> > ide drivers use it per packet command in pc->flags. Well the last are kinda too
+> > much to carry for _each_ command and i'm thinking maybe put all that in the
+> > ide_drive_t and make it generic enough to fit all drivers. This way
+> > pc->callback() can also be harboured there. One concern might be when a flag is
+> > strictly per packet command which could be put somewhere else (maybe in the
+> > struct request since it already has members when it is used as a packet
+> > command).
+> 
+> Some pc->flags describe device's properties and thus should be moved to
+> ide_drive_t (->dev_flags) while some other correspond to the queued command
+> and moving them to ide_drive_t would be a bad idea IMO.
 
-It happens to me too. Do you see
-http://bugzilla.kernel.org/show_bug.cgi?id=10892 ?
+With "the last" i meant pc->flags and not "per packet" so i completely agree:
+per-packet commands go somewhere in rq and the others land in ide_drive_t.
 
-Romano
+> For ATA commands I was planning to put taskfile flags into rq->special field
+> (well, I actually implemented it in draft patch and it looks OK) so maybe we
+> can do something similar for packet commands.
 
+Yep, i was looking for a field to put all those per-command flags into so
+rq->special sounds good. Will prepare some patches for that later.
+
+> > 2. Can all that pc->xferred, pc->b_count, pc->errors and pc->cur_pos accounting
+> > be safely mapped to a rq? I see some discrepancies like is pc->buf_size ==
+> > rq->data_len, what about pc->req_xfer? I'll have a more detailed look at those
+> > when i have more spare time later.
+> 
+> If you ask if they can be mapped 'directly' then the answer is: "probably no"
+> but if the question is whether it is possible to do it after some changes then
+> the answer is: "probably yes". :)
+> 
+> [ However it may be necessary to convert ATAPI drivers to use scatterlists
+>   instead of open-coded ->bio walking for PIO transfers first. ]
+
+Looking into it right now...
+
+Thanks.
 
 -- 
-Romano Giannetti                            Dep. de Electrónica y Automática
-http://www.dea.icai.upcomillas.es/romano    Univ. Pontificia Comillas (MADRID)
-
-
---
-La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
-
-This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
+Regards/Gruß,
+    Boris.
