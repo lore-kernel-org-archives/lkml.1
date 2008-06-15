@@ -1,27 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755250AbYFOWcN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755598AbYFOWeP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755250AbYFOWcN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 18:32:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbYFOWcB
+	id S1755598AbYFOWeP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 18:34:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbYFOWeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 18:32:01 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48948 "EHLO
+	Sun, 15 Jun 2008 18:34:05 -0400
+Received: from casper.infradead.org ([85.118.1.10]:51871 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751001AbYFOWcA (ORCPT
+	with ESMTP id S1751644AbYFOWeF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 18:32:00 -0400
-Date: Sun, 15 Jun 2008 15:31:45 -0700
+	Sun, 15 Jun 2008 18:34:05 -0400
+Date: Sun, 15 Jun 2008 15:33:54 -0700
 From: Arjan van de Ven <arjan@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu, torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@sisk.pl
-Subject: Re: [GIT]: Networking
-Message-ID: <20080615153145.27982962@infradead.org>
-In-Reply-To: <20080614.162430.193006643.davem@davemloft.net>
-References: <20080614.001428.26649070.davem@davemloft.net>
-	<20080614081656.GA27820@elte.hu>
-	<20080614023916.431a868d@infradead.org>
-	<20080614.162430.193006643.davem@davemloft.net>
+To: Peter Korsgaard <jacmet@sunsite.dk>
+Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org, sam@ravnborg.org,
+       Peter Korsgaard <jacmet@sunsite.dk>
+Subject: Re: [PATCH] export linux/a.out.h
+Message-ID: <20080615153354.44b9d1b7@infradead.org>
+In-Reply-To: <1213564021-5195-1-git-send-email-jacmet@sunsite.dk>
+References: <1213564021-5195-1-git-send-email-jacmet@sunsite.dk>
 Organization: Intel
 X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -33,35 +30,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Jun 2008 16:24:30 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
+On Sun, 15 Jun 2008 23:07:01 +0200
+Peter Korsgaard <jacmet@sunsite.dk> wrote:
 
-> From: Arjan van de Ven <arjan@infradead.org>
-> Date: Sat, 14 Jun 2008 02:39:16 -0700
-> 
-> > the interesting thing is that there is a clear bias on which drivers
-> > are tripping this (r8169 is top when I counted yesterday, with
-> > sis900 second and then a long tail of nothing) that I think the
-> > WARN_ON() is useful in addition to the always-there printk. Eg it
-> > does help in seeing which driver is most likely to trigger this.
-> > (Andrew also thought this would trigger a *LOT*, so far it's only a
-> > rather modest amount, but it's waiting for Fedora or others to ship
-> > a kernel with this in to be sure)
-> 
-> I agree that it's useful and should stay.
-> 
-> One thing I noticed is that you can't tell which driver is
-> to blame just from the warning and backtrace.  Somehow getting
-> a driver name in that warning message would be useful and help
-> diagnose problems as well as make it easier for you to compute
-> those statistics.
+> Export linux/a.out.h like we do for asm/a.out.h as some applications
+> needs it (E.G. valgrind). 
 
-There's a patch in -mm to add a WARN_ON variant that takes printk like
-arguments... once that goes to mainline that'd be the thing to use
-here... 
-
-
-
+do we know what they need it for?
 
 -- 
 If you want to reach me at my work email, use arjan@linux.intel.com
