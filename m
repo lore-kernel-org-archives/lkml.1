@@ -1,108 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbYFOF53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbYFOGMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755894AbYFOF53 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 01:57:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbYFOF5S
+	id S1755929AbYFOGMS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 02:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbYFOGMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 01:57:18 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:58606 "EHLO 2ka.mipt.ru"
+	Sun, 15 Jun 2008 02:12:07 -0400
+Received: from gw.goop.org ([64.81.55.164]:46580 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750958AbYFOF5Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 01:57:16 -0400
-Date: Sun, 15 Jun 2008 09:57:22 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Sage Weil <sage@newdream.net>
-Cc: Jamie Lokier <jamie@shareable.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [2/3] POHMELFS: Documentation.
-Message-ID: <20080615055722.GA2643@2ka.mipt.ru>
-References: <20080613163700.GA25860@2ka.mipt.ru> <20080613164110.GB26166@2ka.mipt.ru> <20080614021547.GC32232@shareable.org> <20080614065616.GA32585@2ka.mipt.ru> <Pine.LNX.4.64.0806142102550.3341@cobra.newdream.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0806142102550.3341@cobra.newdream.net>
-User-Agent: Mutt/1.5.9i
+	id S1751278AbYFOGMG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 02:12:06 -0400
+Message-ID: <4854B284.7030709@goop.org>
+Date: Sun, 15 Jun 2008 07:11:16 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, chrisw@sous-sol.org,
+       virtualization@lists.osdl.org, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for June 13 (XEN)
+References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <20080613101316.1c228fe7.randy.dunlap@oracle.com> <4852F1C8.7060904@goop.org> <20080614203109.GH20851@kernel.dk>
+In-Reply-To: <20080614203109.GH20851@kernel.dk>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sage.
+Jens Axboe wrote:
+> On Fri, Jun 13 2008, Jeremy Fitzhardinge wrote:
+>   
+>> Randy Dunlap wrote:
+>>     
+>>> next-20080613 on x86_32 has lots of xen build errors like this:
+>>>
+>>> linux-next-20080613/arch/x86/xen/mmu.c: In function 'drop_mm_ref':
+>>> linux-next-20080613/arch/x86/xen/mmu.c:759: error: implicit declaration of 
+>>> function 'xen_smp_call_function_mask'
+>>> make[2]: *** [arch/x86/xen/mmu.o] Error 1
+>>>
+>>>  
+>>>       
+>> Ooh, first time I've seen that.  Sounds like Jens' patches are missing 
+>> the appropriate update there (though it's certainly had it in the past).
+>>     
+>
+> Hmm, will this work or do we need to force xen smp_ops for this one? I
+> wonder if this is new code and was missed, or what happened in this
+> case.
+>   
 
-On Sat, Jun 14, 2008 at 09:27:55PM -0700, Sage Weil (sage@newdream.net) wrote:
-> By synchronous/asynchronous, are you talking about whether writepages() 
-> blocks until the write is acked by the server?  (Really, any FS that does 
-> writeback is writing asynchronously...)
+Yes, using smp_call_function_mask is perfectly OK.  The old code was 
+just a micro-optimisation.  I'm pretty sure this chunk was in one of 
+your patchsets (or perhaps I sent it to you at some point).
 
-Yes, not only writepage, but any request - if it sends sequest and then
-receives reply (i.e. doing send/recv sequence without ability to do
-something else in between or allow other users to do sends or receives
-into the same socket), then it is synchronous. If it only sends, and
-someone else receives, it is possible to send multiple requests from
-different users who do reads or writes or lookups or whatever and
-asynchronously in different thread receive replies not in particular
-order, so this approach I call asynchronous.
+> diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+> index 3525ef5..8baef77 100644
+> --- a/arch/x86/xen/mmu.c
+> +++ b/arch/x86/xen/mmu.c
+> @@ -569,7 +569,7 @@ static void drop_mm_ref(struct mm_struct *mm)
+>  	}
+>  
+>  	if (!cpus_empty(mask))
+> -		xen_smp_call_function_mask(mask, drop_other_mm_ref, mm, 1);
+> +		smp_call_function_mask(mask, drop_other_mm_ref, mm, 1);
+>  }
+>  #else
+>  static void drop_mm_ref(struct mm_struct *mm)
+>
+>   
 
-> Well... Ceph writes synchronously (i.e. waits for ack in write()) only 
-> when write-sharing on a single file between multiple clients, when it is 
-> needed to preserve proper write ordering semantics.  The rest of the time, 
-> it generates nice big writes via writepages().  The main performance issue 
-> is with small files... the fact that writepages() waits for an ack and is 
-> usually called from only a handful of threads limits overall throughput.  
-> If the writeback path was asynchronous as well that would definitely help 
-> (provided writeback is still appropriately throttled).  Is that what 
-> you're doing in POHMELFS?
+Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Yes, POHMELFS does writing that way.
-
-> > > > * Transactions support. Full failover for all operations.
-> > > >   Resending transactions to different servers on timeout or error.
-> > > 
-> > > By transactions, do you mean an atomic set of writes/changes?
-> > > Or do you trace read dependencies too?
-> > 
-> > It covers all operations, including reading, directory listing, lookups,
-> > attribite changes and so on. Its main goal is to allow transaparent
-> > failover, so it has to be done for reading too.
-> 
-> Your meaning of "transaction" confused me as well.  It sounds like you 
-> just mean that the read/write operation is retried (asynchronously), and 
-> may be redirected at another server if need be.  And that writes can be 
-> directed at multiple servers, waiting for an ack from both.  Is that 
-> right?
-
-Not exactly. Transaction in a nutshell is a wrapper on top of command
-(or multiple commands if needed like in writing), which contains all
-information needed to perform appropriate action. When user calls read()
-or 'ls' or write() or whatever, POHMELFS creates transaction for that
-operation and tries to perform it (if operation is not cached, in that
-case nothing actually happens). When transaction is submitted, it
-becomes part of the failover state machine which will check if data has
-to be read from different server or written to new one or dropped.
-original caller may not even know from which server its data will be
-received. If request sending failed in the middle, the whole transaction
-will be redirected to new one. It is also possible to redo transaction
-against different server, if server sent us error (like I'm busy), but
-this functionality was dropped in previous release iirc, this can be
-resurrected though. Having generic transaction tree callers do not
-bother about how to store theirs requests, how to wait for results and
-how to complete them - transactions do it for them. It is not rocket
-science, but extrmely effective and simple way to help rule out
-asynchronous machinery.
-
-> I my view the writeback metadata cache is definitely the most exciting 
-> part about this project.  Is there a document that describes where the 
-> design ended up?  I seem to remember a string of posts describing your 
-> experiements with client-side inode number assignment and how that is 
-> reconciled with the server.  Keeping things consistent between clients is 
-> definitely the tricky part, although I suspect that even something with 
-> very coarse granularity (e.g., directory/subtree-based locking/leasing) 
-> will capture most of the performance benefits for most workloads.
-
-That was somewhat old approach, currently inode numbers and things like
-open-by-inode or NFS style open-by-cookie are not used. I tried to
-describe caching bits in docuementation I ent, although its a bit rough
-and likely incomplete :) Feel free to ask if there are some white areas
-there.
-
--- 
-	Evgeniy Polyakov
+    J
