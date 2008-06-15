@@ -1,69 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbYFOJOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757273AbYFOJ0t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757279AbYFOJOg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 05:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756646AbYFOJOM
+	id S1757273AbYFOJ0t (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 05:26:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756706AbYFOJ0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 05:14:12 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:47614 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756613AbYFOJOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 05:14:09 -0400
-Date: Sun, 15 Jun 2008 13:14:08 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [3/3] POHMELFS high performance network filesystem.
-Message-ID: <20080615091407.GA4468@2ka.mipt.ru>
-References: <20080613163700.GA25860@2ka.mipt.ru> <20080613164241.GC26166@2ka.mipt.ru> <19f34abd0806150047w4338502en9a75681fb0c95438@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 15 Jun 2008 05:26:39 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:34685 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756456AbYFOJ0h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 05:26:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=WrO1+gPDOA++cu1MWw4rKyrilFT67XNohCuirHh+0kBNjbYwRWrsc5/NT4NTp1b0B/
+         8Je1WKW71/1PdEQxFPQFGJmBm5EAQ6v7RU1ICIgDx0+uh729yeNjF7N0/IeWdv9tlDCk
+         uBAXXNUSRNWqh8/RZ8mZ/rgbFg+lbBuFl7cBY=
+Message-ID: <3877989d0806150226x62fc1d1bk96131430f55848e1@mail.gmail.com>
+Date: Sun, 15 Jun 2008 17:26:36 +0800
+From: "Luming Yu" <luming.yu@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>, andrew.patterson@hp.com
+Subject: Re: kdump regression: /proc/vmcore is 0 after kdump
+Cc: linux-ia64@vger.kernel.org, "Petr Tesarik" <ptesarik@suse.cz>,
+       "Roland McGrath" <roland@redhat.com>,
+       "Kexec Mailing List" <kexec@lists.infradead.org>,
+       "Simon Horman" <horms@verge.net.au>
+In-Reply-To: <3877989d0806130922p1f36a3bes9914144ac8c42266@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <19f34abd0806150047w4338502en9a75681fb0c95438@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+References: <3877989d0806050058u3159e7b5x3113f63b3e0f3d8f@mail.gmail.com>
+	 <20080605081633.GA6713@verge.net.au>
+	 <3877989d0806130922p1f36a3bes9914144ac8c42266@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vegard.
+On Sat, Jun 14, 2008 at 12:22 AM, Luming Yu <luming.yu@gmail.com> wrote:
+> On Thu, Jun 5, 2008 at 4:16 PM, Simon Horman <horms@verge.net.au> wrote:
+>> On Thu, Jun 05, 2008 at 03:58:40PM +0800, Luming Yu wrote:
+>>> On Tue, Jun 3, 2008 at 2:02 PM, Luming Yu <luming.yu@gmail.com> wrote:
+>>> >> I'm trying upstream kdump to get more detailed data for help analysis
+>>> >> the scenario..
+>>> > Upstream kdump doesn't work! don't know what cause the regression,
+>>> > possibly kexec-tools...
+>>> > Need investigation here!
+>>> >
+>>>
+>>> I tested mainline kernel from 2.6.20 to 2.6.26-rc4 on my tiger4..
+>>> whatever I try, /proc/vmcore is always 0 !
+>>>
+>>> Then I managed to get Nan hai's original patch against 2.6.19..
+>>> http://marc.info/?l=linux-ia64&m=116521104831321&w=2
+>>> This patch doesn't have zero-vmcore problem.
+>>>
+>>> Given the age of the kdump feature and so many upstream releases since
+>>> 2.6.20, I'm in doubt why I don't see this kind of bug report on ia64
+>>> mailing list before?
+>>>
+>>> PS. Now I can start to capture info for the strace problem with 2.6.19
+>>> kernel +Nahai's 2.6.19 kdump patch, hope the problem is still
+>>> reproducible.
+>>
+>> Which version of kexec-tools are you using?
+>> If you haven't done so already, could you try the latest version, 20080324.
+>>
+>> http://www.eu.kernel.org/pub/linux/kernel/people/horms/kexec-tools/
+>>
+>
+> Yes, this resolves one of my kdump problem.
+> But there seems to have a regression introduced into upstream probably
+> starting from 2.6.25.
+> The last kernel with kdump working on this box is 2.6.24. I don't have
+> time to start bisection to find out which patch causes that regression
+> right now.Maybe someone on this list can give me some hint..
 
-On Sun, Jun 15, 2008 at 09:47:03AM +0200, Vegard Nossum (vegard.nossum@gmail.com) wrote:
-> I'm having a hard time convincing myself that the error handling here
-> is correct. You have this kind of setup:
-> 
-> 1. for each config in config list {
->     2. for each config in superblock state list {
->         pohmelfs_config_eql();
->         ...
->     }
-> }
-> 
-> And according to your code, if pohmelfs_config_eql returns non-zero in
-> the last iteration of #1, then -EEXISTS will be the return value of
-> the whole function (but the config _will_ be copied; it is not undone
-> in this case). But if pohmenlfs_config_eql returns non-zero in any but
-> the last iteration of #1, then 0 will be the return value. Is this
-> your intention?
-
-Task of this function is to copy as much new configs added by user (or
-by remote server) as we can. 
-If config already exists (was copied in previous iterations) we skip it.
-If it does not, we allocate new structure and initialize it. If
-allocation fails, it is a serious error and unlikely we want to proceed,
-so we jump out of the loop and drop all states and return error. If we
-just failed to initialie new state (like connection was refused by
-remote server), we simply drop that failed case and proceed further. In
-theory we still can leave that half-initialized states in the list, and
-any attempt to send request via them will try to initialize its network
-part, but thread creation and allocation itself will be tried to
-recover, so I just drop such state here. I think initialization function
-should not return error if it failed to connect or create a socket,
-since it can/will be recovered later if needed.
-
-We should not return eexist, from non-error label, but at the only
-place, where this return value is checked (mount time initialization),
-superblock list is empty and thus this error can not happen.
-
--- 
-	Evgeniy Polyakov
+My git bisection result indicates the following commit causes the
+kdump regression in 2.6.25-rc1:
+commit 3c75e23784e6ed5f4841de43d0750fd9b37bafcb
+Author: Andrew Patterson <andrew.patterson@hp.com>
+Date:   Tue Jan 22 17:18:27 2008 -0700
