@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760186AbYFOS35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760168AbYFOSfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760186AbYFOS35 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 14:29:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758942AbYFOS3q
+	id S1760168AbYFOSfX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 14:35:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759213AbYFOSfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 14:29:46 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53799 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758847AbYFOS3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 14:29:45 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: Tree for June 13
-Date: Sun, 15 Jun 2008 20:31:01 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <20080613232214.394fd6fd.sfr@canb.auug.org.au>
-In-Reply-To: <20080613232214.394fd6fd.sfr@canb.auug.org.au>
+	Sun, 15 Jun 2008 14:35:11 -0400
+Received: from fmmailgate05.web.de ([217.72.192.243]:64463 "EHLO
+	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759172AbYFOSfK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 14:35:10 -0400
+Date: Sun, 15 Jun 2008 20:31:49 +0200
+Message-Id: <317948575@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806152031.01959.rjw@sisk.pl>
+From: devzero@web.de
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, kernel-testers@vger.kernel.org
+Subject: suse slab testing module "crasher"
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX1/99BVJd0ZshbD+iFeiIcjuK7YzOI0Plp/rMsnPD4QyX94+v
+ KEcN3UFvF+0yTjD9piQAQPCc5V9wlxFOJy9WAR0Gf7vybWgpJI=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 13 of June 2008, Stephen Rothwell wrote:
-> Hi all,
-> 
-> Changes since next-20080612:
-> 
-> New tree: kgdb
-> Dropped trees (temporary): ldp (it is unfetchable - probably something to
-> do with the new Staging tree)
-> Restored trees: block
-> 
-> The x86 tree gained a conflict with Linus' tree.
-> 
-> The acpi tree gained a conflict with the pci tree.
-> 
-> The mtd tree gained a trivial conflict with the avr32 tree.
-> 
-> The rr tree lost its conflict with the net-current tree.
-> 
-> The block tree gained several conflict with various other trees.  It also
-> required a build fix patch.
-> 
-> The firmware tree lost its build fix patch.
-> 
-> The patches for known build problems are no longer needed.
+>Andrew Morton <akpm@linux-foundation.org> writes:
+>>
+>> Doing the same thing on 2.6.26-rc5-mm3, msgctl08 also runs to
+>> completion, in 20.9 seconds.  So
+>>
+>> - it got slower
+>
+>That is because it scales itself to the number of available msg queues.
+>So with Nadia's patch there are more and it runs slower.
+>
+>In fact it seems to start one process per message queue, so perhaps it's 
+>just running out of processes or something. Ok it should not segfault.
+>
+>BTW a great way to debug slab corruptions with LTP faster is to run with
+>a slab thrasher stress module like http://firstfloor.org/~andi/crasher-26.diff
+>
+>-Andi
 
-20080613 doesn't boot on my HP nx6325.  Bisecting ...
+any reason why only suse has this, but not mainline ?
 
-Thanks,
-Rafael
+i came across that module in suse kernel just some days ago and asked novell ( https://bugzilla.novell.com/show_bug.cgi?id=396132 ) , but they don`t have any objections.
+chris mason didn`t reply on direct request....
+
+so, if it`s useful, who is reponsible for pushing it upstream ?
+
+______________________________________________________________
+Jeden Monat 1 hochkarätiger maxdome-Blockbuster GRATIS!
+Exklusiv für alle WEB.DE Nutzer. http://www.blockbuster.web.de
+
