@@ -1,68 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758794AbYFOOjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759233AbYFOOH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758794AbYFOOjz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 10:39:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757934AbYFOOjq
+	id S1759233AbYFOOH5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 10:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757672AbYFOOHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 10:39:46 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:56990 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758056AbYFOOjp (ORCPT
+	Sun, 15 Jun 2008 10:07:48 -0400
+Received: from nelson.telenet-ops.be ([195.130.133.66]:39964 "EHLO
+	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757602AbYFOOHr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 10:39:45 -0400
-Subject: Re: [regression] CD-DA delay needed after insertion
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
-References: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
-Content-Type: text/plain
-Date: Sun, 15 Jun 2008 09:39:41 -0500
-Message-Id: <1213540781.3517.18.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Sun, 15 Jun 2008 10:07:47 -0400
+Date: Sun, 15 Jun 2008 16:07:45 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-arch@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH] initrd: Fix virtual/physical mix-up in overwrite test
+In-Reply-To: <Pine.LNX.4.64.0712231142190.24252@anakin>
+Message-ID: <Pine.LNX.4.64.0806151606320.5736@anakin>
+References: <Pine.LNX.4.64.0712161148340.5869@anakin>
+ <20071218030131.8b272833.akpm@linux-foundation.org> <Pine.LNX.4.64.0712182051050.24841@anakin>
+ <20071218123119.54262974.akpm@linux-foundation.org> <Pine.LNX.4.64.0712231142190.24252@anakin>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-06-13 at 13:57 +0200, Geert Uytterhoeven wrote:
-> We've found another regression in 2.6.25 w.r.t. CD media change on PS3.
+On Sun, 23 Dec 2007, Geert Uytterhoeven wrote:
+> New version below. Tested on Amiga. Compile-tested on ia32 (i386_defconfig) and
+> pp64 (ps3_defconfig).
+
+Ping?
+
+> Subject: initrd: Fix virtual/physical mix-up in overwrite test
 > 
-> It can easily be reproduced by:
+> From: Geert Uytterhoeven <geert@linux-m68k.org>
 > 
->   1. Inserting an audio CD
->   2. Running the following command as soon as the blue CD/DVD/BD drive LED
->      stops blinking and is lit continuously:
->       
-> 	 cdparanoia -Z -q 1-1[:1] /dev/null || echo failed
+> On recent kernels, I get the following error when using an initrd:
 > 
-> On 2.6.25 (and current mainline), you have to wait ca. 10 seconds after
-> insertion, or it will fail.
-> On 2.6.24 and older, it just works immediately.
+> | initrd overwritten (0x00b78000 < 0x07668000) - disabling it.
 > 
-> It does not matter whether
-> http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fjejb%2Fscsi-rc-fixes-2.6.git;a=commitdiff_plain;h=d1daeabf0da5bfa1943272ce508e2ba785730bf0
-> is applied or not.
+> My Amiga 4000 has 12 MiB of RAM at physical address 0x07400000 (virtual
+> 0x00000000).
+> The initrd is located at the end of RAM: 0x00b78000 - 0x00c00000 (virtual).
+> The overwrite test compares the (virtual) initrd location to the (physical)
+> first available memory location, which fails.
 > 
-> We haven't bisected it yet.
+> This patch converts initrd_start to a page frame number, so it can be safely
+> compared with min_low_pfn.
+> 
+> Before the introduction of discontiguous memory support on m68k
+> (12d810c1b8c2b913d48e629e2b5c01d105029839), min_low_pfn was just left
+> untouched by the m68k-specific code (zero, I guess), and everything worked
+> fine.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> ---
+> On several platforms, initrd_below_start_ok is set to 1:
+> 
+> | arch/mips/kernel/setup.c:       initrd_below_start_ok = 1;
+> | arch/parisc/mm/init.c:                  initrd_below_start_ok = 1;
+> | arch/powerpc/kernel/prom.c:                     initrd_below_start_ok = 1;
+> | arch/ppc/platforms/hdpu.c:                      initrd_below_start_ok = 1;
+> | arch/xtensa/kernel/setup.c:             initrd_below_start_ok = 1;
+> 
+> Some of these may be workarounds for this bug. Please check.
+> 
+>  init/main.c |    5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> --- a/init/main.c
+> +++ b/init/main.c
+> @@ -598,9 +598,10 @@ asmlinkage void __init start_kernel(void
+>  
+>  #ifdef CONFIG_BLK_DEV_INITRD
+>  	if (initrd_start && !initrd_below_start_ok &&
+> -			initrd_start < min_low_pfn << PAGE_SHIFT) {
+> +	    page_to_pfn(virt_to_page(initrd_start)) < min_low_pfn) {
+>  		printk(KERN_CRIT "initrd overwritten (0x%08lx < 0x%08lx) - "
+> -		    "disabling it.\n",initrd_start,min_low_pfn << PAGE_SHIFT);
+> +		    "disabling it.\n",
+> +		    page_to_pfn(virt_to_page(initrd_start)), min_low_pfn);
+>  		initrd_start = 0;
+>  	}
+>  #endif
 
-There aren't that many commits affecting sr between 2.6.24 and 2.6.25,
-so I'd bet on the previous culprits.
+Gr{oetje,eeting}s,
 
-This time, the taxonomy looks like NOT_READY isn't being waited for
-properly.  I'd still tend to blame
-210ba1d1724f5c4ed87a2ab1a21ca861a915f734 it's just that this time I
-suspect this to be the problem line:
+						Geert
 
-	if (sshdr.sense_key == NOT_READY && sshdr.asc == 0x04)
-		return CDS_DISC_OK;
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Previously the code would have returned CDS_NO_DISC for the not ready
-case.  The CD would have tried to close the door but (and this is the
-key) it would have waited for the door to close before trying again.
-
-James
-
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
