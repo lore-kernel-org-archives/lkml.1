@@ -1,81 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbYFPPP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755654AbYFPPTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755251AbYFPPP4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 11:15:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbYFPPPs
+	id S1755654AbYFPPTT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 11:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbYFPPTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 11:15:48 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54092 "EHLO
+	Mon, 16 Jun 2008 11:19:11 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49365 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752257AbYFPPPs (ORCPT
+	with ESMTP id S1752904AbYFPPTK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 11:15:48 -0400
-Subject: Re: [PATCH v2] export linux/a.out.h
-From: David Woodhouse <dwmw2@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Peter Korsgaard <jacmet@sunsite.dk>, linux-kernel@vger.kernel.org,
-       sam@ravnborg.org, dhowells@redhat.com,
-       "Kirill A. Shutemov" <k.shutemov@gmail.com>, rth@twiddle.net
-In-Reply-To: <48567B52.4050901@firstfloor.org>
-References: <1213565555.26255.522.camel@pmac.infradead.org>
-	 <1213604973-7073-1-git-send-email-jacmet@sunsite.dk>
-	 <1213617663.26255.708.camel@pmac.infradead.org>
-	 <48567B52.4050901@firstfloor.org>
+	Mon, 16 Jun 2008 11:19:10 -0400
+Subject: Re: [BUG: NULL pointer dereference] cgroups and
+	RT	scheduling	interact badly.
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Daniel K." <dk@uw.no>
+Cc: mingo@elte.hu, menage@google.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <485682B0.8010805@uw.no>
+References: <485445AE.2010602@uw.no> <1213612447.16944.99.camel@twins>
+	 <4856671B.1020304@uw.no>  <1213624312.16944.104.camel@twins>
+	 <1213627148.16944.106.camel@twins>  <485682B0.8010805@uw.no>
 Content-Type: text/plain
-Date: Mon, 16 Jun 2008 16:15:35 +0100
-Message-Id: <1213629335.26255.792.camel@pmac.infradead.org>
+Date: Mon, 16 Jun 2008 17:18:56 +0200
+Message-Id: <1213629536.16944.109.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-06-16 at 16:40 +0200, Andi Kleen wrote:
-> >  We should get rid of CONFIG_ARCH_SUPPORTS_AOUT entirely. The only
-> > remaining users of it are fs/exec.c, which uses it entirely redundantly:
-> >	#if defined(__alpha__) && defined(CONFIG_ARCH_SUPPORTS_AOUT)
-> >
-> > ...and (indirectly, by virtue of being the only other file that includes
-> > <linux/a.out.h> when ARCH_SUPPORTS_AOUT might be unset) fs/binfmt_elf.c,
-> > which still has unnecessary references to 'struct exec' even though Andi
-> > removed the support for a.out interpreters a few months ago. That can
-> > just go away.
+On Mon, 2008-06-16 at 17:11 +0200, Daniel K. wrote:
+> Peter Zijlstra wrote:
+> > On Mon, 2008-06-16 at 15:51 +0200, Peter Zijlstra wrote:
+> >> On Mon, 2008-06-16 at 15:14 +0200, Daniel K. wrote:
+> >>> Peter Zijlstra wrote:
+> >>>
+> >>> Although this patch seems to be correct, this is what shows up on my
+> >>> netconsole, when applying it -- with an offset, do you have other fixes
+> >>> applied as well?
+> >> I had indeed, although nothing touching the rt scheduler. I popped all
+> >> my patches and pulled an update from Linus, but I fail to reproduce the
+> >> below.
+> >>
+> >> /me goes look for that burnp6 thing, I used a simple while (1); loop.
+> > 
+> > found it, still seems to work for me. do you have a funny number of
+> > cpus? or anything else noteworthy?
 > 
-> I didn't think the Alpha /sbin/loader stuff was an a.out interpreter for ELF.
->
-> Also pure a.out is still supported.
+> I don't think so, this is on a SUN X2200 M2, with two AMD Opteron 2214
+> processors, and 8G RAM.
 > 
-> It might be ok to remove it anyways, but you should check with someone
-> who knows Alpha first. cc Richard.
+> If I follow the procedure up to 'echo 4000 > oops/cpu.rt_runtime_us'
+> then I can
+> 
+> # burnP6 &
+> [1] 3395
+> # schedtool -R -p 1 3395
+> 
+> but
+> 
+> # echo -n 3395 > /dev/cgroup/burn/oops/tasks
 
-The Alpha /sbin/loader support, and the a.out-interpreter-for-ELF, are
-two completely separate issues -- you're right that /sbin/loader isn't
-an a.out interpreter for ELF files.
+Ah, that did it,.. I'll go poke at it. Thanks!
 
-They're the two places which rely on '#ifdef CONFIG_ARCH_SUPPORTS_AOUT'
-in <linux/a.out.h>, because they include <linux/a.out.h> on platforms
-which might not have <asm/a.out.h>.
+> yields this:
+> 
+> > [ 1116.296418] ------------[ cut here ]------------
+> > [ 1116.296559] Kernel BUG at ffffffff8022acea [verbose debug info unavailable]
+> > [ 1116.296644] invalid opcode: 0000 [1] SMP 
+> > [ 1116.296721] CPU 3 
+> > [ 1116.296788] Modules linked in: netconsole configfs ipmi_msghandler kvm_amd kvm ipv6 iptable_filter ip_tables x_tables af_packet usbhid hid loop tg3 evdev i2c_nforce2 o
+> > hci_hcd i2c_core ehci_hcd k8temp button thermal processor pcspkr usbcore shpchp pci_hotplug forcedeth sd_mod sg fan thermal_sys
+> > [ 1116.297161] Pid: 3395, comm: burnP6 Not tainted 2.6.26-rc6 #4
+> > [ 1116.297240] RIP: 0010:[<ffffffff8022acea>]  [<ffffffff8022acea>] pick_next_task_rt+0x5a/0x90
+> > [ 1116.297390] RSP: 0000:ffff81021edf7ea0  EFLAGS: 00010002
+> > [ 1116.297467] RAX: 0000000000000064 RBX: ffffffff8049ec00 RCX: ffff81021ef5e800
+> > [ 1116.297551] RDX: ffff8102214d7c00 RSI: 0000000000000003 RDI: ffff810001056600
+> > [ 1116.298666] RBP: ffff81021edf7ea0 R08: ffff810001050660 R09: 00000000000010a8
+> > [ 1116.298750] R10: 0000000000000001 R11: 00000000ffffffff R12: 0000000000000000
+> > [ 1116.298833] R13: ffff810001056600 R14: 0000000000000003 R15: 0000000000000000
+> > [ 1116.298917] FS:  00007fecf7cc76e0(0000) GS:ffff810223022980(0000) knlGS:0000000000000000
+> > [ 1116.299060] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
+> > [ 1116.299142] CR2: 0000000001a0d958 CR3: 0000000220c79000 CR4: 00000000000006e0
+> > [ 1116.299225] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > [ 1116.299309] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > [ 1116.299393] Process burnP6 (pid: 3395, threadinfo ffff81021edf6000, task ffff81022178aca0)
+> > [ 1116.299535] Stack:  ffff81021edf7f70 ffffffff8048c302 0000000000000000 ffff8102210b1b00
+> > [ 1116.299682]  ffffffff80689600 ffffffff80689600 ffffffff806858a0 ffffffff80689600
+> > [ 1116.299827]  ffff81022178af18 0000000000000000 0000000000000292 ffff81022178aca0
+> > [ 1116.299914] Call Trace:
+> > [ 1116.300046]  [<ffffffff8048c302>] thread_return+0x101/0x4af
+> > [ 1116.300130]  [<ffffffff8020bdee>] retint_careful+0x1c/0x42
+> > [ 1116.300210] 
+> > [ 1116.300273] 
+> > [ 1116.300335] Code: 48 c1 e0 04 48 8b 14 08 48 85 d2 74 49 48 8b 4a 40 48 85 c9 74 1b 48 8b 01 48 85 c0 75 d4 48 0f bc 41 08 83 c0 40 83 f8 63 7e d0 <0f> 0b eb fe 66 
 
-In the Alpha case in fs/exec.c, we can simply include <linux/a.out.h>
-only #ifdef __alpha__ -- while noting that that code could probably do
-with a little more cleanup and turning into a properly registered binfmt
-rather than a special case, if possible.
-
-In the case of fs/binfmt_elf.c, we can simply remove the inclusion of
-<linux/a.out.h> and all references to 'struct exec'. You removed the
-rest of the a.out interpreter support already; that last part probably
-should have gone away at the same time.
-
-Proper a.out support in fs/binfmt_aout.c can stay as it is; you won't be
-building binfmt_aout.c unless your platform supports a.out anyway.
-
-And then we can remove the #ifdef CONFIG_ARCH_SUPPORTS_AOUT in
-<linux/a.out.h>, and export it to userspace again, which was the point
-of Peter's patch that started this thread.
-
--- 
-dwmw2
 
