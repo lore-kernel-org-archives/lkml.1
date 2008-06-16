@@ -1,150 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757401AbYFPNZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbYFPN04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757401AbYFPNZU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 09:25:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbYFPNZA
+	id S1757450AbYFPN04 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 09:26:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbYFPN0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 09:25:00 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:41562 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753808AbYFPNY5 (ORCPT
+	Mon, 16 Jun 2008 09:26:48 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40625 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752644AbYFPN0r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 09:24:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=Cv0j3Q2GHymCMURS0WNUuumIy3evgLqJGvYpTf+hpe7z8uzItZ5k+IshPd5QhKkYlR
-         vJjmpbmHIynVFm90LQHNc7GSnnbHLY7QzXAzizTaZ+wVWk4cm4lZdiWOFqGlErEUCOen
-         OHnYro+2nwdlEed/Kp24EVdm5Pgr1f6PMg9dE=
-Message-ID: <485669A0.6000404@gmail.com>
-Date: Mon, 16 Jun 2008 22:24:48 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 16 Jun 2008 09:26:47 -0400
+Date: Mon, 16 Jun 2008 22:22:53 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [Patch](memory hotplug)Allocate usemap on the section with pgdat (take 2)
+Cc: David Miller <davem@davemloft.net>, Badari Pulavarty <pbadari@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Hiroyuki KAMEZAWA <kamezawa.hiroyu@jp.fujitsu.com>,
+       Tony Breeds <tony@bakeyournoodle.com>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Mel Gorman <mel@csn.ul.ie>
+In-Reply-To: <20080616104500.GD2232@shadowen.org>
+References: <20080614211216.76B0.E1E9C6FF@jp.fujitsu.com> <20080616104500.GD2232@shadowen.org>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080616220705.9EA7.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Komuro <komurojun-mbn@nifty.com>
-CC: Jeff Garzik <jeff@garzik.org>,
-       Dominik Brodowski <linux@dominikbrodowski.net>, jgarzik@redhat.com,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-pcmcia <linux-pcmcia@lists.infradead.org>,
-       Kristoffer Ericson <kristoffer.ericson@gmail.com>
-Subject: Re: [KERNEL 2.6.26-rc4]  bugreport : pata_pcmcia with Sandisk Extreme
- III 8GB
-References: <20080528225049.9a134e0d.Kristoffer.Ericson@Gmail.com>	<20080528222740.GB20893@isilmar.linta.de>	<20080530135728.be02d3dc.Kristoffer.Ericson@Gmail.com>	<20080607223716.7d142072.komurojun-mbn@nifty.com>	<20080611072029.GB28692@comet.dominikbrodowski.net>	<20080614120055.ad8fbee0.komurojun-mbn@nifty.com>	<48537149.4040102@garzik.org>	<20080614213612.96873c25.komurojun-mbn@nifty.com>	<4855D8E2.10409@gmail.com> <20080616221145.e3b069b9.komurojun-mbn@nifty.com>
-In-Reply-To: <20080616221145.e3b069b9.komurojun-mbn@nifty.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/mixed;
- boundary="------------000102010201020501050003"
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000102010201020501050003
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-Komuro wrote:
-> Hi,
+> > +static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
+> > +{
+> > +	unsigned long usemap_snr, pgdat_snr;
+> > +	static unsigned long old_usemap_snr = NR_MEM_SECTIONS;
+> > +	static unsigned long old_pgdat_snr = NR_MEM_SECTIONS;
+> > +	struct pglist_data *pgdat = NODE_DATA(nid);
+> > +	int usemap_nid;
+> > +
+> > +	usemap_snr = pfn_to_section_nr(__pa(usemap) >> PAGE_SHIFT);
+> > +	pgdat_snr = pfn_to_section_nr(__pa(pgdat) >> PAGE_SHIFT);
+> > +	if (usemap_snr == pgdat_snr)
+> > +		return;
+> > +
+> > +	if (old_usemap_snr == usemap_snr && old_pgdat_snr == pgdat_snr)
+> > +		/* skip redundant message */
+> > +		return;
+> > +
+> > +	old_usemap_snr = usemap_snr;
+> > +	old_pgdat_snr = pgdat_snr;
 > 
-> Here is the log  (your patch is applied).
-> Unfortunately, no message that you added appears.
-> 
-> It seems this device is detected as pcmcia0.0 first
-> but later it is detected as pcmcia0.1.
+> The pgdat and usemap sections are node specific, but this repeat message
+> check is not, so if I add sections alternatly to node 0 and node 1 I
+> will recieve the warning for every addition?
 
-Hmmm... strange.  Can you please try the attached patch?
+Yes. alloc_bootmem_section() may be failed, and usemap may be allocated on
+other node. I would like to notice for its dependency case too.
+
+> 
+> > +
+> > +	usemap_nid = sparse_early_nid(__nr_to_section(usemap_snr));
+> > +	if (usemap_nid != nid) {
+> > +		printk("node %d must be removed before remove section %ld\n",
+> > +		       nid, usemap_snr);
+> > +		return;
+> > +	}
+> > +	/*
+> > +	 * There is a dependency deadlock.
+> > +	 * Some platforms allow un-removable section because they will just
+> > +	 * gather other removable sections for dynamic partitioning.
+> > +	 * Just notify un-removable section's number here.
+> > +	 */
+> > +	printk(KERN_INFO "section %ld and %ld", usemap_snr, pgdat_snr);
+> > +	printk(" can't be hotremoved due to dependency each other.\n");
+> 
+> This might be better worded as a circular dependancy.  Also it would be
+> nice to include the node perhaps:
+> 
+> 	"Sections %ld and %ld (node %ld) have a circular dependancy on
+> 	usemap and pgdat allocations"
+
+Thanks. I'll change it.
+
 
 -- 
-tejun
+Yasunori Goto 
 
---------------000102010201020501050003
-Content-Type: text/x-patch;
- name="pata_pcmcia-debug-1.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="pata_pcmcia-debug-1.patch"
 
-diff --git a/drivers/ata/pata_pcmcia.c b/drivers/ata/pata_pcmcia.c
-index 3d39f9d..0eb4f77 100644
---- a/drivers/ata/pata_pcmcia.c
-+++ b/drivers/ata/pata_pcmcia.c
-@@ -176,9 +176,14 @@ static int pcmcia_init_one(struct pcmcia_device *pdev)
- 
- 	struct ata_port_operations *ops = &pcmcia_port_ops;
- 
-+	dev_printk(KERN_INFO, &pdev->dev, "XXX ENTER\n");
-+	dump_stack();
-+
- 	info = kzalloc(sizeof(*info), GFP_KERNEL);
--	if (info == NULL)
-+	if (info == NULL) {
-+		printk("XXX info alloc failed\n");
- 		return -ENOMEM;
-+	}
- 
- 	/* Glue stuff together. FIXME: We may be able to get rid of info with care */
- 	info->pdev = pdev;
-@@ -196,8 +201,10 @@ static int pcmcia_init_one(struct pcmcia_device *pdev)
- 	/* Allocate resoure probing structures */
- 
- 	stk = kzalloc(sizeof(*stk), GFP_KERNEL);
--	if (!stk)
-+	if (!stk) {
-+		printk("XXX stk alloc failed\n");
- 		goto out1;
-+	}
- 
- 	cfg = &stk->parse.cftable_entry;
- 
-@@ -290,8 +297,11 @@ next_entry:
- 	ret = -ENOMEM;
- 	io_addr = devm_ioport_map(&pdev->dev, io_base, 8);
- 	ctl_addr = devm_ioport_map(&pdev->dev, ctl_base, 1);
--	if (!io_addr || !ctl_addr)
-+	if (!io_addr || !ctl_addr) {
-+		printk("XXX ioport_map failed io_addr=%p ctl_addr=%p\n",
-+		       io_addr, ctl_addr);
- 		goto failed;
-+	}
- 
- 	/* Success. Disable the IRQ nIEN line, do quirks */
- 	iowrite8(0x02, ctl_addr);
-@@ -311,8 +321,10 @@ next_entry:
- 	 */
- 	ret = -ENOMEM;
- 	host = ata_host_alloc(&pdev->dev, n_ports);
--	if (!host)
-+	if (!host) {
-+		printk("XXX host alloc failed\n");
- 		goto failed;
-+	}
- 
- 	for (p = 0; p < n_ports; p++) {
- 		ap = host->ports[p];
-@@ -331,11 +343,14 @@ next_entry:
- 	/* activate */
- 	ret = ata_host_activate(host, pdev->irq.AssignedIRQ, ata_sff_interrupt,
- 				IRQF_SHARED, &pcmcia_sht);
--	if (ret)
-+	if (ret) {
-+		printk("XXX host activate failed ret=%d\n", ret);
- 		goto failed;
-+	}
- 
- 	info->ndev = 1;
- 	kfree(stk);
-+	dev_printk(KERN_INFO, &pdev->dev, "XXX LEAVE 0\n");
- 	return 0;
- 
- cs_failed:
-@@ -345,6 +360,7 @@ failed:
- 	info->ndev = 0;
- 	pcmcia_disable_device(pdev);
- out1:
-+	dev_printk(KERN_INFO, &pdev->dev, "XXX LEAVE %d\n", ret);
- 	kfree(info);
- 	return ret;
- }
-
---------------000102010201020501050003--
