@@ -1,62 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbYFPLcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbYFPLca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755327AbYFPLcq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 07:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755659AbYFPLcC
+	id S1754658AbYFPLca (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 07:32:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbYFPLb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 07:32:02 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52834 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755561AbYFPLb6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 07:31:58 -0400
-Date: Mon, 16 Jun 2008 12:42:00 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: auke-jan.h.kok@intel.com, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, len.brown@intel.com,
-       cpufreq@lists.linux.org.uk, davej@codemonkey.org.uk
-Subject: Re: bug? acpi p-state + ondemand keeps dropping max freq
-Message-ID: <20080616104159.GA28659@elf.ucw.cz>
-References: <20080606140846.GA9580@ucw.cz> <20080607213918.GC1746@elf.ucw.cz> <20080607145435.4afc9812@infradead.org>
+	Mon, 16 Jun 2008 07:31:27 -0400
+Received: from gw.goop.org ([64.81.55.164]:47523 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754687AbYFPLb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 07:31:26 -0400
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080607145435.4afc9812@infradead.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 7bit
+Subject: [PATCH 2 of 4] paravirt: add hooks for ptep_modify_prot_start/commit
+X-Mercurial-Node: 2717ff42e6bf767833e0fc6e2ff8c24817379dcb
+Message-Id: <2717ff42e6bf767833e0.1213615801@localhost>
+In-Reply-To: <patchbomb.1213615799@localhost>
+Date: Mon, 16 Jun 2008 04:30:01 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Hugh Dickins <hugh@veritas.com>,
+       Zachary Amsden <zach@vmware.com>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2008-06-07 14:54:35, Arjan van de Ven wrote:
-> On Sat, 7 Jun 2008 23:39:18 +0200
-> Pavel Machek <pavel@suse.cz> wrote:
-> 
-> > > # echo 1866000 > scaling_max_freq ; cat scaling_max_freq
-> > > 800000
-> > > # echo 1866000 > scaling_max_freq ; cat scaling_max_freq
-> > > 800000
-> > > 
-> > > 
-> > > This renders my Dothan to utterly poor speeds. (standard T43)
-> > > 
-> > > performance cpufreq governor makes no difference - I still can't
-> > > change the frequency upper/lower values.
-> > 
-> > Hmm, I have similar problem in Novell bugzilla, on very different hw:
-> > 
-> > https://bugzilla.novell.com/show_bug.cgi?id=396311
+This patch adds paravirt-ops hooks in pv_mmu_ops for ptep_modify_prot_start and
+ptep_modify_prot_commit.  This allows the hypervisor-specific backends to
+implement these in some more efficient way.
 
-> are either of you running gnome-power-manager or kpowersaved ?
-> sometimes these programs (and more likely, the patches added by a
-> distro maintainer who doesn't fully realize how power works) tend to
-> muck with kernel settings around CPU frequency that they have
-> absolutely no business touching...
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ arch/x86/kernel/paravirt.c |    3 +++
+ arch/x86/xen/enlighten.c   |    3 +++
+ include/asm-x86/paravirt.h |   28 ++++++++++++++++++++++++++++
+ 3 files changed, 34 insertions(+)
 
-In novel bugzilla case ignore_ppc=1 helped, so it seems to be BIOS
-problem, not userland's...
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
+--- a/arch/x86/kernel/paravirt.c
++++ b/arch/x86/kernel/paravirt.c
+@@ -383,6 +383,9 @@
+ 	.pte_update = paravirt_nop,
+ 	.pte_update_defer = paravirt_nop,
+ 
++	.ptep_modify_prot_start = __ptep_modify_prot_start,
++	.ptep_modify_prot_commit = __ptep_modify_prot_commit,
++
+ #ifdef CONFIG_HIGHPTE
+ 	.kmap_atomic_pte = kmap_atomic,
+ #endif
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -1139,6 +1139,9 @@
+ 	.set_pte_at = xen_set_pte_at,
+ 	.set_pmd = xen_set_pmd_hyper,
+ 
++	.ptep_modify_prot_start = __ptep_modify_prot_start,
++	.ptep_modify_prot_commit = __ptep_modify_prot_commit,
++
+ 	.pte_val = xen_pte_val,
+ 	.pte_flags = native_pte_val,
+ 	.pgd_val = xen_pgd_val,
+diff --git a/include/asm-x86/paravirt.h b/include/asm-x86/paravirt.h
+--- a/include/asm-x86/paravirt.h
++++ b/include/asm-x86/paravirt.h
+@@ -238,6 +238,11 @@
+ 			   pte_t *ptep);
+ 	void (*pte_update_defer)(struct mm_struct *mm,
+ 				 unsigned long addr, pte_t *ptep);
++
++	pte_t (*ptep_modify_prot_start)(struct mm_struct *mm, unsigned long addr,
++					pte_t *ptep);
++	void (*ptep_modify_prot_commit)(struct mm_struct *mm, unsigned long addr,
++					pte_t *ptep, pte_t pte);
+ 
+ 	pteval_t (*pte_val)(pte_t);
+ 	pteval_t (*pte_flags)(pte_t);
+@@ -1040,6 +1045,29 @@
+ 	return ret;
+ }
+ 
++#define  __HAVE_ARCH_PTEP_MODIFY_PROT_TRANSACTION
++static inline pte_t ptep_modify_prot_start(struct mm_struct *mm, unsigned long addr,
++					   pte_t *ptep)
++{
++	pteval_t ret;
++
++	ret = PVOP_CALL3(pteval_t, pv_mmu_ops.ptep_modify_prot_start,
++			 mm, addr, ptep);
++
++	return (pte_t) { .pte = ret };
++}
++
++static inline void ptep_modify_prot_commit(struct mm_struct *mm, unsigned long addr,
++					   pte_t *ptep, pte_t pte)
++{
++	if (sizeof(pteval_t) > sizeof(long))
++		/* 5 arg words */
++		pv_mmu_ops.ptep_modify_prot_commit(mm, addr, ptep, pte);
++	else
++		PVOP_VCALL4(pv_mmu_ops.ptep_modify_prot_commit,
++			    mm, addr, ptep, pte.pte);
++}
++
+ static inline void set_pte(pte_t *ptep, pte_t pte)
+ {
+ 	if (sizeof(pteval_t) > sizeof(long))
+
+
