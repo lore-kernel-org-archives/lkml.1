@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760878AbYFPIw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760851AbYFPIyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760878AbYFPIw0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 04:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbYFPIwS
+	id S1760851AbYFPIyc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 04:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754292AbYFPIyY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 04:52:18 -0400
-Received: from ti-out-0910.google.com ([209.85.142.189]:22072 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754451AbYFPIwR (ORCPT
+	Mon, 16 Jun 2008 04:54:24 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59977 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754479AbYFPIyY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 04:52:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=U7ARMOHr0xSBfOTrGKaM0idsGm8z3hF85hYZooLFuECilpdsB7eMWmo97fcze9f46P
-         aq5kFJppCv+GNsOdcl+8r3hoUX5R6tRPKJD1Of89/h8ByKitq0l2zuzY6sjW+AKCa5qn
-         tDAqKCDIjnP0EZvEUfDrlKav9COHAX2t6YG5M=
-Message-ID: <a8e1da0806160152j202dba59y214f23993b5c8bbf@mail.gmail.com>
-Date: Mon, 16 Jun 2008 16:52:16 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] kernel parameter vmalloc size fix
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, hpa@zytor.com,
-       "the arch/x86 maintainers" <x86@kernel.org>
-In-Reply-To: <a8e1da0806160108x3de46eafp545275eb9dfd4f98@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Mon, 16 Jun 2008 04:54:24 -0400
+From: kamezawa.hiroyu@jp.fujitsu.com
+Message-ID: <31111909.1213606437203.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Mon, 16 Jun 2008 17:53:57 +0900 (JST)
+To: kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: Re: Re: [PATCH 1/6] res_counter:  handle limit change
+Cc: Pavel Emelyanov <xemul@openvz.org>, kamezawa.hiroyu@jp.fujitsu.com,
+       linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>,
+       menage@google.com, balbir@linux.vnet.ibm.com, yamamoto@valinux.co.jp,
+       nishimura@mxp.nes.nec.co.jp, lizf@cn.fujitsu.com
+In-Reply-To: <11930674.1213604250738.kamezawa.hiroyu@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="iso-2022-jp"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080616042528.GA3003@darkstar.te-china.tietoenator.com>
-	 <20080616080131.GC25632@elte.hu>
-	 <a8e1da0806160108x3de46eafp545275eb9dfd4f98@mail.gmail.com>
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: @nifty Webmail 2.0
+References: <11930674.1213604250738.kamezawa.hiroyu@jp.fujitsu.com>
+ <48561B68.6060503@openvz.org>
+ <48560A7C.9050501@openvz.org> <20080613182714.265fe6d2.kamezawa.hiroyu@jp.fujitsu.com> <20080613182924.c73fe9eb.kamezawa.hiroyu@jp.fujitsu.com> <33011576.1213601977563.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 16, 2008 at 4:08 PM, Dave Young <hidave.darkstar@gmail.com> wrote:
-> On Mon, Jun 16, 2008 at 4:01 PM, Ingo Molnar <mingo@elte.hu> wrote:
+----- Original Message -----
+>>> I think when I did all in memcg, someone will comment that "why do that
+>>> all in memcg ? please implement generic one to avoid code duplication"
 >>
->> * Dave Young <hidave.darkstar@gmail.com> wrote:
+>>Hm... But we're choosing between
 >>
->>> booting kernel with vmalloc=[any size<=16m] will oops.
->>>
->>> It's due to the vm area hole.
->>>
->>> In include/asm-x86/pgtable_32.h:
->>> #define VMALLOC_OFFSET        (8 * 1024 * 1024)
->>> #define VMALLOC_START (((unsigned long)high_memory + 2 * VMALLOC_OFFSET - 1) \
->>>                        & ~(VMALLOC_OFFSET - 1))
->>>
->>> BUG_ON in arch/x86/mm/init_32.c will be triggered:
->>> BUG_ON((unsigned long)high_memory             > VMALLOC_START);
->>>
->>> Fixed by return -EINVAL for invalid parameter
+>>sys_write->xxx_cgroup_write->res_counter_set_limit->xxx_cgroup_call
 >>
->> hm. Why dont we instead add the size of the hole to the
->> __VMALLOC_RESERVE value instead? There's nothing inherently bad about
->> using vmalloc=16m. The VM area hole is really a kernel-internal
->> abstraction that should not be visible in the usage of the parameter.
+>>and
+>>
+>>sys_write->xxx_cgroup_write->res_counter_set_limit
+>>                           ->xxx_cgroup_call
+>>
+>>With the sizeof(void *)-bytes difference in res_counter, nNo?
+>>
+>I can't catch what you mean. What is res_counter_set_limit here ?
+>(my patche's ?) and what is sizeof(void *)-bytes ?
+>
+>Is it so strange to add following algorithm in res_counter?
+>==
+>set_limit -> fail -> shrink -> set limit -> fail ->shrink
+>-> success -> return 0
+>==
+>I think this is enough generic.
+>
+This was previous request from Paul. (to hierarchy patch set)
 
-I built with:
-__VMALLOC_RESERVE = memparse(arg, &arg) + 2 * VMALLOC_OFFSET;
+http://marc.info/?l=linux-mm&m=121257010530546&w=2
 
-But it doesn't work, still oops at ie. vmalloc=4M (BUT vmalloc=8M is ok)
-I can't figure out what's wrong with it.
+I think this version meets his request. and I like this.
 
-Regards
-dave
+I don't want to waste more weeks. Then, what is bad ?
+removing res_counter_ops is okay ?
+
+Thanks,
+-Kame
+
+
