@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760112AbYFPHAB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758722AbYFPHDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760112AbYFPHAB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 03:00:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbYFPG7v
+	id S1758722AbYFPHDd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 03:03:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYFPHDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 02:59:51 -0400
-Received: from mga09.intel.com ([134.134.136.24]:59839 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752135AbYFPG7u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 02:59:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,651,1204531200"; 
-   d="scan'208";a="260944756"
-Subject: Re: [PATCH 5/8] x86 boot: remap efi systab runtime from phys to
-	virt
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Jack Steiner <steiner@sgi.com>,
-       Mike Travis <travis@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+	Mon, 16 Jun 2008 03:03:25 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:49616 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751310AbYFPHDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 03:03:24 -0400
+Message-ID: <48560FDB.9070206@cn.fujitsu.com>
+Date: Mon, 16 Jun 2008 15:01:47 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: containers@lists.osdl.org, LKML <linux-kernel@vger.kernel.org>,
+       Paul Menage <menage@google.com>,
        Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080616063006.14597.73386.sendpatchset@polaris-admin.engr.sgi.com>
-References: <20080616062945.14597.78009.sendpatchset@polaris-admin.engr.sgi.com>
-	 <20080616063006.14597.73386.sendpatchset@polaris-admin.engr.sgi.com>
-Content-Type: text/plain
+Subject: Re: [PATCH] introduce task cgroup v2
+References: <20080607195733.9C77.KOSAKI.MOTOHIRO@jp.fujitsu.com> <484E0F7F.3000606@cn.fujitsu.com> <20080616111410.7896.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20080616111410.7896.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Mon, 16 Jun 2008 15:02:39 +0800
-Message-Id: <1213599759.11185.7.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-X-OriginalArrivalTime: 16 Jun 2008 06:59:42.0105 (UTC) FILETIME=[8D274890:01C8CF7E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-06-15 at 23:30 -0700, Paul Jackson wrote:
-> From: Paul Jackson <pj@sgi.com>
-> 
-> One more efi entry needs its address converted from physical
-> to virtual during boot: efi.systab->runtime.
-> 
-> Signed-off-by: Paul Jackson <pj@sgi.com>
-> 
-> ---
->  arch/x86/kernel/efi.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> --- linux.orig/arch/x86/kernel/efi.c	2008-06-13 00:53:10.053599898 -0700
-> +++ linux/arch/x86/kernel/efi.c	2008-06-13 00:53:21.762309008 -0700
-> @@ -486,6 +486,7 @@ void __init efi_enter_virtual_mode(void)
->  		if (md->phys_addr <= systab && systab < end) {
->  			systab += md->virt_addr - md->phys_addr;
->  			efi.systab = (efi_system_table_t *) (unsigned long) systab;
-> +			efi.systab->runtime = __va(efi.systab->runtime);
->  		}
->  	}
+I guess you didn't notice this comment ? :)
 
-Why do you need this? This should be done by firmware in
-efi_set_virtual_address_map(). And this doesn't work on i386, because
-runtime code/data area may be not in identity map area (that is > 768M).
-even on x86_64, runtime code/data area can be non-identity mapped (For
-example identity map is restricted by mem=xxx kernel parameter). Same
-problem for
-
-[PATCH 6/8] x86 boot: virtualize the efi runtime function callback
-addresses
-
-Best Regards,
-Huang Ying
+>> --- a/kernel/fork.c
+>> > +++ b/kernel/fork.c
+>> > @@ -54,6 +54,7 @@
+>> >  #include <linux/tty.h>
+>> >  #include <linux/proc_fs.h>
+>> >  #include <linux/blkdev.h>
+>> > +#include <linux/cgroup_task.h>
+>> >  
+>> >  #include <asm/pgtable.h>
+>> >  #include <asm/pgalloc.h>
+>> > @@ -920,6 +921,8 @@ static struct task_struct *copy_process(
+>> >  		    p->user != current->nsproxy->user_ns->root_user)
+>> >  			goto bad_fork_free;
+>> >  	}
+>> > +	if (task_cgroup_can_fork(p))
+>> > +		goto bad_fork_free;
+> 
+> If task_cgroup_can_fork() returns 0, but copy_process() fails afterwords,
+> taskcg->nr_tasks will be in a wrong state.
+> 
 
