@@ -1,82 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756141AbYFPRyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757456AbYFPRz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756141AbYFPRyT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 13:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbYFPRyL
+	id S1757456AbYFPRz0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 13:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbYFPRzP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 13:54:11 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34037 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751366AbYFPRyK (ORCPT
+	Mon, 16 Jun 2008 13:55:15 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:52880 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751525AbYFPRzN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 13:54:10 -0400
-Date: Mon, 16 Jun 2008 19:54:08 +0200
-From: Jan Kara <jack@suse.cz>
-To: Holger Kiehl <Holger.Kiehl@dwd.de>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Theodore Tso <tytso@mit.edu>, Solofo.Ramangalahy@bull.net,
-       Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Performance of ext4
-Message-ID: <20080616175408.GF3279@atrey.karlin.mff.cuni.cz>
-References: <Pine.LNX.4.64.0806111937460.3720@diagnostix.dwd.de> <18563.1213215457@alphaville.zko.hp.com> <Pine.LNX.4.64.0806120855370.27806@diagnostix.dwd.de> <18513.345.553912.449710@frecb006361.adech.frec.bull.fr> <Pine.LNX.4.64.0806121154090.27806@diagnostix.dwd.de> <20080612131928.GB18229@mit.edu> <Pine.LNX.4.64.0806121333480.27806@diagnostix.dwd.de> <20080612180605.GD22481@skywalker> <Pine.LNX.4.64.0806121940020.2974@diagnostix.dwd.de> <Pine.LNX.4.64.0806130753100.7097@diagnostix.dwd.de>
+	Mon, 16 Jun 2008 13:55:13 -0400
+Message-ID: <4856A8E0.4060408@zytor.com>
+Date: Mon, 16 Jun 2008 10:54:40 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0806130753100.7097@diagnostix.dwd.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: trenn@suse.de
+CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "andreas.herrmann3" <andreas.herrmann3@amd.com>,
+       Richard <tuxbox.guru@gmail.com>, eumaster@gmail.com,
+       uli.geins@geins-web.de
+Subject: Re: AMD Mobile Semprons (3500+, 3600+,...) break with nohz and highres
+ enabled
+References: <1213638474.1684.21.camel@queen.suse.de>
+In-Reply-To: <1213638474.1684.21.camel@queen.suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 12 Jun 2008, Holger Kiehl wrote:
+Thomas Renninger wrote:
+>   - This affects AMD Mobile Semprons (at least 3500+ and 3600+)
 > 
-> >On Thu, 12 Jun 2008, Aneesh Kumar K.V wrote:
-> >
-> >>On Thu, Jun 12, 2008 at 02:07:30PM +0000, Holger Kiehl wrote:
-> >>>This time there is no OOPS and system is still up running without any
-> >>>problem (except any process wanting to write something to this filesystem
-> >>>gets stuck forever).
-> >>>
-> >>>What can I do to help find the problem? The system is still up with all 
-> >>>those
-> >>>process hanging in D-state.
-> >>>
-> >>
-> >>if you can login to the system get the dmesg output after
-> >>
-> >>echo t > /proc/sysrq-trigger
-> >>
-> >Unfortunately I have not set CONFIG_MAGIC_SYSRQ. Tomorrow I will try to
-> >reproduce this with a kernel that has CONFIG_MAGIC_SYSRQ set.
-> >
-> After recompiling, rebooting and run afdbench first I got an OOPS and the
-> system hanged up solid. The only thing I was able to catch is this:
-> 
->   RIP [<ffffffff803019f9>] jbd2_journal_release_jbd_inode+0xcb/0x100
->   RSP <ffff8101fe259c18>
-> 
-> This was copied by hand. And this I cut 'cut and past' from my terminal:
-> 
-> kernel: Code: c3 e8 31 ce f3 ff 41 fe 04 24 e8 fe 3f 16 00 4c 89 fe 48 89 
-> df e8 5f cd f3 ff eb 82 48 83 7d 00 00 74 27 48 8b 55 10 48 8b 45 18 <48> 
-> 89 42 08 48 89 10 48 c7 45 18 00 02 20 00 48 c7 45 10 00 01
-  Aneesh found cause of this oops I think... Aneesh, would you send the
-fix to Holger? Thanks.
+> This seem to be a mainline kernel regression since the nohz/highres
+> patches have been added.
+> I do not own such a machine myself (Richard, Evgeny, Uli (and Anvin?)
+> have such a machine and already helped to come that far).
 
-> So I rebooted run bonnie and then afdbench and I get the same problem as
-> yesterday. All process trying to write something to this filesystem hang
-> in D-state. But now I was able to do the echo t > /proc/sysrq-trigger.
-> Here the dmesg output:
-  Sadly, the output seems to be truncated (mainly, the kjournald process
-is missing, which is probably the root cause of the hang). So could you
-have a look whether /var/log/messages doesn't contain the dump of all
-processes? And if no, then could you do "echo w >/proc/sysrq-trigger"
-please? That will dump only blocked processes which should fit in the log
-buffer. You can also increase log buffer size in kernel config but that
-shouldn't be needed. Thanks.
+'Fraid I don't.  :(
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+	-hpa
