@@ -1,45 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678AbYFPT7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754780AbYFPUCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754678AbYFPT7P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 15:59:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbYFPT7A
+	id S1754780AbYFPUCd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 16:02:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbYFPUC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 15:59:00 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:53174 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751013AbYFPT7A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 15:59:00 -0400
-Message-ID: <4856C5D5.7010800@zytor.com>
-Date: Mon, 16 Jun 2008 12:58:13 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
+	Mon, 16 Jun 2008 16:02:26 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:60055 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751272AbYFPUCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 16:02:25 -0400
+Message-ID: <4856C6C8.6060506@garzik.org>
+Date: Mon, 16 Jun 2008 16:02:16 -0400
+From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
 To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Paul Jackson <pj@sgi.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       ying.huang@intel.com, mingo@elte.hu, tglx@linutronix.de,
-       steiner@sgi.com, travis@sgi.com, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 4/8] x86 boot: allow overlapping ebda and efi memmap memory
- ranges
-References: <20080616062945.14597.78009.sendpatchset@polaris-admin.engr.sgi.com>	<20080616063001.14597.96170.sendpatchset@polaris-admin.engr.sgi.com>	<1213600062.11185.13.camel@caritas-dev.intel.com>	<20080616032457.718f4d87.pj@sgi.com>	<1213606435.12968.14.camel@caritas-dev.intel.com>	<48568B56.7060307@zytor.com>	<20080616113806.2ff4c1a4.pj@sgi.com>	<48569D62.9050107@zytor.com>	<20080616123721.bb9195e6.pj@sgi.com>	<86802c440806161041v5f582d4y2a65adf57451a6d9@mail.gmail.com>	<20080616130938.527283f7.pj@sgi.com>	<4856AE64.7020906@zytor.com> <20080616195340.7d0a56a8@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080616195340.7d0a56a8@lxorguk.ukuu.org.uk>
+CC: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+       jaswinder@infradead.org
+Subject: Re: [PATCH] ip2: use request_firmware()
+References: <1213609751.26255.673.camel@pmac.infradead.org> <20080616115950.41bc65aa@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080616115950.41bc65aa@lxorguk.ukuu.org.uk>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Alan Cox wrote:
+> On Mon, 16 Jun 2008 10:49:11 +0100
+> David Woodhouse <dwmw2@infradead.org> wrote:
+> 
+>> Converted with help from Jaswinder Singh
 >>
->> 0x40E contains the pointer to the EBDA; this basically tests for the 
->> existence of an EBDA at all.
+>> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+>> ---
+>>  drivers/char/Kconfig           |    7 +
+>>  drivers/char/ip2/fip_firm.h    | 2149 ----------------------------------------
+>>  drivers/char/ip2/ip2base.c     |    5 +-
+>>  drivers/char/ip2/ip2main.c     |   45 +-
+>>  firmware/Makefile              |    1 +
+>>  firmware/WHENCE                |   10 +
+>>  firmware/intelliport2.bin.ihex | 2147 +++++++++++++++++++++++++++++++++++++++
+>>  7 files changed, 2201 insertions(+), 2163 deletions(-)
+>>  delete mode 100644 drivers/char/ip2/fip_firm.h
+>>  create mode 100644 firmware/intelliport2.bin.ihex
 > 
-> I'd disagree with the "very old". Machines without EBDA go right up to
-> the AMD Athlon era and maybe beyond that. My old dual Athlon box has no
-> EBDA.
+> Fine by me. I've not checked all the digits are correct but the rest of
+> the logic seems clean enough
 > 
+> Acked-by: Alan Cox <alan@redhat.com>
 
-Fair enough.
+Except for the part where the firmware is pointlessly separated from the 
+driver.
 
-	-hpa
+We do not need two parallel driver hierarchies, one for firmware, one 
+for C source.
+
+	Jeff
+
+
+
+
