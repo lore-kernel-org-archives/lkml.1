@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755628AbYFPBtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757251AbYFPBwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755628AbYFPBtk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 21:49:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbYFPBtc
+	id S1757251AbYFPBwA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 21:52:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbYFPBvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 21:49:32 -0400
-Received: from mga09.intel.com ([134.134.136.24]:14838 "EHLO mga09.intel.com"
+	Sun, 15 Jun 2008 21:51:51 -0400
+Received: from mga11.intel.com ([192.55.52.93]:1134 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751380AbYFPBtc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 21:49:32 -0400
+	id S1751128AbYFPBvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 21:51:50 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.27,649,1204531200"; 
-   d="scan'208";a="294736842"
-Subject: Re: [PATCH -mm 1/2] kexec jump -v11: kexec jump
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-In-Reply-To: <20080613180059.GA4906@redhat.com>
-References: <1213082104.22608.29.camel@caritas-dev.intel.com>
-	 <20080612192015.GH9654@redhat.com>
-	 <1213319040.20431.8.camel@caritas-dev.intel.com>
-	 <20080613180059.GA4906@redhat.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 16 Jun 2008 09:52:21 +0800
-Message-Id: <1213581141.7179.6.camel@caritas-dev.intel.com>
+   d="scan'208";a="341490925"
+Subject: Re: [2.6.26-rc5] iwlwifi 4965 not working - last on 2.6.23
+From: Zhu Yi <yi.zhu@intel.com>
+To: =?UTF-8?Q?Micha=C5=82_Kud=C5=82a?= <michal.kudla@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <200806131937.03680.Michal.Kudla@gmail.com>
+References: <200806060039.48488.m1k0@wp.pl>
+	 <20080606034738.9835782d.akpm@linux-foundation.org>
+	 <1213151464.7814.630.camel@debian.sh.intel.com>
+	 <200806131937.03680.Michal.Kudla@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Organization: Intel Corp.
+Date: Mon, 16 Jun 2008 09:51:28 +0800
+Message-Id: <1213581088.7814.882.camel@debian.sh.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1 
-X-OriginalArrivalTime: 16 Jun 2008 01:49:26.0423 (UTC) FILETIME=[3557A270:01C8CF53]
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-06-13 at 14:00 -0400, Vivek Goyal wrote:
-[...]
-> Ok, I found that in my config CONFIG_HIBERNATION was not enabled. After
-> enabling CONFIG_HIBERNATION, both suspend to disk and kjump started
-> working.
-> 
-> Does that mean there is some dependency on code under CONFIG_HIBERNATION.
-> If yes, I think this dependency should be resolved during compile time.
-> May be addtional config option (CONFIG_KEXEC_JUMP), which also selects
-> the CONFIG_HIBERNATION automatically etc...
+On Fri, 2008-06-13 at 19:37 +0200, Michał Kudła wrote:
+> dmesg-2.6.26-rc5_2008-06-13.txt
 
-Yes. kexec jump need to put devices into quiescent state and save
-devices state into memory, which is implemented by calling hibernation
-function: device_suspend(PMSG_FREEZE), whose implementation depends on 
-CONFIG_HIBERNATION.
+>From this log:
 
-So, I will add CONFIG_KEXEC_JUMP and select CONFIG_HIBERNATION
-automatically.
+iwl4965: U iwl4965_radio_kill_sw Manual SW RF KILL set to: RADIO OFF
+iwl4965: I iwl4965_rx_card_state_notif Card state received: HW:On
+SW:Kill
+iwl4965: U iwl4965_mac_config leave - radio disabled
+iwl4965: Error sending REPLY_TX_PWR_TABLE_CMD: enqueue_hcmd failed: -5
+iwl4965: U iwl4965_bg_rf_kill Can not turn radio back on - disabled by
+SW switch
+iwl4965: Error sending REPLY_WEPKEY: enqueue_hcmd failed: -5
 
-Best Regards,
-Huang Ying
+Your radio is disabled by the software rf_kill switch. Please do a
+
+$ echo 0 > /sys/bus/pci/drivers/iwl4965/<dev id>/rfkill\:rfkill0/state
+
+I wonder if you (or some application) did something like a `iwconfig
+wlan0 txpower off` so that the radio is disabled. Maybe you can try
+`iwconfig wlan0 txpower on`?
+
+Thanks,
+-yi
 
