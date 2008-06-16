@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757854AbYFPN1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbYFPNbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757854AbYFPN1s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 09:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757616AbYFPN1i
+	id S1756733AbYFPNbh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 09:31:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbYFPNb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 09:27:38 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40655 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757595AbYFPN1h (ORCPT
+	Mon, 16 Jun 2008 09:31:29 -0400
+Received: from [194.117.236.238] ([194.117.236.238]:39788 "EHLO
+	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1753609AbYFPNb3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 09:27:37 -0400
-From: kamezawa.hiroyu@jp.fujitsu.com
-Message-ID: <32834312.1213622802513.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Mon, 16 Jun 2008 22:26:42 +0900 (JST)
-To: balbir@linux.vnet.ibm.com
-Subject: Re: Re: [PATCH 1/6] res_counter:  handle limit change
-Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>, menage@google.com,
-       xemul@openvz.org, yamamoto@valinux.co.jp, nishimura@mxp.nes.nec.co.jp,
-       lizf@cn.fujitsu.com
-In-Reply-To: <48565CBA.2040309@linux.vnet.ibm.com>
+	Mon, 16 Jun 2008 09:31:29 -0400
+Date: Mon, 16 Jun 2008 16:30:46 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: tzanussi@gmail.com, penberg@cs.helsinki.fi, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, righi.andrea@gmail.com
+Subject: Re: [PATCH 3/3] relay: Add buffer-only channels; useful for early
+ logging.
+Message-ID: <20080616163046.6f93ec04@linux360.ro>
+In-Reply-To: <20080616123535.GD18561@Krystal>
+References: <20080613041013.274ccb28@linux360.ro>
+	<20080616123535.GD18561@Krystal>
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-2022-jp"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: @nifty Webmail 2.0
-References: <48565CBA.2040309@linux.vnet.ibm.com>
- <48562AFF.9050804@linux.vnet.ibm.com> <20080613182714.265fe6d2.kamezawa.hiroyu@jp.fujitsu.com> <20080613182924.c73fe9eb.kamezawa.hiroyu@jp.fujitsu.com> <400765.1213607050433.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message -----
+On Mon, 16 Jun 2008 08:35:35 -0400
+Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
+ 
+> I think it would be good to add a patch to this patch series which
+> allows to allocate such early boot buffers either statically in a
+> kernel menuconfig option or in a kernel command line argument, so we
+> do not depend on vmap. That would make it usable "very early".
+> 
+> Mathieu
 
->> Definitely No. I think counters which cannot be shrink should return -EBUSY
->> by shrink_usage() when it cannot do it. 
->
->Wouldn't that be all counters except for the memory controller RSS counter? I
->can't see anyone besides the memory controller supporting shrink_usage().
->
-Slab_counter is a candidate. But ok, if everyone doesn't like this,
-I'll abandon the whole and rewrite it as v3. 
+This can be done, but it would require rewriting much of what relay
+uses to allocate structures and buffers. I've decided with my mentor,
+Pekka Enberg, that kmemtrace doesn't need this so much, so this is on
+my low priority list. I agree it would be nice, but it probably won't
+happen until kmemtrace is done.
 
-And condidering your point, my high-low-watermark patch set should be
-implemented within memcg and adding high/low to res_counter is too bad.
-I'll change my plan. But res_counter is less useful rather than I thought of ;
-)
-Besides it doesn't support any feedbacks, it just restricts the access to para
-meters.
+The bright side is most of this patch will still be valid if we choose
+to implement static buffers. So this _is_ a step in that direction.
 
-BTW, I believe current res_counter's behavior to return success
-at usage > limit case is very bad. I'd like to return -EBUSY.
-How do you think ?
-(And I also think res_counter_charge returns -ENOMEM is BUG. It should be
- -EBUSY.)
 
-Thanks,
--Kame
-
+	Eduard
