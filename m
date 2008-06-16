@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756973AbYFPIUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754292AbYFPIVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756973AbYFPIUz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 04:20:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754510AbYFPIUX
+	id S1754292AbYFPIVX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 04:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755635AbYFPIUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 04:20:23 -0400
-Received: from lec.cs.unibo.it ([130.136.1.103]:33417 "EHLO lec.cs.unibo.it"
+	Mon, 16 Jun 2008 04:20:25 -0400
+Received: from lec.cs.unibo.it ([130.136.1.103]:33416 "EHLO lec.cs.unibo.it"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753010AbYFPIUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752948AbYFPIUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 16 Jun 2008 04:20:19 -0400
-Date: Mon, 16 Jun 2008 09:58:28 +0200
+X-Greylist: delayed 1332 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Jun 2008 04:20:18 EDT
+Date: Mon, 16 Jun 2008 09:58:12 +0200
 To: LKML <linux-kernel@vger.kernel.org>, Jeff Dike <jdike@addtoit.com>,
        Roland McGrath <roland@redhat.com>
-Subject: [PATCH 1/2] ptrace_multi: speedup for virtual machines (and debuggers) running on ptrace
-Message-ID: <20080616075828.GD6950@cs.unibo.it>
+Subject: [PATCH 1/1] ptrace_vm: let us simplify the code for ptrace and add useful features for VM
+Message-ID: <20080616075812.GB6950@cs.unibo.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,349 +24,711 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch implements PTRACE_MULTI.
+This patch adds the new PTRACE_VM_SKIPCALL and PTRACE_VM_SKIPEXIT
+tags for ptrace's addr parameter.
+In this way it is possible to (eventually) get rid of PTRACE_SYSEMU
+PTRACE_SYSEMU_SINGLESTEP, while providing not only the same features
+but a more general support for Virtual Machines. 
 
-Several ptrace requests can be packed up and sent together to the
-kernel. This speeds up Virtual Machines and, if you like, debuggers.
+	renzo
 
 Signed-off-by: Renzo Davoli <renzo@cs.unibo.it>
 
 ---
-diff -Naur linux-2.6.26-rc6/include/linux/mm.h linux-2.6.26-rc6-ptrace_multi/include/linux/mm.h
---- linux-2.6.26-rc6/include/linux/mm.h	2008-06-13 13:33:30.000000000 +0200
-+++ linux-2.6.26-rc6-ptrace_multi/include/linux/mm.h	2008-06-14 16:56:11.000000000 +0200
-@@ -804,6 +804,7 @@
+diff -Naur linux-2.6.26-rc6/arch/powerpc/kernel/entry_32.S linux-2.6.26-rc6-ptrace_vm/arch/powerpc/kernel/entry_32.S
+--- linux-2.6.26-rc6/arch/powerpc/kernel/entry_32.S	2008-06-13 13:33:26.000000000 +0200
++++ linux-2.6.26-rc6-ptrace_vm/arch/powerpc/kernel/entry_32.S	2008-06-14 16:42:36.000000000 +0200
+@@ -299,6 +299,7 @@
+ 	stw	r0,_TRAP(r1)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	do_syscall_trace_enter
++	mr  r10,r3
+ 	lwz	r0,GPR0(r1)	/* Restore original registers */
+ 	lwz	r3,GPR3(r1)
+ 	lwz	r4,GPR4(r1)
+@@ -307,6 +308,8 @@
+ 	lwz	r7,GPR7(r1)
+ 	lwz	r8,GPR8(r1)
+ 	REST_NVGPRS(r1)
++	cmpwi r10,0
++	bne-  ret_from_syscall
+ 	b	syscall_dotrace_cont
  
- extern int make_pages_present(unsigned long addr, unsigned long end);
- extern int access_process_vm(struct task_struct *tsk, unsigned long addr, void *buf, int len, int write);
-+extern int access_process_vm_user(struct task_struct *tsk, unsigned long addr, char __user *ubuf, int len, int write, int string);
+ syscall_exit_work:
+diff -Naur linux-2.6.26-rc6/arch/powerpc/kernel/entry_64.S linux-2.6.26-rc6-ptrace_vm/arch/powerpc/kernel/entry_64.S
+--- linux-2.6.26-rc6/arch/powerpc/kernel/entry_64.S	2008-06-13 13:33:26.000000000 +0200
++++ linux-2.6.26-rc6-ptrace_vm/arch/powerpc/kernel/entry_64.S	2008-06-14 16:42:36.000000000 +0200
+@@ -213,6 +213,7 @@
+ 	bl	.save_nvgprs
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	.do_syscall_trace_enter
++	mr  r11,r3
+ 	ld	r0,GPR0(r1)	/* Restore original registers */
+ 	ld	r3,GPR3(r1)
+ 	ld	r4,GPR4(r1)
+@@ -223,6 +224,8 @@
+ 	addi	r9,r1,STACK_FRAME_OVERHEAD
+ 	clrrdi	r10,r1,THREAD_SHIFT
+ 	ld	r10,TI_FLAGS(r10)
++	cmpwi r11,0
++	bne-  syscall_exit
+ 	b	syscall_dotrace_cont
  
- int get_user_pages(struct task_struct *tsk, struct mm_struct *mm, unsigned long start,
- 		int len, int write, int force, struct page **pages, struct vm_area_struct **vmas);
-diff -Naur linux-2.6.26-rc6/include/linux/ptrace.h linux-2.6.26-rc6-ptrace_multi/include/linux/ptrace.h
---- linux-2.6.26-rc6/include/linux/ptrace.h	2008-06-13 13:33:30.000000000 +0200
-+++ linux-2.6.26-rc6-ptrace_multi/include/linux/ptrace.h	2008-06-14 16:56:11.000000000 +0200
-@@ -27,6 +27,18 @@
- #define PTRACE_GETSIGINFO	0x4202
- #define PTRACE_SETSIGINFO	0x4203
- 
-+#define PTRACE_MULTI            0x4300
-+#define PTRACE_PEEKCHARDATA     0x4301
-+#define PTRACE_POKECHARDATA     0x4302
-+#define PTRACE_PEEKSTRINGDATA   0x4303
-+
-+struct ptrace_multi {
-+	long request;
-+	long addr;
-+	void *localaddr;
-+	long length;
-+};
-+
- /* options set using PTRACE_SETOPTIONS */
- #define PTRACE_O_TRACESYSGOOD	0x00000001
- #define PTRACE_O_TRACEFORK	0x00000002
-@@ -84,6 +96,7 @@
- extern struct task_struct *ptrace_get_task_struct(pid_t pid);
- extern int ptrace_traceme(void);
- extern int ptrace_readdata(struct task_struct *tsk, unsigned long src, char __user *dst, int len);
-+extern int ptrace_readstringdata(struct task_struct *tsk, unsigned long src, char __user *dst, int len);
- extern int ptrace_writedata(struct task_struct *tsk, char __user *src, unsigned long dst, int len);
- extern int ptrace_attach(struct task_struct *tsk);
- extern int ptrace_detach(struct task_struct *, unsigned int);
-diff -Naur linux-2.6.26-rc6/kernel/ptrace.c linux-2.6.26-rc6-ptrace_multi/kernel/ptrace.c
---- linux-2.6.26-rc6/kernel/ptrace.c	2008-06-13 13:33:31.000000000 +0200
-+++ linux-2.6.26-rc6-ptrace_multi/kernel/ptrace.c	2008-06-14 19:00:13.000000000 +0200
-@@ -2,6 +2,7 @@
-  * linux/kernel/ptrace.c
-  *
-  * (C) Copyright 1999 Linus Torvalds
-+ * PTRACE_MULTI support 2008 Renzo Davoli
-  *
-  * Common interfaces for "ptrace()" which we do not want
-  * to continually duplicate across every architecture.
-@@ -244,52 +245,23 @@
- 
- int ptrace_readdata(struct task_struct *tsk, unsigned long src, char __user *dst, int len)
- {
--	int copied = 0;
-+	if (!access_ok(VERIFY_WRITE, dst, len))
-+		return -EIO;
-+	return access_process_vm_user(tsk, src, dst, len, 0, 0);
-+}
- 
--	while (len > 0) {
--		char buf[128];
--		int this_len, retval;
--
--		this_len = (len > sizeof(buf)) ? sizeof(buf) : len;
--		retval = access_process_vm(tsk, src, buf, this_len, 0);
--		if (!retval) {
--			if (copied)
--				break;
--			return -EIO;
--		}
--		if (copy_to_user(dst, buf, retval))
--			return -EFAULT;
--		copied += retval;
--		src += retval;
--		dst += retval;
--		len -= retval;			
--	}
--	return copied;
-+int ptrace_readstringdata(struct task_struct *tsk, unsigned long src, char __user *dst, int len)
-+{
-+	if (!access_ok(VERIFY_WRITE, dst, len))
-+		return -EIO;
-+	return access_process_vm_user(tsk, src, dst, len, 0, 1);
+ syscall_enosys:
+diff -Naur linux-2.6.26-rc6/arch/powerpc/kernel/ptrace.c linux-2.6.26-rc6-ptrace_vm/arch/powerpc/kernel/ptrace.c
+--- linux-2.6.26-rc6/arch/powerpc/kernel/ptrace.c	2008-04-17 04:49:44.000000000 +0200
++++ linux-2.6.26-rc6-ptrace_vm/arch/powerpc/kernel/ptrace.c	2008-06-14 16:42:36.000000000 +0200
+@@ -867,7 +867,7 @@
+ 	}
  }
  
- int ptrace_writedata(struct task_struct *tsk, char __user *src, unsigned long dst, int len)
+-void do_syscall_trace_enter(struct pt_regs *regs)
++int do_syscall_trace_enter(struct pt_regs *regs)
  {
--	int copied = 0;
--
--	while (len > 0) {
--		char buf[128];
--		int this_len, retval;
--
--		this_len = (len > sizeof(buf)) ? sizeof(buf) : len;
--		if (copy_from_user(buf, src, this_len))
--			return -EFAULT;
--		retval = access_process_vm(tsk, dst, buf, this_len, 1);
--		if (!retval) {
--			if (copied)
--				break;
--			return -EIO;
--		}
--		copied += retval;
--		src += retval;
--		dst += retval;
--		len -= retval;			
--	}
--	return copied;
-+	if (!access_ok(VERIFY_READ, dst, len))
-+		return -EIO;
-+	return access_process_vm_user(tsk, dst, src, len, 1, 0);
+ 	secure_computing(regs->gpr[0]);
+ 
+@@ -891,6 +891,7 @@
+ 					    regs->gpr[5] & 0xffffffff,
+ 					    regs->gpr[6] & 0xffffffff);
+ 	}
++	return (current->ptrace & PT_SYSCALL_SKIPCALL);
  }
  
- static int ptrace_setoptions(struct task_struct *child, long data)
-@@ -534,6 +506,50 @@
- #define arch_ptrace_attach(child)	do { } while (0)
+ void do_syscall_trace_leave(struct pt_regs *regs)
+@@ -900,7 +901,9 @@
+ 				   regs->result);
+ 
+ 	if ((test_thread_flag(TIF_SYSCALL_TRACE)
+-	     || test_thread_flag(TIF_SINGLESTEP))
+-	    && (current->ptrace & PT_PTRACED))
++				|| test_thread_flag(TIF_SINGLESTEP))
++			&& (current->ptrace & PT_PTRACED) && 
++			((current->ptrace & PT_SYSCALL_SKIPEXIT)==0))
++
+ 		do_syscall_trace();
+ }
+diff -Naur linux-2.6.26-rc6/arch/ppc/kernel/entry.S linux-2.6.26-rc6-ptrace_vm/arch/ppc/kernel/entry.S
+--- linux-2.6.26-rc6/arch/ppc/kernel/entry.S	2008-04-17 04:49:44.000000000 +0200
++++ linux-2.6.26-rc6-ptrace_vm/arch/ppc/kernel/entry.S	2008-06-14 16:42:36.000000000 +0200
+@@ -292,6 +292,7 @@
+ 	stw	r0,TRAP(r1)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	do_syscall_trace_enter
++	mr  r10,r3
+ 	lwz	r0,GPR0(r1)	/* Restore original registers */
+ 	lwz	r3,GPR3(r1)
+ 	lwz	r4,GPR4(r1)
+@@ -300,6 +301,8 @@
+ 	lwz	r7,GPR7(r1)
+ 	lwz	r8,GPR8(r1)
+ 	REST_NVGPRS(r1)
++	cmpwi r10,0
++	bne-  ret_from_syscall
+ 	b	syscall_dotrace_cont
+ 
+ syscall_exit_work:
+diff -Naur linux-2.6.26-rc6/arch/um/include/kern_util.h linux-2.6.26-rc6-ptrace_vm/arch/um/include/kern_util.h
+--- linux-2.6.26-rc6/arch/um/include/kern_util.h	2008-04-17 04:49:44.000000000 +0200
++++ linux-2.6.26-rc6-ptrace_vm/arch/um/include/kern_util.h	2008-06-14 16:42:36.000000000 +0200
+@@ -57,7 +57,7 @@
+ extern unsigned long to_irq_stack(unsigned long *mask_out);
+ extern unsigned long from_irq_stack(int nested);
+ 
+-extern void syscall_trace(struct uml_pt_regs *regs, int entryexit);
++extern int syscall_trace(struct uml_pt_regs *regs, int entryexit);
+ extern int singlestepping(void *t);
+ 
+ extern void segv_handler(int sig, struct uml_pt_regs *regs);
+diff -Naur linux-2.6.26-rc6/arch/um/include/ptrace_user.h linux-2.6.26-rc6-ptrace_vm/arch/um/include/ptrace_user.h
+--- linux-2.6.26-rc6/arch/um/include/ptrace_user.h	2008-04-17 04:49:44.000000000 +0200
++++ linux-2.6.26-rc6-ptrace_vm/arch/um/include/ptrace_user.h	2008-06-14 16:42:36.000000000 +0200
+@@ -40,9 +40,20 @@
+ #define PTRACE_OLDSETOPTIONS PTRACE_SETOPTIONS
  #endif
  
-+static int multi_ptrace(struct task_struct *child, long request, long addr, long size)
-+{
-+	int i, ret;
-+	long j;
-+	ret=0;
-+	if (!access_ok(VERIFY_READ, addr,size*sizeof(struct ptrace_multi))) {
-+		ret = -EIO;
-+		goto out_multi_ptrace;
-+	}
-+	for (i=0; i<size && ret==0; i++, addr+=sizeof(struct ptrace_multi)) {
-+		unsigned long len;
-+		struct ptrace_multi __user pm ;
-+		if (__copy_from_user(&pm, (struct ptrace_multi __user *)addr, sizeof(struct ptrace_multi)) == 0) {
-+			len = pm.length;
-+			switch ( pm.request){
-+				case PTRACE_PEEKTEXT:
-+				case PTRACE_PEEKDATA:
-+				case PTRACE_PEEKUSR:
-+				case PTRACE_POKETEXT:
-+				case PTRACE_POKEDATA:
-+				case PTRACE_POKEUSR:
-+					if (len <= 0) len=1;
-+					for (j=0; j<len && ret==0; j++)
-+						ret=arch_ptrace(child, pm.request, (long) (pm.addr) + j*sizeof(long), (long) (pm.localaddr) + j*sizeof(long));
-+					break;
-+				case PTRACE_PEEKCHARDATA:
-+					ret = ptrace_readdata(child, pm.addr, pm.localaddr, len);
-+					break;
-+				case PTRACE_POKECHARDATA:
-+					ret = ptrace_writedata(child, pm.localaddr, pm.addr, len);
-+					break;
-+				case PTRACE_PEEKSTRINGDATA:
-+					ret = ptrace_readstringdata(child, pm.addr, pm.localaddr, len);
-+					break;
-+				default:
-+					ret=arch_ptrace(child, pm.request, (long) (pm.addr), (long) (pm.localaddr));
-+					break;
-+			}
-+		}
-+	}
-+out_multi_ptrace:
-+	return ret;
-+}
++/* these constant should eventually enter in sys/ptrace.h */
++#ifndef PTRACE_SYSCALL_SKIPCALL
++#define PTRACE_SYSCALL_SKIPCALL      0x6
++#endif
++#ifndef PTRACE_SYSCALL_SKIPEXIT
++#define PTRACE_SYSCALL_SKIPEXIT      0x2
++#endif
 +
- asmlinkage long sys_ptrace(long request, long pid, long addr, long data)
- {
- 	struct task_struct *child;
-@@ -571,9 +587,10 @@
- 	if (ret < 0)
- 		goto out_put_task_struct;
+ void set_using_sysemu(int value);
+ int get_using_sysemu(void);
+ extern int sysemu_supported;
++void set_using_sysptvm(int value);
++int get_using_sysptvm(void);
++extern int sysptvm_supported;
  
--	ret = arch_ptrace(child, request, addr, data);
--	if (ret < 0)
--		goto out_put_task_struct;
-+	if (request == PTRACE_MULTI)
-+		ret = multi_ptrace(child, request, addr, data);
-+	else
-+		ret = arch_ptrace(child, request, addr, data);
- 
-  out_put_task_struct:
- 	put_task_struct(child);
-@@ -656,6 +673,57 @@
- 	return ret;
+ #define SELECT_PTRACE_OPERATION(sysemu_mode, singlestep_mode) \
+ 	(((int[3][3] ) { \
+diff -Naur linux-2.6.26-rc6/arch/um/kernel/process.c linux-2.6.26-rc6-ptrace_vm/arch/um/kernel/process.c
+--- linux-2.6.26-rc6/arch/um/kernel/process.c	2008-06-13 13:33:26.000000000 +0200
++++ linux-2.6.26-rc6-ptrace_vm/arch/um/kernel/process.c	2008-06-14 16:42:36.000000000 +0200
+@@ -322,7 +322,9 @@
  }
  
-+struct compat_ptrace_multi {
-+	compat_long_t request;
-+	compat_ulong_t addr;
-+	compat_ulong_t localaddr;
-+	compat_ulong_t length;
-+};
-+
-+static int compat_multi_ptrace(struct task_struct *child, compat_long_t request, compat_ulong_t addr, compat_ulong_t size)
-+{
-+	int i, ret;
-+	compat_long_t j;
-+	ret=0;
-+	if (!access_ok(VERIFY_READ, addr,size*sizeof(struct compat_ptrace_multi))) {
-+		ret = -EIO;
-+		goto out_multi_ptrace;
-+	}
-+	for (i=0; i<size && ret==0; i++, addr+=sizeof(struct compat_ptrace_multi)) {
-+		compat_ulong_t len;
-+		struct compat_ptrace_multi __user pm ;
-+		if (__copy_from_user(&pm, (struct compat_ptrace_multi __user *)(u_long)addr, sizeof(struct compat_ptrace_multi)) == 0) {
-+			len = pm.length;
-+			switch ( pm.request){
-+				case PTRACE_PEEKTEXT:
-+				case PTRACE_PEEKDATA:
-+				case PTRACE_PEEKUSR:
-+				case PTRACE_POKETEXT:
-+				case PTRACE_POKEDATA:
-+				case PTRACE_POKEUSR:
-+					if (len <= 0) len=1;
-+					for (j=0; j<len && ret==0; j++)
-+						ret=compat_arch_ptrace(child, pm.request, (compat_long_t) (pm.addr) + j*sizeof(compat_long_t), (compat_ulong_t) (pm.localaddr) + j*sizeof(compat_long_t));
-+					break;
-+				case PTRACE_PEEKCHARDATA:
-+					ret = ptrace_readdata(child, pm.addr, (char __user *)(long)pm.localaddr, len);
-+					break;
-+				case PTRACE_POKECHARDATA:
-+					ret = ptrace_writedata(child, (char __user *)(long)pm.localaddr, pm.addr, len);
-+					break;
-+				case PTRACE_PEEKSTRINGDATA:
-+					ret = ptrace_readstringdata(child, pm.addr, (char __user *)(long)pm.localaddr, len);
-+				break;
-+				default:
-+					ret=compat_arch_ptrace(child, pm.request, (compat_ulong_t) (pm.addr), (compat_ulong_t) (pm.localaddr));
-+				break;
-+			}
-+		}
-+	}
-+out_multi_ptrace:
-+	return ret;
-+}
-+
- asmlinkage long compat_sys_ptrace(compat_long_t request, compat_long_t pid,
- 				  compat_long_t addr, compat_long_t data)
+ static atomic_t using_sysemu = ATOMIC_INIT(0);
++static atomic_t using_sysptvm = ATOMIC_INIT(0);
+ int sysemu_supported;
++int sysptvm_supported;
+ 
+ void set_using_sysemu(int value)
  {
-@@ -689,8 +757,12 @@
- 	}
- 
- 	ret = ptrace_check_attach(child, request == PTRACE_KILL);
--	if (!ret)
--		ret = compat_arch_ptrace(child, request, addr, data);
-+	if (!ret) {
-+		if (request == PTRACE_MULTI)
-+			ret= compat_multi_ptrace(child, request, addr, data);
-+		else
-+			ret = compat_arch_ptrace(child, request, addr, data);
-+	}
- 
-  out_put_task_struct:
- 	put_task_struct(child);
-diff -Naur linux-2.6.26-rc6/mm/memory.c linux-2.6.26-rc6-ptrace_multi/mm/memory.c
---- linux-2.6.26-rc6/mm/memory.c	2008-06-13 13:33:31.000000000 +0200
-+++ linux-2.6.26-rc6-ptrace_multi/mm/memory.c	2008-06-14 16:56:11.000000000 +0200
-@@ -2793,6 +2793,74 @@
+@@ -336,6 +338,16 @@
+ 	return atomic_read(&using_sysemu);
  }
  
- /*
-+ * Access another process' address space to/from user space
-+ * Do not walk the page table directly, use get_user_pages
-+ */
-+int access_process_vm_user(struct task_struct *tsk, unsigned long addr, char __user *ubuf, int len, int write, int string)
++void set_using_sysptvm(int value)
 +{
-+	struct mm_struct *mm;
-+	struct vm_area_struct *vma;
-+	struct page *page;
-+	char *buf;
-+	unsigned long old_addr = addr;
-+
-+	mm = get_task_mm(tsk);
-+	if (!mm)
-+		return 0;
-+
-+	buf=kmalloc(PAGE_SIZE, GFP_KERNEL);
-+	if (!buf)
-+		return 0;
-+
-+	down_read(&mm->mmap_sem);
-+	/* ignore errors, just check how much was sucessfully transfered */
-+	while (len) {
-+		int bytes, ret, offset;
-+		void *maddr;
-+
-+		ret = get_user_pages(tsk, mm, addr, 1,
-+				write, 1, &page, &vma);
-+		if (ret <= 0)
-+			break;
-+
-+		bytes = len;
-+		offset = addr & (PAGE_SIZE-1);
-+		if (bytes > PAGE_SIZE-offset)
-+			bytes = PAGE_SIZE-offset;
-+
-+		maddr = kmap(page);
-+		if (write) {
-+			__copy_from_user(buf,ubuf,bytes);
-+			copy_to_user_page(vma, page, addr,
-+					maddr + offset, buf, bytes);
-+			if (!PageCompound(page))
-+				set_page_dirty_lock(page);
-+		} else {
-+			copy_from_user_page(vma, page, addr,
-+					buf, maddr + offset, bytes);
-+			if (string) {
-+				for (offset=0;offset<bytes;offset++)
-+					if (buf[offset]==0)
-+						break;
-+				if (offset < bytes)
-+					bytes=len=offset+1;
-+			}
-+			ret=__copy_to_user(ubuf,buf,bytes);
-+		}
-+		kunmap(page);
-+		page_cache_release(page);
-+		len -= bytes;
-+		ubuf += bytes;
-+		addr += bytes;
-+	}
-+	up_read(&mm->mmap_sem);
-+	mmput(mm);
-+
-+	kfree(buf);
-+	return addr - old_addr;
++	atomic_set(&using_sysptvm, value);
 +}
 +
-+/*
-  * Print the name of a VMA.
++int get_using_sysptvm(void)
++{
++	return atomic_read(&using_sysptvm);
++}
++
+ static int proc_read_sysemu(char *buf, char **start, off_t offset, int size,int *eof, void *data)
+ {
+ 	if (snprintf(buf, size, "%d\n", get_using_sysemu()) < size)
+@@ -358,27 +370,62 @@
+ 	return count;
+ }
+ 
+-int __init make_proc_sysemu(void)
++static int proc_read_sysptvm(char *buf, char **start, off_t offset, int size,int *eof, void *data)
+ {
+-	struct proc_dir_entry *ent;
+-	if (!sysemu_supported)
+-		return 0;
++	int sysptvm=(get_using_sysptvm() != 0);
++	if (snprintf(buf, size, "%d\n", sysptvm) < size)
++		/* No overflow */
++		*eof = 1;
+ 
+-	ent = create_proc_entry("sysemu", 0600, NULL);
++	return strlen(buf);
++}
+ 
+-	if (ent == NULL)
+-	{
+-		printk(KERN_WARNING "Failed to register /proc/sysemu\n");
+-		return 0;
+-	}
++static int proc_write_sysptvm(struct file *file,const char __user *buf, unsigned long count,void *data)
++{
++	char tmp[2];
++
++	if (copy_from_user(tmp, buf, 1))
++		return -EFAULT;
++
++	if (tmp[0] == '0')
++		set_using_sysptvm(0);
++	if (tmp[0] == '1')
++		set_using_sysemu(/* XXX */ 6);
++	/* We use the first char, but pretend to write everything */
++	return count;
++}
+ 
+-	ent->read_proc  = proc_read_sysemu;
+-	ent->write_proc = proc_write_sysemu;
++int __init make_proc_sysemu_or_sysptvm(void)
++{
++	struct proc_dir_entry *ent;
+ 
++	if (sysptvm_supported) {
++		ent = create_proc_entry("sysptvm", 0600, NULL);
++
++		if (ent == NULL)
++		{
++			printk(KERN_WARNING "Failed to register /proc/sysptvm\n");
++			return 0;
++		}
++
++		ent->read_proc  = proc_read_sysptvm;
++		ent->write_proc = proc_write_sysptvm;
++	} else if (sysemu_supported) {
++		ent = create_proc_entry("sysemu", 0600, NULL);
++
++		if (ent == NULL)
++		{
++			printk(KERN_WARNING "Failed to register /proc/sysemu\n");
++			return 0;
++		}
++
++		ent->read_proc  = proc_read_sysemu;
++		ent->write_proc = proc_write_sysemu;
++	}
+ 	return 0;
+ }
+ 
+-late_initcall(make_proc_sysemu);
++late_initcall(make_proc_sysemu_or_sysptvm);
+ 
+ int singlestepping(void * t)
+ {
+diff -Naur linux-2.6.26-rc6/arch/um/kernel/ptrace.c linux-2.6.26-rc6-ptrace_vm/arch/um/kernel/ptrace.c
+--- linux-2.6.26-rc6/arch/um/kernel/ptrace.c	2008-04-17 04:49:44.000000000 +0200
++++ linux-2.6.26-rc6-ptrace_vm/arch/um/kernel/ptrace.c	2008-06-14 16:42:36.000000000 +0200
+@@ -76,6 +76,8 @@
+ 		if (request == PTRACE_SYSCALL)
+ 			set_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
+ 		else clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
++		child->ptrace &= ~PT_SYSCALL_MASK;
++		child->ptrace |= (addr & PTRACE_SYSCALL_MASK) << 28;
+ 		child->exit_code = data;
+ 		wake_up_process(child);
+ 		ret = 0;
+@@ -102,7 +104,9 @@
+ 		ret = -EIO;
+ 		if (!valid_signal(data))
+ 			break;
++		child->ptrace &= ~PT_SYSCALL_MASK;
+ 		clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
++		child->ptrace |= (addr & PTRACE_SYSCALL_MASK) << 28;
+ 		set_singlestepping(child, 1);
+ 		child->exit_code = data;
+ 		/* give it a chance to run. */
+@@ -245,7 +249,7 @@
+  * XXX Check PT_DTRACE vs TIF_SINGLESTEP for singlestepping check and
+  * PT_PTRACED vs TIF_SYSCALL_TRACE for syscall tracing check
   */
- void print_vma_addr(char *prefix, unsigned long ip)
-diff -Naur linux-2.6.26-rc6/patch-linux-2.6.25.5-ptrace_vm linux-2.6.26-rc6-ptrace_multi/patch-linux-2.6.25.5-ptrace_vm
---- linux-2.6.26-rc6/patch-linux-2.6.25.5-ptrace_vm	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.26-rc6-ptrace_multi/patch-linux-2.6.25.5-ptrace_vm	2008-06-14 16:56:11.000000000 +0200
-@@ -0,0 +1 @@
-+diff -Naur linux-2.6.25.5 linux-2.6.25.5.ptrace_vm
+-void syscall_trace(struct uml_pt_regs *regs, int entryexit)
++int syscall_trace(struct uml_pt_regs *regs, int entryexit)
+ {
+ 	int is_singlestep = (current->ptrace & PT_DTRACE) && entryexit;
+ 	int tracesysgood;
+@@ -267,10 +271,13 @@
+ 		send_sigtrap(current, regs, 0);
+ 
+ 	if (!test_thread_flag(TIF_SYSCALL_TRACE))
+-		return;
++		return 0;
+ 
+ 	if (!(current->ptrace & PT_PTRACED))
+-		return;
++		return 0;
++
++	if (entryexit && (current->ptrace & PT_SYSCALL_SKIPEXIT))
++		return 0;
+ 
+ 	/*
+ 	 * the 0x80 provides a way for the tracing parent to distinguish
+@@ -291,4 +298,8 @@
+ 		send_sig(current->exit_code, current, 1);
+ 		current->exit_code = 0;
+ 	}
++	if (!entryexit && (current->ptrace & PT_SYSCALL_SKIPCALL))
++		return 1;
++	else
++		return 0;
+ }
+diff -Naur linux-2.6.26-rc6/arch/um/kernel/skas/syscall.c linux-2.6.26-rc6-ptrace_vm/arch/um/kernel/skas/syscall.c
+--- linux-2.6.26-rc6/arch/um/kernel/skas/syscall.c	2008-04-17 04:49:44.000000000 +0200
++++ linux-2.6.26-rc6-ptrace_vm/arch/um/kernel/skas/syscall.c	2008-06-14 16:42:36.000000000 +0200
+@@ -17,8 +17,9 @@
+ 	struct pt_regs *regs = container_of(r, struct pt_regs, regs);
+ 	long result;
+ 	int syscall;
++	int skip_call;
+ 
+-	syscall_trace(r, 0);
++	skip_call=syscall_trace(r, 0);
+ 
+ 	/*
+ 	 * This should go in the declaration of syscall, but when I do that,
+@@ -29,12 +30,14 @@
+ 	 *     gcc version 4.0.1 20050727 (Red Hat 4.0.1-5)
+ 	 * in case it's a compiler bug.
+ 	 */
+-	syscall = UPT_SYSCALL_NR(r);
+-	if ((syscall >= NR_syscalls) || (syscall < 0))
+-		result = -ENOSYS;
+-	else result = EXECUTE_SYSCALL(syscall, regs);
++	if (skip_call == 0) {
++		syscall = UPT_SYSCALL_NR(r);
++		if ((syscall >= NR_syscalls) || (syscall < 0))
++			result = -ENOSYS;
++		else result = EXECUTE_SYSCALL(syscall, regs);
+ 
+-	REGS_SET_SYSCALL_RETURN(r->gp, result);
++		REGS_SET_SYSCALL_RETURN(r->gp, result);
++	}
+ 
+ 	syscall_trace(r, 1);
+ }
+diff -Naur linux-2.6.26-rc6/arch/um/os-Linux/skas/process.c linux-2.6.26-rc6-ptrace_vm/arch/um/os-Linux/skas/process.c
+--- linux-2.6.26-rc6/arch/um/os-Linux/skas/process.c	2008-06-13 13:33:26.000000000 +0200
++++ linux-2.6.26-rc6-ptrace_vm/arch/um/os-Linux/skas/process.c	2008-06-14 16:42:36.000000000 +0200
+@@ -157,7 +157,7 @@
+  * (in local_using_sysemu
+  */
+ static void handle_trap(int pid, struct uml_pt_regs *regs,
+-			int local_using_sysemu)
++			int local_using_sysptvm_or_sysemu)
+ {
+ 	int err, status;
+ 
+@@ -167,7 +167,7 @@
+ 	/* Mark this as a syscall */
+ 	UPT_SYSCALL_NR(regs) = PT_SYSCALL_NR(regs->gp);
+ 
+-	if (!local_using_sysemu)
++	if (!local_using_sysptvm_or_sysemu)
+ 	{
+ 		err = ptrace(PTRACE_POKEUSR, pid, PT_SYSCALL_NR_OFFSET,
+ 			     __NR_getpid);
+@@ -354,6 +354,7 @@
+ 	int err, status, op, pid = userspace_pid[0];
+ 	/* To prevent races if using_sysemu changes under us.*/
+ 	int local_using_sysemu;
++	int local_using_sysptvm;
+ 
+ 	if (getitimer(ITIMER_VIRTUAL, &timer))
+ 		printk(UM_KERN_ERR "Failed to get itimer, errno = %d\n", errno);
+@@ -375,11 +376,12 @@
+ 
+ 		/* Now we set local_using_sysemu to be used for one loop */
+ 		local_using_sysemu = get_using_sysemu();
++		local_using_sysptvm = get_using_sysptvm();
+ 
+ 		op = SELECT_PTRACE_OPERATION(local_using_sysemu,
+ 					     singlestepping(NULL));
+ 
+-		if (ptrace(op, pid, 0, 0)) {
++		if (ptrace(op, pid, local_using_sysptvm, 0)) {
+ 			printk(UM_KERN_ERR "userspace - ptrace continue "
+ 			       "failed, op = %d, errno = %d\n", op, errno);
+ 			fatal_sigsegv();
+diff -Naur linux-2.6.26-rc6/arch/um/os-Linux/start_up.c linux-2.6.26-rc6-ptrace_vm/arch/um/os-Linux/start_up.c
+--- linux-2.6.26-rc6/arch/um/os-Linux/start_up.c	2008-06-13 13:33:26.000000000 +0200
++++ linux-2.6.26-rc6-ptrace_vm/arch/um/os-Linux/start_up.c	2008-06-14 16:42:36.000000000 +0200
+@@ -196,6 +196,35 @@
+ "    See http://perso.wanadoo.fr/laurent.vivier/UML/ for further \n"
+ "    information.\n\n");
+ 
++/* Changed only during early boot */
++static int force_sysptvm_disabled = 0;
++
++static int __init nosysptvm_cmd_param(char *str, int* add)
++{
++	force_sysptvm_disabled = 1;
++	return 0;
++}
++
++__uml_setup("nosysptvm", nosysptvm_cmd_param,
++"nosysptvm\n"
++"    Turns off syscall emulation tags for ptrace (ptrace_vm) on.\n"
++"    Ptrace_vm is a feature introduced by Renzo Davoli. It changes\n"
++"    behaviour of ptrace() and helps reducing host context switch rate.\n"
++"\n");
++
++static int use_sysemu = 0;
++
++static int __init usesysemu_cmd_param(char *str, int* add)
++{
++	use_sysemu = 1;
++	return 0;
++}
++
++__uml_setup("usesysemu", usesysemu_cmd_param,
++"usesysemu\n"
++"    Use sysemu instead of sysptvm even when the kernel supports it.\n\n"
++);
++
+ static void __init check_sysemu(void)
+ {
+ 	unsigned long regs[MAX_REG_NR];
+@@ -286,6 +315,100 @@
+ 	non_fatal("missing\n");
+ }
+ 
++/* test thread code. This thread is started only to test 
++ * which features are provided by the linux kernel */
++static int sysptvm_child(void *arg)
++{
++	int *featurep=arg;
++	int p[2]={-1,-1};
++	pid_t pid=os_getpid();
++	if(ptrace(PTRACE_TRACEME, 0, 0, 0) < 0){
++		perror("ptrace test_ptracemulti");
++		kill(pid, SIGKILL);
++	}
++	kill(pid, SIGSTOP);
++	*featurep=0;
++	os_getpid();
++	/* if it reaches this point in 1 stop it means that
++	 * PTRACE_SYSCALL_SKIPEXIT works */
++	*featurep=PTRACE_SYSCALL_SKIPEXIT;
++	pipe(p);
++	/* if after a PTRACE_SYSCALL_SKIPCALL p[0] is already <0 
++	 * pipe has been really skipped */
++	if (p[0] < 0)
++		*featurep=PTRACE_SYSCALL_SKIPCALL;
++	else { /* clean up everything */
++		close(p[0]);
++		close(p[1]);
++	}
++	return 0;
++}
++
++/* kernel feature test: 
++ * it returns:
++ *   -1 error 
++ *   0 old PTRACE_SYSCALL (addr is ignored)
++ *   PTRACE_SYSCALL_SKIPEXIT: just skip_exit is provided
++ *   PTRACE_SYSCALL_SKIPCALL: the entire syntax is implemented
++ *   by the running kernel */
++static int __init test_ptrace_sysptvm(void) {
++	int pid, status, rv, feature;
++	static char stack[1024];
++	feature=0;
++
++	if((pid = clone(sysptvm_child, &stack[1020], SIGCHLD | CLONE_VM, &feature)) < 0)
++		return 0;
++	if(waitpid(pid, &status, WUNTRACED) < 0){
++		kill(pid, SIGKILL);
++		return 0;
++	}
++	/* restart and wait for the next syscall (getpid)*/
++	rv=ptrace(PTRACE_SYSCALL, pid, 0, 0);
++	if(waitpid(pid, &status, WUNTRACED) < 0)
++		goto out;
++	/* try to skip the exit call */
++	rv=ptrace(PTRACE_SYSCALL, pid, PTRACE_SYSCALL_SKIPEXIT, 0);
++	if (rv < 0)
++		goto out;
++	/* wait for the next stop */
++	if(waitpid(pid, &status, WUNTRACED) < 0)
++		goto out;
++	/* if feature is already 0 it means that this is the exit call,
++	 * and it has not been skipped, otherwise this is the
++	 * entry call for the system call "time" */
++	if (feature<PTRACE_SYSCALL_SKIPEXIT)
++		goto out;
++	/* restart (time) and and try to skip the entire call */
++	rv=ptrace(PTRACE_SYSCALL, pid, PTRACE_SYSCALL_SKIPCALL, 0);
++	if(waitpid(pid, &status, WUNTRACED) < 0)
++		return 0;
++out:
++	ptrace(PTRACE_KILL,pid,0,0);
++	/* eliminate zombie */
++	if(waitpid(pid, &status, WUNTRACED) < 0)
++		return 0;
++	return feature;
++}
++
++static int  __init check_sysptvm(void)
++{
++	int feature=test_ptrace_sysptvm();
++  
++	non_fatal("Checking ptrace new tags for syscall emulation...");
++	if (feature==PTRACE_SYSCALL_SKIPCALL) {
++		sysptvm_supported=1;
++		non_fatal("OK");
++		if (!force_sysptvm_disabled) 
++			set_using_sysptvm(PTRACE_SYSCALL_SKIPCALL);
++		else
++			non_fatal(" (disabled)");
++		non_fatal("\n");
++		return 1;
++	} else
++		non_fatal("unsupported\n");
++	return 0;
++}
++
+ static void __init check_ptrace(void)
+ {
+ 	int pid, syscall, n, status;
+@@ -323,7 +446,8 @@
+ 	}
+ 	stop_ptraced_child(pid, 0, 1);
+ 	non_fatal("OK\n");
+-	check_sysemu();
++	if (use_sysemu || !check_sysptvm()) 
++		check_sysemu();
+ }
+ 
+ extern void check_tmpexec(void);
+diff -Naur linux-2.6.26-rc6/arch/x86/ia32/ia32entry.S linux-2.6.26-rc6-ptrace_vm/arch/x86/ia32/ia32entry.S
+--- linux-2.6.26-rc6/arch/x86/ia32/ia32entry.S	2008-06-13 13:33:26.000000000 +0200
++++ linux-2.6.26-rc6-ptrace_vm/arch/x86/ia32/ia32entry.S	2008-06-14 16:46:41.000000000 +0200
+@@ -165,6 +165,8 @@
+ 	movq	$-ENOSYS,RAX(%rsp)/* ptrace can change this for a bad syscall */
+ 	movq	%rsp,%rdi        /* &pt_regs -> arg1 */
+ 	call	syscall_trace_enter
++	testq %rax,%rax
++	jnz ia32_skipcall
+ 	LOAD_ARGS32 ARGOFFSET  /* reload args from stack in case ptrace changed it */
+ 	RESTORE_REST
+ 	xchgl	%ebp,%r9d
+@@ -266,6 +268,8 @@
+ 	movq $-ENOSYS,RAX(%rsp)	/* ptrace can change this for a bad syscall */
+ 	movq %rsp,%rdi        /* &pt_regs -> arg1 */
+ 	call syscall_trace_enter
++	testq %rax,%rax
++	jnz ia32_skipcall
+ 	LOAD_ARGS32 ARGOFFSET  /* reload args from stack in case ptrace changed it */
+ 	RESTORE_REST
+ 	xchgl %ebp,%r9d
+@@ -342,6 +346,8 @@
+ 	movq $-ENOSYS,RAX(%rsp)	/* ptrace can change this for a bad syscall */
+ 	movq %rsp,%rdi        /* &pt_regs -> arg1 */
+ 	call syscall_trace_enter
++	testq %rax,%rax
++	jnz ia32_skipcall
+ 	LOAD_ARGS32 ARGOFFSET  /* reload args from stack in case ptrace changed it */
+ 	RESTORE_REST
+ 	jmp ia32_do_syscall
+@@ -352,6 +358,11 @@
+ 	movq $-ENOSYS,RAX-ARGOFFSET(%rsp)
+ 	jmp int_ret_from_sys_call
+ 
++ia32_skipcall:
++	LOAD_ARGS32 ARGOFFSET  /* reload args from stack in case ptrace changed it */
++	RESTORE_REST
++	jmp int_ret_from_sys_call
++
+ quiet_ni_syscall:
+ 	movq $-ENOSYS,%rax
+ 	ret
+diff -Naur linux-2.6.26-rc6/arch/x86/kernel/entry_64.S linux-2.6.26-rc6-ptrace_vm/arch/x86/kernel/entry_64.S
+--- linux-2.6.26-rc6/arch/x86/kernel/entry_64.S	2008-06-13 13:33:26.000000000 +0200
++++ linux-2.6.26-rc6-ptrace_vm/arch/x86/kernel/entry_64.S	2008-06-14 16:42:36.000000000 +0200
+@@ -316,6 +316,11 @@
+ 	movq $-ENOSYS,RAX-ARGOFFSET(%rsp)
+ 	jmp ret_from_sys_call
+ 
++skipcall:
++	LOAD_ARGS ARGOFFSET  /* reload args from stack in case ptrace changed it */
++	RESTORE_REST
++	jmp ret_from_sys_call
++
+ 	/* Do syscall tracing */
+ tracesys:			 
+ 	SAVE_REST
+@@ -323,6 +328,8 @@
+ 	FIXUP_TOP_OF_STACK %rdi
+ 	movq %rsp,%rdi
+ 	call syscall_trace_enter
++	testq %rax,%rax
++	jnz skipcall
+ 	LOAD_ARGS ARGOFFSET  /* reload args from stack in case ptrace changed it */
+ 	RESTORE_REST
+ 	cmpq $__NR_syscall_max,%rax
+diff -Naur linux-2.6.26-rc6/arch/x86/kernel/ptrace.c linux-2.6.26-rc6-ptrace_vm/arch/x86/kernel/ptrace.c
+--- linux-2.6.26-rc6/arch/x86/kernel/ptrace.c	2008-06-13 13:33:26.000000000 +0200
++++ linux-2.6.26-rc6-ptrace_vm/arch/x86/kernel/ptrace.c	2008-06-14 16:42:36.000000000 +0200
+@@ -1415,6 +1415,9 @@
+ 	if (!(current->ptrace & PT_PTRACED))
+ 		goto out;
+ 
++	if (entryexit && (current->ptrace & PT_SYSCALL_SKIPEXIT))
++		return 0;
++
+ 	/* If a process stops on the 1st tracepoint with SYSCALL_TRACE
+ 	 * and then is resumed with SYSEMU_SINGLESTEP, it will come in
+ 	 * here. We have to check this and return */
+@@ -1442,7 +1445,8 @@
+ 		send_sig(current->exit_code, current, 1);
+ 		current->exit_code = 0;
+ 	}
+-	ret = is_sysemu;
++	ret = (is_sysemu || (!entryexit && (current->ptrace & PT_SYSCALL_SKIPCALL)));
++
+ out:
+ 	if (unlikely(current->audit_context) && !entryexit)
+ 		audit_syscall_entry(AUDIT_ARCH_I386, regs->orig_ax,
+@@ -1481,7 +1485,7 @@
+ 	}
+ }
+ 
+-asmlinkage void syscall_trace_enter(struct pt_regs *regs)
++asmlinkage long syscall_trace_enter(struct pt_regs *regs)
+ {
+ 	/* do the secure computing check first */
+ 	secure_computing(regs->orig_ax);
+@@ -1503,6 +1507,8 @@
+ 					    regs->dx, regs->r10);
+ 		}
+ 	}
++
++	return (current->ptrace & PT_SYSCALL_SKIPCALL);
+ }
+ 
+ asmlinkage void syscall_trace_leave(struct pt_regs *regs)
+@@ -1512,7 +1518,8 @@
+ 
+ 	if ((test_thread_flag(TIF_SYSCALL_TRACE)
+ 	     || test_thread_flag(TIF_SINGLESTEP))
+-	    && (current->ptrace & PT_PTRACED))
++			&& (current->ptrace & PT_PTRACED) &&
++			((current->ptrace & PT_SYSCALL_SKIPEXIT)==0))
+ 		syscall_trace(regs);
+ }
+ 
+diff -Naur linux-2.6.26-rc6/include/linux/ptrace.h linux-2.6.26-rc6-ptrace_vm/include/linux/ptrace.h
+--- linux-2.6.26-rc6/include/linux/ptrace.h	2008-06-13 13:33:30.000000000 +0200
++++ linux-2.6.26-rc6-ptrace_vm/include/linux/ptrace.h	2008-06-14 16:42:36.000000000 +0200
+@@ -46,6 +46,11 @@
+ #define PTRACE_EVENT_VFORK_DONE	5
+ #define PTRACE_EVENT_EXIT	6
+ 
++/* options for new PTRACE_SYSCALL syntax*/
++#define PTRACE_SYSCALL_SKIPEXIT  0x2
++#define PTRACE_SYSCALL_SKIPCALL  0x6
++#define PTRACE_SYSCALL_MASK    0x00000006
++
+ #include <asm/ptrace.h>
+ 
+ #ifdef __KERNEL__
+@@ -68,6 +73,10 @@
+ #define PT_TRACE_VFORK_DONE	0x00000100
+ #define PT_TRACE_EXIT	0x00000200
+ 
++#define PT_SYSCALL_SKIPEXIT  0x60000000
++#define PT_SYSCALL_SKIPCALL  0x40000000
++#define PT_SYSCALL_MASK      0x60000000
++
+ #define PT_TRACE_MASK	0x000003f4
+ 
+ /* single stepping state bits (used on ARM and PA-RISC) */
+diff -Naur linux-2.6.26-rc6/kernel/ptrace.c linux-2.6.26-rc6-ptrace_vm/kernel/ptrace.c
+--- linux-2.6.26-rc6/kernel/ptrace.c	2008-06-13 13:33:31.000000000 +0200
++++ linux-2.6.26-rc6-ptrace_vm/kernel/ptrace.c	2008-06-14 16:42:36.000000000 +0200
+@@ -375,7 +375,7 @@
+ #define is_sysemu_singlestep(request)	0
+ #endif
+ 
+-static int ptrace_resume(struct task_struct *child, long request, long data)
++static int ptrace_resume(struct task_struct *child, long request, long addr, long data)
+ {
+ 	if (!valid_signal(data))
+ 		return -EIO;
+@@ -404,6 +404,9 @@
+ 	else
+ 		user_disable_single_step(child);
+ 
++	child->ptrace &= ~PT_SYSCALL_MASK;
++	child->ptrace |= (addr & PTRACE_SYSCALL_MASK) << 28;
++
+ 	child->exit_code = data;
+ 	wake_up_process(child);
+ 
+@@ -465,12 +468,12 @@
+ #endif
+ 	case PTRACE_SYSCALL:
+ 	case PTRACE_CONT:
+-		return ptrace_resume(child, request, data);
++		return ptrace_resume(child, request, addr, data);
+ 
+ 	case PTRACE_KILL:
+ 		if (child->exit_state)	/* already dead */
+ 			return 0;
+-		return ptrace_resume(child, request, SIGKILL);
++		return ptrace_resume(child, request, addr, SIGKILL);
+ 
+ 	default:
+ 		break;
