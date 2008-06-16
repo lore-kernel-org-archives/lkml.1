@@ -1,78 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758896AbYFPDw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751974AbYFPEMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758896AbYFPDw7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 23:52:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbYFPDwt
+	id S1751974AbYFPEMt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 00:12:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750804AbYFPEMj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 23:52:49 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47168 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752077AbYFPDws (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 23:52:48 -0400
-Message-ID: <4855E389.10305@kernel.org>
-Date: Mon, 16 Jun 2008 12:52:41 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 16 Jun 2008 00:12:39 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:33426 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750711AbYFPEMi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 00:12:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=dIYxMiU/s250Co8x7XWC5R3HLw0yOMfUn4YwUiqym09EoxLdajpWR8ZIDapnaf3Pwl
+         Jo7hoMCqP9S6Nl+0esez82VAwwntercq54k0Enk+kqL6DyNXlt0RIu2VIyM9wawIPWWC
+         nzOwjMUOR6l/Kcv5ZaW8yCQMQe3nrjdPPJUXM=
+Message-ID: <86802c440806152112y23fda539i841ed77da8f2ad78@mail.gmail.com>
+Date: Sun, 15 Jun 2008 21:12:35 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: [Bug 10872] x86_64 boot hang when CONFIG_NUMA=n
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080615181101.bcbab2ef.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: What do these SATA errors mean / kernel 2.6.25.6 (DRDY ERR/ICRC
- ABRT)
-References: <alpine.DEB.1.10.0806110608080.7726@p34.internal.lan>
-In-Reply-To: <alpine.DEB.1.10.0806110608080.7726@p34.internal.lan>
-X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0rc1 (hera.kernel.org [127.0.0.1]); Mon, 16 Jun 2008 03:52:46 +0000 (UTC)
+Content-Disposition: inline
+References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
+	 <Jn7irxIunJK.A.8UD.1IDVIB@albercik>
+	 <20080615093543.1b18b9eb.randy.dunlap@oracle.com>
+	 <86802c440806151218h7b8b6c80q4ce0f6505244e588@mail.gmail.com>
+	 <20080615181101.bcbab2ef.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
-> Never had a single error so far, powered down my host, powered it back up,
-> Jun 11 05:23:24 p34 kernel: [   67.118632] mtrr: no more MTRRs available
-> Jun 11 05:46:23 p34 kernel: [ 1445.288619] ata12.00: exception Emask 0x0
-> SAct 0x0 SErr 0x0 action 0x2
-> Jun 11 05:46:23 p34 kernel: [ 1445.288626] ata12.00: irq_stat
-> 0x00060002, device error via D2H FIS
-> Jun 11 05:46:23 p34 kernel: [ 1445.288632] ata12.00: cmd
-> 35/00:f8:47:dc:35/00:03:02:00:00/e0 tag 0 dma 520192 out
-> Jun 11 05:46:23 p34 kernel: [ 1445.288634]          res
-> 51/84:f8:47:dc:35/00:03:02:00:00/e0 Emask 0x10 (ATA bus error)
-> Jun 11 05:46:23 p34 kernel: [ 1445.288637] ata12.00: status: { DRDY ERR }
-> Jun 11 05:46:23 p34 kernel: [ 1445.288639] ata12.00: error: { ICRC ABRT }
+On Sun, Jun 15, 2008 at 6:11 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> On Sun, 15 Jun 2008 12:18:42 -0700 Yinghai Lu wrote:
+>
+>> On Sun, Jun 15, 2008 at 9:35 AM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+>> > On Sat, 14 Jun 2008 22:12:04 +0200 (CEST) Rafael J. Wysocki wrote:
+>> >
+>> >> This message has been generated automatically as a part of a report
+>> >> of recent regressions.
+>> >>
+>> >> The following bug entry is on the current list of known regressions
+>> >> from 2.6.25.  Please verify if it still should be listed.
+>> >>
+>> >>
+>> >> Bug-Entry     : http://bugzilla.kernel.org/show_bug.cgi?id=10872
+>> >> Subject               : x86_64 boot hang when CONFIG_NUMA=n
+>> >> Submitter     : Randy Dunlap <randy.dunlap@oracle.com>
+>> >> Date          : 2008-06-05 21:50 (10 days old)
+>> >> References    : http://marc.info/?l=linux-kernel&m=121270308607116&w=4
+>> >>                 http://lkml.org/lkml/2008/6/11/355
+>> >> Handled-By    : Yinghai Lu <yhlu.kernel@gmail.com>
+>> >
+>> > Yes, still happens for me on 2.6.26-rc6-git2.
+>> >
+>>
+>> please send out whole boot log with numa on and numa off
+>> and boot with debug
+>>
+>> please apply attached debug patch too.
+>
+> OK, did all of that.
+> I should probably note that in both cases, the kernel is loaded/booted by using kexec.
+> Both boot logs are captured generated via netconsole.
+>
+> The failing boot log is netcon-4409.log.  The working boot log (CONFIG_NUMA=y) is
+> netcon-4410.log.  Enabling CONFIG_NUMA makes the following changes:
+>
+> 4c4
+> < # Sun Jun 15 15:00:56 2008
+> ---
+>> # Sun Jun 15 15:10:15 2008
+> 241c241,246
+> < # CONFIG_NUMA is not set
+> ---
+>> CONFIG_NUMA=y
+>> CONFIG_K8_NUMA=y
+>> CONFIG_X86_64_ACPI_NUMA=y
+>> CONFIG_NODES_SPAN_OTHER_NODES=y
+>> # CONFIG_NUMA_EMU is not set
+>> CONFIG_NODES_SHIFT=6
+> 249a255
+>> CONFIG_NEED_MULTIPLE_NODES=y
+> 260a267
+>> CONFIG_MIGRATION=y
+> 282a290
+>> CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID=y
+> 309a318
+>> CONFIG_ACPI_NUMA=y
+>
 
-That's your drive reporting that it saw transmission error on the wire.
+the print out looks all right.
 
+any chance to use normal serial console to capture the boot log?
 
-> Jun 11 06:00:32 p34 kernel: [ 2293.491350] ata1.00: exception Emask 0x0
-> SAct 0x0 SErr 0x0 action 0x2 frozen
-> Jun 11 06:00:32 p34 kernel: [ 2293.491360] ata1.00: cmd
-> 35/00:02:43:90:7d/00:00:12:00:00/e0 tag 0 dma 1024 out
-> Jun 11 06:00:32 p34 kernel: [ 2293.491362]          res
-> 40/00:ff:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
-> Jun 11 06:00:32 p34 kernel: [ 2293.491365] ata1.00: status: { DRDY }
-> Jun 11 06:00:32 p34 kernel: [ 2293.794295] ata1: soft resetting link
-> Jun 11 06:00:32 p34 kernel: [ 2293.947277] ata1: SATA link up 3.0 Gbps
-> (SStatus 123 SControl 300)
-
-And a write command timed out which is also often caused by transmission
-problems.
-
-> Nothing was broken in any of the arrays and all seems to be functioning
-> now but albeit at lower speeds as you see above UDMA/100 and UDMA/133.
-
-No, according to the log, there was no slow down.  Transmission speed is
-lowered only after some number of errors have accumulated.
-
-> Could there be a bug with the new Veliciraptors and the drivers in the
-> kernel?  I never saw this happen/occur with my old raptor 150s or 74s.
-> Also, I stress tested all of these drives for 8hours+ and they never had
-> a problem before so it makes the problem rather peculiar.
-
-For SATA drives, occasional transmission problems are expected even on
-otherwise pretty healthy systems.  No need to worry about it too much
-unless the problem repeats itself a lot.
-
--- 
-tejun
+YH
