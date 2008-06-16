@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761446AbYFPJKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761533AbYFPJLO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761446AbYFPJKR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 05:10:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757066AbYFPJKE
+	id S1761533AbYFPJLO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 05:11:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757066AbYFPJK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 05:10:04 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:3521 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758498AbYFPJKB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 05:10:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:content-type
-         :content-transfer-encoding:message-id;
-        b=eOfAy9wHrOajUDR7j9NzZyL1JkH1vn7WJrr8rj9zWknrilBWsKyFmpV1X+uiY5jLni
-         6bh/XWx4ZVJ1SBOGTh9lluGBisg5sGXMJ6Lkh7eR2N8nc+N9O8vvhJnxvkEengY9mcc7
-         0jmx+6d2oz9NyLk3QcRTKA8B+RZjZS2n951lg=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [git patches] IDE fixes
-Date: Mon, 16 Jun 2008 11:10:42 +0200
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200806152149.11267.bzolnier@gmail.com> <alpine.LFD.1.10.0806151630380.2949@woody.linux-foundation.org> <alpine.LFD.1.10.0806151702400.2949@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0806151702400.2949@woody.linux-foundation.org>
-MIME-Version: 1.0
+	Mon, 16 Jun 2008 05:10:59 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42455 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751219AbYFPJK6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 05:10:58 -0400
+Date: Mon, 16 Jun 2008 05:10:34 -0400
+From: Alan Cox <alan@redhat.com>
+To: Adam Williamson <awilliamson@mandriva.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@redhat.com>
+Subject: Re: [Bug 10868] Oops on loading ipaq module since 2.6.26, prevents	use of device
+Message-ID: <20080616091034.GA15790@devserv.devel.redhat.com>
+References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik> <Jn7irxIunJK.A.hXD.3IDVIB@albercik> <20080614222621.084522fe@lxorguk.ukuu.org.uk> <1213512291.7393.0.camel@lenovo.local.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200806161110.44224.bzolnier@gmail.com>
+In-Reply-To: <1213512291.7393.0.camel@lenovo.local.net>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 16 June 2008, Linus Torvalds wrote:
+On Sat, Jun 14, 2008 at 11:44:51PM -0700, Adam Williamson wrote:
+> > Still waiting for the actual attached result of the test patch to debug
+> > this further. Guess it will miss 2.6.26
 > 
-> On Sun, 15 Jun 2008, Linus Torvalds wrote:
-> > 
-> > It *looks* like it has all the new objects, but its 
-> > objects/info/alternates is corrupt:
-> > 
-> > 	[torvalds@hera ide-2.6.git]$ cat objects/info/alternates 
-> > 	/home/dump/git/linux-2.6.git/.git/objects
-> > 
-> > and there is no such thing as "/home/dump/git/linux-2.6.git/"
-> 
-> Ok, I did the pull by just copying the objects to a local repo, and 
-> setting the alternates file correctly. So it worked this time, but please 
-> double-check your alternates next time,
+> I replied via email - as you requested earlier in the thread - and
+> attached the result to that email. Did you not get it?
 
-Thanks, and sorry for troubles.
+Andrew may have asked you to use email not me.
 
-Bart
+The last I have is "Okay, output with the patch is attached. Thanks for your help"
+
+only the output in question isn't attached to the bug ?
+
+Alan
+
