@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758508AbYFPSWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758099AbYFPSXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758508AbYFPSWf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 14:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbYFPSVu
+	id S1758099AbYFPSXj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 14:23:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbYFPSXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 14:21:50 -0400
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:60048 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754611AbYFPSVt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 14:21:49 -0400
-Message-ID: <4856AF3C.9010904@krogh.cc>
-Date: Mon, 16 Jun 2008 20:21:48 +0200
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
-MIME-Version: 1.0
-To: Matheos Worku <Matheos.Worku@Sun.COM>
-CC: David Miller <davem@davemloft.net>, yhlu.kernel@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
-References: <483CB301.40007@sun.com> <20080528.223415.193732490.davem@davemloft.net> <483F46E5.9030707@sun.com> <20080530.000009.02995266.davem@davemloft.net> <4856AC5E.1010206@sun.com>
-In-Reply-To: <4856AC5E.1010206@sun.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 16 Jun 2008 14:23:31 -0400
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:40514 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751006AbYFPSXa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 14:23:30 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq0EAKVIVkhMQW1O/2dsb2JhbACBW6t6
+Date: Mon, 16 Jun 2008 14:23:27 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Tom Zanussi <tzanussi@gmail.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, righi.andrea@gmail.com
+Subject: Re: [PATCH 2/3] relay: Fix race condition which occurs when
+	reading across CPUs.
+Message-ID: <20080616182327.GA31477@Krystal>
+References: <20080613040958.4f52ee29@linux360.ro> <1213417601.8237.37.camel@charm-linux> <20080614181103.17617db1@linux360.ro> <20080616122249.GB18561@Krystal> <20080616162212.27a8c119@linux360.ro> <20080616164609.GM20851@kernel.dk> <84144f020806161118n70a876aeyb5ccac7b1e21d842@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <84144f020806161118n70a876aeyb5ccac7b1e21d842@mail.gmail.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:22:08 up 11 days, 23:03,  5 users,  load average: 0.41, 0.81,
+	0.62
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matheos Worku wrote:
-> David Miller wrote:
+* Pekka Enberg (penberg@cs.helsinki.fi) wrote:
+> Hi Jens,
 > 
->> From: Matheos Worku <Matheos.Worku@Sun.COM>
->> Date: Thu, 29 May 2008 17:14:29 -0700
->>
->>  
->>
->>> Actually what I am suggesting was a workaround for the lack of "TX 
->>> Ring Empty" interrupt by not relying on the TX interrupt at all.
->>>   
->>
->> Ahh I see.
->>
->> Some of the things I talked about in my presentation here in
->> Berlin at LinuxTAG yesterday can help mitigate the effects.
->> Most of it revolves around batching, and allowing the driver
->> to manage the backlog of packets directly when the TX queue
->> fills up.
->>
->> In such a case we could batch the TX queue refill, know how many more
->> TX packets we will queue up to the chip right now, and therefore know
->> that we can safely set periodic MARK bits and only need to force set
->> the MARK bit at the very end.
->>
->>  
->>
->>> As for the TX hang, I will try to reproduce the problem and look at
->>> the registers for the clue.
->>>   
-> Have been trying but not able to reproduce the timeout. I am using NFS 
-> V3 with TCP. Are you using UDP by any chance?
+> On Mon, Jun 16 2008, Eduard - Gabriel Munteanu wrote:
+> >> In any case, if we use relay in a hot path, we are doing debugging, so
+> >> a couple of atomic operations won't be a big problem. Along with
+> >> setting affinity, this shouldn't be a problem.
+> 
+> On Mon, Jun 16, 2008 at 7:46 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> > Ehm no, that is a completely false claim. Relay speed does matter, a
+> > great deal. We rely heavily on eg blktrace being as ligt weight as
+> > possible to capture millions of events in a very short time frame
+> > without impacting performance too much. Relay is NOT just for debugging.
+> >
+> > So I completely agree with Mathieu here, and I'm not a big fan of the
+> > proposed solution.
+> 
+> OK, so we just document that fact that you're not supposed to read
+> from different CPU and be done with that? Or do you have any
+> alternative fix in mind?
+> 
 
-I wouldn't say it is easy either.. I have never got it before getting a
-few TB over the "wire". I've got proto=tcp in /proc/mounts for the
-mountpoints, so I'd assume that I use TCP.
+ltt-relay.c in the LTTng project implements its own buffering scheme on
+top of relay buffers. It does not have such limitation. Actually, it
+does not need to disable interrupts. It uses atomic counters and cmpxchg
+atomic ops to manage concurrency. You might want to have a look at it.
 
-There is an Extreme Networks switch in the other end, I havent got
-hardware to actually test that with a different card, so I cannot rule
-the switch out either. .. but it would be strange.
+Mathieu
 
 
-Jesper
 -- 
-Jesper
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
