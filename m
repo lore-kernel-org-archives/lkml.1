@@ -1,54 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760550AbYFPIbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761186AbYFPIcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760550AbYFPIbo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 04:31:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbYFPIbh
+	id S1761186AbYFPIcb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 04:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754914AbYFPIcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 04:31:37 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:44223 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753143AbYFPIbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 04:31:36 -0400
-Date: Mon, 16 Jun 2008 03:31:34 -0500
-From: Paul Jackson <pj@sgi.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: mingo@elte.hu, tglx@linutronix.de, steiner@sgi.com, travis@sgi.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org, ying.huang@intel.com,
-       andi@firstfloor.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 4/8] x86 boot: allow overlapping ebda and efi memmap
- memory ranges
-Message-Id: <20080616033134.e18f9a6e.pj@sgi.com>
-In-Reply-To: <86802c440806160034r343f9570ma0141df8af9360d7@mail.gmail.com>
-References: <20080616062945.14597.78009.sendpatchset@polaris-admin.engr.sgi.com>
-	<20080616063001.14597.96170.sendpatchset@polaris-admin.engr.sgi.com>
-	<86802c440806152354i24a1ec5ap316dacec0981d05@mail.gmail.com>
-	<20080616023200.16eafc18.pj@sgi.com>
-	<86802c440806160034r343f9570ma0141df8af9360d7@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Mon, 16 Jun 2008 04:32:23 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:58960 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754465AbYFPIcW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 04:32:22 -0400
+From: kamezawa.hiroyu@jp.fujitsu.com
+Message-ID: <11706925.1213605137616.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Mon, 16 Jun 2008 17:32:17 +0900 (JST)
+To: Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: Re: [PATCH 1/6] res_counter:  handle limit change
+Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>, menage@google.com,
+       balbir@linux.vnet.ibm.com, yamamoto@valinux.co.jp,
+       nishimura@mxp.nes.nec.co.jp, lizf@cn.fujitsu.com
+In-Reply-To: <4856231B.9050704@openvz.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="iso-2022-jp"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: @nifty Webmail 2.0
+References: <4856231B.9050704@openvz.org>
+ <48561B68.6060503@openvz.org> <48560A7C.9050501@openvz.org> <20080613182714.265fe6d2.kamezawa.hiroyu@jp.fujitsu.com> <20080613182924.c73fe9eb.kamezawa.hiroyu@jp.fujitsu.com> <33011576.1213601977563.kamezawa.hiroyu@jp.fujitsu.com> <11930674.1213604250738.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai wrote:
-> EFI memmap and ebda is partial overlapping?
-> 
-> you may expand range_in_ebda_area(), and let it handle overlapping...
+----- Original Message -----
 
-Ok - now I understand your comment.
+>kamezawa.hiroyu@jp.fujitsu.com wrote:
+>> ----- Original Message -----
+>> 
+>>>> I think when I did all in memcg, someone will comment that "why do that
+>>>> all in memcg ? please implement generic one to avoid code duplication"
+>>> Hm... But we're choosing between
+>>>
+>>> sys_write->xxx_cgroup_write->res_counter_set_limit->xxx_cgroup_call
+>>>
+>>> and
+>>>
+>>> sys_write->xxx_cgroup_write->res_counter_set_limit
+>>>                           ->xxx_cgroup_call
+>>>
+>>> With the sizeof(void *)-bytes difference in res_counter, nNo?
+>>>
+>> I can't catch what you mean. What is res_counter_set_limit here ?
+>
+>It's res_counter_resize_limit from your patch, sorry for the confusion.
+>
+>> (my patche's ?) and what is sizeof(void *)-bytes ?
+>
+>I meant, that we have to add 4 bytes (8 on 64-bit arches) on the
+>struct res_counter to store the pointer on the res_counter_ops.
+>
+Okay, maye all you want is "don't increase the size of res_counter"
 
-I hesitated at first to handle the overlapping case because it was
-not clear to me how to handle it (and I didn't happen to need it ;).
+>> Is it so strange to add following algorithm in res_counter?
+>> ==
+>> set_limit -> fail -> shrink -> set limit -> fail ->shrink
+>> -> success -> return 0
+>> ==
+>> I think this is enough generic.
+>
+>It is, but my point is - we're calling the set_limit (this is a
+>res_counter_resize_limit from your patch, sorry for the confusion again)
+>routine right from the cgroup's write callback and thus can call
+>the desired "ops->shrink_usage" directly, w/o additional level of
+>indirection.
+>
+Hmm, to do that, I'd like to remove strategy function from res_counter.
+Ok? 
 
-I suppose that what I should do is reserve any additional range in the
-memmap not already in the ebda reservation.
-
-ugh ;).
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Thanks,
+-Kame
