@@ -1,113 +1,284 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761375AbYFPI6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760995AbYFPJBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761375AbYFPI6V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 04:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760853AbYFPI57
+	id S1760995AbYFPJBY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 05:01:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755937AbYFPJBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 04:57:59 -0400
-Received: from as1.cineca.com ([130.186.84.213]:50596 "EHLO as1.cineca.com"
+	Mon, 16 Jun 2008 05:01:15 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:56119 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760098AbYFPI55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 04:57:57 -0400
-Message-ID: <485625D9.6040508@gmail.com>
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070604 Thunderbird/1.5.0.12 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       balbir@linux.vnet.ibm.com, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       yamamoto@valinux.co.jp, menage@google.com, linux-kernel@vger.kernel.org,
-       xemul@openvz.org, kamezawa.hiroyu@jp.fujitsu.com,
-       linux-arch@vger.kernel.org
-Subject: Re: [PATCH -mm] PAGE_ALIGN(): correctly handle 64-bit values on 32-bit
- architectures (v2)
-References: <1213543436-15254-1-git-send-email-righi.andrea@gmail.com> <18517.39513.867328.171299@cargo.ozlabs.ibm.com>
-In-Reply-To: <18517.39513.867328.171299@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-Date: Mon, 16 Jun 2008 10:35:37 +0200 (MEST)
+	id S1754451AbYFPJBN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 05:01:13 -0400
+Date: Mon, 16 Jun 2008 19:01:03 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for June 16
+Message-Id: <20080616190103.c3271e3e.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.10; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__16_Jun_2008_19_01_03_+1000_OJouKSTMC.xgN=sG"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mackerras wrote:
-> Andrea Righi writes:
-> 
->> Also move the PAGE_ALIGN() definitions out of include/asm-*/page.h in
->> include/linux/mm.h.
-> 
-> I'd rather see it in some other place than this, because
-> include/linux/mm.h is a large header that includes quite a lot of
-> other stuff.  What's wrong with leaving it in each arch's page.h and
-> only changing it on those archs that have both 32-bit and 64-bit
-> variants?  Or perhaps there is some other, lower-level header in
-> include/linux where it could go?
+--Signature=_Mon__16_Jun_2008_19_01_03_+1000_OJouKSTMC.xgN=sG
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I think the only evident advantage of this is to have a single
-implementation, instead of dealing with (potentially) N different
-implementations.
+Hi all,
 
-Maybe a different place could be linux/mm_types.h, it's not so small,
-but at least it's smaller than linux/mm.h. However, it's a bit ugly to
-put a "function" in a file called mm_types.h.
+Changes since next-20080613:
 
-Anyway, I've to say that fixing PAGE_ALIGN and leaving it in each page.h
-for now would be surely a simpler solution and would introduce less
-potential errors.
+The driver-core tree gained a conflict with the scsi-rc-fixes tree.
 
-> 
->> diff --git a/arch/powerpc/boot/of.c b/arch/powerpc/boot/of.c
->> index 61d9899..6bc72b1 100644
->> --- a/arch/powerpc/boot/of.c
->> +++ b/arch/powerpc/boot/of.c
->> @@ -8,6 +8,7 @@
->>   */
->>  #include <stdarg.h>
->>  #include <stddef.h>
->> +#include <linux/mm.h>
->>  #include "types.h"
->>  #include "elf.h"
->>  #include "string.h"
->> diff --git a/arch/powerpc/boot/page.h b/arch/powerpc/boot/page.h
->> index 14eca30..aa42298 100644
->> --- a/arch/powerpc/boot/page.h
->> +++ b/arch/powerpc/boot/page.h
->> @@ -28,7 +28,4 @@
->>  /* align addr on a size boundary - adjust address up if needed */
->>  #define _ALIGN(addr,size)     _ALIGN_UP(addr,size)
->>  
->> -/* to align the pointer to the (next) page boundary */
->> -#define PAGE_ALIGN(addr)	_ALIGN(addr, PAGE_SIZE)
->> -
->>  #endif				/* _PPC_BOOT_PAGE_H */
-> 
-> These parts are NAKed, because arch/powerpc/boot is a separate program
-> that doesn't use the kernel include files.
+The ide tree needed a build fixup patch.
 
-OK, so we also shouldn't use the linux/kernel.h's ALIGN() here, but leave
-the local _ALIGN() definition, right?
+The net (really the included wireless) tree gained a couple of conflicts
+with the wireless-current tree.  It also needed a build fixup patch.
 
-> 
->> diff --git a/include/asm-powerpc/page.h b/include/asm-powerpc/page.h
->> index cffdf0e..e088545 100644
->> --- a/include/asm-powerpc/page.h
->> +++ b/include/asm-powerpc/page.h
->> @@ -119,9 +119,6 @@ extern phys_addr_t kernstart_addr;
->>  /* align addr on a size boundary - adjust address up if needed */
->>  #define _ALIGN(addr,size)     _ALIGN_UP(addr,size)
->>  
->> -/* to align the pointer to the (next) page boundary */
->> -#define PAGE_ALIGN(addr)	_ALIGN(addr, PAGE_SIZE)
->> -
->>  /*
->>   * Don't compare things with KERNELBASE or PAGE_OFFSET to test for
->>   * "kernelness", use is_kernel_addr() - it should do what you want.
-> 
-> We had already come across this issue on powerpc, and we fixed it by
-> making sure that the type of PAGE_MASK was int, not unsigned int.
-> However, I have no objection to using the ALIGN() macro from
-> include/linux/kernel.h instead.
+The arm tree needed a new driver reverted because it needs better Kconfig
+dependencies.
 
-Thanks,
--Andrea
+The blk-removal tree gained a conflict with the acpi tree.
+
+The pcmcia tree gained a conflict with the bkl-removal tree.
+
+I have temporarily applied the patch "powerpc: ppc32 does not need
+console_drivers exported" to fix know build problems on some powerpc
+platforms.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups, it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 92 trees (counting Linus' and 13 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging powerpc-merge/merge
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sparc-current/master
+Merging sound-current/for-linus
+Merging arm-current/master
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in drivers/scsi/hosts.c
+Merging quilt/usb
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+Merging ftrace/auto-ftrace-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+CONFLICT (content): Merge conflict in kernel/Makefile
+Applying ftrace: fix rculist split fallout
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging x86/auto-x86-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/io_apic_32.c
+CONFLICT (delete/modify): arch/x86/kernel/nmi_32.c deleted in x86/auto-x86-=
+next and modified in HEAD. Version HEAD of arch/x86/kernel/nmi_32.c left in=
+ tree.
+CONFLICT (content): Merge conflict in arch/x86/kernel/process_32.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/process_64.c
+Merging pci/linux-next
+CONFLICT (content): Merge conflict in arch/x86/pci/irq.c
+CONFLICT (content): Merge conflict in include/linux/device.h
+Merging quilt/device-mapper
+Merging hid/mm
+Merging quilt/i2c
+CONFLICT (content): Merge conflict in drivers/i2c/i2c-core.c
+Merging quilt/kernel-doc
+Merging avr32/avr32-arch
+Merging v4l-dvb/stable
+Merging s390/features
+CONFLICT (content): Merge conflict in drivers/s390/block/dasd.c
+CONFLICT (content): Merge conflict in drivers/s390/block/dasd_eckd.c
+CONFLICT (content): Merge conflict in drivers/s390/block/dasd_fba.c
+CONFLICT (content): Merge conflict in drivers/s390/char/tape_core.c
+CONFLICT (content): Merge conflict in drivers/s390/cio/device_fsm.c
+CONFLICT (content): Merge conflict in drivers/s390/net/claw.c
+CONFLICT (content): Merge conflict in drivers/s390/net/ctcm_main.c
+CONFLICT (content): Merge conflict in drivers/s390/net/lcs.c
+Merging sh/master
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Applying ide pmac fixes 1
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+CONFLICT (content): Merge conflict in drivers/acpi/processor_throttling.c
+CONFLICT (content): Merge conflict in drivers/acpi/sleep/main.c
+Merging blackfin/for-linus
+Merging nfsd/nfsd-next
+CONFLICT (content): Merge conflict in net/sunrpc/svc.c
+Merging ieee1394/for-next
+Merging hwmon/testing
+Merging ubi/master
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Applying scsi: fix fallout from the class_find_device API change
+Applying scsi: fix fallout from KOBJ_NAME_LEN removal
+Merging ia64/test
+Merging tests/master
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging ocfs2/linux-next
+Merging selinux/for-akpm
+Merging quilt/m68k
+Merging powerpc/powerpc-next
+Merging lblnet/master
+Merging ext4/next
+Merging 4xx/next
+Merging async_tx/next
+Merging udf/for_next
+Merging security-testing/next
+Merging net/master
+CONFLICT (content): Merge conflict in Documentation/powerpc/booting-without=
+-of.txt
+CONFLICT (content): Merge conflict in drivers/net/wireless/rt2x00/Kconfig
+CONFLICT (content): Merge conflict in drivers/net/wireless/rt2x00/rt2x00usb=
+.c
+Applying wireless: fix fallout from device_create removal
+Merging sparc/master
+Merging galak/powerpc-next
+CONFLICT (content): Merge conflict in Documentation/powerpc/booting-without=
+-of.txt
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+Merging vfs/vfs-2.6.25
+Merging sound/master
+Merging arm/devel
+CONFLICT (content): Merge conflict in arch/arm/mach-at91/board-yl-9200.c
+CONFLICT (content): Merge conflict in arch/arm/mach-pxa/tosa.c
+Created commit dda0dc5: Revert "[ARM] 5096/1: Support Toshiba TC6393XB Mobi=
+le I/O Controller."
+Merging cpufreq/next
+CONFLICT (content): Merge conflict in drivers/cpufreq/cpufreq.c
+Merging v9fs/for-next
+Merging quilt/rr
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging semaphore/semaphore
+Merging semaphore-removal/semaphore-removal
+CONFLICT (content): Merge conflict in drivers/net/ps3_gelic_wireless.c
+CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_attr.c
+CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_def.h
+CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_mbx.c
+CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_mid.c
+CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_os.c
+Merging bkl-removal/bkl-removal
+CONFLICT (content): Merge conflict in kernel/power/user.c
+Merging trivial/next
+Merging ubifs/for_andrew
+Merging lsm/for-next
+Merging block/for-next
+CONFLICT (content): Merge conflict in arch/powerpc/Kconfig
+CONFLICT (content): Merge conflict in arch/x86/kernel/apic_32.c
+CONFLICT (delete/modify): arch/x86/kernel/i8259_64.c deleted in HEAD and mo=
+dified in block/for-next. Version block/for-next of arch/x86/kernel/i8259_6=
+4.c left in tree.
+CONFLICT (content): Merge conflict in arch/x86/xen/smp.c
+CONFLICT (delete/modify): include/asm-x86/hw_irq_32.h deleted in HEAD and m=
+odified in block/for-next. Version block/for-next of include/asm-x86/hw_irq=
+_32.h left in tree.
+CONFLICT (delete/modify): include/asm-x86/hw_irq_64.h deleted in HEAD and m=
+odified in block/for-next. Version block/for-next of include/asm-x86/hw_irq=
+_64.h left in tree.
+CONFLICT (delete/modify): include/asm-x86/mach-default/irq_vectors.h delete=
+d in HEAD and modified in block/for-next. Version block/for-next of include=
+/asm-x86/mach-default/irq_vectors.h left in tree.
+CONFLICT (delete/modify): include/asm-x86/mach-voyager/irq_vectors.h delete=
+d in HEAD and modified in block/for-next. Version block/for-next of include=
+/asm-x86/mach-voyager/irq_vectors.h left in tree.
+CONFLICT (content): Merge conflict in kernel/Makefile
+Applying block: fix up rculist split fallout
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in drivers/char/ip2/ip2main.c
+CONFLICT (content): Merge conflict in drivers/usb/misc/isight_firmware.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/Kconfig
+CONFLICT (delete/modify): drivers/usb/serial/ti_fw_3410.h deleted in firmwa=
+re/master and modified in HEAD. Version HEAD of drivers/usb/serial/ti_fw_34=
+10.h left in tree.
+CONFLICT (delete/modify): drivers/usb/serial/ti_fw_5052.h deleted in firmwa=
+re/master and modified in HEAD. Version HEAD of drivers/usb/serial/ti_fw_50=
+52.h left in tree.
+CONFLICT (content): Merge conflict in drivers/usb/serial/ti_usb_3410_5052.c
+CONFLICT (content): Merge conflict in sound/pci/Kconfig
+CONFLICT (content): Merge conflict in sound/pci/maestro3.c
+CONFLICT (content): Merge conflict in sound/pci/ymfpci/ymfpci_main.c
+Merging pcmcia/master
+CONFLICT (content): Merge conflict in drivers/char/pcmcia/cm4000_cs.c
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+CONFLICT (content): Merge conflict in drivers/video/backlight/Kconfig
+CONFLICT (content): Merge conflict in drivers/video/backlight/Makefile
+Merging kgdb/kgdb-next
+Applying powerpc: ppc32 does not need console_drivers exported
+
+--Signature=_Mon__16_Jun_2008_19_01_03_+1000_OJouKSTMC.xgN=sG
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhWK88ACgkQTgG2atn1QN/WngCdF0C0JbR12Ym5m/TU6LVDZAYh
+DP8An0m9ADwj5u2+g0jlKO3tVrrBW/DH
+=htwn
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__16_Jun_2008_19_01_03_+1000_OJouKSTMC.xgN=sG--
