@@ -1,35 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755971AbYFPAEd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757811AbYFPAFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755971AbYFPAEd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 20:04:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbYFPAEZ
+	id S1757811AbYFPAFd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 20:05:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbYFPAFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 20:04:25 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:61753 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752196AbYFPAEY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 20:04:24 -0400
-Date: Mon, 16 Jun 2008 01:03:08 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: "Chen, Huacai" <huacai.chen@intel.com>
-cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: RE: [patch]modify the MIPS CPU classfication
-In-Reply-To: <42DFA526FC41B1429CE7279EF83C6BDC01404431@pdsmsx415.ccr.corp.intel.com>
-Message-ID: <Pine.LNX.4.55.0806160102040.11995@cliff.in.clinika.pl>
-References: <42DFA526FC41B1429CE7279EF83C6BDC01404341@pdsmsx415.ccr.corp.intel.com>
- <Pine.LNX.4.55.0806091330560.26593@cliff.in.clinika.pl>
- <42DFA526FC41B1429CE7279EF83C6BDC01404431@pdsmsx415.ccr.corp.intel.com>
+	Sun, 15 Jun 2008 20:05:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49024 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753488AbYFPAE1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 20:04:27 -0400
+Date: Sun, 15 Jun 2008 17:04:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [git patches] IDE fixes
+In-Reply-To: <alpine.LFD.1.10.0806151630380.2949@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0806151702400.2949@woody.linux-foundation.org>
+References: <200806152149.11267.bzolnier@gmail.com> <alpine.LFD.1.10.0806151630380.2949@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Jun 2008, Chen, Huacai wrote:
 
-> This is the new patch sorted numerically.
 
- This version looks good, thanks.  Please send it to Ralf, the MIPS/Linux 
-maintainer, for inclusion.
+On Sun, 15 Jun 2008, Linus Torvalds wrote:
+> 
+> It *looks* like it has all the new objects, but its 
+> objects/info/alternates is corrupt:
+> 
+> 	[torvalds@hera ide-2.6.git]$ cat objects/info/alternates 
+> 	/home/dump/git/linux-2.6.git/.git/objects
+> 
+> and there is no such thing as "/home/dump/git/linux-2.6.git/"
 
-  Maciej
+Ok, I did the pull by just copying the objects to a local repo, and 
+setting the alternates file correctly. So it worked this time, but please 
+double-check your alternates next time,
+
+		Linus
