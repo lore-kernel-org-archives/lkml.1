@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756807AbYFPS2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755263AbYFPSkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756807AbYFPS2z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 14:28:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbYFPS2r
+	id S1755263AbYFPSkk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 14:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbYFPSkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 14:28:47 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:29311 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750717AbYFPS2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 14:28:47 -0400
-Date: Mon, 16 Jun 2008 20:28:44 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Tom Zanussi <tzanussi@gmail.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, righi.andrea@gmail.com
-Subject: Re: [PATCH 2/3] relay: Fix race condition which occurs when reading across CPUs.
-Message-ID: <20080616182843.GS20851@kernel.dk>
-References: <20080613040958.4f52ee29@linux360.ro> <1213417601.8237.37.camel@charm-linux> <20080614181103.17617db1@linux360.ro> <20080616122249.GB18561@Krystal> <20080616162212.27a8c119@linux360.ro> <20080616164609.GM20851@kernel.dk> <84144f020806161118n70a876aeyb5ccac7b1e21d842@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020806161118n70a876aeyb5ccac7b1e21d842@mail.gmail.com>
+	Mon, 16 Jun 2008 14:40:32 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33729 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750717AbYFPSkb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 14:40:31 -0400
+Date: Mon, 16 Jun 2008 19:22:55 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Johannes Weiner <hannes@saeurebad.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug 10741] bug in `tty: BKL pushdown'?
+Message-ID: <20080616192255.312b6be5@lxorguk.ukuu.org.uk>
+In-Reply-To: <87ve099yyt.fsf@saeurebad.de>
+References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
+	<Jn7irxIunJK.A.B-E.dKDVIB@albercik>
+	<873andbst2.fsf@saeurebad.de>
+	<20080616113313.2f932f8d@lxorguk.ukuu.org.uk>
+	<20080616124602.54910afd@lxorguk.ukuu.org.uk>
+	<87ve099yyt.fsf@saeurebad.de>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 16 2008, Pekka Enberg wrote:
-> Hi Jens,
+> tty->session =
+> tty->pgrp =
+> spin_unlock()
 > 
-> On Mon, Jun 16 2008, Eduard - Gabriel Munteanu wrote:
-> >> In any case, if we use relay in a hot path, we are doing debugging, so
-> >> a couple of atomic operations won't be a big problem. Along with
-> >> setting affinity, this shouldn't be a problem.
-> 
-> On Mon, Jun 16, 2008 at 7:46 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> > Ehm no, that is a completely false claim. Relay speed does matter, a
-> > great deal. We rely heavily on eg blktrace being as ligt weight as
-> > possible to capture millions of events in a very short time frame
-> > without impacting performance too much. Relay is NOT just for debugging.
-> >
-> > So I completely agree with Mathieu here, and I'm not a big fan of the
-> > proposed solution.
-> 
-> OK, so we just document that fact that you're not supposed to read
-> from different CPU and be done with that? Or do you have any
-> alternative fix in mind?
+> That does not fix it.
 
-Hmm dunno, that is what blktrace also did but primarily for performance
-reasons. It's tricky - Tom stated that he is working on a lib to
-abstract this from applications. While that is handy for telling you
-what to do, it also an annoyance that you HAVE to do it that way (it's
-supposed to just be a "normal" fs, not with funky restrictions).
+Thanks. That rules out the one case I could see that might have pointed
+to a potential bug.
 
-So perhaps provide both versions in-kernel and let the kernel user
-device. For blktrace, we have one app and we know we can use the faster
-variant since readers are affine. For more debug style exports or where
-you don't know your consumer, use the safer variant (which should be the
-default action).
-
--- 
-Jens Axboe
-
+Alan
