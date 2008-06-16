@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759267AbYFPOkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759392AbYFPOky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759267AbYFPOkl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 10:40:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755949AbYFPOff
+	id S1759392AbYFPOky (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 10:40:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758669AbYFPOjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 10:35:35 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:50222 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754009AbYFPOfP (ORCPT
+	Mon, 16 Jun 2008 10:39:18 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42132 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758693AbYFPOjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 10:35:15 -0400
-Message-Id: <20080616143514.349827212@fluff.org.uk>
-References: <20080616143445.451023326@fluff.org.uk>
-User-Agent: quilt/0.46-1
-Date: Mon, 16 Jun 2008 15:34:57 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: linux-kernel@vger.kernel.org
-Cc: drzeus-mmc@drzeus.cx, Ben Dooks <ben-linux@fluff.org>
-Subject: [patch v2 12/16] MMC: S3C24XX: Fix MMC return codes.
-Content-Disposition: inline; filename=simtec/s3c24xx-sdmmc-retcode-fixes.patch
+	Mon, 16 Jun 2008 10:39:17 -0400
+Subject: Re: [BUG: NULL pointer dereference] cgroups and RT
+	scheduling	interact badly.
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Daniel K." <dk@uw.no>
+Cc: mingo@elte.hu, menage@google.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <1213624312.16944.104.camel@twins>
+References: <485445AE.2010602@uw.no> <1213612447.16944.99.camel@twins>
+	 <4856671B.1020304@uw.no>  <1213624312.16944.104.camel@twins>
+Content-Type: text/plain
+Date: Mon, 16 Jun 2008 16:39:08 +0200
+Message-Id: <1213627148.16944.106.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the error codes
+On Mon, 2008-06-16 at 15:51 +0200, Peter Zijlstra wrote:
+> On Mon, 2008-06-16 at 15:14 +0200, Daniel K. wrote:
+> > Peter Zijlstra wrote:
+> > > Does the below work for you?
+> > > 
+> > > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > ---
+> > > Index: linux-2.6/kernel/sched.c
+> > > ===================================================================
+> > > --- linux-2.6.orig/kernel/sched.c
+> > > +++ linux-2.6/kernel/sched.c
+> > > @@ -7784,7 +7784,6 @@ static void init_tg_rt_entry(struct task
+> > >  	else
+> > >  		rt_se->rt_rq = parent->my_q;
+> > >  
+> > > -	rt_se->rt_rq = &rq->rt;
+> > >  	rt_se->my_q = rt_rq;
+> > >  	rt_se->parent = parent;
+> > >  	INIT_LIST_HEAD(&rt_se->run_list);
+> > 
+> > Although this patch seems to be correct, this is what shows up on my
+> > netconsole, when applying it -- with an offset, do you have other fixes
+> > applied as well?
+> 
+> I had indeed, although nothing touching the rt scheduler. I popped all
+> my patches and pulled an update from Linus, but I fail to reproduce the
+> below.
+> 
+> /me goes look for that burnp6 thing, I used a simple while (1); loop.
 
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+found it, still seems to work for me. do you have a funny number of
+cpus? or anything else noteworthy?
 
-Index: linux-2.6.26-rc5-q2/drivers/mmc/host/s3cmci.c
-===================================================================
---- linux-2.6.26-rc5-q2.orig/drivers/mmc/host/s3cmci.c	2008-06-08 14:02:32.000000000 +0100
-+++ linux-2.6.26-rc5-q2/drivers/mmc/host/s3cmci.c	2008-06-08 14:02:34.000000000 +0100
-@@ -11,6 +11,7 @@
- #include <linux/module.h>
- #include <linux/dma-mapping.h>
- #include <linux/clk.h>
-+#include <linux/mmc/core.h>
- #include <linux/mmc/mmc.h>
- #include <linux/mmc/host.h>
- #include <linux/platform_device.h>
-@@ -27,6 +28,12 @@
- 
- #define DRIVER_NAME "s3c-mci"
- 
-+#define MMC_ERR_NONE	(0)
-+#define MMC_ERR_DMA	EINVAL
-+#define MMC_ERR_TIMEOUT ETIMEDOUT
-+#define MMC_ERR_BADCRC	EILSEQ
-+#define MMC_ERR_FIFO	EILSEQ
-+
- enum dbg_channels {
- 	dbg_err   = (1 << 0),
- 	dbg_debug = (1 << 1),
-
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
