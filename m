@@ -1,120 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbYFPBTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755971AbYFPB0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756925AbYFPBTW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 21:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbYFPBTN
+	id S1755971AbYFPB0v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 21:26:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbYFPB0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 21:19:13 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:54013 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751438AbYFPBTK (ORCPT
+	Sun, 15 Jun 2008 21:26:34 -0400
+Received: from mga11.intel.com ([192.55.52.93]:25717 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751128AbYFPB0d convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 21:19:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :message-id;
-        b=DFxMyDgd7aQoE1NcgxHjV2YiCOaWjCSRAUvdakoPuYky0soZeuXPS3zhFMhR+wI2Ae
-         mwJB4YZJxthrCpNZbJRWbDQoFI5kMxLLGiYQtP/tAa0+O961xEmvLnFtGw4Vr06bfn2p
-         7PmvJu43QUCfoWT2CtENDDRFU+iq/HHpuU3Kw=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] x86: using dstapic in mp_config_acpi_legacy_irqs
-Date: Sun, 15 Jun 2008 18:19:46 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806151819.47236.yhlu.kernel@gmail.com>
+	Sun, 15 Jun 2008 21:26:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,649,1204531200"; 
+   d="scan'208";a="341486355"
+Subject: Re: [linux-pm] [PATCH -mm 2/2] kexec jump -v11: save/restore
+	device state
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Len Brown <lenb@kernel.org>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080613180555.GB4906@redhat.com>
+References: <1213082106.22608.30.camel@caritas-dev.intel.com>
+	 <alpine.LFD.1.10.0806101400090.14381@localhost.localdomain>
+	 <1213146074.21923.10.camel@caritas-dev.intel.com>
+	 <20080613180555.GB4906@redhat.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Date: Mon, 16 Jun 2008 09:29:23 +0800
+Message-Id: <1213579763.7179.1.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+X-OriginalArrivalTime: 16 Jun 2008 01:26:29.0170 (UTC) FILETIME=[006F8120:01C8CF50]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+﻿Hi, Vivek,
 
-so don't get that same value multiple times.
+On Fri, 2008-06-13 at 14:05 -0400, Vivek Goyal wrote:
+[...]
+> 
+> Can't we implement ACPI S5 state as an option in current hibernation
+> framework? Or kexec jump is a requirement for that? 
 
-also make mp_config_acpi_legacy_irqs more readable by moving some assignment
-together.
+ACPI S5 has been implemented in current hibernation framework. If you
+do:
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+    echo shutdown > /sys/power/disk
 
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index d2a4768..04dbb35 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -960,8 +960,8 @@ void __init mp_register_ioapic(int id, u32 address, u32 gsi_base)
- 
- void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger, u32 gsi)
- {
--	int ioapic = -1;
--	int pin = -1;
-+	int ioapic;
-+	int pin;
- 
- 	/*
- 	 * Convert 'gsi' to 'ioapic.pin'.
-@@ -995,8 +995,9 @@ void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger, u32 gsi)
- 
- void __init mp_config_acpi_legacy_irqs(void)
- {
--	int i = 0;
--	int ioapic = -1;
-+	int i;
-+	int ioapic;
-+	unsigned int dstapic;
- 
- #if defined (CONFIG_MCA) || defined (CONFIG_EISA)
- 	/*
-@@ -1021,6 +1022,7 @@ void __init mp_config_acpi_legacy_irqs(void)
- 	ioapic = mp_find_ioapic(0);
- 	if (ioapic < 0)
- 		return;
-+	dstapic = mp_ioapics[ioapic].mp_apicid;
- 
- 	/*
- 	 * Use the default configuration for the IRQs 0-15.  Unless
-@@ -1029,11 +1031,6 @@ void __init mp_config_acpi_legacy_irqs(void)
- 	for (i = 0; i < 16; i++) {
- 		int idx;
- 
--		mp_irqs[mp_irq_entries].mp_type = MP_INTSRC;
--		mp_irqs[mp_irq_entries].mp_irqflag = 0;	/* Conforming */
--		mp_irqs[mp_irq_entries].mp_srcbus = MP_ISA_BUS;
--		mp_irqs[mp_irq_entries].mp_dstapic = mp_ioapics[ioapic].mp_apicid;
--
- 		for (idx = 0; idx < mp_irq_entries; idx++) {
- 			struct mp_config_intsrc *irq = mp_irqs + idx;
- 
-@@ -1043,9 +1040,8 @@ void __init mp_config_acpi_legacy_irqs(void)
- 				break;
- 
- 			/* Do we already have a mapping for this IOAPIC pin */
--			if ((irq->mp_dstapic ==
--				mp_irqs[mp_irq_entries].mp_dstapic) &&
--			    (irq->mp_dstirq == i))
-+			if (irq->mp_dstapic == dstapic &&
-+			    irq->mp_dstirq == i)
- 				break;
- 		}
- 
-@@ -1054,8 +1050,12 @@ void __init mp_config_acpi_legacy_irqs(void)
- 			continue;	/* IRQ already used */
- 		}
- 
-+		mp_irqs[mp_irq_entries].mp_type = MP_INTSRC;
-+		mp_irqs[mp_irq_entries].mp_irqflag = 0;	/* Conforming */
-+		mp_irqs[mp_irq_entries].mp_srcbus = MP_ISA_BUS;
-+		mp_irqs[mp_irq_entries].mp_dstapic = dstapic;
- 		mp_irqs[mp_irq_entries].mp_irqtype = mp_INT;
--		mp_irqs[mp_irq_entries].mp_srcbusirq = i;	/* Identity mapped */
-+		mp_irqs[mp_irq_entries].mp_srcbusirq = i; /* Identity mapped */
- 		mp_irqs[mp_irq_entries].mp_dstirq = i;
- 
- 		if (++mp_irq_entries == MAX_IRQ_SOURCES)
+ACPI S5 instead of S4 will be used. That is, corresponding ACPI method
+is not executed.
+
+Best Regards,
+Huang Ying
+
