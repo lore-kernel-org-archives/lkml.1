@@ -1,135 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbYFPPKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbYFPPP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755973AbYFPPKU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 11:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756034AbYFPPKA
+	id S1755251AbYFPPP4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 11:15:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbYFPPPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 11:10:00 -0400
-Received: from mu-out-0910.google.com ([209.85.134.187]:63819 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755950AbYFPPJ5 (ORCPT
+	Mon, 16 Jun 2008 11:15:48 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:54092 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752257AbYFPPPs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 11:09:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=nZoFVH1vALMHoDQCpfddXte3pGKj1GMfTevioLh+fx60y6Su6noVw1aljhqFNotblz
-         NU1l1lQdRSBi9cDxMMwtKzAWwpUOb8KeFmrR1GWRjXRZM+ZGxUvEp0/DsB9Voc3Sb23x
-         8aD2n9ZRHa1MZdnwn4mjBZ5NUq8TUt0Qf9RRA=
-Message-ID: <76bd70e30806160809o495dd50fw88a80ec0673c0dc1@mail.gmail.com>
-Date: Mon, 16 Jun 2008 11:09:52 -0400
-From: "Chuck Lever" <chucklever@gmail.com>
-To: "Peter Staubach" <staubach@redhat.com>
-Subject: Re: [PATCH] knfsd: nfsd: Handle ERESTARTSYS from syscalls.
-Cc: NeilBrown <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>,
-       linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <48565F19.10508@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 16 Jun 2008 11:15:48 -0400
+Subject: Re: [PATCH v2] export linux/a.out.h
+From: David Woodhouse <dwmw2@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Peter Korsgaard <jacmet@sunsite.dk>, linux-kernel@vger.kernel.org,
+       sam@ravnborg.org, dhowells@redhat.com,
+       "Kirill A. Shutemov" <k.shutemov@gmail.com>, rth@twiddle.net
+In-Reply-To: <48567B52.4050901@firstfloor.org>
+References: <1213565555.26255.522.camel@pmac.infradead.org>
+	 <1213604973-7073-1-git-send-email-jacmet@sunsite.dk>
+	 <1213617663.26255.708.camel@pmac.infradead.org>
+	 <48567B52.4050901@firstfloor.org>
+Content-Type: text/plain
+Date: Mon, 16 Jun 2008 16:15:35 +0100
+Message-Id: <1213629335.26255.792.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080613213759.26929.patches@notabene>
-	 <1080613114215.27095@suse.de> <48565F19.10508@redhat.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 16, 2008 at 8:39 AM, Peter Staubach <staubach@redhat.com> wrote:
-> NeilBrown wrote:
->>
->> OCFS2 can return -ERESTARTSYS from write requests (and possibly
->> elsewhere) if there is a signal pending.
->>
->> If nfsd is shutdown (by sending a signal to each thread) while there
->> is still an IO load from the client, each thread could handle one last
->> request with a signal pending.  This can result in -ERESTARTSYS
->> which is not understood by nfserrno() and so is reflected back to
->> the client as nfserr_io aka -EIO.  This is wrong.
->>
->> Instead, interpret ERESTARTSYS to mean "don't send a reply".
->> The client will resend and - if the server is restarted - the write will
->> (hopefully) be successful and everyone will be happy.
->>
->>
+On Mon, 2008-06-16 at 16:40 +0200, Andi Kleen wrote:
+> >  We should get rid of CONFIG_ARCH_SUPPORTS_AOUT entirely. The only
+> > remaining users of it are fs/exec.c, which uses it entirely redundantly:
+> >	#if defined(__alpha__) && defined(CONFIG_ARCH_SUPPORTS_AOUT)
+> >
+> > ...and (indirectly, by virtue of being the only other file that includes
+> > <linux/a.out.h> when ARCH_SUPPORTS_AOUT might be unset) fs/binfmt_elf.c,
+> > which still has unnecessary references to 'struct exec' even though Andi
+> > removed the support for a.out interpreters a few months ago. That can
+> > just go away.
+> 
+> I didn't think the Alpha /sbin/loader stuff was an a.out interpreter for ELF.
 >
-> Why not handle -ERESTARTSYS in the same fashion as -ETIMEDOUT, ie.
-> leading to a EJUKEBOX sort of error being returned if possible?
->
-> Simply not returning is a bad thing to do for anything other than
-> NFSv2.  It is especially bad for NFSv4.
+> Also pure a.out is still supported.
+> 
+> It might be ok to remove it anyways, but you should check with someone
+> who knows Alpha first. cc Richard.
 
-Actually, the NFSv4 spec *requires* the server to reply to every request.
+The Alpha /sbin/loader support, and the a.out-interpreter-for-ELF, are
+two completely separate issues -- you're right that /sbin/loader isn't
+an a.out interpreter for ELF files.
 
-Not replying means an NFSv4 client connected via NFSv4 will have to
-disconnect and retransmit.  That should be avoided if at all possible.
+They're the two places which rely on '#ifdef CONFIG_ARCH_SUPPORTS_AOUT'
+in <linux/a.out.h>, because they include <linux/a.out.h> on platforms
+which might not have <asm/a.out.h>.
 
-I think an error reply is much better than no reply in nearly every
-case.  NFS3ERR_JUKEBOX/NFS4ERR_DELAY is an interesting idea, but
-something else again will probably be required for v4.1 with sessions.
+In the Alpha case in fs/exec.c, we can simply include <linux/a.out.h>
+only #ifdef __alpha__ -- while noting that that code could probably do
+with a little more cleanup and turning into a properly registered binfmt
+rather than a special case, if possible.
 
->> Signed-off-by: Neil Brown <neilb@suse.de>
->>
->> ### Diffstat output
->>  ./fs/nfsd/nfsproc.c |    1 +
->>  1 file changed, 1 insertion(+)
->>
->> ----
->> Funny how the shortest patches sometimes have the longest
->> descriptions.
->>
->> The symptom that I narrowed down to this was:
->>   copy a large file via NFS to an OCFS2 filesystem, and restart
->>   the nfs server during the copy.
->>   The 'cp' might get an -EIO, and the file will be corrupted -
->>   presumably holes in the middle were writes appeared to fail.
->>
->> diff .prev/fs/nfsd/nfsproc.c ./fs/nfsd/nfsproc.c
->> --- .prev/fs/nfsd/nfsproc.c     2008-06-13 21:31:53.000000000 +1000
->> +++ ./fs/nfsd/nfsproc.c 2008-06-13 21:31:57.000000000 +1000
->> @@ -614,6 +614,7 @@ nfserrno (int errno)
->>  #endif
->>                { nfserr_stale, -ESTALE },
->>                { nfserr_jukebox, -ETIMEDOUT },
->> +               { nfserr_dropit, -ERESTARTSYS },
->>                { nfserr_dropit, -EAGAIN },
->>                { nfserr_dropit, -ENOMEM },
->>                { nfserr_badname, -ESRCH },
->>
->> ### Diffstat output
->>  ./fs/nfsd/nfsproc.c |    1 +
->>  1 file changed, 1 insertion(+)
->>
->> diff .prev/fs/nfsd/nfsproc.c ./fs/nfsd/nfsproc.c
->> --- .prev/fs/nfsd/nfsproc.c     2008-06-13 21:31:53.000000000 +1000
->> +++ ./fs/nfsd/nfsproc.c 2008-06-13 21:31:57.000000000 +1000
->> @@ -614,6 +614,7 @@ nfserrno (int errno)
->>  #endif
->>                { nfserr_stale, -ESTALE },
->>                { nfserr_jukebox, -ETIMEDOUT },
->> +               { nfserr_dropit, -ERESTARTSYS },
->>                { nfserr_dropit, -EAGAIN },
->>                { nfserr_dropit, -ENOMEM },
->>                { nfserr_badname, -ESRCH },
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+In the case of fs/binfmt_elf.c, we can simply remove the inclusion of
+<linux/a.out.h> and all references to 'struct exec'. You removed the
+rest of the a.out interpreter support already; that last part probably
+should have gone away at the same time.
 
+Proper a.out support in fs/binfmt_aout.c can stay as it is; you won't be
+building binfmt_aout.c unless your platform supports a.out anyway.
 
+And then we can remove the #ifdef CONFIG_ARCH_SUPPORTS_AOUT in
+<linux/a.out.h>, and export it to userspace again, which was the point
+of Peter's patch that started this thread.
 
 -- 
-I am certain that these presidents will understand the cry of the
-people of Bolivia, of the people of Latin America and the whole world,
-which wants to have more food and not more cars. First food, then if
-something's left over, more cars, more automobiles. I think that life
-has to come first.
--- Evo Morales
+dwmw2
+
