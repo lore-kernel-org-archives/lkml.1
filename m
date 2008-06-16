@@ -1,85 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbYFPCwN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757273AbYFPC6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756925AbYFPCwN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 22:52:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750869AbYFPCv4
+	id S1757273AbYFPC6y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 22:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbYFPC6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 22:51:56 -0400
-Received: from mail.vyatta.com ([216.93.170.194]:35023 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750851AbYFPCvz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 22:51:55 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -2.017
-Date: Sun, 15 Jun 2008 19:51:48 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: David Newall <davidn@davidnewall.com>
-Cc: OBATA Noboru <noboru.obata.ar@hitachi.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-net@vger.kernel.org
-Subject: Re: Feedback on TCP: Make TCP_RTO_MAX a variable
-Message-ID: <20080615195148.28c85c36@extreme>
-In-Reply-To: <4855823F.40208@davidnewall.com>
-References: <4855823F.40208@davidnewall.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 15 Jun 2008 22:58:44 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43586 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750851AbYFPC6n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 22:58:43 -0400
+From: "Takashi Nishiie" <t-nishiie@np.css.fujitsu.com>
+To: "'Masami Hiramatsu'" <mhiramat@redhat.com>
+Cc: "'Frank Ch. Eigler'" <fche@redhat.com>,
+       "'Peter Zijlstra'" <peterz@infradead.org>,
+       "'Mathieu Desnoyers'" <mathieu.desnoyers@polymtl.ca>,
+       "'Hideo AOKI'" <haoki@redhat.com>, <mingo@elte.hu>,
+       <linux-kernel@vger.kernel.org>,
+       "'Steven Rostedt'" <rostedt@goodmis.org>
+References: <20080602232135.GA20173@Krystal> <1212618449.19205.35.camel@lappy.programming.kicks-ass.net> <20080604232241.GA8488@Krystal> <1212653539.19205.47.camel@lappy.programming.kicks-ass.net> <20080612135319.GB22348@Krystal> <1213280823.31518.114.camel@twins> <20080612155332.GA16658@redhat.com> <48514BE3.3000506@redhat.com> <20080612164318.GB17814@redhat.com> <48515770.4020002@redhat.com> <20080612174834.GB22454@redhat.com> <48517A56.20603@redhat.com> <004101c8cd0c$aa093190$fe1b94b0$@css.fujitsu.com> <4852B628.8040906@redhat.com>
+In-Reply-To: <4852B628.8040906@redhat.com>
+Subject: RE: Kernel marker has no performance impact on ia64.
+Date: Mon, 16 Jun 2008 11:58:52 +0900
+Message-ID: <009301c8cf5c$e8c00ba0$ba4022e0$@css.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: AcjNf/JRp+AvNVxJTP27YmLtrytHjgB2NciA
+Content-Language: ja
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jun 2008 06:27:35 +0930
-David Newall <davidn@davidnewall.com> wrote:
+Hi.
 
-> Last year, Obata Noboru sent a patch to permit adjustment of
-> TCP_RTO_MAX, which I have found useful.  Refer to
-> http://marc.info/?l=linux-netdev&m=118422471428855 for details.
-> 
-> A customer reported that their internet-connected POS terminals were
-> regularly "freezing" for extended periods, sometimes for as long as a
-> few minutes.  My analysis, such as it was, suggested that those
-> occasions were caused by floods of packets directed towards the internet
-> link at one end or the other (i.e. POS terminal or central server),
-> leading to severe packet loss and maximum packet retransmit times during
-> which no session data could be transmitted.  I believe those floods were
-> caused by anonymous third parties scanning the internet, and attempting
-> to break through my client's routers.  I also believe that to be an
-> unavoidable social quality of the internet; I have to live with it.
+Takashi Nishiie wrote:
+>>   I think that I only have to add the item that shows the type of an 
+>> accurate argument if the format of "Module.markers" is changed. 
+>
+Masami Hiramatsu wrote:
+>I think those 'semantic' type information (which informs you what
+>is this value and how this value should be recorded) should be
+>defined by each tracer, because what information they want to
+>extract from arguments are strongly depends on their use cases.
+>
+>Actually, that requires tracers to pay maintenance costs, but
+>it's not so big if the "regular" marking point is enough stable.
 
-Why are you letting them through. Use proper firewalling.
+  Certainly, because it only has to be able to acquire name of the 
+point that wants to be traced, value that can be referred, the type, 
+and those three items if interchangeability with an existing tool is 
+not thought, it might not have to stick to a detailed thing. 
 
-> Having a "cash register" randomly freeze for minutes at a time is not
-> acceptable, and neither does it seem necessary.  Using Obata Noboru's
-> patch, I set TCP_RTO_MAX to 5 seconds at both ends.  The system has been
-> running thus for five weeks, and I have not been called by my customer
-> since.  While this change obviously did nothing to solve the underlying
-> problem of temporary link congestion (it has no solution), it did remove
-> a frequent, multi-minute pause.  Perhaps surprisingly, I have not heard
-> of sessions being dropped, which could be expected to occur as a
-> consequence of the substantially reduced retransmit times.  This might
-> be luck, and sessions aren't dropping; or it might be insufficiently
-> important (annoying) for my client to report; the application would
-> restart quickly.  Either way, apparently my client no longer has a problem.
-> 
+  By the way, 'pr_debug' and 'dev_debug' and 'DEBUGP', etc. might 
+unite handling by replacing it with kernel markers. 
 
-A real VPN with IPSEC would have stopped the problem.
-I wouldn't put a mission critical system exposed directly to the Internet.
+Thank you,
 
-> I acknowledge that this patch must exacerbate an already hopeless
-> situation: A link is congested and I am causing packets to be sent at
-> five second intervals instead of 10, 20, 40, 80 or 120.  I am
-> unconcerned by this because the number of additional packets is
-> miniscule when compared to the number of packets that caused the problem
-> in the initial instance.  I do not know how 120 seconds was chosen for
-> the RTO maximum but I observe that network bandwidth has increased by
-> orders of magnitude since it was, and feel that a corresponding decrease
-> in RTO is fair.  I put it to administrators everywhere to consider this
-> when faced with similar problems.
-> 
-> It's a pity that Obata Noboru's patch was rejected.
+--
+Takashi Nishiie
 
-Linux already doesn't follow enough RFC's. But it is free software so
-you can do what you want. That is the beauty of it.
+
+
