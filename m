@@ -1,85 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758214AbYFPDrF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758673AbYFPDvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758214AbYFPDrF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 23:47:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbYFPDqy
+	id S1758673AbYFPDvR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 23:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbYFPDvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 23:46:54 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:21089 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752077AbYFPDqx (ORCPT
+	Sun, 15 Jun 2008 23:51:05 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:60705 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752591AbYFPDvD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 23:46:53 -0400
+	Sun, 15 Jun 2008 23:51:03 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=eH5V0tQdnkHKRdMtVWHWtYKPrbv98t8/t/KGQvqo8mmbdtxYa/Bda6z9g42ccMTHZR
-         j5HiJBVcnELRbJ12NH6dtaBj468QGYa7KiJYpPkK4FXL9pBYvCxcDuDevPA6SNdLWtgT
-         bgT33QLP2ZVY7C1URYPihDQIEWrZ9TAw0y/QM=
-Message-ID: <86802c440806152046s71916de8g6f8e3e8d272d336a@mail.gmail.com>
-Date: Sun, 15 Jun 2008 20:46:50 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATCH] x86: use add_highpages_with_active_regions for high pages init
-Cc: "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1213579241.2433.7.camel@caritas-dev.intel.com>
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=AJNPqH2hwk5HHqfpOW9DknjXEWP3qyzWCbOhgx7382jHmeaLUx+xkrw6KnwGrNC/IW
+         k31gCo53y1nvaZM/j/MDZOTmlxG0xXNJTAZpgZcwUVgF+qIalKhH9IeffXDYvZipAu2s
+         wMG5jJZJyMND4fw3YW9gKix5qEol4SYaICMKs=
+Date: Mon, 16 Jun 2008 07:46:59 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Adrian Bunk <bunk@kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug #10815] 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
+Message-ID: <20080616034659.GA7600@martell.zuzino.mipt.ru>
+References: <20080614181212.GB26421@linux.vnet.ibm.com> <20080614194338.GA4820@martell.zuzino.mipt.ru> <20080615033001.GE26421@linux.vnet.ibm.com> <20080615162150.GA8289@martell.zuzino.mipt.ru> <20080615181710.GA17915@linux.vnet.ibm.com> <alpine.LFD.1.10.0806151323101.2949@woody.linux-foundation.org> <20080615232754.GD17915@linux.vnet.ibm.com> <alpine.LFD.1.10.0806151633290.2949@woody.linux-foundation.org> <20080616030154.GA7445@martell.zuzino.mipt.ru> <20080616033126.GF17915@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200806132005.45836.yhlu.kernel@gmail.com>
-	 <200806140056.32601.yhlu.kernel@gmail.com>
-	 <20080614082343.GB11277@elte.hu>
-	 <86802c440806140205g3ff113ffq39272c18ef5b9654@mail.gmail.com>
-	 <1213579241.2433.7.camel@caritas-dev.intel.com>
+In-Reply-To: <20080616033126.GF17915@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 15, 2008 at 6:20 PM, Huang, Ying <ying.huang@intel.com> wrote:
-> On Sat, 2008-06-14 at 02:05 -0700, Yinghai Lu wrote:
->> On Sat, Jun 14, 2008 at 1:23 AM, Ingo Molnar <mingo@elte.hu> wrote:
->> >
->> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->> >
->> >> use early_node_map to init high pages, so can remove page_is_ram and
->> >> page_is_reserved_early in the big loop with add_one_highpage
->> >>
->> >> also remove the page_is_reserved_early that is not needed.
->> >
->> > applied to tip/x86/mpparse for testing, thanks.
->> >
->> > Andrew: mm/page_alloc.c modification.
->>
->> Ying Huang,
->>
->> I removed page_is_reserved_early....it cause init highmem take extra
->> time on my big box.
->
-> OK.
->
->> please check efi_reserve_early that is calling reserve_early. so need
->> to make sure "EFI memmap" is reserved in itself...otherwise you may
->> need to update e820 table by add_memory_region (....,
->> E820_RESERVED)...
->
-> EFI memmap may be in highmem, it can not be reserved by bootmem
-> allocator on i386. So I think it is necessary to have an early highmem
-> allocator. It can be used for EFI memory map and linked list of setup
-> data which comes from boot-loader and may be located in highmem.
->
-> As for the implementation, what about adding a remove_active_range()
-> which operate on early_node_map and an early_res_to_early_node_map()?
+On Sun, Jun 15, 2008 at 08:31:26PM -0700, Paul E. McKenney wrote:
+> On Mon, Jun 16, 2008 at 07:01:54AM +0400, Alexey Dobriyan wrote:
+> > On Sun, Jun 15, 2008 at 04:38:24PM -0700, Linus Torvalds wrote:
+> > > On Sun, 15 Jun 2008, Paul E. McKenney wrote:
+> > > >
+> > > > If that is the right thing to do.  I would feel better about it if I
+> > > > could reproduce the failure.
+> > > 
+> > > Is there some configuration thing that might make it happen for Alexey but 
+> > > not for you? The only obvious one is the normal PREEMPT thing, but 
+> > > PREEMPT_RCU obviously depends on that, so there must be something else.
+> > > 
+> > > CONFIG_SMP? CONFIG_NO_HZ? CONFIG_[RT|FAIR]_GROUP_SCHED? There's a number 
+> > > of config options that change scheduling details..
+> > 
+> > The only way I can "fix" rcutorture here is SMP=n (not maxcpus=1!).
+> 
+> I am running SMP=y without seeing the problem.
+> 
+> > Among things tried and do not matter are NO_HZ, HIGH_RES_TIMERS, turning off
+> > debugging options (one by one and in bulk), DEBUG_PER_CPU_MAPS, HZ tweaks,
+> > SCHED_MC.
+> > 
+> > All of this doesn't help, but SMP=n does.
+> 
+> Attached is the compressed config file I used for a run on a POWER
+> machine.  I have used similar config files for x86.  For this run, I built
+> LTP, installed it, started rcutorture, ran LTP, then ended rcutorture.
+> 
+> The only other thing I can think of is that Alexey's machines are
+> somehow managing to nest NMIs or something.  I can produce a fix for
+> that, but have no way of testing it.
 
-don't need,
-EFI memmap should be reserved in e820map, so it should not show up in
-early_node_map.
-if it is not reserved in e820map, you could use e820_add_region or
-e820_update_range make it reserved
+No NMIs here according to /proc/interrupts .
 
-YH
+           CPU0       CPU1       
+  0:         42          0   IO-APIC-edge      timer
+  1:          8          0   IO-APIC-edge      i8042
+  8:          1          0   IO-APIC-edge      rtc
+  9:          0          0   IO-APIC-fasteoi   acpi
+ 16:          0          0   IO-APIC-fasteoi   ahci, uhci_hcd:usb1
+ 17:         35          0   IO-APIC-fasteoi   pata_jmicron, uhci_hcd:usb2
+ 18:          0          0   IO-APIC-fasteoi   ehci_hcd:usb3, uhci_hcd:usb6
+ 19:       6238          0   IO-APIC-fasteoi   ata_piix, ata_piix, uhci_hcd:usb5
+ 22:        278          0   IO-APIC-fasteoi   HDA Intel
+ 23:       2802          0   IO-APIC-fasteoi   uhci_hcd:usb4, ehci_hcd:usb7, eth1
+319:       5126          0   PCI-MSI-edge      eth0
+NMI:          0          0   Non-maskable interrupts
+LOC:      66777      66036   Local timer interrupts
+RES:       3031       3403   Rescheduling interrupts
+CAL:         17         62   function call interrupts
+TLB:        671        900   TLB shootdowns
+TRM:          0          0   Thermal event interrupts
+THR:          0          0   Threshold APIC interrupts
+SPU:          0          0   Spurious interrupts
+ERR:          0
+
