@@ -1,218 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754845AbYFPLvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754357AbYFPMAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754845AbYFPLvs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 07:51:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbYFPLvk
+	id S1754357AbYFPMAf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 08:00:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbYFPMA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 07:51:40 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:58898 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752763AbYFPLvj (ORCPT
+	Mon, 16 Jun 2008 08:00:29 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:18837 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751186AbYFPMA2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 07:51:39 -0400
-To: Steven Whitehouse <swhiteho@redhat.com>
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [patch] gfs2: don't call permission()
-Message-Id: <E1K8DFJ-0006nQ-E7@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 16 Jun 2008 13:51:37 +0200
+	Mon, 16 Jun 2008 08:00:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=bJUzfF3LBiaCMNHjLDMDHXRL7InxL7jMzJd7juw02ibVNbZsWrorw2Aa8eHR2yJ/Fq
+         eLd2ysN3bdYJgdmzj8LR2KPl+Al3Rh7FQ37eMGHTBUvkSbtPrq8WiPjWvAwyoYINnEPL
+         7kuWNeMwgaWeAR5SJMa3sxOgH5elWB9qyJ/90=
+Message-ID: <f8c1374c0806160500p722dee55vf6f2084ecadf670c@mail.gmail.com>
+Date: Mon, 16 Jun 2008 17:30:26 +0530
+From: "Madhava K R" <madhavakr@gmail.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: [PATCH] Delay accounting, fix incorrect delay time when constantly waiting on runqueue
+Cc: bharathravi1@gmail.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       dhaval@linux.vnet.ibm.com, vatsa@in.ibm.com, balbir@in.ibm.com,
+       "Ankita Garg" <ankita@in.ibm.com>
+In-Reply-To: <1213610109.16944.95.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1213609261-9554-1-git-send-email-bharathravi1@gmail.com>
+	 <1213610109.16944.95.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven,
+Hello,
 
-Can you add this cleanup patch to your git tree?
+On Mon, Jun 16, 2008 at 3:25 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Mon, 2008-06-16 at 15:11 +0530, bharathravi1@gmail.com wrote:
+>> From: Bharath Ravi <bharathravi1@gmail.com>
+>>
+>> This patch corrects the incorrect value of per process run-queue wait time
+>> reported by delay statistics. The anomaly was due to the following reason.
+>> When a process leaves the CPU and immediately starts waiting for CPU on
+>> the runqueue (which means it remains in the TASK_RUNNABLE state), the time
+>> of re-entry into the run-queue is never recorded. Due to this, the waiting time
+>> on the runqueue from this point of re-entry upto the next time it hits the CPU
+>> is not accounted for. This is solved by recording the time of re-entry of a
+>> process leaving the CPU in the sched_info_depart() function IF the process will
+>> go back to waiting on the run-queue. This IF condition is verified by checking
+>> whether the process is still in the TASK_RUNNABLE state.
+>>
+>> The patch was tested on 2.6.26-rc6 using two simple CPU hog programs. The
+>> values noted prior to the fix did not account for the time spent on the
+>> runqueue waiting. After the fix, the correct values were reported back
+>> to user space.
+>
+>
+> Have you considered: http://lkml.org/lkml/2008/6/5/10
+>
+> I'm sad to say it is still pending in my todo list :-( - sorry Ankita.
+>
 
-Thanks,
-Miklos
+It seems that Ankita's patch addresses the scenario where a process is
+already on the run-queue, and is shuffled about CPUs. This patch
+addresses the scenario where a process is pre-empted and returns to
+the run-queue, where the last_queued value is not recorded.
 
---
-From: Miklos Szeredi <mszeredi@suse.cz>
+I tried our test case with Ankita's patch, and the problem remains.
+Our test case involves running two tight loops on an idle CPU.
+Ideally, both should experience a run time of 50% and a delay time of
+50%. But the results show negligible delay time for both processes.
 
-GFS2 calls permission() to verify permissions after locks on the files
-have been taken.
+The problems appear mutually exclusive...
 
-For this it's sufficient to call gfs2_permission() instead.  This
-results in the following changes:
-
-  - IS_RDONLY() check is not performed
-  - IS_IMMUTABLE() check is not performed
-  - devcgroup_inode_permission() is not called
-  - security_inode_permission() is not called
-
-IS_RDONLY() should be unnecessary anyway, as the per-mount read-only
-flag should provide protection against read-only remounts during
-operations.  do_gfs2_set_flags() has been fixed to perform
-mnt_want_write()/mnt_drop_write() to protect against remounting
-read-only.
-
-IS_IMMUTABLE has been added to gfs2_do_permission()
-
-Repeating the security checks seems to be pointless, as they don't
-normally change, and if they do, it's independent of the filesystem
-state.
-
-I also suspect the conditional locking in gfs2_do_permission() could
-be cleaned up, due to the removal of the implicit recursion.
-
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
- fs/gfs2/inode.c     |    6 +++---
- fs/gfs2/inode.h     |    1 +
- fs/gfs2/ops_file.c  |   11 +++++++++--
- fs/gfs2/ops_inode.c |   18 +++++++++++++-----
- 4 files changed, 26 insertions(+), 10 deletions(-)
-
-Index: linux-2.6/fs/gfs2/inode.c
-===================================================================
---- linux-2.6.orig/fs/gfs2/inode.c	2008-06-09 19:16:43.000000000 +0200
-+++ linux-2.6/fs/gfs2/inode.c	2008-06-09 21:10:11.000000000 +0200
-@@ -504,7 +504,7 @@ struct inode *gfs2_lookupi(struct inode 
- 	}
- 
- 	if (!is_root) {
--		error = permission(dir, MAY_EXEC, NULL);
-+		error = gfs2_do_permission(dir, MAY_EXEC);
- 		if (error)
- 			goto out;
- 	}
-@@ -667,7 +667,7 @@ static int create_ok(struct gfs2_inode *
- {
- 	int error;
- 
--	error = permission(&dip->i_inode, MAY_WRITE | MAY_EXEC, NULL);
-+	error = gfs2_do_permission(&dip->i_inode, MAY_WRITE | MAY_EXEC);
- 	if (error)
- 		return error;
- 
-@@ -1134,7 +1134,7 @@ int gfs2_unlink_ok(struct gfs2_inode *di
- 	if (IS_APPEND(&dip->i_inode))
- 		return -EPERM;
- 
--	error = permission(&dip->i_inode, MAY_WRITE | MAY_EXEC, NULL);
-+	error = gfs2_do_permission(&dip->i_inode, MAY_WRITE | MAY_EXEC);
- 	if (error)
- 		return error;
- 
-Index: linux-2.6/fs/gfs2/inode.h
-===================================================================
---- linux-2.6.orig/fs/gfs2/inode.h	2008-06-09 19:16:43.000000000 +0200
-+++ linux-2.6/fs/gfs2/inode.h	2008-06-09 21:10:11.000000000 +0200
-@@ -91,6 +91,7 @@ int gfs2_rmdiri(struct gfs2_inode *dip, 
- 		struct gfs2_inode *ip);
- int gfs2_unlink_ok(struct gfs2_inode *dip, const struct qstr *name,
- 		   const struct gfs2_inode *ip);
-+int gfs2_do_permission(struct inode *inode, int mask);
- int gfs2_ok_to_move(struct gfs2_inode *this, struct gfs2_inode *to);
- int gfs2_readlinki(struct gfs2_inode *ip, char **buf, unsigned int *len);
- int gfs2_glock_nq_atime(struct gfs2_holder *gh);
-Index: linux-2.6/fs/gfs2/ops_file.c
-===================================================================
---- linux-2.6.orig/fs/gfs2/ops_file.c	2008-06-09 19:16:43.000000000 +0200
-+++ linux-2.6/fs/gfs2/ops_file.c	2008-06-09 21:10:11.000000000 +0200
-@@ -15,6 +15,7 @@
- #include <linux/uio.h>
- #include <linux/blkdev.h>
- #include <linux/mm.h>
-+#include <linux/mount.h>
- #include <linux/fs.h>
- #include <linux/gfs2_ondisk.h>
- #include <linux/ext2_fs.h>
-@@ -220,10 +221,14 @@ static int do_gfs2_set_flags(struct file
- 	int error;
- 	u32 new_flags, flags;
- 
--	error = gfs2_glock_nq_init(ip->i_gl, LM_ST_EXCLUSIVE, 0, &gh);
-+	error = mnt_want_write(filp->f_path.mnt);
- 	if (error)
- 		return error;
- 
-+	error = gfs2_glock_nq_init(ip->i_gl, LM_ST_EXCLUSIVE, 0, &gh);
-+	if (error)
-+		goto out_drop_write;
-+
- 	flags = ip->i_di.di_flags;
- 	new_flags = (flags & ~mask) | (reqflags & mask);
- 	if ((new_flags ^ flags) == 0)
-@@ -242,7 +247,7 @@ static int do_gfs2_set_flags(struct file
- 	    !capable(CAP_LINUX_IMMUTABLE))
- 		goto out;
- 	if (!IS_IMMUTABLE(inode)) {
--		error = permission(inode, MAY_WRITE, NULL);
-+		error = gfs2_do_permission(inode, MAY_WRITE);
- 		if (error)
- 			goto out;
- 	}
-@@ -272,6 +277,8 @@ out_trans_end:
- 	gfs2_trans_end(sdp);
- out:
- 	gfs2_glock_dq_uninit(&gh);
-+out_drop_write:
-+	mnt_drop_write(filp->f_path.mnt);
- 	return error;
- }
- 
-Index: linux-2.6/fs/gfs2/ops_inode.c
-===================================================================
---- linux-2.6.orig/fs/gfs2/ops_inode.c	2008-06-09 19:16:43.000000000 +0200
-+++ linux-2.6/fs/gfs2/ops_inode.c	2008-06-09 21:10:11.000000000 +0200
-@@ -163,7 +163,7 @@ static int gfs2_link(struct dentry *old_
- 	if (error)
- 		goto out;
- 
--	error = permission(dir, MAY_WRITE | MAY_EXEC, NULL);
-+	error = gfs2_do_permission(dir, MAY_WRITE | MAY_EXEC);
- 	if (error)
- 		goto out_gunlock;
- 
-@@ -669,7 +669,7 @@ static int gfs2_rename(struct inode *odi
- 			}
- 		}
- 	} else {
--		error = permission(ndir, MAY_WRITE | MAY_EXEC, NULL);
-+		error = gfs2_do_permission(ndir, MAY_WRITE | MAY_EXEC);
- 		if (error)
- 			goto out_gunlock;
- 
-@@ -704,7 +704,7 @@ static int gfs2_rename(struct inode *odi
- 	/* Check out the dir to be renamed */
- 
- 	if (dir_rename) {
--		error = permission(odentry->d_inode, MAY_WRITE, NULL);
-+		error = gfs2_do_permission(odentry->d_inode, MAY_WRITE);
- 		if (error)
- 			goto out_gunlock;
- 	}
-@@ -891,7 +891,7 @@ static void *gfs2_follow_link(struct den
-  * Returns: errno
-  */
- 
--static int gfs2_permission(struct inode *inode, int mask, struct nameidata *nd)
-+int gfs2_do_permission(struct inode *inode, int mask)
- {
- 	struct gfs2_inode *ip = GFS2_I(inode);
- 	struct gfs2_holder i_gh;
-@@ -905,13 +905,21 @@ static int gfs2_permission(struct inode 
- 		unlock = 1;
- 	}
- 
--	error = generic_permission(inode, mask, gfs2_check_acl);
-+	if ((mask & MAY_WRITE) && IS_IMMUTABLE(inode))
-+		error = -EACCES;
-+	else
-+		error = generic_permission(inode, mask, gfs2_check_acl);
- 	if (unlock)
- 		gfs2_glock_dq_uninit(&i_gh);
- 
- 	return error;
- }
- 
-+static int gfs2_permission(struct inode *inode, int mask, struct nameidata *nd)
-+{
-+	return gfs2_do_permission(inode, mask);
-+}
-+
- static int setattr_size(struct inode *inode, struct iattr *attr)
- {
- 	struct gfs2_inode *ip = GFS2_I(inode);
+>> Signed-off-by: Bharath Ravi <bharathravi1@gmail.com>
+>> Signed-off-by: Madhava K R  <madhavakr@gmail.com>
+>> ---
+>>  kernel/sched_stats.h |    6 ++++++
+>>  1 files changed, 6 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/kernel/sched_stats.h b/kernel/sched_stats.h
+>> index a38878e..80179ef 100644
+>> --- a/kernel/sched_stats.h
+>> +++ b/kernel/sched_stats.h
+>> @@ -198,6 +198,9 @@ static inline void sched_info_queued(struct task_struct *t)
+>>  /*
+>>   * Called when a process ceases being the active-running process, either
+>>   * voluntarily or involuntarily.  Now we can calculate how long we ran.
+>> + * Also, if the process is still in the TASK_RUNNING state, call
+>> + * sched_info_queued() to mark that it has now again started waiting on
+>> + * the runqueue.
+>>   */
+>>  static inline void sched_info_depart(struct task_struct *t)
+>>  {
+>> @@ -206,6 +209,9 @@ static inline void sched_info_depart(struct task_struct *t)
+>>
+>>       t->sched_info.cpu_time += delta;
+>>       rq_sched_info_depart(task_rq(t), delta);
+>> +
+>> +     if (t->state == TASK_RUNNING)
+>> +             sched_info_queued(t);
+>>  }
+>>
+>>  /*
+>
+>
