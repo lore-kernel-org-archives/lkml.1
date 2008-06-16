@@ -1,82 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758418AbYFPVt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbYFPVvn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758418AbYFPVt2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 17:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754484AbYFPVtU
+	id S1758278AbYFPVvn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 17:51:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755830AbYFPVvg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 17:49:20 -0400
-Received: from webmail.e-teleport.net ([213.190.83.68]:44253 "EHLO
-	mail.imsnet.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752380AbYFPVtU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 17:49:20 -0400
-X-Greylist: delayed 1405 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Jun 2008 17:49:19 EDT
-Message-ID: <4856DA62.7080803@e-teleport.net>
-Date: Mon, 16 Jun 2008 23:25:54 +0200
-From: =?ISO-8859-1?Q?S=E9guier_R=E9gis?= <rseguier@e-teleport.net>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Francois Romieu <romieu@fr.zoreil.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, alan@redhat.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net: via-velocity.c fix sleep-with-spinlock bug during
- MTU change
-References: <20080531184615.350bac00@infradead.org> <20080603134019.df2f51d4.akpm@linux-foundation.org> <20080603215155.GA9712@electric-eye.fr.zoreil.com> <20080604215909.GA17446@electric-eye.fr.zoreil.com> <20080614212341.GA12976@electric-eye.fr.zoreil.com>
-In-Reply-To: <20080614212341.GA12976@electric-eye.fr.zoreil.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Mon, 16 Jun 2008 17:51:36 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36023 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753250AbYFPVvf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 17:51:35 -0400
+Date: Mon, 16 Jun 2008 22:34:02 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+       jaswinder@infradead.org
+Subject: Re: [PATCH] ip2: use request_firmware()
+Message-ID: <20080616223402.6ad2365c@lxorguk.ukuu.org.uk>
+In-Reply-To: <4856DDAA.1080707@garzik.org>
+References: <1213609751.26255.673.camel@pmac.infradead.org>
+	<20080616115950.41bc65aa@lxorguk.ukuu.org.uk>
+	<4856C6C8.6060506@garzik.org>
+	<4856C795.2050007@garzik.org>
+	<20080616205820.1fe298d7@lxorguk.ukuu.org.uk>
+	<4856CB61.6030202@garzik.org>
+	<20080616212111.406f9c96@lxorguk.ukuu.org.uk>
+	<4856DDAA.1080707@garzik.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Francois Romieu a écrit :
-> Francois Romieu <romieu@fr.zoreil.com> :
-> [...context available from http://lkml.org/lkml/2008/5/31/251 ...]
->
-> Régis, I need your help.
->
-> Can you give the patchkit below a try and check if the change of mtu
-> works correctly ?
->
-> http://userweb.kernel.org/~romieu/via-velocity/2.6.26-rc6/
->
-> or:
->
-> git://git.kernel.org/pub/scm/linux/kernel/git/romieu/netdev-2.6.git velocity
->
->   
-The mtu change doesn't work :
+O> This separation certainly does not make things _easier_ for users, our 
+> reason for existence.  This separation certainly does not make it easier 
+> to drop in a driver with a firmware, i.e. not easier on driver 
+> developers.  It is one more PITA detail when copying a driver from one 
+> kernel to another, or shipping the driver out of tree.
 
-Jun 16 23:22:34 apollo kernel: ------------[ cut here ]------------
-Jun 16 23:22:34 apollo kernel: WARNING: at arch/x86/kernel/pci-dma.c:482 
-dma_free_coherent+0x3a/0x9c()
-Jun 16 23:22:34 apollo kernel: Pid: 1527, comm: ip Tainted: G        W 
-2.6.26-rc6EPIA_SN_VB7001 #3
-Jun 16 23:22:34 apollo kernel:  [<c0115fe5>] warn_on_slowpath+0x3b/0x5f
-Jun 16 23:22:34 apollo kernel:  [<c0133940>] 
-get_page_from_freelist+0x24a/0x36f
-Jun 16 23:22:34 apollo kernel:  [<c012d86b>] handle_IRQ_event+0x1a/0x3f
-Jun 16 23:22:34 apollo kernel:  [<c0241193>] velocity_free_rd_ring+0xa5/0xb6
-Jun 16 23:22:34 apollo kernel:  [<c0144752>] kfree+0x6a/0x72
-Jun 16 23:22:34 apollo kernel:  [<c0241193>] velocity_free_rd_ring+0xa5/0xb6
-Jun 16 23:22:34 apollo kernel:  [<c0105816>] dma_free_coherent+0x3a/0x9c
-Jun 16 23:22:34 apollo kernel:  [<c02411eb>] 
-velocity_free_dma_rings+0x47/0x4d
-Jun 16 23:22:34 apollo kernel:  [<c024225b>] velocity_change_mtu+0xf6/0x157
-Jun 16 23:22:34 apollo kernel:  [<c02856c4>] dev_set_mtu+0x2a/0x4f
-Jun 16 23:22:34 apollo kernel:  [<c0286642>] dev_ioctl+0x4ab/0x530
-Jun 16 23:22:34 apollo kernel:  [<c012e4cb>] handle_fasteoi_irq+0x74/0x77
-Jun 16 23:22:34 apollo kernel:  [<c010479b>] do_IRQ+0x50/0x60
-Jun 16 23:22:34 apollo kernel:  [<c027d785>] sock_ioctl+0x0/0x177
-Jun 16 23:22:34 apollo kernel:  [<c01032eb>] common_interrupt+0x23/0x28
-Jun 16 23:22:34 apollo kernel:  [<c027d785>] sock_ioctl+0x0/0x177
-Jun 16 23:22:34 apollo kernel:  [<c0150b4a>] vfs_ioctl+0x16/0x48
-Jun 16 23:22:34 apollo kernel:  [<c0150d5a>] do_vfs_ioctl+0x1de/0x1f1
-Jun 16 23:22:34 apollo kernel:  [<c0150dae>] sys_ioctl+0x41/0x5b
-Jun 16 23:22:34 apollo kernel:  [<c010291d>] sysenter_past_esp+0x6a/0x91
-Jun 16 23:22:34 apollo kernel:  =======================
-Jun 16 23:22:34 apollo kernel: ---[ end trace 17457a054a24b83c ]---
+Users run distributions. The user picture is "I installed it, it worked".
 
+> There are good reasons why the Makefile rules, Kconfig rules, C source 
+> code and headers for a driver all live together...  moving the firmware 
 
--- 
-Régis
+But they don't. Half the headers are in include/, random bits of glue are
+scattered around the scripts dir.
+
+> I like the goal, but see little effort in the area of "make this 
+> transition painless for users."
+
+I think we need to think about "for the technically competent and distro
+builders". I don't see any connection between the choice of firmware
+source directory and users at all. They typed make, magic occurred.
+
+Alan
