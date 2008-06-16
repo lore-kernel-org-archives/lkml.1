@@ -1,112 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758348AbYFPWHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758122AbYFPWah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758348AbYFPWHb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 18:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756411AbYFPWHY
+	id S1758122AbYFPWah (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 18:30:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756312AbYFPWa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 18:07:24 -0400
-Received: from gw.goop.org ([64.81.55.164]:56360 "EHLO mail.goop.org"
+	Mon, 16 Jun 2008 18:30:26 -0400
+Received: from cantor.suse.de ([195.135.220.2]:41562 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753250AbYFPWHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 18:07:23 -0400
-Message-ID: <4856E3D3.2010207@goop.org>
-Date: Mon, 16 Jun 2008 15:06:11 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1751693AbYFPWaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 18:30:25 -0400
+Date: Mon, 16 Jun 2008 13:59:53 -0700
+From: Greg KH <gregkh@suse.de>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [patch] sysfs: don't call notify_change
+Message-ID: <20080616205953.GA8372@suse.de>
+References: <E1K8DAd-0006my-Ck@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-To: the arch/x86 maintainers <x86@kernel.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: make asm/asm.h work for asm code.
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1K8DAd-0006my-Ck@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is useful for unifying some pieces of asm code.
+On Mon, Jun 16, 2008 at 01:46:47PM +0200, Miklos Szeredi wrote:
+> Greg,
+> 
+> Could you please take this patch into your 2.6.27 queue?
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- include/asm-x86/asm.h |   56 +++++++++++++++++++++++++++++++++++--------------
- 1 file changed, 40 insertions(+), 16 deletions(-)
+Sure, would be glad to.
 
-===================================================================
---- a/include/asm-x86/asm.h
-+++ b/include/asm-x86/asm.h
-@@ -1,33 +1,57 @@
- #ifndef _ASM_X86_ASM_H
- #define _ASM_X86_ASM_H
-+
-+#include <linux/stringify.h>
- 
- #ifdef CONFIG_X86_32
- /* 32 bits */
- 
--# define _ASM_PTR	" .long "
--# define _ASM_ALIGN	" .balign 4 "
--# define _ASM_MOV_UL	" movl "
-+# define __ASM_PTR	.long
-+# define __ASM_ALIGN	.balign 4
-+# define __ASM_MOV_UL	movl
- 
--# define _ASM_INC	" incl "
--# define _ASM_DEC	" decl "
--# define _ASM_ADD	" addl "
--# define _ASM_SUB	" subl "
--# define _ASM_XADD	" xaddl "
-+# define __ASM_INC	incl
-+# define __ASM_DEC	decl
-+# define __ASM_ADD	addl
-+# define __ASM_SUB	subl
-+# define __ASM_XADD	xaddl
- 
- #else
- /* 64 bits */
- 
--# define _ASM_PTR	" .quad "
--# define _ASM_ALIGN	" .balign 8 "
--# define _ASM_MOV_UL	" movq "
-+# define __ASM_PTR	.quad
-+# define __ASM_ALIGN	.balign 8
-+# define __ASM_MOV_UL	movq
- 
--# define _ASM_INC	" incq "
--# define _ASM_DEC	" decq "
--# define _ASM_ADD	" addq "
--# define _ASM_SUB	" subq "
--# define _ASM_XADD	" xaddq "
-+# define __ASM_INC	incq
-+# define __ASM_DEC	decq
-+# define __ASM_ADD	addq
-+# define __ASM_SUB	subq
-+# define __ASM_XADD	xaddq
- 
- #endif /* CONFIG_X86_32 */
-+
-+#ifdef __ASSEMBLER__
-+#define _ASM_PTR	__ASM_PTR
-+#define _ASM_ALIGN	__ASM_ALIGN
-+#define _ASM_MOV_UL	__ASM_MOV_UL
-+
-+#define _ASM_INC	__ASM_INC
-+#define _ASM_DEC	__ASM_DEC
-+#define _ASM_ADD	__ASM_ADD
-+#define _ASM_SUB	__ASM_SUB
-+#define _ASM_XADD	__ASM_XADD
-+#else  /* !ASSEMBLER */
-+#define _ASM_PTR	" " __stringify(__ASM_PTR) " "
-+#define _ASM_ALIGN	" " __stringify(__ASM_ALIGN) " "
-+#define _ASM_MOV_UL	" " __stringify(__ASM_MOV_UL) " "
-+
-+#define _ASM_INC	" " __stringify(__ASM_INC) " "
-+#define _ASM_DEC	" " __stringify(__ASM_DEC) " "
-+#define _ASM_ADD	" " __stringify(__ASM_ADD) " "
-+#define _ASM_SUB	" " __stringify(__ASM_SUB) " "
-+#define _ASM_XADD	" " __stringify(__ASM_XADD) " "
-+#endif	/* __ASSEMBLER__ */
- 
- /* Exception table entry */
- # define _ASM_EXTABLE(from,to) \
+thanks,
 
-
+greg k-h
