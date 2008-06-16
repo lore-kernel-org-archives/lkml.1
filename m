@@ -1,126 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbYFPM6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784AbYFPNK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754738AbYFPM6q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 08:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbYFPM6g
+	id S1754784AbYFPNK3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 09:10:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbYFPNKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 08:58:36 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:51867 "EHLO
-	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752234AbYFPM6f (ORCPT
+	Mon, 16 Jun 2008 09:10:18 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:43558 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753051AbYFPNKR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 08:58:35 -0400
-X-BigFish: VPS-1(zz3117Kzz10d3izzz32i6bh65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0K2K417-02-W7S-01
-Date: Mon, 16 Jun 2008 14:58:21 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-CC: linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>
-Subject: [PATCH 5/5 v2] x86: PAT: make pat_x_mtrr_type() more readable
-Message-ID: <20080616125821.GA5213@alberich.amd.com>
-References: <20080610140755.GI5024@alberich.amd.com>
+	Mon, 16 Jun 2008 09:10:17 -0400
+Message-ID: <48566639.4000006@suse.de>
+Date: Mon, 16 Jun 2008 17:10:17 +0400
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20080610140755.GI5024@alberich.amd.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 16 Jun 2008 12:58:22.0912 (UTC) FILETIME=[A88DD400:01C8CFB0]
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: using dstapic in mp_config_acpi_legacy_irqs
+References: <200806151819.47236.yhlu.kernel@gmail.com>
+In-Reply-To: <200806151819.47236.yhlu.kernel@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've found it inconvenient to review pat_x_mtrr_type().
-Thus I slightly changed it and added some comment to make
-it more readable.
+Hi Yinghai,
 
-I've also added BUG statements for (some) unused/unhandled PAT/MTRR
-types.
+I think it should be split into 3 pieces, according to latest tradition :)
+1. don't init variables with -1
+2. use dstapic to allow moving of assignments together
+3. move assignments
 
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
-New patch version. (against current tip/x86/pat - v2.6.26-rc6-105-gfaeca31)
-Previous version had some conflict with another commit in tip/master.
+Other than that seems ok (thou I'm not sure that -1 is not used somewhere)
 
 Regards,
-Andreas
+Alex.
 
- arch/x86/mm/pat.c |   50 +++++++++++++++++++++++++++-----------------------
- 1 files changed, 27 insertions(+), 23 deletions(-)
-
-diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-index 4beccea..cdf2c15 100644
---- a/arch/x86/mm/pat.c
-+++ b/arch/x86/mm/pat.c
-@@ -169,35 +169,39 @@ static int pat_x_mtrr_type(u64 start, u64 end, unsigned long prot,
- 	prot &= (~_PAGE_CACHE_MASK);
- 
- 	/*
--	 * We return the PAT request directly for types where PAT takes
--	 * precedence with respect to MTRR and for UC_MINUS.
-+	 * We return the PAT request directly for types where PAT
-+	 * takes precedence with respect to MTRR and for UC_MINUS. In
-+	 * case of pat_type==WB we have to know mtrr_type to get the
-+	 * effective type.
-+	 *
-+	 *    effective type                ret_prot
-+	 *  pat \ mtrr  WB WC UC    pat \ mtrr  WB  WC  UC
-+	 *  WC          WC WC WC    WC          WC  WC  WC
-+	 *  UC-         UC WC UC    UC-         UC- UC- UC-
-+	 *  UC          UC UC UC    UC          UC  UC  UC
-+	 *  WB          WB WC UC    WB          WB  WC  UC
-+	 *
- 	 * Consistency checks with other PAT requests is done later
- 	 * while going through memtype list.
- 	 */
--	if (pat_type == _PAGE_CACHE_WC) {
-+	if (pat_type == _PAGE_CACHE_WC)
- 		*ret_prot = prot | _PAGE_CACHE_WC;
--		return 0;
--	} else if (pat_type == _PAGE_CACHE_UC_MINUS) {
-+	else if (pat_type == _PAGE_CACHE_UC_MINUS)
- 		*ret_prot = prot | _PAGE_CACHE_UC_MINUS;
--		return 0;
--	} else if (pat_type == _PAGE_CACHE_UC) {
--		*ret_prot = prot | _PAGE_CACHE_UC;
--		return 0;
--	}
--
--	/*
--	 * Look for MTRR hint to get the effective type in case where PAT
--	 * request is for WB.
--	 */
--	mtrr_type = mtrr_type_lookup(start, end);
--
--	if (mtrr_type == MTRR_TYPE_UNCACHABLE) {
-+	else if (pat_type == _PAGE_CACHE_UC)
- 		*ret_prot = prot | _PAGE_CACHE_UC;
--	} else if (mtrr_type == MTRR_TYPE_WRCOMB) {
--		*ret_prot = prot | _PAGE_CACHE_WC;
--	} else {
--		*ret_prot = prot | _PAGE_CACHE_WB;
--	}
-+	else if (pat_type == _PAGE_CACHE_WB) {
-+		mtrr_type = mtrr_type_lookup(start, end);
-+		if (mtrr_type == MTRR_TYPE_WRBACK)
-+			*ret_prot = prot | _PAGE_CACHE_WB;
-+		else if (mtrr_type == MTRR_TYPE_WRCOMB)
-+			*ret_prot = prot | _PAGE_CACHE_WC;
-+		else if (mtrr_type == MTRR_TYPE_UNCACHABLE)
-+			*ret_prot = prot | _PAGE_CACHE_UC;
-+		else
-+			BUG();
-+	} else
-+		  BUG();
- 
- 	return 0;
- }
--- 
-1.5.5.4
-
-
-
+Yinghai Lu wrote:
+> so don't get that same value multiple times.
+> 
+> also make mp_config_acpi_legacy_irqs more readable by moving some assignment
+> together.
+> 
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> 
+> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+> index d2a4768..04dbb35 100644
+> --- a/arch/x86/kernel/acpi/boot.c
+> +++ b/arch/x86/kernel/acpi/boot.c
+> @@ -960,8 +960,8 @@ void __init mp_register_ioapic(int id, u32 address, u32 gsi_base)
+>  
+>  void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger, u32 gsi)
+>  {
+> -	int ioapic = -1;
+> -	int pin = -1;
+> +	int ioapic;
+> +	int pin;
+>  
+>  	/*
+>  	 * Convert 'gsi' to 'ioapic.pin'.
+> @@ -995,8 +995,9 @@ void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger, u32 gsi)
+>  
+>  void __init mp_config_acpi_legacy_irqs(void)
+>  {
+> -	int i = 0;
+> -	int ioapic = -1;
+> +	int i;
+> +	int ioapic;
+> +	unsigned int dstapic;
+>  
+>  #if defined (CONFIG_MCA) || defined (CONFIG_EISA)
+>  	/*
+> @@ -1021,6 +1022,7 @@ void __init mp_config_acpi_legacy_irqs(void)
+>  	ioapic = mp_find_ioapic(0);
+>  	if (ioapic < 0)
+>  		return;
+> +	dstapic = mp_ioapics[ioapic].mp_apicid;
+>  
+>  	/*
+>  	 * Use the default configuration for the IRQs 0-15.  Unless
+> @@ -1029,11 +1031,6 @@ void __init mp_config_acpi_legacy_irqs(void)
+>  	for (i = 0; i < 16; i++) {
+>  		int idx;
+>  
+> -		mp_irqs[mp_irq_entries].mp_type = MP_INTSRC;
+> -		mp_irqs[mp_irq_entries].mp_irqflag = 0;	/* Conforming */
+> -		mp_irqs[mp_irq_entries].mp_srcbus = MP_ISA_BUS;
+> -		mp_irqs[mp_irq_entries].mp_dstapic = mp_ioapics[ioapic].mp_apicid;
+> -
+>  		for (idx = 0; idx < mp_irq_entries; idx++) {
+>  			struct mp_config_intsrc *irq = mp_irqs + idx;
+>  
+> @@ -1043,9 +1040,8 @@ void __init mp_config_acpi_legacy_irqs(void)
+>  				break;
+>  
+>  			/* Do we already have a mapping for this IOAPIC pin */
+> -			if ((irq->mp_dstapic ==
+> -				mp_irqs[mp_irq_entries].mp_dstapic) &&
+> -			    (irq->mp_dstirq == i))
+> +			if (irq->mp_dstapic == dstapic &&
+> +			    irq->mp_dstirq == i)
+>  				break;
+>  		}
+>  
+> @@ -1054,8 +1050,12 @@ void __init mp_config_acpi_legacy_irqs(void)
+>  			continue;	/* IRQ already used */
+>  		}
+>  
+> +		mp_irqs[mp_irq_entries].mp_type = MP_INTSRC;
+> +		mp_irqs[mp_irq_entries].mp_irqflag = 0;	/* Conforming */
+> +		mp_irqs[mp_irq_entries].mp_srcbus = MP_ISA_BUS;
+> +		mp_irqs[mp_irq_entries].mp_dstapic = dstapic;
+>  		mp_irqs[mp_irq_entries].mp_irqtype = mp_INT;
+> -		mp_irqs[mp_irq_entries].mp_srcbusirq = i;	/* Identity mapped */
+> +		mp_irqs[mp_irq_entries].mp_srcbusirq = i; /* Identity mapped */
+>  		mp_irqs[mp_irq_entries].mp_dstirq = i;
+>  
+>  		if (++mp_irq_entries == MAX_IRQ_SOURCES)
 
