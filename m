@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbYFPNSg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755285AbYFPNW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755843AbYFPNSg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 09:18:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbYFPNS2
+	id S1755285AbYFPNW1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 09:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbYFPNWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 09:18:28 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57938 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753322AbYFPNS1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 09:18:27 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Miquel van Smoorenburg <miquels@cistron.nl>
-Subject: Re: [Bug 10905] 2.6.26: x86/kernel/pci_dma.c: gfp |= __GFP_NORETRY ?
-Date: Mon, 16 Jun 2008 15:19:54 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Glauber Costa <gcosta@redhat.com>
-References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik> <Jn7irxIunJK.A.QLD.qIDVIB@albercik> <1213615582.19372.2.camel@n2o.xs4all.nl>
-In-Reply-To: <1213615582.19372.2.camel@n2o.xs4all.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Mon, 16 Jun 2008 09:22:19 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50121 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753450AbYFPNWT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 09:22:19 -0400
+Subject: Re: [PATCH v2] export linux/a.out.h
+From: David Woodhouse <dwmw2@infradead.org>
+To: Peter Korsgaard <jacmet@sunsite.dk>, torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org, dhowells@redhat.com,
+       andi@firstfloor.org, "Kirill A. Shutemov" <k.shutemov@gmail.com>
+In-Reply-To: <87abhl7eqo.fsf@macbook.be.48ers.dk>
+References: <1213565555.26255.522.camel@pmac.infradead.org>
+	 <1213604973-7073-1-git-send-email-jacmet@sunsite.dk>
+	 <1213617663.26255.708.camel@pmac.infradead.org>
+	 <87abhl7eqo.fsf@macbook.be.48ers.dk>
+Content-Type: text/plain
+Date: Mon, 16 Jun 2008 14:22:05 +0100
+Message-Id: <1213622525.26255.735.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806161519.55161.rjw@sisk.pl>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 16 of June 2008, Miquel van Smoorenburg wrote:
-> On Sat, 2008-06-14 at 22:12 +0200, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
+On Mon, 2008-06-16 at 14:20 +0200, Peter Korsgaard wrote:
+> David Woodhouse <dwmw2@infradead.org> writes:
+> > On Mon, 2008-06-16 at 10:29 +0200, Peter Korsgaard wrote:
+> > > Export linux/a.out.h like we do for asm/a.out.h as some applications needs
+> > > it (E.G. valgrind). One minor complication is that the content is protected
+> > > by an CONFIG_ARCH_SUPPORTS_AOUT ifdef, so get rid of it.
+> >
+> > There was a _reason_ for that ifdef, although on reflection probably not
+> > a particularly good one. But unless we remove the reason for that ifdef,
+> > your patch will break compilation on architectures which don't have
+> > <asm/a.out.h>.
 > > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.25.  Please verify if it still should be listed.
+> > We should get rid of CONFIG_ARCH_SUPPORTS_AOUT entirely. The only
+> > remaining users of it are fs/exec.c, which uses it entirely redundantly:
+> >         #if defined(__alpha__) && defined(CONFIG_ARCH_SUPPORTS_AOUT)
 > > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10905
-> > Subject		: 2.6.26: x86/kernel/pci_dma.c: gfp |= __GFP_NORETRY ?
-> > Submitter	: Miquel van Smoorenburg <miquels@cistron.nl>
-> > Date		: 2008-05-21 13:30 (25 days old)
-> > References	: http://lkml.org/lkml/2008/5/21/131
-> > 		  http://lkml.org/lkml/2008/6/12/121
-> > Handled-By	: Glauber Costa <gcosta@redhat.com>
-> > 		  Andi Kleen <andi@firstfloor.org>
-> > 		  Miquel van Smoorenburg <mikevs@xs4all.net>
-> > Patch		: http://lkml.org/lkml/2008/5/28/42
+> > ...and (indirectly, by virtue of being the only other file that includes
+> > <linux/a.out.h> when ARCH_SUPPORTS_AOUT might be unset) fs/binfmt_elf.c,
+> > which still has unnecessary references to 'struct exec' even though Andi
+> > removed the support for a.out interpreters a few months ago. That can
+> > just go away.
+>>
+> > Please see  git.infradead.org/users/dwmw2/aout-2.6.git
+> >
+> > David Woodhouse (6):
+> >       Include <asm/a.out.h> in fs/exec.c only for Alpha.
+> >       Remove last traces of a.out support from ELF loader.
+> >       Remove #ifdef CONFIG_ARCH_SUPPORTS_AOUT from <linux/a.out.h>
+> >       Export <linux/a.out.h> to userspace again.
+> >       Remove redundant CONFIG_ARCH_SUPPORTS_AOUT
+> >       Remove references to now-defunct CONFIG_ARCH_SUPPORTS_AOUT from defconfigs
+> >
+> > The first four are shown below, as a single combined patch.
 > 
-> This bug was recently fixed in 2.6.26 by commit
-> 0269c5c6d9a9de22715ecda589730547435cd3e8
+> Thanks David, looks good to me.
+> 
+> Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
 
-Thanks, closed.
+OK, I'll send just those first four on to Linus for 2.6.26 to fix the
+<linux/a.out.h> regression. The rest can wait till later, as discussed.
 
-Rafael
+-- 
+dwmw2
+
