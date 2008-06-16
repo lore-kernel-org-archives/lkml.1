@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754961AbYFPMD5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbYFPMG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754961AbYFPMD5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 08:03:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836AbYFPMDv
+	id S1755161AbYFPMG3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 08:06:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbYFPMGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 08:03:51 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54275 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752692AbYFPMDu (ORCPT
+	Mon, 16 Jun 2008 08:06:22 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:34676 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753167AbYFPMGW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 08:03:50 -0400
-Date: Mon, 16 Jun 2008 12:46:02 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+	Mon, 16 Jun 2008 08:06:22 -0400
+Subject: Re: [PATCH] ip2: use request_firmware()
+From: David Woodhouse <dwmw2@infradead.org>
 To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Johannes Weiner <hannes@saeurebad.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug 10741] bug in `tty: BKL pushdown'?
-Message-ID: <20080616124602.54910afd@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080616113313.2f932f8d@lxorguk.ukuu.org.uk>
-References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
-	<Jn7irxIunJK.A.B-E.dKDVIB@albercik>
-	<873andbst2.fsf@saeurebad.de>
-	<20080616113313.2f932f8d@lxorguk.ukuu.org.uk>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+Cc: linux-kernel@vger.kernel.org, jaswinder@infradead.org
+In-Reply-To: <20080616115950.41bc65aa@lxorguk.ukuu.org.uk>
+References: <1213609751.26255.673.camel@pmac.infradead.org>
+	 <20080616115950.41bc65aa@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Mon, 16 Jun 2008 13:06:19 +0100
+Message-Id: <1213617979.26255.713.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jun 2008 11:33:13 +0100
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-
-> > The bug still exists, however, a bisect on another machine with the same
-> > userland leads to different commit
-> > (47f86834bbd4193139d61d659bebf9ab9d691e37 "redo locking of tty->pgrp"),
-> > so it is not all that clear and stable.
+On Mon, 2008-06-16 at 11:59 +0100, Alan Cox wrote:
+> On Mon, 16 Jun 2008 10:49:11 +0100
+> David Woodhouse <dwmw2@infradead.org> wrote:
 > 
-> Now that would actually make a lot more sense as a root cause.
+> > Converted with help from Jaswinder Singh
+> > 
+> > Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+> > ---
+> >  drivers/char/Kconfig           |    7 +
+> >  drivers/char/ip2/fip_firm.h    | 2149 ----------------------------------------
+> >  drivers/char/ip2/ip2base.c     |    5 +-
+> >  drivers/char/ip2/ip2main.c     |   45 +-
+> >  firmware/Makefile              |    1 +
+> >  firmware/WHENCE                |   10 +
+> >  firmware/intelliport2.bin.ihex | 2147 +++++++++++++++++++++++++++++++++++++++
+> >  7 files changed, 2201 insertions(+), 2163 deletions(-)
+> >  delete mode 100644 drivers/char/ip2/fip_firm.h
+> >  create mode 100644 firmware/intelliport2.bin.ihex
+> 
+> Fine by me. I've not checked all the digits are correct but the rest of
+> the logic seems clean enough
 
-Experiment time. In _proc_set_tty() in tty_io.c move the
+Yeah, we're trying to be quite careful with the digits, but I'd be a lot
+happier when some of this actually gets tested. 
 
-	tty->session = get_pid(task_session(tsk));
+It's good that Jaswinder is now helping -- we can each convert the
+firmware and verify that we come up with the same thing. And while I'm
+giving a lot of guidance on the _code_ changes, I'm deliberately leaving
+him to his own devices for that part, as a kind of 'control' :)
 
-back inside the lock just before
+-- 
+dwmw2
 
-	tty->pgrp = get_pid(task_pgrp(tsk));
-
-Alan
---
-  "Standards committees don't like hashing.  It looks complicated and
-    insufficiently deterministic on an overhead projector."
-					- Vern Schryver
