@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbYFPGTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756145AbYFPGUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754768AbYFPGTV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 02:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbYFPGTJ
+	id S1756145AbYFPGUi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 02:20:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbYFPGU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 02:19:09 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:30578 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752005AbYFPGTI (ORCPT
+	Mon, 16 Jun 2008 02:20:29 -0400
+Received: from edna.telenet-ops.be ([195.130.132.58]:52221 "EHLO
+	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752109AbYFPGU2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 02:19:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=HAICM+cukcgQpjND9S8bsJT1ALtin5spSayFL34GqFhZYDuOWi+fNbKHXnuEzuwj4p
-         O0on/beXkt5GB0xcWcLKtZ7TWUx6i0kF2oEVDoVFu5LMn/tyENKgiCc2a2SBzcsJchhM
-         rdFubQFA+gv9EUrd47HA18DQoq0yEo85p3hZU=
-Message-ID: <84144f020806152319w487b67fasa70f2cf27de1d761@mail.gmail.com>
-Date: Mon, 16 Jun 2008 09:19:06 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Tom Zanussi" <tzanussi@gmail.com>
-Subject: Re: [PATCH 2/3] relay: Fix race condition which occurs when reading across CPUs.
-Cc: "Eduard - Gabriel Munteanu" <eduard.munteanu@linux360.ro>,
-       akpm@linux-foundation.org, compudj@krystal.dyndns.org,
-       linux-kernel@vger.kernel.org, righi.andrea@gmail.com
-In-Reply-To: <1213594690.7744.49.camel@charm-linux>
+	Mon, 16 Jun 2008 02:20:28 -0400
+Date: Mon, 16 Jun 2008 08:20:23 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-arch@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH] initrd: Fix virtual/physical mix-up in overwrite test
+In-Reply-To: <20080615181100.79e48697.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0806160819080.5736@anakin>
+References: <Pine.LNX.4.64.0712161148340.5869@anakin>
+ <20071218030131.8b272833.akpm@linux-foundation.org> <Pine.LNX.4.64.0712182051050.24841@anakin>
+ <20071218123119.54262974.akpm@linux-foundation.org> <Pine.LNX.4.64.0712231142190.24252@anakin>
+ <Pine.LNX.4.64.0806151606320.5736@anakin> <20080615181100.79e48697.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080613040958.4f52ee29@linux360.ro>
-	 <1213417601.8237.37.camel@charm-linux>
-	 <20080614181103.17617db1@linux360.ro>
-	 <84144f020806140916j7c39d3fr6ada38169ebc84c2@mail.gmail.com>
-	 <1213594690.7744.49.camel@charm-linux>
-X-Google-Sender-Auth: 244425962409fa72
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tom,
+On Sun, 15 Jun 2008, Andrew Morton wrote:
+> On Sun, 15 Jun 2008 16:07:45 +0200 (CEST) Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > On Sun, 23 Dec 2007, Geert Uytterhoeven wrote:
+> > > New version below. Tested on Amiga. Compile-tested on ia32 (i386_defconfig) and
+> > > pp64 (ps3_defconfig).
+> > 
+> > Ping?
+> 
+> You appear to have a six month RTT ;)
+> 
+> If this was not a mistaken email and if you have something which needs
+> to be in 2.6.26 then please send it to Linus directly - I'm hiding from
+> you guys for a week.
 
-On Mon, Jun 16, 2008 at 8:38 AM, Tom Zanussi <tzanussi@gmail.com> wrote:
-> So I guess I don't have strong feelings about it if it's solving a real
-> usability problem and doesn't cause any performance (or other)
-> regressions.
+`need' is a strong word. I prefer to have it receive some testing on
+other platforms. I don't want to risk breaking something this late in
+the 2.6.26 cycle...
 
-Is there some standard performance test for relayfs that we could use
-to verify this?
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
