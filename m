@@ -1,74 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884AbYFPMow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbYFPM6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755884AbYFPMow (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 08:44:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbYFPMoo
+	id S1754738AbYFPM6q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 08:58:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbYFPM6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 08:44:44 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:57599 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752463AbYFPMon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 08:44:43 -0400
-Date: Mon, 16 Jun 2008 15:43:24 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linuxppc-dev@ozlabs.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-Message-ID: <20080616124324.GC10854@cs181133002.pp.htv.fi>
-References: <18518.114.100584.607669@cargo.ozlabs.ibm.com> <18518.19857.917564.461743@cargo.ozlabs.ibm.com>
+	Mon, 16 Jun 2008 08:58:36 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:51867 "EHLO
+	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752234AbYFPM6f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 08:58:35 -0400
+X-BigFish: VPS-1(zz3117Kzz10d3izzz32i6bh65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0K2K417-02-W7S-01
+Date: Mon, 16 Jun 2008 14:58:21 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+CC: linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>
+Subject: [PATCH 5/5 v2] x86: PAT: make pat_x_mtrr_type() more readable
+Message-ID: <20080616125821.GA5213@alberich.amd.com>
+References: <20080610140755.GI5024@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <18518.19857.917564.461743@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20080610140755.GI5024@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 16 Jun 2008 12:58:22.0912 (UTC) FILETIME=[A88DD400:01C8CFB0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 16, 2008 at 09:25:05PM +1000, Paul Mackerras wrote:
-> Linus,
-> 
-> As Ben pointed out, I had forgotten to re-do a couple of defconfigs
-> where I had inadvertently turned off the SATA driver for the G5
-> powermacs.  So when you do the pull as I requested earlier from
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
-> 
-> you'll also get one more commit as listed below.
-> 
-> Thanks,
-> Paul.
-> 
->  arch/powerpc/configs/g5_defconfig    |   62 ++++++++++++++++++++++++++++++--
->  arch/powerpc/configs/ppc64_defconfig |   66 ++++++++++++++++++++++++++++++++--
->  2 files changed, 122 insertions(+), 6 deletions(-)
-> 
-> Paul Mackerras (1):
->       [POWERPC] Turn on ATA_SFF so we get SATA_SVW back in defconfigs
->...
+I've found it inconvenient to review pat_x_mtrr_type().
+Thus I slightly changed it and added some comment to make
+it more readable.
 
-What about my patch [1] to eliminate this new trap in kconfig since we 
-do not have to bother kconfig users with ATA_SFF at all?
+I've also added BUG statements for (some) unused/unhandled PAT/MTRR
+types.
 
-Besides some orthoginal discussion whether this stuff should actually be 
-called SFF I am not aware of any reactions to my patch from the ATA 
-people.
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+New patch version. (against current tip/x86/pat - v2.6.26-rc6-105-gfaeca31)
+Previous version had some conflict with another commit in tip/master.
 
-I already sent this patch twice and I can update it to the latest tree 
-if it's considered OK, but I'd like to get some ACK/NAK first.
+Regards,
+Andreas
 
-cu
-Adrian
+ arch/x86/mm/pat.c |   50 +++++++++++++++++++++++++++-----------------------
+ 1 files changed, 27 insertions(+), 23 deletions(-)
 
-[1] http://lkml.org/lkml/2008/4/21/501
-
+diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+index 4beccea..cdf2c15 100644
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -169,35 +169,39 @@ static int pat_x_mtrr_type(u64 start, u64 end, unsigned long prot,
+ 	prot &= (~_PAGE_CACHE_MASK);
+ 
+ 	/*
+-	 * We return the PAT request directly for types where PAT takes
+-	 * precedence with respect to MTRR and for UC_MINUS.
++	 * We return the PAT request directly for types where PAT
++	 * takes precedence with respect to MTRR and for UC_MINUS. In
++	 * case of pat_type==WB we have to know mtrr_type to get the
++	 * effective type.
++	 *
++	 *    effective type                ret_prot
++	 *  pat \ mtrr  WB WC UC    pat \ mtrr  WB  WC  UC
++	 *  WC          WC WC WC    WC          WC  WC  WC
++	 *  UC-         UC WC UC    UC-         UC- UC- UC-
++	 *  UC          UC UC UC    UC          UC  UC  UC
++	 *  WB          WB WC UC    WB          WB  WC  UC
++	 *
+ 	 * Consistency checks with other PAT requests is done later
+ 	 * while going through memtype list.
+ 	 */
+-	if (pat_type == _PAGE_CACHE_WC) {
++	if (pat_type == _PAGE_CACHE_WC)
+ 		*ret_prot = prot | _PAGE_CACHE_WC;
+-		return 0;
+-	} else if (pat_type == _PAGE_CACHE_UC_MINUS) {
++	else if (pat_type == _PAGE_CACHE_UC_MINUS)
+ 		*ret_prot = prot | _PAGE_CACHE_UC_MINUS;
+-		return 0;
+-	} else if (pat_type == _PAGE_CACHE_UC) {
+-		*ret_prot = prot | _PAGE_CACHE_UC;
+-		return 0;
+-	}
+-
+-	/*
+-	 * Look for MTRR hint to get the effective type in case where PAT
+-	 * request is for WB.
+-	 */
+-	mtrr_type = mtrr_type_lookup(start, end);
+-
+-	if (mtrr_type == MTRR_TYPE_UNCACHABLE) {
++	else if (pat_type == _PAGE_CACHE_UC)
+ 		*ret_prot = prot | _PAGE_CACHE_UC;
+-	} else if (mtrr_type == MTRR_TYPE_WRCOMB) {
+-		*ret_prot = prot | _PAGE_CACHE_WC;
+-	} else {
+-		*ret_prot = prot | _PAGE_CACHE_WB;
+-	}
++	else if (pat_type == _PAGE_CACHE_WB) {
++		mtrr_type = mtrr_type_lookup(start, end);
++		if (mtrr_type == MTRR_TYPE_WRBACK)
++			*ret_prot = prot | _PAGE_CACHE_WB;
++		else if (mtrr_type == MTRR_TYPE_WRCOMB)
++			*ret_prot = prot | _PAGE_CACHE_WC;
++		else if (mtrr_type == MTRR_TYPE_UNCACHABLE)
++			*ret_prot = prot | _PAGE_CACHE_UC;
++		else
++			BUG();
++	} else
++		  BUG();
+ 
+ 	return 0;
+ }
 -- 
+1.5.5.4
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+
+
 
