@@ -1,74 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755634AbYFPQX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756127AbYFPQZ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755634AbYFPQX7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 12:23:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbYFPQXw
+	id S1756127AbYFPQZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 12:25:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbYFPQZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 12:23:52 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:55770 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754186AbYFPQXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 12:23:51 -0400
-Date: Mon, 16 Jun 2008 20:26:03 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] coredump: elf_core_dump: skip kernel threads
-Message-ID: <20080616162603.GA21028@tv-sign.ru>
-Mime-Version: 1.0
+	Mon, 16 Jun 2008 12:25:49 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:60410
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754169AbYFPQZs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 12:25:48 -0400
+Date: Mon, 16 Jun 2008 18:25:44 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+Cc: Ivana Varekova <varekova@redhat.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-man@vger.kernel.org
+Subject: Re: PR_SET_SECCOMP and PR_GET_SECCOMP doc (and bug?)
+Message-ID: <20080616162543.GA9552@duo.random>
+References: <48565951.40603@gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <48565951.40603@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linux_binfmt->core_dump() runs before the process does exit_aio(), this means
-that we can hit the kernel thread which shares the same ->mm. Afaics, nothing
-really bad can happen, but perhaps it makes sense to fix this minor bug.
+Hi Michael,
 
-It is sad we have to iterate over all threads in system and use GFP_ATOMIC.
-Hopefully we can kill theses ugly do_each_thread()s, but this needs some
-nontrivial changes in mm_struct and do_coredump.
+On Mon, Jun 16, 2008 at 02:15:13PM +0200, Michael Kerrisk wrote:
+> Andrea,
+> 
+> Below is my attempt to document the SECCOMP prctl() operations that you added
+> in 2.6.23.  Could you please read, and let me know if I have the details
+> correct.  Especially take a look at the description of PR_GET_SECCOMP, whose
+> operation tends to suggest a thinko:
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+thanks for this useful doc effort!
 
- binfmt_elf.c       |    6 ++++++
- binfmt_elf_fdpic.c |    3 +++
- 2 files changed, 9 insertions(+)
+> 
+>     PR_SET_SECCOMP (since Linux 2.6.23)
+>         Set the secure computing mode for the calling  thread.   In
+>         the  current  implementation,  arg2  must  be 1.  After the
+>         secure computing mode has been set to 1,  the  only  system
+>         calls  that  the  thread  is permitted to make are read(2),
+>         write(2), _exit(2), and sigreturn(2).  Other  system  calls
+>         result in the delivery of a SIGKILL signal.  Secure comput-
+>         ing mode is useful for number-crunching  applications  that
+>         may  need  to execute untrusted byte code, perhaps obtained
+>         by reading from a pipe or socket.  This operation  is  only
+>         available  if  the kernel is configured with CONFIG_SECCOMP
+>         enabled.
+> 
+>     PR_GET_SECCOMP (since Linux 2.6.23)
+>         Return the secure computing mode  of  the  calling  thread.
+>         Not  very  useful: if the caller is not in secure computing
+>         mode, this operation returns 0; if the caller is in  secure
+>         computing  mode, then the prctl() call will cause a SIGKILL
+>         signal to be sent to the process.  This operation  is  only
+>         available  if  the kernel is configured with CONFIG_SECCOMP
+>         enabled.
+> 
+> Have I misunderstood something?  Surely it is not really intended that
 
---- 26-rc2/fs/binfmt_elf.c~CD_SKIP_KTHREAD	2008-06-02 20:46:54.000000000 +0400
-+++ 26-rc2/fs/binfmt_elf.c	2008-06-16 20:00:00.000000000 +0400
-@@ -1522,6 +1522,9 @@ static int fill_note_info(struct elfhdr 
- 	rcu_read_lock();
- 	do_each_thread(g, p)
- 		if (p->mm == dump_task->mm) {
-+			if (p->flags & PF_KTHREAD)
-+				continue;
-+
- 			t = kzalloc(offsetof(struct elf_thread_core_info,
- 					     notes[info->thread_notes]),
- 				    GFP_ATOMIC);
-@@ -1726,6 +1729,9 @@ static int fill_note_info(struct elfhdr 
- 		rcu_read_lock();
- 		do_each_thread(g, p)
- 			if (current->mm == p->mm && current != p) {
-+				if (p->flags & PF_KTHREAD)
-+					continue;
-+
- 				ets = kzalloc(sizeof(*ets), GFP_ATOMIC);
- 				if (!ets) {
- 					rcu_read_unlock();
---- 26-rc2/fs/binfmt_elf_fdpic.c~CD_SKIP_KTHREAD	2008-06-02 20:46:54.000000000 +0400
-+++ 26-rc2/fs/binfmt_elf_fdpic.c	2008-06-16 18:57:46.000000000 +0400
-@@ -1626,6 +1626,9 @@ static int elf_fdpic_core_dump(long sign
- 		rcu_read_lock();
- 		do_each_thread(g,p)
- 			if (current->mm == p->mm && current != p) {
-+				if (p->flags & PF_KTHREAD)
-+					continue;
-+
- 				tmp = kzalloc(sizeof(*tmp), GFP_ATOMIC);
- 				if (!tmp) {
- 					rcu_read_unlock();
+No, the above is exactly correct.
 
+> PR_GET_SECCOMP be this useless?  The alternatives that I can think of would be
+> that
+
+I thought that registering a PR_GET_SECCOMP next to the SET operation
+was nicer in case future modes > 1 will allow to enable/disable more
+syscalls on demand (so including prctl), if you see the prctl.h file
+has get/set and read/drop for all other prctl so retaining that
+symmetry looked natural. However I tend to agree that currently
+PR_GET_SECCOMP is mostly useless, so perhaps it was better not to
+register it at all but it doesn't really make any practical
+difference.
+
+> a) at least the call prctl(PR_GET_SECCOMP) would be among the set of permitted
+> syscalls in secure computing mode, or
+
+It's very intentional that prctl isn't one of the permitted syscalls
+with mode=1. Future modes may vary.
+
+> b) there shouldn't be a prctl(PR_GET_SECCOMP) at all.
+
+I'm not against if somebody wants to nuke GET_SECCOMP, I'm neutral on
+this, but it doesn't really waste anything relevant and at least to
+me, it looked cleaner to have it even if not useful with current
+mode=1.
