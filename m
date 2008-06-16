@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757856AbYFPSPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757538AbYFPSSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757856AbYFPSPv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 14:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbYFPSPo
+	id S1757538AbYFPSSU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 14:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbYFPSSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 14:15:44 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:41819 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752864AbYFPSPn (ORCPT
+	Mon, 16 Jun 2008 14:18:12 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:62656 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751633AbYFPSSL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 14:15:43 -0400
-Date: Mon, 16 Jun 2008 19:13:48 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Linus Torvalds <torvalds@linux-foundation.or>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Zachary Amsden <zach@vmware.com>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 1 of 4] mm: add a ptep_modify_prot transaction abstraction
-In-Reply-To: <alpine.LFD.1.10.0806161028080.2949@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0806161906490.19564@blonde.site>
-References: <b020e42384197b824320.1213615800@localhost>
- <alpine.LFD.1.10.0806161028080.2949@woody.linux-foundation.org>
+	Mon, 16 Jun 2008 14:18:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=qSLuJ9pKJ4qokH2195IXsji6DE8rmvdCdUh1ZYhnqrorVIy9p6Pa5IrLtsUsrT6ZLd
+         KkOdwgqOFR++ALni3qBaOPwPUmkR33anUGW/B568r990N3L4KCgKyfzb8kwxW6dFuwV8
+         XTHdcPV+688Di0R57YIEEZpwCrFd32GRdnsf4=
+Message-ID: <84144f020806161118n70a876aeyb5ccac7b1e21d842@mail.gmail.com>
+Date: Mon, 16 Jun 2008 21:18:11 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: [PATCH 2/3] relay: Fix race condition which occurs when reading across CPUs.
+Cc: "Eduard - Gabriel Munteanu" <eduard.munteanu@linux360.ro>,
+       "Mathieu Desnoyers" <compudj@krystal.dyndns.org>,
+       "Tom Zanussi" <tzanussi@gmail.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, righi.andrea@gmail.com
+In-Reply-To: <20080616164609.GM20851@kernel.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080613040958.4f52ee29@linux360.ro>
+	 <1213417601.8237.37.camel@charm-linux>
+	 <20080614181103.17617db1@linux360.ro> <20080616122249.GB18561@Krystal>
+	 <20080616162212.27a8c119@linux360.ro>
+	 <20080616164609.GM20851@kernel.dk>
+X-Google-Sender-Auth: 8c7a3e0988b78906
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jun 2008, Linus Torvalds wrote:
-> On Mon, 16 Jun 2008, Jeremy Fitzhardinge wrote:
-> >
-> > ptep_modify_prot_start() returns the current pte value, and puts the
-> >   pte entry into a state where either the hardware will not update the
-> >   pte, or if it does, the updates will be preserved on commit.
-> > 
-> > ptep_modify_prot_commit() writes back the updated pte, makes sure that
-> >   any hardware updates made since ptep_modify_prot_start() are
-> >   preserved.
-> 
-> Ok, I'm fine with this now that it's renamed to be clearly about just 
-> protection bits.
-> 
-> So 
-> 
-> 	Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
+Hi Jens,
 
-And seems very reasonable (and exceptionally well described) to me too.
+On Mon, Jun 16 2008, Eduard - Gabriel Munteanu wrote:
+>> In any case, if we use relay in a hot path, we are doing debugging, so
+>> a couple of atomic operations won't be a big problem. Along with
+>> setting affinity, this shouldn't be a problem.
 
-	Acked-by: Hugh Dickins <hugh@veritas.com>
+On Mon, Jun 16, 2008 at 7:46 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> Ehm no, that is a completely false claim. Relay speed does matter, a
+> great deal. We rely heavily on eg blktrace being as ligt weight as
+> possible to capture millions of events in a very short time frame
+> without impacting performance too much. Relay is NOT just for debugging.
+>
+> So I completely agree with Mathieu here, and I'm not a big fan of the
+> proposed solution.
+
+OK, so we just document that fact that you're not supposed to read
+from different CPU and be done with that? Or do you have any
+alternative fix in mind?
