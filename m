@@ -1,250 +1,1003 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbYFPOGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756379AbYFPOHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755963AbYFPOGf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 10:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbYFPOG0
+	id S1756379AbYFPOHt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 10:07:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbYFPOHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 10:06:26 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41534 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752684AbYFPOGZ (ORCPT
+	Mon, 16 Jun 2008 10:07:42 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:43307 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752684AbYFPOHk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 10:06:25 -0400
-Date: Mon, 16 Jun 2008 22:58:01 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [Patch 001/005](memory hotplug) register section/node id to free
-Cc: Badari Pulavarty <pbadari@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, Yinghai Lu <yhlu.kernel@gmail.com>
-In-Reply-To: <20080616102131.GD17016@shadowen.org>
-References: <20080407214318.8870.E1E9C6FF@jp.fujitsu.com> <20080616102131.GD17016@shadowen.org>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080616204200.9E9F.E1E9C6FF@jp.fujitsu.com>
+	Mon, 16 Jun 2008 10:07:40 -0400
+Date: Mon, 16 Jun 2008 08:07:29 -0600
+From: David Altobelli <david.altobelli@hp.com>
+To: linux-kernel@vger.kernel.org
+Cc: david.altobelli@hp.com
+Subject: [PATCH] HP iLO driver
+Message-ID: <20080616140729.GA377@ldl.fc.hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Index: current/include/linux/memory_hotplug.h
-> > ===================================================================
-> > --- current.orig/include/linux/memory_hotplug.h	2008-04-07 16:06:49.000000000 +0900
-> > +++ current/include/linux/memory_hotplug.h	2008-04-07 16:33:12.000000000 +0900
-> > @@ -11,6 +11,15 @@
-> >  struct mem_section;
-> >  
-> >  #ifdef CONFIG_MEMORY_HOTPLUG
-> > +
-> > +/*
-> > + * Magic number for free bootmem.
-> > + * The normal smallest mapcount is -1. Here is smaller value than it.
-> > + */
-> > +#define SECTION_INFO		0xfffffffe
-> > +#define MIX_INFO		0xfffffffd
-> > +#define NODE_INFO		0xfffffffc
-> 
-> Perhaps these should be defined relative to -1 to make that very
-> explicit.
-> 
-> #define SECTION_INFO	(-1 - 1)
-> #define MIX_INFO	(-1 - 2)
-> #define NODE_INFO	(-1 - 3)
-> 
+A driver for the HP iLO/iLO2 management processor, which allows userspace
+programs to query the management processor.  Programs can open a channel
+to the device (/dev/hpilo/dXccbN), and use this to send/receive queries.  
+The O_EXCL open flag is used to indicate that a particular channel cannot
+be shared between processes.  This driver will replace various packages
+HP has shipped, including hprsm and hp-ilo.
 
-Ah, ok. I'll change them. 
+	v1 -> v2
+	Changed device path to /dev/hpilo/dXccbN.
+	Removed a volatile from fifobar variable.
+	Changed ILO_NAME to remove spaces.
 
-> Also from a scan of this patch I cannot see why I might care about the
-> type of these.  Yes it appears you are going to need a marker to say
-> which bootmem pages are under this reference counted scheme and which
-> are not.  From a review perspective having some clue in the leader about
-> the type and why we care would help.
-> 
-> >From the names I was expecting SECTION related info, NODE related info,
-> and a MIXture of things.  However, SECTION seems to be the actual sections,
-> NODE seems to be pgdat information, MIX seems to be usemap?  Why is it
-> not USEMAP here?  Possibily I will find out in a later patch but a clue
-> here might help.
+Please CC me on any replies, thanks for your time.
 
-MIX_INFO might not be good name. I intended it was MIX_SECTION_INFO.
-When SECTION_INFO is specified, section_number in ->private
-can be checked which section uses this page.
-This is important for dependency check.
-
-When MIX_(SECTION_)INFO is specified, many sections uses this page.
-So, dependency check is not possible.
-Currently, this type is used for just usemap. But I thought other feature
-may use it later...
-
-
-
-> > Index: current/mm/memory_hotplug.c
-> > ===================================================================
-> > --- current.orig/mm/memory_hotplug.c	2008-04-07 16:06:49.000000000 +0900
-> > +++ current/mm/memory_hotplug.c	2008-04-07 20:08:13.000000000 +0900
-> > @@ -59,8 +59,105 @@
-> >  	return;
-> >  }
-> >  
-> > -
-> >  #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
-> > +#ifndef CONFIG_SPARSEMEM_VMEMMAP
-> > +static void get_page_bootmem(unsigned long info,  struct page *page, int magic)
-> > +{
-> > +	atomic_set(&page->_mapcount, magic);
-> > +	SetPagePrivate(page);
-> > +	set_page_private(page, info);
-> > +	atomic_inc(&page->_count);
-> > +}
-> 
-> Although I guess these 'magic' constants are effectivly magic numbers it
-> is also the type.  So I do wonder if this would be better called type.
-
-Ah, if you feel type is better than magic, then I'll change it.
-To be honest, I feel I'm not good at naming of functions/parameters.
-So, good advice is welcome.
-
-
-> > +
-> > +void put_page_bootmem(struct page *page)
-> > +{
-> > +	int magic;
-> > +
-> > +	magic = atomic_read(&page->_mapcount);
-> > +	BUG_ON(magic >= -1);
-> > +
-> > +	if (atomic_dec_return(&page->_count) == 1) {
-> > +		ClearPagePrivate(page);
-> > +		set_page_private(page, 0);
-> > +		reset_page_mapcount(page);
-> > +		__free_pages_bootmem(page, 0);
-> > +	}
-> > +
-> > +}
-> 
-> That seems pretty sensible, using _count to track track the number of
-> users of this page to allow it to be tracked.  But there was no mention
-> of this in the changelog, so I was about to complain that the get_ was a
-> strange name for something which set the magic numbers.  It mirroring
-> get_page, put_page makes the name sensible.  But please document that in
-> the changelog.
-
-Ah, sorry.
-
-> The BUG in put_page_bootmem I assume is effectivly saying "this page was
-> not reference counted and so cannot be freed with this call".  Is there
-> anything stopping us simply reference counting all bootmem allocations
-> in this manner?  So that any of them could be released?
-
-This count is just set for only memory management structure.
-
-> 
-> Also how does this scheme cope with things being merged into the end of
-> the blocks you mark as freeable.  bootmem can pack small things into the
-> end of the previous allocation if they fit and alignment allows.  Is it
-> not possible that such allocations would get packed in, but not
-> accounted for in the _count so that when hotplug frees these things the
-> bootmem page would get dropped, but still have useful data in it?
-
-(See second patch)
-
-> 
-> > +
-> > +void register_page_bootmem_info_section(unsigned long start_pfn)
-> > +{
-> > +	unsigned long *usemap, mapsize, section_nr, i;
-> > +	struct mem_section *ms;
-> > +	struct page *page, *memmap;
-> > +
-> > +	if (!pfn_valid(start_pfn))
-> > +		return;
-> > +
-> > +	section_nr = pfn_to_section_nr(start_pfn);
-> > +	ms = __nr_to_section(section_nr);
-> > +
-> > +	/* Get section's memmap address */
-> > +	memmap = sparse_decode_mem_map(ms->section_mem_map, section_nr);
-> > +
-> > +	/*
-> > +	 * Get page for the memmap's phys address
-> > +	 * XXX: need more consideration for sparse_vmemmap...
-> > +	 */
-> > +	page = virt_to_page(memmap);
-> > +	mapsize = sizeof(struct page) * PAGES_PER_SECTION;
-> > +	mapsize = PAGE_ALIGN(mapsize) >> PAGE_SHIFT;
-> > +
-> > +	/* remember memmap's page */
-> > +	for (i = 0; i < mapsize; i++, page++)
-> > +		get_page_bootmem(section_nr, page, SECTION_INFO);
-> > +
-> > +	usemap = __nr_to_section(section_nr)->pageblock_flags;
-> > +	page = virt_to_page(usemap);
-> > +
-> > +	mapsize = PAGE_ALIGN(usemap_size()) >> PAGE_SHIFT;
-> > +
-> > +	for (i = 0; i < mapsize; i++, page++)
-> > +		get_page_bootmem(section_nr, page, MIX_INFO);
-> > +
-> 
-> I am concerned that some of these pages might be in the numa remap space?
-> If they are they were not part of bootmem, will they free correctly in the
-> same manner?  They are necessarily not mapped at the correct kernel virtual
-> address so the __pa() is not going to find the right struct page is it?
-
-Good point. Yes. You are right.
-
-> 
-> Perhaps if you simply reference counted all bootmem allocations you
-> would avoid this problem?
-
-No. At least offline_pages() must distinguish followings
- A) a page will be not necessary later.
- B) a page is really busy
-
-A) is the pages for section's memmap, pgdat and so on.
-B) is others
-
-A) must be isolated final phase of memory hotplug, because they used by
-page offlining themselves. But offline_pages() is prior than final phase.
-
-B) should be freed before offline_pages(). If it is busy, offline_pages should
-be canceled.
-
-
-> > Index: current/mm/sparse.c
-> > ===================================================================
-> > --- current.orig/mm/sparse.c	2008-04-07 16:06:49.000000000 +0900
-> > +++ current/mm/sparse.c	2008-04-07 20:08:16.000000000 +0900
-> > @@ -200,7 +200,6 @@
-> >  /*
-> >   * Decode mem_map from the coded memmap
-> >   */
-> > -static
-> >  struct page *sparse_decode_mem_map(unsigned long coded_mem_map, unsigned long pnum)
-> >  {
-> >  	/* mask off the extra low bits of information */
-> > @@ -223,7 +222,7 @@
-> >  	return 1;
-> >  }
-> >  
-> > -static unsigned long usemap_size(void)
-> > +unsigned long usemap_size(void)
-> >  {
-> >  	unsigned long size_bytes;
-> >  	size_bytes = roundup(SECTION_BLOCKFLAGS_BITS, 8) / 8;
-> > 
-> 
-> I wonder if these export changes might make more sense as a separate
-> patch, they are effectivly just noise.
-
-Ah, yes. It should be separated. Sorry.
-
-Thanks.
-
--- 
-Yasunori Goto 
-
-
+Signed-off-by: David Altobelli <david.altobelli@hp.com>
+---
+ Kconfig  |   13 +
+ Makefile |    1 
+ hpilo.c  |  695 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ hpilo.h  |  218 +++++++++++++++++++
+ 4 files changed, 927 insertions(+)
+diff -urpN linux-2.6.25.orig/drivers/char/hpilo.c linux-2.6.25/drivers/char/hpilo.c
+--- linux-2.6.25.orig/drivers/char/hpilo.c	1969-12-31 18:00:00.000000000 -0600
++++ linux-2.6.25/drivers/char/hpilo.c	2008-06-16 08:56:31.000000000 -0500
+@@ -0,0 +1,695 @@
++/*
++ * Driver for HP iLO/iLO2 management processor.
++ *
++ * Copyright (C) 2008 Hewlett-Packard Development Company, L.P.
++ *	David Altobelli <david.altobelli@hp.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#include <linux/kernel.h>
++#include <linux/types.h>
++#include <linux/module.h>
++#include <linux/fs.h>
++#include <linux/pci.h>
++#include <linux/ioport.h>
++#include <linux/device.h>
++#include <linux/file.h>
++#include <linux/cdev.h>
++#include <linux/spinlock.h>
++#include <linux/delay.h>
++#include <linux/uaccess.h>
++#include <linux/io.h>
++#include "hpilo.h"
++
++static struct class *ilo_class;
++static unsigned int ilo_major;
++static char ilo_hwdev[MAX_ILO_DEV];
++
++/*
++ * FIFO queues, shared with hardware.
++ *
++ * If a queue has empty slots, an entry is added to the queue tail,
++ * and that entry is marked as occupied.
++ * Entries can be dequeued from the head of the list, when the device
++ * has marked the entry as consumed.
++ *
++ * Returns true on successful queue/dequeue, false on failure.
++ */
++static int fifo_enqueue(struct ilo_hwinfo *hw, char *fifobar, int entry)
++{
++	struct fifo *Q = FIFOBARTOHANDLE(fifobar);
++	int ret = 0;
++
++	spin_lock(&hw->fifo_lock);
++	if (!(Q->fifobar[(Q->tail + 1) & Q->imask] & ENTRY_MASK_O)) {
++		Q->fifobar[Q->tail & Q->imask] |=
++			((entry & ENTRY_MASK_NOSTATE) | Q->merge);
++		Q->tail += 1;
++		ret = 1;
++	}
++	spin_unlock(&hw->fifo_lock);
++
++	return ret;
++}
++
++static int fifo_dequeue(struct ilo_hwinfo *hw, char *fifobar, int *entry)
++{
++	struct fifo *Q = FIFOBARTOHANDLE(fifobar);
++	int ret = 0;
++	u64 c;
++
++	spin_lock(&hw->fifo_lock);
++	c = Q->fifobar[Q->head & Q->imask];
++	if (c & ENTRY_MASK_C) {
++		if (entry)
++			*entry = c & ENTRY_MASK_NOSTATE;
++
++		Q->fifobar[Q->head & Q->imask] = ((c | ENTRY_MASK) + 1);
++		Q->head += 1;
++		ret = 1;
++	}
++	spin_unlock(&hw->fifo_lock);
++
++	return ret;
++}
++
++static int ilo_pkt_enqueue(struct ilo_hwinfo *hw, struct ccb *ccb,
++			   int dir, int id, int len)
++{
++	char *fifobar;
++	int entry;
++
++	if (dir == SENDQ)
++		fifobar = ccb->ccb_u1.send_fifobar;
++	else
++		fifobar = ccb->ccb_u3.recv_fifobar;
++
++	entry = id << ENTRY_BITPOS_DESCRIPTOR |
++		QWORDS(len) << ENTRY_BITPOS_QWORDS;
++
++	return fifo_enqueue(hw, fifobar, entry);
++}
++
++static int ilo_pkt_dequeue(struct ilo_hwinfo *hw, struct ccb *ccb,
++			   int dir, int *id, int *len, void **pkt)
++{
++	char *fifobar, *desc;
++	int entry = 0, pkt_id = 0;
++	int ret;
++
++	if (dir == SENDQ) {
++		fifobar = ccb->ccb_u1.send_fifobar;
++		desc = ccb->ccb_u2.send_desc;
++	} else {
++		fifobar = ccb->ccb_u3.recv_fifobar;
++		desc = ccb->ccb_u4.recv_desc;
++	}
++
++	ret = fifo_dequeue(hw, fifobar, &entry);
++	if (ret) {
++		pkt_id = GETDESC(entry);
++		if (id)
++			*id = pkt_id;
++		if (len)
++			*len = GETQWORDS(entry) << 3;
++		if (pkt)
++			*pkt = (void *)(desc + DESC_MEM_SZ(pkt_id));
++	}
++
++	return ret;
++}
++
++static void ctrl_setup(struct ccb *ccb, int nr_desc, int l2desc_sz)
++{
++	/* for simplicity, use the same parameters for send and recv ctrls */
++	CTRL_SET(ccb->send_ctrl, l2desc_sz, nr_desc-1, nr_desc-1, 0, 1);
++	CTRL_SET(ccb->recv_ctrl, l2desc_sz, nr_desc-1, nr_desc-1, 0, 1);
++}
++
++static void fifo_setup(void *base_addr, int nr_entry)
++{
++	struct fifo *Q = base_addr;
++	int i;
++
++	/* set up an empty fifo */
++	Q->head = 0;
++	Q->tail = 0;
++	Q->reset = 0;
++	Q->nrents = nr_entry;
++	Q->imask = nr_entry - 1;
++	Q->merge = ENTRY_MASK_O;
++
++	for (i = 0; i < nr_entry; i++)
++		Q->fifobar[i] = 0;
++}
++
++static void ilo_ccb_close(struct pci_dev *pdev, struct ccb_data *data)
++{
++	struct ccb *driver_ccb;
++	struct ccb __iomem *device_ccb;
++	int retries;
++
++	driver_ccb = &data->driver_ccb;
++	device_ccb = data->mapped_ccb;
++
++	/* complicated dance to tell the hw we are stopping */
++	DOORBELL_CLR(driver_ccb);
++	iowrite32(ioread32(&device_ccb->send_ctrl) & ~(1 << CTRL_BITPOS_G),
++		  &device_ccb->send_ctrl);
++	iowrite32(ioread32(&device_ccb->recv_ctrl) & ~(1 << CTRL_BITPOS_G),
++		  &device_ccb->recv_ctrl);
++
++	/* give iLO some time to process stop request */
++	for (retries = 1000; retries > 0; retries--) {
++		DOORBELL_SET(driver_ccb);
++		udelay(1);
++		if (!(ioread32(&device_ccb->send_ctrl) & (1 << CTRL_BITPOS_A))
++		    &&
++		    !(ioread32(&device_ccb->recv_ctrl) & (1 << CTRL_BITPOS_A)))
++			break;
++	}
++	if (retries == 0)
++		dev_err(&pdev->dev, "Closing, but controller still active\n");
++
++	/* clear the hw ccb */
++	memset_io(device_ccb, 0, sizeof(struct ccb));
++
++	/* free resources used to back send/recv queues */
++	pci_free_consistent(pdev, data->dma_size, data->dma_va, data->dma_pa);
++}
++
++static int ilo_ccb_open(struct ilo_hwinfo *hw, struct ccb_data *data, int slot)
++{
++	char *dma_va, *dma_pa;
++	int pkt_id, pkt_sz, i, error;
++	struct ccb *driver_ccb, *ilo_ccb;
++	struct pci_dev *pdev;
++
++	driver_ccb = &data->driver_ccb;
++	ilo_ccb = &data->ilo_ccb;
++	pdev = hw->ilo_dev;
++
++	data->dma_size = 2 * FIFO_SZ(NR_QENTRY) +
++			 2 * DESC_MEM_SZ(NR_QENTRY) +
++			 ILO_START_ALIGN + ILO_CACHE_SZ;
++
++	error = -ENOMEM;
++	data->dma_va = pci_alloc_consistent(pdev, data->dma_size,
++					    &data->dma_pa);
++	if (!data->dma_va)
++		goto out;
++
++	dma_va = (char *)data->dma_va;
++	dma_pa = (char *)data->dma_pa;
++
++	memset(dma_va, 0, data->dma_size);
++
++	dma_va = (char *)roundup((unsigned long)dma_va, ILO_START_ALIGN);
++	dma_pa = (char *)roundup((unsigned long)dma_pa, ILO_START_ALIGN);
++
++	/*
++	 * Create two ccb's, one with virt addrs, one with phys addrs.
++	 * Copy the phys addr ccb to device shared mem.
++	 */
++	ctrl_setup(driver_ccb, NR_QENTRY, L2_QENTRY_SZ);
++	ctrl_setup(ilo_ccb, NR_QENTRY, L2_QENTRY_SZ);
++
++	fifo_setup(dma_va, NR_QENTRY);
++	driver_ccb->ccb_u1.send_fifobar = (dma_va + FIFOHANDLESIZE);
++	ilo_ccb->ccb_u1.send_fifobar = (dma_pa + FIFOHANDLESIZE);
++	dma_va += FIFO_SZ(NR_QENTRY);
++	dma_pa += FIFO_SZ(NR_QENTRY);
++
++	dma_va = (char *)roundup((unsigned long)dma_va, ILO_CACHE_SZ);
++	dma_pa = (char *)roundup((unsigned long)dma_pa, ILO_CACHE_SZ);
++
++	fifo_setup(dma_va, NR_QENTRY);
++	driver_ccb->ccb_u3.recv_fifobar = (dma_va + FIFOHANDLESIZE);
++	ilo_ccb->ccb_u3.recv_fifobar = (dma_pa + FIFOHANDLESIZE);
++	dma_va += FIFO_SZ(NR_QENTRY);
++	dma_pa += FIFO_SZ(NR_QENTRY);
++
++	driver_ccb->ccb_u2.send_desc = dma_va;
++	ilo_ccb->ccb_u2.send_desc = dma_pa;
++	dma_pa += DESC_MEM_SZ(NR_QENTRY);
++	dma_va += DESC_MEM_SZ(NR_QENTRY);
++
++	driver_ccb->ccb_u4.recv_desc = dma_va;
++	ilo_ccb->ccb_u4.recv_desc = dma_pa;
++
++	driver_ccb->channel = slot;
++	ilo_ccb->channel = slot;
++
++	driver_ccb->ccb_u5.db_base = hw->db_vaddr + (slot << L2_DB_SIZE);
++	ilo_ccb->ccb_u5.db_base = NULL; /* hw ccb's doorbell is not used */
++
++	/* copy the ccb with physical addrs to device memory */
++	data->mapped_ccb = (struct ccb __iomem *)
++				(hw->ram_vaddr + (slot * ILOHW_CCB_SZ));
++	memcpy_toio(data->mapped_ccb, ilo_ccb, sizeof(struct ccb));
++
++	/* put packets on the send and receive queues */
++	pkt_sz = 0;
++	for (pkt_id = 0; pkt_id < NR_QENTRY; pkt_id++) {
++		ilo_pkt_enqueue(hw, driver_ccb, SENDQ, pkt_id, pkt_sz);
++		DOORBELL_SET(driver_ccb);
++	}
++
++	pkt_sz = DESC_MEM_SZ(1);
++	for (pkt_id = 0; pkt_id < NR_QENTRY; pkt_id++)
++		ilo_pkt_enqueue(hw, driver_ccb, RECVQ, pkt_id, pkt_sz);
++
++	DOORBELL_CLR(driver_ccb);
++
++	/* make sure iLO is really handling requests */
++	for (i = 1000; i > 0; i--) {
++		if (ilo_pkt_dequeue(hw, driver_ccb, SENDQ, &pkt_id, NULL, NULL))
++			break;
++		udelay(1);
++	}
++
++	if (i) {
++		ilo_pkt_enqueue(hw, driver_ccb, SENDQ, pkt_id, 0);
++		DOORBELL_SET(driver_ccb);
++	} else {
++		dev_err(&pdev->dev, "Open could not dequeue a packet\n");
++		error = -EBUSY;
++		goto free;
++	}
++
++	return 0;
++free:
++	pci_free_consistent(pdev, data->dma_size, data->dma_va, data->dma_pa);
++out:
++	return error;
++}
++
++static void ilo_locked_reset(struct ilo_hwinfo *hw)
++{
++	int slot;
++
++	/*
++	 * Mapped memory is zeroed on ilo reset, so set a per ccb flag
++	 * to indicate that this ccb needs to be closed and reopened.
++	 */
++	for (slot = 0; slot < MAX_CCB; slot++) {
++		if (!hw->ccb_alloc[slot])
++			continue;
++		SET_CHANNEL_RESET(&hw->ccb_alloc[slot]->driver_ccb);
++	}
++
++	CLEAR_DEVICE(hw);
++}
++
++static void ilo_reset(struct ilo_hwinfo *hw)
++{
++	spin_lock(&hw->alloc_lock);
++
++	/* reset might have been handled after lock was taken */
++	if (IS_DEVICE_RESET(hw))
++		ilo_locked_reset(hw);
++
++	spin_unlock(&hw->alloc_lock);
++}
++
++static ssize_t ilo_read(struct file *fp, char __user *buf,
++			size_t len, loff_t *off)
++{
++	int err, found, cnt, pkt_id, pkt_len;
++	struct ccb_data *data;
++	struct ccb *driver_ccb;
++	struct ilo_hwinfo *hw;
++	void *pkt;
++
++	data = fp->private_data;
++	driver_ccb = &data->driver_ccb;
++	hw = data->ilo_hw;
++
++	if (IS_DEVICE_RESET(hw) || IS_CHANNEL_RESET(driver_ccb)) {
++		/*
++		 * If the device has been reset, applications
++		 * need to close and reopen all ccbs.
++		 */
++		ilo_reset(hw);
++		return -ENODEV;
++	}
++
++	/*
++	 * This function is to be called when data is expected
++	 * in the channel, and will return an error if no packet is found
++	 * during the loop below.  The sleep/retry logic is to allow
++	 * applications to call read() immediately post write(),
++	 * and give iLO some time to process the sent packet.
++	 */
++	cnt = 20;
++	do {
++		/* look for a received packet */
++		found = ilo_pkt_dequeue(hw, driver_ccb, RECVQ, &pkt_id,
++					&pkt_len, &pkt);
++		if (found)
++			break;
++		cnt--;
++		msleep(100);
++	} while (!found && cnt);
++
++	if (!found)
++		return -EAGAIN;
++
++	/* only copy the length of the received packet */
++	if (pkt_len < len)
++		len = pkt_len;
++
++	err = copy_to_user(buf, pkt, len);
++
++	/* return the received packet to the queue */
++	ilo_pkt_enqueue(hw, driver_ccb, RECVQ, pkt_id, DESC_MEM_SZ(1));
++
++	return (err ? -EFAULT : len);
++}
++
++static ssize_t ilo_write(struct file *fp, const char __user *buf,
++			 size_t len, loff_t *off)
++{
++	int err, pkt_id, pkt_len;
++	struct ccb_data *data;
++	struct ccb *driver_ccb;
++	struct ilo_hwinfo *hw;
++	void *pkt;
++
++	data = fp->private_data;
++	driver_ccb = &data->driver_ccb;
++	hw = data->ilo_hw;
++
++	if (IS_DEVICE_RESET(hw) || IS_CHANNEL_RESET(driver_ccb)) {
++		/*
++		 * If the device has been reset, applications
++		 * need to close and reopen all ccbs.
++		 */
++		ilo_reset(hw);
++		return -ENODEV;
++	}
++
++	/* get a packet to send the user command */
++	if (!ilo_pkt_dequeue(hw, driver_ccb, SENDQ, &pkt_id, &pkt_len, &pkt))
++		return -EBUSY;
++
++	/* limit the length to the length of the packet */
++	if (pkt_len < len)
++		len = pkt_len;
++
++	/* on failure, set the len to 0 to return empty packet to the device */
++	err = copy_from_user(pkt, buf, len);
++	if (err)
++		len = 0;
++
++	/* send the packet */
++	ilo_pkt_enqueue(hw, driver_ccb, SENDQ, pkt_id, len);
++	DOORBELL_SET(driver_ccb);
++
++	return (err ? -EFAULT : len);
++}
++
++static int ilo_close(struct inode *ip, struct file *fp)
++{
++	int slot;
++	struct ccb_data *data;
++	struct ilo_hwinfo *hw;
++
++	slot = iminor(ip) % MAX_CCB;
++	hw = container_of(ip->i_cdev, struct ilo_hwinfo, cdev);
++
++	spin_lock(&hw->alloc_lock);
++
++	if (IS_DEVICE_RESET(hw))
++		ilo_locked_reset(hw);
++
++	if (hw->ccb_alloc[slot]->ccb_cnt == 1) {
++
++		data = fp->private_data;
++
++		ilo_ccb_close(hw->ilo_dev, data);
++
++		kfree(data);
++		hw->ccb_alloc[slot] = NULL;
++	} else
++		hw->ccb_alloc[slot]->ccb_cnt--;
++
++	spin_unlock(&hw->alloc_lock);
++
++	return 0;
++}
++
++static int ilo_open(struct inode *ip, struct file *fp)
++{
++	int slot, error;
++	struct ccb_data *data;
++	struct ilo_hwinfo *hw;
++
++	slot = iminor(ip) % MAX_CCB;
++	hw = container_of(ip->i_cdev, struct ilo_hwinfo, cdev);
++
++	spin_lock(&hw->alloc_lock);
++
++	if (IS_DEVICE_RESET(hw))
++		ilo_locked_reset(hw);
++
++	/* each fd private_data holds sw/hw view of ccb */
++	if (hw->ccb_alloc[slot] == NULL) {
++		/* new ccb allocation */
++		error = -ENOMEM;
++		data = kzalloc(sizeof(struct ccb_data), GFP_KERNEL);
++		if (!data)
++			goto out;
++
++		/* create a channel control block for this minor */
++		error = ilo_ccb_open(hw, data, slot);
++		if (error)
++			goto free;
++
++		hw->ccb_alloc[slot] = data;
++		hw->ccb_alloc[slot]->ccb_cnt = 1;
++		hw->ccb_alloc[slot]->ccb_excl = fp->f_flags & O_EXCL;
++		hw->ccb_alloc[slot]->ilo_hw = hw;
++	} else if (fp->f_flags & O_EXCL || hw->ccb_alloc[slot]->ccb_excl) {
++		/* either this open or a previous open wants exclusive access */
++		error = -EBUSY;
++		goto out;
++	} else
++		hw->ccb_alloc[slot]->ccb_cnt++;
++
++	spin_unlock(&hw->alloc_lock);
++
++	fp->private_data = hw->ccb_alloc[slot];
++
++	return 0;
++free:
++	kfree(data);
++out:
++	spin_unlock(&hw->alloc_lock);
++	return error;
++}
++
++static const struct file_operations ilo_fops = {
++	THIS_MODULE,
++	.read		= ilo_read,
++	.write		= ilo_write,
++	.open 		= ilo_open,
++	.release 	= ilo_close,
++};
++
++static void ilo_unmap_device(struct pci_dev *pdev, struct ilo_hwinfo *hw)
++{
++	pci_iounmap(pdev, hw->db_vaddr);
++	pci_iounmap(pdev, hw->ram_vaddr);
++	pci_iounmap(pdev, hw->mmio_vaddr);
++}
++
++static int __devinit ilo_map_device(struct pci_dev *pdev, struct ilo_hwinfo *hw)
++{
++	int error = -ENOMEM;
++
++	/* map the memory mapped i/o registers */
++	hw->mmio_vaddr = pci_iomap(pdev, 1, 0);
++	if (hw->mmio_vaddr == NULL) {
++		dev_err(&pdev->dev, "Error mapping mmio\n");
++		goto out;
++	}
++
++	/* map the adapter shared memory region */
++	hw->ram_vaddr = pci_iomap(pdev, 2, MAX_CCB * ILOHW_CCB_SZ);
++	if (hw->ram_vaddr == NULL) {
++		dev_err(&pdev->dev, "Error mapping shared mem\n");
++		goto mmio_free;
++	}
++
++	/* map the doorbell aperture */
++	hw->db_vaddr = pci_iomap(pdev, 3, MAX_CCB * ONE_DB_SIZE);
++	if (hw->db_vaddr == NULL) {
++		dev_err(&pdev->dev, "Error mapping doorbell\n");
++		goto ram_free;
++	}
++
++	return 0;
++ram_free:
++	pci_iounmap(pdev, hw->ram_vaddr);
++mmio_free:
++	pci_iounmap(pdev, hw->mmio_vaddr);
++out:
++	return error;
++}
++
++static void ilo_remove(struct pci_dev *pdev)
++{
++	int i, minor;
++	struct ilo_hwinfo *ilo_hw = pci_get_drvdata(pdev);
++
++	CLEAR_DEVICE(ilo_hw);
++
++	minor = MINOR(ilo_hw->cdev.dev);
++	for (i = minor; i < minor + MAX_CCB; i++)
++		device_destroy(ilo_class, MKDEV(ilo_major, i));
++
++	cdev_del(&ilo_hw->cdev);
++	ilo_unmap_device(pdev, ilo_hw);
++	pci_release_regions(pdev);
++	pci_disable_device(pdev);
++	kfree(ilo_hw);
++	ilo_hwdev[(minor / MAX_CCB)] = 0;
++}
++
++static int __devinit ilo_probe(struct pci_dev *pdev,
++			       const struct pci_device_id *ent)
++{
++	int devnum, minor, start, error;
++	struct ilo_hwinfo *ilo_hw;
++
++	/* find a free range for device files */
++	for (devnum = 0; devnum < MAX_ILO_DEV; devnum++) {
++		if (ilo_hwdev[devnum] == 0) {
++			ilo_hwdev[devnum] = 1;
++			break;
++		}
++	}
++
++	if (devnum == MAX_ILO_DEV) {
++		dev_err(&pdev->dev, "Error finding free device\n");
++		return -ENODEV;
++	}
++
++	/* track global allocations for this device */
++	error = -ENOMEM;
++	ilo_hw = kzalloc(sizeof(struct ilo_hwinfo), GFP_KERNEL);
++	if (!ilo_hw)
++		goto out;
++
++	ilo_hw->ilo_dev = pdev;
++	spin_lock_init(&ilo_hw->alloc_lock);
++	spin_lock_init(&ilo_hw->fifo_lock);
++
++	error = pci_enable_device(pdev);
++	if (error)
++		goto free;
++
++	pci_set_master(pdev);
++
++	error = pci_request_regions(pdev, ILO_NAME);
++	if (error)
++		goto disable;
++
++	error = ilo_map_device(pdev, ilo_hw);
++	if (error)
++		goto free_regions;
++
++	pci_set_drvdata(pdev, ilo_hw);
++	CLEAR_DEVICE(ilo_hw);
++
++	cdev_init(&ilo_hw->cdev, &ilo_fops);
++	ilo_hw->cdev.owner = THIS_MODULE;
++	start = devnum * MAX_CCB;
++	error = cdev_add(&ilo_hw->cdev, MKDEV(ilo_major, start), MAX_CCB);
++	if (error) {
++		dev_err(&pdev->dev, "Could not add cdev\n");
++		goto unmap;
++	}
++
++	for (minor = 0 ; minor < MAX_CCB; minor++) {
++		if (IS_ERR(device_create(ilo_class, &pdev->dev,
++					 MKDEV(ilo_major, minor),
++					 "hpilo!d%dccb%d", devnum, minor)))
++			dev_err(&pdev->dev, "Could not create files\n");
++	}
++
++	return 0;
++unmap:
++	ilo_unmap_device(pdev, ilo_hw);
++free_regions:
++	pci_release_regions(pdev);
++disable:
++	pci_disable_device(pdev);
++free:
++	kfree(ilo_hw);
++out:
++	ilo_hwdev[devnum] = 0;
++	return error;
++}
++
++static struct pci_device_id ilo_devices[] = {
++	{ PCI_DEVICE(PCI_VENDOR_ID_COMPAQ, 0xB204) },
++	{ }
++};
++MODULE_DEVICE_TABLE(pci, ilo_devices);
++
++static struct pci_driver ilo_driver = {
++	.name 	  = ILO_NAME,
++	.id_table = ilo_devices,
++	.probe 	  = ilo_probe,
++	.remove   = __devexit_p(ilo_remove),
++};
++
++static int __init ilo_init(void)
++{
++	int error;
++	dev_t dev;
++
++	ilo_class = class_create(THIS_MODULE, "iLO");
++	if (IS_ERR(ilo_class)) {
++		error = PTR_ERR(ilo_class);
++		goto out;
++	}
++
++	error = alloc_chrdev_region(&dev, 0, MAX_OPEN, ILO_NAME);
++	if (error)
++		goto class_destroy;
++
++	ilo_major = MAJOR(dev);
++
++	error =	pci_register_driver(&ilo_driver);
++	if (error)
++		goto chr_remove;
++
++	return 0;
++chr_remove:
++	unregister_chrdev_region(dev, MAX_OPEN);
++class_destroy:
++	class_destroy(ilo_class);
++out:
++	return error;
++}
++
++static void __exit ilo_exit(void)
++{
++	pci_unregister_driver(&ilo_driver);
++	unregister_chrdev_region(MKDEV(ilo_major, 0), MAX_OPEN);
++	class_destroy(ilo_class);
++}
++
++MODULE_VERSION("0.02");
++MODULE_ALIAS(ILO_NAME);
++MODULE_DESCRIPTION(ILO_NAME);
++MODULE_AUTHOR("David Altobelli <david.altobelli@hp.com>");
++MODULE_LICENSE("GPL v2");
++
++module_init(ilo_init);
++module_exit(ilo_exit);
+diff -urpN linux-2.6.25.orig/drivers/char/hpilo.h linux-2.6.25/drivers/char/hpilo.h
+--- linux-2.6.25.orig/drivers/char/hpilo.h	1969-12-31 18:00:00.000000000 -0600
++++ linux-2.6.25/drivers/char/hpilo.h	2008-06-16 08:56:31.000000000 -0500
+@@ -0,0 +1,218 @@
++/*
++ * linux/drivers/char/hpilo.h
++ *
++ * Copyright (C) 2008 Hewlett-Packard Development Company, L.P.
++ *	David Altobelli <david.altobelli@hp.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#ifndef __HPILO_H
++#define __HPILO_H
++
++#define ILO_NAME "hpilo"
++
++/* max number of open channel control blocks per device, hw limited to 32 */
++#define MAX_CCB		8
++/* max number of supported devices */
++#define MAX_ILO_DEV	1
++/* max number of files */
++#define MAX_OPEN	MAX_CCB * MAX_ILO_DEV
++
++/*
++ * Per device, used to track global memory allocations.
++ */
++struct ilo_hwinfo {
++	/* mmio registers on device */
++	char __iomem *mmio_vaddr;
++
++	/* doorbell registers on device */
++	char __iomem *db_vaddr;
++
++	/* shared memory on device used for channel control blocks */
++	char __iomem *ram_vaddr;
++
++	/* files corresponding to this device */
++	struct ccb_data *ccb_alloc[MAX_CCB];
++
++	struct pci_dev *ilo_dev;
++
++	spinlock_t alloc_lock;
++	spinlock_t fifo_lock;
++
++	struct cdev cdev;
++};
++
++/* offset from mmio_vaddr */
++#define DB_OUT		0xD4
++/* check for global reset condition */
++#define IS_DEVICE_RESET(hw) (ioread32(&(hw)->mmio_vaddr[DB_OUT]) & (1 << 26))
++/* clear the device (reset bits, pending channel entries) */
++#define CLEAR_DEVICE(hw)    (iowrite32(-1, &(hw)->mmio_vaddr[DB_OUT]))
++
++/*
++ * Channel control block. Used to manage hardware queues.
++ * The format must match hw's version.  The hw ccb is 128 bytes,
++ * but the context area shouldn't be touched by the driver.
++ */
++#define ILOSW_CCB_SZ	64
++#define ILOHW_CCB_SZ 	128
++struct ccb {
++	union {
++		char *send_fifobar;
++		u64 padding1;
++	} ccb_u1;
++	union {
++		char *send_desc;
++		u64 padding2;
++	} ccb_u2;
++	u64 send_ctrl;
++
++	union {
++		char *recv_fifobar;
++		u64 padding3;
++	} ccb_u3;
++	union {
++		char *recv_desc;
++		u64 padding4;
++	} ccb_u4;
++	u64 recv_ctrl;
++
++	union {
++		char __iomem *db_base;
++		u64 padding5;
++	} ccb_u5;
++
++	u64 channel;
++
++	/* unused context area (64 bytes) */
++};
++
++/* ccb queue parameters */
++#define SENDQ		1
++#define RECVQ 		2
++#define NR_QENTRY    	4
++#define L2_QENTRY_SZ 	12
++#define DESC_MEM_SZ(_descs) ((_descs) << L2_QENTRY_SZ)
++
++/* ccb ctrl bitfields */
++#define CTRL_BITPOS_L2SZ             0
++#define CTRL_BITPOS_FIFOINDEXMASK    4
++#define CTRL_BITPOS_DESCLIMIT        18
++#define CTRL_BITPOS_A                30
++#define CTRL_BITPOS_G                31
++
++#define CTRL_SET(_c, _l, _f, _d, _a, _g)	 \
++	((_c) =			 	 	 \
++	 (((_l) << CTRL_BITPOS_L2SZ)		|\
++	  ((_f) << CTRL_BITPOS_FIFOINDEXMASK)	|\
++	  ((_d) << CTRL_BITPOS_DESCLIMIT)	|\
++	  ((_a) << CTRL_BITPOS_A)		|\
++	  ((_g) << CTRL_BITPOS_G)))
++
++/* ccb doorbell macros */
++#define L2_DB_SIZE		14
++#define ONE_DB_SIZE		(1 << L2_DB_SIZE)
++#define DOORBELL_SET(_ccb)	(iowrite8(1, (_ccb)->ccb_u5.db_base))
++#define DOORBELL_CLR(_ccb)	(iowrite8(2, (_ccb)->ccb_u5.db_base))
++
++/*
++ * Per fd structure used to track the ccb allocated to that dev file.
++ */
++struct ccb_data {
++	/* software version of ccb, using virtual addrs */
++	struct ccb  driver_ccb;
++
++	/* hardware version of ccb, using physical addrs */
++	struct ccb  ilo_ccb;
++
++	/* hardware ccb is written to this shared mapped device memory */
++	struct ccb __iomem *mapped_ccb;
++
++	/* dma'able memory used for send/recv queues */
++	void       *dma_va;
++	dma_addr_t  dma_pa;
++	size_t      dma_size;
++
++	/* pointer to hardware device info */
++	struct ilo_hwinfo *ilo_hw;
++
++	/* usage count, to allow for shared ccb's */
++	int	    ccb_cnt;
++
++	/* open wanted exclusive access to this ccb */
++	int	    ccb_excl;
++};
++
++/*
++ * FIFO queue structure, shared with hw.
++ */
++#define ILO_START_ALIGN	4096
++#define ILO_CACHE_SZ 	 128
++struct fifo {
++    u64 nrents;	/* user requested number of fifo entries */
++    u64 imask;  /* mask to extract valid fifo index */
++    u64 merge;	/*  O/C bits to merge in during enqueue operation */
++    u64 reset;	/* set to non-zero when the target device resets */
++    u8  pad_0[ILO_CACHE_SZ - (sizeof(u64) * 4)];
++
++    u64 head;
++    u8  pad_1[ILO_CACHE_SZ - (sizeof(u64))];
++
++    u64 tail;
++    u8  pad_2[ILO_CACHE_SZ - (sizeof(u64))];
++
++    u64 fifobar[1];
++};
++
++/* convert between struct fifo, and the fifobar, which is saved in the ccb */
++#define FIFOHANDLESIZE (sizeof(struct fifo) - sizeof(u64))
++#define FIFOBARTOHANDLE(_fifo) \
++	((struct fifo *)(((char *)(_fifo)) - FIFOHANDLESIZE))
++
++/* set a flag indicating this channel needs a reset */
++#define SET_CHANNEL_RESET(_ccb) \
++	(FIFOBARTOHANDLE((_ccb)->ccb_u1.send_fifobar)->reset = 1)
++
++/* check for this particular channel needing a reset */
++#define IS_CHANNEL_RESET(_ccb) \
++	(FIFOBARTOHANDLE((_ccb)->ccb_u1.send_fifobar)->reset)
++
++/* overall size of a fifo is determined by the number of entries it contains */
++#define FIFO_SZ(_num) (((_num)*sizeof(u64)) + FIFOHANDLESIZE)
++
++/* the number of qwords to consume from the entry descriptor */
++#define ENTRY_BITPOS_QWORDS      0
++/* descriptor index number (within a specified queue) */
++#define ENTRY_BITPOS_DESCRIPTOR  10
++/* state bit, fifo entry consumed by consumer */
++#define ENTRY_BITPOS_C           22
++/* state bit, fifo entry is occupied */
++#define ENTRY_BITPOS_O           23
++
++#define ENTRY_BITS_QWORDS        10
++#define ENTRY_BITS_DESCRIPTOR    12
++#define ENTRY_BITS_C             1
++#define ENTRY_BITS_O             1
++#define ENTRY_BITS_TOTAL	\
++	(ENTRY_BITS_C + ENTRY_BITS_O + \
++	 ENTRY_BITS_QWORDS + ENTRY_BITS_DESCRIPTOR)
++
++/* extract various entry fields */
++#define ENTRY_MASK ((1 << ENTRY_BITS_TOTAL) - 1)
++#define ENTRY_MASK_C (((1 << ENTRY_BITS_C) - 1) << ENTRY_BITPOS_C)
++#define ENTRY_MASK_O (((1 << ENTRY_BITS_O) - 1) << ENTRY_BITPOS_O)
++#define ENTRY_MASK_QWORDS \
++	(((1 << ENTRY_BITS_QWORDS) - 1) << ENTRY_BITPOS_QWORDS)
++#define ENTRY_MASK_DESCRIPTOR \
++	(((1 << ENTRY_BITS_DESCRIPTOR) - 1) << ENTRY_BITPOS_DESCRIPTOR)
++
++#define ENTRY_MASK_NOSTATE (ENTRY_MASK >> (ENTRY_BITS_C + ENTRY_BITS_O))
++
++#define GETQWORDS(_e) (((_e) & ENTRY_MASK_QWORDS) >> ENTRY_BITPOS_QWORDS)
++#define GETDESC(_e) (((_e) & ENTRY_MASK_DESCRIPTOR) >> ENTRY_BITPOS_DESCRIPTOR)
++
++#define QWORDS(_B) (((_B) & 7) ? (((_B) >> 3) + 1) : ((_B) >> 3))
++
++#endif /* __HPILO_H */
+diff -urpN linux-2.6.25.orig/drivers/char/Kconfig linux-2.6.25/drivers/char/Kconfig
+--- linux-2.6.25.orig/drivers/char/Kconfig	2008-04-30 16:42:55.000000000 -0500
++++ linux-2.6.25/drivers/char/Kconfig	2008-06-16 08:23:36.000000000 -0500
+@@ -1049,5 +1049,18 @@ config DEVPORT
+ 
+ source "drivers/s390/char/Kconfig"
+ 
++config HP_ILO
++	tristate "Channel interface driver for HP iLO/iLO2 processor"
++	default n
++	help
++	  The channel interface driver allows applications to communicate
++	  with iLO/iLO2 management processors present on HP ProLiant
++	  servers.  Upon loading, the driver creates /dev/hpilo/dXccbN files, 
++	  which can be used to gather data from the management processor,
++	  via read and write system calls.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called hpilo.
++	
+ endmenu
+ 
+diff -urpN linux-2.6.25.orig/drivers/char/Makefile linux-2.6.25/drivers/char/Makefile
+--- linux-2.6.25.orig/drivers/char/Makefile	2008-04-30 16:42:56.000000000 -0500
++++ linux-2.6.25/drivers/char/Makefile	2008-05-22 16:22:28.000000000 -0500
+@@ -97,6 +97,7 @@ obj-$(CONFIG_CS5535_GPIO)	+= cs5535_gpio
+ obj-$(CONFIG_GPIO_VR41XX)	+= vr41xx_giu.o
+ obj-$(CONFIG_GPIO_TB0219)	+= tb0219.o
+ obj-$(CONFIG_TELCLOCK)		+= tlclk.o
++obj-$(CONFIG_HP_ILO)		+= hpilo.o
+ 
+ obj-$(CONFIG_MWAVE)		+= mwave/
+ obj-$(CONFIG_AGP)		+= agp/
