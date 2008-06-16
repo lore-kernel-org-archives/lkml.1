@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761533AbYFPJLO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761580AbYFPJMK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761533AbYFPJLO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 05:11:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757066AbYFPJK7
+	id S1761580AbYFPJMK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 05:12:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757181AbYFPJL5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 05:10:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42455 "EHLO mx1.redhat.com"
+	Mon, 16 Jun 2008 05:11:57 -0400
+Received: from mga02.intel.com ([134.134.136.20]:59016 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751219AbYFPJK6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 05:10:58 -0400
-Date: Mon, 16 Jun 2008 05:10:34 -0400
-From: Alan Cox <alan@redhat.com>
-To: Adam Williamson <awilliamson@mandriva.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@redhat.com>
-Subject: Re: [Bug 10868] Oops on loading ipaq module since 2.6.26, prevents	use of device
-Message-ID: <20080616091034.GA15790@devserv.devel.redhat.com>
-References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik> <Jn7irxIunJK.A.hXD.3IDVIB@albercik> <20080614222621.084522fe@lxorguk.ukuu.org.uk> <1213512291.7393.0.camel@lenovo.local.net>
+	id S1752132AbYFPJL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 05:11:56 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,651,1204531200"; 
+   d="scan'208";a="397334586"
+Subject: Re: [PATCH 4/8] x86 boot: allow overlapping ebda and efi memmap
+	memory ranges
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Paul Jackson <pj@sgi.com>
+Cc: mingo@elte.hu, tglx@linutronix.de, yhlu.kernel@gmail.com, steiner@sgi.com,
+       travis@sgi.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org, akpm@linux-foundation.org
+In-Reply-To: <20080616040904.6f684c76.pj@sgi.com>
+References: <20080616062945.14597.78009.sendpatchset@polaris-admin.engr.sgi.com>
+	 <20080616063001.14597.96170.sendpatchset@polaris-admin.engr.sgi.com>
+	 <1213600062.11185.13.camel@caritas-dev.intel.com>
+	 <20080616032457.718f4d87.pj@sgi.com>
+	 <1213606435.12968.14.camel@caritas-dev.intel.com>
+	 <20080616040904.6f684c76.pj@sgi.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 16 Jun 2008 17:14:19 +0800
+Message-Id: <1213607659.13629.0.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1213512291.7393.0.camel@lenovo.local.net>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
+X-Mailer: Evolution 2.22.1 
+X-OriginalArrivalTime: 16 Jun 2008 09:11:22.0516 (UTC) FILETIME=[F22A5540:01C8CF90]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 14, 2008 at 11:44:51PM -0700, Adam Williamson wrote:
-> > Still waiting for the actual attached result of the test patch to debug
-> > this further. Guess it will miss 2.6.26
+On Mon, 2008-06-16 at 04:09 -0500, Paul Jackson wrote:
+> Huang wrote:
+> > I think it is sufficient for boot loader to avoid memory area from
+> > 0x9f000 to 0x100000. This can be seen as compatible code for legacy
+> > BIOS.
 > 
-> I replied via email - as you requested earlier in the thread - and
-> attached the result to that email. Did you not get it?
+> That might work -- I'll give it a try.
+> 
+> > I think if EBDA area is used in EFI system, it should be reserved in EFI
+> > memory map.
+> 
+> Would you recommend doing this with code in arch/x86/kernel/head.c,
+> that did not invoke reserve_ebda_region() if efi_enabled was set?
 
-Andrew may have asked you to use email not me.
+Yes.
 
-The last I have is "Okay, output with the patch is attached. Thanks for your help"
-
-only the output in question isn't attached to the bug ?
-
-Alan
-
+Best Regards,
+Huang Ying
