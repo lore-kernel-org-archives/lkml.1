@@ -1,171 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757731AbYFPSJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758001AbYFPSJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757731AbYFPSJV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 14:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbYFPSJO
+	id S1758001AbYFPSJv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 14:09:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbYFPSJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 14:09:14 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:48400 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751468AbYFPSJN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 14:09:13 -0400
-Date: Mon, 16 Jun 2008 20:09:11 +0200
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: Joel Becker <Joel.Becker@oracle.com>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: [PATCH][BUGFIX] configfs: Fix symlink() to a removing item
-Message-ID: <20080616180911.GV30804@localhost>
-Reply-To: Louis.Rilling@kerlabs.com
+	Mon, 16 Jun 2008 14:09:43 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:59583 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754214AbYFPSJm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 14:09:42 -0400
+Date: Mon, 16 Jun 2008 13:09:38 -0500
+From: Paul Jackson <pj@sgi.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: hpa@zytor.com, ying.huang@intel.com, mingo@elte.hu, tglx@linutronix.de,
+       steiner@sgi.com, travis@sgi.com, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 4/8] x86 boot: allow overlapping ebda and efi memmap
+ memory ranges
+Message-Id: <20080616130938.527283f7.pj@sgi.com>
+In-Reply-To: <86802c440806161041v5f582d4y2a65adf57451a6d9@mail.gmail.com>
+References: <20080616062945.14597.78009.sendpatchset@polaris-admin.engr.sgi.com>
+	<20080616063001.14597.96170.sendpatchset@polaris-admin.engr.sgi.com>
+	<1213600062.11185.13.camel@caritas-dev.intel.com>
+	<20080616032457.718f4d87.pj@sgi.com>
+	<1213606435.12968.14.camel@caritas-dev.intel.com>
+	<48568B56.7060307@zytor.com>
+	<20080616113806.2ff4c1a4.pj@sgi.com>
+	<48569D62.9050107@zytor.com>
+	<20080616123721.bb9195e6.pj@sgi.com>
+	<86802c440806161041v5f582d4y2a65adf57451a6d9@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-18240-1213639663-0001-2"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Yinghai wrote:
+> like to see to make reserve_ebda_region() more smart like the old
+> way when andi introduced ebda_size... instead of reserve 0x9000 to
+> 0x100000 all the way.
 
---=_bohort-18240-1213639663-0001-2
-Content-Type: multipart/mixed; boundary="ahZICQ7iXVM/oLYH"
-Content-Disposition: inline
+Looking back at some older kernels, that code seems to have setup an
+ebda region only if there was a non-zero real mode pointer at 0x40E.
 
+This is rather different than always setting up such a region.
 
---ahZICQ7iXVM/oLYH
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I would hesitate myself to re-introduce that code, because I know
+too little, and have no pressing need for it.
 
-Hi, the following patch fixes the symlink bug I mentioned a few days ago.
-Thanks for your comments.
+I will leave to others the desirability of such a change.
 
-Louis
-
---=20
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
-
---ahZICQ7iXVM/oLYH
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="configfs-do-not-symlink-to-removing-item.patch"
-Content-Transfer-Encoding: quoted-printable
-
-configfs: Fix symlink() to a removing item
-
-[Applies on top of rename() vs rmdir() deadlock fix patchset]
-
-The rule for configfs symlinks is that symlinks always point to valid
-config_items, and prevent the target from being removed. However,
-configfs_symlink() only checks that it can grab a reference on the target i=
-tem,
-without ensuring that it remains alive until the symlink is correctly attac=
-hed.
-
-This patch makes configfs_symlink() fail whenever the target is being remov=
-ed,
-using the CONFIGFS_USET_DROPPING flag set by configfs_detach_prep() and
-protected by configfs_dirent_lock.
-
-This patch introduces a similar (weird?) behavior as with mkdir failures ma=
-king
-rmdir fail: if symlink() races with rmdir() of the parent directory (or its
-youngest user-created ancestor if parent is a default group) or rmdir() of =
-the
-target directory, and then fails in configfs_create(), this can make the ra=
-cing
-rmdir() fail despite the concerned directory having no user-created entry (=
-resp.
-no symlink pointing to it or one of its default groups) in the end.
-If this behavior is found unacceptable, I'll submit a fix in the same spiri=
-t as
-the racing mkdir() fix.
-
-Signed-off-by: Louis Rilling <Louis.Rilling@kerlabs.com>
----
- fs/configfs/dir.c     |   14 +++++++-------
- fs/configfs/symlink.c |    6 ++++++
- 2 files changed, 13 insertions(+), 7 deletions(-)
-
-Index: b/fs/configfs/dir.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- a/fs/configfs/dir.c	2008-06-16 19:35:57.000000000 +0200
-+++ b/fs/configfs/dir.c	2008-06-16 19:38:47.000000000 +0200
-@@ -370,6 +370,9 @@ static int configfs_detach_prep(struct d
- 	struct configfs_dirent *sd;
- 	int ret;
-=20
-+	/* Mark that we're trying to drop the group */
-+	parent_sd->s_type |=3D CONFIGFS_USET_DROPPING;
-+
- 	ret =3D -EBUSY;
- 	if (!list_empty(&parent_sd->s_links))
- 		goto out;
-@@ -385,8 +388,6 @@ static int configfs_detach_prep(struct d
- 					*wait_mutex =3D &sd->s_dentry->d_inode->i_mutex;
- 				return -EAGAIN;
- 			}
--			/* Mark that we're trying to drop the group */
--			sd->s_type |=3D CONFIGFS_USET_DROPPING;
-=20
- 			/*
- 			 * Yup, recursive.  If there's a problem, blame
-@@ -414,12 +415,11 @@ static void configfs_detach_rollback(str
- 	struct configfs_dirent *parent_sd =3D dentry->d_fsdata;
- 	struct configfs_dirent *sd;
-=20
--	list_for_each_entry(sd, &parent_sd->s_children, s_sibling) {
--		if (sd->s_type & CONFIGFS_USET_DEFAULT) {
-+	parent_sd->s_type &=3D ~CONFIGFS_USET_DROPPING;
-+
-+	list_for_each_entry(sd, &parent_sd->s_children, s_sibling)
-+		if (sd->s_type & CONFIGFS_USET_DEFAULT)
- 			configfs_detach_rollback(sd->s_dentry);
--			sd->s_type &=3D ~CONFIGFS_USET_DROPPING;
--		}
--	}
- }
-=20
- static void detach_attrs(struct config_item * item)
-Index: b/fs/configfs/symlink.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- a/fs/configfs/symlink.c	2008-06-16 19:43:34.000000000 +0200
-+++ b/fs/configfs/symlink.c	2008-06-16 19:47:06.000000000 +0200
-@@ -78,6 +78,12 @@ static int create_link(struct config_ite
- 	if (sl) {
- 		sl->sl_target =3D config_item_get(item);
- 		spin_lock(&configfs_dirent_lock);
-+		if (target_sd->s_type & CONFIGFS_USET_DROPPING) {
-+			spin_unlock(&configfs_dirent_lock);
-+			config_item_put(item);
-+			kfree(sl);
-+			return -EPERM;
-+		}
- 		list_add(&sl->sl_list, &target_sd->s_links);
- 		spin_unlock(&configfs_dirent_lock);
- 		ret =3D configfs_create_link(sl, parent_item->ci_dentry,
-
---ahZICQ7iXVM/oLYH--
-
---=_bohort-18240-1213639663-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIVqxHVKcRuvQ9Q1QRAjyOAKC0K/MGj+eIlcDQZzv8ioqBgS1AngCgpIdv
-VCWfItbBJrqyAufhCogqLxc=
-=zlxj
------END PGP SIGNATURE-----
-
---=_bohort-18240-1213639663-0001-2--
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
