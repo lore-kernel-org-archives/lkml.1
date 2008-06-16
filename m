@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754169AbYFPLOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754412AbYFPLRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754169AbYFPLOo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 07:14:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbYFPLOd
+	id S1754412AbYFPLRd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 07:17:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752157AbYFPLRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 07:14:33 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:52001 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751167AbYFPLOc (ORCPT
+	Mon, 16 Jun 2008 07:17:25 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57430 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752102AbYFPLRZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 07:14:32 -0400
-To: Michael Halcrow <mhalcrow@us.ibm.com>
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [patch] ecryptfs: string copy cleanup
-Message-Id: <E1K8CfM-0006Wa-Mu@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 16 Jun 2008 13:14:28 +0200
+	Mon, 16 Jun 2008 07:17:25 -0400
+Date: Mon, 16 Jun 2008 11:59:50 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel@vger.kernel.org, jaswinder@infradead.org
+Subject: Re: [PATCH] ip2: use request_firmware()
+Message-ID: <20080616115950.41bc65aa@lxorguk.ukuu.org.uk>
+In-Reply-To: <1213609751.26255.673.camel@pmac.infradead.org>
+References: <1213609751.26255.673.camel@pmac.infradead.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+On Mon, 16 Jun 2008 10:49:11 +0100
+David Woodhouse <dwmw2@infradead.org> wrote:
 
-Clean up overcomplicated string copy, which also gets rid of this
-bogus warning:
+> Converted with help from Jaswinder Singh
+> 
+> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+> ---
+>  drivers/char/Kconfig           |    7 +
+>  drivers/char/ip2/fip_firm.h    | 2149 ----------------------------------------
+>  drivers/char/ip2/ip2base.c     |    5 +-
+>  drivers/char/ip2/ip2main.c     |   45 +-
+>  firmware/Makefile              |    1 +
+>  firmware/WHENCE                |   10 +
+>  firmware/intelliport2.bin.ihex | 2147 +++++++++++++++++++++++++++++++++++++++
+>  7 files changed, 2201 insertions(+), 2163 deletions(-)
+>  delete mode 100644 drivers/char/ip2/fip_firm.h
+>  create mode 100644 firmware/intelliport2.bin.ihex
 
-fs/ecryptfs/main.c: In function 'ecryptfs_parse_options':
-include/asm/arch/string_32.h:75: warning: array subscript is above array bounds
+Fine by me. I've not checked all the digits are correct but the rest of
+the logic seems clean enough
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
- fs/ecryptfs/main.c |   18 ++++++------------
- 1 file changed, 6 insertions(+), 12 deletions(-)
-
-Index: linux-2.6/fs/ecryptfs/main.c
-===================================================================
---- linux-2.6.orig/fs/ecryptfs/main.c	2008-06-09 14:14:27.000000000 +0200
-+++ linux-2.6/fs/ecryptfs/main.c	2008-06-13 13:04:04.000000000 +0200
-@@ -314,7 +314,6 @@ static int ecryptfs_parse_options(struct
- 	char *cipher_name_dst;
- 	char *cipher_name_src;
- 	char *cipher_key_bytes_src;
--	int cipher_name_len;
- 
- 	if (!options) {
- 		rc = -EINVAL;
-@@ -395,17 +394,12 @@ static int ecryptfs_parse_options(struct
- 		goto out;
- 	}
- 	if (!cipher_name_set) {
--		cipher_name_len = strlen(ECRYPTFS_DEFAULT_CIPHER);
--		if (unlikely(cipher_name_len
--			     >= ECRYPTFS_MAX_CIPHER_NAME_SIZE)) {
--			rc = -EINVAL;
--			BUG();
--			goto out;
--		}
--		memcpy(mount_crypt_stat->global_default_cipher_name,
--		       ECRYPTFS_DEFAULT_CIPHER, cipher_name_len);
--		mount_crypt_stat->global_default_cipher_name[cipher_name_len]
--		    = '\0';
-+		int cipher_name_len = strlen(ECRYPTFS_DEFAULT_CIPHER);
-+
-+		BUG_ON(cipher_name_len >= ECRYPTFS_MAX_CIPHER_NAME_SIZE);
-+
-+		strcpy(mount_crypt_stat->global_default_cipher_name,
-+		       ECRYPTFS_DEFAULT_CIPHER);
- 	}
- 	if (!cipher_key_bytes_set) {
- 		mount_crypt_stat->global_default_cipher_key_size = 0;
+Acked-by: Alan Cox <alan@redhat.com>
