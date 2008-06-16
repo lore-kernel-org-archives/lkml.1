@@ -1,41 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756766AbYFPNsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbYFPNwP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756766AbYFPNsx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 09:48:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbYFPNso
+	id S1756797AbYFPNwP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 09:52:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbYFPNwB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 09:48:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45194 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753322AbYFPNsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 09:48:43 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1213619214.26255.721.camel@pmac.infradead.org>
-References: <1213619214.26255.721.camel@pmac.infradead.org> <1213565555.26255.522.camel@pmac.infradead.org> <1213604973-7073-1-git-send-email-jacmet@sunsite.dk> <1213617663.26255.708.camel@pmac.infradead.org> <20080616121727.GB10854@cs181133002.pp.htv.fi>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: dhowells@redhat.com, Adrian Bunk <bunk@kernel.org>,
-       Peter Korsgaard <jacmet@sunsite.dk>, linux-kernel@vger.kernel.org,
-       sam@ravnborg.org, andi@firstfloor.org,
-       "Kirill A. Shutemov" <k.shutemov@gmail.com>
-Subject: Re: [PATCH v2] export linux/a.out.h
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Mon, 16 Jun 2008 14:48:14 +0100
-Message-ID: <9834.1213624094@redhat.com>
+	Mon, 16 Jun 2008 09:52:01 -0400
+Received: from casper.infradead.org ([85.118.1.10]:49099 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752458AbYFPNwA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 09:52:00 -0400
+Subject: Re: [BUG: NULL pointer dereference] cgroups and RT
+	scheduling	interact badly.
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Daniel K." <dk@uw.no>
+Cc: mingo@elte.hu, menage@google.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <4856671B.1020304@uw.no>
+References: <485445AE.2010602@uw.no> <1213612447.16944.99.camel@twins>
+	 <4856671B.1020304@uw.no>
+Content-Type: text/plain
+Date: Mon, 16 Jun 2008 15:51:52 +0200
+Message-Id: <1213624312.16944.104.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse <dwmw2@infradead.org> wrote:
+On Mon, 2008-06-16 at 15:14 +0200, Daniel K. wrote:
+> Peter Zijlstra wrote:
+> > Does the below work for you?
+> > 
+> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > ---
+> > Index: linux-2.6/kernel/sched.c
+> > ===================================================================
+> > --- linux-2.6.orig/kernel/sched.c
+> > +++ linux-2.6/kernel/sched.c
+> > @@ -7784,7 +7784,6 @@ static void init_tg_rt_entry(struct task
+> >  	else
+> >  		rt_se->rt_rq = parent->my_q;
+> >  
+> > -	rt_se->rt_rq = &rq->rt;
+> >  	rt_se->my_q = rt_rq;
+> >  	rt_se->parent = parent;
+> >  	INIT_LIST_HEAD(&rt_se->run_list);
+> 
+> Although this patch seems to be correct, this is what shows up on my
+> netconsole, when applying it -- with an offset, do you have other fixes
+> applied as well?
 
-> Why _are_ there architectures which define ARCH_SUPPORTS_AOUT and have
-> <asm/a.out.h> but don't support binfmt_aout, anyway? How does that make
-> sense?
+I had indeed, although nothing touching the rt scheduler. I popped all
+my patches and pulled an update from Linus, but I fail to reproduce the
+below.
 
-Maybe because some arches supported ELF with AOUT interpreters but not full
-AOUT binaries?
+/me goes look for that burnp6 thing, I used a simple while (1); loop.
 
-David
+
