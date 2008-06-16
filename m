@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760318AbYFPHed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759282AbYFPHkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760318AbYFPHed (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 03:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753139AbYFPHeZ
+	id S1759282AbYFPHkM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 03:40:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbYFPHj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 03:34:25 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:7767 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752591AbYFPHeY (ORCPT
+	Mon, 16 Jun 2008 03:39:59 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56259 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752109AbYFPHj6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 03:34:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=XlcwLxBvOJ9zJlq3MCq8Yj4tKubeEgZpHW49M+FUlJIbP7z6Nv0fC+fxdu8SgUED0j
-         6J/KFe18YhRDm9HB/eXl76tJ6VqkJjFEKDnH4KrdJFdodiE3EW6v1xb/TqIW7B0r87Ms
-         JSZoCUvQ/9JHOZOvuYBj1rnRaeoZHArAkxMXM=
-Message-ID: <86802c440806160034r343f9570ma0141df8af9360d7@mail.gmail.com>
-Date: Mon, 16 Jun 2008 00:34:23 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Paul Jackson" <pj@sgi.com>
-Subject: Re: [PATCH 4/8] x86 boot: allow overlapping ebda and efi memmap memory ranges
-Cc: mingo@elte.hu, tglx@linutronix.de, steiner@sgi.com, travis@sgi.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org, ying.huang@intel.com,
-       andi@firstfloor.org, akpm@linux-foundation.org
-In-Reply-To: <20080616023200.16eafc18.pj@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 16 Jun 2008 03:39:58 -0400
+From: kamezawa.hiroyu@jp.fujitsu.com
+Message-ID: <33011576.1213601977563.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Mon, 16 Jun 2008 16:39:37 +0900 (JST)
+To: Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: Re: [PATCH 1/6] res_counter:  handle limit change
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>, menage@google.com,
+       balbir@linux.vnet.ibm.com, yamamoto@valinux.co.jp,
+       nishimura@mxp.nes.nec.co.jp, lizf@cn.fujitsu.com
+In-Reply-To: <48560A7C.9050501@openvz.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="iso-2022-jp"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080616062945.14597.78009.sendpatchset@polaris-admin.engr.sgi.com>
-	 <20080616063001.14597.96170.sendpatchset@polaris-admin.engr.sgi.com>
-	 <86802c440806152354i24a1ec5ap316dacec0981d05@mail.gmail.com>
-	 <20080616023200.16eafc18.pj@sgi.com>
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: @nifty Webmail 2.0
+References: <48560A7C.9050501@openvz.org>
+ <20080613182714.265fe6d2.kamezawa.hiroyu@jp.fujitsu.com> <20080613182924.c73fe9eb.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 16, 2008 at 12:32 AM, Paul Jackson <pj@sgi.com> wrote:
-> Yinghai wrote:
->> how about patial overlapping?
+----- Original Message -----
+>> +	 * registered callbacks etc...for res_counter.
+>> +	 */
+>> +	struct res_counter_ops ops;
+>> +	/*
 >
-> I do not understand what you ask.
->
-> I suppose your question is a minor typo of:
->
->> how about partial overlapping?
->
-> ... however I don't understand that either - sorry.
+Now, write to limit is done in following path.
+sys_write() -> write_func of subsys -> write in res_counter -> 
+strategy callback -> set limit -> return
 
-EFI memmap and ebda is partial overlapping?
+Because stragety callback is called in res_counter, we can only do 
+something after set-limit without callback. So res_counter should call
+another callback before set-limit if it can fail.
 
-you may expand range_in_ebda_area(), and let it handle overlapping...
+>Why would we need such? All res_counter.limit update comes via the appropiate
+>cgroup's files, so it can do whatever it needs w/o any callbacks?
+>
 
-YH
+First reason is that this allows us to implement generic algorithm to
+handle limit change. Second is that generic algorithm can be a stack of
+functions. I don't like to pass function pointers through several stack
+of functions. (And this design allow the code to be much easier to read.
+My first version used an argument of function pointer but it was verrry ugly.)
+
+I think when I did all in memcg, someone will comment that "why do that
+all in memcg ? please implement generic one to avoid code duplication"
+
+>And (if we definitely need one) isn't it better to make it a
+>	struct res_counter_ops *ops;
+>pointer?
+>
+My first version did that. When I added hierarchy_model to ops(see later patch
+), I made use of copy of ops. But maybe you're right. Keeping 
+res_counter small is important. I'll use pointer in v5.  
+
+Thanks,
+-Kame-
+
