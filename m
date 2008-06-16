@@ -1,79 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758075AbYFPSK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756679AbYFPSOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758075AbYFPSK1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 14:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbYFPSKJ
+	id S1756679AbYFPSOT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 14:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbYFPSOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 14:10:09 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:48267 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750717AbYFPSKH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 14:10:07 -0400
-Date: Mon, 16 Jun 2008 11:09:34 -0700
-From: Matheos Worku <Matheos.Worku@Sun.COM>
-Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
-In-reply-to: <20080530.000009.02995266.davem@davemloft.net>
-To: David Miller <davem@davemloft.net>
-Cc: jesper@krogh.cc, yhlu.kernel@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Message-id: <4856AC5E.1010206@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=us-ascii
-Content-transfer-encoding: 7BIT
-X-Accept-Language: en-us, en
-References: <483CB301.40007@sun.com>
- <20080528.223415.193732490.davem@davemloft.net> <483F46E5.9030707@sun.com>
- <20080530.000009.02995266.davem@davemloft.net>
-User-Agent: Mozilla Thunderbird 1.0.7-1.4.1 (X11/20050929)
+	Mon, 16 Jun 2008 14:14:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43737 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753194AbYFPSOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 14:14:09 -0400
+Date: Mon, 16 Jun 2008 14:13:55 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Chuck Lever <chucklever@gmail.com>, Peter Staubach <staubach@redhat.com>,
+       NeilBrown <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>,
+       linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] knfsd: nfsd: Handle ERESTARTSYS from syscalls.
+Message-ID: <20080616141355.20b4f824@tleilax.poochiereds.net>
+In-Reply-To: <1213635286.7238.13.camel@localhost>
+References: <20080613213759.26929.patches@notabene>
+	<1080613114215.27095@suse.de>
+	<48565F19.10508@redhat.com>
+	<76bd70e30806160809o495dd50fw88a80ec0673c0dc1@mail.gmail.com>
+	<1213635286.7238.13.camel@localhost>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
+On Mon, 16 Jun 2008 12:54:46 -0400
+Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 
->From: Matheos Worku <Matheos.Worku@Sun.COM>
->Date: Thu, 29 May 2008 17:14:29 -0700
->
->  
->
->>Actually what I am suggesting was a workaround for the lack of "TX Ring 
->>Empty" interrupt by not relying on the TX interrupt at all.
->>    
->>
->
->Ahh I see.
->
->Some of the things I talked about in my presentation here in
->Berlin at LinuxTAG yesterday can help mitigate the effects.
->Most of it revolves around batching, and allowing the driver
->to manage the backlog of packets directly when the TX queue
->fills up.
->
->In such a case we could batch the TX queue refill, know how many more
->TX packets we will queue up to the chip right now, and therefore know
->that we can safely set periodic MARK bits and only need to force set
->the MARK bit at the very end.
->
->  
->
->>As for the TX hang, I will try to reproduce the problem and look at
->>the registers for the clue.
->>    
->>
-Have been trying but not able to reproduce the timeout. I am using NFS 
-V3 with TCP. Are you using UDP by any chance?
+> On Mon, 2008-06-16 at 11:09 -0400, Chuck Lever wrote:
+> 
+> > I think an error reply is much better than no reply in nearly every
+> > case.  NFS3ERR_JUKEBOX/NFS4ERR_DELAY is an interesting idea, but
+> > something else again will probably be required for v4.1 with sessions.
+> 
+> NFS3ERR_JUKEBOX/NFS4ERR_DELAY may be inappropriate if the nfs daemon has
+> already started handling the RPC call, since you may be interrupting a
+> non-idempotent operation.
+> 
 
-Regards
-Matheos
+But if you drop the reply, the client will probably still end up
+retransmitting the request. It seems like a JUKEBOX/DELAY error
+is at least a defined error to the client instead of leaving it
+guessing. Either way, the client could still end up on the wrong
+side of a non-idempotent op.
 
->
->Thanks a lot.
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
->  
->
+Also, am I right that this should really only be happening if nfsd
+catches a SIGKILL? All other signals should be masked off when
+doing the local file operation. Or do we have a potential race if
+we catch a signal just after svc_recv returns but before the new
+sigmask is set and svc_process is called?
 
+> The only complete solution to this problem is NFSv4.1 with persistent
+> sessions.
+> 
+
+That's probably the case, though we should probably try to do
+best-effort for earlier versions.
+
+-- 
+Jeff Layton <jlayton@redhat.com>
