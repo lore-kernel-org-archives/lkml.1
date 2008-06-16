@@ -1,111 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759355AbYFPGz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbYFPG6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759355AbYFPGz5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 02:55:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbYFPGzu
+	id S1758246AbYFPG6m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 02:58:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbYFPG6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 02:55:50 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:50475 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751203AbYFPGzt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 02:55:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=kU2lADZGT5WS2jyssR+/Fe9Jj4Gi8SGlpB+FYXC33JrkugkNSxGqC8Mem38hUYbPiN
-         kc1EX8uG2k578ejTYUqj6yYnabwF8mms0Fm0nZLVWLfm6whCbGzF7T8E3Xoyw/WcGncX
-         5+zlLhH6dS2nVUsPmXXhK/rj7rQYoHDQSy33I=
-Message-ID: <19f34abd0806152355h65876c54r1ae0aa156e839db2@mail.gmail.com>
-Date: Mon, 16 Jun 2008 08:55:48 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [RFC][PATCH] kmemcheck: divide and conquer
-Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       "Thomas Gleixner" <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080616051504.GA3492@elte.hu>
+	Mon, 16 Jun 2008 02:58:34 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56614 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751293AbYFPG6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 02:58:33 -0400
+Date: Mon, 16 Jun 2008 08:58:02 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH 2.6.26-rc6] x86-32: fix boot failure on TSC-less
+	processors
+Message-ID: <20080616065802.GA24421@elte.hu>
+References: <200806150019.m5F0JujB026872@harpo.it.uu.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080613140057.GA25833@damson.getinternet.no>
-	 <20080614063114.GA24188@elte.hu>
-	 <19f34abd0806140139i70a5056ehbd8a6f5df81549e4@mail.gmail.com>
-	 <20080614090023.GA13798@elte.hu>
-	 <19f34abd0806140217x1ea73a8k1cae18a12128a2b1@mail.gmail.com>
-	 <20080616051504.GA3492@elte.hu>
+In-Reply-To: <200806150019.m5F0JujB026872@harpo.it.uu.se>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 16, 2008 at 7:15 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> -tip testing found a build failure with kmemcheck:
->
-> include/asm/string_32.h:320:1: warning: "memset" redefined
-> include/asm/string_32.h:245:1: warning: this is the location of the previous definition
->
-> arch/x86/mm/kmemcheck/smp.c: In function 'kmemcheck_pause_allbutself':
-> arch/x86/mm/kmemcheck/smp.c:59: error: 'NMI_VECTOR' undeclared (first use in this function)
-> arch/x86/mm/kmemcheck/smp.c:59: error: (Each undeclared identifier is reported only once
-> arch/x86/mm/kmemcheck/smp.c:59: error: for each function it appears in.)
->
-> with this config:
->
->  http://redhat.com/~mingo/misc/config-Mon_Jun_16_04_15_22_CEST_2008.bad
->
-> the patch below fixes the build failure, but note that there are lots of
-> those memset redefined warnings with that config as well.
 
-Thanks. I get the error with that config as well.
+* Mikael Pettersson <mikpe@it.uu.se> wrote:
 
-> @@ -5,6 +5,7 @@
->  #include <mach_ipi.h>
->
->  #include "smp.h"
-> +#include <asm/irq_vectors.h>
->
->  static spinlock_t nmi_spinlock;
+> Booting 2.6.26-rc6 on my 486 DX/4 fails with a "BUG: Int 6" (invalid 
+> opcode) and a kernel halt immediately after the kernel has been 
+> uncompressed. The BUG shows EIP pointing to an rdtsc instruction in 
+> native_read_tsc(), invoked from native_sched_clock().
+> 
+> (This error occurs so early that not even the serial console can 
+> capture it.)
+> 
+> A bisection showed that this bug first occurs in 2.6.26-rc3-git7, via 
+> commit 9ccc906c97e34fd91dc6aaf5b69b52d824386910:
+> 
+> >x86: distangle user disabled TSC from unstable
+> >
+> >tsc_enabled is set to 0 from the command line switch "notsc" and from
+> >the mark_tsc_unstable code. Seperate those functionalities and replace
+> >tsc_enable with tsc_disable. This makes also the native_sched_clock()
+> >decision when to use TSC understandable.
+> >
+> >Preparatory patch to solve the sched_clock() issue on 32 bit.
+> >
+> >Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> 
+> The core reason for this bug is that native_sched_clock() gets
+> called before tsc_init().
+> 
+> Before the commit above, tsc_32.c used a "tsc_enabled" variable
+> which defaulted to 0 == disabled, and which only got enabled late
+> in tsc_init(). Thus early calls to native_sched_clock() would skip
+> the TSC and use jiffies instead.
+> 
+> After the commit above, tsc_32.c uses a "tsc_disabled" variable
+> which defaults to 0, meaning that the TSC is Ok to use. Early calls
+> to native_sched_clock() now erroneously try to use the TSC on
+> !cpu_has_tsc processors, leading to invalid opcode exceptions.
+> 
+> My proposed fix is to initialise tsc_disabled to a "soft disabled"
+> state distinct from the hard disabled state set up by the "notsc"
+> kernel option. This fixes the native_sched_clock() problem. It also
+> allows tsc_init() to be simplified: instead of setting tsc_disabled = 1
+> on every error return, we just set tsc_disabled = 0 once when all
+> checks have succeeded.
+> 
+> I've verified that this lets my 486 boot again. I've also verified 
+> that a Core2 machine still uses the TSC as clocksource after the 
+> patch.
 
-However, the real error is that I'm including <mach_ipi.h> which for
-the default config resolves to
-include/asm-x86/mach-default/mach_ipi.h. All the mach-*/mach_ipi.h
-files exist, but only one of them define NMI_VECTOR.
+applied to tip/x86/urgent - thanks Mikael! The soft-disabled state is a 
+pretty good solution.
 
-But your config has CONFIG_X86_BIGSMP=y.
-
-For some reason, there is no <asm/irq_vectors.h> in my repository, so
-I assume the change came from another branch. In fact, I should have
-included <asm/hw_irq.h>, but that doesn't contain the right
-definitions in the tip/auto-test branch.
-
-Yep, seems to be
-
-commit 9b7dc567d03d74a1fbae84e88949b6a60d922d82
-Author: Thomas Gleixner <tglx@linutronix.de>
-Date:   Fri May 2 20:10:09 2008 +0200
-
-    x86: unify interrupt vector defines
-
-I also can't seem to get the redefined warnings, so I assume that's
-also just an indirect conflict with other -tip changes.
-
-Right now, I am reluctant to apply your fix because it means that
-kmemcheck tree won't build as it is. In general, what's the way to
-resolve these things? Do you have another branch, *-fixes, where these
-fixlets can go until either of the conflicting changesets are merged
-upstream? If so, it seems that that would be the right place for this
-patch. Do you agree or do you have another solution? :-)
-
-Thanks!
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+	Ingo
