@@ -1,55 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbYFPKbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753868AbYFPKdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753836AbYFPKbU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 06:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750931AbYFPKbN
+	id S1753868AbYFPKdS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 06:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbYFPKdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 06:31:13 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44893 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750868AbYFPKbM (ORCPT
+	Mon, 16 Jun 2008 06:33:10 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4267 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751348AbYFPKdJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 06:31:12 -0400
-Date: Mon, 16 Jun 2008 11:13:29 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "R.L. Horn" <lists@eastcheap.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25.3: serial problem (minicom)
-Message-ID: <20080616111329.3ae97879@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LNX.1.00.0806150032050.1283@hani.compact.internal>
-References: <alpine.LNX.1.00.0806131635260.1294@hani.compact.internal>
-	<20080614102900.6830ed46@lxorguk.ukuu.org.uk>
-	<alpine.LNX.1.00.0806150032050.1283@hani.compact.internal>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Jun 2008 06:33:09 -0400
+Date: Mon, 16 Jun 2008 11:32:31 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: Badari Pulavarty <pbadari@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [Patch 003/005](memory hotplug) make alloc_bootmem_section()
+Message-ID: <20080616103231.GF17016@shadowen.org>
+References: <20080407213519.886E.E1E9C6FF@jp.fujitsu.com> <20080407214639.8876.E1E9C6FF@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080407214639.8876.E1E9C6FF@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> But, then, what is the relationship between CLOCAL and DTR/RTS supposed to 
-> be?  Presumably, it should prevent a SIGHUP from being raised when DSR 
-> goes low, but beyond that, it all seems rather ill-defined.  Throw in B0, 
-
-CLOCAL is defined to "ignore modem control lines"
-
-> which the SUS strongly implies should unconditionally lower DTR and RTS, 
-> and the CRTSCTS flag, and the waters really get murky.  It looks to me 
-> like the only thing you can say for certain is that CLOCAL will cause DSR 
-> to be ignored...and for anything else you're on your own.
-
-Whatever it implies the behaviour should not have changed between 2.6.24
-and 2.6.25. Nobody AFAIK sat down and decided to change it.
-
+On Mon, Apr 07, 2008 at 09:47:29PM +0900, Yasunori Goto wrote:
+> alloc_bootmem_section() can allocate specified section's area.
+> This is used for usemap to keep same section with pgdat by later patch.
 > 
-> Mind you, all this just suggests that POSIX kinda sucks, which is hardly 
-> an earth-shattering revelation.
+> Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+> 
+> ---
+>  include/linux/bootmem.h |    2 ++
+>  mm/bootmem.c            |   31 +++++++++++++++++++++++++++++++
+>  2 files changed, 33 insertions(+)
+> 
+> Index: current/include/linux/bootmem.h
+> ===================================================================
+> --- current.orig/include/linux/bootmem.h	2008-04-07 19:18:44.000000000 +0900
+> +++ current/include/linux/bootmem.h	2008-04-07 19:30:08.000000000 +0900
+> @@ -101,6 +101,8 @@
+>  extern void free_bootmem_node(pg_data_t *pgdat,
+>  			      unsigned long addr,
+>  			      unsigned long size);
+> +extern void *alloc_bootmem_section(unsigned long size,
+> +				   unsigned long section_nr);
+>  
+>  #ifndef CONFIG_HAVE_ARCH_BOOTMEM_NODE
+>  #define alloc_bootmem_node(pgdat, x) \
+> Index: current/mm/bootmem.c
+> ===================================================================
+> --- current.orig/mm/bootmem.c	2008-04-07 19:18:44.000000000 +0900
+> +++ current/mm/bootmem.c	2008-04-07 19:30:08.000000000 +0900
+> @@ -540,6 +540,37 @@
+>  	return __alloc_bootmem(size, align, goal);
+>  }
+>  
+> +#ifdef CONFIG_SPARSEMEM
+> +void * __init alloc_bootmem_section(unsigned long size,
+> +				    unsigned long section_nr)
+> +{
+> +	void *ptr;
+> +	unsigned long limit, goal, start_nr, end_nr, pfn;
+> +	struct pglist_data *pgdat;
+> +
+> +	pfn = section_nr_to_pfn(section_nr);
+> +	goal = PFN_PHYS(pfn);
+> +	limit = PFN_PHYS(section_nr_to_pfn(section_nr + 1)) - 1;
+> +	pgdat = NODE_DATA(early_pfn_to_nid(pfn));
+> +	ptr = __alloc_bootmem_core(pgdat->bdata, size, SMP_CACHE_BYTES, goal,
+> +				   limit);
+> +
+> +	if (!ptr)
+> +		return NULL;
+> +
+This also indicates a failure allocating within the section, and yet we
+do not report it here.
 
-Standards are part written spec and a large part an existing tradition
-around that standard. The tradition is often the most important bit.
+> +	start_nr = pfn_to_section_nr(PFN_DOWN(__pa(ptr)));
+> +	end_nr = pfn_to_section_nr(PFN_DOWN(__pa(ptr) + size));
+> +	if (start_nr != section_nr || end_nr != section_nr) {
+> +		printk(KERN_WARNING "alloc_bootmem failed on section %ld.\n",
+> +		       section_nr);
+> +		free_bootmem_core(pgdat->bdata, __pa(ptr), size);
 
-Alan
+But we do here.  I think we should report both if this is worth
+reporting.
+
+> +		ptr = NULL;
+> +	}
+> +
+> +	return ptr;
+> +}
+> +#endif
+> +
+>  #ifndef ARCH_LOW_ADDRESS_LIMIT
+>  #define ARCH_LOW_ADDRESS_LIMIT	0xffffffffUL
+>  #endif
+
+-apw
