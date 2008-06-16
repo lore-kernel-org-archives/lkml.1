@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758935AbYFPWC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758529AbYFPWFx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758935AbYFPWC7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 18:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757725AbYFPWCi
+	id S1758529AbYFPWFx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 18:05:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756515AbYFPWFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 18:02:38 -0400
-Received: from gw.goop.org ([64.81.55.164]:38908 "EHLO mail.goop.org"
+	Mon, 16 Jun 2008 18:05:45 -0400
+Received: from gw.goop.org ([64.81.55.164]:56349 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757370AbYFPWCh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 18:02:37 -0400
-Message-ID: <4856E2D4.3020402@goop.org>
-Date: Mon, 16 Jun 2008 15:01:56 -0700
+	id S1752380AbYFPWFo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 18:05:44 -0400
+Message-ID: <4856E38E.1040203@goop.org>
+Date: Mon, 16 Jun 2008 15:05:02 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: the arch/x86 maintainers <x86@kernel.org>
-CC: Stable Kernel <stable@kernel.org>,
+To: Jaya Kumar <jayakumar.lkml@gmail.com>
+CC: Markus Armbruster <armbru@redhat.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] xen: don't drop NX bit
+Subject: "fb-defio: fix page list with concurrent processes"
 X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
@@ -25,122 +25,74 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When converting the pfn/mfn in a pagetable entry, make sure we mask
-out the protection flags properly.  Formerly, this code was losing the
-NX bit, and not dealing with extra Xen-defined software flags in ptes.
+Your patch "fb-defio: fix page list with concurrent processes" 
+definitely seems to help with the suspend/resume problem I had with the 
+Xen pvfb device.  Is it queued up anywhere?  It seems to be a real 
+bugfix, and should probably be queued for 2.6.26...
 
-Because NX is now enforced properly, we must put the hypercall page
-into the .text segment so that it is executable.
+    J
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: Stable Kernel <stable@kernel.org>
+fb-defio: fix page list with concurrent processes
+
+From: Jaya Kumar <jayakumar.lkml@gmail.com>
+
+Hi Tony, Geert, Andrew, fbdev,
+
+This patch is a bugfix for how defio handles multiple processes manipulating
+the same framebuffer. Thanks to Bernard Blackham for identifying this bug.
+It occurs when two applications mmap the same framebuffer and concurrently
+write to the same page. Normally, this doesn't occur since only a single
+process mmaps the framebuffer. The symptom of the bug is that the mapping
+applications will hang. The cause is that defio incorrectly tries to add the
+same page twice to the pagelist. The solution I have is to walk the pagelist
+and check for a duplicate before adding. Since I needed to walk the
+pagelist, I now also keep the pagelist in sorted order.
+
+Thanks,
+jaya
+
+Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+
 ---
- arch/x86/xen/mmu.c      |   56 ++++++++++++++++++++++++++---------------------
- arch/x86/xen/xen-head.S |    2 -
- 2 files changed, 32 insertions(+), 26 deletions(-)
+ drivers/video/fb_defio.c |   20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
 
 ===================================================================
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -323,46 +323,54 @@
- 		preempt_enable();
- }
+--- a/drivers/video/fb_defio.c
++++ b/drivers/video/fb_defio.c
+@@ -74,6 +74,7 @@ static int fb_deferred_io_mkwrite(struct vm_area_struct *vma,
+ {
+ 	struct fb_info *info = vma->vm_private_data;
+ 	struct fb_deferred_io *fbdefio = info->fbdefio;
++	struct page *cur;
  
-+/* Assume pteval_t is equivalent to all the other *val_t types. */
-+static pteval_t pte_mfn_to_pfn(pteval_t val)
-+{
-+	if (val & _PAGE_PRESENT) {
-+		unsigned long mfn = (val & PTE_MASK) >> PAGE_SHIFT;
-+		pteval_t flags = val & ~PTE_MASK;
-+		val = (mfn_to_pfn(mfn) << PAGE_SHIFT) | flags;
+ 	/* this is a callback we get when userspace first tries to
+ 	write to the page. we schedule a workqueue. that workqueue
+@@ -83,7 +84,24 @@ static int fb_deferred_io_mkwrite(struct vm_area_struct *vma,
+ 
+ 	/* protect against the workqueue changing the page list */
+ 	mutex_lock(&fbdefio->lock);
+-	list_add(&page->lru, &fbdefio->pagelist);
++
++	/* we loop through the pagelist before adding in order
++	to keep the pagelist sorted */
++	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
++		/* this check is to catch the case where a new
++		process could start writing to the same page
++		through a new pte. this new access can cause the
++		mkwrite even when the original ps's pte is marked
++		writable */
++		if (unlikely(cur == page))
++			goto page_already_added;
++		else if (cur->index > page->index)
++			break;
 +	}
 +
-+	return val;
-+}
++	list_add_tail(&page->lru, &cur->lru);
 +
-+static pteval_t pte_pfn_to_mfn(pteval_t val)
-+{
-+	if (val & _PAGE_PRESENT) {
-+		unsigned long pfn = (val & PTE_MASK) >> PAGE_SHIFT;
-+		pteval_t flags = val & ~PTE_MASK;
-+		val = (pfn_to_mfn(pfn) << PAGE_SHIFT) | flags;
-+	}
-+
-+	return val;
-+}
-+
- pteval_t xen_pte_val(pte_t pte)
- {
--	pteval_t ret = pte.pte;
--
--	if (ret & _PAGE_PRESENT)
--		ret = machine_to_phys(XMADDR(ret)).paddr | _PAGE_PRESENT;
--
--	return ret;
-+	return pte_mfn_to_pfn(pte.pte);
- }
++page_already_added:
+ 	mutex_unlock(&fbdefio->lock);
  
- pgdval_t xen_pgd_val(pgd_t pgd)
- {
--	pgdval_t ret = pgd.pgd;
--	if (ret & _PAGE_PRESENT)
--		ret = machine_to_phys(XMADDR(ret)).paddr | _PAGE_PRESENT;
--	return ret;
-+	return pte_mfn_to_pfn(pgd.pgd);
- }
- 
- pte_t xen_make_pte(pteval_t pte)
- {
--	if (pte & _PAGE_PRESENT)
--		pte = phys_to_machine(XPADDR(pte)).maddr;
--
--	return (pte_t){ .pte = pte };
-+	pte = pte_pfn_to_mfn(pte);
-+	return native_make_pte(pte);
- }
- 
- pgd_t xen_make_pgd(pgdval_t pgd)
- {
--	if (pgd & _PAGE_PRESENT)
--		pgd = phys_to_machine(XPADDR(pgd)).maddr;
--
--	return (pgd_t){ pgd };
-+	pgd = pte_pfn_to_mfn(pgd);
-+	return native_make_pgd(pgd);
- }
- 
- pmdval_t xen_pmd_val(pmd_t pmd)
- {
--	pmdval_t ret = native_pmd_val(pmd);
--	if (ret & _PAGE_PRESENT)
--		ret = machine_to_phys(XMADDR(ret)).paddr | _PAGE_PRESENT;
--	return ret;
-+	return pte_mfn_to_pfn(pmd.pmd);
- }
- 
- void xen_set_pud_hyper(pud_t *ptr, pud_t val)
-@@ -421,9 +429,7 @@
- 
- pmd_t xen_make_pmd(pmdval_t pmd)
- {
--	if (pmd & _PAGE_PRESENT)
--		pmd = phys_to_machine(XPADDR(pmd)).maddr;
--
-+	pmd = pte_pfn_to_mfn(pmd);
- 	return native_make_pmd(pmd);
- }
- 
-===================================================================
---- a/arch/x86/xen/xen-head.S
-+++ b/arch/x86/xen/xen-head.S
-@@ -18,7 +18,7 @@
- 
- 	__FINIT
- 
--.pushsection .bss.page_aligned
-+.pushsection .text
- 	.align PAGE_SIZE_asm
- ENTRY(hypercall_page)
- 	.skip 0x1000
+ 	/* come back after delay to process the deferred IO */
 
 
