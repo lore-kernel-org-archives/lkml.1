@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759885AbYFPHdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760545AbYFPHdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759885AbYFPHdU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 03:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbYFPHdG
+	id S1760545AbYFPHdf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 03:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755560AbYFPHdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 03:33:06 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:14589 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752519AbYFPHdE (ORCPT
+	Mon, 16 Jun 2008 03:33:12 -0400
+Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:44366 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754673AbYFPHdL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 03:33:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Y8sjwGhBCu8La8u505wX51ntxTE5DzN8aRRKdWKub7LIcUDaZV/xlH0ectV8nmJ3yt
-         X3cLVPvKWPATDTSTBb98zzQEQgDHvbrWUZOVkCqerbAnrXsCGvpTHTQvz0Bno1KPV6Bl
-         1jEbgTdyM3WW74H/hqr6a1f30A6ZFa/ndcGWA=
-Message-ID: <a5bf86a80806160033n28e101e1s35670a946f3ca57b@mail.gmail.com>
-Date: Mon, 16 Jun 2008 10:33:00 +0300
-From: "Lior Dotan" <liodot@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: [Bug 10866] /dev/rtc was missing until I disabled CONFIG_RTC_CLASS
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       a.zummo@towertech.it,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       bugme-daemon@bugzilla.kernel.org, rtc-linux@googlegroups.com
-In-Reply-To: <20080616002359.GC1407@cs181133002.pp.htv.fi>
+	Mon, 16 Jun 2008 03:33:11 -0400
+Message-ID: <48561732.1040203@davidnewall.com>
+Date: Mon, 16 Jun 2008 17:03:06 +0930
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: OBATA Noboru <noboru.obata.ar@hitachi.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-net@vger.kernel.org
+Subject: Re: Feedback on TCP: Make TCP_RTO_MAX a variable
+References: <4855823F.40208@davidnewall.com> <20080615195148.28c85c36@extreme>
+In-Reply-To: <20080615195148.28c85c36@extreme>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <GIilET9wkhI.A.JzB.81vSIB@albercik>
-	 <dCRO4tbfLzK.A.rFC.L2vSIB@albercik>
-	 <20080613193302.GA1716@cs181133002.pp.htv.fi>
-	 <a5bf86a80806131255w704745d7mc109c13669ac9c68@mail.gmail.com>
-	 <20080613212023.GB1716@cs181133002.pp.htv.fi>
-	 <a5bf86a80806150115q2d3ee545y84bae48f84d4fe96@mail.gmail.com>
-	 <20080616002359.GC1407@cs181133002.pp.htv.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 16, 2008 at 3:24 AM, Adrian Bunk <bunk@kernel.org> wrote:
-> On Sun, Jun 15, 2008 at 11:15:23AM +0300, Lior Dotan wrote:
->> On Sat, Jun 14, 2008 at 12:20 AM, Adrian Bunk <bunk@kernel.org> wrote:
->> >
->> > What is the output of "grep RTC_ .config" on your old .config?
->>
->> Here it is:
->
-> Thanks.
->
->>...
->> CONFIG_RTC_CLASS=y
->>...
->> # CONFIG_RTC_DRV_CMOS is not set
->>...
->
-> That means the support for the PC RTC is disabled.
->
-> Honestly, I do not think we can handle all possible misconfigurations
-> when switching to the new RTC drivers automatically.
+Stephen Hemminger wrote:
+> On Mon, 16 Jun 2008 06:27:35 +0930
+> David Newall <davidn@davidnewall.com> wrote:
+>   
+>> ... caused by floods of packets directed towards the internet
+>> link at one end or the other
+> Why are you letting them through. Use proper firewalling.
+>   
 
-In that case my configuration was indeed bogus and this bug can be closed.
+They didn't get through the router.  These floods congested the border
+links (devices).
 
-> cu
-> Adrian
->
+> A real VPN with IPSEC would have stopped the problem.
+>   
 
-Cheers,
-Lior.
+No, it wouldn't.  If you don't see this, ask and I'll explain, again.
+
+
+> I wouldn't put a mission critical system exposed directly to the Internet.
+>   
+
+I didn't.  Standard NAT appliances protect all ends.
