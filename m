@@ -1,52 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758902AbYFPWlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758585AbYFPWrp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758902AbYFPWlr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 18:41:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758774AbYFPWlg
+	id S1758585AbYFPWrp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 18:47:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756832AbYFPWrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 18:41:36 -0400
-Received: from casper.infradead.org ([85.118.1.10]:41776 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756955AbYFPWlf (ORCPT
+	Mon, 16 Jun 2008 18:47:37 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:41957 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756700AbYFPWrg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 18:41:35 -0400
-Date: Mon, 16 Jun 2008 15:35:08 -0700
-From: Greg KH <greg@kroah.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Stable Kernel <stable@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [stable] [PATCH 2/2] xen: don't drop NX bit
-Message-ID: <20080616223508.GA1165@kroah.com>
-References: <4856E2D4.3020402@goop.org>
+	Mon, 16 Jun 2008 18:47:36 -0400
+Message-ID: <4856ECC0.3050201@kernel.org>
+Date: Mon, 16 Jun 2008 15:44:16 -0700
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4856E2D4.3020402@goop.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: make asm/asm.h work for asm code.
+References: <4856E3D3.2010207@goop.org>
+In-Reply-To: <4856E3D3.2010207@goop.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 16, 2008 at 03:01:56PM -0700, Jeremy Fitzhardinge wrote:
-> When converting the pfn/mfn in a pagetable entry, make sure we mask
-> out the protection flags properly.  Formerly, this code was losing the
-> NX bit, and not dealing with extra Xen-defined software flags in ptes.
-> 
-> Because NX is now enforced properly, we must put the hypercall page
-> into the .text segment so that it is executable.
-> 
-> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> Cc: Stable Kernel <stable@kernel.org>
+Jeremy Fitzhardinge wrote:
 
-While it's great that you tell the stable people about this, but is it
-realistic?  Is anyone using Xen as contained in the mainline kernel
-these days?
+> +# define __ASM_INC    incl
+> +# define __ASM_INC    incq
+> +#define _ASM_INC    __ASM_INC
+> +#define _ASM_INC    " " __stringify(__ASM_INC) " "
 
-If a distro were to be based on 2.6.25 and we take this patch, they will
-just revert it back out due to their very large Xen patchset they apply
-on top to get a "working" Xen version, right?
+You have *exactly* as many #defines as if one would simply do four cases 
+(32 C, 64 C, 32 asm, 64 asm), and that would be easier to read...
 
-thanks,
-
-greg k-h
+	-hpa
