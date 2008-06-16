@@ -1,58 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbYFPOgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756507AbYFPOg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757340AbYFPOgn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 10:36:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbYFPOfU
+	id S1756507AbYFPOg6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 10:36:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754519AbYFPOfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 10:35:20 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:50202 "EHLO
+	Mon, 16 Jun 2008 10:35:22 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:50208 "EHLO
 	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753913AbYFPOfO (ORCPT
+	with ESMTP id S1753927AbYFPOfO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 16 Jun 2008 10:35:14 -0400
-Message-Id: <20080616143513.025791459@fluff.org.uk>
+Message-Id: <20080616143513.247445740@fluff.org.uk>
 References: <20080616143445.451023326@fluff.org.uk>
 User-Agent: quilt/0.46-1
-Date: Mon, 16 Jun 2008 15:34:51 +0100
+Date: Mon, 16 Jun 2008 15:34:52 +0100
 From: Ben Dooks <ben-linux@fluff.org>
 To: linux-kernel@vger.kernel.org
 Cc: drzeus-mmc@drzeus.cx, Ben Dooks <ben-linux@fluff.org>
-Subject: [patch v2 06/16] MMC: Fix S3C24XX IRQ enable during PIO transfers
-Content-Disposition: inline; filename=thirdparty/openmoko-mci/s3cmci-unfinished-write-fix.patch
+Subject: [patch v2 07/16] MMC: S3C24XX: Add platform data for MMC/SD driver
+Content-Disposition: inline; filename=thirdparty/openmoko-mci/s3c_mci_platform.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roman Moracik <roman.moravcik@gmail.com> 
-
-Fix Bug #677 - I/O errors on heavy microSD writes for 2.6.22.x.
+This patch adds platform data support to the s3mci driver.  This allows
+flexible board-specific configuration of set_power, card detect and read only
+pins.
 
 Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
 Index: linux-2.6.26-rc5-q2/drivers/mmc/host/s3cmci.c
 ===================================================================
---- linux-2.6.26-rc5-q2.orig/drivers/mmc/host/s3cmci.c	2008-06-08 13:57:35.000000000 +0100
-+++ linux-2.6.26-rc5-q2/drivers/mmc/host/s3cmci.c	2008-06-08 13:57:37.000000000 +0100
-@@ -327,6 +327,7 @@ static void pio_tasklet(unsigned long da
- {
- 	struct s3cmci_host *host = (struct s3cmci_host *) data;
+--- linux-2.6.26-rc5-q2.orig/drivers/mmc/host/s3cmci.c	2008-06-16 15:24:57.000000000 +0100
++++ linux-2.6.26-rc5-q2/drivers/mmc/host/s3cmci.c	2008-06-16 15:24:59.000000000 +0100
+@@ -21,6 +21,7 @@
  
-+	disable_irq(host->irq);
+ #include <asm/arch/regs-sdi.h>
+ #include <asm/arch/regs-gpio.h>
++#include <asm/arch/mci.h>
  
- 	if (host->pio_active == XFER_WRITE)
- 		do_pio_write(host);
-@@ -345,9 +346,9 @@ static void pio_tasklet(unsigned long da
- 			host->mrq->data->error = MMC_ERR_DMA;
- 		}
+ #include "s3cmci.h"
  
--		disable_irq(host->irq);
- 		finalize_request(host);
--	}
-+	} else
-+		enable_irq(host->irq);
+@@ -1005,6 +1006,9 @@ static void s3cmci_set_ios(struct mmc_ho
+ 		s3c2410_gpio_cfgpin(S3C2410_GPE9, S3C2410_GPE9_SDDAT2);
+ 		s3c2410_gpio_cfgpin(S3C2410_GPE10, S3C2410_GPE10_SDDAT3);
+ 
++		if (host->pdata->set_power)
++			host->pdata->set_power(ios->power_mode, ios->vdd);
++
+ 		if (!host->is2440)
+ 			mci_con |= S3C2410_SDICON_FIFORESET;
+ 
+@@ -1018,6 +1022,9 @@ static void s3cmci_set_ios(struct mmc_ho
+ 		if (host->is2440)
+ 			mci_con |= S3C2440_SDICON_SDRESET;
+ 
++		if (host->pdata->set_power)
++			host->pdata->set_power(ios->power_mode, ios->vdd);
++
+ 		break;
+ 	}
+ 
+@@ -1066,9 +1073,26 @@ static void s3cmci_reset(struct s3cmci_h
+ 	writel(con, host->base + S3C2410_SDICON);
  }
  
- /*
++static int s3cmci_get_ro(struct mmc_host *mmc)
++{
++	struct s3cmci_host *host = mmc_priv(mmc);
++
++	if (host->pdata->gpio_wprotect == 0)
++		return 0;
++
++	return s3c2410_gpio_getpin(host->pdata->gpio_wprotect);
++}
++
+ static struct mmc_host_ops s3cmci_ops = {
+ 	.request	= s3cmci_request,
+ 	.set_ios	= s3cmci_set_ios,
++	.get_ro		= s3cmci_get_ro,
++};
++
++static struct s3c24xx_mci_pdata s3cmci_def_pdata = {
++	.gpio_detect	= 0,
++	.set_power	= NULL,
++	.ocr_avail	= MMC_VDD_32_33,
+ };
+ 
+ static int s3cmci_probe(struct platform_device *pdev, int is2440)
+@@ -1089,6 +1113,12 @@ static int s3cmci_probe(struct platform_
+ 	host->pdev	= pdev;
+ 	host->is2440	= is2440;
+ 
++	host->pdata = pdev->dev.platform_data;
++	if (!host->pdata) {
++		pdev->dev.platform_data = &s3cmci_def_pdata;
++		host->pdata = &s3cmci_def_pdata;
++	}
++
+ 	spin_lock_init(&host->complete_lock);
+ 	tasklet_init(&host->pio_tasklet, pio_tasklet, (unsigned long) host);
+ 
+@@ -1107,7 +1137,8 @@ static int s3cmci_probe(struct platform_
+ 	host->pio_active 	= XFER_NONE;
+ 
+ 	host->dma		= S3CMCI_DMA;
+-	host->irq_cd		= IRQ_EINT2;
++	host->irq_cd = s3c2410_gpio_getirq(host->pdata->gpio_detect);
++	s3c2410_gpio_cfgpin(host->pdata->gpio_detect, S3C2410_GPIO_IRQ);
+ 
+ 	host->mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!host->mem) {
+@@ -1149,7 +1180,7 @@ static int s3cmci_probe(struct platform_
+ 
+ 	disable_irq(host->irq);
+ 
+-	s3c2410_gpio_cfgpin(S3C2410_GPF2, S3C2410_GPF2_EINT2);
++	s3c2410_gpio_cfgpin(host->pdata->gpio_detect, S3C2410_GPIO_IRQ);
+ 	set_irq_type(host->irq_cd, IRQT_BOTHEDGE);
+ 
+ 	if (request_irq(host->irq_cd, s3cmci_irq_cd, 0, DRIVER_NAME, host)) {
+@@ -1159,6 +1190,10 @@ static int s3cmci_probe(struct platform_
+ 		goto probe_free_irq;
+ 	}
+ 
++	if (host->pdata->gpio_wprotect)
++		s3c2410_gpio_cfgpin(host->pdata->gpio_wprotect,
++				    S3C2410_GPIO_INPUT);
++
+ 	if (s3c2410_dma_request(S3CMCI_DMA, &s3cmci_dma_client, NULL)) {
+ 		dev_err(&pdev->dev, "unable to get DMA channel.\n");
+ 		ret = -EBUSY;
+@@ -1182,7 +1217,7 @@ static int s3cmci_probe(struct platform_
+ 	host->clk_rate = clk_get_rate(host->clk);
+ 
+ 	mmc->ops 	= &s3cmci_ops;
+-	mmc->ocr_avail	= MMC_VDD_32_33;
++	mmc->ocr_avail	= host->pdata->ocr_avail;
+ 	mmc->caps	= MMC_CAP_4_BIT_DATA;
+ 	mmc->f_min 	= host->clk_rate / (host->clk_div * 256);
+ 	mmc->f_max 	= host->clk_rate / host->clk_div;
+Index: linux-2.6.26-rc5-q2/drivers/mmc/host/s3cmci.h
+===================================================================
+--- linux-2.6.26-rc5-q2.orig/drivers/mmc/host/s3cmci.h	2008-06-16 15:13:28.000000000 +0100
++++ linux-2.6.26-rc5-q2/drivers/mmc/host/s3cmci.h	2008-06-16 15:24:59.000000000 +0100
+@@ -22,6 +22,7 @@ enum s3cmci_waitfor {
+ 
+ struct s3cmci_host {
+ 	struct platform_device	*pdev;
++	struct s3c24xx_mci_pdata *pdata;
+ 	struct mmc_host		*mmc;
+ 	struct resource		*mem;
+ 	struct clk		*clk;
+Index: linux-2.6.26-rc5-q2/include/asm-arm/arch-s3c2410/mci.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.26-rc5-q2/include/asm-arm/arch-s3c2410/mci.h	2008-06-16 15:24:59.000000000 +0100
+@@ -0,0 +1,12 @@
++#ifndef _ARCH_MCI_H
++#define _ARCH_MCI_H
++
++struct s3c24xx_mci_pdata {
++	unsigned int	gpio_detect;
++	unsigned int	gpio_wprotect;
++	unsigned long	ocr_avail;
++	void		(*set_power)(unsigned char power_mode,
++				     unsigned short vdd);
++};
++
++#endif /* _ARCH_NCI_H */
 
 -- 
 Ben (ben@fluff.org, http://www.fluff.org/)
