@@ -1,84 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756532AbYFPQ0o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756832AbYFPQ04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756532AbYFPQ0o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 12:26:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbYFPQ0f
+	id S1756832AbYFPQ04 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 12:26:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbYFPQ0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 12:26:35 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:43344 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754297AbYFPQ0e (ORCPT
+	Mon, 16 Jun 2008 12:26:36 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:48324 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754383AbYFPQ0e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 16 Jun 2008 12:26:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=T8F1dcw35lVYRvtPqI1+JLjsMo+/IdNx9M4iikEMA5LEDbVLji9+fPMShLFqFSUsnW
-         b/hd0hhZ+PRsy2L7n5LveIqm0O9k0lBV7iShIddyOQCAW9uHO2j9cYmjRJphrr4/WD1z
-         F03agVNIzyIWY1JuBzK22voF35tdF+klkRgek=
-Message-ID: <7c86c4470806160926x847cfe5k103fbfaf6cbfa724@mail.gmail.com>
-Date: Mon, 16 Jun 2008 18:26:25 +0200
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Subject: Re: [patch 06/21] perfmon2 minimal: X86 generic hooks
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080615112529.95efd539.sfr@canb.auug.org.au>
+Message-ID: <4856944A.8040802@keyaccess.nl>
+Date: Mon, 16 Jun 2008 18:26:50 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
+       Adam M Belay <abelay@mit.edu>, Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>
+Subject: Re: [patch 15/18] PNP: support optional IRQ resources
+References: <20080604220933.168145536@ldl.fc.hp.com> <20080604221129.758385014@ldl.fc.hp.com> <4853814D.4010309@keyaccess.nl> <200806160941.49959.bjorn.helgaas@hp.com>
+In-Reply-To: <200806160941.49959.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <484dafd6.0407560a.301b.6595@mx.google.com>
-	 <20080615112529.95efd539.sfr@canb.auug.org.au>
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen,
+On 16-06-08 17:41, Bjorn Helgaas wrote:
 
-Ok, I will fold those  chunks into the patch that adds the files,
-i.e., perfmon-x86.diff
+>>> @@ -176,33 +184,10 @@ static void quirk_ad1815_mpu_resources(s
+>>>  	if (!irq || irq->next)
+>>>  		return;
+>>>  
+>>> -	res = dev->dependent;
+>>> -	if (!res)
+>>> -		return;
+>>> -
+>>> -	while (1) {
+>>> -		struct pnp_irq *copy;
+>>> -
+>>> -		copy = pnp_alloc(sizeof *copy);
+>>> -		if (!copy)
+>>> -			break;
+>>> -
+>>> -		bitmap_copy(copy->map.bits, irq->map.bits, PNP_IRQ_NR);
+>>> -		copy->flags = irq->flags;
+>>> -
+>>> -		copy->next = res->irq; /* Yes, this is NULL */
+>>> -		res->irq = copy;
+>>> -
+>>> -		if (!res->next)
+>>> -			break;
+>>> -		res = res->next;
+>>> -	}
+>>> -	kfree(irq);
+>>> +	irq->flags |= IORESOURCE_IRQ_OPTIONAL;
+>>> +	dev_info(&dev->dev, "made independent IRQ optional\n");
+>>>  
+>>>  	res->next = quirk_isapnp_mpu_options(dev);
+>> 
+>> ... this line should just go.
+> 
+> You mean I should delete the "res->next = quirk_isapnp_mpu_options(dev)"
+> line?
 
-Thanks.
+Yes. With the optional flag, ad1815 doesn't need the cloning and due to 
+the below it's actively wrong at this point in the series.
 
+>> Previously "res" ended up as the last dependent set through the while 
+>> loop but now it's the independendent set which in this previous setup of 
+>> things shouldn't even have a ->next. Just deleting this line makes this 
+>> patch fine and
+>>
+>> Acked-by: Rene Herman <rene.herman@gmail.com>
+> 
+> OK.  This will mean replacing patches 15 and 18 in this series.  If
+> I repost those two, is that easy for you to deal with, Andrew?
+> 
+> If I replace these, I'll also update patch 18 to fix the
+> pnp_independent_option() comment Rene made.
 
-On Sun, Jun 15, 2008 at 3:25 AM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> Hi Stephane,
->
-> On Mon, 09 Jun 2008 15:33:58 -0700 (PDT) eranian@googlemail.com wrote:
->>
->> +++ o/arch/x86/Makefile       2008-06-02 18:54:41.000000000 +0200
->> @@ -176,6 +176,8 @@
->>  core-y += arch/x86/kernel/
->>  core-y += arch/x86/mm/
->>
->> +core-$(CONFIG_PERFMON) += arch/x86/perfmon/
->
-> Again, this needs to come after some code is added to arch/x86/perfmon/
-> so that bisections still work.
->
->> +++ o/include/asm-x86/Kbuild  2008-06-02 18:54:41.000000000 +0200
->> @@ -11,6 +11,7 @@
->>  header-y += sigcontext32.h
->>  header-y += ucontext.h
->>  header-y += processor-flags.h
->> +header-y += perfmon.h
->
-> And this bit should go in the patch that adds that file.
->
->> +++ o/arch/x86/Kconfig        2008-06-02 18:54:41.000000000 +0200
->> @@ -1306,6 +1306,8 @@
->>
->>         If unsure, say Y.
->>
->> +source "arch/x86/perfmon/Kconfig"
->
-> Same here.
->
-> --
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> http://www.canb.auug.org.au/~sfr/
->
+Rene.
