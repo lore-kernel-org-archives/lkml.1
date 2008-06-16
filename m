@@ -1,103 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757441AbYFPN2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758113AbYFPN2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757441AbYFPN2V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 09:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbYFPN2F
+	id S1758113AbYFPN2e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 09:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757881AbYFPN2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 09:28:05 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33415 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756562AbYFPN2D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 09:28:03 -0400
-Date: Mon, 16 Jun 2008 22:18:40 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [Patch 003/005](memory hotplug) make alloc_bootmem_section()
-Cc: Badari Pulavarty <pbadari@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, Yinghai Lu <yhlu.kernel@gmail.com>
-In-Reply-To: <20080616103231.GF17016@shadowen.org>
-References: <20080407214639.8876.E1E9C6FF@jp.fujitsu.com> <20080616103231.GF17016@shadowen.org>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080616213951.9EA3.E1E9C6FF@jp.fujitsu.com>
+	Mon, 16 Jun 2008 09:28:08 -0400
+Received: from ozlabs.org ([203.10.76.45]:35004 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757358AbYFPN2H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 09:28:07 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Sean Young <sean@mess.org>
+Subject: Re: Regression: boot failure on AMD Elan TS-5500
+Date: Mon, 16 Jun 2008 23:27:34 +1000
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>,
+       "H. Anvin" <hpa@zytor.com>
+References: <20080616121138.GA51097@atlantis.8hz.com>
+In-Reply-To: <20080616121138.GA51097@atlantis.8hz.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
+Content-Disposition: inline
+Message-Id: <200806162327.34912.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, Apr 07, 2008 at 09:47:29PM +0900, Yasunori Goto wrote:
-> > alloc_bootmem_section() can allocate specified section's area.
-> > This is used for usemap to keep same section with pgdat by later patch.
-> > 
-> > Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-> > 
-> > ---
-> >  include/linux/bootmem.h |    2 ++
-> >  mm/bootmem.c            |   31 +++++++++++++++++++++++++++++++
-> >  2 files changed, 33 insertions(+)
-> > 
-> > Index: current/include/linux/bootmem.h
-> > ===================================================================
-> > --- current.orig/include/linux/bootmem.h	2008-04-07 19:18:44.000000000 +0900
-> > +++ current/include/linux/bootmem.h	2008-04-07 19:30:08.000000000 +0900
-> > @@ -101,6 +101,8 @@
-> >  extern void free_bootmem_node(pg_data_t *pgdat,
-> >  			      unsigned long addr,
-> >  			      unsigned long size);
-> > +extern void *alloc_bootmem_section(unsigned long size,
-> > +				   unsigned long section_nr);
-> >  
-> >  #ifndef CONFIG_HAVE_ARCH_BOOTMEM_NODE
-> >  #define alloc_bootmem_node(pgdat, x) \
-> > Index: current/mm/bootmem.c
-> > ===================================================================
-> > --- current.orig/mm/bootmem.c	2008-04-07 19:18:44.000000000 +0900
-> > +++ current/mm/bootmem.c	2008-04-07 19:30:08.000000000 +0900
-> > @@ -540,6 +540,37 @@
-> >  	return __alloc_bootmem(size, align, goal);
-> >  }
-> >  
-> > +#ifdef CONFIG_SPARSEMEM
-> > +void * __init alloc_bootmem_section(unsigned long size,
-> > +				    unsigned long section_nr)
-> > +{
-> > +	void *ptr;
-> > +	unsigned long limit, goal, start_nr, end_nr, pfn;
-> > +	struct pglist_data *pgdat;
-> > +
-> > +	pfn = section_nr_to_pfn(section_nr);
-> > +	goal = PFN_PHYS(pfn);
-> > +	limit = PFN_PHYS(section_nr_to_pfn(section_nr + 1)) - 1;
-> > +	pgdat = NODE_DATA(early_pfn_to_nid(pfn));
-> > +	ptr = __alloc_bootmem_core(pgdat->bdata, size, SMP_CACHE_BYTES, goal,
-> > +				   limit);
-> > +
-> > +	if (!ptr)
-> > +		return NULL;
-> > +
-> This also indicates a failure allocating within the section, and yet we
-> do not report it here.
-> 
-> > +	start_nr = pfn_to_section_nr(PFN_DOWN(__pa(ptr)));
-> > +	end_nr = pfn_to_section_nr(PFN_DOWN(__pa(ptr) + size));
-> > +	if (start_nr != section_nr || end_nr != section_nr) {
-> > +		printk(KERN_WARNING "alloc_bootmem failed on section %ld.\n",
-> > +		       section_nr);
-> > +		free_bootmem_core(pgdat->bdata, __pa(ptr), size);
-> 
-> But we do here.  I think we should report both if this is worth
-> reporting.
+On Monday 16 June 2008 22:11:39 Sean Young wrote:
+> The symptons are either a crash or reboot on booting the kernel. No
+> printk's have occurred yet -- even with early printk on.
+>
+> 2.6.15 worked on this board however current does not. I've bisected it to:
+>
+> 	commit a24e785111a32ccb7cebafd24b1b1cb474ea8e5d
+> 	Author: Rusty Russell <rusty@rustcorp.com.au>
+> 	Date:   Sun Oct 21 16:41:35 2007 -0700
+>
+> 	    i386: paravirt boot sequence
 
-Here is already removed from newest -mm.
-(Bootmem code is rewritten by Johannes Weiner recently.)
-Please check the newest -mm code.
+Hi Sean,
 
--- 
-Yasunori Goto 
+   Thanks for tracking this down.  Can we try reverting this in pieces to see 
+exactly what the cause was?
 
+1) Revert arch/x86/boot/compressed/head_32.S
+2) If that doesn't fix it, Try removing the 8 lines which were added to 
+arch/x86/kernel/head_32.S
 
+I assume this is CONFIG_PARAVIRT=n?
+
+Thanks,
+Rusty.
