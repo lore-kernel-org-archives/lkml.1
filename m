@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868AbYFPLb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbYFPLbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754868AbYFPLb2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 07:31:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbYFPLbS
+	id S1755374AbYFPLbk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 07:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbYFPLbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 07:31:18 -0400
-Received: from gw.goop.org ([64.81.55.164]:47483 "EHLO mail.goop.org"
+	Mon, 16 Jun 2008 07:31:19 -0400
+Received: from gw.goop.org ([64.81.55.164]:47482 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751993AbYFPLbR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 07:31:17 -0400
+	id S1752011AbYFPLbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 07:31:18 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 0 of 4] mm+paravirt+xen: add pte read-modify-write abstraction
-	(take 2)
-Message-Id: <patchbomb.1213615799@localhost>
-Date: Mon, 16 Jun 2008 04:29:59 -0700
+Subject: [PATCH 1 of 4] mm: add a ptep_modify_prot transaction abstraction
+X-Mercurial-Node: b020e42384197b82432092839e3dff8435fcebd1
+Message-Id: <b020e42384197b824320.1213615800@localhost>
+In-Reply-To: <patchbomb.1213615799@localhost>
+Date: Mon, 16 Jun 2008 04:30:00 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
@@ -31,86 +32,148 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+This patch adds an API for doing read-modify-write updates to a pte's
+protection bits which may race against hardware updates to the pte.
+After reading the pte, the hardware may asynchonously set the accessed
+or dirty bits on a pte, which would be lost when writing back the
+modified pte value.
 
-[ Change since last post: change name to ptep_modify_prot_, on the
-  grounds that it isn't really a general pte-modification interface. ]
+The existing technique to handle this race is to use
+ptep_get_and_clear() atomically fetch the old pte value and clear it
+in memory.  This has the effect of marking the pte as non-present,
+which will prevent the hardware from updating its state.  When the new
+value is written back, the pte will be present again, and the hardware
+can resume updating the access/dirty flags.
 
-This little series adds a new transaction-like abstraction for doing
-RMW updates to a pte, hooks it into paravirt_ops, and then makes use
-of it in Xen.
+When running in a virtualized environment, pagetable updates are
+relatively expensive, since they generally involve some trap into the
+hypervisor.  To mitigate the cost of these updates, we tend to batch
+them.
 
-The basic problem is that mprotect is very slow under Xen (up to 50x
-slower than native), primarily because of the
+However, because of the atomic nature of ptep_get_and_clear(), it is
+inherently non-batchable.  This new interface allows batching by
+giving the underlying implementation enough information to open a
+transaction between the read and write phases:
 
-	ptent = ptep_get_and_clear(mm, addr, pte);
-	ptent = pte_modify(ptent, newprot);
-	/* ... */
-	set_pte_at(mm, addr, pte, ptent);
+ptep_modify_prot_start() returns the current pte value, and puts the
+  pte entry into a state where either the hardware will not update the
+  pte, or if it does, the updates will be preserved on commit.
 
-sequence in mm/mprotect.c:change_pte_range().
+ptep_modify_prot_commit() writes back the updated pte, makes sure that
+  any hardware updates made since ptep_modify_prot_start() are
+  preserved.
 
-This is bad for Xen for two reasons:
+ptep_modify_prot_start() and _commit() must be exactly paired, and
+used while holding the appropriate pte lock.  They do not protect
+against other software updates of the pte in any way.
 
-  1: ptep_get_and_clear() ends up being a xchg on the pte.  Since the
-     pte page is read-only (as it must be, because Xen needs to
-     control all pte updates), this traps into Xen, which then
-     emulates the instruction.  Trapping into the instruction emulator
-     is inherently expensive.  And,
+The current implementations of ptep_modify_prot_start and _commit are
+functionally unchanged from before: _start() uses ptep_get_and_clear()
+fetch the pte and zero the entry, preventing any hardware updates.
+_commit() simply writes the new pte value back knowing that the
+hardware has not updated the pte in the meantime.
 
-  2: because ptep_get_and_clear has atomic-fetch-and-update semantics,
-     it's impossible to implement in a way which can be batched to
-     amortize the cost of trapping into the hypervisor.
+The only current user of this interface is mprotect
 
-This series adds the ptep_modify_prot_start() and
-ptep_modify_prot_commit() operations, which change this sequence to:
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ include/asm-generic/pgtable.h |   57 +++++++++++++++++++++++++++++++++++++++++
+ mm/mprotect.c                 |   10 ++-----
+ 2 files changed, 61 insertions(+), 6 deletions(-)
 
-	ptent = ptep_modify_prot_start(mm, addr, pte);
-	ptent = pte_modify(ptent, newprot);
-	/* ... */
-	ptep_modify_prot_commit(mm, addr, pte, ptent);
+diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
+--- a/include/asm-generic/pgtable.h
++++ b/include/asm-generic/pgtable.h
+@@ -197,6 +197,63 @@
+ }
+ #endif /* CONFIG_MMU */
+ 
++static inline pte_t __ptep_modify_prot_start(struct mm_struct *mm,
++					     unsigned long addr,
++					     pte_t *ptep)
++{
++	/*
++	 * Get the current pte state, but zero it out to make it
++	 * non-present, preventing the hardware from asynchronously
++	 * updating it.
++	 */
++	return ptep_get_and_clear(mm, addr, ptep);
++}
++
++static inline void __ptep_modify_prot_commit(struct mm_struct *mm,
++					     unsigned long addr,
++					     pte_t *ptep, pte_t pte)
++{
++	/*
++	 * The pte is non-present, so there's no hardware state to
++	 * preserve.
++	 */
++	set_pte_at(mm, addr, ptep, pte);
++}
++
++#ifndef __HAVE_ARCH_PTEP_MODIFY_PROT_TRANSACTION
++/*
++ * Start a pte protection read-modify-write transaction, which
++ * protects against asynchronous hardware modifications to the pte.
++ * The intention is not to prevent the hardware from making pte
++ * updates, but to prevent any updates it may make from being lost.
++ *
++ * This does not protect against other software modifications of the
++ * pte; the appropriate pte lock must be held over the transation.
++ *
++ * Note that this interface is intended to be batchable, meaning that
++ * ptep_modify_prot_commit may not actually update the pte, but merely
++ * queue the update to be done at some later time.  The update must be
++ * actually committed before the pte lock is released, however.
++ */
++static inline pte_t ptep_modify_prot_start(struct mm_struct *mm,
++					   unsigned long addr,
++					   pte_t *ptep)
++{
++	return __ptep_modify_prot_start(mm, addr, ptep);
++}
++
++/*
++ * Commit an update to a pte, leaving any hardware-controlled bits in
++ * the PTE unmodified.
++ */
++static inline void ptep_modify_prot_commit(struct mm_struct *mm,
++					   unsigned long addr,
++					   pte_t *ptep, pte_t pte)
++{
++	__ptep_modify_prot_commit(mm, addr, ptep, pte);
++}
++#endif /* __HAVE_ARCH_PTEP_MODIFY_PROT_TRANSACTION */
++
+ /*
+  * A facility to provide lazy MMU batching.  This allows PTE updates and
+  * page invalidations to be delayed until a call to leave lazy MMU mode
+diff --git a/mm/mprotect.c b/mm/mprotect.c
+--- a/mm/mprotect.c
++++ b/mm/mprotect.c
+@@ -47,19 +47,17 @@
+ 		if (pte_present(oldpte)) {
+ 			pte_t ptent;
+ 
+-			/* Avoid an SMP race with hardware updated dirty/clean
+-			 * bits by wiping the pte and then setting the new pte
+-			 * into place.
+-			 */
+-			ptent = ptep_get_and_clear(mm, addr, pte);
++			ptent = ptep_modify_prot_start(mm, addr, pte);
+ 			ptent = pte_modify(ptent, newprot);
++
+ 			/*
+ 			 * Avoid taking write faults for pages we know to be
+ 			 * dirty.
+ 			 */
+ 			if (dirty_accountable && pte_dirty(ptent))
+ 				ptent = pte_mkwrite(ptent);
+-			set_pte_at(mm, addr, pte, ptent);
++
++			ptep_modify_prot_commit(mm, addr, pte, ptent);
+ #ifdef CONFIG_MIGRATION
+ 		} else if (!pte_file(oldpte)) {
+ 			swp_entry_t entry = pte_to_swp_entry(oldpte);
 
-Which looks very familiar.  And, indeed, when compiled without
-CONFIG_PARAVIRT (or on a non-x86 architecture), it will end up doing
-precisely the same thing as before.
-
-However, the effective semantics are a bit different.
-ptep_modify_prot_start() means "I'm reading this pte with the
-intention of updating it; please don't lose any hardware pte changes
-in the meantime".  And ptep_modify_prot_commit() means "Here's a new
-value for the pte, but make sure you don't lose any hardware changes".
-
-The default implementation achieves these semantics by making
-ptep_modify_prot_start() set the pte to non-present, which prevents
-any async hardware changes to the pte.  The ptep_modify_prot_commit()
-can then just write the new value into place without having to worry
-about preserving any changes, because it knows there are none.
-
-Xen implements ptep_modify_prot_start() as a simple read of the pte.
-This leaves the pte unchanged in memory, and the hardware may make
-asynchronous changes to it.  It implements ptep_modify_prot_commit()
-using a batched hypercall which preserves the state of the
-Access/Dirty bits when updating the pte.  This allows the whole
-change_pte_range() loop to be run without any synchronous unbatched
-traps into the hypervisor.  With this change in place, an mprotect
-microbenchmark goes from being 50x worse than native to around 7x,
-which is acceptible.
-
-I believe that other virtualization systems, whether they use direct
-paging like Xen, or a shadow pagetable scheme (vmi, kvm, lguest), can
-make use of this interface to improve the performance.
-
-Unfortunately (or fortunately) there aren't very many other areas of
-the kernel which can really take advantage of this.  There's only a
-couple of other instances of ptep_get_and_clear() in mm/, and they're
-being used in a similar way; but I don't think they're very
-performance critical (though zap_pte_range might be interesting).
-
-In general, mprotect is rarely a performance bottleneck.  But some
-debugging libraries (such as electric fence) and garbage collectors
-can be very heavy users of mprotect, and this change could materially
-benefit them.
-
-Thanks,
-	J
 
