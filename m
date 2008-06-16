@@ -1,59 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757643AbYFPDGG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbYFPDHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757643AbYFPDGG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 23:06:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbYFPDFz
+	id S1758263AbYFPDHd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 23:07:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbYFPDHY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 23:05:55 -0400
-Received: from ik-out-1112.google.com ([66.249.90.176]:33374 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750851AbYFPDFy (ORCPT
+	Sun, 15 Jun 2008 23:07:24 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:2306 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751267AbYFPDHX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 23:05:54 -0400
+	Sun, 15 Jun 2008 23:07:23 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=So90LMBKMeAMS/9ssEc6SeyTHZtUMICbJeBohwAZwsgECh9eRKMuizSoCuIRjkkuI1
-         aVyrtFfBN/dY3z0wVoU2LX7oQgwuw74A33g49REY8qr5UHRHLQFAr1VZaZmYqhAUD+V7
-         aZ/Y5TXUZ129eRRSQq9bYdREvvqoFMobtQqDU=
-Date: Mon, 16 Jun 2008 07:01:54 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Adrian Bunk <bunk@kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug #10815] 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
-Message-ID: <20080616030154.GA7445@martell.zuzino.mipt.ru>
-References: <20080614144200.GA26421@linux.vnet.ibm.com> <20080614145839.GA10523@tv-sign.ru> <20080614181212.GB26421@linux.vnet.ibm.com> <20080614194338.GA4820@martell.zuzino.mipt.ru> <20080615033001.GE26421@linux.vnet.ibm.com> <20080615162150.GA8289@martell.zuzino.mipt.ru> <20080615181710.GA17915@linux.vnet.ibm.com> <alpine.LFD.1.10.0806151323101.2949@woody.linux-foundation.org> <20080615232754.GD17915@linux.vnet.ibm.com> <alpine.LFD.1.10.0806151633290.2949@woody.linux-foundation.org>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=FizXE5wIzrbGToh7UZHowmoNhAYmWcXHwMiZZkb/a7+bhzNzy3Wi4Y6iI8qF824fGn
+         hljz21uW6883kPVnX6guDjPFsW2atzcogycmf5ZHDhy1XGM7AgEnLHaNl/Kfx6yyu2FE
+         7ohTqfdQ79G2HEd6deO0LrskHrPu4K5ZZv2pc=
+Message-ID: <4855D8E2.10409@gmail.com>
+Date: Mon, 16 Jun 2008 12:07:14 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0806151633290.2949@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Komuro <komurojun-mbn@nifty.com>
+CC: Jeff Garzik <jeff@garzik.org>,
+       Dominik Brodowski <linux@dominikbrodowski.net>, jgarzik@redhat.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-pcmcia <linux-pcmcia@lists.infradead.org>,
+       Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Subject: Re: [KERNEL 2.6.26-rc4]  bugreport : pata_pcmcia with Sandisk Extreme
+ III 8GB
+References: <20080528225049.9a134e0d.Kristoffer.Ericson@Gmail.com>	<20080528222740.GB20893@isilmar.linta.de>	<20080530135728.be02d3dc.Kristoffer.Ericson@Gmail.com>	<20080607223716.7d142072.komurojun-mbn@nifty.com>	<20080611072029.GB28692@comet.dominikbrodowski.net>	<20080614120055.ad8fbee0.komurojun-mbn@nifty.com>	<48537149.4040102@garzik.org> <20080614213612.96873c25.komurojun-mbn@nifty.com>
+In-Reply-To: <20080614213612.96873c25.komurojun-mbn@nifty.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/mixed;
+ boundary="------------020409020006020000010900"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 15, 2008 at 04:38:24PM -0700, Linus Torvalds wrote:
-> On Sun, 15 Jun 2008, Paul E. McKenney wrote:
-> >
-> > If that is the right thing to do.  I would feel better about it if I
-> > could reproduce the failure.
+This is a multi-part message in MIME format.
+--------------020409020006020000010900
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+Hello,
+
+Komuro wrote:
+> On Sat, 14 Jun 2008 03:20:41 -0400
+> Jeff Garzik <jeff@garzik.org> wrote:
 > 
-> Is there some configuration thing that might make it happen for Alexey but 
-> not for you? The only obvious one is the normal PREEMPT thing, but 
-> PREEMPT_RCU obviously depends on that, so there must be something else.
 > 
-> CONFIG_SMP? CONFIG_NO_HZ? CONFIG_[RT|FAIR]_GROUP_SCHED? There's a number 
-> of config options that change scheduling details..
+> After removing the 3-lines below in ata_eh_reset
+> the pata_pcmcia works properly.
+> 
+> 
+> -       spin_lock_irqsave(link->ap->lock, flags);
+> -       link->eh_info.serror = 0;
+> -       spin_unlock_irqrestore(link->ap->lock, flags);
+> 
+> Please fix this problem.
 
-The only way I can "fix" rcutorture here is SMP=n (not maxcpus=1!).
+Thanks for diagnosing the problem but it doesn't make any sense at all.
+ Those three lines just clear cached SError value.  pata_pcmcia being a
+PATA driver, SError is not implemented and always zero.
 
-Among things tried and do not matter are NO_HZ, HIGH_RES_TIMERS, turning off
-debugging options (one by one and in bulk), DEBUG_PER_CPU_MAPS, HZ tweaks,
-SCHED_MC.
+Also the init_one error is -ENOMEM.  For the above change to make any
+difference, EH should have been entered which is invoked deep into
+ata_host_register() and once control reaches that point it never returns
+error code.  I have difficult time imagining any way the above diff can
+have anything to do with the reported failure.
 
-All of this doesn't help, but SMP=n does.
+Please apply the attached patch and report the log after probe failure.
 
+Thanks.
+
+-- 
+tejun
+
+--------------020409020006020000010900
+Content-Type: text/x-patch;
+ name="pata_pcmcia-debug.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="pata_pcmcia-debug.patch"
+
+diff --git a/drivers/ata/pata_pcmcia.c b/drivers/ata/pata_pcmcia.c
+index 3d39f9d..d5bcdc2 100644
+--- a/drivers/ata/pata_pcmcia.c
++++ b/drivers/ata/pata_pcmcia.c
+@@ -177,8 +177,10 @@ static int pcmcia_init_one(struct pcmcia_device *pdev)
+ 	struct ata_port_operations *ops = &pcmcia_port_ops;
+ 
+ 	info = kzalloc(sizeof(*info), GFP_KERNEL);
+-	if (info == NULL)
++	if (info == NULL) {
++		printk("XXX info alloc failed\n");
+ 		return -ENOMEM;
++	}
+ 
+ 	/* Glue stuff together. FIXME: We may be able to get rid of info with care */
+ 	info->pdev = pdev;
+@@ -196,8 +198,10 @@ static int pcmcia_init_one(struct pcmcia_device *pdev)
+ 	/* Allocate resoure probing structures */
+ 
+ 	stk = kzalloc(sizeof(*stk), GFP_KERNEL);
+-	if (!stk)
++	if (!stk) {
++		printk("XXX stk alloc failed\n");
+ 		goto out1;
++	}
+ 
+ 	cfg = &stk->parse.cftable_entry;
+ 
+@@ -290,8 +294,11 @@ next_entry:
+ 	ret = -ENOMEM;
+ 	io_addr = devm_ioport_map(&pdev->dev, io_base, 8);
+ 	ctl_addr = devm_ioport_map(&pdev->dev, ctl_base, 1);
+-	if (!io_addr || !ctl_addr)
++	if (!io_addr || !ctl_addr) {
++		printk("XXX ioport_map failed io_addr=%p ctl_addr=%p\n",
++		       io_addr, ctl_addr);
+ 		goto failed;
++	}
+ 
+ 	/* Success. Disable the IRQ nIEN line, do quirks */
+ 	iowrite8(0x02, ctl_addr);
+@@ -311,8 +318,10 @@ next_entry:
+ 	 */
+ 	ret = -ENOMEM;
+ 	host = ata_host_alloc(&pdev->dev, n_ports);
+-	if (!host)
++	if (!host) {
++		printk("XXX host alloc failed\n");
+ 		goto failed;
++	}
+ 
+ 	for (p = 0; p < n_ports; p++) {
+ 		ap = host->ports[p];
+@@ -331,8 +340,10 @@ next_entry:
+ 	/* activate */
+ 	ret = ata_host_activate(host, pdev->irq.AssignedIRQ, ata_sff_interrupt,
+ 				IRQF_SHARED, &pcmcia_sht);
+-	if (ret)
++	if (ret) {
++		printk("XXX host activate failed ret=%d\n", ret);
+ 		goto failed;
++	}
+ 
+ 	info->ndev = 1;
+ 	kfree(stk);
+
+--------------020409020006020000010900--
