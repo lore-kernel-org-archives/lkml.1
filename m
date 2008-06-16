@@ -1,71 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755191AbYFPTLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755334AbYFPTQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755191AbYFPTLv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 15:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbYFPTLn
+	id S1755334AbYFPTQo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 15:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbYFPTQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 15:11:43 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55092 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751677AbYFPTLn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 15:11:43 -0400
-Date: Mon, 16 Jun 2008 19:53:40 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Paul Jackson <pj@sgi.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       ying.huang@intel.com, mingo@elte.hu, tglx@linutronix.de,
-       steiner@sgi.com, travis@sgi.com, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 4/8] x86 boot: allow overlapping ebda and efi memmap
- memory ranges
-Message-ID: <20080616195340.7d0a56a8@lxorguk.ukuu.org.uk>
-In-Reply-To: <4856AE64.7020906@zytor.com>
-References: <20080616062945.14597.78009.sendpatchset@polaris-admin.engr.sgi.com>
-	<20080616063001.14597.96170.sendpatchset@polaris-admin.engr.sgi.com>
-	<1213600062.11185.13.camel@caritas-dev.intel.com>
-	<20080616032457.718f4d87.pj@sgi.com>
-	<1213606435.12968.14.camel@caritas-dev.intel.com>
-	<48568B56.7060307@zytor.com>
-	<20080616113806.2ff4c1a4.pj@sgi.com>
-	<48569D62.9050107@zytor.com>
-	<20080616123721.bb9195e6.pj@sgi.com>
-	<86802c440806161041v5f582d4y2a65adf57451a6d9@mail.gmail.com>
-	<20080616130938.527283f7.pj@sgi.com>
-	<4856AE64.7020906@zytor.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Mon, 16 Jun 2008 15:16:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44379 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751677AbYFPTQe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 15:16:34 -0400
+Date: Mon, 16 Jun 2008 15:15:11 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: Joe Perches <joe@perches.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, greg@kroah.com,
+       nick@nick-andrew.net, randy.dunlap@oracle.com
+Subject: Re: [PATCH 2/8] dynamic debug - core infrastructure
+Message-ID: <20080616191511.GB30284@redhat.com>
+References: <20080613190039.GC8813@redhat.com> <1213396218.5463.48.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1213396218.5463.48.camel@localhost>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jun 2008 11:18:12 -0700
-"H. Peter Anvin" <hpa@zytor.com> wrote:
-
-> Paul Jackson wrote:
-> > Yinghai wrote:
-> >> like to see to make reserve_ebda_region() more smart like the old
-> >> way when andi introduced ebda_size... instead of reserve 0x9000 to
-> >> 0x100000 all the way.
-> > 
-> > Looking back at some older kernels, that code seems to have setup an
-> > ebda region only if there was a non-zero real mode pointer at 0x40E.
-> > 
-> > This is rather different than always setting up such a region.
-> > 
+On Fri, Jun 13, 2008 at 03:30:18PM -0700, Joe Perches wrote:
+> On Fri, 2008-06-13 at 15:00 -0400, Jason Baron wrote:
+> > This is the core patch that implements a new dynamic debug
+> > infrastructure.
 > 
-> Well, sort of.  Only some very old systems will not have had one.
+> Some general and specific comments.
 > 
-> 0x40E contains the pointer to the EBDA; this basically tests for the 
-> existence of an EBDA at all.
+> > +int dynamic_printk_enabled[NR_CPUS];
+> 
+> I don't understand why you use NR_CPUS.
+> 
+> Also, I think the major use cases are 1 or 2 modules enabled,
+> no modules enabled, or all modules enabled, so the hashing of
+> module names is particularly not useful.
+> 
+> Any pr_debug or dev_dbg is in a slow path.
+> 
+> I think a list and a direct comparison to KBUILD_MODNAME
+> would be simpler and as fast as necessary.
+> 
 
-I'd disagree with the "very old". Machines without EBDA go right up to
-the AMD Athlon era and maybe beyond that. My old dual Athlon box has no
-EBDA.
+NR_CPUS is used to set up a per-cpu int variable where bit 'n' is set if any 
+enabled module's name hashes into bucket 'n'. Having a single linked list of
+the enabled modules would work, but i like just checking a bit in the common
+case. Like you pointed out, most modules are likely disabled which means in the
+common case, i'm just checking a bit, whereas in a linked list I'd be walking
+a small number of entries.
 
-Alan
+However, we can better optimize the case of no modules enabled or all modules
+enabled, by simply checking globals that indicate this state. I think that
+would be improvment. So dynamic_dbg_enabled() looks something like:
+
+if (alloff)
+	return 0;
+elseif (allon)
+	return 1;
+elseif (if hash bucket of KBUILD_MODNAME is disabled)
+	return 0;
+else
+	lookup KBUILD_MODNAME in hash table
+	if (level or flag comparisons pass and enabled)
+		return 1;
+	else
+		return 0;
+	
+> > +         To set the level or flag value for type 'level' or 'flag': 
+> > +
+> > +               $echo "set level=<#> <module_name>" > dynamic_printk/modules
+> > +
+> 
+> I think that set level=<#> should also work for "all"
+> 
+
+good idea.
+
+> Perhaps a simpler interface would be to use
+> 	enable <module> <level>
+> where <level> not specified is 0.
+> 
+
+hmmm, there are also 'flags' that can be set for certain modules. Right now
+flags and level are set the same way, via 'set level=". However, i want flags
+to be able to be set via their name - "set FLAG_FOOBAR=1" or 
+"set FLAG_FOOBAR=0". I also like having this independent of whether the module
+is enabled or disabled. 
+
+> > +int unregister_debug_module(char *mod_name)
+> > +{
+> > +	struct debug_name *element;
+> > +	struct debug_name *parent = NULL;
+> > +	int ret = 0;
+> > +	int i;
+> > +
+> > +	down(&debug_list_mutex);
+> > +	element = find_debug_module(mod_name);
+> > +	if (!element) {
+> > +		ret = -EINVAL;
+> > +		goto out;
+> > +	}
+> 
+> []
+> 
+> > +out:
+> > +	up(&debug_list_mutex);
+> > +	return 0;
+> > +}
+> 
+> Because the return values aren't used,
+> the functions might as well be declared void
+> 
+
+ok
+
+> You should probably add a sprinkling of "const"
+> to the argument lists.
+> 
+
+ok
+
+> +extern void dynamic_printk(char *, char *, ...);
+> 
+> +	dynamic_printk(KBUILD_MODNAME,                     \
+> +			KERN_DEBUG KBUILD_MODNAME ": " fmt,\
+> 
+> Instead of prefixing every fmt with KBUILD_MODNAME ": ",
+> why not change this to something like:
+> 
+> extern void dynamic_printk(const char *level, const char *module,
+> 			   const char *fmt, ...);
+> 
+> and just do the printk in 2 parts?
+> 
+> 	if (module_enabled) {
+> 		printk("%s%s: ", level, module);
+> 		vprintk(fmt, args);
+> 	}
+> 
+> If not that, why should dynamic_printk prefix a KBUILD_MODNAME
+> at all?  Why not just check if the module is enabled, then
+> output what the code specifies?
+> 
+> trivial:  The dynamic versions of the dev_dbg and pr_debug macros
+> don't return the number of chars output, but always return 0.
+> 
+>
+
+good idea - i think pr_debug and dev_dbg should simply be implemented on top
+of dynamic_dbg_enabled(). I'll add that in the next spin.
+
+thanks,
+
+-Jason
+
+ 
