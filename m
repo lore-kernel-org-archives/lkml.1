@@ -1,86 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755684AbYFPNLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755063AbYFPNQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755684AbYFPNLu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 09:11:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbYFPNLl
+	id S1755063AbYFPNQw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 09:16:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbYFPNQm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 09:11:41 -0400
-Received: from in.cluded.net ([195.159.98.120]:52507 "EHLO in.cluded.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753301AbYFPNLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 09:11:41 -0400
-X-OS: [Linux] 2.6.8 and newer (?)
-Message-ID: <4856671B.1020304@uw.no>
-Date: Mon, 16 Jun 2008 15:14:03 +0200
-From: "Daniel K." <dk@uw.no>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: mingo@elte.hu, menage@google.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG: NULL pointer dereference] cgroups and RT scheduling	interact
- badly.
-References: <485445AE.2010602@uw.no> <1213612447.16944.99.camel@twins>
-In-Reply-To: <1213612447.16944.99.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 16 Jun 2008 09:16:42 -0400
+Received: from userg500.nifty.com ([202.248.238.80]:64708 "EHLO
+	userg500.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752463AbYFPNQl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 09:16:41 -0400
+DomainKey-Signature: a=rsa-sha1; s=userg500; d=nifty.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:in-reply-to:references:
+	x-mailer:mime-version:content-type:content-transfer-encoding;
+	b=UyftToneQ2+lD7NopZWW+mpqY9UBc+MTEqJtVsqBqRjhMvx7DY67HvU1vLMQBR1hP
+	wMMLXe/TJjmV4Cecibuqg==
+X-Nifty-SrcIP: [220.145.30.232]
+Date: Mon, 16 Jun 2008 22:11:45 +0900
+From: Komuro <komurojun-mbn@nifty.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Dominik Brodowski <linux@dominikbrodowski.net>, jgarzik@redhat.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-pcmcia <linux-pcmcia@lists.infradead.org>,
+       Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Subject: Re: [KERNEL 2.6.26-rc4]  bugreport : pata_pcmcia with Sandisk
+ Extreme III 8GB
+Message-Id: <20080616221145.e3b069b9.komurojun-mbn@nifty.com>
+In-Reply-To: <4855D8E2.10409@gmail.com>
+References: <20080528225049.9a134e0d.Kristoffer.Ericson@Gmail.com>
+	<20080528222740.GB20893@isilmar.linta.de>
+	<20080530135728.be02d3dc.Kristoffer.Ericson@Gmail.com>
+	<20080607223716.7d142072.komurojun-mbn@nifty.com>
+	<20080611072029.GB28692@comet.dominikbrodowski.net>
+	<20080614120055.ad8fbee0.komurojun-mbn@nifty.com>
+	<48537149.4040102@garzik.org>
+	<20080614213612.96873c25.komurojun-mbn@nifty.com>
+	<4855D8E2.10409@gmail.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> Does the below work for you?
+Hi,
+
+Here is the log  (your patch is applied).
+Unfortunately, no message that you added appears.
+
+It seems this device is detected as pcmcia0.0 first
+but later it is detected as pcmcia0.1.
+
+
+>pcmcia: registering new device pcmcia0.0
+>scsi2 : pata_pcmcia
+>ata3: PATA max PIO0 cmd 0xd100 ctl 0xd10e irq 4
+>ata3.00: CFA: , Ver.1.0, max PIO2
+>ata3.00: 32000 sectors, multi 0: LBA 
+>ata3.00: configured for PIO0
+>ata3.00: configured for PIO0
+>ata3: EH complete
+>isa bounce pool size: 16 pages
+>scsi 2:0:0:0: Direct-Access     ATA                       Ver. PQ: 0 ANSI: 5
+>sd 2:0:0:0: [sdb] 32000 512-byte hardware sectors (16 MB)
+>sd 2:0:0:0: [sdb] Write Protect is off
+>sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+>sd 2:0:0:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+>sd 2:0:0:0: [sdb] 32000 512-byte hardware sectors (16 MB)
+>sd 2:0:0:0: [sdb] Write Protect is off
+>sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+>sd 2:0:0:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+> sdb: sdb1
+>sd 2:0:0:0: [sdb] Attached SCSI removable disk
+>sd 2:0:0:0: Attached scsi generic sg2 type 0
+>pcmcia: registering new device pcmcia0.1
+>pcmcia: registering new device pcmcia0.1
+>0.1: GetNextTuple: No more items
+>pata_pcmcia: probe of 0.1 failed with error -12
+>modprobe used greatest stack depth: 1684 bytes left
+>0.1: GetNextTuple: No more items
+>pata_pcmcia: probe of 0.1 failed with error -12
+>0.1: GetNextTuple: No more items
+>pata_pcmcia: probe of 0.1 failed with error -12
+
+Best Regards
+Komuro
+
+> Hello,
 > 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
-> Index: linux-2.6/kernel/sched.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/sched.c
-> +++ linux-2.6/kernel/sched.c
-> @@ -7784,7 +7784,6 @@ static void init_tg_rt_entry(struct task
->  	else
->  		rt_se->rt_rq = parent->my_q;
->  
-> -	rt_se->rt_rq = &rq->rt;
->  	rt_se->my_q = rt_rq;
->  	rt_se->parent = parent;
->  	INIT_LIST_HEAD(&rt_se->run_list);
+> Komuro wrote:
+> > On Sat, 14 Jun 2008 03:20:41 -0400
+> > Jeff Garzik <jeff@garzik.org> wrote:
+> > 
+> > 
+> > After removing the 3-lines below in ata_eh_reset
+> > the pata_pcmcia works properly.
+> > 
+> > 
+> > -       spin_lock_irqsave(link->ap->lock, flags);
+> > -       link->eh_info.serror = 0;
+> > -       spin_unlock_irqrestore(link->ap->lock, flags);
+> > 
+> > Please fix this problem.
+> 
+> Thanks for diagnosing the problem but it doesn't make any sense at all.
+>  Those three lines just clear cached SError value.  pata_pcmcia being a
+> PATA driver, SError is not implemented and always zero.
+> 
+> Also the init_one error is -ENOMEM.  For the above change to make any
+> difference, EH should have been entered which is invoked deep into
+> ata_host_register() and once control reaches that point it never returns
+> error code.  I have difficult time imagining any way the above diff can
+> have anything to do with the reported failure.
+> 
+> Please apply the attached patch and report the log after probe failure.
+> 
+> Thanks.
+> 
+> -- 
+> tejun
+> 
 
-Although this patch seems to be correct, this is what shows up on my
-netconsole, when applying it -- with an offset, do you have other fixes
-applied as well?
 
-
-Daniel K.
-
-> [  129.390189] ------------[ cut here ]------------
-> [  129.390370] Kernel BUG at ffffffff8022acea [verbose debug info unavailable]
-> [  129.390489] invalid opcode: 0000 [1] SMP 
-> [  129.390672] CPU 3 
-> [  129.390811] Modules linked in: netconsole configfs ipmi_msghandler kvm_amd kvm ipv6 iptable_filter ip_tables x_tables af_packet usbhid hid loop evdev ehci_hcd tg3 ohci_hcd i2c_nforce2 forcedeth shpchp pci_hotplug button pcspkr k8temp thermal usbcore processor i2c_core sd_mod sg fan thermal_sys
-> [  129.393446] Pid: 3375, comm: burnP6 Not tainted 2.6.26-rc6 #3
-> [  129.393560] RIP: 0010:[<ffffffff8022acea>]  [<ffffffff8022acea>] pick_next_task_rt+0x5a/0x90
-> [  129.393784] RSP: 0000:ffff81021eda5ea0  EFLAGS: 00010002
-> [  129.393896] RAX: 0000000000000064 RBX: ffffffff8049ec00 RCX: ffff810221495000
-> [  129.393920] RDX: ffff81022113f9c0 RSI: 0000000000000003 RDI: ffff810001056600
-> [  129.393920] RBP: ffff81021eda5ea0 R08: ffff810001050660 R09: 0000000000001280
-> [  129.393920] R10: 0000000000000001 R11: 00000000ffffffff R12: 0000000000000000
-> [  129.393920] R13: ffff810001056600 R14: 0000000000000003 R15: 0000000000000000
-> [  129.393920] FS:  00007f36635536e0(0000) GS:ffff810223022980(0000) knlGS:0000000000000000
-> [  129.393920] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
-> [  129.393920] CR2: 0000000008049130 CR3: 0000000221d08000 CR4: 00000000000006e0
-> [  129.393920] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> [  129.393920] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> [  129.393920] Process burnP6 (pid: 3375, threadinfo ffff81021eda4000, task ffff810220ded2e0)
-> [  129.393920] Stack:  ffff81021eda5f70 ffffffff8048c302 0000000000000000 ffff81021ec1da00
-> [  129.393920]  ffffffff80689600 ffffffff80689600 ffffffff806858a0 ffffffff80689600
-> [  129.393920]  ffff810220ded558 0000000000000000 0000000000000292 ffff810220ded2e0
-> [  129.393920] Call Trace:
-> [  129.393920]  [<ffffffff8048c302>] thread_return+0x101/0x4af
-> [  129.393921]  [<ffffffff80343761>] ? __up_read+0x21/0xb0
-> [  129.393921]  [<ffffffff8020bdee>] retint_careful+0x1c/0x42
-> [  129.393921] 
-> [  129.393921] 
-> [  129.393921] Code: 48 c1 e0 04 48 8b 14 08 48 85 d2 74 49 48 8b 4a 40 48 85 c9 74 1b 48 8b 01 48 85 c0 75 d4 48 0f bc 41 08 83 c0 40 83 f8 63 7e d0 <0f> 0b eb fe 66 90 48 8b 87 f8 07 00 00 48 8d 8a 40 ff ff ff 48 
-> [  129.400164] RIP  [<ffffffff8022acea>] pick_next_task_rt+0x5a/0x90
-> [  129.400164]  RSP <ffff81021eda5ea0>
