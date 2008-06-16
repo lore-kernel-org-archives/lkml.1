@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756102AbYFPPtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbYFPPu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756102AbYFPPtt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 11:49:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbYFPPtm
+	id S1756590AbYFPPu3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 11:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbYFPPuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 11:49:42 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45153 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753609AbYFPPtl (ORCPT
+	Mon, 16 Jun 2008 11:50:21 -0400
+Received: from smtp-vbr11.xs4all.nl ([194.109.24.31]:4408 "EHLO
+	smtp-vbr11.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752348AbYFPPuU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 11:49:41 -0400
-Message-ID: <48568B56.7060307@zytor.com>
-Date: Mon, 16 Jun 2008 08:48:38 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: "Huang, Ying" <ying.huang@intel.com>
-CC: Paul Jackson <pj@sgi.com>, mingo@elte.hu, tglx@linutronix.de,
-       yhlu.kernel@gmail.com, steiner@sgi.com, travis@sgi.com,
-       linux-kernel@vger.kernel.org, andi@firstfloor.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 4/8] x86 boot: allow overlapping ebda and efi memmap	memory
- ranges
-References: <20080616062945.14597.78009.sendpatchset@polaris-admin.engr.sgi.com>	 <20080616063001.14597.96170.sendpatchset@polaris-admin.engr.sgi.com>	 <1213600062.11185.13.camel@caritas-dev.intel.com>	 <20080616032457.718f4d87.pj@sgi.com> <1213606435.12968.14.camel@caritas-dev.intel.com>
-In-Reply-To: <1213606435.12968.14.camel@caritas-dev.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 16 Jun 2008 11:50:20 -0400
+Subject: Re: XFS internal error xfs_trans_cancel at line 1163 of file
+	fs/xfs/xfs_trans.c
+From: Miquel van Smoorenburg <mikevs@xs4all.net>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Oliver Pinter <oliver.pntr@gmail.com>, lists@ku-gbr.de,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       xfs@oss.sgi.com, xfs-masters@oss.sgi.com, mikevs@xs4all.net
+In-Reply-To: <1213356518.8530.5.camel@n2o.xs4all.nl>
+References: <20080612123031.21594jyk6rjc1lfk@imp.ku-gbr.de>
+	 <6101e8c40806120733m3c8647ccy149eb237e2c6d027@mail.gmail.com>
+	 <1213309629.29745.8.camel@localhost.localdomain>
+	 <20080613030841.GC3700@disturbed>  <1213356518.8530.5.camel@n2o.xs4all.nl>
+Content-Type: text/plain
+Organization: XS4ALL Internet B.V.
+Date: Mon, 16 Jun 2008 17:50:06 +0200
+Message-Id: <1213631406.19372.15.camel@n2o.xs4all.nl>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang, Ying wrote:
->>> Or do not reserve EBDA on EFI system.
->> I suppose.  This would have been a bigger change than I could
->> suggest.  For all I know, there are existing systems using EBDA
->> and EFI together.  Would this change break them?
->>
->> If you have good reason to know that's essentially impossible then
->> I have no objections, so far as my needs go, to not reserving EBDA
->> on EFI systems.
+On Fri, 2008-06-13 at 13:28 +0200, Miquel van Smoorenburg wrote:
+> On Fri, 2008-06-13 at 13:08 +1000, Dave Chinner wrote: 
+> > On Fri, Jun 13, 2008 at 12:27:09AM +0200, Miquel van Smoorenburg wrote:
+>
+> > > Linux transit5.news.xs4all.nl 2.6.25.6 #1 SMP Wed Jun 11 10:59:10 CEST
+> > > 2008 x86_64 GNU/Linux
+> > > 
+> > > Filesystem "sda4": XFS internal error xfs_trans_cancel at line 1163 of
+> > > file fs/xfs/xfs_trans.c.  Caller 0xffffffff880f1315
+> > > Pid: 3402, comm: diablo Not tainted 2.6.25.6 #1
+> > 
+> > This commit in 2.6.26 will probably fix it.
+> > 
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=75de2a91c98a6f486f261c1367fe59f5583e15a3
 > 
-> I think if EBDA area is used in EFI system, it should be reserved in EFI
-> memory map.
+> "At ENOSPC, we can get a filesystem shutdown due to a cancelling a dirty
+> transaction in xfs_mkdir or xfs_create."
+> 
+> But The filesystem is only used for 35%. It might have hit 100% somewhere in
+> the recent past though (a few reboots ago).
+> I've applied the patch to 2.6.25.6 just in case, I'll let it run over
+> the weekend to see what happens.
 
-Realistically, we need the infrastructure to be able to make paranoia 
-reservations, and you need to be able to deal with later finding they 
-are actually in use.  That's part of why we *make* paranoia 
-reservations.  It's not acceptable to say "oh, it's EFI, we don't need 
-it" -- that's equivalent to saying "oh, EFI firmware won't have any 
-bugs."  Although I know there are plenty of EFI fanboys who seem to have 
-that idea, I consider it about as likely as the tooth fairy.
+Well, the box has been up for 3 days now. When this problem first
+appeared it only stayed up for a day max, so I'm reasonably positive
+it's fixed.
 
-	-hpa
+The patch applies cleanly to 2.6.25.6 - perhaps it should go into
+-stable.
+
+Thanks,
+
+Mike.
+
