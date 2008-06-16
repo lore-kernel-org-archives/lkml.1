@@ -1,240 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755823AbYFPLcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbYFPLcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755823AbYFPLcR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 07:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753739AbYFPLbU
+	id S1755327AbYFPLcq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 07:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755659AbYFPLcC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 07:31:20 -0400
-Received: from gw.goop.org ([64.81.55.164]:47509 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752972AbYFPLbT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 07:31:19 -0400
-Content-Type: text/plain; charset="us-ascii"
+	Mon, 16 Jun 2008 07:32:02 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52834 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755561AbYFPLb6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 07:31:58 -0400
+Date: Mon, 16 Jun 2008 12:42:00 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: auke-jan.h.kok@intel.com, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, len.brown@intel.com,
+       cpufreq@lists.linux.org.uk, davej@codemonkey.org.uk
+Subject: Re: bug? acpi p-state + ondemand keeps dropping max freq
+Message-ID: <20080616104159.GA28659@elf.ucw.cz>
+References: <20080606140846.GA9580@ucw.cz> <20080607213918.GC1746@elf.ucw.cz> <20080607145435.4afc9812@infradead.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: [PATCH 4 of 4] xen: add mechanism to extend existing multicalls
-X-Mercurial-Node: 273a42980ece51283d93b2ab7c169db55089e789
-Message-Id: <273a42980ece51283d93.1213615803@localhost>
-In-Reply-To: <patchbomb.1213615799@localhost>
-Date: Mon, 16 Jun 2008 04:30:03 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Hugh Dickins <hugh@veritas.com>,
-       Zachary Amsden <zach@vmware.com>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080607145435.4afc9812@infradead.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some Xen hypercalls accept an array of operations to work on.  In
-general this is because its more efficient for the hypercall to the
-work all at once rather than as separate hypercalls (even batched as a
-multicall).
+On Sat 2008-06-07 14:54:35, Arjan van de Ven wrote:
+> On Sat, 7 Jun 2008 23:39:18 +0200
+> Pavel Machek <pavel@suse.cz> wrote:
+> 
+> > > # echo 1866000 > scaling_max_freq ; cat scaling_max_freq
+> > > 800000
+> > > # echo 1866000 > scaling_max_freq ; cat scaling_max_freq
+> > > 800000
+> > > 
+> > > 
+> > > This renders my Dothan to utterly poor speeds. (standard T43)
+> > > 
+> > > performance cpufreq governor makes no difference - I still can't
+> > > change the frequency upper/lower values.
+> > 
+> > Hmm, I have similar problem in Novell bugzilla, on very different hw:
+> > 
+> > https://bugzilla.novell.com/show_bug.cgi?id=396311
 
-This patch adds a mechanism (xen_mc_extend_args()) to allocate more
-argument space to the last-issued multicall, in order to extend its
-argument list.
+> are either of you running gnome-power-manager or kpowersaved ?
+> sometimes these programs (and more likely, the patches added by a
+> distro maintainer who doesn't fully realize how power works) tend to
+> muck with kernel settings around CPU frequency that they have
+> absolutely no business touching...
 
-The user of this mechanism is xen/mmu.c, which uses it to extend the
-args array of mmu_update.  This is particularly valuable when doing
-the update for a large mprotect, which goes via
-ptep_modify_prot_commit(), but it also manages to batch updates to
-pgd/pmds as well.
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- arch/x86/xen/mmu.c        |   55 ++++++++++++++++++++++++++++-----------------
- arch/x86/xen/multicalls.c |   40 +++++++++++++++++++++++++++-----
- arch/x86/xen/multicalls.h |   12 +++++++++
- 3 files changed, 81 insertions(+), 26 deletions(-)
-
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -227,18 +227,35 @@
- 	return PagePinned(page);
- }
- 
--void xen_set_pmd_hyper(pmd_t *ptr, pmd_t val)
-+static void extend_mmu_update(const struct mmu_update *update)
- {
- 	struct multicall_space mcs;
- 	struct mmu_update *u;
- 
-+	mcs = xen_mc_extend_args(__HYPERVISOR_mmu_update, sizeof(*u));
-+
-+	if (mcs.mc != NULL)
-+		mcs.mc->args[1]++;
-+	else {
-+		mcs = __xen_mc_entry(sizeof(*u));
-+		MULTI_mmu_update(mcs.mc, mcs.args, 1, NULL, DOMID_SELF);
-+	}
-+
-+	u = mcs.args;
-+	*u = *update;
-+}
-+
-+void xen_set_pmd_hyper(pmd_t *ptr, pmd_t val)
-+{
-+	struct mmu_update u;
-+
- 	preempt_disable();
- 
--	mcs = xen_mc_entry(sizeof(*u));
--	u = mcs.args;
--	u->ptr = virt_to_machine(ptr).maddr;
--	u->val = pmd_val_ma(val);
--	MULTI_mmu_update(mcs.mc, u, 1, NULL, DOMID_SELF);
-+	xen_mc_batch();
-+
-+	u.ptr = virt_to_machine(ptr).maddr;
-+	u.val = pmd_val_ma(val);
-+	extend_mmu_update(&u);
- 
- 	xen_mc_issue(PARAVIRT_LAZY_MMU);
- 
-@@ -329,14 +346,13 @@
- void xen_ptep_modify_prot_commit(struct mm_struct *mm, unsigned long addr,
- 				 pte_t *ptep, pte_t pte)
- {
--	struct multicall_space mcs;
--	struct mmu_update *u;
-+	struct mmu_update u;
- 
--	mcs = xen_mc_entry(sizeof(*u));
--	u = mcs.args;
--	u->ptr = virt_to_machine(ptep).maddr | MMU_PT_UPDATE_PRESERVE_AD;
--	u->val = pte_val_ma(pte);
--	MULTI_mmu_update(mcs.mc, u, 1, NULL, DOMID_SELF);
-+	xen_mc_batch();
-+
-+	u.ptr = virt_to_machine(ptep).maddr | MMU_PT_UPDATE_PRESERVE_AD;
-+	u.val = pte_val_ma(pte);
-+	extend_mmu_update(&u);
- 
- 	xen_mc_issue(PARAVIRT_LAZY_MMU);
- }
-@@ -393,16 +409,15 @@
- 
- void xen_set_pud_hyper(pud_t *ptr, pud_t val)
- {
--	struct multicall_space mcs;
--	struct mmu_update *u;
-+	struct mmu_update u;
- 
- 	preempt_disable();
- 
--	mcs = xen_mc_entry(sizeof(*u));
--	u = mcs.args;
--	u->ptr = virt_to_machine(ptr).maddr;
--	u->val = pud_val_ma(val);
--	MULTI_mmu_update(mcs.mc, u, 1, NULL, DOMID_SELF);
-+	xen_mc_batch();
-+
-+	u.ptr = virt_to_machine(ptr).maddr;
-+	u.val = pud_val_ma(val);
-+	extend_mmu_update(&u);
- 
- 	xen_mc_issue(PARAVIRT_LAZY_MMU);
- 
-diff --git a/arch/x86/xen/multicalls.c b/arch/x86/xen/multicalls.c
---- a/arch/x86/xen/multicalls.c
-+++ b/arch/x86/xen/multicalls.c
-@@ -29,14 +29,14 @@
- #define MC_DEBUG	1
- 
- #define MC_BATCH	32
--#define MC_ARGS		(MC_BATCH * 16 / sizeof(u64))
-+#define MC_ARGS		(MC_BATCH * 16)
- 
- struct mc_buffer {
- 	struct multicall_entry entries[MC_BATCH];
- #if MC_DEBUG
- 	struct multicall_entry debug[MC_BATCH];
- #endif
--	u64 args[MC_ARGS];
-+	unsigned char args[MC_ARGS];
- 	struct callback {
- 		void (*fn)(void *);
- 		void *data;
-@@ -108,20 +108,48 @@
- {
- 	struct mc_buffer *b = &__get_cpu_var(mc_buffer);
- 	struct multicall_space ret;
--	unsigned argspace = (args + sizeof(u64) - 1) / sizeof(u64);
-+	unsigned argidx = roundup(b->argidx, sizeof(u64));
- 
- 	BUG_ON(preemptible());
--	BUG_ON(argspace > MC_ARGS);
-+	BUG_ON(b->argidx > MC_ARGS);
- 
- 	if (b->mcidx == MC_BATCH ||
--	    (b->argidx + argspace) > MC_ARGS)
-+	    (argidx + args) > MC_ARGS) {
- 		xen_mc_flush();
-+		argidx = roundup(b->argidx, sizeof(u64));
-+	}
- 
- 	ret.mc = &b->entries[b->mcidx];
- 	b->mcidx++;
-+	ret.args = &b->args[argidx];
-+	b->argidx = argidx + args;
-+
-+	BUG_ON(b->argidx > MC_ARGS);
-+	return ret;
-+}
-+
-+struct multicall_space xen_mc_extend_args(unsigned long op, size_t size)
-+{
-+	struct mc_buffer *b = &__get_cpu_var(mc_buffer);
-+	struct multicall_space ret = { NULL, NULL };
-+
-+	BUG_ON(preemptible());
-+	BUG_ON(b->argidx > MC_ARGS);
-+
-+	if (b->mcidx == 0)
-+		return ret;
-+
-+	if (b->entries[b->mcidx - 1].op != op)
-+		return ret;
-+
-+	if ((b->argidx + size) > MC_ARGS)
-+		return ret;
-+
-+	ret.mc = &b->entries[b->mcidx - 1];
- 	ret.args = &b->args[b->argidx];
--	b->argidx += argspace;
-+	b->argidx += size;
- 
-+	BUG_ON(b->argidx > MC_ARGS);
- 	return ret;
- }
- 
-diff --git a/arch/x86/xen/multicalls.h b/arch/x86/xen/multicalls.h
---- a/arch/x86/xen/multicalls.h
-+++ b/arch/x86/xen/multicalls.h
-@@ -45,4 +45,16 @@
- /* Set up a callback to be called when the current batch is flushed */
- void xen_mc_callback(void (*fn)(void *), void *data);
- 
-+/*
-+ * Try to extend the arguments of the previous multicall command.  The
-+ * previous command's op must match.  If it does, then it attempts to
-+ * extend the argument space allocated to the multicall entry by
-+ * arg_size bytes.
-+ *
-+ * The returned multicall_space will return with mc pointing to the
-+ * command on success, or NULL on failure, and args pointing to the
-+ * newly allocated space.
-+ */
-+struct multicall_space xen_mc_extend_args(unsigned long op, size_t arg_size);
-+
- #endif /* _XEN_MULTICALLS_H */
-
-
+In novel bugzilla case ignore_ppc=1 helped, so it seems to be BIOS
+problem, not userland's...
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
