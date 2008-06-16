@@ -1,84 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753214AbYFPFP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbYFPFPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753214AbYFPFP1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 01:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751012AbYFPFPT
+	id S1755359AbYFPFPs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 01:15:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbYFPFPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 01:15:19 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57820 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750711AbYFPFPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 01:15:18 -0400
-Date: Mon, 16 Jun 2008 07:15:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] kmemcheck: divide and conquer
-Message-ID: <20080616051504.GA3492@elte.hu>
-References: <20080613140057.GA25833@damson.getinternet.no> <20080614063114.GA24188@elte.hu> <19f34abd0806140139i70a5056ehbd8a6f5df81549e4@mail.gmail.com> <20080614090023.GA13798@elte.hu> <19f34abd0806140217x1ea73a8k1cae18a12128a2b1@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19f34abd0806140217x1ea73a8k1cae18a12128a2b1@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 16 Jun 2008 01:15:39 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:34587 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751012AbYFPFPi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 01:15:38 -0400
+Date: Sun, 15 Jun 2008 22:14:58 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug 10872] x86_64 boot hang when CONFIG_NUMA=n
+Message-Id: <20080615221458.e575ab10.randy.dunlap@oracle.com>
+In-Reply-To: <86802c440806152112y23fda539i841ed77da8f2ad78@mail.gmail.com>
+References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
+	<Jn7irxIunJK.A.8UD.1IDVIB@albercik>
+	<20080615093543.1b18b9eb.randy.dunlap@oracle.com>
+	<86802c440806151218h7b8b6c80q4ce0f6505244e588@mail.gmail.com>
+	<20080615181101.bcbab2ef.randy.dunlap@oracle.com>
+	<86802c440806152112y23fda539i841ed77da8f2ad78@mail.gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 15 Jun 2008 21:12:35 -0700 Yinghai Lu wrote:
 
--tip testing found a build failure with kmemcheck:
+> On Sun, Jun 15, 2008 at 6:11 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > On Sun, 15 Jun 2008 12:18:42 -0700 Yinghai Lu wrote:
+> >
+> >> On Sun, Jun 15, 2008 at 9:35 AM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> >> > On Sat, 14 Jun 2008 22:12:04 +0200 (CEST) Rafael J. Wysocki wrote:
+> >> >
+> >> >> This message has been generated automatically as a part of a report
+> >> >> of recent regressions.
+> >> >>
+> >> >> The following bug entry is on the current list of known regressions
+> >> >> from 2.6.25.  Please verify if it still should be listed.
+> >> >>
+> >> >>
+> >> >> Bug-Entry     : http://bugzilla.kernel.org/show_bug.cgi?id=10872
+> >> >> Subject               : x86_64 boot hang when CONFIG_NUMA=n
+> >> >> Submitter     : Randy Dunlap <randy.dunlap@oracle.com>
+> >> >> Date          : 2008-06-05 21:50 (10 days old)
+> >> >> References    : http://marc.info/?l=linux-kernel&m=121270308607116&w=4
+> >> >>                 http://lkml.org/lkml/2008/6/11/355
+> >> >> Handled-By    : Yinghai Lu <yhlu.kernel@gmail.com>
+> >> >
+> >> > Yes, still happens for me on 2.6.26-rc6-git2.
+> >> >
+> >>
+> >> please send out whole boot log with numa on and numa off
+> >> and boot with debug
+> >>
+> >> please apply attached debug patch too.
+> >
+> > OK, did all of that.
+> > I should probably note that in both cases, the kernel is loaded/booted by using kexec.
+> > Both boot logs are captured generated via netconsole.
+> >
+> > The failing boot log is netcon-4409.log.  The working boot log (CONFIG_NUMA=y) is
+> > netcon-4410.log.  Enabling CONFIG_NUMA makes the following changes:
+> >
+> > 4c4
+> > < # Sun Jun 15 15:00:56 2008
+> > ---
+> >> # Sun Jun 15 15:10:15 2008
+> > 241c241,246
+> > < # CONFIG_NUMA is not set
+> > ---
+> >> CONFIG_NUMA=y
+> >> CONFIG_K8_NUMA=y
+> >> CONFIG_X86_64_ACPI_NUMA=y
+> >> CONFIG_NODES_SPAN_OTHER_NODES=y
+> >> # CONFIG_NUMA_EMU is not set
+> >> CONFIG_NODES_SHIFT=6
+> > 249a255
+> >> CONFIG_NEED_MULTIPLE_NODES=y
+> > 260a267
+> >> CONFIG_MIGRATION=y
+> > 282a290
+> >> CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID=y
+> > 309a318
+> >> CONFIG_ACPI_NUMA=y
+> >
+> 
+> the print out looks all right.
+> 
+> any chance to use normal serial console to capture the boot log?
 
-include/asm/string_32.h:320:1: warning: "memset" redefined
-include/asm/string_32.h:245:1: warning: this is the location of the previous definition
+Not that I know of.
 
-arch/x86/mm/kmemcheck/smp.c: In function 'kmemcheck_pause_allbutself':
-arch/x86/mm/kmemcheck/smp.c:59: error: 'NMI_VECTOR' undeclared (first use in this function)
-arch/x86/mm/kmemcheck/smp.c:59: error: (Each undeclared identifier is reported only once
-arch/x86/mm/kmemcheck/smp.c:59: error: for each function it appears in.)
-
-with this config:
-
-  http://redhat.com/~mingo/misc/config-Mon_Jun_16_04_15_22_CEST_2008.bad
-
-the patch below fixes the build failure, but note that there are lots of 
-those memset redefined warnings with that config as well.
-
-	Ingo
-
------------->
-commit 36bdad27f868eba1d17e6d9dc1cbb6794361d541
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Mon Jun 16 07:11:37 2008 +0200
-
-    kmemcheck: fix build error
-    
-    fix:
-    
-    arch/x86/mm/kmemcheck/smp.c: In function 'kmemcheck_pause_allbutself':
-    arch/x86/mm/kmemcheck/smp.c:59: error: 'NMI_VECTOR' undeclared (first use in this function)
-    arch/x86/mm/kmemcheck/smp.c:59: error: (Each undeclared identifier is reported only once
-    arch/x86/mm/kmemcheck/smp.c:59: error: for each function it appears in.)
-    
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-diff --git a/arch/x86/mm/kmemcheck/smp.c b/arch/x86/mm/kmemcheck/smp.c
-index c4ff615..cd17ddf 100644
---- a/arch/x86/mm/kmemcheck/smp.c
-+++ b/arch/x86/mm/kmemcheck/smp.c
-@@ -5,6 +5,7 @@
- #include <mach_ipi.h>
- 
- #include "smp.h"
-+#include <asm/irq_vectors.h>
- 
- static spinlock_t nmi_spinlock;
- 
+---
+~Randy
+'"Daemon' is an old piece of jargon from the UNIX operating system,
+where it referred to a piece of low-level utility software, a
+fundamental part of the operating system."
