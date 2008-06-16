@@ -1,77 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbYFPKed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbYFPKoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754001AbYFPKed (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 06:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751875AbYFPKeZ
+	id S1753254AbYFPKoh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 06:44:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751050AbYFPKo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 06:34:25 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41129 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751732AbYFPKeZ (ORCPT
+	Mon, 16 Jun 2008 06:44:28 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3036 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750868AbYFPKo1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 06:34:25 -0400
-Subject: Re: [BUG: NULL pointer dereference] cgroups and RT scheduling
-	interact badly.
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Daniel K." <dk@uw.no>
-Cc: mingo@elte.hu, menage@google.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <485445AE.2010602@uw.no>
-References: <485445AE.2010602@uw.no>
-Content-Type: text/plain
-Date: Mon, 16 Jun 2008 12:34:07 +0200
-Message-Id: <1213612447.16944.99.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Jun 2008 06:44:27 -0400
+Date: Mon, 16 Jun 2008 11:44:34 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: Badari Pulavarty <pbadari@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [Patch 005/005](memory hotplug) free memmaps allocated by bootmem
+Message-ID: <20080616104434.GG17016@shadowen.org>
+References: <20080407213519.886E.E1E9C6FF@jp.fujitsu.com> <20080407214844.887A.E1E9C6FF@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080407214844.887A.E1E9C6FF@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-06-15 at 00:26 +0200, Daniel K. wrote:
-> I get the following on the latest Linus git tree.
+On Mon, Apr 07, 2008 at 09:50:18PM +0900, Yasunori Goto wrote:
+> This patch is to free memmaps which is allocated by bootmem.
 > 
-> Testcase:
+> Freeing usemap is not necessary. The pages of usemap may be necessary
+> for other sections.
 > 
-> mkdir /dev/cgroup
-> mount -t cgroup -o cpu,cpuset cgroup /dev/cgroup
+> If removing section is last section on the node,
+> its section is the final user of usemap page.
+> (usemaps are allocated on its section by previous patch.)
+> But it shouldn't be freed too, because the section must be
+> logical offline state which all pages are isolated against page allocater.
+> If it is freed, page alloctor may use it which will be removed
+> physically soon. It will be disaster.
+> So, this patch keeps it as it is.
 > 
-> mkdir -p /dev/cgroup/burn/oops
-> cd /dev/cgroup/burn
 > 
-> echo 3 > cpuset.cpus
-> echo 0 > cpuset.mems
-> echo 1000000 > cpu.rt_period_us
-> echo 940000  > cpu.rt_runtime_us
+> Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
 > 
-> echo 3 > oops/cpuset.cpus
-> echo 0 > oops/cpuset.mems
-> echo 100000 > oops/cpu.rt_period_us
-> echo 4000 > oops/cpu.rt_runtime_us
+> ---
+>  mm/internal.h       |    3 +--
+>  mm/memory_hotplug.c |   11 +++++++++++
+>  mm/page_alloc.c     |    2 +-
+>  mm/sparse.c         |   51 +++++++++++++++++++++++++++++++++++++++++++++++----
+>  4 files changed, 60 insertions(+), 7 deletions(-)
 > 
-> echo $$ > oops/tasks
-> schedtool -R -p 1 -e burnP6
-> 
-> And then it breaks into the pieces below, as captured by netconsole.
+> Index: current/mm/sparse.c
+> ===================================================================
+> --- current.orig/mm/sparse.c	2008-04-07 20:13:25.000000000 +0900
+> +++ current/mm/sparse.c	2008-04-07 20:27:20.000000000 +0900
+> @@ -8,6 +8,7 @@
+>  #include <linux/module.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/vmalloc.h>
+> +#include "internal.h"
+>  #include <asm/dma.h>
+>  #include <asm/pgalloc.h>
+>  #include <asm/pgtable.h>
+> @@ -360,6 +361,9 @@
+>  {
+>  	return; /* XXX: Not implemented yet */
+>  }
+> +static void free_map_bootmem(struct page *page, unsigned long nr_pages)
+> +{
+> +}
+>  #else
+>  static struct page *__kmalloc_section_memmap(unsigned long nr_pages)
+>  {
+> @@ -397,17 +401,47 @@
+>  		free_pages((unsigned long)memmap,
+>  			   get_order(sizeof(struct page) * nr_pages));
+>  }
+> +
+> +static void free_map_bootmem(struct page *page, unsigned long nr_pages)
+> +{
+> +	unsigned long maps_section_nr, removing_section_nr, i;
+> +	int magic;
+> +
+> +	for (i = 0; i < nr_pages; i++, page++) {
+> +		magic = atomic_read(&page->_mapcount);
+> +
+> +		BUG_ON(magic == NODE_INFO);
 
-Excellent report, thanks!
+Are we sure the node area was big enough to never allocate usemap's into
+it and change the magic to MIX?  I saw you make the section information
+page sized but not the others.
 
+> +
+> +		maps_section_nr = pfn_to_section_nr(page_to_pfn(page));
+> +		removing_section_nr = page->private;
+> +
+> +		/*
+> +		 * When this function is called, the removing section is
+> +		 * logical offlined state. This means all pages are isolated
+> +		 * from page allocator. If removing section's memmap is placed
+> +		 * on the same section, it must not be freed.
+> +		 * If it is freed, page allocator may allocate it which will
+> +		 * be removed physically soon.
+> +		 */
+> +		if (maps_section_nr != removing_section_nr)
+> +			put_page_bootmem(page);
 
-Does the below work for you?
+Would the section memmap have its own get_page_bootmem reference here?
+Would that not protect it from release?
 
+> +	}
+> +}
+>  #endif /* CONFIG_SPARSEMEM_VMEMMAP */
+>  
+>  static void free_section_usemap(struct page *memmap, unsigned long *usemap)
+>  {
+> +	struct page *usemap_page;
+> +	unsigned long nr_pages;
+> +
+>  	if (!usemap)
+>  		return;
+>  
+> +	usemap_page = virt_to_page(usemap);
+>  	/*
+>  	 * Check to see if allocation came from hot-plug-add
+>  	 */
+> -	if (PageSlab(virt_to_page(usemap))) {
+> +	if (PageSlab(usemap_page)) {
+>  		kfree(usemap);
+>  		if (memmap)
+>  			__kfree_section_memmap(memmap, PAGES_PER_SECTION);
+> @@ -415,10 +449,19 @@
+>  	}
+>  
+>  	/*
+> -	 * TODO: Allocations came from bootmem - how do I free up ?
+> +	 * The usemap came from bootmem. This is packed with other usemaps
+> +	 * on the section which has pgdat at boot time. Just keep it as is now.
+>  	 */
+> -	printk(KERN_WARNING "Not freeing up allocations from bootmem "
+> -			"- leaking memory\n");
+> +
+> +	if (memmap) {
+> +		struct page *memmap_page;
+> +		memmap_page = virt_to_page(memmap);
+> +
+> +		nr_pages = PAGE_ALIGN(PAGES_PER_SECTION * sizeof(struct page))
+> +			>> PAGE_SHIFT;
+> +
+> +		free_map_bootmem(memmap_page, nr_pages);
+> +	}
+>  }
+>  
+>  /*
+> Index: current/mm/page_alloc.c
+> ===================================================================
+> --- current.orig/mm/page_alloc.c	2008-04-07 20:12:55.000000000 +0900
+> +++ current/mm/page_alloc.c	2008-04-07 20:13:29.000000000 +0900
+> @@ -568,7 +568,7 @@
+>  /*
+>   * permit the bootmem allocator to evade page validation on high-order frees
+>   */
+> -void __init __free_pages_bootmem(struct page *page, unsigned int order)
+> +void __free_pages_bootmem(struct page *page, unsigned int order)
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -7784,7 +7784,6 @@ static void init_tg_rt_entry(struct task
- 	else
- 		rt_se->rt_rq = parent->my_q;
- 
--	rt_se->rt_rq = &rq->rt;
- 	rt_se->my_q = rt_rq;
- 	rt_se->parent = parent;
- 	INIT_LIST_HEAD(&rt_se->run_list);
+not __meminit or something?
 
+>  {
+>  	if (order == 0) {
+>  		__ClearPageReserved(page);
+> Index: current/mm/internal.h
+> ===================================================================
+> --- current.orig/mm/internal.h	2008-04-07 20:12:55.000000000 +0900
+> +++ current/mm/internal.h	2008-04-07 20:13:29.000000000 +0900
+> @@ -34,8 +34,7 @@
+>  	atomic_dec(&page->_count);
+>  }
+>  
+> -extern void __init __free_pages_bootmem(struct page *page,
+> -						unsigned int order);
+> +extern void __free_pages_bootmem(struct page *page, unsigned int order);
+>  
+>  /*
+>   * function for dealing with page's order in buddy system.
+> Index: current/mm/memory_hotplug.c
+> ===================================================================
+> --- current.orig/mm/memory_hotplug.c	2008-04-07 20:12:55.000000000 +0900
+> +++ current/mm/memory_hotplug.c	2008-04-07 20:13:29.000000000 +0900
+> @@ -199,6 +199,16 @@
+>  	return register_new_memory(__pfn_to_section(phys_start_pfn));
+>  }
+>  
+> +#ifdef CONFIG_SPARSEMEM_VMEMMAP
+> +static int __remove_section(struct zone *zone, struct mem_section *ms)
+> +{
+> +	/*
+> +	 * XXX: Freeing memmap with vmemmap is not implement yet.
+> +	 *      This should be removed later.
+> +	 */
+> +	return -EBUSY;
+> +}
+> +#else
+>  static int __remove_section(struct zone *zone, struct mem_section *ms)
+>  {
+>  	unsigned long flags;
+> @@ -217,6 +227,7 @@
+>  	pgdat_resize_unlock(pgdat, &flags);
+>  	return 0;
+>  }
+> +#endif
+>  
+>  /*
+>   * Reasonably generic function for adding memory.  It is
+
+-apw
