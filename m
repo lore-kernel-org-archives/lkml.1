@@ -1,88 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757079AbYFPRt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756141AbYFPRyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757079AbYFPRt6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 13:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbYFPRtu
+	id S1756141AbYFPRyT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 13:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbYFPRyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 13:49:50 -0400
-Received: from mga01.intel.com ([192.55.52.88]:37065 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751790AbYFPRtt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 13:49:49 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,653,1204531200"; 
-   d="scan'208";a="578484421"
-Date: Mon, 16 Jun 2008 10:49:48 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Simon Holm =?iso-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Patrick McHardy <kaber@trash.net>,
-       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       Chuck Ebbert <cebbert@redhat.com>, "x86@kernel.org" <x86@kernel.org>
-Subject: Re: 2.6.26-git: NULL pointer deref in __switch_to
-Message-ID: <20080616174948.GB7788@linux-os.sc.intel.com>
-References: <4852B19E.4010202@trash.net> <19f34abd0806131124w32133715o3ef8c27cb0a9f96e@mail.gmail.com> <20080613224711.GA15084@linux-os.sc.intel.com> <1213611339.2495.11.camel@odie.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Mon, 16 Jun 2008 13:54:11 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34037 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751366AbYFPRyK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 13:54:10 -0400
+Date: Mon, 16 Jun 2008 19:54:08 +0200
+From: Jan Kara <jack@suse.cz>
+To: Holger Kiehl <Holger.Kiehl@dwd.de>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Theodore Tso <tytso@mit.edu>, Solofo.Ramangalahy@bull.net,
+       Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Performance of ext4
+Message-ID: <20080616175408.GF3279@atrey.karlin.mff.cuni.cz>
+References: <Pine.LNX.4.64.0806111937460.3720@diagnostix.dwd.de> <18563.1213215457@alphaville.zko.hp.com> <Pine.LNX.4.64.0806120855370.27806@diagnostix.dwd.de> <18513.345.553912.449710@frecb006361.adech.frec.bull.fr> <Pine.LNX.4.64.0806121154090.27806@diagnostix.dwd.de> <20080612131928.GB18229@mit.edu> <Pine.LNX.4.64.0806121333480.27806@diagnostix.dwd.de> <20080612180605.GD22481@skywalker> <Pine.LNX.4.64.0806121940020.2974@diagnostix.dwd.de> <Pine.LNX.4.64.0806130753100.7097@diagnostix.dwd.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1213611339.2495.11.camel@odie.local>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <Pine.LNX.4.64.0806130753100.7097@diagnostix.dwd.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 16, 2008 at 03:15:39AM -0700, Simon Holm Thøgersen wrote:
-> fre, 13 06 2008 kl. 15:47 -0700, skrev Suresh Siddha:
-> > On Fri, Jun 13, 2008 at 11:24:01AM -0700, Vegard Nossum wrote:
-> > > On Fri, Jun 13, 2008 at 7:42 PM, Patrick McHardy <kaber@trash.net> wrote:
-> > > > I get this oops once a day, its apparently triggered by something
-> > > > run by cron, but the process is a different one each time.
-> > > >
-> > > > Kernel is -git from yesterday shortly before the -rc6 release
-> > > > (last commit is the usb-2.6 merge, the x86 patches are missing),
-> > > > .config is attached.
-> > > >
-> > > > I'll retry with current -git, but the patches that have gone in
-> > > > since I last updated don't look related.
-> > > >
-> > >
-> > > Thanks for the report.
-> > >
-> > > >
-> > > > [62060.043009] BUG: unable to handle kernel NULL pointer dereference at
-> > > > 000001ff
-> > > > [62060.043009] IP: [<c0102a9b>] __switch_to+0x2f/0x118
-> > > > [62060.043009] *pde = 00000000
-> > > > [62060.043009] Oops: 0002 [#1] PREEMPT
+> On Thu, 12 Jun 2008, Holger Kiehl wrote:
+> 
+> >On Thu, 12 Jun 2008, Aneesh Kumar K.V wrote:
 > >
-> > Patrick, Do you see any other error messages before this BUG stmt? Can you
-> > please provide the complete kernel log till the point of failure?
+> >>On Thu, Jun 12, 2008 at 02:07:30PM +0000, Holger Kiehl wrote:
+> >>>This time there is no OOPS and system is still up running without any
+> >>>problem (except any process wanting to write something to this filesystem
+> >>>gets stuck forever).
+> >>>
+> >>>What can I do to help find the problem? The system is still up with all 
+> >>>those
+> >>>process hanging in D-state.
+> >>>
+> >>
+> >>if you can login to the system get the dmesg output after
+> >>
+> >>echo t > /proc/sysrq-trigger
+> >>
+> >Unfortunately I have not set CONFIG_MAGIC_SYSRQ. Tomorrow I will try to
+> >reproduce this with a kernel that has CONFIG_MAGIC_SYSRQ set.
 > >
-> Suresh, I'm pretty sure this is the same problem that I reported two
-> weeks ago [1]. I suggested that you tried running lguest and reproduced
-> the problem locally, but I did not hear back from you. Now Patrick is
-> reporting the same problem and is also indicating that the problem is
-> correlated with his use of lguest, so I'd really like you to follow up
-> on this.
+> After recompiling, rebooting and run afdbench first I got an OOPS and the
+> system hanged up solid. The only thing I was able to catch is this:
+> 
+>   RIP [<ffffffff803019f9>] jbd2_journal_release_jbd_inode+0xcb/0x100
+>   RSP <ffff8101fe259c18>
+> 
+> This was copied by hand. And this I cut 'cut and past' from my terminal:
+> 
+> kernel: Code: c3 e8 31 ce f3 ff 41 fe 04 24 e8 fe 3f 16 00 4c 89 fe 48 89 
+> df e8 5f cd f3 ff eb 82 48 83 7d 00 00 74 27 48 8b 55 10 48 8b 45 18 <48> 
+> 89 42 08 48 89 10 48 c7 45 18 00 02 20 00 48 c7 45 10 00 01
+  Aneesh found cause of this oops I think... Aneesh, would you send the
+fix to Holger? Thanks.
 
-I am on this and did try reproducing with lguest last week but couldn't
-reproduce the issue with the initrd image. May be I need a full blown
-disk image.
+> So I rebooted run bonnie and then afdbench and I get the same problem as
+> yesterday. All process trying to write something to this filesystem hang
+> in D-state. But now I was able to do the echo t > /proc/sysrq-trigger.
+> Here the dmesg output:
+  Sadly, the output seems to be truncated (mainly, the kjournald process
+is missing, which is probably the root cause of the hang). So could you
+have a look whether /var/log/messages doesn't contain the dump of all
+processes? And if no, then could you do "echo w >/proc/sysrq-trigger"
+please? That will dump only blocked processes which should fit in the log
+buffer. You can also increase log buffer size in kernel config but that
+shouldn't be needed. Thanks.
 
-> At least for me, with this patch applied on top of -rc4 or -rc6+ the
-> problem still triggered after running an lguest guest for less than 30
-> seconds (the guest didn't even finish the boot of an image of Ubuntu
-> with no X-server).
-
-Please post the oops you captured.
-
-> If you or anybody else would like to use the same guest image I use
-> please just ask and I'll make it available somehow.
-
-Can you please upload it some where? I will also try with another guest
-image meanwhile.
-
-thanks,
-suresh
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
