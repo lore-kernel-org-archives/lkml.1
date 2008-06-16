@@ -1,75 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760873AbYFPI3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761215AbYFPI3s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760873AbYFPI3A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 04:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754453AbYFPI2x
+	id S1761215AbYFPI3s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 04:29:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754554AbYFPI3k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 04:28:53 -0400
-Received: from sacred.ru ([62.205.161.221]:52242 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754292AbYFPI2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 04:28:52 -0400
-Message-ID: <4856231B.9050704@openvz.org>
-Date: Mon, 16 Jun 2008 12:23:55 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: kamezawa.hiroyu@jp.fujitsu.com
-CC: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>, menage@google.com,
-       balbir@linux.vnet.ibm.com, yamamoto@valinux.co.jp,
-       nishimura@mxp.nes.nec.co.jp, lizf@cn.fujitsu.com
-Subject: Re: [PATCH 1/6] res_counter:  handle limit change
-References: <48561B68.6060503@openvz.org> <48560A7C.9050501@openvz.org> <20080613182714.265fe6d2.kamezawa.hiroyu@jp.fujitsu.com> <20080613182924.c73fe9eb.kamezawa.hiroyu@jp.fujitsu.com> <33011576.1213601977563.kamezawa.hiroyu@jp.fujitsu.com> <11930674.1213604250738.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <11930674.1213604250738.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 16 Jun 2008 12:26:18 +0400 (MSD)
+	Mon, 16 Jun 2008 04:29:40 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:21048 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754493AbYFPI3j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 04:29:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
+         :sender;
+        b=LbiEUkweRMooIxHi248trs5MS32zaOwKJRbQH6+VuBQ5AUoAivQeylDCt0b9o/OicV
+         1ZLeZWgjpRLG9sTvLpuoYip73Zw7IAcbJh9g07fwKYdwbTeWkS4L7DS/V2PYSYAuRTMb
+         sTJ9QxU/l9dM1cgVZ4pxDBqEE1Duf+VUS5kUM=
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: linux-kernel@vger.kernel.org, dwmw2@infradead.org, sam@ravnborg.org
+Cc: Peter Korsgaard <jacmet@sunsite.dk>
+Subject: [PATCH v2] export linux/a.out.h
+Date: Mon, 16 Jun 2008 10:29:33 +0200
+Message-Id: <1213604973-7073-1-git-send-email-jacmet@sunsite.dk>
+X-Mailer: git-send-email 1.5.5.1
+In-Reply-To: <1213565555.26255.522.camel@pmac.infradead.org>
+References: <1213565555.26255.522.camel@pmac.infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kamezawa.hiroyu@jp.fujitsu.com wrote:
-> ----- Original Message -----
-> 
->>> I think when I did all in memcg, someone will comment that "why do that
->>> all in memcg ? please implement generic one to avoid code duplication"
->> Hm... But we're choosing between
->>
->> sys_write->xxx_cgroup_write->res_counter_set_limit->xxx_cgroup_call
->>
->> and
->>
->> sys_write->xxx_cgroup_write->res_counter_set_limit
->>                           ->xxx_cgroup_call
->>
->> With the sizeof(void *)-bytes difference in res_counter, nNo?
->>
-> I can't catch what you mean. What is res_counter_set_limit here ?
+Export linux/a.out.h like we do for asm/a.out.h as some applications needs
+it (E.G. valgrind). One minor complication is that the content is protected
+by an CONFIG_ARCH_SUPPORTS_AOUT ifdef, so get rid of it.
 
-It's res_counter_resize_limit from your patch, sorry for the confusion.
+Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+---
+ include/linux/Kbuild  |    3 +++
+ include/linux/a.out.h |    8 --------
+ 2 files changed, 3 insertions(+), 8 deletions(-)
 
-> (my patche's ?) and what is sizeof(void *)-bytes ?
-
-I meant, that we have to add 4 bytes (8 on 64-bit arches) on the
-struct res_counter to store the pointer on the res_counter_ops.
-
-> Is it so strange to add following algorithm in res_counter?
-> ==
-> set_limit -> fail -> shrink -> set limit -> fail ->shrink
-> -> success -> return 0
-> ==
-> I think this is enough generic.
-
-It is, but my point is - we're calling the set_limit (this is a
-res_counter_resize_limit from your patch, sorry for the confusion again)
-routine right from the cgroup's write callback and thus can call
-the desired "ops->shrink_usage" directly, w/o additional level of
-indirection.
-
-> Thanks,
-> -Kame
-> 
-> 
-> 
-> 
+diff --git a/include/linux/Kbuild b/include/linux/Kbuild
+index 93b9885..e61f1f9 100644
+--- a/include/linux/Kbuild
++++ b/include/linux/Kbuild
+@@ -162,6 +162,9 @@ header-y += video_encoder.h
+ header-y += videotext.h
+ header-y += x25.h
+ 
++ifeq ($(wildcard include/asm-$(SRCARCH)/a.out.h),include/asm-$(SRCARCH)/a.out.h)
++unifdef-y += a.out.h
++endif
+ unifdef-y += acct.h
+ unifdef-y += adb.h
+ unifdef-y += adfs_fs.h
+diff --git a/include/linux/a.out.h b/include/linux/a.out.h
+index 208f4e8..e86dfca 100644
+--- a/include/linux/a.out.h
++++ b/include/linux/a.out.h
+@@ -1,8 +1,6 @@
+ #ifndef __A_OUT_GNU_H__
+ #define __A_OUT_GNU_H__
+ 
+-#ifdef CONFIG_ARCH_SUPPORTS_AOUT
+-
+ #define __GNU_EXEC_MACROS__
+ 
+ #ifndef __STRUCT_EXEC_OVERRIDE__
+@@ -277,10 +275,4 @@ struct relocation_info
+ #endif /* no N_RELOCATION_INFO_DECLARED.  */
+ 
+ #endif /*__ASSEMBLY__ */
+-#else /* CONFIG_ARCH_SUPPORTS_AOUT */
+-#ifndef __ASSEMBLY__
+-struct exec {
+-};
+-#endif
+-#endif /* CONFIG_ARCH_SUPPORTS_AOUT */
+ #endif /* __A_OUT_GNU_H__ */
+-- 
+1.5.5.1
 
