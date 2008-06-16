@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbYFPTy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755012AbYFPT4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754254AbYFPTy4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 15:54:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbYFPTyq
+	id S1755012AbYFPT4J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 15:56:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753229AbYFPTz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 15:54:46 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:42767 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751272AbYFPTyp convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 15:54:45 -0400
-Message-Id: <48568CCC.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Mon, 16 Jun 2008 13:54:52 -0600
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Steven Rostedt" <rostedt@goodmis.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>
-Subject: Re: [sched-devel, patch-rfc] rework of "prioritize
-	non-migratabletasks over migratable ones"
-References: <1213138710.26530.51.camel@earth>
- <1213174382.31518.69.camel@twins>
- <b647ffbd0806110305p2be38608iadc1d2e91e3be57a@mail.gmail.com>
- <48563FDB.BA47.005A.0@novell.com>
- <b647ffbd0806161059q7048ea40id0f4235ab19d6ca0@mail.gmail.com>
- <1213643862.16944.142.camel@twins>
-In-Reply-To: <1213643862.16944.142.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Mon, 16 Jun 2008 15:55:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40686 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753194AbYFPTz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 15:55:56 -0400
+Date: Mon, 16 Jun 2008 16:55:38 -0300
+From: Marcelo Tosatti <mtosatti@redhat.com>
+To: Bart Van Assche <bart.vanassche@gmail.com>
+Cc: Marco Barbero <marco.barbero@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: OOM killer invoked on 2.6.24.4
+Message-ID: <20080616195538.GA9217@dmt.cnet>
+References: <e1aa27e00806140313o5a62c618kb41b892b7b29e235@mail.gmail.com> <e2e108260806140831s40f36a95s1a412cec4dc47f31@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <e2e108260806140831s40f36a95s1a412cec4dc47f31@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Mon, Jun 16, 2008 at  3:17 PM, in message
-<1213643862.16944.142.camel@twins>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-wrote: 
-> On Mon, 2008-06-16 at 19:59 +0200, Dmitry Adamushko wrote:
+On Sat, Jun 14, 2008 at 05:31:18PM +0200, Bart Van Assche wrote:
+> On Sat, Jun 14, 2008 at 12:13 PM, Marco Barbero <marco.barbero@gmail.com> wrote:
+> > samba/slapd/heartbeat/drbd/mon
+> ...
+> > Jun 14 01:00:17 pippo kernel: Out of memory: kill process 6873 (slapd)
+> > score 5003 or a child
+> > Jun 14 01:00:17 pippo kernel: Killed process 6873 (slapd)
+> >
+> > Anyone can help me in understanding what went wrong? And if I need to
+> > upgrade to last kernel version?
 > 
->> One way or another, we have different aritifacts (and mine have likely
->> more) but conceptually, both "violates" POSIX if a strict round-robin
->> scheduling is required.
+> One or more processes on your system used too much memory. Dumping the
+> output of the following command periodically (e.g. every 10 minutes)
+> to a file will tell you which process is using too much memory:
 > 
-> http://www.opengroup.org/onlinepubs/009695399/functions/xsh_chap02_08.html#t
-> ag_02_08_04_01
-> 
-> Is quite strict on what FIFO should do, and I know of two points where
-> we deviate and should work to match.
+> { ps aux | head -n 1; ps aux | sort -n +4 | tail -n 10; }
 
-Thanks for the link, Peter.  When you read that, its pretty clear that this whole concept violates the standard.  Its probably best to just revert the patch and be done with it.
+There were lots of swap free:
 
-Regards,
--Greg
+Jun 14 01:00:17 pippo kernel: Free swap  = 3903752kB
+Jun 14 01:00:17 pippo kernel: Total swap = 3903752kB
+Jun 14 01:00:17 pippo kernel: Free swap:       3903752kB
+
+Something is wrong.
 
