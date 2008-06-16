@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757138AbYFPJF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761196AbYFPJJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757138AbYFPJF2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 05:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756397AbYFPJFM
+	id S1761196AbYFPJJT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 05:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757066AbYFPJJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 05:05:12 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:60438 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752132AbYFPJFL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 05:05:11 -0400
-From: kamezawa.hiroyu@jp.fujitsu.com
-Message-ID: <400765.1213607050433.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Mon, 16 Jun 2008 18:04:10 +0900 (JST)
-To: balbir@linux.vnet.ibm.com
-Subject: Re: Re: [PATCH 1/6] res_counter:  handle limit change
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>, menage@google.com,
-       xemul@openvz.org, yamamoto@valinux.co.jp, nishimura@mxp.nes.nec.co.jp,
-       lizf@cn.fujitsu.com
-In-Reply-To: <48562AFF.9050804@linux.vnet.ibm.com>
+	Mon, 16 Jun 2008 05:09:08 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:59533 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756973AbYFPJJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 05:09:07 -0400
+Date: Mon, 16 Jun 2008 04:09:04 -0500
+From: Paul Jackson <pj@sgi.com>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: mingo@elte.hu, tglx@linutronix.de, yhlu.kernel@gmail.com, steiner@sgi.com,
+       travis@sgi.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 4/8] x86 boot: allow overlapping ebda and efi memmap
+ memory ranges
+Message-Id: <20080616040904.6f684c76.pj@sgi.com>
+In-Reply-To: <1213606435.12968.14.camel@caritas-dev.intel.com>
+References: <20080616062945.14597.78009.sendpatchset@polaris-admin.engr.sgi.com>
+	<20080616063001.14597.96170.sendpatchset@polaris-admin.engr.sgi.com>
+	<1213600062.11185.13.camel@caritas-dev.intel.com>
+	<20080616032457.718f4d87.pj@sgi.com>
+	<1213606435.12968.14.camel@caritas-dev.intel.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-2022-jp"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: @nifty Webmail 2.0
-References: <48562AFF.9050804@linux.vnet.ibm.com>
- <20080613182714.265fe6d2.kamezawa.hiroyu@jp.fujitsu.com> <20080613182924.c73fe9eb.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message -----
->KAMEZAWA Hiroyuki wrote:
->> Add a support to shrink_usage_at_limit_change feature to res_counter.
->> memcg will use this to drop pages.
->> 
->> Change log: xxx -> v4 (new file.)
->>  - cut out the limit-change part from hierarchy patch set.
->>  - add "retry_count" arguments to shrink_usage(). This allows that we don't
->>    have to set the default retry loop count.
->>  - res_counter_check_under_val() is added to support subsystem.
->>  - res_counter_init() is res_counter_init_ops(cnt, NULL)
->> 
->> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->> 
->
->Does shrink_usage() really belong to res_counters? Could a task limiter, a
->CPU/IO bandwidth controller use this callback? Resource Counters were designe
-d
->to be generic and work across controllers. Isn't the memory controller a bett
-er
->place for such ops.
->
-Definitely No. I think counters which cannot be shrink should return -EBUSY
-by shrink_usage() when it cannot do it. 
+Huang wrote:
+> I think it is sufficient for boot loader to avoid memory area from
+> 0x9f000 to 0x100000. This can be seen as compatible code for legacy
+> BIOS.
 
-Thanks,
--Kame
+That might work -- I'll give it a try.
 
+> I think if EBDA area is used in EFI system, it should be reserved in EFI
+> memory map.
 
+Would you recommend doing this with code in arch/x86/kernel/head.c,
+that did not invoke reserve_ebda_region() if efi_enabled was set?
 
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
