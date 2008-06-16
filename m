@@ -1,94 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752763AbYFPEYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbYFPEjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752763AbYFPEYz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 00:24:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbYFPEYo
+	id S1752725AbYFPEjV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 00:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751012AbYFPEjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 00:24:44 -0400
-Received: from ik-out-1112.google.com ([66.249.90.176]:40834 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750876AbYFPEYf (ORCPT
+	Mon, 16 Jun 2008 00:39:11 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:46621 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750974AbYFPEjJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 00:24:35 -0400
+	Mon, 16 Jun 2008 00:39:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=vPqqoIYvFZqsCHOe+EV1bH/v6Zc0HQ2DeK+ViWLCicyndG5oDPGJdM/EM1NO03Xa/W
-         qdA7lCksgwM+zGjHbMB02czEvx81gVM7Sd31wgpByk/7+mBVF8yeACUXL/N8dwR9Igf/
-         /lTZnGv0fBkNBlVPe8owkFMBwQPFjwydUvM5Q=
-Date: Mon, 16 Jun 2008 12:25:28 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org, mingo@elte.hu, hpa@zytor.com
-Subject: [PATCH] kernel parameter vmalloc size fix
-Message-ID: <20080616042528.GA3003@darkstar.te-china.tietoenator.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:references;
+        b=HhU79K7BMgIehoaIat1Kh7jFuCI7UW9uPKSBtY3bXBfZMEUsbo25dmyhz8imRCZQT0
+         eNhYASfKDXSw+r08rSDDOgcwDpV/9m9O4nl2LHNt5RvJlVhSfJ1bR74n35mv6YQ0PH40
+         SQ0oaBHjwq+CjF5p7Q1L5bFjsVx3mRsc1XPd8=
+Message-ID: <86802c440806152139q13c2a2fay2c518f5b95c3d9ed@mail.gmail.com>
+Date: Sun, 15 Jun 2008 21:39:09 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATCH] x86: use add_highpages_with_active_regions for high pages init
+Cc: "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <86802c440806152046s71916de8g6f8e3e8d272d336a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_11775_20759570.1213591149091"
+References: <200806132005.45836.yhlu.kernel@gmail.com>
+	 <200806140056.32601.yhlu.kernel@gmail.com>
+	 <20080614082343.GB11277@elte.hu>
+	 <86802c440806140205g3ff113ffq39272c18ef5b9654@mail.gmail.com>
+	 <1213579241.2433.7.camel@caritas-dev.intel.com>
+	 <86802c440806152046s71916de8g6f8e3e8d272d336a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-booting kernel with vmalloc=[any size<=16m] will oops.
+------=_Part_11775_20759570.1213591149091
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-It's due to the vm area hole.
+On Sun, Jun 15, 2008 at 8:46 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> On Sun, Jun 15, 2008 at 6:20 PM, Huang, Ying <ying.huang@intel.com> wrote:
+>> On Sat, 2008-06-14 at 02:05 -0700, Yinghai Lu wrote:
+>>> On Sat, Jun 14, 2008 at 1:23 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>>> >
+>>> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>>> >
+>>> >> use early_node_map to init high pages, so can remove page_is_ram and
+>>> >> page_is_reserved_early in the big loop with add_one_highpage
+>>> >>
+>>> >> also remove the page_is_reserved_early that is not needed.
+>>> >
+>>> > applied to tip/x86/mpparse for testing, thanks.
+>>> >
+>>> > Andrew: mm/page_alloc.c modification.
+>>>
+>>> Ying Huang,
+>>>
+>>> I removed page_is_reserved_early....it cause init highmem take extra
+>>> time on my big box.
+>>
+>> OK.
+>>
+>>> please check efi_reserve_early that is calling reserve_early. so need
+>>> to make sure "EFI memmap" is reserved in itself...otherwise you may
+>>> need to update e820 table by add_memory_region (....,
+>>> E820_RESERVED)...
+>>
+>> EFI memmap may be in highmem, it can not be reserved by bootmem
+>> allocator on i386. So I think it is necessary to have an early highmem
+>> allocator. It can be used for EFI memory map and linked list of setup
+>> data which comes from boot-loader and may be located in highmem.
+>>
+>> As for the implementation, what about adding a remove_active_range()
+>> which operate on early_node_map and an early_res_to_early_node_map()?
+>
+> don't need,
+> EFI memmap should be reserved in e820map, so it should not show up in
+> early_node_map.
+> if it is not reserved in e820map, you could use e820_add_region or
+> e820_update_range make it reserved
 
-In include/asm-x86/pgtable_32.h:
-#define VMALLOC_OFFSET	(8 * 1024 * 1024)
-#define VMALLOC_START	(((unsigned long)high_memory + 2 * VMALLOC_OFFSET - 1) \
-			 & ~(VMALLOC_OFFSET - 1))
+something like attached patch
 
-BUG_ON in arch/x86/mm/init_32.c will be triggered:
-BUG_ON((unsigned long)high_memory		> VMALLOC_START);
+YH
 
-Fixed by return -EINVAL for invalid parameter
+------=_Part_11775_20759570.1213591149091
+Content-Type: text/x-patch; name=efi_memmap.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fhikuiag0
+Content-Disposition: attachment; filename=efi_memmap.patch
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
-
-Documentation/kernel-parameters.txt |    3 ++-
-arch/x86/kernel/setup_32.c          |   11 +++++++++--
-2 files changed, 11 insertions(+), 3 deletions(-)
-
-diff -upr linux/Documentation/kernel-parameters.txt linux.new/Documentation/kernel-parameters.txt
---- linux/Documentation/kernel-parameters.txt	2008-06-16 11:30:29.000000000 +0800
-+++ linux.new/Documentation/kernel-parameters.txt	2008-06-16 11:43:01.000000000 +0800
-@@ -2139,7 +2139,8 @@ and is between 256 and 4096 characters. 
- 			size of <nn>. This can be used to increase the
- 			minimum size (128MB on x86). It can also be used to
- 			decrease the size and leave more room for directly
--			mapped kernel RAM.
-+			mapped kernel RAM. Note that the size must be bigger
-+			than 16M now on i386 due to the memory hole.
- 
- 	vmhalt=		[KNL,S390] Perform z/VM CP command after system halt.
- 			Format: <command>
-diff -upr linux/arch/x86/kernel/setup_32.c linux.new/arch/x86/kernel/setup_32.c
---- linux/arch/x86/kernel/setup_32.c	2008-06-16 11:28:51.000000000 +0800
-+++ linux.new/arch/x86/kernel/setup_32.c	2008-06-16 11:43:35.000000000 +0800
-@@ -305,15 +305,22 @@ early_param("highmem", parse_highmem);
- 
- /*
-  * vmalloc=size forces the vmalloc area to be exactly 'size'
-- * bytes. This can be used to increase (or decrease) the
-+ * bytes. Now size must be bigger than 16m due to the memory hole.
-+ * This can be used to increase (or decrease) the
-  * vmalloc area - the default is 128m.
-  */
- static int __init parse_vmalloc(char *arg)
- {
-+	unsigned int v;
-+
- 	if (!arg)
- 		return -EINVAL;
- 
--	__VMALLOC_RESERVE = memparse(arg, &arg);
-+	v = memparse(arg, &arg);
-+	if (v <= 2 * VMALLOC_OFFSET)
-+		return -EINVAL;
-+	__VMALLOC_RESERVE = v;
-+
- 	return 0;
- }
- early_param("vmalloc", parse_vmalloc);
+W1BBVENIXSB4ODY6IHJlc2VydmUgZWZpIG1hcCBpdHNlbGYgaW4gZTgyMCBtYXAKClNpZ25lZC1v
+ZmYtYnk6IFlpbmdoYWkgTHUgPHlobHUua2VybmVsQGdtYWlsLmNvbT4KCmRpZmYgLS1naXQgYS9h
+cmNoL3g4Ni9rZXJuZWwvZWZpLmMgYi9hcmNoL3g4Ni9rZXJuZWwvZWZpLmMKaW5kZXggZDVjN2Zj
+ZC4uZjA4NjliYiAxMDA2NDQKLS0tIGEvYXJjaC94ODYva2VybmVsL2VmaS5jCisrKyBiL2FyY2gv
+eDg2L2tlcm5lbC9lZmkuYwpAQCAtMjM1LDYgKzIzNSw4IEBAIHN0YXRpYyB2b2lkIF9faW5pdCBh
+ZGRfZWZpX21lbW1hcCh2b2lkKQogCQkJZTgyMF90eXBlID0gRTgyMF9SRVNFUlZFRDsKIAkJZTgy
+MF9hZGRfcmVnaW9uKHN0YXJ0LCBzaXplLCBlODIwX3R5cGUpOwogCX0KKwllODIwX2FkZF9yZWdp
+b24obWVtbWFwLnBoeXNfbWFwLCBtZW1tYXAubnJfbWFwICogbWVtbWFwLmRlc2Nfc2l6ZSwKKwkJ
+CUU4MjBfUkVTRVJWRUQpOwogCXNhbml0aXplX2U4MjBfbWFwKGU4MjAubWFwLCBBUlJBWV9TSVpF
+KGU4MjAubWFwKSwgJmU4MjAubnJfbWFwKTsKIH0KIApkaWZmIC0tZ2l0IGEvYXJjaC94ODYva2Vy
+bmVsL3NldHVwXzY0LmMgYi9hcmNoL3g4Ni9rZXJuZWwvc2V0dXBfNjQuYwppbmRleCBkZTI2NDVl
+Li41ZmEyNDFlIDEwMDY0NAotLS0gYS9hcmNoL3g4Ni9rZXJuZWwvc2V0dXBfNjQuYworKysgYi9h
+cmNoL3g4Ni9rZXJuZWwvc2V0dXBfNjQuYwpAQCAtMzcwLDYgKzM3MCw5IEBAIHZvaWQgX19pbml0
+IHNldHVwX2FyY2goY2hhciAqKmNtZGxpbmVfcCkKIAogCWVhcmx5X2dhcnRfaW9tbXVfY2hlY2so
+KTsKIAorCWlmIChlZmlfZW5hYmxlZCkKKwkJZWZpX2luaXQoKTsKKwogCWU4MjBfcmVnaXN0ZXJf
+YWN0aXZlX3JlZ2lvbnMoMCwgMCwgLTFVTCk7CiAJLyoKIAkgKiBwYXJ0aWFsbHkgdXNlZCBwYWdl
+cyBhcmUgbm90IHVzYWJsZSAtIHRodXMKQEAgLTM5Miw4ICszOTUsNiBAQCB2b2lkIF9faW5pdCBz
+ZXR1cF9hcmNoKGNoYXIgKipjbWRsaW5lX3ApCiAJY2hlY2tfZWZlcigpOwogCiAJbWF4X3Bmbl9t
+YXBwZWQgPSBpbml0X21lbW9yeV9tYXBwaW5nKDAsIChlbmRfcGZuIDw8IFBBR0VfU0hJRlQpKTsK
+LQlpZiAoZWZpX2VuYWJsZWQpCi0JCWVmaV9pbml0KCk7CiAKIAl2c21wX2luaXQoKTsKIAo=
+------=_Part_11775_20759570.1213591149091--
