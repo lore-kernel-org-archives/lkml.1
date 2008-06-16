@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760649AbYFPHzL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760074AbYFPIB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760649AbYFPHzL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 03:55:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706AbYFPHyy
+	id S1760074AbYFPIB6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 04:01:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbYFPIBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 03:54:54 -0400
-Received: from sacred.ru ([62.205.161.221]:54640 "EHLO sacred.ru"
+	Mon, 16 Jun 2008 04:01:48 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52105 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752607AbYFPHyy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 03:54:54 -0400
-Message-ID: <48561B68.6060503@openvz.org>
-Date: Mon, 16 Jun 2008 11:51:04 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	id S1752816AbYFPIBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 04:01:48 -0400
+Date: Mon, 16 Jun 2008 10:01:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, hpa@zytor.com,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH] kernel parameter vmalloc size fix
+Message-ID: <20080616080131.GC25632@elte.hu>
+References: <20080616042528.GA3003@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
-To: kamezawa.hiroyu@jp.fujitsu.com
-CC: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>, menage@google.com,
-       balbir@linux.vnet.ibm.com, yamamoto@valinux.co.jp,
-       nishimura@mxp.nes.nec.co.jp, lizf@cn.fujitsu.com
-Subject: Re: [PATCH 1/6] res_counter:  handle limit change
-References: <48560A7C.9050501@openvz.org> <20080613182714.265fe6d2.kamezawa.hiroyu@jp.fujitsu.com> <20080613182924.c73fe9eb.kamezawa.hiroyu@jp.fujitsu.com> <33011576.1213601977563.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <33011576.1213601977563.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 16 Jun 2008 11:53:24 +0400 (MSD)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080616042528.GA3003@darkstar.te-china.tietoenator.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kamezawa.hiroyu@jp.fujitsu.com wrote:
-> ----- Original Message -----
->>> +	 * registered callbacks etc...for res_counter.
->>> +	 */
->>> +	struct res_counter_ops ops;
->>> +	/*
-> Now, write to limit is done in following path.
-> sys_write() -> write_func of subsys -> write in res_counter -> 
-> strategy callback -> set limit -> return
-> 
-> Because stragety callback is called in res_counter, we can only do 
-> something after set-limit without callback. So res_counter should call
-> another callback before set-limit if it can fail.
-> 
->> Why would we need such? All res_counter.limit update comes via the appropiate
->> cgroup's files, so it can do whatever it needs w/o any callbacks?
->>
-> 
-> First reason is that this allows us to implement generic algorithm to
-> handle limit change. Second is that generic algorithm can be a stack of
-> functions. I don't like to pass function pointers through several stack
-> of functions. (And this design allow the code to be much easier to read.
-> My first version used an argument of function pointer but it was verrry ugly.)
-> 
-> I think when I did all in memcg, someone will comment that "why do that
-> all in memcg ? please implement generic one to avoid code duplication"
 
-Hm... But we're choosing between
+* Dave Young <hidave.darkstar@gmail.com> wrote:
 
-sys_write->xxx_cgroup_write->res_counter_set_limit->xxx_cgroup_call
-
-and
-
-sys_write->xxx_cgroup_write->res_counter_set_limit
-                           ->xxx_cgroup_call
-
-With the sizeof(void *)-bytes difference in res_counter, nNo?
-
->> And (if we definitely need one) isn't it better to make it a
->> 	struct res_counter_ops *ops;
->> pointer?
->>
-> My first version did that. When I added hierarchy_model to ops(see later patch
-> ), I made use of copy of ops. But maybe you're right. Keeping 
-> res_counter small is important. I'll use pointer in v5.  
+> booting kernel with vmalloc=[any size<=16m] will oops.
 > 
-> Thanks,
-> -Kame-
+> It's due to the vm area hole.
 > 
+> In include/asm-x86/pgtable_32.h:
+> #define VMALLOC_OFFSET	(8 * 1024 * 1024)
+> #define VMALLOC_START	(((unsigned long)high_memory + 2 * VMALLOC_OFFSET - 1) \
+> 			 & ~(VMALLOC_OFFSET - 1))
 > 
+> BUG_ON in arch/x86/mm/init_32.c will be triggered:
+> BUG_ON((unsigned long)high_memory		> VMALLOC_START);
+> 
+> Fixed by return -EINVAL for invalid parameter
 
+hm. Why dont we instead add the size of the hole to the 
+__VMALLOC_RESERVE value instead? There's nothing inherently bad about 
+using vmalloc=16m. The VM area hole is really a kernel-internal 
+abstraction that should not be visible in the usage of the parameter.
+
+	Ingo
