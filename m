@@ -1,141 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbYFPRVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbYFPRVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757448AbYFPRVm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 13:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbYFPRVc
+	id S1754816AbYFPRVz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 13:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756611AbYFPRVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 16 Jun 2008 13:21:32 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:50842 "EHLO
+Received: from bohort.kerlabs.com ([62.160.40.57]:38793 "EHLO
 	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752987AbYFPRVa (ORCPT
+	with ESMTP id S1753016AbYFPRVb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 13:21:30 -0400
-Message-Id: <20080616170057.399713501@kerlabs.com>
+	Mon, 16 Jun 2008 13:21:31 -0400
+Message-Id: <20080616171058.503697544@kerlabs.com>
+References: <20080616170057.399713501@kerlabs.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 16 Jun 2008 19:00:57 +0200
+Date: Mon, 16 Jun 2008 19:00:58 +0200
 From: Louis Rilling <Louis.Rilling@kerlabs.com>
 To: Joel.Becker@oracle.com
 Cc: Louis.Rilling@kerlabs.com, linux-kernel@vger.kernel.org,
        ocfs2-devel@oss.oracle.com
-Subject: [PATCH 0/5][BUGFIX] configfs: Fix deadlock of rename() vs rmdir()
+Subject: [PATCH 1/5][BUGFIX] configfs: Introduce configfs_dirent_lock
+Content-Disposition: inline; filename=configfs-introduce-configfs_dirent_lock.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This patch introduces configfs_dirent_lock spinlock to protect configfs_dirent
+traversals against linkage mutations (add/del/move). This will allow
+configfs_detach_prep() to avoid locking i_mutexes. 
 
-This patchset fixes the deadlock described below. This second version of the
-patchset fixes another long-standing bug in symlinks locking. Please read the
-headers of the third and fourth patches for a detailed explanation of the
-bugfixes. The last patch fixes a new behavior introduced by the deadlock fix,
-and that ones could find undesirable. Whether it is really needed or not is
-debatable.
+Locking rules for configfs_dirent linkage mutations are the same plus the
+requirement of taking configfs_dirent_lock. For configfs_dirent walking, one can
+either take appropriate i_mutex as before, or take configfs_dirent_lock.
 
-Changelog: 
-  - improve comments on the usage of the new configfs_dirent_lock
-  - fix a few missing critical sections in the first patch (see the patch header
-    for details)
-  - include the symlinks locking fix since it depends on configfs_dirent_lock
-    and affects rmdir()
-  - added a behavior fix that prevents a failing mkdir() from making rmdir()
-    fail
+The spinlock could actually be a mutex, but the critical sections are either
+O(1) or should not be too long (default groups walking in last patch).
 
-The following procedure can trigger a deadlock in configfs (see
-http://www.ussg.iu.edu/hypermail/linux/kernel/0806.1/0380.html for a patch
-that makes it easier to trigger):
+ChangeLog:
+  - Clarify the comment on configfs_dirent_lock usage
+  - Move sd->s_element init before linking the new dirent
+  - In lseek(), do not release configfs_dirent_lock before the dirent is
+    relinked.
 
-# mkdir /config/cluster/foo
-# cd /config/cluster/foo
-# mv heartbeat/dead_threshold node/bar
+Signed-off-by: Louis Rilling <Louis.Rilling@kerlabs.com>
+---
+ fs/configfs/configfs_internal.h |    3 +++
+ fs/configfs/dir.c               |   28 +++++++++++++++++++++++++++-
+ fs/configfs/inode.c             |    2 ++
+ fs/configfs/symlink.c           |    2 ++
+ 4 files changed, 34 insertions(+), 1 deletion(-)
 
-and in another shell, right after having launched test_deadlock:
-
-# rmdir /config/cluster/foo
-
-First, lockdep warns as usual (see below), and after two minutes (standard task
-deadlock parameters), we get the dead lock alerts:
-
-<log>
-
-=============================================
-[ INFO: possible recursive locking detected ]
-2.6.26-rc5 #13
----------------------------------------------
-rmdir/3997 is trying to acquire lock:
- (&sb->s_type->i_mutex_key#11){--..}, at: [<ffffffff802d2131>] configfs_detach_prep+0x58/0xaa
-
-but task is already holding lock:
- (&sb->s_type->i_mutex_key#11){--..}, at: [<ffffffff80296070>] vfs_rmdir+0x49/0xac
-
-other info that might help us debug this:
-2 locks held by rmdir/3997:
- #0:  (&sb->s_type->i_mutex_key#3/1){--..}, at: [<ffffffff80297c77>] do_rmdir+0x82/0x108
- #1:  (&sb->s_type->i_mutex_key#11){--..}, at: [<ffffffff80296070>] vfs_rmdir+0x49/0xac
-
-stack backtrace:
-Pid: 3997, comm: rmdir Not tainted 2.6.26-rc5 #13
-
-Call Trace:
- [<ffffffff8024aa65>] __lock_acquire+0x8d2/0xc78
- [<ffffffff802495ec>] find_usage_backwards+0x9d/0xbe
- [<ffffffff802d2131>] configfs_detach_prep+0x58/0xaa
- [<ffffffff8024b1de>] lock_acquire+0x51/0x6c
- [<ffffffff802d2131>] configfs_detach_prep+0x58/0xaa
- [<ffffffff80247dad>] debug_mutex_lock_common+0x16/0x23
- [<ffffffff805d63a4>] mutex_lock_nested+0xcd/0x23b
- [<ffffffff802d2131>] configfs_detach_prep+0x58/0xaa
- [<ffffffff802d327b>] configfs_rmdir+0xb8/0x1c3
- [<ffffffff80296092>] vfs_rmdir+0x6b/0xac
- [<ffffffff80297cac>] do_rmdir+0xb7/0x108
- [<ffffffff80249d1e>] trace_hardirqs_on+0xef/0x113
- [<ffffffff805d74c4>] trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff8020b0cb>] system_call_after_swapgs+0x7b/0x80
-
-INFO: task test_deadlock:3996 blocked for more than 120 seconds.
-"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-test_deadlock D 0000000000000001     0  3996   3980
- ffff81007cc93d78 0000000000000046 ffff81007cc93d40 ffffffff808ed280
- ffffffff808ed280 ffff81007cc93d28 ffffffff808ed280 ffffffff808ed280
- ffffffff808ed280 ffffffff808ea120 ffffffff808ed280 ffff81007cdcaa10
-Call Trace:
- [<ffffffff802955e3>] lock_rename+0x11e/0x126
- [<ffffffff805d641e>] mutex_lock_nested+0x147/0x23b
- [<ffffffff802955e3>] lock_rename+0x11e/0x126
- [<ffffffff80297838>] sys_renameat+0xd7/0x21c
- [<ffffffff805d74c4>] trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff80249d1e>] trace_hardirqs_on+0xef/0x113
- [<ffffffff805d74c4>] trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff8020b0cb>] system_call_after_swapgs+0x7b/0x80
-
-INFO: lockdep is turned off.
-INFO: task rmdir:3997 blocked for more than 120 seconds.
-"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-rmdir         D 0000000000000000     0  3997   3986
- ffff81007cdb9dd8 0000000000000046 0000000000000000 ffffffff808ed280
- ffffffff808ed280 ffff81007cdb9d88 ffffffff808ed280 ffffffff808ed280
- ffffffff808ed280 ffffffff808ea120 ffffffff808ed280 ffff81007cde0a50
-Call Trace:
- [<ffffffff802d2131>] configfs_detach_prep+0x58/0xaa
- [<ffffffff805d641e>] mutex_lock_nested+0x147/0x23b
- [<ffffffff802d2131>] configfs_detach_prep+0x58/0xaa
- [<ffffffff802d327b>] configfs_rmdir+0xb8/0x1c3
- [<ffffffff80296092>] vfs_rmdir+0x6b/0xac
- [<ffffffff80297cac>] do_rmdir+0xb7/0x108
- [<ffffffff80249d1e>] trace_hardirqs_on+0xef/0x113
- [<ffffffff805d74c4>] trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff8020b0cb>] system_call_after_swapgs+0x7b/0x80
-
-INFO: lockdep is turned off.
-
-</log>
-
-The issue here is that the VFS locks the i_mutex of the source and target
-directories of the rename in source -> target order (because none is ascendent
-of the other one), while configfs_detach_prep() takes them in default group
-order (or reverse order, I'm not sure), following the order specified by the
-groups' creator.
-
-Louis
+Index: b/fs/configfs/configfs_internal.h
+===================================================================
+--- a/fs/configfs/configfs_internal.h	2008-06-16 15:59:47.000000000 +0200
++++ b/fs/configfs/configfs_internal.h	2008-06-16 18:54:04.000000000 +0200
+@@ -26,6 +26,7 @@
+ 
+ #include <linux/slab.h>
+ #include <linux/list.h>
++#include <linux/spinlock.h>
+ 
+ struct configfs_dirent {
+ 	atomic_t		s_count;
+@@ -49,6 +50,8 @@ struct configfs_dirent {
+ #define CONFIGFS_USET_DROPPING	0x0100
+ #define CONFIGFS_NOT_PINNED	(CONFIGFS_ITEM_ATTR)
+ 
++extern spinlock_t configfs_dirent_lock;
++
+ extern struct vfsmount * configfs_mount;
+ extern struct kmem_cache *configfs_dir_cachep;
+ 
+Index: b/fs/configfs/dir.c
+===================================================================
+--- a/fs/configfs/dir.c	2008-06-16 15:59:47.000000000 +0200
++++ b/fs/configfs/dir.c	2008-06-16 18:54:25.000000000 +0200
+@@ -35,6 +35,14 @@
+ #include "configfs_internal.h"
+ 
+ DECLARE_RWSEM(configfs_rename_sem);
++/*
++ * Protects mutations of configfs_dirent linkage together with proper i_mutex
++ * Mutators of configfs_dirent linkage must *both* have the proper inode locked
++ * and configfs_dirent_lock locked, in that order.
++ * This allows one to safely traverse configfs_dirent trees without having to
++ * lock inodes.
++ */
++DEFINE_SPINLOCK(configfs_dirent_lock);
+ 
+ static void configfs_d_iput(struct dentry * dentry,
+ 			    struct inode * inode)
+@@ -79,8 +87,10 @@ static struct configfs_dirent *configfs_
+ 	atomic_set(&sd->s_count, 1);
+ 	INIT_LIST_HEAD(&sd->s_links);
+ 	INIT_LIST_HEAD(&sd->s_children);
+-	list_add(&sd->s_sibling, &parent_sd->s_children);
+ 	sd->s_element = element;
++	spin_lock(&configfs_dirent_lock);
++	list_add(&sd->s_sibling, &parent_sd->s_children);
++	spin_unlock(&configfs_dirent_lock);
+ 
+ 	return sd;
+ }
+@@ -173,7 +183,9 @@ static int create_dir(struct config_item
+ 		} else {
+ 			struct configfs_dirent *sd = d->d_fsdata;
+ 			if (sd) {
++				spin_lock(&configfs_dirent_lock);
+ 				list_del_init(&sd->s_sibling);
++				spin_unlock(&configfs_dirent_lock);
+ 				configfs_put(sd);
+ 			}
+ 		}
+@@ -224,7 +236,9 @@ int configfs_create_link(struct configfs
+ 		else {
+ 			struct configfs_dirent *sd = dentry->d_fsdata;
+ 			if (sd) {
++				spin_lock(&configfs_dirent_lock);
+ 				list_del_init(&sd->s_sibling);
++				spin_unlock(&configfs_dirent_lock);
+ 				configfs_put(sd);
+ 			}
+ 		}
+@@ -238,7 +252,9 @@ static void remove_dir(struct dentry * d
+ 	struct configfs_dirent * sd;
+ 
+ 	sd = d->d_fsdata;
++	spin_lock(&configfs_dirent_lock);
+ 	list_del_init(&sd->s_sibling);
++	spin_unlock(&configfs_dirent_lock);
+ 	configfs_put(sd);
+ 	if (d->d_inode)
+ 		simple_rmdir(parent->d_inode,d);
+@@ -410,7 +426,9 @@ static void detach_attrs(struct config_i
+ 	list_for_each_entry_safe(sd, tmp, &parent_sd->s_children, s_sibling) {
+ 		if (!sd->s_element || !(sd->s_type & CONFIGFS_NOT_PINNED))
+ 			continue;
++		spin_lock(&configfs_dirent_lock);
+ 		list_del_init(&sd->s_sibling);
++		spin_unlock(&configfs_dirent_lock);
+ 		configfs_drop_dentry(sd, dentry);
+ 		configfs_put(sd);
+ 	}
+@@ -1268,7 +1286,9 @@ static int configfs_dir_close(struct ino
+ 	struct configfs_dirent * cursor = file->private_data;
+ 
+ 	mutex_lock(&dentry->d_inode->i_mutex);
++	spin_lock(&configfs_dirent_lock);
+ 	list_del_init(&cursor->s_sibling);
++	spin_unlock(&configfs_dirent_lock);
+ 	mutex_unlock(&dentry->d_inode->i_mutex);
+ 
+ 	release_configfs_dirent(cursor);
+@@ -1308,7 +1328,9 @@ static int configfs_readdir(struct file 
+ 			/* fallthrough */
+ 		default:
+ 			if (filp->f_pos == 2) {
++				spin_lock(&configfs_dirent_lock);
+ 				list_move(q, &parent_sd->s_children);
++				spin_unlock(&configfs_dirent_lock);
+ 			}
+ 			for (p=q->next; p!= &parent_sd->s_children; p=p->next) {
+ 				struct configfs_dirent *next;
+@@ -1331,7 +1353,9 @@ static int configfs_readdir(struct file 
+ 						 dt_type(next)) < 0)
+ 					return 0;
+ 
++				spin_lock(&configfs_dirent_lock);
+ 				list_move(q, p);
++				spin_unlock(&configfs_dirent_lock);
+ 				p = q;
+ 				filp->f_pos++;
+ 			}
+@@ -1362,6 +1386,7 @@ static loff_t configfs_dir_lseek(struct 
+ 			struct list_head *p;
+ 			loff_t n = file->f_pos - 2;
+ 
++			spin_lock(&configfs_dirent_lock);
+ 			list_del(&cursor->s_sibling);
+ 			p = sd->s_children.next;
+ 			while (n && p != &sd->s_children) {
+@@ -1373,6 +1398,7 @@ static loff_t configfs_dir_lseek(struct 
+ 				p = p->next;
+ 			}
+ 			list_add_tail(&cursor->s_sibling, p);
++			spin_unlock(&configfs_dirent_lock);
+ 		}
+ 	}
+ 	mutex_unlock(&dentry->d_inode->i_mutex);
+Index: b/fs/configfs/inode.c
+===================================================================
+--- a/fs/configfs/inode.c	2008-06-16 15:59:47.000000000 +0200
++++ b/fs/configfs/inode.c	2008-06-16 17:22:13.000000000 +0200
+@@ -247,7 +247,9 @@ void configfs_hash_and_remove(struct den
+ 		if (!sd->s_element)
+ 			continue;
+ 		if (!strcmp(configfs_get_name(sd), name)) {
++			spin_lock(&configfs_dirent_lock);
+ 			list_del_init(&sd->s_sibling);
++			spin_unlock(&configfs_dirent_lock);
+ 			configfs_drop_dentry(sd, dir);
+ 			configfs_put(sd);
+ 			break;
+Index: b/fs/configfs/symlink.c
+===================================================================
+--- a/fs/configfs/symlink.c	2008-06-16 15:59:47.000000000 +0200
++++ b/fs/configfs/symlink.c	2008-06-16 18:54:25.000000000 +0200
+@@ -169,7 +169,9 @@ int configfs_unlink(struct inode *dir, s
+ 	parent_item = configfs_get_config_item(dentry->d_parent);
+ 	type = parent_item->ci_type;
+ 
++	spin_lock(&configfs_dirent_lock);
+ 	list_del_init(&sd->s_sibling);
++	spin_unlock(&configfs_dirent_lock);
+ 	configfs_drop_dentry(sd, dentry->d_parent);
+ 	dput(dentry);
+ 	configfs_put(sd);
 
 -- 
 Dr Louis Rilling			Kerlabs
