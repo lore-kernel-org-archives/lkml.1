@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759200AbYFPX1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758800AbYFPXjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759200AbYFPX1y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 19:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758674AbYFPX1h
+	id S1758800AbYFPXjT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 19:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611AbYFPXjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 19:27:37 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:16427 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758378AbYFPX1g (ORCPT
+	Mon, 16 Jun 2008 19:39:03 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47211 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756219AbYFPXjD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 19:27:36 -0400
-Date: Mon, 16 Jun 2008 16:26:57 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Louis Rilling <Louis.Rilling@kerlabs.com>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: Re: [PATCH 0/5][BUGFIX] configfs: Fix deadlock of rename() vs
-	rmdir()
-Message-ID: <20080616232657.GE6441@mail.oracle.com>
-Mail-Followup-To: Louis Rilling <Louis.Rilling@kerlabs.com>,
-	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-References: <20080616170057.399713501@kerlabs.com>
+	Mon, 16 Jun 2008 19:39:03 -0400
+Date: Mon, 16 Jun 2008 16:37:30 -0700
+From: Greg KH <greg@kroah.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       Stable Kernel <stable@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [stable] [PATCH 2/2] xen: don't drop NX bit
+Message-ID: <20080616233730.GA25506@kroah.com>
+References: <4856E2D4.3020402@goop.org> <20080616223508.GA1165@kroah.com> <4856EE79.1000205@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080616170057.399713501@kerlabs.com>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+In-Reply-To: <4856EE79.1000205@goop.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 16, 2008 at 07:00:57PM +0200, Louis Rilling wrote:
-> This patchset fixes the deadlock described below. This second version of the
-> patchset fixes another long-standing bug in symlinks locking. Please read the
-> headers of the third and fourth patches for a detailed explanation of the
-> bugfixes. The last patch fixes a new behavior introduced by the deadlock fix,
-> and that ones could find undesirable. Whether it is really needed or not is
-> debatable.
+On Mon, Jun 16, 2008 at 03:51:37PM -0700, Jeremy Fitzhardinge wrote:
+> Greg KH wrote:
+>> While it's great that you tell the stable people about this, but is it
+>> realistic?  Is anyone using Xen as contained in the mainline kernel
+>> these days?
+>>   
+>
+> Yes, it's what Redhat is shipping in Fedora 9.
 
-	Ok, this is in-tree for the next merge.  Thanks.
+Wow, great, I didn't realize this!  Nevermind then :)
 
-Joel
+>> If a distro were to be based on 2.6.25 and we take this patch, they will
+>> just revert it back out due to their very large Xen patchset they apply
+>> on top to get a "working" Xen version, right?
+>>   
+>
+> No.  RH is using upstream Xen now.  I don't know what the other distros are 
+> doing, but Novell is considering it, at least.
 
--- 
+Heh, Novell isn't using it right now, look at the series of patches in
+opensuse 11.0 for proof of that :(
 
-"There is no sincerer love than the love of food."  
-         - George Bernard Shaw 
+Ok, no objection from me, when these hit Linus's tree we'll add them to
+the -stable queue.
 
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+thanks,
+
+greg k-h
