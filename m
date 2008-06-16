@@ -1,89 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbYFPWhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758586AbYFPWjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758602AbYFPWhn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 18:37:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757041AbYFPWhe
+	id S1758586AbYFPWjp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 18:39:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbYFPWji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 18:37:34 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60297 "EHLO ogre.sisk.pl"
+	Mon, 16 Jun 2008 18:39:38 -0400
+Received: from as3.cineca.com ([130.186.84.211]:47279 "EHLO as3.cineca.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754060AbYFPWhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 18:37:33 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
-Date: Tue, 17 Jun 2008 00:38:36 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806161539.05524.rjw@sisk.pl> <Pine.LNX.4.55.0806161636510.20218@cliff.in.clinika.pl>
-In-Reply-To: <Pine.LNX.4.55.0806161636510.20218@cliff.in.clinika.pl>
+	id S1751586AbYFPWjh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 18:39:37 -0400
+Message-ID: <4856EB9D.6070804@gmail.com>
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070604 Thunderbird/1.5.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Divyesh Shah <dpshah@google.com>
+Cc: balbir@linux.vnet.ibm.com, menage@google.com, linux-kernel@vger.kernel.org,
+       axboe@kernel.dk, matt@bluehost.com, roberto@unbit.it,
+       randy.dunlap@oracle.com, akpm@linux-foundation.org
+Subject: Re: i/o bandwidth controller infrastructure
+References: <20030410181011$6d15@gated-at.bofh.it> <aC1Yl-2AL-1@gated-at.bofh.it> <75b07c02-1595-4af2-ac87-3b067459f62e@w8g2000prd.googlegroups.com> <48D0786A-AC3B-46C3-B35C-EAAA47BFAEBC@google.com>
+In-Reply-To: <48D0786A-AC3B-46C3-B35C-EAAA47BFAEBC@google.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200806170038.37224.rjw@sisk.pl>
+Date: Tue, 17 Jun 2008 00:39:26 +0200 (MEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 16 of June 2008, Maciej W. Rozycki wrote:
-> On Mon, 16 Jun 2008, Rafael J. Wysocki wrote:
+Divyesh Shah wrote:
+>> This is the core io-throttle kernel infrastructure. It creates the
+>> basic
+>> interfaces to cgroups and implements the I/O measurement and
+>> throttling
+>> functions.
 > 
-> > > > commit 7e3530cd98a0c6ab38f5898e855a5beffab26561
-> > > > Author: Maciej W. Rozycki <macro@linux-mips.org>
-> > > > Date:   Tue May 27 21:19:51 2008 +0100
-> > > > 
-> > > >     x86: I/O APIC: timer through 8259A second-chance
-> > > > 
-> > > >     Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
-> > > >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > > 
-> > >  Can I have .config used and a full bootstrap log from that system with
-> > > the patch still applied?
-> > 
-> > That may be difficult, because with the patch applied the box either doesn't
-> > boot at all, or works unreliably when booted (depending on the set of patches
-> > applied on top of it).
+> I am not sure if throttling an application's cpu usage by explicitly  
+> putting it to sleep
+> in order to restrain it from making more IO requests is the way to go  
+> here (though I can't think
+> of anything better right now).
+> With this bandwidth controller, a cpu-intensive job which otherwise  
+> does not care about its IO
+> performance needs to be pin-point accurate about IO bandwidth  
+> required in order to not suffer
+> from cpu-throttling. IMHO, if a cgroup is exceeding its limit for a  
+> given resource, the throttling
+> should be done _only_ for that resource.
 > 
->  Serial console?
+> -Divyesh
 
-No, this box doesn't have any serial ports.  It has a FireWire one, but I don't
-have a matching cable ...
+Divyesh,
 
->  I'm most interested in one from a configuration that 
-> does not boot at all as that's easier to reproduce, determine the cause
-> and verify whether a change fixes the problem or not.  Other
-> configurations may then be tested with the fix in place.
+I understand your point of view. It would be nice if we could just
+"disable" the i/o for a cgroup that exceeds its limit, instead of
+scheduling some sleep()s, so the tasks running in this cgroup would be
+able to continue their non-i/o operations as usual.
 
-With the -next from today (20080616) I get a different picture.
+However, how to do if the tasks continue to perform i/o ops under this
+condition? we could just cache the i/o in memory and at the same time
+reduce the i/o priority of those tasks' requests, but this would require
+a lot of memory, more space in the page cache, and probably could lead
+to potential OOM conditions. A safer approach IMHO is to force the tasks
+to wait synchronously on each operation that directly or indirectly
+generates i/o. The last one is the solution implemented by this
+bandwidth controller.
 
-Without any patches on top it boots, but the fan is turned 100% on as soon as
-the ACPI modules get loaded, regardless of the temperature (normally it does
-that above 75^o C, which is impossible to get normally, because there are 3
-temperature trip points below that level; generally the hardware only does that
-when overheating).  After that, things start to go _very_ slow, like 10x slower
-than usually in X and somewhat slower in the fb console, but I was able to get
-a dmesg output.  This is reproducible 100% of the time.
+We could collect additional statistics, or implement some heuristics to
+predict the tasks' i/o patterns in order to not penalize cpu-bound jobs
+too much, but the basic concept is the same.
 
-With commit 7e3530cd98a0c6ab38f5898e855a5beffab26561 reverted the box seems to
-work normally.  However, while I was writing this message, ACPI decided it was
-overheating and emergency shut down the box, although that was completely
-wrong.  Next time I'll try with the C1E patches reverted.
+Anyway, I agree there must be a better solution, but this is the best
+I've found right now... nice ideas are welcome.
 
-The .config is at: http://www.sisk.pl/kernel/debug/20080616/next-config
-
-dmesg output without any patches is at
-http://www.sisk.pl/kernel/debug/20080616/dmesg-1.log
-
-dmesg output with commit 7e3530cd98a0c6ab38f5898e855a5beffab26561 reverted is
-at: http://www.sisk.pl/kernel/debug/20080616/dmesg-2.log
-
-(they look pretty similar to my untrained eye, but well).
-
-Thanks,
-Rafael
+-Andrea
