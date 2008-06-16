@@ -1,157 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753776AbYFPLHE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752078AbYFPLIM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753776AbYFPLHE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 07:07:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbYFPLGx
+	id S1752078AbYFPLIM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 07:08:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbYFPLH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 07:06:53 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:27953 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751378AbYFPLGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 07:06:52 -0400
-Date: Mon, 16 Jun 2008 13:06:49 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Patrick McHardy <kaber@trash.net>,
-       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       Chuck Ebbert <cebbert@redhat.com>, x86@kernel.org
-Subject: Re: 2.6.26-git: NULL pointer deref in __switch_to
-Message-ID: <20080616110649.GJ20851@kernel.dk>
-References: <4852B19E.4010202@trash.net> <19f34abd0806131124w32133715o3ef8c27cb0a9f96e@mail.gmail.com> <20080613224711.GA15084@linux-os.sc.intel.com> <20080614062014.GA7340@elte.hu>
+	Mon, 16 Jun 2008 07:07:56 -0400
+Received: from cpsmtpo-eml02.kpnxchange.com ([213.75.38.151]:12390 "EHLO
+	cpsmtpo-eml02.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751758AbYFPLHz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 07:07:55 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [Bug 10843] Display artifacts on XOrg logout with PAT kernel and VESA framebuffer
+Date: Mon, 16 Jun 2008 13:07:48 +0200
+User-Agent: KMail/1.9.9
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>
+References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik> <20080616004153.GA7788@linux-os.sc.intel.com> <200806161253.10656.elendil@planet.nl>
+In-Reply-To: <200806161253.10656.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080614062014.GA7340@elte.hu>
+Message-Id: <200806161307.50029.elendil@planet.nl>
+X-OriginalArrivalTime: 16 Jun 2008 11:07:50.0853 (UTC) FILETIME=[3789EF50:01C8CFA1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 14 2008, Ingo Molnar wrote:
-> 
-> * Suresh Siddha <suresh.b.siddha@intel.com> wrote:
-> 
-> > Somehow (as described below?) TS_USEDFPU is set but the fpu is not 
-> > allocated or freed.
-> > 
-> > Please try the appended patch.
-> 
-> i've queued up your fix in tip/x86/urgent. (Git access coordinates: 
-> http://people.redhat.com/mingo/tip.git/README)
-> 
-> i'm wondering why this problem was not hit more frequently. Does it need 
-> some special FPU use to trigger? Or does it need an exec() with the FPU 
-> stack still active? (normally the FPU stack is empty at exec() time)
-> 
-> 	Ingo
-> 
-> -------------------->
-> commit fade25af0c80b9caed83beb0b961559f4c33a49f
-> Author: Suresh Siddha <suresh.b.siddha@intel.com>
-> Date:   Fri Jun 13 15:47:12 2008 -0700
-> 
->     x86: fix NULL pointer deref in __switch_to
->     
->     Patrick McHardy reported a crash:
->     
->     > > I get this oops once a day, its apparently triggered by something
->     > > run by cron, but the process is a different one each time.
->     > >
->     > > Kernel is -git from yesterday shortly before the -rc6 release
->     > > (last commit is the usb-2.6 merge, the x86 patches are missing),
->     > > .config is attached.
->     > >
->     > > I'll retry with current -git, but the patches that have gone in
->     > > since I last updated don't look related.
->     > >
->     > > [62060.043009] BUG: unable to handle kernel NULL pointer dereference at
->     > > 000001ff
->     > > [62060.043009] IP: [<c0102a9b>] __switch_to+0x2f/0x118
->     > > [62060.043009] *pde = 00000000
->     > > [62060.043009] Oops: 0002 [#1] PREEMPT
->     
->     Vegard Nossum analyzed it:
->     
->     > This decodes to
->     >
->     >    0:   0f ae 00                fxsave (%eax)
->     >
->     > so it's related to the floating-point context. This is the exact
->     > location of the crash:
->     >
->     > $ addr2line -e arch/x86/kernel/process_32.o -i ab0
->     > include/asm/i387.h:232
->     > include/asm/i387.h:262
->     > arch/x86/kernel/process_32.c:595
->     >
->     > ...so it looks like prev_task->thread.xstate->fxsave has become NULL.
->     > Or maybe it never had any other value.
->     
->     Somehow (as described below) TS_USEDFPU is set but the fpu is not
->     allocated or freed.
->     
->     Another possible FPU pre-emption issue with the sleazy FPU optimization
->     which was benign before but not so anymore, with the dynamic FPU allocation
->     patch.
->     
->     New task is getting exec'd and it is prempted at the below point.
->     
->     flush_thread() {
->     	...
->     	/*
->     	* Forget coprocessor state..
->     	*/
->     	clear_fpu(tsk);
->     		<----- Preemption point
->     	clear_used_math();
->     	...
->     }
->     
->     Now when it context switches in again, as the used_math() is still set
->     and fpu_counter can be > 5, we will do a math_state_restore() which sets
->     the task's TS_USEDFPU. After it continues from the above preemption point
->     it does clear_used_math() and much later free_thread_xstate().
->     
->     Now, at the next context switch, it is quite possible that xstate is
->     null, used_math() is not set and TS_USEDFPU is still set. This will
->     trigger unlazy_fpu() causing kernel oops.
->     
->     Fix this  by clearing tsk's fpu_counter before clearing task's fpu.
->     
->     Reported-by: Patrick McHardy <kaber@trash.net>
->     Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-> index 6d54833..e2db9ac 100644
-> --- a/arch/x86/kernel/process_32.c
-> +++ b/arch/x86/kernel/process_32.c
-> @@ -333,6 +333,7 @@ void flush_thread(void)
->  	/*
->  	 * Forget coprocessor state..
->  	 */
-> +	tsk->fpu_counter = 0;
->  	clear_fpu(tsk);
->  	clear_used_math();
->  }
-> diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-> index ac54ff5..c6eb5c9 100644
-> --- a/arch/x86/kernel/process_64.c
-> +++ b/arch/x86/kernel/process_64.c
-> @@ -294,6 +294,7 @@ void flush_thread(void)
->  	/*
->  	 * Forget coprocessor state..
->  	 */
-> +	tsk->fpu_counter = 0;
->  	clear_fpu(tsk);
->  	clear_used_math();
->  }
+On Monday 16 June 2008, Frans Pop wrote:
+> I do see some differences in Xorg logs, so it does seem that the mtrr
+> options _are_ being recognized.
+> Attached my "normal" Xorg log (with 'vga=791') which I used as the base
+> for the diffs below. Other than shown, the logs are identical.
+>
+> With mtrr:1 I get (added at the end of the log):
+> @@ -688,3 +688,11 @@
+>  (II) evaluating device (Generic Keyboard)
+>  (II) XINPUT: Adding extended input device "Generic Keyboard" (type:
+> KEYBOARD)
+> (II) Configured Mouse: ps2EnableDataReporting: succeeded 
+> +(II) intel(0): xf86UnbindGARTMemory: unbind key 0
+> +(II) intel(0): xf86UnbindGARTMemory: unbind key 1
+> +(II) intel(0): xf86UnbindGARTMemory: unbind key 2
+> +(II) intel(0): xf86UnbindGARTMemory: unbind key 3
+> +(II) intel(0): xf86UnbindGARTMemory: unbind key 4
+> +(II) intel(0): [drm] removed 1 reserved context for kernel
+> +(II) intel(0): [drm] unmapping 8192 bytes of SAREA 0x2efff000 at
+> 0x7f2788ab9000
+> +(II) intel(0): [drm] Closed DRM master. 
 
-Don't you need an smp_wmb() between that fpu_counter clear and
-clear_fpu(), since your fix seems to rely on strict ordering between
-the two?
+Oops. Just realized that this is completely bogus. I used the .old log for 
+this one while I used logs for still running Xorg sessions for the 
+others. So this was actually the only one that contains Xorg shutdown 
+messages at all.
 
--- 
-Jens Axboe
+> And with mtrr:3 (added in the middle):
+> @@ -577,6 +577,7 @@
+>  (II) intel(0): [drm] Initialized kernel agp heap manager, 33554432
+>  (II) intel(0): [dri] visual configs initialized
+>  (II) intel(0): Page Flipping disabled
+> +(==) intel(0): Removed MMIO write-combining range
+> (0x80000000,0x400000)
+> (==) intel(0): Write-combining range (0x80000000,0x10000000)
+>  (II) intel(0): vgaHWGetIOBase: hwp->IOBase is 0x03d0, hwp->PIOOffset
+> is 0x0000
+> (II) EXA(0): Offscreen pixmap area of 39321600 bytes 
 
+This is still valid though.
+
+Sorry for the confusion.
