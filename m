@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758706AbYFPWla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758902AbYFPWlr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758706AbYFPWla (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 18:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756955AbYFPWlV
+	id S1758902AbYFPWlr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 18:41:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758774AbYFPWlg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 18:41:21 -0400
-Received: from colo.lackof.org ([198.49.126.79]:55453 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756032AbYFPWlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 18:41:20 -0400
-Date: Mon, 16 Jun 2008 16:41:07 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: kyle@mcmartin.ca, matthew@wil.cx, grundler@parisc-linux.org,
-       linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: parisc: pcibios_init_bus() isn't called
-Message-ID: <20080616224107.GA32030@colo.lackof.org>
-References: <20080615161327.GC7865@cs181133002.pp.htv.fi>
+	Mon, 16 Jun 2008 18:41:36 -0400
+Received: from casper.infradead.org ([85.118.1.10]:41776 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756955AbYFPWlf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 18:41:35 -0400
+Date: Mon, 16 Jun 2008 15:35:08 -0700
+From: Greg KH <greg@kroah.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       Stable Kernel <stable@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [stable] [PATCH 2/2] xen: don't drop NX bit
+Message-ID: <20080616223508.GA1165@kroah.com>
+References: <4856E2D4.3020402@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080615161327.GC7865@cs181133002.pp.htv.fi>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <4856E2D4.3020402@goop.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 15, 2008 at 07:13:27PM +0300, Adrian Bunk wrote:
-> arch/parisc/kernel/pci.c:pcibios_init_bus() never gets called - this
-> doesn't seem to be intentionally?
+On Mon, Jun 16, 2008 at 03:01:56PM -0700, Jeremy Fitzhardinge wrote:
+> When converting the pfn/mfn in a pagetable entry, make sure we mask
+> out the protection flags properly.  Formerly, this code was losing the
+> NX bit, and not dealing with extra Xen-defined software flags in ptes.
+> 
+> Because NX is now enforced properly, we must put the hypercall page
+> into the .text segment so that it is executable.
+> 
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> Cc: Stable Kernel <stable@kernel.org>
 
-I think this is accidentally abandoned code and introduced here:
-    http://lkml.org/lkml/2001/12/22/43
+While it's great that you tell the stable people about this, but is it
+realistic?  Is anyone using Xen as contained in the mainline kernel
+these days?
 
-So it was called from pci_do_scan_bus(). Can you track down when this
-was removed from pci_do_scan_bus() ?
-
-But it was once used by parisc port:
-    http://lists.parisc-linux.org/pipermail/parisc-linux/2001-June/037259.html
-
-and then perhaps got removed soon after in the generic code:
-    http://www.cs.helsinki.fi/linux/linux-kernel/2003-01/0388.html
-
-But I'm not finding the exact patch that removed it.
+If a distro were to be based on 2.6.25 and we take this patch, they will
+just revert it back out due to their very large Xen patchset they apply
+on top to get a "working" Xen version, right?
 
 thanks,
-grant
+
+greg k-h
