@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760137AbYFPHyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbYFPHyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760137AbYFPHyX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 03:54:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbYFPHyQ
+	id S1754453AbYFPHyl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 03:54:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760376AbYFPHyc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 03:54:16 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46599 "EHLO mx3.mail.elte.hu"
+	Mon, 16 Jun 2008 03:54:32 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40308 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752349AbYFPHyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 03:54:15 -0400
-Date: Mon, 16 Jun 2008 09:53:50 +0200
+	id S1760366AbYFPHyb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 03:54:31 -0400
+Date: Mon, 16 Jun 2008 09:54:18 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Yinghai Lu <yhlu.kernel@gmail.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: using dstapic in mp_config_acpi_legacy_irqs
-Message-ID: <20080616075350.GA25632@elte.hu>
-References: <200806151819.47236.yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] x86: rename two e820 related functions
+Message-ID: <20080616075418.GB25632@elte.hu>
+References: <200806151858.51200.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200806151819.47236.yhlu.kernel@gmail.com>
+In-Reply-To: <200806151858.51200.yhlu.kernel@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,12 +36,12 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-
-> so don't get that same value multiple times.
 > 
-> also make mp_config_acpi_legacy_irqs more readable by moving some 
-> assignment together.
+> rename update_memory_range to e820_update_range
+> rename add_memory_region to e820_add_region
+> 
+> to make them more clear about e820 map opertation
 
-applied to tip/x86/mpparse - thanks Yinghai.
+applied to tip/x86/mpparse - nice cleanup.
 
 	Ingo
