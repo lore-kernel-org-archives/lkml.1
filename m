@@ -1,280 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757004AbYFPOU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbYFPOZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757004AbYFPOU1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 10:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbYFPOUI
+	id S1755481AbYFPOZp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 10:25:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbYFPOZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 10:20:08 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:53405 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753941AbYFPOUG convert rfc822-to-8bit (ORCPT
+	Mon, 16 Jun 2008 10:25:37 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41894 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753195AbYFPOZh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 10:20:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=AFPXxkSh+MmKHv20AUzhsZXUiOjlvlS5eRy/Ve+WY3EEem27MBkuwn3g3nXxN0a0dK
-         v46kpVEvCPqTKYEdIC9ebBZIwCyUoa8bDjvn1ThriJ2+SFAIwzjPyGCxJvR02eSbyArB
-         lWhmV4wxZAmHNimzfGIQ7tKmkPs+oGcONv7JE=
-Message-ID: <85e7c2fc0806160720v510a565id709ee782851169d@mail.gmail.com>
-Date: Mon, 16 Jun 2008 22:20:04 +0800
-From: "Bob Zhang" <zhanglinbao@gmail.com>
-To: "Jared Hulbert" <jaredeh@gmail.com>
-Subject: Re: Does anyone run AXFS in 2.4 version of kernel ? I am trying my best to apply AXFS patches into 2.4.18
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <85e7c2fc0805190842v6ee5f4f3jef7790b0fa459a21@mail.gmail.com>
+	Mon, 16 Jun 2008 10:25:37 -0400
+Date: Mon, 16 Jun 2008 23:09:02 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [Patch 005/005](memory hotplug) free memmaps allocated by bootmem
+Cc: Badari Pulavarty <pbadari@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Yinghai Lu <yhlu.kernel@gmail.com>
+In-Reply-To: <20080616104434.GG17016@shadowen.org>
+References: <20080407214844.887A.E1E9C6FF@jp.fujitsu.com> <20080616104434.GG17016@shadowen.org>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080616220228.9EA5.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <85e7c2fc0805090919v613fb823m8dd979b8cd959889@mail.gmail.com>
-	 <6934efce0805120923v636d2dbjb062d33fb861f5a2@mail.gmail.com>
-	 <85e7c2fc0805131746k5284d66dj7cfac5f9138186e2@mail.gmail.com>
-	 <6934efce0805131801s633a1692ha8914a76173c2c80@mail.gmail.com>
-	 <85e7c2fc0805190842v6ee5f4f3jef7790b0fa459a21@mail.gmail.com>
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Jaredeh,
 
-     First , I admire your devotion to AXFS , you are a great
-programmer worth respecting , we pay you a great reverence and pay
-homage to your genius on file system . I think AXFS is a huge
-contribution to open source.
+> > Index: current/mm/sparse.c
+> > ===================================================================
+> > --- current.orig/mm/sparse.c	2008-04-07 20:13:25.000000000 +0900
+> > +++ current/mm/sparse.c	2008-04-07 20:27:20.000000000 +0900
+> > @@ -8,6 +8,7 @@
+> >  #include <linux/module.h>
+> >  #include <linux/spinlock.h>
+> >  #include <linux/vmalloc.h>
+> > +#include "internal.h"
+> >  #include <asm/dma.h>
+> >  #include <asm/pgalloc.h>
+> >  #include <asm/pgtable.h>
+> > @@ -360,6 +361,9 @@
+> >  {
+> >  	return; /* XXX: Not implemented yet */
+> >  }
+> > +static void free_map_bootmem(struct page *page, unsigned long nr_pages)
+> > +{
+> > +}
+> >  #else
+> >  static struct page *__kmalloc_section_memmap(unsigned long nr_pages)
+> >  {
+> > @@ -397,17 +401,47 @@
+> >  		free_pages((unsigned long)memmap,
+> >  			   get_order(sizeof(struct page) * nr_pages));
+> >  }
+> > +
+> > +static void free_map_bootmem(struct page *page, unsigned long nr_pages)
+> > +{
+> > +	unsigned long maps_section_nr, removing_section_nr, i;
+> > +	int magic;
+> > +
+> > +	for (i = 0; i < nr_pages; i++, page++) {
+> > +		magic = atomic_read(&page->_mapcount);
+> > +
+> > +		BUG_ON(magic == NODE_INFO);
+> 
+> Are we sure the node area was big enough to never allocate usemap's into
+> it and change the magic to MIX?  I saw you make the section information
+> page sized but not the others.
+
+I don't think this is finish for removing whole of node. Just preparing.
+I would like to make section removing at first rather than node.
+
+> > +
+> > +		maps_section_nr = pfn_to_section_nr(page_to_pfn(page));
+> > +		removing_section_nr = page->private;
+> > +
+> > +		/*
+> > +		 * When this function is called, the removing section is
+> > +		 * logical offlined state. This means all pages are isolated
+> > +		 * from page allocator. If removing section's memmap is placed
+> > +		 * on the same section, it must not be freed.
+> > +		 * If it is freed, page allocator may allocate it which will
+> > +		 * be removed physically soon.
+> > +		 */
+> > +		if (maps_section_nr != removing_section_nr)
+> > +			put_page_bootmem(page);
+> 
+> Would the section memmap have its own get_page_bootmem reference here?
+> Would that not protect it from release?
+
+It's not protected.
+
+
+
+> > Index: current/mm/page_alloc.c
+> > ===================================================================
+> > --- current.orig/mm/page_alloc.c	2008-04-07 20:12:55.000000000 +0900
+> > +++ current/mm/page_alloc.c	2008-04-07 20:13:29.000000000 +0900
+> > @@ -568,7 +568,7 @@
+> >  /*
+> >   * permit the bootmem allocator to evade page validation on high-order frees
+> >   */
+> > -void __init __free_pages_bootmem(struct page *page, unsigned int order)
+> > +void __free_pages_bootmem(struct page *page, unsigned int order)
+> 
+> not __meminit or something?
+
+Ah, yes. I'll fix it.
+
+Thanks for comments.
+
+Bye.
+
+-- 
+Yasunori Goto 
 
-Now , I could run AXFS in 2.4.21 kernel by skyeye simulator supported
-PXA platform . I modified some parts of linux2.4.21 code related with
-memory management and ad justed some interfaces of AXFS code to fit
-for 2.4, ,once XIP is OK , I will submit my patch.
-Till now , all files in the AXFS rootfs image are compressed , they
-are working OK . I can run "ls" , "ifconfig" and so on.
 
-But I can't these files run directly XIP , I need your help to configure them .
-I am puzzled for how to make files and pages are of XIP not compressed .
-
-In your AXFS howto http://axfs.sourceforge.net/wordpress/?page_id=19
-To use AXFS you must follow these steps:
-
-» 1. pre patch kernel
-» 2. use patchin.sh script to install files into kernel
-» 3. build kernel with AXFS profiling on
-» 4. create fully compressed AXFS image
-» 5. run usecases with profiling on and fully compressed image
-» 6. extract profile from /proc/axfs/volumeX
-» 7. create new partially XIP image using the extracted profile
-» 8. build kernel with profiling off
-» 9. Enjoy!
-
-For easily debugging , I am in 2.6.18 not 2.4.21 to test your method .
-
-In 2.6.18 , my kernel whose axfs profiling on (make menuconfig) , and
-
-Cat /proc/axfs/volume0 ,I can get
-
-================ cat /proc/axfs/volume0   begin ===================
-
-/ $
-
-/ $ cat /proc/axfs/volume0
-
-./bin/busybox,0,18
-
-./bin/busybox,28672,2
-
-./bin/busybox,53248,4
-
-./bin/busybox,143360,3
-
-./bin/busybox,147456,3
-
-./bin/busybox,151552,8
-
-./bin/busybox,155648,11
-
-./bin/busybox,159744,10
-
-./bin/busybox,163840,14
-
-./bin/busybox,167936,4
-
-./bin/busybox,204800,3
-
-./bin/busybox,233472,13
-
-./bin/busybox,237568,13
-
-./bin/busybox,241664,13
-
-./bin/busybox,245760,13
-
-./bin/busybox,249856,3
-
-./bin/busybox,253952,13
-
-./bin/busybox,258048,2
-
-./bin/busybox,262144,2
-
-./bin/busybox,266240,2
-
-./bin/busybox,270336,2
-
-./bin/busybox,274432,2
-
-./bin/busybox,278528,2
-
-./bin/busybox,282624,13
-
-./bin/busybox,286720,1
-
-./bin/busybox,290816,1
-
-./bin/busybox,294912,1
-
-./bin/busybox,303104,1
-
-./bin/busybox,307200,1
-
-./bin/busybox,315392,1
-
-./bin/busybox,339968,4
-
-./bin/busybox,348160,2
-
-./bin/busybox,376832,2
-
-./bin/busybox,380928,15
-
-./bin/busybox,413696,14
-
-./bin/busybox,417792,14
-
-./bin/busybox,421888,13
-
-./bin/busybox,425984,19
-
-./bin/busybox,430080,12
-
-./bin/busybox,434176,7
-
-./bin/busybox,438272,20
-
-./bin/busybox,442368,20
-
-./bin/busybox,446464,15
-
-./bin/busybox,450560,11
-
-./bin/busybox,454656,9
-
-./bin/busybox,466944,11
-
-./bin/busybox,471040,11
-
-./bin/busybox,475136,10
-
-./bin/busybox,479232,2
-
-./bin/busybox,483328,18
-
-./bin/busybox,487424,3
-
-./bin/busybox,491520,10
-
-./bin/busybox,495616,2
-
-./bin/busybox,499712,1
-
-./bin/busybox,503808,13
-
-./bin/busybox,507904,9
-
-./bin/busybox,512000,1
-
-./bin/busybox,516096,2
-
-./bin/busybox,520192,9
-
-./bin/busybox,524288,10
-
-./bin/busybox,528384,7
-
-./bin/busybox,532480,11
-
-./bin/busybox,536576,14
-
-
-
- =================end of cat /proc/axfs/volume0=====================
-
-There are only three columns of outputs ,
-
->From the source code , this function procfile_read() implement the
-proc reading function ,
-
-/* set everything up to print out */
-
-                     len =
-                         sprintf(current_buf_ptr,
-                                "%s,%lu,%lu \n",
-                                name, (unsigned
-long)(inode_page_offset * PAGE_SIZE),
-                                (profile_data->count));
-
-it will print
-./bin/busybox,  507904,         9
-filename   page_offset   reference_count
-
-But from your readme of mkfs.axfs.c directory .
-
-You have written that :
-Usage Notes
-
---------------------
-
-1. "./mkfs.axfs [-h] [-i infile] indir outfile"
-
-  -h         print this help
- -i infile  input file of the XIP information
- dirname    root of the directory tree to be compressed
- outfile    output file
-
-About the Input File
---------------------
-Input file should be an XML file with specific element name.  See
-
-example_xipfsmap_syntax.xml for an example.
-<xipfsmap>
-       <file>
-             <name>./xxx</name>
-              <chunk>
-                     <size>aaa</size>
-                     <offset>bbb</offset>
-              </chunk>
-       </file>
-
-</xipfsmap>
-
- 1. Input file is optional.  If the option is not available, the writer will
-
-compress every file.
-
- I think I need to provide a Input file to tell the mkfs.axfs.c which
-files and pages are of XIP .
-
-So I need to provide their names ,size and offset , but "cat
-/proc/axfs/volume0" , we can only get
-
-./bin/busybox,  507904,         9
-
-filename   page_offset   reference_count
-
-Would you mind telling me more information or can you give me a fresh
-example ? thanks very much!
-
-Best Regards,
-
-Bob
