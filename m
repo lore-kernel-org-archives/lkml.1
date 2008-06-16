@@ -1,60 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761183AbYFPI6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761375AbYFPI6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761183AbYFPI6A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 04:58:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359AbYFPI5v
+	id S1761375AbYFPI6V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 04:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760853AbYFPI57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 04:57:51 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:57079 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755092AbYFPI5u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 04:57:50 -0400
-Message-ID: <48562AFF.9050804@linux.vnet.ibm.com>
-Date: Mon, 16 Jun 2008 14:27:35 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 16 Jun 2008 04:57:59 -0400
+Received: from as1.cineca.com ([130.186.84.213]:50596 "EHLO as1.cineca.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760098AbYFPI55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 04:57:57 -0400
+Message-ID: <485625D9.6040508@gmail.com>
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070604 Thunderbird/1.5.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "menage@google.com" <menage@google.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH 1/6] res_counter:  handle limit change
-References: <20080613182714.265fe6d2.kamezawa.hiroyu@jp.fujitsu.com> <20080613182924.c73fe9eb.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080613182924.c73fe9eb.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Paul Mackerras <paulus@samba.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       balbir@linux.vnet.ibm.com, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       yamamoto@valinux.co.jp, menage@google.com, linux-kernel@vger.kernel.org,
+       xemul@openvz.org, kamezawa.hiroyu@jp.fujitsu.com,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH -mm] PAGE_ALIGN(): correctly handle 64-bit values on 32-bit
+ architectures (v2)
+References: <1213543436-15254-1-git-send-email-righi.andrea@gmail.com> <18517.39513.867328.171299@cargo.ozlabs.ibm.com>
+In-Reply-To: <18517.39513.867328.171299@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
+Date: Mon, 16 Jun 2008 10:35:37 +0200 (MEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> Add a support to shrink_usage_at_limit_change feature to res_counter.
-> memcg will use this to drop pages.
+Paul Mackerras wrote:
+> Andrea Righi writes:
 > 
-> Change log: xxx -> v4 (new file.)
->  - cut out the limit-change part from hierarchy patch set.
->  - add "retry_count" arguments to shrink_usage(). This allows that we don't
->    have to set the default retry loop count.
->  - res_counter_check_under_val() is added to support subsystem.
->  - res_counter_init() is res_counter_init_ops(cnt, NULL)
+>> Also move the PAGE_ALIGN() definitions out of include/asm-*/page.h in
+>> include/linux/mm.h.
 > 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
+> I'd rather see it in some other place than this, because
+> include/linux/mm.h is a large header that includes quite a lot of
+> other stuff.  What's wrong with leaving it in each arch's page.h and
+> only changing it on those archs that have both 32-bit and 64-bit
+> variants?  Or perhaps there is some other, lower-level header in
+> include/linux where it could go?
 
-Does shrink_usage() really belong to res_counters? Could a task limiter, a
-CPU/IO bandwidth controller use this callback? Resource Counters were designed
-to be generic and work across controllers. Isn't the memory controller a better
-place for such ops.
+I think the only evident advantage of this is to have a single
+implementation, instead of dealing with (potentially) N different
+implementations.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Maybe a different place could be linux/mm_types.h, it's not so small,
+but at least it's smaller than linux/mm.h. However, it's a bit ugly to
+put a "function" in a file called mm_types.h.
+
+Anyway, I've to say that fixing PAGE_ALIGN and leaving it in each page.h
+for now would be surely a simpler solution and would introduce less
+potential errors.
+
+> 
+>> diff --git a/arch/powerpc/boot/of.c b/arch/powerpc/boot/of.c
+>> index 61d9899..6bc72b1 100644
+>> --- a/arch/powerpc/boot/of.c
+>> +++ b/arch/powerpc/boot/of.c
+>> @@ -8,6 +8,7 @@
+>>   */
+>>  #include <stdarg.h>
+>>  #include <stddef.h>
+>> +#include <linux/mm.h>
+>>  #include "types.h"
+>>  #include "elf.h"
+>>  #include "string.h"
+>> diff --git a/arch/powerpc/boot/page.h b/arch/powerpc/boot/page.h
+>> index 14eca30..aa42298 100644
+>> --- a/arch/powerpc/boot/page.h
+>> +++ b/arch/powerpc/boot/page.h
+>> @@ -28,7 +28,4 @@
+>>  /* align addr on a size boundary - adjust address up if needed */
+>>  #define _ALIGN(addr,size)     _ALIGN_UP(addr,size)
+>>  
+>> -/* to align the pointer to the (next) page boundary */
+>> -#define PAGE_ALIGN(addr)	_ALIGN(addr, PAGE_SIZE)
+>> -
+>>  #endif				/* _PPC_BOOT_PAGE_H */
+> 
+> These parts are NAKed, because arch/powerpc/boot is a separate program
+> that doesn't use the kernel include files.
+
+OK, so we also shouldn't use the linux/kernel.h's ALIGN() here, but leave
+the local _ALIGN() definition, right?
+
+> 
+>> diff --git a/include/asm-powerpc/page.h b/include/asm-powerpc/page.h
+>> index cffdf0e..e088545 100644
+>> --- a/include/asm-powerpc/page.h
+>> +++ b/include/asm-powerpc/page.h
+>> @@ -119,9 +119,6 @@ extern phys_addr_t kernstart_addr;
+>>  /* align addr on a size boundary - adjust address up if needed */
+>>  #define _ALIGN(addr,size)     _ALIGN_UP(addr,size)
+>>  
+>> -/* to align the pointer to the (next) page boundary */
+>> -#define PAGE_ALIGN(addr)	_ALIGN(addr, PAGE_SIZE)
+>> -
+>>  /*
+>>   * Don't compare things with KERNELBASE or PAGE_OFFSET to test for
+>>   * "kernelness", use is_kernel_addr() - it should do what you want.
+> 
+> We had already come across this issue on powerpc, and we fixed it by
+> making sure that the type of PAGE_MASK was int, not unsigned int.
+> However, I have no objection to using the ALIGN() macro from
+> include/linux/kernel.h instead.
+
+Thanks,
+-Andrea
