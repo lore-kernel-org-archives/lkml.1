@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757325AbYFPRKS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757496AbYFPRKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757325AbYFPRKS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 13:10:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754392AbYFPRKG
+	id S1757496AbYFPRKm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 13:10:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754678AbYFPRKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 13:10:06 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:43645 "EHLO
+	Mon, 16 Jun 2008 13:10:32 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:43650 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750953AbYFPRKF (ORCPT
+	with ESMTP id S1754559AbYFPRKb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 13:10:05 -0400
-Message-ID: <48569D96.1090904@zytor.com>
-Date: Mon, 16 Jun 2008 10:06:30 -0700
+	Mon, 16 Jun 2008 13:10:31 -0400
+Message-ID: <48569DAF.4050805@zytor.com>
+Date: Mon, 16 Jun 2008 10:06:55 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
@@ -37,6 +37,6 @@ Sean Young wrote:
 > I'm digging in syslinux right now. 
 > 
 
-What makes you draw that conclusion?
+Also, what version of syslinux?
 
 	-hpa
