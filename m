@@ -1,111 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754357AbYFPMAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755155AbYFPMBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754357AbYFPMAf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 08:00:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbYFPMA3
+	id S1755155AbYFPMBX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 08:01:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbYFPMBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 08:00:29 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:18837 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751186AbYFPMA2 (ORCPT
+	Mon, 16 Jun 2008 08:01:09 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:39241 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754757AbYFPMBI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 08:00:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=bJUzfF3LBiaCMNHjLDMDHXRL7InxL7jMzJd7juw02ibVNbZsWrorw2Aa8eHR2yJ/Fq
-         eLd2ysN3bdYJgdmzj8LR2KPl+Al3Rh7FQ37eMGHTBUvkSbtPrq8WiPjWvAwyoYINnEPL
-         7kuWNeMwgaWeAR5SJMa3sxOgH5elWB9qyJ/90=
-Message-ID: <f8c1374c0806160500p722dee55vf6f2084ecadf670c@mail.gmail.com>
-Date: Mon, 16 Jun 2008 17:30:26 +0530
-From: "Madhava K R" <madhavakr@gmail.com>
-To: "Peter Zijlstra" <peterz@infradead.org>
-Subject: Re: [PATCH] Delay accounting, fix incorrect delay time when constantly waiting on runqueue
-Cc: bharathravi1@gmail.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       dhaval@linux.vnet.ibm.com, vatsa@in.ibm.com, balbir@in.ibm.com,
-       "Ankita Garg" <ankita@in.ibm.com>
-In-Reply-To: <1213610109.16944.95.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 16 Jun 2008 08:01:08 -0400
+Subject: Re: [PATCH v2] export linux/a.out.h
+From: David Woodhouse <dwmw2@infradead.org>
+To: Peter Korsgaard <jacmet@sunsite.dk>
+Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org, dhowells@redhat.com,
+       andi@firstfloor.org, "Kirill A. Shutemov" <k.shutemov@gmail.com>
+In-Reply-To: <1213604973-7073-1-git-send-email-jacmet@sunsite.dk>
+References: <1213565555.26255.522.camel@pmac.infradead.org>
+	 <1213604973-7073-1-git-send-email-jacmet@sunsite.dk>
+Content-Type: text/plain
+Date: Mon, 16 Jun 2008 13:01:03 +0100
+Message-Id: <1213617663.26255.708.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1213609261-9554-1-git-send-email-bharathravi1@gmail.com>
-	 <1213610109.16944.95.camel@twins>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Mon, 2008-06-16 at 10:29 +0200, Peter Korsgaard wrote:
+> Export linux/a.out.h like we do for asm/a.out.h as some applications needs
+> it (E.G. valgrind). One minor complication is that the content is protected
+> by an CONFIG_ARCH_SUPPORTS_AOUT ifdef, so get rid of it.
 
-On Mon, Jun 16, 2008 at 3:25 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Mon, 2008-06-16 at 15:11 +0530, bharathravi1@gmail.com wrote:
->> From: Bharath Ravi <bharathravi1@gmail.com>
->>
->> This patch corrects the incorrect value of per process run-queue wait time
->> reported by delay statistics. The anomaly was due to the following reason.
->> When a process leaves the CPU and immediately starts waiting for CPU on
->> the runqueue (which means it remains in the TASK_RUNNABLE state), the time
->> of re-entry into the run-queue is never recorded. Due to this, the waiting time
->> on the runqueue from this point of re-entry upto the next time it hits the CPU
->> is not accounted for. This is solved by recording the time of re-entry of a
->> process leaving the CPU in the sched_info_depart() function IF the process will
->> go back to waiting on the run-queue. This IF condition is verified by checking
->> whether the process is still in the TASK_RUNNABLE state.
->>
->> The patch was tested on 2.6.26-rc6 using two simple CPU hog programs. The
->> values noted prior to the fix did not account for the time spent on the
->> runqueue waiting. After the fix, the correct values were reported back
->> to user space.
->
->
-> Have you considered: http://lkml.org/lkml/2008/6/5/10
->
-> I'm sad to say it is still pending in my todo list :-( - sorry Ankita.
->
+There was a _reason_ for that ifdef, although on reflection probably not
+a particularly good one. But unless we remove the reason for that ifdef,
+your patch will break compilation on architectures which don't have
+<asm/a.out.h>.
 
-It seems that Ankita's patch addresses the scenario where a process is
-already on the run-queue, and is shuffled about CPUs. This patch
-addresses the scenario where a process is pre-empted and returns to
-the run-queue, where the last_queued value is not recorded.
+We should get rid of CONFIG_ARCH_SUPPORTS_AOUT entirely. The only
+remaining users of it are fs/exec.c, which uses it entirely redundantly:
+	#if defined(__alpha__) && defined(CONFIG_ARCH_SUPPORTS_AOUT)
 
-I tried our test case with Ankita's patch, and the problem remains.
-Our test case involves running two tight loops on an idle CPU.
-Ideally, both should experience a run time of 50% and a delay time of
-50%. But the results show negligible delay time for both processes.
+...and (indirectly, by virtue of being the only other file that includes
+<linux/a.out.h> when ARCH_SUPPORTS_AOUT might be unset) fs/binfmt_elf.c,
+which still has unnecessary references to 'struct exec' even though Andi
+removed the support for a.out interpreters a few months ago. That can
+just go away.
 
-The problems appear mutually exclusive...
+Please see  git.infradead.org/users/dwmw2/aout-2.6.git
 
->> Signed-off-by: Bharath Ravi <bharathravi1@gmail.com>
->> Signed-off-by: Madhava K R  <madhavakr@gmail.com>
->> ---
->>  kernel/sched_stats.h |    6 ++++++
->>  1 files changed, 6 insertions(+), 0 deletions(-)
->>
->> diff --git a/kernel/sched_stats.h b/kernel/sched_stats.h
->> index a38878e..80179ef 100644
->> --- a/kernel/sched_stats.h
->> +++ b/kernel/sched_stats.h
->> @@ -198,6 +198,9 @@ static inline void sched_info_queued(struct task_struct *t)
->>  /*
->>   * Called when a process ceases being the active-running process, either
->>   * voluntarily or involuntarily.  Now we can calculate how long we ran.
->> + * Also, if the process is still in the TASK_RUNNING state, call
->> + * sched_info_queued() to mark that it has now again started waiting on
->> + * the runqueue.
->>   */
->>  static inline void sched_info_depart(struct task_struct *t)
->>  {
->> @@ -206,6 +209,9 @@ static inline void sched_info_depart(struct task_struct *t)
->>
->>       t->sched_info.cpu_time += delta;
->>       rq_sched_info_depart(task_rq(t), delta);
->> +
->> +     if (t->state == TASK_RUNNING)
->> +             sched_info_queued(t);
->>  }
->>
->>  /*
->
->
+David Woodhouse (6):
+      Include <asm/a.out.h> in fs/exec.c only for Alpha.
+      Remove last traces of a.out support from ELF loader.
+      Remove #ifdef CONFIG_ARCH_SUPPORTS_AOUT from <linux/a.out.h>
+      Export <linux/a.out.h> to userspace again.
+      Remove redundant CONFIG_ARCH_SUPPORTS_AOUT
+      Remove references to now-defunct CONFIG_ARCH_SUPPORTS_AOUT from defconfigs
+
+The first four are shown below, as a single combined patch.
+
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index 0fa95b1..d48ff5f 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -16,7 +16,6 @@
+ #include <linux/time.h>
+ #include <linux/mm.h>
+ #include <linux/mman.h>
+-#include <linux/a.out.h>
+ #include <linux/errno.h>
+ #include <linux/signal.h>
+ #include <linux/binfmts.h>
+@@ -548,7 +547,6 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+ 	struct {
+ 		struct elfhdr elf_ex;
+ 		struct elfhdr interp_elf_ex;
+-  		struct exec interp_ex;
+ 	} *loc;
+ 
+ 	loc = kmalloc(sizeof(*loc), GFP_KERNEL);
+@@ -680,7 +678,6 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+ 			}
+ 
+ 			/* Get the exec headers */
+-			loc->interp_ex = *((struct exec *)bprm->buf);
+ 			loc->interp_elf_ex = *((struct elfhdr *)bprm->buf);
+ 			break;
+ 		}
+diff --git a/fs/exec.c b/fs/exec.c
+index 9448f1b..da94a6f 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -26,7 +26,6 @@
+ #include <linux/file.h>
+ #include <linux/fdtable.h>
+ #include <linux/mman.h>
+-#include <linux/a.out.h>
+ #include <linux/stat.h>
+ #include <linux/fcntl.h>
+ #include <linux/smp_lock.h>
+@@ -61,6 +60,11 @@
+ #include <linux/kmod.h>
+ #endif
+ 
++#ifdef __alpha__
++/* for /sbin/loader handling in search_binary_handler() */
++#include <linux/a.out.h>
++#endif
++
+ int core_uses_pid;
+ char core_pattern[CORENAME_MAX_SIZE] = "core";
+ int suid_dumpable = 0;
+@@ -1155,7 +1159,7 @@ int search_binary_handler(struct linux_binprm *bprm,struct pt_regs *regs)
+ {
+ 	int try,retval;
+ 	struct linux_binfmt *fmt;
+-#if defined(__alpha__) && defined(CONFIG_ARCH_SUPPORTS_AOUT)
++#ifdef __alpha__
+ 	/* handle /sbin/loader.. */
+ 	{
+ 	    struct exec * eh = (struct exec *) bprm->buf;
+diff --git a/include/linux/Kbuild b/include/linux/Kbuild
+index 93b9885..b6fbb25 100644
+--- a/include/linux/Kbuild
++++ b/include/linux/Kbuild
+@@ -166,6 +166,9 @@ unifdef-y += acct.h
+ unifdef-y += adb.h
+ unifdef-y += adfs_fs.h
+ unifdef-y += agpgart.h
++ifeq ($(wildcard include/asm-$(SRCARCH)/a.out.h),include/asm-$(SRCARCH)/a.out.h)
++unifdef-y += a.out.h
++endif
+ unifdef-y += apm_bios.h
+ unifdef-y += atalk.h
+ unifdef-y += atmdev.h
+diff --git a/include/linux/a.out.h b/include/linux/a.out.h
+index 208f4e8..e86dfca 100644
+--- a/include/linux/a.out.h
++++ b/include/linux/a.out.h
+@@ -1,8 +1,6 @@
+ #ifndef __A_OUT_GNU_H__
+ #define __A_OUT_GNU_H__
+ 
+-#ifdef CONFIG_ARCH_SUPPORTS_AOUT
+-
+ #define __GNU_EXEC_MACROS__
+ 
+ #ifndef __STRUCT_EXEC_OVERRIDE__
+@@ -277,10 +275,4 @@ struct relocation_info
+ #endif /* no N_RELOCATION_INFO_DECLARED.  */
+ 
+ #endif /*__ASSEMBLY__ */
+-#else /* CONFIG_ARCH_SUPPORTS_AOUT */
+-#ifndef __ASSEMBLY__
+-struct exec {
+-};
+-#endif
+-#endif /* CONFIG_ARCH_SUPPORTS_AOUT */
+ #endif /* __A_OUT_GNU_H__ */
+
+-- 
+dwmw2
+
