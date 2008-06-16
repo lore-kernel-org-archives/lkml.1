@@ -1,74 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbYFPCqK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbYFPCwN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756925AbYFPCqK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 22:46:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbYFPCp6
+	id S1756925AbYFPCwN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 22:52:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750869AbYFPCv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 22:45:58 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:64008 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751471AbYFPCp5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 22:45:57 -0400
-Date: Mon, 16 Jun 2008 03:45:05 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
-In-Reply-To: <200806160314.49489.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.55.0806160343220.11995@cliff.in.clinika.pl>
-References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806152031.01959.rjw@sisk.pl>
- <200806160314.49489.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 15 Jun 2008 22:51:56 -0400
+Received: from mail.vyatta.com ([216.93.170.194]:35023 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750851AbYFPCvz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Jun 2008 22:51:55 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -2.017
+Date: Sun, 15 Jun 2008 19:51:48 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: David Newall <davidn@davidnewall.com>
+Cc: OBATA Noboru <noboru.obata.ar@hitachi.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-net@vger.kernel.org
+Subject: Re: Feedback on TCP: Make TCP_RTO_MAX a variable
+Message-ID: <20080615195148.28c85c36@extreme>
+In-Reply-To: <4855823F.40208@davidnewall.com>
+References: <4855823F.40208@davidnewall.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jun 2008, Rafael J. Wysocki wrote:
+On Mon, 16 Jun 2008 06:27:35 +0930
+David Newall <davidn@davidnewall.com> wrote:
 
-> On Sunday, 15 of June 2008, Rafael J. Wysocki wrote:
-> > On Friday, 13 of June 2008, Stephen Rothwell wrote:
-> > > Hi all,
-> > > 
-> > > Changes since next-20080612:
-> > > 
-> > > New tree: kgdb
-> > > Dropped trees (temporary): ldp (it is unfetchable - probably something to
-> > > do with the new Staging tree)
-> > > Restored trees: block
-> > > 
-> > > The x86 tree gained a conflict with Linus' tree.
-> > > 
-> > > The acpi tree gained a conflict with the pci tree.
-> > > 
-> > > The mtd tree gained a trivial conflict with the avr32 tree.
-> > > 
-> > > The rr tree lost its conflict with the net-current tree.
-> > > 
-> > > The block tree gained several conflict with various other trees.  It also
-> > > required a build fix patch.
-> > > 
-> > > The firmware tree lost its build fix patch.
-> > > 
-> > > The patches for known build problems are no longer needed.
-> > 
-> > 20080613 doesn't boot on my HP nx6325.  Bisecting ...
+> Last year, Obata Noboru sent a patch to permit adjustment of
+> TCP_RTO_MAX, which I have found useful.  Refer to
+> http://marc.info/?l=linux-netdev&m=118422471428855 for details.
 > 
-> Okay, with the following commit reverted, the kernel boots normally on this
-> box:
-> 
-> commit 7e3530cd98a0c6ab38f5898e855a5beffab26561
-> Author: Maciej W. Rozycki <macro@linux-mips.org>
-> Date:   Tue May 27 21:19:51 2008 +0100
-> 
->     x86: I/O APIC: timer through 8259A second-chance
-> 
->     Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> A customer reported that their internet-connected POS terminals were
+> regularly "freezing" for extended periods, sometimes for as long as a
+> few minutes.  My analysis, such as it was, suggested that those
+> occasions were caused by floods of packets directed towards the internet
+> link at one end or the other (i.e. POS terminal or central server),
+> leading to severe packet loss and maximum packet retransmit times during
+> which no session data could be transmitted.  I believe those floods were
+> caused by anonymous third parties scanning the internet, and attempting
+> to break through my client's routers.  I also believe that to be an
+> unavoidable social quality of the internet; I have to live with it.
 
- Can I have .config used and a full bootstrap log from that system with
-the patch still applied?
+Why are you letting them through. Use proper firewalling.
 
-  Maciej
+> Having a "cash register" randomly freeze for minutes at a time is not
+> acceptable, and neither does it seem necessary.  Using Obata Noboru's
+> patch, I set TCP_RTO_MAX to 5 seconds at both ends.  The system has been
+> running thus for five weeks, and I have not been called by my customer
+> since.  While this change obviously did nothing to solve the underlying
+> problem of temporary link congestion (it has no solution), it did remove
+> a frequent, multi-minute pause.  Perhaps surprisingly, I have not heard
+> of sessions being dropped, which could be expected to occur as a
+> consequence of the substantially reduced retransmit times.  This might
+> be luck, and sessions aren't dropping; or it might be insufficiently
+> important (annoying) for my client to report; the application would
+> restart quickly.  Either way, apparently my client no longer has a problem.
+> 
+
+A real VPN with IPSEC would have stopped the problem.
+I wouldn't put a mission critical system exposed directly to the Internet.
+
+> I acknowledge that this patch must exacerbate an already hopeless
+> situation: A link is congested and I am causing packets to be sent at
+> five second intervals instead of 10, 20, 40, 80 or 120.  I am
+> unconcerned by this because the number of additional packets is
+> miniscule when compared to the number of packets that caused the problem
+> in the initial instance.  I do not know how 120 seconds was chosen for
+> the RTO maximum but I observe that network bandwidth has increased by
+> orders of magnitude since it was, and feel that a corresponding decrease
+> in RTO is fair.  I put it to administrators everywhere to consider this
+> when faced with similar problems.
+> 
+> It's a pity that Obata Noboru's patch was rejected.
+
+Linux already doesn't follow enough RFC's. But it is free software so
+you can do what you want. That is the beauty of it.
