@@ -1,86 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760774AbYFPJzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbYFPKDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760774AbYFPJzc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 05:55:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758139AbYFPJzW
+	id S1757482AbYFPKDi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 06:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbYFPKD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 05:55:22 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58859 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756356AbYFPJzV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 05:55:21 -0400
-Subject: Re: [PATCH] Delay accounting, fix incorrect delay time when
-	constantly waiting on runqueue
-From: Peter Zijlstra <peterz@infradead.org>
-To: bharathravi1@gmail.com
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, dhaval@linux.vnet.ibm.com,
-       vatsa@in.ibm.com, balbir@in.ibm.com, Madhava K R <madhavakr@gmail.com>,
-       Ankita Garg <ankita@in.ibm.com>
-In-Reply-To: <1213609261-9554-1-git-send-email-bharathravi1@gmail.com>
-References: <1213609261-9554-1-git-send-email-bharathravi1@gmail.com>
-Content-Type: text/plain
-Date: Mon, 16 Jun 2008 11:55:09 +0200
-Message-Id: <1213610109.16944.95.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Jun 2008 06:03:28 -0400
+Received: from saeurebad.de ([85.214.36.134]:52719 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750717AbYFPKD2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 06:03:28 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [Bug 10741] bug in `tty: BKL pushdown'?
+References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
+	<Jn7irxIunJK.A.B-E.dKDVIB@albercik>
+Date: Mon, 16 Jun 2008 12:03:21 +0200
+In-Reply-To: <Jn7irxIunJK.A.B-E.dKDVIB@albercik> (Rafael J. Wysocki's message
+	of "Sat, 14 Jun 2008 22:12:02 +0200 (CEST)")
+Message-ID: <873andbst2.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-06-16 at 15:11 +0530, bharathravi1@gmail.com wrote:
-> From: Bharath Ravi <bharathravi1@gmail.com>
-> 
-> This patch corrects the incorrect value of per process run-queue wait time
-> reported by delay statistics. The anomaly was due to the following reason.
-> When a process leaves the CPU and immediately starts waiting for CPU on
-> the runqueue (which means it remains in the TASK_RUNNABLE state), the time
-> of re-entry into the run-queue is never recorded. Due to this, the waiting time
-> on the runqueue from this point of re-entry upto the next time it hits the CPU
-> is not accounted for. This is solved by recording the time of re-entry of a
-> process leaving the CPU in the sched_info_depart() function IF the process will
-> go back to waiting on the run-queue. This IF condition is verified by checking
-> whether the process is still in the TASK_RUNNABLE state.
-> 
-> The patch was tested on 2.6.26-rc6 using two simple CPU hog programs. The
-> values noted prior to the fix did not account for the time spent on the
-> runqueue waiting. After the fix, the correct values were reported back
-> to user space.
+Hi,
 
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-Have you considered: http://lkml.org/lkml/2008/6/5/10
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10741
+> Subject		: bug in `tty: BKL pushdown'?
+> Submitter	: Johannes Weiner <hannes@saeurebad.de>
+> Date		: 2008-05-18 2:16 (28 days old)
+> References	: http://marc.info/?l=linux-kernel&m=121107706506181&w=4
+> Handled-By	: Alan Cox <alan@lxorguk.ukuu.org.uk>
 
-I'm sad to say it is still pending in my todo list :-( - sorry Ankita.
+The bug still exists, however, a bisect on another machine with the same
+userland leads to different commit
+(47f86834bbd4193139d61d659bebf9ab9d691e37 "redo locking of tty->pgrp"),
+so it is not all that clear and stable.
 
-> Signed-off-by: Bharath Ravi <bharathravi1@gmail.com>
-> Signed-off-by: Madhava K R  <madhavakr@gmail.com>
-> ---
->  kernel/sched_stats.h |    6 ++++++
->  1 files changed, 6 insertions(+), 0 deletions(-)
-> 
-> diff --git a/kernel/sched_stats.h b/kernel/sched_stats.h
-> index a38878e..80179ef 100644
-> --- a/kernel/sched_stats.h
-> +++ b/kernel/sched_stats.h
-> @@ -198,6 +198,9 @@ static inline void sched_info_queued(struct task_struct *t)
->  /*
->   * Called when a process ceases being the active-running process, either
->   * voluntarily or involuntarily.  Now we can calculate how long we ran.
-> + * Also, if the process is still in the TASK_RUNNING state, call
-> + * sched_info_queued() to mark that it has now again started waiting on
-> + * the runqueue.
->   */
->  static inline void sched_info_depart(struct task_struct *t)
->  {
-> @@ -206,6 +209,9 @@ static inline void sched_info_depart(struct task_struct *t)
->  
->  	t->sched_info.cpu_time += delta;
->  	rq_sched_info_depart(task_rq(t), delta);
-> +
-> +	if (t->state == TASK_RUNNING)
-> +		sched_info_queued(t);
->  }
->  
->  /*
+I will investigate further but the entry should probably stay for now.
 
+	Hannes
