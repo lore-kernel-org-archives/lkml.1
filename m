@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756102AbYFPMbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbYFPMc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756102AbYFPMbZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 08:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbYFPMbR
+	id S1756218AbYFPMc6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 08:32:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbYFPMcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 08:31:17 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:60317 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750699AbYFPMbQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 08:31:16 -0400
-Message-ID: <48565CBA.2040309@linux.vnet.ibm.com>
-Date: Mon, 16 Jun 2008 17:59:46 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 16 Jun 2008 08:32:51 -0400
+Received: from sorrow.cyrius.com ([65.19.161.204]:3849 "EHLO sorrow.cyrius.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750911AbYFPMcu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 08:32:50 -0400
+Date: Mon, 16 Jun 2008 14:32:38 +0200
+From: Martin Michlmayr <tbm@cyrius.com>
+To: linux-kernel@vger.kernel.org
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, keithp@keithp.com
+Subject: kernel panic when plugging in USB device and closing lid
+Message-ID: <20080616123238.GA2852@deprecation.cyrius.com>
 MIME-Version: 1.0
-To: kamezawa.hiroyu@jp.fujitsu.com
-CC: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>, menage@google.com,
-       xemul@openvz.org, yamamoto@valinux.co.jp, nishimura@mxp.nes.nec.co.jp,
-       lizf@cn.fujitsu.com
-Subject: Re: [PATCH 1/6] res_counter:  handle limit change
-References: <48562AFF.9050804@linux.vnet.ibm.com> <20080613182714.265fe6d2.kamezawa.hiroyu@jp.fujitsu.com> <20080613182924.c73fe9eb.kamezawa.hiroyu@jp.fujitsu.com> <400765.1213607050433.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <400765.1213607050433.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kamezawa.hiroyu@jp.fujitsu.com wrote:
-> ----- Original Message -----
->> KAMEZAWA Hiroyuki wrote:
->>> Add a support to shrink_usage_at_limit_change feature to res_counter.
->>> memcg will use this to drop pages.
->>>
->>> Change log: xxx -> v4 (new file.)
->>>  - cut out the limit-change part from hierarchy patch set.
->>>  - add "retry_count" arguments to shrink_usage(). This allows that we don't
->>>    have to set the default retry loop count.
->>>  - res_counter_check_under_val() is added to support subsystem.
->>>  - res_counter_init() is res_counter_init_ops(cnt, NULL)
->>>
->>> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->>>
->> Does shrink_usage() really belong to res_counters? Could a task limiter, a
->> CPU/IO bandwidth controller use this callback? Resource Counters were designe
-> d
->> to be generic and work across controllers. Isn't the memory controller a bett
-> er
->> place for such ops.
->>
-> Definitely No. I think counters which cannot be shrink should return -EBUSY
-> by shrink_usage() when it cannot do it. 
+My HP Compaq 2510p laptop regularly locks up after I move away from my
+desk and then return, plug in my USB keyboard and close the lid.  I've
+now found an easy way to reproduce this:
 
-Wouldn't that be all counters except for the memory controller RSS counter? I
-can't see anyone besides the memory controller supporting shrink_usage().
+ - Boot in single user mode
+ - Plug in a USB device (e.g. keyboard or usb stick)
+ - Close the lid
+ - Open the lid and you see a kernel panic like this (written down by hand):
+
+BUG: unable to handle kernel <1>BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
+IP: [<ffffffff8024949f>] ktime_get_ts:0x17/0x48
+PGD 7cceb067 PUD 7cd19067 PMD 0
+Oops: 0000 [1] SMP
+CPU 1
+Module linked in: ...
+... lots of register info ...
+Process swapper (pid: 0, threadinfo fffff81007f3bc000, task ffff81007f3b40c0)
+
+RIP [<ffffffff8024949f>] ktime_get_ts+0x17/x048
+ RSP <ffff81007e88fb90>
+CR2: 0000000000000000
+---[ end trace dd6b99ae04431d83 ]--
+Kernel panic -- not syncing: Attempted to kill the idle task!
+
+This is with 2.6.25.  2.6.26-rc5 looks slightly different.  Screen shots:
+http://www.cyrius.com/tmp/2.6.25.jpg
+http://www.cyrius.com/tmp/2.6.26-rc5.jpg
+
+I briefly talked to Matthew Garrett on IRC who said this "looks like
+state corruption".  He asked me to set /proc/acpi/video/blah/DOS to 7
+and see whether I could still reproduce the problem.  After setting
+this value, I no longer see the kernel panic.  Matthew: "Right.  The
+lid-close SMM seems to blow things up some of the time."
+
+Does anyone have any idea what's going on and how to fix it?
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Martin Michlmayr
+http://www.cyrius.com/
