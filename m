@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbYFPTha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbYFPTp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756661AbYFPTha (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 15:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbYFPThU
+	id S1755325AbYFPTp0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 15:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752968AbYFPTpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 15:37:20 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:36642 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751556AbYFPThT (ORCPT
+	Mon, 16 Jun 2008 15:45:11 -0400
+Received: from casper.infradead.org ([85.118.1.10]:39749 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752051AbYFPTpJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 15:37:19 -0400
-Date: Mon, 16 Jun 2008 12:36:14 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Louis Rilling <Louis.Rilling@kerlabs.com>
-Cc: ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] configfs: module reference counting rules
-Message-ID: <20080616193614.GB6441@mail.oracle.com>
-Mail-Followup-To: Louis Rilling <Louis.Rilling@kerlabs.com>,
-	ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org
-References: <20080612235410.GC4012@localdomain> <20080613033309.GE20581@mail.oracle.com> <20080613095159.GH30804@localhost> <20080613202605.GD20576@mail.oracle.com> <20080613222744.GB4153@localdomain> <20080614084701.GA9657@mail.oracle.com> <20080616123912.GR30804@localhost> <20080616180643.GC9657@mail.oracle.com> <20080616181428.GW30804@localhost>
+	Mon, 16 Jun 2008 15:45:09 -0400
+Date: Mon, 16 Jun 2008 12:40:10 -0700
+From: Greg KH <greg@kroah.com>
+To: David Miller <davem@davemloft.net>
+Cc: hidave.darkstar@gmail.com, arjan@linux.intel.com, tytso@mit.edu,
+       zwane@arm.linux.org.uk, torvalds@linux-foundation.org,
+       marcel@holtmann.org, gregkh@suse.de, jmforbes@linuxtx.org,
+       linux-kernel@vger.kernel.org, reviews@ml.cw.f00f.org, cavokz@gmail.com,
+       chrisw@sous-sol.org, rdunlap@xenotime.net, w@1wt.eu,
+       mkrufky@linuxtv.org, cebbert@redhat.com, davej@redhat.com,
+       akpm@linux-foundation.org, chuckw@quantumlinux.com, stable@kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [patch 16/47] bluetooth: fix locking bug in the
+	rfcomm socket cleanup handling
+Message-ID: <20080616194010.GB3804@kroah.com>
+References: <20080614000840.GA24659@suse.de> <20080614001058.GP24698@suse.de> <a8e1da0806131950i4eb0ea48q5cc34ea07cfd523a@mail.gmail.com> <20080613.204628.137971521.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080616181428.GW30804@localhost>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+In-Reply-To: <20080613.204628.137971521.davem@davemloft.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 16, 2008 at 08:14:28PM +0200, Louis Rilling wrote:
-> With a preemptible kernel, after module_put(self) the few assembly instructions
-> cleaning up the stack before returning to the caller can be called after the
-> memory allocated for the module has been freed. Which will make the kernel
-> crash.
+On Fri, Jun 13, 2008 at 08:46:28PM -0700, David Miller wrote:
+> From: "Dave Young" <hidave.darkstar@gmail.com>
+> Date: Sat, 14 Jun 2008 10:50:51 +0800
+> 
+> > On Sat, Jun 14, 2008 at 8:10 AM, Greg KH <gregkh@suse.de> wrote:
+> > > -stable review patch.  If anyone has any objections, please let us know.
+> > >
+> > > ------------------
+> > > From: Arjan van de Ven <arjan@linux.intel.com>
+> > >
+> > > [ Upstream commit: 7dccf1f4e1696c79bff064c3770867cc53cbc71c ]
+> > 
+> > Hi greg
+> > Please including following commit as well because it will cause another bug:
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=537d59af73d894750cff14f90fe2b6d77fbab15b
+> 
+> Acked-by: David S. Miller <davem@davemloft.net>
 
-	Ahh, but if you are running a preemptible kernel, you've already
-made your first mistake :-)
+Thanks, I'll go add it to the tree for this release.
 
-Joel
-
--- 
-
-"Vote early and vote often." 
-        - Al Capone
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+greg k-h
