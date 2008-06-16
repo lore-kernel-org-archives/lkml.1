@@ -1,47 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758983AbYFPWwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758592AbYFPXAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758983AbYFPWwg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 18:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756032AbYFPWwY
+	id S1758592AbYFPXAc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 19:00:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbYFPXAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 18:52:24 -0400
-Received: from gw.goop.org ([64.81.55.164]:49480 "EHLO mail.goop.org"
+	Mon, 16 Jun 2008 19:00:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58673 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757575AbYFPWwY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 18:52:24 -0400
-Message-ID: <4856EE79.1000205@goop.org>
-Date: Mon, 16 Jun 2008 15:51:37 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: the arch/x86 maintainers <x86@kernel.org>,
-       Stable Kernel <stable@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [stable] [PATCH 2/2] xen: don't drop NX bit
-References: <4856E2D4.3020402@goop.org> <20080616223508.GA1165@kroah.com>
-In-Reply-To: <20080616223508.GA1165@kroah.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751929AbYFPXAX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 19:00:23 -0400
+From: Glauber Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: tglx@linutronix.de, mingo@elte.hu
+Subject: [PATCH] typo CONFIX -> CONFIG
+Date: Mon, 16 Jun 2008 19:59:08 -0300
+Message-Id: <1213657148-5263-1-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> While it's great that you tell the stable people about this, but is it
-> realistic?  Is anyone using Xen as contained in the mainline kernel
-> these days?
->   
+---
+ arch/x86/kernel/nmi.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Yes, it's what Redhat is shipping in Fedora 9.
+diff --git a/arch/x86/kernel/nmi.c b/arch/x86/kernel/nmi.c
+index 07cf17f..3775463 100644
+--- a/arch/x86/kernel/nmi.c
++++ b/arch/x86/kernel/nmi.c
+@@ -69,7 +69,7 @@ static inline unsigned int get_nmi_count(int cpu)
+ 
+ static inline int mce_in_progress(void)
+ {
+-#if defined(CONFIX_X86_64) && defined(CONFIG_X86_MCE)
++#if defined(CONFIG_X86_64) && defined(CONFIG_X86_MCE)
+ 	return atomic_read(&mce_entry) > 0;
+ #endif
+ 	return 0;
+-- 
+1.5.4.5
 
-> If a distro were to be based on 2.6.25 and we take this patch, they will
-> just revert it back out due to their very large Xen patchset they apply
-> on top to get a "working" Xen version, right?
->   
-
-No.  RH is using upstream Xen now.  I don't know what the other distros 
-are doing, but Novell is considering it, at least.
-
-    J
