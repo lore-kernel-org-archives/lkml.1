@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756429AbYFPNXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756643AbYFPNXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756429AbYFPNXN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 09:23:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbYFPNW6
+	id S1756643AbYFPNXf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 09:23:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbYFPNXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 09:22:58 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50148 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756149AbYFPNW5 (ORCPT
+	Mon, 16 Jun 2008 09:23:24 -0400
+Received: from [194.117.236.238] ([194.117.236.238]:43146 "EHLO
+	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1756495AbYFPNXX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 09:22:57 -0400
-To: torvalds@linux-foundation.org
-Cc: jacmet@sunsite.dk, dhowells@redhat.com, k.shutemov@gmail.com,
-       linux-kernel@vger.kernel.org
-From: David Woodhouse <dwmw2@infradead.org>
-Date: Mon, 16 Jun 2008 12:18:13 +0100
-In-Reply-To: <87abhl7eqo.fsf@macbook.be.48ers.dk>
-Subject: [PATCH 2/4] Remove last traces of a.out support from ELF loader.
-Message-Id: <E1K8EfR-0002H8-R8@pmac.infradead.org>
-X-Bad-Reply: In-Reply-To but no 'Re:' in Subject.
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 16 Jun 2008 09:23:23 -0400
+Date: Mon, 16 Jun 2008 16:22:12 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: Tom Zanussi <tzanussi@gmail.com>, penberg@cs.helsinki.fi,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       righi.andrea@gmail.com
+Subject: Re: [PATCH 2/3] relay: Fix race condition which occurs when reading
+ across CPUs.
+Message-ID: <20080616162212.27a8c119@linux360.ro>
+In-Reply-To: <20080616122249.GB18561@Krystal>
+References: <20080613040958.4f52ee29@linux360.ro>
+	<1213417601.8237.37.camel@charm-linux>
+	<20080614181103.17617db1@linux360.ro>
+	<20080616122249.GB18561@Krystal>
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In commit d20894a23708c2af75966534f8e4dedb46d48db2, Andi removed support
-for a.out interpreters from the ELF loader, which was only ever needed
-for the transition from a.out to ELF.
+On Mon, 16 Jun 2008 08:22:49 -0400
+Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
 
-This removes the last traces of that support, in particular the
-inclusion of <linux/a.out.h>.
+> Hi Eduard,
 
-Signed-off-by: David Woodhouse <dwmw2@infradead.org>
-Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
----
- fs/binfmt_elf.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+Hi.
 
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index 0fa95b1..d48ff5f 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -16,7 +16,6 @@
- #include <linux/time.h>
- #include <linux/mm.h>
- #include <linux/mman.h>
--#include <linux/a.out.h>
- #include <linux/errno.h>
- #include <linux/signal.h>
- #include <linux/binfmts.h>
-@@ -548,7 +547,6 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
- 	struct {
- 		struct elfhdr elf_ex;
- 		struct elfhdr interp_elf_ex;
--  		struct exec interp_ex;
- 	} *loc;
+> Two objections against this. First, taking a spinlock _is_ slow in SMP
+> because it involves synchronized atomic operations.
+
+In any case, if we use relay in a hot path, we are doing debugging, so
+a couple of atomic operations won't be a big problem. Along with
+setting affinity, this shouldn't be a problem.
+
+> Second, Adding a spinlock to the relay write side is bad since it
+> opens the door to deadly embrace between a trap handler and normal
+> kernel code both running tracing code.
+
+We disable IRQs. However, interrupts which cannot be disabled (AFAIK
+this includes SMM, traps, probably NMIs (but they can be disabled at
+least on x86)) either don't use kernel code (SMM) or run through safe
+paths. But this is the case with all spinlocks used in interrupt context.
+
+The only other option would be to try the lock and let relay_write fail
+sometimes.
+
+> Unless really-really needed, which does not seem to be the case, I
+> would strongly recommend not merging this patch.
+
+My question was if affinity setting offers any guarantees. If it does,
+then maybe we could do without this patch.
+
+BTW, I'm not saying affinity setting doesn't help. It helps
+performance-wise and I'll use it, but it should also offer correctness.
  
- 	loc = kmalloc(sizeof(*loc), GFP_KERNEL);
-@@ -680,7 +678,6 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
- 			}
- 
- 			/* Get the exec headers */
--			loc->interp_ex = *((struct exec *)bprm->buf);
- 			loc->interp_elf_ex = *((struct elfhdr *)bprm->buf);
- 			break;
- 		}
--- 
-1.5.5.1
+> Mathieu
 
+	Cheers,
+	Eduard
