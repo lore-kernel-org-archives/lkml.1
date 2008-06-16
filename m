@@ -1,80 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756991AbYFPEPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752763AbYFPEYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756991AbYFPEPc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 00:15:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974AbYFPEPU
+	id S1752763AbYFPEYz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 00:24:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbYFPEYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 00:15:20 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:34864 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750854AbYFPEPR (ORCPT
+	Mon, 16 Jun 2008 00:24:44 -0400
+Received: from ik-out-1112.google.com ([66.249.90.176]:40834 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750876AbYFPEYf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 00:15:17 -0400
+	Mon, 16 Jun 2008 00:24:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Zj0yfWi2+c8fk/GMHxxIRlmXDpUM7m7+qbAMWdB3Jos1tVPHzG27/RARw/JekxesPa
-         1TSlBnoTGJ8GVosD4kmGoh58StFSBq/SBh/WfB4agEW3fNbYifuMYm/+B5T27BjEF/Fd
-         ROPHLUzuJ2SjAVLvWOJ4K+UwIn853Ko0u6LMc=
-Message-ID: <86802c440806152115r3bbc8a48pb6912e5dd7a6e5a1@mail.gmail.com>
-Date: Sun, 15 Jun 2008 21:15:17 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: [Bug 10872] x86_64 boot hang when CONFIG_NUMA=n
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080615181101.bcbab2ef.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=vPqqoIYvFZqsCHOe+EV1bH/v6Zc0HQ2DeK+ViWLCicyndG5oDPGJdM/EM1NO03Xa/W
+         qdA7lCksgwM+zGjHbMB02czEvx81gVM7Sd31wgpByk/7+mBVF8yeACUXL/N8dwR9Igf/
+         /lTZnGv0fBkNBlVPe8owkFMBwQPFjwydUvM5Q=
+Date: Mon, 16 Jun 2008 12:25:28 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org, mingo@elte.hu, hpa@zytor.com
+Subject: [PATCH] kernel parameter vmalloc size fix
+Message-ID: <20080616042528.GA3003@darkstar.te-china.tietoenator.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
-	 <Jn7irxIunJK.A.8UD.1IDVIB@albercik>
-	 <20080615093543.1b18b9eb.randy.dunlap@oracle.com>
-	 <86802c440806151218h7b8b6c80q4ce0f6505244e588@mail.gmail.com>
-	 <20080615181101.bcbab2ef.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 15, 2008 at 6:11 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> On Sun, 15 Jun 2008 12:18:42 -0700 Yinghai Lu wrote:
->
->> On Sun, Jun 15, 2008 at 9:35 AM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
->> > On Sat, 14 Jun 2008 22:12:04 +0200 (CEST) Rafael J. Wysocki wrote:
->> >
->> >> This message has been generated automatically as a part of a report
->> >> of recent regressions.
->> >>
->> >> The following bug entry is on the current list of known regressions
->> >> from 2.6.25.  Please verify if it still should be listed.
->> >>
->> >>
->> >> Bug-Entry     : http://bugzilla.kernel.org/show_bug.cgi?id=10872
->> >> Subject               : x86_64 boot hang when CONFIG_NUMA=n
->> >> Submitter     : Randy Dunlap <randy.dunlap@oracle.com>
->> >> Date          : 2008-06-05 21:50 (10 days old)
->> >> References    : http://marc.info/?l=linux-kernel&m=121270308607116&w=4
->> >>                 http://lkml.org/lkml/2008/6/11/355
->> >> Handled-By    : Yinghai Lu <yhlu.kernel@gmail.com>
->> >
->> > Yes, still happens for me on 2.6.26-rc6-git2.
->> >
->>
->> please send out whole boot log with numa on and numa off
->> and boot with debug
->>
->> please apply attached debug patch too.
->
-> OK, did all of that.
-> I should probably note that in both cases, the kernel is loaded/booted by using kexec.
-> Both boot logs are captured generated via netconsole.
->
-> The failing boot log is netcon-4409.log.  The working boot log (CONFIG_NUMA=y) is
-> netcon-4410.log.  Enabling CONFIG_NUMA makes the following changes:
+booting kernel with vmalloc=[any size<=16m] will oops.
 
-how about the numa=off on the kernel with CONFIG_NUMA=y?
+It's due to the vm area hole.
 
-YH
+In include/asm-x86/pgtable_32.h:
+#define VMALLOC_OFFSET	(8 * 1024 * 1024)
+#define VMALLOC_START	(((unsigned long)high_memory + 2 * VMALLOC_OFFSET - 1) \
+			 & ~(VMALLOC_OFFSET - 1))
+
+BUG_ON in arch/x86/mm/init_32.c will be triggered:
+BUG_ON((unsigned long)high_memory		> VMALLOC_START);
+
+Fixed by return -EINVAL for invalid parameter
+
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+
+Documentation/kernel-parameters.txt |    3 ++-
+arch/x86/kernel/setup_32.c          |   11 +++++++++--
+2 files changed, 11 insertions(+), 3 deletions(-)
+
+diff -upr linux/Documentation/kernel-parameters.txt linux.new/Documentation/kernel-parameters.txt
+--- linux/Documentation/kernel-parameters.txt	2008-06-16 11:30:29.000000000 +0800
++++ linux.new/Documentation/kernel-parameters.txt	2008-06-16 11:43:01.000000000 +0800
+@@ -2139,7 +2139,8 @@ and is between 256 and 4096 characters. 
+ 			size of <nn>. This can be used to increase the
+ 			minimum size (128MB on x86). It can also be used to
+ 			decrease the size and leave more room for directly
+-			mapped kernel RAM.
++			mapped kernel RAM. Note that the size must be bigger
++			than 16M now on i386 due to the memory hole.
+ 
+ 	vmhalt=		[KNL,S390] Perform z/VM CP command after system halt.
+ 			Format: <command>
+diff -upr linux/arch/x86/kernel/setup_32.c linux.new/arch/x86/kernel/setup_32.c
+--- linux/arch/x86/kernel/setup_32.c	2008-06-16 11:28:51.000000000 +0800
++++ linux.new/arch/x86/kernel/setup_32.c	2008-06-16 11:43:35.000000000 +0800
+@@ -305,15 +305,22 @@ early_param("highmem", parse_highmem);
+ 
+ /*
+  * vmalloc=size forces the vmalloc area to be exactly 'size'
+- * bytes. This can be used to increase (or decrease) the
++ * bytes. Now size must be bigger than 16m due to the memory hole.
++ * This can be used to increase (or decrease) the
+  * vmalloc area - the default is 128m.
+  */
+ static int __init parse_vmalloc(char *arg)
+ {
++	unsigned int v;
++
+ 	if (!arg)
+ 		return -EINVAL;
+ 
+-	__VMALLOC_RESERVE = memparse(arg, &arg);
++	v = memparse(arg, &arg);
++	if (v <= 2 * VMALLOC_OFFSET)
++		return -EINVAL;
++	__VMALLOC_RESERVE = v;
++
+ 	return 0;
+ }
+ early_param("vmalloc", parse_vmalloc);
