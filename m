@@ -1,62 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755021AbYFPONS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbYFPOSn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755021AbYFPONS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 10:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753776AbYFPONI
+	id S1755251AbYFPOSn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 10:18:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbYFPOSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 10:13:08 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:63051 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752809AbYFPONH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 10:13:07 -0400
-Message-ID: <fa686aa40806160713q51f3d132w2fef2a2473faad1@mail.gmail.com>
-Date: Mon, 16 Jun 2008 08:13:06 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>
-Subject: Re: [PATCH] [RFC v3] OF: OpenFirmware bindings for the mmc_spi driver
-Cc: "Anton Vorontsov" <avorontsov@ru.mvista.com>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       "Jochen Friedrich" <jochen@scram.de>,
-       "Segher Boessenkool" <segher@kernel.crashing.org>,
-       "Gary Jennejohn" <garyj@denx.de>,
-       "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080614175723.209e93dc@mjolnir.drzeus.cx>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Jun 2008 10:18:31 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:38096 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752693AbYFPOSa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 10:18:30 -0400
+Date: Mon, 16 Jun 2008 18:20:16 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/3] resend, ptrace && SIGKILL fixes
+Message-ID: <20080616142016.GA13339@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080605161624.GA517@polina.dev.rtsoft.ru>
-	 <20080614175723.209e93dc@mjolnir.drzeus.cx>
-X-Google-Sender-Auth: 3dc830d500fc4389
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 14, 2008 at 9:57 AM, Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
-> On Thu, 5 Jun 2008 20:16:24 +0400
-> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+On 06/10, Oleg Nesterov wrote:
 >
->> Here is v3. I'm out of ideas if you won't like it. :-)
->>
->> v3:
->> - Now these bindings are using bus notifiers chain, thus we adhere to the
->>   spi bus.
->>
->
-> Now this was nice and clean. I take it Grant doesn't like this version
-> though. What's the downside of it?
+> These 2 patches don't depend on each other. Each change is user visible,
+> and I am not really sure it can't confuse debuggers/etc. The explicit
+> ack/nack from maintainers is wanted.
 
-No, I don't.  I like the v2 approach better as long as it is been
-changed to address your comments.  This approach I think is needlessly
-complex and non-obvious (relying on the notification chain instead of
-being part of the probe call).  It will break in non-obvious ways if
-the notifier module is loaded after the mmc_spi driver.
+I'm mostly worried about do_exit()->ptrace_notify(), with these patches
+we never notify the tracer if the tracee was SIGKILL'ed. The current
+behaviour depends on arch_ptrace_stop_needed(), this is not good either.
 
-Cheers,
-g.
+Anyway, I think these patches are fixes. Suppose we send SIGKILL to the
+traced task which does ptrace_notify(). If the signal is delivered before
+ptrace_notify() takes ->siglock, the tracee sleeps in TASK_TRACED state
+and becomes "unkillable". If ptrace_notify() wins, we kill the tracee.
+This can't be good.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+The 3rd patch is new.
+
+Oleg.
+
