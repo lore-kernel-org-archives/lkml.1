@@ -1,83 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752938AbYFPOzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181AbYFPPGM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752938AbYFPOzg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 10:55:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbYFPOz2
+	id S1754181AbYFPPGM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 11:06:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbYFPPFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 10:55:28 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:44067 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752749AbYFPOz1 (ORCPT
+	Mon, 16 Jun 2008 11:05:54 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:40560 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751831AbYFPPFx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 10:55:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=kWJdFJ3yUg6xgnv5mjEEAJ0ZnKGj6SySZPEzw2v5tnHKJEFh9W7vumG7rSSWAjh3OX
-         9uK726qQiJnc3MlB/A0Pv8S+hHhaWGFWmmY5dqosMpYOC8g2GfRi8swFAO70gG++BLHl
-         5hcw2QhURiD3K8omwodvrgwYMsX8+TJzD85fo=
-Message-ID: <85e7c2fc0806160755h10d90d12l1519618de55a644d@mail.gmail.com>
-Date: Mon, 16 Jun 2008 22:55:26 +0800
-From: "Bob Zhang" <zhanglinbao@gmail.com>
-To: "Jared Hulbert" <jaredeh@gmail.com>
-Subject: Re: Does anyone run AXFS in 2.4 version of kernel ? I am trying my best to apply AXFS patches into 2.4.18
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <6934efce0805131801s633a1692ha8914a76173c2c80@mail.gmail.com>
+	Mon, 16 Jun 2008 11:05:53 -0400
+Date: Mon, 16 Jun 2008 17:05:50 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: linux-scsi@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [regression] CD-DA delay needed after insertion
+In-Reply-To: <1213540781.3517.18.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0806161659440.30122@vixen.sonytel.be>
+References: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
+ <1213540781.3517.18.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <85e7c2fc0805090919v613fb823m8dd979b8cd959889@mail.gmail.com>
-	 <6934efce0805120923v636d2dbjb062d33fb861f5a2@mail.gmail.com>
-	 <85e7c2fc0805131746k5284d66dj7cfac5f9138186e2@mail.gmail.com>
-	 <6934efce0805131801s633a1692ha8914a76173c2c80@mail.gmail.com>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-882354669-1213628750=:30122"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jared Hulbert ,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-What a pity that I found few document execept axfs code.
-Although we can read the source code to get all things that we want to
-know as a programmer, a good document is helpfull for understanding
-the source code.
+---584349381-882354669-1213628750=:30122
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-I am debugging the AXFS code and researching its implement , I think a
-good document is very precious ,but there is no such .
+	Hi James,
 
-Could you mind please introuducing your architecture design ? Detailed
-info will be welcomed .
+On Sun, 15 Jun 2008, James Bottomley wrote:
+> On Fri, 2008-06-13 at 13:57 +0200, Geert Uytterhoeven wrote:
+> > We've found another regression in 2.6.25 w.r.t. CD media change on PS3.
+> > 
+> > It can easily be reproduced by:
+> > 
+> >   1. Inserting an audio CD
+> >   2. Running the following command as soon as the blue CD/DVD/BD drive LED
+> >      stops blinking and is lit continuously:
+> >       
+> > 	 cdparanoia -Z -q 1-1[:1] /dev/null || echo failed
+> > 
+> > On 2.6.25 (and current mainline), you have to wait ca. 10 seconds after
+> > insertion, or it will fail.
+> > On 2.6.24 and older, it just works immediately.
+> > 
+> > It does not matter whether
+> > http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fjejb%2Fscsi-rc-fixes-2.6.git;a=commitdiff_plain;h=d1daeabf0da5bfa1943272ce508e2ba785730bf0
+> > is applied or not.
+> > 
+> > We haven't bisected it yet.
+> 
+> There aren't that many commits affecting sr between 2.6.24 and 2.6.25,
+> so I'd bet on the previous culprits.
+> 
+> This time, the taxonomy looks like NOT_READY isn't being waited for
+> properly.  I'd still tend to blame
+> 210ba1d1724f5c4ed87a2ab1a21ca861a915f734 it's just that this time I
 
-For example , ext2 file system , we will get a ext2 file system
-specification, such as super block , and how to organize the
-structures of ext2 , Would you mind please introducing these related
-info ?
+Reverting that commit doesn't fix the problem.
 
-By the way , have you managed the AXFS specification ? if yes ,many
-programmer will join the AXFS group .
+> suspect this to be the problem line:
+> 
+> 	if (sshdr.sense_key == NOT_READY && sshdr.asc == 0x04)
+> 		return CDS_DISC_OK;
+> 
+> Previously the code would have returned CDS_NO_DISC for the not ready
+> case.  The CD would have tried to close the door but (and this is the
+> key) it would have waited for the door to close before trying again.
 
-Best Regards,
-Bob
+I tried the patch below.
 
+Now the kernel spits out messages every 2 seconds:
 
-2008/5/14 Jared Hulbert <jaredeh@gmail.com>:
->> thanks for your work . we look forward your paches for 2.4.21 or
->>  2.4.18 or other 2.4.x . thanks again .
->>  In the meantime , I am compiling axfs patches in 2.4.18 .My policy is
->>  that I basicly don't changed the AXFS code , and only add some
->>  functions existed in 2.6.x into 2.4 kernel ,if necessary , I will
->>  modify it . Thus , I think such working is not rather difficult ,
->>  anyway , I am
->>  analysing the implement of AXFS code , if necessary , I will modify
->>  some functions of axfs.
->>
->>   Till now , AXFS_super.c has been almost ok . Next ,I will compile
->>  other axfs code and check some errors and warnning , and run the
->>  kernel in the skyeye which supported smdk2410 .
->
-> You're free to mess around with that if you want, but what I'm going
-> to release will make that a waste of time.  It's significantly
-> updated.
->
+| G: CDS_NO_DISC
+| G: CDS_NO_DISC
+
+Insert CD-DA media
+
+Reading from CD using cdparanioa fails
+
+| F: CDS_DISC_OK
+| F: CDS_DISC_OK
+| F: CDS_DISC_OK
+| F: CDS_DISC_OK
+| F: CDS_DISC_OK
+
+Reading from CD starts to work here
+
+| B: CDS_DISC_OK
+| B: CDS_DISC_OK
+
+I tried changing the return value in the `F' case to CDS_NO_DISC, but that
+doesn't make a difference.
+
+--- a/drivers/scsi/sr_ioctl.c	2008-06-16 16:34:01.000000000 +0200
++++ b/drivers/scsi/sr_ioctl.c	2008-06-16 16:59:28.000000000 +0200
+@@ -304,25 +304,34 @@ int sr_drive_status(struct cdrom_device_
+ 
+ 	if (CDSL_CURRENT != slot) {
+ 		/* we have no changer support */
++printk("A: -EINVAL\n");
+ 		return -EINVAL;
+ 	}
+-	if (0 == sr_test_unit_ready(cd->device, &sshdr))
++	if (0 == sr_test_unit_ready(cd->device, &sshdr)) {
++printk("B: CDS_DISC_OK\n");
+ 		return CDS_DISC_OK;
++	}
+ 
+ 	if (!cdrom_get_media_event(cdi, &med)) {
+-		if (med.media_present)
++		if (med.media_present) {
++printk("C: CDS_DISC_OK\n");
+ 			return CDS_DISC_OK;
+-		else if (med.door_open)
++		} else if (med.door_open) {
++printk("D: CDS_TRAY_OPEN\n");
+ 			return CDS_TRAY_OPEN;
+-		else
++		} else {
++printk("E: CDS_NO_DISC\n");
+ 			return CDS_NO_DISC;
++		}
+ 	}
+ 
+ 	/*
+ 	 * 0x04 is format in progress .. but there must be a disc present!
+ 	 */
+-	if (sshdr.sense_key == NOT_READY && sshdr.asc == 0x04)
++	if (sshdr.sense_key == NOT_READY && sshdr.asc == 0x04) {
++printk("F: CDS_DISC_OK\n");
+ 		return CDS_DISC_OK;
++	}
+ 
+ 	/*
+ 	 * If not using Mt Fuji extended media tray reports,
+@@ -331,11 +340,15 @@ int sr_drive_status(struct cdrom_device_
+ 	 */
+ 	if (scsi_sense_valid(&sshdr) &&
+ 	    /* 0x3a is medium not present */
+-	    sshdr.asc == 0x3a)
++	    sshdr.asc == 0x3a) {
++printk("G: CDS_NO_DISC\n");
+ 		return CDS_NO_DISC;
+-	else
++	} else {
++printk("H: CDS_TRAY_OPEN\n");
+ 		return CDS_TRAY_OPEN;
++	}
+ 
++printk("I: CDS_DRIVE_NOT_READY\n");
+ 	return CDS_DRIVE_NOT_READY;
+ }
+ 
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+Sony Technology and Software Centre Europe
+A division of Sony Service Centre (Europe) N.V.
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
+VAT BE 0413.825.160 · RPR Brussels
+Fortis 293-0376800-10 GEBA-BE-BB
+---584349381-882354669-1213628750=:30122--
