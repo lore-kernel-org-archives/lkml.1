@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752519AbYFPGUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757147AbYFPGWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752519AbYFPGUx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 02:20:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755861AbYFPGUh
+	id S1757147AbYFPGWt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 02:22:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbYFPGWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 02:20:37 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38526 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755693AbYFPGUg (ORCPT
+	Mon, 16 Jun 2008 02:22:42 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53673 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752129AbYFPGWl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 02:20:36 -0400
-Date: Sun, 15 Jun 2008 23:20:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
+	Mon, 16 Jun 2008 02:22:41 -0400
+Date: Mon, 16 Jun 2008 15:22:12 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [PATCH -mm 00/24] VM pageout scalability improvements (V12)
-Message-Id: <20080615232011.64925446.akpm@linux-foundation.org>
-In-Reply-To: <20080616143034.78A1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080611184214.605110868@redhat.com>
-	<20080611223430.cba0f1b6.akpm@linux-foundation.org>
-	<20080616143034.78A1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
+       linux-kernel@vger.kernel.org,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>
+In-Reply-To: <20080615232011.64925446.akpm@linux-foundation.org>
+References: <20080616143034.78A1.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080615232011.64925446.akpm@linux-foundation.org>
+Message-Id: <20080616152134.78A6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jun 2008 14:32:33 +0900 KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-
-> Hi
+> > > vmm:/home/akpm/qsbench> time ./qsbench -p 4 -m 230
+> > > ./qsbench -p 4 -m 230  178.21s user 28.49s system 99% cpu 3:27.14 total
+> > 
+> > Where can I get this benchmark?
 > 
-> > qsbench, 4 processes, memory size tuned to threshold-of-swapping*1.1:
-> > 
-> > Mainline:
-> > 
-> > vmm:/home/akpm/qsbench> time ./qsbench -p 4 -m 230
-> > ./qsbench -p 4 -m 230  175.45s user 45.67s system 60% cpu 6:08.40 total
-> > 
-> > 2.6.26-rc5-mm3:
-> > 
-> > vmm:/home/akpm/qsbench> time ./qsbench -p 4 -m 230
-> > ./qsbench -p 4 -m 230  178.21s user 28.49s system 99% cpu 3:27.14 total
+> http://userweb.kernel.org/~akpm/qsbench.tar.gz
 > 
-> Where can I get this benchmark?
+> > I guess it is too old ;)
 > 
+> I might have added it - I forget.
 
-http://userweb.kernel.org/~akpm/qsbench.tar.gz
+Thanks.
+I'll test this benchmark :)
 
-> I guess it is too old ;)
 
-I might have added it - I forget.
 
