@@ -1,51 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757868AbYFPSp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755464AbYFPSuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757868AbYFPSp6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 14:45:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbYFPSpt
+	id S1755464AbYFPSuz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 14:50:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbYFPSup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 14:45:49 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:39843 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753734AbYFPSps (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 14:45:48 -0400
-Message-ID: <4856AE64.7020906@zytor.com>
-Date: Mon, 16 Jun 2008 11:18:12 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 16 Jun 2008 14:50:45 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49777 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751970AbYFPSuo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 14:50:44 -0400
+Date: Mon, 16 Jun 2008 20:49:50 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linus Torvalds <torvalds@linux-foundation.or>,
+       LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Zachary Amsden <zach@vmware.com>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1 of 4] mm: add a ptep_modify_prot transaction
+	abstraction
+Message-ID: <20080616184949.GA14182@elte.hu>
+References: <b020e42384197b824320.1213615800@localhost> <alpine.LFD.1.10.0806161028080.2949@woody.linux-foundation.org> <Pine.LNX.4.64.0806161906490.19564@blonde.site>
 MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>, ying.huang@intel.com, mingo@elte.hu,
-       tglx@linutronix.de, steiner@sgi.com, travis@sgi.com,
-       linux-kernel@vger.kernel.org, andi@firstfloor.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 4/8] x86 boot: allow overlapping ebda and efi memmap memory
- ranges
-References: <20080616062945.14597.78009.sendpatchset@polaris-admin.engr.sgi.com>	<20080616063001.14597.96170.sendpatchset@polaris-admin.engr.sgi.com>	<1213600062.11185.13.camel@caritas-dev.intel.com>	<20080616032457.718f4d87.pj@sgi.com>	<1213606435.12968.14.camel@caritas-dev.intel.com>	<48568B56.7060307@zytor.com>	<20080616113806.2ff4c1a4.pj@sgi.com>	<48569D62.9050107@zytor.com>	<20080616123721.bb9195e6.pj@sgi.com>	<86802c440806161041v5f582d4y2a65adf57451a6d9@mail.gmail.com> <20080616130938.527283f7.pj@sgi.com>
-In-Reply-To: <20080616130938.527283f7.pj@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0806161906490.19564@blonde.site>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Jackson wrote:
-> Yinghai wrote:
->> like to see to make reserve_ebda_region() more smart like the old
->> way when andi introduced ebda_size... instead of reserve 0x9000 to
->> 0x100000 all the way.
+
+* Hugh Dickins <hugh@veritas.com> wrote:
+
+> On Mon, 16 Jun 2008, Linus Torvalds wrote:
+> > On Mon, 16 Jun 2008, Jeremy Fitzhardinge wrote:
+> > >
+> > > ptep_modify_prot_start() returns the current pte value, and puts the
+> > >   pte entry into a state where either the hardware will not update the
+> > >   pte, or if it does, the updates will be preserved on commit.
+> > > 
+> > > ptep_modify_prot_commit() writes back the updated pte, makes sure that
+> > >   any hardware updates made since ptep_modify_prot_start() are
+> > >   preserved.
+> > 
+> > Ok, I'm fine with this now that it's renamed to be clearly about just 
+> > protection bits.
+> > 
+> > So 
+> > 
+> > 	Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
 > 
-> Looking back at some older kernels, that code seems to have setup an
-> ebda region only if there was a non-zero real mode pointer at 0x40E.
+> And seems very reasonable (and exceptionally well described) to me too.
 > 
-> This is rather different than always setting up such a region.
-> 
+> 	Acked-by: Hugh Dickins <hugh@veritas.com>
 
-Well, sort of.  Only some very old systems will not have had one.
+thanks guys, i've added the Acked-by's and added a new -tip topic for 
+this.
 
-0x40E contains the pointer to the EBDA; this basically tests for the 
-existence of an EBDA at all.
+The dependencies are a bit tricky and the changes contain mm/ and 
+include/asm-generic/ bits so lets try a new Git trick here to keep it 
+all tidy and disciplined for v2.6.27 merging.
 
-	-hpa
+So i've created a new tip/mm/xen topic branch (the 85th -tip topic 
+branch ;-), which is COW-ed off the current tip/x86/xen topic branch [on 
+which branch these changes have some dependencies], and added these 4 
+changes to that. The tip/x86/xen (append-only-) topic will continue to 
+advance as usual, and we likely wont have dependencies on the stuff in 
+tip/mm/xen. (if there will be such dependencies we can handle that too)
 
+In v2.6.27 we can then offer up the two branches separately for upstream 
+merge, and tip/x86/xen will still only have x86 and xen changes, not any 
+mm changes. (Obviously tip/mm/xen will be offered after tip/x86/xen has 
+gone upstream - so that it will only contain these 4 patches ontop of 
+already-upstream changes)
+
+it will all be auto-merged into linux-next so there this internal 
+structure is not visible, all the changes are available for wide testing 
+of course.
+
+i've added these mm/ changes to auto-core-next (not auto-x86-next), if 
+that is fine by Andrew.
+
+	Ingo
