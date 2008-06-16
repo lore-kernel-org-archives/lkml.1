@@ -1,111 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbYFPFPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753472AbYFPFWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755359AbYFPFPs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 01:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbYFPFPj
+	id S1753472AbYFPFWm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 01:22:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751180AbYFPFWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 01:15:39 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:34587 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751012AbYFPFPi (ORCPT
+	Mon, 16 Jun 2008 01:22:32 -0400
+Received: from ag-out-0708.google.com ([72.14.246.251]:4934 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751145AbYFPFWb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 01:15:38 -0400
-Date: Sun, 15 Jun 2008 22:14:58 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug 10872] x86_64 boot hang when CONFIG_NUMA=n
-Message-Id: <20080615221458.e575ab10.randy.dunlap@oracle.com>
-In-Reply-To: <86802c440806152112y23fda539i841ed77da8f2ad78@mail.gmail.com>
-References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
-	<Jn7irxIunJK.A.8UD.1IDVIB@albercik>
-	<20080615093543.1b18b9eb.randy.dunlap@oracle.com>
-	<86802c440806151218h7b8b6c80q4ce0f6505244e588@mail.gmail.com>
-	<20080615181101.bcbab2ef.randy.dunlap@oracle.com>
-	<86802c440806152112y23fda539i841ed77da8f2ad78@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Mon, 16 Jun 2008 01:22:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=KEUpRuaaW+k2hsgK0DQZf741a8qW2UH0WJK26pNTeJ4hNmr43lMzWj3nmUT07L9pRk
+         xJR9dpkUGt3cTpMGx202SnYiSmyj+XOykqrxQNtnyD7TGsUuyww3Byr+xJIzCnEQR/XG
+         dqZEVCN3I2rXkQRFWSRtf29zPokg6zTDz9MWo=
+Subject: Re: [PATCH 1/3] relay: Fix 4 off-by-one errors occuring when
+	writing to a CPU buffer.
+From: Tom Zanussi <tzanussi@gmail.com>
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: penberg@cs.helsinki.fi, akpm@linux-foundation.org,
+       compudj@krystal.dyndns.org, linux-kernel@vger.kernel.org,
+       righi.andrea@gmail.com
+In-Reply-To: <20080614175223.4d3c6084@linux360.ro>
+References: <20080613040947.7465b9a5@linux360.ro>
+	 <1213418437.8237.51.camel@charm-linux>
+	 <20080614175223.4d3c6084@linux360.ro>
+Content-Type: text/plain
+Date: Mon, 16 Jun 2008 00:22:27 -0500
+Message-Id: <1213593748.7744.34.camel@charm-linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 15 Jun 2008 21:12:35 -0700 Yinghai Lu wrote:
 
-> On Sun, Jun 15, 2008 at 6:11 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > On Sun, 15 Jun 2008 12:18:42 -0700 Yinghai Lu wrote:
-> >
-> >> On Sun, Jun 15, 2008 at 9:35 AM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> >> > On Sat, 14 Jun 2008 22:12:04 +0200 (CEST) Rafael J. Wysocki wrote:
-> >> >
-> >> >> This message has been generated automatically as a part of a report
-> >> >> of recent regressions.
-> >> >>
-> >> >> The following bug entry is on the current list of known regressions
-> >> >> from 2.6.25.  Please verify if it still should be listed.
-> >> >>
-> >> >>
-> >> >> Bug-Entry     : http://bugzilla.kernel.org/show_bug.cgi?id=10872
-> >> >> Subject               : x86_64 boot hang when CONFIG_NUMA=n
-> >> >> Submitter     : Randy Dunlap <randy.dunlap@oracle.com>
-> >> >> Date          : 2008-06-05 21:50 (10 days old)
-> >> >> References    : http://marc.info/?l=linux-kernel&m=121270308607116&w=4
-> >> >>                 http://lkml.org/lkml/2008/6/11/355
-> >> >> Handled-By    : Yinghai Lu <yhlu.kernel@gmail.com>
-> >> >
-> >> > Yes, still happens for me on 2.6.26-rc6-git2.
-> >> >
-> >>
-> >> please send out whole boot log with numa on and numa off
-> >> and boot with debug
-> >>
-> >> please apply attached debug patch too.
-> >
-> > OK, did all of that.
-> > I should probably note that in both cases, the kernel is loaded/booted by using kexec.
-> > Both boot logs are captured generated via netconsole.
-> >
-> > The failing boot log is netcon-4409.log.  The working boot log (CONFIG_NUMA=y) is
-> > netcon-4410.log.  Enabling CONFIG_NUMA makes the following changes:
-> >
-> > 4c4
-> > < # Sun Jun 15 15:00:56 2008
-> > ---
-> >> # Sun Jun 15 15:10:15 2008
-> > 241c241,246
-> > < # CONFIG_NUMA is not set
-> > ---
-> >> CONFIG_NUMA=y
-> >> CONFIG_K8_NUMA=y
-> >> CONFIG_X86_64_ACPI_NUMA=y
-> >> CONFIG_NODES_SPAN_OTHER_NODES=y
-> >> # CONFIG_NUMA_EMU is not set
-> >> CONFIG_NODES_SHIFT=6
-> > 249a255
-> >> CONFIG_NEED_MULTIPLE_NODES=y
-> > 260a267
-> >> CONFIG_MIGRATION=y
-> > 282a290
-> >> CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID=y
-> > 309a318
-> >> CONFIG_ACPI_NUMA=y
-> >
+On Sat, 2008-06-14 at 17:52 +0300, Eduard - Gabriel Munteanu wrote:
+> On Fri, 13 Jun 2008 23:40:37 -0500
+> Tom Zanussi <tzanussi@gmail.com> wrote:
 > 
-> the print out looks all right.
+> > I'm wondering if the all-zeroes at the end of the buffer might be
+> > another case of the all-zeroes you were seeing due to cross-cpu
+> > reading you decribed in the other patch.  In any case, I'm pretty
+> > sure this patch isn't doing what you think it is, and don't see how
+> > it could have fixed the problem (see below).  There may still be a
+> > bug somewhere, but it would be good to be able to reproduce it.  Does
+> > it happen even when running on a single cpu?
 > 
-> any chance to use normal serial console to capture the boot log?
+> Hi,
+> 
+> I noticed this problem after adding those spinlocks. As far as I can
+> tell, having (offset == subbuf_size + 1) at any given moment allows the
+> read() handler to see inconsistent offsets:
+> 1. writer sets offset = subbuf_size + 1
+> 2. writer releases spinlock
+> 3. read() acquires spinlock and reads the wrong offset
+> 4. read() releases spinlock
+> 5. next writer corrects the offset at the next write
+>  
+> > This case, offset being 1 larger than the subbuf size, is how we note
+> > a full sub-buffer, so changing this will break full-subbuffer cases. 
+> 
+> No, it won't. Maximum length messages result in the following condition:
+> start + offset == subbuf_size
+> This happens because a buffer of length subbuf_size actually ranges
+> from zero to (subbuf_size - 1) in regard to how it is addressed. Then,
+> subbuf_size + 1 isn't just outside the bounds, but one more byte off.
+> "Visual" example:
+> subbuf_size = 4
+> |[ ][ ][ ][ ]|[ ]
+>   0  1  2  3   subbuf_size
+> 
+> So, a full subbufer means offset equals subbuf_size, that is, the next
+> empty slot is just outside the subbuffer.
+> 
 
-Not that I know of.
+Yes, I understand that - what I meant was that the subbuf_size + 1
+condition happens only in the buffer-full case (i.e. no reader or
+lagging reader), but not during the normal filling of a subbuffer, which
+you describe correctly.
 
----
-~Randy
-'"Daemon' is an old piece of jargon from the UNIX operating system,
-where it referred to a piece of low-level utility software, a
-fundamental part of the operating system."
+So apparently what you're seeing is zeroes being read when there's a
+buffer-full condition?  If so, we need to figure out exactly why that's
+happening to see whether your fix is really what's needed; I haven't
+seen problems in the buffer-full case before and I think your fix would
+break it even if it fixed your read problem.  So it would be good to be
+able to reproduce it first.
+
+Tom  
+
+
+> 
+> 	Eduard
+
