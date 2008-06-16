@@ -1,177 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758540AbYFPDTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758137AbYFPDbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758540AbYFPDTT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Jun 2008 23:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbYFPDTI
+	id S1758137AbYFPDbr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Jun 2008 23:31:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbYFPDbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Jun 2008 23:19:08 -0400
-Received: from smtp114.mail.mud.yahoo.com ([209.191.84.67]:45815 "HELO
-	smtp114.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751891AbYFPDTH (ORCPT
+	Sun, 15 Jun 2008 23:31:36 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:60789 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751891AbYFPDbf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Jun 2008 23:19:07 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ag1Ec8Omq93ESpyp7n2Y1/TEx75bNMdfNUGzxJcoNIQ8gSmL7TgdhxpUTJYbESHS2bhiII1KCEbPKTlqooowlDXFwC9VppOm3ReVvtvyhpgjwRCSX6/qoKb2bHfvN4wMHOpHDmP7VjqSdaqhgnurJb2WFt8DW0xtkcFmwTZxqag=  ;
-X-YMail-OSG: X1W.7oIVM1mXQfwo4pfNQrzeTQmpXFAH7XqphCphA7Az38626mUNK2MY8pnQVUC8orX_wQHSG1Gw6k6XvkAtwiihm7mKtaNHTG3lnV4z0CUpdaMZa4l7eqFosRsKJS_XvQI-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Divyesh Shah <dpshah@google.com>
-Subject: Re: [BUGFIX][RESEND] Fix the starving writes bug in the anticipatory IO scheduler
-Date: Mon, 16 Jun 2008 13:18:56 +1000
-User-Agent: KMail/1.9.5
-Cc: axboe@kernel.dk, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Suleiman Souhlal <suleiman@google.com>
-References: <935894B7-5FD4-4C3D-9A74-6B18E532462B@google.com>
-In-Reply-To: <935894B7-5FD4-4C3D-9A74-6B18E532462B@google.com>
+	Sun, 15 Jun 2008 23:31:35 -0400
+Date: Sun, 15 Jun 2008 20:31:26 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Adrian Bunk <bunk@kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug #10815] 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
+Message-ID: <20080616033126.GF17915@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080614145839.GA10523@tv-sign.ru> <20080614181212.GB26421@linux.vnet.ibm.com> <20080614194338.GA4820@martell.zuzino.mipt.ru> <20080615033001.GE26421@linux.vnet.ibm.com> <20080615162150.GA8289@martell.zuzino.mipt.ru> <20080615181710.GA17915@linux.vnet.ibm.com> <alpine.LFD.1.10.0806151323101.2949@woody.linux-foundation.org> <20080615232754.GD17915@linux.vnet.ibm.com> <alpine.LFD.1.10.0806151633290.2949@woody.linux-foundation.org> <20080616030154.GA7445@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="82I3+IH0IqGh5yIs"
 Content-Disposition: inline
-Message-Id: <200806161318.57435.nickpiggin@yahoo.com.au>
+In-Reply-To: <20080616030154.GA7445@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well, thanks for the report and test case. I'm a bit out of the
-loop when it comes to IO scheduling these days, however the fix
-seems good to me.
 
-Does google still use AS scheduling? This doesn't introduce any
-performance regressions that you can tell?
+--82I3+IH0IqGh5yIs
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Andrew might be away this week I think. Jens, any chance you can
-pick this up and get it merged when you feel it is ready?
+On Mon, Jun 16, 2008 at 07:01:54AM +0400, Alexey Dobriyan wrote:
+> On Sun, Jun 15, 2008 at 04:38:24PM -0700, Linus Torvalds wrote:
+> > On Sun, 15 Jun 2008, Paul E. McKenney wrote:
+> > >
+> > > If that is the right thing to do.  I would feel better about it if I
+> > > could reproduce the failure.
+> > 
+> > Is there some configuration thing that might make it happen for Alexey but 
+> > not for you? The only obvious one is the normal PREEMPT thing, but 
+> > PREEMPT_RCU obviously depends on that, so there must be something else.
+> > 
+> > CONFIG_SMP? CONFIG_NO_HZ? CONFIG_[RT|FAIR]_GROUP_SCHED? There's a number 
+> > of config options that change scheduling details..
+> 
+> The only way I can "fix" rcutorture here is SMP=n (not maxcpus=1!).
 
-Acked-by: Nick Piggin <npiggin@suse.de>
+I am running SMP=y without seeing the problem.
 
-Thanks,
-Nick
+> Among things tried and do not matter are NO_HZ, HIGH_RES_TIMERS, turning off
+> debugging options (one by one and in bulk), DEBUG_PER_CPU_MAPS, HZ tweaks,
+> SCHED_MC.
+> 
+> All of this doesn't help, but SMP=n does.
 
+Attached is the compressed config file I used for a run on a POWER
+machine.  I have used similar config files for x86.  For this run, I built
+LTP, installed it, started rcutorture, ran LTP, then ended rcutorture.
 
-On Saturday 14 June 2008 03:03, Divyesh Shah wrote:
-> [Sorry for the resend, the previous mail got bounced off lkml]
->
-> Bug description:
-> AS scheduler alternates between issuing read and write batches. It does
-> the batch switch only after all requests from the previous batch are
-> completed.
->
-> When switching to a write batch, if there is an on-going read request,
-> it waits for its completion and indicates its intention of switching by
-> setting ad->changed_batch and the new direction but does not update the
-> batch_expire_time for the new write batch which it does in the case of
-> no previous pending requests.
-> On completion of the read request, it sees that we were waiting for the
-> switch and schedules work for kblockd right away and resets the
-> ad->changed_data flag.
-> Now when kblockd enters dispatch_request where it is expected to pick
-> up a write request, it in turn ends the write batch because the
-> batch_expire_timer was not updated and shows the expire timestamp for
-> the previous batch.
->
-> This results in the write starvation for all the cases where there is
-> the intention for switching to a write batch, but there is a previous
-> in-flight read request and the batch gets reverted to a read_batch
-> right away.
->
-> This also holds true in the reverse case (switching from a write batch
-> to a read batch with an in-flight write request).
->
-> I've checked that this bug exists on 2.6.11, 2.6.18, 2.6.24 and
-> linux-2.6-block git HEAD. I've tested the fix on x86 platforms with
-> SCSI drives where the driver asks for the next request while a current
-> request is in-flight.
->
-> This patch is based off linux-2.6-block git HEAD.
->
-> Bug reproduction:
-> A simple scenario which reproduces this bug is:
-> - dd if=/dev/hda3 of=/dev/null &
-> - lilo
->    The lilo takes forever to complete.
->
-> This can also be reproduced fairly easily with the earlier dd and
-> another test
-> program doing msync().
->
-> The example test program below should print out a message after every
-> iteration
-> but it simply hangs forever. With this bugfix it makes forward progress.
->
-> ====
-> Example test program using msync() (thanks to suleiman AT google DOT
-> com)
->
-> inline uint64_t
-> rdtsc(void)
-> {
->          int64_t tsc;
->
->          __asm __volatile("rdtsc" : "=A" (tsc));
->          return (tsc);
-> }
->
-> int
-> main(int argc, char **argv)
-> {
->          struct stat st;
->          uint64_t e, s, t;
->          char *p, q;
->          long i;
->          int fd;
->
->          if (argc < 2) {
->                  printf("Usage: %s <file>\n", argv[0]);
->                  return (1);
->          }
->
->          if ((fd = open(argv[1], O_RDWR | O_NOATIME)) < 0)
->                  err(1, "open");
->
->          if (fstat(fd, &st) < 0)
->                  err(1, "fstat");
->
->          p = mmap(NULL, st.st_size, PROT_READ | PROT_WRITE,
-> MAP_SHARED, fd, 0);
->
->          t = 0;
->          for (i = 0; i < 1000; i++) {
->                  *p = 0;
->                  msync(p, 4096, MS_SYNC);
->                  s = rdtsc();
->                 *p = 0;
->                  __asm __volatile(""::: "memory");
->                  e = rdtsc();
->                  if (argc > 2)
->                          printf("%d: %lld cycles %jd %jd\n",
->                                 i, e - s, (intmax_t)s, (intmax_t)e);
->                  t += e - s;
->          }
->          printf("average time: %lld cycles\n", t / 1000);
->          return (0);
-> }
-> ====
->
->   block/as-iosched.c |    2 ++
->   1 files changed, 2 insertions(+), 0 deletions(-)
->
-> diff --git a/block/as-iosched.c b/block/as-iosched.c
-> index 8c39467..d4c9f9c 100644
-> --- a/block/as-iosched.c
-> +++ b/block/as-iosched.c
-> @@ -831,6 +831,8 @@ static void as_completed_request(struct
-> request_queue *q, struct request *rq)
->          }
->
->          if (ad->changed_batch && ad->nr_dispatched == 1) {
-> +                ad->current_batch_expires = jiffies +
-> +                        ad->batch_expire[ad->batch_data_dir];
->                  kblockd_schedule_work(&ad->antic_work);
->                  ad->changed_batch = 0;
->
-> --
->
-> -Divyesh Shah
+The only other thing I can think of is that Alexey's machines are
+somehow managing to nest NMIs or something.  I can produce a fix for
+that, but have no way of testing it.
+
+Thoughts?
+
+							Thanx, Paul
+
+--82I3+IH0IqGh5yIs
+Content-Type: application/octet-stream
+Content-Description: dotconfig.bz2
+Content-Disposition: attachment; filename="dotconfig.bz2"
+Content-Transfer-Encoding: base64
+
+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
+ckU4UJAbcKiN
+
+--82I3+IH0IqGh5yIs--
