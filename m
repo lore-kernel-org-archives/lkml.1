@@ -1,83 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757508AbYFPNxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbYFPOGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757508AbYFPNxw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 09:53:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbYFPNxp
+	id S1755963AbYFPOGf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 10:06:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbYFPOG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 09:53:45 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:62207 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753674AbYFPNxn (ORCPT
+	Mon, 16 Jun 2008 10:06:26 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41534 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752684AbYFPOGZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 09:53:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=g3LvSVBgFpu0iJjt/7uUBgXCChpmRKphUpit2bJksK9Sa638jf4QY89l+DwZEiEEhr
-         nMcLD3ZX5tkfQAZl1/1PIStVmJMegKj3ud496h9KHVX/WXIvtiABO0IfFi3u+ZxNgayo
-         lrtfgsOCIRCRdVTPyU1LdlibYwqgBkq2EhyAk=
-Message-ID: <19f34abd0806160653w2e92e43o4fb20e198bcb4615@mail.gmail.com>
-Date: Mon, 16 Jun 2008 15:53:43 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Alexey Dobriyan" <adobriyan@gmail.com>
-Subject: Re: [Bug #10815] 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "Oleg Nesterov" <oleg@tv-sign.ru>, "Adrian Bunk" <bunk@kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080616030154.GA7445@martell.zuzino.mipt.ru>
+	Mon, 16 Jun 2008 10:06:25 -0400
+Date: Mon, 16 Jun 2008 22:58:01 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [Patch 001/005](memory hotplug) register section/node id to free
+Cc: Badari Pulavarty <pbadari@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Yinghai Lu <yhlu.kernel@gmail.com>
+In-Reply-To: <20080616102131.GD17016@shadowen.org>
+References: <20080407214318.8870.E1E9C6FF@jp.fujitsu.com> <20080616102131.GD17016@shadowen.org>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080616204200.9E9F.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080614144200.GA26421@linux.vnet.ibm.com>
-	 <20080614181212.GB26421@linux.vnet.ibm.com>
-	 <20080614194338.GA4820@martell.zuzino.mipt.ru>
-	 <20080615033001.GE26421@linux.vnet.ibm.com>
-	 <20080615162150.GA8289@martell.zuzino.mipt.ru>
-	 <20080615181710.GA17915@linux.vnet.ibm.com>
-	 <alpine.LFD.1.10.0806151323101.2949@woody.linux-foundation.org>
-	 <20080615232754.GD17915@linux.vnet.ibm.com>
-	 <alpine.LFD.1.10.0806151633290.2949@woody.linux-foundation.org>
-	 <20080616030154.GA7445@martell.zuzino.mipt.ru>
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 16, 2008 at 5:01 AM, Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> On Sun, Jun 15, 2008 at 04:38:24PM -0700, Linus Torvalds wrote:
->> On Sun, 15 Jun 2008, Paul E. McKenney wrote:
->> >
->> > If that is the right thing to do.  I would feel better about it if I
->> > could reproduce the failure.
->>
->> Is there some configuration thing that might make it happen for Alexey but
->> not for you? The only obvious one is the normal PREEMPT thing, but
->> PREEMPT_RCU obviously depends on that, so there must be something else.
->>
->> CONFIG_SMP? CONFIG_NO_HZ? CONFIG_[RT|FAIR]_GROUP_SCHED? There's a number
->> of config options that change scheduling details..
->
-> The only way I can "fix" rcutorture here is SMP=n (not maxcpus=1!).
->
-> Among things tried and do not matter are NO_HZ, HIGH_RES_TIMERS, turning off
-> debugging options (one by one and in bulk), DEBUG_PER_CPU_MAPS, HZ tweaks,
-> SCHED_MC.
->
-> All of this doesn't help, but SMP=n does.
+> > Index: current/include/linux/memory_hotplug.h
+> > ===================================================================
+> > --- current.orig/include/linux/memory_hotplug.h	2008-04-07 16:06:49.000000000 +0900
+> > +++ current/include/linux/memory_hotplug.h	2008-04-07 16:33:12.000000000 +0900
+> > @@ -11,6 +11,15 @@
+> >  struct mem_section;
+> >  
+> >  #ifdef CONFIG_MEMORY_HOTPLUG
+> > +
+> > +/*
+> > + * Magic number for free bootmem.
+> > + * The normal smallest mapcount is -1. Here is smaller value than it.
+> > + */
+> > +#define SECTION_INFO		0xfffffffe
+> > +#define MIX_INFO		0xfffffffd
+> > +#define NODE_INFO		0xfffffffc
+> 
+> Perhaps these should be defined relative to -1 to make that very
+> explicit.
+> 
+> #define SECTION_INFO	(-1 - 1)
+> #define MIX_INFO	(-1 - 2)
+> #define NODE_INFO	(-1 - 3)
+> 
 
-Maybe this is a stupid suggestion, but SLUB _is_ involved here (in
-poisoning the object when it is freed). Do you have SLUB_DEBUG_ON=y or
-did you check whether it matters if you have these options on or off?
+Ah, ok. I'll change them. 
+
+> Also from a scan of this patch I cannot see why I might care about the
+> type of these.  Yes it appears you are going to need a marker to say
+> which bootmem pages are under this reference counted scheme and which
+> are not.  From a review perspective having some clue in the leader about
+> the type and why we care would help.
+> 
+> >From the names I was expecting SECTION related info, NODE related info,
+> and a MIXture of things.  However, SECTION seems to be the actual sections,
+> NODE seems to be pgdat information, MIX seems to be usemap?  Why is it
+> not USEMAP here?  Possibily I will find out in a later patch but a clue
+> here might help.
+
+MIX_INFO might not be good name. I intended it was MIX_SECTION_INFO.
+When SECTION_INFO is specified, section_number in ->private
+can be checked which section uses this page.
+This is important for dependency check.
+
+When MIX_(SECTION_)INFO is specified, many sections uses this page.
+So, dependency check is not possible.
+Currently, this type is used for just usemap. But I thought other feature
+may use it later...
 
 
-Vegard
+
+> > Index: current/mm/memory_hotplug.c
+> > ===================================================================
+> > --- current.orig/mm/memory_hotplug.c	2008-04-07 16:06:49.000000000 +0900
+> > +++ current/mm/memory_hotplug.c	2008-04-07 20:08:13.000000000 +0900
+> > @@ -59,8 +59,105 @@
+> >  	return;
+> >  }
+> >  
+> > -
+> >  #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
+> > +#ifndef CONFIG_SPARSEMEM_VMEMMAP
+> > +static void get_page_bootmem(unsigned long info,  struct page *page, int magic)
+> > +{
+> > +	atomic_set(&page->_mapcount, magic);
+> > +	SetPagePrivate(page);
+> > +	set_page_private(page, info);
+> > +	atomic_inc(&page->_count);
+> > +}
+> 
+> Although I guess these 'magic' constants are effectivly magic numbers it
+> is also the type.  So I do wonder if this would be better called type.
+
+Ah, if you feel type is better than magic, then I'll change it.
+To be honest, I feel I'm not good at naming of functions/parameters.
+So, good advice is welcome.
+
+
+> > +
+> > +void put_page_bootmem(struct page *page)
+> > +{
+> > +	int magic;
+> > +
+> > +	magic = atomic_read(&page->_mapcount);
+> > +	BUG_ON(magic >= -1);
+> > +
+> > +	if (atomic_dec_return(&page->_count) == 1) {
+> > +		ClearPagePrivate(page);
+> > +		set_page_private(page, 0);
+> > +		reset_page_mapcount(page);
+> > +		__free_pages_bootmem(page, 0);
+> > +	}
+> > +
+> > +}
+> 
+> That seems pretty sensible, using _count to track track the number of
+> users of this page to allow it to be tracked.  But there was no mention
+> of this in the changelog, so I was about to complain that the get_ was a
+> strange name for something which set the magic numbers.  It mirroring
+> get_page, put_page makes the name sensible.  But please document that in
+> the changelog.
+
+Ah, sorry.
+
+> The BUG in put_page_bootmem I assume is effectivly saying "this page was
+> not reference counted and so cannot be freed with this call".  Is there
+> anything stopping us simply reference counting all bootmem allocations
+> in this manner?  So that any of them could be released?
+
+This count is just set for only memory management structure.
+
+> 
+> Also how does this scheme cope with things being merged into the end of
+> the blocks you mark as freeable.  bootmem can pack small things into the
+> end of the previous allocation if they fit and alignment allows.  Is it
+> not possible that such allocations would get packed in, but not
+> accounted for in the _count so that when hotplug frees these things the
+> bootmem page would get dropped, but still have useful data in it?
+
+(See second patch)
+
+> 
+> > +
+> > +void register_page_bootmem_info_section(unsigned long start_pfn)
+> > +{
+> > +	unsigned long *usemap, mapsize, section_nr, i;
+> > +	struct mem_section *ms;
+> > +	struct page *page, *memmap;
+> > +
+> > +	if (!pfn_valid(start_pfn))
+> > +		return;
+> > +
+> > +	section_nr = pfn_to_section_nr(start_pfn);
+> > +	ms = __nr_to_section(section_nr);
+> > +
+> > +	/* Get section's memmap address */
+> > +	memmap = sparse_decode_mem_map(ms->section_mem_map, section_nr);
+> > +
+> > +	/*
+> > +	 * Get page for the memmap's phys address
+> > +	 * XXX: need more consideration for sparse_vmemmap...
+> > +	 */
+> > +	page = virt_to_page(memmap);
+> > +	mapsize = sizeof(struct page) * PAGES_PER_SECTION;
+> > +	mapsize = PAGE_ALIGN(mapsize) >> PAGE_SHIFT;
+> > +
+> > +	/* remember memmap's page */
+> > +	for (i = 0; i < mapsize; i++, page++)
+> > +		get_page_bootmem(section_nr, page, SECTION_INFO);
+> > +
+> > +	usemap = __nr_to_section(section_nr)->pageblock_flags;
+> > +	page = virt_to_page(usemap);
+> > +
+> > +	mapsize = PAGE_ALIGN(usemap_size()) >> PAGE_SHIFT;
+> > +
+> > +	for (i = 0; i < mapsize; i++, page++)
+> > +		get_page_bootmem(section_nr, page, MIX_INFO);
+> > +
+> 
+> I am concerned that some of these pages might be in the numa remap space?
+> If they are they were not part of bootmem, will they free correctly in the
+> same manner?  They are necessarily not mapped at the correct kernel virtual
+> address so the __pa() is not going to find the right struct page is it?
+
+Good point. Yes. You are right.
+
+> 
+> Perhaps if you simply reference counted all bootmem allocations you
+> would avoid this problem?
+
+No. At least offline_pages() must distinguish followings
+ A) a page will be not necessary later.
+ B) a page is really busy
+
+A) is the pages for section's memmap, pgdat and so on.
+B) is others
+
+A) must be isolated final phase of memory hotplug, because they used by
+page offlining themselves. But offline_pages() is prior than final phase.
+
+B) should be freed before offline_pages(). If it is busy, offline_pages should
+be canceled.
+
+
+> > Index: current/mm/sparse.c
+> > ===================================================================
+> > --- current.orig/mm/sparse.c	2008-04-07 16:06:49.000000000 +0900
+> > +++ current/mm/sparse.c	2008-04-07 20:08:16.000000000 +0900
+> > @@ -200,7 +200,6 @@
+> >  /*
+> >   * Decode mem_map from the coded memmap
+> >   */
+> > -static
+> >  struct page *sparse_decode_mem_map(unsigned long coded_mem_map, unsigned long pnum)
+> >  {
+> >  	/* mask off the extra low bits of information */
+> > @@ -223,7 +222,7 @@
+> >  	return 1;
+> >  }
+> >  
+> > -static unsigned long usemap_size(void)
+> > +unsigned long usemap_size(void)
+> >  {
+> >  	unsigned long size_bytes;
+> >  	size_bytes = roundup(SECTION_BLOCKFLAGS_BITS, 8) / 8;
+> > 
+> 
+> I wonder if these export changes might make more sense as a separate
+> patch, they are effectivly just noise.
+
+Ah, yes. It should be separated. Sorry.
+
+Thanks.
 
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Yasunori Goto 
+
+
