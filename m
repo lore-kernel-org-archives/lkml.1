@@ -1,59 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755272AbYFPMaQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755920AbYFPMah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755272AbYFPMaQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 08:30:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbYFPMaF
+	id S1755920AbYFPMah (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 08:30:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753941AbYFPMaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 08:30:05 -0400
-Received: from atlantis.8hz.com ([212.129.237.78]:57611 "EHLO atlantis.8hz.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752234AbYFPMaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 08:30:04 -0400
-X-Greylist: delayed 1103 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Jun 2008 08:30:03 EDT
-Date: Mon, 16 Jun 2008 12:11:39 +0000
-From: Sean Young <sean@mess.org>
-To: linux-kernel@vger.kernel.org
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Regression: boot failure on AMD Elan TS-5500
-Message-ID: <20080616121138.GA51097@atlantis.8hz.com>
+	Mon, 16 Jun 2008 08:30:08 -0400
+Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:51704 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753167AbYFPMaG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 08:30:06 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AroEAH/0VUhMQW1O/2dsb2JhbACBW6tR
+Date: Mon, 16 Jun 2008 08:30:03 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, tzanussi@gmail.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       righi.andrea@gmail.com
+Subject: Re: [PATCH 3/3] relay: Add buffer-only channels; useful for early
+	logging.
+Message-ID: <20080616123003.GC18561@Krystal>
+References: <20080613041013.274ccb28@linux360.ro> <48521C19.6070001@cs.helsinki.fi> <20080613185414.306b4baa@linux360.ro>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080613185414.306b4baa@linux360.ro>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 08:25:02 up 11 days, 17:06,  2 users,  load average: 0.13, 0.36,
+	0.43
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The symptons are either a crash or reboot on booting the kernel. No printk's
-have occurred yet -- even with early printk on.
+* Eduard - Gabriel Munteanu (eduard.munteanu@linux360.ro) wrote:
+> On Fri, 13 Jun 2008 10:04:57 +0300
+> Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> 
+> > Why do we need to change for_each_online_cpu to for_each_present_cpu?
+> > I guess it's because we don't have all the CPUs online at early
+> > boot?
+> 
+> Yes, that's true. Only one CPU is online at that early point.
+> 
+> > Wouldn't it then be better to implement CPU hotplug support
+> > instead?
+> 
+> It's difficult for me to write such code, as I'm unable to test CPU
+> hotplug; my machines are a Turion X2 laptop and a Athlon Barton desktop
+> computer. So I can't turn off, or unplug in a software sense, one CPU core.
+> Correct me if I'm wrong, but I don't see any way to do that in /sys/devices/system/cpu/
+> 
 
-2.6.15 worked on this board however current does not. I've bisected it to:
+See Documentation/cpu-hotplug.txt
 
-	commit a24e785111a32ccb7cebafd24b1b1cb474ea8e5d
-	Author: Rusty Russell <rusty@rustcorp.com.au>
-	Date:   Sun Oct 21 16:41:35 2007 -0700
+If you need to "emulate" having many CPUs, Xen is always an option.
 
-	    i386: paravirt boot sequence
-	    
-	    This patch uses the updated boot protocol to do paravirtualized boot.
-	    If the boot version is >= 2.07, then it will do two things:
-	    
-	     1. Check the bootparams loadflags to see if we should reload the
-		segment registers and clear interrupts.  This is appropriate
-		for normal native boot and some paravirtualized environments, but
-		inapproprate for others.
-	    
-	     2. Check the hardware architecture, and dispatch to the appropriate
-		kernel entrypoint.  If the bootloader doesn't set this, then we
-		simply do the normal boot sequence.
+> But I suppose I could write a patch very carefully, and then submit to
+> someone that can test this. Anyway, I'll look into this and try to
+> understand the code without being able to test.
+> 
 
-Unfortunately this patch can't be reverse-applied onto mainline, so I've
-tried it on 2.6.24-rc1. 2.6.24-rc1 as-is fails, but with this patch
-reverted it does work.
+Hrm, sounds like a bad idea... please try getting a test setup working,
+it will save you a gazillion iterations and let you stress-test your
+code.
 
-This is the board: 
+Mathieu
 
-http://www.embeddedarm.com/products/board-detail.php?product=TS-5500
+> 
+> 	Eduard
+> 
 
-Regards
-Sean
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
