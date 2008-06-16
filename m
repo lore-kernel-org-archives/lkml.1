@@ -1,180 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756258AbYFPRnx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755011AbYFPRoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756258AbYFPRnx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 13:43:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbYFPRnp
+	id S1755011AbYFPRoh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 13:44:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbYFPRo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 13:43:45 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:53115 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750953AbYFPRno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 13:43:44 -0400
-Date: Mon, 16 Jun 2008 13:43:40 -0400
-To: "Weathers, Norman R." <Norman.R.Weathers@conocophillips.com>
-Cc: Jeff Layton <jlayton@poochiereds.net>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, Neil Brown <neilb@suse.de>
-Subject: Re: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
-Message-ID: <20080616174340.GA27083@fieldses.org>
-References: <20080611195222.GP15380@fieldses.org> <20080611160947.5f08fb16@tleilax.poochiereds.net> <20080611205749.GA25194@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DAA@hoexmb9.conoco.net> <20080611225431.GD25194@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DAE@hoexmb9.conoco.net> <20080613201552.GH8501@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DB6@hoexmb9.conoco.net> <20080613220422.GC14338@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DB7@hoexmb9.conoco.net>
+	Mon, 16 Jun 2008 13:44:28 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:38294 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468AbYFPRo1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 13:44:27 -0400
+Date: Mon, 16 Jun 2008 18:42:43 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [PATCH 5/5 v2] x86: PAT: make pat_x_mtrr_type() more readable
+In-Reply-To: <20080616125821.GA5213@alberich.amd.com>
+Message-ID: <Pine.LNX.4.64.0806161753060.13075@blonde.site>
+References: <20080610140755.GI5024@alberich.amd.com> <20080616125821.GA5213@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0122F800A3B64C449565A9E8C297701002D75DB7@hoexmb9.conoco.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 13, 2008 at 05:53:20PM -0500, Weathers, Norman R. wrote:
+On Mon, 16 Jun 2008, Andreas Herrmann wrote:
+> I've found it inconvenient to review pat_x_mtrr_type().
+> Thus I slightly changed it and added some comment to make
+> it more readable.
+
+I found it hard to read too; but it's amusing how utterly different
+are our ideas to make it more readable.  Most of what it is doing
+seems to me confusingly left over from earlier implementations.
+
+I've appended my version at the bottom: my involvement in pat.c is
+not very strong, so would you like to take over my patch and combine
+best of both into one?  I don't particularly want to stroll along
+after, undoing what you did.
+
+> 
+> I've also added BUG statements for (some) unused/unhandled PAT/MTRR
+> types.
+
+I suspect your pat_type BUG is uninteresting (given _PAGE_CACHE_MASK
+only has two bits to play with), and your mtrr_type BUG dangerous -
+mtrr_type_lookup may be returning other values, which the current
+code tolerates, I believe intentionally; but perhaps you've read
+further than I did, and convinced yourself they cannot get there.
+
+> 
+> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> ---
+> New patch version. (against current tip/x86/pat - v2.6.26-rc6-105-gfaeca31)
+> Previous version had some conflict with another commit in tip/master.
+> 
+> Regards,
+> Andreas
+> 
+>  arch/x86/mm/pat.c |   50 +++++++++++++++++++++++++++-----------------------
+>  1 files changed, 27 insertions(+), 23 deletions(-)
+> 
+> diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+> index 4beccea..cdf2c15 100644
+> --- a/arch/x86/mm/pat.c
+> +++ b/arch/x86/mm/pat.c
+> @@ -169,35 +169,39 @@ static int pat_x_mtrr_type(u64 start, u64 end, unsigned long prot,
+>  	prot &= (~_PAGE_CACHE_MASK);
 >  
-> 
-> > -----Original Message-----
-> > From: J. Bruce Fields [mailto:bfields@fieldses.org] 
-> > Sent: Friday, June 13, 2008 5:04 PM
-> > To: Weathers, Norman R.
-> > Cc: Jeff Layton; linux-kernel@vger.kernel.org; 
-> > linux-nfs@vger.kernel.org; Neil Brown
-> > Subject: Re: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
-> > 
-> > On Fri, Jun 13, 2008 at 04:53:31PM -0500, Weathers, Norman R. wrote:
-> > >  
-> > > 
-> > > > > The big one seems to be the __alloc_skb. (This is with 16 
-> > > > threads, and
-> > > > > it says that we are using up somewhere between 12 and 14 GB 
-> > > > of memory,
-> > > > > about 2 to 3 gig of that is disk cache).  If I were to 
-> > put anymore
-> > > > > threads out there, the server would become almost 
-> > > > unresponsive (it was
-> > > > > bad enough as it was).   
-> > > > > 
-> > > > > At the same time, I also noticed this:
-> > > > > 
-> > > > > skbuff_fclone_cache: 1842524 __alloc_skb+0x50/0x170
-> > > > > 
-> > > > > Don't know for sure if that is meaningful or not....
-> > > > 
-> > > > OK, so, starting at net/core/skbuff.c, this means that 
-> > this memory was
-> > > > allocated by __alloc_skb() calls with something nonzero 
-> > in the third
-> > > > ("fclone") argument.  The only such caller is alloc_skb_fclone().
-> > > > Callers of alloc_skb_fclone() include:
-> > > > 
-> > > > 	sk_stream_alloc_skb:
-> > > > 		do_tcp_sendpages
-> > > > 		tcp_sendmsg
-> > > > 		tcp_fragment
-> > > > 		tso_fragment
-> > > 
-> > > Interesting you should mention the tso...  We recently went 
-> > through and
-> > > turned on TSO on all of our systems, trying it out to see 
-> > if it helped
-> > > with performance...  This could be something to do with 
-> > that.  I can try
-> > > disabling the tso on all of the servers and see if that 
-> > helps with the
-> > > memory.  Actually, I think I will, and I will monitor the 
-> > situation.  I
-> > > think it might help some, but I still think there may be 
-> > something else
-> > > going on in a deep corner...
-> > 
-> > I'll plead total ignorance about TSO, and it sounds like a long
-> > shot--but sure, it'd be worth trying, thanks.
-> > 
-> 
-> Tried it, not for sure if I like the results yet or not...  Didn't seem
-> to make a huge difference, but here is something that will really make
-> you want to drink, the 2.6.25.4 kernel does not go into the size-4096
-> hell.
+>  	/*
+> -	 * We return the PAT request directly for types where PAT takes
+> -	 * precedence with respect to MTRR and for UC_MINUS.
+> +	 * We return the PAT request directly for types where PAT
+> +	 * takes precedence with respect to MTRR and for UC_MINUS. In
+> +	 * case of pat_type==WB we have to know mtrr_type to get the
+> +	 * effective type.
+> +	 *
+> +	 *    effective type                ret_prot
+> +	 *  pat \ mtrr  WB WC UC    pat \ mtrr  WB  WC  UC
+> +	 *  WC          WC WC WC    WC          WC  WC  WC
+> +	 *  UC-         UC WC UC    UC-         UC- UC- UC-
+> +	 *  UC          UC UC UC    UC          UC  UC  UC
+> +	 *  WB          WB WC UC    WB          WB  WC  UC
 
-Remind me what the most recent *bad* kernel was of those you tested?
-(2.6.25?)
+I'm inclined to think that once the obfuscations in the code are
+removed, the code becomes easier to understand than your comment
+table (which, to be honest, I haven't even checked through).
 
-Nothing jumped out at me in a quick skim through the commits from 2.6.25
-to 2.6.25.4.
+> +	 *
+>  	 * Consistency checks with other PAT requests is done later
+>  	 * while going through memtype list.
+>  	 */
+> -	if (pat_type == _PAGE_CACHE_WC) {
+> +	if (pat_type == _PAGE_CACHE_WC)
+>  		*ret_prot = prot | _PAGE_CACHE_WC;
+> -		return 0;
+> -	} else if (pat_type == _PAGE_CACHE_UC_MINUS) {
+> +	else if (pat_type == _PAGE_CACHE_UC_MINUS)
+>  		*ret_prot = prot | _PAGE_CACHE_UC_MINUS;
+> -		return 0;
+> -	} else if (pat_type == _PAGE_CACHE_UC) {
+> -		*ret_prot = prot | _PAGE_CACHE_UC;
+> -		return 0;
+> -	}
+> -
+> -	/*
+> -	 * Look for MTRR hint to get the effective type in case where PAT
+> -	 * request is for WB.
+> -	 */
+> -	mtrr_type = mtrr_type_lookup(start, end);
+> -
+> -	if (mtrr_type == MTRR_TYPE_UNCACHABLE) {
+> +	else if (pat_type == _PAGE_CACHE_UC)
+>  		*ret_prot = prot | _PAGE_CACHE_UC;
+> -	} else if (mtrr_type == MTRR_TYPE_WRCOMB) {
+> -		*ret_prot = prot | _PAGE_CACHE_WC;
+> -	} else {
+> -		*ret_prot = prot | _PAGE_CACHE_WB;
+> -	}
+> +	else if (pat_type == _PAGE_CACHE_WB) {
+> +		mtrr_type = mtrr_type_lookup(start, end);
+> +		if (mtrr_type == MTRR_TYPE_WRBACK)
+> +			*ret_prot = prot | _PAGE_CACHE_WB;
+> +		else if (mtrr_type == MTRR_TYPE_WRCOMB)
+> +			*ret_prot = prot | _PAGE_CACHE_WC;
+> +		else if (mtrr_type == MTRR_TYPE_UNCACHABLE)
+> +			*ret_prot = prot | _PAGE_CACHE_UC;
+> +		else
+> +			BUG();
+> +	} else
+> +		  BUG();
+>  
+>  	return 0;
+>  }
 
-> The largest users of slab there are the size-1024 and still the
-> skbuff_fclone_cache.  On a box with 16 threads, it will cache up about 5
-> GB of disk data, and still use about 6 GB of slab to put the information
-> out there (without TSO on), but at least it is not causing the disk
-> cache to be evicted, and it appears to be a little more responsive.  If
-> I up it to 32 or more threads, however, it gets very sluggish, but then
-> again, I am hitting it with a lot of nodes.
-> 
-> > > 
-> > > > 		tcp_mtu_probe
-> > > > 	tcp_send_fin
-> > > > 	tcp_connect
-> > > > 	buf_acquire:
-> > > > 		lots of callers in tipc code (whatever that is).
-> > > > 
-> > > > So unless you're using tipc, or you have something in 
-> > userspace going
-> > > > haywire (perhaps netstat would help rule that out?), then 
-> > I suppose
-> > > > there's something wrong with knfsd's tcp code.  Which 
-> > makes sense, I
-> > > > guess.
-> > > > 
-> > > 
-> > > Not for sure what tipc is either....
-> > > 
-> > > > I'd think this sort of allocation would be limited by the 
-> > number of
-> > > > sockets times the size of the send and receive buffers.
-> > > > svc_xprt.c:svc_check_conn_limits() claims to be limiting 
-> > the number of
-> > > > sockets to (nrthreads+3)*20.  (You aren't hitting the 
-> > "too many open
-> > > > connections" printk there, are you?)  The total buffer 
-> > size should be
-> > > > bounded by something like 4 megs.
-> > > > 
-> > > > --b.
-> > > > 
-> > > 
-> > > Yes, we are getting a continuous stream of the too many 
-> > open connections
-> > > scrolling across our logs.  
-> > 
-> > That's interesting!  So we should probably look more closely at the
-> > svc_check_conn_limits() behavior.  I wonder whether some pathological
-> > behavior is triggered in the case where you're constantly 
-> > over the limit
-> > it's trying to enforce.
-> > 
-> > (Remind me how many active clients you have?)
-> > 
-> 
-> 
-> We currently are hitting with somewhere around 600 to 800 nodes, but it
-> can go up to over 1000 nodes.  We are artificially starving with a
-> limited number of threads (2 to 3) right now on the older 2.6.22.14
-> kernel because of that memory issue (which may or may not be tso
-> related)...
+Clean up over-complications in pat_x_mtrr_type().
+And if reserve_memtype() ignores stray req_type bits when
+pat_enabled, it's better to mask them off when not also.
 
-So with that many clients all making requests to the server at once,
-we'd start hitting that (serv->sv_nrthreads+3)*20 limit when the number
-of threads was set to less than 30-50.  That doesn't seem to be the
-point where you're seeing a change in behavior, though.
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
 
-> I really want to move forward to the newer kernel, but we had an issue
-> where clients all of the sudden wouldn't connect, yet other clients
-> could, to the exact same server NFS export.  I had booted the server
-> into the 2.6.25.4 kernel at the time, and the other admin set us back to
-> the 2.6.22.14 to see if that was it.  The clients started working again,
-> and he left it there (he also took out my options in the exports file,
-> no_subtree_check and insecure).  I know that we are running over the
-> number of privelaged ports, and we probably need the insecure, but I am
-> having a hard time wrapping my self around all of the problems at
-> once....
+ arch/x86/mm/pat.c |   47 +++++++++++---------------------------------
+ 1 file changed, 12 insertions(+), 35 deletions(-)
 
-The secure ports limitation should be a problem for a client that does a
-lot of nfs mounts, not for a server with a lot of clients.
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -145,47 +145,31 @@ static DEFINE_SPINLOCK(memtype_lock); 	/
+  * The intersection is based on "Effective Memory Type" tables in IA-32
+  * SDM vol 3a
+  */
+-static int pat_x_mtrr_type(u64 start, u64 end, unsigned long prot,
+-				unsigned long *ret_prot)
++static unsigned long pat_x_mtrr_type(u64 start, u64 end, unsigned long req_type)
+ {
+-	unsigned long pat_type;
+ 	u8 mtrr_type;
+ 
+-	pat_type = prot & _PAGE_CACHE_MASK;
+-	prot &= (~_PAGE_CACHE_MASK);
+-
+ 	/*
+ 	 * We return the PAT request directly for types where PAT takes
+ 	 * precedence with respect to MTRR and for UC_MINUS.
+ 	 * Consistency checks with other PAT requests is done later
+ 	 * while going through memtype list.
+ 	 */
+-	if (pat_type == _PAGE_CACHE_WC) {
+-		*ret_prot = prot | _PAGE_CACHE_WC;
+-		return 0;
+-	} else if (pat_type == _PAGE_CACHE_UC_MINUS) {
+-		*ret_prot = prot | _PAGE_CACHE_UC_MINUS;
+-		return 0;
+-	} else if (pat_type == _PAGE_CACHE_UC) {
+-		*ret_prot = prot | _PAGE_CACHE_UC;
+-		return 0;
+-	}
++	if (req_type == _PAGE_CACHE_WC ||
++	    req_type == _PAGE_CACHE_UC_MINUS ||
++	    req_type == _PAGE_CACHE_UC)
++		return req_type;
+ 
+ 	/*
+ 	 * Look for MTRR hint to get the effective type in case where PAT
+ 	 * request is for WB.
+ 	 */
+ 	mtrr_type = mtrr_type_lookup(start, end);
+-
+-	if (mtrr_type == MTRR_TYPE_UNCACHABLE) {
+-		*ret_prot = prot | _PAGE_CACHE_UC;
+-	} else if (mtrr_type == MTRR_TYPE_WRCOMB) {
+-		*ret_prot = prot | _PAGE_CACHE_WC;
+-	} else {
+-		*ret_prot = prot | _PAGE_CACHE_WB;
+-	}
+-
+-	return 0;
++	if (mtrr_type == MTRR_TYPE_UNCACHABLE)
++		return _PAGE_CACHE_UC;
++	if (mtrr_type == MTRR_TYPE_WRCOMB)
++		return _PAGE_CACHE_WC;
++	return _PAGE_CACHE_WB;
+ }
+ 
+ /*
+@@ -218,7 +202,7 @@ int reserve_memtype(u64 start, u64 end, 
+ 			if (req_type == -1) {
+ 				*ret_type = _PAGE_CACHE_WB;
+ 			} else {
+-				*ret_type = req_type;
++				*ret_type = req_type & _PAGE_CACHE_MASK;
+ 			}
+ 		}
+ 		return 0;
+@@ -250,14 +234,7 @@ int reserve_memtype(u64 start, u64 end, 
+ 		}
+ 	} else {
+ 		req_type &= _PAGE_CACHE_MASK;
+-		err = pat_x_mtrr_type(start, end, req_type, &actual_type);
+-	}
+-
+-	if (err) {
+-		if (ret_type)
+-			*ret_type = actual_type;
+-
+-		return -EINVAL;
++		actual_type = pat_x_mtrr_type(start, end, req_type);
+ 	}
+ 
+ 	new_entry  = kmalloc(sizeof(struct memtype), GFP_KERNEL);
 
---b.
