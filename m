@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758950AbYFQVay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759342AbYFQVcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758950AbYFQVay (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 17:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756218AbYFQVar
+	id S1759342AbYFQVcb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 17:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756086AbYFQVcY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 17:30:47 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:58122 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752803AbYFQVaq (ORCPT
+	Tue, 17 Jun 2008 17:32:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56208 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755454AbYFQVcX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 17:30:46 -0400
-Message-ID: <48582D04.1000107@firstfloor.org>
-Date: Tue, 17 Jun 2008 23:30:44 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Bron Gondwana <brong@fastmail.fm>,
+	Tue, 17 Jun 2008 17:32:23 -0400
+Date: Tue, 17 Jun 2008 14:31:31 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Bron Gondwana <brong@fastmail.fm>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Nick Piggin <npiggin@suse.de>,
        Andrew Morton <akpm@linux-foundation.org>,
        Rob Mueller <robm@fastmail.fm>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: BUG: mmapfile/writev spurious zero bytes (x86_64/not i386, bisected,
- reproducable)
-References: <1213682410.13174.1258837181@webmail.messagingengine.com> <1213682570.13708.1258839317@webmail.messagingengine.com> <alpine.LFD.1.10.0806170947380.25099@woody.linux-foundation.org> <alpine.LFD.1.10.0806171041560.25099@woody.linux-foundation.org> <alpine.LFD.1.10.0806171309130.2981@woody.linux-foundation.org> <alpine.LFD.1.10.0806171331460.2908@woody.linux-foundation.org> <alpine.LFD.1.10.0806171356320.2908@woody.linux-foundation.org> <485829A1.4020705@firstfloor.org> <alpine.LFD.1.10.0806171421100.2907@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0806171421100.2907@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: BUG: mmapfile/writev spurious zero bytes (x86_64/not i386,
+ bisected, reproducable)
+In-Reply-To: <48582C18.4090900@firstfloor.org>
+Message-ID: <alpine.LFD.1.10.0806171429010.2907@woody.linux-foundation.org>
+References: <1213682410.13174.1258837181@webmail.messagingengine.com> <1213682570.13708.1258839317@webmail.messagingengine.com> <alpine.LFD.1.10.0806170947380.25099@woody.linux-foundation.org> <alpine.LFD.1.10.0806171041560.25099@woody.linux-foundation.org>
+ <alpine.LFD.1.10.0806171309130.2981@woody.linux-foundation.org> <87od5zwzh2.fsf@basil.nowhere.org> <alpine.LFD.1.10.0806171412470.2907@woody.linux-foundation.org> <48582C18.4090900@firstfloor.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+
+
+On Tue, 17 Jun 2008, Andi Kleen wrote:
 > 
-> On Tue, 17 Jun 2008, Andi Kleen wrote:
->> If that fixes anything:
->> - The caller is broken because it shouldn't pass a faulting source to copy_to_user()
->> - And you broken copy_from_user error reporting which shares the same code
-> 
-> Andi, I'm sorry I cc'd you. You are the author of that crap, but the bug 
-> seems to be that you never even understood what copy_from_user() is 
-> supposed to do.
-> 
-> The whole *and*only* reason for copy_to/from_user() existing AT ALL is 
-> exactly the fact that the source or destination access can fault. 
+> Loads are not supposed to fault in copy_to_user(). Only stores are.
 
-yes, but only one of them (destination for copy_to_user and source for
-copy_from_user)
+Andi, just shut up already.
 
-Or are you're describing copy_in_user()?
+It is "copy_user". Notice the lack of "from" or "to". That code handles 
+*both* copy_to_user and copy_from_user.
 
-> I don't really see why you continually start arguing about things that are 
-> OBVIOUSLY BUGGY, as if they weren't buggy. Once somebody has debugged a 
-> buggy routine, you shouldn't argue against it. 
-> 
-> So here's a hint: next time I claim some code of yours is buggy, either 
-> just acknowledge the bug, or stay silent. You'll look smarter that way.
+> If your patch fixes something then the main wrong thing is the caller
+> who passes a faulting source address.
 
-Ok if I'm really wrong on this (but frankly I don't see the mistake, sorry)
-for my person edification: what's a legitimate case for copy_to_user()
-where the source can fault?
+Andi, SHUT THE F*CK UP. Read the code. Read the patch. Sorry for ever 
+involving you. I don't want to hear your idiotic whining.
 
--Andi
-
-
+		Linus
