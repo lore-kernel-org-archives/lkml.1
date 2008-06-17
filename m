@@ -1,71 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848AbYFQJbw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756604AbYFQJfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756848AbYFQJbw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 05:31:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbYFQJbn
+	id S1756604AbYFQJfZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 05:35:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbYFQJfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 05:31:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40902 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752077AbYFQJbm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 05:31:42 -0400
-To: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: "fb-defio: fix page list with concurrent processes"
-References: <4856E38E.1040203@goop.org>
-	<45a44e480806161811k423fecf2r2d79609a5c0d057@mail.gmail.com>
-	<874p7so6p7.fsf@pike.pond.sub.org>
-	<45a44e480806170121s222906cdt23db2d6c394a50a1@mail.gmail.com>
-From: Markus Armbruster <armbru@redhat.com>
-Date: Tue, 17 Jun 2008 11:31:35 +0200
-In-Reply-To: <45a44e480806170121s222906cdt23db2d6c394a50a1@mail.gmail.com> (Jaya Kumar's message of "Tue\, 17 Jun 2008 01\:21\:13 -0700")
-Message-ID: <87hcbsmmq0.fsf@pike.pond.sub.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Tue, 17 Jun 2008 05:35:12 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41133 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751944AbYFQJfK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 05:35:10 -0400
+Date: Tue, 17 Jun 2008 18:34:09 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Johannes Weiner <hannes@saeurebad.de>
+Subject: [PATCH] Fix new alloc_bootmem_core (Re: [PATCH -mm 08/14] bootmem: clean up alloc_bootmem_core)
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080605225720.616014665@saeurebad.de>
+References: <20080605224940.434439989@saeurebad.de> <20080605225720.616014665@saeurebad.de>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080617173021.C1FE.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Jaya Kumar" <jayakumar.lkml@gmail.com> writes:
+Hi Johannes-san.
 
-> On Tue, Jun 17, 2008 at 12:34 AM, Markus Armbruster <armbru@redhat.com> wrote:
->> "Jaya Kumar" <jayakumar.lkml@gmail.com> writes:
->>
->>> On Mon, Jun 16, 2008 at 3:05 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->>>> Your patch "fb-defio: fix page list with concurrent processes" definitely
->>>> seems to help with the suspend/resume problem I had with the Xen pvfb
->>>> device.  Is it queued up anywhere?  It seems to be a real bugfix, and should
->>>> probably be queued for 2.6.26...
->>>
->>> It isn't currently queued. I had intended to improve its performance
->>> by taking advantage of Andrew's suggestion of using !list_empty on the
->>> page->lru to avoid walking the page list to find the duplicate page,
->>> but I ran into trouble since the page starts off being on the lru
->>> list. I'll try to take a look at doing this next weekend.
->>>
->>> Thanks,
->>> jaya
->>
->> Well, we got a bug that makes the code useless in practice for us, and
->> a fix for it that's not quite as fast as it could be.  Which is
->> better, somewhat slow code, or somewhat useless code?  I'd like to see
->> the fix merged as soon as possible.  You can always improve its
->> performance later.
->>
->
-> Ok, I didn't realize there was any time pressure. Keep in mind, I'm
-> just a person doing this stuff for fun on weekends not someone under
-> commercial pressures. Yup, I've got no problem if the old patch is
-> requeued and merged.
->
-> Thanks,
-> jaya
+I found a bug in this patch.
 
-Hey, it's your own fault!  If you wrote useless code in your spare
-time, we wouldn't bother you ;->
 
-Seriously, I appreciate your contributions, and I didn't mean to
-pressure you.  Just to explain why I think it makes sense to merge
-your fix now, and performance improvements later.
+> -	eidx = end_pfn - PFN_DOWN(node_boot_start);
+> +	if (goal && goal < max)
+> +		start = ALIGN(goal, step);
+> +	else
+> +		start = ALIGN(min, step);
+
+Here should check (min < goal) too.
+
+If not, start can becomes smaller than min. and sidx doesn't point
+correct index.
+alloc_bootmem_node() almost allocates pages of other node,
+when node's min address is over MAX_DMA_ADDRESS.
+
+Bye.
+
+----
+
+Fix new alloc_bootmem_core() of bootmem-clean-up-alloc_bootmem_core.patch
+in 2.6.26-rc5-mm3.
+
+(min < goal) should be checked too.
+
+
+Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+CC: Johannes Weiner <hannes@saeurebad.de>
+
+---
+ mm/bootmem.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: current/mm/bootmem.c
+===================================================================
+--- current.orig/mm/bootmem.c	2008-06-17 18:33:31.000000000 +0900
++++ current/mm/bootmem.c	2008-06-17 18:34:27.000000000 +0900
+@@ -435,7 +435,7 @@
+ 
+ 	step = max(align >> PAGE_SHIFT, 1UL);
+ 
+-	if (goal && goal < max)
++	if (goal && min < goal && goal < max)
+ 		start = ALIGN(goal, step);
+ 	else
+ 		start = ALIGN(min, step);
+
+
+
+-- 
+Yasunori Goto 
+
+
