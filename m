@@ -1,39 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759449AbYFQSXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759472AbYFQSZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759449AbYFQSXy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 14:23:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755461AbYFQSXq
+	id S1759472AbYFQSZu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 14:25:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755827AbYFQSZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 14:23:46 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:51933 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755229AbYFQSXq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 14:23:46 -0400
-Message-ID: <48580113.9070806@zytor.com>
-Date: Tue, 17 Jun 2008 11:23:15 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Glauber Costa <glommer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: merge setup_memory_map with e820
-References: <200806161303.31997.yhlu.kernel@gmail.com>	 <200806161958.28627.yhlu.kernel@gmail.com>	 <5d6222a80806170531g50a72ea2r963bba8e404e619f@mail.gmail.com>	 <4857E07F.3070209@zytor.com>	 <86802c440806170918l1cb10014nccfd8d3e2b13da47@mail.gmail.com>	 <4857F6B5.4000404@zytor.com> <86802c440806171052n6221d13dnf172928b0321dc6a@mail.gmail.com>
-In-Reply-To: <86802c440806171052n6221d13dnf172928b0321dc6a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Jun 2008 14:25:42 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:41315 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753186AbYFQSZl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 14:25:41 -0400
+Date: Tue, 17 Jun 2008 20:26:23 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Michael Kerrisk <mtk.manpages@googlemail.com>, corbet@lwn.net,
+       Andrew Morton <akpm@linux-foundation.org>, linux-doc@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>, mpm@selenic.com,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       tech-board@lists.linux-foundation.org,
+       Jim Zemlin <jzemlin@linux-foundation.org>
+Subject: Re: [patch] MAINTAINERS -- Documentation
+Message-ID: <20080617182623.GC11453@uranus.ravnborg.org>
+References: <4857A1D6.2080600@gmail.com> <20080617075354.7a6c9bd3.randy.dunlap@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080617075354.7a6c9bd3.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
+On Tue, Jun 17, 2008 at 07:53:54AM -0700, Randy Dunlap wrote:
+> On Tue, 17 Jun 2008 13:36:54 +0200 Michael Kerrisk wrote:
 > 
-> OK, after Ingo put three patch in the tip, I will submit one to remove
-> early_panic.
+> > Andrew,
+> > 
+> > Could you apply this patch for MAINTAINERS.  At this stage, I doubt that I'll
+> > be doing much in terms of writing new documents or trying to fix
+> > /Documentation as a whole, but I'm very willing to provide review and
+> > editorial assistance for people contributing changes to /Documentation, and
+> > even prod them in that direction if something is in need of documentation.
+> > 
+> > Cheers,
+> > 
+> > Michael
 > 
+> 
+> While I welcome the additional help, I've been doing this for years, and
+> Jon Corbet also does some of this, so I don't believe that having Michael
+> listed here alone is the right thing.  I'll be glad to send an additional
+> patch to this, adding me to it, and Jon could do the same for himself.
 
-I'll do it after lunch if Ingo or Thomas don't beat me to it.
+I would prefer the three of you works it out in-between you so you act like
+a group rather than three individuals (as it looks from the outside today).
+I do not mind sending mails to the three of you but I expect it to be a
+common effort rather than three individuals.
 
-	-hpa
+To agree on who is listed in MAINTAINERS and sending a single diff looks to
+me like a simple start.
+
+	Sam
