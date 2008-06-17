@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756903AbYFQMeb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758791AbYFQMep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756903AbYFQMeb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 08:34:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758297AbYFQMeL
+	id S1758791AbYFQMep (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 08:34:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758369AbYFQMeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 08:34:11 -0400
-Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.108]:18600
-	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758071AbYFQMeJ (ORCPT
+	Tue, 17 Jun 2008 08:34:17 -0400
+Received: from outbound.icp-qv1-irony-out2.iinet.net.au ([203.59.1.107]:29064
+	"EHLO outbound.icp-qv1-irony-out2.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758324AbYFQMeP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 08:34:09 -0400
+	Tue, 17 Jun 2008 08:34:15 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAP5JV0h8qbBs/2dsb2JhbACuIw
+X-IronPort-Anti-Spam-Result: ApoEAFZJV0h8qbBs/2dsb2JhbACuIQ
 X-IronPort-AV: E=Sophos;i="4.27,657,1204470000"; 
-   d="scan'208";a="343868502"
+   d="scan'208";a="330449801"
 From: Ian Kent <raven@themaw.net>
-Subject: [PATCH 3/7] autofs4 - use look aside list for lookups
+Subject: [PATCH 5/7] autofs4 - use lookup intent flags to trigger mounts
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
        autofs mailing list <autofs@linux.kernel.org>,
        linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Date: Tue, 17 Jun 2008 20:23:49 +0800
-Message-ID: <20080617122349.14725.64578.stgit@raven.themaw.net>
+Date: Tue, 17 Jun 2008 20:24:00 +0800
+Message-ID: <20080617122400.14725.61435.stgit@raven.themaw.net>
 In-Reply-To: <20080617122336.14725.64829.stgit@raven.themaw.net>
 References: <20080617122336.14725.64829.stgit@raven.themaw.net>
 User-Agent: StGIT/0.14.1
@@ -32,399 +32,75 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A while ago a patch to resolve a deadlock during directory creation
-was merged. This delayed the hashing of lookup dentrys until the
-->mkdir() (or ->symlink()) operation completed to ensure we always
-went through ->lookup() instead of also having processes go through
-->revalidate() so our VFS locking remained consistent.
+When an open(2) call is made on an autofs mount point directory that
+already exists and the O_DIRECTORY flag is not used the needed mount
+callback to the daemon is not done. This leads to the path walk
+continuing resulting in a callback to the daemon with an incorrect
+key. open(2) is called without O_DIRECTORY by the "find" utility but
+this should be handled properly anyway.
 
-Now we are seeing a couple of side affects of that change in situations
-with heavy mount activity.
+This happens because autofs needs to use the lookup flags to decide
+when to callback to the daemon to perform a mount to prevent mount
+storms. For example, an autofs indirect mount map that has the "browse"
+option will have the mount point directories are pre-created and the
+stat(2) call made by a color ls against each directory will cause all
+these directories to be mounted. It is unfortunate we need to resort
+to this but mount maps can be quite large. Additionally, if a user
+manually umounts an autofs indirect mount the directory isn't removed
+which also leads to this situation.
 
-Two cases have been identified:
+To resolve this autofs needs to use the lookup intent flags to enable
+it to make this decision. This patch adds this check and triggers a
+call back if any of the lookup intent flags are set as all these calls
+warrant a mount attempt be requested.
 
-1) When a mount request is triggered, due to the delayed hashing, the
-directory created by user space for the mount point doesn't have the
-DCACHE_AUTOFS_PENDING flag set. In the case of an autofs multi-mount
-where a tree of mount point directories are created this can lead to
-the path walk continuing rather than the dentry being sent to the wait
-queue to wait for request completion. This is because, if the pending
-flag isn't set, the criteria for deciding this is a mount in progress
-fails to hold, namely that the dentry is not a mount point and has no
-subdirectories.
+I know that external VFS code which uses the lookup flags is something
+that the VFS would like to eliminate but I have no choice as I can't
+see any other way to do this. A VFS dentry or inode operation callback
+which returns the lookup "type" (requires a definition) would be
+sufficient. But this change is needed now and I'm not aware of the form
+that coming VFS changes will take so I'm not willing to propose anything
+along these lines.
 
-2) A mount request dentry is initially created negative and unhashed.
-It remains this way until the ->mkdir() callback completes. Since it is
-unhashed a fresh dentry is used when the user space mount request creates
-the mount point directory. This leaves the original dentry negative and
-unhashed. But revalidate has no way to tell the VFS that the dentry has
-changed, other than to force another ->lookup() by returning false, which
-is at best wastefull and at worst not possible. This results in an
--ENOENT return from the original path walk when in fact the mount succeeded.
-
-To resolve this we need to ensure that the same dentry is used in all
-calls to ->lookup() during the course of a mount request. This patch
-achieves that by adding the initial dentry to a look aside list and
-removes it at ->mkdir() or ->symlink() completion (or when the dentry
-is released), since these are the only create operations autofs4 supports.
+If anyone can provide an alternate method I would be happy to use it.
 
 Signed-off-by: Ian Kent <raven@themaw.net>
 
 ---
 
- fs/autofs4/autofs_i.h |    2 +
- fs/autofs4/inode.c    |   25 ++++---
- fs/autofs4/root.c     |  169 ++++++++++++++++++++++++++++++++++++++++---------
- 3 files changed, 156 insertions(+), 40 deletions(-)
+ fs/autofs4/root.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
 
-diff --git a/fs/autofs4/autofs_i.h b/fs/autofs4/autofs_i.h
-index 69b1497..2dce233 100644
---- a/fs/autofs4/autofs_i.h
-+++ b/fs/autofs4/autofs_i.h
-@@ -52,6 +52,7 @@ struct autofs_info {
- 
- 	int		flags;
- 
-+	struct list_head active;
- 	struct list_head expiring;
- 
- 	struct autofs_sb_info *sbi;
-@@ -113,6 +114,7 @@ struct autofs_sb_info {
- 	spinlock_t fs_lock;
- 	struct autofs_wait_queue *queues; /* Wait queue pointer */
- 	spinlock_t lookup_lock;
-+	struct list_head active_list;
- 	struct list_head expiring_list;
- };
- 
-diff --git a/fs/autofs4/inode.c b/fs/autofs4/inode.c
-index 94bfc15..e3e7099 100644
---- a/fs/autofs4/inode.c
-+++ b/fs/autofs4/inode.c
-@@ -24,8 +24,10 @@
- 
- static void ino_lnkfree(struct autofs_info *ino)
- {
--	kfree(ino->u.symlink);
--	ino->u.symlink = NULL;
-+	if (ino->u.symlink) {
-+		kfree(ino->u.symlink);
-+		ino->u.symlink = NULL;
-+	}
- }
- 
- struct autofs_info *autofs4_init_ino(struct autofs_info *ino,
-@@ -41,16 +43,18 @@ struct autofs_info *autofs4_init_ino(struct autofs_info *ino,
- 	if (ino == NULL)
- 		return NULL;
- 
--	ino->flags = 0;
--	ino->mode = mode;
--	ino->inode = NULL;
--	ino->dentry = NULL;
--	ino->size = 0;
--
--	INIT_LIST_HEAD(&ino->expiring);
-+	if (!reinit) {
-+		ino->flags = 0;
-+		ino->inode = NULL;
-+		ino->dentry = NULL;
-+		ino->size = 0;
-+		INIT_LIST_HEAD(&ino->active);
-+		INIT_LIST_HEAD(&ino->expiring);
-+		atomic_set(&ino->count, 0);
-+	}
- 
-+	ino->mode = mode;
- 	ino->last_used = jiffies;
--	atomic_set(&ino->count, 0);
- 
- 	ino->sbi = sbi;
- 
-@@ -339,6 +343,7 @@ int autofs4_fill_super(struct super_block *s, void *data, int silent)
- 	spin_lock_init(&sbi->fs_lock);
- 	sbi->queues = NULL;
- 	spin_lock_init(&sbi->lookup_lock);
-+	INIT_LIST_HEAD(&sbi->active_list);
- 	INIT_LIST_HEAD(&sbi->expiring_list);
- 	s->s_blocksize = 1024;
- 	s->s_blocksize_bits = 10;
 diff --git a/fs/autofs4/root.c b/fs/autofs4/root.c
-index 8511cb2..7fa303d 100644
+index 236eb9b..7f3ebf1 100644
 --- a/fs/autofs4/root.c
 +++ b/fs/autofs4/root.c
-@@ -473,6 +473,8 @@ void autofs4_dentry_release(struct dentry *de)
+@@ -31,6 +31,9 @@ static int autofs4_root_readdir(struct file * filp, void * dirent, filldir_t fil
+ static struct dentry *autofs4_lookup(struct inode *,struct dentry *, struct nameidata *);
+ static void *autofs4_follow_link(struct dentry *, struct nameidata *);
  
- 		if (sbi) {
- 			spin_lock(&sbi->lookup_lock);
-+			if (!list_empty(&inf->active))
-+				list_del(&inf->active);
- 			if (!list_empty(&inf->expiring))
- 				list_del(&inf->expiring);
- 			spin_unlock(&sbi->lookup_lock);
-@@ -497,6 +499,58 @@ static struct dentry_operations autofs4_dentry_operations = {
- 	.d_release	= autofs4_dentry_release,
- };
- 
-+static struct dentry *autofs4_lookup_active(struct autofs_sb_info *sbi, struct dentry *parent, struct qstr *name)
-+{
-+	unsigned int len = name->len;
-+	unsigned int hash = name->hash;
-+	const unsigned char *str = name->name;
-+	struct list_head *p, *head;
++#define TRIGGER_FLAGS   (LOOKUP_CONTINUE | LOOKUP_DIRECTORY)
++#define TRIGGER_INTENTS (LOOKUP_OPEN | LOOKUP_ACCESS | LOOKUP_CREATE)
 +
-+	spin_lock(&dcache_lock);
-+	spin_lock(&sbi->lookup_lock);
-+	head = &sbi->active_list;
-+	list_for_each(p, head) {
-+		struct autofs_info *ino;
-+		struct dentry *dentry;
-+		struct qstr *qstr;
-+
-+		ino = list_entry(p, struct autofs_info, active);
-+		dentry = ino->dentry;
-+
-+		spin_lock(&dentry->d_lock);
-+
-+		/* Already gone? */
-+		if (atomic_read(&dentry->d_count) == 0)
-+			goto next;
-+
-+		qstr = &dentry->d_name;
-+
-+		if (dentry->d_name.hash != hash)
-+			goto next;
-+		if (dentry->d_parent != parent)
-+			goto next;
-+
-+		if (qstr->len != len)
-+			goto next;
-+		if (memcmp(qstr->name, str, len))
-+			goto next;
-+
-+		if (d_unhashed(dentry)) {
-+			dget(dentry);
-+			spin_unlock(&dentry->d_lock);
-+			spin_unlock(&sbi->lookup_lock);
-+			spin_unlock(&dcache_lock);
-+			return dentry;
-+		}
-+next:
-+		spin_unlock(&dentry->d_lock);
-+	}
-+	spin_unlock(&sbi->lookup_lock);
-+	spin_unlock(&dcache_lock);
-+
-+	return NULL;
-+}
-+
- static struct dentry *autofs4_lookup_expiring(struct autofs_sb_info *sbi, struct dentry *parent, struct qstr *name)
- {
- 	unsigned int len = name->len;
-@@ -554,7 +608,8 @@ next:
- static struct dentry *autofs4_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
- {
- 	struct autofs_sb_info *sbi;
--	struct dentry *expiring;
-+	struct autofs_info *ino;
-+	struct dentry *expiring, *unhashed;
- 	int oz_mode;
- 
- 	DPRINTK("name = %.*s",
-@@ -572,12 +627,12 @@ static struct dentry *autofs4_lookup(struct inode *dir, struct dentry *dentry, s
- 
- 	expiring = autofs4_lookup_expiring(sbi, dentry->d_parent, &dentry->d_name);
- 	if (expiring) {
--		struct autofs_info *ino = autofs4_dentry_ino(expiring);
- 		/*
- 		 * If we are racing with expire the request might not
- 		 * be quite complete but the directory has been removed
- 		 * so it must have been successful, so just wait for it.
- 		 */
-+		ino = autofs4_dentry_ino(expiring);
- 		while (ino && (ino->flags & AUTOFS_INF_EXPIRING)) {
- 			DPRINTK("wait for incomplete expire %p name=%.*s",
- 				expiring, expiring->d_name.len,
-@@ -588,21 +643,41 @@ static struct dentry *autofs4_lookup(struct inode *dir, struct dentry *dentry, s
- 		dput(expiring);
- 	}
- 
--	/*
--	 * Mark the dentry incomplete but don't hash it. We do this
--	 * to serialize our inode creation operations (symlink and
--	 * mkdir) which prevents deadlock during the callback to
--	 * the daemon. Subsequent user space lookups for the same
--	 * dentry are placed on the wait queue while the daemon
--	 * itself is allowed passage unresticted so the create
--	 * operation itself can then hash the dentry. Finally,
--	 * we check for the hashed dentry and return the newly
--	 * hashed dentry.
--	 */
--	dentry->d_op = &autofs4_root_dentry_operations;
-+	unhashed = autofs4_lookup_active(sbi, dentry->d_parent, &dentry->d_name);
-+	if (unhashed)
-+		dentry = unhashed;
-+	else {
-+		/*
-+		 * Mark the dentry incomplete but don't hash it. We do this
-+		 * to serialize our inode creation operations (symlink and
-+		 * mkdir) which prevents deadlock during the callback to
-+		 * the daemon. Subsequent user space lookups for the same
-+		 * dentry are placed on the wait queue while the daemon
-+		 * itself is allowed passage unresticted so the create
-+		 * operation itself can then hash the dentry. Finally,
-+		 * we check for the hashed dentry and return the newly
-+		 * hashed dentry.
-+		 */
-+		dentry->d_op = &autofs4_root_dentry_operations;
- 
--	dentry->d_fsdata = NULL;
--	d_instantiate(dentry, NULL);
-+		/*
-+		 * And we need to ensure that the same dentry is used for
-+		 * all following lookup calls until it is hashed so that
-+		 * the dentry flags are persistent throughout the request.
-+		 */
-+		ino = autofs4_init_ino(NULL, sbi, 0555);
-+		if (!ino)
-+			return ERR_PTR(-ENOMEM);
-+
-+		dentry->d_fsdata = ino;
-+		ino->dentry = dentry;
-+
-+		spin_lock(&sbi->lookup_lock);
-+		list_add(&ino->active, &sbi->active_list);
-+		spin_unlock(&sbi->lookup_lock);
-+
-+		d_instantiate(dentry, NULL);
-+	}
- 
- 	if (!oz_mode) {
- 		spin_lock(&dentry->d_lock);
-@@ -627,12 +702,16 @@ static struct dentry *autofs4_lookup(struct inode *dir, struct dentry *dentry, s
- 			if (sigismember (sigset, SIGKILL) ||
- 			    sigismember (sigset, SIGQUIT) ||
- 			    sigismember (sigset, SIGINT)) {
-+			    if (unhashed)
-+				dput(unhashed);
- 			    return ERR_PTR(-ERESTARTNOINTR);
- 			}
+ const struct file_operations autofs4_root_operations = {
+ 	.open		= dcache_dir_open,
+ 	.release	= dcache_dir_close,
+@@ -291,7 +294,7 @@ static int try_to_fill_dentry(struct dentry *dentry, int flags)
+ 			return status;
  		}
--		spin_lock(&dentry->d_lock);
--		dentry->d_flags &= ~DCACHE_AUTOFS_PENDING;
--		spin_unlock(&dentry->d_lock);
-+		if (!oz_mode) {
-+			spin_lock(&dentry->d_lock);
-+			dentry->d_flags &= ~DCACHE_AUTOFS_PENDING;
-+			spin_unlock(&dentry->d_lock);
-+		}
- 	}
+ 	/* Trigger mount for path component or follow link */
+-	} else if (flags & (LOOKUP_CONTINUE | LOOKUP_DIRECTORY) ||
++	} else if (flags & (TRIGGER_FLAGS | TRIGGER_INTENTS) ||
+ 			current->link_count) {
+ 		DPRINTK("waiting for mount name=%.*s",
+ 			dentry->d_name.len, dentry->d_name.name);
+@@ -336,7 +339,7 @@ static void *autofs4_follow_link(struct dentry *dentry, struct nameidata *nd)
+ 		nd->flags);
  
- 	/*
-@@ -656,9 +735,15 @@ static struct dentry *autofs4_lookup(struct inode *dir, struct dentry *dentry, s
- 		else
- 			dentry = ERR_PTR(-ENOENT);
+ 	/* If it's our master or we shouldn't trigger a mount we're done */
+-	lookup_type = nd->flags & (LOOKUP_CONTINUE | LOOKUP_DIRECTORY);
++	lookup_type = nd->flags & (TRIGGER_FLAGS | TRIGGER_INTENTS);
+ 	if (oz_mode || !lookup_type)
+ 		goto done;
  
-+		if (unhashed)
-+			dput(unhashed);
-+
- 		return dentry;
- 	}
- 
-+	if (unhashed)
-+		return unhashed;
-+
- 	return NULL;
- }
- 
-@@ -679,20 +764,30 @@ static int autofs4_dir_symlink(struct inode *dir,
- 		return -EACCES;
- 
- 	ino = autofs4_init_ino(ino, sbi, S_IFLNK | 0555);
--	if (ino == NULL)
--		return -ENOSPC;
-+	if (!ino)
-+		return -ENOMEM;
- 
--	ino->size = strlen(symname);
--	ino->u.symlink = cp = kmalloc(ino->size + 1, GFP_KERNEL);
-+	spin_lock(&sbi->lookup_lock);
-+	if (!list_empty(&ino->active))
-+		list_del_init(&ino->active);
-+	spin_unlock(&sbi->lookup_lock);
- 
--	if (cp == NULL) {
--		kfree(ino);
--		return -ENOSPC;
-+	cp = kmalloc(ino->size + 1, GFP_KERNEL);
-+	if (!cp) {
-+		if (!dentry->d_fsdata)
-+			kfree(ino);
-+		return -ENOMEM;
- 	}
- 
- 	strcpy(cp, symname);
- 
- 	inode = autofs4_get_inode(dir->i_sb, ino);
-+	if (!inode) {
-+		kfree(cp);
-+		if (!dentry->d_fsdata)
-+			kfree(ino);
-+		return -ENOMEM;
-+	}
- 	d_add(dentry, inode);
- 
- 	if (dir == dir->i_sb->s_root->d_inode)
-@@ -708,6 +803,8 @@ static int autofs4_dir_symlink(struct inode *dir,
- 		atomic_inc(&p_ino->count);
- 	ino->inode = inode;
- 
-+	ino->size = strlen(symname);
-+	ino->u.symlink = cp;
- 	dir->i_mtime = CURRENT_TIME;
- 
- 	return 0;
-@@ -752,7 +849,8 @@ static int autofs4_dir_unlink(struct inode *dir, struct dentry *dentry)
- 
- 	spin_lock(&dcache_lock);
- 	spin_lock(&sbi->lookup_lock);
--	list_add(&ino->expiring, &sbi->expiring_list);
-+	if (list_empty(&ino->expiring))
-+		list_add(&ino->expiring, &sbi->expiring_list);
- 	spin_unlock(&sbi->lookup_lock);
- 	spin_lock(&dentry->d_lock);
- 	__d_drop(dentry);
-@@ -780,7 +878,8 @@ static int autofs4_dir_rmdir(struct inode *dir, struct dentry *dentry)
- 		return -ENOTEMPTY;
- 	}
- 	spin_lock(&sbi->lookup_lock);
--	list_add(&ino->expiring, &sbi->expiring_list);
-+	if (list_empty(&ino->expiring))
-+		list_add(&ino->expiring, &sbi->expiring_list);
- 	spin_unlock(&sbi->lookup_lock);
- 	spin_lock(&dentry->d_lock);
- 	__d_drop(dentry);
-@@ -816,10 +915,20 @@ static int autofs4_dir_mkdir(struct inode *dir, struct dentry *dentry, int mode)
- 		dentry, dentry->d_name.len, dentry->d_name.name);
- 
- 	ino = autofs4_init_ino(ino, sbi, S_IFDIR | 0555);
--	if (ino == NULL)
--		return -ENOSPC;
-+	if (!ino)
-+		return -ENOMEM;
-+
-+	spin_lock(&sbi->lookup_lock);
-+	if (!list_empty(&ino->active))
-+		list_del_init(&ino->active);
-+	spin_unlock(&sbi->lookup_lock);
- 
- 	inode = autofs4_get_inode(dir->i_sb, ino);
-+	if (!inode) {
-+		if (!dentry->d_fsdata)
-+			kfree(ino);
-+		return -ENOMEM;
-+	}
- 	d_add(dentry, inode);
- 
- 	if (dir == dir->i_sb->s_root->d_inode)
