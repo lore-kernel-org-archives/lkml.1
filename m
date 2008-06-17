@@ -1,39 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760374AbYFQXcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760705AbYFQXdx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760374AbYFQXcV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 19:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758930AbYFQXcH
+	id S1760705AbYFQXdx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 19:33:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758788AbYFQXdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 19:32:07 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59826
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757572AbYFQXcF (ORCPT
+	Tue, 17 Jun 2008 19:33:43 -0400
+Received: from trinity.fluff.org ([89.145.97.151]:56667 "EHLO
+	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756690AbYFQXdm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 19:32:05 -0400
-Date: Tue, 17 Jun 2008 16:32:05 -0700 (PDT)
-Message-Id: <20080617.163205.160864233.davem@davemloft.net>
-To: maxk@qualcomm.com
-Cc: wcang@nav6.org, steve.zabele@baesystems.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] NET: Proper handling of IPv6 header in tun driver when
- TUN_NO_PI is set
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <48499C32.6070703@qualcomm.com>
-References: <4849162D.7000401@nav6.org>
-	<48499C32.6070703@qualcomm.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 17 Jun 2008 19:33:42 -0400
+Date: Wed, 18 Jun 2008 00:33:40 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Pierre Ossman <drzeus@drzeus.cx>
+Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
+       Harald Welte <laforge@openmoko.org>, Thomas Kleffel <tk@maintech.de>,
+       Roman Moravcik <roman.moravcik@gmail.com>
+Subject: Re: [patch 11/15] MMC: Fix the retcode in the S3C24XX MMC/SD driver
+Message-ID: <20080617233340.GE10351@trinity.fluff.org>
+References: <20080606155117.074799346@fluff.org.uk> <20080606155526.681793235@fluff.org.uk> <20080614182505.058cefe3@mjolnir.drzeus.cx>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080614182505.058cefe3@mjolnir.drzeus.cx>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.9i
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-Date: Fri, 06 Jun 2008 13:21:06 -0700
-
-> Acked-by: Max Krasnyansky <maxk@qualcomm.com>
+On Sat, Jun 14, 2008 at 06:25:05PM +0200, Pierre Ossman wrote:
+> On Fri, 06 Jun 2008 16:51:28 +0100
+> Ben Dooks <ben-linux@fluff.org> wrote:
 > 
-> Dave, can you please add this patch to your tree.
+> > Fix the error codes
+> > 
+> > Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+> > 
+> 
+> NAK, for rather obvious reasons.
 
-I can't, the patch is severely whitespace damaged.
+Fixed and folded back into patch #2.
+
+thanks,
+-- 
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
+
