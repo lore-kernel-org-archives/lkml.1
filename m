@@ -1,93 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755379AbYFQDmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755258AbYFQDqu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755379AbYFQDmu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 23:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbYFQDmm
+	id S1755258AbYFQDqu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 23:46:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbYFQDql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 23:42:42 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:35731 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753642AbYFQDml (ORCPT
+	Mon, 16 Jun 2008 23:46:41 -0400
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:54208 "EHLO
+	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753523AbYFQDqk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 23:42:41 -0400
-Date: Mon, 16 Jun 2008 20:42:28 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Adrian Bunk <bunk@kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug #10815] 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
-Message-ID: <20080617034228.GA18217@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080614194338.GA4820@martell.zuzino.mipt.ru> <20080615033001.GE26421@linux.vnet.ibm.com> <20080615162150.GA8289@martell.zuzino.mipt.ru> <20080615181710.GA17915@linux.vnet.ibm.com> <alpine.LFD.1.10.0806151323101.2949@woody.linux-foundation.org> <20080615232754.GD17915@linux.vnet.ibm.com> <alpine.LFD.1.10.0806151633290.2949@woody.linux-foundation.org> <20080616030154.GA7445@martell.zuzino.mipt.ru> <20080616033126.GF17915@linux.vnet.ibm.com> <20080616034659.GA7600@martell.zuzino.mipt.ru>
+	Mon, 16 Jun 2008 23:46:40 -0400
+Message-ID: <48573397.608@linux.vnet.ibm.com>
+Date: Tue, 17 Jun 2008 09:16:31 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080616034659.GA7600@martell.zuzino.mipt.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "menage@google.com" <menage@google.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/2] memcg: reduce usage at change limit
+References: <20080617123144.ce5a74fa.kamezawa.hiroyu@jp.fujitsu.com> <20080617123604.c8cb1bd5.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080617123604.c8cb1bd5.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 16, 2008 at 07:46:59AM +0400, Alexey Dobriyan wrote:
-> On Sun, Jun 15, 2008 at 08:31:26PM -0700, Paul E. McKenney wrote:
-> > On Mon, Jun 16, 2008 at 07:01:54AM +0400, Alexey Dobriyan wrote:
-> > > On Sun, Jun 15, 2008 at 04:38:24PM -0700, Linus Torvalds wrote:
-> > > > On Sun, 15 Jun 2008, Paul E. McKenney wrote:
-> > > > >
-> > > > > If that is the right thing to do.  I would feel better about it if I
-> > > > > could reproduce the failure.
-> > > > 
-> > > > Is there some configuration thing that might make it happen for Alexey but 
-> > > > not for you? The only obvious one is the normal PREEMPT thing, but 
-> > > > PREEMPT_RCU obviously depends on that, so there must be something else.
-> > > > 
-> > > > CONFIG_SMP? CONFIG_NO_HZ? CONFIG_[RT|FAIR]_GROUP_SCHED? There's a number 
-> > > > of config options that change scheduling details..
-> > > 
-> > > The only way I can "fix" rcutorture here is SMP=n (not maxcpus=1!).
-> > 
-> > I am running SMP=y without seeing the problem.
-> > 
-> > > Among things tried and do not matter are NO_HZ, HIGH_RES_TIMERS, turning off
-> > > debugging options (one by one and in bulk), DEBUG_PER_CPU_MAPS, HZ tweaks,
-> > > SCHED_MC.
-> > > 
-> > > All of this doesn't help, but SMP=n does.
-> > 
-> > Attached is the compressed config file I used for a run on a POWER
-> > machine.  I have used similar config files for x86.  For this run, I built
-> > LTP, installed it, started rcutorture, ran LTP, then ended rcutorture.
-> > 
-> > The only other thing I can think of is that Alexey's machines are
-> > somehow managing to nest NMIs or something.  I can produce a fix for
-> > that, but have no way of testing it.
+KAMEZAWA Hiroyuki wrote:
+> Reduce the usage of res_counter at the change of limit.
 > 
-> No NMIs here according to /proc/interrupts .
+> Changelog v4 -> v5.
+>  - moved "feedback" alogrithm from res_counter to memcg.
 > 
->            CPU0       CPU1       
->   0:         42          0   IO-APIC-edge      timer
->   1:          8          0   IO-APIC-edge      i8042
->   8:          1          0   IO-APIC-edge      rtc
->   9:          0          0   IO-APIC-fasteoi   acpi
->  16:          0          0   IO-APIC-fasteoi   ahci, uhci_hcd:usb1
->  17:         35          0   IO-APIC-fasteoi   pata_jmicron, uhci_hcd:usb2
->  18:          0          0   IO-APIC-fasteoi   ehci_hcd:usb3, uhci_hcd:usb6
->  19:       6238          0   IO-APIC-fasteoi   ata_piix, ata_piix, uhci_hcd:usb5
->  22:        278          0   IO-APIC-fasteoi   HDA Intel
->  23:       2802          0   IO-APIC-fasteoi   uhci_hcd:usb4, ehci_hcd:usb7, eth1
-> 319:       5126          0   PCI-MSI-edge      eth0
-> NMI:          0          0   Non-maskable interrupts
-> LOC:      66777      66036   Local timer interrupts
-> RES:       3031       3403   Rescheduling interrupts
-> CAL:         17         62   function call interrupts
-> TLB:        671        900   TLB shootdowns
-> TRM:          0          0   Thermal event interrupts
-> THR:          0          0   Threshold APIC interrupts
-> SPU:          0          0   Spurious interrupts
-> ERR:          0
+> Background:
+>  - Now, mem->usage is not reduced at limit change. So, the users will see
+>    usage > limit case in memcg every time. This patch fixes it.
+> 
+>  Before:
+>  - no usage change at setting limit.
+>  - setting limit always returns 0 even if usage can never be less than zero.
+>    (This can happen when memory is locked or there is no swap.)
+>  - This is BUG, I think.
+>  After:
+>  - usage will be less than new limit at limit change.
+>  - set limit returns -EBUSY when the usage cannot be reduced.
+> 
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> ---
+>  Documentation/controllers/memory.txt |    3 -
+>  mm/memcontrol.c                      |   68 ++++++++++++++++++++++++++++-------
+>  2 files changed, 56 insertions(+), 15 deletions(-)
+> 
+> Index: mm-2.6.26-rc5-mm3/mm/memcontrol.c
+> ===================================================================
+> --- mm-2.6.26-rc5-mm3.orig/mm/memcontrol.c
+> +++ mm-2.6.26-rc5-mm3/mm/memcontrol.c
+> @@ -852,18 +852,30 @@ out:
+>  	css_put(&mem->css);
+>  	return ret;
+>  }
+> +/*
+> + * try to set limit and reduce usage if necessary.
+> + * returns 0 at success.
+> + * returns -EBUSY if memory cannot be dropped.
+> + */
+> 
+> -static int mem_cgroup_write_strategy(char *buf, unsigned long long *tmp)
+> +static inline int mem_cgroup_resize_limit(struct cgroup *cont,
+> +					unsigned long long val)
+>  {
+> -	*tmp = memparse(buf, &buf);
+> -	if (*buf != '\0')
+> -		return -EINVAL;
+> +	struct mem_cgroup *memcg = mem_cgroup_from_cont(cont);
+> +	int retry_count = 0;
+> +	int progress;
+> 
+> -	/*
+> -	 * Round up the value to the closest page size
+> -	 */
+> -	*tmp = ((*tmp + PAGE_SIZE - 1) >> PAGE_SHIFT) << PAGE_SHIFT;
+> -	return 0;
+> +retry:
+> +	if (!res_counter_set_limit(&memcg->res, val))
+> +		return 0;
+> +	if (retry_count == MEM_CGROUP_RECLAIM_RETRIES)
+> +		return -EBUSY;
+> +
+> +	cond_resched();
 
-OK, thank you for the information.  Looking elsewhere...
+Do we really need this? We do have cond_resched in shrink_page_list(),
+shrink_active_list(), do we need it here as well?
 
-						Thanx, Paul
+> +	progress = try_to_free_mem_cgroup_pages(memcg, GFP_KERNEL);
+> +	if (!progress)
+> +		retry_count++;
+> +	goto retry;
+
+I don't like upward goto's. Can't we convert this to a nice do {} while or
+while() loop?
+
+>  }
+> 
+>  static u64 mem_cgroup_read(struct cgroup *cont, struct cftype *cft)
+> @@ -874,11 +886,41 @@ static u64 mem_cgroup_read(struct cgroup
+> 
+>  static ssize_t mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
+>  				struct file *file, const char __user *userbuf,
+> -				size_t nbytes, loff_t *ppos)
+> +				size_t bbytes, loff_t *ppos)
+>  {
+> -	return res_counter_write(&mem_cgroup_from_cont(cont)->res,
+> -				cft->private, userbuf, nbytes, ppos,
+> -				mem_cgroup_write_strategy);
+> +	char *buf, *end;
+> +	unsigned long long val;
+> +	int ret;
+> +
+> +	buf = kmalloc(bbytes + 1, GFP_KERNEL);
+> +	if (!buf)
+> +		return -ENOMEM;
+> +	buf[bbytes] = '\0';
+> +	ret = -EFAULT;
+> +	if (copy_from_user(buf, userbuf, bbytes))
+> +		goto out;
+> +
+> +	ret = -EINVAL;
+> +	strstrip(buf);
+> +	val = memparse(buf, &end);
+> +	if (*end != '\0')
+> +		goto out;
+> +	/* Round to page size */
+> +	val = ((val + PAGE_SIZE - 1) >> PAGE_SHIFT) << PAGE_SHIFT;
+> +
+> +	switch(cft->private) {
+> +	case RES_LIMIT:
+> +		ret = mem_cgroup_resize_limit(cont, val);
+> +		break;
+> +	default:
+> +		ret = -EINVAL;
+> +		goto out;
+> +	}
+> +	if (!ret)
+> +		ret = bbytes;
+> +out:
+> +	kfree(buf);
+> +	return ret;
+>  }
+> 
+>  static int mem_cgroup_reset(struct cgroup *cont, unsigned int event)
+> Index: mm-2.6.26-rc5-mm3/Documentation/controllers/memory.txt
+> ===================================================================
+> --- mm-2.6.26-rc5-mm3.orig/Documentation/controllers/memory.txt
+> +++ mm-2.6.26-rc5-mm3/Documentation/controllers/memory.txt
+> @@ -242,8 +242,7 @@ rmdir() if there are no tasks.
+>  1. Add support for accounting huge pages (as a separate controller)
+>  2. Make per-cgroup scanner reclaim not-shared pages first
+>  3. Teach controller to account for shared-pages
+> -4. Start reclamation when the limit is lowered
+> -5. Start reclamation in the background when the limit is
+> +4. Start reclamation in the background when the limit is
+>     not yet hit but the usage is getting closer
+
+Except for the minor nits
+
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
