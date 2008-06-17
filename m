@@ -1,125 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756405AbYFQIdK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757001AbYFQIgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756405AbYFQIdK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 04:33:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbYFQIcw
+	id S1757001AbYFQIgR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 04:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754619AbYFQIgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 04:32:52 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49275 "EHLO mx3.mail.elte.hu"
+	Tue, 17 Jun 2008 04:36:05 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:25683 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753386AbYFQIcu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 04:32:50 -0400
-Date: Tue, 17 Jun 2008 10:32:20 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: kuznet@ms2.inr.ac.ru, vgusev@openvz.org, mcmanus@ducksong.com,
-       xemul@openvz.org, netdev@vger.kernel.org, ilpo.jarvinen@helsinki.fi,
-       linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [TCP]: TCP_DEFER_ACCEPT causes leak sockets
-Message-ID: <20080617083220.GA11393@elte.hu>
-References: <20080613114746.GA27811@elte.hu> <20080616.165900.189566405.davem@davemloft.net> <20080617072658.GA12535@elte.hu> <20080617.003832.130616157.davem@davemloft.net> <20080617080958.GC12535@elte.hu>
+	id S1754186AbYFQIgC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 04:36:02 -0400
+Date: Tue, 17 Jun 2008 10:36:00 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Zhang, Yanmin" <yanmin.zhang@intel.com>
+Cc: "Lin, Ming M" <ming.m.lin@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: FIO: kjournald blocked for more than 120 seconds
+Message-ID: <20080617083600.GE20851@kernel.dk>
+References: <1213581875.7398.32.camel@minggr> <20080616192950.GZ20851@kernel.dk> <37E52D09333DE2469A03574C88DBF40F02011751@pdsmsx414.ccr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080617080958.GC12535@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <37E52D09333DE2469A03574C88DBF40F02011751@pdsmsx414.ccr.corp.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jun 17 2008, Zhang, Yanmin wrote:
+> >>-----Original Message-----
+> >>From: Jens Axboe [mailto:jens.axboe@oracle.com]
+> >>Sent: Tuesday, June 17, 2008 3:30 AM
+> >>To: Lin, Ming M
+> >>Cc: Zhang, Yanmin; Linux Kernel Mailing List
+> >>Subject: Re: FIO: kjournald blocked for more than 120 seconds
+> >>
+> >>On Mon, Jun 16 2008, Lin Ming wrote:
+> >>> Hi, Jens
+> >>>
+> >>> When runnig FIO benchmark, kjournald blocked for more than 120
+> seconds.
+> >>> Detailed root cause analysis and proposed solutions as below.
+> >>>
+> >>> Any comment is appreciated.
+> >>>
+> >>> Hardware Environment
+> >>> ---------------------
+> >>> 13 SEAGATE ST373307FC disks in a JBOD, connected by a Qlogic ISP2312
+> >>> Fibe Channel HBA.
+> >>>
+> >>> Bug description
+> >>> ----------------
+> >>> fio vsync random read 4K in 13 disks, 4 processes per disk, fio
+> global
+> >>> paramter as below,
+> >>> Tested 4 IO schedulers, issue is only seen in CFQ.
+> >>>
+> >>> INFO: task kjournald:20558 blocked for more than 120 seconds.
+> >>> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this
+> >>> message.
+> >>> kjournald     D ffff810010820978  6712 20558      2
+> >>> ffff81022ddb1d10 0000000000000046 ffff81022e7baa10 ffffffff803ba6f2
+> >>> ffff81022ecd0000 ffff8101e6dc9160 ffff81022ecd0348 000000008048b6cb
+> >>> 0000000000000086 ffff81022c4e8d30 0000000000000000 ffffffff80247537
+> >>> Call Trace:
+> >>> [<ffffffff803ba6f2>] kobject_get+0x12/0x17
+> >>> The disks of my testing machine are tagged devices, so the CFQ idle
+> >>> window is disabled. In other words, the active queue of tagged
+> >>> devices(cfqd->hw_tag=1) never idle for a new request.
+> >>>
+> >>> This causes active queue be expired immediately if it's empty,
+> although
+> >>> it has not run out of time. CFQ will select next queue as active
+> queue.
+> >>> In this testcase, there are thousands of FIO read requests in sync
+> >>> queues, only a few write requests by journal_write_commit_record in
+> >>> async queues.
+> >>>
+> >>> In the other hand, all processes use the default io class and
+> priority.
+> >>> They share the async queue for the same device, but have their own
+> sync
+> >>> queue, so the sync queue number is 4 while asyn queue number is just
+> 1
+> >>> for the same device.
+> >>>
+> >>> So sync queue has much more chances be selected as new active queue
+> than
+> >>> async queue.
+> >>>
+> >>> Sync queues do not idle and they are dispatched all the time. This
+> leads
+> >>> to many unfinished requests in external queue,
+> >>> namely, cfqd->sync_flight > 0.
+> >>>
+> >>> static int cfq_dispatch_requests (...) {
+> >>> 	....
+> >>> 	while ((cfqq = cfq_select_queue(cfqd)) != NULL) {
+> >>> 	....
+> >>> 	if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq))
+> >>> 		break;
+> >>> 		....
+> >>> 		__cfq_dispatch_requests(cfqq)
+> >>> 	}
+> >>> 	....
+> >>> }
+> >>>
+> >>> When cfq_select_queue selects the async queue which includes
+> kjournald's
+> >>> write request, this selected async queue will never be dispatched
+> since
+> >>> cfqd->sync_flight > 0, so kjournald is blocked.
+> >>>
+> >>> Proposed 3 solutions
+> >>> ------------------
+> >>> 1. Do not check cfqd->sync_flight
+> >>>
+> >>> -               if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq))
+> >>> -                       break;
+> >>>
+> >>> 2. If we do need to check cfqd->sync_flight, then for tagged
+> devices, we
+> >>> should give a little more chances to async queue to be dispatched.
+> >>>
+> >>> @@ -1102,7 +1102,7 @@ static int cfq_dispatch_requests(struct
+> >>> request_queue *q, int force)
+> >>>                                 break;
+> >>>                 }
+> >>>
+> >>> -               if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq))
+> >>> +               if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq) && !
+> >>> cfqd->hw_tag)
+> >>>                         break;
+> >>>
+> >>> 3. Force write request issued by journal_write_commit_record as sync
+> >>> request. As a matter of fact, it looks like most write requests
+> >>> submitted by kjournald is async request. We need convert them to
+> sync
+> >>> requests.
+> >>
+> >>Thanks for the very detailed analysis of the problem, complete with
+> >>suggestions. While I think that any code that does:
+> >>
+> >>        submit async io
+> >>        wait for it
+> >>
+> >>should be issuing sync IO (or, better, automatically upgrade the
+> request
+> >>from async -> sync), we cannot rely on that.
+> [YM] We can talk case by case. We could convert some important async io
+> codes
+>  to sync io codes at least. For example, kjournald calls
+> sync_dirty_buffer what 
+> we captured in this case.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+I agree, we should fix the obvious cases. My point was merely that there
+will probably always be missed cases, so we should attempt to handle it
+in the scheduler as well. Does the below buffer patch make it any
+better?
 
-> 
-> > FWIW I don't think your TX timeout problem has anything to do with 
-> > packet ordering.  The TX element of the network device is totally 
-> > stateless, but it's hanging under some set of circumstances to the 
-> > point where we timeout and reset the hardware to get it going again.
-> 
-> ok. That's e1000 then. Cc:s added. Stock T60 laptop, 32-bit:
-> 
-> 02:00.0 Ethernet controller: Intel Corporation 82573L Gigabit Ethernet Controller
->         Subsystem: Lenovo ThinkPad T60
->         Flags: bus master, fast devsel, latency 0, IRQ 16
->         Memory at ee000000 (32-bit, non-prefetchable) [size=128K]
->         I/O ports at 2000 [size=32]
->         Capabilities: <access denied>
->         Kernel driver in use: e1000
-> 
-> the problem is this non-fatal warning showing up after bootup, 
-> sporadically, in a non-reproducible way:
-> 
-> [  173.354049] NETDEV WATCHDOG: eth0: transmit timed out
-> [  173.354148] ------------[ cut here ]------------
-> [  173.354221] WARNING: at net/sched/sch_generic.c:222 dev_watchdog+0x9a/0xec()
-> [  173.354298] Modules linked in:
-> [  173.354421] Pid: 13452, comm: cc1 Tainted: G        W 2.6.26-rc6-00273-g81ae43a-dirty #2573
-> [  173.354516]  [<c01250ca>] warn_on_slowpath+0x46/0x76
-> [  173.354641]  [<c011d428>] ? try_to_wake_up+0x1d6/0x1e0
-> [  173.354815]  [<c01411e9>] ? trace_hardirqs_off+0xb/0xd
-> [  173.357370]  [<c011d43d>] ? default_wake_function+0xb/0xd
-> [  173.357370]  [<c014112a>] ? trace_hardirqs_off_caller+0x15/0xc9
-> [  173.357370]  [<c01411e9>] ? trace_hardirqs_off+0xb/0xd
-> [  173.357370]  [<c0142c83>] ? trace_hardirqs_on+0xb/0xd
-> [  173.357370]  [<c0142b33>] ? trace_hardirqs_on_caller+0x16/0x15b
-> [  173.357370]  [<c0142c83>] ? trace_hardirqs_on+0xb/0xd
-> [  173.357370]  [<c06bb3c9>] ? _spin_unlock_irqrestore+0x5b/0x71
-> [  173.357370]  [<c0133d46>] ? __queue_work+0x2d/0x32
-> [  173.357370]  [<c0134023>] ? queue_work+0x50/0x72
-> [  173.357483]  [<c0134059>] ? schedule_work+0x14/0x16
-> [  173.357654]  [<c05c59b8>] dev_watchdog+0x9a/0xec
-> [  173.357783]  [<c012d456>] run_timer_softirq+0x13d/0x19d
-> [  173.357905]  [<c05c591e>] ? dev_watchdog+0x0/0xec
-> [  173.358073]  [<c05c591e>] ? dev_watchdog+0x0/0xec
-> [  173.360804]  [<c0129ad7>] __do_softirq+0xb2/0x15c
-> [  173.360804]  [<c0129a25>] ? __do_softirq+0x0/0x15c
-> [  173.360804]  [<c0105526>] do_softirq+0x84/0xe9
-> [  173.360804]  [<c0129996>] irq_exit+0x4b/0x88
-> [  173.360804]  [<c010ec7a>] smp_apic_timer_interrupt+0x73/0x81
-> [  173.360804]  [<c0103ddd>] apic_timer_interrupt+0x2d/0x34
-> [  173.360804]  =======================
-> [  173.360804] ---[ end trace a7919e7f17c0a725 ]---
-> 
-> full report can be found at:
-> 
->    http://lkml.org/lkml/2008/6/13/224
-> 
-> i have 3 other test-systems with e1000 (with a similar CPU) which are 
-> _not_ showing this symptom, so this could be some model-specific e1000 
-> issue.
+> Another case is writeback. If processes do mmapped I/O and they might
+> stop in 
+> page fault to wait writeback finishing. Or a buffer write might trigger
+> a dirty 
+> page balance. As the latest kernel is more aggressive to start
+> writeback, it might 
+> be an issue now.
 
-btw., this reminds me that this is the same system that has a serious 
-e1000 network latency bug which i have reported more than a year ago, 
-but which still does not appear to be fixed in latest mainline:
+Sync process getting stuck in async writeout is another problem of the
+same variety.
 
- PING europe (10.0.1.15) 56(84) bytes of data.
- 64 bytes from europe (10.0.1.15): icmp_seq=1 ttl=64 time=1.51 ms
- 64 bytes from europe (10.0.1.15): icmp_seq=2 ttl=64 time=404 ms
- 64 bytes from europe (10.0.1.15): icmp_seq=3 ttl=64 time=487 ms
- 64 bytes from europe (10.0.1.15): icmp_seq=4 ttl=64 time=296 ms
- 64 bytes from europe (10.0.1.15): icmp_seq=5 ttl=64 time=305 ms
- 64 bytes from europe (10.0.1.15): icmp_seq=6 ttl=64 time=1011 ms
- 64 bytes from europe (10.0.1.15): icmp_seq=7 ttl=64 time=0.209 ms
- 64 bytes from europe (10.0.1.15): icmp_seq=8 ttl=64 time=763 ms
- 64 bytes from europe (10.0.1.15): icmp_seq=9 ttl=64 time=1000 ms
- 64 bytes from europe (10.0.1.15): icmp_seq=10 ttl=64 time=0.438 ms
- 64 bytes from europe (10.0.1.15): icmp_seq=11 ttl=64 time=1000 ms
- 64 bytes from europe (10.0.1.15): icmp_seq=12 ttl=64 time=0.299 ms
- ^C
- --- europe ping statistics ---
- 12 packets transmitted, 12 received, 0% packet loss, time 11085ms
+diff --git a/fs/buffer.c b/fs/buffer.c
+index a073f3f..1957a8f 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -2978,7 +2978,7 @@ int sync_dirty_buffer(struct buffer_head *bh)
+ 	if (test_clear_buffer_dirty(bh)) {
+ 		get_bh(bh);
+ 		bh->b_end_io = end_buffer_write_sync;
+-		ret = submit_bh(WRITE, bh);
++		ret = submit_bh(WRITE_SYNC, bh);
+ 		wait_on_buffer(bh);
+ 		if (buffer_eopnotsupp(bh)) {
+ 			clear_buffer_eopnotsupp(bh);
 
-those up to 1000 msec delays can be 'felt' via ssh too, if this problem 
-triggers then the system is almost unusable via the network. Local 
-latencies are perfect so it's an e1000 problem.
+-- 
+Jens Axboe
 
-	Ingo
