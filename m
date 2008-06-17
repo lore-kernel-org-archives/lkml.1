@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759760AbYFQW7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760650AbYFQXAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759760AbYFQW7t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 18:59:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756809AbYFQW7d
+	id S1760650AbYFQXAU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 19:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759087AbYFQW7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 18:59:33 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:17549 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753693AbYFQW7c (ORCPT
+	Tue, 17 Jun 2008 18:59:35 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:15104 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756271AbYFQW7d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 18:59:32 -0400
-Message-Id: <20080617225823.045233728@ldl.fc.hp.com>
+	Tue, 17 Jun 2008 18:59:33 -0400
+Message-Id: <20080617225907.642544594@ldl.fc.hp.com>
+References: <20080617225823.045233728@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 17 Jun 2008 16:58:23 -0600
+Date: Tue, 17 Jun 2008 16:58:24 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org
@@ -27,61 +28,77 @@ Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Takashi Iwai <tiwai@suse.de>
 Cc: Jiri Slaby <jirislaby@gmail.com>
-Subject: [patch 00/28] PNP: convert fixed tables to lists, v3
+Subject: [patch 01/28] PNP: add detail to debug resource dump
+Content-Disposition: inline; filename=pnp-better-resource-dump
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch series contains all my PNP patches that are not yet in Linus'
-tree, including both the "convert resource table to dynamic list" series
-and the "convert resource options to unified dynamic list" series.
+In the debug resource dump, decode the flags and indicate when
+a resource is disabled or has been automatically assigned.
 
-This series should replace all the PNP patches in -mm from
-    pnp-add-detail-to-debug-resource-dump.patch
-    ...
-    not-for-merging-pnp-changes-suspend-oops.patch
-except for isa-set-24-bit-dma_mask-for-isa-devices.patch, which got
-stuck in the middle but isn't really PNP-related.
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-I'll be on vacation for the rest of the week, so I won't be able to
-respond to any issues until Monday.
+Index: work10/drivers/pnp/support.c
+===================================================================
+--- work10.orig/drivers/pnp/support.c	2008-05-02 11:18:50.000000000 -0600
++++ work10/drivers/pnp/support.c	2008-05-05 09:39:03.000000000 -0600
+@@ -63,28 +63,46 @@ void dbg_pnp_show_resources(struct pnp_d
+ 	for (i = 0; i < PNP_MAX_IRQ; i++) {
+ 		res = pnp_get_resource(dev, IORESOURCE_IRQ, i);
+ 		if (res && !(res->flags & IORESOURCE_UNSET))
+-			dev_dbg(&dev->dev, "  irq %lld flags %#lx\n",
+-				(unsigned long long) res->start, res->flags);
++			dev_dbg(&dev->dev, "  irq %lld flags %#lx%s%s\n",
++				(unsigned long long) res->start, res->flags,
++				res->flags & IORESOURCE_DISABLED ?
++					" DISABLED" : "",
++				res->flags & IORESOURCE_AUTO ?
++					" AUTO" : "");
+ 	}
+ 	for (i = 0; i < PNP_MAX_DMA; i++) {
+ 		res = pnp_get_resource(dev, IORESOURCE_DMA, i);
+ 		if (res && !(res->flags & IORESOURCE_UNSET))
+-			dev_dbg(&dev->dev, "  dma %lld flags %#lx\n",
+-				(unsigned long long) res->start, res->flags);
++			dev_dbg(&dev->dev, "  dma %lld flags %#lx%s%s\n",
++				(unsigned long long) res->start, res->flags,
++				res->flags & IORESOURCE_DISABLED ?
++					" DISABLED" : "",
++				res->flags & IORESOURCE_AUTO ?
++					" AUTO" : "");
+ 	}
+ 	for (i = 0; i < PNP_MAX_PORT; i++) {
+ 		res = pnp_get_resource(dev, IORESOURCE_IO, i);
+ 		if (res && !(res->flags & IORESOURCE_UNSET))
+-			dev_dbg(&dev->dev, "  io  %#llx-%#llx flags %#lx\n",
++			dev_dbg(&dev->dev, "  io  %#llx-%#llx flags %#lx"
++				"%s%s\n",
+ 				(unsigned long long) res->start,
+-				(unsigned long long) res->end, res->flags);
++				(unsigned long long) res->end, res->flags,
++				res->flags & IORESOURCE_DISABLED ?
++					" DISABLED" : "",
++				res->flags & IORESOURCE_AUTO ?
++					" AUTO" : "");
+ 	}
+ 	for (i = 0; i < PNP_MAX_MEM; i++) {
+ 		res = pnp_get_resource(dev, IORESOURCE_MEM, i);
+ 		if (res && !(res->flags & IORESOURCE_UNSET))
+-			dev_dbg(&dev->dev, "  mem %#llx-%#llx flags %#lx\n",
++			dev_dbg(&dev->dev, "  mem %#llx-%#llx flags %#lx"
++				"%s%s\n",
+ 				(unsigned long long) res->start,
+-				(unsigned long long) res->end, res->flags);
++				(unsigned long long) res->end, res->flags,
++				res->flags & IORESOURCE_DISABLED ?
++					" DISABLED" : "",
++				res->flags & IORESOURCE_AUTO ?
++					" AUTO" : "");
+ 	}
+ #endif
+ }
 
-Here are the significant changes since the last posting:
-
-    - When replacing pnp_resource_table, the PNPACPI resource encoders
-      have to explicitly handle disabled resources; previously any
-      unused slots in the table were implicitly disabled.  This should
-      fix Jiri Slaby's oops on suspend/resume (though he hasn't tested
-      this version).
-      
-      This change is in the patch titled "PNP: replace pnp_resource_table
-      with dynamically allocated resources".
-      
-    - Added a new patch to keep disabled IRQ and DMA resources when parsing
-      current config.  This fixes a bug in the current (2.6.25) PNPACPI
-      code: consider a device with (mem, irq0, irq1, io), where irq0 is
-      disabled.  If we drop irq0 when parsing the _CRS, we will mistakenly
-      put irq1 in the irq0 slot when we encode resources for an _SRS call.
-
-    - Added a new patch to avoid interrupts used by an IDE controller in
-      compatibility mode.  https://bugzilla.novell.com/show_bug.cgi?id=375836
-
-    - Added a new PNPACPI patch to support HP vendor-specific descriptors.
-      This has long been supported by arch/ia64/kernel/acpi-ext.c, which
-      provides an hp_acpi_csr_space() interface, but I think it's better
-      and more generic to support it in PNPACPI.
-
-Changes since v2 of "convert resource options to unified dynamic list":
-
-    - fixed bisection problem in quirk_ad1815_mpu_resources()
-    - fixed checkpatch warning in pnp_show_options()
-      (pnp-convert-resource-options-to-single-linked-list-checkpatch-fixes.patch)
-    - replaced pnp_independent_option() with literal 0
-    - fixed coding style in pnp/manager.c
-    - added EXPORT_SYMBOL(pnp_possible_config)
-      (pnp-add-pnp_possible_config-can-a-device-could-be-configured-this-way-fix.patch)
-
-Bjorn
 -- 
