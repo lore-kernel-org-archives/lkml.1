@@ -1,132 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756432AbYFQJzY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757268AbYFQJ5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756432AbYFQJzY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 05:55:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753702AbYFQJzL
+	id S1757268AbYFQJ5T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 05:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbYFQJ5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 05:55:11 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48014 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751789AbYFQJzJ (ORCPT
+	Tue, 17 Jun 2008 05:57:07 -0400
+Received: from wr-out-0506.google.com ([64.233.184.224]:50756 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753702AbYFQJ5E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 05:55:09 -0400
-Date: Tue, 17 Jun 2008 19:00:55 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: balbir@linux.vnet.ibm.com, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "menage@google.com" <menage@google.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/2] memcg: reduce usage at change limit
-Message-Id: <20080617190055.2b55ba0b.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080617130656.bcd3ca85.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080617123144.ce5a74fa.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080617123604.c8cb1bd5.kamezawa.hiroyu@jp.fujitsu.com>
-	<48573397.608@linux.vnet.ibm.com>
-	<20080617130656.bcd3ca85.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 17 Jun 2008 05:57:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=JDp/4pQHgXLE1MSHBWM7J+clatso0oDr/NjKvp5UYP7d+WHyYWYT9nrS7uKDdj48+h
+         FBmdJ4Yza/mVD32npo1mtC9J2jhLjsgja2su3vGaIwrkaZNoq0/ICdnyl7t047033IBh
+         rNReO8JTrOZd6t2ZerHSRmjGWPhGs1z6y8FYM=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 1/4] ide-pmac: media-bay support fixes
+Date: Tue, 17 Jun 2008 11:58:34 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200806162124.43005.bzolnier@gmail.com> <1213674572.8129.159.camel@pasglop> <200806171141.08865.bzolnier@gmail.com>
+In-Reply-To: <200806171141.08865.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806171158.35210.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jun 2008 13:06:56 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+On Tuesday 17 June 2008, Bartlomiej Zolnierkiewicz wrote:
+> On Tuesday 17 June 2008, Benjamin Herrenschmidt wrote:
+> > On Tue, 2008-06-17 at 13:39 +1000, Benjamin Herrenschmidt wrote:
+> > > Your patches don't apply on today upstream, I'll try against
+> > > linux-next or is there a git I can clone to test things ?
+> > 
+> > Ok, I'm lost. I have 3 different series of patches from you partially
+> > overlapping with different amount of patches in them. I don't have
+> > time to sort that out right now. Can you send me a single serie that
+> > I can apply on top of either upstream or tonight linux-next which
+> > should have your stuff removed hopefully ?
+> 
+> This patch series (from yesterday, the rest of can be ignored) should
+> apply fine to the next revision of linux-next (later than -next-20080616,
+> it is not out yet), if you prefer upstream patches I can look into it
 
-> On Tue, 17 Jun 2008 09:16:31 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
-> > KAMEZAWA Hiroyuki wrote:
-> > > Reduce the usage of res_counter at the change of limit.
-> > > 
-> > > Changelog v4 -> v5.
-> > >  - moved "feedback" alogrithm from res_counter to memcg.
-> > > 
-> > > Background:
-> > >  - Now, mem->usage is not reduced at limit change. So, the users will see
-> > >    usage > limit case in memcg every time. This patch fixes it.
-> > > 
-> > >  Before:
-> > >  - no usage change at setting limit.
-> > >  - setting limit always returns 0 even if usage can never be less than zero.
-> > >    (This can happen when memory is locked or there is no swap.)
-> > >  - This is BUG, I think.
-> > >  After:
-> > >  - usage will be less than new limit at limit change.
-> > >  - set limit returns -EBUSY when the usage cannot be reduced.
-> > > 
-> > > 
-> > > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > > 
-> > > ---
-> > >  Documentation/controllers/memory.txt |    3 -
-> > >  mm/memcontrol.c                      |   68 ++++++++++++++++++++++++++++-------
-> > >  2 files changed, 56 insertions(+), 15 deletions(-)
-> > > 
-> > > Index: mm-2.6.26-rc5-mm3/mm/memcontrol.c
-> > > ===================================================================
-> > > --- mm-2.6.26-rc5-mm3.orig/mm/memcontrol.c
-> > > +++ mm-2.6.26-rc5-mm3/mm/memcontrol.c
-> > > @@ -852,18 +852,30 @@ out:
-> > >  	css_put(&mem->css);
-> > >  	return ret;
-> > >  }
-> > > +/*
-> > > + * try to set limit and reduce usage if necessary.
-> > > + * returns 0 at success.
-> > > + * returns -EBUSY if memory cannot be dropped.
-> > > + */
-> > > 
-> > > -static int mem_cgroup_write_strategy(char *buf, unsigned long long *tmp)
-> > > +static inline int mem_cgroup_resize_limit(struct cgroup *cont,
-> > > +					unsigned long long val)
-> > >  {
-> > > -	*tmp = memparse(buf, &buf);
-> > > -	if (*buf != '\0')
-> > > -		return -EINVAL;
-> > > +	struct mem_cgroup *memcg = mem_cgroup_from_cont(cont);
-> > > +	int retry_count = 0;
-> > > +	int progress;
-> > > 
-> > > -	/*
-> > > -	 * Round up the value to the closest page size
-> > > -	 */
-> > > -	*tmp = ((*tmp + PAGE_SIZE - 1) >> PAGE_SHIFT) << PAGE_SHIFT;
-> > > -	return 0;
-> > > +retry:
-> > > +	if (!res_counter_set_limit(&memcg->res, val))
-> > > +		return 0;
-> > > +	if (retry_count == MEM_CGROUP_RECLAIM_RETRIES)
-> > > +		return -EBUSY;
-> > > +
-> > > +	cond_resched();
-> > 
-> > Do we really need this? We do have cond_resched in shrink_page_list(),
-> > shrink_active_list(), do we need it here as well?
-> > 
-> I'd like to add this when adding a busy loop. But ok, will remove.
-> 
-> > > +	progress = try_to_free_mem_cgroup_pages(memcg, GFP_KERNEL);
-> > > +	if (!progress)
-> > > +		retry_count++;
-> > > +	goto retry;
-> > 
-> > I don't like upward goto's. Can't we convert this to a nice do {} while or
-> > while() loop?
-> > 
-> Hmm, ok.
-> 
-> I'll repost later, today.
-> 
-I'll postpone this until -mm is settled ;)
+-next-20080617 is out now so please try it
 
-Thanks,
--Kame
-
+> tonight.
+> 
+> Thanks,
+> Bart
