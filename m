@@ -1,54 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757999AbYFQUnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758170AbYFQUpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757999AbYFQUnd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 16:43:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbYFQUnY
+	id S1758170AbYFQUpQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 16:45:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755511AbYFQUpD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 16:43:24 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37841 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755127AbYFQUnX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 16:43:23 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
-Date: Tue, 17 Jun 2008 22:44:23 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806170105.45647.rjw@sisk.pl> <alpine.LFD.1.10.0806170905221.3395@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.10.0806170905221.3395@apollo.tec.linutronix.de>
+	Tue, 17 Jun 2008 16:45:03 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:5032 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754942AbYFQUpA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 16:45:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=pyOOC6s5bV62hSCt4QYIA5JGhbKEtavRrDMOci+TGDissNDBQHk6opMn1sAh2+I6Rn
+         ZoOmZM9YY7f6N0Ma/0XAbYAFTLtL3HSuUvuXPIpIqeE7fAMfWkpl50GBRZIENfSl+ria
+         XyqqljsxqpfVYWT8H3b1Z+AC/DKMYrfXDf0Rk=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 3/4] ide-pmac: add ->init_dev method (take 2)
+Date: Tue, 17 Jun 2008 22:43:31 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <200806162124.48029.bzolnier@gmail.com> <20080617104546.3b4535c9.sfr@canb.auug.org.au>
+In-Reply-To: <20080617104546.3b4535c9.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806172244.24026.rjw@sisk.pl>
+Message-Id: <200806172243.32854.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 17 of June 2008, Thomas Gleixner wrote:
-> On Tue, 17 Jun 2008, Rafael J. Wysocki wrote:
-> > 
-> > BTW, with the C1E patches reverted I don't get the
-> > WARNING: at /home/rafael/src/linux-next/kernel/smp.c:215 smp_call_function_single+0x3d/0xa2
-> > in the log.  Thomas?
+On Tuesday 17 June 2008, Stephen Rothwell wrote:
+> Hi Bart,
 > 
-> Yeah, my bad. Fix below.
+> On Mon, 16 Jun 2008 21:24:47 +0200 Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> >
+> > +static void pmac_ide_init_dev(ide_drive_t *drive)
+> > +{
+> > +	ide_hwif_t *hwif = drive->hwif;
+> > +	pmac_ide_hwif_t *pmif =
+> > +		(pmac_ide_hwif_t *)dev_get_drvdata(hwif->gendev.parent);
+> > +
+> > +	if (pmif->mediabay) {
+> > +#ifdef CONFIG_PMAC_MEDIABAY
+> > +		if (check_media_bay(np->parent, MB_CD) == -ENODEV)
+>                                     ^^
+> "np" doesn't exist here.
 
-Thanks, it eliminates the WARNING, but still the box doesn't work with
-the "x86: add C1E aware idle function" patch applied, even with 'highres=off'.
+uh, it should be pmif->node there... take 3...
 
-The main symptom is that CPU loads are computed incorrectly (I got X using 126%
-of CPU time from 'top', for example).  Apart from this, some processes (like
-gkrellm) seem to be 'frozen' and only change their state in 'jumps', as though
-they only got CPU from time to time at random.
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] ide-pmac: add ->init_dev method (take 3)
 
-Reverting the above-mentioned patch fixes those problems.
+v2/3:
+* Build fixes from Stephen Rothwell.
 
-Thanks,
-Rafael
+There should be no functional changes caused by this patch.
+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/ppc/pmac.c |   27 ++++++++++++++++++---------
+ 1 file changed, 18 insertions(+), 9 deletions(-)
+
+Index: b/drivers/ide/ppc/pmac.c
+===================================================================
+--- a/drivers/ide/ppc/pmac.c
++++ b/drivers/ide/ppc/pmac.c
+@@ -941,7 +941,23 @@ static u8 pmac_ide_cable_detect(ide_hwif
+ 	return ATA_CBL_PATA40;
+ }
+ 
++static void pmac_ide_init_dev(ide_drive_t *drive)
++{
++	ide_hwif_t *hwif = drive->hwif;
++	pmac_ide_hwif_t *pmif =
++		(pmac_ide_hwif_t *)dev_get_drvdata(hwif->gendev.parent);
++
++	if (pmif->mediabay) {
++#ifdef CONFIG_PMAC_MEDIABAY
++		if (check_media_bay(pmif->node->parent, MB_CD) == -ENODEV)
++			return;
++#endif
++		drive->noprobe = 1;
++	}
++}
++
+ static const struct ide_port_ops pmac_ide_ata6_port_ops = {
++	.init_dev		= pmac_ide_init_dev,
+ 	.set_pio_mode		= pmac_ide_set_pio_mode,
+ 	.set_dma_mode		= pmac_ide_set_dma_mode,
+ 	.selectproc		= pmac_ide_kauai_selectproc,
+@@ -949,6 +965,7 @@ static const struct ide_port_ops pmac_id
+ };
+ 
+ static const struct ide_port_ops pmac_ide_ata4_port_ops = {
++	.init_dev		= pmac_ide_init_dev,
+ 	.set_pio_mode		= pmac_ide_set_pio_mode,
+ 	.set_dma_mode		= pmac_ide_set_dma_mode,
+ 	.selectproc		= pmac_ide_selectproc,
+@@ -956,6 +973,7 @@ static const struct ide_port_ops pmac_id
+ };
+ 
+ static const struct ide_port_ops pmac_ide_port_ops = {
++	.init_dev		= pmac_ide_init_dev,
+ 	.set_pio_mode		= pmac_ide_set_pio_mode,
+ 	.set_dma_mode		= pmac_ide_set_dma_mode,
+ 	.selectproc		= pmac_ide_selectproc,
+@@ -1065,15 +1083,6 @@ pmac_ide_setup_device(pmac_ide_hwif_t *p
+ 	       hwif->index, model_name[pmif->kind], pmif->aapl_bus_id,
+ 	       pmif->mediabay ? " (mediabay)" : "", hwif->irq);
+ 
+-	if (pmif->mediabay) {
+-#ifdef CONFIG_PMAC_MEDIABAY
+-		if (check_media_bay(np->parent, MB_CD) == -ENODEV)
+-			break;
+-#endif
+-		hwif->drives[0].noprobe = 1;
+-		hwif->drives[1].noprobe = 1;
+-	}
+-
+ 	idx[0] = hwif->index;
+ 
+ 	ide_device_add(idx, &d);
