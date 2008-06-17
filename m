@@ -1,67 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758718AbYFQO4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759406AbYFQO6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758718AbYFQO4l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 10:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757859AbYFQO4d
+	id S1759406AbYFQO6P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 10:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758366AbYFQO6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 10:56:33 -0400
-Received: from [194.117.236.238] ([194.117.236.238]:34408 "EHLO
-	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1757381AbYFQO4d (ORCPT
+	Tue, 17 Jun 2008 10:58:00 -0400
+Received: from hs-out-0708.google.com ([64.233.178.251]:57660 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751443AbYFQO57 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 10:56:33 -0400
-Date: Tue, 17 Jun 2008 17:55:35 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Tom Zanussi <tzanussi@gmail.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, righi.andrea@gmail.com
-Subject: Re: [PATCH 2/3] relay: Fix race condition which occurs when reading
- across CPUs.
-Message-ID: <20080617175535.638e54c5@linux360.ro>
-In-Reply-To: <20080617135031.GA10316@Krystal>
-References: <20080614181103.17617db1@linux360.ro>
-	<20080616122249.GB18561@Krystal>
-	<20080616162212.27a8c119@linux360.ro>
-	<20080616164609.GM20851@kernel.dk>
-	<84144f020806161118n70a876aeyb5ccac7b1e21d842@mail.gmail.com>
-	<20080616182843.GS20851@kernel.dk>
-	<20080617153934.59a7c7ee@linux360.ro>
-	<20080617154923.36195161@linux360.ro>
-	<20080617131036.GB8696@Krystal>
-	<20080617163551.49f96c7d@linux360.ro>
-	<20080617135031.GA10316@Krystal>
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 17 Jun 2008 10:57:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=PKnUrGZw/eMi9/cW/BWuQpcMWKUe9fO4FBmczxtXtiArr7+7XcLoRQmiy/Boj/zc3D
+         f6yB07DHi+yFa5qVVaSFvZbJZBbp4BPjZ4PNsbE2obuQvchWpygW1CD06yaVLMJD9+p1
+         miSUE2gzu3P2xtSOLFCIbH8yGaSA4ZBrgy9jQ=
+Message-ID: <85e7c2fc0806170757t66a1167m9683fd4ad1c36f71@mail.gmail.com>
+Date: Tue, 17 Jun 2008 22:57:54 +0800
+From: "Bob Zhang" <zhanglinbao@gmail.com>
+To: "Jared Hulbert" <jaredeh@gmail.com>
+Subject: Re: Does anyone run AXFS in 2.4 version of kernel ? I am trying my best to apply AXFS patches into 2.4.18
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <85e7c2fc0806160720v510a565id709ee782851169d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <85e7c2fc0805090919v613fb823m8dd979b8cd959889@mail.gmail.com>
+	 <6934efce0805120923v636d2dbjb062d33fb861f5a2@mail.gmail.com>
+	 <85e7c2fc0805131746k5284d66dj7cfac5f9138186e2@mail.gmail.com>
+	 <6934efce0805131801s633a1692ha8914a76173c2c80@mail.gmail.com>
+	 <85e7c2fc0805190842v6ee5f4f3jef7790b0fa459a21@mail.gmail.com>
+	 <85e7c2fc0806160720v510a565id709ee782851169d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jun 2008 09:50:31 -0400
-Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
+Today I carefully read the mkfs.axfs.c , I finally make clear about
+the axfs is how to organize the structure ,including the spec of super
+,and the content of region , and how to store the file content in
+different region are .
 
-> Yeah, although using set affinity with CPU hotplug is broken by
-> design.
-> 
-> Mathieu
+Jared Hulber is a great programmer , this is a very complex thing .
+I am ready for writing a document about I have known for more newbies for axfs.
 
-Never thought about this, but it does make sense. I presume this
-affects relay reading as well, right? Quote from sched_setaffinity(2):
-> EINVAL The affinity bit mask mask contains no processors that are phys-
->        ically on the system, or cpusetsize is smaller than the size  of
->        the affinity mask used by the kernel.
-We have 2 situations:
-1. CPUs do _not_ get reordered --- the mask is then invalid, will it be
-invalidated by the kernel even if set prior to the hotplug event?
-2. CPUs get reordered after hotplug events. Assume this ([CPU logical <physical>]):
-CPU 0 <0>, CPU 1 <1>, CPU 2 <2> => CPU 0 <0>, CPU 1 <2>
-relay filenames likely change, but the underlying fds are preserved.
-If the threads get migrated, this means we end up reading cross-CPU, AFAICS.
+----
+In fact , yesterday , I asked a stupid question to Jared Hulbert , the
+information from /proc/axfs/volume0 is engough to create a valid xml
+file .
 
-Do we ignore this and hope no one uses relay apps while triggering CPU
-hotplug events?
+for example ,from
+./bin/busybox,0,18
 
+./bin/busybox,28672,2
 
-	Eduard
+./bin/busybox,53248,4
+
+./bin/busybox,143360,3
+
+./bin/busybox,147456,3
+
+./bin/busybox,151552,8
+
+./bin/busybox,155648,11
+
+we can know the page of offset 0 is called 18 times ,compared with
+other pages , it should be set XIP.
+<xipfsmap>
+	<file>
+		<name>
+			./bin/busybox
+		</name>
+		<chunk>
+			<size>4096</size>
+			<offset>0</offset>    //maybe we need convert it from /proc info
+		</chunk>
+	</file>
+</xipfsmap>
+the advantage of AXFS is that we can set every page to be XIP , so the
+size is certainly 4096. but if we think like this , the size item in
+the xml is useless, I think maybe Jared Hulber want to provide some
+lazy method to set contiguous pages to be XIP , you don't need to
+write some chunk . but I feel that the chance of contiguous pages are
+read is not high , so for us , setting every page is enough .
+
+if we want to set many pages to be XIP , we should write many chunk items .
+
+Am I right , Mr Hulbert ?
+
+Best Regards,
+Bob
