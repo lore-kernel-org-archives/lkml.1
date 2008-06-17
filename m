@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760260AbYFQWWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759636AbYFQWZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760260AbYFQWWH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 18:22:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759588AbYFQWVx
+	id S1759636AbYFQWZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 18:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756799AbYFQWZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 18:21:53 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34480 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758002AbYFQWVw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 18:21:52 -0400
-Message-ID: <485838F9.8010001@firstfloor.org>
-Date: Wed, 18 Jun 2008 00:21:45 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Tue, 17 Jun 2008 18:25:11 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38431 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755961AbYFQWZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 18:25:09 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
+Date: Wed, 18 Jun 2008 00:25:20 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806172244.24026.rjw@sisk.pl> <200806180019.49628.rjw@sisk.pl>
+In-Reply-To: <200806180019.49628.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Al Viro <viro@ZenIV.linux.org.uk>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Bron Gondwana <brong@fastmail.fm>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rob Mueller <robm@fastmail.fm>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: BUG: mmapfile/writev spurious zero bytes (x86_64/not i386,	bisected,
- reproducable)
-References: <1213682570.13708.1258839317@webmail.messagingengine.com> <alpine.LFD.1.10.0806170947380.25099@woody.linux-foundation.org> <alpine.LFD.1.10.0806171041560.25099@woody.linux-foundation.org> <alpine.LFD.1.10.0806171309130.2981@woody.linux-foundation.org> <alpine.LFD.1.10.0806171331460.2908@woody.linux-foundation.org> <alpine.LFD.1.10.0806171356320.2908@woody.linux-foundation.org> <485829A1.4020705@firstfloor.org> <alpine.LFD.1.10.0806171421100.2907@woody.linux-foundation.org> <20080617213618.GL28946@ZenIV.linux.org.uk> <48582FAB.1020402@firstfloor.org> <20080617221118.GM28946@ZenIV.linux.org.uk>
-In-Reply-To: <20080617221118.GM28946@ZenIV.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806180025.20504.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> AFAICS, what happened is that b0rken copy_*FROM*_user() had been discussed
-> with references to copy_*TO*_user().  With proposed patch indeed not affecting
-> any legitimate calls of the latter.  Does affect the former and that, from
-> my reading of the code in question, correctly.
+On Wednesday, 18 of June 2008, Rafael J. Wysocki wrote:
+> On Tuesday, 17 of June 2008, Rafael J. Wysocki wrote:
+> > On Tuesday, 17 of June 2008, Thomas Gleixner wrote:
+> > > On Tue, 17 Jun 2008, Rafael J. Wysocki wrote:
+> > > > 
+> > > > BTW, with the C1E patches reverted I don't get the
+> > > > WARNING: at /home/rafael/src/linux-next/kernel/smp.c:215 smp_call_function_single+0x3d/0xa2
+> > > > in the log.  Thomas?
+> > > 
+> > > Yeah, my bad. Fix below.
+> > 
+> > Thanks, it eliminates the WARNING, but still the box doesn't work with
+> > the "x86: add C1E aware idle function" patch applied, even with 'highres=off'.
+> > 
+> > The main symptom is that CPU loads are computed incorrectly (I got X using 126%
+> > of CPU time from 'top', for example).  Apart from this, some processes (like
+> > gkrellm) seem to be 'frozen' and only change their state in 'jumps', as though
+> > they only got CPU from time to time at random.
+> > 
+> > Reverting the above-mentioned patch fixes those problems.
 > 
-> IOW, s/copy_to_user/copy_from_user/ in Linus' postings upthread and they
-> make sense.
+> Ah.  If your fix is replaced with the appended one, the system happily works
+> with C1E and highres.
 
-Yes, it makes some more sense, but I'm not completely happy with the fix
-because it makes the fault point reporting very unreliable (maximum error
-will be 63 instead of 7 now). iirc especially mount was sensitive to that.
+Scratch that.  The symptoms appeared later this time, that's all.  I've just got
+b43 consuming 90+ % of the CPU time. :-(
 
-Unfortunately fixing the accuracy is a little tricky.
-
--Andi
+Thanks,
+Rafael
