@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757273AbYFQL5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757297AbYFQMDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757273AbYFQL5x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 07:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755494AbYFQL5m
+	id S1757297AbYFQMDy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 08:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754990AbYFQMDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 07:57:42 -0400
-Received: from mtagate2.uk.ibm.com ([195.212.29.135]:50491 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754903AbYFQL5k convert rfc822-to-8bit (ORCPT
+	Tue, 17 Jun 2008 08:03:43 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51894 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754907AbYFQMDm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 07:57:40 -0400
-Date: Tue, 17 Jun 2008 13:57:22 +0200
-From: Maxim Shchetynin <maxim@linux.vnet.ibm.com>
-To: linux-fsdevel@vger.kernel.org
-Cc: Jan Engelhardt <jengelh@medozas.de>, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel@vger.kernel.org
-Subject: Re: AZFS file system proposal
-Message-ID: <20080617135722.374673b9@mercedes-benz.boeblingen.de.ibm.com>
-In-Reply-To: <alpine.LNX.1.10.0806171133220.6620@fbirervta.pbzchgretzou.qr>
-References: <20080609104650.4f220492@mercedes-benz.boeblingen.de.ibm.com>
-	<20080609125530.GF30405@parisc-linux.org>
-	<20080610104919.504b9826@mercedes-benz.boeblingen.de.ibm.com>
-	<alpine.LNX.1.10.0806110000560.20733@fbirervta.pbzchgretzou.qr>
-	<20080617110655.59c915da@mercedes-benz.boeblingen.de.ibm.com>
-	<alpine.LNX.1.10.0806171133220.6620@fbirervta.pbzchgretzou.qr>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+	Tue, 17 Jun 2008 08:03:42 -0400
+From: kamezawa.hiroyu@jp.fujitsu.com
+Message-ID: <18509098.1213704200391.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Tue, 17 Jun 2008 21:03:20 +0900 (JST)
+To: balbir@linux.vnet.ibm.com
+Subject: Re: Re: [PATCH 2/2] memcg: reduce usage at change limit
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>, xemul@openvz.org,
+       menage@google.com, lizf@cn.fujitsu.com, yamamoto@valinux.co.jp,
+       nishimura@mxp.nes.nec.co.jp, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <48578E9D.4050903@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="iso-2022-jp"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: @nifty Webmail 2.0
+References: <48578E9D.4050903@linux.vnet.ibm.com>
+ <20080617123144.ce5a74fa.kamezawa.hiroyu@jp.fujitsu.com> <20080617123604.c8cb1bd5.kamezawa.hiroyu@jp.fujitsu.com> <48573397.608@linux.vnet.ibm.com> <20080617130656.bcd3ca85.kamezawa.hiroyu@jp.fujitsu.com> <20080617190055.2b55ba0b.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >> (a) What is axonram?
-> >> (b) why is axonram direct_access, and my other devices (including
-> >> standard PC RAM) not?
-> >
-> >[Axonram is a module specific for IBM CellBlade and allows access to
-> >a DDR2 memory attached onto Axon controller.] You don't need
-> >direct_access and not azfs for main memory because there is already
-> >a pretty nice tmpfs for it.
-> 
-> So the reason azfs could be useful is...?
+----- Original Message -----
+>Date: 	Tue, 17 Jun 2008 15:44:53 +0530
+>From: Balbir Singh <balbir@linux.vnet.ibm.com>
+>KAMEZAWA Hiroyuki wrote:
+>
+>>> I'll repost later, today.
+>>>
+>> I'll postpone this until -mm is settled ;)
+>> 
+>
+>Sure, by -mm is settled you mean scalable page reclaim, fast GUP and lockless
+>read size for pagecache? Is there something else I am unaware of?
+>
+Ah, some panics are added ;)
+It's my main concern.  And I have to study new VM LRU management
+scheme and check whether there are something to be fixed(updated)
+around memcg. 
 
-The "?" at the end of your sentence might mean a question. I would be really happy to give an answer on it if I could understand it.
+Anyway, I'd like to push this patch before too late. I just stop
+for a while (because -mm has trouble).
 
-> >> >+         Mounting such device with azfs gives memory mapped
-> >> >access to the + underlying memory to user space.
-> >> 
-> >> Can't I just mmap(/dev/theblockdevice), why would I need to go through 
-> >> azfs?
-> >
-> >Yes, you can mmap it. But what does it have to do with a file system.
-> 
-> Exactly, that's what I was asking myself.
-
-I am glad I could make you feel comfortable with that answer.
-
-> >I would say you can either mmap it or place a file system on it.
-> 
-> The help text implies that I *need* azfs to mmap it - and that sounds
-> like a Rube Goldberg machine.
-
-Does it? If it is really so, then only because my english is not perfect. I didn't want to compel someone to do mmap or to disturb user's rights in any other way. By the way, you can also mmap some files on AZFS like on any other file system. But mmap wouldn't work if you mount AZFS with a block size less than the system page size.
-
--- 
-Mit freundlichen Grüßen / met vriendelijke groeten / avec regards
-
-    Maxim V. Shchetynin
-    Linux Kernel Entwicklung
-    IBM Deutschland Entwicklung GmbH
-    Linux für Cell, Abteilung 3250
-    Schönaicher Straße 220
-    71032 Böblingen
-
-Vorsitzender des Aufsichtsrats: Johann Weihen
-Geschäftsführung: Herbert Kircher
-Sitz der Gesellschaft: Böblingen
-Registriergericht: Amtsgericht Stuttgart, HRB 243294
-
-Fahr nur so schnell wie dein Schutzengel fliegen kann!
+Thanks,
+-Kame
