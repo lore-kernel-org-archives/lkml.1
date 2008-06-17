@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758103AbYFQNRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758180AbYFQNWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758103AbYFQNRX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 09:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757211AbYFQNRI
+	id S1758180AbYFQNWR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 09:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757261AbYFQNWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 09:17:08 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:10208 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757198AbYFQNRC (ORCPT
+	Tue, 17 Jun 2008 09:22:06 -0400
+Received: from [194.117.236.238] ([194.117.236.238]:56272 "EHLO
+	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1757211AbYFQNWE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 09:17:02 -0400
-Message-ID: <4857B92F.9020309@codemonkey.ws>
-Date: Tue, 17 Jun 2008 08:16:31 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Martin Michlmayr <tbm@cyrius.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Linux with kvm-intel locks up VMplayer guest is started
-References: <20080616150550.GA16086@deprecation.cyrius.com> <48568503.90607@codemonkey.ws> <20080617123918.GA2397@deprecation.cyrius.com>
-In-Reply-To: <20080617123918.GA2397@deprecation.cyrius.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 17 Jun 2008 09:22:04 -0400
+Date: Tue, 17 Jun 2008 16:21:28 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Tom Zanussi <tzanussi@gmail.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, righi.andrea@gmail.com
+Subject: Re: [PATCH 2/3] relay: Fix race condition which occurs when reading
+ across CPUs.
+Message-ID: <20080617162128.634ea287@linux360.ro>
+In-Reply-To: <20080617125543.GA8696@Krystal>
+References: <20080613040958.4f52ee29@linux360.ro>
+	<1213417601.8237.37.camel@charm-linux>
+	<20080614181103.17617db1@linux360.ro>
+	<20080616122249.GB18561@Krystal>
+	<20080616162212.27a8c119@linux360.ro>
+	<20080616164609.GM20851@kernel.dk>
+	<84144f020806161118n70a876aeyb5ccac7b1e21d842@mail.gmail.com>
+	<20080616182843.GS20851@kernel.dk>
+	<20080617153934.59a7c7ee@linux360.ro>
+	<20080617125543.GA8696@Krystal>
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Michlmayr wrote:
-> * Anthony Liguori <anthony@codemonkey.ws> [2008-06-16 10:21]:
->   
->>> Any idea if this is a kernel bug, BIOS issue or a bug in VMplayer?
->>>       
->> This has been fixed in the latest KVM code base AFAIK.
->>     
->
-> Can you give some more information?  Which commit fixed the problem?
->   
+On Tue, 17 Jun 2008 08:55:44 -0400
+Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
 
-commit 1f4e1d64122369d65d8a9c616112780019fb6188
-Author: Eli Collins <ecollins@vmware.com>
-Date:   Sun Jun 1 20:24:40 2008 -0700
+> How about not changing the code, not providing a safe version of
+> relay_write, but document its use and what kind of locking the
+> in-kernel user must provide ?
+> 
+> Mathieu
 
-> Was the patch submitted to the 2.6.25-stable tree?
->   
+I would have agreed with you if this was about some other kernel
+function. But having the user provide locking means more than just
+bracing writes with spinlocks. Essentially, one also needs to duplicate
+relay_file_read() and relay_file_read_subbufs(), thus having to know
+relay's internals.
 
-No, it's not a regression.  I misread your first email btw, you have to 
-unload the kvm-intel kernel module to use VMware.
+When I do this, I'll split my changes into two parts, with the first just
+documenting as you said. Anyway, the non-affine versions are low
+priority for me right now.
 
-VMware is a binary kernel module that's out of kernel.  KVM is not 
-misbehaving and the fact that VMware breaks when the KVM module is 
-loaded isn't our problem.  If they submitted their code for inclusion in 
-mainline, we could possibly come up with solution for arbitrating who is 
-using VT.
+BTW, did you recieve or took a look at the buffer-only channels patch
+series, the one with CPU hotplug support? Sorry for being impatient,
+but that early initcall is really core stuff and I'd like a review. :-)
 
-Regards,
 
-Anthony Liguori
+	Eduard
