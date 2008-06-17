@@ -1,42 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759589AbYFQVgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759755AbYFQVha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759589AbYFQVgc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 17:36:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757123AbYFQVgY
+	id S1759755AbYFQVha (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 17:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756508AbYFQVhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 17:36:24 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:33075 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757069AbYFQVgY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 17:36:24 -0400
-Date: Tue, 17 Jun 2008 22:36:18 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Bron Gondwana <brong@fastmail.fm>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rob Mueller <robm@fastmail.fm>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: BUG: mmapfile/writev spurious zero bytes (x86_64/not i386,
-	bisected, reproducable)
-Message-ID: <20080617213618.GL28946@ZenIV.linux.org.uk>
-References: <1213682410.13174.1258837181@webmail.messagingengine.com> <1213682570.13708.1258839317@webmail.messagingengine.com> <alpine.LFD.1.10.0806170947380.25099@woody.linux-foundation.org> <alpine.LFD.1.10.0806171041560.25099@woody.linux-foundation.org> <alpine.LFD.1.10.0806171309130.2981@woody.linux-foundation.org> <alpine.LFD.1.10.0806171331460.2908@woody.linux-foundation.org> <alpine.LFD.1.10.0806171356320.2908@woody.linux-foundation.org> <485829A1.4020705@firstfloor.org> <alpine.LFD.1.10.0806171421100.2907@woody.linux-foundation.org>
+	Tue, 17 Jun 2008 17:37:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38152 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756300AbYFQVhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 17:37:16 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
+Date: Tue, 17 Jun 2008 23:38:37 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806172259.47861.rjw@sisk.pl> <Pine.LNX.4.55.0806172206580.28110@cliff.in.clinika.pl>
+In-Reply-To: <Pine.LNX.4.55.0806172206580.28110@cliff.in.clinika.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0806171421100.2907@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200806172338.38318.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 17, 2008 at 02:24:39PM -0700, Linus Torvalds wrote:
+On Tuesday, 17 of June 2008, Maciej W. Rozycki wrote:
+> On Tue, 17 Jun 2008, Rafael J. Wysocki wrote:
+> 
+> > May I gently ask that the patch ("x86: I/O APIC: timer through 8259A second-chance")
+> > be reverted?
+> 
+>  We're trying to find a solution for a long-standing problem and this
+> patch is a step in that direction.  We need to find out exactly what is
+> going wrong with the HP nx6325 system and removing the patch would make us
+> lose the opportunity to get things right in this area.  At the time I
+> submitted that patch I warned a lot of testing would be required before it
+> goes upstream and hopefully my request will get honored.  If you do not
+> want to participate in testing for whatever reason, you have the right to
+> do so, but I insist on the patch to stay at least until we know the source
+> of the problem and conclude there is no other way to get it fixed.  Len
+> reported he's got the same system and it behaves the same, so I hope he'll
+> be able to do the testing if you decide to opt out.
 
-> The whole *and*only* reason for copy_to/from_user() existing AT ALL is 
-> exactly the fact that the source or destination access can fault. 
+I can do the testing actually, but IMO putting that patch into linux-next was a
+mistake.
 
-Erm...  The reason for copy_to_user() existing is that dereferencing
-a user-supplied address in the kernel does not have to access any
-memory reachable in user mode, regardless of any faults.  WTF are you
-guys talking about?
+>  Unfortunately the 64-bit variation has a lot of necessary logging
+> disabled by default (as you have now discovered with the need to rename
+> apic_printk() to printk()), so my plan is to cook up a patch to enable all
+> the available logging facilities around that code first.
+
+Well, that's easy.  I can send you a dmesg output with all of the printk()s in
+there functional if that helps, but frankly I don't see how this is going to
+get you more information than I've already posted.
+
+Thanks,
+Rafael
