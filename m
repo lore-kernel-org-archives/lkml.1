@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758661AbYFQSmo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759805AbYFQSn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758661AbYFQSmo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 14:42:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbYFQSmd
+	id S1759805AbYFQSn1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 14:43:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758445AbYFQSml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 14:42:33 -0400
-Received: from gw.goop.org ([64.81.55.164]:51603 "EHLO mail.goop.org"
+	Tue, 17 Jun 2008 14:42:41 -0400
+Received: from gw.goop.org ([64.81.55.164]:51611 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755827AbYFQSmc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 14:42:32 -0400
-Message-ID: <4858056D.7000500@goop.org>
-Date: Tue, 17 Jun 2008 11:41:49 -0700
+	id S1758246AbYFQSmk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 14:42:40 -0400
+Message-ID: <48580577.2040505@goop.org>
+Date: Tue, 17 Jun 2008 11:41:59 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
 To: the arch/x86 maintainers <x86@kernel.org>
 CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/4] x86: unify asm-x86/fixmap*.h
+Subject: [PATCH 3/4] x86: implement set_pte_vaddr
 X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
@@ -24,181 +24,99 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Almost everything aside from the actual fixmap slot definitions is
-common, so move it all into the common fixmap.h header.
+Re-name set_pte_pfn() to set_pte_vaddr(), taking a pte_t rather than
+pfn/flags, and expose it.  This allows the pte to constructed in
+arbitrary ways, rather than just via __pte(), which may be necessary
+in a virtual environment.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 ---
- include/asm-x86/fixmap.h    |   43 +++++++++++++++++++++++++++++++++++++++++++
- include/asm-x86/fixmap_32.h |   42 ------------------------------------------
- include/asm-x86/fixmap_64.h |   37 -------------------------------------
- 3 files changed, 43 insertions(+), 79 deletions(-)
+ arch/x86/mm/init_64.c     |    9 ++++-----
+ arch/x86/mm/pgtable.c     |    2 +-
+ arch/x86/mm/pgtable_32.c  |    6 +++---
+ include/asm-x86/pgtable.h |    3 +++
+ 4 files changed, 11 insertions(+), 9 deletions(-)
 
 ===================================================================
---- a/include/asm-x86/fixmap.h
-+++ b/include/asm-x86/fixmap.h
-@@ -7,7 +7,50 @@
- # include "fixmap_64.h"
- #endif
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -136,15 +136,15 @@ static __init void *spp_getpage(void)
+ 	return ptr;
+ }
  
-+extern void __set_fixmap(enum fixed_addresses idx,
-+			 unsigned long phys, pgprot_t flags);
-+#define set_fixmap(idx, phys)				\
-+	__set_fixmap(idx, phys, PAGE_KERNEL)
-+
-+/*
-+ * Some hardware wants to get fixmapped without caching.
-+ */
-+#define set_fixmap_nocache(idx, phys)			\
-+	__set_fixmap(idx, phys, PAGE_KERNEL_NOCACHE)
-+
- #define clear_fixmap(idx)			\
- 	__set_fixmap(idx, 0, __pgprot(0))
+-static void
+-set_pte_phys(unsigned long vaddr, unsigned long phys, pgprot_t prot)
++void
++set_pte_vaddr(unsigned long vaddr, pte_t new_pte)
+ {
+ 	pgd_t *pgd;
+ 	pud_t *pud;
+ 	pmd_t *pmd;
+-	pte_t *pte, new_pte;
++	pte_t *pte;
  
-+#define __fix_to_virt(x)	(FIXADDR_TOP - ((x) << PAGE_SHIFT))
-+#define __virt_to_fix(x)	((FIXADDR_TOP - ((x)&PAGE_MASK)) >> PAGE_SHIFT)
-+
-+extern void __this_fixmap_does_not_exist(void);
-+
-+/*
-+ * 'index to address' translation. If anyone tries to use the idx
-+ * directly without translation, we catch the bug with a NULL-deference
-+ * kernel oops. Illegal ranges of incoming indices are caught too.
-+ */
-+static __always_inline unsigned long fix_to_virt(const unsigned int idx)
-+{
-+	/*
-+	 * this branch gets completely eliminated after inlining,
-+	 * except when someone tries to use fixaddr indices in an
-+	 * illegal way. (such as mixing up address types or using
-+	 * out-of-range indices).
-+	 *
-+	 * If it doesn't get removed, the linker will complain
-+	 * loudly with a reasonably clear error message..
-+	 */
-+	if (idx >= __end_of_fixed_addresses)
-+		__this_fixmap_does_not_exist();
-+
-+	return __fix_to_virt(idx);
-+}
-+
-+static inline unsigned long virt_to_fix(const unsigned long vaddr)
-+{
-+	BUG_ON(vaddr >= FIXADDR_TOP || vaddr < FIXADDR_START);
-+	return __virt_to_fix(vaddr);
-+}
- #endif
+-	pr_debug("set_pte_phys %lx to %lx\n", vaddr, phys);
++	pr_debug("set_pte_vaddr %lx to %lx\n", vaddr, native_pte_val(new_pte));
+ 
+ 	pgd = pgd_offset_k(vaddr);
+ 	if (pgd_none(*pgd)) {
+@@ -171,7 +171,6 @@ set_pte_phys(unsigned long vaddr, unsign
+ 			return;
+ 		}
+ 	}
+-	new_pte = pfn_pte(phys >> PAGE_SHIFT, prot);
+ 
+ 	pte = pte_offset_kernel(pmd, vaddr);
+ 	if (!pte_none(*pte) && pte_val(new_pte) &&
+diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
 ===================================================================
---- a/include/asm-x86/fixmap_32.h
-+++ b/include/asm-x86/fixmap_32.h
-@@ -109,17 +109,8 @@
- 	__end_of_fixed_addresses
- };
- 
--extern void __set_fixmap(enum fixed_addresses idx,
--			 unsigned long phys, pgprot_t flags);
- extern void reserve_top_address(unsigned long reserve);
- 
--#define set_fixmap(idx, phys)				\
--	__set_fixmap(idx, phys, PAGE_KERNEL)
--/*
-- * Some hardware wants to get fixmapped without caching.
-- */
--#define set_fixmap_nocache(idx, phys)			\
--	__set_fixmap(idx, phys, PAGE_KERNEL_NOCACHE)
- 
- #define FIXADDR_TOP	((unsigned long)__FIXADDR_TOP)
- 
-@@ -128,38 +119,5 @@
- #define FIXADDR_START		(FIXADDR_TOP - __FIXADDR_SIZE)
- #define FIXADDR_BOOT_START	(FIXADDR_TOP - __FIXADDR_BOOT_SIZE)
- 
--#define __fix_to_virt(x)	(FIXADDR_TOP - ((x) << PAGE_SHIFT))
--#define __virt_to_fix(x)	((FIXADDR_TOP - ((x)&PAGE_MASK)) >> PAGE_SHIFT)
--
--extern void __this_fixmap_does_not_exist(void);
--
--/*
-- * 'index to address' translation. If anyone tries to use the idx
-- * directly without tranlation, we catch the bug with a NULL-deference
-- * kernel oops. Illegal ranges of incoming indices are caught too.
-- */
--static __always_inline unsigned long fix_to_virt(const unsigned int idx)
--{
--	/*
--	 * this branch gets completely eliminated after inlining,
--	 * except when someone tries to use fixaddr indices in an
--	 * illegal way. (such as mixing up address types or using
--	 * out-of-range indices).
--	 *
--	 * If it doesn't get removed, the linker will complain
--	 * loudly with a reasonably clear error message..
--	 */
--	if (idx >= __end_of_fixed_addresses)
--		__this_fixmap_does_not_exist();
--
--	return __fix_to_virt(idx);
--}
--
--static inline unsigned long virt_to_fix(const unsigned long vaddr)
--{
--	BUG_ON(vaddr >= FIXADDR_TOP || vaddr < FIXADDR_START);
--	return __virt_to_fix(vaddr);
--}
--
- #endif /* !__ASSEMBLY__ */
- #endif
+--- a/arch/x86/mm/pgtable.c
++++ b/arch/x86/mm/pgtable.c
+@@ -285,6 +285,6 @@ void __set_fixmap (enum fixed_addresses 
+ 		BUG();
+ 		return;
+ 	}
+-	set_pte_pfn(address, phys >> PAGE_SHIFT, flags);
++	set_pte_vaddr(address, pfn_pte(phys >> PAGE_SHIFT, flags));
+ 	fixmaps_set++;
+ }
+diff --git a/arch/x86/mm/pgtable_32.c b/arch/x86/mm/pgtable_32.c
 ===================================================================
---- a/include/asm-x86/fixmap_64.h
-+++ b/include/asm-x86/fixmap_64.h
-@@ -65,17 +65,6 @@
- 	__end_of_fixed_addresses
- };
+--- a/arch/x86/mm/pgtable_32.c
++++ b/arch/x86/mm/pgtable_32.c
+@@ -71,7 +71,7 @@ void show_mem(void)
+  * Associate a virtual page frame with a given physical page frame 
+  * and protection flags for that frame.
+  */ 
+-static void set_pte_pfn(unsigned long vaddr, unsigned long pfn, pgprot_t flags)
++void set_pte_vaddr(unsigned long vaddr, pte_t pteval)
+ {
+ 	pgd_t *pgd;
+ 	pud_t *pud;
+@@ -94,8 +94,8 @@ static void set_pte_pfn(unsigned long va
+ 		return;
+ 	}
+ 	pte = pte_offset_kernel(pmd, vaddr);
+-	if (pgprot_val(flags))
+-		set_pte_present(&init_mm, vaddr, pte, pfn_pte(pfn, flags));
++	if (pte_val(pteval))
++		set_pte_present(&init_mm, vaddr, pte, pteval);
+ 	else
+ 		pte_clear(&init_mm, vaddr, pte);
  
--extern void __set_fixmap(enum fixed_addresses idx,
--			 unsigned long phys, pgprot_t flags);
--
--#define set_fixmap(idx, phys)			\
--	__set_fixmap(idx, phys, PAGE_KERNEL)
--/*
-- * Some hardware wants to get fixmapped without caching.
-- */
--#define set_fixmap_nocache(idx, phys)			\
--	__set_fixmap(idx, phys, PAGE_KERNEL_NOCACHE)
--
- #define FIXADDR_TOP	(VSYSCALL_END-PAGE_SIZE)
- #define FIXADDR_SIZE	(__end_of_fixed_addresses << PAGE_SHIFT)
- #define FIXADDR_START	(FIXADDR_TOP - FIXADDR_SIZE)
-@@ -84,30 +73,4 @@
- #define FIXADDR_USER_START	((unsigned long)VSYSCALL32_VSYSCALL)
- #define FIXADDR_USER_END	(FIXADDR_USER_START + PAGE_SIZE)
- 
--#define __fix_to_virt(x)	(FIXADDR_TOP - ((x) << PAGE_SHIFT))
--
--extern void __this_fixmap_does_not_exist(void);
--
--/*
-- * 'index to address' translation. If anyone tries to use the idx
-- * directly without translation, we catch the bug with a NULL-deference
-- * kernel oops. Illegal ranges of incoming indices are caught too.
-- */
--static __always_inline unsigned long fix_to_virt(const unsigned int idx)
--{
--	/*
--	 * this branch gets completely eliminated after inlining,
--	 * except when someone tries to use fixaddr indices in an
--	 * illegal way. (such as mixing up address types or using
--	 * out-of-range indices).
--	 *
--	 * If it doesn't get removed, the linker will complain
--	 * loudly with a reasonably clear error message..
--	 */
--	if (idx >= __end_of_fixed_addresses)
--		__this_fixmap_does_not_exist();
--
--	return __fix_to_virt(idx);
--}
--
+diff --git a/include/asm-x86/pgtable.h b/include/asm-x86/pgtable.h
+===================================================================
+--- a/include/asm-x86/pgtable.h
++++ b/include/asm-x86/pgtable.h
+@@ -313,6 +313,9 @@ int phys_mem_access_prot_allowed(struct 
+                               unsigned long size, pgprot_t *vma_prot);
  #endif
+ 
++/* Install a pte for a particular vaddr in kernel space. */
++void set_pte_vaddr(unsigned long vaddr, pte_t pte);
++
+ #ifdef CONFIG_PARAVIRT
+ #include <asm/paravirt.h>
+ #else  /* !CONFIG_PARAVIRT */
 
 
