@@ -1,109 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757965AbYFQMZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757751AbYFQM2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757965AbYFQMZn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 08:25:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbYFQMZf
+	id S1757751AbYFQM2u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 08:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755731AbYFQM2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 08:25:35 -0400
-Received: from in.cluded.net ([195.159.98.120]:54852 "EHLO in.cluded.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754940AbYFQMZe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 08:25:34 -0400
-X-OS: [Linux] 2.6.8 and newer (?)
-Message-ID: <4857AD38.2090601@uw.no>
-Date: Tue, 17 Jun 2008 14:25:28 +0200
-From: "Daniel K." <dk@uw.no>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: mingo@elte.hu, menage@google.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [BUG: NULL pointer dereference] cgroups and	RT	scheduling	interact
- badly.
-References: <485445AE.2010602@uw.no> <1213612447.16944.99.camel@twins>	 <4856671B.1020304@uw.no>  <1213624312.16944.104.camel@twins>	 <1213627148.16944.106.camel@twins>  <485682B0.8010805@uw.no>	 <1213629536.16944.109.camel@twins> <1213692557.16944.153.camel@twins>
-In-Reply-To: <1213692557.16944.153.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 17 Jun 2008 08:28:42 -0400
+Received: from userg501.nifty.com ([202.248.238.81]:29721 "EHLO
+	userg501.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755713AbYFQM2k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 08:28:40 -0400
+DomainKey-Signature: a=rsa-sha1; s=userg501; d=nifty.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:in-reply-to:references:
+	x-mailer:mime-version:content-type:content-transfer-encoding;
+	b=wFHykoM3twGjALc6VNSiKQpnpNHxjHluzxRIEJQPYRFp9UUoXUJLSVJ4sJLtRXee4
+	RW6P5Pmx6xBElMmg7Tv1w==
+X-Nifty-SrcIP: [220.145.30.185]
+Date: Tue, 17 Jun 2008 21:23:45 +0900
+From: Komuro <komurojun-mbn@nifty.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Dominik Brodowski <linux@dominikbrodowski.net>, jgarzik@redhat.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-pcmcia <linux-pcmcia@lists.infradead.org>,
+       Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Subject: Re: [KERNEL 2.6.26-rc4]  bugreport : pata_pcmcia with Sandisk
+ Extreme III 8GB
+Message-Id: <20080617212345.c452d8c5.komurojun-mbn@nifty.com>
+In-Reply-To: <485669A0.6000404@gmail.com>
+References: <20080528225049.9a134e0d.Kristoffer.Ericson@Gmail.com>
+	<20080528222740.GB20893@isilmar.linta.de>
+	<20080530135728.be02d3dc.Kristoffer.Ericson@Gmail.com>
+	<20080607223716.7d142072.komurojun-mbn@nifty.com>
+	<20080611072029.GB28692@comet.dominikbrodowski.net>
+	<20080614120055.ad8fbee0.komurojun-mbn@nifty.com>
+	<48537149.4040102@garzik.org>
+	<20080614213612.96873c25.komurojun-mbn@nifty.com>
+	<4855D8E2.10409@gmail.com>
+	<20080616221145.e3b069b9.komurojun-mbn@nifty.com>
+	<485669A0.6000404@gmail.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> How's this [patch] work for you? (includes the previuos patchlet too)
+Hi,
 
-Thanks,
+Here is the log again.
 
-this patch fixed the obvious problem, namely
+pcmcia: registering new device pcmcia0.0
+pata_pcmcia 0.0: XXX ENTER
+Pid: 1648, comm: modprobe Not tainted 2.6.26-rc5 #3
+ [<d885314f>] pcmcia_init_one+0x34/0x585 [pata_pcmcia]
+ [<c0559444>] pccard_get_tuple_data+0x53/0x5c
+ [<c0476a1a>] iput+0x2a/0x4a
+ [<c055b156>] pcmcia_device_probe+0xa6/0xf6
+ [<c0538d00>] driver_probe_device+0x103/0x12c
+ [<c0538d29>] __driver_attach+0x0/0x55
+ [<c0538cb2>] driver_probe_device+0xb5/0x12c
+ [<c0538d60>] __driver_attach+0x37/0x55
+ [<c05385fb>] bus_for_each_dev+0x37/0x59
+ [<c0538b4d>] driver_attach+0x11/0x13
+ [<c0538d29>] __driver_attach+0x0/0x55
+ [<c053894f>] bus_add_driver+0x8a/0x1a7
+ [<c04d2db0>] kset_find_obj+0x20/0x4b
+ [<c0538f41>] driver_register+0x6d/0xc1
+ [<c055b8d0>] pcmcia_register_driver+0xaf/0xdb
+ [<c043b932>] sys_init_module+0x1844/0x19b4
+ [<c055c3db>] pcmcia_request_irq+0x0/0x1d6
+ [<c0403815>] sysenter_past_esp+0x6a/0x91
+ =======================
+scsi2 : pata_pcmcia
+ata3: PATA max PIO0 cmd 0xd100 ctl 0xd10e irq 3
+ata3.00: CFA: , Ver.1.0, max PIO2
+ata3.00: 32000 sectors, multi 0: LBA 
+ata3.00: configured for PIO0
+ata3.00: configured for PIO0
+ata3: EH complete
+isa bounce pool size: 16 pages
+scsi 2:0:0:0: Direct-Access     ATA                       Ver. PQ: 0 ANSI: 5
+sd 2:0:0:0: [sdb] 32000 512-byte hardware sectors (16 MB)
+sd 2:0:0:0: [sdb] Write Protect is off
+sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+sd 2:0:0:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+sd 2:0:0:0: [sdb] 32000 512-byte hardware sectors (16 MB)
+sd 2:0:0:0: [sdb] Write Protect is off
+sd 2:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+sd 2:0:0:0: [sdb] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+ sdb: sdb1
+sd 2:0:0:0: [sdb] Attached SCSI removable disk
+sd 2:0:0:0: Attached scsi generic sg2 type 0
+pata_pcmcia 0.0: XXX LEAVE 0
+pcmcia: registering new device pcmcia0.1
+pata_pcmcia 0.1: XXX ENTER
+Pid: 6, comm: events/0 Not tainted 2.6.26-rc5 #3
+ [<d885314f>] pcmcia_init_one+0x34/0x585 [pata_pcmcia]
+ [<c0559444>] pccard_get_tuple_data+0x53/0x5c
+ [<c055b156>] pcmcia_device_probe+0xa6/0xf6
+ [<c0538cb2>] driver_probe_device+0xb5/0x12c
+ [<c0538d7e>] __device_attach+0x0/0x5
+ [<c05383e9>] bus_for_each_drv+0x36/0x5e
+ [<c0538dec>] device_attach+0x4e/0x5e
+ [<c0538d7e>] __device_attach+0x0/0x5
+ [<c053827c>] bus_attach_device+0x1e/0x46
+ [<c05376fa>] device_add+0x310/0x43d
+ [<c055b5ab>] pcmcia_device_add+0x188/0x1eb
+ [<c055b60e>] pcmcia_delayed_add_device+0x0/0x23
+ [<c055b628>] pcmcia_delayed_add_device+0x1a/0x23
+ [<c042b735>] run_workqueue+0x6b/0xe0
+ [<c042bddf>] worker_thread+0x0/0xbd
+ [<c042be92>] worker_thread+0xb3/0xbd
+ [<c042e000>] autoremove_wake_function+0x0/0x2d
+ [<c042df3e>] kthread+0x38/0x5e
+ [<c042df06>] kthread+0x0/0x5e
+ [<c0404407>] kernel_thread_helper+0x7/0x10
+ =======================
+0.1: GetNextTuple: No more items
+pata_pcmcia 0.1: XXX LEAVE -12
+pata_pcmcia: probe of 0.1 failed with error -12
+modprobe used greatest stack depth: 1676 bytes left
+pata_pcmcia 0.1: XXX ENTER
+Pid: 1661, comm: sh Not tainted 2.6.26-rc5 #3
+ [<d885314f>] pcmcia_init_one+0x34/0x585 [pata_pcmcia]
+ [<c0559444>] pccard_get_tuple_data+0x53/0x5c
+ [<c0476a1a>] iput+0x2a/0x4a
+ [<c055b156>] pcmcia_device_probe+0xa6/0xf6
+ [<c0538000>] bus_register_notifier+0x2/0xb
+ [<c0538063>] bus_rescan_devices_helper+0x0/0x44
+ [<c0538cb2>] driver_probe_device+0xb5/0x12c
+ [<c0538d7e>] __device_attach+0x0/0x5
+ [<c05383e9>] bus_for_each_drv+0x36/0x5e
+ [<c0538dec>] device_attach+0x4e/0x5e
+ [<c0538d7e>] __device_attach+0x0/0x5
+ [<c053808a>] bus_rescan_devices_helper+0x27/0x44
+ [<c05385fb>] bus_for_each_dev+0x37/0x59
+ [<c053862b>] bus_rescan_devices+0xe/0x10
+ [<c0538063>] bus_rescan_devices_helper+0x0/0x44
+ [<c055a8f2>] pcmcia_store_allow_func_id_match+0x46/0x5b
+ [<c055a8ac>] pcmcia_store_allow_func_id_match+0x0/0x5b
+ [<c05369d6>] dev_attr_store+0x19/0x1d
+ [<c04997a0>] sysfs_write_file+0xa4/0xd8
+ [<c04996fc>] sysfs_write_file+0x0/0xd8
+ [<c0467a3d>] vfs_write+0x83/0x114
+ [<c0467ff6>] sys_write+0x3c/0x63
+ [<c0403815>] sysenter_past_esp+0x6a/0x91
+ =======================
+0.1: GetNextTuple: No more items
+pata_pcmcia 0.1: XXX LEAVE -12
+pata_pcmcia: probe of 0.1 failed with error -12
 
-# echo $$ > /dev/cgroup/burn/oops/tasks
-# schedtool -R -p 1 -e burnP6 &
 
-now works again. However, the last step below
-
-# echo $$ > /dev/cgroup/tasks
-# burnP6 &
-[1] 3414
-# echo 3414 > /dev/cgroup/burn/oops/tasks
-# schedtool -R -p 1 3414
-
-gives this new and shiny Oops instead.
-
-> [  189.274997] BUG: unable to handle kernel NULL pointer dereference at 0000000000000064
-> [  189.274997] IP: [<ffffffff8022e165>] __enqueue_rt_entity+0x55/0x1d0
-> [  189.274997] PGD 21e451067 PUD 220d19067 PMD 0 
-> [  189.274997] Oops: 0002 [1] SMP 
-> [  189.274997] CPU 1 
-> [  189.274997] Modules linked in: netconsole configfs ipmi_msghandler kvm_amd kvm ipv6 iptable_filter ip_tables x_tables af_packet loop evdev usbhid hid i2c_nforce2 button pcspkr i2c_core k8temp shpchp pci_hotplug tg3 sd_mod forcedeth sg ohci_hcd ehci_hcd usbcore thermal processor fan
-> [  189.274997] Pid: 3415, comm: schedtool Not tainted 2.6.26-rc6 #3
-> [  189.274997] RIP: 0010:[<ffffffff8022e165>]  [<ffffffff8022e165>] __enqueue_rt_entity+0x55/0x1d0
-> [  189.274997] RSP: 0018:ffff81021e477e48  EFLAGS: 00010012
-> [  189.274997] RAX: ffff810001056d08 RBX: ffff810220dbc060 RCX: ffff810220dbbfc0
-> [  189.274997] RDX: 0000000000000064 RSI: ffff81022120ec60 RDI: ffff810220dbc060
-> [  189.274997] RBP: ffff81021e477e58 R08: 44b0000000000000 R09: 0000000000000001
-> [  189.274997] R10: 0000000000000000 R11: 0000000000000206 R12: ffff8100010566b8
-> [  189.274997] R13: 0000000000000001 R14: 0000000000000001 R15: ffff81021e477f38
-> [  189.274997] FS:  00007f71ec2146e0(0000) GS:ffff810223022580(0000) knlGS:0000000000000000
-> [  189.274997] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> [  189.274997] CR2: 0000000000000064 CR3: 000000021e439000 CR4: 00000000000006e0
-> [  189.274997] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> [  189.274997] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> [  189.274997] Process schedtool (pid: 3415, threadinfo ffff81021e476000, task ffff810221daf920)
-> [  189.274997] Stack:  ffff810220dbc060 ffff81022120ec60 ffff81021e477e78 ffffffff8022e34e
-> [  189.274997]  0000000000000001 ffff81022120ec60 ffff81021e477e98 ffffffff802299e3
-> [  189.274997]  ffff81021e477f38 ffff8100010565c0 ffff81021e477eb8 ffffffff80229a60
-> [  189.274997] Call Trace:
-> [  189.274997]  [<ffffffff8022e34e>] enqueue_rt_entity+0x1e/0x30
-> [  189.274997]  [<ffffffff802299e3>] enqueue_task+0x13/0x30
-> [  189.274998]  [<ffffffff80229a60>] activate_task+0x30/0x50
-> [  189.274998]  [<ffffffff80232ebf>] sched_setscheduler+0x28f/0x3b0
-> [  189.274998]  [<ffffffff8028b368>] ? do_munmap+0x278/0x2d0
-> [  189.274998]  [<ffffffff8023305d>] do_sched_setscheduler+0x7d/0x90
-> [  189.274998]  [<ffffffff802330a4>] sys_sched_setscheduler+0x14/0x20
-> [  189.274998]  [<ffffffff8020b77a>] system_call_after_swapgs+0x8a/0x8f
-> [  189.274998] 
-> [  189.274998] 
-> [  189.274998] Code: 85 c9 0f 84 76 01 00 00 8b 81 58 06 00 00 48 98 48 8d 8b 60 ff ff ff 48 c1 e0 04 4a 8d 44 20 10 48 8b 50 08 48 89 03 48 89 58 08 <48> 89 1a 48 89 53 08 48 8b 53 40 48 8d 82 58 06 00 00 48 85 d2 
-> [  189.274998] RIP  [<ffffffff8022e165>] __enqueue_rt_entity+0x55/0x1d0
-> [  189.274998]  RSP <ffff81021e477e48>
-> [  189.274998] CR2: 0000000000000064
-
-If I switch the order of calling schedtool and assigning the task to a
-cgroup, then it works OK.
-
-# echo $$ > /dev/cgroup/tasks
-# burnP6 &
-[1] 3414
-# schedtool -R -p 1 3414
-# echo 3414 > /dev/cgroup/burn/oops/tasks
-
-Note the distinct lack of an Oops here.
-
-But all is not well. If I now use schedtool (obvoiusly redundantly)
-
-# schedtool -R -p 1 3414
-
-I get a new Oops, which looks essentially tha same as the one above.
+Best Regards
+Komuro
 
 
-Daniel K.
+> > 
+> > Here is the log  (your patch is applied).
+> > Unfortunately, no message that you added appears.
+> > 
+> > It seems this device is detected as pcmcia0.0 first
+> > but later it is detected as pcmcia0.1.
+> 
+> Hmmm... strange.  Can you please try the attached patch?
+> 
+> -- 
+> tejun
+> 
+
+
+-- 
+Komuro <komurojun-mbn@nifty.com>
