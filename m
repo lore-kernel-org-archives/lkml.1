@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761719AbYFQXFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762052AbYFQXGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761719AbYFQXFn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 19:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760174AbYFQXAV
+	id S1762052AbYFQXGA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 19:06:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760310AbYFQXAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 19:00:21 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:24425 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760310AbYFQW7z (ORCPT
+	Tue, 17 Jun 2008 19:00:24 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:39829 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760173AbYFQW7u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 18:59:55 -0400
-Message-Id: <20080617225910.961415170@ldl.fc.hp.com>
+	Tue, 17 Jun 2008 18:59:50 -0400
+Message-Id: <20080617225910.137967467@ldl.fc.hp.com>
 References: <20080617225823.045233728@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 17 Jun 2008 16:58:39 -0600
+Date: Tue, 17 Jun 2008 16:58:35 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org, Rene Herman <rene.herman@gmail.com>
@@ -28,47 +28,165 @@ Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Takashi Iwai <tiwai@suse.de>
 Cc: Jiri Slaby <jirislaby@gmail.com>
-Subject: [patch 16/28] PNP: improve resource assignment debug
-Content-Disposition: inline; filename=pnp-improve-assign-debug
+Subject: [patch 12/28] PNP: define PNP-specific IORESOURCE_IO_* flags alongside IRQ, DMA, MEM
+Content-Disposition: inline; filename=pnp-io-option-flags
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When we fail to assign an I/O or MEM resource, include the min/max
-in the debug output to help match it with the options.
+PNP previously defined PNP_PORT_FLAG_16BITADDR and PNP_PORT_FLAG_FIXED
+in a private header file, but put those flags in struct resource.flags
+fields.  Better to make them IORESOURCE_IO_* flags like the existing
+IRQ, DMA, and MEM flags.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 Acked-by: Rene Herman <rene.herman@gmail.com>
 
-Index: work10/drivers/pnp/manager.c
+---
+ include/linux/ioport.h         |   10 +++++++---
+ include/linux/pnp.h            |    3 ---
+ drivers/pnp/interface.c        |    2 +-
+ drivers/pnp/isapnp/core.c      |    4 ++--
+ drivers/pnp/pnpacpi/rsparser.c |   10 +++++-----
+ drivers/pnp/pnpbios/rsparser.c |    4 ++--
+ 6 files changed, 17 insertions(+), 16 deletions(-)
+
+Index: work14/include/linux/ioport.h
 ===================================================================
---- work10.orig/drivers/pnp/manager.c	2008-05-13 12:01:17.000000000 -0600
-+++ work10/drivers/pnp/manager.c	2008-05-13 12:50:57.000000000 -0600
-@@ -47,7 +47,10 @@ static int pnp_assign_port(struct pnp_de
- 		res->start += rule->align;
- 		res->end = res->start + rule->size - 1;
- 		if (res->start > rule->max || !rule->align) {
--			dev_dbg(&dev->dev, "  couldn't assign io %d\n", idx);
-+			dev_dbg(&dev->dev, "  couldn't assign io %d "
-+				"(min %#llx max %#llx)\n", idx,
-+				(unsigned long long) rule->min,
-+				(unsigned long long) rule->max);
- 			return 0;
- 		}
+--- work14.orig/include/linux/ioport.h	2008-06-17 14:42:48.000000000 -0600
++++ work14/include/linux/ioport.h	2008-06-17 15:52:16.000000000 -0600
+@@ -88,6 +88,10 @@ struct resource_list {
+ #define IORESOURCE_MEM_SHADOWABLE	(1<<5)	/* dup: IORESOURCE_SHADOWABLE */
+ #define IORESOURCE_MEM_EXPANSIONROM	(1<<6)
+ 
++/* PnP I/O specific bits (IORESOURCE_BITS) */
++#define IORESOURCE_IO_16BIT_ADDR	(1<<0)
++#define IORESOURCE_IO_FIXED		(1<<1)
++
+ /* PCI ROM control bits (IORESOURCE_BITS) */
+ #define IORESOURCE_ROM_ENABLE		(1<<0)	/* ROM is enabled, same as PCI_ROM_ADDRESS_ENABLE */
+ #define IORESOURCE_ROM_SHADOW		(1<<1)	/* ROM is copy at C000:0 */
+Index: work14/include/linux/pnp.h
+===================================================================
+--- work14.orig/include/linux/pnp.h	2008-06-17 15:52:14.000000000 -0600
++++ work14/include/linux/pnp.h	2008-06-17 15:52:16.000000000 -0600
+@@ -182,9 +182,6 @@ static inline int pnp_dma_valid(struct p
+ }
+ 
+ 
+-#define PNP_PORT_FLAG_16BITADDR	(1<<0)
+-#define PNP_PORT_FLAG_FIXED	(1<<1)
+-
+ struct pnp_port {
+ 	unsigned short min;	/* min base number */
+ 	unsigned short max;	/* max base number */
+Index: work14/drivers/pnp/interface.c
+===================================================================
+--- work14.orig/drivers/pnp/interface.c	2008-06-17 15:52:15.000000000 -0600
++++ work14/drivers/pnp/interface.c	2008-06-17 15:52:16.000000000 -0600
+@@ -57,7 +57,7 @@ static void pnp_print_port(pnp_info_buff
+ 		   "%sport 0x%x-0x%x, align 0x%x, size 0x%x, %i-bit address decoding\n",
+ 		   space, port->min, port->max,
+ 		   port->align ? (port->align - 1) : 0, port->size,
+-		   port->flags & PNP_PORT_FLAG_16BITADDR ? 16 : 10);
++		   port->flags & IORESOURCE_IO_16BIT_ADDR ? 16 : 10);
+ }
+ 
+ static void pnp_print_irq(pnp_info_buffer_t * buffer, char *space,
+Index: work14/drivers/pnp/isapnp/core.c
+===================================================================
+--- work14.orig/drivers/pnp/isapnp/core.c	2008-06-17 14:47:29.000000000 -0600
++++ work14/drivers/pnp/isapnp/core.c	2008-06-17 15:52:16.000000000 -0600
+@@ -486,7 +486,7 @@ static void __init isapnp_parse_port_res
+ 	port->max = (tmp[4] << 8) | tmp[3];
+ 	port->align = tmp[5];
+ 	port->size = tmp[6];
+-	port->flags = tmp[0] ? PNP_PORT_FLAG_16BITADDR : 0;
++	port->flags = tmp[0] ? IORESOURCE_IO_16BIT_ADDR : 0;
+ 	pnp_register_port_resource(dev, option, port);
+ }
+ 
+@@ -507,7 +507,7 @@ static void __init isapnp_parse_fixed_po
+ 	port->min = port->max = (tmp[1] << 8) | tmp[0];
+ 	port->size = tmp[2];
+ 	port->align = 0;
+-	port->flags = PNP_PORT_FLAG_FIXED;
++	port->flags = IORESOURCE_IO_FIXED;
+ 	pnp_register_port_resource(dev, option, port);
+ }
+ 
+Index: work14/drivers/pnp/pnpacpi/rsparser.c
+===================================================================
+--- work14.orig/drivers/pnp/pnpacpi/rsparser.c	2008-06-17 15:46:52.000000000 -0600
++++ work14/drivers/pnp/pnpacpi/rsparser.c	2008-06-17 15:52:16.000000000 -0600
+@@ -180,7 +180,7 @@ static void pnpacpi_parse_allocated_iore
+ 	u64 end = start + len - 1;
+ 
+ 	if (io_decode == ACPI_DECODE_16)
+-		flags |= PNP_PORT_FLAG_16BITADDR;
++		flags |= IORESOURCE_IO_16BIT_ADDR;
+ 	if (len == 0 || end >= 0x10003)
+ 		flags |= IORESOURCE_DISABLED;
+ 
+@@ -485,7 +485,7 @@ static __init void pnpacpi_parse_port_op
+ 	port->align = io->alignment;
+ 	port->size = io->address_length;
+ 	port->flags = ACPI_DECODE_16 == io->io_decode ?
+-	    PNP_PORT_FLAG_16BITADDR : 0;
++	    IORESOURCE_IO_16BIT_ADDR : 0;
+ 	pnp_register_port_resource(dev, option, port);
+ }
+ 
+@@ -503,7 +503,7 @@ static __init void pnpacpi_parse_fixed_p
+ 	port->min = port->max = io->address;
+ 	port->size = io->address_length;
+ 	port->align = 0;
+-	port->flags = PNP_PORT_FLAG_FIXED;
++	port->flags = IORESOURCE_IO_FIXED;
+ 	pnp_register_port_resource(dev, option, port);
+ }
+ 
+@@ -609,7 +609,7 @@ static __init void pnpacpi_parse_address
+ 		port->min = port->max = p->minimum;
+ 		port->size = p->address_length;
+ 		port->align = 0;
+-		port->flags = PNP_PORT_FLAG_FIXED;
++		port->flags = IORESOURCE_IO_FIXED;
+ 		pnp_register_port_resource(dev, option, port);
  	}
-@@ -96,7 +99,10 @@ static int pnp_assign_mem(struct pnp_dev
- 		res->start += rule->align;
- 		res->end = res->start + rule->size - 1;
- 		if (res->start > rule->max || !rule->align) {
--			dev_dbg(&dev->dev, "  couldn't assign mem %d\n", idx);
-+			dev_dbg(&dev->dev, "  couldn't assign mem %d "
-+				"(min %#llx max %#llx)\n", idx,
-+				(unsigned long long) rule->min,
-+				(unsigned long long) rule->max);
- 			return 0;
- 		}
- 	}
+ }
+@@ -946,7 +946,7 @@ static void pnpacpi_encode_io(struct pnp
+ 
+ 	if (pnp_resource_enabled(p)) {
+ 		/* Note: pnp_assign_port copies pnp_port->flags into p->flags */
+-		io->io_decode = (p->flags & PNP_PORT_FLAG_16BITADDR) ?
++		io->io_decode = (p->flags & IORESOURCE_IO_16BIT_ADDR) ?
+ 		    ACPI_DECODE_16 : ACPI_DECODE_10;
+ 		io->minimum = p->start;
+ 		io->maximum = p->end;
+Index: work14/drivers/pnp/pnpbios/rsparser.c
+===================================================================
+--- work14.orig/drivers/pnp/pnpbios/rsparser.c	2008-06-17 14:47:29.000000000 -0600
++++ work14/drivers/pnp/pnpbios/rsparser.c	2008-06-17 15:52:16.000000000 -0600
+@@ -310,7 +310,7 @@ static __init void pnpbios_parse_port_op
+ 	port->max = (p[5] << 8) | p[4];
+ 	port->align = p[6];
+ 	port->size = p[7];
+-	port->flags = p[1] ? PNP_PORT_FLAG_16BITADDR : 0;
++	port->flags = p[1] ? IORESOURCE_IO_16BIT_ADDR : 0;
+ 	pnp_register_port_resource(dev, option, port);
+ }
+ 
+@@ -326,7 +326,7 @@ static __init void pnpbios_parse_fixed_p
+ 	port->min = port->max = (p[2] << 8) | p[1];
+ 	port->size = p[3];
+ 	port->align = 0;
+-	port->flags = PNP_PORT_FLAG_FIXED;
++	port->flags = IORESOURCE_IO_FIXED;
+ 	pnp_register_port_resource(dev, option, port);
+ }
+ 
 
 -- 
