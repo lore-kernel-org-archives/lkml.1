@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761519AbYFQXCg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760950AbYFQXCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761519AbYFQXCg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 19:02:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760264AbYFQW7x
+	id S1760950AbYFQXCO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 19:02:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760094AbYFQW7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 18:59:53 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:24359 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759636AbYFQW7o (ORCPT
+	Tue, 17 Jun 2008 18:59:48 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:15152 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759531AbYFQW7k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 18:59:44 -0400
-Message-Id: <20080617225909.260022434@ldl.fc.hp.com>
+	Tue, 17 Jun 2008 18:59:40 -0400
+Message-Id: <20080617225909.062403791@ldl.fc.hp.com>
 References: <20080617225823.045233728@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 17 Jun 2008 16:58:31 -0600
+Date: Tue, 17 Jun 2008 16:58:30 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org
@@ -28,101 +28,129 @@ Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Takashi Iwai <tiwai@suse.de>
 Cc: Jiri Slaby <jirislaby@gmail.com>
-Subject: [patch 08/28] PNP: remove ratelimit on add resource failures
-Content-Disposition: inline; filename=pnp-remove-warning-ratelimit
+Subject: [patch 07/28] PNPACPI: keep disabled resources when parsing current config
+Content-Disposition: inline; filename=pnp-keep-disabled-resources-when-parsing-current-config
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We used to have a fixed-size resource table.  If a device had
-twenty resources when the table only had space for ten, we didn't
-need ten warnings, so we added the ratelimit.
+When we parse a device's _CRS data (the current resource settings),
+we should keep track of everything we find, even if it's currently
+disabled or invalid.
 
-Now that we can dynamically allocate new resources, we should
-only get failures if the allocation fails.  That should be
-rare enough that we don't need to ratelimit the messages.
+This is what we already do for ISAPNP and PNPBIOS, and it helps
+keep things matched up when we subsequently re-encode resources.
+For example, consider a device with (mem, irq0, irq1, io), where
+irq0 is disabled.  If we drop irq0 when parsing the _CRS, we will
+mistakenly put irq1 in the irq0 slot when we encode resources
+for an _SRS call.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Index: work10/drivers/pnp/resource.c
+Index: work14/drivers/pnp/pnpacpi/rsparser.c
 ===================================================================
---- work10.orig/drivers/pnp/resource.c	2008-05-05 11:38:16.000000000 -0600
-+++ work10/drivers/pnp/resource.c	2008-05-05 11:49:05.000000000 -0600
-@@ -537,15 +537,10 @@ struct pnp_resource *pnp_add_irq_resourc
- {
- 	struct pnp_resource *pnp_res;
- 	struct resource *res;
--	static unsigned char warned;
+--- work14.orig/drivers/pnp/pnpacpi/rsparser.c	2008-06-17 14:47:29.000000000 -0600
++++ work14/drivers/pnp/pnpacpi/rsparser.c	2008-06-17 15:46:52.000000000 -0600
+@@ -98,8 +98,10 @@ static void pnpacpi_parse_allocated_irqr
+ 	int irq, flags;
+ 	int p, t;
  
- 	pnp_res = pnp_new_resource(dev);
- 	if (!pnp_res) {
--		if (!warned) {
--			dev_err(&dev->dev, "can't add resource for IRQ %d\n",
--				irq);
--			warned = 1;
+-	if (!valid_IRQ(gsi))
++	if (!valid_IRQ(gsi)) {
++		pnp_add_irq_resource(dev, gsi, IORESOURCE_DISABLED);
+ 		return;
++	}
+ 
+ 	/*
+ 	 * in IO-APIC mode, use overrided attribute. Two reasons:
+@@ -248,24 +250,39 @@ static acpi_status pnpacpi_allocated_res
+ 		 * _CRS, but some firmware violates this, so parse them all.
+ 		 */
+ 		irq = &res->data.irq;
+-		for (i = 0; i < irq->interrupt_count; i++) {
+-			pnpacpi_parse_allocated_irqresource(dev,
+-				irq->interrupts[i],
+-				irq->triggering,
+-				irq->polarity,
+-				irq->sharable);
++		if (irq->interrupt_count == 0)
++			pnp_add_irq_resource(dev, 0, IORESOURCE_DISABLED);
++		else {
++			for (i = 0; i < irq->interrupt_count; i++) {
++				pnpacpi_parse_allocated_irqresource(dev,
++					irq->interrupts[i],
++					irq->triggering,
++					irq->polarity,
++				    irq->sharable);
++			}
++
++			/*
++			 * The IRQ encoder puts a single interrupt in each
++			 * descriptor, so if a _CRS descriptor has more than
++			 * one interrupt, we won't be able to re-encode it.
++			 */
++			if (pnp_can_write(dev) && irq->interrupt_count > 1) {
++				dev_warn(&dev->dev, "multiple interrupts in "
++					 "_CRS descriptor; configuration can't "
++					 "be changed\n");
++				dev->capabilities &= ~PNP_WRITE;
++			}
+ 		}
+ 		break;
+ 
+ 	case ACPI_RESOURCE_TYPE_DMA:
+ 		dma = &res->data.dma;
+-		if (dma->channel_count > 0) {
++		if (dma->channel_count > 0 && dma->channels[0] != (u8) -1)
+ 			flags = dma_flags(dma->type, dma->bus_master,
+ 					  dma->transfer);
+-			if (dma->channels[0] == (u8) -1)
+-				flags |= IORESOURCE_DISABLED;
+-			pnp_add_dma_resource(dev, dma->channels[0], flags);
 -		}
-+		dev_err(&dev->dev, "can't add resource for IRQ %d\n", irq);
- 		return NULL;
- 	}
++		else
++			flags = IORESOURCE_DISABLED;
++		pnp_add_dma_resource(dev, dma->channels[0], flags);
+ 		break;
  
-@@ -563,15 +558,10 @@ struct pnp_resource *pnp_add_dma_resourc
- {
- 	struct pnp_resource *pnp_res;
- 	struct resource *res;
--	static unsigned char warned;
+ 	case ACPI_RESOURCE_TYPE_IO:
+@@ -331,12 +348,29 @@ static acpi_status pnpacpi_allocated_res
+ 		if (extended_irq->producer_consumer == ACPI_PRODUCER)
+ 			return AE_OK;
  
- 	pnp_res = pnp_new_resource(dev);
- 	if (!pnp_res) {
--		if (!warned) {
--			dev_err(&dev->dev, "can't add resource for DMA %d\n",
--				dma);
--			warned = 1;
--		}
-+		dev_err(&dev->dev, "can't add resource for DMA %d\n", dma);
- 		return NULL;
- 	}
- 
-@@ -590,16 +580,12 @@ struct pnp_resource *pnp_add_io_resource
- {
- 	struct pnp_resource *pnp_res;
- 	struct resource *res;
--	static unsigned char warned;
- 
- 	pnp_res = pnp_new_resource(dev);
- 	if (!pnp_res) {
--		if (!warned) {
--			dev_err(&dev->dev, "can't add resource for IO "
--				"%#llx-%#llx\n",(unsigned long long) start,
--				(unsigned long long) end);
--			warned = 1;
--		}
-+		dev_err(&dev->dev, "can't add resource for IO %#llx-%#llx\n",
-+			(unsigned long long) start,
-+			(unsigned long long) end);
- 		return NULL;
- 	}
- 
-@@ -619,16 +605,12 @@ struct pnp_resource *pnp_add_mem_resourc
- {
- 	struct pnp_resource *pnp_res;
- 	struct resource *res;
--	static unsigned char warned;
- 
- 	pnp_res = pnp_new_resource(dev);
- 	if (!pnp_res) {
--		if (!warned) {
--			dev_err(&dev->dev, "can't add resource for MEM "
--				"%#llx-%#llx\n",(unsigned long long) start,
--				(unsigned long long) end);
--			warned = 1;
--		}
-+		dev_err(&dev->dev, "can't add resource for MEM %#llx-%#llx\n",
-+			(unsigned long long) start,
-+			(unsigned long long) end);
- 		return NULL;
- 	}
+-		for (i = 0; i < extended_irq->interrupt_count; i++) {
+-			pnpacpi_parse_allocated_irqresource(dev,
+-				extended_irq->interrupts[i],
+-				extended_irq->triggering,
+-				extended_irq->polarity,
+-				extended_irq->sharable);
++		if (extended_irq->interrupt_count == 0)
++			pnp_add_irq_resource(dev, 0, IORESOURCE_DISABLED);
++		else {
++			for (i = 0; i < extended_irq->interrupt_count; i++) {
++				pnpacpi_parse_allocated_irqresource(dev,
++					extended_irq->interrupts[i],
++					extended_irq->triggering,
++					extended_irq->polarity,
++					extended_irq->sharable);
++			}
++
++			/*
++			 * The IRQ encoder puts a single interrupt in each
++			 * descriptor, so if a _CRS descriptor has more than
++			 * one interrupt, we won't be able to re-encode it.
++			 */
++			if (pnp_can_write(dev) &&
++			    extended_irq->interrupt_count > 1) {
++				dev_warn(&dev->dev, "multiple interrupts in "
++					 "_CRS descriptor; configuration can't "
++					 "be changed\n");
++				dev->capabilities &= ~PNP_WRITE;
++			}
+ 		}
+ 		break;
  
 
 -- 
