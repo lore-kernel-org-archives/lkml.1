@@ -1,68 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759654AbYFQV6I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759721AbYFQWAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759654AbYFQV6I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 17:58:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756973AbYFQV5z
+	id S1759721AbYFQWAe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 18:00:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757182AbYFQWA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 17:57:55 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:60950 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756467AbYFQV5y (ORCPT
+	Tue, 17 Jun 2008 18:00:26 -0400
+Received: from web52506.mail.re2.yahoo.com ([206.190.48.189]:47618 "HELO
+	web52506.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754995AbYFQWA0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 17:57:54 -0400
-Subject: [PATCH/RFC] remove irqs_disabled warning from local_bh_enable
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Cc: Michael Buesch <mb@bu3sch.de>,
-       David Ellingsworth <david@identd.dyndns.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 17 Jun 2008 23:57:14 +0200
-Message-Id: <1213739834.3803.137.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Jun 2008 18:00:26 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
+  b=xVMQIdyFyBuEMtVYTjU/3tmFglI114gvBwHS13Es/eicynHFA0TgbyQE15WhWtAH6hY6bBUChC/rAsR43DRitKTO4+vrdaoEY8lAXqeMK1BaF+niEhyyea1j9cq6djVlu6YCGw1hH1V8WO9KbkP1jAgjrLQ2BNnvg18jQLNLmlo=;
+X-Mailer: YahooMailWebService/0.7.199
+Date: Tue, 17 Jun 2008 15:00:25 -0700 (PDT)
+From: Marc Perkel <mperkel@yahoo.com>
+Reply-To: mperkel@yahoo.com
+Subject: AMD Dual Core vs. Quad - Power Management
+To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <364301.54904.qm@web52506.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This warning has started to trigger with mac80211 because it can, under
-some circumstances, use spin_lock_bh() protected sections within
-irq-disabled sections. Is that a bug?
+Been running a few tests and an AMD motherboard booting 2.6.25 from flash uses 0.33 amps if the CPU is a AM2 Athlon 6000. But if I used a Phenom Quad core CPU 9550 it pulls 0.55 amps.
 
-Interestingly, the warning was never noticed until somebody ran the code
-on UP/NO-PREEMPT because local_bh_enable_ip() does not contain such a
-warning. Also, because softirq disabling is refcounted (via the preempt
-counter), it ought to be safe to nest it and even use within
-irqs-disabled sections, as far as I can tell.
+In theory the 9550 should pull less because it's a lower TPD and the phenom processor is supposed to be smarter about power management.
 
-Also, if you're going to treat IRQs being enabled as a bug, there's no
-point in disabling them right afterwards, is there?
+So - why is the Phenom pulling more power? Is it because power management software for the Phenom isn't updated yet?
 
-If you're going to reject this patch, I'll post one that adds the
-warning to local_bh_enable_ip() to allow detecting this for everybody
-and not just those poor people running UP/NO-PREEMPT :)
-
-(and why doesn't local_bh_enable just call local_bh_enable_ip anyway? or
-both "call" a common static inline?)
----
- kernel/softirq.c |    3 ---
- 1 file changed, 3 deletions(-)
-
---- everything.orig/kernel/softirq.c	2008-06-17 23:48:25.000000000 +0200
-+++ everything/kernel/softirq.c	2008-06-17 23:48:56.000000000 +0200
-@@ -137,10 +137,7 @@ void local_bh_enable(void)
- 	unsigned long flags;
- 
- 	WARN_ON_ONCE(in_irq());
--#endif
--	WARN_ON_ONCE(irqs_disabled());
- 
--#ifdef CONFIG_TRACE_IRQFLAGS
- 	local_irq_save(flags);
- #endif
- 	/*
+Marc Perkel
+Junk Email Filter dot com
+http://www.junkemailfilter.com
 
 
+      
