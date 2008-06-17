@@ -1,60 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757268AbYFQJ5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755845AbYFQKLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757268AbYFQJ5T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 05:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbYFQJ5H
+	id S1755845AbYFQKLW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 06:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbYFQKLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 05:57:07 -0400
-Received: from wr-out-0506.google.com ([64.233.184.224]:50756 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753702AbYFQJ5E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 05:57:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=JDp/4pQHgXLE1MSHBWM7J+clatso0oDr/NjKvp5UYP7d+WHyYWYT9nrS7uKDdj48+h
-         FBmdJ4Yza/mVD32npo1mtC9J2jhLjsgja2su3vGaIwrkaZNoq0/ICdnyl7t047033IBh
-         rNReO8JTrOZd6t2ZerHSRmjGWPhGs1z6y8FYM=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 1/4] ide-pmac: media-bay support fixes
-Date: Tue, 17 Jun 2008 11:58:34 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200806162124.43005.bzolnier@gmail.com> <1213674572.8129.159.camel@pasglop> <200806171141.08865.bzolnier@gmail.com>
-In-Reply-To: <200806171141.08865.bzolnier@gmail.com>
+	Tue, 17 Jun 2008 06:11:10 -0400
+Received: from styx.suse.cz ([82.119.242.94]:58040 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754030AbYFQKLJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 06:11:09 -0400
+Date: Tue, 17 Jun 2008 12:11:07 +0200
+From: Jan Kara <jack@suse.cz>
+To: Neil Brown <neilb@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
+Subject: Re: Two questions on VFS/mm
+Message-ID: <20080617101107.GA12527@duck.suse.cz>
+References: <20080604163412.GL16572@duck.suse.cz> <18512.51954.831279.617586@notabene.brown> <20080612081847.GA12367@duck.suse.cz> <18514.5983.603918.591472@notabene.brown>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806171158.35210.bzolnier@gmail.com>
+In-Reply-To: <18514.5983.603918.591472@notabene.brown>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 17 June 2008, Bartlomiej Zolnierkiewicz wrote:
-> On Tuesday 17 June 2008, Benjamin Herrenschmidt wrote:
-> > On Tue, 2008-06-17 at 13:39 +1000, Benjamin Herrenschmidt wrote:
-> > > Your patches don't apply on today upstream, I'll try against
-> > > linux-next or is there a git I can clone to test things ?
-> > 
-> > Ok, I'm lost. I have 3 different series of patches from you partially
-> > overlapping with different amount of patches in them. I don't have
-> > time to sort that out right now. Can you send me a single serie that
-> > I can apply on top of either upstream or tonight linux-next which
-> > should have your stuff removed hopefully ?
+On Fri 13-06-08 16:44:47, Neil Brown wrote:
+> On Thursday June 12, jack@suse.cz wrote:
+> > On Thu 12-06-08 17:06:26, Neil Brown wrote:
+> > > On Wednesday June 4, jack@suse.cz wrote:
+> > > >   Hi,
+> > > > 
+> > > >   could some kind soul knowledgable in VFS/mm help me with the following
+> > > > two questions? I've spotted them when testing some ext4 for patches...
+> > > >   1) In write_cache_pages() we do:
+> > > > ...
+> > > > 	lock_page(page);
+> > > > 	...
+> > > > 	if (!wbc->range_cyclic && page->index > end) {
+> > > >                    done = 1;
+> > > >                    unlock_page(page);
+> > > >                    continue;
+> > > >         }
+> > > > 	...
+> > > > 	ret = (*writepage)(page, wbc, data);
+> > > > 
+> > > >   Now the problem is that if range_cyclic is set, it can happen that the
+> > > > page we give to the filesystem is beyond the current end of file (and can
+> > > > be already processed by invalidatepage()). Is the filesystem supposed to
+> > > > handle this (what would it be good for to give such a page to the fs?) or
+> > > > is it just a bug in write_cache_pages()?
+> > > 
+> > > Maybe there is an invariant that an address_space never has a dirty
+> > > page beyond the end-of-file??
+> > > Certainly 'truncate' invalidates and un-dirties such pages.
+> > > 
+> > > With typical writes, ->write_begin will extend EOF to include the
+> > > page, and ->write_end will mark it dirty (I think).
+> > > 
+> > > mmap writes are probably a bit different, but I suspect the same
+> > > principle applies.
+> > > 
+> > > If the page is not dirty, then 
+> > > 			if (PageWriteback(page) ||
+> > > 			    !clear_page_dirty_for_io(page)) {
+> > > 				unlock_page(page);
+> > > 				continue;
+> > > 			}
+> > > 
+> > > will fire, and you never get to
+> > > 			ret = (*writepage)(page, wbc, data);
+> >   As Miklos pointed out, there's at least call do_invalidatepage() from
+> > block_write_full_page() which does invalidate the page but does not clear
+> > dirty bits or remove page from page cache. Otherwise I'd agree with
+> > you...
 > 
-> This patch series (from yesterday, the rest of can be ignored) should
-> apply fine to the next revision of linux-next (later than -next-20080616,
-> it is not out yet), if you prefer upstream patches I can look into it
-
--next-20080617 is out now so please try it
-
-> tonight.
+> block_write_full_page will have been called after a
+> clear_page_dirty_for_io() call, so it should not be dirty.
 > 
-> Thanks,
-> Bart
+> I guess it could have been dirtied again as you don't need the page
+> lock to dirty a page... though if it is beyond EOF, maybe you do...
+> 
+> Hmm, I have a very strong feeling that "this cannot happen", and that
+> it should certainly be "this shouldn't happen", but I guess I'm not
+> 100% convincing at the moment :-)
+  Definitely marking page beyond EOF dirty can happen without page lock.
+Look for example at clean_page_dirty_for_io() - there we do
+set_page_dirty() in case dirty bit is set in page tables and noone checks
+for being beyond EOF.
+  So what I'd think can happen (although this is rather theoretical, I
+admit) is that if there happen to be two processes doing writeback on the
+same file (one may be pdflush, the other one for example data writeback on
+journal commit), the third process doing truncate and someone accesses mmap,
+we can see:
+  pdflush                   writeback                   truncate       writer
+-> write_cache_pages      -> write_cache_pages
+ - lookup dirty pages      - lookup dirty pages
+							- i_size = 0
+ -> writepage
+  -> block_write_full_page
+   -> do_invalidatepage
+								       writes to page beyond EOF
+                           - sees dirty bit
+			    -> writepage -> Oops
+ 
+> > > >   2) I have the following problem with page_mkwrite() when blocksize <
+> > > > pagesize. What we want to do is to fill in a potential hole under a page
+> > > > somebody wants to write to. But consider following scenario with a
+> > > > filesystem with 1k blocksize:
+> > > >   truncate("file", 1024);
+> > > >   ptr = mmap("file");
+> > > >   *ptr = 'a'
+> > > >      -> page_mkwrite() is called.
+> > > >         but "file" is only 1k large and we cannot really allocate blocks
+> > > >         beyond end of file. So we allocate just one 1k block.
+> > > >   truncate("file", 4096);
+> > > >   *(ptr + 2048) = 'a'
+> > > >      - nothing is called and later during writepage() time we are surprised
+> > > >        we have a dirty page which is not backed by a filesystem block.
+> > > > 
+> > > >   How to solve this? One idea I have here is that when we handle truncate(),
+> > > > we mark the original last page (if it is partial) as read-only again so
+> > > > that page_mkwrite() is called on the next write to it. Is something like
+> > > > this possible? Pointers to code doing something similar are welcome, I don't
+> > > > really know these things ;).
+> > > 
+> > > My understanding is that memory mapping is always done in multiples of
+> > > the page size.  When you dirty any part of a page, you effectively dirty
+> > > the whole page, so you need to extend the file to cover the whole page.
+> > > i.e. the page_mkwrite() call must extend the file to a size of 4096.
+> >   Well, you definitely cannot increase file size because someone wrote to
+> > the last page of file whose size is not multiple of page size. So when your
+> > block size is smaller than page size, you have to handle it somehow... You
+> > could instantiate blocks beyond end of file but that gets a bit tricky
+> > (e.g. in ext3, we don't allow such blocks to exist so far).
+> 
+> I get the problem now.. I read the 'mmap' man page:
+> 
+>        A file is mapped in multiples of the page size.  For a file that is not
+>        a multiple of the page  size,  the  remaining  memory  is  zeroed  when
+>        mapped, and writes to that region are not written out to the file.  The
+>        effect of changing the size of the underlying file of a mapping on  the
+>        pages  that  correspond  to  added  or  removed  regions of the file is
+>        unspecified.
+> 
+> As the situation you are describing is documented as having
+> "unspecified" behaviour, I guess you can do whatever you want.
+> So just not writing out to any block that isn't backed by a filesystem
+> block would be defensible.  But maybe not desirable.
+  Hmm, I never thought about discarding mmap accesses even after the
+extending truncate has happened. I guess there are quite some applications
+which use this so I think it's not an option...
+
+> I like your idea of playing with the mapping.
+> I don't think you want to bother mapping it as "read-only" - just
+> unmap it altogether.  When it is next mapped writable to service a
+> write you will get a page_mkwrite call and you can fix things up.
+> 
+> To unmap the page, just call
+>   unmap_mapping_range(mapping, page_index << PAGE_CACHE_SHIFT,
+> 		      PAGE_CACHE_SIZE, 0);
+> (I got that from truncate_inode_pages_range in mm/truncate.c).
+> You can do this while you have the page locked, and it won't be
+> mapped again until you unlock it.
+  True but we have to be careful not to discard data in that page before
+EOF. Thinking more about it, we'll probably have to allocate blocks
+upto multiple of page size on extending truncate...
+  Thanks for your ideas.
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
