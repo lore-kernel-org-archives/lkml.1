@@ -1,65 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbYFQG0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755061AbYFQHEP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754830AbYFQG0W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 02:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbYFQG0F
+	id S1755061AbYFQHEP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 03:04:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbYFQHD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 02:26:05 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:34408 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752045AbYFQG0E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 02:26:04 -0400
-Message-Id: <1213682570.13708.1258839317@webmail.messagingengine.com>
-X-Sasl-Enc: jqNTBVF55AcTOY8JtJpAMvtwsJ/Gm4vUyZy+YyccRyzG 1213682570
-From: "Bron Gondwana" <brong@fastmail.fm>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Nick Piggin" <npiggin@suse.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-Cc: " Rob Mueller" <robm@fastmail.fm>
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="ISO-8859-1"
+	Tue, 17 Jun 2008 03:03:58 -0400
+Received: from mx2.suse.de ([195.135.220.15]:58570 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751186AbYFQHD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 03:03:57 -0400
+From: Neil Brown <neilb@suse.de>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Date: Tue, 17 Jun 2008 17:03:01 +1000
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <1213682410.13174.1258837181@webmail.messagingengine.com>
-Subject: Re: BUG: mmapfile/writev spurious zero bytes (x86_64/not i386,
- bisected, reproducable)
-In-Reply-To: <1213682410.13174.1258837181@webmail.messagingengine.com>
-Date: Tue, 17 Jun 2008 16:02:50 +1000
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18519.24997.34761.283298@notabene.brown>
+Cc: Chuck Lever <chucklever@gmail.com>, Peter Staubach <staubach@redhat.com>,
+       "J. Bruce Fields" <bfields@fieldses.org>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] knfsd: nfsd: Handle ERESTARTSYS from syscalls.
+In-Reply-To: message from Trond Myklebust on Monday June 16
+References: <20080613213759.26929.patches@notabene>
+	<1080613114215.27095@suse.de>
+	<48565F19.10508@redhat.com>
+	<76bd70e30806160809o495dd50fw88a80ec0673c0dc1@mail.gmail.com>
+	<1213635286.7238.13.camel@localhost>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday June 16, trond.myklebust@fys.uio.no wrote:
+> On Mon, 2008-06-16 at 11:09 -0400, Chuck Lever wrote:
+> 
+> > I think an error reply is much better than no reply in nearly every
+> > case.  NFS3ERR_JUKEBOX/NFS4ERR_DELAY is an interesting idea, but
+> > something else again will probably be required for v4.1 with sessions.
+> 
+> NFS3ERR_JUKEBOX/NFS4ERR_DELAY may be inappropriate if the nfs daemon has
+> already started handling the RPC call, since you may be interrupting a
+> non-idempotent operation.
 
-On Tue, 17 Jun 2008 16:00:10 +1000, "Bron Gondwana" <brong@fastmail.fm> said:
-> I apologise for the length of the attached C program.  I tried
-> to make it shorter, but kept not tickling the bug.  There's also
-> another advantage of keeping it like this - it closely mirrors the
-> Cyrus behaviour, to the point where the output is a valid skiplist
-> file.
+If the filesystem allows you to interrupt a non-idempotent operation
+part way through, then the filesystem is doing something very wrong.
 
-And I appear to have sent the one without the usage comments at the top.
-Here they are:
+The observed behaviour is that multiple 32K writes are outstanding
+(in different nfsd threads) when a signal is delivered to each nfsd.
 
- * USAGE:
- *    $ gcc -g maptest.c
- *    $ ./a.out z
- *    $ hexdump -C z.NEW
- *
- * Notice the block of zero byte records appearing within
- * the output.
- *
- * Run with a second argument:
- *
- *    $ ./a.out z 1
- *    $ hexdump -C z.NEW
- *
- * No more zeros!
+OCFS2 appears to be serialising these writes.
 
-Bron.
--- 
-  Bron Gondwana
-  brong@fastmail.fm
+One of the writes completes returning a length that is less than 32K.
+This length is returned to the client.  A quick look at the client
+code suggests that it complains with a printk, and tries to write the
+remainder, which seems correct.
 
+The other writes all complete with ERESTARTSYS.  Presumably they
+haven't started at all.  If they had, you might expect a partial
+return from them too.
+
+So far, what OCFS2 is doing seems credible and doesn't leave us in an
+awkward position with respect to incomplete idempotent operations.
+
+I cannot be certain, but I'm willing to believe that OCFS2 only
+returns ERESTARTSYS when the operation hasn't been performed at all
+(or has been wound-back to the starting condition).
+
+I agree that NFS3ERR_JUKEBOX is more appropriate than no reply, but I
+don't think there is any reason to suspect that will not be
+sufficient.
+
+Thanks,
+NeilBrown
