@@ -1,41 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758507AbYFQRDG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757109AbYFQRJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758507AbYFQRDG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 13:03:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755125AbYFQRCx
+	id S1757109AbYFQRJT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 13:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754385AbYFQRJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 13:02:53 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:57321 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754920AbYFQRCx (ORCPT
+	Tue, 17 Jun 2008 13:09:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36025 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753766AbYFQRJF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 13:02:53 -0400
-To: szaka@ntfs-3g.org
-CC: miklos@szeredi.hu, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, ywang221@hotmail.com
-In-reply-to: <Pine.LNX.4.62.0806171950350.23306@tamago.serverit.net> (message
-	from Szabolcs Szakacsits on Tue, 17 Jun 2008 19:59:15 +0300 (EEST))
-Subject: Re: [2.6.26 patch] fuse: fix thinko in max I/O size calucation
-References: <E1K8dgi-0005sl-El@pomaz-ex.szeredi.hu> <Pine.LNX.4.62.0806171950350.23306@tamago.serverit.net>
-Message-Id: <E1K8eZX-0006B3-Kb@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 17 Jun 2008 19:02:19 +0200
+	Tue, 17 Jun 2008 13:09:05 -0400
+Date: Tue, 17 Jun 2008 10:08:24 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bron Gondwana <brong@fastmail.fm>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rob Mueller <robm@fastmail.fm>
+Subject: Re: BUG: mmapfile/writev spurious zero bytes (x86_64/not i386,
+ bisected, reproducable)
+In-Reply-To: <1213682570.13708.1258839317@webmail.messagingengine.com>
+Message-ID: <alpine.LFD.1.10.0806170947380.25099@woody.linux-foundation.org>
+References: <1213682410.13174.1258837181@webmail.messagingengine.com> <1213682570.13708.1258839317@webmail.messagingengine.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > From: Miklos Szeredi <mszeredi@suse.cz>
-> > 
-> > Use max not min to enforce a lower limit on the max I/O size.
-> 
-> Big write is ok now, thanks. NTFS-3G in-memory write performance seems to 
-> be 6x better on a T9300 and quick tests seem to show that it's at least as 
-> fast as ext3 in-memory writes (but this needs more testing, etc).
-> 
-> However the max write size seems to be limited to 128kB. Is this 
-> intentional?
 
-Yes, that's due to another limit (max 32 pages per request).
 
-Miklos
+On Tue, 17 Jun 2008, Bron Gondwana wrote:
+> 
+> And I appear to have sent the one without the usage comments at the top.
+> Here they are:
+
+Very interesting. There's certainly something there. 
+
+That said, there's a distracting bug which is visible when doing an strace
+
+ lseek(4, 140333890921392, SEEK_SET)     = -1 EINVAL (Invalid argument)
+ write(4, "\0\0\0\0", 4)                 = 4
+
+which is from that
+
+	lseek(newfd, mapbase + offset + size - 8, 0);
+	write(newfd, (char *) &zero, 4);
+
+where the addition of "mapbase" is insane. So that will write zeroes to 
+the wrong part of the file (offset 64, to be exact). And that will get 
+overwritten by the next write, making it all look entirely insane.
+
+That said, that bug may be distracting, but it seems to have nothign at 
+all to do with the actual problem. The bug seems to happen only when the 
+file is not pre-paged in.
+
+Nick?
+
+		Linus
