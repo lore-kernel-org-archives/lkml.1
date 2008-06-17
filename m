@@ -1,143 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758127AbYFQNbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758599AbYFQNcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758127AbYFQNbq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 09:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757261AbYFQNbd
+	id S1758599AbYFQNcu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 09:32:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757328AbYFQNcm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 09:31:33 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:58636 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756682AbYFQNbb (ORCPT
+	Tue, 17 Jun 2008 09:32:42 -0400
+Received: from po-out-1718.google.com ([72.14.252.155]:60744 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757261AbYFQNcl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 09:31:31 -0400
-Date: Tue, 17 Jun 2008 15:31:30 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [regression] CD-DA delay needed after insertion
-In-Reply-To: <1213648258.3420.12.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0806171530340.22840@vixen.sonytel.be>
-References: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
- <1213540781.3517.18.camel@localhost.localdomain>
- <Pine.LNX.4.64.0806161659440.30122@vixen.sonytel.be>
- <1213648258.3420.12.camel@localhost.localdomain>
+	Tue, 17 Jun 2008 09:32:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Ke8ObSptctMUcC8oag1I6XbZVUSM/rjQC/0mgAMDPFrWNFe31aRmk+E9NkQcExCu7Z
+         6PmRvgttUrhY5+I4gN55ACOMsERlj7wLdF79S/KDSds85MgKuGOyf7fVNRI9ZuIkyq6R
+         C3UaDsoQFMLHnBeYyKJHxjxUSTmWUmWDND7Es=
+Message-ID: <cfd18e0f0806170632p27a5ccd2obadaf0dfd4ce64aa@mail.gmail.com>
+Date: Tue, 17 Jun 2008 15:32:29 +0200
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+To: "Andrea Arcangeli" <andrea@qumranet.com>
+Subject: Re: PR_SET_SECCOMP and PR_GET_SECCOMP doc (and bug?)
+Cc: "Ivana Varekova" <varekova@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>, linux-man@vger.kernel.org
+In-Reply-To: <20080616162543.GA9552@duo.random>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1695146321-1213709490=:22840"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48565951.40603@gmail.com> <20080616162543.GA9552@duo.random>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi Andrea,
 
----584349381-1695146321-1213709490=:22840
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+On Mon, Jun 16, 2008 at 6:25 PM, Andrea Arcangeli <andrea@qumranet.com> wrote:
+> Hi Michael,
+>
+> On Mon, Jun 16, 2008 at 02:15:13PM +0200, Michael Kerrisk wrote:
+>> Andrea,
+>>
+>> Below is my attempt to document the SECCOMP prctl() operations that you added
+>> in 2.6.23.  Could you please read, and let me know if I have the details
+>> correct.  Especially take a look at the description of PR_GET_SECCOMP, whose
+>> operation tends to suggest a thinko:
+>
+> thanks for this useful doc effort!
+>
+>>
+>>     PR_SET_SECCOMP (since Linux 2.6.23)
+>>         Set the secure computing mode for the calling  thread.   In
+>>         the  current  implementation,  arg2  must  be 1.  After the
+>>         secure computing mode has been set to 1,  the  only  system
+>>         calls  that  the  thread  is permitted to make are read(2),
+>>         write(2), _exit(2), and sigreturn(2).  Other  system  calls
+>>         result in the delivery of a SIGKILL signal.  Secure comput-
+>>         ing mode is useful for number-crunching  applications  that
+>>         may  need  to execute untrusted byte code, perhaps obtained
+>>         by reading from a pipe or socket.  This operation  is  only
+>>         available  if  the kernel is configured with CONFIG_SECCOMP
+>>         enabled.
+>>
+>>     PR_GET_SECCOMP (since Linux 2.6.23)
+>>         Return the secure computing mode  of  the  calling  thread.
+>>         Not  very  useful: if the caller is not in secure computing
+>>         mode, this operation returns 0; if the caller is in  secure
+>>         computing  mode, then the prctl() call will cause a SIGKILL
+>>         signal to be sent to the process.  This operation  is  only
+>>         available  if  the kernel is configured with CONFIG_SECCOMP
+>>         enabled.
+>>
+>> Have I misunderstood something?  Surely it is not really intended that
+>
+> No, the above is exactly correct.
 
-On Mon, 16 Jun 2008, James Bottomley wrote:
-> On Mon, 2008-06-16 at 17:05 +0200, Geert Uytterhoeven wrote:
-> > On Sun, 15 Jun 2008, James Bottomley wrote:
-> > > On Fri, 2008-06-13 at 13:57 +0200, Geert Uytterhoeven wrote:
-> > > > We've found another regression in 2.6.25 w.r.t. CD media change on PS3.
-> > > > 
-> > > > It can easily be reproduced by:
-> > > > 
-> > > >   1. Inserting an audio CD
-> > > >   2. Running the following command as soon as the blue CD/DVD/BD drive LED
-> > > >      stops blinking and is lit continuously:
-> > > >       
-> > > > 	 cdparanoia -Z -q 1-1[:1] /dev/null || echo failed
-> > > > 
-> > > > On 2.6.25 (and current mainline), you have to wait ca. 10 seconds after
-> > > > insertion, or it will fail.
-> > > > On 2.6.24 and older, it just works immediately.
-> > > > 
-> > > > It does not matter whether
-> > > > http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fjejb%2Fscsi-rc-fixes-2.6.git;a=commitdiff_plain;h=d1daeabf0da5bfa1943272ce508e2ba785730bf0
-> > > > is applied or not.
-> > > > 
-> > > > We haven't bisected it yet.
-> > > 
-> > > There aren't that many commits affecting sr between 2.6.24 and 2.6.25,
-> > > so I'd bet on the previous culprits.
-> > > 
-> > > This time, the taxonomy looks like NOT_READY isn't being waited for
-> > > properly.  I'd still tend to blame
-> > > 210ba1d1724f5c4ed87a2ab1a21ca861a915f734 it's just that this time I
-> > 
-> > Reverting that commit doesn't fix the problem.
-> 
-> That's a bit of a problem.  Particularly as:
-> 
-> > > suspect this to be the problem line:
-> > > 
-> > > 	if (sshdr.sense_key == NOT_READY && sshdr.asc == 0x04)
-> > > 		return CDS_DISC_OK;
-> > > 
-> > > Previously the code would have returned CDS_NO_DISC for the not ready
-> > > case.  The CD would have tried to close the door but (and this is the
-> > > key) it would have waited for the door to close before trying again.
-> > 
-> > I tried the patch below.
-> > 
-> > Now the kernel spits out messages every 2 seconds:
-> > 
-> > | G: CDS_NO_DISC
-> > | G: CDS_NO_DISC
-> > 
-> > Insert CD-DA media
-> > 
-> > Reading from CD using cdparanioa fails
-> > 
-> > | F: CDS_DISC_OK
-> > | F: CDS_DISC_OK
-> > | F: CDS_DISC_OK
-> > | F: CDS_DISC_OK
-> > | F: CDS_DISC_OK
-> 
-> That's in the two lines I fingered as the source of the problem ...
-> however, if reversing the apparently bad commit (that introduces those
-> lines) doesn't work there's something else wrong.
-> 
-> Could you try altering your F: case to return CDS_DRIVE_NOT_READY, but
-> if that doesn't work, it's going to take a bit of bisection, I'm
-> afraid ...
+Okay -- thanks for the confirmation.
 
-Doesn't make any difference.
+>> PR_GET_SECCOMP be this useless?  The alternatives that I can think of would be
+>> that
+>
+> I thought that registering a PR_GET_SECCOMP next to the SET operation
+> was nicer in case future modes > 1 will allow to enable/disable more
+> syscalls on demand (so including prctl),
 
-git-bisect taught me it was introduced by
+Okay.
 
-commit 38582a62ecd337de4212004c7d4844899dc57890
-Author: James Bottomley <James.Bottomley@HansenPartnership.com>
-Date:   Wed Feb 6 13:01:58 2008 -0600
+> if you see the prctl.h file
+> has get/set and read/drop for all other prctl so retaining that
+> symmetry looked natural.
 
-    [SCSI] sr: fix test unit ready responses
-    
-    Commit 210ba1d1724f5c4ed87a2ab1a21ca861a915f734 updated sr.c to use
-    the scsi_test_unit_ready() function.  Unfortunately, this has the
-    wrong characteristic of eating NOT_READY returns which sr.c relies on
-    for tray status.
-    
-    Fix by rolling an internal sr_test_unit_ready() that doesn't do this.
+Okay.
+
+> However I tend to agree that currently
+> PR_GET_SECCOMP is mostly useless, so perhaps it was better not to
+> register it at all but it doesn't really make any practical
+> difference.
+>
+>> a) at least the call prctl(PR_GET_SECCOMP) would be among the set of permitted
+>> syscalls in secure computing mode, or
+>
+> It's very intentional that prctl isn't one of the permitted syscalls
+> with mode=1. Future modes may vary.
+>
+>> b) there shouldn't be a prctl(PR_GET_SECCOMP) at all.
+>
+> I'm not against if somebody wants to nuke GET_SECCOMP, I'm neutral on
+> this, but it doesn't really waste anything relevant and at least to
+> me, it looked cleaner to have it even if not useful with current
+> mode=1.
+
+I have no strong opinion either way about what should be done.  IMO,
+even the status quo is fine, as long as it's documented.  My only
+doubt was that the status quo is a little "strange" so I wondered
+whether there might have been some mistake.  Anyway, if you do decide
+to change something here, please CC me.
+
+Cheers,
+
+Michael
 
 
-With kind regards,
 
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-Sony Technology and Software Centre Europe
-A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
-VAT BE 0413.825.160 · RPR Brussels
-Fortis 293-0376800-10 GEBA-BE-BB
----584349381-1695146321-1213709490=:22840--
+-- 
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
