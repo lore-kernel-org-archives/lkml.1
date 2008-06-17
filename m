@@ -1,173 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755845AbYFQKLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbYFQKMr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755845AbYFQKLW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 06:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbYFQKLK
+	id S1756178AbYFQKMr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 06:12:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbYFQKMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 06:11:10 -0400
-Received: from styx.suse.cz ([82.119.242.94]:58040 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754030AbYFQKLJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 06:11:09 -0400
-Date: Tue, 17 Jun 2008 12:11:07 +0200
-From: Jan Kara <jack@suse.cz>
-To: Neil Brown <neilb@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
-Subject: Re: Two questions on VFS/mm
-Message-ID: <20080617101107.GA12527@duck.suse.cz>
-References: <20080604163412.GL16572@duck.suse.cz> <18512.51954.831279.617586@notabene.brown> <20080612081847.GA12367@duck.suse.cz> <18514.5983.603918.591472@notabene.brown>
+	Tue, 17 Jun 2008 06:12:38 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:38599 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752612AbYFQKMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 06:12:36 -0400
+Date: Tue, 17 Jun 2008 13:11:12 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Peter Korsgaard <jacmet@sunsite.dk>, linux-kernel@vger.kernel.org,
+       sam@ravnborg.org, dhowells@redhat.com, andi@firstfloor.org,
+       "Kirill A. Shutemov" <k.shutemov@gmail.com>, ysato@users.sourceforge.jp,
+       takata@linux-m32r.org, linux-m32r@ml.linux-m32r.org, kyle@mcmartin.ca,
+       matthew@wil.cx, grundler@parisc-linux.org, linux-parisc@vger.kernel.org,
+       lethal@linux-sh.org, linux-sh@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: architectures with ARCH_SUPPORTS_AOUT but no binfmt_aout
+Message-ID: <20080617101112.GE20169@cs181133002.pp.htv.fi>
+References: <1213565555.26255.522.camel@pmac.infradead.org> <1213604973-7073-1-git-send-email-jacmet@sunsite.dk> <1213617663.26255.708.camel@pmac.infradead.org> <20080616121727.GB10854@cs181133002.pp.htv.fi> <1213619214.26255.721.camel@pmac.infradead.org> <20080617084235.GA20169@cs181133002.pp.htv.fi> <1213696004.26255.960.camel@pmac.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <18514.5983.603918.591472@notabene.brown>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1213696004.26255.960.camel@pmac.infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 13-06-08 16:44:47, Neil Brown wrote:
-> On Thursday June 12, jack@suse.cz wrote:
-> > On Thu 12-06-08 17:06:26, Neil Brown wrote:
-> > > On Wednesday June 4, jack@suse.cz wrote:
-> > > >   Hi,
-> > > > 
-> > > >   could some kind soul knowledgable in VFS/mm help me with the following
-> > > > two questions? I've spotted them when testing some ext4 for patches...
-> > > >   1) In write_cache_pages() we do:
-> > > > ...
-> > > > 	lock_page(page);
-> > > > 	...
-> > > > 	if (!wbc->range_cyclic && page->index > end) {
-> > > >                    done = 1;
-> > > >                    unlock_page(page);
-> > > >                    continue;
-> > > >         }
-> > > > 	...
-> > > > 	ret = (*writepage)(page, wbc, data);
-> > > > 
-> > > >   Now the problem is that if range_cyclic is set, it can happen that the
-> > > > page we give to the filesystem is beyond the current end of file (and can
-> > > > be already processed by invalidatepage()). Is the filesystem supposed to
-> > > > handle this (what would it be good for to give such a page to the fs?) or
-> > > > is it just a bug in write_cache_pages()?
-> > > 
-> > > Maybe there is an invariant that an address_space never has a dirty
-> > > page beyond the end-of-file??
-> > > Certainly 'truncate' invalidates and un-dirties such pages.
-> > > 
-> > > With typical writes, ->write_begin will extend EOF to include the
-> > > page, and ->write_end will mark it dirty (I think).
-> > > 
-> > > mmap writes are probably a bit different, but I suspect the same
-> > > principle applies.
-> > > 
-> > > If the page is not dirty, then 
-> > > 			if (PageWriteback(page) ||
-> > > 			    !clear_page_dirty_for_io(page)) {
-> > > 				unlock_page(page);
-> > > 				continue;
-> > > 			}
-> > > 
-> > > will fire, and you never get to
-> > > 			ret = (*writepage)(page, wbc, data);
-> >   As Miklos pointed out, there's at least call do_invalidatepage() from
-> > block_write_full_page() which does invalidate the page but does not clear
-> > dirty bits or remove page from page cache. Otherwise I'd agree with
-> > you...
+On Tue, Jun 17, 2008 at 10:46:44AM +0100, David Woodhouse wrote:
+> On Tue, 2008-06-17 at 11:42 +0300, Adrian Bunk wrote:
+> > 
+> > > Why _are_ there architectures which define ARCH_SUPPORTS_AOUT and have
+> > > <asm/a.out.h> but don't support binfmt_aout, anyway? How does that make
+> > > sense?
+> > 
+> > My guess would be that binfmt_aout isn't actually used there.
+> > 
+> > The affected architectures are:
+> > - h8300
+> > - m32r
+> > - parisc
+> > - sh
+> > - v850
+> > 
+> > v850 is broken beyond repair, and I hope my patch to remove the 
+> > architecture will make it into 2.6.27.
+> > 
+> > For the other 4 architectures I have Cc'ed the architecture maintainers.
 > 
-> block_write_full_page will have been called after a
-> clear_page_dirty_for_io() call, so it should not be dirty.
+> There's another set of architectures which have <asm/a.out.h> but don't
+> define ARCH_SUPPORTS_AOUT. Including PowerPC.
 > 
-> I guess it could have been dirtied again as you don't need the page
-> lock to dirty a page... though if it is beyond EOF, maybe you do...
-> 
-> Hmm, I have a very strong feeling that "this cannot happen", and that
-> it should certainly be "this shouldn't happen", but I guess I'm not
-> 100% convincing at the moment :-)
-  Definitely marking page beyond EOF dirty can happen without page lock.
-Look for example at clean_page_dirty_for_io() - there we do
-set_page_dirty() in case dirty bit is set in page tables and noone checks
-for being beyond EOF.
-  So what I'd think can happen (although this is rather theoretical, I
-admit) is that if there happen to be two processes doing writeback on the
-same file (one may be pdflush, the other one for example data writeback on
-journal commit), the third process doing truncate and someone accesses mmap,
-we can see:
-  pdflush                   writeback                   truncate       writer
--> write_cache_pages      -> write_cache_pages
- - lookup dirty pages      - lookup dirty pages
-							- i_size = 0
- -> writepage
-  -> block_write_full_page
-   -> do_invalidatepage
-								       writes to page beyond EOF
-                           - sees dirty bit
-			    -> writepage -> Oops
- 
-> > > >   2) I have the following problem with page_mkwrite() when blocksize <
-> > > > pagesize. What we want to do is to fill in a potential hole under a page
-> > > > somebody wants to write to. But consider following scenario with a
-> > > > filesystem with 1k blocksize:
-> > > >   truncate("file", 1024);
-> > > >   ptr = mmap("file");
-> > > >   *ptr = 'a'
-> > > >      -> page_mkwrite() is called.
-> > > >         but "file" is only 1k large and we cannot really allocate blocks
-> > > >         beyond end of file. So we allocate just one 1k block.
-> > > >   truncate("file", 4096);
-> > > >   *(ptr + 2048) = 'a'
-> > > >      - nothing is called and later during writepage() time we are surprised
-> > > >        we have a dirty page which is not backed by a filesystem block.
-> > > > 
-> > > >   How to solve this? One idea I have here is that when we handle truncate(),
-> > > > we mark the original last page (if it is partial) as read-only again so
-> > > > that page_mkwrite() is called on the next write to it. Is something like
-> > > > this possible? Pointers to code doing something similar are welcome, I don't
-> > > > really know these things ;).
-> > > 
-> > > My understanding is that memory mapping is always done in multiples of
-> > > the page size.  When you dirty any part of a page, you effectively dirty
-> > > the whole page, so you need to extend the file to cover the whole page.
-> > > i.e. the page_mkwrite() call must extend the file to a size of 4096.
-> >   Well, you definitely cannot increase file size because someone wrote to
-> > the last page of file whose size is not multiple of page size. So when your
-> > block size is smaller than page size, you have to handle it somehow... You
-> > could instantiate blocks beyond end of file but that gets a bit tricky
-> > (e.g. in ext3, we don't allow such blocks to exist so far).
-> 
-> I get the problem now.. I read the 'mmap' man page:
-> 
->        A file is mapped in multiples of the page size.  For a file that is not
->        a multiple of the page  size,  the  remaining  memory  is  zeroed  when
->        mapped, and writes to that region are not written out to the file.  The
->        effect of changing the size of the underlying file of a mapping on  the
->        pages  that  correspond  to  added  or  removed  regions of the file is
->        unspecified.
-> 
-> As the situation you are describing is documented as having
-> "unspecified" behaviour, I guess you can do whatever you want.
-> So just not writing out to any block that isn't backed by a filesystem
-> block would be defensible.  But maybe not desirable.
-  Hmm, I never thought about discarding mmap accesses even after the
-extending truncate has happened. I guess there are quite some applications
-which use this so I think it's not an option...
+> I think we can probably get away with removing <asm/a.out.h> from every
+> architecture other than Alpha, ARM, m68k and x86, and killing
+> ARCH_SUPPORTS_AOUT completely.
 
-> I like your idea of playing with the mapping.
-> I don't think you want to bother mapping it as "read-only" - just
-> unmap it altogether.  When it is next mapped writable to service a
-> write you will get a page_mkwrite call and you can fix things up.
-> 
-> To unmap the page, just call
->   unmap_mapping_range(mapping, page_index << PAGE_CACHE_SHIFT,
-> 		      PAGE_CACHE_SIZE, 0);
-> (I got that from truncate_inode_pages_range in mm/truncate.c).
-> You can do this while you have the page locked, and it won't be
-> mapped again until you unlock it.
-  True but we have to be careful not to discard data in that page before
-EOF. Thinking more about it, we'll probably have to allocate blocks
-upto multiple of page size on extending truncate...
-  Thanks for your ideas.
-									Honza
+include/linux/a.out.h contains an #include <asm/a.out.h> and is exported 
+to userspace...
+
+> Or maybe, as dhowells suggests, re-defining ARCH_SUPPORTS_AOUT to be set
+> only on Alpha, ARM, m68k and x86 (so BINFMT_AOUT can depend on it).
+
+The pattern for this stuff is to provide a HAVE_AOUT kconfig variable 
+that gets select'ed by these architectures.
+
+> dwmw2
+
+cu
+Adrian
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
