@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755805AbYFQTs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756093AbYFQTxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755805AbYFQTs4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 15:48:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbYFQTsq
+	id S1756093AbYFQTxU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 15:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbYFQTxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 15:48:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58920 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751819AbYFQTsq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 15:48:46 -0400
-Date: Tue, 17 Jun 2008 15:41:05 -0400
-From: Dave Jones <davej@redhat.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       arjan@linux.intel.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, linville@tuxdriver.com, gregkh@suse.de
-Subject: Re: Oops report for the week preceding June 16th, 2008
-Message-ID: <20080617194105.GA18177@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-	arjan@linux.intel.com, linux-kernel@vger.kernel.org,
-	torvalds@linux-foundation.org, akpm@linux-foundation.org,
-	tglx@linutronix.de, linville@tuxdriver.com, gregkh@suse.de
-References: <4856AFDF.5080901@linux.intel.com> <20080617092023.GA20621@elte.hu> <20080617.022652.76635616.davem@davemloft.net> <20080617153356.GA3510@elte.hu> <1213730654.3803.122.camel@johannes.berg>
+	Tue, 17 Jun 2008 15:53:10 -0400
+Received: from mail-wa4.bigfish.com ([216.32.181.113]:58921 "EHLO
+	mail147-wa4-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751605AbYFQTxI convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 15:53:08 -0400
+X-BigFish: VPS-48(zz1432R98dR7efV1447R1805Mzz10d3izzz2fh6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
+Message-ID: <485815F6.20507@am.sony.com>
+Date: Tue, 17 Jun 2008 12:52:22 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1213730654.3803.122.camel@johannes.berg>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>
+CC: linux-embedded <linux-embedded@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Recommendation for activating a deferred module init in the kernel
+References: <48580116.9070504@am.sony.com> <20080617190750.GA31224@logfs.org>
+In-Reply-To: <20080617190750.GA31224@logfs.org>
+Content-Type: text/plain; charset=UTF-8
+X-OriginalArrivalTime: 17 Jun 2008 19:52:55.0907 (UTC) FILETIME=[BC6D6B30:01C8D0B3]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 17, 2008 at 09:24:14PM +0200, Johannes Berg wrote:
- > 
- > > i have no gripes about the current situation of wireless in linux-next, 
- > > other than it all came 1-2 years too late:
- > 
- > Clearly, you don't have a clue about wireless. I'll admit to being
- > pissed off by statements like this because I personally spent a lot of
- > time getting wireless code into shape for merging, and it took a long
- > time.
- > 
- > If we'd have merged the existing wireless drivers 2 years ago, we would
- > have (at least) four 802.11 stacks in the kernel now, at least two
- > legally questionable drivers (the ath5k legal situation would probably
- > never have been cleared up, acx100 still isn't), no uniform API so it
- > would be impossible to write userspace support tools etc.
+Jörn Engel wrote:
+> On Tue, 17 June 2008 11:23:18 -0700, Tim Bird wrote:
+>> I'm not that happy using an ioctl for this trigger.  What is
+>> the preferred method of activating a kernel feature like this?
+>> I presume something in /proc or /sys, but I'm not sure.
+> 
+> I personally would be unhappy with any kind of interface for this.  It
+> would be much nicer to make it transparent and still get the benefits.
+> One option would be to start a kernel thread for the initialization and
+> renice it to 19 or so.
 
-FWIW, the fact that there's so much churn happening in wireless right
-now is IMO, a sign of its health.  When I told John "commit whatever
-wireless bits you think need to be in Fedora" many months back, I admit
-I wasn't expecting as much churn as there has been.
+That's an interesting idea. I'm pretty sure the product guys want
+an explicit trigger, so they can make sure they've got the main
+application well underway before this deferred initialization occurs.
 
-It's been something of a double edged sword.  It's great that users are
-getting the latest drivers & fixes, but at the same time, it means they
-get exposed to all the latest breakage at the same time.
-Given the volume of change occuring, cherry-picking isn't an enviable task,
-so distros are stuck between this reality, or leaving users hanging until we
-get to the next point release.
+> 
+> If you want an explicit trigger, you could either hook into init_post()
+> or have hooks in the open functions of drivers with deferred
+> initialization.
 
-FWIW, wireless isn't unique in this regard. For eg, the last few months we've
-always been shipping the latest ALSA bits rather than what's in kernel.org too,
-for similar reasons -- when bugs appear, the developers want to know
-"does it still happen with the latest bits?"
+This would presumably require multiple calls (one to the open of
+each deferred module).  I would still need a trigger for the memory
+free operation, unless I hardcode the order of the opening and just
+"know" that the last one should free the memory.  I'll have to see
+if all the modules being loaded like this have open()s.
 
-The situation isn't perfect, but I don't think it's quite as bleak
-as Ingo painted it to be.
+Thanks for the ideas!
+ -- Tim
 
-	Dave
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
--- 
-http://www.codemonkey.org.uk
