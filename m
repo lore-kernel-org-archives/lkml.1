@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbYFQHxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbYFQHxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756189AbYFQHxP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 03:53:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbYFQHw4
+	id S1756694AbYFQHxi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 03:53:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755461AbYFQHxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 03:52:56 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56451
+	Tue, 17 Jun 2008 03:53:06 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56455
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752440AbYFQHwz (ORCPT
+	by vger.kernel.org with ESMTP id S1755273AbYFQHxE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 03:52:55 -0400
-Date: Tue, 17 Jun 2008 00:52:55 -0700 (PDT)
-Message-Id: <20080617.005255.135158143.davem@davemloft.net>
+	Tue, 17 Jun 2008 03:53:04 -0400
+Date: Tue, 17 Jun 2008 00:53:04 -0700 (PDT)
+Message-Id: <20080617.005304.207929650.davem@davemloft.net>
 To: linville@tuxdriver.com
 CC: mokuno@sm.sony.co.jp, linux-wireless@vger.kernel.org,
        netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/12]: Proper compat WEXT support.
+Subject: [PATCH 1/12]: wext: Remove inline from get_priv_size() and
+ adjust_priv_size().
 From: David Miller <davem@davemloft.net>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
@@ -26,32 +27,38 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This is what I consider the final submission of this patch set, it's
-ready to go.  I also made sure all the patches are checkpatch clean.
+wext: Remove inline from get_priv_size() and adjust_priv_size().
 
-I've actually tested these exact patches on sparc64 with a RNDIS based
-USB wireless device from Linksys.  I was able to perform iwconfig
-commands, check iwlist, bring up the interface and use it properly.
-All with 32-bit tools.  I've also done an allmodconfig sanity build
-check on sparc64.  Masakazu-san has tested these patches extensively
-on PS3 systems, using the gelic and zd1211 drivers.  In particular he
-tested wpa_supplicant use.
+The compiler inlines when appropriate.
 
-The patch set starts by cleaning up the code so that we can avoid
-having multiple copies of the WEXT main dispatch routines, one for
-compat and one for the non-compat case.
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ net/wireless/wext.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-Next, basic compat level handling of the WEXT ioctl is added, and the
-equivalent code in the compat_ioctl.c file is removed.
+diff --git a/net/wireless/wext.c b/net/wireless/wext.c
+index 947188a..e83d74a 100644
+--- a/net/wireless/wext.c
++++ b/net/wireless/wext.c
+@@ -500,7 +500,7 @@ static int call_commit_handler(struct net_device *dev)
+ /*
+  * Calculate size of private arguments
+  */
+-static inline int get_priv_size(__u16	args)
++static int get_priv_size(__u16 args)
+ {
+ 	int	num = args & IW_PRIV_SIZE_MASK;
+ 	int	type = (args & IW_PRIV_TYPE_MASK) >> 12;
+@@ -512,8 +512,7 @@ static inline int get_priv_size(__u16	args)
+ /*
+  * Re-calculate the size of private arguments
+  */
+-static inline int adjust_priv_size(__u16		args,
+-				   union iwreq_data *	wrqu)
++static int adjust_priv_size(__u16 args, union iwreq_data *wrqu)
+ {
+ 	int	num = wrqu->data.length;
+ 	int	max = args & IW_PRIV_SIZE_MASK;
+-- 
+1.5.5.1.308.g1fbb5
 
-Finally, compat IWE stream munging is added for the wireless layer.
-When we get a compat WEXT ioctl request, we set a bit in the request
-info blob, and the stream building helpers tip off this to format the
-stream entries properly.
-
-These patches are against net-next-2.6 and are also available as
-a GIT tree at:
-
-	master.kernel.org:/pub/scm/linux/kernel/git/davem/wireless-2.6.git
-
-John, please pull or apply as you deem appropriate.
