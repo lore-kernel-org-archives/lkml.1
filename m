@@ -1,76 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761614AbYFQXDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760916AbYFQXEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761614AbYFQXDS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 19:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759367AbYFQXAF
+	id S1760916AbYFQXEL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 19:04:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760249AbYFQXAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 19:00:05 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:49690 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759984AbYFQW7q (ORCPT
+	Tue, 17 Jun 2008 19:00:11 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:24392 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760084AbYFQW7r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 18:59:46 -0400
-Subject: Re: [regression] CD-DA delay needed after insertion
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-In-Reply-To: <48584106.5000302@redhat.com>
-References: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
-	 <1213540781.3517.18.camel@localhost.localdomain>
-	 <48584106.5000302@redhat.com>
-Content-Type: text/plain
-Date: Tue, 17 Jun 2008 17:59:41 -0500
-Message-Id: <1213743581.3465.98.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Jun 2008 18:59:47 -0400
+Message-Id: <20080617225909.457896982@ldl.fc.hp.com>
+References: <20080617225823.045233728@ldl.fc.hp.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 17 Jun 2008 16:58:32 -0600
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: Adam Belay <ambx1@neo.rr.com>
+Cc: Adam M Belay <abelay@mit.edu>
+Cc: Li Shaohua <shaohua.li@intel.com>
+Cc: Matthieu Castet <castet.matthieu@free.fr>
+Cc: Thomas Renninger <trenn@suse.de>
+Cc: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Takashi Iwai <tiwai@suse.de>
+Cc: Jiri Slaby <jirislaby@gmail.com>
+Subject: [patch 09/28] PNP: dont sort by type in /sys/.../resources
+Content-Disposition: inline; filename=pnp-unsort-sysfs-resources
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-06-17 at 18:56 -0400, Chuck Ebbert wrote:
-> James Bottomley wrote:
-> > On Fri, 2008-06-13 at 13:57 +0200, Geert Uytterhoeven wrote:
-> >> We've found another regression in 2.6.25 w.r.t. CD media change on PS3.
-> >>
-> >> It can easily be reproduced by:
-> >>
-> >>   1. Inserting an audio CD
-> >>   2. Running the following command as soon as the blue CD/DVD/BD drive LED
-> >>      stops blinking and is lit continuously:
-> >>       
-> >> 	 cdparanoia -Z -q 1-1[:1] /dev/null || echo failed
-> >>
-> >> On 2.6.25 (and current mainline), you have to wait ca. 10 seconds after
-> >> insertion, or it will fail.
-> >> On 2.6.24 and older, it just works immediately.
-> >>
-> >> It does not matter whether
-> >> http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fjejb%2Fscsi-rc-fixes-2.6.git;a=commitdiff_plain;h=d1daeabf0da5bfa1943272ce508e2ba785730bf0
-> >> is applied or not.
-> >>
-> >> We haven't bisected it yet.
-> > 
-> > There aren't that many commits affecting sr between 2.6.24 and 2.6.25,
-> > so I'd bet on the previous culprits.
-> > 
-> > This time, the taxonomy looks like NOT_READY isn't being waited for
-> > properly.  I'd still tend to blame
-> > 210ba1d1724f5c4ed87a2ab1a21ca861a915f734 it's just that this time I
-> > suspect this to be the problem line:
-> > 
-> 
-> Looking at the last part of that commit, what code path could ever lead 
-> to reaching that last return statement and returning 
-> CDS_DRIVE_NOT_READY? Maybe I'm just being dense but it looks unreachable 
-> to me:
+Rather than stepping through all IO resources, then stepping through
+all MMIO resources, etc., we can just iterate over the resource list
+once directly.
 
-It is ... unfortunately, it's also been verified not to be the problem
-(that's what I thought at first too) ... it looks like drivers/cdrom has
-no real use for CDS_DRIVE_NOT_READY.
+This can change the order in /sys, e.g.,
 
-James
+    # cat /sys/devices/pnp0/00:07/resources     # OLD
+    state = active
+    io 0x3f8-0x3ff
+    irq 4
 
+    # cat /sys/devices/pnp0/00:07/resources     # NEW
+    state = active
+    irq 4
+    io 0x3f8-0x3ff
 
+The old code artificially sorted resources by type; the new code
+just lists them in the order we read them from the ISAPNP hardware
+or the BIOS.
+
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+
+Index: work10/drivers/pnp/interface.c
+===================================================================
+--- work10.orig/drivers/pnp/interface.c	2008-05-05 11:54:26.000000000 -0600
++++ work10/drivers/pnp/interface.c	2008-05-05 11:59:53.000000000 -0600
+@@ -248,8 +248,9 @@ static ssize_t pnp_show_current_resource
+ 					  char *buf)
+ {
+ 	struct pnp_dev *dev = to_pnp_dev(dmdev);
++	struct pnp_resource *pnp_res;
+ 	struct resource *res;
+-	int i, ret;
++	int ret;
+ 	pnp_info_buffer_t *buffer;
+ 
+ 	if (!dev)
+@@ -262,46 +263,33 @@ static ssize_t pnp_show_current_resource
+ 	buffer->buffer = buf;
+ 	buffer->curr = buffer->buffer;
+ 
+-	pnp_printf(buffer, "state = ");
+-	if (dev->active)
+-		pnp_printf(buffer, "active\n");
+-	else
+-		pnp_printf(buffer, "disabled\n");
+-
+-	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_IO, i)); i++) {
+-		pnp_printf(buffer, "io");
+-		if (res->flags & IORESOURCE_DISABLED)
+-			pnp_printf(buffer, " disabled\n");
+-		else
+-			pnp_printf(buffer, " 0x%llx-0x%llx\n",
+-				   (unsigned long long) res->start,
+-				   (unsigned long long) res->end);
+-	}
+-	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_MEM, i)); i++) {
+-		pnp_printf(buffer, "mem");
+-		if (res->flags & IORESOURCE_DISABLED)
++	pnp_printf(buffer, "state = %s\n", dev->active ? "active" : "disabled");
++
++	list_for_each_entry(pnp_res, &dev->resources, list) {
++		res = &pnp_res->res;
++
++		pnp_printf(buffer, pnp_resource_type_name(res));
++
++		if (res->flags & IORESOURCE_DISABLED) {
+ 			pnp_printf(buffer, " disabled\n");
+-		else
+-			pnp_printf(buffer, " 0x%llx-0x%llx\n",
++			continue;
++		}
++
++		switch (pnp_resource_type(res)) {
++		case IORESOURCE_IO:
++		case IORESOURCE_MEM:
++			pnp_printf(buffer, " %#llx-%#llx\n",
+ 				   (unsigned long long) res->start,
+ 				   (unsigned long long) res->end);
+-	}
+-	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_IRQ, i)); i++) {
+-		pnp_printf(buffer, "irq");
+-		if (res->flags & IORESOURCE_DISABLED)
+-			pnp_printf(buffer, " disabled\n");
+-		else
+-			pnp_printf(buffer, " %lld\n",
+-				   (unsigned long long) res->start);
+-	}
+-	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_DMA, i)); i++) {
+-		pnp_printf(buffer, "dma");
+-		if (res->flags & IORESOURCE_DISABLED)
+-			pnp_printf(buffer, " disabled\n");
+-		else
++			break;
++		case IORESOURCE_IRQ:
++		case IORESOURCE_DMA:
+ 			pnp_printf(buffer, " %lld\n",
+ 				   (unsigned long long) res->start);
++			break;
++		}
+ 	}
++
+ 	ret = (buffer->curr - buf);
+ 	kfree(buffer);
+ 	return ret;
+
+-- 
