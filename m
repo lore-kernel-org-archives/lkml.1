@@ -1,49 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759368AbYFQOQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759384AbYFQORZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759368AbYFQOQY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 10:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759281AbYFQOQK
+	id S1759384AbYFQORZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 10:17:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758036AbYFQORS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 10:16:10 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:18029 "EHLO
+	Tue, 17 Jun 2008 10:17:18 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:18034 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757941AbYFQOQJ (ORCPT
+	by vger.kernel.org with ESMTP id S1757992AbYFQORR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 10:16:09 -0400
-Date: Tue, 17 Jun 2008 18:16:07 +0400
+	Tue, 17 Jun 2008 10:17:17 -0400
+Date: Tue, 17 Jun 2008 18:17:15 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus-mmc@drzeus.cx>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mmc: toughen get_ro() and get_cd() return values
-Message-ID: <20080617141607.GA2712@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080523154204.GA19803@polina.dev.rtsoft.ru> <200806031207.49843.marc.pignat@hevs.ch> <20080605144310.GA31596@polina.dev.rtsoft.ru> <200806051759.00202.marc.pignat@hevs.ch> <20080605171013.GA10513@polina.dev.rtsoft.ru> <20080614163640.01e89c51@mjolnir.drzeus.cx>
+Subject: [PATCH 1/3] mmc: add support for card-detection polling
+Message-ID: <20080617141715.GA8376@polina.dev.rtsoft.ru>
+References: <20080617141607.GA2712@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-In-Reply-To: <20080614163640.01e89c51@mjolnir.drzeus.cx>
+In-Reply-To: <20080617141607.GA2712@polina.dev.rtsoft.ru>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 14, 2008 at 04:36:40PM +0200, Pierre Ossman wrote:
-> On Thu, 5 Jun 2008 21:10:13 +0400
-> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> 
-> > 
-> > Pierre, I see you didn't yet pushed out the mmc tree, so.. would you
-> > prefer this patch folded into 0/3 series and resent?
-> > 
-> 
-> This works fine. :)
+Some hosts (and boards that use mmc_spi) do not use interrupts on the CD
+line, so they can't trigger mmc_detect_change. We want to poll the card
+and see if there was a change. 1 second poll interval seems resonable.
 
-Great, patches follows. Also added missing changes for the at91_mci host.
-Now, I hope, every host is really converted.
+This patch also implements .get_cd() host operation, that could be used
+by the hosts that are able to report card-detect status without need to
+talk MMC.
 
-Thanks,
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/mmc/core/core.c  |   12 +++++++++---
+ include/linux/mmc/host.h |   11 +++++++++++
+ 2 files changed, 20 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+index 01ced4c..ede5d1e 100644
+--- a/drivers/mmc/core/core.c
++++ b/drivers/mmc/core/core.c
+@@ -638,6 +638,9 @@ void mmc_rescan(struct work_struct *work)
+ 		 */
+ 		mmc_bus_put(host);
+ 
++		if (host->ops->get_cd && host->ops->get_cd(host) == 0)
++			goto out;
++
+ 		mmc_claim_host(host);
+ 
+ 		mmc_power_up(host);
+@@ -652,7 +655,7 @@ void mmc_rescan(struct work_struct *work)
+ 		if (!err) {
+ 			if (mmc_attach_sdio(host, ocr))
+ 				mmc_power_off(host);
+-			return;
++			goto out;
+ 		}
+ 
+ 		/*
+@@ -662,7 +665,7 @@ void mmc_rescan(struct work_struct *work)
+ 		if (!err) {
+ 			if (mmc_attach_sd(host, ocr))
+ 				mmc_power_off(host);
+-			return;
++			goto out;
+ 		}
+ 
+ 		/*
+@@ -672,7 +675,7 @@ void mmc_rescan(struct work_struct *work)
+ 		if (!err) {
+ 			if (mmc_attach_mmc(host, ocr))
+ 				mmc_power_off(host);
+-			return;
++			goto out;
+ 		}
+ 
+ 		mmc_release_host(host);
+@@ -683,6 +686,9 @@ void mmc_rescan(struct work_struct *work)
+ 
+ 		mmc_bus_put(host);
+ 	}
++out:
++	if (host->caps & MMC_CAP_NEEDS_POLL)
++		mmc_schedule_delayed_work(&host->detect, HZ);
+ }
+ 
+ void mmc_start_host(struct mmc_host *host)
+diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
+index 7ab962f..6188e19 100644
+--- a/include/linux/mmc/host.h
++++ b/include/linux/mmc/host.h
+@@ -51,8 +51,18 @@ struct mmc_ios {
+ 
+ struct mmc_host_ops {
+ 	void	(*request)(struct mmc_host *host, struct mmc_request *req);
++	/*
++	 * Avoid calling these three functions too often or in a "fast path",
++	 * since underlaying controller might implement them in an expensive
++	 * and/or slow way.
++	 *
++	 * Also note that these functions might sleep, so don't call them
++	 * in the atomic contexts!
++	 */
+ 	void	(*set_ios)(struct mmc_host *host, struct mmc_ios *ios);
+ 	int	(*get_ro)(struct mmc_host *host);
++	int	(*get_cd)(struct mmc_host *host);
++
+ 	void	(*enable_sdio_irq)(struct mmc_host *host, int enable);
+ };
+ 
+@@ -94,6 +104,7 @@ struct mmc_host {
+ #define MMC_CAP_SD_HIGHSPEED	(1 << 3)	/* Can do SD high-speed timing */
+ #define MMC_CAP_SDIO_IRQ	(1 << 4)	/* Can signal pending SDIO IRQs */
+ #define MMC_CAP_SPI		(1 << 5)	/* Talks only SPI protocols */
++#define MMC_CAP_NEEDS_POLL	(1 << 6)	/* Needs polling for card-detection */
+ 
+ 	/* host specific block data */
+ 	unsigned int		max_seg_size;	/* see blk_queue_max_segment_size */
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.5.5.4
+
