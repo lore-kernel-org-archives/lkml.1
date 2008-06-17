@@ -1,45 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbYFQLOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757545AbYFQLOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756118AbYFQLOI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 07:14:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbYFQLN5
+	id S1757545AbYFQLOy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 07:14:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbYFQLOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 07:13:57 -0400
-Received: from mout.perfora.net ([74.208.4.194]:50116 "EHLO mout.perfora.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752757AbYFQLN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 07:13:57 -0400
-Date: Tue, 17 Jun 2008 06:03:07 -0500 (CDT)
-From: "R.L. Horn" <lists@eastcheap.org>
-X-X-Sender: rlhorn@hani.compact.internal
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25.3: serial problem (minicom)
-In-Reply-To: <20080617095827.0f4f77de@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LNX.1.00.0806170559280.13421@hani.compact.internal>
-References: <alpine.LNX.1.00.0806131635260.1294@hani.compact.internal> <20080614102900.6830ed46@lxorguk.ukuu.org.uk> <alpine.LNX.1.00.0806150032050.1283@hani.compact.internal> <20080616111329.3ae97879@lxorguk.ukuu.org.uk> <alpine.LNX.1.00.0806162306400.10919@hani.compact.internal>
- <20080617095827.0f4f77de@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
+	Tue, 17 Jun 2008 07:14:44 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50655 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756040AbYFQLOH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 07:14:07 -0400
+Date: Tue, 17 Jun 2008 20:07:16 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [Patch](memory hotplug)Allocate usemap on the section with pgdat (take 3)
+Cc: David Miller <davem@davemloft.net>, Badari Pulavarty <pbadari@us.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Hiroyuki KAMEZAWA <kamezawa.hiroyu@jp.fujitsu.com>,
+       Tony Breeds <tony@bakeyournoodle.com>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Mel Gorman <mel@csn.ul.ie>
+In-Reply-To: <20080616220705.9EA7.E1E9C6FF@jp.fujitsu.com>
+References: <20080616104500.GD2232@shadowen.org> <20080616220705.9EA7.E1E9C6FF@jp.fujitsu.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080617195653.C200.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Provags-ID: V01U2FsdGVkX1/PXM3+NhEfZ3vEhcr0NEOR0bvUU67B4XYjApI
- B+ASFaumCAi/R3NWk9LJTCN7f/DJshD9lc8YVqkuwjduThOu3C
- vCfk/LmTSKDxTD4fsqKEw==
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jun 2008, Alan Cox wrote:
 
-> Ah ok I know what the bug is - it was fixed in 2.6.26-rc as follows
->
-> +       /* Don't rewrite B0 */
-> +       if (tty_termios_baud_rate(termios))
-> +               tty_termios_encode_baud_rate(termios, baud, baud);
-> }
+Here is take 3 for usemap allocation on pgdat section.
 
-Oh.
+If there is any trouble, please let me know.
 
-Oh well.
+If no trouble, please apply.
 
-I guess I'll just fix it here and wait for the official fix.
+Thanks.
+
+---
+
+Usemaps are allocated on the section which has pgdat by this.
+
+Because usemap size is very small, many other sections usemaps
+are allocated on only one page. If a section has usemap, it
+can't be removed until removing other sections.
+This dependency is not desirable for memory removing.
+
+Pgdat has similar feature. When a section has pgdat area, it 
+must be the last section for removing on the node.
+So, if section A has pgdat and section B has usemap for section A,
+Both sections can't be removed due to dependency each other.
+
+To solve this issue, this patch collects usemap on same
+section with pgdat as much as possible.
+If other sections doesn't have any dependency, this section will
+be able to be removed finally.
+
+Change log of take 3.
+ - Change dependency message and comment.
+  (Thanks! > Andy Whitcroft-san)
+
+Change log of take 2.
+ - This feature becomes effective only when CONFIG_MEMORY_HOTREMOVE is on.
+   If hotremove is off, this feature is not necessary.
+ - Allow allocation on other section if alloc_bootmem_section() fails.
+   This removes previous regression.
+ - Show message if allocation on same section fails.
+
+Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+
+---
+
+ mm/sparse.c |   78 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 77 insertions(+), 1 deletion(-)
+
+Index: current/mm/sparse.c
+===================================================================
+--- current.orig/mm/sparse.c	2008-06-17 15:34:29.000000000 +0900
++++ current/mm/sparse.c	2008-06-17 18:35:02.000000000 +0900
+@@ -269,16 +269,92 @@
+ }
+ #endif /* CONFIG_MEMORY_HOTPLUG */
+ 
++#ifdef CONFIG_MEMORY_HOTREMOVE
++static unsigned long * __init
++sparse_early_usemap_alloc_section(unsigned long pnum)
++{
++	unsigned long section_nr;
++	struct mem_section *ms = __nr_to_section(pnum);
++	int nid = sparse_early_nid(ms);
++ 	struct pglist_data *pgdat = NODE_DATA(nid);
++
++	/*
++	 * Usemap's page can't be freed until freeing other sections
++	 * which use it. And, pgdat has same feature.
++	 * If section A has pgdat and section B has usemap for other
++	 * sections (includes section A), both sections can't be removed,
++	 * because there is the dependency each other.
++	 * To solve above issue, this collects all usemap on the same section
++	 * which has pgdat as much as possible.
++	 */
++	section_nr = pfn_to_section_nr(__pa(pgdat) >> PAGE_SHIFT);
++	return alloc_bootmem_section(usemap_size(), section_nr);
++}
++
++static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
++{
++	unsigned long usemap_snr, pgdat_snr;
++	static unsigned long old_usemap_snr = NR_MEM_SECTIONS;
++	static unsigned long old_pgdat_snr = NR_MEM_SECTIONS;
++	struct pglist_data *pgdat = NODE_DATA(nid);
++	int usemap_nid;
++
++	usemap_snr = pfn_to_section_nr(__pa(usemap) >> PAGE_SHIFT);
++	pgdat_snr = pfn_to_section_nr(__pa(pgdat) >> PAGE_SHIFT);
++	if (usemap_snr == pgdat_snr)
++		return;
++
++	if (old_usemap_snr == usemap_snr && old_pgdat_snr == pgdat_snr)
++		/* skip redundant message */
++		return;
++
++	old_usemap_snr = usemap_snr;
++	old_pgdat_snr = pgdat_snr;
++
++	usemap_nid = sparse_early_nid(__nr_to_section(usemap_snr));
++	if (usemap_nid != nid) {
++		printk("node %d must be removed before remove section %ld\n",
++		       nid, usemap_snr);
++		return;
++	}
++	/*
++	 * There is a circular dependency.
++	 * Some platforms allow un-removable section because they will just
++	 * gather other removable sections for dynamic partitioning.
++	 * Just notify un-removable section's number here.
++	 */
++	printk(KERN_INFO "Section %ld and %ld (node %d)",
++	       usemap_snr, pgdat_snr, nid);
++	printk(" have a circular dependency on usemap and pgdat allocations\n");
++}
++#else
++static unsigned long * __init
++sparse_early_usemap_alloc_section(unsigned long pnum)
++{
++	return NULL;
++}
++
++static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
++{
++}
++#endif /* CONFIG_MEMORY_HOTREMOVE */
++
+ static unsigned long *__init sparse_early_usemap_alloc(unsigned long pnum)
+ {
+ 	unsigned long *usemap;
+ 	struct mem_section *ms = __nr_to_section(pnum);
+ 	int nid = sparse_early_nid(ms);
+ 
+-	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
++	usemap = sparse_early_usemap_alloc_section(pnum);
+ 	if (usemap)
+ 		return usemap;
+ 
++	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
++	if (usemap) {
++		check_usemap_section_nr(nid, usemap);
++		return usemap;
++	}
++
+ 	/* Stupid: suppress gcc warning for SPARSEMEM && !NUMA */
+ 	nid = 0;
+ 
+
+-- 
+Yasunori Goto 
+
+
