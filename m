@@ -1,509 +1,288 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761463AbYFQWIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761096AbYFQWJP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761463AbYFQWIt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 18:08:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758731AbYFQWD3
+	id S1761096AbYFQWJP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 18:09:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760387AbYFQWHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 18:03:29 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:52630 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760160AbYFQWD2 (ORCPT
+	Tue, 17 Jun 2008 18:07:10 -0400
+Received: from outbound-mail-31.bluehost.com ([69.89.18.151]:49553 "HELO
+	outbound-mail-31.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758557AbYFQWHF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 18:03:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=to:subject:from:date:message-id;
-        b=IxxuL/7UGgG9Aqlp2ZECy+Cz0hSsGnBjGj/vy6+qIMVkTEe4I5K6hD/+moij+3OyY9
-         XfErdTIKk/D/pQwDNzbsLDdDQmMIDHsvd0xwL4n59gVDdfkA4jj/8wP3c7v2cCux6uOq
-         x2mMFQZ2YOhm9MZyaTm8rK4KP87zGSZbqHRWs=
+	Tue, 17 Jun 2008 18:07:05 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
 To: linux-kernel@vger.kernel.org
-Subject: [patch 19/19] perfmon2 minimal v2:  AMD64 processor support
-From: eranian@googlemail.com
-Date: Tue, 17 Jun 2008 15:03:26 -0700 (PDT)
-Message-ID: <485834ae.0637560a.7766.52d1@mx.google.com>
+Subject: [PATCH] DRM support for new pm_ops hooks
+Date: Tue, 17 Jun 2008 15:06:58 -0700
+User-Agent: KMail/1.9.9
+Cc: Rafael Wysocki <rjw@sisk.pl>, Dave Airlie <airlied@linux.ie>
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_CWDWIpcbbM33O5y"
+Message-Id: <200806171506.58345.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add support for AMD64 processors for Family 6, 15, and 16.
-Both 32-bit and 64-bit modes are supported.
+--Boundary-00=_CWDWIpcbbM33O5y
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Signed-off-by: Stephane Eranian <eranian@gmail.com>
+The PCI linux-next branch has support for the new PM ops hooks, so I thought I 
+should refresh the DRM support for suspend/resume based on the new stuff.
 
---
+I think we can get away with having drivers provide just save/restore hooks 
+and let the core take care of the rest.  When we flesh out the 
+prepare/complete hooks we may need another driver callback, not sure yet.
 
-Index: o/arch/x86/perfmon/perfmon_amd64.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ o/arch/x86/perfmon/perfmon_amd64.c	2008-06-13 16:42:30.000000000 +0200
-@@ -0,0 +1,441 @@
-+/*
-+ * This file contains the PMU description for the Athlon64 and Opteron64
-+ * processors. It supports 32 and 64-bit modes.
+How does it look?
+
+Thanks,
+Jesse
+
+
+--Boundary-00=_CWDWIpcbbM33O5y
+Content-Type: text/x-diff;
+  charset="us-ascii";
+  name="i915-new-pm-ops-2.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="i915-new-pm-ops-2.patch"
+
+diff --git a/drivers/char/drm/drmP.h b/drivers/char/drm/drmP.h
+index 0764b66..f9d3eae 100644
+--- a/drivers/char/drm/drmP.h
++++ b/drivers/char/drm/drmP.h
+@@ -570,8 +570,8 @@ struct drm_driver {
+ 	void (*postclose) (struct drm_device *, struct drm_file *);
+ 	void (*lastclose) (struct drm_device *);
+ 	int (*unload) (struct drm_device *);
+-	int (*suspend) (struct drm_device *, pm_message_t state);
+-	int (*resume) (struct drm_device *);
++	int (*save) (struct drm_device *);
++	int (*restore) (struct drm_device *);
+ 	int (*dma_ioctl) (struct drm_device *dev, void *data, struct drm_file *file_priv);
+ 	void (*dma_ready) (struct drm_device *);
+ 	int (*dma_quiescent) (struct drm_device *);
+diff --git a/drivers/char/drm/drm_sysfs.c b/drivers/char/drm/drm_sysfs.c
+index af211a0..1cf426e 100644
+--- a/drivers/char/drm/drm_sysfs.c
++++ b/drivers/char/drm/drm_sysfs.c
+@@ -22,42 +22,107 @@
+ #define to_drm_minor(d) container_of(d, struct drm_minor, kdev)
+ 
+ /**
+- * drm_sysfs_suspend - DRM class suspend hook
++ * drm_prepare - DRM class prepare hook
+  * @dev: Linux device to suspend
+- * @state: power state to enter
+  *
+- * Just figures out what the actual struct drm_device associated with
+- * @dev is and calls its suspend hook, if present.
++ * Suspend any DRM activity by putting clients to sleep, but don't touch
++ * hardware.
 + *
-+ * Copyright (c) 2005-2007 Hewlett-Packard Development Company, L.P.
-+ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
++ * Gets called before suspend, freeze, and poweroff.  Sleeping ok (though
++ * don't rely on userspace).
 + *
-+ * Copyright (c) 2007 Advanced Micro Devices, Inc.
-+ * Contributed by Robert Richter <robert.richter@amd.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-+ * 02111-1307 USA
-+  */
-+#include <linux/kprobes.h>
-+#include <linux/vmalloc.h>
-+#include <linux/topology.h>
-+#include <linux/pci.h>
-+#include <linux/perfmon_kern.h>
-+#include <asm/hw_irq.h>
-+#include <asm/apic.h>
-+
-+static void __kprobes pfm_amd64_quiesce(void);
-+static int pfm_amd64_has_ovfls(struct pfm_context *ctx);
-+static int pfm_amd64_stop_save(struct pfm_context *ctx,
-+			       struct pfm_event_set *set);
-+
-+static u64 enable_mask[PFM_MAX_PMCS];
-+static u16 max_enable;
-+
-+static struct pfm_arch_pmu_info pfm_amd64_pmu_info = {
-+	.stop_save = pfm_amd64_stop_save,
-+	.has_ovfls = pfm_amd64_has_ovfls,
-+	.quiesce = pfm_amd64_quiesce,
-+};
-+
-+/*
-+ * force Local APIC interrupt on overflow
++ * Should prevent new DMA requests, device registration, etc., as well
++ * as wait for any outstanding requests to complete (except for maybe
++ * distant vblank events).
 + */
-+#define PFM_K8_VAL	(1ULL<<20)
-+#define PFM_K8_NO64	(1ULL<<20)
-+
-+/*
-+ * reserved bits must be 1
-+ *
-+ * for family 15:
-+ * - upper 32 bits are reserved
-+ * - bit 20, bit 21
-+ *
-+ * for family 16:
-+ * - bits 36-39 are reserved
-+ * - bits 42-63 are reserved
-+ * - bit 20, bit 21
-+ *
-+ */
-+#define PFM_K8_RSVD 	((~((1ULL<<32)-1)) | (1ULL<<20) | (1ULL<<21))
-+#define PFM_16_RSVD ((0x3fffffULL<<42) | (0xfULL<<36) | (1ULL<<20) | (1ULL<<21))
-+
-+static struct pfm_regmap_desc pfm_amd64_pmc_desc[] = {
-+/* pmc0  */ PMC_D(PFM_REG_I64, "PERFSEL0", PFM_K8_VAL, PFM_K8_RSVD, PFM_K8_NO64, MSR_K7_EVNTSEL0),
-+/* pmc1  */ PMC_D(PFM_REG_I64, "PERFSEL1", PFM_K8_VAL, PFM_K8_RSVD, PFM_K8_NO64, MSR_K7_EVNTSEL1),
-+/* pmc2  */ PMC_D(PFM_REG_I64, "PERFSEL2", PFM_K8_VAL, PFM_K8_RSVD, PFM_K8_NO64, MSR_K7_EVNTSEL2),
-+/* pmc3  */ PMC_D(PFM_REG_I64, "PERFSEL3", PFM_K8_VAL, PFM_K8_RSVD, PFM_K8_NO64, MSR_K7_EVNTSEL3),
-+};
-+#define PFM_AMD_NUM_PMCS ARRAY_SIZE(pfm_amd64_pmc_desc)
-+
-+/*
-+ * AMD64 counters are 48 bits, upper bits are reserved
-+ */
-+#define PFM_AMD64_CTR_RSVD	(~((1ULL<<48)-1))
-+
-+static struct pfm_regmap_desc pfm_amd64_pmd_desc[] = {
-+/* pmd0  */ PMD_DR(PFM_REG_C,   "PERFCTR0",	MSR_K7_PERFCTR0, PFM_AMD64_CTR_RSVD),
-+/* pmd1  */ PMD_DR(PFM_REG_C,   "PERFCTR1",	MSR_K7_PERFCTR1, PFM_AMD64_CTR_RSVD),
-+/* pmd2  */ PMD_DR(PFM_REG_C,   "PERFCTR2",	MSR_K7_PERFCTR2, PFM_AMD64_CTR_RSVD),
-+/* pmd3  */ PMD_DR(PFM_REG_C,   "PERFCTR3",	MSR_K7_PERFCTR3, PFM_AMD64_CTR_RSVD),
-+};
-+#define PFM_AMD_NUM_PMDS ARRAY_SIZE(pfm_amd64_pmd_desc)
-+
-+static struct pfm_context *pfm_nb_task_owner;
-+
-+static struct pfm_pmu_config pfm_amd64_pmu_conf;
-+
-+/*
-+ * There can only be one user per socket for the Northbridge (NB) events,
-+ * so we enforce mutual exclusion as follows:
-+ * 	- per-thread : only one context machine-wide can use NB events
-+ *
-+ * Exclusion is enforced at:
-+ * 	- pfm_load_context()
-+ * 	- pfm_write_pmcs() for attached contexts
-+ *
-+ * Exclusion is released at:
-+ * 	- pfm_unload_context() or any calls that implicitely uses it
-+ *
-+ * return:
-+ * 	0  : successfully acquire NB access
-+ * 	< 0:  errno, failed to acquire NB access
-+ */
-+static int pfm_amd64_acquire_nb(struct pfm_context *ctx)
++static int drm_prepare(struct device *dev)
 +{
-+	struct pfm_context **entry, *old;
-+	int proc_id;
-+
-+#ifdef CONFIG_SMP
-+	proc_id = cpu_data(smp_processor_id()).phys_proc_id;
-+#else
-+	proc_id = 0;
-+#endif
-+
-+	entry = &pfm_nb_task_owner;
-+
-+	old = cmpxchg(entry, NULL, ctx);
-+	if (!old) {
-+		PFM_DBG("acquired Northbridge event access globally");
-+	} else if (old != ctx) {
-+		PFM_DBG("global NorthBridge event conflict");
-+		return -EBUSY;
-+	}
-+	return 0;
-+}
-+
-+/*
-+ * invoked from pfm_write_pmcs() when pfm_nb_sys_owners is not NULL,i.e.,
-+ * when we have detected a multi-core processor.
-+ *
-+ * context is locked, interrupts are masked
-+ */
-+static int pfm_amd64_pmc_write_check(struct pfm_context *ctx,
-+			     struct pfm_event_set *set,
-+			     struct pfarg_pmc *req)
-+{
-+	unsigned int event;
-+
-+	/*
-+	 * delay checking NB event until we load the context
-+	 */
-+	if (ctx->state == PFM_CTX_UNLOADED)
-+		return 0;
-+
-+	/*
-+	 * check event is NB event
-+	 */
-+	event = (unsigned int)(req->reg_value & 0xff);
-+	if (event < 0xee)
-+		return 0;
-+
-+	return pfm_amd64_acquire_nb(ctx);
-+}
-+
-+/*
-+ * invoked on pfm_load_context().
-+ * context is locked, interrupts are masked
-+ */
-+static int pfm_amd64_load_context(struct pfm_context *ctx)
-+{
-+	struct pfm_event_set *set;
-+	unsigned int i, n;
-+
-+	set = ctx->active_set;
-+	n = set->nused_pmcs;
-+	for (i = 0; n; i++) {
-+		if (!test_bit(i, cast_ulp(set->used_pmcs)))
-+			continue;
-+
-+		if ((set->pmcs[i] & 0xff) >= 0xee)
-+			goto found;
-+		n--;
-+	}
-+	return 0;
-+found:
-+	return pfm_amd64_acquire_nb(ctx);
-+}
-+
-+/*
-+ * invoked on pfm_unload_context()
-+ */
-+static void pfm_amd64_unload_context(struct pfm_context *ctx)
-+{
-+	struct pfm_context **entry, *old;
-+	int proc_id;
-+
-+#ifdef CONFIG_SMP
-+	proc_id = cpu_data(smp_processor_id()).phys_proc_id;
-+#else
-+	proc_id = 0;
-+#endif
-+
-+	entry = &pfm_nb_task_owner;
-+
-+	old = cmpxchg(entry, ctx, NULL);
-+	if (old == ctx)
-+		PFM_DBG("released NorthBridge events globally");
-+}
-+
-+/*
-+ * detect if we need to activate NorthBridge event access control
-+ */
-+static int pfm_amd64_setup_nb_event_control(void)
-+{
-+	unsigned int c, n = 0;
-+	unsigned int max_phys = 0;
-+
-+#ifdef CONFIG_SMP
-+	for_each_possible_cpu(c) {
-+		if (cpu_data(c).phys_proc_id > max_phys)
-+			max_phys = cpu_data(c).phys_proc_id;
-+	}
-+#else
-+	max_phys = 0;
-+#endif
-+	if (max_phys > 255) {
-+		PFM_INFO("socket id %d is too big to handle", max_phys);
-+		return -ENOMEM;
-+	}
-+
-+	n = max_phys + 1;
-+	if (n < 2)
-+		return 0;
-+
-+	pfm_nb_task_owner = NULL;
-+
-+	/*
-+	 * activate write-checker for PMC registers
-+	 */
-+	for (c = 0; c < PFM_AMD_NUM_PMCS; c++)
-+		pfm_amd64_pmc_desc[c].type |= PFM_REG_WC;
-+
-+	pfm_amd64_pmu_info.load_context = pfm_amd64_load_context;
-+	pfm_amd64_pmu_info.unload_context = pfm_amd64_unload_context;
-+
-+	pfm_amd64_pmu_conf.pmc_write_check = pfm_amd64_pmc_write_check;
-+
-+	PFM_INFO("NorthBridge event access control enabled");
-+
-+	return 0;
-+}
-+
-+static void pfm_amd64_setup_registers(void)
-+{
-+	u16 i;
-+
-+	__set_bit(0, cast_ulp(enable_mask));
-+	__set_bit(1, cast_ulp(enable_mask));
-+	__set_bit(2, cast_ulp(enable_mask));
-+	__set_bit(3, cast_ulp(enable_mask));
-+	max_enable = 3+1;
-+
-+	/*
-+	 * adjust reserved bit fields for family 16
-+	 */
-+	if (current_cpu_data.x86 == 16) {
-+		for (i = 0; i < PFM_AMD_NUM_PMCS; i++)
-+			if (pfm_amd64_pmc_desc[i].rsvd_msk == PFM_K8_RSVD)
-+				pfm_amd64_pmc_desc[i].rsvd_msk = PFM_16_RSVD;
-+	}
-+}
-+
-+static int pfm_amd64_probe_pmu(void)
-+{
-+	if (current_cpu_data.x86_vendor != X86_VENDOR_AMD)
-+		return -1;
-+
-+	switch (current_cpu_data.x86) {
-+	case  6:
-+	case 15:
-+	case 16:
-+		PFM_INFO("found family=%d", current_cpu_data.x86);
-+		break;
-+	default:
-+		PFM_INFO("unsupported family=%d", current_cpu_data.x86);
-+		return -1;
-+	}
-+
-+	/*
-+	 * check for local APIC (required)
-+	 */
-+	if (!cpu_has_apic) {
-+		PFM_INFO("no local APIC, unsupported");
-+		return -1;
-+	}
-+
-+	if (current_cpu_data.x86_max_cores > 1
-+	    && pfm_amd64_setup_nb_event_control())
-+		return -1;
-+
-+	pfm_amd64_setup_registers();
-+
-+	return 0;
-+}
-+
-+/*
-+ * detect is counters have overflowed.
-+ * return:
-+ * 	0 : no overflow
-+ * 	1 : at least one overflow
-+ */
-+static int __kprobes pfm_amd64_has_ovfls(struct pfm_context *ctx)
-+{
-+	struct pfm_regmap_desc *xrd;
-+	u64 *cnt_mask;
-+	u64 wmask, val;
-+	u16 i, num;
-+
-+	/*
-+	 * Check regular counters
-+	 */
-+	cnt_mask = pfm_pmu_conf->regs.cnt_pmds;
-+	num = pfm_pmu_conf->regs.num_counters;
-+	wmask = 1ULL << pfm_pmu_conf->counter_width;
-+	xrd = pfm_amd64_pmd_desc;
-+
-+	for (i = 0; num; i++) {
-+		if (test_bit(i, cast_ulp(cnt_mask))) {
-+			rdmsrl(xrd[i].hw_addr, val);
-+			if (!(val & wmask))
-+				return 1;
-+			num--;
-+		}
-+	}
-+	return 0;
-+}
-+
-+static int pfm_amd64_stop_save(struct pfm_context *ctx, struct pfm_event_set *set)
-+{
-+	struct pfm_arch_pmu_info *pmu_info;
-+	u64 used_mask[PFM_PMC_BV];
-+	u64 *cnt_pmds;
-+	u64 val, wmask, ovfl_mask;
-+	u32 i, count;
-+
-+	pmu_info = pfm_pmu_info();
-+
-+	wmask = 1ULL << pfm_pmu_conf->counter_width;
-+
-+	bitmap_and(cast_ulp(used_mask),
-+		   cast_ulp(set->used_pmcs),
-+		   cast_ulp(enable_mask),
-+		   max_enable);
-+
-+	count = bitmap_weight(cast_ulp(used_mask), max_enable);
-+
-+	/*
-+	 * stop monitoring
-+	 * Unfortunately, this is very expensive!
-+	 * wrmsrl() is serializing.
-+	 */
-+	for (i = 0; count; i++) {
-+		if (test_bit(i, cast_ulp(used_mask))) {
-+			wrmsrl(pfm_pmu_conf->pmc_desc[i].hw_addr, 0);
-+			count--;
-+		}
-+	}
-+
-+	/*
-+	 * if we already having a pending overflow condition, we simply
-+	 * return to take care of this first.
-+	 */
-+	if (set->npend_ovfls)
-+		return 1;
-+
-+	ovfl_mask = pfm_pmu_conf->ovfl_mask;
-+	cnt_pmds = pfm_pmu_conf->regs.cnt_pmds;
-+
-+	/*
-+	 * check for pending overflows and save PMDs (combo)
-+	 * we employ used_pmds because we also need to save
-+	 * and not just check for pending interrupts.
-+	 *
-+	 * Must check for counting PMDs because of virtual PMDs and IBS
-+	 */
-+	count = set->nused_pmds;
-+	for (i = 0; count; i++) {
-+		if (test_bit(i, cast_ulp(set->used_pmds))) {
-+			val = pfm_arch_read_pmd(ctx, i);
-+			if (likely(test_bit(i, cast_ulp(cnt_pmds)))) {
-+				if (!(val & wmask)) {
-+					__set_bit(i, cast_ulp(set->povfl_pmds));
-+					set->npend_ovfls++;
-+				}
-+				val = (set->pmds[i].value & ~ovfl_mask) | (val & ovfl_mask);
-+			}
-+			set->pmds[i].value = val;
-+			count--;
-+		}
-+	}
-+	/* 0 means: no need to save PMDs at upper level */
++	/* FIXME: call into drivers etc. as needed */
 +	return 0;
 +}
 +
 +/**
-+ * pfm_amd64_quiesce_pmu -- stop monitoring without grabbing any lock
++ * drm_complete - DRM class complete hook
++ * @dev: Linux device to suspend
 + *
-+ * called from NMI interrupt handler to immediately stop monitoring
-+ * cannot grab any lock, including perfmon related locks
-+ */
-+static void __kprobes pfm_amd64_quiesce(void)
++ * Finish a resume or restore.  Called after resume, thaw, and restore (or
++ * if suspend, freeze or poweroff fail).
+  */
+-static int drm_sysfs_suspend(struct device *dev, pm_message_t state)
++static void drm_complete(struct device *dev)
 +{
-+	/*
-+	 * quiesce PMU by clearing available registers that have
-+	 * the start/stop capability
-+	 */
-+	if (test_bit(0, cast_ulp(pfm_pmu_conf->regs.pmcs)))
-+		wrmsrl(MSR_K7_EVNTSEL0, 0);
-+	if (test_bit(1, cast_ulp(pfm_pmu_conf->regs.pmcs)))
-+		wrmsrl(MSR_K7_EVNTSEL0+1, 0);
-+	if (test_bit(2, cast_ulp(pfm_pmu_conf->regs.pmcs)))
-+		wrmsrl(MSR_K7_EVNTSEL0+2, 0);
-+	if (test_bit(3, cast_ulp(pfm_pmu_conf->regs.pmcs)))
-+		wrmsrl(MSR_K7_EVNTSEL0+3, 0);
 +}
 +
-+static struct pfm_pmu_config pfm_amd64_pmu_conf = {
-+	.pmu_name = "AMD64",
-+	.counter_width = 47,
-+	.pmd_desc = pfm_amd64_pmd_desc,
-+	.pmc_desc = pfm_amd64_pmc_desc,
-+	.num_pmc_entries = PFM_AMD_NUM_PMCS,
-+	.num_pmd_entries = PFM_AMD_NUM_PMDS,
-+	.version = "1.2",
-+	.pmu_info = &pfm_amd64_pmu_info
++static int drm_sysfs_save(struct device *dev)
+ {
+ 	struct drm_minor *drm_minor = to_drm_minor(dev);
+ 	struct drm_device *drm_dev = drm_minor->dev;
+ 
+-	if (drm_dev->driver->suspend)
+-		return drm_dev->driver->suspend(drm_dev, state);
++	if (drm_dev->driver->save)
++		return drm_dev->driver->save(drm_dev);
++
++	return 0;
++}
++
++static int drm_sysfs_restore(struct device *dev)
++{
++	struct drm_minor *drm_minor = to_drm_minor(dev);
++	struct drm_device *drm_dev = drm_minor->dev;
++
++	if (drm_dev->driver->restore)
++		return drm_dev->driver->restore(drm_dev);
+ 
+ 	return 0;
+ }
+ 
+ /**
+- * drm_sysfs_resume - DRM class resume hook
+- * @dev: Linux device to resume
++ * drm_sysfs_poweroff - DRM class poweroff hook
++ * @dev: Linux device to power off
+  *
+- * Just figures out what the actual struct drm_device associated with
+- * @dev is and calls its resume hook, if present.
++ * Put a device into low power state for suspend or hibernate
+  */
+-static int drm_sysfs_resume(struct device *dev)
++static int drm_sysfs_poweroff(struct device *dev)
+ {
+ 	struct drm_minor *drm_minor = to_drm_minor(dev);
+ 	struct drm_device *drm_dev = drm_minor->dev;
+ 
+-	if (drm_dev->driver->resume)
+-		return drm_dev->driver->resume(drm_dev);
++	/* Shut down the device */
++	pci_disable_device(drm_dev->pdev);
++	pci_set_power_state(drm_dev->pdev, PCI_D3hot);
+ 
+ 	return 0;
+ }
+ 
++/**
++ * drm_sysfs_suspend - DRM class suspend hook
++ * @dev: Linux device to suspend
++ *
++ * Just figures out what the actual struct drm_device associated with
++ * @dev is and calls its suspend hook, if present.
++ */
++static int drm_sysfs_suspend(struct device *dev)
++{
++	int ret = 0;
++
++	/* Suspend is just save, poweroff */
++	ret = drm_sysfs_save(dev);
++	if (ret)
++		return ret;
++
++	return drm_sysfs_poweroff(dev);
++}
++
++/**
++ * drm_sysfs_resume - DRM class resume hook
++ * @dev: Linux device to resume
++ *
++ * Just figures out what the actual struct drm_device associated with
++ * @dev is and calls its resume hook, if present.
++ */
++static int drm_sysfs_resume(struct device *dev)
++{
++	return drm_sysfs_restore(dev);
++}
++
+ /* Display the version of drm_core. This doesn't work right in current design */
+ static ssize_t version_show(struct class *dev, char *buf)
+ {
+@@ -67,6 +132,16 @@ static ssize_t version_show(struct class *dev, char *buf)
+ 
+ static CLASS_ATTR(version, S_IRUGO, version_show, NULL);
+ 
++static struct pm_ops drm_pm_ops = {
++	.prepare = drm_prepare,
++	.complete = drm_complete,
++	.poweroff = drm_sysfs_poweroff,
++	.suspend = drm_sysfs_suspend,
++	.resume = drm_sysfs_resume,
++	.freeze = drm_sysfs_save,
++	.restore = drm_sysfs_restore,
 +};
 +
-+static int __init pfm_amd64_pmu_init_module(void)
-+{
-+	if (pfm_amd64_probe_pmu())
-+		return -ENOSYS;
-+	return pfm_pmu_register(&pfm_amd64_pmu_conf);
-+}
-+
-+device_initcall(pfm_amd64_pmu_init_module);
-Index: o/arch/x86/perfmon/Kconfig
-===================================================================
---- o.orig/arch/x86/perfmon/Kconfig	2008-06-13 16:42:37.000000000 +0200
-+++ o/arch/x86/perfmon/Kconfig	2008-06-13 16:43:00.000000000 +0200
-@@ -22,4 +22,12 @@
- 	help
- 	Enables support for Intel architectural performance counters.
- 	This feature was introduced with Intel Core Solo/Core Duo processors.
-+
-+config	X86_PERFMON_AMD64
-+	bool "Support AMD Athlon/Opteron hardware performance counters"
-+	depends on PERFMON
-+	default n
-+	help
-+	Enables support for Athlon/Opterton hardware performance counters.
-+	Support for  family 6, 15 and 16 processors.
- endmenu
-Index: o/arch/x86/perfmon/Makefile
-===================================================================
---- o.orig/arch/x86/perfmon/Makefile	2008-06-13 16:42:40.000000000 +0200
-+++ o/arch/x86/perfmon/Makefile	2008-06-13 16:43:18.000000000 +0200
-@@ -4,3 +4,4 @@
- #
- obj-$(CONFIG_PERFMON)			+= perfmon.o
- obj-$(CONFIG_X86_PERFMON_INTEL_ARCH)	+= perfmon_intel_arch.o
-+obj-$(CONFIG_X86_PERFMON_AMD64)   	+= perfmon_amd64.o
+ /**
+  * drm_sysfs_create - create a struct drm_sysfs_class structure
+  * @owner: pointer to the module that is to "own" this struct drm_sysfs_class
+@@ -89,8 +164,7 @@ struct class *drm_sysfs_create(struct module *owner, char *name)
+ 		goto err_out;
+ 	}
+ 
+-	class->suspend = drm_sysfs_suspend;
+-	class->resume = drm_sysfs_resume;
++	class->pm = &drm_pm_ops;
+ 
+ 	err = class_create_file(class, &class_attr_version);
+ 	if (err)
+diff --git a/drivers/char/drm/i915_drv.c b/drivers/char/drm/i915_drv.c
+index e8f3d68..a014aa9 100644
+--- a/drivers/char/drm/i915_drv.c
++++ b/drivers/char/drm/i915_drv.c
+@@ -239,7 +239,7 @@ static void i915_restore_vga(struct drm_device *dev)
+ 
+ }
+ 
+-static int i915_suspend(struct drm_device *dev, pm_message_t state)
++static int i915_save(struct drm_device *dev)
+ {
+ 	struct drm_i915_private *dev_priv = dev->dev_private;
+ 	int i;
+@@ -250,10 +250,6 @@ static int i915_suspend(struct drm_device *dev, pm_message_t state)
+ 		return -ENODEV;
+ 	}
+ 
+-	if (state.event == PM_EVENT_PRETHAW)
+-		return 0;
+-
+-	pci_save_state(dev->pdev);
+ 	pci_read_config_byte(dev->pdev, LBB, &dev_priv->saveLBB);
+ 
+ 	/* Display arbitration control */
+@@ -371,24 +367,15 @@ static int i915_suspend(struct drm_device *dev, pm_message_t state)
+ 
+ 	i915_save_vga(dev);
+ 
+-	if (state.event == PM_EVENT_SUSPEND) {
+-		/* Shut down the device */
+-		pci_disable_device(dev->pdev);
+-		pci_set_power_state(dev->pdev, PCI_D3hot);
+-	}
+-
+ 	return 0;
+ }
+ 
+-static int i915_resume(struct drm_device *dev)
++static int i915_restore(struct drm_device *dev)
+ {
+ 	struct drm_i915_private *dev_priv = dev->dev_private;
+ 	int i;
+ 
+ 	pci_set_power_state(dev->pdev, PCI_D0);
+-	pci_restore_state(dev->pdev);
+-	if (pci_enable_device(dev->pdev))
+-		return -1;
+ 
+ 	pci_write_config_byte(dev->pdev, LBB, dev_priv->saveLBB);
+ 
+@@ -544,10 +531,10 @@ static struct drm_driver driver = {
+ 	    DRIVER_IRQ_VBL2,
+ 	.load = i915_driver_load,
+ 	.unload = i915_driver_unload,
++	.save = i915_save,
++	.restore = i915_restore,
+ 	.lastclose = i915_driver_lastclose,
+ 	.preclose = i915_driver_preclose,
+-	.suspend = i915_suspend,
+-	.resume = i915_resume,
+ 	.device_is_agp = i915_driver_device_is_agp,
+ 	.vblank_wait = i915_driver_vblank_wait,
+ 	.vblank_wait2 = i915_driver_vblank_wait2,
 
--- 
-
+--Boundary-00=_CWDWIpcbbM33O5y--
