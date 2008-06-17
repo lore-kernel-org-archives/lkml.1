@@ -1,198 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752926AbYFQEBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbYFQEYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752926AbYFQEBW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 00:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750873AbYFQEBL
+	id S1753666AbYFQEYP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 00:24:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbYFQEX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 00:01:11 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60323 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750799AbYFQEBJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 00:01:09 -0400
-Date: Tue, 17 Jun 2008 13:06:56 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "menage@google.com" <menage@google.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/2] memcg: reduce usage at change limit
-Message-Id: <20080617130656.bcd3ca85.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <48573397.608@linux.vnet.ibm.com>
-References: <20080617123144.ce5a74fa.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080617123604.c8cb1bd5.kamezawa.hiroyu@jp.fujitsu.com>
-	<48573397.608@linux.vnet.ibm.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Jun 2008 00:23:58 -0400
+Received: from mout.perfora.net ([74.208.4.196]:57401 "EHLO mout.perfora.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751266AbYFQEX6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 00:23:58 -0400
+Date: Mon, 16 Jun 2008 23:22:54 -0500 (CDT)
+From: "R.L. Horn" <lists@eastcheap.org>
+X-X-Sender: rlhorn@hani.compact.internal
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25.3: serial problem (minicom)
+In-Reply-To: <20080616111329.3ae97879@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.LNX.1.00.0806162306400.10919@hani.compact.internal>
+References: <alpine.LNX.1.00.0806131635260.1294@hani.compact.internal> <20080614102900.6830ed46@lxorguk.ukuu.org.uk> <alpine.LNX.1.00.0806150032050.1283@hani.compact.internal> <20080616111329.3ae97879@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Provags-ID: V01U2FsdGVkX1/4lzecdYTnNg6rvLR5QyzVC3RoeE4xOpEvgdd
+ eTew+sYFzUxq3tm0so7vgjlkUjMGlDTHqlgBaZoI40TF2q8U1h
+ ntgZC7RahCaGPmmm8/Htg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jun 2008 09:16:31 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Mon, 16 Jun 2008, Alan Cox wrote:
 
-> KAMEZAWA Hiroyuki wrote:
-> > Reduce the usage of res_counter at the change of limit.
-> > 
-> > Changelog v4 -> v5.
-> >  - moved "feedback" alogrithm from res_counter to memcg.
-> > 
-> > Background:
-> >  - Now, mem->usage is not reduced at limit change. So, the users will see
-> >    usage > limit case in memcg every time. This patch fixes it.
-> > 
-> >  Before:
-> >  - no usage change at setting limit.
-> >  - setting limit always returns 0 even if usage can never be less than zero.
-> >    (This can happen when memory is locked or there is no swap.)
-> >  - This is BUG, I think.
-> >  After:
-> >  - usage will be less than new limit at limit change.
-> >  - set limit returns -EBUSY when the usage cannot be reduced.
-> > 
-> > 
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > 
-> > ---
-> >  Documentation/controllers/memory.txt |    3 -
-> >  mm/memcontrol.c                      |   68 ++++++++++++++++++++++++++++-------
-> >  2 files changed, 56 insertions(+), 15 deletions(-)
-> > 
-> > Index: mm-2.6.26-rc5-mm3/mm/memcontrol.c
-> > ===================================================================
-> > --- mm-2.6.26-rc5-mm3.orig/mm/memcontrol.c
-> > +++ mm-2.6.26-rc5-mm3/mm/memcontrol.c
-> > @@ -852,18 +852,30 @@ out:
-> >  	css_put(&mem->css);
-> >  	return ret;
-> >  }
-> > +/*
-> > + * try to set limit and reduce usage if necessary.
-> > + * returns 0 at success.
-> > + * returns -EBUSY if memory cannot be dropped.
-> > + */
-> > 
-> > -static int mem_cgroup_write_strategy(char *buf, unsigned long long *tmp)
-> > +static inline int mem_cgroup_resize_limit(struct cgroup *cont,
-> > +					unsigned long long val)
-> >  {
-> > -	*tmp = memparse(buf, &buf);
-> > -	if (*buf != '\0')
-> > -		return -EINVAL;
-> > +	struct mem_cgroup *memcg = mem_cgroup_from_cont(cont);
-> > +	int retry_count = 0;
-> > +	int progress;
-> > 
-> > -	/*
-> > -	 * Round up the value to the closest page size
-> > -	 */
-> > -	*tmp = ((*tmp + PAGE_SIZE - 1) >> PAGE_SHIFT) << PAGE_SHIFT;
-> > -	return 0;
-> > +retry:
-> > +	if (!res_counter_set_limit(&memcg->res, val))
-> > +		return 0;
-> > +	if (retry_count == MEM_CGROUP_RECLAIM_RETRIES)
-> > +		return -EBUSY;
-> > +
-> > +	cond_resched();
-> 
-> Do we really need this? We do have cond_resched in shrink_page_list(),
-> shrink_active_list(), do we need it here as well?
-> 
-I'd like to add this when adding a busy loop. But ok, will remove.
+> Whatever it implies the behaviour should not have changed between 2.6.24
+> and 2.6.25. Nobody AFAIK sat down and decided to change it.
 
-> > +	progress = try_to_free_mem_cgroup_pages(memcg, GFP_KERNEL);
-> > +	if (!progress)
-> > +		retry_count++;
-> > +	goto retry;
-> 
-> I don't like upward goto's. Can't we convert this to a nice do {} while or
-> while() loop?
-> 
-Hmm, ok.
+And, besides, I've gotten reports that the usb-serial drivers still behave 
+the same as with 2.6.24.
 
-I'll repost later, today.
+It looks like the call to tty_termios_encode_baud_rate() in 
+drivers/serial/8250.c is the culprit.  If I comment it out, everything 
+appears to go back to normal (seemingly with no undesired side effects).
 
-Thanks,
--Kame
-> >  }
-> > 
-> >  static u64 mem_cgroup_read(struct cgroup *cont, struct cftype *cft)
-> > @@ -874,11 +886,41 @@ static u64 mem_cgroup_read(struct cgroup
-> > 
-> >  static ssize_t mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
-> >  				struct file *file, const char __user *userbuf,
-> > -				size_t nbytes, loff_t *ppos)
-> > +				size_t bbytes, loff_t *ppos)
-> >  {
-> > -	return res_counter_write(&mem_cgroup_from_cont(cont)->res,
-> > -				cft->private, userbuf, nbytes, ppos,
-> > -				mem_cgroup_write_strategy);
-> > +	char *buf, *end;
-> > +	unsigned long long val;
-> > +	int ret;
-> > +
-> > +	buf = kmalloc(bbytes + 1, GFP_KERNEL);
-> > +	if (!buf)
-> > +		return -ENOMEM;
-> > +	buf[bbytes] = '\0';
-> > +	ret = -EFAULT;
-> > +	if (copy_from_user(buf, userbuf, bbytes))
-> > +		goto out;
-> > +
-> > +	ret = -EINVAL;
-> > +	strstrip(buf);
-> > +	val = memparse(buf, &end);
-> > +	if (*end != '\0')
-> > +		goto out;
-> > +	/* Round to page size */
-> > +	val = ((val + PAGE_SIZE - 1) >> PAGE_SHIFT) << PAGE_SHIFT;
-> > +
-> > +	switch(cft->private) {
-> > +	case RES_LIMIT:
-> > +		ret = mem_cgroup_resize_limit(cont, val);
-> > +		break;
-> > +	default:
-> > +		ret = -EINVAL;
-> > +		goto out;
-> > +	}
-> > +	if (!ret)
-> > +		ret = bbytes;
-> > +out:
-> > +	kfree(buf);
-> > +	return ret;
-> >  }
-> > 
-> >  static int mem_cgroup_reset(struct cgroup *cont, unsigned int event)
-> > Index: mm-2.6.26-rc5-mm3/Documentation/controllers/memory.txt
-> > ===================================================================
-> > --- mm-2.6.26-rc5-mm3.orig/Documentation/controllers/memory.txt
-> > +++ mm-2.6.26-rc5-mm3/Documentation/controllers/memory.txt
-> > @@ -242,8 +242,7 @@ rmdir() if there are no tasks.
-> >  1. Add support for accounting huge pages (as a separate controller)
-> >  2. Make per-cgroup scanner reclaim not-shared pages first
-> >  3. Teach controller to account for shared-pages
-> > -4. Start reclamation when the limit is lowered
-> > -5. Start reclamation in the background when the limit is
-> > +4. Start reclamation in the background when the limit is
-> >     not yet hit but the usage is getting closer
-> 
-> Except for the minor nits
-> 
-> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> 
-> -- 
-> 	Warm Regards,
-> 	Balbir Singh
-> 	Linux Technology Center
-> 	IBM, ISTL
-> 
-
+Why the call is there (it didn't replace anything else in the 2.6.24.7 
+version of 8250.c, though it did in serial_core.c) remains a mystery to 
+me.
