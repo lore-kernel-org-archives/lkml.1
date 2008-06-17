@@ -1,79 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758774AbYFQTZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759212AbYFQT32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758774AbYFQTZR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 15:25:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756785AbYFQTZD
+	id S1759212AbYFQT32 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 15:29:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757194AbYFQT3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 15:25:03 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:47628 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756766AbYFQTZB (ORCPT
+	Tue, 17 Jun 2008 15:29:20 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:46811 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751828AbYFQT3T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 15:25:01 -0400
-Subject: Re: Oops report for the week preceding June 16th, 2008
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Miller <davem@davemloft.net>, arjan@linux.intel.com,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, tglx@linutronix.de, linville@tuxdriver.com,
-       davej@redhat.com, gregkh@suse.de
-In-Reply-To: <20080617153356.GA3510@elte.hu>
-References: <4856AFDF.5080901@linux.intel.com>
-	 <20080617092023.GA20621@elte.hu>
-	 <20080617.022652.76635616.davem@davemloft.net>
-	 <20080617153356.GA3510@elte.hu>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Fi2pD4MipdbPVUnHg5I2"
-Date: Tue, 17 Jun 2008 21:24:14 +0200
-Message-Id: <1213730654.3803.122.camel@johannes.berg>
+	Tue, 17 Jun 2008 15:29:19 -0400
+Subject: Re: [PATCH][RFC] fix kernel BUG at mm/migrate.c:719! in
+	2.6.26-rc5-mm3
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0806171925200.21436@blonde.site>
+References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
+	 <20080617163501.7cf411ee.nishimura@mxp.nes.nec.co.jp>
+	 <1213724798.8707.41.camel@lts-notebook>
+	 <Pine.LNX.4.64.0806171925200.21436@blonde.site>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Tue, 17 Jun 2008 15:28:42 -0400
+Message-Id: <1213730922.8707.57.camel@lts-notebook>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2008-06-17 at 19:33 +0100, Hugh Dickins wrote:
+> On Tue, 17 Jun 2008, Lee Schermerhorn wrote:
+> > 
+> > Now I wonder if the assertion that newpage count == 1 could be violated?
+> > I don't see how.  We've just allocated and filled it and haven't
+> > unlocked it yet, so we should hold the only reference.  Do you agree?
+> 
+> Disagree: IIRC, excellent example of the kind of assumption
+> that becomes invalid with Nick's speculative page references.
+> 
+> Someone interested in the previous use of the page may have
+> incremented the refcount, and in due course will find that
+> it's got reused for something else, and will then back off.
+> 
 
---=-Fi2pD4MipdbPVUnHg5I2
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Yeah.  Kosaki-san mentioned that we'd need some rework for the
+speculative page cache work.  Looks like we'll need to drop the
+VM_BUG_ON().  
 
+I need to go read up on the new invariants we can trust with the
+speculative page cache.  
 
-> i have no gripes about the current situation of wireless in linux-next,=20
-> other than it all came 1-2 years too late:
-
-Clearly, you don't have a clue about wireless. I'll admit to being
-pissed off by statements like this because I personally spent a lot of
-time getting wireless code into shape for merging, and it took a long
-time.
-
-If we'd have merged the existing wireless drivers 2 years ago, we would
-have (at least) four 802.11 stacks in the kernel now, at least two
-legally questionable drivers (the ath5k legal situation would probably
-never have been cleared up, acx100 still isn't), no uniform API so it
-would be impossible to write userspace support tools etc.
-
-johannes
-
---=-Fi2pD4MipdbPVUnHg5I2
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJIWA9bAAoJEKVg1VMiehFY+okQALEapV1e6uKiirgk1K6SziTz
-B9O8SCR6biyxzHzB9nmhvuullZUdY4QvX3vlu1gOqXPgvoB/Ao1A5zxwBTbg3gUz
-LlzPDNtILbStg/BK79BFg43N3mgZBeI1w31UeW1ho0N57suJzWRMNaLb1oSvTNoC
-/dFWEVmYTViqCZR9hL+8hFvS6StcZRoaOINm0K5RbXWT2E6XB6kjqL499HvXnOOw
-eNR+O4MpjpbhYZKCZnClLDKoikwlhzBM/24nycBAVJjn3zhi+7+Te8VlvqkDUhwU
-FIxxVAfRny3SyfTZ9iq6JJC7XjxYRMAg0FIj7CwerphOLC1lBULIh/c0p9pEzdxM
-Gki5PS1TR8GrzUV6v+o5izrdC0KO5xnCUAvIJ90K88oR8mcLUJkbgJG+nRhJEOTq
-EIzREzcgc9615MWGN0TP8uM9naHYrM4tBujnKCP7HjGHuWD11TUZGEClj37eZ53B
-huj+/5FirFJeYC1Oi0tS6mKy3n7JLnzR1EtVP3kAsToHXQ4dKWvVrbDQ4GkqtAxH
-1Bsoh3ymjaxEnvRT/KrLI/Ze9prsQIQw9xMv97AkrbUkZgiTSOmRC01ZbwR6i4q4
-ygoRdpYpz++Fxrp5lh9FANe6kUJTD3gTjRMxIh3CaNaYcJiJ/CQkhbE1QzULcM1e
-CBD0Q4d9eGvtfiM275XU
-=TYlA
------END PGP SIGNATURE-----
-
---=-Fi2pD4MipdbPVUnHg5I2--
+Thanks,
+Lee
 
