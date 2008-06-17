@@ -1,42 +1,506 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760023AbYFQWCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758049AbYFQWDD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760023AbYFQWCo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 18:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758548AbYFQWCM
+	id S1758049AbYFQWDD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 18:03:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759459AbYFQWCS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 18:02:12 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:14514 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758024AbYFQWCH (ORCPT
+	Tue, 17 Jun 2008 18:02:18 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:52630 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758714AbYFQWCP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 18:02:07 -0400
+	Tue, 17 Jun 2008 18:02:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=to:subject:from:date:message-id;
-        b=iyQt8QaYiu5DBTh7Zr/nyOw2Kz1rC1DVZmAcRsKjgFm2yI2tOj/NKF5sWS/PHcU4dh
-         DkifceoLFwpfJ5lLJdIOqtXvAGpZyLRNIXtD7m1GCqvBrtJITs5fxjJb5t7WWe7JCInY
-         CPz/wOOb51scibaiec8WSnEqvA6Pvsnf+JvVw=
+        b=smr3EvZGJu7xNuu8XtlK1M0EZGHPTtLjpfMAJFljGLWumHxHL048otnM8amj88fDf9
+         07tQKGnbuPPz+ocHR54QEoYEqEkuYG5Bf4U+ExmUIwGL233DQX/FkF9iRL3ooc/Uo3bl
+         dhASz2YVEv3JgZe01oA+i32XMjDrdoy2GOrBs=
 To: linux-kernel@vger.kernel.org
-Subject: [patch 01/19] perfmon2 minimal v2:  generic headers
+Subject: [patch 02/19] perfmon2 minimal v2:  base code
 From: eranian@googlemail.com
-Date: Tue, 17 Jun 2008 15:02:05 -0700 (PDT)
-Message-ID: <4858345d.1d3e400a.4004.ffffbd9b@mx.google.com>
+Date: Tue, 17 Jun 2008 15:02:10 -0700 (PDT)
+Message-ID: <48583462.25014e0a.0982.6263@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the generic perfmon2 headers including the public
-head perfmon.h which can be used by applications. The other
-headers are for kernel use only.
+This patch adds the core functions of the perfmon2 subsystem.
+It creates the toplevel perfmon subdirectory where all perfmon2
+generic code lives. Core functions implements initialization,
+session allocation and terminations.
 
 Signed-off-by: Stephane Eranian <eranian@gmail.com>
 --
 
-Index: o/include/linux/perfmon.h
+Index: o/perfmon/Makefile
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ o/include/linux/perfmon.h	2008-06-17 08:50:15.000000000 +0200
-@@ -0,0 +1,65 @@
++++ o/perfmon/Makefile	2008-06-17 08:33:23.000000000 +0200
+@@ -0,0 +1,7 @@
++#
++# Copyright (c) 2005-2006 Hewlett-Packard Development Company, L.P.
++# Contributed by Stephane Eranian <eranian@gmail.com>
++#
++obj-$(CONFIG_PERFMON) = perfmon_ctx.o \
++			perfmon_file.o perfmon_attach.o 	\
++			perfmon_res.o perfmon_init.o
+Index: o/perfmon/perfmon_attach.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ o/perfmon/perfmon_attach.c	2008-06-17 08:33:23.000000000 +0200
+@@ -0,0 +1,86 @@
++/*
++ * perfmon_attach.c: perfmon2 load/unload functions
++ *
++ * This file implements the perfmon2 interface which
++ * provides access to the hardware performance counters
++ * of the host processor.
++ *
++ *
++ * The initial version of perfmon.c was written by
++ * Ganesh Venkitachalam, IBM Corp.
++ *
++ * Then it was modified for perfmon-1.x by Stephane Eranian and
++ * David Mosberger, Hewlett Packard Co.
++ *
++ * Version Perfmon-2.x is a complete rewrite of perfmon-1.x
++ * by Stephane Eranian, Hewlett Packard Co.
++ *
++ * Copyright (c) 1999-2006 Hewlett-Packard Development Company, L.P.
++ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
++ *                David Mosberger-Tang <davidm@hpl.hp.com>
++ *
++ * More information about perfmon available at:
++ * 	http://www.hpl.hp.com/research/linux/perfmon
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++ * 02111-1307 USA
++ */
++#include <linux/kernel.h>
++#include <linux/fs.h>
++#include <linux/perfmon_kern.h>
++#include "perfmon_priv.h"
++
++/**
++ * __pfm_exit_thread - detach and free context on thread exit
++ */
++void __pfm_exit_thread(void)
++{
++	struct pfm_context *ctx;
++	unsigned long flags;
++	int free_ok = 0, ret = -1;
++
++	ctx  = current->pfm_context;
++
++	spin_lock_irqsave(&ctx->lock, flags);
++
++	PFM_DBG("state=%d is_self=%d", ctx->state, ctx->flags.is_self);
++
++	/*
++	 * __pfm_unload_context() cannot fail
++	 * in the context states we are interested in
++	 */
++	switch (ctx->state) {
++	case PFM_CTX_LOADED:
++		ret = __pfm_unload_context(ctx);
++		break;
++	case PFM_CTX_ZOMBIE:
++		ret = __pfm_unload_context(ctx);
++		free_ok = 1;
++		break;
++	default:
++		BUG_ON(ctx->state != PFM_CTX_LOADED);
++		break;
++	}
++	spin_unlock_irqrestore(&ctx->lock, flags);
++
++	if (!ret)
++		pfm_session_release();
++
++	/*
++	 * All memory free operations (especially for vmalloc'ed memory)
++	 * MUST be done with interrupts ENABLED.
++	 */
++	if (free_ok)
++		pfm_free_context(ctx);
++}
+Index: o/perfmon/perfmon_ctx.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ o/perfmon/perfmon_ctx.c	2008-06-17 08:33:23.000000000 +0200
+@@ -0,0 +1,164 @@
++/*
++ * perfmon_ctx.c: perfmon2 context functions
++ *
++ * This file implements the perfmon2 interface which
++ * provides access to the hardware performance counters
++ * of the host processor.
++ *
++ *
++ * The initial version of perfmon.c was written by
++ * Ganesh Venkitachalam, IBM Corp.
++ *
++ * Then it was modified for perfmon-1.x by Stephane Eranian and
++ * David Mosberger, Hewlett Packard Co.
++ *
++ * Version Perfmon-2.x is a complete rewrite of perfmon-1.x
++ * by Stephane Eranian, Hewlett Packard Co.
++ *
++ * Copyright (c) 1999-2006 Hewlett-Packard Development Company, L.P.
++ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
++ *                David Mosberger-Tang <davidm@hpl.hp.com>
++ *
++ * More information about perfmon available at:
++ * 	http://www.hpl.hp.com/research/linux/perfmon
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++ * 02111-1307 USA
++ */
++#include <linux/kernel.h>
++#include <linux/fs.h>
++#include <linux/perfmon_kern.h>
++#include "perfmon_priv.h"
++
++/*
++ * context memory pool pointer
++ */
++static struct kmem_cache *pfm_ctx_cachep;
++
++/*
++ * This function is called when we need to perform asynchronous
++ * work on a context. This function is called ONLY when about to
++ * return to user mode (very much like with signal handling).
++ *
++ * we come here if:
++ *
++ *  - we are zombie and we need to cleanup our state
++ *
++ * pfm_handle_work() can be called with interrupts enabled
++ * (TIF_NEED_RESCHED) or disabled.
++ */
++void pfm_handle_work(struct pt_regs *regs)
++{
++	struct pfm_context *ctx;
++	unsigned long flags;
++	int type;
++
++	if (!user_mode(regs))
++		return;
++
++	clear_thread_flag(TIF_PERFMON_WORK);
++
++	ctx = current->pfm_context;
++	if (ctx == NULL) {
++		PFM_DBG("[%d] has no ctx", current->pid);
++		return;
++	}
++
++	spin_lock_irqsave(&ctx->lock, flags);
++
++	type = ctx->flags.work_type;
++	ctx->flags.work_type = PFM_WORK_NONE;
++
++	PFM_DBG("work_type=%d", type);
++
++	switch (type) {
++	case PFM_WORK_ZOMBIE:
++		goto do_zombie;
++	default:
++		PFM_DBG("unkown type=%d", type);
++		goto nothing_todo;
++	}
++nothing_todo:
++	/*
++	 * restore flags as they were upon entry
++	 */
++	spin_unlock_irqrestore(&ctx->lock, flags);
++	return;
++
++do_zombie:
++	PFM_DBG("context is zombie, bailing out");
++
++	/* always returns 0 in this case */
++	 __pfm_unload_context(ctx);
++
++	/*
++	 * keep the spinlock check happy
++	 */
++	spin_unlock(&ctx->lock);
++
++	/*
++	 * enable interrupt for vfree()
++	 */
++	local_irq_enable();
++
++	/*
++	 * actual context free
++	 */
++	pfm_free_context(ctx);
++
++	/*
++	 * restore interrupts as they were upon entry
++	 */
++	local_irq_restore(flags);
++
++	/*
++	 * pfm_unload always successful, so can release
++	 * session safely
++	 */
++	pfm_session_release();
++}
++
++/**
++ * pfm_free_context - de-allocate context and associated resources
++ * @ctx: context to free
++ */
++void pfm_free_context(struct pfm_context *ctx)
++{
++	pfm_arch_context_free(ctx);
++
++	PFM_DBG("free ctx @0x%p", ctx);
++	kmem_cache_free(pfm_ctx_cachep, ctx);
++	/*
++	 * decrease refcount on:
++	 * 	- PMU description table
++	 */
++	pfm_pmu_release();
++}
++
++/**
++ * pfm_init_ctx -- initialize context SLAB
++ *
++ * called from pfm_init
++ */
++int __init pfm_init_ctx(void)
++{
++	pfm_ctx_cachep = kmem_cache_create("pfm_context",
++				   sizeof(struct pfm_context)+PFM_ARCH_CTX_SIZE,
++				   SLAB_HWCACHE_ALIGN, 0, NULL);
++	if (!pfm_ctx_cachep) {
++		PFM_ERR("cannot initialize context slab");
++		return -ENOMEM;
++	}
++	return 0;
++}
+Index: o/perfmon/perfmon_file.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ o/perfmon/perfmon_file.c	2008-06-17 08:33:23.000000000 +0200
+@@ -0,0 +1,94 @@
++/*
++ * perfmon_file.c: perfmon2 file input/output functions
++ *
++ * This file implements the perfmon2 interface which
++ * provides access to the hardware performance counters
++ * of the host processor.
++ *
++ * The initial version of perfmon.c was written by
++ * Ganesh Venkitachalam, IBM Corp.
++ *
++ * Then it was modified for perfmon-1.x by Stephane Eranian and
++ * David Mosberger, Hewlett Packard Co.
++ *
++ * Version Perfmon-2.x is a complete rewrite of perfmon-1.x
++ * by Stephane Eranian, Hewlett Packard Co.
++ *
++ * Copyright (c) 1999-2006 Hewlett-Packard Development Company, L.P.
++ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
++ *                David Mosberger-Tang <davidm@hpl.hp.com>
++ *
++ * More information about perfmon available at:
++ * 	http://perfmon2.sf.net
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++ * 02111-1307 USA
++ */
++#include <linux/kernel.h>
++#include <linux/fs.h>
++#include <linux/file.h>
++#include <linux/vfs.h>
++#include <linux/mount.h>
++#include <linux/perfmon_kern.h>
++#include "perfmon_priv.h"
++
++#define PFMFS_MAGIC 0xa0b4d889	/* perfmon filesystem magic number */
++
++struct pfm_controls pfm_controls = {
++	.task_group = PFM_GROUP_PERM_ANY,
++	.arg_mem_max = PAGE_SIZE,
++};
++
++static int __init enable_debug(char *str)
++{
++	pfm_controls.debug = 1;
++	PFM_INFO("debug output enabled\n");
++	return 1;
++}
++__setup("perfmon_debug", enable_debug);
++
++static int pfmfs_get_sb(struct file_system_type *fs_type,
++			int flags, const char *dev_name,
++			void *data, struct vfsmount *mnt)
++{
++	return get_sb_pseudo(fs_type, "pfm:", NULL, PFMFS_MAGIC, mnt);
++}
++
++static struct file_system_type pfm_fs_type = {
++	.name     = "pfmfs",
++	.get_sb   = pfmfs_get_sb,
++	.kill_sb  = kill_anon_super,
++};
++
++/*
++ * pfmfs should _never_ be mounted by userland - too much of security hassle,
++ * no real gain from having the whole whorehouse mounted. So we don't need
++ * any operations on the root directory. However, we need a non-trivial
++ * d_name - pfm: will go nicely and kill the special-casing in procfs.
++ */
++static struct vfsmount *pfmfs_mnt;
++
++int __init pfm_init_fs(void)
++{
++	int err = register_filesystem(&pfm_fs_type);
++	if (!err) {
++		pfmfs_mnt = kern_mount(&pfm_fs_type);
++		err = PTR_ERR(pfmfs_mnt);
++		if (IS_ERR(pfmfs_mnt))
++			unregister_filesystem(&pfm_fs_type);
++		else
++			err = 0;
++	}
++	return err;
++}
+Index: o/perfmon/perfmon_init.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ o/perfmon/perfmon_init.c	2008-06-17 08:33:23.000000000 +0200
+@@ -0,0 +1,87 @@
++/*
++ * perfmon.c: perfmon2 global initialization functions
++ *
++ * This file implements the perfmon2 interface which
++ * provides access to the hardware performance counters
++ * of the host processor.
++ *
++ *
++ * The initial version of perfmon.c was written by
++ * Ganesh Venkitachalam, IBM Corp.
++ *
++ * Then it was modified for perfmon-1.x by Stephane Eranian and
++ * David Mosberger, Hewlett Packard Co.
++ *
++ * Version Perfmon-2.x is a complete rewrite of perfmon-1.x
++ * by Stephane Eranian, Hewlett Packard Co.
++ *
++ * Copyright (c) 1999-2006 Hewlett-Packard Development Company, L.P.
++ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
++ *                David Mosberger-Tang <davidm@hpl.hp.com>
++ *
++ * More information about perfmon available at:
++ * 	http://www.hpl.hp.com/research/linux/perfmon
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of version 2 of the GNU General Public
++ * License as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
++ * 02111-1307 USA
++ */
++#include <linux/kernel.h>
++#include <linux/perfmon_kern.h>
++#include "perfmon_priv.h"
++
++/*
++ * external variables
++ */
++DEFINE_PER_CPU(struct task_struct *, pmu_owner);
++DEFINE_PER_CPU(struct pfm_context  *, pmu_ctx);
++DEFINE_PER_CPU(u64, pmu_activation_number);
++
++int perfmon_disabled;	/* >0 if perfmon is disabled */
++
++/*
++ * global initialization routine, executed only once
++ */
++int __init pfm_init(void)
++{
++	PFM_LOG("version %u.%u", PFM_VERSION_MAJ, PFM_VERSION_MIN);
++
++	if (pfm_init_ctx())
++		goto error_disable;
++
++	if (pfm_init_fs())
++		goto error_disable;
++
++	/* not critical, so no error checking */
++	pfm_init_debugfs();
++
++	/*
++	 * one time, arch-specific global initialization
++	 */
++	if (pfm_arch_init())
++		goto error_disable;
++
++	return 0;
++
++error_disable:
++	PFM_ERR("perfmon is disabled due to initialization error");
++	perfmon_disabled = 1;
++	return -1;
++}
++
++/*
++ * must use subsys_initcall() to ensure that the perfmon2 core
++ * is initialized before any PMU description module when they are
++ * compiled in.
++ */
++subsys_initcall(pfm_init);
+Index: o/perfmon/perfmon_priv.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ o/perfmon/perfmon_priv.h	2008-06-17 08:33:23.000000000 +0200
+@@ -0,0 +1,119 @@
 +/*
 + * Copyright (c) 2001-2006 Hewlett-Packard Development Company, L.P.
 + * Contributed by Stephane Eranian <eranian@hpl.hp.com>
@@ -56,320 +520,133 @@ Index: o/include/linux/perfmon.h
 + * 02111-1307 USA
 + */
 +
-+#ifndef __LINUX_PERFMON_H__
-+#define __LINUX_PERFMON_H__
-+
-+/*
-+ * This file contains all the user visible generic definitions for the
-+ * interface. Model-specific user-visible definitions are located in
-+ * the asm/perfmon.h file.
-+ */
-+
-+/*
-+ * include arch-specific user interface definitions
-+ */
-+#include <asm/perfmon.h>
-+
-+/*
-+ * defined by each arch
-+ */
-+#define PFM_MAX_PMCS	PFM_ARCH_MAX_PMCS
-+#define PFM_MAX_PMDS	PFM_ARCH_MAX_PMDS
-+
-+/*
-+ * number of elements for each type of bitvector
-+ * all bitvectors use u64 fixed size type on all architectures.
-+ */
-+#define PFM_BVSIZE(x)	(((x)+(sizeof(__u64)<<3)-1) / (sizeof(__u64)<<3))
-+#define PFM_PMD_BV	PFM_BVSIZE(PFM_MAX_PMDS)
-+#define PFM_PMC_BV	PFM_BVSIZE(PFM_MAX_PMCS)
-+
-+/*
-+ * default value for the user and group security parameters in
-+ * /proc/sys/kernel/perfmon/sys_group
-+ * /proc/sys/kernel/perfmon/task_group
-+ */
-+#define PFM_GROUP_PERM_ANY	-1	/* any user/group */
-+
-+/*
-+ * perfmon version number
-+ */
-+#define PFM_VERSION_MAJ		 2U
-+#define PFM_VERSION_MIN		 99U
-+#define PFM_VERSION		 (((PFM_VERSION_MAJ&0xffff)<<16)|\
-+				  (PFM_VERSION_MIN & 0xffff))
-+#define PFM_VERSION_MAJOR(x)	 (((x)>>16) & 0xffff)
-+#define PFM_VERSION_MINOR(x)	 ((x) & 0xffff)
-+
-+#endif /* __LINUX_PERFMON_H__ */
-Index: o/include/linux/perfmon_kern.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ o/include/linux/perfmon_kern.h	2008-06-17 08:33:20.000000000 +0200
-@@ -0,0 +1,253 @@
-+/*
-+ * Copyright (c) 2001-2006 Hewlett-Packard Development Company, L.P.
-+ * Contributed by Stephane Eranian <eranian@gmail.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public
-+ * License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-+ * 02111-1307 USA
-+ */
-+
-+#ifndef __LINUX_PERFMON_KERN_H__
-+#define __LINUX_PERFMON_KERN_H__
++#ifndef __PERFMON_PRIV_H__
++#define __PERFMON_PRIV_H__
 +/*
 + * This file contains all the definitions of data structures, variables, macros
-+ * that are to be shared between generic code and arch-specific code
++ * that are to private to the generic code, i.e., not shared with any code that
++ * lives under arch/ or include/asm-XX
 + *
-+ * For generic only definitions, use perfmon/perfmon_priv.h
++ * For shared definitions, use include/linux/perfmon_kern.h
 + */
-+#include <linux/file.h>
-+#include <linux/sched.h>
-+#include <linux/perfmon.h>
 +
 +#ifdef CONFIG_PERFMON
 +
 +/*
-+ * system adminstrator configuration controls available via
-+ * the /sys/kerne/perfmon interface
++ * context lazy save/restore activation count
 + */
-+struct pfm_controls {
-+	u32	debug;		/* debugging control bitmask */
-+	gid_t	task_group;	/* gid to create a per-task context */
-+	size_t	arg_mem_max;	/* maximum vector argument size */
-+};
-+extern struct pfm_controls pfm_controls;
++#define PFM_INVALID_ACTIVATION	((u64)~0)
++
++DECLARE_PER_CPU(u64, pmu_activation_number);
++
++static inline void pfm_set_pmu_owner(struct task_struct *task,
++				     struct pfm_context *ctx)
++{
++	__get_cpu_var(pmu_owner) = task;
++	__get_cpu_var(pmu_ctx) = ctx;
++}
++
++int pfm_init_ctx(void);
++
++int pfm_session_acquire(void);
++void pfm_session_release(void);
++
++int  pfm_init_sysfs(void);
++
++void pfm_free_context(struct pfm_context *ctx);
++
++void pfm_save_pmds(struct pfm_context *ctx);
 +
 +/*
-+ * software PMD
++ * check_mask bitmask values for pfm_check_task_state()
 + */
-+struct pfm_pmd {
-+	u64 value;			/* 64-bit value */
-+	u64 lval;			/* last reset value */
-+};
++#define PFM_CMD_STOPPED		0x01	/* command needs thread stopped */
++#define PFM_CMD_UNLOADED	0x02	/* command needs ctx unloaded */
++#define PFM_CMD_UNLOAD		0x04	/* command is unload */
 +
-+/*
-+ * event_set: encapsulates the full PMU state
-+ */
-+struct pfm_event_set {
-+	u16 nused_pmds;			/* max number of used PMDs */
-+	u16 nused_pmcs;			/* max number of used PMCs */
-+	u32 priv_flags;			/* private flags (see below) */
-+	u32 npend_ovfls;		/* number of pending PMD overflow */
-+	u32 pad2;			/* padding */
-+	u64 used_pmds[PFM_PMD_BV];	/* used PMDs */
-+	u64 povfl_pmds[PFM_PMD_BV];	/* pending overflowed PMDs */
-+	u64 used_pmcs[PFM_PMC_BV];	/* used PMCs */
-+	u64 pmcs[PFM_MAX_PMCS];		/* PMC values */
-+
-+	struct pfm_pmd pmds[PFM_MAX_PMDS];
-+};
-+
-+/*
-+ * common private event set flags (priv_flags)
++/**
++ * pfm_save_prev_ctx - check if previous context exists and save state
 + *
-+ * upper 16 bits: for arch-specific use
-+ * lower 16 bits: for common use
-+ */
-+#define PFM_SETFL_PRIV_MOD_PMDS 0x1 /* PMD register(s) modified */
-+#define PFM_SETFL_PRIV_MOD_PMCS 0x2 /* PMC register(s) modified */
-+#define PFM_SETFL_PRIV_MOD_BOTH	(PFM_SETFL_PRIV_MOD_PMDS \
-+				| PFM_SETFL_PRIV_MOD_PMCS)
-+
-+
-+/*
-+ * context flags
-+ */
-+struct pfm_context_flags {
-+	unsigned int started:1;		/* pfm_start() issued */
-+	unsigned int is_self:1;		/* per-thread and self-montoring */
-+	unsigned int work_type:2;	/* type of work for pfm_handle_work */
-+	unsigned int reserved:28;	/* for future use */
-+};
-+/*
-+ * values for work_type (TIF_PERFMON_WORK must be set)
-+ */
-+#define PFM_WORK_NONE	0	/* nothing to do */
-+#define PFM_WORK_ZOMBIE	1	/* cleanup zombie context */
-+
-+
-+/*
-+ * perfmon context state
-+ */
-+#define PFM_CTX_UNLOADED	1 /* context is detached */
-+#define PFM_CTX_LOADED		2 /* context is attached */
-+#define PFM_CTX_ZOMBIE		3 /* context lost owner but still attached */
-+
-+/*
-+ * context: contains all the state of a session
-+ */
-+struct pfm_context {
-+	spinlock_t		lock;		/* context protection */
-+
-+	struct pfm_context_flags flags;
-+	u32			state;		/* current state */
-+	struct task_struct 	*task;		/* attached task */
-+
-+	u64 			last_act;	/* last activation */
-+	u32			last_cpu;   	/* last CPU used (SMP only) */
-+
-+	struct pfm_event_set	*active_set;	/* active set */
-+	struct pfm_event_set	_set0;		/* event set 0 */
-+};
-+
-+/*
-+ * logging
-+ */
-+#define PFM_ERR(f, x...)  printk(KERN_ERR     "perfmon: " f "\n", ## x)
-+#define PFM_WARN(f, x...) printk(KERN_WARNING "perfmon: " f "\n", ## x)
-+#define PFM_LOG(f, x...)  printk(KERN_NOTICE  "perfmon: " f "\n", ## x)
-+#define PFM_INFO(f, x...) printk(KERN_INFO    "perfmon: " f "\n", ## x)
-+
-+/*
-+ * debugging
++ * called from pfm_load_ctx_thread() and __pfm_ctxsin_thread() to
++ * check if previous context exists. If so saved its PMU state. This is used
++ * only for UP kernels.
 + *
-+ * Printk rate limiting is enforced to avoid getting flooded with too many
-+ * error messages on the console (which could render the machine unresponsive).
-+ * To get full debug output (turn off ratelimit):
-+ * 	$ echo 0 >/proc/sys/kernel/printk_ratelimit
-+ *
-+ * debug is a bitmask where bits are defined as follows:
-+ * bit  0: enable non-interrupt code degbug messages
-+ * bit  1: enable interrupt code debug messages
++ * PMU ownership is not cleared because the function is always called while
++ * trying to install a new owner.
 + */
-+#ifdef CONFIG_PERFMON_DEBUG
-+#define _PFM_DBG(lm, f, x...) \
-+	do { \
-+		if (unlikely((pfm_controls.debug & lm) && printk_ratelimit())) { \
-+			printk("perfmon: %s.%d: CPU%d [%d]: " f "\n", \
-+			       __func__, __LINE__, \
-+			       smp_processor_id(), current->pid , ## x); \
-+		} \
-+	} while (0)
-+
-+#define PFM_DBG(f, x...) _PFM_DBG(0x1, f, ##x)
-+#define PFM_DBG_ovfl(f, x...) _PFM_DBG(0x2, f, ##x)
-+#else
-+#define PFM_DBG(f, x...)	do {} while (0)
-+#define PFM_DBG_ovfl(f, x...)	do {} while (0)
-+#endif
-+
-+extern struct pfm_pmu_config  *pfm_pmu_conf;
-+extern int perfmon_disabled;
-+
-+static inline struct pfm_arch_context *pfm_ctx_arch(struct pfm_context *c)
++static inline void pfm_check_save_prev_ctx(void)
 +{
-+	return (struct pfm_arch_context *)(c+1);
-+}
++#ifdef CONFIG_SMP
++	struct pfm_context *ctxp;
 +
-+#include <linux/perfmon_pmu.h>
-+
-+extern const struct file_operations pfm_file_ops;
-+
-+#define cast_ulp(_x) ((unsigned long *)_x)
-+
-+void pfm_handle_work(struct pt_regs *regs);
-+void __pfm_exit_thread(void);
-+void __pfm_init_percpu(void *dummy);
-+
-+static inline void pfm_exit_thread(void)
-+{
-+	if (current->pfm_context)
-+		__pfm_exit_thread();
-+}
-+
-+/*
-+ * include arch-specific kernel level definitions
-+ */
-+#include <asm/perfmon_kern.h>
-+
-+static inline void pfm_copy_thread(struct task_struct *task)
-+{
-+	/*
-+	 * context or perfmon TIF state  is NEVER inherited
-+	 * in child task. Holds for per-thread and system-wide
-+	 */
-+	task->pfm_context = NULL;
-+	clear_tsk_thread_flag(task, TIF_PERFMON_CTXSW);
-+}
-+
-+/*
-+ * read a single PMD register.
-+ */
-+static inline u64 pfm_read_pmd(struct pfm_context *ctx, unsigned int cnum)
-+{
-+	return pfm_arch_read_pmd(ctx, cnum);
-+}
-+/*
-+ * write a single PMD register.
-+ */
-+static inline void pfm_write_pmd(struct pfm_context *ctx, unsigned int cnum,
-+				 u64 value)
-+{
-+	/*
-+	 * PMD writes are ignored for read-only registers
-+	 */
-+	if (pfm_pmu_conf->pmd_desc[cnum].type & PFM_REG_RO)
++	ctxp = __get_cpu_var(pmu_ctx);
++	if (!ctxp)
 +		return;
-+
 +	/*
-+	 * clear unimplemented bits
++	 * in UP per-thread, due to lazy save
++	 * there could be a context from another
++	 * task. We need to push it first before
++	 * installing our new state
 +	 */
-+	value &= ~pfm_pmu_conf->pmd_desc[cnum].rsvd_msk;
-+
-+	pfm_arch_write_pmd(ctx, cnum, value);
++	pfm_save_pmds(ctxp);
++	/*
++	 * do not clear ownership because we rewrite
++	 * right away
++	 */
++#endif
 +}
 +
-+DECLARE_PER_CPU(struct pfm_context *, pmu_ctx);
-+DECLARE_PER_CPU(struct task_struct *, pmu_owner);
++int pfm_init_fs(void);
 +
-+/*
-+ * max vector argument elements for local storage (no kmalloc/kfree)
-+ * The PFM_ARCH_PM*_ARG should be defined in perfmon_kern.h.
-+ * If not, default (conservative) values are used
-+ */
-+#ifndef PFM_ARCH_PMC_STK_ARG
-+#define PFM_ARCH_PMC_STK_ARG	1
-+#endif
++static inline void pfm_post_work(struct task_struct *task,
++				 struct pfm_context *ctx, int type)
++{
++	ctx->flags.work_type = type;
++	set_tsk_thread_flag(task, TIF_PERFMON_WORK);
++}
 +
-+#ifndef PFM_ARCH_PMD_STK_ARG
-+#define PFM_ARCH_PMD_STK_ARG	1
++#ifdef CONFIG_PERFMON_DEBUG_FS
++int  pfm_init_debugfs(void);
++#else
++static inline int pfm_init_debugfs(void)
++{
++	return 0;
++}
 +#endif
 +
 +#define PFM_PMC_STK_ARG	PFM_ARCH_PMC_STK_ARG
 +#define PFM_PMD_STK_ARG	PFM_ARCH_PMD_STK_ARG
 +
-+#else /* !CONFIG_PERFMON */
-+/*
-+ * perfmon hooks are nops when CONFIG_PERFMON is undefined
-+ */
-+#define pfm_exit_thread(_t)  		do { } while (0)
-+#define pfm_handle_work(_t)    		do { } while (0)
-+#define pfm_copy_thread(_t)		do { } while (0)
-+
 +#endif /* CONFIG_PERFMON */
-+#endif /* __LINUX_PERFMON_KERN_H__ */
-Index: o/include/linux/perfmon_pmu.h
++
++#endif /* __PERFMON_PRIV_H__ */
+Index: o/perfmon/perfmon_res.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ o/include/linux/perfmon_pmu.h	2008-06-17 10:27:48.000000000 +0200
-@@ -0,0 +1,155 @@
++++ o/perfmon/perfmon_res.c	2008-06-17 08:33:23.000000000 +0200
+@@ -0,0 +1,105 @@
 +/*
-+ * Copyright (c) 2006 Hewlett-Packard Development Company, L.P.
-+ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
++ * perfmon_res.c:  perfmon2 resource allocations
 + *
-+ * Interface for PMU description modules
++ * This file implements the perfmon2 interface which
++ * provides access to the hardware performance counters
++ * of the host processor.
++ *
++ * The initial version of perfmon.c was written by
++ * Ganesh Venkitachalam, IBM Corp.
++ *
++ * Then it was modified for perfmon-1.x by Stephane Eranian and
++ * David Mosberger, Hewlett Packard Co.
++ *
++ * Version Perfmon-2.x is a complete rewrite of perfmon-1.x
++ * by Stephane Eranian, Hewlett Packard Co.
++ *
++ * Copyright (c) 1999-2006 Hewlett-Packard Development Company, L.P.
++ * Contributed by Stephane Eranian <eranian@hpl.hp.com>
++ *                David Mosberger-Tang <davidm@hpl.hp.com>
++ *
++ * More information about perfmon available at:
++ * 	http://perfmon2.sf.net
 + *
 + * This program is free software; you can redistribute it and/or
 + * modify it under the terms of version 2 of the GNU General Public
@@ -385,141 +662,101 @@ Index: o/include/linux/perfmon_pmu.h
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 + * 02111-1307 USA
 + */
-+#ifndef __PERFMON_PMU_H__
-+#define __PERFMON_PMU_H__ 1
++#include <linux/kernel.h>
++#include <linux/perfmon_kern.h>
++#include "perfmon_priv.h"
 +
 +/*
-+ * generic information about a PMC or PMD register
++ * global information about all sessions
 + */
-+struct pfm_regmap_desc {
-+	u16  type;		/* register infos */
-+	u16  reserved1;		/* for future use */
-+	u32  reserved2;		/* for future use */
-+	u64  dfl_val;		/* power-on default value (quiescent) */
-+	u64  rsvd_msk;		/* reserved bits: 1 means reserved */
-+	u64  no_emul64_msk;	/* bits to clear for PFM_REGFL_NO_EMUL64 */
-+	unsigned long hw_addr;	/* HW register address or index */
-+	struct kobject	kobj;	/* for internal use only */
-+	char *desc;		/* HW register description string */
++struct pfm_resources {
++	cpumask_t	sys_cpumask;     /* bitmask of used cpus */
++	u32		thread_sessions; /* #num loaded per-thread sessions */
 +};
 +
-+/*
-+ * pfm_reg_desc helper macros
-+ */
-+#define PMC_D(t, d, v, r, n, h) \
-+	{ .type = t,          \
-+	  .desc = d,          \
-+	  .dfl_val = v,       \
-+	  .rsvd_msk = r,      \
-+	  .no_emul64_msk = n, \
-+	  .hw_addr = h	      \
-+	}
++static struct pfm_resources pfm_res;
 +
-+#define PMD_D(t, d, h)        \
-+	{ .type = t,          \
-+	  .desc = d,          \
-+	  .rsvd_msk = 0,      \
-+	  .no_emul64_msk = 0, \
-+	  .hw_addr = h	      \
-+	}
++static __cacheline_aligned_in_smp DEFINE_SPINLOCK(pfm_res_lock);
 +
-+#define PMD_DR(t, d, h, r)    \
-+	{ .type = t,          \
-+	  .desc = d,          \
-+	  .rsvd_msk = r,      \
-+	  .no_emul64_msk = 0, \
-+	  .hw_addr = h	      \
-+	}
-+
-+#define PMX_NA \
-+	{ .type = PFM_REG_NA }
-+
-+/*
-+ * type of a PMU register (16-bit bitmask) for use with pfm_reg_desc.type
-+ */
-+#define PFM_REG_NA	0x00  /* not avail. (not impl.,no access) must be 0 */
-+#define PFM_REG_I	0x01  /* PMC/PMD: implemented */
-+#define PFM_REG_WC	0x02  /* PMC: has write_checker */
-+#define PFM_REG_C64	0x04  /* PMD: 64-bit virtualization */
-+#define PFM_REG_RO	0x08  /* PMD: read-only (writes ignored) */
-+#define PFM_REG_INTR	0x20  /* PMD: register can generate interrupt */
-+#define PFM_REG_NO64	0x100 /* PMC: supports PFM_REGFL_NO_EMUL64 */
-+
-+/*
-+ * define some shortcuts for common types
-+ */
-+#define PFM_REG_W	(PFM_REG_WC|PFM_REG_I)
-+#define PFM_REG_W64	(PFM_REG_WC|PFM_REG_NO64|PFM_REG_I)
-+#define PFM_REG_C	(PFM_REG_C64|PFM_REG_INTR|PFM_REG_I)
-+#define PFM_REG_I64	(PFM_REG_NO64|PFM_REG_I)
-+#define PFM_REG_IRO	(PFM_REG_I|PFM_REG_RO)
-+
-+typedef int (*pfm_pmc_check_t)(struct pfm_context *ctx,
-+			       struct pfm_event_set *set,
-+			       struct pfarg_pmc *req);
-+
-+typedef int (*pfm_pmd_check_t)(struct pfm_context *ctx,
-+			       struct pfm_event_set *set,
-+			       struct pfarg_pmd *req);
-+
-+/*
-+ * registers description
-+ */
-+struct pfm_regdesc {
-+	u64 pmcs[PFM_PMC_BV];		/* available PMC */
-+	u64 pmds[PFM_PMD_BV];		/* available PMD */
-+	u64 rw_pmds[PFM_PMD_BV];	/* available RW PMD */
-+	u64 intr_pmds[PFM_PMD_BV];	/* PMD generating intr */
-+	u64 cnt_pmds[PFM_PMD_BV];	/* PMD counters */
-+	u16 max_pmc;			/* highest+1 avail PMC */
-+	u16 max_pmd;			/* highest+1 avail PMD */
-+	u16 max_rw_pmd;			/* highest+1 avail RW PMD */
-+	u16 max_intr_pmd;		/* highest+1 intr PMD */
-+	u16 num_rw_pmd;			/* number of avail RW PMD */
-+	u16 num_pmcs;			/* number of logical PMCS */
-+	u16 num_pmds;			/* number of logical PMDS */
-+	u16 num_counters;		/* number of counting PMD */
-+};
-+
-+/*
-+ * structure used by pmu description modules
++/**
++ * pfm_session_acquire - reserve a per-thread session
 + *
-+ * probe_pmu() routine return value:
-+ * 	- 1 means recognized PMU
-+ * 	- 0 means not recognized PMU
++ * return:
++ * 	 0    : success
++ * 	-EBUSY: if conflicting session exist
 + */
-+struct pfm_pmu_config {
-+	char *pmu_name;				/* PMU family name */
-+	char *version;				/* config module version */
-+
-+	int counter_width;			/* width of hardware counter */
-+
-+	struct pfm_regmap_desc	*pmc_desc;	/* PMC register descriptions */
-+	struct pfm_regmap_desc	*pmd_desc;	/* PMD register descriptions */
-+
-+	pfm_pmc_check_t		pmc_write_check;/* write checker (optional) */
-+	pfm_pmd_check_t		pmd_write_check;/* write checker (optional) */
-+	pfm_pmd_check_t		pmd_read_check;	/* read checker (optional) */
-+	u16			num_pmc_entries;/* #entries in pmc_desc */
-+	u16			num_pmd_entries;/* #entries in pmd_desc */
-+	void			*pmu_info;	/* model-specific infos */
-+	/*
-+	 * fields computed internally, do not set in module
-+	 */
-+	struct pfm_regdesc	regs;		/* registers available */
-+	u64			ovfl_mask;	/* overflow mask */
-+};
-+
-+static inline void *pfm_pmu_info(void)
++int pfm_session_acquire(void)
 +{
-+	return pfm_pmu_conf->pmu_info;
++	unsigned long flags;
++	int ret = 0;
++
++	/*
++	 * validy checks on cpu_mask have been done upstream
++	 */
++	spin_lock_irqsave(&pfm_res_lock, flags);
++
++	PFM_DBG("in  thread=%u",
++		pfm_res.thread_sessions);
++
++	pfm_res.thread_sessions++;
++
++	PFM_DBG("out thread=%u ret=%d",
++		pfm_res.thread_sessions,
++		ret);
++
++	spin_unlock_irqrestore(&pfm_res_lock, flags);
++
++	return ret;
 +}
 +
-+int pfm_pmu_register(struct pfm_pmu_config *cfg);
++/**
++ * pfm_session_release - release a per-thread session
++ *
++ * called from __pfm_unload_context()
++ */
++void pfm_session_release(void)
++{
++	unsigned long flags;
 +
-+int pfm_sysfs_add_pmu(struct pfm_pmu_config *pmu);
++	spin_lock_irqsave(&pfm_res_lock, flags);
 +
-+#endif /* __PERFMON_PMU_H__ */
++	PFM_DBG("in thread=%u",
++		pfm_res.thread_sessions);
++
++	pfm_res.thread_sessions--;
++
++	PFM_DBG("out thread=%u",
++		pfm_res.thread_sessions);
++
++	spin_unlock_irqrestore(&pfm_res_lock, flags);
++}
+Index: o/Makefile
+===================================================================
+--- o.orig/Makefile	2008-06-17 08:33:47.000000000 +0200
++++ o/Makefile	2008-06-17 08:34:19.000000000 +0200
+@@ -607,7 +607,7 @@
+ 
+ 
+ ifeq ($(KBUILD_EXTMOD),)
+-core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/
++core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/ perfmon/
+ 
+ vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, $(init-y) $(init-m) \
+ 		     $(core-y) $(core-m) $(drivers-y) $(drivers-m) \
+Index: o/include/linux/sched.h
+===================================================================
+--- o.orig/include/linux/sched.h	2008-06-17 08:34:34.000000000 +0200
++++ o/include/linux/sched.h	2008-06-17 08:35:05.000000000 +0200
+@@ -1303,6 +1303,9 @@
+ 	int latency_record_count;
+ 	struct latency_record latency_record[LT_SAVECOUNT];
+ #endif
++#ifdef CONFIG_PERFMON
++	struct pfm_context *pfm_context;
++#endif
+ };
+ 
+ /*
 
 -- 
 
