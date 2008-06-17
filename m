@@ -1,47 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759095AbYFQSev@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758661AbYFQSmo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759095AbYFQSev (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 14:34:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755961AbYFQSen
+	id S1758661AbYFQSmo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 14:42:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbYFQSmd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 14:34:43 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:45889 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754756AbYFQSem (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 14:34:42 -0400
-Date: Tue, 17 Jun 2008 19:33:32 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-Subject: Re: [PATCH][RFC] fix kernel BUG at mm/migrate.c:719! in 2.6.26-rc5-mm3
-In-Reply-To: <1213724798.8707.41.camel@lts-notebook>
-Message-ID: <Pine.LNX.4.64.0806171925200.21436@blonde.site>
-References: <20080611225945.4da7bb7f.akpm@linux-foundation.org> 
- <20080617163501.7cf411ee.nishimura@mxp.nes.nec.co.jp> <1213724798.8707.41.camel@lts-notebook>
+	Tue, 17 Jun 2008 14:42:33 -0400
+Received: from gw.goop.org ([64.81.55.164]:51603 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755827AbYFQSmc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 14:42:32 -0400
+Message-ID: <4858056D.7000500@goop.org>
+Date: Tue, 17 Jun 2008 11:41:49 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: the arch/x86 maintainers <x86@kernel.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/4] x86: unify asm-x86/fixmap*.h
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jun 2008, Lee Schermerhorn wrote:
-> 
-> Now I wonder if the assertion that newpage count == 1 could be violated?
-> I don't see how.  We've just allocated and filled it and haven't
-> unlocked it yet, so we should hold the only reference.  Do you agree?
+Almost everything aside from the actual fixmap slot definitions is
+common, so move it all into the common fixmap.h header.
 
-Disagree: IIRC, excellent example of the kind of assumption
-that becomes invalid with Nick's speculative page references.
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ include/asm-x86/fixmap.h    |   43 +++++++++++++++++++++++++++++++++++++++++++
+ include/asm-x86/fixmap_32.h |   42 ------------------------------------------
+ include/asm-x86/fixmap_64.h |   37 -------------------------------------
+ 3 files changed, 43 insertions(+), 79 deletions(-)
 
-Someone interested in the previous use of the page may have
-incremented the refcount, and in due course will find that
-it's got reused for something else, and will then back off.
+===================================================================
+--- a/include/asm-x86/fixmap.h
++++ b/include/asm-x86/fixmap.h
+@@ -7,7 +7,50 @@
+ # include "fixmap_64.h"
+ #endif
+ 
++extern void __set_fixmap(enum fixed_addresses idx,
++			 unsigned long phys, pgprot_t flags);
++#define set_fixmap(idx, phys)				\
++	__set_fixmap(idx, phys, PAGE_KERNEL)
++
++/*
++ * Some hardware wants to get fixmapped without caching.
++ */
++#define set_fixmap_nocache(idx, phys)			\
++	__set_fixmap(idx, phys, PAGE_KERNEL_NOCACHE)
++
+ #define clear_fixmap(idx)			\
+ 	__set_fixmap(idx, 0, __pgprot(0))
+ 
++#define __fix_to_virt(x)	(FIXADDR_TOP - ((x) << PAGE_SHIFT))
++#define __virt_to_fix(x)	((FIXADDR_TOP - ((x)&PAGE_MASK)) >> PAGE_SHIFT)
++
++extern void __this_fixmap_does_not_exist(void);
++
++/*
++ * 'index to address' translation. If anyone tries to use the idx
++ * directly without translation, we catch the bug with a NULL-deference
++ * kernel oops. Illegal ranges of incoming indices are caught too.
++ */
++static __always_inline unsigned long fix_to_virt(const unsigned int idx)
++{
++	/*
++	 * this branch gets completely eliminated after inlining,
++	 * except when someone tries to use fixaddr indices in an
++	 * illegal way. (such as mixing up address types or using
++	 * out-of-range indices).
++	 *
++	 * If it doesn't get removed, the linker will complain
++	 * loudly with a reasonably clear error message..
++	 */
++	if (idx >= __end_of_fixed_addresses)
++		__this_fixmap_does_not_exist();
++
++	return __fix_to_virt(idx);
++}
++
++static inline unsigned long virt_to_fix(const unsigned long vaddr)
++{
++	BUG_ON(vaddr >= FIXADDR_TOP || vaddr < FIXADDR_START);
++	return __virt_to_fix(vaddr);
++}
+ #endif
+===================================================================
+--- a/include/asm-x86/fixmap_32.h
++++ b/include/asm-x86/fixmap_32.h
+@@ -109,17 +109,8 @@
+ 	__end_of_fixed_addresses
+ };
+ 
+-extern void __set_fixmap(enum fixed_addresses idx,
+-			 unsigned long phys, pgprot_t flags);
+ extern void reserve_top_address(unsigned long reserve);
+ 
+-#define set_fixmap(idx, phys)				\
+-	__set_fixmap(idx, phys, PAGE_KERNEL)
+-/*
+- * Some hardware wants to get fixmapped without caching.
+- */
+-#define set_fixmap_nocache(idx, phys)			\
+-	__set_fixmap(idx, phys, PAGE_KERNEL_NOCACHE)
+ 
+ #define FIXADDR_TOP	((unsigned long)__FIXADDR_TOP)
+ 
+@@ -128,38 +119,5 @@
+ #define FIXADDR_START		(FIXADDR_TOP - __FIXADDR_SIZE)
+ #define FIXADDR_BOOT_START	(FIXADDR_TOP - __FIXADDR_BOOT_SIZE)
+ 
+-#define __fix_to_virt(x)	(FIXADDR_TOP - ((x) << PAGE_SHIFT))
+-#define __virt_to_fix(x)	((FIXADDR_TOP - ((x)&PAGE_MASK)) >> PAGE_SHIFT)
+-
+-extern void __this_fixmap_does_not_exist(void);
+-
+-/*
+- * 'index to address' translation. If anyone tries to use the idx
+- * directly without tranlation, we catch the bug with a NULL-deference
+- * kernel oops. Illegal ranges of incoming indices are caught too.
+- */
+-static __always_inline unsigned long fix_to_virt(const unsigned int idx)
+-{
+-	/*
+-	 * this branch gets completely eliminated after inlining,
+-	 * except when someone tries to use fixaddr indices in an
+-	 * illegal way. (such as mixing up address types or using
+-	 * out-of-range indices).
+-	 *
+-	 * If it doesn't get removed, the linker will complain
+-	 * loudly with a reasonably clear error message..
+-	 */
+-	if (idx >= __end_of_fixed_addresses)
+-		__this_fixmap_does_not_exist();
+-
+-	return __fix_to_virt(idx);
+-}
+-
+-static inline unsigned long virt_to_fix(const unsigned long vaddr)
+-{
+-	BUG_ON(vaddr >= FIXADDR_TOP || vaddr < FIXADDR_START);
+-	return __virt_to_fix(vaddr);
+-}
+-
+ #endif /* !__ASSEMBLY__ */
+ #endif
+===================================================================
+--- a/include/asm-x86/fixmap_64.h
++++ b/include/asm-x86/fixmap_64.h
+@@ -65,17 +65,6 @@
+ 	__end_of_fixed_addresses
+ };
+ 
+-extern void __set_fixmap(enum fixed_addresses idx,
+-			 unsigned long phys, pgprot_t flags);
+-
+-#define set_fixmap(idx, phys)			\
+-	__set_fixmap(idx, phys, PAGE_KERNEL)
+-/*
+- * Some hardware wants to get fixmapped without caching.
+- */
+-#define set_fixmap_nocache(idx, phys)			\
+-	__set_fixmap(idx, phys, PAGE_KERNEL_NOCACHE)
+-
+ #define FIXADDR_TOP	(VSYSCALL_END-PAGE_SIZE)
+ #define FIXADDR_SIZE	(__end_of_fixed_addresses << PAGE_SHIFT)
+ #define FIXADDR_START	(FIXADDR_TOP - FIXADDR_SIZE)
+@@ -84,30 +73,4 @@
+ #define FIXADDR_USER_START	((unsigned long)VSYSCALL32_VSYSCALL)
+ #define FIXADDR_USER_END	(FIXADDR_USER_START + PAGE_SIZE)
+ 
+-#define __fix_to_virt(x)	(FIXADDR_TOP - ((x) << PAGE_SHIFT))
+-
+-extern void __this_fixmap_does_not_exist(void);
+-
+-/*
+- * 'index to address' translation. If anyone tries to use the idx
+- * directly without translation, we catch the bug with a NULL-deference
+- * kernel oops. Illegal ranges of incoming indices are caught too.
+- */
+-static __always_inline unsigned long fix_to_virt(const unsigned int idx)
+-{
+-	/*
+-	 * this branch gets completely eliminated after inlining,
+-	 * except when someone tries to use fixaddr indices in an
+-	 * illegal way. (such as mixing up address types or using
+-	 * out-of-range indices).
+-	 *
+-	 * If it doesn't get removed, the linker will complain
+-	 * loudly with a reasonably clear error message..
+-	 */
+-	if (idx >= __end_of_fixed_addresses)
+-		__this_fixmap_does_not_exist();
+-
+-	return __fix_to_virt(idx);
+-}
+-
+ #endif
 
-Hugh
+
