@@ -1,108 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536AbYFQHVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755703AbYFQH1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755536AbYFQHVS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 03:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbYFQHVD
+	id S1755703AbYFQH1b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 03:27:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753739AbYFQH1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 03:21:03 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:5189 "EHLO kernel.dk"
+	Tue, 17 Jun 2008 03:27:20 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37600 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751000AbYFQHVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 03:21:01 -0400
-Date: Tue, 17 Jun 2008 09:20:59 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 2 of 3] block: Block layer data integrity support
-Message-ID: <20080617072058.GC20851@kernel.dk>
-References: <patchbomb.1213589417@sermon.lab.mkp.net> <91ceabd365c3e718425d.1213589419@sermon.lab.mkp.net> <20080616192104.GV20851@kernel.dk> <yq1zlpkd5l0.fsf@sermon.lab.mkp.net>
+	id S1753359AbYFQH1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 03:27:19 -0400
+Date: Tue, 17 Jun 2008 09:26:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: kuznet@ms2.inr.ac.ru, vgusev@openvz.org, mcmanus@ducksong.com,
+       xemul@openvz.org, netdev@vger.kernel.org, ilpo.jarvinen@helsinki.fi,
+       linux-kernel@vger.kernel.org
+Subject: Re: [TCP]: TCP_DEFER_ACCEPT causes leak sockets
+Message-ID: <20080617072658.GA12535@elte.hu>
+References: <20080613.023208.78649628.davem@davemloft.net> <20080613110913.GB9867@elte.hu> <20080613114746.GA27811@elte.hu> <20080616.165900.189566405.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <yq1zlpkd5l0.fsf@sermon.lab.mkp.net>
+In-Reply-To: <20080616.165900.189566405.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 17 2008, Martin K. Petersen wrote:
-> >>>>> "Jens" == Jens Axboe <jens.axboe@oracle.com> writes:
+
+* David Miller <davem@davemloft.net> wrote:
+
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Fri, 13 Jun 2008 13:47:46 +0200
 > 
-> Jens,
+> > this threw the warning below - never saw that before in thousands of 
+> > bootups and this was the only networking change that happened. 
+> > config and bootlog attached. Might be unlucky coincidence.
 > 
-> I've fixed pretty much everything you pointed out.  So unless
-> otherwise noted it's an ACK.
-
-Great, I'll hold off including the other two patches until a new posting
-of the main patch.
-
-> > +	/* Allocate kernel buffer for protection data */
-> > +	len = sectors * blk_integrity_tuple_size(bi);
-> > +	buf = kmalloc(len, GFP_NOIO | q->bounce_gfp);
-> > +	if (unlikely(buf == NULL)) {
-> > +		printk(KERN_ERR "could not allocate integrity buffer\n");
-> > +		return -EIO;
-> > +	}
+> So that we can make forward progress here, please confirm that the 
+> following patch against -tip makes your problems go away for good.
 > 
-> Jens> Is that good enough, don't you want to handle this error
-> Jens> condition? IOW, doesn't this allocation want mempool backing or
-> Jens> similar?
-> 
-> When I originally wrote this I had a couple of mempools that worked
-> well with ext2/3 because they blow everything into 4KB (or 1KB)
-> atoms. Due to the problems with ext2/3 modifying pages in flight I've
-> mostly used XFS and btrfs for development.  And they both generate a
-> much more varied set of bio sizes that in turn will require a whole
-> whack of different sized integrity pools.
-> 
-> I did gather quite a bit of statistics from runs with different
-> filesystems a few months ago.  kmalloc provided a good set of pre-made
-> sizes and I felt it was an overkill to replicate that.  But you are
-> right that we should probably be more conservative in terms of failing
-> the I/O.  I'll look at it again.
+> Once you can confirm I will push it to Linus.
 
-You are right, a strict mempool solution will not be feasible (or at
-least it will be very wasteful). I guess a temporary solution would be
-to add __GFP_NOFAIL for this allocation.
+i triggered the net/sched/sch_generic.c:222 warning once more meanwhile 
+(yesterday) with the full revert applied (which i think is the same as 
+the patch below).
 
-> >  struct bio_pair {
-> >  	struct bio	bio1, bio2;
-> >  	struct bio_vec	bv1, bv2;
-> > +#if defined(CONFIG_BLK_DEV_INTEGRITY)
-> > +	struct bip	bip1, bip2;
-> > +	struct bio_vec	iv1, iv2;
-> > +#endif
-> >  	atomic_t	cnt;
-> >  	int		error;
-> >  };
-> 
-> Jens> That's somewhat of a shame, it makes bio_pair a LOT bigger. bio
-> Jens> grows a pointer if CONFIG_BLK_DEV_INTEGRITY, that we can live
-> Jens> with. In reality, very few people will use this stuff so adding
-> Jens> a sizable chunk of data to struct bio_pair is somewhat of a
-> Jens> bother.
-> 
-> Yeah, well.  Wasn't sure what else to do.  But the pool is tiny (2
-> entries by default) and only pktdvd and raid 0/10 actually use
-> bio_pairs.  I figured if you had CONFIG_BLK_DEV_INTEGRITY on you'd
-> probably want to use integrity it on your MD disks anyway.  And on
-> your desktop box with pktdvd integrity wasn't likely to be compiled
-> in.
+So i think it's either some unlucky coincidence or some timing 
+relationship - perhaps the change impacts packet ordering for certain 
+workload patterns? [but that same condition can occur without that patch 
+too]
 
-I'm not sure there IS a better solution, just noting that it's a bit of
-a shame to grow it that much...
+I also checked kerneloops.org and this warning seems to have been 
+reported by others as well - although it's not triggering heavily. In 
+some of those other reports the warning came together with a dead 
+interface, while in my case it's just a warning with still working 
+networking.
 
-> Dynamic allocation would defeat the purpose of the pool.  But I guess
-> I could make another dedicated bio_integrity_pair pool and wire the
-> integrity portion into bio_pair using pointers.  What do you think?
+So since there's no clear bug pattern and no sure reproducability on my 
+side i'd suggest we track this problem separately and "do nothing" right 
+now. I've excluded this warning from my 'is the freshly booted kernel 
+buggy' list of conditions of -tip testing so it's not holding me up.
 
-Doing a quick check, bio_pair is 248 bytes on x86-64 currently. struct
-bio is around 80 bytes or so, bio_vec is 16 bytes. So that's about 200
-extra bytes, making the bio_pair around 440 bytes or so - indeed a
-sizable increase in size. The bio_pair is only used for rare splitting,
-so it's not THAT big of an issue.
+and i can apply any test-patch if that would be helpful - if it does a 
+WARN_ON() i'll notice it. (pure extra debug printks with no stack trace 
+are much harder to notice in automated tests)
 
-So lets just keep it as-is, I think.
+btw., it would be nice if there was some .config driven networking debug 
+option that randomized packet ordering in the tx and rx queue. 
+(transparently enabled, with zero-config on the userspace side)
 
--- 
-Jens Axboe
+I.e. it would have an (expensive, because O(1)) debug mechanism that 
+randomized things - it would insert new packets into a random place 
+within the queue where it gets queued. We could hit races and rarer 
+codepaths much sooner that way - as especially in LAN based testing 
+there's a strong natural ordering of packets so randomizing it 
+artificially looks promising to me.
 
+If you make that new option =y enable-able in the .config(dependent on 
+DEBUG_KERNEL && default off, etc.), and as long as it does not have to 
+be configured on the userspace side (i'm testing unmodified userspace 
+images with default distro installs, etc.) the randconfig test will 
+still be able to reach it in a percentage of the tests and i think we'll 
+be able to hit a lot of exciting races much sooner than with the normal 
+in-order/FIFO queueing methods.
+
+it's basically massively parallel coverage testing. It doesnt matter how 
+unbelievably slow packet ordering randomization might be, the coverage 
+testing it would do would be worth gold i'm sure. (I'd love to test 
+something like that in -tip, if it comes in form of some standalone 
+patch against a mainline-ish tree.)
+
+	Ingo
