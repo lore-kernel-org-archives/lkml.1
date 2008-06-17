@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759221AbYFQSQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758850AbYFQSV7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759221AbYFQSQT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 14:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbYFQSQJ
+	id S1758850AbYFQSV7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 14:21:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756196AbYFQSVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 14:16:09 -0400
-Received: from vms046pub.verizon.net ([206.46.252.46]:34834 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755146AbYFQSQH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 14:16:07 -0400
-Date: Tue, 17 Jun 2008 14:15:38 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: bug? acpi p-state + ondemand keeps dropping max freq
-In-reply-to: <20080616104159.GA28659@elf.ucw.cz>
-X-X-Sender: lenb@localhost.localdomain
-To: Pavel Machek <pavel@suse.cz>
-Cc: Arjan van de Ven <arjan@infradead.org>, auke-jan.h.kok@intel.com,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       len.brown@intel.com, cpufreq@lists.linux.org.uk,
-       davej@codemonkey.org.uk
-Message-id: <alpine.LFD.1.10.0806171404370.7277@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <20080606140846.GA9580@ucw.cz> <20080607213918.GC1746@elf.ucw.cz>
- <20080607145435.4afc9812@infradead.org> <20080616104159.GA28659@elf.ucw.cz>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 17 Jun 2008 14:21:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35399 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755323AbYFQSVs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 14:21:48 -0400
+Date: Tue, 17 Jun 2008 14:14:27 -0400
+From: Dave Jones <davej@redhat.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       arjan@linux.intel.com, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       tglx@linutronix.de, linville@tuxdriver.com
+Subject: Re: Oops report for the week preceding June 16th, 2008
+Message-ID: <20080617181427.GB13192@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>, Greg KH <gregkh@suse.de>,
+	Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+	arjan@linux.intel.com, linux-kernel@vger.kernel.org,
+	torvalds@linux-foundation.org, akpm@linux-foundation.org,
+	tglx@linutronix.de, linville@tuxdriver.com
+References: <4856AFDF.5080901@linux.intel.com> <20080617092023.GA20621@elte.hu> <20080617.022652.76635616.davem@davemloft.net> <20080617153356.GA3510@elte.hu> <20080617175414.GA9866@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080617175414.GA9866@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jun 17, 2008 at 10:54:14AM -0700, Greg KH wrote:
 
+ > We try to respect the authors of the code when not including them into
+ > the kernel tree for situations like this :)
+ > 
+ > As for why Fedora added it, it might be because they can control both
+ > sides of the boundry with matching packages much easier.
 
-> > > > # echo 1866000 > scaling_max_freq ; cat scaling_max_freq
-> > > > 800000
-> > > > # echo 1866000 > scaling_max_freq ; cat scaling_max_freq
-> > > > 800000
-> > > > 
-> > > > 
-> > > > This renders my Dothan to utterly poor speeds. (standard T43)
-> > > > 
-> > > > performance cpufreq governor makes no difference - I still can't
-> > > > change the frequency upper/lower values.
-> > > 
-> > > Hmm, I have similar problem in Novell bugzilla, on very different hw:
-> > > 
-> > > https://bugzilla.novell.com/show_bug.cgi?id=396311
-> 
-> > are either of you running gnome-power-manager or kpowersaved ?
-> > sometimes these programs (and more likely, the patches added by a
-> > distro maintainer who doesn't fully realize how power works) tend to
-> > muck with kernel settings around CPU frequency that they have
-> > absolutely no business touching...
-> 
-> In novel bugzilla case ignore_ppc=1 helped, so it seems to be BIOS
-> problem, not userland's...
+That's exactly it.  Dave Airlie keeps both the X and kernel side of DRI
+in check in Fedora, and with him being the DRI maintainer, he tends to have
+a good handle on the state of things.
 
-Thanks for the pointer to the novell report, Pavel.
-I poked at that one and I think it may actually be a table loading issue
-for which we've just send a patch to 2.6.26.
+Nouveau has been a bit bumpy, and isn't ready for mass-use, which is why
+we don't enable it by default.  We ship it, but a user has to actually
+install it, and set it up to explicitly use it instead of the 'nv' X driver
+right now.  Given it's there as a sort of 'preview' for interested parties,
+I don't think the world is ending because we jumped the gun by shipping
+this even though it's not upstream.
 
-Auke,
+	Dave
 
-Please open a signting in bugzilla and attach your dmesg and 
-acpidump output.
-
-Also, please report if processor.ignore_ppc=1 helps.
-
-http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
-
-thanks,
--Len
-
+-- 
+http://www.codemonkey.org.uk
