@@ -1,112 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759450AbYFQS3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759675AbYFQS3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759450AbYFQS3V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 14:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756766AbYFQS3N
+	id S1759675AbYFQS3f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 14:29:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758303AbYFQS3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 14:29:13 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:23050 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756765AbYFQS3M (ORCPT
+	Tue, 17 Jun 2008 14:29:18 -0400
+Received: from mail-sin.bigfish.com ([207.46.51.74]:51155 "EHLO
+	mail102-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758007AbYFQS3S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 14:29:12 -0400
-Subject: Re: [Bad page] trying to free locked page? (Re: [PATCH][RFC] fix
-	kernel BUG at mm/migrate.c:719! in 2.6.26-rc5-mm3)
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-In-Reply-To: <20080617181527.5bcbbccc.nishimura@mxp.nes.nec.co.jp>
-References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
-	 <20080617163501.7cf411ee.nishimura@mxp.nes.nec.co.jp>
-	 <20080617164709.de4db070.nishimura@mxp.nes.nec.co.jp>
-	 <20080617180314.2d1b0efa.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20080617181527.5bcbbccc.nishimura@mxp.nes.nec.co.jp>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Tue, 17 Jun 2008 14:29:45 -0400
-Message-Id: <1213727385.8707.53.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Tue, 17 Jun 2008 14:29:18 -0400
+X-BigFish: VPS-30(zf7I34a4lz542N14ffO4015M7efV1442Jzz10d3izzz2fh6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
+Message-ID: <4858024D.6010601@am.sony.com>
+Date: Tue, 17 Jun 2008 11:28:29 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: linux kernel <linux-kernel@vger.kernel.org>
+Subject: [Fwd: Recommendation for activating a deferred module init in the
+ kernel]
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+X-OriginalArrivalTime: 17 Jun 2008 18:29:02.0048 (UTC) FILETIME=[04037E00:01C8D0A8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-06-17 at 18:15 +0900, Daisuke Nishimura wrote:
-> On Tue, 17 Jun 2008 18:03:14 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > On Tue, 17 Jun 2008 16:47:09 +0900
-> > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > 
-> > > On Tue, 17 Jun 2008 16:35:01 +0900, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > > > Hi.
-> > > > 
-> > > > I got this bug while migrating pages only a few times
-> > > > via memory_migrate of cpuset.
-> > > > 
-> > > > Unfortunately, even if this patch is applied,
-> > > > I got bad_page problem after hundreds times of page migration
-> > > > (I'll report it in another mail).
-> > > > But I believe something like this patch is needed anyway.
-> > > > 
-> > > 
-> > > I got bad_page after hundreds times of page migration.
-> > > It seems that a locked page is being freed.
+Sorry - I meant to copy this to linux-kernel and forgot.
+This is a query I just sent to the linux-embedded list.
+Please copy linux-embedded@vger.kernel.org on any replies.
 
-I'm seeing *mlocked* pages [PG_mlocked] being freed now with my stress
-load, with just the "if(!page->mapping) { } clause removed, as proposed
-in your rfc patch in previous mail.  Need to investigate this...
+-------- Original Message --------
+Subject: Recommendation for activating a deferred module init in the kernel
+Date: Tue, 17 Jun 2008 11:23:18 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+To: linux-embedded <linux-embedded@vger.kernel.org>
 
-I'm not seeing *locked* pages [PG_lock], tho'.  From your stack trace,
-it appears that migrate_page() left locked pages on the list of pages to
-be putback.  The pages get locked and unlocked in unmap_and_move().  I
-haven't found a path [yet] where the page can be returned still locked.
-I think I need to duplicate the problem.
+Hi all,
 
-> > > 
-> > Good catch, and I think your investigation in the last e-mail was correct.
-> > I'd like to dig this...but it seems some kind of big fix is necessary.
-> > Did this happen under page-migraion by cpuset-task-move test ?
-> > 
-> Yes.
-> 
-> I made 2 cpuset directories, run some processes in each cpusets,
-> and run a script like below infinitely to move tasks and migrate pages.
+I am working with a product team on bootup time issues.  One technique
+that we are forward-porting from an old kernel (and that I thought I
+might work on mainlining) is to compile modules statically into the kernel,
+but defer their initialization until after boot time.
 
-What processes/tests do you run in each cpuset?
+Normally, module init routines are declared with module_init(), which,
+when they are statically linked into the kernel, uses the macro
+__define_initcall() to add an entry to a special init segment.
+This is called during bootup by do_initcall() (in init/main.c),
+and the memory where the function resides is eventually freed.
 
-> 
-> ---
-> #!/bin/bash
-> 
-> G1=$1
-> G2=$2
-> 
-> move_task()
-> {
->         for pid in $1
->         do
->                 echo $pid >$2/tasks 2>/dev/null
->         done
-> }
-> 
-> G1_TASK=`cat ${G1}/tasks`
-> G2_TASK=`cat ${G2}/tasks`
-> 
-> move_task "${G1_TASK}" ${G2} &
-> move_task "${G2_TASK}" ${G1} &
-> 
-> wait
-> ---
-> 
-> I got this bad_page after running this script for about 600 times.
-> 
+There are several phases of initcalls (see include/linux/init.h),
+including core, postcore, arch, subsys, fs, rootfs, device, and late.
 
+In our modification, we:
+ 1) add another phase for deferred initcalls
+ 2) modify the module_init macro definition to use that phase, for the
+ modules we wish to defer initialization of
+ 3) modify the free code to not free the memory until later
+ 4) add an ioctl to trigger the deferred initialization (and memory free)
 
+One of the main sub-systems that we defer initialization of this
+way is USB, and this saves quite a bit of time.  (Of course the
+same, or slightly more CPU cycles are eventually used during
+bootup time.  But this lets us get to user space quicker so we
+can start user-visible applications faster.)
+
+I'm not that happy using an ioctl for this trigger.  What is
+the preferred method of activating a kernel feature like this?
+I presume something in /proc or /sys, but I'm not sure.
+
+Also, is there something like this in the kernel now that I'm
+missing?
+
+Any advice or comments would be welcome.
+
+Thanks,
+ -- Tim
+
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
