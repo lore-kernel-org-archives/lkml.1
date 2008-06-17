@@ -1,87 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758799AbYFQOnh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759193AbYFQOpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758799AbYFQOnh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 10:43:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757794AbYFQOn2
+	id S1759193AbYFQOpt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 10:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757902AbYFQOpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 10:43:28 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:28903 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756569AbYFQOn1 (ORCPT
+	Tue, 17 Jun 2008 10:45:41 -0400
+Received: from lazybastard.de ([212.112.238.170]:51661 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755961AbYFQOpk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 10:43:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Va7mH+/cnr6+fMeKfO8TgEltjFD6Xhq6ZQu2F3dJ2SCqUU4u0k7hPDNv2eek0DqAGB
-         bJmjZ31UJDJPtuQAELgyQsSOeegek3nJm+MXK2ZhAibJuSOHX22454OoBxhJQ41Jbop3
-         ppHCYzd5Mp3cr6umlJTw8LBT6OsJPlRn/rccI=
-Message-ID: <19f34abd0806170743v274b23a7m85340bccfe9eaf36@mail.gmail.com>
-Date: Tue, 17 Jun 2008 16:43:25 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Mathieu Desnoyers" <compudj@krystal.dyndns.org>
-Subject: Re: [PATCH 2/3] Better interface for hooking early initcalls.
-Cc: "Eduard - Gabriel Munteanu" <eduard.munteanu@linux360.ro>,
-       tzanussi@gmail.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <20080617140742.GD10316@Krystal>
+	Tue, 17 Jun 2008 10:45:40 -0400
+Date: Tue, 17 Jun 2008 16:45:26 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Maxim Shchetynin <maxim@linux.vnet.ibm.com>
+Cc: linux-fsdevel@vger.kernel.org, Jan Engelhardt <jengelh@medozas.de>,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org
+Subject: Re: AZFS file system proposal
+Message-ID: <20080617144526.GA28448@logfs.org>
+References: <20080609104650.4f220492@mercedes-benz.boeblingen.de.ibm.com> <20080609125530.GF30405@parisc-linux.org> <20080610104919.504b9826@mercedes-benz.boeblingen.de.ibm.com> <alpine.LNX.1.10.0806110000560.20733@fbirervta.pbzchgretzou.qr> <20080617110655.59c915da@mercedes-benz.boeblingen.de.ibm.com> <alpine.LNX.1.10.0806171133220.6620@fbirervta.pbzchgretzou.qr> <20080617105300.GA28310@logfs.org> <20080617160628.79efd2d9@mercedes-benz.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <20080615180508.71d1cbcc@linux360.ro>
-	 <20080617140742.GD10316@Krystal>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080617160628.79efd2d9@mercedes-benz.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 17, 2008 at 4:07 PM, Mathieu Desnoyers
-<compudj@krystal.dyndns.org> wrote:
-> * Eduard - Gabriel Munteanu (eduard.munteanu@linux360.ro) wrote:
->> Added early initcall (pre-SMP) support, using an identical interface to
->> that of regular initcalls. Functions called from do_pre_smp_initcalls()
->> could be converted to use this cleaner interface.
->>
->> This is required by CPU hotplug, because early users have to register
->> notifiers before going SMP. One such CPU hotplug user is the relay
->> interface with buffer-only channels, which needs to register such a
->> notifier, to be usable in early code. This in turn is used by kmemtrace.
->>
->
-> I am not sure it's worth it trying to define a generic "early" initcall,
-> since definition of "how early it is" may change with time.
->
-> Currently, it's earlier than SMP init, but later on, it could become
-> earlier than mm init. If there are only few users of this, and given
-> that they must be designed "knowing" how early they are initialized wrt
-> other subsystems, I think it would make sense to call them directly from
-> the init code without putting them in a "early initcall" category.
+On Tue, 17 June 2008 16:06:28 +0200, Maxim Shchetynin wrote:
+> > 
+> > My personal question when looking at this is: Why not use ext2?  It
+> 
+> Same reason we don't use ext2 for file system in RAM - we don't need any expensive caching and readahead mechanisms for devices which are as fast as main memory (or almost as fast).
 
-If this existed already, I'd use it for kmemcheck. We need to hook
-into what happens just before SMP is initialized in order to set
-maxcpus = 1 depending on some kernel parameter. Right now it's called
-directly from do_pre_smp_initcalls():
+Well, with the '-o xip' option I mentioned below, there is no caching or
+readahead.  The direct_access method you use as well was developed for
+ext2.  Or rather for xip2fs, another new filesystem.  After some review,
+that was shot down and a mount option was added to ext2 instead.
 
-@@ -779,6 +780,7 @@ static void __init do_pre_smp_initcalls(void)
- {
-        extern int spawn_ksoftirqd(void);
+> > appears to me that an ext2 mounted with '-o xip' would solve the same
+> > problems.
 
-+       kmemcheck_init();
-        migration_init();
-        spawn_ksoftirqd();
-        if (!nosoftlockup)
-
-With proposed patch, we wouldn't have to touch this file at all, so
-for what it's worth, consider it acked by me.
-
-
-Vegard
+Jörn
 
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Homo Sapiens is a goal, not a description.
+-- unknown
