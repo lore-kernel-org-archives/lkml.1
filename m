@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760790AbYFQWdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761154AbYFQWeN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760790AbYFQWdu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 18:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760157AbYFQWcV
+	id S1761154AbYFQWeN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 18:34:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760197AbYFQWcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 18:32:21 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:50762 "EHLO smtp6.pp.htv.fi"
+	Tue, 17 Jun 2008 18:32:25 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:46813 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759576AbYFQWcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 18:32:19 -0400
-Date: Wed, 18 Jun 2008 01:30:53 +0300
+	id S1759300AbYFQWcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 18:32:24 -0400
+Date: Wed, 18 Jun 2008 01:30:57 +0300
 From: Adrian Bunk <bunk@kernel.org>
 To: lethal@linux-sh.org
 Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] move arch/sh/lib/io.o to obj-y
-Message-ID: <20080617223053.GJ25911@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] sh/boards/dreamcast/rtc.c: make 2 functions static
+Message-ID: <20080617223057.GK25911@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,42 +23,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-EXPORT_SYMBOL's in lib-y considered harmful:
+This patch makes the needlessly global aica_rtc_{get,set}timeofday() 
+static.
 
-<--  snip  -->
-
-...
-  MODPOST 1837 modules
-ERROR: "__raw_readsl" [drivers/ssb/ssb.ko] undefined!
-ERROR: "__raw_writesl" [drivers/ssb/ssb.ko] undefined!
-ERROR: "__raw_writesl" [drivers/net/smc91x.ko] undefined!
-ERROR: "__raw_readsl" [drivers/net/smc91x.ko] undefined!
-ERROR: "__raw_writesl" [drivers/net/3c59x.ko] undefined!
-ERROR: "__raw_readsl" [drivers/net/3c59x.ko] undefined!
-...
-make[2]: *** [__modpost] Error 1
-
-<--  snip  -->
-
-Reported-by: Adrian Bunk <bunk@kernel.org>
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
-b4dec4046b4e491c0ad2cb1046699f22d635fcab diff --git a/arch/sh/lib/Makefile b/arch/sh/lib/Makefile
-index 3424b90..265aca0 100644
---- a/arch/sh/lib/Makefile
-+++ b/arch/sh/lib/Makefile
-@@ -2,9 +2,11 @@
- # Makefile for SuperH-specific library files..
- #
+ arch/sh/boards/dreamcast/rtc.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+1716a5d5a29b5a2c16713e34465558cce3895545 diff --git a/arch/sh/boards/dreamcast/rtc.c b/arch/sh/boards/dreamcast/rtc.c
+index b3a876a..a743368 100644
+--- a/arch/sh/boards/dreamcast/rtc.c
++++ b/arch/sh/boards/dreamcast/rtc.c
+@@ -30,7 +30,7 @@
+  *
+  * Grabs the current RTC seconds counter and adjusts it to the Unix Epoch.
+  */
+-void aica_rtc_gettimeofday(struct timespec *ts)
++static void aica_rtc_gettimeofday(struct timespec *ts)
+ {
+ 	unsigned long val1, val2;
  
--lib-y  = delay.o io.o memset.o memmove.o memchr.o \
-+lib-y  = delay.o memset.o memmove.o memchr.o \
- 	 checksum.o strlen.o div64.o div64-generic.o
- 
-+obj-y				+= io.o
-+
- memcpy-y			:= memcpy.o
- memcpy-$(CONFIG_CPU_SH4)	:= memcpy-sh4.o
- 
+@@ -54,7 +54,7 @@ void aica_rtc_gettimeofday(struct timespec *ts)
+  *
+  * Adjusts the given @tv to the AICA Epoch and sets the RTC seconds counter.
+  */
+-int aica_rtc_settimeofday(const time_t secs)
++static int aica_rtc_settimeofday(const time_t secs)
+ {
+ 	unsigned long val1, val2;
+ 	unsigned long adj = secs + TWENTY_YEARS;
+
