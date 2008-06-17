@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758855AbYFQNlF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758417AbYFQNuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758855AbYFQNlF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 09:41:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757261AbYFQNkx
+	id S1758417AbYFQNuo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 09:50:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757386AbYFQNue
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 09:40:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38175 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757545AbYFQNkw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 09:40:52 -0400
-Date: Tue, 17 Jun 2008 09:38:25 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Hugh Dickins <hugh@veritas.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Pavel Machek <pavel@suse.cz>, mtk.manpages@gmail.com,
-       kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: sync_file_range(SYNC_FILE_RANGE_WRITE) blocks?
-Message-ID: <20080617093825.7a245f7f@bree.surriel.com>
-In-Reply-To: <20080616215406.8f09e519.akpm@linux-foundation.org>
-References: <20080530102619.GA2468@elf.ucw.cz>
-	<Pine.LNX.4.64.0805301451020.19914@blonde.site>
-	<20080530204307.GA4978@ucw.cz>
-	<Pine.LNX.4.64.0805311925190.27293@blonde.site>
-	<20080531173950.c4f04028.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0806010752510.24919@blonde.site>
-	<20080601011501.199af80c.akpm@linux-foundation.org>
-	<20080601114008.GC16843@elf.ucw.cz>
-	<20080601133727.4e62ae55.akpm@linux-foundation.org>
-	<20080602114319.GI5757@kernel.dk>
-	<Pine.LNX.4.64.0806021319250.16157@blonde.site>
-	<20080616165351.1b2ff397@bree.surriel.com>
-	<20080616215406.8f09e519.akpm@linux-foundation.org>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	Tue, 17 Jun 2008 09:50:34 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:44350 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752862AbYFQNud (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 09:50:33 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvIEAPhcV0hMQW1O/2dsb2JhbACBW60V
+Date: Tue, 17 Jun 2008 09:50:31 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Tom Zanussi <tzanussi@gmail.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, righi.andrea@gmail.com
+Subject: Re: [PATCH 2/3] relay: Fix race condition which occurs when
+	reading across CPUs.
+Message-ID: <20080617135031.GA10316@Krystal>
+References: <20080614181103.17617db1@linux360.ro> <20080616122249.GB18561@Krystal> <20080616162212.27a8c119@linux360.ro> <20080616164609.GM20851@kernel.dk> <84144f020806161118n70a876aeyb5ccac7b1e21d842@mail.gmail.com> <20080616182843.GS20851@kernel.dk> <20080617153934.59a7c7ee@linux360.ro> <20080617154923.36195161@linux360.ro> <20080617131036.GB8696@Krystal> <20080617163551.49f96c7d@linux360.ro>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080617163551.49f96c7d@linux360.ro>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 09:50:06 up 12 days, 18:31,  4 users,  load average: 0.34, 0.40,
+	0.37
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jun 2008 21:54:06 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> > The problem with lots of CFQ requests is simpler.
-> > 
-> > If you look at balance_dirty_pages() you will see that it only
-> > takes dirty and NFS unstable pages into account when checking
-> > the dirty limit.  The pages that are in flight (under IO) are
-> > not counted at all.
+* Eduard - Gabriel Munteanu (eduard.munteanu@linux360.ro) wrote:
+> On Tue, 17 Jun 2008 09:10:36 -0400
+> Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
 > 
-> That would be totally busted.  All that nr_writeback logic in there is very
-> much supposed to handle under-writeback pages?
+> > Do you get the same results when not using a buffered read to read
+> > /proc/PID/stat ? Also, since the internal proc handle might buffer the
+> > information, closing the file and re-opening it after the set affinity
+> > would not be a bad idea.
+> > 
+> > Mathieu
+> 
+> Tested your suggestions now, looks fine. 5 instances end up on CPU 1,
+> one on CPU 0, no errors printed by the application.
+> 
 
-Mmm, you are right.   It is counting the number of writeback
-pages.
+Yeah, although using set affinity with CPU hotplug is broken by design.
 
-It just isn't waiting on them.  After moving enough pages from
-dirty state to writeback state, it breaks out of the loop and
-allows memory dirtying to continue.
+Mathieu
 
-                if (pages_written >= write_chunk)
-                        break;          /* We've done our duty */
-
-I wonder if we should wait for some IO to complete, or at least
-do a simple congestion_wait() if the number of writeback pages
-is very large?
+> 
+> 	Eduard
+> 
 
 -- 
-All rights reversed.
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
