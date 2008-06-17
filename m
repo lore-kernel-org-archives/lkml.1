@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757366AbYFQUmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757999AbYFQUnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757366AbYFQUmU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 16:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbYFQUmJ
+	id S1757999AbYFQUnd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 16:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbYFQUnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 16:42:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49672 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754260AbYFQUmI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 16:42:08 -0400
-Date: Tue, 17 Jun 2008 13:41:41 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Bron Gondwana <brong@fastmail.fm>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rob Mueller <robm@fastmail.fm>, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: BUG: mmapfile/writev spurious zero bytes (x86_64/not i386,
- bisected, reproducable)
-In-Reply-To: <alpine.LFD.1.10.0806171309130.2981@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0806171331460.2908@woody.linux-foundation.org>
-References: <1213682410.13174.1258837181@webmail.messagingengine.com> <1213682570.13708.1258839317@webmail.messagingengine.com> <alpine.LFD.1.10.0806170947380.25099@woody.linux-foundation.org> <alpine.LFD.1.10.0806171041560.25099@woody.linux-foundation.org>
- <alpine.LFD.1.10.0806171309130.2981@woody.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 17 Jun 2008 16:43:24 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37841 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755127AbYFQUnX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 16:43:23 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
+Date: Tue, 17 Jun 2008 22:44:23 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806170105.45647.rjw@sisk.pl> <alpine.LFD.1.10.0806170905221.3395@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.10.0806170905221.3395@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806172244.24026.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 17 Jun 2008, Linus Torvalds wrote:
+On Tuesday, 17 of June 2008, Thomas Gleixner wrote:
+> On Tue, 17 Jun 2008, Rafael J. Wysocki wrote:
+> > 
+> > BTW, with the C1E patches reverted I don't get the
+> > WARNING: at /home/rafael/src/linux-next/kernel/smp.c:215 smp_call_function_single+0x3d/0xa2
+> > in the log.  Thomas?
 > 
-> I actually am starting to think that the bug is in 
-> __copy_to_user_inatomic_nocache().
+> Yeah, my bad. Fix below.
 
-Confirmed.
+Thanks, it eliminates the WARNING, but still the box doesn't work with
+the "x86: add C1E aware idle function" patch applied, even with 'highres=off'.
 
-The uncached user copies are totally broken. The number of bytes left 
-uncopied is simply wrong, because of how it does that unrolled loop and 
-doesn't account for the fact that just doing loads does not actually 
-increase the number of bytes copied at all.
+The main symptom is that CPU loads are computed incorrectly (I got X using 126%
+of CPU time from 'top', for example).  Apart from this, some processes (like
+gkrellm) seem to be 'frozen' and only change their state in 'jumps', as though
+they only got CPU from time to time at random.
 
-So because the "copy_to_user_inatomic()" logic cares _deeply_ about how 
-many bytes were actually copied, when the copy count is wrong, the code 
-ends up thinking that it copied more bytes than it actually did, resulting 
-in the corruption in the page cache.
+Reverting the above-mentioned patch fixes those problems.
 
-Nasty.
-
-That whole file is a mess. Sadly, so is the regular "copy_user_64.S" too 
-(it has the same totally broken comment, too!), this is not just the 
-uncached version.
-
-And the only reason that it only shows up with the uncached version in 
-_practice_ is that the routine that uses the x86 string instructions (ie 
-the "rep movsq" in copy_user_generic_string) actually gets this all right. 
-
-So the bug is hidden in that case - which is most CPU's out there (all 
-CPU's that have X86_FEATURE_REP_GOOD set).
-
-I don't think that code is reasonably salvageable. Damn. 
-
-		Linus
+Thanks,
+Rafael
