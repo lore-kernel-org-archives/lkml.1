@@ -1,116 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760843AbYFQXh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760969AbYFQXly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760843AbYFQXh2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 19:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757634AbYFQXhO
+	id S1760969AbYFQXly (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 19:41:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759792AbYFQXlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 19:37:14 -0400
-Received: from webmail.e-teleport.net ([213.190.83.68]:52560 "EHLO
-	mail.imsnet.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756221AbYFQXhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 19:37:12 -0400
-Message-ID: <48584AA4.8040801@e-teleport.net>
-Date: Wed, 18 Jun 2008 01:37:08 +0200
-From: =?ISO-8859-1?Q?S=E9guier_R=E9gis?= <rseguier@e-teleport.net>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Tue, 17 Jun 2008 19:41:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34795 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759599AbYFQXlq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 19:41:46 -0400
+Date: Tue, 17 Jun 2008 16:41:40 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: copy_from_user again()
+In-Reply-To: <87hcbrwvqg.fsf@basil.nowhere.org>
+Message-ID: <alpine.LFD.1.10.0806171632220.2907@woody.linux-foundation.org>
+References: <87hcbrwvqg.fsf@basil.nowhere.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Francois Romieu <romieu@fr.zoreil.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, alan@redhat.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net: via-velocity.c fix sleep-with-spinlock bug during
- MTU change
-References: <20080531184615.350bac00@infradead.org> <20080603134019.df2f51d4.akpm@linux-foundation.org> <20080603215155.GA9712@electric-eye.fr.zoreil.com> <20080604215909.GA17446@electric-eye.fr.zoreil.com> <20080614212341.GA12976@electric-eye.fr.zoreil.com> <4856DA62.7080803@e-teleport.net> <20080617214538.GA6388@electric-eye.fr.zoreil.com>
-In-Reply-To: <20080617214538.GA6388@electric-eye.fr.zoreil.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Francois Romieu a écrit :
-> Séguier Régis <rseguier@e-teleport.net> :
-> [...]
->   
->> The mtu change doesn't work :
->>
->> Jun 16 23:22:34 apollo kernel: ------------[ cut here ]------------
->> Jun 16 23:22:34 apollo kernel: WARNING: at arch/x86/kernel/pci-dma.c:482 
->> dma_free_coherent+0x3a/0x9c()
->> Jun 16 23:22:34 apollo kernel: Pid: 1527, comm: ip Tainted: G        W 
->> 2.6.26-rc6EPIA_SN_VB7001 #3
->> Jun 16 23:22:34 apollo kernel:  [<c0115fe5>] warn_on_slowpath+0x3b/0x5f
->> Jun 16 23:22:34 apollo kernel:  [<c0133940>] 
->> get_page_from_freelist+0x24a/0x36f
->> Jun 16 23:22:34 apollo kernel:  [<c012d86b>] handle_IRQ_event+0x1a/0x3f
->> Jun 16 23:22:34 apollo kernel:  [<c0241193>] velocity_free_rd_ring+0xa5/0xb6
->> Jun 16 23:22:34 apollo kernel:  [<c0144752>] kfree+0x6a/0x72
->> Jun 16 23:22:34 apollo kernel:  [<c0241193>] velocity_free_rd_ring+0xa5/0xb6
->> Jun 16 23:22:34 apollo kernel:  [<c0105816>] dma_free_coherent+0x3a/0x9c
->> Jun 16 23:22:34 apollo kernel:  [<c02411eb>] 
->> velocity_free_dma_rings+0x47/0x4d
->> Jun 16 23:22:34 apollo kernel:  [<c024225b>] velocity_change_mtu+0xf6/0x157
->> Jun 16 23:22:34 apollo kernel:  [<c02856c4>] dev_set_mtu+0x2a/0x4f
->> Jun 16 23:22:34 apollo kernel:  [<c0286642>] dev_ioctl+0x4ab/0x530
->> Jun 16 23:22:34 apollo kernel:  [<c012e4cb>] handle_fasteoi_irq+0x74/0x77
->> Jun 16 23:22:34 apollo kernel:  [<c010479b>] do_IRQ+0x50/0x60
->> Jun 16 23:22:34 apollo kernel:  [<c027d785>] sock_ioctl+0x0/0x177
->>     
->
-> Does the patch below make a difference ?
->
-> diff --git a/drivers/net/via-velocity.c b/drivers/net/via-velocity.c
-> index 71a5133..fa303da 100644
-> --- a/drivers/net/via-velocity.c
-> +++ b/drivers/net/via-velocity.c
-> @@ -1274,7 +1274,7 @@ static void velocity_free_rd_ring(struct velocity_info *vptr)
->  				 PCI_DMA_FROMDEVICE);
->  		rd_info->skb_dma = (dma_addr_t) NULL;
->  
-> -		dev_kfree_skb(rd_info->skb);
-> +		dev_kfree_skb_any(rd_info->skb);
->  		rd_info->skb = NULL;
->  	}
->  
-> @@ -1336,7 +1336,7 @@ static void velocity_free_td_ring_entry(struct velocity_info *vptr,
->  				td_info->skb_dma[i] = (dma_addr_t) NULL;
->  			}
->  		}
-> -		dev_kfree_skb(td_info->skb);
-> +		dev_kfree_skb_any(td_info->skb);
->  		td_info->skb = NULL;
->  	}
->  }
->   
-Idem.
 
-Jun 18 01:30:15 apollo kernel: ------------[ cut here ]------------
-Jun 18 01:30:15 apollo kernel: WARNING: at arch/x86/kernel/pci-dma.c:482 
-dma_free_coherent+0x3a/0x9c()
-Jun 18 01:30:15 apollo kernel: Pid: 1401, comm: ip Not tainted 
-2.6.26-rc6EPIA_SN_VB7001 #4
-Jun 18 01:30:15 apollo kernel:  [<c0115fe5>] warn_on_slowpath+0x3b/0x5f
-Jun 18 01:30:15 apollo kernel:  [<c0133b19>] 
-__alloc_pages_internal+0xb4/0x349
-Jun 18 01:30:15 apollo kernel:  [<c0112bfd>] hrtick_start_fair+0x67/0xfd
-Jun 18 01:30:15 apollo kernel:  [<c011414f>] check_preempt_wakeup+0x9d/0xbb
-Jun 18 01:30:15 apollo kernel:  [<c0144752>] kfree+0x6a/0x72
-Jun 18 01:30:15 apollo kernel:  [<c0241193>] velocity_free_rd_ring+0xa5/0xb6
-Jun 18 01:30:15 apollo kernel:  [<c0105816>] dma_free_coherent+0x3a/0x9c
-Jun 18 01:30:15 apollo kernel:  [<c02411eb>] 
-velocity_free_dma_rings+0x47/0x4d
-Jun 18 01:30:15 apollo kernel:  [<c024225b>] velocity_change_mtu+0xf6/0x157
-Jun 18 01:30:15 apollo kernel:  [<c02856c4>] dev_set_mtu+0x2a/0x4f
-Jun 18 01:30:15 apollo kernel:  [<c0286642>] dev_ioctl+0x4ab/0x530
-Jun 18 01:30:15 apollo kernel:  [<c013964a>] __do_fault+0x256/0x28e
-Jun 18 01:30:15 apollo kernel:  [<c027d8d7>] sock_ioctl+0x152/0x177
-Jun 18 01:30:15 apollo kernel:  [<c027d785>] sock_ioctl+0x0/0x177
-Jun 18 01:30:15 apollo kernel:  [<c0150b4a>] vfs_ioctl+0x16/0x48
-Jun 18 01:30:15 apollo kernel:  [<c0150d5a>] do_vfs_ioctl+0x1de/0x1f1
-Jun 18 01:30:15 apollo kernel:  [<c0150dae>] sys_ioctl+0x41/0x5b
-Jun 18 01:30:15 apollo kernel:  [<c010291d>] sysenter_past_esp+0x6a/0x91
-Jun 18 01:30:15 apollo kernel:  =======================
-Jun 18 01:30:15 apollo kernel: ---[ end trace abc2c54f7fac91dc ]---
 
--- 
-Régis
+On Wed, 18 Jun 2008, Andi Kleen wrote:
+> 
+> I thought a little more about your patch. One problem I see (and that is why
+> I aborted my version of it too) is that it becomes very inaccurate now in reporting.
+
+Well, it doesn't become any less accurate in reporting, quite the reverse: 
+now it *is* accurate in reporting what it actually *did*. Before, it would 
+report something that simply wasn't _true_. Being closer to what you might 
+_wish_ would happen doesn't make it accurate, if it doesn'y match reality!
+
+However, you're right that the routine has always had (and I didn't change 
+that) a 32-byte granularity in what it does and what it doesn't do in the 
+unrolled part. 
+
+Before, it _claimed_ to be more precise than it actually was. It claimed 
+to be able to detect non-existing pages at a 8-byte granular level, but it 
+never actually did the copy at that level, so the claim wasn't backed up 
+by what it did. 
+
+Which was why the users were unhappy: the write() system call _thought_ it 
+had copied 16 bytes more than it actually had, resulting in a 16-byte hole 
+(which happened to be zero-filled, but could actually in theory be leaking 
+information) in the page cache. 
+
+Which gets us back to the original bug report by Bron Gondwana: the end 
+result was a corrupt page cache (and on-disk, for that matter), because 
+__copy_user() claimed to have copied more than it actually did.
+
+And yes, I do agree that it would be nicer to have byte-granular reporting 
+and copying - and I even made that very clear in the email that contained 
+the patch. But you must never report finer granularity than you actually 
+copy, becuase at that point it's not "more accurate" - it's just plain 
+WRONG.
+
+So what I would actually prefer (as I outlined earlier) would be that the 
+failure case woudl then fall back on trying to do a byte-by-byte slow copy 
+until it hits the exact byte that fails.
+
+However, that is a much bigger patch, and it's actually not something 
+we've ever done. Even the original old x86-32 routines would fail at that, 
+they just did it with a 4-byte granularity (so max 3 bytes of uncopied 
+data close to the end of the page, rather than at a 32-byte (max 31 bytes 
+of uncopied data close to the end of the page).
+
+And as mentioned, the cases that really care (like mm/filemap.c) actually 
+know to always try to do at least _one_ whole iovec entry. So they are ok 
+with the lack of accuracy, because if the atomic version fails, they'll 
+fall back to doing something slow and careful.
+
+		Linus
