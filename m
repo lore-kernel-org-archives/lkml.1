@@ -1,94 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbYFQPvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbYFQPwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754708AbYFQPvx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 11:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbYFQPvo
+	id S1756055AbYFQPwW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 11:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754636AbYFQPwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 11:51:44 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:28127 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751987AbYFQPvn (ORCPT
+	Tue, 17 Jun 2008 11:52:08 -0400
+Received: from lazybastard.de ([212.112.238.170]:57030 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755073AbYFQPwH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 11:51:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=SITqM0K83jU1jBwDJpukgLGXF0KwcCvzSTmIgaLcafgxEV/r7E2vSHFpNYn4xQV2iz
-         RBzqlNz47VAC8u/avj+64XraFQd/MIw8vulgLJBUTL65cLTcz043gOkUj51kQsLatbO2
-         A7W03z1CbDlL52hac13b5m3mVuC/tlwDyOJg0=
-Date: Tue, 17 Jun 2008 19:51:20 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: nmi_watchdog suspicious
-Message-ID: <20080617155120.GA9440@cvg>
-References: <20080610185759.GA7353@cvg> <Pine.LNX.4.55.0806160040270.11995@cliff.in.clinika.pl> <20080616170000.GC7273@cvg> <Pine.LNX.4.55.0806161819500.20218@cliff.in.clinika.pl>
+	Tue, 17 Jun 2008 11:52:07 -0400
+Date: Tue, 17 Jun 2008 17:51:39 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: Maxim Shchetynin <maxim@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org
+Subject: Re: AZFS file system proposal
+Message-ID: <20080617155139.GF28448@logfs.org>
+References: <20080609104650.4f220492@mercedes-benz.boeblingen.de.ibm.com> <20080609125530.GF30405@parisc-linux.org> <20080610104919.504b9826@mercedes-benz.boeblingen.de.ibm.com> <alpine.LNX.1.10.0806110000560.20733@fbirervta.pbzchgretzou.qr> <20080617110655.59c915da@mercedes-benz.boeblingen.de.ibm.com> <alpine.LNX.1.10.0806171133220.6620@fbirervta.pbzchgretzou.qr> <20080617135722.374673b9@mercedes-benz.boeblingen.de.ibm.com> <alpine.LNX.1.10.0806171634040.32473@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.55.0806161819500.20218@cliff.in.clinika.pl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LNX.1.10.0806171634040.32473@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Maciej W. Rozycki - Tue, Jun 17, 2008 at 12:20:28AM +0100]
-| On Mon, 16 Jun 2008, Cyrill Gorcunov wrote:
-| 
-| > Maciej, I think nmi_watchdog could (and probably should) be defined as
-| > unsigned. Here my points of why (fix me please if I'm wrong):
-| > 
-| > - if we remain it as unsigned we could simplify setup_nmi_watchdog() to
-| >   just check for 'if (nmi >= NMI_INVALID)'
-| 
-|  This is run once only at the boot if at all -- just to verify the range
-| is correct.  Other places are executed multiple times during normal
-| operation and it is them you should optimise for.
-| 
-| > - current code does check for NMI_NONE _and_ NMI_DISABLED at once in most
-| >   cases (only the case it dont is - proc_nmi_enabled() wich could be simplified too)
-| 
-|  Please note the intent is NMI_DISABLED is a bootstrap default to tell the
-| platform the user has not specified any override.  With the 32-bit
-| platform it used to be promoted automatically to NMI_IO_APIC or
-| NMI_LOCAL_APIC as appropriate, but it was removed because of stability
-| problems with many systems.  It looks it wasn't done in a particularly
-| fortunate way -- the new promotion should be to NMI_NONE, but instead it
-| was removed altogether.
-| 
-|  Preferably the initialization to NMI_NONE should be done as soon as it
-| has been determined there was no "nmi_watchdog=" option specified, but in
-| practice I think it can simply be done at the beginning of trap_init(),
-| before the gate descriptor has been set up for the NMI (after which point
-| the NMI handler can be reached).  This way no piece of code other than
-| setup_nmi_watchdog() would have to care about negative values of
-| nmi_watchdog.
-| 
-| > - the only affected of such sign/unsign contention I found is
-| >   touch_nmi_watchdog() for which I suggested the patch (already in Ingo's tip tree)
-| >   http://lkml.org/lkml/2008/6/12/200
-| >   So there could be some 'useless counters resetting' but it could happen for
-| >   quite short time while APIC in initialization phase.
-| 
-|  This is a sloppy coding practice which has led us to the current
-| situation with the APIC code -- there should be no "useless code
-| execution" unless absolutely unavoidable.  I'd feel more comfortable if
-| there was a separate variable like nmi_watchdog_active checked in the
-| handler instead of nmi_watchdog that would only be set once the watchdog
-| has actually been activated.
-| 
-|  The whole idea of touch_nmi_watchdog() itself is rather unfortunate too,
-| but that's apparently not an easy problem to solve.
-| 
-|   Maciej
-|
+On Tue, 17 June 2008 16:36:28 +0200, Jan Engelhardt wrote:
+> 
+> tmpfs plus XIP
 
-Thanks a lot Maciej for comments! I've marked them. I'm not sure but it seems
-I wrote a bit unclear /my english bad indeed/ ;) I mean - this say 'slipping'
-(ie useless code executions) _was_ before the patch applied. Now it doesn't
-slip on this since we do mention explicitly in which case there should be
-alert counters reset. Other then that - will try to handle your notes. Thanks!
+That looks seriously disturbed.  Normal filesystems have a backing store
+plus a page cache.  Tmpfs removes the backing store and keeps everything
+in the page cache.  XIP removes the page cache and leaves everything in
+the backing store - which is memory.
 
-		- Cyrill -
+Would tmpfs plus XIP remove both the page cache and the backing store?
+
+Jörn
+
+-- 
+Data dominates. If you've chosen the right data structures and organized
+things well, the algorithms will almost always be self-evident. Data
+structures, not algorithms, are central to programming.
+-- Rob Pike
