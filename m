@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758311AbYFQMv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758329AbYFQMyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758311AbYFQMv5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 08:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757102AbYFQMvs
+	id S1758329AbYFQMyt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 08:54:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755864AbYFQMyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 08:51:48 -0400
-Received: from smtp2.Stanford.EDU ([171.67.20.25]:55757 "EHLO
-	smtp2.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756831AbYFQMvr (ORCPT
+	Tue, 17 Jun 2008 08:54:40 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:36800 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755797AbYFQMyj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 08:51:47 -0400
-X-Greylist: delayed 422 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Jun 2008 08:51:47 EDT
-Subject: 2.6.25.7 + rt6 = BUGs (sleeping function called from invalid
-	context)
-From: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Fernando Pablo Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       linux-kernel@vger.kernel.org
+	Tue, 17 Jun 2008 08:54:39 -0400
+Subject: Re: architectures with ARCH_SUPPORTS_AOUT but no binfmt_aout
+From: David Woodhouse <dwmw2@infradead.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Peter Korsgaard <jacmet@sunsite.dk>,
+       linux-kernel@vger.kernel.org, dhowells@redhat.com, andi@firstfloor.org,
+       "Kirill A. Shutemov" <k.shutemov@gmail.com>, ysato@users.sourceforge.jp,
+       takata@linux-m32r.org, linux-m32r@ml.linux-m32r.org, kyle@mcmartin.ca,
+       matthew@wil.cx, grundler@parisc-linux.org, linux-parisc@vger.kernel.org,
+       lethal@linux-sh.org, linux-sh@vger.kernel.org,
+       linux-arch@vger.kernel.org
+In-Reply-To: <20080617123717.GC10598@uranus.ravnborg.org>
+References: <1213604973-7073-1-git-send-email-jacmet@sunsite.dk>
+	 <1213617663.26255.708.camel@pmac.infradead.org>
+	 <20080616121727.GB10854@cs181133002.pp.htv.fi>
+	 <1213619214.26255.721.camel@pmac.infradead.org>
+	 <20080617084235.GA20169@cs181133002.pp.htv.fi>
+	 <1213696004.26255.960.camel@pmac.infradead.org>
+	 <20080617101112.GE20169@cs181133002.pp.htv.fi>
+	 <1213702113.26255.996.camel@pmac.infradead.org>
+	 <20080617122346.GA10598@uranus.ravnborg.org>
+	 <1213705749.26255.1027.camel@pmac.infradead.org>
+	 <20080617123717.GC10598@uranus.ravnborg.org>
 Content-Type: text/plain
-Date: Tue, 17 Jun 2008 14:40:57 +0200
-Message-Id: <1213706457.23172.4.camel@cage.kgw.TU-Berlin.DE>
+Date: Tue, 17 Jun 2008 13:54:21 +0100
+Message-Id: <1213707261.26255.1038.camel@pmac.infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo, just trying the latest rt6 (for 2.6.25) on top of 2.6.25.7 and
-I'm getting a lot these (1 a second?):
+On Tue, 2008-06-17 at 14:37 +0200, Sam Ravnborg wrote:
+> I know and I know.
+> If someone did the janitorial effort and converted all the
+> per-arch defined symbols to one single definiton
+> and select the list would grow rapidly.
 
-BUG: sleeping function called from invalid context swapper(0) at
-kernel/rtmutex.c:739
-in_atomic():1 [00000001], irqs_disabled():0
-Pid: 0, comm: swapper Not tainted 2.6.25.7-1.rt6.1.fc8.ccrma.i686.rt #1
- [<c041f5ae>] __might_sleep+0xed/0xf4
- [<c0637bec>] __rt_spin_lock+0x24/0x61
- [<c0637c31>] rt_spin_lock+0x8/0xa
- [<c043ce6d>] pm_qos_requirement+0x10/0x29
- [<c05aac94>] menu_select+0x55/0x79
- [<c05aa222>] ? cpuidle_idle_call+0x0/0x8e
- [<c05aa263>] cpuidle_idle_call+0x41/0x8e
- [<c05aa222>] ? cpuidle_idle_call+0x0/0x8e
- [<c040466a>] cpu_idle+0xa4/0xfb
- [<c0633447>] start_secondary+0x15c/0x161
- [<c0403664>] ? lguest_time_init+0xa3/0xa3f
- =======================
+http://git.infradead.org/users/dwmw2/aout-2.6.git?a=commitdiff;h=e75fd00c
 
-(please cc me, I can't currently read lkml)
--- Fernando
+They're still not in alphabetical order, but I haven't made it worse :)
 
+-- 
+dwmw2
 
