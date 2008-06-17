@@ -1,49 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756467AbYFQVAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758221AbYFQVDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756467AbYFQVAS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 17:00:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbYFQVAA
+	id S1758221AbYFQVDd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 17:03:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbYFQVDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 17:00:00 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:16017 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755281AbYFQU77 (ORCPT
+	Tue, 17 Jun 2008 17:03:25 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:63662 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755278AbYFQVDY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 16:59:59 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Bron Gondwana <brong@fastmail.fm>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rob Mueller <robm@fastmail.fm>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: BUG: mmapfile/writev spurious zero bytes (x86_64/not i386, bisected, reproducable)
-From: Andi Kleen <andi@firstfloor.org>
-References: <1213682410.13174.1258837181@webmail.messagingengine.com>
-	<1213682570.13708.1258839317@webmail.messagingengine.com>
-	<alpine.LFD.1.10.0806170947380.25099@woody.linux-foundation.org>
-	<alpine.LFD.1.10.0806171041560.25099@woody.linux-foundation.org>
-	<alpine.LFD.1.10.0806171309130.2981@woody.linux-foundation.org>
-Date: Tue, 17 Jun 2008 22:58:17 +0200
-In-Reply-To: <alpine.LFD.1.10.0806171309130.2981@woody.linux-foundation.org> (Linus Torvalds's message of "Tue, 17 Jun 2008 13:16:39 -0700 (PDT)")
-Message-ID: <87od5zwzh2.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Tue, 17 Jun 2008 17:03:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=b9Zl3CH1EsJRQyrsH5gqCybN/5HsHQCv95B1Gc5fVT+GnpvMHE1tSJSAwEEE96U6zS
+         EpPB6vQfCwf4NnPXPufIACpgG7x+1EvFyd7oJd5kIIMBgLBG/aZ/+rYIBJY+DMkV7G9n
+         i9proWIvVzXQHhK1kbGacm/LQI0XQGGRA4zPQ=
+Message-ID: <b647ffbd0806171403o327c1b93v8ffb2593d30e3ba3@mail.gmail.com>
+Date: Tue, 17 Jun 2008 23:03:21 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: [BUG: NULL pointer dereference] cgroups and RT scheduling interact badly.
+Cc: "Daniel K." <dk@uw.no>, mingo@elte.hu, menage@google.com,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1213732878.3223.95.camel@lappy.programming.kicks-ass.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 17 Jun 2008 20:51:03.0131 (UTC) FILETIME=[DAF992B0:01C8D0BB]
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <485445AE.2010602@uw.no> <1213612447.16944.99.camel@twins>
+	 <4856671B.1020304@uw.no> <1213624312.16944.104.camel@twins>
+	 <1213627148.16944.106.camel@twins> <485682B0.8010805@uw.no>
+	 <1213629536.16944.109.camel@twins> <1213692557.16944.153.camel@twins>
+	 <4857AD38.2090601@uw.no>
+	 <1213732878.3223.95.camel@lappy.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
-
+2008/6/17 Peter Zijlstra <peterz@infradead.org>:
+> On Tue, 2008-06-17 at 14:25 +0200, Daniel K. wrote:
+>> Peter Zijlstra wrote:
+>> > How's this [patch] work for you? (includes the previuos patchlet too)
+>>
+>> Thanks,
+>>
+>> this patch fixed the obvious problem, namely
+>>
+>> # echo $$ > /dev/cgroup/burn/oops/tasks
+>> # schedtool -R -p 1 -e burnP6 &
+>>
+>> now works again. However, the last step below
+>>
+>> # echo $$ > /dev/cgroup/tasks
+>> # burnP6 &
+>> [1] 3414
+>> # echo 3414 > /dev/cgroup/burn/oops/tasks
+>> # schedtool -R -p 1 3414
+>>
+>> gives this new and shiny Oops instead.
 >
-> So I'm starting to think the bug is all in there, not in the VM itself. 
-> See arch/x86/lib/copy_user_nocache.S.
+> Whilst I'm gracious for your testing, I truly hope you're done breaking
+> my stuff ;-)
+>
+> How's this for you?
 
-The x86-64 copy_*_user functions were always designed to return errors
-both ways (as in both for load and for store). That's needed because
-the loops are shared for copy_to_user and copy_from_user. That's normally
-ok because when you do _to_user you shouldn't fault on the loads
-and vice versa. If a caller does that it's buggy.
+FYI, I could reproduce a crash and this patch fixes it indeed.
 
--Andi
+
+-- 
+Best regards,
+Dmitry Adamushko
