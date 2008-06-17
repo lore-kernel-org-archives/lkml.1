@@ -1,65 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757036AbYFQKxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbYFQLOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757036AbYFQKxz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 06:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754708AbYFQKxq
+	id S1756118AbYFQLOI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 07:14:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbYFQLN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 06:53:46 -0400
-Received: from lazybastard.de ([212.112.238.170]:48068 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754257AbYFQKxp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 06:53:45 -0400
-Date: Tue, 17 Jun 2008 12:53:00 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: Maxim Shchetynin <maxim@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org
-Subject: Re: AZFS file system proposal
-Message-ID: <20080617105300.GA28310@logfs.org>
-References: <20080609104650.4f220492@mercedes-benz.boeblingen.de.ibm.com> <20080609125530.GF30405@parisc-linux.org> <20080610104919.504b9826@mercedes-benz.boeblingen.de.ibm.com> <alpine.LNX.1.10.0806110000560.20733@fbirervta.pbzchgretzou.qr> <20080617110655.59c915da@mercedes-benz.boeblingen.de.ibm.com> <alpine.LNX.1.10.0806171133220.6620@fbirervta.pbzchgretzou.qr>
+	Tue, 17 Jun 2008 07:13:57 -0400
+Received: from mout.perfora.net ([74.208.4.194]:50116 "EHLO mout.perfora.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752757AbYFQLN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 07:13:57 -0400
+Date: Tue, 17 Jun 2008 06:03:07 -0500 (CDT)
+From: "R.L. Horn" <lists@eastcheap.org>
+X-X-Sender: rlhorn@hani.compact.internal
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25.3: serial problem (minicom)
+In-Reply-To: <20080617095827.0f4f77de@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.LNX.1.00.0806170559280.13421@hani.compact.internal>
+References: <alpine.LNX.1.00.0806131635260.1294@hani.compact.internal> <20080614102900.6830ed46@lxorguk.ukuu.org.uk> <alpine.LNX.1.00.0806150032050.1283@hani.compact.internal> <20080616111329.3ae97879@lxorguk.ukuu.org.uk> <alpine.LNX.1.00.0806162306400.10919@hani.compact.internal>
+ <20080617095827.0f4f77de@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LNX.1.10.0806171133220.6620@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Provags-ID: V01U2FsdGVkX1/PXM3+NhEfZ3vEhcr0NEOR0bvUU67B4XYjApI
+ B+ASFaumCAi/R3NWk9LJTCN7f/DJshD9lc8YVqkuwjduThOu3C
+ vCfk/LmTSKDxTD4fsqKEw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 June 2008 11:35:10 +0200, Jan Engelhardt wrote:
-> On Tuesday 2008-06-17 11:06, Maxim Shchetynin wrote:
-> 
-> >I would say you can either mmap it or place a file system on it.
-> 
-> The help text implies that I *need* azfs to mmap it - and that sounds
-> like a Rube Goldberg machine.
+On Tue, 17 Jun 2008, Alan Cox wrote:
 
-Some people actually prefer filesystems over raw devices for a variety
-of reasons:
-- each file brings its own address space, which offers memory protection
-  from other processes,
-- files can have owners and permission bits,
-- files hide the fragmentation of the underlying device from users,
-- a file system provides a common and well-understood api for devices
-  with less common or well-understood apis,
-- etc.
+> Ah ok I know what the bug is - it was fixed in 2.6.26-rc as follows
+>
+> +       /* Don't rewrite B0 */
+> +       if (tty_termios_baud_rate(termios))
+> +               tty_termios_encode_baud_rate(termios, baud, baud);
+> }
 
-Those reasons are as valid for azfs as for any other filesystem.  I have
-no doubt that azfs is useful.  It probably wouldn't hurt to express the
-merits of the filesystem and the problems it is supposed to solve a
-little better.  So far most criticism was based on the fact that noone
-understood what the hell it was all about.
+Oh.
 
-My personal question when looking at this is: Why not use ext2?  It
-appears to me that an ext2 mounted with '-o xip' would solve the same
-problems.
+Oh well.
 
-Jörn
-
--- 
-To announce that there must be no criticism of the President, or that we
-are to stand by the President, right or wrong, is not only unpatriotic
-and servile, but is morally treasonable to the American public.
--- Theodore Roosevelt, Kansas City Star, 1918
+I guess I'll just fix it here and wait for the official fix.
