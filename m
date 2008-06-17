@@ -1,144 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756963AbYFQIKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756283AbYFQIUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756963AbYFQIKy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 04:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754554AbYFQIKg
+	id S1756283AbYFQIUm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 04:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbYFQIUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 04:10:36 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42006 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753289AbYFQIKc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 04:10:32 -0400
-Date: Tue, 17 Jun 2008 10:09:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: kuznet@ms2.inr.ac.ru, vgusev@openvz.org, mcmanus@ducksong.com,
-       xemul@openvz.org, netdev@vger.kernel.org, ilpo.jarvinen@helsinki.fi,
-       linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net
-Subject: Re: [TCP]: TCP_DEFER_ACCEPT causes leak sockets
-Message-ID: <20080617080958.GC12535@elte.hu>
-References: <20080613114746.GA27811@elte.hu> <20080616.165900.189566405.davem@davemloft.net> <20080617072658.GA12535@elte.hu> <20080617.003832.130616157.davem@davemloft.net>
+	Tue, 17 Jun 2008 04:20:32 -0400
+Received: from mailmxout.mailmx.agnat.pl ([193.239.44.238]:4949 "EHLO
+	mailmxout.mailmx.agnat.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752493AbYFQIUb convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 04:20:31 -0400
+From: Arkadiusz Miskiewicz <arekm@maven.pl>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.25.7
+Date: Tue, 17 Jun 2008 10:20:19 +0200
+User-Agent: PLD Linux KMail/1.9.9
+References: <20080616204307.GA8924@kroah.com>
+In-Reply-To: <20080616204307.GA8924@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080617.003832.130616157.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200806171020.19624.arekm@maven.pl>
+X-Authenticated-Id: arekm
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 16 June 2008, Greg KH wrote:
+> We (the -stable team) are announcing the release of the 2.6.25.7 kernel.
+>
+> It contains a number of assorted bugfixes all over the tree.  Users are
+> encouraged to update.
+>
+> I'll also be replying to this message with a copy of the patch between
+> 2.6.25.6 and 2.6.25.7
 
-* David Miller <davem@davemloft.net> wrote:
+ppc
 
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Tue, 17 Jun 2008 09:26:58 +0200
-> 
-> > So since there's no clear bug pattern and no sure reproducability on 
-> > my side i'd suggest we track this problem separately and "do 
-> > nothing" right now. I've excluded this warning from my 'is the 
-> > freshly booted kernel buggy' list of conditions of -tip testing so 
-> > it's not holding me up.
-> 
-> I'm going to push the revert through just to be safe and I think it's 
-> a good idea to do so because all of those defer accept changes should 
-> be resubmitted as a group for 2.6.27
+  CC      drivers/macintosh/mediabay.o
+drivers/macintosh/mediabay.c: In function 'check_media_bay':
+drivers/macintosh/mediabay.c:427: error: 'struct media_bay_info' has no member 
+named 'cd_index'
+make[2]: *** [drivers/macintosh/mediabay.o] Error 1
 
-okay - in that case the full revert is well-tested on my side as well, 
-fwiw.
+There was a patch to fix this somewhere I think.
 
-Tested-by: Ingo Molnar <mingo@elte.hu>
-
-> > and i can apply any test-patch if that would be helpful - if it does 
-> > a WARN_ON() i'll notice it. (pure extra debug printks with no stack 
-> > trace are much harder to notice in automated tests)
-> 
-> I don't have time to work on your bug, sorry.  Someone else will have 
-> to step forward and help you with it.
-
-it's not really "my bug" - i just offered help to debug someone else's 
-bug :-) This is pretty common hw so i guess there will be such reports.
-
-Let me describe what i'm doing exactly: i do a lot of randomized testing 
-on about a dozen real systems (all across the x86 spectrum) so i tend to 
-trigger a lot of mainline bugs pretty early on.
-
-My collection of kernel bugs for the last 8 months shows 1285 bugs 
-(kernel crashes or build failures - about 50%/50%) triggered. One 
-test-system alone has a serial log of 15 gigabytes - and there's a dozen 
-of them. That's about 5 kernel bugs a day handled by me, on average.
-
-These systems have about 10 times the hardware variability of your 
-Niagara system for example, and many of them are rather difficult to 
-debug (laptops without serial port, etc.). So i physically cannot avoid 
-and debug all bugs on all my test-systems, like you do on the Niagara. I 
-will report bugs, i'll bisect anything that is bisectable (on average i 
-bisect once a day), and i can add patches and report any test-results, 
-and i'll of course debug any bugs that look like heavy mainline 
-showstoppers.
-
-> FWIW I don't think your TX timeout problem has anything to do with 
-> packet ordering.  The TX element of the network device is totally 
-> stateless, but it's hanging under some set of circumstances to the 
-> point where we timeout and reset the hardware to get it going again.
-
-ok. That's e1000 then. Cc:s added. Stock T60 laptop, 32-bit:
-
-02:00.0 Ethernet controller: Intel Corporation 82573L Gigabit Ethernet Controller
-        Subsystem: Lenovo ThinkPad T60
-        Flags: bus master, fast devsel, latency 0, IRQ 16
-        Memory at ee000000 (32-bit, non-prefetchable) [size=128K]
-        I/O ports at 2000 [size=32]
-        Capabilities: <access denied>
-        Kernel driver in use: e1000
-
-the problem is this non-fatal warning showing up after bootup, 
-sporadically, in a non-reproducible way:
-
-[  173.354049] NETDEV WATCHDOG: eth0: transmit timed out
-[  173.354148] ------------[ cut here ]------------
-[  173.354221] WARNING: at net/sched/sch_generic.c:222 dev_watchdog+0x9a/0xec()
-[  173.354298] Modules linked in:
-[  173.354421] Pid: 13452, comm: cc1 Tainted: G        W 2.6.26-rc6-00273-g81ae43a-dirty #2573
-[  173.354516]  [<c01250ca>] warn_on_slowpath+0x46/0x76
-[  173.354641]  [<c011d428>] ? try_to_wake_up+0x1d6/0x1e0
-[  173.354815]  [<c01411e9>] ? trace_hardirqs_off+0xb/0xd
-[  173.357370]  [<c011d43d>] ? default_wake_function+0xb/0xd
-[  173.357370]  [<c014112a>] ? trace_hardirqs_off_caller+0x15/0xc9
-[  173.357370]  [<c01411e9>] ? trace_hardirqs_off+0xb/0xd
-[  173.357370]  [<c0142c83>] ? trace_hardirqs_on+0xb/0xd
-[  173.357370]  [<c0142b33>] ? trace_hardirqs_on_caller+0x16/0x15b
-[  173.357370]  [<c0142c83>] ? trace_hardirqs_on+0xb/0xd
-[  173.357370]  [<c06bb3c9>] ? _spin_unlock_irqrestore+0x5b/0x71
-[  173.357370]  [<c0133d46>] ? __queue_work+0x2d/0x32
-[  173.357370]  [<c0134023>] ? queue_work+0x50/0x72
-[  173.357483]  [<c0134059>] ? schedule_work+0x14/0x16
-[  173.357654]  [<c05c59b8>] dev_watchdog+0x9a/0xec
-[  173.357783]  [<c012d456>] run_timer_softirq+0x13d/0x19d
-[  173.357905]  [<c05c591e>] ? dev_watchdog+0x0/0xec
-[  173.358073]  [<c05c591e>] ? dev_watchdog+0x0/0xec
-[  173.360804]  [<c0129ad7>] __do_softirq+0xb2/0x15c
-[  173.360804]  [<c0129a25>] ? __do_softirq+0x0/0x15c
-[  173.360804]  [<c0105526>] do_softirq+0x84/0xe9
-[  173.360804]  [<c0129996>] irq_exit+0x4b/0x88
-[  173.360804]  [<c010ec7a>] smp_apic_timer_interrupt+0x73/0x81
-[  173.360804]  [<c0103ddd>] apic_timer_interrupt+0x2d/0x34
-[  173.360804]  =======================
-[  173.360804] ---[ end trace a7919e7f17c0a725 ]---
-
-full report can be found at:
-
-   http://lkml.org/lkml/2008/6/13/224
-
-i have 3 other test-systems with e1000 (with a similar CPU) which are 
-_not_ showing this symptom, so this could be some model-specific e1000 
-issue.
-
-	Ingo
+-- 
+Arkadiusz Miśkiewicz        PLD/Linux Team
+arekm / maven.pl            http://ftp.pld-linux.org/
