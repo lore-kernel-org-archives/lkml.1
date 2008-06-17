@@ -1,269 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757211AbYFQJoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757194AbYFQJrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757211AbYFQJoY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 05:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbYFQJoQ
+	id S1757194AbYFQJrs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 05:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbYFQJrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 05:44:16 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:49474 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754046AbYFQJoO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 05:44:14 -0400
-Date: Tue, 17 Jun 2008 19:44:07 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for June 17
-Message-Id: <20080617194407.3ab6c268.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.10; i486-pc-linux-gnu)
+	Tue, 17 Jun 2008 05:47:39 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:33944 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751987AbYFQJrh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 05:47:37 -0400
+Subject: Re: architectures with ARCH_SUPPORTS_AOUT but no binfmt_aout
+From: David Woodhouse <dwmw2@infradead.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Peter Korsgaard <jacmet@sunsite.dk>, linux-kernel@vger.kernel.org,
+       sam@ravnborg.org, dhowells@redhat.com, andi@firstfloor.org,
+       "Kirill A. Shutemov" <k.shutemov@gmail.com>, ysato@users.sourceforge.jp,
+       takata@linux-m32r.org, linux-m32r@ml.linux-m32r.org, kyle@mcmartin.ca,
+       matthew@wil.cx, grundler@parisc-linux.org, linux-parisc@vger.kernel.org,
+       lethal@linux-sh.org, linux-sh@vger.kernel.org,
+       linux-arch@vger.kernel.org
+In-Reply-To: <20080617084235.GA20169@cs181133002.pp.htv.fi>
+References: <1213565555.26255.522.camel@pmac.infradead.org>
+	 <1213604973-7073-1-git-send-email-jacmet@sunsite.dk>
+	 <1213617663.26255.708.camel@pmac.infradead.org>
+	 <20080616121727.GB10854@cs181133002.pp.htv.fi>
+	 <1213619214.26255.721.camel@pmac.infradead.org>
+	 <20080617084235.GA20169@cs181133002.pp.htv.fi>
+Content-Type: text/plain
+Date: Tue, 17 Jun 2008 10:46:44 +0100
+Message-Id: <1213696004.26255.960.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__17_Jun_2008_19_44_07_+1000_eWrP+wIMM3AxUj5t"
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__17_Jun_2008_19_44_07_+1000_eWrP+wIMM3AxUj5t
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2008-06-17 at 11:42 +0300, Adrian Bunk wrote:
+> 
+> > Why _are_ there architectures which define ARCH_SUPPORTS_AOUT and have
+> > <asm/a.out.h> but don't support binfmt_aout, anyway? How does that make
+> > sense?
+> 
+> My guess would be that binfmt_aout isn't actually used there.
+> 
+> The affected architectures are:
+> - h8300
+> - m32r
+> - parisc
+> - sh
+> - v850
+> 
+> v850 is broken beyond repair, and I hope my patch to remove the 
+> architecture will make it into 2.6.27.
+> 
+> For the other 4 architectures I have Cc'ed the architecture maintainers.
 
-Hi all,
+There's another set of architectures which have <asm/a.out.h> but don't
+define ARCH_SUPPORTS_AOUT. Including PowerPC.
 
-Changes since next-20080616:
+I think we can probably get away with removing <asm/a.out.h> from every
+architecture other than Alpha, ARM, m68k and x86, and killing
+ARCH_SUPPORTS_AOUT completely.
 
-Trees dropped temporarily: x86 (build problems - we will try again
-tomorrow)
+Or maybe, as dhowells suggests, re-defining ARCH_SUPPORTS_AOUT to be set
+only on Alpha, ARM, m68k and x86 (so BINFMT_AOUT can depend on it).
 
-The s390 tree was not able to be fetched so was not updated today.
+-- 
+dwmw2
 
-The ide tree no longer needed build fixup patch.
-
-The nfsd tree gained a conflict against the nfs tree.
-
-The net tree gained a conflict with the net-current tree.
-
-The sparc tree gained a conflict with the m68k tree.
-
-Instead of reverting the new driver from the arm tree, a patch has been
-applied.
-
-The patch "powerpc: ppc32 does not need console_drivers exported" is no
-longer needed.
-
-A build patch "nfs fix 1" is needed because a check for CONFIG_NFS_V4 was
-neglected.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups, it is also built with powerpc allnoconfig,
-44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
-
-Below is a summary of the state of the merge.
-
-We are up to 92 trees (counting Linus' and 13 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging powerpc-merge/merge
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sparc-current/master
-Merging sound-current/for-linus
-Merging arm-current/master
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging quilt/driver-core
-CONFLICT (content): Merge conflict in drivers/scsi/hosts.c
-Merging quilt/usb
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-Merging ftrace/auto-ftrace-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-CONFLICT (content): Merge conflict in kernel/Makefile
-Applying ftrace: fix rculist split fallout
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging x86/auto-x86-next
-CONFLICT (content): Merge conflict in arch/x86/kernel/process_32.c
-CONFLICT (content): Merge conflict in arch/x86/kernel/process_64.c
-$ git reset --hard HEAD^
-Merging pci/linux-next
-CONFLICT (content): Merge conflict in include/linux/device.h
-Merging quilt/device-mapper
-Merging hid/mm
-Merging quilt/i2c
-CONFLICT (content): Merge conflict in drivers/i2c/i2c-core.c
-Merging quilt/kernel-doc
-Merging avr32/avr32-arch
-Merging v4l-dvb/stable
-Merging s390/features
-CONFLICT (content): Merge conflict in drivers/s390/block/dasd.c
-CONFLICT (content): Merge conflict in drivers/s390/block/dasd_eckd.c
-CONFLICT (content): Merge conflict in drivers/s390/block/dasd_fba.c
-CONFLICT (content): Merge conflict in drivers/s390/char/tape_core.c
-CONFLICT (content): Merge conflict in drivers/s390/cio/device_fsm.c
-CONFLICT (content): Merge conflict in drivers/s390/net/claw.c
-CONFLICT (content): Merge conflict in drivers/s390/net/ctcm_main.c
-CONFLICT (content): Merge conflict in drivers/s390/net/lcs.c
-Merging sh/master
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-CONFLICT (content): Merge conflict in drivers/acpi/processor_throttling.c
-CONFLICT (content): Merge conflict in drivers/acpi/sleep/main.c
-Merging blackfin/for-linus
-Merging nfsd/nfsd-next
-CONFLICT (content): Merge conflict in net/sunrpc/auth_gss/auth_gss.c
-CONFLICT (content): Merge conflict in net/sunrpc/svc.c
-Merging ieee1394/for-next
-Merging hwmon/testing
-Merging ubi/master
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Applying scsi: fix fallout from the class_find_device API change
-Applying scsi: fix fallout from KOBJ_NAME_LEN removal
-Merging ia64/test
-Merging tests/master
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-Merging ocfs2/linux-next
-Merging selinux/for-akpm
-Merging quilt/m68k
-Merging powerpc/powerpc-next
-Merging lblnet/master
-Merging ext4/next
-Merging 4xx/next
-Merging async_tx/next
-Merging udf/for_next
-Merging security-testing/next
-Merging net/master
-CONFLICT (content): Merge conflict in Documentation/powerpc/booting-without=
--of.txt
-CONFLICT (content): Merge conflict in drivers/net/wireless/rt2x00/Kconfig
-CONFLICT (content): Merge conflict in drivers/net/wireless/rt2x00/rt2x00usb=
-.c
-CONFLICT (content): Merge conflict in net/sctp/protocol.c
-Applying wireless: fix fallout from device_create removal
-Merging sparc/master
-CONFLICT (content): Merge conflict in include/asm-m68k/sbus.h
-Merging galak/powerpc-next
-CONFLICT (content): Merge conflict in Documentation/powerpc/booting-without=
--of.txt
-Merging mtd/master
-Merging wireless/master
-Merging crypto/master
-Merging vfs/vfs-2.6.25
-Merging sound/master
-Merging arm/devel
-CONFLICT (content): Merge conflict in arch/arm/mach-at91/board-yl-9200.c
-CONFLICT (content): Merge conflict in arch/arm/mach-pxa/tosa.c
-Applying Fix Kconfig entry for TC6393XB
-Merging cpufreq/next
-CONFLICT (content): Merge conflict in drivers/cpufreq/cpufreq.c
-Merging v9fs/for-next
-Merging quilt/rr
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging semaphore/semaphore
-Merging semaphore-removal/semaphore-removal
-CONFLICT (content): Merge conflict in drivers/net/ps3_gelic_wireless.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_attr.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_def.h
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_mbx.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_mid.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_os.c
-Merging bkl-removal/bkl-removal
-CONFLICT (content): Merge conflict in kernel/power/user.c
-Merging trivial/next
-Merging ubifs/for_andrew
-Merging lsm/for-next
-Merging block/for-next
-CONFLICT (content): Merge conflict in arch/powerpc/Kconfig
-CONFLICT (content): Merge conflict in arch/x86/xen/smp.c
-CONFLICT (content): Merge conflict in kernel/Makefile
-Applying block: fix up rculist split fallout
-Merging embedded/master
-Merging firmware/master
-CONFLICT (content): Merge conflict in drivers/char/ip2/ip2main.c
-CONFLICT (content): Merge conflict in drivers/usb/misc/isight_firmware.c
-CONFLICT (content): Merge conflict in drivers/usb/serial/Kconfig
-CONFLICT (delete/modify): drivers/usb/serial/ti_fw_3410.h deleted in firmwa=
-re/master and modified in HEAD. Version HEAD of drivers/usb/serial/ti_fw_34=
-10.h left in tree.
-CONFLICT (delete/modify): drivers/usb/serial/ti_fw_5052.h deleted in firmwa=
-re/master and modified in HEAD. Version HEAD of drivers/usb/serial/ti_fw_50=
-52.h left in tree.
-CONFLICT (content): Merge conflict in drivers/usb/serial/ti_usb_3410_5052.c
-CONFLICT (content): Merge conflict in sound/pci/Kconfig
-CONFLICT (content): Merge conflict in sound/pci/maestro3.c
-CONFLICT (content): Merge conflict in sound/pci/ymfpci/ymfpci_main.c
-Merging pcmcia/master
-CONFLICT (content): Merge conflict in drivers/char/pcmcia/cm4000_cs.c
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-CONFLICT (content): Merge conflict in drivers/video/backlight/Kconfig
-CONFLICT (content): Merge conflict in drivers/video/backlight/Makefile
-Merging kgdb/kgdb-next
-Applying nfs fix 1
-
---Signature=_Tue__17_Jun_2008_19_44_07_+1000_eWrP+wIMM3AxUj5t
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhXh2cACgkQTgG2atn1QN8xfACePvdly/hm6Ia9BmJL4f0Mo6Ln
-tNwAoJNKgBAU2frbKU9MYbgfKbEjSpJY
-=1SpG
------END PGP SIGNATURE-----
-
---Signature=_Tue__17_Jun_2008_19_44_07_+1000_eWrP+wIMM3AxUj5t--
