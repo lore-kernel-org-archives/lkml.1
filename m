@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760072AbYFQWVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760260AbYFQWWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760072AbYFQWVm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 18:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757634AbYFQWVc
+	id S1760260AbYFQWWH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 18:22:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759588AbYFQWVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 18:21:32 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:37737 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754756AbYFQWVb (ORCPT
+	Tue, 17 Jun 2008 18:21:53 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34480 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758002AbYFQWVw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 18:21:31 -0400
-Date: Tue, 17 Jun 2008 15:17:13 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Louis Rilling <louis.rilling@kerlabs.com>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: Re: [BUGFIX][PATCH 1/3] configfs: Fix symlink() to a removing item
-Message-ID: <20080617221713.GB29091@mail.oracle.com>
-Mail-Followup-To: Louis Rilling <louis.rilling@kerlabs.com>,
-	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-References: <1213724243-29183-1-git-send-email-louis.rilling@kerlabs.com> <1213724243-29183-2-git-send-email-louis.rilling@kerlabs.com>
+	Tue, 17 Jun 2008 18:21:52 -0400
+Message-ID: <485838F9.8010001@firstfloor.org>
+Date: Wed, 18 Jun 2008 00:21:45 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1213724243-29183-2-git-send-email-louis.rilling@kerlabs.com>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+To: Al Viro <viro@ZenIV.linux.org.uk>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Bron Gondwana <brong@fastmail.fm>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rob Mueller <robm@fastmail.fm>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: BUG: mmapfile/writev spurious zero bytes (x86_64/not i386,	bisected,
+ reproducable)
+References: <1213682570.13708.1258839317@webmail.messagingengine.com> <alpine.LFD.1.10.0806170947380.25099@woody.linux-foundation.org> <alpine.LFD.1.10.0806171041560.25099@woody.linux-foundation.org> <alpine.LFD.1.10.0806171309130.2981@woody.linux-foundation.org> <alpine.LFD.1.10.0806171331460.2908@woody.linux-foundation.org> <alpine.LFD.1.10.0806171356320.2908@woody.linux-foundation.org> <485829A1.4020705@firstfloor.org> <alpine.LFD.1.10.0806171421100.2907@woody.linux-foundation.org> <20080617213618.GL28946@ZenIV.linux.org.uk> <48582FAB.1020402@firstfloor.org> <20080617221118.GM28946@ZenIV.linux.org.uk>
+In-Reply-To: <20080617221118.GM28946@ZenIV.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 17, 2008 at 07:37:21PM +0200, Louis Rilling wrote:
-> This patch makes configfs_symlink() fail whenever the target is being removed,
-> using the CONFIGFS_USET_DROPPING flag set by configfs_detach_prep() and
-> protected by configfs_dirent_lock.
-> diff --git a/fs/configfs/symlink.c b/fs/configfs/symlink.c
-> index faeb441..58722a9 100644
-> --- a/fs/configfs/symlink.c
-> +++ b/fs/configfs/symlink.c
-> @@ -78,6 +78,12 @@ static int create_link(struct config_item *parent_item,
->  	if (sl) {
->  		sl->sl_target = config_item_get(item);
->  		spin_lock(&configfs_dirent_lock);
-> +		if (target_sd->s_type & CONFIGFS_USET_DROPPING) {
-> +			spin_unlock(&configfs_dirent_lock);
-> +			config_item_put(item);
-> +			kfree(sl);
-> +			return -EPERM;
 
-	This needs to be -ENOENT.  If rmdir set DROPPING and then
-released dirent_lock, it's going to remove the target.  That's ENOENT.
+> AFAICS, what happened is that b0rken copy_*FROM*_user() had been discussed
+> with references to copy_*TO*_user().  With proposed patch indeed not affecting
+> any legitimate calls of the latter.  Does affect the former and that, from
+> my reading of the code in question, correctly.
+> 
+> IOW, s/copy_to_user/copy_from_user/ in Linus' postings upthread and they
+> make sense.
 
-Joel
+Yes, it makes some more sense, but I'm not completely happy with the fix
+because it makes the fault point reporting very unreliable (maximum error
+will be 63 instead of 7 now). iirc especially mount was sensitive to that.
 
--- 
+Unfortunately fixing the accuracy is a little tricky.
 
-"Sometimes when reading Goethe I have the paralyzing suspicion
- that he is trying to be funny."
-         - Guy Davenport
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+-Andi
