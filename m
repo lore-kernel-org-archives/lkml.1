@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbYFQQMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756303AbYFQQSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756106AbYFQQMi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 12:12:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbYFQQM3
+	id S1756303AbYFQQSR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 12:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbYFQQSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 12:12:29 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:42650 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751843AbYFQQM3 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 12:12:29 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-Cc: Andrea Arcangeli <andrea@qumranet.com>,
-       Ivana Varekova <varekova@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>, linux-man@vger.kernel.org
-Subject: Re: PR_SET_SECCOMP and PR_GET_SECCOMP doc (and bug?)
-In-Reply-To: Your message of "Tue, 17 Jun 2008 15:32:29 +0200."
-             <cfd18e0f0806170632p27a5ccd2obadaf0dfd4ce64aa@mail.gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <48565951.40603@gmail.com> <20080616162543.GA9552@duo.random>
-            <cfd18e0f0806170632p27a5ccd2obadaf0dfd4ce64aa@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1213719134_5877P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Tue, 17 Jun 2008 12:18:06 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:9120 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752432AbYFQQSE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 12:18:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=fnaNWvM3JRyCqmAtLngAvUYzY/DXw6gzVmSbBpglOQdmZpH1D7/sXLjLWDlP2gaYQS
+         hZpbaZ1MBI6VyLQOotdoTg26ZhyBTDOBWbK0F0SOMSXU9mW6Wi7WVNrHPsjKdZBn0FYc
+         Jdgoo6NfM5kH+xIdCVZT4m5crnLI96Dr++kqY=
+Message-ID: <86802c440806170918l1cb10014nccfd8d3e2b13da47@mail.gmail.com>
+Date: Tue, 17 Jun 2008 09:18:01 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: merge setup_memory_map with e820
+Cc: "Glauber Costa" <glommer@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4857E07F.3070209@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Tue, 17 Jun 2008 12:12:14 -0400
-Message-ID: <18697.1213719134@turing-police.cc.vt.edu>
+Content-Disposition: inline
+References: <200806161303.31997.yhlu.kernel@gmail.com>
+	 <200806161958.28627.yhlu.kernel@gmail.com>
+	 <5d6222a80806170531g50a72ea2r963bba8e404e619f@mail.gmail.com>
+	 <4857E07F.3070209@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1213719134_5877P
-Content-Type: text/plain; charset=us-ascii
+On Tue, Jun 17, 2008 at 9:04 AM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Glauber Costa wrote:
+>>>
+>>> +       boot_params.e820_entries = new_nr;
+>>> +       if (copy_e820_map(boot_params.e820_map, boot_params.e820_entries)
+>>> < 0) {
+>>> +#ifdef CONFIG_X86_64
+>>> +               early_panic("Cannot find a valid memory map");
+>>> +#else
+>>
+>> Can't this be made dependant on HIGHMEM instead of X86_64? It seems
+>> high-memory dependant anyway. Also, are you sure
+>> this code that maps into himem would work with HIGHMEM disabled anyway?
 
-On Tue, 17 Jun 2008 15:32:29 +0200, Michael Kerrisk said:
-> On Mon, Jun 16, 2008 at 6:25 PM, Andrea Arcangeli <andrea@qumranet.com> wrote:
-> > On Mon, Jun 16, 2008 at 02:15:13PM +0200, Michael Kerrisk wrote:
+that is behavoir before merge.
 
-> >>     PR_GET_SECCOMP (since Linux 2.6.23)
-> >>         Return the secure computing mode  of  the  calling  thread.
-> >>         Not  very  useful: if the caller is not in secure computing
-> >>         mode, this operation returns 0; if the caller is in  secure
-> >>         computing  mode, then the prctl() call will cause a SIGKILL
-> >>         signal to be sent to the process.  This operation  is  only
-> >>         available  if  the kernel is configured with CONFIG_SECCOMP
-> >>         enabled.
+>>
+>
+> Uhm... x86-64 and HIGHMEM are mutually exclusive.
+>
+> Either way, it shouldn't be dependent on anything; there is no reason why
+> the #else clause can't be applied to both.
 
-Would it make sense to change the text to read "Not very useful for the
-current implementation of mode=1" and/or add that it may be useful for
-future modes that allow prctl() modes other than 1?
+remove the early_panic?
 
---==_Exmh_1213719134_5877P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFIV+JecC3lWbTT17ARAhveAKDY1DP3M9vUeQq+aX7JeUYE+P853QCg/yZo
-KJ0cgJiZqSJ5xwj02OwZuag=
-=Ypgt
------END PGP SIGNATURE-----
-
---==_Exmh_1213719134_5877P--
+YH
