@@ -1,294 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758232AbYFQMYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757965AbYFQMZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758232AbYFQMYf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 08:24:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757984AbYFQMYM
+	id S1757965AbYFQMZn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 08:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbYFQMZf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 08:24:12 -0400
-Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:36497
-	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757951AbYFQMYJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 08:24:09 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEANpJV0h8qbBs/2dsb2JhbACuIA
-X-IronPort-AV: E=Sophos;i="4.27,657,1204470000"; 
-   d="scan'208";a="278175279"
-From: Ian Kent <raven@themaw.net>
-Subject: [PATCH 6/7] autofs4 - use struct qstr in waitq.c
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       autofs mailing list <autofs@linux.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Date: Tue, 17 Jun 2008 20:24:06 +0800
-Message-ID: <20080617122406.14725.84758.stgit@raven.themaw.net>
-In-Reply-To: <20080617122336.14725.64829.stgit@raven.themaw.net>
-References: <20080617122336.14725.64829.stgit@raven.themaw.net>
-User-Agent: StGIT/0.14.1
+	Tue, 17 Jun 2008 08:25:35 -0400
+Received: from in.cluded.net ([195.159.98.120]:54852 "EHLO in.cluded.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754940AbYFQMZe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 08:25:34 -0400
+X-OS: [Linux] 2.6.8 and newer (?)
+Message-ID: <4857AD38.2090601@uw.no>
+Date: Tue, 17 Jun 2008 14:25:28 +0200
+From: "Daniel K." <dk@uw.no>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Peter Zijlstra <peterz@infradead.org>
+CC: mingo@elte.hu, menage@google.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [BUG: NULL pointer dereference] cgroups and	RT	scheduling	interact
+ badly.
+References: <485445AE.2010602@uw.no> <1213612447.16944.99.camel@twins>	 <4856671B.1020304@uw.no>  <1213624312.16944.104.camel@twins>	 <1213627148.16944.106.camel@twins>  <485682B0.8010805@uw.no>	 <1213629536.16944.109.camel@twins> <1213692557.16944.153.camel@twins>
+In-Reply-To: <1213692557.16944.153.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Moyer <jmoyer@redhat.com>
+Peter Zijlstra wrote:
+> How's this [patch] work for you? (includes the previuos patchlet too)
 
-The autofs_wait_queue already contains all of the fields of the
-struct qstr, so change it into a qstr.
+Thanks,
 
-This patch, from Jeff Moyer, has been modified a liitle by myself.
+this patch fixed the obvious problem, namely
 
-Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
-Signed-off-by: Ian Kent <raven@themaw.net>
+# echo $$ > /dev/cgroup/burn/oops/tasks
+# schedtool -R -p 1 -e burnP6 &
 
----
+now works again. However, the last step below
 
- fs/autofs4/autofs_i.h |    4 +-
- fs/autofs4/waitq.c    |   86 ++++++++++++++++++++++++++-----------------------
- 2 files changed, 46 insertions(+), 44 deletions(-)
+# echo $$ > /dev/cgroup/tasks
+# burnP6 &
+[1] 3414
+# echo 3414 > /dev/cgroup/burn/oops/tasks
+# schedtool -R -p 1 3414
+
+gives this new and shiny Oops instead.
+
+> [  189.274997] BUG: unable to handle kernel NULL pointer dereference at 0000000000000064
+> [  189.274997] IP: [<ffffffff8022e165>] __enqueue_rt_entity+0x55/0x1d0
+> [  189.274997] PGD 21e451067 PUD 220d19067 PMD 0 
+> [  189.274997] Oops: 0002 [1] SMP 
+> [  189.274997] CPU 1 
+> [  189.274997] Modules linked in: netconsole configfs ipmi_msghandler kvm_amd kvm ipv6 iptable_filter ip_tables x_tables af_packet loop evdev usbhid hid i2c_nforce2 button pcspkr i2c_core k8temp shpchp pci_hotplug tg3 sd_mod forcedeth sg ohci_hcd ehci_hcd usbcore thermal processor fan
+> [  189.274997] Pid: 3415, comm: schedtool Not tainted 2.6.26-rc6 #3
+> [  189.274997] RIP: 0010:[<ffffffff8022e165>]  [<ffffffff8022e165>] __enqueue_rt_entity+0x55/0x1d0
+> [  189.274997] RSP: 0018:ffff81021e477e48  EFLAGS: 00010012
+> [  189.274997] RAX: ffff810001056d08 RBX: ffff810220dbc060 RCX: ffff810220dbbfc0
+> [  189.274997] RDX: 0000000000000064 RSI: ffff81022120ec60 RDI: ffff810220dbc060
+> [  189.274997] RBP: ffff81021e477e58 R08: 44b0000000000000 R09: 0000000000000001
+> [  189.274997] R10: 0000000000000000 R11: 0000000000000206 R12: ffff8100010566b8
+> [  189.274997] R13: 0000000000000001 R14: 0000000000000001 R15: ffff81021e477f38
+> [  189.274997] FS:  00007f71ec2146e0(0000) GS:ffff810223022580(0000) knlGS:0000000000000000
+> [  189.274997] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> [  189.274997] CR2: 0000000000000064 CR3: 000000021e439000 CR4: 00000000000006e0
+> [  189.274997] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> [  189.274997] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> [  189.274997] Process schedtool (pid: 3415, threadinfo ffff81021e476000, task ffff810221daf920)
+> [  189.274997] Stack:  ffff810220dbc060 ffff81022120ec60 ffff81021e477e78 ffffffff8022e34e
+> [  189.274997]  0000000000000001 ffff81022120ec60 ffff81021e477e98 ffffffff802299e3
+> [  189.274997]  ffff81021e477f38 ffff8100010565c0 ffff81021e477eb8 ffffffff80229a60
+> [  189.274997] Call Trace:
+> [  189.274997]  [<ffffffff8022e34e>] enqueue_rt_entity+0x1e/0x30
+> [  189.274997]  [<ffffffff802299e3>] enqueue_task+0x13/0x30
+> [  189.274998]  [<ffffffff80229a60>] activate_task+0x30/0x50
+> [  189.274998]  [<ffffffff80232ebf>] sched_setscheduler+0x28f/0x3b0
+> [  189.274998]  [<ffffffff8028b368>] ? do_munmap+0x278/0x2d0
+> [  189.274998]  [<ffffffff8023305d>] do_sched_setscheduler+0x7d/0x90
+> [  189.274998]  [<ffffffff802330a4>] sys_sched_setscheduler+0x14/0x20
+> [  189.274998]  [<ffffffff8020b77a>] system_call_after_swapgs+0x8a/0x8f
+> [  189.274998] 
+> [  189.274998] 
+> [  189.274998] Code: 85 c9 0f 84 76 01 00 00 8b 81 58 06 00 00 48 98 48 8d 8b 60 ff ff ff 48 c1 e0 04 4a 8d 44 20 10 48 8b 50 08 48 89 03 48 89 58 08 <48> 89 1a 48 89 53 08 48 8b 53 40 48 8d 82 58 06 00 00 48 85 d2 
+> [  189.274998] RIP  [<ffffffff8022e165>] __enqueue_rt_entity+0x55/0x1d0
+> [  189.274998]  RSP <ffff81021e477e48>
+> [  189.274998] CR2: 0000000000000064
+
+If I switch the order of calling schedtool and assigning the task to a
+cgroup, then it works OK.
+
+# echo $$ > /dev/cgroup/tasks
+# burnP6 &
+[1] 3414
+# schedtool -R -p 1 3414
+# echo 3414 > /dev/cgroup/burn/oops/tasks
+
+Note the distinct lack of an Oops here.
+
+But all is not well. If I now use schedtool (obvoiusly redundantly)
+
+# schedtool -R -p 1 3414
+
+I get a new Oops, which looks essentially tha same as the one above.
 
 
-diff --git a/fs/autofs4/autofs_i.h b/fs/autofs4/autofs_i.h
-index 2dce233..da8882f 100644
---- a/fs/autofs4/autofs_i.h
-+++ b/fs/autofs4/autofs_i.h
-@@ -75,9 +75,7 @@ struct autofs_wait_queue {
- 	struct autofs_wait_queue *next;
- 	autofs_wqt_t wait_queue_token;
- 	/* We use the following to see what we are waiting for */
--	unsigned int hash;
--	unsigned int len;
--	char *name;
-+	struct qstr name;
- 	u32 dev;
- 	u64 ino;
- 	uid_t uid;
-diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
-index 75e5955..5208cfb 100644
---- a/fs/autofs4/waitq.c
-+++ b/fs/autofs4/waitq.c
-@@ -36,8 +36,10 @@ void autofs4_catatonic_mode(struct autofs_sb_info *sbi)
- 	while (wq) {
- 		nwq = wq->next;
- 		wq->status = -ENOENT; /* Magic is gone - report failure */
--		kfree(wq->name);
--		wq->name = NULL;
-+		if (wq->name.name) {
-+			kfree(wq->name.name);
-+			wq->name.name = NULL;
-+		}
- 		wake_up_interruptible(&wq->queue);
- 		wq = nwq;
- 	}
-@@ -92,7 +94,7 @@ static void autofs4_notify_daemon(struct autofs_sb_info *sbi,
- 	size_t pktsz;
- 
- 	DPRINTK("wait id = 0x%08lx, name = %.*s, type=%d",
--		wq->wait_queue_token, wq->len, wq->name, type);
-+		wq->wait_queue_token, wq->name.len, wq->name.name, type);
- 
- 	memset(&pkt,0,sizeof pkt); /* For security reasons */
- 
-@@ -107,9 +109,9 @@ static void autofs4_notify_daemon(struct autofs_sb_info *sbi,
- 		pktsz = sizeof(*mp);
- 
- 		mp->wait_queue_token = wq->wait_queue_token;
--		mp->len = wq->len;
--		memcpy(mp->name, wq->name, wq->len);
--		mp->name[wq->len] = '\0';
-+		mp->len = wq->name.len;
-+		memcpy(mp->name, wq->name.name, wq->name.len);
-+		mp->name[wq->name.len] = '\0';
- 		break;
- 	}
- 	case autofs_ptype_expire_multi:
-@@ -119,9 +121,9 @@ static void autofs4_notify_daemon(struct autofs_sb_info *sbi,
- 		pktsz = sizeof(*ep);
- 
- 		ep->wait_queue_token = wq->wait_queue_token;
--		ep->len = wq->len;
--		memcpy(ep->name, wq->name, wq->len);
--		ep->name[wq->len] = '\0';
-+		ep->len = wq->name.len;
-+		memcpy(ep->name, wq->name.name, wq->name.len);
-+		ep->name[wq->name.len] = '\0';
- 		break;
- 	}
- 	/*
-@@ -138,9 +140,9 @@ static void autofs4_notify_daemon(struct autofs_sb_info *sbi,
- 		pktsz = sizeof(*packet);
- 
- 		packet->wait_queue_token = wq->wait_queue_token;
--		packet->len = wq->len;
--		memcpy(packet->name, wq->name, wq->len);
--		packet->name[wq->len] = '\0';
-+		packet->len = wq->name.len;
-+		memcpy(packet->name, wq->name.name, wq->name.len);
-+		packet->name[wq->name.len] = '\0';
- 		packet->dev = wq->dev;
- 		packet->ino = wq->ino;
- 		packet->uid = wq->uid;
-@@ -191,15 +193,15 @@ static int autofs4_getpath(struct autofs_sb_info *sbi,
- }
- 
- static struct autofs_wait_queue *
--autofs4_find_wait(struct autofs_sb_info *sbi,
--		  char *name, unsigned int hash, unsigned int len)
-+autofs4_find_wait(struct autofs_sb_info *sbi, struct qstr *qstr)
- {
- 	struct autofs_wait_queue *wq;
- 
- 	for (wq = sbi->queues; wq; wq = wq->next) {
--		if (wq->hash == hash &&
--		    wq->len == len &&
--		    wq->name && !memcmp(wq->name, name, len))
-+		if (wq->name.hash == qstr->hash &&
-+		    wq->name.len == qstr->len &&
-+		    wq->name.name &&
-+			 !memcmp(wq->name.name, qstr->name, qstr->len))
- 			break;
- 	}
- 	return wq;
-@@ -210,9 +212,8 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
- {
- 	struct autofs_info *ino;
- 	struct autofs_wait_queue *wq;
-+	struct qstr qstr;
- 	char *name;
--	unsigned int len = 0;
--	unsigned int hash = 0;
- 	int status, type;
- 
- 	/* In catatonic mode, we don't wait for nobody */
-@@ -225,22 +226,23 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
- 
- 	/* If this is a direct mount request create a dummy name */
- 	if (IS_ROOT(dentry) && (sbi->type & AUTOFS_TYPE_DIRECT))
--		len = sprintf(name, "%p", dentry);
-+		qstr.len = sprintf(name, "%p", dentry);
- 	else {
--		len = autofs4_getpath(sbi, dentry, &name);
--		if (!len) {
-+		qstr.len = autofs4_getpath(sbi, dentry, &name);
-+		if (!qstr.len) {
- 			kfree(name);
- 			return -ENOENT;
- 		}
- 	}
--	hash = full_name_hash(name, len);
-+	qstr.name = name;
-+	qstr.hash = full_name_hash(name, qstr.len);
- 
- 	if (mutex_lock_interruptible(&sbi->wq_mutex)) {
--		kfree(name);
-+		kfree(qstr.name);
- 		return -EINTR;
- 	}
- 
--	wq = autofs4_find_wait(sbi, name, hash, len);
-+	wq = autofs4_find_wait(sbi, &qstr);
- 	ino = autofs4_dentry_ino(dentry);
- 	if (!wq && ino && notify == NFY_NONE) {
- 		/*
-@@ -254,10 +256,10 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
- 			mutex_unlock(&sbi->wq_mutex);
- 			schedule_timeout_interruptible(HZ/10);
- 			if (mutex_lock_interruptible(&sbi->wq_mutex)) {
--				kfree(name);
-+				kfree(qstr.name);
- 				return -EINTR;
- 			}
--			wq = autofs4_find_wait(sbi, name, hash, len);
-+			wq = autofs4_find_wait(sbi, &qstr);
- 			if (wq)
- 				break;
- 		}
-@@ -268,7 +270,7 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
- 		 * return status of the wait.
- 		 */
- 		if (!wq) {
--			kfree(name);
-+			kfree(qstr.name);
- 			mutex_unlock(&sbi->wq_mutex);
- 			return 0;
- 		}
-@@ -278,7 +280,7 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
- 		/* Create a new wait queue */
- 		wq = kmalloc(sizeof(struct autofs_wait_queue),GFP_KERNEL);
- 		if (!wq) {
--			kfree(name);
-+			kfree(qstr.name);
- 			mutex_unlock(&sbi->wq_mutex);
- 			return -ENOMEM;
- 		}
-@@ -289,9 +291,7 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
- 		wq->next = sbi->queues;
- 		sbi->queues = wq;
- 		init_waitqueue_head(&wq->queue);
--		wq->hash = hash;
--		wq->name = name;
--		wq->len = len;
-+		memcpy(&wq->name, &qstr, sizeof(struct qstr));
- 		wq->dev = autofs4_get_dev(sbi);
- 		wq->ino = autofs4_get_ino(sbi);
- 		wq->uid = current->uid;
-@@ -319,16 +319,18 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
- 		}
- 
- 		DPRINTK("new wait id = 0x%08lx, name = %.*s, nfy=%d\n",
--			(unsigned long) wq->wait_queue_token, wq->len, wq->name, notify);
-+			(unsigned long) wq->wait_queue_token, wq->name.len,
-+			wq->name.name, notify);
- 
- 		/* autofs4_notify_daemon() may block */
- 		autofs4_notify_daemon(sbi, wq, type);
- 	} else {
- 		atomic_inc(&wq->wait_ctr);
- 		mutex_unlock(&sbi->wq_mutex);
--		kfree(name);
-+		kfree(qstr.name);
- 		DPRINTK("existing wait id = 0x%08lx, name = %.*s, nfy=%d",
--			(unsigned long) wq->wait_queue_token, wq->len, wq->name, notify);
-+			(unsigned long) wq->wait_queue_token, wq->name.len,
-+			wq->name.name, notify);
- 	}
- 
- 	/* wq->name is NULL if and only if the lock is already released */
-@@ -336,11 +338,13 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
- 	if (sbi->catatonic) {
- 		/* We might have slept, so check again for catatonic mode */
- 		wq->status = -ENOENT;
--		kfree(wq->name);
--		wq->name = NULL;
-+		if (wq->name.name) {
-+			kfree(wq->name.name);
-+			wq->name.name = NULL;
-+		}
- 	}
- 
--	if (wq->name) {
-+	if (wq->name.name) {
- 		/* Block all but "shutdown" signals while waiting */
- 		sigset_t oldset;
- 		unsigned long irqflags;
-@@ -351,7 +355,7 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
- 		recalc_sigpending();
- 		spin_unlock_irqrestore(&current->sighand->siglock, irqflags);
- 
--		wait_event_interruptible(wq->queue, wq->name == NULL);
-+		wait_event_interruptible(wq->queue, wq->name.name == NULL);
- 
- 		spin_lock_irqsave(&current->sighand->siglock, irqflags);
- 		current->blocked = oldset;
-@@ -388,8 +392,8 @@ int autofs4_wait_release(struct autofs_sb_info *sbi, autofs_wqt_t wait_queue_tok
- 
- 	*wql = wq->next;	/* Unlink from chain */
- 	mutex_unlock(&sbi->wq_mutex);
--	kfree(wq->name);
--	wq->name = NULL;	/* Do not wait on this queue */
-+	kfree(wq->name.name);
-+	wq->name.name = NULL;	/* Do not wait on this queue */
- 
- 	wq->status = status;
- 
+Daniel K.
