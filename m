@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758195AbYFQH40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758463AbYFQH4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758195AbYFQH40 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 03:56:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbYFQHyK
+	id S1758463AbYFQH4l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 03:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757344AbYFQHyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 03:54:10 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43482
+	Tue, 17 Jun 2008 03:54:23 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43486
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754349AbYFQHyI (ORCPT
+	by vger.kernel.org with ESMTP id S1756593AbYFQHyT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 03:54:08 -0400
-Date: Tue, 17 Jun 2008 00:54:09 -0700 (PDT)
-Message-Id: <20080617.005409.37355710.davem@davemloft.net>
+	Tue, 17 Jun 2008 03:54:19 -0400
+Date: Tue, 17 Jun 2008 00:54:19 -0700 (PDT)
+Message-Id: <20080617.005419.179481054.davem@davemloft.net>
 To: linville@tuxdriver.com
 CC: mokuno@sm.sony.co.jp, linux-wireless@vger.kernel.org,
        netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 7/12]: wext: Pass iwreq pointer down into standard/private
- handlers.
+Subject: [PATCH 8/12]: wext: Pull top-level ioctl dispatch logic into
+ helper function.
 From: David Miller <davem@davemloft.net>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
@@ -27,87 +27,59 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-wext: Pass iwreq pointer down into standard/private handlers.
-
-They have no need to see the object as an ifreq.
+wext: Pull top-level ioctl dispatch logic into helper function.
 
 Signed-off-by: David S. Miller <davem@davemloft.net>
 ---
- net/wireless/wext.c |   17 ++++++++---------
- 1 files changed, 8 insertions(+), 9 deletions(-)
+ net/wireless/wext.c |   26 ++++++++++++++++++++------
+ 1 files changed, 20 insertions(+), 6 deletions(-)
 
 diff --git a/net/wireless/wext.c b/net/wireless/wext.c
-index 929d241..e9c8817 100644
+index e9c8817..09022cb 100644
 --- a/net/wireless/wext.c
 +++ b/net/wireless/wext.c
-@@ -832,11 +832,10 @@ out:
-  * user space and kernel space.
-  */
- static int ioctl_standard_call(struct net_device *	dev,
--			       struct ifreq *		ifr,
-+			       struct iwreq		*iwr,
- 			       unsigned int		cmd,
- 			       iw_handler		handler)
- {
--	struct iwreq *				iwr = (struct iwreq *) ifr;
- 	const struct iw_ioctl_description *	descr;
- 	struct iw_request_info			info;
- 	int					ret = -EINVAL;
-@@ -984,10 +983,9 @@ out:
- 	return err;
+@@ -1079,8 +1079,10 @@ static int wext_permission_check(unsigned int cmd)
  }
  
--static int ioctl_private_call(struct net_device *dev, struct ifreq *ifr,
-+static int ioctl_private_call(struct net_device *dev, struct iwreq *iwr,
- 			      unsigned int cmd, iw_handler handler)
+ /* entry point from dev ioctl */
+-int wext_handle_ioctl(struct net *net, struct ifreq *ifr, unsigned int cmd,
+-		      void __user *arg)
++static int wext_ioctl_dispatch(struct net *net, struct ifreq *ifr,
++			       unsigned int cmd,
++			       wext_ioctl_func standard,
++			       wext_ioctl_func private)
  {
--	struct iwreq *iwr = (struct iwreq *) ifr;
- 	int extra_size = 0, ret = -EINVAL;
- 	const struct iw_priv_args *descr;
- 	struct iw_request_info info;
-@@ -1015,7 +1013,7 @@ static int ioctl_private_call(struct net_device *dev, struct ifreq *ifr,
+ 	int ret = wext_permission_check(cmd);
+ 
+@@ -1089,12 +1091,24 @@ int wext_handle_ioctl(struct net *net, struct ifreq *ifr, unsigned int cmd,
+ 
+ 	dev_load(net, ifr->ifr_name);
+ 	rtnl_lock();
+-	ret = wireless_process_ioctl(net, ifr, cmd,
+-				     ioctl_standard_call,
+-				     ioctl_private_call);
++	ret = wireless_process_ioctl(net, ifr, cmd, standard, private);
+ 	rtnl_unlock();
+-	if (IW_IS_GET(cmd) && copy_to_user(arg, ifr, sizeof(struct iwreq)))
++
++	return ret;
++}
++
++int wext_handle_ioctl(struct net *net, struct ifreq *ifr, unsigned int cmd,
++		      void __user *arg)
++{
++	int ret = wext_ioctl_dispatch(net, ifr, cmd,
++				      ioctl_standard_call,
++				      ioctl_private_call);
++
++	if (ret >= 0 &&
++	    IW_IS_GET(cmd) &&
++	    copy_to_user(arg, ifr, sizeof(struct iwreq)))
+ 		return -EFAULT;
++
+ 	return ret;
  }
  
- /* ---------------------------------------------------------------- */
--typedef int (*wext_ioctl_func)(struct net_device *, struct ifreq *,
-+typedef int (*wext_ioctl_func)(struct net_device *, struct iwreq *,
- 			       unsigned int, iw_handler);
- 
- /*
-@@ -1027,6 +1025,7 @@ static int wireless_process_ioctl(struct net *net, struct ifreq *ifr,
- 				  wext_ioctl_func standard,
- 				  wext_ioctl_func private)
- {
-+	struct iwreq *iwr = (struct iwreq *) ifr;
- 	struct net_device *dev;
- 	iw_handler	handler;
- 
-@@ -1041,11 +1040,11 @@ static int wireless_process_ioctl(struct net *net, struct ifreq *ifr,
- 	 * Note that 'cmd' is already filtered in dev_ioctl() with
- 	 * (cmd >= SIOCIWFIRST && cmd <= SIOCIWLAST) */
- 	if (cmd == SIOCGIWSTATS)
--		return standard(dev, ifr, cmd,
-+		return standard(dev, iwr, cmd,
- 				&iw_handler_get_iwstats);
- 
- 	if (cmd == SIOCGIWPRIV && dev->wireless_handlers)
--		return standard(dev, ifr, cmd,
-+		return standard(dev, iwr, cmd,
- 				&iw_handler_get_private);
- 
- 	/* Basic check */
-@@ -1057,9 +1056,9 @@ static int wireless_process_ioctl(struct net *net, struct ifreq *ifr,
- 	if (handler) {
- 		/* Standard and private are not the same */
- 		if (cmd < SIOCIWFIRSTPRIV)
--			return standard(dev, ifr, cmd, handler);
-+			return standard(dev, iwr, cmd, handler);
- 		else
--			return private(dev, ifr, cmd, handler);
-+			return private(dev, iwr, cmd, handler);
- 	}
- 	/* Old driver API : call driver ioctl handler */
- 	if (dev->do_ioctl)
 -- 
 1.5.5.1.308.g1fbb5
 
