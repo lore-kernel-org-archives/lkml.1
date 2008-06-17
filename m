@@ -1,62 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759472AbYFQSZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759450AbYFQS3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759472AbYFQSZu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 14:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755827AbYFQSZm
+	id S1759450AbYFQS3V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 14:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756766AbYFQS3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 14:25:42 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:41315 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753186AbYFQSZl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 14:25:41 -0400
-Date: Tue, 17 Jun 2008 20:26:23 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Michael Kerrisk <mtk.manpages@googlemail.com>, corbet@lwn.net,
-       Andrew Morton <akpm@linux-foundation.org>, linux-doc@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>, mpm@selenic.com,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       tech-board@lists.linux-foundation.org,
-       Jim Zemlin <jzemlin@linux-foundation.org>
-Subject: Re: [patch] MAINTAINERS -- Documentation
-Message-ID: <20080617182623.GC11453@uranus.ravnborg.org>
-References: <4857A1D6.2080600@gmail.com> <20080617075354.7a6c9bd3.randy.dunlap@oracle.com>
+	Tue, 17 Jun 2008 14:29:13 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:23050 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756765AbYFQS3M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 14:29:12 -0400
+Subject: Re: [Bad page] trying to free locked page? (Re: [PATCH][RFC] fix
+	kernel BUG at mm/migrate.c:719! in 2.6.26-rc5-mm3)
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
+In-Reply-To: <20080617181527.5bcbbccc.nishimura@mxp.nes.nec.co.jp>
+References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
+	 <20080617163501.7cf411ee.nishimura@mxp.nes.nec.co.jp>
+	 <20080617164709.de4db070.nishimura@mxp.nes.nec.co.jp>
+	 <20080617180314.2d1b0efa.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20080617181527.5bcbbccc.nishimura@mxp.nes.nec.co.jp>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Tue, 17 Jun 2008 14:29:45 -0400
+Message-Id: <1213727385.8707.53.camel@lts-notebook>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080617075354.7a6c9bd3.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 17, 2008 at 07:53:54AM -0700, Randy Dunlap wrote:
-> On Tue, 17 Jun 2008 13:36:54 +0200 Michael Kerrisk wrote:
-> 
-> > Andrew,
+On Tue, 2008-06-17 at 18:15 +0900, Daisuke Nishimura wrote:
+> On Tue, 17 Jun 2008 18:03:14 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > On Tue, 17 Jun 2008 16:47:09 +0900
+> > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 > > 
-> > Could you apply this patch for MAINTAINERS.  At this stage, I doubt that I'll
-> > be doing much in terms of writing new documents or trying to fix
-> > /Documentation as a whole, but I'm very willing to provide review and
-> > editorial assistance for people contributing changes to /Documentation, and
-> > even prod them in that direction if something is in need of documentation.
+> > > On Tue, 17 Jun 2008 16:35:01 +0900, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > > > Hi.
+> > > > 
+> > > > I got this bug while migrating pages only a few times
+> > > > via memory_migrate of cpuset.
+> > > > 
+> > > > Unfortunately, even if this patch is applied,
+> > > > I got bad_page problem after hundreds times of page migration
+> > > > (I'll report it in another mail).
+> > > > But I believe something like this patch is needed anyway.
+> > > > 
+> > > 
+> > > I got bad_page after hundreds times of page migration.
+> > > It seems that a locked page is being freed.
+
+I'm seeing *mlocked* pages [PG_mlocked] being freed now with my stress
+load, with just the "if(!page->mapping) { } clause removed, as proposed
+in your rfc patch in previous mail.  Need to investigate this...
+
+I'm not seeing *locked* pages [PG_lock], tho'.  From your stack trace,
+it appears that migrate_page() left locked pages on the list of pages to
+be putback.  The pages get locked and unlocked in unmap_and_move().  I
+haven't found a path [yet] where the page can be returned still locked.
+I think I need to duplicate the problem.
+
+> > > 
+> > Good catch, and I think your investigation in the last e-mail was correct.
+> > I'd like to dig this...but it seems some kind of big fix is necessary.
+> > Did this happen under page-migraion by cpuset-task-move test ?
 > > 
-> > Cheers,
-> > 
-> > Michael
+> Yes.
 > 
+> I made 2 cpuset directories, run some processes in each cpusets,
+> and run a script like below infinitely to move tasks and migrate pages.
+
+What processes/tests do you run in each cpuset?
+
 > 
-> While I welcome the additional help, I've been doing this for years, and
-> Jon Corbet also does some of this, so I don't believe that having Michael
-> listed here alone is the right thing.  I'll be glad to send an additional
-> patch to this, adding me to it, and Jon could do the same for himself.
+> ---
+> #!/bin/bash
+> 
+> G1=$1
+> G2=$2
+> 
+> move_task()
+> {
+>         for pid in $1
+>         do
+>                 echo $pid >$2/tasks 2>/dev/null
+>         done
+> }
+> 
+> G1_TASK=`cat ${G1}/tasks`
+> G2_TASK=`cat ${G2}/tasks`
+> 
+> move_task "${G1_TASK}" ${G2} &
+> move_task "${G2_TASK}" ${G1} &
+> 
+> wait
+> ---
+> 
+> I got this bad_page after running this script for about 600 times.
+> 
 
-I would prefer the three of you works it out in-between you so you act like
-a group rather than three individuals (as it looks from the outside today).
-I do not mind sending mails to the three of you but I expect it to be a
-common effort rather than three individuals.
 
-To agree on who is listed in MAINTAINERS and sending a single diff looks to
-me like a simple start.
 
-	Sam
