@@ -1,505 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758137AbYFQMbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755845AbYFQMeJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758137AbYFQMbS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 08:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756021AbYFQMbI
+	id S1755845AbYFQMeJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 08:34:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756099AbYFQMdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 08:31:08 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:28555 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755845AbYFQMbG (ORCPT
+	Tue, 17 Jun 2008 08:33:54 -0400
+Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.108]:18551
+	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756021AbYFQMdx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 08:31:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=pMVgc+YArSuWnhen6s8Jw57Q8gRmLDvt0qCliYhZj2FWucNfEdWaXmWToXHBgEoUDC
-         2irzi2qK1vw3rEf+c+DVcg3350wxArCEdGRWBEZuzc0v/KquJlEREY2zrWrVM4Lis/Zp
-         3eunS2RTTVzitvUYieGdwZlwxsH/Q/J6SBiV8=
-Message-ID: <5d6222a80806170531g50a72ea2r963bba8e404e619f@mail.gmail.com>
-Date: Tue, 17 Jun 2008 09:31:03 -0300
-From: "Glauber Costa" <glommer@gmail.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] x86: merge setup_memory_map with e820
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200806161958.28627.yhlu.kernel@gmail.com>
+	Tue, 17 Jun 2008 08:33:53 -0400
+X-Greylist: delayed 600 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Jun 2008 08:33:53 EDT
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAP5JV0h8qbBs/2dsb2JhbACuIw
+X-IronPort-AV: E=Sophos;i="4.27,657,1204470000"; 
+   d="scan'208";a="343868518"
+From: Ian Kent <raven@themaw.net>
+Subject: [PATCH 4/7] autofs4 - don't release directory mutex if called in
+	oz_mode
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       autofs mailing list <autofs@linux.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Date: Tue, 17 Jun 2008 20:23:55 +0800
+Message-ID: <20080617122355.14725.46170.stgit@raven.themaw.net>
+In-Reply-To: <20080617122336.14725.64829.stgit@raven.themaw.net>
+References: <20080617122336.14725.64829.stgit@raven.themaw.net>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200806161303.31997.yhlu.kernel@gmail.com>
-	 <200806161958.28627.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 16, 2008 at 11:58 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
-> and kill e820_32/64.c and e820_32/64.h
->
-> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->
-> Index: linux-2.6/arch/x86/mm/init_64.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/mm/init_64.c
-> +++ linux-2.6/arch/x86/mm/init_64.c
-> @@ -48,6 +48,18 @@
->  #include <asm/numa.h>
->  #include <asm/cacheflush.h>
->
-> +/*
-> + * PFN of last memory page.
-> + */
-> +unsigned long end_pfn;
-> +
-> +/*
-> + * end_pfn only includes RAM, while max_pfn_mapped includes all e820 entries.
-> + * The direct mapping extends to max_pfn_mapped, so that we can directly access
-> + * apertures, ACPI and other tables without having to play with fixmaps.
-> + */
-> +unsigned long max_pfn_mapped;
-> +
->  static unsigned long dma_reserve __initdata;
->
->  DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
-> Index: linux-2.6/arch/x86/kernel/setup_64.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/setup_64.c
-> +++ linux-2.6/arch/x86/kernel/setup_64.c
-> @@ -281,12 +281,6 @@ static inline void __init reserve_crashk
->  {}
->  #endif
->
-> -/* Overridden in paravirt.c if CONFIG_PARAVIRT */
-> -void __attribute__((weak)) __init memory_setup(void)
-> -{
-> -       machine_specific_memory_setup();
-> -}
-> -
->  /* Current gdt points %fs at the "master" per-cpu area: after this,
->  * it's on the real one. */
->  void switch_to_new_gdt(void)
-> @@ -330,7 +324,7 @@ void __init setup_arch(char **cmdline_p)
->
->        ARCH_SETUP
->
-> -       memory_setup();
-> +       setup_memory_map();
->        copy_edd();
->
->        if (!boot_params.hdr.root_flags)
-> Index: linux-2.6/arch/x86/kernel/e820_64.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/e820_64.c
-> +++ /dev/null
-> @@ -1,92 +0,0 @@
-> -/*
-> - * Handle the memory map.
-> - * The functions here do the job until bootmem takes over.
-> - *
-> - *  Getting sanitize_e820_map() in sync with i386 version by applying change:
-> - *  -  Provisions for empty E820 memory regions (reported by certain BIOSes).
-> - *     Alex Achenbach <xela@slit.de>, December 2002.
-> - *  Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> - *
-> - */
-> -#include <linux/kernel.h>
-> -#include <linux/types.h>
-> -#include <linux/init.h>
-> -#include <linux/bootmem.h>
-> -#include <linux/ioport.h>
-> -#include <linux/string.h>
-> -#include <linux/kexec.h>
-> -#include <linux/module.h>
-> -#include <linux/mm.h>
-> -#include <linux/pfn.h>
-> -#include <linux/pci.h>
-> -
-> -#include <asm/pgtable.h>
-> -#include <asm/page.h>
-> -#include <asm/e820.h>
-> -#include <asm/proto.h>
-> -#include <asm/setup.h>
-> -#include <asm/sections.h>
-> -#include <asm/kdebug.h>
-> -#include <asm/trampoline.h>
-> -
-> -/*
-> - * PFN of last memory page.
-> - */
-> -unsigned long end_pfn;
-> -
-> -/*
-> - * end_pfn only includes RAM, while max_pfn_mapped includes all e820 entries.
-> - * The direct mapping extends to max_pfn_mapped, so that we can directly access
-> - * apertures, ACPI and other tables without having to play with fixmaps.
-> - */
-> -unsigned long max_pfn_mapped;
-> -
-> -static void early_panic(char *msg)
-> -{
-> -       early_printk(msg);
-> -       panic(msg);
-> -}
-> -
-> -/* We're not void only for x86 32-bit compat */
-> -char *__init machine_specific_memory_setup(void)
-> -{
-> -       char *who = "BIOS-e820";
-> -       int new_nr;
-> -       /*
-> -        * Try to copy the BIOS-supplied E820-map.
-> -        *
-> -        * Otherwise fake a memory map; one section from 0k->640k,
-> -        * the next section from 1mb->appropriate_mem_k
-> -        */
-> -       new_nr = boot_params.e820_entries;
-> -       sanitize_e820_map(boot_params.e820_map,
-> -                       ARRAY_SIZE(boot_params.e820_map),
-> -                       &new_nr);
-> -       boot_params.e820_entries = new_nr;
-> -       if (copy_e820_map(boot_params.e820_map, boot_params.e820_entries) < 0)
-> -               early_panic("Cannot find a valid memory map");
-> -       printk(KERN_INFO "BIOS-provided physical RAM map:\n");
-> -       e820_print_map(who);
-> -
-> -       /* In case someone cares... */
-> -       return who;
-> -}
-> -
-> -int __init arch_get_ram_range(int slot, u64 *addr, u64 *size)
-> -{
-> -       int i;
-> -
-> -       if (slot < 0 || slot >= e820.nr_map)
-> -               return -1;
-> -       for (i = slot; i < e820.nr_map; i++) {
-> -               if (e820.map[i].type != E820_RAM)
-> -                       continue;
-> -               break;
-> -       }
-> -       if (i == e820.nr_map || e820.map[i].addr > (max_pfn << PAGE_SHIFT))
-> -               return -1;
-> -       *addr = e820.map[i].addr;
-> -       *size = min_t(u64, e820.map[i].size + e820.map[i].addr,
-> -               max_pfn << PAGE_SHIFT) - *addr;
-> -       return i + 1;
-> -}
-> Index: linux-2.6/arch/x86/kernel/e820_32.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/e820_32.c
-> +++ /dev/null
-> @@ -1,29 +0,0 @@
-> -#include <linux/kernel.h>
-> -#include <linux/types.h>
-> -#include <linux/init.h>
-> -#include <linux/bootmem.h>
-> -#include <linux/ioport.h>
-> -#include <linux/string.h>
-> -#include <linux/kexec.h>
-> -#include <linux/module.h>
-> -#include <linux/mm.h>
-> -#include <linux/pfn.h>
-> -#include <linux/uaccess.h>
-> -
-> -#include <asm/pgtable.h>
-> -#include <asm/page.h>
-> -#include <asm/e820.h>
-> -#include <asm/setup.h>
-> -
-> -/* Overridden in paravirt.c if CONFIG_PARAVIRT */
-> -char * __init __attribute__((weak)) memory_setup(void)
-> -{
-> -       return machine_specific_memory_setup();
-> -}
-> -
-> -void __init setup_memory_map(void)
-> -{
-> -       printk(KERN_INFO "BIOS-provided physical RAM map:\n");
-> -       e820_print_map(memory_setup());
-> -}
-> -
-> Index: linux-2.6/arch/x86/kernel/e820.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/e820.c
-> +++ linux-2.6/arch/x86/kernel/e820.c
-> @@ -996,4 +996,76 @@ void __init e820_reserve_resources(void)
->        }
->  }
->
-> +char *__init __attribute__((weak)) machine_specific_memory_setup(void)
-> +{
-> +       char *who = "BIOS-e820";
-> +       int new_nr;
-> +       /*
-> +        * Try to copy the BIOS-supplied E820-map.
-> +        *
-> +        * Otherwise fake a memory map; one section from 0k->640k,
-> +        * the next section from 1mb->appropriate_mem_k
-> +        */
-> +       new_nr = boot_params.e820_entries;
-> +       sanitize_e820_map(boot_params.e820_map,
-> +                       ARRAY_SIZE(boot_params.e820_map),
-> +                       &new_nr);
-> +       boot_params.e820_entries = new_nr;
-> +       if (copy_e820_map(boot_params.e820_map, boot_params.e820_entries) < 0) {
-> +#ifdef CONFIG_X86_64
-> +               early_panic("Cannot find a valid memory map");
-> +#else
+Since we now delay hashing of dentrys until the ->mkdir() call,
+droping and re-taking the directory mutex within the ->lookup()
+function when we are being called by user space is not needed.
+This can lead to a race when other processes are attempting to
+access the same directory during mount point directory creation.
 
-Can't this be made dependant on HIGHMEM instead of X86_64? It seems
-high-memory dependant anyway. Also, are you sure
-this code that maps into himem would work with HIGHMEM disabled anyway?
+In this case we need to hang onto the mutex to ensure we don't
+get user processes trying to create a mount request for a newly
+created dentry after the mount point entry has already been
+created. This ensures that when we need to check a dentry passed
+to autofs4_wait(), if it is hashed, it is always the mount point
+dentry and not a new dentry created by another lookup during
+directory creation.
 
-> +               unsigned long mem_size;
->
-> +               /* compare results from other methods and take the greater */
-> +               if (boot_params.alt_mem_k
-> +                   < boot_params.screen_info.ext_mem_k) {
-> +                       mem_size = boot_params.screen_info.ext_mem_k;
-> +                       who = "BIOS-88";
-> +               } else {
-> +                       mem_size = boot_params.alt_mem_k;
-> +                       who = "BIOS-e801";
-> +               }
-> +
-> +               e820.nr_map = 0;
-> +               e820_add_region(0, LOWMEMSIZE(), E820_RAM);
-> +               e820_add_region(HIGH_MEMORY, mem_size << 10, E820_RAM);
-> +#endif
-> +       }
-> +
-> +       /* In case someone cares... */
-> +       return who;
-> +}
-> +
-> +/* Overridden in paravirt.c if CONFIG_PARAVIRT */
-> +char * __init __attribute__((weak)) memory_setup(void)
-> +{
-> +       return machine_specific_memory_setup();
-> +}
-> +
-> +void __init setup_memory_map(void)
-> +{
-> +       printk(KERN_INFO "BIOS-provided physical RAM map:\n");
-> +       e820_print_map(memory_setup());
-> +}
-> +
-> +#ifdef CONFIG_X86_64
-> +int __init arch_get_ram_range(int slot, u64 *addr, u64 *size)
-> +{
-> +       int i;
-> +
-> +       if (slot < 0 || slot >= e820.nr_map)
-> +               return -1;
-> +       for (i = slot; i < e820.nr_map; i++) {
-> +               if (e820.map[i].type != E820_RAM)
-> +                       continue;
-> +               break;
-> +       }
-> +       if (i == e820.nr_map || e820.map[i].addr > (max_pfn << PAGE_SHIFT))
-> +               return -1;
-> +       *addr = e820.map[i].addr;
-> +       *size = min_t(u64, e820.map[i].size + e820.map[i].addr,
-> +               max_pfn << PAGE_SHIFT) - *addr;
-> +       return i + 1;
-> +}
-> +#endif
-> Index: linux-2.6/include/asm-x86/e820_32.h
-> ===================================================================
-> --- linux-2.6.orig/include/asm-x86/e820_32.h
-> +++ /dev/null
-> @@ -1,24 +0,0 @@
-> -/*
-> - * structures and definitions for the int 15, ax=e820 memory map
-> - * scheme.
-> - *
-> - * In a nutshell, arch/i386/boot/setup.S populates a scratch table
-> - * in the empty_zero_block that contains a list of usable address/size
-> - * duples.   In arch/i386/kernel/setup.c, this information is
-> - * transferred into the e820map, and in arch/i386/mm/init.c, that
-> - * new information is used to mark pages reserved or not.
-> - *
-> - */
-> -#ifndef __E820_HEADER
-> -#define __E820_HEADER
-> -
-> -#include <linux/ioport.h>
-> -
-> -#define HIGH_MEMORY    (1024*1024)
-> -
-> -#ifndef __ASSEMBLY__
-> -
-> -extern void setup_memory_map(void);
-> -
-> -#endif/*!__ASSEMBLY__*/
-> -#endif/*__E820_HEADER*/
-> Index: linux-2.6/include/asm-x86/e820_64.h
-> ===================================================================
-> --- linux-2.6.orig/include/asm-x86/e820_64.h
-> +++ /dev/null
-> @@ -1,26 +0,0 @@
-> -/*
-> - * structures and definitions for the int 15, ax=e820 memory map
-> - * scheme.
-> - *
-> - * In a nutshell, setup.S populates a scratch table in the
-> - * empty_zero_block that contains a list of usable address/size
-> - * duples.  setup.c, this information is transferred into the e820map,
-> - * and in init.c/numa.c, that new information is used to mark pages
-> - * reserved or not.
-> - */
-> -#ifndef __E820_HEADER
-> -#define __E820_HEADER
-> -
-> -#include <linux/ioport.h>
-> -
-> -#ifndef __ASSEMBLY__
-> -extern void setup_memory_region(void);
-> -extern void contig_e820_setup(void);
-> -extern int e820_any_non_reserved(unsigned long start, unsigned long end);
-> -extern int is_memory_any_valid(unsigned long start, unsigned long end);
-> -extern int e820_all_non_reserved(unsigned long start, unsigned long end);
-> -extern int is_memory_all_valid(unsigned long start, unsigned long end);
-> -
-> -#endif/*!__ASSEMBLY__*/
-> -
-> -#endif/*__E820_HEADER*/
-> Index: linux-2.6/include/asm-x86/e820.h
-> ===================================================================
-> --- linux-2.6.orig/include/asm-x86/e820.h
-> +++ linux-2.6/include/asm-x86/e820.h
-> @@ -99,6 +99,9 @@ extern void e820_register_active_regions
->  extern u64 e820_hole_size(u64 start, u64 end);
->  extern void finish_e820_parsing(void);
->  extern void e820_reserve_resources(void);
-> +extern void setup_memory_map(void);
-> +extern char *machine_specific_memory_setup(void);
-> +extern char *memory_setup(void);
->
->  #endif /* __ASSEMBLY__ */
->
-> @@ -109,10 +112,10 @@ extern void e820_reserve_resources(void)
->  #define BIOS_END               0x00100000
->
->  #ifdef __KERNEL__
-> +#include <linux/ioport.h>
-> +
->  #ifdef CONFIG_X86_32
-> -# include "e820_32.h"
-> -#else
-> -# include "e820_64.h"
-> +#define HIGH_MEMORY    (1024*1024)
->  #endif
->  #endif /* __KERNEL__ */
->
-> Index: linux-2.6/arch/x86/mach-default/setup.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/mach-default/setup.c
-> +++ linux-2.6/arch/x86/mach-default/setup.c
-> @@ -142,50 +142,3 @@ static int __init print_ipi_mode(void)
->
->  late_initcall(print_ipi_mode);
->
-> -/**
-> - * machine_specific_memory_setup - Hook for machine specific memory setup.
-> - *
-> - * Description:
-> - *     This is included late in kernel/setup.c so that it can make
-> - *     use of all of the static functions.
-> - **/
-> -
-> -char * __init machine_specific_memory_setup(void)
-> -{
-> -       char *who;
-> -       int new_nr;
-> -
-> -
-> -       who = "BIOS-e820";
-> -
-> -       /*
-> -        * Try to copy the BIOS-supplied E820-map.
-> -        *
-> -        * Otherwise fake a memory map; one section from 0k->640k,
-> -        * the next section from 1mb->appropriate_mem_k
-> -        */
-> -       new_nr = boot_params.e820_entries;
-> -       sanitize_e820_map(boot_params.e820_map,
-> -                       ARRAY_SIZE(boot_params.e820_map),
-> -                       &new_nr);
-> -       boot_params.e820_entries = new_nr;
-> -       if (copy_e820_map(boot_params.e820_map, boot_params.e820_entries)
-> -           < 0) {
-> -               unsigned long mem_size;
-> -
-> -               /* compare results from other methods and take the greater */
-> -               if (boot_params.alt_mem_k
-> -                   < boot_params.screen_info.ext_mem_k) {
-> -                       mem_size = boot_params.screen_info.ext_mem_k;
-> -                       who = "BIOS-88";
-> -               } else {
-> -                       mem_size = boot_params.alt_mem_k;
-> -                       who = "BIOS-e801";
-> -               }
-> -
-> -               e820.nr_map = 0;
-> -               e820_add_region(0, LOWMEMSIZE(), E820_RAM);
-> -               e820_add_region(HIGH_MEMORY, mem_size << 10, E820_RAM);
-> -       }
-> -       return who;
-> -}
-> Index: linux-2.6/include/asm-x86/setup.h
-> ===================================================================
-> --- linux-2.6.orig/include/asm-x86/setup.h
-> +++ linux-2.6/include/asm-x86/setup.h
-> @@ -8,7 +8,6 @@
->  /* Interrupt control for vSMPowered x86_64 systems */
->  void vsmp_init(void);
->
-> -char *machine_specific_memory_setup(void);
->  #ifndef CONFIG_PARAVIRT
->  #define paravirt_post_allocator_init() do {} while (0)
->  #endif
-> @@ -50,10 +49,6 @@ extern struct boot_params boot_params;
->  */
->  #define LOWMEMSIZE()   (0x9f000)
->
-> -char * __init machine_specific_memory_setup(void);
-> -char *memory_setup(void);
-> -
-> -
->  void __init i386_start_kernel(void);
->
->  extern unsigned long init_pg_tables_start;
-> Index: linux-2.6/arch/x86/kernel/Makefile
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/Makefile
-> +++ linux-2.6/arch/x86/kernel/Makefile
-> @@ -30,7 +30,7 @@ obj-y                 += setup_$(BITS).o i8259.o irqin
->  obj-$(CONFIG_X86_32)   += sys_i386_32.o i386_ksyms_32.o
->  obj-$(CONFIG_X86_64)   += sys_x86_64.o x8664_ksyms_64.o
->  obj-$(CONFIG_X86_64)   += syscall_64.o vsyscall_64.o setup64.o
-> -obj-y                  += bootflag.o e820_$(BITS).o e820.o
-> +obj-y                  += bootflag.o e820.o
->  obj-y                  += pci-dma.o quirks.o i8237.o topology.o kdebugfs.o
->  obj-y                  += alternative.o i8253.o pci-nommu.o
->  obj-y                  += tsc_$(BITS).o io_delay.o rtc.o
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Signed-off-by: Ian Kent <raven@themaw.net>
+
+---
+
+ fs/autofs4/root.c |   11 +++++------
+ 1 files changed, 5 insertions(+), 6 deletions(-)
 
 
-
--- 
-Glauber Costa.
-"Free as in Freedom"
-http://glommer.net
-
-"The less confident you are, the more serious you have to act."
+diff --git a/fs/autofs4/root.c b/fs/autofs4/root.c
+index 7fa303d..236eb9b 100644
+--- a/fs/autofs4/root.c
++++ b/fs/autofs4/root.c
+@@ -683,12 +683,11 @@ static struct dentry *autofs4_lookup(struct inode *dir, struct dentry *dentry, s
+ 		spin_lock(&dentry->d_lock);
+ 		dentry->d_flags |= DCACHE_AUTOFS_PENDING;
+ 		spin_unlock(&dentry->d_lock);
+-	}
+-
+-	if (dentry->d_op && dentry->d_op->d_revalidate) {
+-		mutex_unlock(&dir->i_mutex);
+-		(dentry->d_op->d_revalidate)(dentry, nd);
+-		mutex_lock(&dir->i_mutex);
++		if (dentry->d_op && dentry->d_op->d_revalidate) {
++			mutex_unlock(&dir->i_mutex);
++			(dentry->d_op->d_revalidate)(dentry, nd);
++			mutex_lock(&dir->i_mutex);
++		}
+ 	}
+ 
+ 	/*
