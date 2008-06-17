@@ -1,101 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbYFQMUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757297AbYFQMXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756667AbYFQMUR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 08:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755536AbYFQMUB
+	id S1757297AbYFQMXT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 08:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755778AbYFQMXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 08:20:01 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:9705 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755514AbYFQMUA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 08:20:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=BbWBvZqxmTsBYwcgF/n1MXY39f/Br+Hyiql4Q27aTjCu74ahy9zfrDPqEr8COnWBIr
-         Ftw05go0NpIldOKNofKuAToMLZL+5Jfg2GVnnR4V2KuDbHr2MXblo+J4TKn0jU/uzDQo
-         MLplS90CKgXnUxLPbP/FyYUyXUAbNvBVLQSEU=
-Message-ID: <4857ABA2.6060801@gmail.com>
-Date: Tue, 17 Jun 2008 08:18:42 -0400
-From: Gregory Haskins <gregory.haskins.ml@gmail.com>
-Reply-To: gregory.haskins@gmail.com
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: Ankita Garg <ankita@in.ibm.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, rostedt@goodmis.org,
-       Peter Zijlstra <peterz@infradead.org>, suresh.b.siddha@intel.com,
-       aneesh.kumar@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com,
-       vatsa@linux.vnet.ibm.com, David Bahi <DBahi@novell.com>
-Subject: [ANNOUNCE] sched: schedtop utility v0.5
-References: <483545B4.BA47.005A.0@novell.com> <48448081.BA47.005A.0@novell.com>
-In-Reply-To: <48448081.BA47.005A.0@novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Jun 2008 08:23:08 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:55466 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755713AbYFQMXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 08:23:06 -0400
+Date: Tue, 17 Jun 2008 14:23:46 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Peter Korsgaard <jacmet@sunsite.dk>,
+       linux-kernel@vger.kernel.org, dhowells@redhat.com, andi@firstfloor.org,
+       "Kirill A. Shutemov" <k.shutemov@gmail.com>, ysato@users.sourceforge.jp,
+       takata@linux-m32r.org, linux-m32r@ml.linux-m32r.org, kyle@mcmartin.ca,
+       matthew@wil.cx, grundler@parisc-linux.org, linux-parisc@vger.kernel.org,
+       lethal@linux-sh.org, linux-sh@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: architectures with ARCH_SUPPORTS_AOUT but no binfmt_aout
+Message-ID: <20080617122346.GA10598@uranus.ravnborg.org>
+References: <1213565555.26255.522.camel@pmac.infradead.org> <1213604973-7073-1-git-send-email-jacmet@sunsite.dk> <1213617663.26255.708.camel@pmac.infradead.org> <20080616121727.GB10854@cs181133002.pp.htv.fi> <1213619214.26255.721.camel@pmac.infradead.org> <20080617084235.GA20169@cs181133002.pp.htv.fi> <1213696004.26255.960.camel@pmac.infradead.org> <20080617101112.GE20169@cs181133002.pp.htv.fi> <1213702113.26255.996.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1213702113.26255.996.camel@pmac.infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
->>>> On Thu, May 22, 2008 at 10:06 AM, in message <483545B4.BA47.005A.0@novell.com>,
-> Gregory Haskins wrote: 
->> Hi all scheduler developers,
->>   I had an itch to scratch w.r.t. watching the stats in /proc/schedstats, 
->> and it appears that the perl scripts referenced in 
->> Documentation/scheduler/sched-stats.txt do not support v14 from HEAD so I 
->> whipped up a little utility I call "schedtop".
->>
->> This utility will process statistics from /proc/schedstat such that the 
->> busiest stats will bubble up to the top.  It can alternately be sorted by the 
->> largest stat, or by name.  Stats can be included or excluded based on reg-ex 
->> pattern matching.
->>
->> You can download the tarball here:
->>
->> ftp://ftp.novell.com/dev/ghaskins/schedtop.tar.gz
->>
->> I have also posted it to the opensuse build service for generating RPMS for 
->> a handful of 32/64-bit x86 distros for your convenience:
->>
->> http://download.opensuse.org/repositories/home:/ghaskins/
->>
->> (Note that the build is still in progress for some of the favors, so if you 
->> do not see the flavor you are looking for, check back in a little while)
->>
->> Comments/feedback/bug-fixes welcome!
->>
->> Regards
->> -Greg
+On Tue, Jun 17, 2008 at 12:28:33PM +0100, David Woodhouse wrote:
+> On Tue, 2008-06-17 at 13:11 +0300, Adrian Bunk wrote:
+> > The pattern for this stuff is to provide a HAVE_AOUT kconfig variable 
+> > that gets select'ed by these architectures.
 > 
-> Hi All,
->   I have posted an update to schedtop (v0.3) which adds /proc/<pid>/schedstats and /proc/<pid>/sched stats to the mix.
+> http://git.infradead.org/users/dwmw2/aout-2.6.git?a=commitdiff;h=a5db5179
 > 
-> Also note that there is a comprehensive filtering mechanism built into all versions of schedtop:
+> Subject: [PATCH] Introduce HAVE_AOUT symbol to remove hard-coded arch list for BINFMT_AOUT
 > 
-> "-i <REGEX>" sets the *include* pattern, and
-> "-x <REGEX> sets the *exclude* pattern.
+> HAVE_AOUT doesn't quite do the same thing as the recently removed
+> ARCH_SUPPORTS_AOUT config option. That was set even on platforms where
+> binfmt_aout isn't supported, although it's not entirely clear why.
 > 
-> By default, -i is set to allow everything, and -x is set to exclude nothing.  A common config for me is to use "-x sched_info" since those sched_info stats seem to always be moving rapidly and can cloud stats that are more interesting (to me, anyway).
-> 
-> Let me know if you have any questions.  Comments/feedback are welcome
-> 
-> -Greg
+> So it's best just to introduce a new symbol, handled consistently with
+> other similar HAVE_xxx symbols; with a simple 'select' the arch Kconfig.
 
-Hi All,
-  I have released a new version (v0.5) which fixes a compile error on 
-some platforms (like Mandriva, RHEL, and opensuse-factory) that did not 
-like the usage of operator/ in boost::filesystem::path code.  v0.5 is 
-now fully supported on all of the original platforms that v0.2 worked on.
+Looks good.
+One minor issue...
 
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
 
+> @@ -7,6 +7,7 @@ config ALPHA
+>  	default y
+>  	select HAVE_IDE
+>  	select HAVE_OPROFILE
+> +	select HAVE_AOUT
+Sorting these alphabetically will result in less merge conflicts when the list grows.
+
+	Sam
