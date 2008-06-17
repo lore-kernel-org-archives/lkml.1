@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbYFQEYP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbYFQExl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753666AbYFQEYP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 00:24:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbYFQEX6
+	id S1753937AbYFQExl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 00:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbYFQExb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 00:23:58 -0400
-Received: from mout.perfora.net ([74.208.4.196]:57401 "EHLO mout.perfora.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751266AbYFQEX6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 00:23:58 -0400
-Date: Mon, 16 Jun 2008 23:22:54 -0500 (CDT)
-From: "R.L. Horn" <lists@eastcheap.org>
-X-X-Sender: rlhorn@hani.compact.internal
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25.3: serial problem (minicom)
-In-Reply-To: <20080616111329.3ae97879@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LNX.1.00.0806162306400.10919@hani.compact.internal>
-References: <alpine.LNX.1.00.0806131635260.1294@hani.compact.internal> <20080614102900.6830ed46@lxorguk.ukuu.org.uk> <alpine.LNX.1.00.0806150032050.1283@hani.compact.internal> <20080616111329.3ae97879@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Provags-ID: V01U2FsdGVkX1/4lzecdYTnNg6rvLR5QyzVC3RoeE4xOpEvgdd
- eTew+sYFzUxq3tm0so7vgjlkUjMGlDTHqlgBaZoI40TF2q8U1h
- ntgZC7RahCaGPmmm8/Htg==
+	Tue, 17 Jun 2008 00:53:31 -0400
+Received: from ag-out-0708.google.com ([72.14.246.250]:32023 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751383AbYFQExb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 00:53:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=N6lgrFx30eeE7aBDbPtq2Zu0ljPczjTZ6OlJJ7pd+IIZNKIwd1qMoIjUWUrtDroc2Q
+         cbe4wBUYiMz8Yuj1fqNX1B4WsBYZTzCcBnm1xA+yNUo1VKpZdgvGSHSHr+h1SvH0rBUt
+         9EoZgb86Ek6prfh8haDhfycKhDQeqBd054hUY=
+Subject: Re: [PATCH 2/3] relay: Fix race condition which occurs when
+	reading across CPUs.
+From: Tom Zanussi <tzanussi@gmail.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       akpm@linux-foundation.org, compudj@krystal.dyndns.org,
+       linux-kernel@vger.kernel.org, righi.andrea@gmail.com
+In-Reply-To: <84144f020806152319w487b67fasa70f2cf27de1d761@mail.gmail.com>
+References: <20080613040958.4f52ee29@linux360.ro>
+	 <1213417601.8237.37.camel@charm-linux>
+	 <20080614181103.17617db1@linux360.ro>
+	 <84144f020806140916j7c39d3fr6ada38169ebc84c2@mail.gmail.com>
+	 <1213594690.7744.49.camel@charm-linux>
+	 <84144f020806152319w487b67fasa70f2cf27de1d761@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 16 Jun 2008 23:52:53 -0500
+Message-Id: <1213678374.8259.29.camel@charm-linux>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jun 2008, Alan Cox wrote:
 
-> Whatever it implies the behaviour should not have changed between 2.6.24
-> and 2.6.25. Nobody AFAIK sat down and decided to change it.
+Hi Pekka,
 
-And, besides, I've gotten reports that the usb-serial drivers still behave 
-the same as with 2.6.24.
+On Mon, 2008-06-16 at 09:19 +0300, Pekka Enberg wrote:
+> Hi Tom,
+> 
+> On Mon, Jun 16, 2008 at 8:38 AM, Tom Zanussi <tzanussi@gmail.com> wrote:
+> > So I guess I don't have strong feelings about it if it's solving a real
+> > usability problem and doesn't cause any performance (or other)
+> > regressions.
+> 
+> Is there some standard performance test for relayfs that we could use
+> to verify this?
 
-It looks like the call to tty_termios_encode_baud_rate() in 
-drivers/serial/8250.c is the culprit.  If I comment it out, everything 
-appears to go back to normal (seemingly with no undesired side effects).
+Not that I know of, so probably showing how it would affect/not affect
+read and relay_write users with some before/after comparisons would have
+to do.
 
-Why the call is there (it didn't replace anything else in the 2.6.24.7 
-version of 8250.c, though it did in serial_core.c) remains a mystery to 
-me.
+Tom
+
+
