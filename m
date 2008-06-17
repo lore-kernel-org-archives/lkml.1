@@ -1,83 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759414AbYFQRi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759174AbYFQRjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759414AbYFQRi1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 13:38:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755845AbYFQRh3
+	id S1759174AbYFQRjb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 13:39:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755483AbYFQRjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 13:37:29 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:58755 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755535AbYFQRh2 (ORCPT
+	Tue, 17 Jun 2008 13:39:23 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:40104 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755425AbYFQRjX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 13:37:28 -0400
-From: Louis Rilling <louis.rilling@kerlabs.com>
-To: Joel.Becker@oracle.com
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
-       Louis Rilling <louis.rilling@kerlabs.com>
-Subject: [BUGFIX][PATCH 2/3] configfs: Rename CONFIGFS_USET_IN_MKDIR to CONFIGFS_USET_ATTACHING
-Date: Tue, 17 Jun 2008 19:37:22 +0200
-Message-Id: <1213724243-29183-3-git-send-email-louis.rilling@kerlabs.com>
-X-Mailer: git-send-email 1.5.5.3
-In-Reply-To: <1213724243-29183-1-git-send-email-louis.rilling@kerlabs.com>
-References: <1213724243-29183-1-git-send-email-louis.rilling@kerlabs.com>
+	Tue, 17 Jun 2008 13:39:23 -0400
+Message-ID: <4857F6B5.4000404@zytor.com>
+Date: Tue, 17 Jun 2008 10:39:01 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Glauber Costa <glommer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: merge setup_memory_map with e820
+References: <200806161303.31997.yhlu.kernel@gmail.com>	 <200806161958.28627.yhlu.kernel@gmail.com>	 <5d6222a80806170531g50a72ea2r963bba8e404e619f@mail.gmail.com>	 <4857E07F.3070209@zytor.com> <86802c440806170918l1cb10014nccfd8d3e2b13da47@mail.gmail.com>
+In-Reply-To: <86802c440806170918l1cb10014nccfd8d3e2b13da47@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The CONFIGFS_USET_IN_MKDIR flag can be reused with symlink() to solve a similar
-issue as mkdir() vs rmdir(). This patch renames the flag to make it more
-meaningful for this purpose.
+Yinghai Lu wrote:
+> 
+> that is behavoir before merge.
+> 
+>> Uhm... x86-64 and HIGHMEM are mutually exclusive.
+>>
+>> Either way, it shouldn't be dependent on anything; there is no reason why
+>> the #else clause can't be applied to both.
+> 
+> remove the early_panic?
+> 
 
-Signed-off-by: Louis Rilling <louis.rilling@kerlabs.com>
----
- fs/configfs/configfs_internal.h |    2 +-
- fs/configfs/dir.c               |    6 +++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
+Yes, remove the early_panic().  Andi didn't want to support the non-e820 
+modes in x86-64, but if the code is unified there is no reason not to.
 
-diff --git a/fs/configfs/configfs_internal.h b/fs/configfs/configfs_internal.h
-index da015c1..a28f37d 100644
---- a/fs/configfs/configfs_internal.h
-+++ b/fs/configfs/configfs_internal.h
-@@ -48,7 +48,7 @@ struct configfs_dirent {
- #define CONFIGFS_USET_DIR	0x0040
- #define CONFIGFS_USET_DEFAULT	0x0080
- #define CONFIGFS_USET_DROPPING	0x0100
--#define CONFIGFS_USET_IN_MKDIR	0x0200
-+#define CONFIGFS_USET_ATTACHING	0x0200
- #define CONFIGFS_NOT_PINNED	(CONFIGFS_ITEM_ATTR)
- 
- extern spinlock_t configfs_dirent_lock;
-diff --git a/fs/configfs/dir.c b/fs/configfs/dir.c
-index f2a12d0..629c938 100644
---- a/fs/configfs/dir.c
-+++ b/fs/configfs/dir.c
-@@ -383,7 +383,7 @@ static int configfs_detach_prep(struct dentry *dentry, struct mutex **wait_mutex
- 			continue;
- 		if (sd->s_type & CONFIGFS_USET_DEFAULT) {
- 			/* Abort if racing with mkdir() */
--			if (sd->s_type & CONFIGFS_USET_IN_MKDIR) {
-+			if (sd->s_type & CONFIGFS_USET_ATTACHING) {
- 				if (wait_mutex)
- 					*wait_mutex = &sd->s_dentry->d_inode->i_mutex;
- 				return -EAGAIN;
-@@ -1127,7 +1127,7 @@ static int configfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
- 	 */
- 	spin_lock(&configfs_dirent_lock);
- 	/* This will make configfs_detach_prep() fail */
--	sd->s_type |= CONFIGFS_USET_IN_MKDIR;
-+	sd->s_type |= CONFIGFS_USET_ATTACHING;
- 	spin_unlock(&configfs_dirent_lock);
- 
- 	if (group)
-@@ -1136,7 +1136,7 @@ static int configfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
- 		ret = configfs_attach_item(parent_item, item, dentry);
- 
- 	spin_lock(&configfs_dirent_lock);
--	sd->s_type &= ~CONFIGFS_USET_IN_MKDIR;
-+	sd->s_type &= ~CONFIGFS_USET_ATTACHING;
- 	spin_unlock(&configfs_dirent_lock);
- 
- out_unlink:
--- 
-1.5.5.3
-
+	-hpa
