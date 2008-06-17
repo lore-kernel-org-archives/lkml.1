@@ -1,107 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbYFQEyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678AbYFQEzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754597AbYFQEyk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 00:54:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbYFQEya
+	id S1754678AbYFQEzw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 00:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYFQEzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 00:54:30 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:35977 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751400AbYFQEy3 (ORCPT
+	Tue, 17 Jun 2008 00:55:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36040 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751443AbYFQEzo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 00:54:29 -0400
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 2 of 3] block: Block layer data integrity support
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <patchbomb.1213589417@sermon.lab.mkp.net>
-	<91ceabd365c3e718425d.1213589419@sermon.lab.mkp.net>
-	<20080616192104.GV20851@kernel.dk>
-Date: Tue, 17 Jun 2008 00:54:19 -0400
-In-Reply-To: <20080616192104.GV20851@kernel.dk> (Jens Axboe's message of "Mon\, 16 Jun 2008 21\:21\:04 +0200")
-Message-ID: <yq1zlpkd5l0.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 17 Jun 2008 00:55:44 -0400
+Date: Mon, 16 Jun 2008 21:54:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Pavel Machek <pavel@suse.cz>, mtk.manpages@gmail.com,
+       kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: sync_file_range(SYNC_FILE_RANGE_WRITE) blocks?
+Message-Id: <20080616215406.8f09e519.akpm@linux-foundation.org>
+In-Reply-To: <20080616165351.1b2ff397@bree.surriel.com>
+References: <20080530102619.GA2468@elf.ucw.cz>
+	<Pine.LNX.4.64.0805301451020.19914@blonde.site>
+	<20080530204307.GA4978@ucw.cz>
+	<Pine.LNX.4.64.0805311925190.27293@blonde.site>
+	<20080531173950.c4f04028.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0806010752510.24919@blonde.site>
+	<20080601011501.199af80c.akpm@linux-foundation.org>
+	<20080601114008.GC16843@elf.ucw.cz>
+	<20080601133727.4e62ae55.akpm@linux-foundation.org>
+	<20080602114319.GI5757@kernel.dk>
+	<Pine.LNX.4.64.0806021319250.16157@blonde.site>
+	<20080616165351.1b2ff397@bree.surriel.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Jens" == Jens Axboe <jens.axboe@oracle.com> writes:
+On Mon, 16 Jun 2008 16:53:51 -0400 Rik van Riel <riel@redhat.com> wrote:
 
-Jens,
+> On Mon, 2 Jun 2008 13:40:28 +0100 (BST)
+> Hugh Dickins <hugh@veritas.com> wrote:
+> > On Mon, 2 Jun 2008, Jens Axboe wrote:
+> > > On Sun, Jun 01 2008, Andrew Morton wrote:
+> > > > 
+> > > > Well if you're asking the syscall to shove more data into the block
+> > > > layer than it can concurrently handle, sure, the block layer will
+> > > > block.  It's tunable...
+> > > 
+> > > Ehm, lets get the history right, please :-)
+> > > 
+> > > The block layer pretty much doesn't care about how large the queue
+> > > size is, it's largely at 128 to prevent the vm from shitting itself
+> > > like it has done in the past (and continues to do I guess, though
+> > > your reply leaves me wondering).
+> > > 
+> > > So you think the vm will be fine with a huge number of requests?
+> > > It wont go nuts scanning and reclaiming, wasting oodles of CPU
+> > > cycles?
+> > 
+> > Interesting.  I wonder.  I may be quite wrong (Cc'ed Rik and Lee
+> > who I think are currently most in touch with what goes on there),
+> > but my impression is that whereas vmscan.c takes pages off LRU
+> > while it's doing writeback on them, and arranges for them to go
+> > back to the reclaimable tail of the LRU
+> 
+> The problem with lots of CFQ requests is simpler.
+> 
+> If you look at balance_dirty_pages() you will see that it only
+> takes dirty and NFS unstable pages into account when checking
+> the dirty limit.  The pages that are in flight (under IO) are
+> not counted at all.
 
-I've fixed pretty much everything you pointed out.  So unless
-otherwise noted it's an ACK.
+That would be totally busted.  All that nr_writeback logic in there is very
+much supposed to handle under-writeback pages?
 
-> +	if (bi->sector_size == 4096)
-> +		sectors >>= 3;
+> If you have 8192 CFQ requests and large streaming IO, most of
+> the IOs will be mergeable and it is possible to pin all of
+> memory in in-flight (PG_writeback - and other?) pages.
+> 
+> I suspect that balance_dirty_pages() will have to take the
+> writeback pages into account, though that may cause problems
+> with FUSE.  Maybe it should at least wait for some IO to
+> complete?
 
-Jens> This could do with a comment on why it's only 512b or 4kb.
-
-Ok, I've fanned all occurrences of these into a helper function that
-explains the "block layer" sector to hardware sector conversion.
-
-
-> +	/* Allocate kernel buffer for protection data */
-> +	len = sectors * blk_integrity_tuple_size(bi);
-> +	buf = kmalloc(len, GFP_NOIO | q->bounce_gfp);
-> +	if (unlikely(buf == NULL)) {
-> +		printk(KERN_ERR "could not allocate integrity buffer\n");
-> +		return -EIO;
-> +	}
-
-Jens> Is that good enough, don't you want to handle this error
-Jens> condition? IOW, doesn't this allocation want mempool backing or
-Jens> similar?
-
-When I originally wrote this I had a couple of mempools that worked
-well with ext2/3 because they blow everything into 4KB (or 1KB)
-atoms. Due to the problems with ext2/3 modifying pages in flight I've
-mostly used XFS and btrfs for development.  And they both generate a
-much more varied set of bio sizes that in turn will require a whole
-whack of different sized integrity pools.
-
-I did gather quite a bit of statistics from runs with different
-filesystems a few months ago.  kmalloc provided a good set of pre-made
-sizes and I felt it was an overkill to replicate that.  But you are
-right that we should probably be more conservative in terms of failing
-the I/O.  I'll look at it again.
-
-
->  struct bio_pair {
->  	struct bio	bio1, bio2;
->  	struct bio_vec	bv1, bv2;
-> +#if defined(CONFIG_BLK_DEV_INTEGRITY)
-> +	struct bip	bip1, bip2;
-> +	struct bio_vec	iv1, iv2;
-> +#endif
->  	atomic_t	cnt;
->  	int		error;
->  };
-
-Jens> That's somewhat of a shame, it makes bio_pair a LOT bigger. bio
-Jens> grows a pointer if CONFIG_BLK_DEV_INTEGRITY, that we can live
-Jens> with. In reality, very few people will use this stuff so adding
-Jens> a sizable chunk of data to struct bio_pair is somewhat of a
-Jens> bother.
-
-Yeah, well.  Wasn't sure what else to do.  But the pool is tiny (2
-entries by default) and only pktdvd and raid 0/10 actually use
-bio_pairs.  I figured if you had CONFIG_BLK_DEV_INTEGRITY on you'd
-probably want to use integrity it on your MD disks anyway.  And on
-your desktop box with pktdvd integrity wasn't likely to be compiled
-in.
-
-Dynamic allocation would defeat the purpose of the pool.  But I guess
-I could make another dedicated bio_integrity_pair pool and wire the
-integrity portion into bio_pair using pointers.  What do you think?
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Worried.  One of us is missing something here.
