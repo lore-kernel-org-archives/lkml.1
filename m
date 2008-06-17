@@ -1,115 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757114AbYFQUAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757715AbYFQUBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757114AbYFQUAY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 16:00:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754453AbYFQUAM
+	id S1757715AbYFQUBv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 16:01:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754738AbYFQUBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 16:00:12 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:7254 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753895AbYFQUAJ (ORCPT
+	Tue, 17 Jun 2008 16:01:43 -0400
+Received: from casper.infradead.org ([85.118.1.10]:56793 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754734AbYFQUBm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 16:00:09 -0400
-Subject: [PATCH] unevictable mlocked pages:  initialize mm member of
-	munlock mm_walk structure
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Rik van Riel <riel@redhat.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-In-Reply-To: <1213727385.8707.53.camel@lts-notebook>
-References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
-	 <20080617163501.7cf411ee.nishimura@mxp.nes.nec.co.jp>
-	 <20080617164709.de4db070.nishimura@mxp.nes.nec.co.jp>
-	 <20080617180314.2d1b0efa.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20080617181527.5bcbbccc.nishimura@mxp.nes.nec.co.jp>
-	 <1213727385.8707.53.camel@lts-notebook>
+	Tue, 17 Jun 2008 16:01:42 -0400
+Subject: Re: [BUG: NULL pointer dereference] cgroups
+	and	RT	scheduling	interact badly.
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Daniel K." <dk@uw.no>
+Cc: mingo@elte.hu, menage@google.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+In-Reply-To: <4857AD38.2090601@uw.no>
+References: <485445AE.2010602@uw.no> <1213612447.16944.99.camel@twins>
+	 <4856671B.1020304@uw.no>  <1213624312.16944.104.camel@twins>
+	 <1213627148.16944.106.camel@twins>  <485682B0.8010805@uw.no>
+	 <1213629536.16944.109.camel@twins> <1213692557.16944.153.camel@twins>
+	 <4857AD38.2090601@uw.no>
 Content-Type: text/plain
-Organization: HP/OSLO
-Date: Tue, 17 Jun 2008 16:00:43 -0400
-Message-Id: <1213732843.8707.70.camel@lts-notebook>
+Date: Tue, 17 Jun 2008 22:01:18 +0200
+Message-Id: <1213732878.3223.95.camel@lappy.programming.kicks-ass.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-was: Re: [Bad page] trying to free locked page? (Re: [PATCH][RFC] fix
-kernel BUG at mm/migrate.c:719! in 2.6.26-rc5-mm3)
-
-On Tue, 2008-06-17 at 14:29 -0400, Lee Schermerhorn wrote:
-> On Tue, 2008-06-17 at 18:15 +0900, Daisuke Nishimura wrote:
-> > On Tue, 17 Jun 2008 18:03:14 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > > On Tue, 17 Jun 2008 16:47:09 +0900
-> > > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > > 
-> > > > On Tue, 17 Jun 2008 16:35:01 +0900, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > > > > Hi.
-> > > > > 
-> > > > > I got this bug while migrating pages only a few times
-> > > > > via memory_migrate of cpuset.
-> > > > > 
-> > > > > Unfortunately, even if this patch is applied,
-> > > > > I got bad_page problem after hundreds times of page migration
-> > > > > (I'll report it in another mail).
-> > > > > But I believe something like this patch is needed anyway.
-> > > > > 
-> > > > 
-> > > > I got bad_page after hundreds times of page migration.
-> > > > It seems that a locked page is being freed.
+On Tue, 2008-06-17 at 14:25 +0200, Daniel K. wrote:
+> Peter Zijlstra wrote:
+> > How's this [patch] work for you? (includes the previuos patchlet too)
 > 
-> I'm seeing *mlocked* pages [PG_mlocked] being freed now with my stress
-> load, with just the "if(!page->mapping) { } clause removed, as proposed
-> in your rfc patch in previous mail.  Need to investigate this...
+> Thanks,
 > 
-<snip>
+> this patch fixed the obvious problem, namely
+> 
+> # echo $$ > /dev/cgroup/burn/oops/tasks
+> # schedtool -R -p 1 -e burnP6 &
+> 
+> now works again. However, the last step below
+> 
+> # echo $$ > /dev/cgroup/tasks
+> # burnP6 &
+> [1] 3414
+> # echo 3414 > /dev/cgroup/burn/oops/tasks
+> # schedtool -R -p 1 3414
+> 
+> gives this new and shiny Oops instead.
 
-This [freeing of mlocked pages] also occurs in unpatched 26-rc5-mm3.
+Whilst I'm gracious for your testing, I truly hope you're done breaking
+my stuff ;-)
 
-Fixed by the following:
+How's this for you?
 
-PATCH:  fix munlock page table walk - now requires 'mm'
-
-Against 2.6.26-rc5-mm3.
-
-Incremental fix for: mlock-mlocked-pages-are-unevictable-fix.patch 
-
-Initialize the 'mm' member of the mm_walk structure, else the
-page table walk doesn't occur, and mlocked pages will not be
-munlocked.  This is visible in the vmstats:  
-
-	noreclaim_pgs_munlocked - should equal noreclaim_pgs_mlocked
-	  less (nr_mlock + noreclaim_pgs_cleared), but is always zero 
-	  [munlock_vma_page() never called]
-
-	noreclaim_pgs_mlockfreed - should be zero [for debug only],
-	  but == noreclaim_pgs_mlocked - (nr_mlock + noreclaim_pgs_cleared)
-
-
-Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
-
- mm/mlock.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-Index: linux-2.6.26-rc5-mm3/mm/mlock.c
-===================================================================
---- linux-2.6.26-rc5-mm3.orig/mm/mlock.c	2008-06-17 15:20:57.000000000 -0400
-+++ linux-2.6.26-rc5-mm3/mm/mlock.c	2008-06-17 15:23:17.000000000 -0400
-@@ -318,6 +318,8 @@ static void __munlock_vma_pages_range(st
- 	VM_BUG_ON(start < vma->vm_start);
- 	VM_BUG_ON(end > vma->vm_end);
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+diff --git a/kernel/sched.c b/kernel/sched.c
+index eaf6751..efbb7d9 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -7626,7 +7626,6 @@ static void init_tg_rt_entry(struct task_group *tg, struct rt_rq *rt_rq,
+ 	else
+ 		rt_se->rt_rq = parent->my_q;
  
-+	munlock_page_walk.mm = mm;
+-	rt_se->rt_rq = &rq->rt;
+ 	rt_se->my_q = rt_rq;
+ 	rt_se->parent = parent;
+ 	INIT_LIST_HEAD(&rt_se->run_list);
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index 3432d57..2e73cac 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -449,13 +449,13 @@ void dec_rt_tasks(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
+ #endif
+ }
+ 
+-static void enqueue_rt_entity(struct sched_rt_entity *rt_se)
++static void __enqueue_rt_entity(struct sched_rt_entity *rt_se)
+ {
+ 	struct rt_rq *rt_rq = rt_rq_of_se(rt_se);
+ 	struct rt_prio_array *array = &rt_rq->active;
+ 	struct rt_rq *group_rq = group_rt_rq(rt_se);
+ 
+-	if (group_rq && rt_rq_throttled(group_rq))
++	if (group_rq && (rt_rq_throttled(group_rq) || !group_rq->rt_nr_running))
+ 		return;
+ 
+ 	list_add_tail(&rt_se->run_list, array->queue + rt_se_prio(rt_se));
+@@ -464,7 +464,7 @@ static void enqueue_rt_entity(struct sched_rt_entity *rt_se)
+ 	inc_rt_tasks(rt_se, rt_rq);
+ }
+ 
+-static void dequeue_rt_entity(struct sched_rt_entity *rt_se)
++static void __dequeue_rt_entity(struct sched_rt_entity *rt_se)
+ {
+ 	struct rt_rq *rt_rq = rt_rq_of_se(rt_se);
+ 	struct rt_prio_array *array = &rt_rq->active;
+@@ -480,11 +480,10 @@ static void dequeue_rt_entity(struct sched_rt_entity *rt_se)
+  * Because the prio of an upper entry depends on the lower
+  * entries, we must remove entries top - down.
+  */
+-static void dequeue_rt_stack(struct task_struct *p)
++static void dequeue_rt_stack(struct sched_rt_entity *rt_se)
+ {
+-	struct sched_rt_entity *rt_se, *back = NULL;
++	struct sched_rt_entity *back = NULL;
+ 
+-	rt_se = &p->rt;
+ 	for_each_sched_rt_entity(rt_se) {
+ 		rt_se->back = back;
+ 		back = rt_se;
+@@ -492,7 +491,26 @@ static void dequeue_rt_stack(struct task_struct *p)
+ 
+ 	for (rt_se = back; rt_se; rt_se = rt_se->back) {
+ 		if (on_rt_rq(rt_se))
+-			dequeue_rt_entity(rt_se);
++			__dequeue_rt_entity(rt_se);
++	}
++}
 +
- 	lru_add_drain_all();	/* push cached pages to LRU */
- 	walk_page_range(start, end, &munlock_page_walk);
- 	lru_add_drain_all();	/* to update stats */
-
++static void enqueue_rt_entity(struct sched_rt_entity *rt_se)
++{
++	dequeue_rt_stack(rt_se);
++	for_each_sched_rt_entity(rt_se)
++		__enqueue_rt_entity(rt_se);
++}
++
++static void dequeue_rt_entity(struct sched_rt_entity *rt_se)
++{
++	dequeue_rt_stack(rt_se);
++
++	for_each_sched_rt_entity(rt_se) {
++		struct rt_rq *rt_rq = group_rt_rq(rt_se);
++
++		if (rt_rq && rt_rq->rt_nr_running)
++			__enqueue_rt_entity(rt_se);
+ 	}
+ }
+ 
+@@ -506,32 +524,15 @@ static void enqueue_task_rt(struct rq *rq, struct task_struct *p, int wakeup)
+ 	if (wakeup)
+ 		rt_se->timeout = 0;
+ 
+-	dequeue_rt_stack(p);
+-
+-	/*
+-	 * enqueue everybody, bottom - up.
+-	 */
+-	for_each_sched_rt_entity(rt_se)
+-		enqueue_rt_entity(rt_se);
++	enqueue_rt_entity(rt_se);
+ }
+ 
+ static void dequeue_task_rt(struct rq *rq, struct task_struct *p, int sleep)
+ {
+ 	struct sched_rt_entity *rt_se = &p->rt;
+-	struct rt_rq *rt_rq;
+ 
+ 	update_curr_rt(rq);
+-
+-	dequeue_rt_stack(p);
+-
+-	/*
+-	 * re-enqueue all non-empty rt_rq entities.
+-	 */
+-	for_each_sched_rt_entity(rt_se) {
+-		rt_rq = group_rt_rq(rt_se);
+-		if (rt_rq && rt_rq->rt_nr_running)
+-			enqueue_rt_entity(rt_se);
+-	}
++	dequeue_rt_entity(rt_se);
+ }
+ 
+ /*
 
 
