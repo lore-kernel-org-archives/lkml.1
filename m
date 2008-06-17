@@ -1,184 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755258AbYFQDqu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbYFQDts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755258AbYFQDqu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 23:46:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbYFQDql
+	id S1755454AbYFQDts (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 23:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbYFQDtk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 23:46:41 -0400
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:54208 "EHLO
-	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753523AbYFQDqk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 23:46:40 -0400
-Message-ID: <48573397.608@linux.vnet.ibm.com>
-Date: Tue, 17 Jun 2008 09:16:31 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "menage@google.com" <menage@google.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/2] memcg: reduce usage at change limit
-References: <20080617123144.ce5a74fa.kamezawa.hiroyu@jp.fujitsu.com> <20080617123604.c8cb1bd5.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080617123604.c8cb1bd5.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 16 Jun 2008 23:49:40 -0400
+Received: from gate.crashing.org ([63.228.1.57]:56611 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751146AbYFQDtj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 23:49:39 -0400
+Subject: Re: [PATCH 1/4] ide-pmac: media-bay support fixes
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1213673979.8129.156.camel@pasglop>
+References: <200806162124.43005.bzolnier@gmail.com>
+	 <1213673979.8129.156.camel@pasglop>
+Content-Type: text/plain
+Date: Tue, 17 Jun 2008 13:49:32 +1000
+Message-Id: <1213674572.8129.159.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> Reduce the usage of res_counter at the change of limit.
-> 
-> Changelog v4 -> v5.
->  - moved "feedback" alogrithm from res_counter to memcg.
-> 
-> Background:
->  - Now, mem->usage is not reduced at limit change. So, the users will see
->    usage > limit case in memcg every time. This patch fixes it.
-> 
->  Before:
->  - no usage change at setting limit.
->  - setting limit always returns 0 even if usage can never be less than zero.
->    (This can happen when memory is locked or there is no swap.)
->  - This is BUG, I think.
->  After:
->  - usage will be less than new limit at limit change.
->  - set limit returns -EBUSY when the usage cannot be reduced.
-> 
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> ---
->  Documentation/controllers/memory.txt |    3 -
->  mm/memcontrol.c                      |   68 ++++++++++++++++++++++++++++-------
->  2 files changed, 56 insertions(+), 15 deletions(-)
-> 
-> Index: mm-2.6.26-rc5-mm3/mm/memcontrol.c
-> ===================================================================
-> --- mm-2.6.26-rc5-mm3.orig/mm/memcontrol.c
-> +++ mm-2.6.26-rc5-mm3/mm/memcontrol.c
-> @@ -852,18 +852,30 @@ out:
->  	css_put(&mem->css);
->  	return ret;
->  }
-> +/*
-> + * try to set limit and reduce usage if necessary.
-> + * returns 0 at success.
-> + * returns -EBUSY if memory cannot be dropped.
-> + */
-> 
-> -static int mem_cgroup_write_strategy(char *buf, unsigned long long *tmp)
-> +static inline int mem_cgroup_resize_limit(struct cgroup *cont,
-> +					unsigned long long val)
->  {
-> -	*tmp = memparse(buf, &buf);
-> -	if (*buf != '\0')
-> -		return -EINVAL;
-> +	struct mem_cgroup *memcg = mem_cgroup_from_cont(cont);
-> +	int retry_count = 0;
-> +	int progress;
-> 
-> -	/*
-> -	 * Round up the value to the closest page size
-> -	 */
-> -	*tmp = ((*tmp + PAGE_SIZE - 1) >> PAGE_SHIFT) << PAGE_SHIFT;
-> -	return 0;
-> +retry:
-> +	if (!res_counter_set_limit(&memcg->res, val))
-> +		return 0;
-> +	if (retry_count == MEM_CGROUP_RECLAIM_RETRIES)
-> +		return -EBUSY;
-> +
-> +	cond_resched();
+On Tue, 2008-06-17 at 13:39 +1000, Benjamin Herrenschmidt wrote:
+> Your patches don't apply on today upstream, I'll try against
+> linux-next or is there a git I can clone to test things ?
 
-Do we really need this? We do have cond_resched in shrink_page_list(),
-shrink_active_list(), do we need it here as well?
+Ok, I'm lost. I have 3 different series of patches from you partially
+overlapping with different amount of patches in them. I don't have
+time to sort that out right now. Can you send me a single serie that
+I can apply on top of either upstream or tonight linux-next which
+should have your stuff removed hopefully ?
 
-> +	progress = try_to_free_mem_cgroup_pages(memcg, GFP_KERNEL);
-> +	if (!progress)
-> +		retry_count++;
-> +	goto retry;
+Ben.
 
-I don't like upward goto's. Can't we convert this to a nice do {} while or
-while() loop?
 
->  }
-> 
->  static u64 mem_cgroup_read(struct cgroup *cont, struct cftype *cft)
-> @@ -874,11 +886,41 @@ static u64 mem_cgroup_read(struct cgroup
-> 
->  static ssize_t mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
->  				struct file *file, const char __user *userbuf,
-> -				size_t nbytes, loff_t *ppos)
-> +				size_t bbytes, loff_t *ppos)
->  {
-> -	return res_counter_write(&mem_cgroup_from_cont(cont)->res,
-> -				cft->private, userbuf, nbytes, ppos,
-> -				mem_cgroup_write_strategy);
-> +	char *buf, *end;
-> +	unsigned long long val;
-> +	int ret;
-> +
-> +	buf = kmalloc(bbytes + 1, GFP_KERNEL);
-> +	if (!buf)
-> +		return -ENOMEM;
-> +	buf[bbytes] = '\0';
-> +	ret = -EFAULT;
-> +	if (copy_from_user(buf, userbuf, bbytes))
-> +		goto out;
-> +
-> +	ret = -EINVAL;
-> +	strstrip(buf);
-> +	val = memparse(buf, &end);
-> +	if (*end != '\0')
-> +		goto out;
-> +	/* Round to page size */
-> +	val = ((val + PAGE_SIZE - 1) >> PAGE_SHIFT) << PAGE_SHIFT;
-> +
-> +	switch(cft->private) {
-> +	case RES_LIMIT:
-> +		ret = mem_cgroup_resize_limit(cont, val);
-> +		break;
-> +	default:
-> +		ret = -EINVAL;
-> +		goto out;
-> +	}
-> +	if (!ret)
-> +		ret = bbytes;
-> +out:
-> +	kfree(buf);
-> +	return ret;
->  }
-> 
->  static int mem_cgroup_reset(struct cgroup *cont, unsigned int event)
-> Index: mm-2.6.26-rc5-mm3/Documentation/controllers/memory.txt
-> ===================================================================
-> --- mm-2.6.26-rc5-mm3.orig/Documentation/controllers/memory.txt
-> +++ mm-2.6.26-rc5-mm3/Documentation/controllers/memory.txt
-> @@ -242,8 +242,7 @@ rmdir() if there are no tasks.
->  1. Add support for accounting huge pages (as a separate controller)
->  2. Make per-cgroup scanner reclaim not-shared pages first
->  3. Teach controller to account for shared-pages
-> -4. Start reclamation when the limit is lowered
-> -5. Start reclamation in the background when the limit is
-> +4. Start reclamation in the background when the limit is
->     not yet hit but the usage is getting closer
-
-Except for the minor nits
-
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
