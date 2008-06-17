@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbYFQA5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868AbYFQBBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754567AbYFQA5m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 20:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYFQA5b
+	id S1754868AbYFQBBe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 21:01:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbYFQBBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 20:57:31 -0400
-Received: from mga11.intel.com ([192.55.52.93]:5499 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750911AbYFQA5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 20:57:30 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,655,1204531200"; 
-   d="scan'208";a="578651053"
-Subject: Re: [PATCH 4/8] x86 boot: allow overlapping ebda and efi memmap
-	memory ranges
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, mingo@elte.hu, tglx@linutronix.de,
-       yhlu.kernel@gmail.com, steiner@sgi.com, travis@sgi.com,
-       linux-kernel@vger.kernel.org, andi@firstfloor.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20080616130503.1a3a72dc.pj@sgi.com>
-References: <20080616062945.14597.78009.sendpatchset@polaris-admin.engr.sgi.com>
-	 <20080616063001.14597.96170.sendpatchset@polaris-admin.engr.sgi.com>
-	 <1213600062.11185.13.camel@caritas-dev.intel.com>
-	 <20080616032457.718f4d87.pj@sgi.com>
-	 <1213606435.12968.14.camel@caritas-dev.intel.com>
-	 <48568B56.7060307@zytor.com> <20080616113806.2ff4c1a4.pj@sgi.com>
-	 <48569D62.9050107@zytor.com> <20080616123721.bb9195e6.pj@sgi.com>
-	 <4856A6F9.3090605@zytor.com>  <20080616130503.1a3a72dc.pj@sgi.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 17 Jun 2008 09:00:14 +0800
-Message-Id: <1213664414.17772.0.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-X-OriginalArrivalTime: 17 Jun 2008 00:57:14.0026 (UTC) FILETIME=[14B388A0:01C8D015]
+	Mon, 16 Jun 2008 21:01:25 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:9749 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750911AbYFQBBZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 21:01:25 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:to:cc:subject:in-reply-to:message-id:
+	references:mime-version:content-type;
+	b=HS06SYvT7bpx6pVf7Bp4JyKf4vpmJ3UqqjpdcrTi5zmbkB5iqgSu1kWIfMYPlEaq6
+	WR4ZqwKIkqjxf7q0rm1fQ==
+Date: Mon, 16 Jun 2008 18:01:11 -0700 (PDT)
+From: Divyesh Shah <dpshah@google.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Divyesh Shah <dpshah@google.com>, axboe@kernel.dk,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Suleiman Souhlal <suleiman@google.com>
+Subject: Re: [BUGFIX][RESEND] Fix the starving writes bug in the anticipatory
+ IO scheduler
+In-Reply-To: <200806161318.57435.nickpiggin@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0806161723590.15011@austin.corp.google.com>
+References: <935894B7-5FD4-4C3D-9A74-6B18E532462B@google.com>
+ <200806161318.57435.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-06-16 at 13:05 -0500, Paul Jackson wrote:
-[...]
-> Huang - would you agree to this safety reservation of the ebda area
-> even on EFI enabled systems?
+On Mon, 16 Jun 2008, Nick Piggin wrote:
 
-I am OK with this.
+> Well, thanks for the report and test case. I'm a bit out of the
+> loop when it comes to IO scheduling these days, however the fix
+> seems good to me.
+>
+> Does google still use AS scheduling? This doesn't introduce any
+> performance regressions that you can tell?
 
-Best Regards,
-Huang Ying
+Yes we use AS scheduler. Benchmarking results on workloads have shown that 
+AS does as good a job (and better in some cases) as CFQ. When there is 
+a single thread reading/writing to disk, AS performs as well as CFQ. With 
+multiple threads doing IO such that there are a lot of outstanding 
+requests, CFQ performs worse than AS in terms of throughput.
 
+-Divyesh.
