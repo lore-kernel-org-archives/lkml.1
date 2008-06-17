@@ -1,78 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761925AbYFQXMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762751AbYFQXMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761925AbYFQXMA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 19:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761536AbYFQXCk
+	id S1762751AbYFQXMa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 19:12:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762272AbYFQXIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 19:02:40 -0400
-Received: from trinity.fluff.org ([89.145.97.151]:46954 "EHLO
-	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761528AbYFQXCi (ORCPT
+	Tue, 17 Jun 2008 19:08:40 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51473
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1762269AbYFQXIj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 19:02:38 -0400
-Date: Wed, 18 Jun 2008 00:02:33 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Pierre Ossman <drzeus@drzeus.cx>
-Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
-       Harald Welte <laforge@openmoko.org>, Thomas Kleffel <tk@maintech.de>,
-       Roman Moravcik <roman.moravcik@gmail.com>
-Subject: Re: [patch 01/15] MMC: S3C24XX MMC/SD driver. From: Thomas Kleffel <tk@maintech.de>
-Message-ID: <20080617230233.GA10351@trinity.fluff.org>
-References: <20080606155117.074799346@fluff.org.uk> <20080606155524.699256747@fluff.org.uk> <20080614181851.01849d03@mjolnir.drzeus.cx>
+	Tue, 17 Jun 2008 19:08:39 -0400
+Date: Tue, 17 Jun 2008 16:08:39 -0700 (PDT)
+Message-Id: <20080617.160839.112511197.davem@davemloft.net>
+To: johannes@sipsolutions.net
+Cc: linux-kernel@vger.kernel.org, mb@bu3sch.de, david@identd.dyndns.org,
+       linux-wireless@vger.kernel.org, mingo@elte.hu,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH/RFC] remove irqs_disabled warning from local_bh_enable
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1213739834.3803.137.camel@johannes.berg>
+References: <1213739834.3803.137.camel@johannes.berg>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080614181851.01849d03@mjolnir.drzeus.cx>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.9i
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 14, 2008 at 06:18:51PM +0200, Pierre Ossman wrote:
-> On Fri, 06 Jun 2008 16:51:18 +0100
-> Ben Dooks <ben-linux@fluff.org> wrote:
-> 
-> > +#include <linux/mmc/mmc.h>
-> 
-> You don't need this anymore.
+From: Johannes Berg <johannes@sipsolutions.net>
+Date: Tue, 17 Jun 2008 23:57:14 +0200
 
-right, done in patch #2
- 
-> > +	//if(cmd->flags & MMC_RSP_MAYFAIL) debug_as_failure = 0;
-> 
-> Please remove all the dead code.
+> This warning has started to trigger with mac80211 because it can, under
+> some circumstances, use spin_lock_bh() protected sections within
+> irq-disabled sections. Is that a bug?
 
-removed in patch #2
+It is a bug.  The only legal nesting is base --> BH --> IRQ locking.
 
-> > +	if (mrq->data->error == MMC_ERR_NONE) {
+> Also, if you're going to treat IRQs being enabled as a bug, there's no
+> point in disabling them right afterwards, is there?
 
-ok, i've done:
+It's treating IRQs being "disabled" as a bug.  It expects them to
+be enabled, always.
 
-MMC_ERR_NONE	=> 0
-MMC_ERR_DMA	=> EINVAL
-MMC_ERR_TIMEOUT	=> ETIMEDOUT
-MMC_ERR_BADCRC	=> EILSEQ
-MMC_ERR_FIFO	=> EILSEQ
- 
-> And rebase against HEAD. MMC_ERR_* are long gone.
+> If you're going to reject this patch, I'll post one that adds the
+> warning to local_bh_enable_ip() to allow detecting this for everybody
+> and not just those poor people running UP/NO-PREEMPT :)
 
-right, will try and build and test as soon as possible.
- 
-> Also, please test using the mmc_test driver available in HEAD. A proper
-> driver should pass all those tests (or possibly mark a few as
-> unsupported if the hardware is utterly incapable of handling those
-> requests).
-
-Thanks, I'll repost v3 when this is done.
-
--- 
-Ben
-
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
-
+That might be useful :)
