@@ -1,90 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758735AbYFQOAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759117AbYFQOB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758735AbYFQOAg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 10:00:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757362AbYFQOA3
+	id S1759117AbYFQOB1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 10:01:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757362AbYFQOBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 10:00:29 -0400
-Received: from styx.suse.cz ([82.119.242.94]:38817 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756833AbYFQOA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 10:00:28 -0400
-Date: Tue, 17 Jun 2008 16:00:27 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Philippe Troin <phil@fifi.org>
-cc: linux-kernel@vger.kernel.org, arbrandes@gmail.com
-Subject: Re: USB HID: Missing keys on Gyration Media Center Universal Remote
- Control
-In-Reply-To: <871w2xnehf.fsf@old-tantale.fifi.org>
-Message-ID: <Pine.LNX.4.64.0806171557440.10085@jikos.suse.cz>
-References: <871w2xnehf.fsf@old-tantale.fifi.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 17 Jun 2008 10:01:19 -0400
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:43634 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755912AbYFQOBS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 10:01:18 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvIEAL1cV0hMQW1O/2dsb2JhbACBW60T
+Date: Tue, 17 Jun 2008 10:01:13 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: tzanussi@gmail.com, linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH 1/3] Unignore vmlinux.lds.h from Git.
+Message-ID: <20080617140113.GC10316@Krystal>
+References: <20080615180501.1181e659@linux360.ro>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080615180501.1181e659@linux360.ro>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 10:00:13 up 12 days, 18:41,  4 users,  load average: 0.56, 0.62,
+	0.46
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jun 2008, Philippe Troin wrote:
+* Eduard - Gabriel Munteanu (eduard.munteanu@linux360.ro) wrote:
+> Added !vmlinux.lds.h to .gitignore because it would otherwise be ignored.
+> 
+> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 
-> Jiri & all,
-> What's the status on this bug?
-> I used this patch for 2.6.24:
-> diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
-> index 0b27da7..fc6e77e 100644
-> --- a/drivers/hid/hid-input.c
-> +++ b/drivers/hid/hid-input.c
-> @@ -802,6 +802,7 @@ static void hidinput_configure_usage(struct hid_input *hidinput, struct hid_fiel
->  		case HID_UP_LOGIVENDOR:
->  			set_bit(EV_REP, input->evbit);
->  			switch(usage->hid & HID_USAGE) {
-> +				case 0x000: map_key_clear(KEY_TV);
->  				/* Reported on Logitech Ultra X Media Remote */
->  				case 0x004: map_key_clear(KEY_AGAIN);		break;
->  				case 0x00d: map_key_clear(KEY_HOME);		break;
-> @@ -1039,6 +1040,28 @@ void hidinput_hid_event(struct hid_device *hid, struct hid_field *field, struct
->  		return;
->  	}
->  
-> +	/* "Sleep" key */
-> +	if (hid->vendor == 0x0c16 && hid->product == 0x0002 &&
-> +			((usage->hid & HID_USAGE_PAGE) == HID_UP_GENDESK) &&
-> +			((usage->hid & 0xf0) == 0x80)  &&
-> +			((usage->hid & 0xf) == 0x2)) {
-> +		input_event(input, usage->type, usage->code, 1);
-> +		input_sync(input);
-> +		input_event(input, usage->type, usage->code, 0);
-> +		input_sync(input);
-> +		return;
-> +	}
-> +	/* "TV" key */
-> +	if (hid->vendor == 0x0c16 && hid->product == 0x0002 &&
-> +			((usage->hid & HID_USAGE_PAGE) == HID_UP_LOGIVENDOR) &&
-> +			((usage->hid & HID_USAGE) == 0x0000)) {
-> +		input_event(input, usage->type, usage->code, 1);
-> +		input_sync(input);
-> +		input_event(input, usage->type, usage->code, 0);
-> +		input_sync(input);
-> +		return;
-> +	}
-> +
->  	/* Handling MS keyboards special buttons */
->  	if (IS_MS_KB(hid) && usage->hid == (HID_UP_MSVENDOR | 0xff05)) {
->  		int key = 0;
-> It was working fine.
+Yep, the "vmlinux*" entry seems to match vmlinux.lds.h, it shouldn't.
 
-Hi,
+Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-The patch didn't add complete support for this device, there still has 
-been problem with "TV" key, and I have asked Adolfo to perform a test with 
-debugging patch, but there seems to be no response so far [1]
-
-Adolfo (added to CC), has there been any progress, so that we could 
-proceed with merging the patch adding proper support for this HW?
-
-Thanks,
-
-[1]
+> ---
+>  .gitignore |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/.gitignore b/.gitignore
+> index d24ad50..9bb1cb6 100644
+> --- a/.gitignore
+> +++ b/.gitignore
+> @@ -26,6 +26,7 @@ tags
+>  TAGS
+>  vmlinux*
+>  !vmlinux.lds.S
+> +!vmlinux.lds.h
+>  System.map
+>  Module.markers
+>  Module.symvers
+> -- 
+> 1.5.5.4
+> 
 
 -- 
-Jiri Kosina
-SUSE Labs
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
