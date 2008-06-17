@@ -1,132 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbYFQHsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbYFQHxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755955AbYFQHsc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 03:48:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753069AbYFQHsV
+	id S1756189AbYFQHxP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 03:53:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbYFQHw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 03:48:21 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:62586 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752440AbYFQHsU (ORCPT
+	Tue, 17 Jun 2008 03:52:56 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56451
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752440AbYFQHwz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 03:48:20 -0400
-Date: Tue, 17 Jun 2008 16:47:09 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Rik van Riel <riel@redhat.com>, Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-Subject: [Bad page] trying to free locked page? (Re: [PATCH][RFC] fix kernel
- BUG at mm/migrate.c:719! in 2.6.26-rc5-mm3)
-Message-Id: <20080617164709.de4db070.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20080617163501.7cf411ee.nishimura@mxp.nes.nec.co.jp>
-References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
-	<20080617163501.7cf411ee.nishimura@mxp.nes.nec.co.jp>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+	Tue, 17 Jun 2008 03:52:55 -0400
+Date: Tue, 17 Jun 2008 00:52:55 -0700 (PDT)
+Message-Id: <20080617.005255.135158143.davem@davemloft.net>
+To: linville@tuxdriver.com
+CC: mokuno@sm.sony.co.jp, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/12]: Proper compat WEXT support.
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jun 2008 16:35:01 +0900, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> Hi.
-> 
-> I got this bug while migrating pages only a few times
-> via memory_migrate of cpuset.
-> 
-> Unfortunately, even if this patch is applied,
-> I got bad_page problem after hundreds times of page migration
-> (I'll report it in another mail).
-> But I believe something like this patch is needed anyway.
-> 
 
-I got bad_page after hundreds times of page migration.
-It seems that a locked page is being freed.
+This is what I consider the final submission of this patch set, it's
+ready to go.  I also made sure all the patches are checkpatch clean.
 
+I've actually tested these exact patches on sparc64 with a RNDIS based
+USB wireless device from Linksys.  I was able to perform iwconfig
+commands, check iwlist, bring up the interface and use it properly.
+All with 32-bit tools.  I've also done an allmodconfig sanity build
+check on sparc64.  Masakazu-san has tested these patches extensively
+on PS3 systems, using the gelic and zd1211 drivers.  In particular he
+tested wpa_supplicant use.
 
-Bad page state in process 'switch.sh'
-page:ffffe20001ee8f40 flags:0x0500000000080019 mapping:0000000000000000 mapcount:0 count:0
-Trying to fix it up, but a reboot is needed
-Backtrace:
-Pid: 23283, comm: switch.sh Not tainted 2.6.26-rc5-mm3-test6-lee #1
+The patch set starts by cleaning up the code so that we can avoid
+having multiple copies of the WEXT main dispatch routines, one for
+compat and one for the non-compat case.
 
-Call Trace:
- [<ffffffff802747b0>] bad_page+0x97/0x131
- [<ffffffff80275ae6>] free_hot_cold_page+0xd4/0x19c
- [<ffffffff8027a5c3>] putback_lru_page+0xf4/0xfb
- [<ffffffff8029b210>] putback_lru_pages+0x46/0x74
- [<ffffffff8029bc5b>] migrate_pages+0x3f4/0x468
- [<ffffffff80290797>] new_node_page+0x0/0x2f
- [<ffffffff80291631>] do_migrate_pages+0x19b/0x1e7
- [<ffffffff8025c827>] cpuset_migrate_mm+0x58/0x8f
- [<ffffffff8025d0fd>] cpuset_attach+0x8b/0x9e
- [<ffffffff8032ffdc>] sscanf+0x49/0x51
- [<ffffffff8025a3e1>] cgroup_attach_task+0x3a3/0x3f5
- [<ffffffff80489a90>] __mutex_lock_slowpath+0x64/0x93
- [<ffffffff8025af06>] cgroup_common_file_write+0x150/0x1dd
- [<ffffffff8025aaf4>] cgroup_file_write+0x54/0x150
- [<ffffffff8029f855>] vfs_write+0xad/0x136
- [<ffffffff8029fd92>] sys_write+0x45/0x6e
- [<ffffffff8020bef2>] tracesys+0xd5/0xda
+Next, basic compat level handling of the WEXT ioctl is added, and the
+equivalent code in the compat_ioctl.c file is removed.
 
-Hexdump:
-000: 28 00 08 00 00 00 00 05 02 00 00 00 01 00 00 00
-010: 00 00 00 00 00 00 00 00 41 3b 41 2f 00 81 ff ff
-020: 46 01 00 00 00 00 00 00 e8 17 e6 01 00 e2 ff ff
-030: e8 4b e6 01 00 e2 ff ff 00 00 00 00 00 00 00 00
-040: 19 00 08 00 00 00 00 05 00 00 00 00 ff ff ff ff
-050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-060: ba 06 00 00 00 00 00 00 00 01 10 00 00 c1 ff ff
-070: 00 02 20 00 00 c1 ff ff 00 00 00 00 00 00 00 00
-080: 28 00 08 00 00 00 00 05 01 00 00 00 00 00 00 00
-090: 00 00 00 00 00 00 00 00 01 3d 41 2f 00 81 ff ff
-0a0: bb c3 55 f7 07 00 00 00 68 c4 f0 01 00 e2 ff ff
-0b0: e8 8f ee 01 00 e2 ff ff 00 00 00 00 00 00 00 00
-------------[ cut here ]------------
-kernel BUG at mm/filemap.c:575!
-invalid opcode: 0000 [1] SMP
-last sysfs file: /sys/devices/system/cpu/cpu3/cache/index1/shared_cpu_map
-CPU 1
-Modules linked in: nfs lockd nfs_acl ipv6 autofs4 hidp rfcomm l2cap bluetooth sunrpc dm_mirror dm_log dm_multipath dm_mod sbs sbshc button battery acpi_memhotplug ac parport_pc lp parport floppy serio_raw rtc_cmos 8139too rtc_core rtc_lib 8139cp mii pcspkr ata_piix libata sd_mod scsi_mod ext3 jbd ehci_hcd ohci_hcd uhci_hcd [last unloaded: microcode]
-Pid: 23283, comm: switch.sh Tainted: G    B     2.6.26-rc5-mm3-test6-lee #1
-RIP: 0010:[<ffffffff80270bfe>]  [<ffffffff80270bfe>] unlock_page+0xf/0x26
-RSP: 0018:ffff8100396e7b78  EFLAGS: 00010246
-RAX: 0000000000000000 RBX: ffffe20001ee8f40 RCX: 000000000000005a
-RDX: 0000000000000006 RSI: 0000000000000003 RDI: ffffe20001ee8f40
-RBP: ffffe20001f3e9c0 R08: 0000000000000008 R09: ffff810001101780
-R10: 0000000000000002 R11: 0000000000000000 R12: 0000000000000004
-R13: ffff8100396e7c88 R14: ffffe20001e8d080 R15: ffff8100396e7c88
-FS:  00007fd4597fb6f0(0000) GS:ffff81007f98d280(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 0000000000418498 CR3: 000000003e9ac000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process switch.sh (pid: 23283, threadinfo ffff8100396e6000, task ffff8100318a64a0)
-Stack:  ffffe20001ee8f40 ffffffff8029b21c ffffe20001e98e40 ffff8100396e7c60
- ffffe20000665140 ffff8100314fd581 0000000000000000 ffffffff8029bc5b
- 0000000000000000 ffffffff80290797 0000000000000000 0000000000000001
-Call Trace:
- [<ffffffff8029b21c>] ? putback_lru_pages+0x52/0x74
- [<ffffffff8029bc5b>] ? migrate_pages+0x3f4/0x468
- [<ffffffff80290797>] ? new_node_page+0x0/0x2f
- [<ffffffff80291631>] ? do_migrate_pages+0x19b/0x1e7
- [<ffffffff8025c827>] ? cpuset_migrate_mm+0x58/0x8f
- [<ffffffff8025d0fd>] ? cpuset_attach+0x8b/0x9e
- [<ffffffff8032ffdc>] ? sscanf+0x49/0x51
- [<ffffffff8025a3e1>] ? cgroup_attach_task+0x3a3/0x3f5
- [<ffffffff80489a90>] ? __mutex_lock_slowpath+0x64/0x93
- [<ffffffff8025af06>] ? cgroup_common_file_write+0x150/0x1dd
- [<ffffffff8025aaf4>] ? cgroup_file_write+0x54/0x150
- [<ffffffff8029f855>] ? vfs_write+0xad/0x136
- [<ffffffff8029fd92>] ? sys_write+0x45/0x6e
- [<ffffffff8020bef2>] ? tracesys+0xd5/0xda
+Finally, compat IWE stream munging is added for the wireless layer.
+When we get a compat WEXT ioctl request, we set a bit in the request
+info blob, and the stream building helpers tip off this to format the
+stream entries properly.
 
+These patches are against net-next-2.6 and are also available as
+a GIT tree at:
 
-Code: 40 58 48 85 c0 74 0b 48 8b 40 10 48 85 c0 74 02 ff d0 e8 7b 89 21 00 41 5b 31 c0 c3 53 48 89 fb f0 0f ba 37 00 19 c0 85 c0 75 04 <0f> 0b eb fe e8 01 f5 ff ff 48 89 de 48 89 c7 31 d2 5b e9 ea 5e
-RIP  [<ffffffff80270bfe>] unlock_page+0xf/0x26
- RSP <ffff8100396e7b78>
----[ end trace 4ab171fcf075cf2e ]---
+	master.kernel.org:/pub/scm/linux/kernel/git/davem/wireless-2.6.git
 
+John, please pull or apply as you deem appropriate.
