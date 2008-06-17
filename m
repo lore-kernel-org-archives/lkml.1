@@ -1,87 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758905AbYFQOGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759247AbYFQOHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758905AbYFQOGy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 10:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757535AbYFQOGo
+	id S1759247AbYFQOHx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 10:07:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756422AbYFQOHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 10:06:44 -0400
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:55739 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752862AbYFQOGn convert rfc822-to-8bit (ORCPT
+	Tue, 17 Jun 2008 10:07:45 -0400
+Received: from tomts36.bellnexxia.net ([209.226.175.93]:64837 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755250AbYFQOHo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 10:06:43 -0400
-Date: Tue, 17 Jun 2008 16:06:28 +0200
-From: Maxim Shchetynin <maxim@linux.vnet.ibm.com>
-To: linux-fsdevel@vger.kernel.org
-Cc: =?UTF-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
-       Jan Engelhardt <jengelh@medozas.de>, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel@vger.kernel.org
-Subject: Re: AZFS file system proposal
-Message-ID: <20080617160628.79efd2d9@mercedes-benz.boeblingen.de.ibm.com>
-In-Reply-To: <20080617105300.GA28310@logfs.org>
-References: <20080609104650.4f220492@mercedes-benz.boeblingen.de.ibm.com>
-	<20080609125530.GF30405@parisc-linux.org>
-	<20080610104919.504b9826@mercedes-benz.boeblingen.de.ibm.com>
-	<alpine.LNX.1.10.0806110000560.20733@fbirervta.pbzchgretzou.qr>
-	<20080617110655.59c915da@mercedes-benz.boeblingen.de.ibm.com>
-	<alpine.LNX.1.10.0806171133220.6620@fbirervta.pbzchgretzou.qr>
-	<20080617105300.GA28310@logfs.org>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+	Tue, 17 Jun 2008 10:07:44 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvIEAL1cV0hMQW1O/2dsb2JhbACBW60T
+Date: Tue, 17 Jun 2008 10:07:42 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: tzanussi@gmail.com, linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH 2/3] Better interface for hooking early initcalls.
+Message-ID: <20080617140742.GD10316@Krystal>
+References: <20080615180508.71d1cbcc@linux360.ro>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080615180508.71d1cbcc@linux360.ro>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 10:03:40 up 12 days, 18:44,  4 users,  load average: 0.99, 0.68,
+	0.50
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jun 2008 12:53:00 +0200
-Jörn Engel <joern@logfs.org> wrote:
-
-> On Tue, 17 June 2008 11:35:10 +0200, Jan Engelhardt wrote:
-> > On Tuesday 2008-06-17 11:06, Maxim Shchetynin wrote:
-> > 
-> > >I would say you can either mmap it or place a file system on it.
-> > 
-> > The help text implies that I *need* azfs to mmap it - and that sounds
-> > like a Rube Goldberg machine.
+* Eduard - Gabriel Munteanu (eduard.munteanu@linux360.ro) wrote:
+> Added early initcall (pre-SMP) support, using an identical interface to
+> that of regular initcalls. Functions called from do_pre_smp_initcalls()
+> could be converted to use this cleaner interface.
 > 
-> Some people actually prefer filesystems over raw devices for a variety
-> of reasons:
-> - each file brings its own address space, which offers memory protection
->   from other processes,
-> - files can have owners and permission bits,
-> - files hide the fragmentation of the underlying device from users,
-> - a file system provides a common and well-understood api for devices
->   with less common or well-understood apis,
-> - etc.
+> This is required by CPU hotplug, because early users have to register
+> notifiers before going SMP. One such CPU hotplug user is the relay
+> interface with buffer-only channels, which needs to register such a
+> notifier, to be usable in early code. This in turn is used by kmemtrace.
 > 
-> Those reasons are as valid for azfs as for any other filesystem.  I have
-> no doubt that azfs is useful.  It probably wouldn't hurt to express the
-> merits of the filesystem and the problems it is supposed to solve a
-> little better.  So far most criticism was based on the fact that noone
-> understood what the hell it was all about.
-> 
-> My personal question when looking at this is: Why not use ext2?  It
 
-Same reason we don't use ext2 for file system in RAM - we don't need any expensive caching and readahead mechanisms for devices which are as fast as main memory (or almost as fast).
+I am not sure it's worth it trying to define a generic "early" initcall,
+since definition of "how early it is" may change with time.
 
-> appears to me that an ext2 mounted with '-o xip' would solve the same
-> problems.
+Currently, it's earlier than SMP init, but later on, it could become
+earlier than mm init. If there are only few users of this, and given
+that they must be designed "knowing" how early they are initialized wrt
+other subsystems, I think it would make sense to call them directly from
+the init code without putting them in a "early initcall" category.
+
+> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+ .... 
+> -extern initcall_t __initcall_start[], __initcall_end[];
+> +extern initcall_t __initcall_start[], __initcall_end[], __early_initcall_end[];
+>  
+>  static void __init do_initcalls(void)
+>  {
+>  	initcall_t *call;
+>  
+> -	for (call = __initcall_start; call < __initcall_end; call++)
+> +	for (call = __early_initcall_end; call < __initcall_end; call++)
+>  		do_one_initcall(*call);
+>  
+>  	/* Make sure there is no pending stuff from the initcall sequence */
+> @@ -775,6 +775,14 @@ static int __init nosoftlockup_setup(char *str)
+>  }
+>  __setup("nosoftlockup", nosoftlockup_setup);
+>  
+> +static void __init __do_pre_smp_initcalls(void)
+> +{
+> +	initcall_t *call;
+> +
+> +	for (call = __initcall_start; call < __early_initcall_end; call++)
+> +		(*call)();
+
+why not do_one_initcall(*call); ?
+
+Mathieu
 
 -- 
-Mit freundlichen Grüßen / met vriendelijke groeten / avec regards
-
-    Maxim V. Shchetynin
-    Linux Kernel Entwicklung
-    IBM Deutschland Entwicklung GmbH
-    Linux für Cell, Abteilung 3250
-    Schönaicher Straße 220
-    71032 Böblingen
-
-Vorsitzender des Aufsichtsrats: Johann Weihen
-Geschäftsführung: Herbert Kircher
-Sitz der Gesellschaft: Böblingen
-Registriergericht: Amtsgericht Stuttgart, HRB 243294
-
-Fahr nur so schnell wie dein Schutzengel fliegen kann!
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
