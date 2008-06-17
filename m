@@ -1,63 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756593AbYFQQ5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbYFQQ7k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756593AbYFQQ5T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 12:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbYFQQ5I
+	id S1757482AbYFQQ7k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 12:59:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbYFQQ7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 12:57:08 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:28220 "EHLO kernel.dk"
+	Tue, 17 Jun 2008 12:59:33 -0400
+Received: from saeurebad.de ([85.214.36.134]:43607 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753962AbYFQQ5G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 12:57:06 -0400
-Date: Tue, 17 Jun 2008 18:57:02 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 0 of 3] Block Layer Data Integrity
-Message-ID: <20080617165701.GN20851@kernel.dk>
-References: <patchbomb.1213718275@sermon.lab.mkp.net>
+	id S1754708AbYFQQ7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 12:59:32 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix new alloc_bootmem_core (Re: [PATCH -mm 08/14] bootmem: clean up alloc_bootmem_core)
+References: <20080605224940.434439989@saeurebad.de>
+	<20080605225720.616014665@saeurebad.de>
+	<20080617173021.C1FE.E1E9C6FF@jp.fujitsu.com>
+Date: Tue, 17 Jun 2008 18:59:28 +0200
+In-Reply-To: <20080617173021.C1FE.E1E9C6FF@jp.fujitsu.com> (Yasunori Goto's
+	message of "Tue, 17 Jun 2008 18:34:09 +0900")
+Message-ID: <87tzfs80b3.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <patchbomb.1213718275@sermon.lab.mkp.net>
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 17 2008, Martin K. Petersen wrote:
-> 
-> These patches allow data integrity information (checksum and more) to
-> be attached to I/Os at the block/filesystem layers and transferred
-> through the entire I/O stack all the way to the physical storage
-> device.
-> 
-> The integrity metadata can be generated in close proximity to the
-> original data.  Capable host adapters, RAID arrays and physical disks
-> can verify the data integrity and abort I/Os in case of a mismatch.
-> 
-> Changes:
-> 
->  - Add "if in doubt" to Kconfig
-> 
->  - Make blk_rq_count_integrity_sg() more readable
-> 
->  - Queue integrity sysfs fixes
-> 
->  - Fix two struct bi leaks
-> 
->  - Rename struct bip to bio_integrity_payload
-> 
->  - Introduce bio_integrity_hw_sectors() that converts from block layer
->    (512b) sectors to hardware sectors
-> 
->  - Fix kunmap_atomic() abuse
-> 
->  - Replace ?: constructs with if()
-> 
->  - Add __GFP_NOFAIL to bio_integrity_prep() allocation
+Hi,
 
-Thanks Martin, looks good to me now. Applied to pending 2.6.27 queue.
+Yasunori Goto <y-goto@jp.fujitsu.com> writes:
 
--- 
-Jens Axboe
+> Hi Johannes-san.
+>
+> I found a bug in this patch.
+>
+>
+>> -	eidx = end_pfn - PFN_DOWN(node_boot_start);
+>> +	if (goal && goal < max)
+>> +		start = ALIGN(goal, step);
+>> +	else
+>> +		start = ALIGN(min, step);
+>
+> Here should check (min < goal) too.
+>
+> If not, start can becomes smaller than min. and sidx doesn't point
+> correct index.
+> alloc_bootmem_node() almost allocates pages of other node,
+> when node's min address is over MAX_DMA_ADDRESS.
 
+Oh, good catch!
+
+> Bye.
+>
+> ----
+>
+> Fix new alloc_bootmem_core() of bootmem-clean-up-alloc_bootmem_core.patch
+> in 2.6.26-rc5-mm3.
+>
+> (min < goal) should be checked too.
+>
+>
+> Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+> CC: Johannes Weiner <hannes@saeurebad.de>
+  Acked-by: Johannes Weiner <hannes@saeurebad.de>
+
+> ---
+>  mm/bootmem.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> Index: current/mm/bootmem.c
+> ===================================================================
+> --- current.orig/mm/bootmem.c	2008-06-17 18:33:31.000000000 +0900
+> +++ current/mm/bootmem.c	2008-06-17 18:34:27.000000000 +0900
+> @@ -435,7 +435,7 @@
+>  
+>  	step = max(align >> PAGE_SHIFT, 1UL);
+>  
+> -	if (goal && goal < max)
+> +	if (goal && min < goal && goal < max)
+>  		start = ALIGN(goal, step);
+>  	else
+>  		start = ALIGN(min, step);
+
+	Hannes
