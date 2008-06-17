@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760916AbYFQXEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761936AbYFQXEr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760916AbYFQXEL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 19:04:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760249AbYFQXAL
+	id S1761936AbYFQXEr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 19:04:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760588AbYFQXAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 19:00:11 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:24392 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760084AbYFQW7r (ORCPT
+	Tue, 17 Jun 2008 19:00:15 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:17634 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760217AbYFQW7w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 18:59:47 -0400
-Message-Id: <20080617225909.457896982@ldl.fc.hp.com>
+	Tue, 17 Jun 2008 18:59:52 -0400
+Message-Id: <20080617225910.352030211@ldl.fc.hp.com>
 References: <20080617225823.045233728@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 17 Jun 2008 16:58:32 -0600
+Date: Tue, 17 Jun 2008 16:58:36 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org
+Cc: linux-acpi@vger.kernel.org, Rene Herman <rene.herman@gmail.com>
 Cc: linux-kernel@vger.kernel.org
 Cc: Adam Belay <ambx1@neo.rr.com>
 Cc: Adam M Belay <abelay@mit.edu>
@@ -28,118 +28,138 @@ Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Takashi Iwai <tiwai@suse.de>
 Cc: Jiri Slaby <jirislaby@gmail.com>
-Subject: [patch 09/28] PNP: dont sort by type in /sys/.../resources
-Content-Disposition: inline; filename=pnp-unsort-sysfs-resources
+Subject: [patch 13/28] PNP: make resource option structures private to PNP subsystem
+Content-Disposition: inline; filename=pnp-make-option-structures-private
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rather than stepping through all IO resources, then stepping through
-all MMIO resources, etc., we can just iterate over the resource list
-once directly.
-
-This can change the order in /sys, e.g.,
-
-    # cat /sys/devices/pnp0/00:07/resources     # OLD
-    state = active
-    io 0x3f8-0x3ff
-    irq 4
-
-    # cat /sys/devices/pnp0/00:07/resources     # NEW
-    state = active
-    irq 4
-    io 0x3f8-0x3ff
-
-The old code artificially sorted resources by type; the new code
-just lists them in the order we read them from the ISAPNP hardware
-or the BIOS.
+Nothing outside the PNP subsystem should need access to a
+device's resource options, so this patch moves the option
+structure declarations to a private header file.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Acked-by: Rene Herman <rene.herman@gmail.com>
 
-Index: work10/drivers/pnp/interface.c
+Index: work14/drivers/pnp/base.h
 ===================================================================
---- work10.orig/drivers/pnp/interface.c	2008-05-05 11:54:26.000000000 -0600
-+++ work10/drivers/pnp/interface.c	2008-05-05 11:59:53.000000000 -0600
-@@ -248,8 +248,9 @@ static ssize_t pnp_show_current_resource
- 					  char *buf)
- {
- 	struct pnp_dev *dev = to_pnp_dev(dmdev);
-+	struct pnp_resource *pnp_res;
- 	struct resource *res;
--	int i, ret;
-+	int ret;
- 	pnp_info_buffer_t *buffer;
+--- work14.orig/drivers/pnp/base.h	2008-06-17 14:40:28.000000000 -0600
++++ work14/drivers/pnp/base.h	2008-06-17 14:42:28.000000000 -0600
+@@ -19,6 +19,54 @@ void pnp_remove_card(struct pnp_card *ca
+ int pnp_add_card_device(struct pnp_card *card, struct pnp_dev *dev);
+ void pnp_remove_card_device(struct pnp_dev *dev);
  
- 	if (!dev)
-@@ -262,46 +263,33 @@ static ssize_t pnp_show_current_resource
- 	buffer->buffer = buf;
- 	buffer->curr = buffer->buffer;
++struct pnp_port {
++	unsigned short min;	/* min base number */
++	unsigned short max;	/* max base number */
++	unsigned char align;	/* align boundary */
++	unsigned char size;	/* size of range */
++	unsigned char flags;	/* port flags */
++	unsigned char pad;	/* pad */
++	struct pnp_port *next;	/* next port */
++};
++
++#define PNP_IRQ_NR 256
++struct pnp_irq {
++	DECLARE_BITMAP(map, PNP_IRQ_NR);	/* bitmask for IRQ lines */
++	unsigned char flags;	/* IRQ flags */
++	unsigned char pad;	/* pad */
++	struct pnp_irq *next;	/* next IRQ */
++};
++
++struct pnp_dma {
++	unsigned char map;	/* bitmask for DMA channels */
++	unsigned char flags;	/* DMA flags */
++	struct pnp_dma *next;	/* next port */
++};
++
++struct pnp_mem {
++	unsigned int min;	/* min base number */
++	unsigned int max;	/* max base number */
++	unsigned int align;	/* align boundary */
++	unsigned int size;	/* size of range */
++	unsigned char flags;	/* memory flags */
++	unsigned char pad;	/* pad */
++	struct pnp_mem *next;	/* next memory resource */
++};
++
++#define PNP_RES_PRIORITY_PREFERRED	0
++#define PNP_RES_PRIORITY_ACCEPTABLE	1
++#define PNP_RES_PRIORITY_FUNCTIONAL	2
++#define PNP_RES_PRIORITY_INVALID	65535
++
++struct pnp_option {
++	unsigned short priority;	/* priority */
++	struct pnp_port *port;		/* first port */
++	struct pnp_irq *irq;		/* first IRQ */
++	struct pnp_dma *dma;		/* first DMA */
++	struct pnp_mem *mem;		/* first memory resource */
++	struct pnp_option *next;	/* used to chain dependent resources */
++};
++
+ struct pnp_option *pnp_build_option(int priority);
+ struct pnp_option *pnp_register_independent_option(struct pnp_dev *dev);
+ struct pnp_option *pnp_register_dependent_option(struct pnp_dev *dev,
+Index: work14/include/linux/pnp.h
+===================================================================
+--- work14.orig/include/linux/pnp.h	2008-06-17 14:41:18.000000000 -0600
++++ work14/include/linux/pnp.h	2008-06-17 14:42:28.000000000 -0600
+@@ -182,54 +182,6 @@ static inline int pnp_dma_valid(struct p
+ }
  
--	pnp_printf(buffer, "state = ");
--	if (dev->active)
--		pnp_printf(buffer, "active\n");
--	else
--		pnp_printf(buffer, "disabled\n");
+ 
+-struct pnp_port {
+-	unsigned short min;	/* min base number */
+-	unsigned short max;	/* max base number */
+-	unsigned char align;	/* align boundary */
+-	unsigned char size;	/* size of range */
+-	unsigned char flags;	/* port flags */
+-	unsigned char pad;	/* pad */
+-	struct pnp_port *next;	/* next port */
+-};
 -
--	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_IO, i)); i++) {
--		pnp_printf(buffer, "io");
--		if (res->flags & IORESOURCE_DISABLED)
--			pnp_printf(buffer, " disabled\n");
--		else
--			pnp_printf(buffer, " 0x%llx-0x%llx\n",
--				   (unsigned long long) res->start,
--				   (unsigned long long) res->end);
--	}
--	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_MEM, i)); i++) {
--		pnp_printf(buffer, "mem");
--		if (res->flags & IORESOURCE_DISABLED)
-+	pnp_printf(buffer, "state = %s\n", dev->active ? "active" : "disabled");
-+
-+	list_for_each_entry(pnp_res, &dev->resources, list) {
-+		res = &pnp_res->res;
-+
-+		pnp_printf(buffer, pnp_resource_type_name(res));
-+
-+		if (res->flags & IORESOURCE_DISABLED) {
- 			pnp_printf(buffer, " disabled\n");
--		else
--			pnp_printf(buffer, " 0x%llx-0x%llx\n",
-+			continue;
-+		}
-+
-+		switch (pnp_resource_type(res)) {
-+		case IORESOURCE_IO:
-+		case IORESOURCE_MEM:
-+			pnp_printf(buffer, " %#llx-%#llx\n",
- 				   (unsigned long long) res->start,
- 				   (unsigned long long) res->end);
--	}
--	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_IRQ, i)); i++) {
--		pnp_printf(buffer, "irq");
--		if (res->flags & IORESOURCE_DISABLED)
--			pnp_printf(buffer, " disabled\n");
--		else
--			pnp_printf(buffer, " %lld\n",
--				   (unsigned long long) res->start);
--	}
--	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_DMA, i)); i++) {
--		pnp_printf(buffer, "dma");
--		if (res->flags & IORESOURCE_DISABLED)
--			pnp_printf(buffer, " disabled\n");
--		else
-+			break;
-+		case IORESOURCE_IRQ:
-+		case IORESOURCE_DMA:
- 			pnp_printf(buffer, " %lld\n",
- 				   (unsigned long long) res->start);
-+			break;
-+		}
- 	}
-+
- 	ret = (buffer->curr - buf);
- 	kfree(buffer);
- 	return ret;
+-#define PNP_IRQ_NR 256
+-struct pnp_irq {
+-	DECLARE_BITMAP(map, PNP_IRQ_NR);	/* bitmask for IRQ lines */
+-	unsigned char flags;	/* IRQ flags */
+-	unsigned char pad;	/* pad */
+-	struct pnp_irq *next;	/* next IRQ */
+-};
+-
+-struct pnp_dma {
+-	unsigned char map;	/* bitmask for DMA channels */
+-	unsigned char flags;	/* DMA flags */
+-	struct pnp_dma *next;	/* next port */
+-};
+-
+-struct pnp_mem {
+-	unsigned int min;	/* min base number */
+-	unsigned int max;	/* max base number */
+-	unsigned int align;	/* align boundary */
+-	unsigned int size;	/* size of range */
+-	unsigned char flags;	/* memory flags */
+-	unsigned char pad;	/* pad */
+-	struct pnp_mem *next;	/* next memory resource */
+-};
+-
+-#define PNP_RES_PRIORITY_PREFERRED	0
+-#define PNP_RES_PRIORITY_ACCEPTABLE	1
+-#define PNP_RES_PRIORITY_FUNCTIONAL	2
+-#define PNP_RES_PRIORITY_INVALID	65535
+-
+-struct pnp_option {
+-	unsigned short priority;	/* priority */
+-	struct pnp_port *port;		/* first port */
+-	struct pnp_irq *irq;		/* first IRQ */
+-	struct pnp_dma *dma;		/* first DMA */
+-	struct pnp_mem *mem;		/* first memory resource */
+-	struct pnp_option *next;	/* used to chain dependent resources */
+-};
+-
+ /*
+  * Device Management
+  */
 
 -- 
