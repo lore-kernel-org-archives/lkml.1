@@ -1,102 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755703AbYFQH1b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbYFQH2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755703AbYFQH1b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 03:27:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753739AbYFQH1U
+	id S1755974AbYFQH2g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 03:28:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbYFQH22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 03:27:20 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37600 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753359AbYFQH1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 03:27:19 -0400
-Date: Tue, 17 Jun 2008 09:26:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: kuznet@ms2.inr.ac.ru, vgusev@openvz.org, mcmanus@ducksong.com,
-       xemul@openvz.org, netdev@vger.kernel.org, ilpo.jarvinen@helsinki.fi,
-       linux-kernel@vger.kernel.org
-Subject: Re: [TCP]: TCP_DEFER_ACCEPT causes leak sockets
-Message-ID: <20080617072658.GA12535@elte.hu>
-References: <20080613.023208.78649628.davem@davemloft.net> <20080613110913.GB9867@elte.hu> <20080613114746.GA27811@elte.hu> <20080616.165900.189566405.davem@davemloft.net>
+	Tue, 17 Jun 2008 03:28:28 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:29557 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753754AbYFQH21 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 03:28:27 -0400
+Message-ID: <fa686aa40806170028t2ccb679k22d2d3cea793ebc1@mail.gmail.com>
+Date: Tue, 17 Jun 2008 01:28:26 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [PATCH 2/4] spi: split up spi_new_device() to allow two stage registration.
+Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, fabrizio.garetto@gmail.com,
+       jonsmirl@gmail.com
+In-Reply-To: <fa686aa40805232343x20031560j5659d203e25f494@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080616.165900.189566405.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
+	 <20080516193608.28030.34968.stgit@trillian.secretlab.ca>
+	 <200805211717.13206.david-b@pacbell.net>
+	 <fa686aa40805232343x20031560j5659d203e25f494@mail.gmail.com>
+X-Google-Sender-Auth: 3884a24789acd198
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, May 24, 2008 at 12:43 AM, Grant Likely
+<grant.likely@secretlab.ca> wrote:
+> On Wed, May 21, 2008 at 6:17 PM, David Brownell <david-b@pacbell.net> wrote:
+>> On Friday 16 May 2008, Grant Likely wrote:
+>>>
+>>> This patch splits the allocation and registration portions of code out
+>>> of spi_new_device() and creates three new functions; spi_alloc_device(),
+>>> spi_register_device(), and spi_device_release().
+>>
+>> I have no problem with the first two, but why the last?
+>>
+>> If the devices are always allocated by spi_alloc_device() as
+>> they should be -- probably through an intermediary -- the
+>> only public function necessary for that cleanup should be
+>> the existing spi_dev_put().
+>
+> Ah, okay.  I'm still a bit fuzzy on the device model conventions.
+> I'll remove that then.
 
-* David Miller <davem@davemloft.net> wrote:
+I've dug into this some more.  spi_alloc_device only allocates the
+memory.  It doesn't call device_initialize() to initialize the kref.
+All of that behaviour is handled within device_register().  Therefore
+if a driver uses spi_alloc_device() and then if a later part of the
+initialization fails before spi_register_device() is called, then the
+alloc'd memory needs to be freed, but spi_dev_put() won't work because
+the kobj isn't set up so I need another function to handle freeing it
+in on a failure path.
 
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Fri, 13 Jun 2008 13:47:46 +0200
-> 
-> > this threw the warning below - never saw that before in thousands of 
-> > bootups and this was the only networking change that happened. 
-> > config and bootlog attached. Might be unlucky coincidence.
-> 
-> So that we can make forward progress here, please confirm that the 
-> following patch against -tip makes your problems go away for good.
-> 
-> Once you can confirm I will push it to Linus.
+Should I switch things around to do device_initialize() in the alloc
+function and call device_add() instead of device_register() in the
+spi_register_device() function?  Is that sufficient to make
+put_device() work?
 
-i triggered the net/sched/sch_generic.c:222 warning once more meanwhile 
-(yesterday) with the full revert applied (which i think is the same as 
-the patch below).
+Cheers,
+g.
 
-So i think it's either some unlucky coincidence or some timing 
-relationship - perhaps the change impacts packet ordering for certain 
-workload patterns? [but that same condition can occur without that patch 
-too]
-
-I also checked kerneloops.org and this warning seems to have been 
-reported by others as well - although it's not triggering heavily. In 
-some of those other reports the warning came together with a dead 
-interface, while in my case it's just a warning with still working 
-networking.
-
-So since there's no clear bug pattern and no sure reproducability on my 
-side i'd suggest we track this problem separately and "do nothing" right 
-now. I've excluded this warning from my 'is the freshly booted kernel 
-buggy' list of conditions of -tip testing so it's not holding me up.
-
-and i can apply any test-patch if that would be helpful - if it does a 
-WARN_ON() i'll notice it. (pure extra debug printks with no stack trace 
-are much harder to notice in automated tests)
-
-btw., it would be nice if there was some .config driven networking debug 
-option that randomized packet ordering in the tx and rx queue. 
-(transparently enabled, with zero-config on the userspace side)
-
-I.e. it would have an (expensive, because O(1)) debug mechanism that 
-randomized things - it would insert new packets into a random place 
-within the queue where it gets queued. We could hit races and rarer 
-codepaths much sooner that way - as especially in LAN based testing 
-there's a strong natural ordering of packets so randomizing it 
-artificially looks promising to me.
-
-If you make that new option =y enable-able in the .config(dependent on 
-DEBUG_KERNEL && default off, etc.), and as long as it does not have to 
-be configured on the userspace side (i'm testing unmodified userspace 
-images with default distro installs, etc.) the randconfig test will 
-still be able to reach it in a percentage of the tests and i think we'll 
-be able to hit a lot of exciting races much sooner than with the normal 
-in-order/FIFO queueing methods.
-
-it's basically massively parallel coverage testing. It doesnt matter how 
-unbelievably slow packet ordering randomization might be, the coverage 
-testing it would do would be worth gold i'm sure. (I'd love to test 
-something like that in -tip, if it comes in form of some standalone 
-patch against a mainline-ish tree.)
-
-	Ingo
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
