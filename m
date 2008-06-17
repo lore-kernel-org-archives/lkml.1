@@ -1,42 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbYFQDts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182AbYFQD76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755454AbYFQDts (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 23:49:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbYFQDtk
+	id S1755182AbYFQD76 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 23:59:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753651AbYFQD7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 23:49:40 -0400
-Received: from gate.crashing.org ([63.228.1.57]:56611 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751146AbYFQDtj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 23:49:39 -0400
-Subject: Re: [PATCH 1/4] ide-pmac: media-bay support fixes
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1213673979.8129.156.camel@pasglop>
-References: <200806162124.43005.bzolnier@gmail.com>
-	 <1213673979.8129.156.camel@pasglop>
-Content-Type: text/plain
-Date: Tue, 17 Jun 2008 13:49:32 +1000
-Message-Id: <1213674572.8129.159.camel@pasglop>
+	Mon, 16 Jun 2008 23:59:49 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60208 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753523AbYFQD7s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 23:59:48 -0400
+Date: Tue, 17 Jun 2008 13:05:04 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "menage@google.com" <menage@google.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] memcg: res counter set limit
+Message-Id: <20080617130504.15864ae8.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <48573236.2060700@linux.vnet.ibm.com>
+References: <20080617123144.ce5a74fa.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080617123319.51e1f09d.kamezawa.hiroyu@jp.fujitsu.com>
+	<48573236.2060700@linux.vnet.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-06-17 at 13:39 +1000, Benjamin Herrenschmidt wrote:
-> Your patches don't apply on today upstream, I'll try against
-> linux-next or is there a git I can clone to test things ?
+On Tue, 17 Jun 2008 09:10:38 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-Ok, I'm lost. I have 3 different series of patches from you partially
-overlapping with different amount of patches in them. I don't have
-time to sort that out right now. Can you send me a single serie that
-I can apply on top of either upstream or tonight linux-next which
-should have your stuff removed hopefully ?
+> KAMEZAWA Hiroyuki wrote:
+> > Helper function of res_counter for reducing usage in subsys(memcg).
+> > 
+> > Changelog xxx -> v5.
+> >  - new file.
+> > 
+> > Background:
+> >  In v3, I was asked to implement generic ones to res_counter.
+> >  In v4. I was asked not to implement generic ones because memcg is only
+> >  controller which can reduce usage by the kernel. Okay, maybe make sense.
+> >  In this version, adds only necessary helpers to res_counter in 
+> >  not-invasive manner.
+> > 
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > 
+> > ---
+> >  include/linux/res_counter.h |    7 +++++++
+> >  kernel/res_counter.c        |   24 ++++++++++++++++++++++++
+> >  2 files changed, 31 insertions(+)
+> > 
+> > Index: mm-2.6.26-rc5-mm3/include/linux/res_counter.h
+> > ===================================================================
+> > --- mm-2.6.26-rc5-mm3.orig/include/linux/res_counter.h
+> > +++ mm-2.6.26-rc5-mm3/include/linux/res_counter.h
+> > @@ -136,6 +136,12 @@ static inline bool res_counter_check_und
+> >  	return ret;
+> >  }
+> > 
+> > +/*
+> > + * set new limit to the val. if usage > val, returns -EBUSY.
+> > + * returns 0 at success.
+> > + */
+> > +int res_counter_set_limit(struct res_counter *cnt, unsigned long long limit);
+> > +
+> >  static inline void res_counter_reset_max(struct res_counter *cnt)
+> >  {
+> >  	unsigned long flags;
+> > @@ -153,4 +159,5 @@ static inline void res_counter_reset_fai
+> >  	cnt->failcnt = 0;
+> >  	spin_unlock_irqrestore(&cnt->lock, flags);
+> >  }
+> > +
+> 
+> I don't understand this extra newline here
+> 
+Sorry. I'll remove this ;)
 
-Ben.
+Thanks,
+-Kame
 
+
+> >  #endif
+> > Index: mm-2.6.26-rc5-mm3/kernel/res_counter.c
+> > ===================================================================
+> > --- mm-2.6.26-rc5-mm3.orig/kernel/res_counter.c
+> > +++ mm-2.6.26-rc5-mm3/kernel/res_counter.c
+> > @@ -143,3 +143,27 @@ out_free:
+> >  out:
+> >  	return ret;
+> >  }
+> > +
+> > +
+> > +/**
+> > + * res_counter_set_limit - set limit of res_counter.
+> > + * @cnt: the res_counter
+> > + * @limit: the new limit
+> > + *
+> > + * Note that res_coutner_write() allows the same kind of operation.
+> > + * But this returns -EBUSY when new limit < usage. If you want strict control
+> > + * of limit, please use this.
+> > + */
+> > +int res_counter_set_limit(struct res_counter *cnt, unsigned long long limit)
+> > +{
+> > +	unsigned long flags;
+> > +	int ret = -EBUSY;
+> > +
+> > +	spin_lock_irqsave(&cnt->lock, flags);
+> > +	if (cnt->usage <= limit) {
+> > +		cnt->limit = limit;
+> > +		ret = 0;
+> > +	}
+> > +	spin_unlock_irqrestore(&cnt->lock, flags);
+> > +	return ret;
+> > +}
+> 
+> Reviewed-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> 
+> -- 
+> 	Warm Regards,
+> 	Balbir Singh
+> 	Linux Technology Center
+> 	IBM, ISTL
+> 
 
