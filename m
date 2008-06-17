@@ -1,49 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759193AbYFQOpt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759193AbYFQOz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759193AbYFQOpt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 10:45:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757902AbYFQOpl
+	id S1759193AbYFQOz3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 10:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757381AbYFQOzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 10:45:41 -0400
-Received: from lazybastard.de ([212.112.238.170]:51661 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755961AbYFQOpk (ORCPT
+	Tue, 17 Jun 2008 10:55:17 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:27115 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756351AbYFQOzQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 10:45:40 -0400
-Date: Tue, 17 Jun 2008 16:45:26 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Maxim Shchetynin <maxim@linux.vnet.ibm.com>
-Cc: linux-fsdevel@vger.kernel.org, Jan Engelhardt <jengelh@medozas.de>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org
-Subject: Re: AZFS file system proposal
-Message-ID: <20080617144526.GA28448@logfs.org>
-References: <20080609104650.4f220492@mercedes-benz.boeblingen.de.ibm.com> <20080609125530.GF30405@parisc-linux.org> <20080610104919.504b9826@mercedes-benz.boeblingen.de.ibm.com> <alpine.LNX.1.10.0806110000560.20733@fbirervta.pbzchgretzou.qr> <20080617110655.59c915da@mercedes-benz.boeblingen.de.ibm.com> <alpine.LNX.1.10.0806171133220.6620@fbirervta.pbzchgretzou.qr> <20080617105300.GA28310@logfs.org> <20080617160628.79efd2d9@mercedes-benz.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080617160628.79efd2d9@mercedes-benz.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 17 Jun 2008 10:55:16 -0400
+Date: Tue, 17 Jun 2008 07:53:54 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Michael Kerrisk <mtk.manpages@googlemail.com>, corbet@lwn.net
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-doc@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>, mpm@selenic.com,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       tech-board@lists.linux-foundation.org,
+       Jim Zemlin <jzemlin@linux-foundation.org>
+Subject: Re: [patch] MAINTAINERS -- Documentation
+Message-Id: <20080617075354.7a6c9bd3.randy.dunlap@oracle.com>
+In-Reply-To: <4857A1D6.2080600@gmail.com>
+References: <4857A1D6.2080600@gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 June 2008 16:06:28 +0200, Maxim Shchetynin wrote:
-> > 
-> > My personal question when looking at this is: Why not use ext2?  It
+On Tue, 17 Jun 2008 13:36:54 +0200 Michael Kerrisk wrote:
+
+> Andrew,
 > 
-> Same reason we don't use ext2 for file system in RAM - we don't need any expensive caching and readahead mechanisms for devices which are as fast as main memory (or almost as fast).
+> Could you apply this patch for MAINTAINERS.  At this stage, I doubt that I'll
+> be doing much in terms of writing new documents or trying to fix
+> /Documentation as a whole, but I'm very willing to provide review and
+> editorial assistance for people contributing changes to /Documentation, and
+> even prod them in that direction if something is in need of documentation.
+> 
+> Cheers,
+> 
+> Michael
 
-Well, with the '-o xip' option I mentioned below, there is no caching or
-readahead.  The direct_access method you use as well was developed for
-ext2.  Or rather for xip2fs, another new filesystem.  After some review,
-that was shot down and a mount option was added to ext2 instead.
 
-> > appears to me that an ext2 mounted with '-o xip' would solve the same
-> > problems.
+While I welcome the additional help, I've been doing this for years, and
+Jon Corbet also does some of this, so I don't believe that having Michael
+listed here alone is the right thing.  I'll be glad to send an additional
+patch to this, adding me to it, and Jon could do the same for himself.
 
-Jörn
 
--- 
-Homo Sapiens is a goal, not a description.
--- unknown
+> --- linux-2.6.26-rc5/MAINTAINERS.old.26-2008-06-17 11:19:01.000000000 +0200
+> +++ linux-2.6.26-rc5/MAINTAINERS        2008-06-17 11:22:36.000000000 +0200
+> @@ -1419,6 +1419,12 @@
+>  L:     linux-acpi@vger.kernel.org
+>  S:     Supported
+> 
+> +DOCUMENTATION (/Documentation directory)
+> +P:     Michael Kerrisk
+> +M:     mtk.manpages@gmail.com
+> +L:     linux-doc@vger.kernel.org
+> +S:     Maintained
+> +
+>  DOUBLETALK DRIVER
+>  P:     James R. Van Zandt
+>  M:     jrv@vanzandt.mv.com
+> 
+> 
+
+
+---
+~Randy
+'"Daemon' is an old piece of jargon from the UNIX operating system,
+where it referred to a piece of low-level utility software, a
+fundamental part of the operating system."
