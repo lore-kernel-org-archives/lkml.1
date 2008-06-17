@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbYFQRoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758760AbYFQRp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758205AbYFQRoQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 13:44:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754386AbYFQRoE
+	id S1758760AbYFQRp0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 13:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbYFQRpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 13:44:04 -0400
-Received: from tamago.serverit.net ([91.189.209.155]:52620 "EHLO
-	mail.hosting2.serverit.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752999AbYFQRoB (ORCPT
+	Tue, 17 Jun 2008 13:45:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39247 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754686AbYFQRpL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 13:44:01 -0400
-X-Greylist: delayed 2679 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Jun 2008 13:44:01 EDT
-Date: Tue, 17 Jun 2008 19:59:15 +0300 (EEST)
-From: Szabolcs Szakacsits <szaka@ntfs-3g.org>
-X-X-Sender: szaka@tamago.serverit.net
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       ywang221@hotmail.com
-Subject: Re: [2.6.26 patch] fuse: fix thinko in max I/O size calucation
-In-Reply-To: <E1K8dgi-0005sl-El@pomaz-ex.szeredi.hu>
-Message-ID: <Pine.LNX.4.62.0806171950350.23306@tamago.serverit.net>
-References: <E1K8dgi-0005sl-El@pomaz-ex.szeredi.hu>
+	Tue, 17 Jun 2008 13:45:11 -0400
+Date: Tue, 17 Jun 2008 10:45:03 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bron Gondwana <brong@fastmail.fm>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rob Mueller <robm@fastmail.fm>
+Subject: Re: BUG: mmapfile/writev spurious zero bytes (x86_64/not i386,
+ bisected, reproducable)
+In-Reply-To: <alpine.LFD.1.10.0806170947380.25099@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0806171041560.25099@woody.linux-foundation.org>
+References: <1213682410.13174.1258837181@webmail.messagingengine.com> <1213682570.13708.1258839317@webmail.messagingengine.com> <alpine.LFD.1.10.0806170947380.25099@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,64 +30,56 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 17 Jun 2008, Miklos Szeredi wrote:
 
-> From: Miklos Szeredi <mszeredi@suse.cz>
+On Tue, 17 Jun 2008, Linus Torvalds wrote:
 > 
-> Use max not min to enforce a lower limit on the max I/O size.
+> That said, that bug may be distracting, but it seems to have nothign at 
+> all to do with the actual problem. The bug seems to happen only when the 
+> file is not pre-paged in.
 
-Big write is ok now, thanks. NTFS-3G in-memory write performance seems to 
-be 6x better on a T9300 and quick tests seem to show that it's at least as 
-fast as ext3 in-memory writes (but this needs more testing, etc).
+Bron, does this untested patch hide the bug?
 
-However the max write size seems to be limited to 128kB. Is this 
-intentional? If yes then
+> Nick?
 
-Acked-by: Szabolcs Szakacsits <szaka@ntfs-3g.org>
+I don't think this patch is correct, because it doesn't really fix the 
+basic issue (the code should do the right thing even if a page isn't 
+there), but it might hide it by faulting in the whole "bytes" range rather 
+than just the first iov.
 
-	Szaka
+So Nick, it's still over to you, but if this does hide it, then that's an 
+interesting detail in itself.
 
-> This bug was introduced by
-> 
->    commit e5d9a0df07484d6d191756878c974e4307fb24ce
->    Author: Miklos Szeredi <mszeredi@suse.cz>
->    Date:   Wed Apr 30 00:54:44 2008 -0700
->    
->        fuse: fix max i/o size calculation
-> 
-> Thanks to Brian Wang for noticing.
-> 
-> Reported-by: Brian Wang <ywang221@hotmail.com>
-> CC: Szabolcs Szakacsits <szaka@ntfs-3g.org>
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> ---
->  fs/fuse/inode.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6/fs/fuse/inode.c
-> ===================================================================
-> --- linux-2.6.orig/fs/fuse/inode.c	2008-06-17 17:55:38.000000000 +0200
-> +++ linux-2.6/fs/fuse/inode.c	2008-06-17 17:55:48.000000000 +0200
-> @@ -591,7 +591,7 @@ static void process_init_reply(struct fu
->  		fc->bdi.ra_pages = min(fc->bdi.ra_pages, ra_pages);
->  		fc->minor = arg->minor;
->  		fc->max_write = arg->minor < 5 ? 4096 : arg->max_write;
-> -		fc->max_write = min_t(unsigned, 4096, fc->max_write);
-> +		fc->max_write = max_t(unsigned, 4096, fc->max_write);
->  		fc->conn_init = 1;
->  	}
->  	fuse_put_request(fc, req);
-> @@ -667,7 +667,7 @@ static int fuse_fill_super(struct super_
->  	fc->flags = d.flags;
->  	fc->user_id = d.user_id;
->  	fc->group_id = d.group_id;
-> -	fc->max_read = min_t(unsigned, 4096, d.max_read);
-> +	fc->max_read = max_t(unsigned, 4096, d.max_read);
->  
->  	/* Used by get_root_inode() */
->  	sb->s_fs_info = fc;
-> 
+		Linus
 
---
-NTFS-3G:  http://ntfs-3g.org
+---
+ mm/filemap.c |   17 ++++++++++++++---
+ 1 files changed, 14 insertions(+), 3 deletions(-)
 
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 1e6a7d3..0080a27 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1808,9 +1808,20 @@ EXPORT_SYMBOL(iov_iter_advance);
+  */
+ int iov_iter_fault_in_readable(struct iov_iter *i, size_t bytes)
+ {
+-	char __user *buf = i->iov->iov_base + i->iov_offset;
+-	bytes = min(bytes, i->iov->iov_len - i->iov_offset);
+-	return fault_in_pages_readable(buf, bytes);
++	unsigned long offset = i->iov_offset;
++	const struct iovec *iov = i->iov;
++
++	while (bytes) {
++		char __user *buf = iov->iov_base + offset;
++		size_t n = min(bytes, iov->iov_len - offset);
++
++		if (fault_in_pages_readable(buf, n))
++			return -EFAULT;
++		bytes -= n;
++		offset = 0;
++		iov++;
++	}
++	return 0;	
+ }
+ EXPORT_SYMBOL(iov_iter_fault_in_readable);
+ 
