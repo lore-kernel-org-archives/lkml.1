@@ -1,196 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756865AbYFQItj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757342AbYFQIxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756865AbYFQItj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 04:49:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754382AbYFQIta
+	id S1757342AbYFQIxP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 04:53:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487AbYFQIxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 04:49:30 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:42067 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752612AbYFQIt3 (ORCPT
+	Tue, 17 Jun 2008 04:53:00 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:54014 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755273AbYFQIw7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 04:49:29 -0400
-Subject: Re: [BUG: NULL pointer dereference] cgroups and
-	RT	scheduling	interact badly.
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Daniel K." <dk@uw.no>
-Cc: mingo@elte.hu, menage@google.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-In-Reply-To: <1213629536.16944.109.camel@twins>
-References: <485445AE.2010602@uw.no> <1213612447.16944.99.camel@twins>
-	 <4856671B.1020304@uw.no>  <1213624312.16944.104.camel@twins>
-	 <1213627148.16944.106.camel@twins>  <485682B0.8010805@uw.no>
-	 <1213629536.16944.109.camel@twins>
-Content-Type: text/plain
-Date: Tue, 17 Jun 2008 10:49:17 +0200
-Message-Id: <1213692557.16944.153.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Tue, 17 Jun 2008 04:52:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=s4d8Ov46Ebd+eG08aTAuMxIytqiYvZkcOE7A+ULX64Vmv1FVYHsq+Dbc88TEe0gHJj
+         OX5cPQWjmaZjC3gRXUpZ+pzw4fn6zJtiopBMiw1yhXwPC2h3P4iz8YskGq0z6G9zBk8H
+         NCz47Ew4pRLWhqwYc2+UUHakx4+5OuyeNG6Eg=
+Message-ID: <7c86c4470806170152rba7a4d0ieebca667ae81afaa@mail.gmail.com>
+Date: Tue, 17 Jun 2008 10:52:59 +0200
+From: "stephane eranian" <eranian@googlemail.com>
+Reply-To: eranian@gmail.com
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: [patch 12/21] perfmon2 minimal: sysfs interface
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <7c86c4470806131531n4b24bc4dmc22d4b2277e75f24@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <484daff1.1358560a.0808.0267@mx.google.com>
+	 <20080611144955.GA20145@kroah.com>
+	 <7c86c4470806110800w465f1c91k7e8f0bb8fba18ca3@mail.gmail.com>
+	 <7c86c4470806120554w38a11307qa34511cf4f8b4aba@mail.gmail.com>
+	 <20080613035339.GE17872@kroah.com>
+	 <7c86c4470806131531n4b24bc4dmc22d4b2277e75f24@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-06-16 at 17:18 +0200, Peter Zijlstra wrote:
-> On Mon, 2008-06-16 at 17:11 +0200, Daniel K. wrote:
-> > Peter Zijlstra wrote:
-> > > On Mon, 2008-06-16 at 15:51 +0200, Peter Zijlstra wrote:
-> > >> On Mon, 2008-06-16 at 15:14 +0200, Daniel K. wrote:
-> > >>> Peter Zijlstra wrote:
-> > >>>
-> > >>> Although this patch seems to be correct, this is what shows up on my
-> > >>> netconsole, when applying it -- with an offset, do you have other fixes
-> > >>> applied as well?
-> > >> I had indeed, although nothing touching the rt scheduler. I popped all
-> > >> my patches and pulled an update from Linus, but I fail to reproduce the
-> > >> below.
-> > >>
-> > >> /me goes look for that burnp6 thing, I used a simple while (1); loop.
-> > > 
-> > > found it, still seems to work for me. do you have a funny number of
-> > > cpus? or anything else noteworthy?
-> > 
-> > I don't think so, this is on a SUN X2200 M2, with two AMD Opteron 2214
-> > processors, and 8G RAM.
-> > 
-> > If I follow the procedure up to 'echo 4000 > oops/cpu.rt_runtime_us'
-> > then I can
-> > 
-> > # burnP6 &
-> > [1] 3395
-> > # schedtool -R -p 1 3395
-> > 
-> > but
-> > 
-> > # echo -n 3395 > /dev/cgroup/burn/oops/tasks
-> 
-> Ah, that did it,.. I'll go poke at it. Thanks!
+Greg,
 
-How's this work for you? (includes the previuos patchlet too)
+I looked at this some more today.
+I was able to remove the need for a custom attribute structure for one
+of the objects.
 
----
-Subject: sched: rt-group: fix NULL deref
+I think it is not possible to use the generic kobj_attribute if you
+need to refer to a particular
+object in the show/store, i.e, not a global data structure. In other
+words, if you need to use
+the kobj pointer passed to the show() routine to access your data
+structure, then you need to
+rely on container_of() and thus the kobject MUST be embedded into the
+data structure defining
+the object. It cannot just be a kobject pointer.
 
- - the rt group hierarchy got corrupted by always pointing the entity's
-rq pointer to the root rq.
+The kobject interface to create and add objects come in two forms, the
+one which requires
+a ktype and the one which does not, i.e., kobject_create() and its
+derivatives. It seems like
+if you want to leverage the kobj_attribute, you need to avoid all
+calls which require a ktype.
+But then there is no such function which would work on an already
+allocated kobject.
+kobject_create_and_add() does allocate the kobject. You do not want
+that because it means
+the kobject is not embedded into your data structure anymore.
 
- - the enqueue/dequeue on throttle should also use the full
-dequeue_rt_stack like regular task enqueue/dequeue do. Not doing this
-can leave empty groups and possibly corrupt the priority queues.
+Am I missing something here?
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
-diff --git a/kernel/sched.c b/kernel/sched.c
-index eaf6751..efbb7d9 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -7626,7 +7626,6 @@ static void init_tg_rt_entry(struct task_group *tg, struct rt_rq *rt_rq,
- 	else
- 		rt_se->rt_rq = parent->my_q;
- 
--	rt_se->rt_rq = &rq->rt;
- 	rt_se->my_q = rt_rq;
- 	rt_se->parent = parent;
- 	INIT_LIST_HEAD(&rt_se->run_list);
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 3432d57..95c408e 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -449,7 +449,7 @@ void dec_rt_tasks(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
- #endif
- }
- 
--static void enqueue_rt_entity(struct sched_rt_entity *rt_se)
-+static void __enqueue_rt_entity(struct sched_rt_entity *rt_se)
- {
- 	struct rt_rq *rt_rq = rt_rq_of_se(rt_se);
- 	struct rt_prio_array *array = &rt_rq->active;
-@@ -464,7 +464,7 @@ static void enqueue_rt_entity(struct sched_rt_entity *rt_se)
- 	inc_rt_tasks(rt_se, rt_rq);
- }
- 
--static void dequeue_rt_entity(struct sched_rt_entity *rt_se)
-+static void __dequeue_rt_entity(struct sched_rt_entity *rt_se)
- {
- 	struct rt_rq *rt_rq = rt_rq_of_se(rt_se);
- 	struct rt_prio_array *array = &rt_rq->active;
-@@ -480,11 +480,10 @@ static void dequeue_rt_entity(struct sched_rt_entity *rt_se)
-  * Because the prio of an upper entry depends on the lower
-  * entries, we must remove entries top - down.
-  */
--static void dequeue_rt_stack(struct task_struct *p)
-+static void dequeue_rt_stack(struct sched_rt_entity *rt_se)
- {
--	struct sched_rt_entity *rt_se, *back = NULL;
-+	struct sched_rt_entity *back = NULL;
- 
--	rt_se = &p->rt;
- 	for_each_sched_rt_entity(rt_se) {
- 		rt_se->back = back;
- 		back = rt_se;
-@@ -492,7 +491,26 @@ static void dequeue_rt_stack(struct task_struct *p)
- 
- 	for (rt_se = back; rt_se; rt_se = rt_se->back) {
- 		if (on_rt_rq(rt_se))
--			dequeue_rt_entity(rt_se);
-+			__dequeue_rt_entity(rt_se);
-+	}
-+}
-+
-+static void enqueue_rt_entity(struct sched_rt_entity *rt_se)
-+{
-+	dequeue_rt_stack(rt_se);
-+	for_each_sched_rt_entity(rt_se)
-+		__enqueue_rt_entity(rt_se);
-+}
-+
-+static void dequeue_rt_entity(struct sched_rt_entity *rt_se)
-+{
-+	dequeue_rt_stack(rt_se);
-+
-+	for_each_sched_rt_entity(rt_se) {
-+		struct rt_rq *rt_rq = group_rt_rq(rt_se);
-+
-+		if (rt_rq && rt_rq->rt_nr_running)
-+			__enqueue_rt_entity(rt_se);
- 	}
- }
- 
-@@ -506,32 +524,15 @@ static void enqueue_task_rt(struct rq *rq, struct task_struct *p, int wakeup)
- 	if (wakeup)
- 		rt_se->timeout = 0;
- 
--	dequeue_rt_stack(p);
--
--	/*
--	 * enqueue everybody, bottom - up.
--	 */
--	for_each_sched_rt_entity(rt_se)
--		enqueue_rt_entity(rt_se);
-+	enqueue_rt_entity(rt_se);
- }
- 
- static void dequeue_task_rt(struct rq *rq, struct task_struct *p, int sleep)
- {
- 	struct sched_rt_entity *rt_se = &p->rt;
--	struct rt_rq *rt_rq;
- 
- 	update_curr_rt(rq);
--
--	dequeue_rt_stack(p);
--
--	/*
--	 * re-enqueue all non-empty rt_rq entities.
--	 */
--	for_each_sched_rt_entity(rt_se) {
--		rt_rq = group_rt_rq(rt_se);
--		if (rt_rq && rt_rq->rt_nr_running)
--			enqueue_rt_entity(rt_se);
--	}
-+	dequeue_rt_entity(rt_se);
- }
- 
- /*
+Thanks.
 
 
+
+On Sat, Jun 14, 2008 at 12:31 AM, stephane eranian
+<eranian@googlemail.com> wrote:
+> Greg,
+>
+>
+>
+> On Fri, Jun 13, 2008 at 5:53 AM, Greg KH <greg@kroah.com> wrote:
+>> On Thu, Jun 12, 2008 at 02:54:15PM +0200, stephane eranian wrote:
+>>>
+>>> In any case, let me know if there are still things that must be
+>>> changed/simplified in my file.
+>>
+>> This looks much better.  I wonder if you could use the "default" kobject
+>> attributes, which might allow you to remove some of your show/store
+>> wrappers, but in general, it's much better than before.
+>>
+> Well, I wondered about that myself, but I think I am missing one piece.
+> The difference between some of the show/store functions and others
+> is that if you look closely, you see that some make reference to global
+> structures, e.g., pfm_controls, or call out to routines in others modules.
+> For those, I have switched to the default attribute. But the other show/store
+> functions need to access the particular object where the kobj is embedded.
+> And for that, it seems you need to glue function:
+>
+> #define to_pmu(n) container_of(n, struct pfm_pmu_config, kobj)
+>
+> static ssize_t pfm_pmu_attr_show(struct kobject *kobj,
+>                struct attribute *attr, char *buf)
+> {
+>        struct pfm_pmu_config *pmu = to_pmu(kobj);
+>        struct pfm_attribute *attribute = to_attr(attr);
+>        return attribute->show ? attribute->show(pmu, attribute, buf) : -EIO;
+> }
+>
+> which basically calls the container_of() routine..
+>
+> Yet, I get the feeling that is the show routein gets the same kobj,
+> then I could as well do the
+> to_pmu() there. And the attr (use the the strcmp()) would be the default.
+>
+> If you tell me this is the way to go, I will certainly be happy to
+> make the change and remove even
+> more code!
+>
+>
+> Thanks.
+>
