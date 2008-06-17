@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757195AbYFQR7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758195AbYFQSF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757195AbYFQR7U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 13:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758466AbYFQR7F
+	id S1758195AbYFQSF2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 14:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755229AbYFQSFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 13:59:05 -0400
-Received: from qb-out-0506.google.com ([72.14.204.224]:43750 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755786AbYFQR7D (ORCPT
+	Tue, 17 Jun 2008 14:05:15 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:50612 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754686AbYFQSFN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 13:59:03 -0400
+	Tue, 17 Jun 2008 14:05:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Dgdh+YK/zm8EfzctYU2CPOBjENqZSgVoUkHb3d6k32SiWB3rUNftVwkIb3QGa5GohD
-         SbKmD1XcaryfEp8rxp98NtiwO5pKEV7xRMwpYa6HC8XxBNoxd6GbcPfthum9VvUvV9co
-         FGG7qlgh2uXKTiZuciAh1PGJosnY4LXdEh9XI=
-Message-ID: <cfd18e0f0806171059l42783342h9ff68b0761c8a2e@mail.gmail.com>
-Date: Tue, 17 Jun 2008 19:59:00 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Andrea Arcangeli" <andrea@qumranet.com>
-Subject: Re: PR_SET_SECCOMP and PR_GET_SECCOMP doc (and bug?)
-Cc: Valdis.Kletnieks@vt.edu, "Ivana Varekova" <varekova@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>, linux-man@vger.kernel.org
-In-Reply-To: <20080617173411.GC28087@duo.random>
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=PGRuVZKiSUY/0WXZQlJzmybc5vxMTtGG/RAxJx7DtIjSU1Xcdzqb9vPCnt8xoLluUK
+         BhAMlCG9uxdvQnLDWrgvSMNGz44dzyEwomJnPHZHrNC4nGobJUT3CFXNT4rDASgz7sYi
+         a//YqShTcjSC6yToT1zzh/xDN/V9DW0CesmbQ=
+Date: Tue, 17 Jun 2008 14:05:08 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [git pull] Input updates for 2.6.26-rc6
+Message-ID: <20080617180508.GA9057@anvil.corenet.prv>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <48565951.40603@gmail.com> <20080616162543.GA9552@duo.random>
-	 <cfd18e0f0806170632p27a5ccd2obadaf0dfd4ce64aa@mail.gmail.com>
-	 <18697.1213719134@turing-police.cc.vt.edu>
-	 <20080617173411.GC28087@duo.random>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 17, 2008 at 7:34 PM, Andrea Arcangeli <andrea@qumranet.com> wrote:
-> On Tue, Jun 17, 2008 at 12:12:14PM -0400, Valdis.Kletnieks@vt.edu wrote:
->> On Tue, 17 Jun 2008 15:32:29 +0200, Michael Kerrisk said:
->> > On Mon, Jun 16, 2008 at 6:25 PM, Andrea Arcangeli <andrea@qumranet.com> wrote:
->> > > On Mon, Jun 16, 2008 at 02:15:13PM +0200, Michael Kerrisk wrote:
->>
->> > >>     PR_GET_SECCOMP (since Linux 2.6.23)
->> > >>         Return the secure computing mode  of  the  calling  thread.
->> > >>         Not  very  useful: if the caller is not in secure computing
->> > >>         mode, this operation returns 0; if the caller is in  secure
->> > >>         computing  mode, then the prctl() call will cause a SIGKILL
->> > >>         signal to be sent to the process.  This operation  is  only
->> > >>         available  if  the kernel is configured with CONFIG_SECCOMP
->> > >>         enabled.
->>
->> Would it make sense to change the text to read "Not very useful for the
->> current implementation of mode=1" and/or add that it may be useful for
->
-> Yes, makes sense to me ;).
+Hi Linus,
 
-I've made a change something like you suggest, Valdis.  But I'm still
-not really convinced that it will be useful in the future.  The
-problem is that as things stand, we would *never* be able to safely
-make the prctl(PR_GET_SECCOMP) call, since there is a chance (if mode
-is 1) that we would be killed by SIGKILL.
+Please pull from:
+
+	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
+or
+	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+
+to receive updates for the input subsystem. There will be a small
+conflict in drivers/usb/core/quirks.c, I hope this is OK because I don't
+like to have merges on my 'for-linus' branch except for the one done in
+merge window for the next release. This way one can clearly see what
+went in into a release after the initial merge.
+
+Changelog:
+---------
+
+Jiri Kosina (2):
+      Input: i8042 - add Fujitsu-Siemens Amilo Pro V2030 to nomux table
+      Input: i8042 - retry failed CTR writes when resuming
+
+Oliver Neukum (1):
+      Input: appletouch - implement reset-resume logic
+
+Stas Sergeev (1):
+      Input: pcspkr - remove negative dependency on snd-pcsp
 
 
+Diffstat:
+--------
+
+ drivers/input/misc/Kconfig            |    1 -
+ drivers/input/mouse/appletouch.c      |   49 +++++++++++++++++++++++++++-----
+ drivers/input/serio/i8042-x86ia64io.h |    7 +++++
+ drivers/input/serio/i8042.c           |    8 ++++-
+ drivers/usb/core/quirks.c             |    3 ++
+ 5 files changed, 57 insertions(+), 11 deletions(-)
 
 -- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+Dmitry
