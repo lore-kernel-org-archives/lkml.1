@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbYFQQAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757600AbYFQQAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754213AbYFQQAV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 12:00:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753242AbYFQP7e
+	id S1757600AbYFQQAm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 12:00:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbYFQP75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 11:59:34 -0400
-Received: from jaguar.mkp.net ([192.139.46.146]:59419 "EHLO jaguar.mkp.net"
+	Tue, 17 Jun 2008 11:59:57 -0400
+Received: from jaguar.mkp.net ([192.139.46.146]:59423 "EHLO jaguar.mkp.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752147AbYFQP7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752504AbYFQP7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 17 Jun 2008 11:59:31 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 1 of 3] block: Globalize bio_set and bio_vec_slab
-X-Mercurial-Node: 5e0f9cfc845a390b644bf25b4e4a9a4d36b6f196
-Message-Id: <5e0f9cfc845a390b644b.1213718276@sermon.lab.mkp.net>
+Subject: [PATCH 3 of 3] block: Data integrity infrastructure documentation
+X-Mercurial-Node: e17b7bc27edcb77787475efd8d863b615d1a3a2b
+Message-Id: <e17b7bc27edcb7778747.1213718278@sermon.lab.mkp.net>
 In-Reply-To: <patchbomb.1213718275@sermon.lab.mkp.net>
-Date: Tue, 17 Jun 2008 11:57:56 -0400
+Date: Tue, 17 Jun 2008 11:57:58 -0400
 From: "Martin K. Petersen" <martin.petersen@oracle.com>
 To: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
        linux-scsi@vger.kernel.org
@@ -24,111 +24,387 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move struct bio_set and biovec_slab definitions to bio.h so they can
-be used outside of bio.c.
-
 Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Reviewed-by: Jeff Moyer <jmoyer@redhat.com>
 
 ---
-2 files changed, 31 insertions(+), 28 deletions(-)
-fs/bio.c            |   30 ++----------------------------
-include/linux/bio.h |   29 +++++++++++++++++++++++++++++
+2 files changed, 361 insertions(+)
+Documentation/ABI/testing/sysfs-block  |   34 +++
+Documentation/block/data-integrity.txt |  327 ++++++++++++++++++++++++++++++++
 
 
 
-diff --git a/fs/bio.c b/fs/bio.c
---- a/fs/bio.c
-+++ b/fs/bio.c
-@@ -28,24 +28,9 @@
- #include <linux/blktrace_api.h>
- #include <scsi/sg.h>		/* for struct sg_iovec */
- 
--#define BIO_POOL_SIZE 2
--
- static struct kmem_cache *bio_slab __read_mostly;
- 
--#define BIOVEC_NR_POOLS 6
--
--/*
-- * a small number of entries is fine, not going to be performance critical.
-- * basically we just need to survive
-- */
--#define BIO_SPLIT_ENTRIES 2
- mempool_t *bio_split_pool __read_mostly;
--
--struct biovec_slab {
--	int nr_vecs;
--	char *name; 
--	struct kmem_cache *slab;
--};
- 
- /*
-  * if you change this list, also change bvec_alloc or things will
-@@ -60,23 +45,12 @@ static struct biovec_slab bvec_slabs[BIO
- #undef BV
- 
- /*
-- * bio_set is used to allow other portions of the IO system to
-- * allocate their own private memory pools for bio and iovec structures.
-- * These memory pools in turn all allocate from the bio_slab
-- * and the bvec_slabs[].
-- */
--struct bio_set {
--	mempool_t *bio_pool;
--	mempool_t *bvec_pools[BIOVEC_NR_POOLS];
--};
--
--/*
-  * fs_bio_set is the bio_set containing bio and iovec memory pools used by
-  * IO code that does not need private memory pools.
-  */
--static struct bio_set *fs_bio_set;
-+struct bio_set *fs_bio_set;
- 
--static inline struct bio_vec *bvec_alloc_bs(gfp_t gfp_mask, int nr, unsigned long *idx, struct bio_set *bs)
-+struct bio_vec *bvec_alloc_bs(gfp_t gfp_mask, int nr, unsigned long *idx, struct bio_set *bs)
- {
- 	struct bio_vec *bvl;
- 
-diff --git a/include/linux/bio.h b/include/linux/bio.h
---- a/include/linux/bio.h
-+++ b/include/linux/bio.h
-@@ -333,6 +333,35 @@ extern struct bio *bio_copy_user_iov(str
- 				     int, int);
- extern int bio_uncopy_user(struct bio *);
- void zero_fill_bio(struct bio *bio);
-+extern struct bio_vec *bvec_alloc_bs(gfp_t, int, unsigned long *, struct bio_set *);
+diff --git a/Documentation/ABI/testing/sysfs-block b/Documentation/ABI/testing/sysfs-block
+--- a/Documentation/ABI/testing/sysfs-block
++++ b/Documentation/ABI/testing/sysfs-block
+@@ -26,3 +26,37 @@ Description:
+ 		I/O statistics of partition <part>. The format is the
+ 		same as the above-written /sys/block/<disk>/stat
+ 		format.
 +
-+/*
-+ * bio_set is used to allow other portions of the IO system to
-+ * allocate their own private memory pools for bio and iovec structures.
-+ * These memory pools in turn all allocate from the bio_slab
-+ * and the bvec_slabs[].
-+ */
-+#define BIO_POOL_SIZE 2
-+#define BIOVEC_NR_POOLS 6
 +
-+struct bio_set {
-+	mempool_t *bio_pool;
-+	mempool_t *bvec_pools[BIOVEC_NR_POOLS];
-+};
++What:		/sys/block/<disk>/integrity/format
++Date:		June 2008
++Contact:	Martin K. Petersen <martin.petersen@oracle.com>
++Description:
++		Metadata format for integrity capable block device.
++		E.g. T10-DIF-TYPE1-CRC.
 +
-+struct biovec_slab {
-+	int nr_vecs;
-+	char *name;
-+	struct kmem_cache *slab;
-+};
 +
-+extern struct bio_set *fs_bio_set;
++What:		/sys/block/<disk>/integrity/read_verify
++Date:		June 2008
++Contact:	Martin K. Petersen <martin.petersen@oracle.com>
++Description:
++		Indicates whether the block layer should verify the
++		integrity of read requests serviced by devices that
++		support sending integrity metadata.
 +
-+/*
-+ * a small number of entries is fine, not going to be performance critical.
-+ * basically we just need to survive
-+ */
-+#define BIO_SPLIT_ENTRIES 2
- 
- #ifdef CONFIG_HIGHMEM
- /*
++
++What:		/sys/block/<disk>/integrity/tag_size
++Date:		June 2008
++Contact:	Martin K. Petersen <martin.petersen@oracle.com>
++Description:
++		Number of bytes of integrity tag space available per
++		512 bytes of data.
++
++
++What:		/sys/block/<disk>/integrity/write_generate
++Date:		June 2008
++Contact:	Martin K. Petersen <martin.petersen@oracle.com>
++Description:
++		Indicates whether the block layer should automatically
++		generate checksums for write requests bound for
++		devices that support receiving integrity metadata.
+diff --git a/Documentation/block/data-integrity.txt b/Documentation/block/data-integrity.txt
+new file mode 100644
+--- /dev/null
++++ b/Documentation/block/data-integrity.txt
+@@ -0,0 +1,327 @@
++----------------------------------------------------------------------
++1. INTRODUCTION
++
++Modern filesystems feature checksumming of data and metadata to
++protect against data corruption.  However, the detection of the
++corruption is done at read time which could potentially be months
++after the data was written.  At that point the original data that the
++application tried to write is most likely lost.
++
++The solution is to ensure that the disk is actually storing what the
++application meant it to.  Recent additions to both the SCSI family
++protocols (SBC Data Integrity Field, SCC protection proposal) as well
++as SATA/T13 (External Path Protection) try to remedy this by adding
++support for appending integrity metadata to an I/O.  The integrity
++metadata (or protection information in SCSI terminology) includes a
++checksum for each sector as well as an incrementing counter that
++ensures the individual sectors are written in the right order.  And
++for some protection schemes also that the I/O is written to the right
++place on disk.
++
++Current storage controllers and devices implement various protective
++measures, for instance checksumming and scrubbing.  But these
++technologies are working in their own isolated domains or at best
++between adjacent nodes in the I/O path.  The interesting thing about
++DIF and the other integrity extensions is that the protection format
++is well defined and every node in the I/O path can verify the
++integrity of the I/O and reject it if corruption is detected.  This
++allows not only corruption prevention but also isolation of the point
++of failure.
++
++----------------------------------------------------------------------
++2. THE DATA INTEGRITY EXTENSIONS
++
++As written, the protocol extensions only protect the path between
++controller and storage device.  However, many controllers actually
++allow the operating system to interact with the integrity metadata
++(IMD).  We have been working with several FC/SAS HBA vendors to enable
++the protection information to be transferred to and from their
++controllers.
++
++The SCSI Data Integrity Field works by appending 8 bytes of protection
++information to each sector.  The data + integrity metadata is stored
++in 520 byte sectors on disk.  Data + IMD are interleaved when
++transferred between the controller and target.  The T13 proposal is
++similar.
++
++Because it is highly inconvenient for operating systems to deal with
++520 (and 4104) byte sectors, we approached several HBA vendors and
++encouraged them to allow separation of the data and integrity metadata
++scatter-gather lists.
++
++The controller will interleave the buffers on write and split them on
++read.  This means that the Linux can DMA the data buffers to and from
++host memory without changes to the page cache.
++
++Also, the 16-bit CRC checksum mandated by both the SCSI and SATA specs
++is somewhat heavy to compute in software.  Benchmarks found that
++calculating this checksum had a significant impact on system
++performance for a number of workloads.  Some controllers allow a
++lighter-weight checksum to be used when interfacing with the operating
++system.  Emulex, for instance, supports the TCP/IP checksum instead.
++The IP checksum received from the OS is converted to the 16-bit CRC
++when writing and vice versa.  This allows the integrity metadata to be
++generated by Linux or the application at very low cost (comparable to
++software RAID5).
++
++The IP checksum is weaker than the CRC in terms of detecting bit
++errors.  However, the strength is really in the separation of the data
++buffers and the integrity metadata.  These two distinct buffers much
++match up for an I/O to complete.
++
++The separation of the data and integrity metadata buffers as well as
++the choice in checksums is referred to as the Data Integrity
++Extensions.  As these extensions are outside the scope of the protocol
++bodies (T10, T13), Oracle and its partners are trying to standardize
++them within the Storage Networking Industry Association.
++
++----------------------------------------------------------------------
++3. KERNEL CHANGES
++
++The data integrity framework in Linux enables protection information
++to be pinned to I/Os and sent to/received from controllers that
++support it.
++
++The advantage to the integrity extensions in SCSI and SATA is that
++they enable us to protect the entire path from application to storage
++device.  However, at the same time this is also the biggest
++disadvantage. It means that the protection information must be in a
++format that can be understood by the disk.
++
++Generally Linux/POSIX applications are agnostic to the intricacies of
++the storage devices they are accessing.  The virtual filesystem switch
++and the block layer make things like hardware sector size and
++transport protocols completely transparent to the application.
++
++However, this level of detail is required when preparing the
++protection information to send to a disk.  Consequently, the very
++concept of an end-to-end protection scheme is a layering violation.
++It is completely unreasonable for an application to be aware whether
++it is accessing a SCSI or SATA disk.
++
++The data integrity support implemented in Linux attempts to hide this
++from the application.  As far as the application (and to some extent
++the kernel) is concerned, the integrity metadata is opaque information
++that's attached to the I/O.
++
++The current implementation allows the block layer to automatically
++generate the protection information for any I/O.  Eventually the
++intent is to move the integrity metadata calculation to userspace for
++user data.  Metadata and other I/O that originates within the kernel
++will still use the automatic generation interface.
++
++Some storage devices allow each hardware sector to be tagged with a
++16-bit value.  The owner of this tag space is the owner of the block
++device.  I.e. the filesystem in most cases.  The filesystem can use
++this extra space to tag sectors as they see fit.  Because the tag
++space is limited, the block interface allows tagging bigger chunks by
++way of interleaving.  This way, 8*16 bits of information can be
++attached to a typical 4KB filesystem block.
++
++This also means that applications such as fsck and mkfs will need
++access to manipulate the tags from user space.  A passthrough
++interface for this is being worked on.
++
++
++----------------------------------------------------------------------
++4. BLOCK LAYER IMPLEMENTATION DETAILS
++
++4.1 BIO
++
++The data integrity patches add a new field to struct bio when
++CONFIG_BLK_DEV_INTEGRITY is enabled.  bio->bi_integrity is a pointer
++to a struct bip which contains the bio integrity payload.  Essentially
++a bip is a trimmed down struct bio which holds a bio_vec containing
++the integrity metadata and the required housekeeping information (bvec
++pool, vector count, etc.)
++
++A kernel subsystem can enable data integrity protection on a bio by
++calling bio_integrity_alloc(bio).  This will allocate and attach the
++bip to the bio.
++
++Individual pages containing integrity metadata can subsequently be
++attached using bio_integrity_add_page().
++
++bio_free() will automatically free the bip.
++
++
++4.2 BLOCK DEVICE
++
++Because the format of the protection data is tied to the physical
++disk, each block device has been extended with a block integrity
++profile (struct blk_integrity).  This optional profile is registered
++with the block layer using blk_integrity_register().
++
++The profile contains callback functions for generating and verifying
++the protection data, as well as getting and setting application tags.
++The profile also contains a few constants to aid in completing,
++merging and splitting the integrity metadata.
++
++Layered block devices will need to pick a profile that's appropriate
++for all subdevices.  blk_integrity_compare() can help with that.  DM
++and MD linear, RAID0 and RAID1 are currently supported.  RAID4/5/6
++will require extra work due to the application tag.
++
++
++----------------------------------------------------------------------
++5.0 BLOCK LAYER INTEGRITY API
++
++5.1 NORMAL FILESYSTEM
++
++    The normal filesystem is unaware that the underlying block device
++    is capable of sending/receiving integrity metadata.  The IMD will
++    be automatically generated by the block layer at submit_bio() time
++    in case of a WRITE.  A READ request will cause the I/O integrity
++    to be verified upon completion.
++
++    IMD generation and verification can be toggled using the
++
++      /sys/block/<bdev>/integrity/write_generate
++
++    and
++
++      /sys/block/<bdev>/integrity/read_verify
++
++    flags.
++
++
++5.2 INTEGRITY-AWARE FILESYSTEM
++
++    A filesystem that is integrity-aware can prepare I/Os with IMD
++    attached.  It can also use the application tag space if this is
++    supported by the block device.
++
++
++    int bdev_integrity_enabled(block_device, int rw);
++
++      bdev_integrity_enabled() will return 1 if the block device
++      supports integrity metadata transfer for the data direction
++      specified in 'rw'.
++
++      bdev_integrity_enabled() honors the write_generate and
++      read_verify flags in sysfs and will respond accordingly.
++
++
++    int bio_integrity_prep(bio);
++
++      To generate IMD for WRITE and to set up buffers for READ, the
++      filesystem must call bio_integrity_prep(bio).
++
++      Prior to calling this function, the bio data direction and start
++      sector must be set, and the bio should have all data pages
++      added.  It is up to the caller to ensure that the bio does not
++      change while I/O is in progress.
++
++      bio_integrity_prep() should only be called if
++      bio_integrity_enabled() returned 1.
++
++
++    int bio_integrity_tag_size(bio);
++
++      If the filesystem wants to use the application tag space it will
++      first have to find out how much storage space is available.
++      Because tag space is generally limited (usually 2 bytes per
++      sector regardless of sector size), the integrity framework
++      supports interleaving the information between the sectors in an
++      I/O.
++
++      Filesystems can call bio_integrity_tag_size(bio) to find out how
++      many bytes of storage are available for that particular bio.
++
++      Another option is bdev_get_tag_size(block_device) which will
++      return the number of available bytes per hardware sector.
++
++
++    int bio_integrity_set_tag(bio, void *tag_buf, len);
++
++      After a successful return from bio_integrity_prep(),
++      bio_integrity_set_tag() can be used to attach an opaque tag
++      buffer to a bio.  Obviously this only makes sense if the I/O is
++      a WRITE.
++
++
++    int bio_integrity_get_tag(bio, void *tag_buf, len);
++
++      Similarly, at READ I/O completion time the filesystem can
++      retrieve the tag buffer using bio_integrity_get_tag().
++
++
++6.3 PASSING EXISTING INTEGRITY METADATA
++
++    Filesystems that either generate their own integrity metadata or
++    are capable of transferring IMD from user space can use the
++    following calls:
++
++
++    struct bip * bio_integrity_alloc(bio, gfp_mask, nr_pages);
++
++      Allocates the bio integrity payload and hangs it off of the bio.
++      nr_pages indicate how many pages of protection data need to be
++      stored in the integrity bio_vec list (similar to bio_alloc()).
++
++      The integrity payload will be freed at bio_free() time.
++
++
++    int bio_integrity_add_page(bio, page, len, offset);
++
++      Attaches a page containing integrity metadata to an existing
++      bio.  The bio must have an existing bip,
++      i.e. bio_integrity_alloc() must have been called.  For a WRITE,
++      the integrity metadata in the pages must be in a format
++      understood by the target device with the notable exception that
++      the sector numbers will be remapped as the request traverses the
++      I/O stack.  This implies that the pages added using this call
++      will be modified during I/O!  The first reference tag in the
++      integrity metadata must have a value of bip->bip_sector.
++
++      Pages can be added using bio_integrity_add_page() as long as
++      there is room in the bip bio_vec array (nr_pages).
++
++      Upon completion of a READ operation, the attached pages will
++      contain the integrity metadata received from the storage device.
++      It is up to the receiver to process them and verify data
++      integrity upon completion.
++
++
++6.4 REGISTERING A BLOCK DEVICE AS CAPABLE OF EXCHANGING INTEGRITY
++    METADATA
++
++    To enable integrity exchange on a block device the gendisk must be
++    registered as capable:
++
++    int blk_integrity_register(gendisk, blk_integrity);
++
++      The blk_integrity struct is a template and should contain the
++      following:
++
++        static struct blk_integrity my_profile = {
++            .name                   = "STANDARDSBODY-TYPE-VARIANT-CSUM",
++            .generate_fn            = my_generate_fn,
++       	    .verify_fn              = my_verify_fn,
++       	    .get_tag_fn             = my_get_tag_fn,
++       	    .set_tag_fn             = my_set_tag_fn,
++	    .tuple_size             = sizeof(struct my_tuple_size),
++	    .tag_size               = <tag bytes per hw sector>,
++        };
++
++      'name' is a text string which will be visible in sysfs.  This is
++      part of the userland API so chose it carefully and never change
++      it.  The format is standards body-type-variant.
++      E.g. T10-DIF-TYPE1-IP or T13-EPP-0-CRC.
++
++      'generate_fn' generates appropriate integrity metadata (for WRITE).
++
++      'verify_fn' verifies that the data buffer matches the integrity
++      metadata.
++
++      'tuple_size' must be set to match the size of the integrity
++      metadata per sector.  I.e. 8 for DIF and EPP.
++
++      'tag_size' must be set to identify how many bytes of tag space
++      are available per hardware sector.  For DIF this is either 2 or
++      0 depending on the value of the Control Mode Page ATO bit.
++
++      See 6.2 for a description of get_tag_fn and set_tag_fn.
++
++----------------------------------------------------------------------
++2007-12-24 Martin K. Petersen <martin.petersen@oracle.com>
 
 
