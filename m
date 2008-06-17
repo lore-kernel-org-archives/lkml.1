@@ -1,92 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755350AbYFQHRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536AbYFQHVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755350AbYFQHRR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 03:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbYFQHRF
+	id S1755536AbYFQHVS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 03:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbYFQHVD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 03:17:05 -0400
-Received: from www.tglx.de ([62.245.132.106]:48410 "EHLO www.tglx.de"
+	Tue, 17 Jun 2008 03:21:03 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:5189 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752612AbYFQHRE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 03:17:04 -0400
-Date: Tue, 17 Jun 2008 09:12:03 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
-In-Reply-To: <200806170105.45647.rjw@sisk.pl>
-Message-ID: <alpine.LFD.1.10.0806170905221.3395@apollo.tec.linutronix.de>
-References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <Pine.LNX.4.55.0806161636510.20218@cliff.in.clinika.pl> <200806170038.37224.rjw@sisk.pl> <200806170105.45647.rjw@sisk.pl>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	id S1751000AbYFQHVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 03:21:01 -0400
+Date: Tue, 17 Jun 2008 09:20:59 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 2 of 3] block: Block layer data integrity support
+Message-ID: <20080617072058.GC20851@kernel.dk>
+References: <patchbomb.1213589417@sermon.lab.mkp.net> <91ceabd365c3e718425d.1213589419@sermon.lab.mkp.net> <20080616192104.GV20851@kernel.dk> <yq1zlpkd5l0.fsf@sermon.lab.mkp.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <yq1zlpkd5l0.fsf@sermon.lab.mkp.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jun 2008, Rafael J. Wysocki wrote:
+On Tue, Jun 17 2008, Martin K. Petersen wrote:
+> >>>>> "Jens" == Jens Axboe <jens.axboe@oracle.com> writes:
 > 
-> BTW, with the C1E patches reverted I don't get the
-> WARNING: at /home/rafael/src/linux-next/kernel/smp.c:215 smp_call_function_single+0x3d/0xa2
-> in the log.  Thomas?
+> Jens,
+> 
+> I've fixed pretty much everything you pointed out.  So unless
+> otherwise noted it's an ACK.
 
-Yeah, my bad. Fix below.
+Great, I'll hold off including the other two patches until a new posting
+of the main patch.
 
-Thanks,
-	tglx
+> > +	/* Allocate kernel buffer for protection data */
+> > +	len = sectors * blk_integrity_tuple_size(bi);
+> > +	buf = kmalloc(len, GFP_NOIO | q->bounce_gfp);
+> > +	if (unlikely(buf == NULL)) {
+> > +		printk(KERN_ERR "could not allocate integrity buffer\n");
+> > +		return -EIO;
+> > +	}
+> 
+> Jens> Is that good enough, don't you want to handle this error
+> Jens> condition? IOW, doesn't this allocation want mempool backing or
+> Jens> similar?
+> 
+> When I originally wrote this I had a couple of mempools that worked
+> well with ext2/3 because they blow everything into 4KB (or 1KB)
+> atoms. Due to the problems with ext2/3 modifying pages in flight I've
+> mostly used XFS and btrfs for development.  And they both generate a
+> much more varied set of bio sizes that in turn will require a whole
+> whack of different sized integrity pools.
+> 
+> I did gather quite a bit of statistics from runs with different
+> filesystems a few months ago.  kmalloc provided a good set of pre-made
+> sizes and I felt it was an overkill to replicate that.  But you are
+> right that we should probably be more conservative in terms of failing
+> the I/O.  I'll look at it again.
 
-------------------->
-Subject: x86: c1e_idle, run BROADCAST_FORCE notify with irqs enabled
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Tue, 17 Jun 2008 09:07:53 +0200
+You are right, a strict mempool solution will not be feasible (or at
+least it will be very wasteful). I guess a temporary solution would be
+to add __GFP_NOFAIL for this allocation.
 
-The BROADCAST_FORCE notification uses smp_function_call and therefor
-must be run with interrupts enabled.
+> >  struct bio_pair {
+> >  	struct bio	bio1, bio2;
+> >  	struct bio_vec	bv1, bv2;
+> > +#if defined(CONFIG_BLK_DEV_INTEGRITY)
+> > +	struct bip	bip1, bip2;
+> > +	struct bio_vec	iv1, iv2;
+> > +#endif
+> >  	atomic_t	cnt;
+> >  	int		error;
+> >  };
+> 
+> Jens> That's somewhat of a shame, it makes bio_pair a LOT bigger. bio
+> Jens> grows a pointer if CONFIG_BLK_DEV_INTEGRITY, that we can live
+> Jens> with. In reality, very few people will use this stuff so adding
+> Jens> a sizable chunk of data to struct bio_pair is somewhat of a
+> Jens> bother.
+> 
+> Yeah, well.  Wasn't sure what else to do.  But the pool is tiny (2
+> entries by default) and only pktdvd and raid 0/10 actually use
+> bio_pairs.  I figured if you had CONFIG_BLK_DEV_INTEGRITY on you'd
+> probably want to use integrity it on your MD disks anyway.  And on
+> your desktop box with pktdvd integrity wasn't likely to be compiled
+> in.
 
-While at it, add a comment for the BROADCAST_EXIT notifier as well.
+I'm not sure there IS a better solution, just noting that it's a bit of
+a shame to grow it that much...
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 57fa86d..1450e0f 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -267,17 +267,29 @@ static void c1e_idle(void)
- 
- 		if (!cpu_isset(cpu, c1e_mask)) {
- 			cpu_set(cpu, c1e_mask);
--			/* Force broadcast so ACPI can not interfere */
-+			/*
-+			 * Force broadcast so ACPI can not interfere. Needs
-+			 * to run with interrupts enabled as it uses
-+			 * smp_function_call.
-+			 */
-+			local_irq_enable();
- 			clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_FORCE,
- 					   &cpu);
- 			printk(KERN_INFO "Switch to broadcast mode on CPU%d\n",
- 			       cpu);
-+			local_irq_disable();
- 		}
- 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
-+
- 		default_idle();
--		local_irq_disable();
--		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
--		local_irq_enable();
-+
-+		/*
-+		 * The switch back from broadcast mode needs to be
-+		 * called with interrupts disabled.
-+		 */
-+		 local_irq_disable();
-+		 clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
-+		 local_irq_enable();
- 	} else
- 		default_idle();
- }
+> Dynamic allocation would defeat the purpose of the pool.  But I guess
+> I could make another dedicated bio_integrity_pair pool and wire the
+> integrity portion into bio_pair using pointers.  What do you think?
+
+Doing a quick check, bio_pair is 248 bytes on x86-64 currently. struct
+bio is around 80 bytes or so, bio_vec is 16 bytes. So that's about 200
+extra bytes, making the bio_pair around 440 bytes or so - indeed a
+sizable increase in size. The bio_pair is only used for rare splitting,
+so it's not THAT big of an issue.
+
+So lets just keep it as-is, I think.
+
+-- 
+Jens Axboe
 
