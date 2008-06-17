@@ -1,57 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757297AbYFQMDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbYFQMUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757297AbYFQMDy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 08:03:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754990AbYFQMDn
+	id S1756667AbYFQMUR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 08:20:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755536AbYFQMUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 08:03:43 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51894 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754907AbYFQMDm (ORCPT
+	Tue, 17 Jun 2008 08:20:01 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:9705 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755514AbYFQMUA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 08:03:42 -0400
-From: kamezawa.hiroyu@jp.fujitsu.com
-Message-ID: <18509098.1213704200391.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Tue, 17 Jun 2008 21:03:20 +0900 (JST)
-To: balbir@linux.vnet.ibm.com
-Subject: Re: Re: [PATCH 2/2] memcg: reduce usage at change limit
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>, xemul@openvz.org,
-       menage@google.com, lizf@cn.fujitsu.com, yamamoto@valinux.co.jp,
-       nishimura@mxp.nes.nec.co.jp, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <48578E9D.4050903@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-2022-jp"
+	Tue, 17 Jun 2008 08:20:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=BbWBvZqxmTsBYwcgF/n1MXY39f/Br+Hyiql4Q27aTjCu74ahy9zfrDPqEr8COnWBIr
+         Ftw05go0NpIldOKNofKuAToMLZL+5Jfg2GVnnR4V2KuDbHr2MXblo+J4TKn0jU/uzDQo
+         MLplS90CKgXnUxLPbP/FyYUyXUAbNvBVLQSEU=
+Message-ID: <4857ABA2.6060801@gmail.com>
+Date: Tue, 17 Jun 2008 08:18:42 -0400
+From: Gregory Haskins <gregory.haskins.ml@gmail.com>
+Reply-To: gregory.haskins@gmail.com
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Gregory Haskins <ghaskins@novell.com>
+CC: Ankita Garg <ankita@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, rostedt@goodmis.org,
+       Peter Zijlstra <peterz@infradead.org>, suresh.b.siddha@intel.com,
+       aneesh.kumar@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com,
+       vatsa@linux.vnet.ibm.com, David Bahi <DBahi@novell.com>
+Subject: [ANNOUNCE] sched: schedtop utility v0.5
+References: <483545B4.BA47.005A.0@novell.com> <48448081.BA47.005A.0@novell.com>
+In-Reply-To: <48448081.BA47.005A.0@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: @nifty Webmail 2.0
-References: <48578E9D.4050903@linux.vnet.ibm.com>
- <20080617123144.ce5a74fa.kamezawa.hiroyu@jp.fujitsu.com> <20080617123604.c8cb1bd5.kamezawa.hiroyu@jp.fujitsu.com> <48573397.608@linux.vnet.ibm.com> <20080617130656.bcd3ca85.kamezawa.hiroyu@jp.fujitsu.com> <20080617190055.2b55ba0b.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message -----
->Date: 	Tue, 17 Jun 2008 15:44:53 +0530
->From: Balbir Singh <balbir@linux.vnet.ibm.com>
->KAMEZAWA Hiroyuki wrote:
->
->>> I'll repost later, today.
->>>
->> I'll postpone this until -mm is settled ;)
->> 
->
->Sure, by -mm is settled you mean scalable page reclaim, fast GUP and lockless
->read size for pagecache? Is there something else I am unaware of?
->
-Ah, some panics are added ;)
-It's my main concern.  And I have to study new VM LRU management
-scheme and check whether there are something to be fixed(updated)
-around memcg. 
+Gregory Haskins wrote:
+>>>> On Thu, May 22, 2008 at 10:06 AM, in message <483545B4.BA47.005A.0@novell.com>,
+> Gregory Haskins wrote: 
+>> Hi all scheduler developers,
+>>   I had an itch to scratch w.r.t. watching the stats in /proc/schedstats, 
+>> and it appears that the perl scripts referenced in 
+>> Documentation/scheduler/sched-stats.txt do not support v14 from HEAD so I 
+>> whipped up a little utility I call "schedtop".
+>>
+>> This utility will process statistics from /proc/schedstat such that the 
+>> busiest stats will bubble up to the top.  It can alternately be sorted by the 
+>> largest stat, or by name.  Stats can be included or excluded based on reg-ex 
+>> pattern matching.
+>>
+>> You can download the tarball here:
+>>
+>> ftp://ftp.novell.com/dev/ghaskins/schedtop.tar.gz
+>>
+>> I have also posted it to the opensuse build service for generating RPMS for 
+>> a handful of 32/64-bit x86 distros for your convenience:
+>>
+>> http://download.opensuse.org/repositories/home:/ghaskins/
+>>
+>> (Note that the build is still in progress for some of the favors, so if you 
+>> do not see the flavor you are looking for, check back in a little while)
+>>
+>> Comments/feedback/bug-fixes welcome!
+>>
+>> Regards
+>> -Greg
+> 
+> Hi All,
+>   I have posted an update to schedtop (v0.3) which adds /proc/<pid>/schedstats and /proc/<pid>/sched stats to the mix.
+> 
+> Also note that there is a comprehensive filtering mechanism built into all versions of schedtop:
+> 
+> "-i <REGEX>" sets the *include* pattern, and
+> "-x <REGEX> sets the *exclude* pattern.
+> 
+> By default, -i is set to allow everything, and -x is set to exclude nothing.  A common config for me is to use "-x sched_info" since those sched_info stats seem to always be moving rapidly and can cloud stats that are more interesting (to me, anyway).
+> 
+> Let me know if you have any questions.  Comments/feedback are welcome
+> 
+> -Greg
 
-Anyway, I'd like to push this patch before too late. I just stop
-for a while (because -mm has trouble).
+Hi All,
+  I have released a new version (v0.5) which fixes a compile error on 
+some platforms (like Mandriva, RHEL, and opensuse-factory) that did not 
+like the usage of operator/ in boost::filesystem::path code.  v0.5 is 
+now fully supported on all of the original platforms that v0.2 worked on.
 
-Thanks,
--Kame
+> 
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
