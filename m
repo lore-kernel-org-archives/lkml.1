@@ -1,358 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754359AbYFQGQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbYFQG0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754359AbYFQGQR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 02:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbYFQGQH
+	id S1754830AbYFQG0W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 02:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbYFQG0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 02:16:07 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:38761 "EHLO
+	Tue, 17 Jun 2008 02:26:05 -0400
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:34408 "EHLO
 	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751843AbYFQGQF (ORCPT
+	by vger.kernel.org with ESMTP id S1752045AbYFQG0E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 02:16:05 -0400
-X-Greylist: delayed 952 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Jun 2008 02:16:05 EDT
-Message-Id: <1213682410.13174.1258837181@webmail.messagingengine.com>
-X-Sasl-Enc: /N9htOPcmtvU9gjqiD7lOs6H7LtM1PeCeUL9V5Hbc6te 1213682410
+	Tue, 17 Jun 2008 02:26:04 -0400
+Message-Id: <1213682570.13708.1258839317@webmail.messagingengine.com>
+X-Sasl-Enc: jqNTBVF55AcTOY8JtJpAMvtwsJ/Gm4vUyZy+YyccRyzG 1213682570
 From: "Bron Gondwana" <brong@fastmail.fm>
 To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
        "Nick Piggin" <npiggin@suse.de>,
        "Andrew Morton" <akpm@linux-foundation.org>,
        "Linus Torvalds" <torvalds@linux-foundation.org>
 Cc: " Rob Mueller" <robm@fastmail.fm>
-Content-Transfer-Encoding: 7bit
-Content-Type: multipart/mixed; boundary="_----------=_1213682410131740"; charset="ISO-8859-1"
-MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-Subject: BUG: mmapfile/writev spurious zero bytes (x86_64/not i386, bisected,
- reproducable)
-Date: Tue, 17 Jun 2008 16:00:10 +1000
-Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <linux-kernel.vger.kernel.org>
-X-Mailing-List: linux-kernel@vger.kernel.org
-
-This is a multi-part message in MIME format.
-
---_----------=_1213682410131740
 Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
 Content-Type: text/plain; charset="ISO-8859-1"
 MIME-Version: 1.0
 X-Mailer: MessagingEngine.com Webmail Interface
-Date: Tue, 17 Jun 2008 06:00:10 UT
-
-Background: we recently upgraded one of our 64bit kernel
-machines to 2.6.25 and discovered that Cyrus skiplist
-files were becoming randomly corrupted.  This is a machine
-with a 32bit Debian Etch userland but a 64bit kernel with
-32bit support.
-
-We run this way so we can actually use the 12Gb memory as
-cache without running out of inode space, but don't have
-to support two different sets of userland across our
-servers.
+References: <1213682410.13174.1258837181@webmail.messagingengine.com>
+Subject: Re: BUG: mmapfile/writev spurious zero bytes (x86_64/not i386,
+ bisected, reproducable)
+In-Reply-To: <1213682410.13174.1258837181@webmail.messagingengine.com>
+Date: Tue, 17 Jun 2008 16:02:50 +1000
+Sender: linux-kernel-owner@vger.kernel.org
+List-ID: <linux-kernel.vger.kernel.org>
+X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-The symptom - 16 to 24 bytes of zero appearing "randomly"
-within the file after a "checkpoint" (file rewrite,
-skipping stale copies of records).
+On Tue, 17 Jun 2008 16:00:10 +1000, "Bron Gondwana" <brong@fastmail.fm> said:
+> I apologise for the length of the attached C program.  I tried
+> to make it shorter, but kept not tickling the bug.  There's also
+> another advantage of keeping it like this - it closely mirrors the
+> Cyrus behaviour, to the point where the output is a valid skiplist
+> file.
 
-Further investigation by retaining the pre-checkpoint files
-showed that those bytes were the last ones of a page in the
-original file.
+And I appear to have sent the one without the usage comments at the top.
+Here they are:
 
-
-Attached is a small C program which recreates the actions
-that Cyrus takes, and uses record lengths identical to a
-known-broken skiplist file on our systems.
-
-Using this I was able to bisect the kernel to find the
-commit which caused the problem:
-
-
-08291429cfa6258c4cd95d8833beb40f828b194e is first bad commit
-commit 08291429cfa6258c4cd95d8833beb40f828b194e
-Author: Nick Piggin <npiggin@suse.de>
-Date:   Tue Oct 16 01:24:59 2007 -0700
-
-    mm: fix pagecache write deadlocks
-
-    Modify the core write() code so that it won't take a pagefault while holding a
-    lock on the pagecache page. There are a number of different deadlocks possible
-    if we try to do such a thing:
-
-    [...]
-
-    Signed-off-by: Nick Piggin <npiggin@suse.de>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-
-For Cyrus users, this is a really serious bug - occasionally
-the zeros will hit a "navigational component" of the file,
-causing crashes and being noticeable.  Most of the time
-(including this example) it will just cause silent corruption
-and data loss.
-
-I suspect this will be visible to users as large swathes of
-messages becoming unread, and if it hits the mailboxes.db,
-large swathes of mailboxes just disappearing.  Not good.
-
-
-I apologise for the length of the attached C program.  I tried
-to make it shorter, but kept not tickling the bug.  There's also
-another advantage of keeping it like this - it closely mirrors the
-Cyrus behaviour, to the point where the output is a valid skiplist
-file.
-
-It also has a "magic" mode, just pass a second parameter.  It will
-read through the mapped memory in order before the checkpoint.
-This makes the bug disappear.
-
-Let me know if there's anything else I can do to make this report
-clearer.  I've had a quick glance around the code, but especially
-since it's 64 bit kernel only bug (I tested by rebooting the test
-machine with a 2.6.25.3 32 bit kernel I had lying around and the
-bug was not visible there.  I've also repeated the test on my Ubuntu
-desktop machine with the shipped kernel vs my hand-compiled
-known-bad kernel, and tested with a 64bit userland in a chroot as
-well).
-
-Regards,
+ * USAGE:
+ *    $ gcc -g maptest.c
+ *    $ ./a.out z
+ *    $ hexdump -C z.NEW
+ *
+ * Notice the block of zero byte records appearing within
+ * the output.
+ *
+ * Run with a second argument:
+ *
+ *    $ ./a.out z 1
+ *    $ hexdump -C z.NEW
+ *
+ * No more zeros!
 
 Bron.
-
 -- 
   Bron Gondwana
   brong@fastmail.fm
-
-
---_----------=_1213682410131740
-Content-Disposition: attachment; filename="maptest.c"
-Content-Transfer-Encoding: base64
-Content-Type: text/x-csrc; name="maptest.c"
-MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-Date: Tue, 17 Jun 2008 06:00:10 UT
-
-LyogVGhpcyBwcm9ncmFtIGlzIGRlc2lnbmVkIHRvIHRlc3QgbW1hcCBmaWxl
-CiAqIHJlYWRzIGFuZCBpb3ZlYyB3cml0ZXMgYXMgcGVyIGN5cnVzIGltYXAn
-cwogKiBza2lwbGlzdCBkYXRhYmFzZSB1c2FnZS4gIEl0IGVtdWxhdGVzIHRo
-ZQogKiBiZWhhdmlvdXIgb2YgYSBza2lwbGlzdCBkYXRhYmFzZSAoc2Fucwog
-KiBmY250bCBsb2NraW5nKSBhY3Jvc3MgYSBmaWxlIGNoZWNrcG9pbnQgKi8K
-CiNpbmNsdWRlIDxzdGRsaWIuaD4KI2luY2x1ZGUgPHN0ZGlvLmg+CiNpbmNs
-dWRlIDxzdHJpbmcuaD4KI2luY2x1ZGUgPGxpbWl0cy5oPgojaW5jbHVkZSA8
-ZXJybm8uaD4KI2luY2x1ZGUgPHN5cy90eXBlcy5oPgojaW5jbHVkZSA8c3lz
-L3N0YXQuaD4KI2luY2x1ZGUgPHN5cy9tbWFuLmg+CiNpbmNsdWRlIDxzeXMv
-dWlvLmg+CiNpbmNsdWRlIDxmY250bC5oPgoKLyogdXNlIHNvbWUgZGVmaW5p
-dGlvbnMgb3V0IG9mIHRoZSBjeXJ1cyBza2lwbGlzdCAKICogY29kZSB0byBh
-bGxvdyBpZGVudGljYWwgYmVoYXZpb3VyICovCgojZGVmaW5lIFNLSVBMSVNU
-X0hFQURFUiAiXDI0MVwwMDJcMjEzXDAxNXNraXBsaXN0IGZpbGVcMFwwXDAi
-Cgp0eXBlZGVmIHVuc2lnbmVkIGludCBiaXQzMjsKCiNkZWZpbmUgV1JJVEVW
-X0FERF9UT19JT1ZFQyhpb3YsIG51bV9pb3YsIHMsIGxlbikgXAogICAgZG8g
-eyAoaW92KVsobnVtX2lvdildLmlvdl9iYXNlID0gKHMpOyBcCiAgICAgICAg
-IChpb3YpWyhudW1faW92KSsrXS5pb3ZfbGVuID0gKGxlbik7IH0gd2hpbGUg
-KDApCi8qIGJ1bXAgdG8gdGhlIG5leHQgbXVsdGlwbGUgb2YgNCBieXRlcyAq
-LwojZGVmaW5lIFJPVU5EVVAobnVtKSAoKChudW0pICsgMykgJiAweEZGRkZG
-RkZDKQoKYml0MzIgemVybzsKYml0MzIgaW5vcmRlcjsKYml0MzIgYWRkOwpi
-aXQzMiBkZWxldGU7CmJpdDMyIGNvbW1pdDsKYml0MzIgZHVtbXk7CmJpdDMy
-IG1heDsKCiNkZWZpbmUga2V5bGVuIDE2CmNoYXIgKmtleTsKI2RlZmluZSB2
-YWxsZW4gNjUwNgpjaGFyICp2YWw7Cgp2b2lkIHNldHVwX3ZhcnMoKSB7CiAg
-aW50IGk7CgogIC8qIHNraXBsaXN0IG1hZ2ljIHZhbHVlcyAqLwogIHplcm8g
-PSBodG9ubCgwKTsKICBpbm9yZGVyID0gaHRvbmwoMSk7CiAgYWRkID0gaHRv
-bmwoMik7CiAgZGVsZXRlID0gaHRvbmwoNCk7CiAgY29tbWl0ID0gaHRvbmwo
-MjU1KTsKICBkdW1teSA9IGh0b25sKDI1Nyk7CiAgbWF4ID0gaHRvbmwoKGJp
-dDMyKS0xKTsKCiAgLyogb3VyIGtleSBhbmQgdmFsdWUgKi8KICBrZXkgPSBt
-YWxsb2Moa2V5bGVuICogc2l6ZW9mKGNoYXIpKTsKICBmb3IgKGkgPSAwOyBp
-IDwga2V5bGVuOyBpKyspIHsKICAgIGtleVtpXSA9ICdrJzsKICB9CgogIHZh
-bCA9IG1hbGxvYyh2YWxsZW4gKiBzaXplb2YoY2hhcikpOwogIGZvciAoaSA9
-IDA7IGkgPCB2YWxsZW47IGkrKykgewogICAgdmFsW2ldID0gJ2InOwogIH0K
-fQoKdm9pZCB3cml0ZV9kdW1teShpbnQgZmQpIHsKICBjaGFyIGJ1ZmZlcls5
-Nl07CiAgaW50IGk7CgogIGZvciAoaSA9IDA7IGkgPCA5NjsgaSsrKSAKICAg
-IGJ1ZmZlcltpXSA9IDA7CgogICooYml0MzIgKikoYnVmZmVyICsgMCkgPSBk
-dW1teTsgLyogdHlwZSAqLwogICooYml0MzIgKikoYnVmZmVyICsgOTIpID0g
-bWF4OyAvKiBlbmQgcHRyIGxpc3QgKi8KCiAgbHNlZWsoZmQsIDQ4LCAwKTsK
-ICB3cml0ZShmZCwgYnVmZmVyLCA5Nik7Cn0KCnZvaWQgd3JpdGVfaGVhZGVy
-KGludCBmZCkgewogIGNoYXIgYnVmZmVyWzQ4XTsKICBpbnQgaTsKCiAgZm9y
-IChpID0gMDsgaSA8IDQ4OyBpKyspIAogICAgYnVmZmVyW2ldID0gMDsKCiAg
-c3RybmNweShidWZmZXIsIFNLSVBMSVNUX0hFQURFUiwgMjApOwogICooYml0
-MzIgKikoYnVmZmVyICsgMjApID0gaHRvbmwoKGJpdDMyKSAgMSk7IC8qIHZl
-cnNpb24gKi8KICAqKGJpdDMyICopKGJ1ZmZlciArIDI0KSA9IGh0b25sKChi
-aXQzMikgIDIpOyAvKiBtaW5vcnZlcnNpb24gKi8KICAqKGJpdDMyICopKGJ1
-ZmZlciArIDI4KSA9IGh0b25sKChiaXQzMikgMjApOyAvKiBtYXhsZXZlbCAq
-LwogICooYml0MzIgKikoYnVmZmVyICsgMzIpID0gaHRvbmwoKGJpdDMyKSAg
-MSk7IC8qIGN1cmxldmVsICovCiAgKihiaXQzMiAqKShidWZmZXIgKyAzNikg
-PSBodG9ubCgoYml0MzIpICAwKTsgLyogbnVtcmVjb3JkcyAqLwogICooYml0
-MzIgKikoYnVmZmVyICsgNDApID0gaHRvbmwoKGJpdDMyKTE0NCk7IC8qIGxl
-bmd0aCBhdCBsYXN0IGNoZWNrcG9pbnQgKi8KICAqKGJpdDMyICopKGJ1ZmZl
-ciArIDQ0KSA9IGh0b25sKChiaXQzMikgIDApOyAvKiBsYXN0IHJlY292ZXJ5
-IHRpbWVzdGFtcCAqLwoKICBsc2VlayhmZCwgMCwgMCk7CiAgd3JpdGUoZmQs
-IGJ1ZmZlciwgNDgpOwp9CgppbnQgbWFpbihpbnQgYXJnYywgY2hhciAqKmFy
-Z3YpCnsKICAvKiBmaWxlcyAqLwogIGNoYXIgZmlsZW5hbWVbMTAyNF07CiAg
-aW50IGZkOwogIGNoYXIgbmV3ZmlsZW5hbWVbMTAyNF07CiAgaW50IG5ld2Zk
-OwoKICAvKiBpbyB2ZWN0b3IgKi8KICBzdHJ1Y3QgaW92ZWMgaW92WzUwXTsK
-ICBpbnQgbnVtX2lvdjsKCiAgLyogbW1hcCBzdHVmZiAqLwogIGNoYXIgKm1h
-cGJhc2U7CiAgaW50IG1hcHNpemU7CiAgaW50IG1hcGxlbjsKCiAgLyogbmV0
-d29yayBvcmRlciB2YWx1ZXMgKi8KICBiaXQzMiBuZXRrZXlsZW47CiAgYml0
-MzIgbmV0dmFsbGVuOwogIGJpdDMyIG5ldG9mZnNldDsKCiAgLyogbWlzYyBp
-bnRzICovCiAgaW50IGk7CiAgaW50IG9mZnNldDsKICBpbnQgbmV3b2Zmc2V0
-OwogIGludCBzaXplOwogIGludCBtYWdpYzsKCiAgc2V0dXBfdmFycygpOwoK
-ICBpZiAoYXJnYyA8PSAxKSB7CiAgICBwcmludGYoIk5FRUQgQSBGSUxFXG4i
-KTsKICAgIGV4aXQoMSk7CiAgfQoKICBzdHJuY3B5KGZpbGVuYW1lLCBhcmd2
-WzFdLCBzaXplb2YoZmlsZW5hbWUpKTsKICB1bmxpbmsoZmlsZW5hbWUpOwog
-IGZkID0gb3BlbihmaWxlbmFtZSwgT19SRFdSIHwgT19DUkVBVCwgMDY2Nik7
-CgogIC8qIFNUQUdFIDEgLSBjcmVhdGUgYSAicHJlLWNoZWNrcG9pbnRlZCIg
-ZmlsZSB0aGF0IGxvb2tzIGp1c3QgbGlrZQogICAqIGEgcmVhbCBzZWVuIGZp
-bGUgYmVmb3JlIGl0IGdldHMgdXBkYXRlZCAqLwoKICB3cml0ZV9oZWFkZXIo
-ZmQpOwogIHdyaXRlX2R1bW15KGZkKTsKICBmZGF0YXN5bmMoZmQpOwoKICAv
-KiBtbWFwIHRoZSBmaWxlIG5vdyAqLwoKICBtYXBsZW4gPSAxMDI0ICogMTY7
-CiAgbWFwYmFzZSA9IChjaGFyICopbW1hcCgoY2FkZHJfdCkwLCBtYXBsZW4s
-IFBST1RfUkVBRCwgTUFQX1NIQVJFRCwgZmQsIDBMKTsKCiAgLyogY3JlYXRl
-IHRoZSBpbml0aWFsIGNoZWNrcG9pbnRlZCByZWNvcmQgKi8KCiAgbnVtX2lv
-diA9IDA7CiAgV1JJVEVWX0FERF9UT19JT1ZFQyhpb3YsIG51bV9pb3YsIChj
-aGFyICopJmlub3JkZXIsIDQpOyAvKiBoZWFkZXIgKi8KCiAgLyoga2V5ICov
-CiAgbmV0a2V5bGVuID0gaHRvbmwoa2V5bGVuKTsKICBXUklURVZfQUREX1RP
-X0lPVkVDKGlvdiwgbnVtX2lvdiwgKGNoYXIgKikmbmV0a2V5bGVuLCA0KTsg
-LyogbGVuZ3RoICovCiAgV1JJVEVWX0FERF9UT19JT1ZFQyhpb3YsIG51bV9p
-b3YsIGtleSwga2V5bGVuKTsgLyogZGF0YSAqLwogIGlmIChST1VORFVQKGtl
-eWxlbikgPiBrZXlsZW4pIHsgLyogbmVlZCB0byBwYWQgKi8KICAgIFdSSVRF
-Vl9BRERfVE9fSU9WRUMoaW92LCBudW1faW92LCAoY2hhciAqKSZ6ZXJvLCBS
-T1VORFVQKGtleWxlbikgLSBrZXlsZW4pOwogIH0KCiAgLyogdmFsdWUgKi8K
-ICBuZXR2YWxsZW4gPSBodG9ubCh2YWxsZW4pOwogIFdSSVRFVl9BRERfVE9f
-SU9WRUMoaW92LCBudW1faW92LCAoY2hhciAqKSZuZXR2YWxsZW4sIDQpOyAv
-KiBsZW5ndGggKi8KICBXUklURVZfQUREX1RPX0lPVkVDKGlvdiwgbnVtX2lv
-diwgdmFsLCB2YWxsZW4pOyAvKiBkYXRhICovCiAgaWYgKFJPVU5EVVAodmFs
-bGVuKSA+IHZhbGxlbikgeyAvKiBuZWVkIHRvIHBhZCAqLwogICAgV1JJVEVW
-X0FERF9UT19JT1ZFQyhpb3YsIG51bV9pb3YsIChjaGFyICopJnplcm8sIFJP
-VU5EVVAodmFsbGVuKSAtIHZhbGxlbik7CiAgfQoKICAvKiBvbmx5IG9uZSBw
-b2ludGVyLCBhbmQgdGhlbiBmaW5pc2ggdGhlIHJlY29yZCBvZmYgKi8KCiAg
-V1JJVEVWX0FERF9UT19JT1ZFQyhpb3YsIG51bV9pb3YsIChjaGFyICopJnpl
-cm8sIDQpOyAvKiBwb2ludGVyICovCiAgV1JJVEVWX0FERF9UT19JT1ZFQyhp
-b3YsIG51bV9pb3YsIChjaGFyICopJm1heCwgNCk7IC8qIGVuZCByZWNvcmQg
-Ki8KCiAgLyogd3JpdGUgdGhlIHJlY29yZCAqLwogIGxzZWVrKGZkLCAwLCAy
-KTsKICB3cml0ZXYoZmQsIGlvdiwgbnVtX2lvdik7CgogIC8qIHVwZGF0ZSB0
-aGUgZHVtbXkgcG9pbnRlciAqLwogIGxzZWVrKGZkLCA2MCwgMCk7CiAgbmV0
-b2Zmc2V0ID0gaHRvbmwoMTQ0KTsKICB3cml0ZShmZCwgKGNoYXIgKikmbmV0
-b2Zmc2V0LCA0KTsgCgogIC8qIHVwZGF0ZSB0aGUgaGVhZGVyICovCiAgbmV0
-b2Zmc2V0ID0gaHRvbmwoMHgxYTIwKTsKICBsc2VlayhmZCwgNDAsIDApOwog
-IHdyaXRlKGZkLCAoY2hhciAqKSZuZXRvZmZzZXQsIDQpOwoKICAvKiBzeW5j
-IHRoZSByZWNvcmQgdG8gZGlzayAqLwogIGZkYXRhc3luYyhmZCk7CgoKICAv
-KiBDSEVDS1BPSU5UIDEgLSB0aGUgZmlsZSBvbiBkaXNrIGlzIG5vdyAxMDAl
-IGlkZW50aWNhbCB0byAKICAgKiB0aGUgZmlsZSB0aGF0IHdvdWxkIGV4aXN0
-IGFmdGVyIGxvYWRpbmcgdGhlIGRhdGEgYWJvdmUgCiAgICogaW50byBhIGN5
-cnVzIHNraXBsaXN0IGZpbGUgYW5kIHJ1bm5pbmcgdGhlIGNoZWNrcG9pbnQg
-Y29kZSAKICAgKiAob2ssIGV4Y2VwdCB0aGUgdGltZXN0YW1wKQogICAqLwoK
-ICAvKiBDeXJ1cyB3b3VsZCBjaGVjayB0aGUgTU1BUCBhdCB0aGlzIHBvaW50
-IGFuZCBkaXNjb3ZlciBpdCAKICAgKiBzdGlsbCBmaXRzIGFsbCB0aGUgZGF0
-YSB3aXRoaW4gdGhlICJzbG90Iiwgc28gaXQgZG9lc24ndAogICAqIGFjdHVh
-bGx5IHJlbWFwIGFueXRoaW5nICovCgogIC8qIFNUQUdFIDIgLSB3cml0ZSBh
-IG5ldyByZWNvcmQgLSBzdGFydGluZyBieSBmaW5kaW5nIHRoZQogICAqIHBv
-aW50ZXJzIGFuZCBkZWxldGluZyB0aGUgb2xkIHJlY29yZC4gIFNpbXBsaWZp
-ZWQgZm9yIAogICAqIGEgbGV2ZWwgMSBub2RlIGhlcmUuICBUaGlzIGFwcGVu
-ZHMgdG8gdGhlIGZpbGUuCiAgICovCgogIC8qIGZpbmQgdGhlIHBvaW50ZXIg
-cmVjb3JkIC0gQ3lydXMgZG9lcyB0aGlzLCBzbyBkbyB3ZSAqLwogIGZvciAo
-aSA9IDIwOyBpID4gMDsgaS0tKSB7CiAgICBvZmZzZXQgPSBudG9obCgqKGJp
-dDMyICopKG1hcGJhc2UgKyA2MCArIDQqKGktMSkpKTsKICAgIGlmIChvZmZz
-ZXQpIGJyZWFrOwogIH0KCiAgLyogdGVzdCB0aGF0IHRoZSBrZXlzIG1hdGNo
-ICovCiAgaWYgKHN0cm5jbXAobWFwYmFzZSArIG9mZnNldCArIDQgKyA0LCBr
-ZXksIGtleWxlbikpIHsKICAgIHByaW50ZigiT0RELCBrZXkgd2Fzbid0IGZv
-dW5kXG4iKTsKICB9CgogIG51bV9pb3YgPSAwOwoKICAvKiBhZGQgdGhlIGRl
-bGV0ZSByZWNvcmQgKi8KICBXUklURVZfQUREX1RPX0lPVkVDKGlvdiwgbnVt
-X2lvdiwgKGNoYXIgKikmZGVsZXRlLCA0KTsgLyogaGVhZGVyICovCiAgbmV0
-b2Zmc2V0ID0gaHRvbmwob2Zmc2V0KTsKICBXUklURVZfQUREX1RPX0lPVkVD
-KGlvdiwgbnVtX2lvdiwgKGNoYXIgKikmbmV0b2Zmc2V0LCA0KTsgLyogb2Zm
-c2V0IHRvIGZpeCAqLwoKICAvKiBtb3ZlIG9mZnNldCBhbG9uZyAtIHRoaXMg
-aXMgIk5FWFQiIG9mIGRlbGV0ZWQgcmVjb3JkLCB3aWxsCiAgICogYWx3YXlz
-IGJlIHplcm8gYmVjYXVzZSB0aGVyZSdzIG9ubHkgb25lIHJlY29yZCAqLwog
-IGlmIChvZmZzZXQpIHsKICAgIGludCBrbGVuID0gUk9VTkRVUChudG9obCgq
-KGJpdDMyICopKG1hcGJhc2UgKyBvZmZzZXQgKyA0KSkpOwogICAgaW50IHZs
-ZW4gPSBST1VORFVQKG50b2hsKCooYml0MzIgKikobWFwYmFzZSArIG9mZnNl
-dCArIDQgKyA0ICsga2xlbikpKTsKICAgIG9mZnNldCA9IG50b2hsKCooYml0
-MzIgKikobWFwYmFzZSArIG9mZnNldCArIDQgKyA0ICsga2xlbiArIDQgKyB2
-bGVuKSk7CiAgfQogIGlmIChvZmZzZXQgIT0gMCkgewogICAgcHJpbnRmKCJP
-REQsIG9mZnNldCBpc24ndCAwIGFmdGVyIGRlbGV0aW5nIHJlY29yZFxuIik7
-CiAgfQoKICAvKiBtYXJrIHRoZSBkZWxldGlvbiAqLwogIGxzZWVrKGZkLCA2
-MCwgMCk7CiAgd3JpdGUoZmQsIChjaGFyICopJnplcm8sIDQpOwoKICAvKiBz
-ZXQgdXAgdGhlIG5ldyByZWNvcmQgKi8KICBXUklURVZfQUREX1RPX0lPVkVD
-KGlvdiwgbnVtX2lvdiwgKGNoYXIgKikmYWRkLCA0KTsgLyogaGVhZGVyICov
-CgogIC8qIGtleSAqLwogIG5ldGtleWxlbiA9IGh0b25sKGtleWxlbik7CiAg
-V1JJVEVWX0FERF9UT19JT1ZFQyhpb3YsIG51bV9pb3YsIChjaGFyICopJm5l
-dGtleWxlbiwgNCk7IC8qIGxlbmd0aCAqLwogIFdSSVRFVl9BRERfVE9fSU9W
-RUMoaW92LCBudW1faW92LCBrZXksIGtleWxlbik7IC8qIGRhdGEgKi8KICBp
-ZiAoUk9VTkRVUChrZXlsZW4pID4ga2V5bGVuKSB7IC8qIG5lZWQgdG8gcGFk
-ICovCiAgICBXUklURVZfQUREX1RPX0lPVkVDKGlvdiwgbnVtX2lvdiwgKGNo
-YXIgKikmemVybywgUk9VTkRVUChrZXlsZW4pIC0ga2V5bGVuKTsKICB9Cgog
-IC8qIHZhbHVlICovCiAgbmV0dmFsbGVuID0gaHRvbmwodmFsbGVuKTsKICBX
-UklURVZfQUREX1RPX0lPVkVDKGlvdiwgbnVtX2lvdiwgKGNoYXIgKikmbmV0
-dmFsbGVuLCA0KTsgLyogbGVuZ3RoICovCiAgV1JJVEVWX0FERF9UT19JT1ZF
-Qyhpb3YsIG51bV9pb3YsIHZhbCwgdmFsbGVuKTsgLyogZGF0YSAqLwogIGlm
-IChST1VORFVQKHZhbGxlbikgPiB2YWxsZW4pIHsgLyogbmVlZCB0byBwYWQg
-Ki8KICAgIFdSSVRFVl9BRERfVE9fSU9WRUMoaW92LCBudW1faW92LCAoY2hh
-ciAqKSZ6ZXJvLCBST1VORFVQKHZhbGxlbikgLSB2YWxsZW4pOwogIH0KCiAg
-Lyogb25seSBvbmUgcG9pbnRlciwgYW5kIHRoZW4gZmluaXNoIHRoZSByZWNv
-cmQgb2ZmICovCgogIFdSSVRFVl9BRERfVE9fSU9WRUMoaW92LCBudW1faW92
-LCAoY2hhciAqKSZ6ZXJvLCA0KTsgLyogcG9pbnRlciAqLwogIFdSSVRFVl9B
-RERfVE9fSU9WRUMoaW92LCBudW1faW92LCAoY2hhciAqKSZtYXgsIDQpOyAv
-KiBlbmQgcmVjb3JkICovCgogIC8qIHdyaXRlIHRoZSByZWNvcmQgKi8KICBv
-ZmZzZXQgPSBsc2VlayhmZCwgMCwgMik7CiAgd3JpdGV2KGZkLCBpb3YsIG51
-bV9pb3YpOwoKICAvKiB1cGRhdGUgdGhlIGR1bW15IHBvaW50ZXIgKi8KICBs
-c2VlayhmZCwgNjAsIDApOwogIG5ldG9mZnNldCA9IGh0b25sKG9mZnNldCAr
-IDgpOyAvKiBza2lwIHRoZSBkZWxldGUgKi8KICB3cml0ZShmZCwgKGNoYXIg
-KikmbmV0b2Zmc2V0LCA0KTsgCiAgZmRhdGFzeW5jKGZkKTsKICAKICAvKiBj
-b21taXQgcmVjb3JkIGdvZXMgb24gdGhlIGVuZCBvZiB0aGUgZmlsZSBvbmx5
-IG9uY2UgYWxsCiAgICogZGF0YSBjaGFuZ2VzIGFyZSBmc3luY2VkIHRvIGRp
-c2sgKi8KICBsc2VlayhmZCwgMCwgMik7CiAgd3JpdGUoZmQsIChjaGFyICop
-JmNvbW1pdCwgNCk7CiAgZmRhdGFzeW5jKGZkKTsKCiAgLyogQ0hFQ0tQT0lO
-VCAyIC0gd2UndmUgZmluaXNoZWQgd3JpdGluZyBhbmQgY29tbWl0dGluZyB0
-aGUgbmV3IHJlY29yZCwKICAgKiBhbmQgdGhlIEN5cnVzIHNraXBsaXN0IHdv
-dWxkIGNoZWNrcG9pbnQgdGhpcyBmaWxlIG5vdy4gIAogICAqIFdlIHNpbXVs
-YXRlIHRoYXQgaGVyZSAqLwoKICAvKiBhZ2FpbiAtIHdlIGZpdCBpbnNpemUg
-dGhlIG1tYXAgc3BhY2UsIHNvIGl0IGRvZXNuJ3QgZ2V0IHJlZnJlc2hlZCAq
-LwoKICAvKiBTVEFHRSAzIC0gcGVyZm9ybSBhIGN5cnVzIGNoZWNrcG9pbnQg
-Ki8KCiAgaWYgKGFyZ2MgPiAyKSB7CiAgICAvKiBQRVJGT1JNIE1BR0lDIC0g
-YWNjZXNzIHRoZSBtbWFwIGluIG9yZGVyICovCiAgICBmb3IgKGkgPSAwOyBp
-IDwgbWFwbGVuOyBpKyspIHsKICAgICAgbWFnaWMgXj0gbWFwYmFzZVtpXTsK
-ICAgIH0KICB9CgogIC8qIHN0cmVhbSB0byBhIG5ldyBmaWxlICovCgogIHNu
-cHJpbnRmKG5ld2ZpbGVuYW1lLCBzaXplb2YobmV3ZmlsZW5hbWUpLCAiJXMu
-TkVXIiwgZmlsZW5hbWUpOwogIG5ld2ZkID0gb3BlbihuZXdmaWxlbmFtZSwg
-T19SRFdSIHwgT19DUkVBVCwgMDY2Nik7CiAgZnRydW5jYXRlKG5ld2ZkLCAw
-KTsKCiAgLyogZHVtbXkgZ29lcyBmaXJzdCwgaGVhZGVyIGdldHMgd3JpdHRl
-biBsYXN0ICovCiAgd3JpdGVfZHVtbXkobmV3ZmQpOwoKICBsc2VlayhuZXdm
-ZCwgMCwgMik7IC8qIDE0NCAqLwoKICAvKiBhZ2FpbiwgQ3lydXMgZmluZHMg
-dGhlIHJlY29yZCBmaXJzdCAqLwogIGZvciAoaSA9IDIwOyBpID4gMDsgaS0t
-KSB7CiAgICBvZmZzZXQgPSBudG9obCgqKGJpdDMyICopKG1hcGJhc2UgKyA2
-MCArIDQqKGktMSkpKTsKICAgIGlmIChvZmZzZXQpIGJyZWFrOwogIH0KCiAg
-LyogYW5kIGNhbGN1bGF0ZXMgdGhlIGxlbmd0aCBieSByZWFkaW5nIHRoZSBs
-ZW5ndGhzIG9mIHRoZQogICAqIHZhcmlvdXMgY29tcG9uZW50cyBhbmQgc3Vt
-bWluZyB0aGVtIHVwLCBmaW5hbGx5IHdhbGtpbmcKICAgKiB0aGUgcG9pbnRl
-cnMgdW50aWwgaXQgaGl0cyBhICItMSIKICAgKi8KICBpZiAob2Zmc2V0KSB7
-CiAgICBpbnQga2xlbiA9IFJPVU5EVVAobnRvaGwoKihiaXQzMiAqKShtYXBi
-YXNlICsgb2Zmc2V0ICsgNCkpKTsKICAgIGludCB2bGVuID0gUk9VTkRVUChu
-dG9obCgqKGJpdDMyICopKG1hcGJhc2UgKyBvZmZzZXQgKyA0ICsgNCArIGts
-ZW4pKSk7CiAgICBzaXplID0gNCArIDQgKyBrbGVuICsgNCArIHZsZW47CiAg
-ICB3aGlsZSAobnRvaGwoKihiaXQzMiAqKShtYXBiYXNlICsgb2Zmc2V0ICsg
-c2l6ZSkpICE9IC0xKSB7CiAgICAgIHNpemUgKz0gNDsKICAgIH0KICAgIHNp
-emUgKz0gNDsgLyogZmluYWwgLTEgcG9pbnRlciAqLwogIH0KICBlbHNlIHsK
-ICAgIC8qIGRpZG4ndCBmaW5kIHRoZSByZWNvcmQgKi8KICAgIHByaW50Zigi
-RmFpbGVkIHRvIGZpbmQgdGhlIHJlY29yZCwgZHlpbmdcbiIpOwogICAgZXhp
-dCgxKTsKICB9CgogIG51bV9pb3YgPSAwOwogIC8qIHdyaXRlIHRoZSBlbnRp
-cmUgcmVjb3JkLCBidXQgY2hhbmdlIHRoZSBUWVBFIGZpZWxkIGZyb20KICAg
-KiB3aGF0ZXZlciBpdCB3YXMgKEFERCBvciBJTk9SREVSKSB0byBJTk9SREVS
-IG9ubHkgKi8KICBXUklURVZfQUREX1RPX0lPVkVDKGlvdiwgbnVtX2lvdiwg
-KGNoYXIgKikmaW5vcmRlciwgNCk7IC8qIGhlYWRlciAqLwogIFdSSVRFVl9B
-RERfVE9fSU9WRUMoaW92LCBudW1faW92LCBtYXBiYXNlICsgb2Zmc2V0ICsg
-NCwgc2l6ZSAtIDQpOyAvKiBkYXRhICovCiAgd3JpdGV2KG5ld2ZkLCBpb3Ys
-IG51bV9pb3YpOwoKICAvKiB3cml0ZSB0aGUgZm9yd2FyZCBwb2ludGVyICov
-CiAgbHNlZWsobmV3ZmQsIDYwLCAwKTsKICBuZXRvZmZzZXQgPSBodG9ubCgx
-NDQpOwogIHdyaXRlKG5ld2ZkLCAoY2hhciAqKSZuZXRvZmZzZXQsIDQpOwoK
-ICAvKiB3cml0ZSB0aGUgemVyb3MgLSBmaXJzdCB0aGUgb25lIGluIHRoZSBu
-ZXcgcmVjb3JkICovCiAgbHNlZWsobmV3ZmQsIG1hcGJhc2UgKyBvZmZzZXQg
-KyBzaXplIC0gOCwgMCk7CiAgd3JpdGUobmV3ZmQsIChjaGFyICopJnplcm8s
-IDQpOwoKICAvKiB0aGVuIHRoZSByZXN0IGludG8gdGhlIGR1bW15ICovCiAg
-Zm9yIChpID0gMTsgaSA8IDIwOyBpKyspIHsKICAgIGxzZWVrKG5ld2ZkLCA2
-MCArIDQqaSwgMCk7CiAgICB3cml0ZShuZXdmZCwgKGNoYXIgKikmemVybywg
-NCk7CiAgfQoKICAvKiB3cml0ZSB0aGUgaGVhZGVyIGxhc3QgKi8KICB3cml0
-ZV9oZWFkZXIoZmQpOwoKICBjbG9zZShuZXdmZCk7CiAgY2xvc2UoZmQpOwoK
-ICBleGl0KDApOwp9Cg==
-
---_----------=_1213682410131740--
 
