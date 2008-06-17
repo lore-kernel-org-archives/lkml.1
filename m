@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757623AbYFQQFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbYFQPrD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757623AbYFQQFy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 12:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbYFQQFq
+	id S1754157AbYFQPrD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 11:47:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbYFQPqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 12:05:46 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:45840 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752093AbYFQQFp (ORCPT
+	Tue, 17 Jun 2008 11:46:51 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57507 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751603AbYFQPqu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 12:05:45 -0400
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, ywang221@hotmail.com, szaka@ntfs-3g.org
-Subject: [2.6.26 patch] fuse: fix thinko in max I/O size calucation
-Message-Id: <E1K8dgi-0005sl-El@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 17 Jun 2008 18:05:40 +0200
+	Tue, 17 Jun 2008 11:46:50 -0400
+Date: Tue, 17 Jun 2008 16:29:10 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Martin Michlmayr <tbm@cyrius.com>
+Cc: Anthony Liguori <anthony@codemonkey.ws>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Linux with kvm-intel locks up VMplayer guest is started
+Message-ID: <20080617162910.4019bf01@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080617133234.GE2397@deprecation.cyrius.com>
+References: <20080616150550.GA16086@deprecation.cyrius.com>
+	<48568503.90607@codemonkey.ws>
+	<20080617123918.GA2397@deprecation.cyrius.com>
+	<4857B92F.9020309@codemonkey.ws>
+	<20080617133234.GE2397@deprecation.cyrius.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+On Tue, 17 Jun 2008 15:32:34 +0200
+Martin Michlmayr <tbm@cyrius.com> wrote:
 
-Use max not min to enforce a lower limit on the max I/O size.
+> * Anthony Liguori <anthony@codemonkey.ws> [2008-06-17 08:16]:
+> > VMware is a binary kernel module that's out of kernel.  KVM is not
+> > misbehaving and the fact that VMware breaks when the KVM module is
+> > loaded isn't our problem.  If they submitted their code for
+> > inclusion in  mainline, we could possibly come up with solution for
+> > arbitrating who is  using VT.
+> 
+> I feared I'd get a response like this.  But unless this is a known
+> issue in VMware (which I don't think it is), you don't know whether
+> it's not a bug in kvm-intel.
 
-This bug was introduced by
+So ask vmware. They have source to both parts we don't.
 
-   commit e5d9a0df07484d6d191756878c974e4307fb24ce
-   Author: Miklos Szeredi <mszeredi@suse.cz>
-   Date:   Wed Apr 30 00:54:44 2008 -0700
-   
-       fuse: fix max i/o size calculation
+And its a bug in vmware by definition. If the emulator differs from the
+real thing then the emulator is at fault. It might well be that the limit
+is a genuine technical limit - but its still an emulator fault.
 
-Thanks to Brian Wang for noticing.
-
-Reported-by: Brian Wang <ywang221@hotmail.com>
-CC: Szabolcs Szakacsits <szaka@ntfs-3g.org>
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
- fs/fuse/inode.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/fs/fuse/inode.c
-===================================================================
---- linux-2.6.orig/fs/fuse/inode.c	2008-06-17 17:55:38.000000000 +0200
-+++ linux-2.6/fs/fuse/inode.c	2008-06-17 17:55:48.000000000 +0200
-@@ -591,7 +591,7 @@ static void process_init_reply(struct fu
- 		fc->bdi.ra_pages = min(fc->bdi.ra_pages, ra_pages);
- 		fc->minor = arg->minor;
- 		fc->max_write = arg->minor < 5 ? 4096 : arg->max_write;
--		fc->max_write = min_t(unsigned, 4096, fc->max_write);
-+		fc->max_write = max_t(unsigned, 4096, fc->max_write);
- 		fc->conn_init = 1;
- 	}
- 	fuse_put_request(fc, req);
-@@ -667,7 +667,7 @@ static int fuse_fill_super(struct super_
- 	fc->flags = d.flags;
- 	fc->user_id = d.user_id;
- 	fc->group_id = d.group_id;
--	fc->max_read = min_t(unsigned, 4096, d.max_read);
-+	fc->max_read = max_t(unsigned, 4096, d.max_read);
- 
- 	/* Used by get_root_inode() */
- 	sb->s_fs_info = fc;
+Alan
