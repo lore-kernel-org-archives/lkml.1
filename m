@@ -1,58 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758850AbYFQSV7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759449AbYFQSXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758850AbYFQSV7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 14:21:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756196AbYFQSVt
+	id S1759449AbYFQSXy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 14:23:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755461AbYFQSXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 14:21:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35399 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755323AbYFQSVs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 14:21:48 -0400
-Date: Tue, 17 Jun 2008 14:14:27 -0400
-From: Dave Jones <davej@redhat.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       arjan@linux.intel.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, linville@tuxdriver.com
-Subject: Re: Oops report for the week preceding June 16th, 2008
-Message-ID: <20080617181427.GB13192@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Greg KH <gregkh@suse.de>,
-	Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-	arjan@linux.intel.com, linux-kernel@vger.kernel.org,
-	torvalds@linux-foundation.org, akpm@linux-foundation.org,
-	tglx@linutronix.de, linville@tuxdriver.com
-References: <4856AFDF.5080901@linux.intel.com> <20080617092023.GA20621@elte.hu> <20080617.022652.76635616.davem@davemloft.net> <20080617153356.GA3510@elte.hu> <20080617175414.GA9866@suse.de>
+	Tue, 17 Jun 2008 14:23:46 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:51933 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755229AbYFQSXq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 14:23:46 -0400
+Message-ID: <48580113.9070806@zytor.com>
+Date: Tue, 17 Jun 2008 11:23:15 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080617175414.GA9866@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Glauber Costa <glommer@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: merge setup_memory_map with e820
+References: <200806161303.31997.yhlu.kernel@gmail.com>	 <200806161958.28627.yhlu.kernel@gmail.com>	 <5d6222a80806170531g50a72ea2r963bba8e404e619f@mail.gmail.com>	 <4857E07F.3070209@zytor.com>	 <86802c440806170918l1cb10014nccfd8d3e2b13da47@mail.gmail.com>	 <4857F6B5.4000404@zytor.com> <86802c440806171052n6221d13dnf172928b0321dc6a@mail.gmail.com>
+In-Reply-To: <86802c440806171052n6221d13dnf172928b0321dc6a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 17, 2008 at 10:54:14AM -0700, Greg KH wrote:
+Yinghai Lu wrote:
+> 
+> OK, after Ingo put three patch in the tip, I will submit one to remove
+> early_panic.
+> 
 
- > We try to respect the authors of the code when not including them into
- > the kernel tree for situations like this :)
- > 
- > As for why Fedora added it, it might be because they can control both
- > sides of the boundry with matching packages much easier.
+I'll do it after lunch if Ingo or Thomas don't beat me to it.
 
-That's exactly it.  Dave Airlie keeps both the X and kernel side of DRI
-in check in Fedora, and with him being the DRI maintainer, he tends to have
-a good handle on the state of things.
-
-Nouveau has been a bit bumpy, and isn't ready for mass-use, which is why
-we don't enable it by default.  We ship it, but a user has to actually
-install it, and set it up to explicitly use it instead of the 'nv' X driver
-right now.  Given it's there as a sort of 'preview' for interested parties,
-I don't think the world is ending because we jumped the gun by shipping
-this even though it's not upstream.
-
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+	-hpa
