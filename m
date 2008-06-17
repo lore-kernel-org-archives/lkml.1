@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756271AbYFQXH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762069AbYFQXIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756271AbYFQXH5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 19:07:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760450AbYFQXAf
+	id S1762069AbYFQXIV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 19:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760490AbYFQXAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 19:00:35 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:37043 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759362AbYFQXAB (ORCPT
+	Tue, 17 Jun 2008 19:00:37 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:24538 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760545AbYFQXAI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 19:00:01 -0400
-Message-Id: <20080617225911.385015675@ldl.fc.hp.com>
+	Tue, 17 Jun 2008 19:00:08 -0400
+Message-Id: <20080617225912.432176740@ldl.fc.hp.com>
 References: <20080617225823.045233728@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 17 Jun 2008 16:58:41 -0600
+Date: Tue, 17 Jun 2008 16:58:46 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org, Rene Herman <rene.herman@gmail.com>
@@ -28,184 +28,208 @@ Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Takashi Iwai <tiwai@suse.de>
 Cc: Jiri Slaby <jirislaby@gmail.com>
-Subject: [patch 18/28] PNP: make resource assignment functions return 0 (success) or -EBUSY (failure)
-Content-Disposition: inline; filename=pnp-change-assignment-return-values
+Subject: [patch 23/28] PNP: support optional IRQ resources
+Content-Disposition: inline; filename=pnp-optional-irqs
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch doesn't change any behavior; it just makes the return
-values more conventional.
+This patch adds an IORESOURCE_IRQ_OPTIONAL flag for use when
+assigning resources to a device.  If the flag is set and we are
+unable to assign an IRQ to the device, we can leave the IRQ
+disabled but allow the overall resource allocation to succeed.
 
-This changes pnp_assign_dma() from a void function to one that
-returns an int, just like the other assignment functions.  For
-now, at least, pnp_assign_dma() always returns 0 (success), so
-it appears to never fail, just like before.
+Some devices request an IRQ, but can run without an IRQ
+(possibly with degraded performance).  This flag lets us run
+the device without the IRQ instead of just leaving the
+device disabled.
+
+This is a reimplementation of this previous change by Rene
+Herman <rene.herman@gmail.com>:
+    http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=3b73a223661ed137c5d3d2635f954382e94f5a43
+
+I reimplemented this for two reasons:
+    - to prepare for converting all resource options into a single linked
+      list, as opposed to the per-resource-type lists we have now, and
+    - to preserve the order and number of resource options.
+
+In PNPBIOS and ACPI, we configure a device by giving firmware a
+list of resource assignments.  It is important that this list
+has exactly the same number of resources, in the same order,
+as the "template" list we got from the firmware in the first
+place.
+
+The problem of a sound card MPU401 being left disabled for want of
+an IRQ was reported by Uwe Bugla <uwe.bugla@gmx.de>.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 Acked-by: Rene Herman <rene.herman@gmail.com>
 
+Index: work10/include/linux/ioport.h
+===================================================================
+--- work10.orig/include/linux/ioport.h	2008-06-17 12:42:07.000000000 -0600
++++ work10/include/linux/ioport.h	2008-06-17 12:42:07.000000000 -0600
+@@ -59,6 +59,7 @@ struct resource_list {
+ #define IORESOURCE_IRQ_HIGHLEVEL	(1<<2)
+ #define IORESOURCE_IRQ_LOWLEVEL		(1<<3)
+ #define IORESOURCE_IRQ_SHAREABLE	(1<<4)
++#define IORESOURCE_IRQ_OPTIONAL		(1<<5)
+ 
+ /* PnP DMA specific bits (IORESOURCE_BITS) */
+ #define IORESOURCE_DMA_TYPE_MASK	(3<<0)
 Index: work10/drivers/pnp/manager.c
 ===================================================================
---- work10.orig/drivers/pnp/manager.c	2008-05-13 13:27:01.000000000 -0600
-+++ work10/drivers/pnp/manager.c	2008-05-13 13:29:05.000000000 -0600
-@@ -26,7 +26,7 @@ static int pnp_assign_port(struct pnp_de
- 		dev_dbg(&dev->dev, "  io %d already set to %#llx-%#llx "
- 			"flags %#lx\n", idx, (unsigned long long) res->start,
- 			(unsigned long long) res->end, res->flags);
--		return 1;
-+		return 0;
- 	}
- 
- 	res = &local_res;
-@@ -51,13 +51,13 @@ static int pnp_assign_port(struct pnp_de
- 				"(min %#llx max %#llx)\n", idx,
- 				(unsigned long long) rule->min,
- 				(unsigned long long) rule->max);
--			return 0;
-+			return -EBUSY;
+--- work10.orig/drivers/pnp/manager.c	2008-06-17 12:42:07.000000000 -0600
++++ work10/drivers/pnp/manager.c	2008-06-17 12:43:03.000000000 -0600
+@@ -153,6 +153,15 @@ static int pnp_assign_irq(struct pnp_dev
+ 				goto __add;
  		}
  	}
- 
- __add:
- 	pnp_add_io_resource(dev, res->start, res->end, res->flags);
--	return 1;
-+	return 0;
- }
- 
- static int pnp_assign_mem(struct pnp_dev *dev, struct pnp_mem *rule, int idx)
-@@ -69,7 +69,7 @@ static int pnp_assign_mem(struct pnp_dev
- 		dev_dbg(&dev->dev, "  mem %d already set to %#llx-%#llx "
- 			"flags %#lx\n", idx, (unsigned long long) res->start,
- 			(unsigned long long) res->end, res->flags);
--		return 1;
-+		return 0;
- 	}
- 
- 	res = &local_res;
-@@ -103,13 +103,13 @@ static int pnp_assign_mem(struct pnp_dev
- 				"(min %#llx max %#llx)\n", idx,
- 				(unsigned long long) rule->min,
- 				(unsigned long long) rule->max);
--			return 0;
-+			return -EBUSY;
- 		}
- 	}
- 
- __add:
- 	pnp_add_mem_resource(dev, res->start, res->end, res->flags);
--	return 1;
-+	return 0;
- }
- 
- static int pnp_assign_irq(struct pnp_dev *dev, struct pnp_irq *rule, int idx)
-@@ -126,7 +126,7 @@ static int pnp_assign_irq(struct pnp_dev
- 	if (res) {
- 		dev_dbg(&dev->dev, "  irq %d already set to %d flags %#lx\n",
- 			idx, (int) res->start, res->flags);
--		return 1;
-+		return 0;
- 	}
- 
- 	res = &local_res;
-@@ -154,14 +154,14 @@ static int pnp_assign_irq(struct pnp_dev
- 		}
- 	}
++
++	if (rule->flags & IORESOURCE_IRQ_OPTIONAL) {
++		res->start = -1;
++		res->end = -1;
++		res->flags |= IORESOURCE_DISABLED;
++		dev_dbg(&dev->dev, "  irq %d disabled (optional)\n", idx);
++		goto __add;
++	}
++
  	dev_dbg(&dev->dev, "  couldn't assign irq %d\n", idx);
--	return 0;
-+	return -EBUSY;
+ 	return -EBUSY;
  
- __add:
- 	pnp_add_irq_resource(dev, res->start, res->flags);
--	return 1;
-+	return 0;
- }
+Index: work10/drivers/pnp/quirks.c
+===================================================================
+--- work10.orig/drivers/pnp/quirks.c	2008-06-17 12:42:07.000000000 -0600
++++ work10/drivers/pnp/quirks.c	2008-06-17 12:44:48.000000000 -0600
+@@ -118,34 +118,46 @@ static struct pnp_option *quirk_isapnp_m
+ 	struct pnp_option *res;
  
--static void pnp_assign_dma(struct pnp_dev *dev, struct pnp_dma *rule, int idx)
-+static int pnp_assign_dma(struct pnp_dev *dev, struct pnp_dma *rule, int idx)
- {
- 	struct resource *res, local_res;
- 	int i;
-@@ -175,7 +175,7 @@ static void pnp_assign_dma(struct pnp_de
- 	if (res) {
- 		dev_dbg(&dev->dev, "  dma %d already set to %d flags %#lx\n",
- 			idx, (int) res->start, res->flags);
--		return;
-+		return 0;
+ 	/*
+-	 * Build a functional IRQ-less variant of each MPU option.
++	 * Build a functional IRQ-optional variant of each MPU option.
+ 	 */
+ 
+ 	for (res = dev->dependent; res; res = res->next) {
+ 		struct pnp_option *curr;
+ 		struct pnp_port *port;
+-		struct pnp_port *copy;
++		struct pnp_port *copy_port;
++		struct pnp_irq *irq;
++		struct pnp_irq *copy_irq;
+ 
+ 		port = res->port;
+-		if (!port || !res->irq)
++		irq = res->irq;
++		if (!port || !irq)
+ 			continue;
+ 
+-		copy = pnp_alloc(sizeof *copy);
+-		if (!copy)
++		copy_port = pnp_alloc(sizeof *copy_port);
++		if (!copy_port)
+ 			break;
+ 
+-		copy->min = port->min;
+-		copy->max = port->max;
+-		copy->align = port->align;
+-		copy->size = port->size;
+-		copy->flags = port->flags;
++		copy_irq = pnp_alloc(sizeof *copy_irq);
++		if (!copy_irq) {
++			kfree(copy_port);
++			break;
++		}
++
++		*copy_port = *port;
++		copy_port->next = NULL;
++
++		*copy_irq = *irq;
++		copy_irq->flags |= IORESOURCE_IRQ_OPTIONAL;
++		copy_irq->next = NULL;
+ 
+ 		curr = pnp_build_option(PNP_RES_PRIORITY_FUNCTIONAL);
+ 		if (!curr) {
+-			kfree(copy);
++			kfree(copy_port);
++			kfree(copy_irq);
+ 			break;
+ 		}
+-		curr->port = copy;
++		curr->port = copy_port;
++		curr->irq = copy_irq;
+ 
+ 		if (prev)
+ 			prev->next = curr;
+@@ -154,7 +166,7 @@ static struct pnp_option *quirk_isapnp_m
+ 		prev = curr;
  	}
+ 	if (head)
+-		dev_info(&dev->dev, "adding IRQ-less MPU options\n");
++		dev_info(&dev->dev, "adding IRQ-optional MPU options\n");
  
- 	res = &local_res;
-@@ -198,6 +198,7 @@ static void pnp_assign_dma(struct pnp_de
+ 	return head;
+ }
+@@ -164,10 +176,6 @@ static void quirk_ad1815_mpu_resources(s
+ 	struct pnp_option *res;
+ 	struct pnp_irq *irq;
  
- __add:
- 	pnp_add_dma_resource(dev, res->start, res->flags);
-+	return 0;
+-	/*
+-	 * Distribute the independent IRQ over the dependent options
+-	 */
+-
+ 	res = dev->independent;
+ 	if (!res)
+ 		return;
+@@ -176,33 +184,8 @@ static void quirk_ad1815_mpu_resources(s
+ 	if (!irq || irq->next)
+ 		return;
+ 
+-	res = dev->dependent;
+-	if (!res)
+-		return;
+-
+-	while (1) {
+-		struct pnp_irq *copy;
+-
+-		copy = pnp_alloc(sizeof *copy);
+-		if (!copy)
+-			break;
+-
+-		bitmap_copy(copy->map.bits, irq->map.bits, PNP_IRQ_NR);
+-		copy->flags = irq->flags;
+-
+-		copy->next = res->irq; /* Yes, this is NULL */
+-		res->irq = copy;
+-
+-		if (!res->next)
+-			break;
+-		res = res->next;
+-	}
+-	kfree(irq);
+-
+-	res->next = quirk_isapnp_mpu_options(dev);
+-
+-	res = dev->independent;
+-	res->irq = NULL;
++	irq->flags |= IORESOURCE_IRQ_OPTIONAL;
++	dev_info(&dev->dev, "made independent IRQ optional\n");
  }
  
- void pnp_init_resources(struct pnp_dev *dev)
-@@ -243,25 +244,26 @@ static int pnp_assign_resources(struct p
- 		irq = dev->independent->irq;
- 		dma = dev->independent->dma;
- 		while (port) {
--			if (!pnp_assign_port(dev, port, nport))
-+			if (pnp_assign_port(dev, port, nport) < 0)
- 				goto fail;
- 			nport++;
- 			port = port->next;
- 		}
- 		while (mem) {
--			if (!pnp_assign_mem(dev, mem, nmem))
-+			if (pnp_assign_mem(dev, mem, nmem) < 0)
- 				goto fail;
- 			nmem++;
- 			mem = mem->next;
- 		}
- 		while (irq) {
--			if (!pnp_assign_irq(dev, irq, nirq))
-+			if (pnp_assign_irq(dev, irq, nirq) < 0)
- 				goto fail;
- 			nirq++;
- 			irq = irq->next;
- 		}
- 		while (dma) {
--			pnp_assign_dma(dev, dma, ndma);
-+			if (pnp_assign_dma(dev, dma, ndma) < 0)
-+				goto fail;
- 			ndma++;
- 			dma = dma->next;
- 		}
-@@ -281,25 +283,26 @@ static int pnp_assign_resources(struct p
- 		irq = dep->irq;
- 		dma = dep->dma;
- 		while (port) {
--			if (!pnp_assign_port(dev, port, nport))
-+			if (pnp_assign_port(dev, port, nport) < 0)
- 				goto fail;
- 			nport++;
- 			port = port->next;
- 		}
- 		while (mem) {
--			if (!pnp_assign_mem(dev, mem, nmem))
-+			if (pnp_assign_mem(dev, mem, nmem) < 0)
- 				goto fail;
- 			nmem++;
- 			mem = mem->next;
- 		}
- 		while (irq) {
--			if (!pnp_assign_irq(dev, irq, nirq))
-+			if (pnp_assign_irq(dev, irq, nirq) < 0)
- 				goto fail;
- 			nirq++;
- 			irq = irq->next;
- 		}
- 		while (dma) {
--			pnp_assign_dma(dev, dma, ndma);
-+			if (pnp_assign_dma(dev, dma, ndma) < 0)
-+				goto fail;
- 			ndma++;
- 			dma = dma->next;
- 		}
+ static void quirk_isapnp_mpu_resources(struct pnp_dev *dev)
+Index: work10/drivers/pnp/interface.c
+===================================================================
+--- work10.orig/drivers/pnp/interface.c	2008-06-17 12:42:07.000000000 -0600
++++ work10/drivers/pnp/interface.c	2008-06-17 12:43:03.000000000 -0600
+@@ -90,6 +90,8 @@ static void pnp_print_irq(pnp_info_buffe
+ 		pnp_printf(buffer, " High-Level");
+ 	if (irq->flags & IORESOURCE_IRQ_LOWLEVEL)
+ 		pnp_printf(buffer, " Low-Level");
++	if (irq->flags & IORESOURCE_IRQ_OPTIONAL)
++		pnp_printf(buffer, " (optional)");
+ 	pnp_printf(buffer, "\n");
+ }
+ 
 
 -- 
