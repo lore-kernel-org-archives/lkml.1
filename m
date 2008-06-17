@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754108AbYFQVmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759592AbYFQVme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754108AbYFQVmS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 17:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755652AbYFQVmI
+	id S1759592AbYFQVme (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 17:42:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758527AbYFQVmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 17:42:08 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:56463 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754555AbYFQVmH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 17:42:07 -0400
-Message-ID: <48582FAB.1020402@firstfloor.org>
-Date: Tue, 17 Jun 2008 23:42:03 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Tue, 17 Jun 2008 17:42:20 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:45344 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759612AbYFQVmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 17:42:19 -0400
+Date: Wed, 18 Jun 2008 00:40:52 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Miloslav Semler <majkls@tiscali.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Is 2.6.16.x dead?
+Message-ID: <20080617214052.GB25911@cs181133002.pp.htv.fi>
+References: <4857F344.4050709@tiscali.cz>
 MIME-Version: 1.0
-To: Al Viro <viro@ZenIV.linux.org.uk>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Bron Gondwana <brong@fastmail.fm>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rob Mueller <robm@fastmail.fm>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: BUG: mmapfile/writev spurious zero bytes (x86_64/not i386,	bisected,
- reproducable)
-References: <1213682410.13174.1258837181@webmail.messagingengine.com> <1213682570.13708.1258839317@webmail.messagingengine.com> <alpine.LFD.1.10.0806170947380.25099@woody.linux-foundation.org> <alpine.LFD.1.10.0806171041560.25099@woody.linux-foundation.org> <alpine.LFD.1.10.0806171309130.2981@woody.linux-foundation.org> <alpine.LFD.1.10.0806171331460.2908@woody.linux-foundation.org> <alpine.LFD.1.10.0806171356320.2908@woody.linux-foundation.org> <485829A1.4020705@firstfloor.org> <alpine.LFD.1.10.0806171421100.2907@woody.linux-foundation.org> <20080617213618.GL28946@ZenIV.linux.org.uk>
-In-Reply-To: <20080617213618.GL28946@ZenIV.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4857F344.4050709@tiscali.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:
-> On Tue, Jun 17, 2008 at 02:24:39PM -0700, Linus Torvalds wrote:
-> 
->> The whole *and*only* reason for copy_to/from_user() existing AT ALL is 
->> exactly the fact that the source or destination access can fault. 
-> 
-> Erm...  The reason for copy_to_user() existing is that dereferencing
-> a user-supplied address in the kernel does not have to access any
-> memory reachable in user mode, regardless of any faults. 
+On Tue, Jun 17, 2008 at 07:24:20PM +0200, Miloslav Semler wrote:
+> Hello,
 
-Well on x86 it is reachable, so it only handles faults.
+Hi Miloslav,
 
-> WTF are you
-> guys talking about?
+> I would like to know if is 2.6.16.x stable tree dead, or is it still
+> maintained?
 
-Linus seems to think that copy_to_user() should have
-copy_in_user semantics(). It happens to be in some cases (when string instructions
-are used), but not for the unrolled case.
+apologies that the 2.6.16 tree slipped too low to my TODO list.
 
-What seems also confusing him is that x86-64 copy_from/to_user use a shared
-subfunction. The trick that this subfunction uses is to assume that
-either the destination faults or the source, but never both. It's legal
-because the caller should never pass in a faulting source for copy to
-or a faulting destination for copy from.
+I'm going since a few days through the backlog and will update it soon.
 
-Actually they handle it, but the return value is not correct.
+> M.S.
 
-Now he "fixed" copy_to_user to return a kind of correct return value
-for source faults, but it'll of course break copy_from_user()'s return value.
+cu
+Adrian
 
-It's still unclear why his patch fixes the test case. The caller should
-be using copy_in_user perhaps? Or is it just buggy by passing something
-unmapped to copy_to_user?
+-- 
 
--Andi
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
