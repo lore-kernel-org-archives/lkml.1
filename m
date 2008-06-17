@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbYFQAqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbYFQA5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754813AbYFQAqP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 20:46:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbYFQAp7
+	id S1754567AbYFQA5m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 20:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbYFQA5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 20:45:59 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:47233 "EHLO smtps.tip.net.au"
+	Mon, 16 Jun 2008 20:57:31 -0400
+Received: from mga11.intel.com ([192.55.52.93]:5499 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752011AbYFQAp6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 20:45:58 -0400
-Date: Tue, 17 Jun 2008 10:45:46 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 3/4] ide-pmac: add ->init_dev method (take 2)
-Message-Id: <20080617104546.3b4535c9.sfr@canb.auug.org.au>
-In-Reply-To: <200806162124.48029.bzolnier@gmail.com>
-References: <200806162124.48029.bzolnier@gmail.com>
-X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.10; i486-pc-linux-gnu)
+	id S1750911AbYFQA5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 20:57:30 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,655,1204531200"; 
+   d="scan'208";a="578651053"
+Subject: Re: [PATCH 4/8] x86 boot: allow overlapping ebda and efi memmap
+	memory ranges
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Paul Jackson <pj@sgi.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, mingo@elte.hu, tglx@linutronix.de,
+       yhlu.kernel@gmail.com, steiner@sgi.com, travis@sgi.com,
+       linux-kernel@vger.kernel.org, andi@firstfloor.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20080616130503.1a3a72dc.pj@sgi.com>
+References: <20080616062945.14597.78009.sendpatchset@polaris-admin.engr.sgi.com>
+	 <20080616063001.14597.96170.sendpatchset@polaris-admin.engr.sgi.com>
+	 <1213600062.11185.13.camel@caritas-dev.intel.com>
+	 <20080616032457.718f4d87.pj@sgi.com>
+	 <1213606435.12968.14.camel@caritas-dev.intel.com>
+	 <48568B56.7060307@zytor.com> <20080616113806.2ff4c1a4.pj@sgi.com>
+	 <48569D62.9050107@zytor.com> <20080616123721.bb9195e6.pj@sgi.com>
+	 <4856A6F9.3090605@zytor.com>  <20080616130503.1a3a72dc.pj@sgi.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 17 Jun 2008 09:00:14 +0800
+Message-Id: <1213664414.17772.0.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__17_Jun_2008_10_45_46_+1000_mEKqAjB4sr8s1P3S"
+X-Mailer: Evolution 2.22.1 
+X-OriginalArrivalTime: 17 Jun 2008 00:57:14.0026 (UTC) FILETIME=[14B388A0:01C8D015]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__17_Jun_2008_10_45_46_+1000_mEKqAjB4sr8s1P3S
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2008-06-16 at 13:05 -0500, Paul Jackson wrote:
+[...]
+> Huang - would you agree to this safety reservation of the ebda area
+> even on EFI enabled systems?
 
-Hi Bart,
+I am OK with this.
 
-On Mon, 16 Jun 2008 21:24:47 +0200 Bartlomiej Zolnierkiewicz <bzolnier@gmai=
-l.com> wrote:
->
-> +static void pmac_ide_init_dev(ide_drive_t *drive)
-> +{
-> +	ide_hwif_t *hwif =3D drive->hwif;
-> +	pmac_ide_hwif_t *pmif =3D
-> +		(pmac_ide_hwif_t *)dev_get_drvdata(hwif->gendev.parent);
-> +
-> +	if (pmif->mediabay) {
-> +#ifdef CONFIG_PMAC_MEDIABAY
-> +		if (check_media_bay(np->parent, MB_CD) =3D=3D -ENODEV)
-                                    ^^
-"np" doesn't exist here.
+Best Regards,
+Huang Ying
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__17_Jun_2008_10_45_46_+1000_mEKqAjB4sr8s1P3S
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhXCToACgkQTgG2atn1QN/l+wCfSiOoVrIZSyAWkFDJmFUOT2oV
-VgwAn0SPKJimmSieWWvfornqd2sVq5SK
-=77XE
------END PGP SIGNATURE-----
-
---Signature=_Tue__17_Jun_2008_10_45_46_+1000_mEKqAjB4sr8s1P3S--
