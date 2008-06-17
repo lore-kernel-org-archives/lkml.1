@@ -1,81 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762657AbYFQXLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761925AbYFQXMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762657AbYFQXLn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 19:11:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760858AbYFQXBE
+	id S1761925AbYFQXMA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 19:12:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761536AbYFQXCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 19:01:04 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:8413 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760537AbYFQXAG (ORCPT
+	Tue, 17 Jun 2008 19:02:40 -0400
+Received: from trinity.fluff.org ([89.145.97.151]:46954 "EHLO
+	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761528AbYFQXCi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 19:00:06 -0400
-Message-Id: <20080617225912.012910968@ldl.fc.hp.com>
-References: <20080617225823.045233728@ldl.fc.hp.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 17 Jun 2008 16:58:44 -0600
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org, Rene Herman <rene.herman@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: Adam Belay <ambx1@neo.rr.com>
-Cc: Adam M Belay <abelay@mit.edu>
-Cc: Li Shaohua <shaohua.li@intel.com>
-Cc: Matthieu Castet <castet.matthieu@free.fr>
-Cc: Thomas Renninger <trenn@suse.de>
-Cc: Rene Herman <rene.herman@keyaccess.nl>
-Cc: Jaroslav Kysela <perex@perex.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Takashi Iwai <tiwai@suse.de>
-Cc: Jiri Slaby <jirislaby@gmail.com>
-Subject: [patch 21/28] PNPACPI: ignore _PRS interrupt numbers larger than PNP_IRQ_NR
-Content-Disposition: inline; filename=pnpacpi-extended-irq-option
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Tue, 17 Jun 2008 19:02:38 -0400
+Date: Wed, 18 Jun 2008 00:02:33 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Pierre Ossman <drzeus@drzeus.cx>
+Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
+       Harald Welte <laforge@openmoko.org>, Thomas Kleffel <tk@maintech.de>,
+       Roman Moravcik <roman.moravcik@gmail.com>
+Subject: Re: [patch 01/15] MMC: S3C24XX MMC/SD driver. From: Thomas Kleffel <tk@maintech.de>
+Message-ID: <20080617230233.GA10351@trinity.fluff.org>
+References: <20080606155117.074799346@fluff.org.uk> <20080606155524.699256747@fluff.org.uk> <20080614181851.01849d03@mjolnir.drzeus.cx>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080614181851.01849d03@mjolnir.drzeus.cx>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.9i
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ACPI Extended Interrupt Descriptors can encode 32-bit interrupt
-numbers, so an interrupt number may exceed the size of the bitmap
-we use to track possible IRQ settings.
+On Sat, Jun 14, 2008 at 06:18:51PM +0200, Pierre Ossman wrote:
+> On Fri, 06 Jun 2008 16:51:18 +0100
+> Ben Dooks <ben-linux@fluff.org> wrote:
+> 
+> > +#include <linux/mmc/mmc.h>
+> 
+> You don't need this anymore.
 
-To avoid corrupting memory, complain and ignore too-large interrupt
-numbers.
-
-There's similar code in pnpacpi_parse_irq_option(), but I didn't
-change that because the small IRQ descriptor can only encode
-IRQs 0-15, which do not exceed bitmap size.
-
-In the future, we could handle IRQ numbers greater than PNP_IRQ_NR
-by replacing the bitmap with a table or list.
-
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Acked-by: Rene Herman <rene.herman@gmail.com>
-
-Index: work14/drivers/pnp/pnpacpi/rsparser.c
-===================================================================
---- work14.orig/drivers/pnp/pnpacpi/rsparser.c	2008-06-17 15:52:27.000000000 -0600
-+++ work14/drivers/pnp/pnpacpi/rsparser.c	2008-06-17 15:52:29.000000000 -0600
-@@ -435,9 +435,16 @@ static __init void pnpacpi_parse_irq_opt
- 		return;
+right, done in patch #2
  
- 	bitmap_zero(map.bits, PNP_IRQ_NR);
--	for (i = 0; i < p->interrupt_count; i++)
--		if (p->interrupts[i])
--			__set_bit(p->interrupts[i], map.bits);
-+	for (i = 0; i < p->interrupt_count; i++) {
-+		if (p->interrupts[i]) {
-+			if (p->interrupts[i] < PNP_IRQ_NR)
-+				__set_bit(p->interrupts[i], map.bits);
-+			else
-+				dev_err(&dev->dev, "ignoring IRQ %d option "
-+					"(too large for %d entry bitmap)\n",
-+					p->interrupts[i], PNP_IRQ_NR);
-+		}
-+	}
+> > +	//if(cmd->flags & MMC_RSP_MAYFAIL) debug_as_failure = 0;
+> 
+> Please remove all the dead code.
+
+removed in patch #2
+
+> > +	if (mrq->data->error == MMC_ERR_NONE) {
+
+ok, i've done:
+
+MMC_ERR_NONE	=> 0
+MMC_ERR_DMA	=> EINVAL
+MMC_ERR_TIMEOUT	=> ETIMEDOUT
+MMC_ERR_BADCRC	=> EILSEQ
+MMC_ERR_FIFO	=> EILSEQ
  
- 	flags = irq_flags(p->triggering, p->polarity, p->sharable);
- 	pnp_register_irq_resource(dev, option, &map, flags);
+> And rebase against HEAD. MMC_ERR_* are long gone.
+
+right, will try and build and test as soon as possible.
+ 
+> Also, please test using the mmc_test driver available in HEAD. A proper
+> driver should pass all those tests (or possibly mark a few as
+> unsupported if the hardware is utterly incapable of handling those
+> requests).
+
+Thanks, I'll repost v3 when this is done.
 
 -- 
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
+
