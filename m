@@ -1,107 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759277AbYFQP1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759130AbYFQPbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759277AbYFQP1P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 11:27:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757982AbYFQP1A
+	id S1759130AbYFQPbu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 11:31:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757381AbYFQPbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 11:27:00 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:61059 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757381AbYFQP07 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 11:26:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ZgZZPjCYfs0rBspK7Y82/d2u5tiwIuEUC5mD1XXuGRPzRh0xw4x/aAp+LqmR1qmjW6
-         bStFFZXqhq84LB0EHZcXH+NWnb4tgXtDrUJC6qEc3yUsHzj1pmJ1uDM5RPkC2zLzKrlY
-         abgbwdaOIhnoJ5rzlgxgklHp5Ao0OIDPXNipI=
-Message-ID: <85e7c2fc0806170826r66ea6f52nccb1f5b3edf1eda@mail.gmail.com>
-Date: Tue, 17 Jun 2008 23:26:56 +0800
-From: "Bob Zhang" <zhanglinbao@gmail.com>
-To: "Jared Hulbert" <jaredeh@gmail.com>
-Subject: Re: Does anyone run AXFS in 2.4 version of kernel ? I am trying my best to apply AXFS patches into 2.4.18
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <85e7c2fc0806170757t66a1167m9683fd4ad1c36f71@mail.gmail.com>
+	Tue, 17 Jun 2008 11:31:43 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36342 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756833AbYFQPbm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 11:31:42 -0400
+Date: Tue, 17 Jun 2008 11:24:50 -0400
+From: Dave Jones <davej@redhat.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: 2.6.26-rc6-git2: Reported regressions from 2.6.25
+Message-ID: <20080617152450.GB8063@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	"Maciej W. Rozycki" <macro@linux-mips.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Adrian Bunk <bunk@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Natalie Protasevich <protasnb@gmail.com>,
+	"David S. Miller" <davem@davemloft.net>
+References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik> <alpine.LFD.1.10.0806141423500.2949@woody.linux-foundation.org> <Pine.LNX.4.55.0806142249090.3771@cliff.in.clinika.pl> <alpine.LFD.1.10.0806141654280.2949@woody.linux-foundation.org> <Pine.LNX.4.55.0806160001430.11995@cliff.in.clinika.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <85e7c2fc0805090919v613fb823m8dd979b8cd959889@mail.gmail.com>
-	 <6934efce0805120923v636d2dbjb062d33fb861f5a2@mail.gmail.com>
-	 <85e7c2fc0805131746k5284d66dj7cfac5f9138186e2@mail.gmail.com>
-	 <6934efce0805131801s633a1692ha8914a76173c2c80@mail.gmail.com>
-	 <85e7c2fc0805190842v6ee5f4f3jef7790b0fa459a21@mail.gmail.com>
-	 <85e7c2fc0806160720v510a565id709ee782851169d@mail.gmail.com>
-	 <85e7c2fc0806170757t66a1167m9683fd4ad1c36f71@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.55.0806160001430.11995@cliff.in.clinika.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Following is what I have known about AXFS implement .If I am not
-right, please Jared Hulbert cto correct what I have said.
+On Mon, Jun 16, 2008 at 12:31:52AM +0100, Maciej W. Rozycki wrote:
+ > On Sat, 14 Jun 2008, Linus Torvalds wrote:
+ > 
+ > > >  From what you have written it looks the dependency should actually be:
+ > > > 
+ > > > 	depends on !M386 && !M486 && !M586 && !M586TSC && !M586MMX
+ > > > 
+ > > > as none of the pre-Pentium-Pro processors had the PAE feature (I am not
+ > > > sure about non-Intel implementations, so the case of M586 would have to be
+ > > > investigated).
+ > > 
+ > > Yes, it's the non-intel ones that would keep me from saying !M586.
+ > > 
+ > > For intel, PAE was a PPro feature (at least officially, as you point out), 
+ > > but I do not know about various other manufacturers. From personal 
+ > > experience, the line between Pentium and PPro features doesn't tend to be 
+ > > totally black-and-white (although I suspect that when it comes to PAE it 
+ > > _may_ be).
+ > 
+ >  Well, PAE is quite a significant block to implement and Intel kept it
+ > hidden until they published the long awaited PentiumPro manual sometime in
+ > 1996.  I am fairly sure the K5 did not implement it (it may have had PSE 
+ > and VME, especially in the later revisions) and Google does not show up 
+ > any Cyrix processors with PAE.  I may have a K5 manual somewhere, so I can 
+ > see if I can verify it.
 
+Even the K6 didn't have PAE.  The Athlon was AMD's first CPU that had it.
+ 
+ >  Please also note these processors tried to compete with Intel on the
+ > desktop market where 4GB of RAM was completely unreasonable in late 90s.  
+ > I think unless someone can recall a counter-example, it can be safely
+ > assumed these chips did not have the PAE.  We could try to extend the
+ > dependency and see if anybody screams.
+ 
+I agree.  To the best of my knowledge (and looking through output of
+x86info from lots of old CPUs), Intel had the only CPUs with PAE in
+that era.
 
-Honestly speaking , AXFS orgnization is pure complex , and no any
-valuable document to help to understand the source code . if you want
-to make clear what happned ,it is not easy .
+	Dave
 
-I have spent over 2 days to read the mkfs.axfs.c , this is what I have known .
----
-For axfs super block ,the best valuable infomation is some offset of regions ,
-axfs image has many regions , such as node_type regions , node_index
-regions,especially X
-IP region,Compressed region and Byte Aligned region which are the most
-important for us.
-
-Important info is that once you have read the superblock into a buffer
-head , you can get all the offset info of all regions. thus , you can
-get the address of regions in the file image .
-once you get the region structure , you can get the "region->fsoffset"
-and "region->virt_addr" , the "region->fsoffset" present that the real
-location region in the image .
-For example , for XIP region , you can get all the pages of data
-through "xip_region->fsoffset" . and then through node_index, you can
-get responding pages.
-
-Another key parameter is "virt_addr" ,
-
-++++
-
-First ,pages are of XIP or Compressed is decided by mkfs.axfs -i xml.txt
-if no the xml.txt provided , mkfs.axfs should compress all the files
-in the image by default.
-
-in the main() of mkfs.axfs.c
-the axfs will compute the number of files , there are some global
-variables to record these .
-in function named  parese_directory() it will generate many entries
-reponding with these files ,and at last , it will call "is_xipfile()"
-function to call "set_page_state" function to set some files and pages
-to be XIP if these names occur in the xml file as parameter of
-mkfs.axfs -i .
-
-In fact , for XIP files and pages , axfs handling is simple , for
-example , I want to set rootfs/init 's 0~4095 bytes to be XIP  ,the
-length of block of data must be aligned with PAGE_SIZE .
-you can set the
-<chunk>
-  <size>4096</size>
-  <offset>0</offset>
-</chunk>
-
-In fact , the data of XIP and that of compressed will be stored
-respectively different regions .
-for example , a file size is large , you know ,for example ,3MB .
-it will have many pages of data , only the XIP pages will be stored
-into XIP region
-node_index[node_count] = xip_rd.size/PAGE_SIZE . THIS INDEX is valid for XIP
-
-For every page , it will have node_index. this node_index will be
-added when parsing the root directory . that is also said that, every
-page has its own unique index number . Future , in kernel ,the axfs
-code will use it. the kernel axfs code will use some macros to get
-detailed infomation about a page , for example , this page is of XIP
-or Compressed .
+-- 
+http://www.codemonkey.org.uk
