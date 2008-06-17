@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759863AbYFQVwJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759500AbYFQVzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759863AbYFQVwJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 17:52:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755652AbYFQVvx
+	id S1759500AbYFQVzp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 17:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757488AbYFQVzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 17:51:53 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34603
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753391AbYFQVvw (ORCPT
+	Tue, 17 Jun 2008 17:55:38 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39736 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755652AbYFQVzh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 17:51:52 -0400
-Date: Tue, 17 Jun 2008 14:51:53 -0700 (PDT)
-Message-Id: <20080617.145153.229833994.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: arjan@linux.intel.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, linville@tuxdriver.com, davej@redhat.com,
-       gregkh@suse.de
-Subject: Re: Oops report for the week preceding June 16th, 2008
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080617153356.GA3510@elte.hu>
-References: <20080617092023.GA20621@elte.hu>
-	<20080617.022652.76635616.davem@davemloft.net>
-	<20080617153356.GA3510@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 17 Jun 2008 17:55:37 -0400
+Date: Tue, 17 Jun 2008 22:38:09 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Nameer Yarkon" <nameer.yarkon@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Serial problem and request for guidance..
+Message-ID: <20080617223809.56d65635@lxorguk.ukuu.org.uk>
+In-Reply-To: <bec9a5870806171433gf74e251m6742e066960d6ab4@mail.gmail.com>
+References: <bec9a5870806160514w79448b53ya622f4752253ae5b@mail.gmail.com>
+	<20080616130353.1b80fdd0@lxorguk.ukuu.org.uk>
+	<bec9a5870806171433gf74e251m6742e066960d6ab4@mail.gmail.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 17 Jun 2008 17:33:56 +0200
+> on ARM (OMAP) with an old 2.6.14 kernel, but only when I enable the
+> debug macros of the line discipline code (hci_h4, hci_ldisc,..).
+> When a big chunk of data arrives, more than
+> half of it is lost. even on 115200. But when I turn of the debug macros (BT_DBG
 
-> v2.6.24 was no doubt a huge step in the right direction but it came too 
-> late and we are still suffering from the fallout today as we have not 
-> reached test cycle equilibrium yet: by the time mainline gets the 
-> patches a new large batch comes up, invalidating much of mainline's role 
-> and forcing distros to gamble with (much untested and thus detached from 
-> reality) experimental branches.
+Not a suprise. The old buffering would struggle in this case.
+
+> macros which are simply a bunch of prinks) the problem disappears. So I suspect
+> there are some nasty timing issues which lead to data loss.
 > 
-> That's my main point: when we mess up and dont merge OSS driver code 
-> that was out there in time - and we messed up big time with wireless - 
-> we should admit the screwup and swallow the bitter pill.
+> I encountered similar problems last year even on a PC, with pre 2.6.21 kernels
+> (around 2.6.19 or even earlier IIRC) but it was all gone with 2.6.21 and 2.6.22.
 
-Your point seems to be that, even though we've acknowledged and
-entirely corrected the problem now, you still will whack us over the
-head and complain because it took in your opinion too long to get to
-that point.
+We rewrote the tty buffering around the point it magically started
+working so that would fit my suspicion.
 
-How nice.  That makes the wireless folks feel great I imagine.
-
-You also have no idea what infrastructure or other invasive wireless
-subsystem changes might have been necessary to merge in some of those
-drivers.  Of course, that doesn't suit your goal of making the
-wireless folks look like a bunch of incompetant twits, so it doesn't
-surprise me that you haven't investigated any such facts.
-
-It is impossible, therefore, to please you since we cannot change the
-past.  So all we can do at this point is continue doing the right
-thing and completely ignore your pointless whines.
-
-In this context your complaints are beyond unfair and beyond
-pointless, therefore you're finally in my kill file now, have a nice
-day Ingo.
+Alan
