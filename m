@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbYFQAmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbYFQAqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754715AbYFQAmd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Jun 2008 20:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYFQAmX
+	id S1754813AbYFQAqP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Jun 2008 20:46:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbYFQAp7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Jun 2008 20:42:23 -0400
-Received: from www262.sakura.ne.jp ([202.181.97.72]:53368 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750956AbYFQAmW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Jun 2008 20:42:22 -0400
-Message-Id: <200806170042.m5H0gJAR051370@www262.sakura.ne.jp>
-Subject: Re: [2.6.22? VMware?] BUG() at sysfs_follow_link+0x129/0x260
-From: penguin-kernel@i-love.sakura.ne.jp
-To: akataria@vmware.com
-Cc: dhecht@vmware.com, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-2022-JP"
-Content-Transfer-Encoding: 7bit
-Date: Tue, 17 Jun 2008 09:42:19 +0900
-References: <200806160337.m5G3blQp087139@www262.sakura.ne.jp> <1213658842.20705.36.camel@promb-2n-dhcp368.eng.vmware.com>
-In-Reply-To: <1213658842.20705.36.camel@promb-2n-dhcp368.eng.vmware.com>
+	Mon, 16 Jun 2008 20:45:59 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:47233 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752011AbYFQAp6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Jun 2008 20:45:58 -0400
+Date: Tue, 17 Jun 2008 10:45:46 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 3/4] ide-pmac: add ->init_dev method (take 2)
+Message-Id: <20080617104546.3b4535c9.sfr@canb.auug.org.au>
+In-Reply-To: <200806162124.48029.bzolnier@gmail.com>
+References: <200806162124.48029.bzolnier@gmail.com>
+X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.10; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__17_Jun_2008_10_45_46_+1000_mEKqAjB4sr8s1P3S"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+--Signature=_Tue__17_Jun_2008_10_45_46_+1000_mEKqAjB4sr8s1P3S
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Alok Kataria wrote:
-> Is this bug reproducible ?
-Yes.
+Hi Bart,
 
-> Does this oops happen while the vmware-install script is still
-> executing ?
-It happened while /usr/bin/vmware-config-tools.pl is running.
-I uploaded screenshots at the moment of oops.
-http://I-love.SAKURA.ne.jp/tmp/oops-1.png
-http://I-love.SAKURA.ne.jp/tmp/oops-2.png
-http://I-love.SAKURA.ne.jp/tmp/oops-3.png
+On Mon, 16 Jun 2008 21:24:47 +0200 Bartlomiej Zolnierkiewicz <bzolnier@gmai=
+l.com> wrote:
+>
+> +static void pmac_ide_init_dev(ide_drive_t *drive)
+> +{
+> +	ide_hwif_t *hwif =3D drive->hwif;
+> +	pmac_ide_hwif_t *pmif =3D
+> +		(pmac_ide_hwif_t *)dev_get_drvdata(hwif->gendev.parent);
+> +
+> +	if (pmif->mediabay) {
+> +#ifdef CONFIG_PMAC_MEDIABAY
+> +		if (check_media_bay(np->parent, MB_CD) =3D=3D -ENODEV)
+                                    ^^
+"np" doesn't exist here.
 
-> Or does it happen after the installation/upgrade is complete ?
-> If its the latter case, Can you please determine what line in the perl
-> script is triggering this oops ?
-The process who triggered this oops is "slabinfo".
-So I tried "strace slabinfo" while I am running /usr/bin/vmware-config-tools.pl ,
-and I found that the oops is happening while trying to read hgfsReqCache entry.
-http://I-love.SAKURA.ne.jp/tmp/oops-4.png
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Here is my environment:
+--Signature=_Tue__17_Jun_2008_10_45_46_+1000_mEKqAjB4sr8s1P3S
+Content-Type: application/pgp-signature
 
- Host OS:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-   CentOS 5.1 x86_64 on ThinkPad X60
-   VMware workstation 6.0.4
+iEYEARECAAYFAkhXCToACgkQTgG2atn1QN/l+wCfSiOoVrIZSyAWkFDJmFUOT2oV
+VgwAn0SPKJimmSieWWvfornqd2sVq5SK
+=77XE
+-----END PGP SIGNATURE-----
 
- Guest OS:
-
-   Ubuntu 7.10 i386
-   Using NAT's DHCP for networking.
-
-Regards.
+--Signature=_Tue__17_Jun_2008_10_45_46_+1000_mEKqAjB4sr8s1P3S--
