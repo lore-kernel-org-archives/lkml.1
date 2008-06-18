@@ -1,99 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759806AbYFRDAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758317AbYFRDO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759806AbYFRDAk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 23:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756969AbYFRDAa
+	id S1758317AbYFRDO1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 23:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbYFRDOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 23:00:30 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:51884 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756890AbYFRDA3 (ORCPT
+	Tue, 17 Jun 2008 23:14:18 -0400
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:57902 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754079AbYFRDOR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 23:00:29 -0400
-Date: Wed, 18 Jun 2008 11:59:25 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-Subject: Re: [PATCH][RFC] fix kernel BUG at mm/migrate.c:719! in
- 2.6.26-rc5-mm3
-Message-Id: <20080618115925.9580aef0.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <1213724798.8707.41.camel@lts-notebook>
-References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
-	<20080617163501.7cf411ee.nishimura@mxp.nes.nec.co.jp>
-	<1213724798.8707.41.camel@lts-notebook>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Jun 2008 23:14:17 -0400
+Date: Wed, 18 Jun 2008 13:14:06 +1000
+From: Bron Gondwana <brong@fastmail.fm>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Bron Gondwana <brong@fastmail.fm>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rob Mueller <robm@fastmail.fm>, Andi Kleen <andi@firstfloor.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: BUG: mmapfile/writev spurious zero bytes (x86_64/not i386,
+	bisected, reproducable)
+Message-ID: <20080618031406.GA4326@brong.net>
+References: <1213682410.13174.1258837181@webmail.messagingengine.com> <1213682570.13708.1258839317@webmail.messagingengine.com> <alpine.LFD.1.10.0806170947380.25099@woody.linux-foundation.org> <alpine.LFD.1.10.0806171041560.25099@woody.linux-foundation.org> <alpine.LFD.1.10.0806171309130.2981@woody.linux-foundation.org> <alpine.LFD.1.10.0806171331460.2908@woody.linux-foundation.org> <alpine.LFD.1.10.0806171356320.2908@woody.linux-foundation.org> <alpine.LFD.1.10.0806171415060.2907@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0806171415060.2907@woody.linux-foundation.org>
+Organization: brong.net
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > @@ -232,6 +232,7 @@ void migration_entry_wait(struct mm_stru
-> >  	swp_entry_t entry;
-> >  	struct page *page;
-> >  
-> > +retry:
-> >  	ptep = pte_offset_map_lock(mm, pmd, address, &ptl);
-> >  	pte = *ptep;
-> >  	if (!is_swap_pte(pte))
-> > @@ -243,11 +244,20 @@ void migration_entry_wait(struct mm_stru
-> >  
-> >  	page = migration_entry_to_page(entry);
-> >  
-> > -	get_page(page);
-> > -	pte_unmap_unlock(ptep, ptl);
-> > -	wait_on_page_locked(page);
-> > -	put_page(page);
-> > -	return;
-> > +	/*
-> > +	 * page count might be set to zero by page_freeze_refs()
-> > +	 * in migrate_page_move_mapping().
-> > +	 */
-> > +	if (get_page_unless_zero(page)) {
-> > +		pte_unmap_unlock(ptep, ptl);
-> > +		wait_on_page_locked(page);
-> > +		put_page(page);
-> > +		return;
-> > +	} else {
-> > +		pte_unmap_unlock(ptep, ptl);
-> > +		goto retry;
-> > +	}
-> > +
+On Tue, Jun 17, 2008 at 02:20:49PM -0700, Linus Torvalds wrote:
+> On Tue, 17 Jun 2008, Linus Torvalds wrote:
+> > 
+> > Hmm. Something like this *may* salvage it.
+> > 
+> > Untested, so far (I'll reboot and test soon enough), but even if it fixes 
+> > things, it's not really very good. 
 > 
-> I'm not sure about this part.  If it IS needed, I think it would be
-> needed independently of the unevictable/putback_lru_page() changes, as
-> this race must have already existed.
+> Ok, so I just rebooted with this, and it does indeed fix the bug.
 > 
-> However, unmap_and_move() replaced the migration entries with bona fide
-> pte's referencing the new page before freeing the old page, so I think
-> we're OK without this change.
+> I'd be happier with a more complete fix (ie being byte-accurate and 
+> actually doing the partial copy when it hits a fault in the middle), but 
+> this seems to be the minimal fix, and at least fixes the totally bogus 
+> return values from the x86-64 __copy_user*() functions.
 > 
+> Not that I checked that I got _all_ cases correct (and maybe there are 
+> other versions of __copy_user that I missed entirely), but Bron's 
+> test-case at least seems to work properly for me now.
+> 
+> Bron? If you have a more complete test-suite (ie the real-world case that 
+> made you find this), it would be good to verify the whole thing. 
 
-Without this part, I can easily get VM_BUG_ON in get_page,
-even when processes in cpusets are only bash.
+Ok - I pulled the latest linus-2.6 git, and discovered 
+the patch was already in there, so I just built and
+rebooted (git 952f4a0a9b27e6dbd5d32e330b3f609ebfa0b061).
 
----
-kernel BUG at include/linux/mm.h:297!
- :
-Call Trace:
- [<ffffffff80280d82>] ? handle_mm_fault+0x3e5/0x782
- [<ffffffff8048c8bf>] ? do_page_fault+0x3d0/0x7a7
- [<ffffffff80263ed0>] ? audit_syscall_exit+0x2e4/0x303
- [<ffffffff8048a989>] ? error_exit+0x0/0x51
- Code: b8 00 00 00 00 00 e2 ff ff 48 8d 1c 02 48 8b 13 f6 c
-2 01 75 04 0f 0b eb fe 80 e6 40 48 89 d8 74 04 48 8b 43 10 83 78 08 00 75 04 <0f> 0b eb fe
- f0 ff 40 08 fe 45 00 f6 03 01 74 0a 31 f6 48 89 df
- RIP  [<ffffffff8029c309>] migration_entry_wait+0xcb/0xfa
- RSP <ffff81062cc6fe58>
----
+Confirmed - fixed in both the test code and the cyr_dbtool 
+test case I was using previously (I would have posted that 
+instead, but building cyrus is a bit of pain.  You need 
+bdb and sasl and all sorts of extraneous crap - and 
+cyrusdb_skiplist.c depends on about half of Cyrus' 
+infrastructure, so I couldn't just pull it out by itself)
 
-I agree that this part should be fixed independently, and
-Kamezawa-san has already posted a patch for this.
+For my sins, I appear to be becoming the world expert on 
+that particular file.  I've debugged skiplist bugs many 
+times over, and completely rewritten the locking code.  
+It really does some pretty evil things - the memory accesses
+look something like this:
+
+[file...................]
+[mmap^....^.^........^^..................................]
+[file...................++++++++++++]
+[mmap^....^.^........^^.^^ ^      ^^.....................]
+
+Where (^) is the bits that get accessed.  All reads are via
+the mmap, all writes are done with retry_write or 
+retry_writev (Cyrus library functions that keep hammering
+until all the bytes are written)
+
+I was suspecting as early as Friday night (we've been 
+debugging this one for a few days now!) that it was page 
+break related, because the bug only seemed to be appearing
+on seen databases with really long seen lists (they're in 
+ranged integer format like 1:5,7:9,12,14:22,24:...).  
+
+It didn't help that at first we were only finding out about
+cases where the corruption hit exactly on the "navigational
+components", hence breaking the skiplist logic.  And then 
+the backpointer writes would scribble all over the corrupt 
+area as well, so that made it even stranger to debug!
 
 
-Thanks,
-Daisuke Nishimura.
+OK - so I'll report this issue to the Cyrus mailing list.
+Warn people not to run on kernels 2.6.23 -> 2.6.25.7 with
+x86_64 kernels.  At least not without the skanky little
+patch that I'm planning to post:
+
+int magic = 0;
+for (i = 0; i < maplen; i++) magic ^= mapbase[i];
+
+Since I've tested that as a viable workaround!
+
+Bron.
