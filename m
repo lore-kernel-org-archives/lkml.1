@@ -1,200 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755725AbYFRHaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756526AbYFRHha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755725AbYFRHaa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 03:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752343AbYFRHaU
+	id S1756526AbYFRHha (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 03:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbYFRHhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 03:30:20 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:55174 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752233AbYFRHaT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 03:30:19 -0400
-Subject: Re: [PATCH/RFC] remove irqs_disabled warning from local_bh_enable
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Michael Buesch <mb@bu3sch.de>,
-       David Ellingsworth <david@identd.dyndns.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <alpine.LFD.1.10.0806171648330.2907@woody.linux-foundation.org>
-References: <1213739834.3803.137.camel@johannes.berg>
-	 <alpine.LFD.1.10.0806171648330.2907@woody.linux-foundation.org>
+	Wed, 18 Jun 2008 03:37:18 -0400
+Received: from correo.ikusi.com ([194.30.89.100]:28867 "EHLO correo.ikusi.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751356AbYFRHhR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 03:37:17 -0400
+X-Greylist: delayed 916 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Jun 2008 03:37:17 EDT
+Subject: Change console to another UART
+From: oihana <munoz.o@ikusi.es>
+To: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080617223023.GH25911@cs181133002.pp.htv.fi>
+References: <20080617223023.GH25911@cs181133002.pp.htv.fi>
 Content-Type: text/plain
-Date: Wed, 18 Jun 2008 09:29:37 +0200
-Message-Id: <1213774177.3803.164.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
+Date: Wed, 18 Jun 2008 09:21:04 +0200
+Message-Id: <1213773664.15059.26.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+X-OriginalArrivalTime: 18 Jun 2008 07:21:58.0620 (UTC) FILETIME=[FE9AC9C0:01C8D113]
+X-TM-AS-Product-Ver: SMEX-7.0.0.1433-5.5.1027-15978.002
+X-TM-AS-Result: No--4.835000-4.000000-31
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-06-17 at 16:55 -0700, Linus Torvalds wrote:
+Hello, 
 
-> > This warning has started to trigger with mac80211 because it can, under
-> > some circumstances, use spin_lock_bh() protected sections within
-> > irq-disabled sections. Is that a bug?
-> 
-> Yes, it's a bug.
+I am working with a STi7109 and mb411. The STi7109 has 4 UARTs and they
+are configured by default as follow....
+- UART0 is reserved for SC0
+- UART1 is reserved for SC1
+- UART2 is reserved for console
+- UART3 is reserved for KGDB
 
-You know, that actually makes sense to me.
+What I need is to have the Console in the UART1 because I need the UART2
+free, and I have enough with one SC (SC0). 
 
-> Why? Not because of the "spin_lock_bh()" itself, but because of the 
-> _unlock_, which does a "local_bh_enable_ip()", which in turn will check 
-> the whole "do_softirq()" if it was the last softirq_count.
+I realized that if I change on my STWorkBench the Kernel Debug
+configuration, from ttyAS0 to ttyAS1, the console comes out from the
+other serial port, but it still uses the UART2. 
 
-Yeah, that makes sense to me as well. In fact, I pondered a bit over the
-code until posting this.
+So I tried to change the configuration in the stasc.c
+(kernel/src/drivers/serial/stasc.c).
 
-> And you must not do softirq's when hard-irq's were disabled!
-> 
-> So it should in theory be ok (but perhaps a bit odd) to do something like
-> 
-> 	spin_lock_irq(&irq_lock);
-> 	..do something..
-> 	spin_lock_bh(&bh_lock);
-> 	spin_unlock_irq(&irq_lock);
-> 	.. do something else ..
-> 	spin_unlock_bh(&bh_lock);
-> 
-> where the "spin_lock_bh()" itself is in an irq-locked context - as long as 
-> the "spin_unlock_bh()" is *not*.
-> 
-> See?
-
-Well, yes, from an API POV I do see that. And it's actually what I
-thought up front. The thing that started to confuse me is that
-local_bh_enable_ip reads like this:
-
-void local_bh_enable_ip(unsigned long ip)
-{
-#ifdef CONFIG_TRACE_IRQFLAGS
-        unsigned long flags;
-
-        WARN_ON_ONCE(in_irq());
-
-        local_irq_save(flags);
-#endif
-
-[...]
-        if (unlikely(!in_interrupt() && local_softirq_pending()))
-                do_softirq();
-
-        dec_preempt_count();
-#ifdef CONFIG_TRACE_IRQFLAGS
-        local_irq_restore(flags);
-#endif
-
-So doesn't it actually run do_softirq() when interrupts are still
-disabled? If I look deeper into the code that appears to be a rather odd
-trick to avoid locking and __do_softirq will unconditionally enable
-IRQs, so I guess here's my answer...
-
-How about the patch below?
-
-johannes
-
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: clean up and comment local_bh_enable code
-
-There's no need to use local_irq_save() over local_irq_disable() in the
-local_bh_enable code since it is a bug to call it with irqs disabled and
-do_softirq will enable irqs if there is any pending work. Consolidate
-the code from local_bh_enable and ..._ip to avoid having a disconnect
-between them in the warnings they trigger that is currently there. Also
-always trigger the warning on in_irq(), not just in the trace-irqflags
-case.
-
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
----
-I made it a static inline so that runtime behaviour isn't affected by
-another function call, but that can be argued.
-
-Maybe local_bh_enable() should just be a static inline somewhere in a
-header file, that would get rid of one export_symbol as well.
-
- kernel/softirq.c |   48 +++++++++++-------------------------------------
- 1 file changed, 11 insertions(+), 37 deletions(-)
-
---- everything.orig/kernel/softirq.c	2008-06-17 23:48:25.000000000 +0200
-+++ everything/kernel/softirq.c	2008-06-18 09:13:21.000000000 +0200
-@@ -131,23 +131,17 @@ void _local_bh_enable(void)
- 
- EXPORT_SYMBOL(_local_bh_enable);
- 
--void local_bh_enable(void)
-+static inline void _local_bh_enable_ip(unsigned long ip)
- {
-+	WARN_ON_ONCE(in_irq() || irqs_disabled());
- #ifdef CONFIG_TRACE_IRQFLAGS
--	unsigned long flags;
--
--	WARN_ON_ONCE(in_irq());
--#endif
--	WARN_ON_ONCE(irqs_disabled());
--
--#ifdef CONFIG_TRACE_IRQFLAGS
--	local_irq_save(flags);
-+	local_irq_disable();
- #endif
- 	/*
- 	 * Are softirqs going to be turned on now:
- 	 */
- 	if (softirq_count() == SOFTIRQ_OFFSET)
--		trace_softirqs_on((unsigned long)__builtin_return_address(0));
-+		trace_softirqs_on(ip);
- 	/*
- 	 * Keep preemption disabled until we are done with
- 	 * softirq processing:
-@@ -159,40 +153,20 @@ void local_bh_enable(void)
- 
- 	dec_preempt_count();
- #ifdef CONFIG_TRACE_IRQFLAGS
--	local_irq_restore(flags);
-+	local_irq_enable();
- #endif
- 	preempt_check_resched();
- }
-+
-+void local_bh_enable(void)
-+{
-+	_local_bh_enable_ip((unsigned long)__builtin_return_address(0));
-+}
- EXPORT_SYMBOL(local_bh_enable);
- 
- void local_bh_enable_ip(unsigned long ip)
- {
--#ifdef CONFIG_TRACE_IRQFLAGS
--	unsigned long flags;
--
--	WARN_ON_ONCE(in_irq());
--
--	local_irq_save(flags);
--#endif
--	/*
--	 * Are softirqs going to be turned on now:
--	 */
--	if (softirq_count() == SOFTIRQ_OFFSET)
--		trace_softirqs_on(ip);
--	/*
--	 * Keep preemption disabled until we are done with
--	 * softirq processing:
-- 	 */
-- 	sub_preempt_count(SOFTIRQ_OFFSET - 1);
--
--	if (unlikely(!in_interrupt() && local_softirq_pending()))
--		do_softirq();
--
--	dec_preempt_count();
--#ifdef CONFIG_TRACE_IRQFLAGS
--	local_irq_restore(flags);
--#endif
--	preempt_check_resched();
-+	_local_bh_enable_ip(ip);
- }
- EXPORT_SYMBOL(local_bh_enable_ip);
- 
+- Original configuration for my chip and board:
+struct asc_port asc_ports[ASC_NPORTS] = {
+#if defined(CONFIG_CPU_SUBTYPE_STB7100)
+        /* UART2 */ 
+	
+	{  
+		.port	= {
+			.membase	= (void *)0xb8032000,
+			.mapbase	= 0xb8032000,
+			.iotype		= SERIAL_IO_MEM,
+			.irq		= 121,
+			.ops		= &asc_uart_ops,
+			.flags		= ASYNC_BOOT_AUTOCONF,
+			.fifosize	= FIFO_SIZE,
+			.line		= 0,
+		},
+		.pio_port	= 4, 
+		.pio_pin	= {3, 2, 4, 5},
+	} ,
+			 
+	
+	/* UART3 */
+	{   
+		.port	= {
+			.membase	= (void *)0xb8033000,
+			.mapbase	= 0xb8033000,
+			.iotype		= SERIAL_IO_MEM,
+			.irq		= 120,
+			.ops		= &asc_uart_ops,
+			.flags		= ASYNC_BOOT_AUTOCONF,
+			.fifosize	= FIFO_SIZE,
+			.line		= 1,
+		},
+		.pio_port	= 5, 
+		.pio_pin	= {0, 1, 2, 3},
+	}
+...
+...
 
 
+- My changes: I tried to change the order, to have in the first element
+the UART3 and in the second the UART2, or to have UART1 and UART2....
+and nothing seams to work. 
+
+        /* UART1 */
+	{   
+		.port	= {
+			.membase	= (void *)0xb8031000,
+			.mapbase	= 0xb8031000,
+			.iotype		= SERIAL_IO_MEM,
+			.irq		= 122,
+			.ops		= &asc_uart_ops,
+			.flags		= ASYNC_BOOT_AUTOCONF,
+			.fifosize	= FIFO_SIZE,
+			.line		= 1,
+		},
+		.pio_port	= 1, 
+		.pio_pin	= {0, 1, 4, 5},
+	},
+	
+	/* UART2 */  
+	{  
+		.port	= {
+			.membase	= (void *)0xb8032000,
+			.mapbase	= 0xb8032000,
+			.iotype		= SERIAL_IO_MEM,
+			.irq		= 121,
+			.ops		= &asc_uart_ops,
+			.flags		= ASYNC_BOOT_AUTOCONF,
+			.fifosize	= FIFO_SIZE,
+			.line		= 0,
+		},
+		.pio_port	= 4, 
+		.pio_pin	= {3, 2, 4, 5},
+	} 
+
+If the first element is the UART2, the kernel runs OK. So that I can go
+into using the minicom or ssh. In the other hand, if the UART2 is the
+second element, kernel seams if it was run (in the STWorkBench)... but
+the ethernet ping to the board tells me "Destination Host Unreachable",
+and I don't get any answer from the 3 serial points in which i
+listen... 
+
+Could someone help me please????????
+
+Thanks, 
+
+Oihana
