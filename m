@@ -1,58 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757515AbYFRWdx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756629AbYFRWi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757515AbYFRWdx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 18:33:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbYFRWdl
+	id S1756629AbYFRWi6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 18:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbYFRWit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 18:33:41 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:59508 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754823AbYFRWdk (ORCPT
+	Wed, 18 Jun 2008 18:38:49 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:14256 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752420AbYFRWis (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 18:33:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=eM4JzPyltxaKSSyF3H+thHXXrU+bPu4LGOveqsb9E9URgFNCpPE2qwvPx79/R1snVz
-         12mdqRXhzkXkX7+54Zjtb/BBZEvTi8+gnlmC6BHExmLNMS3cmbY6xoyNlbgIFEzEqiUQ
-         Di/g+oLW9MTGKoszCYGo4VkZzQxXmkj0Y0lpE=
-Message-ID: <48598D3F.4000505@gmail.com>
-Date: Thu, 19 Jun 2008 00:33:35 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Swiftdove 2.0.0.14 (X11/20080505)
+	Wed, 18 Jun 2008 18:38:48 -0400
+X-IronPort-AV: E=Sophos;i="4.27,667,1204531200"; 
+   d="scan'208";a="33048817"
+From: Roland Dreier <rdreier@cisco.com>
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org
+Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] please pull infiniband.git
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 18 Jun 2008 15:38:47 -0700
+Message-ID: <ada3anaz7uw.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Satoshi UCHIDA <s-uchida@ap.jp.nec.com>
-CC: "'Ryo Tsuruta'" <ryov@valinux.co.jp>, axboe@kernel.dk, vtaras@openvz.org,
-       containers@lists.linux-foundation.org, tom-sugawara@ap.jp.nec.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][v2][patch 0/12][CFQ-cgroup]Yet another I/O bandwidth controlling
- subsystem for CGroups based on CFQ
-References: <20080513.003316.226782406.ryov@valinux.co.jp>	<20080522.220438.226802699.ryov@valinux.co.jp>	<003701c8bc80$3a5f9ec0$af1edc40$@jp.nec.com> <20080526.114627.104044752.ryov@valinux.co.jp> <004f01c8bfed$640fa380$2c2eea80$@jp.nec.com> <483FD8E5.2080600@gmail.com> <001501c8d128$76e734e0$64b59ea0$@jp.nec.com>
-In-Reply-To: <001501c8d128$76e734e0$64b59ea0$@jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 18 Jun 2008 22:38:47.0218 (UTC) FILETIME=[1248B920:01C8D194]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satoshi UCHIDA wrote:
-> Hi, Andrea.
-> 
-> Thanks for bug reports.
-> I fix this problem.
-> 
-> This problem causes by miss of trace for children groups.
-> Please adopt and test this patch.
+Linus, please pull from
 
-Thanks Satoshi, I'll test the fix in this weekend and I'll let you know.
+    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
--Andrea
+This tree is also available from kernel.org mirrors at:
 
-> 
-> If OK, this amendment is adopted when I release new patch-set.
-> 
-> 
-> Regards,
->  Satoshi Uchida.
+    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+
+This will get a couple of small fixes:
+
+Jack Morgenstein (1):
+      IB/uverbs: Fix check of is_closed flag check in ib_uverbs_async_handler()
+
+Roland Dreier (1):
+      RDMA/nes: Fix off-by-one in nes_reg_user_mr() error path
+
+ drivers/infiniband/core/uverbs_main.c |    2 +-
+ drivers/infiniband/hw/nes/nes_verbs.c |    4 +---
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+
+
+diff --git a/drivers/infiniband/core/uverbs_main.c b/drivers/infiniband/core/uverbs_main.c
+index f806da1..caed42b 100644
+--- a/drivers/infiniband/core/uverbs_main.c
++++ b/drivers/infiniband/core/uverbs_main.c
+@@ -423,7 +423,7 @@ static void ib_uverbs_async_handler(struct ib_uverbs_file *file,
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&file->async_file->lock, flags);
+-	if (!file->async_file->is_closed) {
++	if (file->async_file->is_closed) {
+ 		spin_unlock_irqrestore(&file->async_file->lock, flags);
+ 		return;
+ 	}
+diff --git a/drivers/infiniband/hw/nes/nes_verbs.c b/drivers/infiniband/hw/nes/nes_verbs.c
+index 99b3c4a..d617da9 100644
+--- a/drivers/infiniband/hw/nes/nes_verbs.c
++++ b/drivers/infiniband/hw/nes/nes_verbs.c
+@@ -2456,10 +2456,8 @@ static struct ib_mr *nes_reg_user_mr(struct ib_pd *pd, u64 start, u64 length,
+ 						if ((page_count!=0)&&(page_count<<12)-(region->offset&(4096-1))>=region->length)
+ 							goto enough_pages;
+ 						if ((page_count&0x01FF) == 0) {
+-							if (page_count>(1024*512)) {
++							if (page_count >= 1024 * 512) {
+ 								ib_umem_release(region);
+-								pci_free_consistent(nesdev->pcidev, 4096, vpbl.pbl_vbase,
+-										vpbl.pbl_pbase);
+ 								nes_free_resource(nesadapter,
+ 										nesadapter->allocated_mrs, stag_index);
+ 								kfree(nesmr);
