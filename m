@@ -1,85 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756266AbYFRW2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbYFRWar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756266AbYFRW2Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 18:28:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753960AbYFRW2Q
+	id S1756015AbYFRWar (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 18:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbYFRWah
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 18:28:16 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:62716 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753885AbYFRW2P (ORCPT
+	Wed, 18 Jun 2008 18:30:37 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:57416 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754186AbYFRWag (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 18:28:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=l889cx9ZV9cyt+ZPfflteBn6Wl0qpeoTeWxHKUdua136u+n/kJ/6bzykSE2Wo+d8cw
-         vb7d63eGByqVuZ4Xp0HmWBElwsFOOkAkbiuW1u2PmECoN8vj4ecSYEd2v6GKDsgQ5U6A
-         zRWd9lxWdYdzlzoMilXpcss3GNIpk3j8ofGjU=
-Message-ID: <48598BFB.1040305@gmail.com>
-Date: Thu, 19 Jun 2008 00:28:11 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Swiftdove 2.0.0.14 (X11/20080505)
+	Wed, 18 Jun 2008 18:30:36 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Thu, 19 Jun 2008 00:30:27 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: backlog of firewire fixes
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.6c5fe8fdad483627@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: Carl Henrik Lunde <chlunde@ping.uio.no>
-CC: balbir@linux.vnet.ibm.com, menage@google.com, matt@bluehost.com,
-       roberto@unbit.it, randy.dunlap@oracle.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] i/o bandwidth controller documentation
-References: <> <1212791250-32320-2-git-send-email-righi.andrea@gmail.com> <ed038eb20806180816w5a4f9d6bt276dec1373758e08@mail.gmail.com>
-In-Reply-To: <ed038eb20806180816w5a4f9d6bt276dec1373758e08@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Carl Henrik Lunde wrote:
-> On Sat, Jun 7, 2008 at 00:27, Andrea Righi <righi.andrea@gmail.com> wrote:
-> [...]
->> +3. Advantages of providing this feature
->> +
->> +* Allow QoS for block device I/O among different cgroups
-> 
-> I'm not sure if this can be called QoS, as it does not guarantee
-> anything but throttling?
+Hi lists,
 
-That's correct. There's nothing to guarantee minimum bandwidth levels
-right now, the "QoS" is implemented only slowing down i/o "traffic" that
-exceeds the limits (probably "i/o traffic shaping" is a better wording).
+this is a heads-up that I plan to send the following updates to Linus on
+Friday --- unless anybody has issues with them; please tell me so.  The
+diffstat looks quite big for this late -rc phase, but the bulk of it is
+just Kconfig documentation rewording and reordering, and indentation
+churn by the printk prefixes patch.
 
-Minimum thresholds are supposed to be guaranteed if the user configures
-a proper i/o bandwidth partitioning of the block devices shared among
-the different cgroups (that could mean: the sum of all the single limits
-for a device doesn't exceed the total i/o bandwidth of that device... at
-least theoretically).
+The updates are staged in
 
-I'll try to clarify better this concept in the documentation that I'll
-include in the next patchset version.
+    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
 
-I'd also like to explore the io-throttle controller on-top-of other i/o
-band controlling solutions (see for example:
-http://lkml.org/lkml/2008/4/3/45), in order to exploit both the limiting
-feature from io-throttle and use priority / fair queueing alghorithms to
-guarantee minimum performance levels.
+and consist of
 
->> +* The bandwidth limitations are guaranteed both for synchronous and
->> +  asynchronous operations, even the I/O passing through the page cache or
->> +  buffers and not only direct I/O (see below for details)
-> 
-> The throttling does not seem to cover the I/O path for XFS?
-> I was unable to throttle processes reading from an XFS file system.
+Stefan Richter (9):
+      firewire: don't panic on invalid AR request buffer
+      firewire: fw-ohci: use of uninitialized data in AR handler
+      firewire: fw-ohci: disable PHY packet reception into AR context
+      firewire: fw-ohci: write selfIDBufferPtr before LinkControl.rcvSelfID
+      firewire: fill_bus_reset_event needs lock protection
+      firewire: fw-ohci: unify printk prefixes
+      firewire: deadline for PHY config transmission
+      firewire: Kconfig menu touch-up
+      ieee1394: Kconfig menu touch-up
 
-mmmh... works for me. Are you sure you've limited the correct block
-device?
+ drivers/firewire/Kconfig          |   32 ++++----
+ drivers/firewire/fw-cdev.c        |    9 ++-
+ drivers/firewire/fw-ohci.c        |  110 ++++++++++++++-------------
+ drivers/firewire/fw-transaction.c |   52 +++++++++----
+ drivers/ieee1394/Kconfig          |  118 ++++++++++++++++-------------
+ 5 files changed, 180 insertions(+), 141 deletions(-)
 
-> Also I think the name of the function cgroup_io_account is a bit too innocent?
-> It sounds like a inline function "{ io += bytes; }", not like
-> something which may sleep.
+All patches have been seen on linux1394-devel and on lkml.
+-- 
+Stefan Richter
+-=====-==--- -==- =--==
+http://arcgraph.de/sr/
 
-Agree. What about cgroup_acct_and_throttle_io()? suggestions?
-
-Thanks,
--Andrea
