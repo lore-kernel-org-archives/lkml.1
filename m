@@ -1,76 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbYFRLBn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753346AbYFRLOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753285AbYFRLBn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 07:01:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYFRLBg
+	id S1753346AbYFRLOA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 07:14:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbYFRLNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 07:01:36 -0400
-Received: from smtp-vbr5.xs4all.nl ([194.109.24.25]:2206 "EHLO
-	smtp-vbr5.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752077AbYFRLBf (ORCPT
+	Wed, 18 Jun 2008 07:13:49 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:34615 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752388AbYFRLNr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 07:01:35 -0400
-X-Greylist: delayed 708 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Jun 2008 07:01:35 EDT
-Date: Wed, 18 Jun 2008 12:47:23 +0200
-From: Erik Mouw <mouw@nl.linux.org>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: Pierre Ossman <drzeus@drzeus.cx>,
-       Ville =?iso-8859-15?Q?Syrj=E4l=E4?= <syrjala@sci.fi>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Eric BENARD <ebenard@free.fr>, Andrew Victor <linux@maxim.org.za>
-Subject: Re: [PATCH 0/7] mmc: at91_mci: rework to allow better transfer
-Message-ID: <20080618104723.GA6788@gateway.home>
-References: <483FE9E7.7020707@atmel.com> <20080609124623.5b6bda48@mjolnir.drzeus.cx> <484E4F61.7010007@atmel.com> <20080614182831.0360bd77@mjolnir.drzeus.cx> <4858DDC1.6080802@atmel.com>
+	Wed, 18 Jun 2008 07:13:47 -0400
+Date: Wed, 18 Jun 2008 13:13:45 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Alessandro Suardi <alessandro.suardi@gmail.com>
+cc: "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+       David Martin <tasio@hierro.tasio.net>, linux-scsi@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Maarten Bressers <mbres@gentoo.org>, Daniel Drake <dsd@gentoo.org>,
+       Cell Broadband Engine OSS Development 
+	<cbe-oss-dev@ozlabs.org>
+Subject: Re: [Cbe-oss-dev] [regression/bisected] corrupt CD data after media
+ change and delay
+In-Reply-To: <5a4c581d0806180147qf8fc731y527c79bfb73401b2@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0806181156460.13297@vixen.sonytel.be>
+References: <Pine.LNX.4.64.0806061458300.6228@vixen.sonytel.be>
+ <Pine.LNX.4.64.0806131932350.30730@vixen.sonytel.be>
+ <5a4c581d0806180147qf8fc731y527c79bfb73401b2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="XsQoSWH+UP9D9v3l"
-Content-Disposition: inline
-In-Reply-To: <4858DDC1.6080802@atmel.com>
-Organization: Eric Conspiracy Secret Labs
-X-Eric-Conspiracy: There is no conspiracy!
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-698854956-1213787625=:13297"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
---XsQoSWH+UP9D9v3l
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+---584349381-698854956-1213787625=:13297
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-On Wed, Jun 18, 2008 at 12:04:49PM +0200, Nicolas Ferre wrote:
+On Wed, 18 Jun 2008, Alessandro Suardi wrote:
+> On Fri, Jun 13, 2008 at 7:33 PM, Geert Uytterhoeven
+> <Geert.Uytterhoeven@sonycom.com> wrote:
+> > On Fri, 6 Jun 2008, Geert Uytterhoeven wrote:
+> >> When mounting a CD/DVD more than 30 seconds after inserting it, and reading
+> >> from it, we get:
+> >
+> > Apparently the fix didn't make it to all the CCed lists...
+> >
+> > http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fjejb%2Fscsi-rc-fixes-2.6.git;a=commitdiff_plain;h=d1daeabf0da5bfa1943272ce508e2ba785730bf0
+> 
+> Oh, that's in mainline ? I still have the problem of having to
 
-[...]
+Not yet, it's in the scsi-rc-fixes-2.6 tree.
 
-Could you all drop =3D?ISO-8859-1?Q?Hans-J=3DFCrgen_?=3D from the Cc list in
-this thread? The address is invalid because it has no domain part and
-hence causes quite some bounces on the list because some strict email
-checkers reject invalid addresses in the Cc list.
+>  insert DVD / try accessing it and get errors / eject / re-insert
+>  and then it magically works... the messages have changed
+>  from what they were as reported here
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=10116
+> 
+>  (see comments #8 and #9) to these ones, in 2.6.26-rc6-git4:
+> 
+> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] Result:
+> hostbyte=0x00 driverbyte=0x08
+> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] Sense Key : 0x3 [current]
+> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] ASC=0x11 ASCQ=0x0
+> Jun 17 22:38:43 sandman kernel: end_request: I/O error, dev sr0, sector 232
+> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 29
+> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 30
+> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 31
+> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 32
+> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 33
+> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 34
+> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 35
+> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 36
+> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 37
+> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 38
+> 
+> here I eject and reinsert the disc, and:
+> 
+> Jun 17 22:39:10 sandman kernel: UDF-fs: No VRS found
+> 
+>  lo and behold, no problem.
+> 
+> This does not, alas, happen every time. It might be at the first
+>  DVD access after booting the laptop, but I haven't investigated
+>  in this detail yet.
 
-I'm trying to figure out what went wrong, but in the mean time please
-drop =3D?ISO-8859-1?Q?Hans-J=3DFCrgen_?=3D from the Cc list.
+Does /sys/block/sr0/size reflect the correct size of the DVD?
 
+Did you try applying the patch?
 
-Erik
-[linux-arm-kernel-owner #2]
+With kind regards,
 
---=20
-Erik Mouw -- mouw@nl.linux.org
+Geert Uytterhoeven
+Software Architect
 
---XsQoSWH+UP9D9v3l
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Sony Techsoft Centre
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
-iD8DBQFIWOe7/PlVHJtIto0RAlNKAJ9R7xPEd547ePqGZrcqK7vzB3qA8gCdGS5I
-dr/Y5C2cFFeNWQwq0w09o94=
-=MEcb
------END PGP SIGNATURE-----
-
---XsQoSWH+UP9D9v3l--
+Sony Technology and Software Centre Europe
+A division of Sony Service Centre (Europe) N.V.
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
+VAT BE 0413.825.160 · RPR Brussels
+Fortis 293-0376800-10 GEBA-BE-BB
+---584349381-698854956-1213787625=:13297--
