@@ -1,82 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756573AbYFRUWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756397AbYFRUZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756573AbYFRUWr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 16:22:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbYFRUWk
+	id S1756397AbYFRUZT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 16:25:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbYFRUZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 16:22:40 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:49304 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752528AbYFRUWj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 16:22:39 -0400
-Date: Wed, 18 Jun 2008 13:22:26 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Louis Rilling <louis.rilling@kerlabs.com>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: Re: [RFC][PATCH] configfs: Report errors in
-	config_*_init_type_name()
-Message-ID: <20080618202226.GG16780@ca-server1.us.oracle.com>
-Mail-Followup-To: Louis Rilling <louis.rilling@kerlabs.com>,
-	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-References: <1213813851-7359-1-git-send-email-louis.rilling@kerlabs.com>
+	Wed, 18 Jun 2008 16:25:06 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45370 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752786AbYFRUZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 16:25:05 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@suse.cz>
+Subject: Re: [patch 6/6] x86: add c1e aware idle function
+Date: Wed, 18 Jun 2008 22:26:06 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Veen <arjan@infradead.org>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>
+References: <20080610171639.551369443@linutronix.de> <20080610171712.465591661@linutronix.de> <20080618192148.GA4243@ucw.cz>
+In-Reply-To: <20080618192148.GA4243@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1213813851-7359-1-git-send-email-louis.rilling@kerlabs.com>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Message-Id: <200806182226.07590.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 18, 2008 at 08:30:51PM +0200, Louis Rilling wrote:
->  [ applies on top of http://lkml.org/lkml/2008/6/12/427 ]
+On Wednesday, 18 of June 2008, Pavel Machek wrote:
+> On Thu 2008-06-12 10:29:00, Thomas Gleixner wrote:
+> > C1E on AMD machines is like C3 but without control from the OS. Up to
+> > now we disabled the local apic timer for those machines as it stops
+> > when the CPU goes into C1E. This excludes those machines from high
+> > resolution timers / dynamic ticks, which hurts especially the X2 based
+> > laptops.
+> > 
+> > The current boot time C1E detection has another more serious flaw:
+> > some BIOSes do not enable C1E until the ACPI processor module is
+> > loaded. This causes systems to stop working after that point.
+> > 
+> > To work nicely with C1E enabled machines we use a separate idle
+> > function, which checks on idle entry whether C1E was enabled in the
+> > Interrupt Pending Message MSR. This allows us to do timer broadcasting
 > 
-> config_item_set_name() may fail but its error code is not checked in
-> config_*_init_type_name().
+> Entering idle is quite a common operation, and reading MSR is quite
+> slow. Is it possible to do better here?
 > 
-> This patch adds the missing error checking and make config_*_init_type_name()
-> report errors. In-tree users are updated to report errors as well.
+> What happens if ACPI BIOS toggles MSR on all cpus *while* we are
+> entering idle? This seems inherently racy...
 
-	While this patch is correct on the face, I'd like to try a
-different approach.  I wasn't thinking about it right.
-	See, config_*_init_type_name() are generally a create-time thing.
-Almost everyone uses it without error checking because they know it is
-safe; they are usually using a static name.  config_item_set_name()
-can only error if strlen(name)>CONFIGFS_ITEM_NAME_LEN.   That's why
-config_*_init_type_name() are void.
-	In other words, we shouldn't be adding useless error-check
-boilerplate for already-safe things.
-	But there are a couple of users of config_*_set_type_name() that
-aren't safe.  The lockspace in fs/dlm/config.c is one (lockspace names
-can be 64 characters).  The config_*_init_type_name() helpers are quite
-convenient.
-	I see two choices:
+Yes, and that fits the picture I'm observing on the nx6325 (see the
+"linux-next: Tree for June 13: IO APIC breakage on HP nx6325" thread).
 
-1) Make your changes to return errors from config_*_init_type_name(),
-   but don't check the errors on known-safe usage (small static
-   strings).
-2) Provide two API, one that is void and one that is not, so that
-   known-safe usage can use the void call (and BUG_ON() if the strlen()
-   is off), while other usage checks the errors.
-
-Joel
-
--- 
-
-Life's Little Instruction Book #3
-
-	"Watch a sunrise at least once a year."
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+Thanks,
+Rafael
