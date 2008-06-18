@@ -1,123 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754299AbYFRQjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbYFRQjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754299AbYFRQjI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 12:39:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbYFRQiz
+	id S1753199AbYFRQjy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 12:39:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbYFRQjq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 12:38:55 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:33197 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751247AbYFRQiy (ORCPT
+	Wed, 18 Jun 2008 12:39:46 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:22503 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751479AbYFRQjp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 12:38:54 -0400
-Subject: [GIT PATCH] SCSI bug fixes for 2.6.26-rc6
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 18 Jun 2008 11:38:47 -0500
-Message-Id: <1213807127.3515.70.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Jun 2008 12:39:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=g77E4zN5XTRxi4wfiUjxbh1W6KRG1NozRGA661M4Csu63lwHhA6SJi0i56JDbD9tTl
+         YYpxXJKnr3QM5L/fpeWIPVkkxz3Brw1ZEM8rEXkA+7XR3SRBRA1eMGFv4XZ0ux/SIXlD
+         hE/XSyT+6R2+eRbM9xV52et9I/7aVsCnKC2jw=
+Date: Wed, 18 Jun 2008 20:39:05 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: nmi_watchdog suspicious
+Message-ID: <20080618163905.GB7117@cvg>
+References: <20080610185759.GA7353@cvg> <Pine.LNX.4.55.0806160040270.11995@cliff.in.clinika.pl> <20080616170000.GC7273@cvg> <Pine.LNX.4.55.0806161819500.20218@cliff.in.clinika.pl> <20080617155120.GA9440@cvg> <Pine.LNX.4.55.0806181654450.4857@cliff.in.clinika.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.55.0806181654450.4857@cliff.in.clinika.pl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is just a round of the usual pre release bug fixes.  We are still
-chasing down some other bugs (mainly related to CDs).  The patch is
-available here:
+[Maciej W. Rozycki - Wed, Jun 18, 2008 at 05:06:29PM +0100]
+| On Tue, 17 Jun 2008, Cyrill Gorcunov wrote:
+| 
+| > Thanks a lot Maciej for comments! I've marked them. I'm not sure but it seems
+| > I wrote a bit unclear /my english bad indeed/ ;) I mean - this say 'slipping'
+| > (ie useless code executions) _was_ before the patch applied. Now it doesn't
+| > slip on this since we do mention explicitly in which case there should be
+| > alert counters reset. Other then that - will try to handle your notes. Thanks!
+| 
+|  It will happen regardless if touch_nmi_watchdog() is called before the
+| NMI watchdog has been set up in setup_nmi() or lapic_watchdog_init().  It
+| may also happen during that window if an NMI is signalled without any NMI
+| status bits set in the Port B register at 0x61 -- in theory that should
+| not happen except for a broken configuration, but reality out there seems
+| to be quite creative about breakage.
+| 
+|   Maciej
+| 
 
-master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+Maciej, it seems we are talking about different code snippets ;)
+I'm talking only about touch_nmi_watchdog(). By now (in -tip tree
+we have)
 
-The short changelog is:
+void touch_nmi_watchdog(void)
+{
+	if (nmi_watchdog == NMI_LOCAL_APIC ||
+		nmi_watchdog == NMI_IO_APIC) {
+		unsigned cpu;
+		...
 
-James Bottomley (1):
-      sr: fix corrupt CD data after media change and delay
+so we check explicitly the values (so if touch_nmi_watchdog
+was called when nmi_watchdog = 0 or -1U this code will not
+be executed anyway). So I think I'm a bit lost, Maciej... I just
+can't figure out what is wrong with this code, so please help
+me ;). If you're talking about apic code in _general_ design
+then...well, I think I need some time to _understand_ the code
+say byte-by-byte first.
 
-Jeff Mahoney (1):
-      dpt_i2o: Add PROC_IA64 define
-
-Mike Christie (1):
-      scsi_host regression: fix scsi host leak
-
-And the diffstat:
-
- drivers/scsi/dpt/dptsig.h |    3 ++-
- drivers/scsi/hosts.c      |    9 +++++++--
- drivers/scsi/sr.c         |    3 +++
- 3 files changed, 12 insertions(+), 3 deletions(-)
-
-The full diff is attached below.
-
-James
-
----
-
-diff --git a/drivers/scsi/dpt/dptsig.h b/drivers/scsi/dpt/dptsig.h
-index 72c8992..a6644b3 100644
---- a/drivers/scsi/dpt/dptsig.h
-+++ b/drivers/scsi/dpt/dptsig.h
-@@ -85,7 +85,7 @@ typedef unsigned int sigINT;
- /* ------------------------------------------------------------------ */
- /* What type of processor the file is meant to run on. */
- /* This will let us know whether to read sigWORDs as high/low or low/high. */
--#define PROC_INTEL      0x00    /* Intel 80x86 */
-+#define PROC_INTEL      0x00    /* Intel 80x86/ia64 */
- #define PROC_MOTOROLA   0x01    /* Motorola 68K */
- #define PROC_MIPS4000   0x02    /* MIPS RISC 4000 */
- #define PROC_ALPHA      0x03    /* DEC Alpha */
-@@ -104,6 +104,7 @@ typedef unsigned int sigINT;
- #define PROC_486        0x08    /* Intel 80486 */
- #define PROC_PENTIUM    0x10    /* Intel 586 aka P5 aka Pentium */
- #define PROC_SEXIUM	0x20	/* Intel 686 aka P6 aka Pentium Pro or MMX */
-+#define PROC_IA64	0x40	/* Intel IA64 processor */
- 
- /* PROC_i960: */
- #define PROC_960RX      0x01    /* Intel 80960RC/RD */
-diff --git a/drivers/scsi/hosts.c b/drivers/scsi/hosts.c
-index 3690360..c6457bf 100644
---- a/drivers/scsi/hosts.c
-+++ b/drivers/scsi/hosts.c
-@@ -456,6 +456,10 @@ static int __scsi_host_match(struct device *dev, void *data)
-  *
-  * Return value:
-  *	A pointer to located Scsi_Host or NULL.
-+ *
-+ *	The caller must do a scsi_host_put() to drop the reference
-+ *	that scsi_host_get() took. The put_device() below dropped
-+ *	the reference from class_find_device().
-  **/
- struct Scsi_Host *scsi_host_lookup(unsigned short hostnum)
- {
-@@ -463,9 +467,10 @@ struct Scsi_Host *scsi_host_lookup(unsigned short hostnum)
- 	struct Scsi_Host *shost = ERR_PTR(-ENXIO);
- 
- 	cdev = class_find_device(&shost_class, &hostnum, __scsi_host_match);
--	if (cdev)
-+	if (cdev) {
- 		shost = scsi_host_get(class_to_shost(cdev));
--
-+		put_device(cdev);
-+	}
- 	return shost;
- }
- EXPORT_SYMBOL(scsi_host_lookup);
-diff --git a/drivers/scsi/sr.c b/drivers/scsi/sr.c
-index 7ee86d4..c82df8b 100644
---- a/drivers/scsi/sr.c
-+++ b/drivers/scsi/sr.c
-@@ -178,6 +178,9 @@ int sr_test_unit_ready(struct scsi_device *sdev, struct scsi_sense_hdr *sshdr)
- 		the_result = scsi_execute_req(sdev, cmd, DMA_NONE, NULL,
- 					      0, sshdr, SR_TIMEOUT,
- 					      retries--);
-+		if (scsi_sense_valid(sshdr) &&
-+		    sshdr->sense_key == UNIT_ATTENTION)
-+			sdev->changed = 1;
- 
- 	} while (retries > 0 &&
- 		 (!scsi_status_is_good(the_result) ||
-
-
+		- Cyrill -
