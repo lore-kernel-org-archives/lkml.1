@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753334AbYFRQLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbYFRQMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753334AbYFRQLo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 12:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbYFRQLh
+	id S1753972AbYFRQMX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 12:12:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbYFRQMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 12:11:37 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:33040 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751317AbYFRQLg (ORCPT
+	Wed, 18 Jun 2008 12:12:06 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:52193 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751100AbYFRQME (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 12:11:36 -0400
-Date: Wed, 18 Jun 2008 09:08:12 -0700
-From: Greg KH <greg@kroah.com>
-To: Jason Baron <jbaron@redhat.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, joe@perches.com,
-       nick@nick-andrew.net, randy.dunlap@oracle.com
-Subject: Re: [PATCH 2/8] dynamic debug - core infrastructure
-Message-ID: <20080618160812.GB9453@kroah.com>
-References: <20080613190039.GC8813@redhat.com>
+	Wed, 18 Jun 2008 12:12:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=d/54HLCayWsqHpqBl6Hf64O/Gv8xJqNr97PFRJ5je1mS2RGMFy+yjCNwdsaxg9kU5d
+         NPNaXxqUBVnKWGj+dmnoJL+Adx7jDApPaLcUDZg9HkZvD8/1zHbDW5i0fKYDLuTLtWJ8
+         1Ici8UJpkF1ya/83kjbyAxhqP3ZCUv5QvqWBI=
+Message-ID: <485933C7.8050801@gmail.com>
+Date: Wed, 18 Jun 2008 18:11:51 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080613190039.GC8813@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Ingo Molnar <mingo@redhat.com>, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andi Kleen <andi@firstfloor.org>,
+       the arch/x86 maintainers <x86@kernel.org>, Mike Travis <travis@sgi.com>,
+       nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 1/1] MM: virtual address debug
+References: <1213271800-1556-1-git-send-email-jirislaby@gmail.com> <20080618121221.GB13714@elte.hu> <20080618135928.GA12803@elte.hu>
+In-Reply-To: <20080618135928.GA12803@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 13, 2008 at 03:00:39PM -0400, Jason Baron wrote:
-> --- a/include/linux/device.h
-> +++ b/include/linux/device.h
-> @@ -595,6 +595,22 @@ extern const char *dev_driver_string(struct device *dev);
->  #ifdef DEBUG
->  #define dev_dbg(dev, format, arg...)		\
->  	dev_printk(KERN_DEBUG , dev , format , ## arg)
-> +#elif defined(CONFIG_DYNAMIC_PRINTK_DEBUG)
-> +#define dev_dbg(dev, format, ...) do {				    	     \
-> +	static char mod_name[]						     \
-> +	__attribute__((section("__verbose_strings")))			     \
-> +	 = KBUILD_MODNAME;						     \
-> +	static struct mod_debug foobar					     \
-> +	__used								     \
-> +	__attribute__((section("__verbose"), aligned(8))) =		     \
-> +	{ mod_name, mod_name, "0", "0", NULL };				     \
+Ingo Molnar napsal(a):
+> No NUMA configuration found
+> Faking a node at 0000000000000000-000000003fff0000
+> Entering add_active_range(0, 0, 159) 0 entries of 25600 used
+> Entering add_active_range(0, 256, 262128) 1 entries of 25600 used
+> Bootmem setup node 0 0000000000000000-000000003fff0000
+>   NODE_DATA [000000000000a000 - 000000000003dfff]
+> PANIC: early exception 06 rip 10:ffffffff80ba7531 error 0 cr2 f06f53
+> Pid: 0, comm: swapper Not tainted 2.6.26-rc6 #7709
+> 
+> Call Trace:
+>  [<ffffffff80b9c196>] early_idt_handler+0x56/0x6a
+>  [<ffffffff80ba7531>] setup_node_bootmem+0x12a/0x2d4
 
-Does the compiler merge all of these variables together into one within
-the same file?
+Hmm, it's at
+nid = phys_to_nid(nodedata_phys);
+and
+VIRTUAL_BUG_ON((addr >> memnode_shift) >= memnodemapsize);
+triggers. Apparently memnodemapsize is not available for real numas. Going 
+to remove the test and respin the patch with Nick's comment applied.
 
-If not, should we have a new macro, one per file, for this information?
-
-> --- a/include/linux/kernel.h
-> +++ b/include/linux/kernel.h
-> @@ -14,6 +14,7 @@
->  #include <linux/compiler.h>
->  #include <linux/bitops.h>
->  #include <linux/log2.h>
-> +#include <linux/dynamic_printk.h>
->  #include <asm/byteorder.h>
->  #include <asm/bug.h>
->  
-> @@ -288,15 +289,86 @@ extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
->  #define pr_info(fmt, arg...) \
->  	printk(KERN_INFO fmt, ##arg)
->  
-> -#ifdef DEBUG
-> -/* If you are writing a driver, please use dev_dbg instead */
-
-Hm, this comment is still correct, please don't delete it :)
-
-Other than those minor nits, and the fact that your patch has a lot of
-trailing whitespace, it's looking very good so far.
-
-thanks,
-
-greg k-h
+Thanks.
