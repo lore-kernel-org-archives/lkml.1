@@ -1,103 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbYFRTUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828AbYFRTWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755514AbYFRTUK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 15:20:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbYFRTT6
+	id S1755828AbYFRTWW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 15:22:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbYFRTWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 15:19:58 -0400
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:47813 "HELO
-	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750801AbYFRTT5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 15:19:57 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=nt/eG0fe7Ppv58lWZJvZqwJvg4EMbkK+Mv9VYUv08+HwDsBoa1psncP7H5jUg9rEmz5NCzPnPF5vDDtDK+3eZROderBCyVCtB1aB+j2BfjLYyi8yRn4j7m3klbj9GnKPFlXOmlP1y+j32SLeKcs0OGwefuiDIdFBXIpOtMa3Xik=  ;
-X-YMail-OSG: awdeK9kVM1lllyC1KIUC9vqgYDe2uM0yjTesojnSYfOojVRnnrQizlweIGNE3599H32dJN0GQXugkHj7WiwVg.oQbN81XWp44szaJ5MooJh_V_VymnSBhaU83mOp0Fn.CrM-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 2.6.26-rc6-mm] gpio: updates to sysfs support
-Date: Wed, 18 Jun 2008 12:19:55 -0700
-User-Agent: KMail/1.9.9
-Cc: lkml <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Jun 2008 15:22:13 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4189 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751855AbYFRTWM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 15:22:12 -0400
+Date: Wed, 18 Jun 2008 21:21:48 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>
+Subject: Re: [patch 6/6] x86: add c1e aware idle function
+Message-ID: <20080618192148.GA4243@ucw.cz>
+References: <20080610171639.551369443@linutronix.de> <20080610171712.465591661@linutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806181219.55628.david-b@pacbell.net>
+In-Reply-To: <20080610171712.465591661@linutronix.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update and bugfix the patch adding sysfs GPIO support:
+On Thu 2008-06-12 10:29:00, Thomas Gleixner wrote:
+> C1E on AMD machines is like C3 but without control from the OS. Up to
+> now we disabled the local apic timer for those machines as it stops
+> when the CPU goes into C1E. This excludes those machines from high
+> resolution timers / dynamic ticks, which hurts especially the X2 based
+> laptops.
+> 
+> The current boot time C1E detection has another more serious flaw:
+> some BIOSes do not enable C1E until the ACPI processor module is
+> loaded. This causes systems to stop working after that point.
+> 
+> To work nicely with C1E enabled machines we use a separate idle
+> function, which checks on idle entry whether C1E was enabled in the
+> Interrupt Pending Message MSR. This allows us to do timer broadcasting
 
-  * Bugfix:  the test initializing the IS_OUT flag for output-only
-    GPIOs had the sense inverted.
+Entering idle is quite a common operation, and reading MSR is quite
+slow. Is it possible to do better here?
 
-  * Update:  when gpio_chip.dev is provided, list it in the debugfs
-    dump.  Device nodes are unique; the "label" isn't.
-
-The bug of course caused output-only GPIOs to misbehave, but it also
-made just-exported (or generally:  only-requested) GPIOs always appear
-to be outputs in sysfs and debugfs.  That's wrong more often than it's
-right, although it gets corrected when the direction is assigned.
-
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- drivers/gpio/gpiolib.c |   28 +++++++++++++++++++++++-----
- 1 files changed, 23 insertions(+), 5 deletions(-)
-
---- a/drivers/gpio/gpiolib.c	2008-06-17 23:15:17.000000000 -0700
-+++ b/drivers/gpio/gpiolib.c	2008-06-18 09:48:32.000000000 -0700
-@@ -685,7 +685,14 @@ int gpiochip_add(struct gpio_chip *chip)
- 	if (status == 0) {
- 		for (id = base; id < base + chip->ngpio; id++) {
- 			gpio_desc[id].chip = chip;
--			gpio_desc[id].flags = chip->direction_input
-+
-+			/* REVISIT:  most hardware initializes GPIOs as
-+			 * inputs (often with pullups enabled) so power
-+			 * usage is minimized.  Linux code should set the
-+			 * gpio direction first thing; but until it does,
-+			 * we may expose the wrong direction in sysfs.
-+			 */
-+			gpio_desc[id].flags = !chip->direction_input
- 				? (1 << FLAG_IS_OUT)
- 				: 0;
- 		}
-@@ -1108,17 +1115,28 @@ static int gpiolib_show(struct seq_file 
- 	/* REVISIT this isn't locked against gpio_chip removal ... */
- 
- 	for (gpio = 0; gpio_is_valid(gpio); gpio++) {
-+		struct device *dev;
-+
- 		if (chip == gpio_desc[gpio].chip)
- 			continue;
- 		chip = gpio_desc[gpio].chip;
- 		if (!chip)
- 			continue;
- 
--		seq_printf(s, "%sGPIOs %d-%d, %s%s:\n",
-+		seq_printf(s, "%sGPIOs %d-%d",
- 				started ? "\n" : "",
--				chip->base, chip->base + chip->ngpio - 1,
--				chip->label ? : "generic",
--				chip->can_sleep ? ", can sleep" : "");
-+				chip->base, chip->base + chip->ngpio - 1);
-+		dev = chip->dev;
-+		if (dev)
-+			seq_printf(s, ", %s/%s",
-+				dev->bus ? dev->bus->name : "no-bus",
-+				dev->bus_id);
-+		if (chip->label)
-+			seq_printf(s, ", %s", chip->label);
-+		if (chip->can_sleep)
-+			seq_printf(s, ", can sleep");
-+		seq_printf(s, ":\n");
-+
- 		started = 1;
- 		if (chip->dbg_show)
- 			chip->dbg_show(s, chip);
+What happens if ACPI BIOS toggles MSR on all cpus *while* we are
+entering idle? This seems inherently racy...
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
