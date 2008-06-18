@@ -1,55 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbYFRSNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755081AbYFRSRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755270AbYFRSNg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 14:13:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbYFRSN2
+	id S1755081AbYFRSRS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 14:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbYFRSRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 14:13:28 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40196 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752075AbYFRSN2 (ORCPT
+	Wed, 18 Jun 2008 14:17:08 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49776 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752093AbYFRSRH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 14:13:28 -0400
-Date: Wed, 18 Jun 2008 18:55:34 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Hans-Peter Jansen" <hpj@urpla.net>
-Cc: linux-kernel@vger.kernel.org, "R.L. Horn" <lists@eastcheap.org>
-Subject: Re: 2.6.25.3: serial problem (minicom)
-Message-ID: <20080618185534.5f969f63@lxorguk.ukuu.org.uk>
-In-Reply-To: <200806180215.45925.hpj@urpla.net>
-References: <alpine.LNX.1.00.0806131635260.1294@hani.compact.internal>
-	<alpine.LNX.1.00.0806162306400.10919@hani.compact.internal>
-	<20080617095827.0f4f77de@lxorguk.ukuu.org.uk>
-	<200806180215.45925.hpj@urpla.net>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 18 Jun 2008 14:17:07 -0400
+Message-ID: <4859511E.5050605@sgi.com>
+Date: Wed, 18 Jun 2008 11:17:02 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
+       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
+ area
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.509483000@polaris-admin.engr.sgi.com> <20080605102222.GA21319@elte.hu> <484EF29C.7080100@sgi.com> <485947A8.8060801@goop.org>
+In-Reply-To: <485947A8.8060801@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jun 2008 02:15:45 +0200
-"Hans-Peter Jansen" <hpj@urpla.net> wrote:
-
-> Am Dienstag, 17. Juni 2008 schrieb Alan Cox:
-> > On Mon, 16 Jun 2008 23:22:54 -0500 (CDT)
-> >
-> > Ah ok I know what the bug is - it was fixed in 2.6.26-rc as follows
-> >
-> > +       /* Don't rewrite B0 */
-> > +       if (tty_termios_baud_rate(termios))
-> > +               tty_termios_encode_baud_rate(termios, baud, baud);
-> >  }
+Jeremy Fitzhardinge wrote:
+> Mike Travis wrote:
+>> Ingo Molnar wrote:
+>>  
+>>> * Mike Travis <travis@sgi.com> wrote:
+>>>
+>>>    
+>>>>   * Declare the pda as a per cpu variable.
+>>>>
+>>>>   * Make the x86_64 per cpu area start at zero.
+>>>>
+>>>>   * Since the pda is now the first element of the per_cpu area,
+>>>> cpu_pda()
+>>>>     is no longer needed and per_cpu() can be used instead.  This
+>>>> also makes
+>>>>     the _cpu_pda[] table obsolete.
+>>>>
+>>>>   * Since %gs is pointing to the pda, it will then also point to the
+>>>> per cpu
+>>>>     variables and can be accessed thusly:
+>>>>
+>>>>     %gs:[&per_cpu_xxxx - __per_cpu_start]
+>>>>
+>>>> Based on linux-2.6.tip
+>>>>       
+>>> -tip testing found an instantaneous reboot crash on 64-bit x86, with
+>>> this config:
+>>>
+>>>   http://redhat.com/~mingo/misc/config-Thu_Jun__5_11_43_51_CEST_2008.bad
+>>>     
+>>
+>> I'm still stuck on this one.  One new development is that the current
+>> -tip
+>> branch without the patches boots to the kernel prompt then hangs after
+>> a few
+>> moments and then reboots.  It seems you can tickle it using ^C to abort a
+>> process.
 > 
-> Alan, could this issue lead to dysfunctional serial dcf77 receivers, too? 
-> (and could you point my to the related git changeset?)
+> Hi Mike,
+> 
+> I added some instrumentation to Xen to print the cpu state on
+> triple-fault, which highlights an obvious-looking problem.
+> 
+> (XEN) hvm.c:767:d1 Triple fault on VCPU0 - invoking HVM system reset.
+> (XEN) ----[ Xen-3.3-unstable  x86_64  debug=y  Not tainted ]----
+> (XEN) CPU:    1
+> (XEN) RIP:    0010:[<ffffffff80200160>]
+> (XEN) RFLAGS: 0000000000010002   CONTEXT: hvm
+> (XEN) rax: 0000000000000018   rbx: 0000000000000000   rcx: 00000000c0000080
+> (XEN) rdx: 0000000000000000   rsi: 0000000000092f40   rdi: 0000000020100800
+> (XEN) rbp: 0000000000000000   rsp: ffffffff807dfff8   r8:  0000000000208000
+> (XEN) r9:  0000000000000000   r10: 0000000000000000   r11: 00000000000000de
+> (XEN) r12: 0000000000000000   r13: 0000000000000000   r14: 0000000000000000
+> (XEN) r15: 0000000000000000   cr0: 0000000080050033   cr4: 00000000000000a0
+> (XEN) cr3: 0000000000201000   cr2: 0000000000000000
+> (XEN) ds: 0000   es: 0000   fs: 0000   gs: 0000   ss: 0000   cs: 0010
+> 
+> The rip is:
+> 
+> (gdb) x/i 0xffffffff80200160
+> 0xffffffff80200160 <secondary_startup_64+96>:    movl   %eax,%ds
+> 
+> which is:
+> 
+>     lgdt    early_gdt_descr(%rip)
+> 
+>     /* set up data segments. actually 0 would do too */
+>     movl $__KERNEL_DS,%eax
+>     movl %eax,%ds
+>     movl %eax,%ss
+>     movl %eax,%es
+> 
+> And early_gdt_descr is:
+> 
+>     .globl early_gdt_descr
+> early_gdt_descr:
+>     .word    GDT_ENTRIES*8-1
+>     .quad   per_cpu__gdt_page
+> 
+> and per_cpu__gdt_page is zero-based, and therefore not a directly
+> addressable symbol.
+> 
+> I tried this patch, but it didn't work.  Perhaps I'm missing something.
+> 
+> diff -r bf5a46e13f78 arch/x86/kernel/head_64.S
+> --- a/arch/x86/kernel/head_64.S    Tue Jun 17 22:10:51 2008 -0700
+> +++ b/arch/x86/kernel/head_64.S    Wed Jun 18 10:34:24 2008 -0700
+> @@ -94,6 +94,8 @@
+> 
+>     addq    %rbp, level2_fixmap_pgt + (506*8)(%rip)
+> 
+> +    addq    $__per_cpu_load, early_gdt_descr+2(%rip)
+> +   
+>     /* Add an Identity mapping if I am above 1G */
+>     leaq    _text(%rip), %rdi
+>     andq    $PMD_PAGE_MASK, %rdi
+> 
+> 
+>    J
 
-I don't generally work via git so I don't offhand know the changeset id.
-I guess it could do. If its causing this many actual problem cases it
-might also want to go into stable.
+Hi Jeremy,
 
-Alan
+I'm not finding that code in the tip/latest or linux-next branches... ?
+
+I can send you my latest version of the patch which is better than
+the previous but still is having problems with the config file that
+Ingo sent out.  (It also has a weird quirk that it will hang and
+reboot after about 30 seconds with or without my patch.)
+
+Thanks,
+Mike
