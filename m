@@ -1,105 +1,230 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182AbYFRSxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755358AbYFRS6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755182AbYFRSxu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 14:53:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbYFRSxk
+	id S1755358AbYFRS6U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 14:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbYFRS6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 14:53:40 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:35573 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753396AbYFRSxk (ORCPT
+	Wed, 18 Jun 2008 14:58:05 -0400
+Received: from vms173001pub.verizon.net ([206.46.173.1]:41107 "EHLO
+	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751987AbYFRS6D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 14:53:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=SDHpdD+ysxy+AuQGaYyK0ChQ5GigoyxJ7/JqT+z1oUzxfm2gr+557F0gLaLKBKP2dN
-         TOKS7iVlxp52M/6ugM9A1jnJ37xgRDmK3bZcld1clAOZPeKXvs4oy4ytFM1Hi47UHF0e
-         qIeJYBqoRG/Ekiu8DHDVBAxpxPMmx0yVk23X8=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: remove unused file after numaq etc depends on genericarch
-Date: Wed, 18 Jun 2008 11:54:37 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200806171539.01555.yhlu.kernel@gmail.com>
-In-Reply-To: <200806171539.01555.yhlu.kernel@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806181154.37444.yhlu.kernel@gmail.com>
+	Wed, 18 Jun 2008 14:58:03 -0400
+Date: Wed, 18 Jun 2008 11:50:56 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Subject: Re: [E1000-devel] [TCP]: TCP_DEFER_ACCEPT causes leak sockets
+In-reply-to: <20080617093929.GA10334@elte.hu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Miller <davem@davemloft.net>, vgusev@openvz.org,
+       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, rjw@sisk.pl, mcmanus@ducksong.com,
+       ilpo.jarvinen@helsinki.fi, kuznet@ms2.inr.ac.ru, xemul@openvz.org
+Message-id: <48595910.8000905@intel.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+Content-transfer-encoding: 7bit
+References: <20080617083220.GA11393@elte.hu>
+	<20080617.020840.169830916.davem@davemloft.net>
+	<20080617092706.GB20621@elte.hu>
+	<20080617.022909.173003136.davem@davemloft.net>
+ <20080617093929.GA10334@elte.hu>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080417)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> * David Miller <davem@davemloft.net> wrote:
+> 
+>> From: Ingo Molnar <mingo@elte.hu>
+>> Date: Tue, 17 Jun 2008 11:27:06 +0200
+>>
+>>> when i originally reported it i debugged it back to missing e1000 TX 
+>>> completion IRQs. I tried various versions of the driver to figure 
+>>> out whether new workarounds for e1000 cover it but it was fruitless. 
+>>> There is a 1000 msec internal watchdog timer IRQ within e1000 that 
+>>> gets things going if it's stuck.
+>> Then that explains your latency, the chip is getting stuck and TX 
+>> interrupts stop, right.
+> 
+> note that the 1000 msecs timer is AFAIK internal to the e1000 
+> _hardware_, not the driver itself. I.e. probably the firmware detects 
+> and works around a hung transmitter. This is not detectable from the OS 
+> (it's not an OS timer), but it can be observed by a lot of testing on a 
+> totally quiescent system - which i did back then ;-)
+> 
+> i also played a lot with the various knobs of the e1000, none of which 
+> seemed to help.
+> 
+> /me digs in archives
+> 
+> i reported it to the e1000 folks in 2006:
+> 
+>   Date: Mon, 4 Dec 2006 11:24:00 +0100
+> 
+> against 2.6.19. The original report is below - with a trace and various 
+> things i tried to debug this.
+> 
+> i eventually got the suggestion from Auke to set RxIntDelay=8 which 
+> seemed to work around the issue - but since i use a built-in driver i 
+> dont have that setting here (RxIntDelay=8 is a module load parameter and 
+> not exposed via Kconfig methods) and the e1000 driver does not seem to 
+> have changed its default setting for RxIntDelay.
+> 
+> 2.6.18-1.2849.fc6 was the last kernel that worked fine.
+> 
+> 	Ingo
+> 
+> -------------------->
+> Date: Wed, 13 Dec 2006 22:09:22 +0100
+> From: Ingo Molnar <mingo@elte.hu>
+> To: Auke Kok <auke-jan.h.kok@intel.com>
+> Subject: Re: e1000: 2.6.19 & long packet latencies
+> Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>,
+>         "Ronciak, John" <john.ronciak@intel.com>
+> 
+> Jesse, et al.,
+> 
+> i'm having a weird packet processing latency problem with the e1000 
+> driver and recent kernels.
+> 
+> The symptom is this: if i connect to a T60 laptop (which has an on-board 
+> e1000) from the outside, i see large delays in network activity, and ssh 
+> sessions are very sluggish.
+> 
+> ping latencies show it best under a dynticks kernel (but vanilla 2.6.19 
+> is affected too):
+> 
+>  titan:~/linux/linux> ping e
+>  PING europe (10.0.1.15) 56(84) bytes of data.
+>  64 bytes from europe (10.0.1.15): icmp_seq=1 ttl=64 time=0.340 ms
+>  64 bytes from europe (10.0.1.15): icmp_seq=2 ttl=64 time=757 ms
+>  64 bytes from europe (10.0.1.15): icmp_seq=3 ttl=64 time=1001 ms
+>  64 bytes from europe (10.0.1.15): icmp_seq=4 ttl=64 time=1001 ms
+>  64 bytes from europe (10.0.1.15): icmp_seq=5 ttl=64 time=0.356 ms
+>  64 bytes from europe (10.0.1.15): icmp_seq=6 ttl=64 time=2127 ms
+>  64 bytes from europe (10.0.1.15): icmp_seq=7 ttl=64 time=1002 ms
+>  64 bytes from europe (10.0.1.15): icmp_seq=8 ttl=64 time=0.320 ms
+>  64 bytes from europe (10.0.1.15): icmp_seq=9 ttl=64 time=1002 ms
+>  64 bytes from europe (10.0.1.15): icmp_seq=10 ttl=64 time=2004 ms
+>  64 bytes from europe (10.0.1.15): icmp_seq=11 ttl=64 time=1002 ms
+>  64 bytes from europe (10.0.1.15): icmp_seq=12 ttl=64 time=0.303 ms
+>  64 bytes from europe (10.0.1.15): icmp_seq=13 ttl=64 time=1000 ms
+>  64 bytes from europe (10.0.1.15): icmp_seq=14 ttl=64 time=2010 ms
+>  64 bytes from europe (10.0.1.15): icmp_seq=15 ttl=64 time=1009 ms
+>  64 bytes from europe (10.0.1.15): icmp_seq=16 ttl=64 time=0.283 ms
+> 
+> i have traced this and the 1000/2000 msecs values come from some sort of 
+> e1000-internal 'heartbeat' interrupt. What seems to happen is that RX 
+> packet processing is delayed indefinitely and the IRQ just does not 
+> arrive.
+> 
+> NOTE: the vanilla 2.6.19 kernel shows this too, but the ping delays are 
+> 1/HZ.
+> 
+> here's a (filtered) trace of such a delay. IRQ 0x219 is the e1000 
+> interrupt:
+> 
+>   <idle>-0     0D.h1 761236us : do_IRQ (c0272a9b 219 0)
+>  IRQ_219-356   0.... 761412us+: e1000_intr (handle_IRQ_event)
+>  IRQ_219-356   0.... 761416us : e1000_clean_rx_irq (e1000_intr)
+>  IRQ_219-356   0.... 761418us+: e1000_clean_tx_irq (e1000_intr)
+>   <idle>-0     0D.h1 2760093us : do_IRQ (c0272a9b 219 0)
+>  IRQ_219-356   0.... 2760268us+: e1000_intr (handle_IRQ_event)
+>  IRQ_219-356   0.... 2760273us : e1000_clean_rx_irq (e1000_intr)
+>  IRQ_219-356   0.... 2760275us : e1000_clean_tx_irq (e1000_intr)
+>   <idle>-0     0D.h1 3804499us : do_IRQ (c0272a9b 219 0)
+>  IRQ_219-356   0.... 3804674us+: e1000_intr (handle_IRQ_event)
+>  IRQ_219-356   0.... 3804679us+: e1000_clean_rx_irq (e1000_intr)
+>  IRQ_219-356   0.... 3804761us : e1000_clean_tx_irq (e1000_intr)
+>  IRQ_219-356   0.... 3804763us : e1000_clean_rx_irq (e1000_intr)
+>  IRQ_219-356   0.... 3804765us : e1000_clean_tx_irq (e1000_intr)
+> softirq--7     0.... 3804810us : net_rx_action (ksoftirqd)
+> softirq--5     0D.h. 3805425us : do_IRQ (c01598ac 219 0)
+>  IRQ_219-356   0.... 3805499us+: e1000_intr (handle_IRQ_event)
+>  IRQ_219-356   0.... 3805504us : e1000_clean_rx_irq (e1000_intr)
+>  IRQ_219-356   0.... 3805506us : e1000_clean_tx_irq (e1000_intr)
+>  IRQ_219-356   0.... 3805547us : e1000_clean_rx_irq (e1000_intr)
+>  IRQ_219-356   0.... 3805549us : e1000_clean_tx_irq (e1000_intr)
+> softirq--6     0.... 3805641us : net_tx_action (ksoftirqd)
+>   <idle>-0     0D.h1 4760910us : do_IRQ (c01451d4 219 0)
+>  IRQ_219-356   0.... 4761347us+: e1000_intr (handle_IRQ_event)
+>  IRQ_219-356   0.... 4761352us : e1000_clean_rx_irq (e1000_intr)
+>  IRQ_219-356   0.... 4761353us : e1000_clean_tx_irq (e1000_intr)
+>   <idle>-0     0D.h1 6761309us : do_IRQ (c0272a9b 219 0)
+>  IRQ_219-356   0.... 6761483us+: e1000_intr (handle_IRQ_event)
+>  IRQ_219-356   0.... 6761488us : e1000_clean_rx_irq (e1000_intr)
+>  IRQ_219-356   0.... 6761490us : e1000_clean_tx_irq (e1000_intr)
+> softirq--5     0D.h. 8760595us : do_IRQ (c0135dc4 219 0)
+>  IRQ_219-356   0.... 8760676us+: e1000_intr (handle_IRQ_event)
+>  IRQ_219-356   0.... 8760681us+: e1000_clean_rx_irq (e1000_intr)
+>  IRQ_219-356   0.... 8760739us : e1000_clean_tx_irq (e1000_intr)
+>  IRQ_219-356   0.... 8760740us : e1000_clean_rx_irq (e1000_intr)
+>  IRQ_219-356   0.... 8760742us : e1000_clean_tx_irq (e1000_intr)
+> softirq--7     0.... 8760885us : net_rx_action (ksoftirqd)
+> softirq--7     0.... 8760914us+: icmp_rcv (ip_local_deliver)
+> softirq--7     0.... 8760923us+: icmp_reply (icmp_echo)
+>   <idle>-0     0D.h1 8761661us : do_IRQ (c0272a9b 219 0)
+>  IRQ_219-356   0.... 8761833us+: e1000_intr (handle_IRQ_event)
+>  IRQ_219-356   0.... 8761838us : e1000_clean_rx_irq (e1000_intr)
+>  IRQ_219-356   0.... 8761840us : e1000_clean_tx_irq (e1000_intr)
+>  IRQ_219-356   0.... 8761875us : e1000_clean_rx_irq (e1000_intr)
+>  IRQ_219-356   0.... 8761876us : e1000_clean_tx_irq (e1000_intr)
+> softirq--6     0.... 8761921us : net_tx_action (ksoftirqd)
+> 
+> note that timestamps 2760093us, 4760910us, 6761309us and 8760595us is 
+> some sort of traffic-independent 'periodic' interrupt that e1000 
+> generates. That 'housekeeping' interrupt doesnt seem to be doing much. 
+> The IRQ at 8760595us picks up an icmp packet and replies to it - but the 
+> icmp packet in reality arrived somewhere between timestamps 6761309us 
+> and 8760595us - but no IRQ was generated for it!
+> 
+> Suspecting the interrupt-rate controlling bits of the e1000 hw i have 
+> tried the following tunes too:
+> 
+>  -#define DEFAULT_RDTR                   0
+>  +#define DEFAULT_RDTR                   1
+> 
+>  -#define DEFAULT_RADV                 128
+>  +#define DEFAULT_RADV                   1
+> 
+>  -#define DEFAULT_TIDV                  64
+>  +#define DEFAULT_TIDV                   1
+> 
+>  -#define DEFAULT_TADV                  64
+>  +#define DEFAULT_TADV                   1
+> 
+>  -#define DEFAULT_ITR                 8000
+>  +#define DEFAULT_ITR               100000
+> 
+> but they made no difference.
+> 
+> a 2.6.18-ish kernel works fine (2.6.18-1.2849.fc6):
+> 
+>  titan:~/linux/linux> ping e
+>  PING europe (10.0.1.15) 56(84) bytes of data.
+>  64 bytes from europe (10.0.1.15): icmp_seq=1 ttl=64 time=0.695 ms
+>  64 bytes from europe (10.0.1.15): icmp_seq=2 ttl=64 time=0.171 ms
+>  64 bytes from europe (10.0.1.15): icmp_seq=3 ttl=64 time=0.184 ms
+>  64 bytes from europe (10.0.1.15): icmp_seq=4 ttl=64 time=0.159 ms
+>  64 bytes from europe (10.0.1.15): icmp_seq=5 ttl=64 time=0.148 ms
+> 
+>  e1000: 0000:02:00.0: e1000_probe: (PCI Express:2.5Gb/s:Width x1) 00:16:41:17:49:d2
+>  e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
+> 
+> the precise hardware version is:
+> 
+>  02:00.0 Ethernet controller: Intel Corporation 82573L Gigabit Ethernet Controller
+>         Subsystem: Lenovo ThinkPad T60
+>         Flags: bus master, fast devsel, latency 0, IRQ 90
+>         Memory at ee000000 (32-bit, non-prefetchable) [size=128K]
+>         I/O ports at 2000 [size=32]
+>         Capabilities: <access denied>
+> 
+> this laptop has a CoreDuo so i have tried maxcpus=1 too, but it didnt 
+> make any difference.
+> 
+> Any ideas about what i should try next?
+> 
 
-we don't need those mach_mpsech.h now.
-
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-
----
- include/asm-x86/mach-bigsmp/mach_mpspec.h |    8 --------
- include/asm-x86/mach-es7000/mach_mpspec.h |    8 --------
- include/asm-x86/mach-numaq/mach_mpspec.h  |    8 --------
- include/asm-x86/mach-summit/mach_mpspec.h |    9 ---------
- 4 files changed, 33 deletions(-)
-
-Index: linux-2.6/include/asm-x86/mach-bigsmp/mach_mpspec.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/mach-bigsmp/mach_mpspec.h
-+++ /dev/null
-@@ -1,8 +0,0 @@
--#ifndef __ASM_MACH_MPSPEC_H
--#define __ASM_MACH_MPSPEC_H
--
--#define MAX_IRQ_SOURCES 256
--
--#define MAX_MP_BUSSES 32
--
--#endif /* __ASM_MACH_MPSPEC_H */
-Index: linux-2.6/include/asm-x86/mach-es7000/mach_mpspec.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/mach-es7000/mach_mpspec.h
-+++ /dev/null
-@@ -1,8 +0,0 @@
--#ifndef __ASM_MACH_MPSPEC_H
--#define __ASM_MACH_MPSPEC_H
--
--#define MAX_IRQ_SOURCES 256
--
--#define MAX_MP_BUSSES 256
--
--#endif /* __ASM_MACH_MPSPEC_H */
-Index: linux-2.6/include/asm-x86/mach-numaq/mach_mpspec.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/mach-numaq/mach_mpspec.h
-+++ /dev/null
-@@ -1,8 +0,0 @@
--#ifndef __ASM_MACH_MPSPEC_H
--#define __ASM_MACH_MPSPEC_H
--
--#define MAX_IRQ_SOURCES 512
--
--#define MAX_MP_BUSSES 32
--
--#endif /* __ASM_MACH_MPSPEC_H */
-Index: linux-2.6/include/asm-x86/mach-summit/mach_mpspec.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/mach-summit/mach_mpspec.h
-+++ /dev/null
-@@ -1,9 +0,0 @@
--#ifndef __ASM_MACH_MPSPEC_H
--#define __ASM_MACH_MPSPEC_H
--
--#define MAX_IRQ_SOURCES 256
--
--/* Maximum 256 PCI busses, plus 1 ISA bus in each of 4 cabinets. */
--#define MAX_MP_BUSSES 260
--
--#endif /* __ASM_MACH_MPSPEC_H */
+have you tried e1000e?
