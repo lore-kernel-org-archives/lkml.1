@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbYFRLpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754526AbYFRLsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754539AbYFRLpl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 07:45:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbYFRLpe
+	id S1754526AbYFRLsQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 07:48:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbYFRLsD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 07:45:34 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58020 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753057AbYFRLpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 07:45:33 -0400
-Date: Wed, 18 Jun 2008 13:45:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, andi@firstfloor.org, mingo@redhat.com,
-       tglx@linutronix.de, Paul Jackson <pj@sgi.com>,
-       linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] x86 boot: Pass E820 memory map entries more than 128
-	via linked list of setup data
-Message-ID: <20080618114511.GB28838@elte.hu>
-References: <1213155219.13392.2.camel@caritas-dev.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1213155219.13392.2.camel@caritas-dev.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 18 Jun 2008 07:48:03 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56623 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752904AbYFRLsC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 07:48:02 -0400
+Subject: Re: [PATCH 0/7] mmc: at91_mci: rework to allow better transfer
+From: David Woodhouse <dwmw2@infradead.org>
+To: "Hans J. Koch" <hjk@linutronix.de>
+Cc: Erik Mouw <mouw@nl.linux.org>, Nicolas Ferre <nicolas.ferre@atmel.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Victor <linux@maxim.org.za>, Pierre Ossman <drzeus@drzeus.cx>,
+       Eric BENARD <ebenard@free.fr>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Russell King <rmk@arm.linux.org.uk>
+In-Reply-To: <20080618114057.GE2226@local>
+References: <483FE9E7.7020707@atmel.com>
+	 <20080609124623.5b6bda48@mjolnir.drzeus.cx> <484E4F61.7010007@atmel.com>
+	 <20080614182831.0360bd77@mjolnir.drzeus.cx> <4858DDC1.6080802@atmel.com>
+	 <20080618104723.GA6788@gateway.home> <20080618111607.GB6788@gateway.home>
+	 <20080618114057.GE2226@local>
+Content-Type: text/plain
+Date: Wed, 18 Jun 2008 12:47:50 +0100
+Message-Id: <1213789670.26255.1200.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Huang, Ying <ying.huang@intel.com> wrote:
-
-> Because of the size limits of struct boot_params (zero page), the 
-> maximum number of E820 memory map entries can be passed to kernel is 
-> 128. As pointed by Paul Jackson, there is some machine produced by SGI 
-> with so many nodes that the number of E820 memory map entries is more 
-> than 128. To enabling Linux kernel on these system, a new setup data 
-> type named SETUP_E820_EXT is defined to pass additional memory map 
-> entries to Linux kernel.
+On Wed, 2008-06-18 at 13:40 +0200, Hans J. Koch wrote:
 > 
-> This patch is based on x86/auto-latest branch of git-x86 tree and has 
-> been tested on x86_64 and i386 platform.
+> I avoided the German umlaut in my name by using the abbreviation "Hans
+> J. Koch" on mailing lists. Unfortunately, I still have one mail client
+> that uses the full name. I'll fix that to avoid similar trouble.
+> 
+> On the other hand, I used that for quite a while now, and didn't have
+> problems. It shouldn't be too difficult to have these programs use
+> UTF-8 (or any other charset) properly these days.
 
-applied to tip/x86/mpparse, thanks.
+I'm not convinced it's a problem with rfc2047 handling; I think it's
+simpler brain-damage than that on mailman's part. It's to do with line
+wrapping, iirc -- if an address spans two lines, like: David Woodhouse
+ <dwmw2@infradead.org>, then mailman will brokenly insert a comma where
+the line break happened -- or something like that.
 
-this bit collided with a recent change:
+-- 
+dwmw2
 
-> -	do {
-> -		u64 start = biosmap->addr;
-> -		u64 size = biosmap->size;
-> -		u64 end = start + size;
-> -		u32 type = biosmap->type;
-> -
-> -		/* Overflow in 64 bits? Ignore the memory map. */
-> -		if (start > end)
-> -			return -1;
-> -
-> -		add_memory_region(start, size, type);
-> -	} while (biosmap++, --nr_map);
-> -	return 0;
-> +	return __copy_e820_map(biosmap, nr_map);
-
-because add_memory_region() got renamed to e820_add_region(). I did the 
-obvious fixup.
-
-	Ingo
