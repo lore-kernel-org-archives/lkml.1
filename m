@@ -1,138 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760614AbYFRFfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760703AbYFRFgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760614AbYFRFfj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 01:35:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760291AbYFRFfV
+	id S1760703AbYFRFgV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 01:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbYFRFgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 01:35:21 -0400
-Received: from gw.goop.org ([64.81.55.164]:40782 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760217AbYFRFfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 01:35:18 -0400
-Message-ID: <48589E6C.2030403@goop.org>
-Date: Tue, 17 Jun 2008 22:34:36 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 18 Jun 2008 01:36:10 -0400
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:44804 "HELO
+	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754652AbYFRFgJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 01:36:09 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=SlkCzkrn34SjgAhCQiQUVGNZGP7C4Z8B2585Ld/JfGeP2iczGuFy0zlyFOQ6UDJsW/Az62tWuMYQRMHwbcxyp8zqPAeYnZzqYg77LJTXwsOtcAyeDyt6pCZmRikrFmwNbGG8NAJDB9hq/weXaorjSZ5QsAQOeKoE4CRPyu2L1QQ=  ;
+X-YMail-OSG: jujbvpoVM1n2ttLvQoj5gthburGcAS3gC8gsSg74kGcSGhmZO0fUZUPRYOLul.1iswTgkSeo84.UOjX.EtuQEHuh64zGiDeQs2iG39ZxXKXvYN_NhHe2khTtT5S8sUcVvQE-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] migration_entry_wait fix.
+Date: Wed, 18 Jun 2008 15:35:57 +1000
+User-Agent: KMail/1.9.5
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       "hugh@veritas.com" <hugh@veritas.com>
+References: <20080611225945.4da7bb7f.akpm@linux-foundation.org> <20080618101349.db4d5205.kamezawa.hiroyu@jp.fujitsu.com> <20080618105435.de10d6bc.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080618105435.de10d6bc.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
-       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.509483000@polaris-admin.engr.sgi.com> <20080605102222.GA21319@elte.hu> <48480DFB.7000404@sgi.com> <4848F55C.90904@goop.org> <48493861.3050402@sgi.com>
-In-Reply-To: <48493861.3050402@sgi.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806181535.58036.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> Jeremy Fitzhardinge wrote:
->   
->> Mike Travis wrote:
->>     
->>> Ingo Molnar wrote:
->>>  
->>>       
->>>> * Mike Travis <travis@sgi.com> wrote:
->>>>
->>>>    
->>>>         
->>>>>   * Declare the pda as a per cpu variable.
->>>>>
->>>>>   * Make the x86_64 per cpu area start at zero.
->>>>>
->>>>>   * Since the pda is now the first element of the per_cpu area,
->>>>> cpu_pda()
->>>>>     is no longer needed and per_cpu() can be used instead.  This
->>>>> also makes
->>>>>     the _cpu_pda[] table obsolete.
->>>>>
->>>>>   * Since %gs is pointing to the pda, it will then also point to the
->>>>> per cpu
->>>>>     variables and can be accessed thusly:
->>>>>
->>>>>     %gs:[&per_cpu_xxxx - __per_cpu_start]
->>>>>
->>>>> Based on linux-2.6.tip
->>>>>       
->>>>>           
->>>> -tip testing found an instantaneous reboot crash on 64-bit x86, with
->>>> this config:
->>>>
->>>>   http://redhat.com/~mingo/misc/config-Thu_Jun__5_11_43_51_CEST_2008.bad
->>>>
->>>> there is no boot log as the instantaneous reboot happens before
->>>> anything is printed to the (early-) serial console. I have bisected
->>>> it down to:
->>>>
->>>> | 7670dc09e89a2b151a1cf49eccebc07c41c2ce9f is first bad commit
->>>> | commit 7670dc09e89a2b151a1cf49eccebc07c41c2ce9f
->>>> | Author: Mike Travis <travis@sgi.com>
->>>> | Date:   Tue Jun 3 17:30:21 2008 -0700
->>>> |
->>>> |     x86_64: Fold pda into per cpu area
->>>>
->>>> the big problem is not just this crash, but that the patch is _way_
->>>> too big:
->>>>
->>>>  arch/x86/Kconfig                 |    3 +
->>>>  arch/x86/kernel/head64.c         |   34 ++++++--------
->>>>  arch/x86/kernel/irq_64.c         |   36 ++++++++-------
->>>>  arch/x86/kernel/setup.c          |   90
->>>> ++++++++++++---------------------------
->>>>  arch/x86/kernel/setup64.c        |    5 --
->>>>  arch/x86/kernel/smpboot.c        |   51 ----------------------
->>>>  arch/x86/kernel/traps_64.c       |   11 +++-
->>>>  arch/x86/kernel/vmlinux_64.lds.S |    1
->>>>  include/asm-x86/percpu.h         |   48 ++++++--------------
->>>>  9 files changed, 89 insertions(+), 190 deletions(-)
->>>>
->>>> considering the danger involved, this is just way too large, and
->>>> there's no reasonable debugging i can do in the bisection to narrow
->>>> it down any further.
->>>>
->>>> Please resubmit with the bug fixed and with a proper splitup, the
->>>> more patches you manage to create, the better. For a dangerous code
->>>> area like this, with a track record of frequent breakages in the
->>>> past, i would not mind a "one line of code changed per patch" splitup
->>>> either. (Feel free to send a git tree link for us to try as well.)
->>>>
->>>>     Ingo
->>>>     
->>>>         
->>> Thanks for the feedback Ingo.  I'll test the above config and look at
->>> splitting up the patch.  The difficulty is making each patch
->>> independently
->>> compilable and testable.
->>>       
->> FWIW, I'm getting past the "crashes very, very early" stage with this
->> series applied when booting under Xen.  Then it crashes pretty early,
->> but that's not your fault...
->>
->>    J
->>     
+On Wednesday 18 June 2008 11:54, KAMEZAWA Hiroyuki wrote:
+> On Wed, 18 Jun 2008 10:13:49 +0900
 >
-> Hi Jeremy,
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > +	if (!page_cache_get_speculative())
+> > +		goto out;
 >
-> Yes we have a simulator for Nahelem that also breezes past the boot up
-> problem (actually makes it to the kernel login prompt.)  Weirdly, the
-> problem doesn't exist in an earlier code base so my changes are tickling
-> something else newly introduced.  I'm attempting to see if I can use
-> GRUB 2 with the GDB stubs to track it down (which is time consuming in
-> itself to setup.)
+> This is obviously buggy....sorry..quilt refresh miss..
 >
-> It is definitely related to basing percpu variable offsets from %gs and
-> (I think) interrupts.
->   
+> ==
+> In speculative page cache lookup protocol, page_count(page) is set to 0
+> while radix-tree modification is going on, truncation, migration, etc...
 
-Hi Mike,
+These tend to all happen while the page is locked, and in particular
+while the page does not have any references other than the current
+code path and the pagecache. So no page tables should point to it.
 
-Have you made any progress on this?  I'm bumping up against it when I 
-run on native hardware (as opposed to under Xen).
+So migration_entry_wait should not find pages with a refcount of zero.
 
-    J
+
+> While page migration, a page fault to page under migration should wait
+> unlock_page() and migration_entry_wait() waits for the page from its
+> pte entry. It does get_page() -> wait_on_page_locked() -> put_page() now.
+>
+> In page migration, page_freeze_refs() -> page_unfreeze_refs() is called.
+>
+> Here, page_unfreeze_refs() expects page_count(page) == 0 and panics
+> if page_count(page) != 0. To avoid this, we shouldn't touch page_count()
+> if it is zero. This patch uses page_cache_get_speculative() to avoid
+> the panic.
+
+At any rate, page_cache_get_speculative() should not be used for this
+purpose, but for when we _really_ don't have any references to a page.
