@@ -1,74 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753209AbYFRIp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753212AbYFRIrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753209AbYFRIp1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 04:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYFRIpU
+	id S1753212AbYFRIrw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 04:47:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbYFRIrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 04:45:20 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:43059 "EHLO pardus.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751632AbYFRIpT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 04:45:19 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: "Bart Van Assche" <bart.vanassche@gmail.com>
-Subject: Re: Userspace tools for BSD process accounting (v3)
-Date: Wed, 18 Jun 2008 11:45:13 +0300
-User-Agent: KMail/1.9.9
-Cc: LKML <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>
-References: <e2e108260806180134u43413ef5ke226745a8a911e7b@mail.gmail.com> <200806181139.06612.caglar@pardus.org.tr>
-In-Reply-To: <200806181139.06612.caglar@pardus.org.tr>
+	Wed, 18 Jun 2008 04:47:43 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:12490 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751661AbYFRIrl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 04:47:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Y0aJa8KknZUMH63UpqmwvgyKFkUqvAtyXnyfvEVRPmBjmUN6/VEdwJLo0ADmKWBInK
+         COoFzIa1+A0xXusqzyXYdJopBztsrjg5e7YfAVgQpdUqniw5gTlxSoOmO3/kSX9VsNPl
+         HEwrhngouoC4IeLv9AECtaWUEeEVGDZ34cxJA=
+Message-ID: <5a4c581d0806180147qf8fc731y527c79bfb73401b2@mail.gmail.com>
+Date: Wed, 18 Jun 2008 10:47:39 +0200
+From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [Cbe-oss-dev] [regression/bisected] corrupt CD data after media change and delay
+Cc: "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+       "David Martin" <tasio@hierro.tasio.net>, linux-scsi@vger.kernel.org,
+       "Linux Kernel Development" <linux-kernel@vger.kernel.org>,
+       "Maarten Bressers" <mbres@gentoo.org>, "Daniel Drake" <dsd@gentoo.org>,
+       "Cell Broadband Engine OSS Development" <cbe-oss-dev@ozlabs.org>
+In-Reply-To: <Pine.LNX.4.64.0806131932350.30730@vixen.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806181145.14265.caglar@pardus.org.tr>
+References: <Pine.LNX.4.64.0806061458300.6228@vixen.sonytel.be>
+	 <Pine.LNX.4.64.0806131932350.30730@vixen.sonytel.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi;
+On Fri, Jun 13, 2008 at 7:33 PM, Geert Uytterhoeven
+<Geert.Uytterhoeven@sonycom.com> wrote:
+> On Fri, 6 Jun 2008, Geert Uytterhoeven wrote:
+>> When mounting a CD/DVD more than 30 seconds after inserting it, and reading
+>> from it, we get:
+>
+> Apparently the fix didn't make it to all the CCed lists...
+>
+> http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fjejb%2Fscsi-rc-fixes-2.6.git;a=commitdiff_plain;h=d1daeabf0da5bfa1943272ce508e2ba785730bf0
 
-18 Haz 2008 Çar tarihinde, S.Çağlar Onur şunları yazmıştı: 
-> 18 Haz 2008 Çar tarihinde, Bart Van Assche şunları yazmıştı: 
-> > The file init/Kconfig in the kernel source tree refers to the URL
-> > http://www.physik3.uni-rostock.de/tim/kernel/utils/acct/ as the
-> > download location for userspace tools for processing the v3 BSD
-> > process accounting file format. This URL is no longer valid
-> > unfortunately. Anyone any idea where these tools can be downloaded ?
-> 
-> http://savannah.gnu.org/projects/acct/
+Oh, that's in mainline ? I still have the problem of having to
+ insert DVD / try accessing it and get errors / eject / re-insert
+ and then it magically works... the messages have changed
+ from what they were as reported here
 
-Following patch corrects URL of "The GNU Accounting Utilities" in init/Kconfig.
+http://bugzilla.kernel.org/show_bug.cgi?id=10116
 
-Noticed by: Bart Van Assche" <bart.vanassche@gmail.com>
+ (see comments #8 and #9) to these ones, in 2.6.26-rc6-git4:
 
-Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
+Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] Result:
+hostbyte=0x00 driverbyte=0x08
+Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] Sense Key : 0x3 [current]
+Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] ASC=0x11 ASCQ=0x0
+Jun 17 22:38:43 sandman kernel: end_request: I/O error, dev sr0, sector 232
+Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 29
+Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 30
+Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 31
+Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 32
+Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 33
+Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 34
+Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 35
+Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 36
+Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 37
+Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 38
 
- init/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+here I eject and reinsert the disc, and:
 
-diff --git a/init/Kconfig b/init/Kconfig
-index 6199d11..10077ce 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -171,7 +171,7 @@ config BSD_PROCESS_ACCT_V3
- 	  process and it's parent. Note that this file format is incompatible
- 	  with previous v0/v1/v2 file formats, so you will need updated tools
- 	  for processing it. A preliminary version of these tools is available
--	  at <http://www.physik3.uni-rostock.de/tim/kernel/utils/acct/>.
-+	  at <http://www.gnu.org/software/acct/>.
- 
- config TASKSTATS
- 	bool "Export task/process statistics through netlink (EXPERIMENTAL)"
- 
+Jun 17 22:39:10 sandman kernel: UDF-fs: No VRS found
 
+ lo and behold, no problem.
 
-Cheers
--- 
-S.Çağlar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
+This does not, alas, happen every time. It might be at the first
+ DVD access after booting the laptop, but I haven't investigated
+ in this detail yet.
 
-Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
+--alessandro
+
+ "Give me love / Or give me hate
+ Give me anything that's not just ok"
+
+ (Sophia, 'Weightless')
