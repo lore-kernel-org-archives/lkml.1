@@ -1,137 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756526AbYFRHha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751341AbYFRHk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756526AbYFRHha (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 03:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbYFRHhS
+	id S1751341AbYFRHk3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 03:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750737AbYFRHkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 03:37:18 -0400
-Received: from correo.ikusi.com ([194.30.89.100]:28867 "EHLO correo.ikusi.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751356AbYFRHhR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 03:37:17 -0400
-X-Greylist: delayed 916 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Jun 2008 03:37:17 EDT
-Subject: Change console to another UART
-From: oihana <munoz.o@ikusi.es>
-To: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080617223023.GH25911@cs181133002.pp.htv.fi>
-References: <20080617223023.GH25911@cs181133002.pp.htv.fi>
-Content-Type: text/plain
+	Wed, 18 Jun 2008 03:40:21 -0400
+Received: from smtp111.mail.mud.yahoo.com ([209.191.84.64]:35067 "HELO
+	smtp111.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750717AbYFRHkU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 03:40:20 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=a269rwNGTr13x3cZb98SitQiTljY3repl6KQQT3dL9yrxaeaub2TqMiLSw8DbMuEsdoUu/KLK7MSzreOTaCm2gkBvI+gBY4LAAuy+B9GGpTLUMATPmDNp27B+XAe6d3lCZRQDSVVx6yhkBAlmaK7XwLC0Iuihm1q1ZPcYVgX57g=  ;
+X-YMail-OSG: nIsmuaUVM1kfNmTlOGS02Jljjv7Iw.Q7adn6wQWsli7MUx2N5Za4IfQhlikNID7gZ0ICLM7UdXXGn_YFBRq2i_ydMMUteG1CCeCciDUR_.PTxlxX6plLVoLAQt2LRLcv9zo-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH -mm][BUGFIX] migration_entry_wait fix. v2
+Date: Wed, 18 Jun 2008 17:40:07 +1000
+User-Agent: KMail/1.9.5
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       "hugh@veritas.com" <hugh@veritas.com>
+References: <20080611225945.4da7bb7f.akpm@linux-foundation.org> <20080618155233.7dd79312.kamezawa.hiroyu@jp.fujitsu.com> <20080618162944.2f8fd265.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080618162944.2f8fd265.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Date: Wed, 18 Jun 2008 09:21:04 +0200
-Message-Id: <1213773664.15059.26.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-X-OriginalArrivalTime: 18 Jun 2008 07:21:58.0620 (UTC) FILETIME=[FE9AC9C0:01C8D113]
-X-TM-AS-Product-Ver: SMEX-7.0.0.1433-5.5.1027-15978.002
-X-TM-AS-Result: No--4.835000-4.000000-31
+Content-Disposition: inline
+Message-Id: <200806181740.07749.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, 
+On Wednesday 18 June 2008 17:29, KAMEZAWA Hiroyuki wrote:
+> In speculative page cache look up protocol, page_count(page) is set to 0
+> while radix-tree modification is going on, truncation, migration, etc...
+>
+> While page migration, a page fault to page under migration does
+>  - look up page table
+>  - find it is migration_entry_pte
+>  - decode pfn from migration_entry_pte and get page of pfn_page(pfn)
+>  - wait until page is unlocked
+>
+> It does get_page() -> wait_on_page_locked() -> put_page() now.
+>
+> In page migration's radix-tree replacement, page_freeze_refs() ->
+> page_unfreeze_refs() is called. And page_count(page) turns to be zero
+> and must be kept to be zero while radix-tree replacement.
+>
+> If get_page() is called against a page under radix-tree replacement,
+> the kernel panics(). To avoid this, we shouldn't increment page_count()
+> if it is zero. This patch uses get_page_unless_zero().
+>
+> Even if get_page_unless_zero() fails, the caller just retries.
+> But will be a bit busier.
+>
+> Change log v1->v2:
+>  - rewrote the patch description and added comments.
+>
 
-I am working with a STi7109 and mb411. The STi7109 has 4 UARTs and they
-are configured by default as follow....
-- UART0 is reserved for SC0
-- UART1 is reserved for SC1
-- UART2 is reserved for console
-- UART3 is reserved for KGDB
+Thanks
 
-What I need is to have the Console in the UART1 because I need the UART2
-free, and I have enough with one SC (SC0). 
+Acked-by: Nick Piggin <npiggin@suse.de>
 
-I realized that if I change on my STWorkBench the Kernel Debug
-configuration, from ttyAS0 to ttyAS1, the console comes out from the
-other serial port, but it still uses the UART2. 
+Andrew, this is a bugfix to mm-speculative-page-references.patch
 
-So I tried to change the configuration in the stasc.c
-(kernel/src/drivers/serial/stasc.c).
-
-- Original configuration for my chip and board:
-struct asc_port asc_ports[ASC_NPORTS] = {
-#if defined(CONFIG_CPU_SUBTYPE_STB7100)
-        /* UART2 */ 
-	
-	{  
-		.port	= {
-			.membase	= (void *)0xb8032000,
-			.mapbase	= 0xb8032000,
-			.iotype		= SERIAL_IO_MEM,
-			.irq		= 121,
-			.ops		= &asc_uart_ops,
-			.flags		= ASYNC_BOOT_AUTOCONF,
-			.fifosize	= FIFO_SIZE,
-			.line		= 0,
-		},
-		.pio_port	= 4, 
-		.pio_pin	= {3, 2, 4, 5},
-	} ,
-			 
-	
-	/* UART3 */
-	{   
-		.port	= {
-			.membase	= (void *)0xb8033000,
-			.mapbase	= 0xb8033000,
-			.iotype		= SERIAL_IO_MEM,
-			.irq		= 120,
-			.ops		= &asc_uart_ops,
-			.flags		= ASYNC_BOOT_AUTOCONF,
-			.fifosize	= FIFO_SIZE,
-			.line		= 1,
-		},
-		.pio_port	= 5, 
-		.pio_pin	= {0, 1, 2, 3},
-	}
-...
-...
-
-
-- My changes: I tried to change the order, to have in the first element
-the UART3 and in the second the UART2, or to have UART1 and UART2....
-and nothing seams to work. 
-
-        /* UART1 */
-	{   
-		.port	= {
-			.membase	= (void *)0xb8031000,
-			.mapbase	= 0xb8031000,
-			.iotype		= SERIAL_IO_MEM,
-			.irq		= 122,
-			.ops		= &asc_uart_ops,
-			.flags		= ASYNC_BOOT_AUTOCONF,
-			.fifosize	= FIFO_SIZE,
-			.line		= 1,
-		},
-		.pio_port	= 1, 
-		.pio_pin	= {0, 1, 4, 5},
-	},
-	
-	/* UART2 */  
-	{  
-		.port	= {
-			.membase	= (void *)0xb8032000,
-			.mapbase	= 0xb8032000,
-			.iotype		= SERIAL_IO_MEM,
-			.irq		= 121,
-			.ops		= &asc_uart_ops,
-			.flags		= ASYNC_BOOT_AUTOCONF,
-			.fifosize	= FIFO_SIZE,
-			.line		= 0,
-		},
-		.pio_port	= 4, 
-		.pio_pin	= {3, 2, 4, 5},
-	} 
-
-If the first element is the UART2, the kernel runs OK. So that I can go
-into using the minicom or ssh. In the other hand, if the UART2 is the
-second element, kernel seams if it was run (in the STWorkBench)... but
-the ethernet ping to the board tells me "Destination Host Unreachable",
-and I don't get any answer from the 3 serial points in which i
-listen... 
-
-Could someone help me please????????
-
-Thanks, 
-
-Oihana
+> From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+>  mm/migrate.c |   11 +++++++++--
+>  1 file changed, 9 insertions(+), 2 deletions(-)
+>
+> Index: test-2.6.26-rc5-mm3/mm/migrate.c
+> ===================================================================
+> --- test-2.6.26-rc5-mm3.orig/mm/migrate.c
+> +++ test-2.6.26-rc5-mm3/mm/migrate.c
+> @@ -242,8 +242,15 @@ void migration_entry_wait(struct mm_stru
+>  		goto out;
+>
+>  	page = migration_entry_to_page(entry);
+> -
+> -	get_page(page);
+> +	/*
+> +	 * Once radix-tree replacement of page migration started, page_count
+> +	 * *must* be zero. And, we don't want to call wait_on_page_locked()
+> +	 * against a page without get_page().
+> +	 * So, we use get_page_unless_zero(), here. Even failed, page fault
+> +	 * will occur again.
+> +	 */
+> +	if (!get_page_unless_zero(page))
+> +		goto out;
+>  	pte_unmap_unlock(ptep, ptl);
+>  	wait_on_page_locked(page);
+>  	put_page(page);
