@@ -1,72 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754722AbYFRMIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754916AbYFRMJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754722AbYFRMIu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 08:08:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbYFRMIj
+	id S1754916AbYFRMJe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 08:09:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbYFRMJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 08:08:39 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:20819 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754137AbYFRMId convert rfc822-to-8bit (ORCPT
+	Wed, 18 Jun 2008 08:09:26 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:2814 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753286AbYFRMJZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 08:08:33 -0400
-Message-Id: <4858C286.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Wed, 18 Jun 2008 06:08:38 -0600
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Marin Mitov" <mitov@issp.bas.bg>
-Cc: "Andi Kleen" <andi-suse@firstfloor.org>,
-       "Clark Williams" <clark.williams@gmail.com>,
-       "Steven Rostedt" <rostedt@goodmis.org>,
-       "Peter Zijlstra" <peterz@infradead.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>, <akpm@osdl.org>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       "LKML" <linux-kernel@vger.kernel.org>,
-       "linux-rt-users" <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH][resubmit] x86: enable preemption in delay
-References: <200805252108.25011.mitov@issp.bas.bg>
- <200806091911.21850.mitov@issp.bas.bg> <20080609161606.GA24841@elte.hu>
- <200806152058.17142.mitov@issp.bas.bg> <20080618075518.GD4135@elte.hu>
-In-Reply-To: <20080618075518.GD4135@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Wed, 18 Jun 2008 08:09:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=f6mwAcVYfdhGpQ+h8RnS6wCCLNRvdxgu38qvJfrBIjLzmUfwXHfWELmicsFCfG8UW8
+         nOnX7lHzYb29XtuRR9kLJ6S4WjsX7SQzlUFJxk5MuJPnaWku44qoXxbZZ1FGLBlN392G
+         dK6L8n1cdWMMYdN/dEzEHxJmDFLUHAVORSHo4=
+Message-ID: <c49e66200806180509g6a391f8fi1567f21cd353c71c@mail.gmail.com>
+Date: Wed, 18 Jun 2008 14:09:23 +0200
+From: "Pieter Steyn" <pieterste@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] eth_v10.c phy fix
+Cc: jesper.nilsson@axis.com
+In-Reply-To: <c49e66200806130900i26b3c284q262aef2d85d61f61@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <c49e66200806130804u280fdfa1gd1027f3401ae7f4f@mail.gmail.com>
+	 <c49e66200806130900i26b3c284q262aef2d85d61f61@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Wed, Jun 18, 2008 at  3:55 AM, in message <20080618075518.GD4135@elte.hu>,
-Ingo Molnar <mingo@elte.hu> wrote: 
+Hi guys,
 
-> * Marin Mitov <mitov@issp.bas.bg> wrote:
-> 
->> Why not something like that (do keep in mind I am not an expert :-):
->> 
->> static void delay_tsc(unsigned long loops)
->> {
->> 	get and store the mask of allowed cpus;
->> 	/*     prevent the migration   */
->> 	set the mask of allowed cpus to the current cpu only;
->> 	/*     is it possible? could it be guaranteed?    */
->> 	loop for the delay;
->> 	restore the old mask of allowed cpus;
->> }
->> 
->> You have got the idea. Could it be realized? Is it more expensive than 
->> the current realization? So, comments, please.
-> 
-> hm, changing/saving/restorig cpus_allowed is really considered a 'heavy' 
-> operation compared to preempt_disable(). On a 4096 CPUs box cpus_allowed 
-> is 4096 bits which is half a kilobyte ...
-> 
-> preempt_disable()/enable() on the other hand only touches a single 
-> variable, (thread_info->preempt_count which is an u32)
-> 
-> 	Ingo
+Any word on this?
 
-FWIW:  I had submitted some "migration disable" patches a while back that would solve this without the cpus_allowed manipulations described here.  Its more expensive than a preempt-disable (but its preemptible), yet its way cheaper (and more correct / less racy) than chaning cpus_allowed.  I could resubmit if there was any interest, though I think Ingo said he didnt like the concept on the first pass.  Anyway, FYI.
+Thanks,
+Pieter
 
--Greg
-
+> On 6/13/08, Pieter Steyn <pieterste@gmail.com> wrote:
+> Ah, I did not consider case when searching...DOH! :]
+>
+>  I've now cc'ed in Jesper who seems to be the maintainer.
+>
+>  Cheers,
+>
+> Pieter Steyn
+>
+>
+>  > On 6/13/08, Pieter Steyn <pieterste@gmail.com> wrote:
+>  > Hi guys,
+>  >
+>  >  This patch allows you to set phy address parameters through ethtool, like:
+>  >
+>  >  /bin/ethtool -s eth0 phyad 8
+>  >
+>  >  --- drivers/net/cris/eth_v10.c  2008-06-12 14:12:33.000000000 +0200
+>  >  +++ drivers/net/cris/eth_v10.c  2008-06-12 14:19:35.000000000 +0200
+>  >  @@ -1430,7 +1430,11 @@
+>  >                 e100_set_duplex(dev, ecmd->duplex == DUPLEX_HALF ? half : full);
+>  >                 e100_set_speed(dev, ecmd->speed == SPEED_10 ? 10: 100);
+>  >         }
+>  >  -
+>  >  +        //Honor ethtool phy address parameter, which was simply
+>  >  discarded before this.
+>  >  +        if (ecmd->phy_address <= 31)
+>  >  +                mdio_phy_addr = ecmd->phy_address;
+>  >  +        else if (ecmd->phy_address == 32)
+>  >  +                return -ENODEV;
+>  >         return 0;
+>  >   }
+>  >
+>  >  I've searched the MAINTAINERS file and haven't seen anything regarding
+>  >  either the source file name or cris.  Please consider applying my
+>  >  patch to main kernel...
+>  >
+>  >  Thanks,
+>  >
+>  > Pieter Steyn
+>  >
+>  >
+>
