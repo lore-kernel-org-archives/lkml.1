@@ -1,139 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbYFRQkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753437AbYFRQud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755205AbYFRQkl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 12:40:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbYFRQkd
+	id S1753437AbYFRQud (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 12:50:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbYFRQuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 12:40:33 -0400
-Received: from bay0-omc1-s13.bay0.hotmail.com ([65.54.246.85]:52522 "EHLO
-	bay0-omc1-s13.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751319AbYFRQkc (ORCPT
+	Wed, 18 Jun 2008 12:50:23 -0400
+Received: from trinity.fluff.org ([89.145.97.151]:45554 "EHLO
+	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751949AbYFRQuX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 12:40:32 -0400
-Message-ID: <BAY103-DAV10F0AFAC45572E50A384AB2AB0@phx.gbl>
-X-Originating-IP: [85.32.103.134]
-X-Originating-Email: [pupilla@hotmail.com]
-From: "Marco Berizzi" <pupilla@hotmail.com>
-To: "Dave Chinner" <david@fromorbit.com>
-Cc: <linux-kernel@vger.kernel.org>, <xfs@oss.sgi.com>
-References: <BAY103-DAV69C0718B7EDB534D9337FB2A90@phx.gbl> <20080618161252.GV3700@disturbed>
-Subject: Re: XFS: 2.6.26-rc6 link count mismatch for inode
-Date: Wed, 18 Jun 2008 18:39:59 +0200
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2800.1123
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1123
-X-OriginalArrivalTime: 18 Jun 2008 16:40:32.0201 (UTC) FILETIME=[06416B90:01C8D162]
+	Wed, 18 Jun 2008 12:50:23 -0400
+Date: Wed, 18 Jun 2008 17:50:21 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: linux-arm-kernel@lists.arm.linux.org.uk
+Cc: linux-kernel@vger.kernel.org
+Subject: linux-next: fix vector initialisation when !CONFIG_KGDB
+Message-ID: <20080618165021.GJ10351@trinity.fluff.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
+Content-Disposition: inline
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.9i
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Chinner wrote:
 
-> On Mon, Jun 16, 2008 at 11:11:31AM +0200, Marco Berizzi wrote:
-> > Hi Folk,
-> >
-> > I was tring to compile firefox 3.0rc3
-> > and while I was erasing a previous
-> > /tmp/mozilla tree, I started a new
-> > tar xjf mozilla-blabla.
-> > After a while linux 2.6.26-rc6 was
-> > unresponsive: I have unplugged the
-> > power cable. No problem at startup,
-> > but:
->
-> What are your mount options?
+--fdj2RfSjLxBAspz7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-root@Venus:/etc# cat mtab
-/dev/sda2 / xfs rw 0 0
+It seems in the changes for adding CONFIG_KGDB that the ARM
+trap initialisation has been turned off if the configuration
+is not enabled. If CONFIG_KGDB is not set, the system locks
+up as soon as the kernel turns the IRQs on for the first
+time in init/main.c.
 
-root@Venus:/etc# cat fstab
-/dev/sda2        /                xfs         defaults         1   1
+The fix is to remove the dependency on calling early_trap_init()
+on CONFIG_KGDB, so that the vectors are initialised before
+the init sequence enables the IRQs.
 
-> Are you using barriers (what does XFS
-> output in dmesg when mounting the filesystem)?
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-scsi0 : ahci
-scsi1 : ahci
-scsi2 : ahci
-ata1: SATA max UDMA/133 abar m2048@0xe4809000 port 0xe4809100 irq 17
-ata2: DUMMY
-ata3: DUMMY
-ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-ata1.00: ACPI cmd f5/00:00:00:00:00:a0 filtered out
-ata1.00: ACPI cmd b1/c1:00:00:00:00:a0 filtered out
-ata1.00: ACPI cmd c6/00:10:00:00:00:a0 succeeded
-ata1.00: ACPI cmd ef/10:03:00:00:00:a0 succeeded
-ata1.00: ATA-7: ST9160821AS, 3.BHE, max UDMA/100
-ata1.00: 312581808 sectors, multi 16: LBA48
-ata1.00: ACPI cmd f5/00:00:00:00:00:a0 filtered out
-ata1.00: ACPI cmd b1/c1:00:00:00:00:a0 filtered out
-ata1.00: ACPI cmd c6/00:10:00:00:00:a0 succeeded
-ata1.00: ACPI cmd ef/10:03:00:00:00:a0 succeeded
-ata1.00: configured for UDMA/100
-ata1.00: configured for UDMA/100
-ata1: EH complete
-scsi 0:0:0:0: Direct-Access     ATA      ST9160821AS      3.BH PQ: 0
-ANSI: 5
-sd 0:0:0:0: [sda] 312581808 512-byte hardware sectors (160042 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
-support DPO
- or FUA
-sd 0:0:0:0: [sda] 312581808 512-byte hardware sectors (160042 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
-support DPO
- or FUA
- sda: sda1 sda2 sda3 sda4
-sd 0:0:0:0: [sda] Attached SCSI disk
-ata_piix 0000:00:1f.1: version 2.12
-ACPI: PCI Interrupt 0000:00:1f.1[A] -> GSI 16 (level, low) -> IRQ 16
-PCI: Setting latency timer of device 0000:00:1f.1 to 64
-scsi3 : ata_piix
-scsi4 : ata_piix
-ata4: PATA max UDMA/100 cmd 0x1f0 ctl 0x3f6 bmdma 0x40c0 irq 14
-ata5: PATA max UDMA/100 cmd 0x170 ctl 0x376 bmdma 0x40c8 irq 15
-ata4.00: ATAPI: HL-DT-ST DVDRAM GSA-T20L, NC08, max MWDMA2
-ata4.00: configured for MWDMA2
-ata5: port disabled. ignoring.
-scsi 3:0:0:0: CD-ROM            HL-DT-ST DVDRAM GSA-T20L  NC08 PQ: 0
-ANSI: 5
-PNP: PS/2 Controller [PNP0303:C298,PNP0f13:C299] at 0x60,0x64 irq 1,12
-i8042.c: Detected active multiplexing controller, rev 1.1.
-serio: i8042 KBD port at 0x60,0x64 irq 1
-serio: i8042 AUX0 port at 0x60,0x64 irq 12
-serio: i8042 AUX1 port at 0x60,0x64 irq 12
-serio: i8042 AUX2 port at 0x60,0x64 irq 12
-serio: i8042 AUX3 port at 0x60,0x64 irq 12
-mice: PS/2 mouse device common for all mice
-TCP cubic registered
-Initializing XFRM netlink socket
-NET: Registered protocol family 17
-Using IPI Shortcut mode
-input: AT Translated Set 2 keyboard as
-/devices/platform/i8042/serio0/input/inpu
-t0
-XFS mounting filesystem sda2
-Ending clean XFS mount for filesystem: sda2
-VFS: Mounted root (xfs filesystem) readonly.
-
-> I ask because I've
-> seen this sort of directory corruption before when using volatile
-> write caches and yanking the power....
->
-> i.e. the corruption could have been caused by the way you reset the
-> system, not because of the hang. Do you have any information on what
-> caused the hang?
-
-The tar xf mozilla-source.tarball was not responding
-nor writing anything on the disk. I did issue also a
-kill -9 'pid of tar xf' but it did not want to die.
-So I think the problem was on the filesystem before
-the incorrect shutdown.
-I can retry the test. Let me know if I can do a
-xfs_repair.
+--- linux-2.6.26-rc6-q1.orig/arch/arm/kernel/setup.c	2008-06-18 15:17:31.00=
+0000000 +0100
++++ linux-2.6.26-rc6-q1/arch/arm/kernel/setup.c	2008-06-18 15:17:45.0000000=
+00 +0100
+@@ -855,9 +855,7 @@ void __init setup_arch(char **cmdline_p)
+ #endif
+ #endif
+=20
+-#if defined(CONFIG_KGDB)
+ 	early_trap_init();
+-#endif
+ }
 
 
+--fdj2RfSjLxBAspz7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFIWTzMJZCApG2L7OYRApqrAJsFyl+1qq2lTUQ97tv240KUi6WsxQCZAfLe
+XIfrNA+VqpfQLsPmPdvwYe0=
+=duN8
+-----END PGP SIGNATURE-----
+
+--fdj2RfSjLxBAspz7--
