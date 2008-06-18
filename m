@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752202AbYFRIZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752521AbYFRI1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752202AbYFRIZc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 04:25:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbYFRIZV
+	id S1752521AbYFRI1Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 04:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbYFRI1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 04:25:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50873 "EHLO mx3.mail.elte.hu"
+	Wed, 18 Jun 2008 04:27:17 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37730 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751219AbYFRIZS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 04:25:18 -0400
-Date: Wed, 18 Jun 2008 10:25:01 +0200
+	id S1751247AbYFRI1P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 04:27:15 -0400
+Date: Wed, 18 Jun 2008 10:26:51 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, akpm@osdl.org
-Subject: Re: [PATCH -v2] ftrace: disable function tracing bringing up new
-	CPU
-Message-ID: <20080618082501.GE4135@elte.hu>
-References: <Pine.LNX.4.58.0806051648380.13380@gandalf.stny.rr.com> <Pine.LNX.4.58.0806051916190.16872@gandalf.stny.rr.com>
+To: Mike Travis <travis@sgi.com>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: Tree for June 5
+Message-ID: <20080618082651.GF4135@elte.hu>
+References: <48493CBD.1000202@sgi.com> <19f34abd0806060650q203bef48rd3b20c0cabec4774@mail.gmail.com> <19f34abd0806060707x7570c835u4b1837b54dfa36ba@mail.gmail.com> <484947A9.5050804@sgi.com> <19f34abd0806060736m10424455kfbc3e6272d18646e@mail.gmail.com> <20080606145717.GA5300@elte.hu> <20080606150102.GA14141@elte.hu> <19f34abd0806060813t10d422fel10dcb25c71f3b032@mail.gmail.com> <20080606152326.GA18359@elte.hu> <48495D4E.2070203@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0806051916190.16872@gandalf.stny.rr.com>
+In-Reply-To: <48495D4E.2070203@sgi.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,103 +38,51 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+* Mike Travis <travis@sgi.com> wrote:
 
-> Peter Zijlstra found that taking down and bringing up a new CPU caused 
-> ftrace to crash the kernel. This was due to some arch calls that were 
-> being traced by the function tracer before the smp_processor_id was 
-> set up. Since the function tracer uses smp_processor_id it caused a 
-> triple fault.
+> Ingo Molnar wrote:
+> > * Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> > 
+> >>>> AFAICS this is not yet required for v2.6.26, as the requirement to 
+> >>>> never iterate to MAX_NUMNODES and call nr_cpus_node() with the 
+> >>>> index only got introduced by Mike's patch.
+> >>> the one below is needed as well i think.
+> >> Yeah. I think you had better take Mike's patches, I don't trust even 
+> >> that my patch and your fixlet does everything correctly.
+> > 
+> > yep, just discovered that we had them already ;-)
+> > 
+> > Thomas has just scripted up a new "detect if a commit is not in 
+> > linux-next yet" script that should avoid such problems in the future.
+> > 
+> > your second patch is still wanted, it would have detected the problem 
+> > earlier.
+> > 
+> > 	Ingo
 > 
-> Instead of adding notrace all over the architecture code to prevent 
-> this problem, it is easier to simply disable the function tracer when 
-> bringing up a new CPU.
+> Thanks, yes, I agree.  However I would like to modify it slightly:
+> ---
+> Subject: [PATCH 1/1] x86: Add check for node passed to node_to_cpumask
+> 
+>   * When CONFIG_DEBUG_PER_CPU_MAPS is set, the node passed to
+>     node_to_cpumask and node_to_cpumask_ptr should be validated.
+> 
+> Signed-off-by: Mike Travis <travis@sgi.com>
+> ---
+>  arch/x86/kernel/setup.c |   18 ++++++++++++++++++
+>  1 file changed, 18 insertions(+)
+> 
+> --- linux-2.6.tip.orig/arch/x86/kernel/setup.c
+> +++ linux-2.6.tip/arch/x86/kernel/setup.c
+> @@ -399,6 +399,10 @@ int early_cpu_to_node(int cpu)
+>  	return per_cpu(x86_cpu_to_node_map, cpu);
+>  }
+>  
+> +
+> +/* empty cpumask */
+> +static cpumask_t cpu_mask_none;
 
-this patch brought lockdep trouble - see below.
+hm, this should be __read_mostly, maybe even const so that it becomes 
+readonly?
 
 	Ingo
-
-------------------->
-calling  pcibios_irq_init+0x0/0x449
-PCI: Using IRQ router PIIX/ICH [8086/2440] at 0000:00:1f.0
-
-=======================================================
-[ INFO: possible circular locking dependency detected ]
-2.6.26-rc5-00070-g53ec472-dirty #697
--------------------------------------------------------
-ftraced/27 is trying to acquire lock:
- (&cpu_hotplug.lock){--..}, at: [<c0125d44>] get_online_cpus+0x31/0x43
-
-but task is already holding lock:
- (ftraced_lock){--..}, at: [<c014f6ad>] ftraced+0x47/0x136
-
-which lock already depends on the new lock.
-
-
-the existing dependency chain (in reverse order) is:
-
--> #2 (ftraced_lock){--..}:
-       [<c01412ff>] __lock_acquire+0x9f8/0xb5f
-       [<c0141872>] lock_acquire+0x6a/0x90
-       [<c06efb64>] mutex_lock_nested+0xdd/0x27a
-       [<c014f6ad>] ftraced+0x47/0x136
-       [<c0135820>] kthread+0x40/0x68
-       [<c0103c27>] kernel_thread_helper+0x7/0x10
-       [<ffffffff>] 0xffffffff
-
--> #1 (ftrace_sysctl_lock){--..}:
-       [<c01412ff>] __lock_acquire+0x9f8/0xb5f
-       [<c0141872>] lock_acquire+0x6a/0x90
-       [<c06efb64>] mutex_lock_nested+0xdd/0x27a
-       [<c014e7ea>] ftrace_disable+0xf/0x25
-       [<c06edb43>] _cpu_up+0x8a/0xf1
-       [<c06edbf3>] cpu_up+0x49/0x59
-       [<c0a3d599>] kernel_init+0x8e/0x264
-       [<c0103c27>] kernel_thread_helper+0x7/0x10
-       [<ffffffff>] 0xffffffff
-
--> #0 (&cpu_hotplug.lock){--..}:
-       [<c0141226>] __lock_acquire+0x91f/0xb5f
-       [<c0141872>] lock_acquire+0x6a/0x90
-       [<c06efb64>] mutex_lock_nested+0xdd/0x27a
-       [<c0125d44>] get_online_cpus+0x31/0x43
-       [<c0147c34>] stop_machine_run+0x16/0x3d
-       [<c014f00a>] ftrace_update_code+0x2f/0x3a
-       [<c014f6cc>] ftraced+0x66/0x136
-       [<c0135820>] kthread+0x40/0x68
-       [<c0103c27>] kernel_thread_helper+0x7/0x10
-       [<ffffffff>] 0xffffffff
-
-other info that might help us debug this:
-
-2 locks held by ftraced/27:
- #0:  (ftrace_sysctl_lock){--..}, at: [<c014f6a1>] ftraced+0x3b/0x136
- #1:  (ftraced_lock){--..}, at: [<c014f6ad>] ftraced+0x47/0x136
-
-stack backtrace:
-Pid: 27, comm: ftraced Not tainted 2.6.26-rc5-00070-g53ec472-dirty #697
- [<c013f6b1>] print_circular_bug_tail+0x5b/0x66
- [<c013ef59>] ? print_circular_bug_entry+0x39/0x43
- [<c0141226>] __lock_acquire+0x91f/0xb5f
- [<c0141872>] lock_acquire+0x6a/0x90
- [<c0125d44>] ? get_online_cpus+0x31/0x43
- [<c06efb64>] mutex_lock_nested+0xdd/0x27a
- [<c0125d44>] ? get_online_cpus+0x31/0x43
- [<c0125d44>] ? get_online_cpus+0x31/0x43
- [<c014ec54>] ? __ftrace_update_code+0x0/0x12e
- [<c0125d44>] get_online_cpus+0x31/0x43
- [<c0147c34>] stop_machine_run+0x16/0x3d
- [<c014f666>] ? ftraced+0x0/0x136
- [<c014f00a>] ftrace_update_code+0x2f/0x3a
- [<c014f6cc>] ftraced+0x66/0x136
- [<c014f666>] ? ftraced+0x0/0x136
- [<c0135820>] kthread+0x40/0x68
- [<c01357e0>] ? kthread+0x0/0x68
- [<c0103c27>] kernel_thread_helper+0x7/0x10
- =======================
-PCI->APIC IRQ transform: 0000:00:1f.2[D] -> IRQ 19
-PCI->APIC IRQ transform: 0000:00:1f.3[B] -> IRQ 17
-PCI->APIC IRQ transform: 0000:00:1f.4[C] -> IRQ 23
-PCI->APIC IRQ transform: 0000:00:1f.5[B] -> IRQ 17
-PCI->APIC IRQ transform: 0000:01:00.0[A] -> IRQ 22
-PCI->APIC IRQ transform: 0000:03:04.0[A] -> IRQ 18
