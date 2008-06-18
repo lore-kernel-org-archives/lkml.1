@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756573AbYFRX1E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbYFRXbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756573AbYFRX1E (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 19:27:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbYFRX0y
+	id S1755945AbYFRXbv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 19:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754470AbYFRXbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 19:26:54 -0400
-Received: from fk-out-0910.google.com ([209.85.128.190]:56829 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754009AbYFRX0x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 19:26:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=JIbelzADTUVUb8Xu7m7ZJu8mY5z3X45rkDwiOjPy8gtqWzeD3tANX8T2GBeoqUTfHb
-         lmnjdvOz2VspGTpqSEC7P9Qip/aFSizeeJXfUP8wlu+BAELMXGP9zEGfOPJYBxfBUBa1
-         JwA7AEzh34KBydzXWfgrXnuwDWVFoNBOGMkFI=
-Message-ID: <74d0deb30806181626p621897f5td654170daa762f34@mail.gmail.com>
-Date: Thu, 19 Jun 2008 01:26:49 +0200
-From: "pHilipp Zabel" <philipp.zabel@gmail.com>
-To: "Samuel Ortiz" <sameo@openedhand.com>
-Subject: Re: [PATCH] asic3: move probe functions into __init section
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080618212035.GD22566@caravaggio>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 18 Jun 2008 19:31:43 -0400
+Received: from gate.crashing.org ([63.228.1.57]:33418 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753806AbYFRXbn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 19:31:43 -0400
+Subject: Re: Request for discussion on when to merge drivers
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1213802866.3515.24.camel@localhost.localdomain>
+References: <1213802866.3515.24.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 19 Jun 2008 09:31:34 +1000
+Message-Id: <1213831894.8011.29.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1213810349.8144.11.camel@localhost.localdomain>
-	 <20080618212035.GD22566@caravaggio>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 18, 2008 at 11:20 PM, Samuel Ortiz <sameo@openedhand.com> wrote:
-> Hi Philipp,
->
-> On Wed, Jun 18, 2008 at 07:32:29PM +0200, Philipp Zabel wrote:
->> Potentially free some memory by moving the _probe functions into __init.
->>
->> Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
-> This one looks good to me, I'll submit push it to -mm as I'd prefer asic3
-> patches to go through there first.
 
-That's fine with me, thanks.
+> The only slight wrinkle (at least for me) is that often the process of
+> cleaning up a driver is fairly intensive for a maintainer and turn
+> around is a lot faster if you're doing it in a tree you control.  (All
+> the scsi drivers we've done like this have lived in temporary branches
+> while they were being worked on).  So perhaps in addition we should be
+> encouraging maintainers to run staging branches under similar rules in
+> the staging tree, but allowing inclusion into linux-next?
 
-regards
-Philipp
+ .../...
+
+linux-next should, imho, exclusively be for things we are pretty much
+commited to merge in the next release. ie, a staging place to fixup
+things like build breakages, patch conflicts, etc...
+
+Or else, it will just be another -mm ....
+
+So while what you say makes sense, I think we should only put drivers in
+once we have pretty much decided that the drivers in question would be
+merged... in which case, why not straight upstream ?
+
+Cheers,
+Ben.
+
+
