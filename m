@@ -1,77 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759659AbYFRGrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759419AbYFRHCJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759659AbYFRGrn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 02:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756663AbYFRGrf
+	id S1759419AbYFRHCJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 03:02:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754539AbYFRHB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 02:47:35 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54334 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756585AbYFRGre (ORCPT
+	Wed, 18 Jun 2008 03:01:57 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53298 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753921AbYFRHB4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 02:47:34 -0400
-Date: Wed, 18 Jun 2008 15:52:33 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       "hugh@veritas.com" <hugh@veritas.com>
-Subject: Re: [PATCH] migration_entry_wait fix.
-Message-Id: <20080618155233.7dd79312.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <200806181642.38379.nickpiggin@yahoo.com.au>
-References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
-	<200806181535.58036.nickpiggin@yahoo.com.au>
-	<20080618150436.dca5eb75.kamezawa.hiroyu@jp.fujitsu.com>
-	<200806181642.38379.nickpiggin@yahoo.com.au>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Wed, 18 Jun 2008 03:01:56 -0400
+Subject: Re: [PATCH/RFC] remove irqs_disabled warning from local_bh_enable
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Michael Buesch <mb@bu3sch.de>,
+       David Ellingsworth <david@identd.dyndns.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <alpine.LFD.1.10.0806171648330.2907@woody.linux-foundation.org>
+References: <1213739834.3803.137.camel@johannes.berg>
+	 <alpine.LFD.1.10.0806171648330.2907@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 18 Jun 2008 09:01:54 +0200
+Message-Id: <1213772514.16944.197.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jun 2008 16:42:37 +1000
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-
-> > (This fix is not related to lock_page() problem.)
+On Tue, 2008-06-17 at 16:55 -0700, Linus Torvalds wrote:
+> 
+> On Tue, 17 Jun 2008, Johannes Berg wrote:
 > >
-> > If I read your advice correctly, we shouldn't use lock_page() here.
-> >
-> > Before speculative page cache, page_table_entry of a page under migration
-> > has a pte entry which encodes pfn as special pte entry. and wait for the
-> > end of page migration by lock_page().
+> > This warning has started to trigger with mac80211 because it can, under
+> > some circumstances, use spin_lock_bh() protected sections within
+> > irq-disabled sections. Is that a bug?
 > 
-> What I don't think I understand, is how we can have a page in the
-> page tables (and with the ptl held) but with a zero refcount... Oh,
-> it's not actually a page but a migration entry! I'm not quite so
-> familiar with that code.
+> Yes, it's a bug.
 > 
-> Hmm, so we might possibly see a page there that has a zero refcount
-> due to page_freeze_refs? In which case, I think the direction of you
-> fix is good. Sorry for my misunderstanding the problem, and thank
-> you for fixing up my code!
+> Why? Not because of the "spin_lock_bh()" itself, but because of the 
+> _unlock_, which does a "local_bh_enable_ip()", which in turn will check 
+> the whole "do_softirq()" if it was the last softirq_count.
 > 
-> I would ask you to use get_page_unless_zero rather than
-> page_cache_get_speculative(), because it's not exactly a speculative
-> reference -- a speculative reference is one where we elevate _count
-> and then must recheck that the page we have is correct.
+> And you must not do softirq's when hard-irq's were disabled!
 > 
-ok.
+> So it should in theory be ok (but perhaps a bit odd) to do something like
+> 
+> 	spin_lock_irq(&irq_lock);
+> 	..do something..
+> 	spin_lock_bh(&bh_lock);
+> 	spin_unlock_irq(&irq_lock);
+> 	.. do something else ..
+> 	spin_unlock_bh(&bh_lock);
+> 
+> where the "spin_lock_bh()" itself is in an irq-locked context - as long as 
+> the "spin_unlock_bh()" is *not*.
 
-> Also, please add a comment. It would really be nicer to hide this
-> transiently-frozen state away from migration_entry_wait, but I can't
-> see any lock that would easily solve it.
-> 
-ok, will adds comments.
+I would suggest discouraging such madne^Wcreativity, its gains are
+dubious at best and it doesn't make the locking any more obvious and
+could be an indication of messy locking to begin with.
 
-Thanks,
--Kame
+So I would like to see Johannes' other patch that allows all of us to
+enjoy the warning he ran into ;-)
 
+Peter
 
