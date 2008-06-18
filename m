@@ -1,67 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753034AbYFRIme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753209AbYFRIp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753034AbYFRIme (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 04:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbYFRIm1
+	id S1753209AbYFRIp1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 04:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYFRIpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 04:42:27 -0400
-Received: from stinky.trash.net ([213.144.137.162]:56481 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751380AbYFRIm0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 04:42:26 -0400
-Message-ID: <4858CA6B.7060109@trash.net>
-Date: Wed, 18 Jun 2008 10:42:19 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+	Wed, 18 Jun 2008 04:45:20 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:43059 "EHLO pardus.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751632AbYFRIpT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 04:45:19 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: "Bart Van Assche" <bart.vanassche@gmail.com>
+Subject: Re: Userspace tools for BSD process accounting (v3)
+Date: Wed, 18 Jun 2008 11:45:13 +0300
+User-Agent: KMail/1.9.9
+Cc: LKML <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>
+References: <e2e108260806180134u43413ef5ke226745a8a911e7b@mail.gmail.com> <200806181139.06612.caglar@pardus.org.tr>
+In-Reply-To: <200806181139.06612.caglar@pardus.org.tr>
 MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-CC: =?ISO-8859-1?Q?Simon_Holm_Th=F8gersen?= <odie@cs.aau.dk>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       Chuck Ebbert <cebbert@redhat.com>, "x86@kernel.org" <x86@kernel.org>,
-       rusty@rustcorp.com.au
-Subject: Re: 2.6.26-git: NULL pointer deref in __switch_to
-References: <4852B19E.4010202@trash.net> <19f34abd0806131124w32133715o3ef8c27cb0a9f96e@mail.gmail.com> <20080613224711.GA15084@linux-os.sc.intel.com> <1213611339.2495.11.camel@odie.local> <20080616174948.GB7788@linux-os.sc.intel.com> <1213651283.2495.46.camel@odie.local> <20080617235022.GA23370@linux-os.sc.intel.com>
-In-Reply-To: <20080617235022.GA23370@linux-os.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200806181145.14265.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suresh Siddha wrote:
-> Simon, Patrick, I am able to reproduce the oops in __switch_to()
-> with lguest.  My debug showed that there is atleast one lguest specific
-> issue (which should be present in 2.6.25 and before aswell) and it got
-> exposed with a kernel oops with the recent fpu dynamic allocation patches.
->
-> In addition to the previous possible scenario (with fpu_counter), in the
-> presence of lguest, it is possible that the cpu's TS bit it still set and the
-> lguest launcher task's thread_info has TS_USEDFPU still set.
->
-> This is because of the way the lguest launcher handling the guest's TS bit.
-> (look at lguest_set_ts() in lguest_arch_run_guest()). This can result
-> in a DNA fault while doing unlazy_fpu() in __switch_to(). This will
-> end up causing a DNA fault in the context of new process thats
-> getting context switched in (as opossed to handling DNA fault in the context
-> of lguest launcher/helper process).
->
-> This is wrong in both pre and post 2.6.25 kernels. In the recent
-> 2.6.26-rc series, this is showing up as NULL pointer dereferences or
-> sleeping function called from atomic context(__switch_to()), as
-> we free and dynamically allocate the FPU context for the newly
-> created threads. Older kernels might show some FPU corruption for processes
-> running inside of lguest.
->
-> With the appended patch, my test system is running for more than 50 mins
-> now. So atleast some of your oops (hopefully all!) should get fixed.
-> Please give it a try. I will spend more time with this fix tomorrow.
->
-> Apart from the last hunk(MSR_IA32_SYSENTER_CS changes), I believe
-> the below patch is needed for 2.6.25 aswell.
->   
+Hi;
 
-The patch seems to have fixed the problem for me, thanks Suresh.
+18 Haz 2008 Çar tarihinde, S.Çağlar Onur şunları yazmıştı: 
+> 18 Haz 2008 Çar tarihinde, Bart Van Assche şunları yazmıştı: 
+> > The file init/Kconfig in the kernel source tree refers to the URL
+> > http://www.physik3.uni-rostock.de/tim/kernel/utils/acct/ as the
+> > download location for userspace tools for processing the v3 BSD
+> > process accounting file format. This URL is no longer valid
+> > unfortunately. Anyone any idea where these tools can be downloaded ?
+> 
+> http://savannah.gnu.org/projects/acct/
+
+Following patch corrects URL of "The GNU Accounting Utilities" in init/Kconfig.
+
+Noticed by: Bart Van Assche" <bart.vanassche@gmail.com>
+
+Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
+
+ init/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/init/Kconfig b/init/Kconfig
+index 6199d11..10077ce 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -171,7 +171,7 @@ config BSD_PROCESS_ACCT_V3
+ 	  process and it's parent. Note that this file format is incompatible
+ 	  with previous v0/v1/v2 file formats, so you will need updated tools
+ 	  for processing it. A preliminary version of these tools is available
+-	  at <http://www.physik3.uni-rostock.de/tim/kernel/utils/acct/>.
++	  at <http://www.gnu.org/software/acct/>.
+ 
+ config TASKSTATS
+ 	bool "Export task/process statistics through netlink (EXPERIMENTAL)"
+ 
 
 
+Cheers
+-- 
+S.Çağlar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
