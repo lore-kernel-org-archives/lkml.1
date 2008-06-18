@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754437AbYFRMvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbYFRMwF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754437AbYFRMvj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 08:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbYFRMv3
+	id S1754161AbYFRMwF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 08:52:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754058AbYFRMve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 08:51:29 -0400
-Received: from smtp111.mail.mud.yahoo.com ([209.191.84.64]:24721 "HELO
-	smtp111.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751176AbYFRMv3 (ORCPT
+	Wed, 18 Jun 2008 08:51:34 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:44437 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754022AbYFRMvd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 08:51:29 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=oSzRR3/XvMiavrVV5127Awrf2atPAazvp2zQa15xvIQEMiPVYHe31z+ODUnOi+SyZkYg4NDofJ1HbhxtXgM1x+rlIU0la29kPEJ+CBmdz1ow56ikdwhcnNnCzuFkB55XTURiwx5MQK9PA7PTAQdY8HEUp07bl7ugivP1BbTUQ+w=  ;
-X-YMail-OSG: wZhnRpUVM1mb0wZzyNeysFQrwDrWagHdshqn2ELg8O7La.rxz3frS5AWnMFkQ4M9NEKk58vcHTYoyYd70TwYSgABLqOlJSva0pSGXMkWQw--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH 1/1] MM: virtual address debug
-Date: Wed, 18 Jun 2008 22:51:02 +1000
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@redhat.com>, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Andi Kleen <andi@firstfloor.org>
-References: <1213271800-1556-1-git-send-email-jirislaby@gmail.com>
-In-Reply-To: <1213271800-1556-1-git-send-email-jirislaby@gmail.com>
+	Wed, 18 Jun 2008 08:51:33 -0400
+Date: Wed, 18 Jun 2008 08:51:31 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Gaudenz Steinlin <gaudenz@debian.org>, linux-kernel@vger.kernel.org,
+       486798@bugs.debian.org, josejx@gentoo.org
+Subject: Re: [PATCH] restore export of handle_mm_fault for Mac on Linux
+Message-ID: <20080618125131.GA2097@infradead.org>
+References: <20080618101402.GF15718@soziologie.ch> <20080618114906.GA23788@infradead.org> <18521.846.628816.525787@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806182251.02486.nickpiggin@yahoo.com.au>
+In-Reply-To: <18521.846.628816.525787@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 June 2008 21:56, Jiri Slaby wrote:
-> Add some (configurable) expensive sanity checking to catch wrong address
-> translations on x86.
->
-> - create linux/mmdebug.h file to be able include this file in
->   asm headers to not get unsolvable loops in header files
-> - __phys_addr on x86_32 became a function in ioremap.c since
->   PAGE_OFFSET, is_vmalloc_addr and VMALLOC_* non-constasts are undefined
->   if declared in page_32.h
+On Wed, Jun 18, 2008 at 10:45:02PM +1000, Paul Mackerras wrote:
+> > Has been rejected a few times.  An now that we actually have kvm
+> > for powerpc in tree MOL should just merge with that project and
+> > do the right things in tree instead of beeing a really hacky
+> > module subverting the VM.
+> 
+> We don't have KVM for the "classic" 32-bit PowerPC processors, only
+> for the 44x family.  And doing KVM for the classic 32-bit processors
+> would probably involve just as much hackery as MOL. :)
 
-Uh, I have to disagree with this. __phys_addr is used in some really
-performance critical parts of the kernel, and the function calls are
-free mindset is just wrong. Even for modern x86 CPUs, the function
-call return might take 10 cycles or more when you include all costs.
+I don't think so.  Doing it properly in-tree will mean that it is
 
-And for something like this
+  a) properly reviewed
+  b) means we can do the major VM bits in the kernel without these
+     really stupid exports
 
-#define __phys_addr(x)         ((x) - PAGE_OFFSET)
+Have you looked at MOL recently?  It's more than disgusting.
 
-the code to call the function is probably bigger than inline generated
-code anyway.
+And in addition to these issue we do of course as policy not add
+random hooks in the kernel tree for out of tree stuff.  Especially
+for hacks like this that don't even have the intention to get merged.
