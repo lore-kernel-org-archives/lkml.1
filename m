@@ -1,119 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756780AbYFRWEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756166AbYFRWGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756780AbYFRWEU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 18:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbYFRWEK
+	id S1756166AbYFRWGg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 18:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754223AbYFRWGZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 18:04:10 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:1515 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754170AbYFRWEJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 18:04:09 -0400
-From: "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>
-To: "caglar@pardus.org.tr" <caglar@pardus.org.tr>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-CC: Wim Van Sebroeck <wim@iguana.be>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Date: Wed, 18 Jun 2008 22:03:26 +0000
-Subject: RE: [WATCHDOG] v2.6.26 hpwdt.c fixes
-Thread-Topic: [WATCHDOG] v2.6.26 hpwdt.c fixes
-Thread-Index: AcjRjocQRN4sI2/wSoSJzcgsIjqabgAAJSmw
-Message-ID: <183C1D5A376DE343AA8F94FC2A1EC1491BFC2E90FC@GVW1091EXB.americas.hpqcorp.net>
-References: <20080618194917.GC2741@infomag.infomag.iguana.be>
- <alpine.LFD.1.10.0806181256010.2907@woody.linux-foundation.org>
- <200806190058.29330.caglar@pardus.org.tr>
-In-Reply-To: <200806190058.29330.caglar@pardus.org.tr>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="iso-8859-9"
-Content-Transfer-Encoding: 8BIT
+	Wed, 18 Jun 2008 18:06:25 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40441 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754102AbYFRWGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 18:06:24 -0400
+Date: Thu, 19 Jun 2008 00:05:27 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Denys Fedoryshchenko <denys@visp.net.lb>
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, David Miller <davem@davemloft.net>,
+       vgusev@openvz.org, e1000-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@sisk.pl,
+       mcmanus@ducksong.com, ilpo.jarvinen@helsinki.fi, kuznet@ms2.inr.ac.ru,
+       xemul@openvz.org, Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [E1000-devel] [TCP]: TCP_DEFER_ACCEPT causes leak sockets
+Message-ID: <20080618220527.GA19155@elte.hu>
+References: <20080617083220.GA11393@elte.hu> <20080618200805.GA18756@elte.hu> <20080618213230.GA17821@elte.hu> <200806190041.52532.denys@visp.net.lb>
 MIME-Version: 1.0
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200806190041.52532.denys@visp.net.lb>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Is this with 64 bit Linux?
 
-Tom
+* Denys Fedoryshchenko <denys@visp.net.lb> wrote:
 
------Original Message-----
-From: S.Çaðlar Onur [mailto:caglar@pardus.org.tr]
-Sent: Wednesday, June 18, 2008 4:58 PM
-To: Linus Torvalds
-Cc: Wim Van Sebroeck; Andrew Morton; LKML; Mingarelli, Thomas
-Subject: Re: [WATCHDOG] v2.6.26 hpwdt.c fixes
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> > with e1000e i get:
+> > 
+> >  64 bytes from europe (10.0.1.15): icmp_seq=1 ttl=64 time=0.212 ms
+> >  64 bytes from europe (10.0.1.15): icmp_seq=2 ttl=64 time=0.372 ms
+> >  64 bytes from europe (10.0.1.15): icmp_seq=3 ttl=64 time=0.815 ms
+> >  64 bytes from europe (10.0.1.15): icmp_seq=4 ttl=64 time=0.961 ms
+> >  64 bytes from europe (10.0.1.15): icmp_seq=5 ttl=64 time=0.201 ms
+> >  64 bytes from europe (10.0.1.15): icmp_seq=6 ttl=64 time=0.788 ms
+> > 
+> > TCP latencies are fine too - ssh feels snappy again.
+> > 
+> > it still does not have nearly as good latencies as say forcedeth though:
+> > 
+> >  64 bytes from mercury (10.0.1.13): icmp_seq=1 ttl=64 time=0.076 ms
+> >  64 bytes from mercury (10.0.1.13): icmp_seq=2 ttl=64 time=0.085 ms
+> >  64 bytes from mercury (10.0.1.13): icmp_seq=3 ttl=64 time=0.045 ms
+> >  64 bytes from mercury (10.0.1.13): icmp_seq=4 ttl=64 time=0.053 ms
+> > 
+> > that's 10 times better packet latencies.
+> > 
+> > and even an ancient Realtek RTL-8139 over 10 megabit Ethernet (!) has 
+> > better latencies than the e1000e over 1000 megabit:
+> > 
+> >  64 bytes from pluto (10.0.1.10): icmp_seq=2 ttl=64 time=0.309 ms
+> >  64 bytes from pluto (10.0.1.10): icmp_seq=3 ttl=64 time=0.333 ms
+> >  64 bytes from pluto (10.0.1.10): icmp_seq=4 ttl=64 time=0.329 ms
+> >  64 bytes from pluto (10.0.1.10): icmp_seq=5 ttl=64 time=0.311 ms
+> >  64 bytes from pluto (10.0.1.10): icmp_seq=6 ttl=64 time=0.302 ms
+> > 
+> > is it done intentionally perhaps? I dont think it makes much sense to 
+> > delay rx/tx processing on a completely idle box for such a long time.
+> Idle box, ICH8 chipset, e1000e, latest git.
+> 
+> MegaRouterCore-KARAM ~ # ping 192.168.20.26
+> PING 192.168.20.26 (192.168.20.26) 56(84) bytes of data.
+> 64 bytes from 192.168.20.26: icmp_seq=1 ttl=64 time=0.109 ms
+> 64 bytes from 192.168.20.26: icmp_seq=2 ttl=64 time=0.134 ms
+> 64 bytes from 192.168.20.26: icmp_seq=3 ttl=64 time=0.120 ms
+> 64 bytes from 192.168.20.26: icmp_seq=4 ttl=64 time=0.117 ms
+> 64 bytes from 192.168.20.26: icmp_seq=5 ttl=64 time=0.117 ms
+> 64 bytes from 192.168.20.26: icmp_seq=6 ttl=64 time=0.113 ms
 
-Hi Linus;
+ok, that looks much better! i have another box with e1000, ich7:
 
-18 Haz 2008 Çar tarihinde, Linus Torvalds þunlarý yazmýþtý:
->
-> On Wed, 18 Jun 2008, Wim Van Sebroeck wrote:
-> >
-> >     Revert "[WATCHDOG] hpwdt: Fix NMI handling."
-> >
-> >     To get this driver working we need the CFLAGS_hpwdt.o += -O in the Makefile.
-> >
-> >     The driver needs the asmlinkage tag and the CFLAGS line in the Makefile.
-> >     Without it the driver doesn't work.
->
-> The driver is unbelievable shit, and should just be removed, I think.
->
-> The reason for all the games with CFLAGS and asmlinkage and utter crud
-> seems to be that the driver is just BROKEN. It will work purely by luck,
-> and depend entirely on the compiler not doing anything else AT ALL in that
-> asm function.
->
-> Could somebody please just fix the piece-of-sh*t thing?
->
-> Here's a totally untested patch that may or may not work. At least it
-> removes the assembler code that assumes that it controls the whole
-> function from anything that gcc will then create a function prologue and
-> epilogue for. Quite frankly, this is *not* the right thing to do either:
-> the proper thing to do is to just move the low-level call into the "asm"
-> statement, and leave all the function prologue/epilogue entirely to the
-> compiler.
->
-> But this way it isn't actively _broken_ by design, at least.
->
-> No promises. I don't have the hardware. But somebody should *really* do
-> this correctly.
+64 bytes from titan (10.0.1.14): icmp_seq=5 ttl=64 time=0.345 ms
+64 bytes from titan (10.0.1.14): icmp_seq=6 ttl=64 time=1.03 ms
+64 bytes from titan (10.0.1.14): icmp_seq=7 ttl=64 time=0.383 ms
+64 bytes from titan (10.0.1.14): icmp_seq=8 ttl=64 time=0.320 ms
+64 bytes from titan (10.0.1.14): icmp_seq=9 ttl=64 time=0.996 ms
+64 bytes from titan (10.0.1.14): icmp_seq=10 ttl=64 time=0.248 ms
 
+> Disabling interrupt moderation
+> MegaRouterCore-KARAM ~ # ethtool -C eth0 rx-usecs 0
+> MegaRouterCore-KARAM ~ # ping 192.168.20.26
+> PING 192.168.20.26 (192.168.20.26) 56(84) bytes of data.
+> 64 bytes from 192.168.20.26: icmp_seq=1 ttl=64 time=0.072 ms
+> 64 bytes from 192.168.20.26: icmp_seq=2 ttl=64 time=0.091 ms
+> 64 bytes from 192.168.20.26: icmp_seq=3 ttl=64 time=0.066 ms
+> 64 bytes from 192.168.20.26: icmp_seq=4 ttl=64 time=0.065 ms
+> 64 bytes from 192.168.20.26: icmp_seq=5 ttl=64 time=0.077 ms
+> 64 bytes from 192.168.20.26: icmp_seq=6 ttl=64 time=0.073 ms
+> 
+> Maybe try the same?
+> ethtool -C eth0 rx-usecs 0
 
-I have both the hardware and the compiler related (gcc-4.3.1) bug :) (see [1])
+well i tend not to tweak my drivers with such options because i want to 
+experience and test what 99.9% of our users will experience in the 
+field. The reality is that if it's not the default behavior, it's almost 
+as if it didnt exist at all.
 
-Your modifications works like a charm with 32bit 2.6.25.7, kernel no longer opps and watchdog lives happily with hardware.
+but even with that tune on e1000e (on the t60, ich7) i still get rather 
+large numbers:
 
-[...]
-hpwdt: New timer passed in is 30 seconds.
-hpwdt: CRU Base Address:   0xfff6b800
-hpwdt: CRU Offset Address: 0x0
-hpwdt: CRU Length:         0x8000
-hpwdt: CRU Mapped Address: 0xf885bfa8
-hp Watchdog Timer Driver: 1.00, timer margin: 30 seconds( nowayout=0).
-[...]
+earth4:~/s> ping eu
+PING europe (10.0.1.15) 56(84) bytes of data.
+64 bytes from europe (10.0.1.15): icmp_seq=1 ttl=64 time=0.250 ms
+64 bytes from europe (10.0.1.15): icmp_seq=2 ttl=64 time=0.250 ms
+64 bytes from europe (10.0.1.15): icmp_seq=3 ttl=64 time=0.225 ms
+64 bytes from europe (10.0.1.15): icmp_seq=4 ttl=64 time=0.932 ms
+64 bytes from europe (10.0.1.15): icmp_seq=5 ttl=64 time=0.251 ms
+64 bytes from europe (10.0.1.15): icmp_seq=6 ttl=64 time=0.915 ms
+64 bytes from europe (10.0.1.15): icmp_seq=7 ttl=64 time=0.250 ms
+64 bytes from europe (10.0.1.15): icmp_seq=8 ttl=64 time=0.238 ms
+64 bytes from europe (10.0.1.15): icmp_seq=9 ttl=64 time=0.390 ms
+64 bytes from europe (10.0.1.15): icmp_seq=10 ttl=64 time=0.260 ms
 
->               Linus
->
-> ---
->  drivers/watchdog/hpwdt.c |  155 ++++++++++++++++++++++++----------------------
->  1 files changed, 80 insertions(+), 75 deletions(-)
-
-If needed
-
-Tested-by: S.Çaðlar Onur <caglar@pardus.org.tr>
-
-Thanks!
-
-[1] http://marc.info/?l=linux-kernel&m=121266952602497&w=2
---
-S.Çaðlar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
-
-Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
+	Ingo
