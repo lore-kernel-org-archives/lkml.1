@@ -1,64 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752991AbYFRK5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbYFRLBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752991AbYFRK5b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 06:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbYFRK5V
+	id S1753285AbYFRLBn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 07:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYFRLBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 06:57:21 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:60337 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751349AbYFRK5U (ORCPT
+	Wed, 18 Jun 2008 07:01:36 -0400
+Received: from smtp-vbr5.xs4all.nl ([194.109.24.25]:2206 "EHLO
+	smtp-vbr5.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752077AbYFRLBf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 06:57:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=yBxPyl8uVDPy8aXU0dnpG0sOCa2QI1ziiOCKA0lAChFDA956m0qnnJHF1s7xyLh/Kx
-         /fBrEkcZauv5l4Y8XSIbkubkxjSqtdOQQgjPLRb/S6dMRvk4oVz5GTaUXnIizEBQSYtc
-         WMUqvtlhLGeoYB1A9Jro6EyoA+i4NVeFAosrg=
-Message-ID: <b9df5fa10806180357x7c950077wb87b9fca0ee48@mail.gmail.com>
-Date: Wed, 18 Jun 2008 16:57:18 +0600
-From: "Rakib Mullick" <rakib.mullick@gmail.com>
-To: mingo@redhat.com, arjan@infradead.org
-Subject: [PATCH]include/linux/threads.h : Removes extra checking CONFIG_BASE_SMALL
-Cc: linux-kernel@vger.kernel.org
+	Wed, 18 Jun 2008 07:01:35 -0400
+X-Greylist: delayed 708 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Jun 2008 07:01:35 EDT
+Date: Wed, 18 Jun 2008 12:47:23 +0200
+From: Erik Mouw <mouw@nl.linux.org>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: Pierre Ossman <drzeus@drzeus.cx>,
+       Ville =?iso-8859-15?Q?Syrj=E4l=E4?= <syrjala@sci.fi>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Eric BENARD <ebenard@free.fr>, Andrew Victor <linux@maxim.org.za>
+Subject: Re: [PATCH 0/7] mmc: at91_mci: rework to allow better transfer
+Message-ID: <20080618104723.GA6788@gateway.home>
+References: <483FE9E7.7020707@atmel.com> <20080609124623.5b6bda48@mjolnir.drzeus.cx> <484E4F61.7010007@atmel.com> <20080614182831.0360bd77@mjolnir.drzeus.cx> <4858DDC1.6080802@atmel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="XsQoSWH+UP9D9v3l"
 Content-Disposition: inline
+In-Reply-To: <4858DDC1.6080802@atmel.com>
+Organization: Eric Conspiracy Secret Labs
+X-Eric-Conspiracy: There is no conspiracy!
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In existing code for defining PID_MAX_DEFAULT and PID_MAX_LIMIT,a check for
-CONFIG_BASE_SMALL has been made twice. This patch reduces an extra checking.
+
+--XsQoSWH+UP9D9v3l
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Jun 18, 2008 at 12:04:49PM +0200, Nicolas Ferre wrote:
+
+[...]
+
+Could you all drop =3D?ISO-8859-1?Q?Hans-J=3DFCrgen_?=3D from the Cc list in
+this thread? The address is invalid because it has no domain part and
+hence causes quite some bounces on the list because some strict email
+checkers reject invalid addresses in the Cc list.
+
+I'm trying to figure out what went wrong, but in the mean time please
+drop =3D?ISO-8859-1?Q?Hans-J=3DFCrgen_?=3D from the Cc list.
 
 
-Signed-off-by: Md.Rakib H. Mullick ( rakib.mullick@gmail.com)
+Erik
+[linux-arm-kernel-owner #2]
 
---- linux-2.6.25/include/linux/threads.h.orig	2008-06-16
-11:46:42.000000000 +0600
-+++ linux-2.6.25/include/linux/threads.h	2008-06-17 19:41:19.462424632 +0600
-@@ -24,13 +24,17 @@
- /*
-  * This controls the default maximum pid allocated to a process
-  */
--#define PID_MAX_DEFAULT (CONFIG_BASE_SMALL ? 0x1000 : 0x8000)
--
- /*
-  * A maximum of 4 million PIDs should be enough for a while.
-  * [NOTE: PID/TIDs are limited to 2^29 ~= 500+ million, see futex.h.]
-  */
--#define PID_MAX_LIMIT (CONFIG_BASE_SMALL ? PAGE_SIZE * 8 : \
--	(sizeof(long) > 4 ? 4 * 1024 * 1024 : PID_MAX_DEFAULT))
-+#if (CONFIG_BASE_SMALL)
-+#define PID_MAX_DEFAULT 	0x1000
-+#define PID_MAX_LIMIT 		(PAGE_SIZE * 8)
-+#else
-+#define PID_MAX_DEFAULT        	0x8000
-+#define PID_MAX_LIMIT (sizeof(long) > 4 ? 4 * 1024 * 1024 : PID_MAX_DEFAULT)
-+#endif
-+
+--=20
+Erik Mouw -- mouw@nl.linux.org
 
- #endif
+--XsQoSWH+UP9D9v3l
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIWOe7/PlVHJtIto0RAlNKAJ9R7xPEd547ePqGZrcqK7vzB3qA8gCdGS5I
+dr/Y5C2cFFeNWQwq0w09o94=
+=MEcb
+-----END PGP SIGNATURE-----
+
+--XsQoSWH+UP9D9v3l--
