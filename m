@@ -1,97 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbYFRTGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754410AbYFRTMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756142AbYFRTGk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 15:06:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbYFRTG2
+	id S1754410AbYFRTMR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 15:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750817AbYFRTMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 15:06:28 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:28570 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753868AbYFRTG1 (ORCPT
+	Wed, 18 Jun 2008 15:12:05 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:14313 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750801AbYFRTME (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 15:06:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=xAqcQMveAXjQwMgVZBOMlk03HwWS1DNZQ6npDuDCsz96qyo0dcMpklAPRPoUA+vAAN
-         6sCqalcB8I6FBvqMhfNWHGmJKlAwSoRWKf+Gq9UT+JPgxzGSg03/J3sAaR5idjfAd3Kq
-         7Ye8zABGy2WGPPgzPsKl9LyuyF8DVHJBMZJbI=
-Date: Wed, 18 Jun 2008 23:06:03 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
-Message-ID: <20080618190603.GB10431@cvg>
-References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <Pine.LNX.4.55.0806172206580.28110@cliff.in.clinika.pl> <200806172338.38318.rjw@sisk.pl> <200806180053.40044.rjw@sisk.pl> <Pine.LNX.4.55.0806180400070.28110@cliff.in.clinika.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.55.0806180400070.28110@cliff.in.clinika.pl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 18 Jun 2008 15:12:04 -0400
+Date: Wed, 18 Jun 2008 12:12:14 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Soumyadip Das Mahapatra <kernelhacker@visualserver.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Significance Of sort() In include/linux/sort.h
+Message-Id: <20080618121214.ceb6b5d7.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0806152126001.6721@visualserver.org>
+References: <Pine.LNX.4.64.0806152126001.6721@visualserver.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Maciej W. Rozycki - Wed, Jun 18, 2008 at 05:02:48AM +0100]
-| On Wed, 18 Jun 2008, Rafael J. Wysocki wrote:
-| 
-| > Here you go.  Below is the relevant snippet from the yesterday's linux-next
-| > dmesg with the patches:
-| > "x86: I/O APIC: timer through 8259A second-chance"
-| > "x86: add C1E aware idle function"
-| > reverted and the appended debug patch applied.
-| > 
-| > [    0.108006] TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
-| > [    0.108006] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
-| > [    0.108006] ...trying to set up timer (IRQ0) through the 8259A ... <2> failed
-| > [    0.108006] ...trying to set up timer as Virtual Wire IRQ...<2> works.
-| > 
-| > The entire dmesg is at: http://www.sisk.pl/kernel/debug/20080616/dmesg-4.log
-| 
-|  Thanks -- this is very important and useful information as it shows the
-| exact alternative used.
-| 
-|  With such a configuration the "x86: I/O APIC: timer through 8259A
-| second-chance" patch should not matter, because the only change it
-| introduces is an attempt to try the same I/O APIC pin again, but with the
-| IRQ0 line of the master 8259A enabled.  That's not a terribly unusual 
-| configuration and nothing should get confused in the system.
-| 
-|  Barring the unlikely possibility of the 8259A actually being wired to 
-| INTIN2 of the I/O APIC I can see two possible explanations:
-| 
-| 1. The 8259A interrupt actually escapes to the CPU somehow and is handled
-|    as an ExtINTA interrupt.  This would make the code in check_timer()  
-|    decide it has found a working configuration, while actually it has been
-|    fooled.
+On Wed, 18 Jun 2008 20:39:38 +0200 (CEST) Soumyadip Das Mahapatra wrote:
 
-Maciej, that is why we get 'received illegal vector'?
+> Hello everybody,
+>  	I dont understand what is the significance of keeping
+> include/linux/sort.h and lib/sort.c while i think there is
+> none using (#include<linux/sort.h>) it. Can anyone explaint it?
 
-	[  129.092151] APIC error on CPU1: 00(40)
+Did you check all of these?
 
-| 
-| 2. There is a bug in this patch or an assumption it makes which results 
-|    in the state of some component not to be restored correctly.  
-|    Unfortunately I have no resources to test the 64-bit variation of the 
-|    code, so something may have escaped my attention.
-| 
-|  I'd like to find out which one is the case -- can you please reapply the
-| patch and send me the corresponding section of the bootstrap log?  If the
-| system hangs before you can retrieve the log, please just place:
-| 
-| while (1);
-| 
-| or something like that after the out: label in check_timer().
-| 
-|  Thanks.
-| 
-|   Maciej
-| 
+./drivers/message/fusion/mptfc.c:56:#include <linux/sort.h>
+./drivers/net/pppol2tp.c:92:#include <linux/sort.h>
+./drivers/media/video/saa7134/saa7134-video.c:28:#include <linux/sort.h>
+./drivers/media/video/v4l2-int-device.c:27:#include <linux/sort.h>
+./fs/gfs2/glock.c:16:#include <linux/sort.h>
+./fs/gfs2/dir.c:59:#include <linux/sort.h>
+./fs/gfs2/quota.c:44:#include <linux/sort.h>
+./fs/gfs2/inode.c:16:#include <linux/sort.h>
+./fs/ubifs/find.c:29:#include <linux/sort.h>
+./fs/nfs_common/nfsacl.c:28:#include <linux/sort.h>
+./lib/extable.c:14:#include <linux/sort.h>
+./arch/sparc/prom/memory.c:9:#include <linux/sort.h>
+./arch/x86/kernel/test_nx.c:13:#include <linux/sort.h>
+./arch/x86/kernel/mmconf-fam10h_64.c:11:#include <linux/sort.h>
+./arch/x86/kernel/setup_64.c:44:#include <linux/sort.h>
+./arch/x86/kernel/cpu/mtrr/main.c:40:#include <linux/sort.h>
+./arch/sparc64/mm/init.c:25:#include <linux/sort.h>
+./arch/powerpc/kernel/module_64.c:27:#include <linux/sort.h>
+./arch/powerpc/kernel/module_32.c:27:#include <linux/sort.h>
+./arch/ia64/mm/extable.c:8:#include <linux/sort.h>
+./kernel/lockdep_proc.c:20:#include <linux/sort.h>
+./kernel/cpuset.c:52:#include <linux/sort.h>
+./kernel/cgroup.c:43:#include <linux/sort.h>
+./mm/page_alloc.c:42:#include <linux/sort.h>
 
-		- Cyrill -
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
