@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbYFRL7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754324AbYFRMCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754804AbYFRL7a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 07:59:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbYFRL6n
+	id S1754324AbYFRMCT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 08:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753212AbYFRMCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 07:58:43 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47579 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753487AbYFRL6e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 07:58:34 -0400
-Date: Wed, 18 Jun 2008 13:58:19 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Stefan Assmann <sassmann@suse.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jon Masters <jonathan@jonmasters.org>, Olaf Dabrunz <od@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>, Ihno Krumreich <ihno@suse.de>,
-       Sven Dietrich <sdietrich@suse.de>, Daniel Gollub <dgollub@suse.de>,
-       Felix Foerster <ffoerster@suse.de>
-Subject: Re: [PATCH 0/5] Boot IRQ quirks and rerouting [repost]
-Message-ID: <20080618115819.GA13714@elte.hu>
-References: <12131949173532-git-send-email-sassmann@suse.de>
+	Wed, 18 Jun 2008 08:02:10 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:56437 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752861AbYFRMCJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 08:02:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=XQJSEghwbxgPnwmekAYcqT+m3USgKPF8qOGNlGQncvKviGfVoiunRtyrn4eTWM4+1r
+         TfvYJuXDZt1bbdysvOfaZJuBy8kv/6f8kj4SD0qGECyJr6SrhDOBZcjfxGRKQcH5EEvm
+         NOFGqNMWF2xE0SxMCkNoGWdUH+VqwWegM3vBc=
+Message-ID: <e2e108260806180502w6abec5c1sb15dde5c7917e735@mail.gmail.com>
+Date: Wed, 18 Jun 2008 14:02:08 +0200
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: caglar@pardus.org.tr
+Subject: Re: Userspace tools for BSD process accounting (v3)
+Cc: LKML <linux-kernel@vger.kernel.org>, "Sam Ravnborg" <sam@ravnborg.org>
+In-Reply-To: <200806181145.14265.caglar@pardus.org.tr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-9
 Content-Disposition: inline
-In-Reply-To: <12131949173532-git-send-email-sassmann@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <e2e108260806180134u43413ef5ke226745a8a911e7b@mail.gmail.com>
+	 <200806181139.06612.caglar@pardus.org.tr>
+	 <200806181145.14265.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m5IC2Mfq020985
 
-
-* Stefan Assmann <sassmann@suse.de> wrote:
-
-> These patches are against linux-2.6-tip, auto-x86-next.
-> 
-> The AMD/ATI and Broadcomm patches are not included yet, we're working 
-> on getting things ready for submission.
-> 
-> The patch for the bootirqquirk= parameter will be released later.
-
-applied, thanks Stefan. I have created a new 
-tip/x86/pci-ioapic-boot-irq-quirks topic branch for this. Lets see how 
-these changes work out in practice.
-
-	Ingo
+On Wed, Jun 18, 2008 at 10:45 AM, S.Çağlar Onur <caglar@pardus.org.tr> wrote:>          for processing it. A preliminary version of these tools is available
+Does the acct package still have the status 'preliminary' ?
+Bart.ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
