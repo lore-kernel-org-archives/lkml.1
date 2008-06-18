@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755967AbYFRNQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbYFRNR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755967AbYFRNQa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 09:16:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbYFRNQU
+	id S1755931AbYFRNR1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 09:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbYFRNRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 09:16:20 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60822 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753378AbYFRNQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 09:16:19 -0400
-Date: Wed, 18 Jun 2008 15:15:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
-Message-ID: <20080618131545.GD11501@elte.hu>
-References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806172244.24026.rjw@sisk.pl> <200806180019.49628.rjw@sisk.pl> <200806180025.20504.rjw@sisk.pl>
+	Wed, 18 Jun 2008 09:17:19 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:57677 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752761AbYFRNRT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 09:17:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=trne9uyNBA0CSj6zaVBkF9PW4ZBNazwvkk+2P+A2eOaNA/YH9LQHDaSc3ac+rNEey6
+         5fucD+Dsxj3Ws1vtdSPrMMOUcg67X0VYOgevTtF37XHrRCIgwX37ehUoHGaWykd4g6Zd
+         39KgBUWHMrg3MPiH0wqPZWG36yMqrKSnK4Q6U=
+Message-ID: <c49e66200806180617t279be9cbg417d1c17d0c98a37@mail.gmail.com>
+Date: Wed, 18 Jun 2008 15:17:17 +0200
+From: "Pieter Steyn" <pieterste@gmail.com>
+To: "Jesper Nilsson" <Jesper.Nilsson@axis.com>
+Subject: Re: [PATCH] eth_v10.c phy fix
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080618130557.GA5064@axis.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200806180025.20504.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <c49e66200806130804u280fdfa1gd1027f3401ae7f4f@mail.gmail.com>
+	 <c49e66200806130900i26b3c284q262aef2d85d61f61@mail.gmail.com>
+	 <c49e66200806180509g6a391f8fi1567f21cd353c71c@mail.gmail.com>
+	 <20080618130557.GA5064@axis.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> I'll add it to my queue (which will be published RSN :), thanks!
+>
+>  Best regards,
+>
+>  /Jesper
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-> > Ah.  If your fix is replaced with the appended one, the system 
-> > happily works with C1E and highres.
-> 
-> Scratch that.  The symptoms appeared later this time, that's all.  
-> I've just got b43 consuming 90+ % of the CPU time. :-(
+Thank you Jesper. :)
 
-ah, ok. Discarded the patch :-/
-
-	Ingo
+Cheers,
+Pieter
