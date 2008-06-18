@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182AbYFRUJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038AbYFRUKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755182AbYFRUJJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 16:09:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbYFRUI4
+	id S1754038AbYFRUKS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 16:10:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbYFRUKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 16:08:56 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58159 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752114AbYFRUIz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 16:08:55 -0400
-Date: Wed, 18 Jun 2008 22:08:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: David Miller <davem@davemloft.net>, vgusev@openvz.org,
-       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl, mcmanus@ducksong.com,
-       ilpo.jarvinen@helsinki.fi, kuznet@ms2.inr.ac.ru, xemul@openvz.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [E1000-devel] [TCP]: TCP_DEFER_ACCEPT causes leak sockets
-Message-ID: <20080618200805.GA18756@elte.hu>
-References: <20080617083220.GA11393@elte.hu> <20080617.020840.169830916.davem@davemloft.net> <20080617092706.GB20621@elte.hu> <20080617.022909.173003136.davem@davemloft.net> <20080617093929.GA10334@elte.hu> <48595910.8000905@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48595910.8000905@intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 18 Jun 2008 16:10:05 -0400
+Received: from mk-outboundfilter-4.mail.uk.tiscali.com ([212.74.114.32]:22972
+	"EHLO mk-outboundfilter-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752319AbYFRUKE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 16:10:04 -0400
+X-Greylist: delayed 603 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Jun 2008 16:10:04 EDT
+X-Trace: 99538328/mk-outboundfilter-2.mail.uk.tiscali.com/F2S/$ACCEPTED/freedom2Surf-customers/195.137.94.162
+X-SBRS: None
+X-RemoteIP: 195.137.94.162
+X-IP-MAIL-FROM: spyro@f2s.com
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ap8AACAGWUjDiV6i/2dsb2JhbAAIsSY
+X-IronPort-AV: E=Sophos;i="4.27,667,1204502400"; 
+   d="scan'208";a="99538328"
+X-IP-Direction: IN
+Subject: Re: [PATCH] w100fb: do not depend on SHARPSL
+From: ian <spyro@f2s.com>
+To: Philipp Zabel <philipp.zabel@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Alberto Mardegan <mardy@users.sourceforge.net>,
+       Richard Purdie <rpurdie@rpsys.net>
+In-Reply-To: <1213810146.8144.5.camel@localhost.localdomain>
+References: <1213810146.8144.5.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 18 Jun 2008 20:59:57 +0100
+Message-Id: <1213819197.17281.7.camel@wirenth>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Kok, Auke <auke-jan.h.kok@intel.com> wrote:
-
-> > Any ideas about what i should try next?
+On Wed, 2008-06-18 at 19:29 +0200, Philipp Zabel wrote:
+> Apart from Sharp SL-Cxx series, there are a few other devices that have
+> ATI Imageon chips, among them HP iPAQ hx4700.
 > 
-> have you tried e1000e?
+> Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
 
-will try it.
+Acked-by: Ian Molton <spyro@f2s.com>
 
-But even it if solves the problem it's a nasty complication: given how 
-many times i have to bisect back into the times when there was only 
-e1000 around, how do i handle the transition? I have automated bisection 
-tools, etc. and i bisect very frequently.
+> ---
+>  drivers/video/Kconfig |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+> index 002b61b..e0c5f96 100644
+> --- a/drivers/video/Kconfig
+> +++ b/drivers/video/Kconfig
+> @@ -1825,12 +1825,13 @@ config FB_FSL_DIU
+>  
+>  config FB_W100
+>  	tristate "W100 frame buffer support"
+> -	depends on FB && PXA_SHARPSL
+> +	depends on FB && ARCH_PXA
+>   	select FB_CFB_FILLRECT
+>   	select FB_CFB_COPYAREA
+>   	select FB_CFB_IMAGEBLIT
+>  	---help---
+>  	  Frame buffer driver for the w100 as found on the Sharp SL-Cxx series.
+> +	  It can also drive the w3220 chip found on iPAQ hx4700.
+>  
+>  	  This driver is also available as a module ( = code which can be
+>  	  inserted and removed from the running kernel whenever you want). The
 
-It's a real practical problem for me: if i have E1000E=y in my .config 
-and go back to an older kernel, i lose that .config setting in 'make 
-oldconfig'. Then when the bisection run happens to go back into the 
-E1000E times, 'make oldconfig' picks up E1000E with a default-off 
-setting - and things break or work differently.
-
-no other Linux driver i'm using forces me to do that and i rely on many 
-of them and i rely on proper 'make oldconfig' behavior on a daily basis. 
-Until now i was able to do automatic bisection back for _years_, to the 
-v2.6.19 times. You broke that.
-
-And that's just one driver out of thousands of Linux drivers. Imagine 
-what happened to bisectability and migration quality if every driver 
-version update was this careless about its installed base as 
-e1000/e1000e.
-
-The e1000 -> e1000e migration it was not only done in an incompetent, 
-amateurish way, you also ignored real feedback and that combined 
-together is totally lame and inacceptable behavior in my book. You 
-should not expect praise and roses from me as long as you do stupid 
-things like that.
-
-	Ingo
