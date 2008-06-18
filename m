@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbYFRNR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755930AbYFRNSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755931AbYFRNR1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 09:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbYFRNRT
+	id S1755930AbYFRNSW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 09:18:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbYFRNSP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 09:17:19 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:57677 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752761AbYFRNRT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 09:17:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=trne9uyNBA0CSj6zaVBkF9PW4ZBNazwvkk+2P+A2eOaNA/YH9LQHDaSc3ac+rNEey6
-         5fucD+Dsxj3Ws1vtdSPrMMOUcg67X0VYOgevTtF37XHrRCIgwX37ehUoHGaWykd4g6Zd
-         39KgBUWHMrg3MPiH0wqPZWG36yMqrKSnK4Q6U=
-Message-ID: <c49e66200806180617t279be9cbg417d1c17d0c98a37@mail.gmail.com>
-Date: Wed, 18 Jun 2008 15:17:17 +0200
-From: "Pieter Steyn" <pieterste@gmail.com>
-To: "Jesper Nilsson" <Jesper.Nilsson@axis.com>
-Subject: Re: [PATCH] eth_v10.c phy fix
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080618130557.GA5064@axis.com>
+	Wed, 18 Jun 2008 09:18:15 -0400
+Received: from ozlabs.org ([203.10.76.45]:60780 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752910AbYFRNSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 09:18:14 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <c49e66200806130804u280fdfa1gd1027f3401ae7f4f@mail.gmail.com>
-	 <c49e66200806130900i26b3c284q262aef2d85d61f61@mail.gmail.com>
-	 <c49e66200806180509g6a391f8fi1567f21cd353c71c@mail.gmail.com>
-	 <20080618130557.GA5064@axis.com>
+Message-ID: <18521.2804.318527.293516@cargo.ozlabs.ibm.com>
+Date: Wed, 18 Jun 2008 23:17:40 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: [git pull] Please pull powerpc.git merge branch
+X-Mailer: VM 7.19 under Emacs 22.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'll add it to my queue (which will be published RSN :), thanks!
->
->  Best regards,
->
->  /Jesper
+Linus,
 
+Please pull from the 'merge' branch of
 
-Thank you Jesper. :)
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-Cheers,
-Pieter
+to get two more small bug-fixes for powerpc, as listed below.
+
+Thanks,
+Paul.
+
+ arch/powerpc/kernel/head_44x.S |    7 ++++++-
+ arch/powerpc/mm/hash_low_64.S  |    4 ++++
+ 2 files changed, 10 insertions(+), 1 deletions(-)
+
+Josh Boyer (1):
+      [POWERPC] 4xx: Clear new TLB cache attribute bits in Data Storage vector
+
+Paul Mackerras (1):
+      [POWERPC] Clear sub-page HPTE present bits when demoting page size
+
