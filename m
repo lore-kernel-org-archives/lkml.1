@@ -1,25 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbYFRXbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbYFRXcM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755945AbYFRXbv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 19:31:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754470AbYFRXbn
+	id S1754819AbYFRXcM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 19:32:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754736AbYFRXbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 19:31:43 -0400
-Received: from gate.crashing.org ([63.228.1.57]:33418 "EHLO gate.crashing.org"
+	Wed, 18 Jun 2008 19:31:45 -0400
+Received: from gate.crashing.org ([63.228.1.57]:33419 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753806AbYFRXbn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 19:31:43 -0400
-Subject: Re: Request for discussion on when to merge drivers
+	id S1754573AbYFRXbo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 19:31:44 -0400
+Subject: Re: [PATCH 1 of 4] mm: add a ptep_modify_prot transaction
+	abstraction
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Reply-To: benh@kernel.crashing.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1213802866.3515.24.camel@localhost.localdomain>
-References: <1213802866.3515.24.camel@localhost.localdomain>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       x86@kernel.org, xen-devel <xen-devel@lists.xensource.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Hugh Dickins <hugh@veritas.com>,
+       Zachary Amsden <zach@vmware.com>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <b020e42384197b824320.1213615800@localhost>
+References: <b020e42384197b824320.1213615800@localhost>
 Content-Type: text/plain
-Date: Thu, 19 Jun 2008 09:31:34 +1000
-Message-Id: <1213831894.8011.29.camel@pasglop>
+Date: Thu, 19 Jun 2008 09:23:23 +1000
+Message-Id: <1213831403.8011.24.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
@@ -27,28 +35,12 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2008-06-16 at 04:30 -0700, Jeremy Fitzhardinge wrote:
+> 
+> The only current user of this interface is mprotect
 
-> The only slight wrinkle (at least for me) is that often the process of
-> cleaning up a driver is fairly intensive for a maintainer and turn
-> around is a lot faster if you're doing it in a tree you control.  (All
-> the scsi drivers we've done like this have lived in temporary branches
-> while they were being worked on).  So perhaps in addition we should be
-> encouraging maintainers to run staging branches under similar rules in
-> the staging tree, but allowing inclusion into linux-next?
+Do you plan to use it with fork ultimately ?
 
- .../...
-
-linux-next should, imho, exclusively be for things we are pretty much
-commited to merge in the next release. ie, a staging place to fixup
-things like build breakages, patch conflicts, etc...
-
-Or else, it will just be another -mm ....
-
-So while what you say makes sense, I think we should only put drivers in
-once we have pretty much decided that the drivers in question would be
-merged... in which case, why not straight upstream ?
-
-Cheers,
 Ben.
 
 
