@@ -1,345 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569AbYFRLvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbYFRLvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754569AbYFRLvT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 07:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbYFRLvI
+	id S1754503AbYFRLvd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 07:51:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbYFRLvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 07:51:08 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:35299 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752918AbYFRLvG (ORCPT
+	Wed, 18 Jun 2008 07:51:09 -0400
+Received: from casper.infradead.org ([85.118.1.10]:51359 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752991AbYFRLvH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 07:51:06 -0400
-Date: Wed, 18 Jun 2008 20:55:40 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-Subject: Re: [Experimental][PATCH] putback_lru_page rework
-Message-Id: <20080618205540.11a1644b.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080618195009.37BF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080617164709.de4db070.nishimura@mxp.nes.nec.co.jp>
-	<20080618184000.a855dfe0.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080618195009.37BF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Wed, 18 Jun 2008 07:51:07 -0400
+Subject: Re: [BUG: NULL pointer dereference] cgroups and	RT scheduling
+	interact badly.
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Daniel K." <dk@uw.no>
+Cc: mingo@elte.hu, menage@google.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+In-Reply-To: <48583122.7080409@uw.no>
+References: <485445AE.2010602@uw.no> <1213612447.16944.99.camel@twins>
+	 <4856671B.1020304@uw.no>  <1213624312.16944.104.camel@twins>
+	 <1213627148.16944.106.camel@twins>  <485682B0.8010805@uw.no>
+	 <1213629536.16944.109.camel@twins> <1213692557.16944.153.camel@twins>
+	 <4857AD38.2090601@uw.no>
+	 <1213732878.3223.95.camel@lappy.programming.kicks-ass.net>
+	 <48583122.7080409@uw.no>
+Content-Type: text/plain
+Date: Wed, 18 Jun 2008 13:50:54 +0200
+Message-Id: <1213789854.16944.216.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jun 2008 20:36:52 +0900
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-
-> Hi kame-san,
-> 
-> > putback_lru_page() in this patch has a new concepts.
-> > When it adds page to unevictable list, it checks the status is 
-> > changed or not again. if changed, retry to putback.
-> 
-> it seems good idea :)
-> this patch can reduce lock_page() call.
-> 
-yes.
-
-> 
-> > -	} else if (page_evictable(page, NULL)) {
-> > -		/*
-> > -		 * For evictable pages, we can use the cache.
-> > -		 * In event of a race, worst case is we end up with an
-> > -		 * unevictable page on [in]active list.
-> > -		 * We know how to handle that.
-> > -		 */
-> 
-> I think this comment is useful.
-> Why do you want kill it?
-> 
-Oh, my mistake.
-
-
-
-> > +	mem_cgroup_move_lists(page, lru);
-> > +
-> > +	/*
-> > +	 * page's status can change while we move it among lru. If an evictable
-> > +	 * page is on unevictable list, it never be freed. To avoid that,
-> > +	 * check after we added it to the list, again.
-> > +	 */
-> > +	if (lru == LRU_UNEVICTABLE && page_evictable(page, NULL)) {
-> > +		if (!isolate_lru_page(page)) {
-> > +			put_page(page);
-> > +			goto redo;
-> 
-> No.
-> We should treat carefully unevictable -> unevictable moving too.
-> 
-This lru is the destination ;)
-
-
-> 
-> > +		}
-> > +		/* This means someone else dropped this page from LRU
-> > +		 * So, it will be freed or putback to LRU again. There is
-> > +		 * nothing to do here.
-> > +		 */
-> > +	}
-> > +
-> > +	if (was_unevictable && lru != LRU_UNEVICTABLE)
-> > +		count_vm_event(NORECL_PGRESCUED);
-> > +	else if (!was_unevictable && lru == LRU_UNEVICTABLE)
-> > +		count_vm_event(NORECL_PGCULLED);
-> >  
-> >  	put_page(page);		/* drop ref from isolate */
-> > -	return ret;		/* ret => "page still locked" */
-> >  }
-> > -
-> > -/*
-> > - * Cull page that shrink_*_list() has detected to be unevictable
-> > - * under page lock to close races with other tasks that might be making
-> > - * the page evictable.  Avoid stranding an evictable page on the
-> > - * unevictable list.
-> > - */
-> > -static void cull_unevictable_page(struct page *page)
-> > +#else
-> > +void putback_lru_page(struct page *page)
-> >  {
-> > -	lock_page(page);
-> > -	if (putback_lru_page(page))
-> > -		unlock_page(page);
-> > +	int lru;
-> > +	VM_BUG_ON(PageLRU(page));
-> > +
-> > +	lru = !!TestClearPageActive(page) + page_is_file_cache(page);
-> > +	lru_cache_add_lru(page, lru);
-> > +	mem_cgroup_move_lists(page, lru);
-> > +	put_page(page);
-> >  }
-> > +#endif
-> >  
-> >  /*
-> >   * shrink_page_list() returns the number of reclaimed pages
-> > @@ -746,8 +736,8 @@ free_it:
-> >  		continue;
-> >  
-> >  cull_mlocked:
-> > -		if (putback_lru_page(page))
-> > -			unlock_page(page);
-> > +		unlock_page(page);
-> > +		putback_lru_page(page);
-> >  		continue;
-> >  
-> >  activate_locked:
-> > @@ -1127,7 +1117,7 @@ static unsigned long shrink_inactive_lis
-> >  			list_del(&page->lru);
-> >  			if (unlikely(!page_evictable(page, NULL))) {
-> >  				spin_unlock_irq(&zone->lru_lock);
-> > -				cull_unevictable_page(page);
-> > +				putback_lru_page(page);
-> >  				spin_lock_irq(&zone->lru_lock);
-> >  				continue;
-> >  			}
-> > @@ -1231,7 +1221,7 @@ static void shrink_active_list(unsigned 
-> >  		list_del(&page->lru);
-> >  
-> >  		if (unlikely(!page_evictable(page, NULL))) {
-> > -			cull_unevictable_page(page);
-> > +			putback_lru_page(page);
-> >  			continue;
-> >  		}
-> >  
-> > @@ -2393,8 +2383,6 @@ int zone_reclaim(struct zone *zone, gfp_
-> >  int page_evictable(struct page *page, struct vm_area_struct *vma)
-> >  {
-> >  
-> > -	VM_BUG_ON(PageUnevictable(page));
-> > -
-> >  	if (mapping_unevictable(page_mapping(page)))
-> >  		return 0;
-> 
-> Why do you remove this?
-> 
-I caught panci here ;)
-maybe
-==
-  if (lru == LRU_UNEVICTABLE && page_evictable(page, NULL))
-==
-check is.
-
-
-> 
-> 
-> 
-> > @@ -169,7 +166,8 @@ static int __mlock_vma_pages_range(struc
-> >  
-> >  		/*
-> >  		 * get_user_pages makes pages present if we are
-> > -		 * setting mlock.
-> > +		 * setting mlock. and this extra reference count will
-> > +		 * disable migration of this page.
-> >  		 */
-> >  		ret = get_user_pages(current, mm, addr,
-> >  				min_t(int, nr_pages, ARRAY_SIZE(pages)),
-> > @@ -197,14 +195,8 @@ static int __mlock_vma_pages_range(struc
-> >  		for (i = 0; i < ret; i++) {
-> >  			struct page *page = pages[i];
-> >  
-> > -			/*
-> > -			 * page might be truncated or migrated out from under
-> > -			 * us.  Check after acquiring page lock.
-> > -			 */
-> > -			lock_page(page);
-> > -			if (page->mapping)
-> > +			if (page_mapcount(page))
-> >  				mlock_vma_page(page);
-> > -			unlock_page(page);
-> >  			put_page(page);		/* ref from get_user_pages() */
-> >  
-> >  			/*
-> > @@ -240,6 +232,9 @@ static int __munlock_pte_handler(pte_t *
-> >  	struct page *page;
-> >  	pte_t pte;
-> >  
-> > +	/*
-> > +	 * page is never be unmapped by page-reclaim. we lock this page now.
-> > +	 */
-> >  retry:
-> >  	pte = *ptep;
-> >  	/*
-> > @@ -261,7 +256,15 @@ retry:
-> >  		goto out;
-> >  
-> >  	lock_page(page);
-> > -	if (!page->mapping) {
-> > +	/*
-> > +	 * Because we lock page here, we have to check 2 cases.
-> > +	 * - the page is migrated.
-> > +	 * - the page is truncated (file-cache only)
-> > +	 * Note: Anonymous page doesn't clear page->mapping even if it
-> > +	 * is removed from rmap.
-> > +	 */
-> > +	if (!page->mapping ||
-> > +	     (PageAnon(page) && !page_mapcount(page))) {
-> >  		unlock_page(page);
-> >  		goto retry;
-> >  	}
-> > Index: test-2.6.26-rc5-mm3/mm/migrate.c
-> > ===================================================================
-> > --- test-2.6.26-rc5-mm3.orig/mm/migrate.c
-> > +++ test-2.6.26-rc5-mm3/mm/migrate.c
-> > @@ -67,9 +67,7 @@ int putback_lru_pages(struct list_head *
-> >  
-> >  	list_for_each_entry_safe(page, page2, l, lru) {
-> >  		list_del(&page->lru);
-> > -		lock_page(page);
-> > -		if (putback_lru_page(page))
-> > -			unlock_page(page);
-> > +		putback_lru_page(page);
-> >  		count++;
-> >  	}
-> >  	return count;
-> > @@ -571,7 +569,6 @@ static int fallback_migrate_page(struct 
-> >  static int move_to_new_page(struct page *newpage, struct page *page)
-> >  {
-> >  	struct address_space *mapping;
-> > -	int unlock = 1;
-> >  	int rc;
-> >  
-> >  	/*
-> > @@ -610,12 +607,11 @@ static int move_to_new_page(struct page 
-> >  		 * Put back on LRU while holding page locked to
-> >  		 * handle potential race with, e.g., munlock()
-> >  		 */
-> 
-> this comment isn't true.
-> 
-yes.
-
-
-> > -		unlock = putback_lru_page(newpage);
-> > +		putback_lru_page(newpage);
-> >  	} else
-> >  		newpage->mapping = NULL;
-> 
-> originally move_to_lru() called in unmap_and_move().
-> unevictable infrastructure patch move to this point for 
-> calling putback_lru_page() under page locked.
-> 
-> So, your patch remove page locked dependency.
-> move to unmap_and_move() again is better.
-> 
-> it become page lock holding time reducing.
-> 
-ok, will look into again.
-
-Thanks,
--Kame
-
-
-> >  
-> > -	if (unlock)
-> > -		unlock_page(newpage);
-> > +	unlock_page(newpage);
-> >  
-> >  	return rc;
-> >  }
-> > @@ -632,7 +628,6 @@ static int unmap_and_move(new_page_t get
-> >  	struct page *newpage = get_new_page(page, private, &result);
-> >  	int rcu_locked = 0;
-> >  	int charge = 0;
-> > -	int unlock = 1;
-> >  
-> >  	if (!newpage)
-> >  		return -ENOMEM;
-> > @@ -713,6 +708,7 @@ rcu_unlock:
-> >  		rcu_read_unlock();
-> >  
-> >  unlock:
-> > +	unlock_page(page);
-> >  
-> >  	if (rc != -EAGAIN) {
-> >   		/*
-> > @@ -722,18 +718,9 @@ unlock:
-> >   		 * restored.
-> >   		 */
-> >   		list_del(&page->lru);
-> > -		if (!page->mapping) {
-> > -			VM_BUG_ON(page_count(page) != 1);
-> > -			unlock_page(page);
-> > -			put_page(page);		/* just free the old page */
-> > -			goto end_migration;
-> > -		} else
-> > -			unlock = putback_lru_page(page);
-> > +		putback_lru_page(page);
-> >  	}
-> >  
-> > -	if (unlock)
-> > -		unlock_page(page);
-> > -
-> >  end_migration:
-> >  	if (!charge)
-> >  		mem_cgroup_end_migration(newpage);
-> > Index: test-2.6.26-rc5-mm3/mm/internal.h
-> > ===================================================================
-> > --- test-2.6.26-rc5-mm3.orig/mm/internal.h
-> > +++ test-2.6.26-rc5-mm3/mm/internal.h
-> > @@ -43,7 +43,7 @@ static inline void __put_page(struct pag
-> >   * in mm/vmscan.c:
-> >   */
-> >  extern int isolate_lru_page(struct page *page);
-> > -extern int putback_lru_page(struct page *page);
-> > +extern void putback_lru_page(struct page *page);
-> >  
-> >  /*
-> >   * in mm/page_alloc.c
+On Tue, 2008-06-17 at 21:48 +0000, Daniel K. wrote:
+> Peter Zijlstra wrote:
+> > On Tue, 2008-06-17 at 14:25 +0200, Daniel K. wrote:
+> >> Peter Zijlstra wrote:
+> >>> How's this [patch] work for you? (includes the previuos patchlet too)
+> >> Thanks,
+> >>
+> >> this patch fixed the obvious problem, namely
+> >>
+> >> # echo $$ > /dev/cgroup/burn/oops/tasks
+> >> # schedtool -R -p 1 -e burnP6 &
+> >>
+> >> now works again. However, the last step below
+> >>
+> >> # echo $$ > /dev/cgroup/tasks
+> >> # burnP6 &
+> >> [1] 3414
+> >> # echo 3414 > /dev/cgroup/burn/oops/tasks
+> >> # schedtool -R -p 1 3414
+> >>
+> >> gives this new and shiny Oops instead.
 > > 
+> > Whilst I'm gracious for your testing, I truly hope you're done breaking
+> > my stuff ;-)
+> > 
+> > How's this for you?
 > 
+> root@lc01:/dev/cgroup/burn# burnP6 &
+> [1] 3393
+> root@lc01:/dev/cgroup/burn# schedtool -R -p 1 3393
+> root@lc01:/dev/cgroup/burn# echo 3393 > oops/tasks
+> root@lc01:/dev/cgroup/burn# schedtool -R -p 1 3393
+> root@lc01:/dev/cgroup/burn# schedtool -R -p 1 3393
 > 
+> Multiple redundant schedtool invocations now work without incident.
 > 
+> I had almost given up trying to break it, but then this happened.
 > 
+> root@lc01:/dev/cgroup/burn# echo $$ > /dev/cgroup/burn/oops/tasks
+> root@lc01:/dev/cgroup/burn# schedtool -R -p 1 -e burnP6 &
+> [2] 3397
+> 
+> The following Oops happened immediately, but note that it was the first
+> burnP6 process (PID 3393) that is reported as the offender.
+> 
+> I tried the above procedure a second time, and now it ran for about one
+> second before the same Oops manifested itself, but this time with the
+> other burnP6 process as the culprit (the equivalent of PID 3397)
+
+Ah, fun a race between dequeueing because of runtime quota and
+requeueing because of RR slice length.
+
+> Yes, I realize I'm starting to sound like a broken record.
+
+Ah, don't worry - I was just hoping there was an end to the amount of
+glaring bugs in my code :-/
+
+Reproducing was a bit harder than for you, it took me a whole minute of
+runtime and setting the runtime limit above the RR slice length (and
+realizing you're running RR, not FIFO).
+
+The below patch (on top of the other one) seems to not make it crash
+this case for at least 15 minutes.
+
+---
+Subject: sched: rt-group: fix RR buglet
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+In tick_task_rt() we first call update_curr_rt() which can dequeue a runqueue
+due to it running out of runtime, and then we try to requeue it, of it also 
+having exhausted its RR quota. Obviously requeueing something that is no longer
+on the runqueue will not have the expected result.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/sched_rt.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/kernel/sched_rt.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_rt.c
++++ linux-2.6/kernel/sched_rt.c
+@@ -549,8 +549,10 @@ static
+ void requeue_rt_entity(struct rt_rq *rt_rq, struct sched_rt_entity *rt_se)
+ {
+ 	struct rt_prio_array *array = &rt_rq->active;
++	struct list_head *queue = array->queue + rt_se_prio(rt_se);
+ 
+-	list_move_tail(&rt_se->run_list, array->queue + rt_se_prio(rt_se));
++	if (on_rt_rq(rt_se))
++		list_move_tail(&rt_se->run_list, queue);
+ }
+ 
+ static void requeue_task_rt(struct rq *rq, struct task_struct *p)
+
+
+
 
