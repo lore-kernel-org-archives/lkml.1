@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754734AbYFROTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755268AbYFROV6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754734AbYFROTs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 10:19:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750744AbYFROTk
+	id S1755268AbYFROV6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 10:21:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbYFROVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 10:19:40 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:53455 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750737AbYFROTj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 10:19:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=WeDAPUEch0OZfU6xgTFPmdrR8h/So5KV3tEskryvoEtp1e1IhjmRT2tiqPxoEluUVS
-         k9GHpD5OSUdlkdyg7xiEFirM7xEtSiGa8MTXEaU4xjl6uHsrauyZKKAjZmzXzC/8ouaF
-         jSRPep+s1egaq7j1urTAGbDHmJ/CmtWF7mECE=
-Message-ID: <4d8e3fd30806180719j718a3b1ds461495c4d3de8236@mail.gmail.com>
-Date: Wed, 18 Jun 2008 16:19:38 +0200
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "Dmitri Vorobiev" <dmitri.vorobiev@movial.fi>
-Subject: Re: [PATCH] x86: coding style fixes to arch/x86/math-emu/reg_constant
-Cc: "Ingo Molnar" <mingo@elte.hu>, tglx <tglx@linutronix.de>,
-       hpa <hpa@zytor.com>, "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Andy Whitcroft" <apw@shadowen.org>
-In-Reply-To: <48590926.5060009@movial.fi>
+	Wed, 18 Jun 2008 10:21:49 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56352 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750984AbYFROVt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 10:21:49 -0400
+Date: Wed, 18 Jun 2008 16:21:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: use acpi_numa_init to parse on 32bit numa
+Message-ID: <20080618142135.GH11501@elte.hu>
+References: <200806171002.45836.yhlu.kernel@gmail.com> <200806171541.45739.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080614204452.25378bd0@paolo-desktop>
-	 <48590926.5060009@movial.fi>
+In-Reply-To: <200806171541.45739.yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0003]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 18, 2008 at 3:09 PM, Dmitri Vorobiev
-<dmitri.vorobiev@movial.fi> wrote:
-> Paolo Ciarrocchi wrote:
->>
->> -static void fld_const(FPU_REG const *c, int adj, u_char tag)
->> +static void fld_const(FPU_REG const * c, int adj, u_char tag)
-> ________________________________________^
->
-> The above does not seem to me like a big improvement in code quality. A
-> false positive from checkpatch.pl?
 
-Yes, I think you are right.
-Andy CC'ed so that he can have a look at that.
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-Thanks.
+> seperate that srat finding and parsing from get_memcfg_from_srat. and 
+> let getmemcfg_from_srat only handle array from previous step.
 
-regards,
--- 
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
+applied to tip/x86/mpparse, thanks Yinghai.
+
+	Ingo
