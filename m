@@ -1,149 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760271AbYFRFfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760614AbYFRFfj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760271AbYFRFfT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 01:35:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbYFRFfG
+	id S1760614AbYFRFfj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 01:35:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760291AbYFRFfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 01:35:06 -0400
-Received: from ozlabs.org ([203.10.76.45]:54127 "EHLO ozlabs.org"
+	Wed, 18 Jun 2008 01:35:21 -0400
+Received: from gw.goop.org ([64.81.55.164]:40782 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753534AbYFRFfF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 01:35:05 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: 2.6.26-git: NULL pointer deref in __switch_to
-Date: Wed, 18 Jun 2008 15:34:23 +1000
-User-Agent: KMail/1.9.9
-Cc: Simon Holm =?iso-8859-1?q?Th=F8gersen?= <odie@cs.aau.dk>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Patrick McHardy <kaber@trash.net>,
-       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       Chuck Ebbert <cebbert@redhat.com>, "x86@kernel.org" <x86@kernel.org>
-References: <4852B19E.4010202@trash.net> <1213651283.2495.46.camel@odie.local> <20080617235022.GA23370@linux-os.sc.intel.com>
-In-Reply-To: <20080617235022.GA23370@linux-os.sc.intel.com>
+	id S1760217AbYFRFfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 01:35:18 -0400
+Message-ID: <48589E6C.2030403@goop.org>
+Date: Tue, 17 Jun 2008 22:34:36 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200806181534.24085.rusty@rustcorp.com.au>
+To: Mike Travis <travis@sgi.com>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
+       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
+ area
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.509483000@polaris-admin.engr.sgi.com> <20080605102222.GA21319@elte.hu> <48480DFB.7000404@sgi.com> <4848F55C.90904@goop.org> <48493861.3050402@sgi.com>
+In-Reply-To: <48493861.3050402@sgi.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 18 June 2008 09:50:22 Suresh Siddha wrote:
-> On Mon, Jun 16, 2008 at 02:21:23PM -0700, Simon Holm Thøgersen wrote:
-> > > Can you please upload it some where? I will also try with another guest
-> > > image meanwhile.
-> >
-> > [access provided to Suresh in private email]
+Mike Travis wrote:
+> Jeremy Fitzhardinge wrote:
+>   
+>> Mike Travis wrote:
+>>     
+>>> Ingo Molnar wrote:
+>>>  
+>>>       
+>>>> * Mike Travis <travis@sgi.com> wrote:
+>>>>
+>>>>    
+>>>>         
+>>>>>   * Declare the pda as a per cpu variable.
+>>>>>
+>>>>>   * Make the x86_64 per cpu area start at zero.
+>>>>>
+>>>>>   * Since the pda is now the first element of the per_cpu area,
+>>>>> cpu_pda()
+>>>>>     is no longer needed and per_cpu() can be used instead.  This
+>>>>> also makes
+>>>>>     the _cpu_pda[] table obsolete.
+>>>>>
+>>>>>   * Since %gs is pointing to the pda, it will then also point to the
+>>>>> per cpu
+>>>>>     variables and can be accessed thusly:
+>>>>>
+>>>>>     %gs:[&per_cpu_xxxx - __per_cpu_start]
+>>>>>
+>>>>> Based on linux-2.6.tip
+>>>>>       
+>>>>>           
+>>>> -tip testing found an instantaneous reboot crash on 64-bit x86, with
+>>>> this config:
+>>>>
+>>>>   http://redhat.com/~mingo/misc/config-Thu_Jun__5_11_43_51_CEST_2008.bad
+>>>>
+>>>> there is no boot log as the instantaneous reboot happens before
+>>>> anything is printed to the (early-) serial console. I have bisected
+>>>> it down to:
+>>>>
+>>>> | 7670dc09e89a2b151a1cf49eccebc07c41c2ce9f is first bad commit
+>>>> | commit 7670dc09e89a2b151a1cf49eccebc07c41c2ce9f
+>>>> | Author: Mike Travis <travis@sgi.com>
+>>>> | Date:   Tue Jun 3 17:30:21 2008 -0700
+>>>> |
+>>>> |     x86_64: Fold pda into per cpu area
+>>>>
+>>>> the big problem is not just this crash, but that the patch is _way_
+>>>> too big:
+>>>>
+>>>>  arch/x86/Kconfig                 |    3 +
+>>>>  arch/x86/kernel/head64.c         |   34 ++++++--------
+>>>>  arch/x86/kernel/irq_64.c         |   36 ++++++++-------
+>>>>  arch/x86/kernel/setup.c          |   90
+>>>> ++++++++++++---------------------------
+>>>>  arch/x86/kernel/setup64.c        |    5 --
+>>>>  arch/x86/kernel/smpboot.c        |   51 ----------------------
+>>>>  arch/x86/kernel/traps_64.c       |   11 +++-
+>>>>  arch/x86/kernel/vmlinux_64.lds.S |    1
+>>>>  include/asm-x86/percpu.h         |   48 ++++++--------------
+>>>>  9 files changed, 89 insertions(+), 190 deletions(-)
+>>>>
+>>>> considering the danger involved, this is just way too large, and
+>>>> there's no reasonable debugging i can do in the bisection to narrow
+>>>> it down any further.
+>>>>
+>>>> Please resubmit with the bug fixed and with a proper splitup, the
+>>>> more patches you manage to create, the better. For a dangerous code
+>>>> area like this, with a track record of frequent breakages in the
+>>>> past, i would not mind a "one line of code changed per patch" splitup
+>>>> either. (Feel free to send a git tree link for us to try as well.)
+>>>>
+>>>>     Ingo
+>>>>     
+>>>>         
+>>> Thanks for the feedback Ingo.  I'll test the above config and look at
+>>> splitting up the patch.  The difficulty is making each patch
+>>> independently
+>>> compilable and testable.
+>>>       
+>> FWIW, I'm getting past the "crashes very, very early" stage with this
+>> series applied when booting under Xen.  Then it crashes pretty early,
+>> but that's not your fault...
+>>
+>>    J
+>>     
 >
-> Simon, Thanks.
+> Hi Jeremy,
 >
-> Simon, Patrick, I am able to reproduce the oops in __switch_to()
-> with lguest.  My debug showed that there is atleast one lguest specific
-> issue (which should be present in 2.6.25 and before aswell) and it got
-> exposed with a kernel oops with the recent fpu dynamic allocation patches.
+> Yes we have a simulator for Nahelem that also breezes past the boot up
+> problem (actually makes it to the kernel login prompt.)  Weirdly, the
+> problem doesn't exist in an earlier code base so my changes are tickling
+> something else newly introduced.  I'm attempting to see if I can use
+> GRUB 2 with the GDB stubs to track it down (which is time consuming in
+> itself to setup.)
 >
-> In addition to the previous possible scenario (with fpu_counter), in the
-> presence of lguest, it is possible that the cpu's TS bit it still set and
-> the lguest launcher task's thread_info has TS_USEDFPU still set.
->
-> This is because of the way the lguest launcher handling the guest's TS bit.
-> (look at lguest_set_ts() in lguest_arch_run_guest()). This can result
-> in a DNA fault while doing unlazy_fpu() in __switch_to(). This will
-> end up causing a DNA fault in the context of new process thats
-> getting context switched in (as opossed to handling DNA fault in the
-> context of lguest launcher/helper process).
->
-> This is wrong in both pre and post 2.6.25 kernels. In the recent
-> 2.6.26-rc series, this is showing up as NULL pointer dereferences or
-> sleeping function called from atomic context(__switch_to()), as
-> we free and dynamically allocate the FPU context for the newly
-> created threads. Older kernels might show some FPU corruption for processes
-> running inside of lguest.
->
-> With the appended patch, my test system is running for more than 50 mins
-> now. So atleast some of your oops (hopefully all!) should get fixed.
-> Please give it a try. I will spend more time with this fix tomorrow.
->
-> Apart from the last hunk(MSR_IA32_SYSENTER_CS changes), I believe
-> the below patch is needed for 2.6.25 aswell.
->
-> Thanks.
->
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> ---
->
-> diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-> index 6d54833..e2db9ac 100644
-> --- a/arch/x86/kernel/process_32.c
-> +++ b/arch/x86/kernel/process_32.c
-> @@ -333,6 +333,7 @@ void flush_thread(void)
->  	/*
->  	 * Forget coprocessor state..
->  	 */
-> +	tsk->fpu_counter = 0;
->  	clear_fpu(tsk);
->  	clear_used_math();
->  }
-> diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-> index ac54ff5..c6eb5c9 100644
-> --- a/arch/x86/kernel/process_64.c
-> +++ b/arch/x86/kernel/process_64.c
-> @@ -294,6 +294,7 @@ void flush_thread(void)
->  	/*
->  	 * Forget coprocessor state..
->  	 */
-> +	tsk->fpu_counter = 0;
->  	clear_fpu(tsk);
->  	clear_used_math();
->  }
-> diff --git a/drivers/lguest/x86/core.c b/drivers/lguest/x86/core.c
-> index 5126d5d..4a98404 100644
-> --- a/drivers/lguest/x86/core.c
-> +++ b/drivers/lguest/x86/core.c
-> @@ -176,7 +176,7 @@ void lguest_arch_run_guest(struct lg_cpu *cpu)
->  	 * we set it now, so we can trap and pass that trap to the Guest if it
->  	 * uses the FPU. */
->  	if (cpu->ts)
-> -		lguest_set_ts();
-> +		unlazy_fpu(current);
->
->  	/* SYSENTER is an optimized way of doing system calls.  We can't allow
->  	 * it because it always jumps to privilege level 0.  A normal Guest
-> @@ -196,6 +196,10 @@ void lguest_arch_run_guest(struct lg_cpu *cpu)
->  	 * trap made the switcher code come back, and an error code which some
->  	 * traps set.  */
->
-> +	/* Restore SYSENTER if it's supposed to be on. */
-> +	if (boot_cpu_has(X86_FEATURE_SEP))
-> +		wrmsr(MSR_IA32_SYSENTER_CS, __KERNEL_CS, 0);
-> +
->  	/* If the Guest page faulted, then the cr2 register will tell us the
->  	 * bad virtual address.  We have to grab this now, because once we
->  	 * re-enable interrupts an interrupt could fault and thus overwrite
-> @@ -203,13 +207,12 @@ void lguest_arch_run_guest(struct lg_cpu *cpu)
->  	if (cpu->regs->trapnum == 14)
->  		cpu->arch.last_pagefault = read_cr2();
->  	/* Similarly, if we took a trap because the Guest used the FPU,
-> -	 * we have to restore the FPU it expects to see. */
-> +	 * we have to restore the FPU it expects to see.
-> +	 * math_state_restore() may sleep and we may even move off to
-> +	 * a different CPU. So all the critical stuff should be done
-> +	 * before this.  */
->  	else if (cpu->regs->trapnum == 7)
->  		math_state_restore();
+> It is definitely related to basing percpu variable offsets from %gs and
+> (I think) interrupts.
+>   
 
-Hi Suresh,
+Hi Mike,
 
-   Firstly, thanks for figuring this out.  But math_state_restore() has nasty 
-semantics now.  Currently lguest will work, because no code path following 
-this call relies on being on the same CPU.
+Have you made any progress on this?  I'm bumping up against it when I 
+run on native hardware (as opposed to under Xen).
 
-So, this patch is fine, but I wonder if I should just be forcing fpu 
-allocation earlier for lguest tasks, so I can avoid this altogether?
-
-Thanks,
-Rusty.
+    J
