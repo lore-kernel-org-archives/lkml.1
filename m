@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752827AbYFROuf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbYFROvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752827AbYFROuf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 10:50:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbYFROu1
+	id S1753828AbYFROvS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 10:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbYFROvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 10:50:27 -0400
-Received: from smtp1.extricom.com ([212.235.24.249]:49147 "HELO
-	smtp.extricom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1751093AbYFROu0 (ORCPT
+	Wed, 18 Jun 2008 10:51:06 -0400
+Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.68]:35635 "EHLO
+	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751086AbYFROvF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 10:50:26 -0400
-X-Greylist: delayed 1241 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Jun 2008 10:50:25 EDT
-Message-ID: <48591941.4070408@extricom.com>
-Date: Wed, 18 Jun 2008 17:18:41 +0300
-From: Eran Liberty <liberty@extricom.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.24-rc4: pci_remove_bus_device() => pci_scan_child_bus() => pci_bus_add_devices
- bug?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 18 Jun 2008 10:51:05 -0400
+X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
+Date: Wed, 18 Jun 2008 23:50:25 +0900
+From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
+Subject: Re: [Experimental][PATCH] putback_lru_page rework
+Message-Id: <20080618235025.6ced35f8.d-nishimura@mtf.biglobe.ne.jp>
+In-Reply-To: <20080618184000.a855dfe0.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
+	<20080617163501.7cf411ee.nishimura@mxp.nes.nec.co.jp>
+	<20080617164709.de4db070.nishimura@mxp.nes.nec.co.jp>
+	<20080618184000.a855dfe0.kamezawa.hiroyu@jp.fujitsu.com>
+Reply-To: nishimura@mxp.nes.nec.co.jp
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Short:
-1. Calling pci_remove_bus_device() on some of the devices on a bus will 
-remove them. (ok)
-2. Calling pci_scan_child_bus() on that bus will scan the bus for 
-devices and add them all. even the ones already in the bus device list, 
-which will now be duplicated in the bus device list! (no so ok)
-3. Calling pci_bus_add_devices() Will try to add the device, assign 
-resource, and create procfs files. The devices which were not originally 
-removed are were being assigned resource they don't need and procfs 
-files already exist and will collide (Bug)
+Hi, Kamezawa-san.
 
-Background:
-I have a programmable component  which implements a pci device. Upon 
-warm update i need to remove my devices from the bus, upgrade, and add 
-them back.
-I have bashed my head against pci.h API for the last week trying to make 
-this work with no success. Right now I have devised a hideous hack to 
-circumvent pci.h and directly remap the pci device registers.
+Sorry for my late reply, and thank you for your patch.
 
-demo code:
+> This patch tries to make putback_lru_pages() to be lock_page() free.
+> (Of course, some callers must take the lock.)
+> 
+I like this idea.
 
-reload_my_hardware_design() {
-    struct pci_dev *dev = NULL;
-    struct pci_bus *bus = NULL;
-
-    while ((dev = pci_get_device(PCI_VENDOR_ID_MY_ID,PCI_ANY_ID,NULL))) {
-         pci_remove_bus_device(dev);
-    }
-
-    ...
-    reload the hardware
-    ...
-
-    bus = pci_find_bus(0,0); /* though hard coded in this example this 
-is the right bus*/
-    pci_scan_child_bus(bus);
-    pci_bus_add_devices(bus);
-}
+I'll test it tomorrow.
 
 
-Is this a bug or am I doing something wrong?
-
-Liberty
+Thanks,
+Daisuke Nishimura.
