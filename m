@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759064AbYFREEd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbYFREH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759064AbYFREEd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 00:04:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbYFREEU
+	id S1754602AbYFREH0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 00:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbYFREHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 00:04:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46276 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753769AbYFREET (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 00:04:19 -0400
-Date: Tue, 17 Jun 2008 21:03:17 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Bron Gondwana <brong@fastmail.fm>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rob Mueller <robm@fastmail.fm>, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: BUG: mmapfile/writev spurious zero bytes (x86_64/not i386,
- bisected, reproducable)
-In-Reply-To: <20080618031406.GA4326@brong.net>
-Message-ID: <alpine.LFD.1.10.0806172057450.2907@woody.linux-foundation.org>
-References: <1213682410.13174.1258837181@webmail.messagingengine.com> <1213682570.13708.1258839317@webmail.messagingengine.com> <alpine.LFD.1.10.0806170947380.25099@woody.linux-foundation.org> <alpine.LFD.1.10.0806171041560.25099@woody.linux-foundation.org>
- <alpine.LFD.1.10.0806171309130.2981@woody.linux-foundation.org> <alpine.LFD.1.10.0806171331460.2908@woody.linux-foundation.org> <alpine.LFD.1.10.0806171356320.2908@woody.linux-foundation.org> <alpine.LFD.1.10.0806171415060.2907@woody.linux-foundation.org>
- <20080618031406.GA4326@brong.net>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 18 Jun 2008 00:07:13 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:63787 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751036AbYFREHL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 00:07:11 -0400
+Date: Wed, 18 Jun 2008 05:02:48 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
+In-Reply-To: <200806180053.40044.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.55.0806180400070.28110@cliff.in.clinika.pl>
+References: <20080613232214.394fd6fd.sfr@canb.auug.org.au>
+ <Pine.LNX.4.55.0806172206580.28110@cliff.in.clinika.pl> <200806172338.38318.rjw@sisk.pl>
+ <200806180053.40044.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 18 Jun 2008, Rafael J. Wysocki wrote:
 
-
-On Wed, 18 Jun 2008, Bron Gondwana wrote:
+> Here you go.  Below is the relevant snippet from the yesterday's linux-next
+> dmesg with the patches:
+> "x86: I/O APIC: timer through 8259A second-chance"
+> "x86: add C1E aware idle function"
+> reverted and the appended debug patch applied.
 > 
-> For my sins, I appear to be becoming the world expert on 
-> that particular file.
-
-Heh. Congrats ;)
-
-> I've debugged skiplist bugs many times over, and completely rewritten 
-> the locking code.  It really does some pretty evil things - the memory 
-> accesses look something like this:
+> [    0.108006] TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
+> [    0.108006] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
+> [    0.108006] ...trying to set up timer (IRQ0) through the 8259A ... <2> failed
+> [    0.108006] ...trying to set up timer as Virtual Wire IRQ...<2> works.
 > 
-> [file...................]
-> [mmap^....^.^........^^..................................]
-> [file...................++++++++++++]
-> [mmap^....^.^........^^.^^ ^      ^^.....................]
-> 
-> Where (^) is the bits that get accessed.  All reads are via
-> the mmap, all writes are done with retry_write or 
-> retry_writev (Cyrus library functions that keep hammering
-> until all the bytes are written)
+> The entire dmesg is at: http://www.sisk.pl/kernel/debug/20080616/dmesg-4.log
 
-Is there any reason it doesn't use mmap(MAP_SHARED) and make the 
-modifications that way too?
+ Thanks -- this is very important and useful information as it shows the
+exact alternative used.
 
-Because quite frankly, the mixture of doing mmap() and write() system 
-calls is quite fragile - and I'm not saying that just because of this 
-particular bug, but because there are all kinds of nasty cache aliasing 
-issues with virtually indexed caches etc that just fundamentally mean that 
-it's often a mistake to mix mmap with read/write at the same time.
+ With such a configuration the "x86: I/O APIC: timer through 8259A
+second-chance" patch should not matter, because the only change it
+introduces is an attempt to try the same I/O APIC pin again, but with the
+IRQ0 line of the master 8259A enabled.  That's not a terribly unusual 
+configuration and nothing should get confused in the system.
 
-(For the same reason it's not a good idea to mix writing through an mmap() 
-and then using read() to read it - again, you can have some nasty aliasing 
-going on there).
+ Barring the unlikely possibility of the 8259A actually being wired to 
+INTIN2 of the I/O APIC I can see two possible explanations:
 
-So this particular issue was definitely a kernel bug (and big thanks for 
-making such a good test-case), but in general, it does sound like Cyrus is 
-actively trying to dig itself into a nasty hole there.
+1. The 8259A interrupt actually escapes to the CPU somehow and is handled
+   as an ExtINTA interrupt.  This would make the code in check_timer()  
+   decide it has found a working configuration, while actually it has been
+   fooled.
 
-			Linus
+2. There is a bug in this patch or an assumption it makes which results 
+   in the state of some component not to be restored correctly.  
+   Unfortunately I have no resources to test the 64-bit variation of the 
+   code, so something may have escaped my attention.
+
+ I'd like to find out which one is the case -- can you please reapply the
+patch and send me the corresponding section of the bootstrap log?  If the
+system hangs before you can retrieve the log, please just place:
+
+while (1);
+
+or something like that after the out: label in check_timer().
+
+ Thanks.
+
+  Maciej
