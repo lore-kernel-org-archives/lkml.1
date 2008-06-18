@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755777AbYFRSfF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755104AbYFRSj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755777AbYFRSfF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 14:35:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbYFRSez
+	id S1755104AbYFRSj1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 14:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbYFRSjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 14:34:55 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39050 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753397AbYFRSey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 14:34:54 -0400
-Date: Wed, 18 Jun 2008 20:33:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
-       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per
-	cpu area
-Message-ID: <20080618183359.GA24614@elte.hu>
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.509483000@polaris-admin.engr.sgi.com> <20080605102222.GA21319@elte.hu> <484EF29C.7080100@sgi.com> <485947A8.8060801@goop.org> <4859511E.5050605@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4859511E.5050605@sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 18 Jun 2008 14:39:20 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56297 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753425AbYFRSjT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 14:39:19 -0400
+Date: Wed, 18 Jun 2008 15:38:55 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [Ksummit-2008-discuss] Request for discussion on when to merge
+ drivers
+Message-ID: <20080618153855.4d069bb1@gaivota>
+In-Reply-To: <1213802866.3515.24.camel@localhost.localdomain>
+References: <1213802866.3515.24.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 18 Jun 2008 10:27:46 -0500
+James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-* Mike Travis <travis@sgi.com> wrote:
+> I think the Kernel Summit would be a good place to have a discussion of
+> what the criteria are for merging a driver (even if, in the end, it's at
+> the discretion of the subsystem maintainers).
 
-> Hi Jeremy,
-> 
-> I'm not finding that code in the tip/latest or linux-next branches... 
-> ?
-> 
-> I can send you my latest version of the patch which is better than the 
-> previous but still is having problems with the config file that Ingo 
-> sent out.  (It also has a weird quirk that it will hang and reboot 
-> after about 30 seconds with or without my patch.)
+I agree.
 
-the patch is not in -tip yet because we dont keep known-broken patches 
-applied unless there's some really strong reason to do so.
+> So perhaps in addition we should be
+> encouraging maintainers to run staging branches under similar rules in
+> the staging tree, but allowing inclusion into linux-next?
 
-	Ingo
+This seems a good idea for drivers.
+
+One potencial issue that we may discuss is some sort of policy on how to deal
+with drivers at the "generic" staging tree versus a subsystem maintainer
+staging tree. I can foresee a few troubles if a maintainer have such tree, like:
+
+	- After the fixes at -staging, the patch may be kept for a while at
+maintainer's staging tree. So, the workflow will be longer than having just one tree;
+
+	- Two different patches for the same device can be sent to the
+"generic" staging and to the maintainer's staging tree. So, a conflict will
+rise (hopefully detected at linux-next, but may require additional checks for
+conflicts with PCI/USB ID's);
+
+On the other hand, without the maintainer's staging tree, this would mean that
+the maintainer would have to send their cooking drivers to the generic tree,
+with doesn't seem to be very productive.
+
+A possible solution would be if each maintainer with such staging tree would
+keep the wiki at linux driver project updated, but this adds some additional
+tasks to the maintainer's arms.
+
+Cheers,
+Mauro
