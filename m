@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbYFREH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758780AbYFREIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754602AbYFREH0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 00:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbYFREHN
+	id S1758780AbYFREIU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 00:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbYFREIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 00:07:13 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:63787 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751036AbYFREHL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 00:07:11 -0400
-Date: Wed, 18 Jun 2008 05:02:48 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
-In-Reply-To: <200806180053.40044.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.55.0806180400070.28110@cliff.in.clinika.pl>
-References: <20080613232214.394fd6fd.sfr@canb.auug.org.au>
- <Pine.LNX.4.55.0806172206580.28110@cliff.in.clinika.pl> <200806172338.38318.rjw@sisk.pl>
- <200806180053.40044.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 18 Jun 2008 00:08:05 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52166
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751579AbYFREIC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 00:08:02 -0400
+Date: Tue, 17 Jun 2008 21:08:03 -0700 (PDT)
+Message-Id: <20080617.210803.190930256.davem@davemloft.net>
+To: wcang@nav6.org
+Cc: maxk@qualcomm.com, steve.zabele@baesystems.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] NET: Proper handling of IPv6 header in tun driver when
+ TUN_NO_PI is set
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <48586F4B.4060404@nav6.org>
+References: <48499C32.6070703@qualcomm.com>
+	<20080617.163205.160864233.davem@davemloft.net>
+	<48586F4B.4060404@nav6.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jun 2008, Rafael J. Wysocki wrote:
+From: Ang Way Chuang <wcang@nav6.org>
+Date: Wed, 18 Jun 2008 10:13:31 +0800
 
-> Here you go.  Below is the relevant snippet from the yesterday's linux-next
-> dmesg with the patches:
-> "x86: I/O APIC: timer through 8259A second-chance"
-> "x86: add C1E aware idle function"
-> reverted and the appended debug patch applied.
-> 
-> [    0.108006] TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
-> [    0.108006] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
-> [    0.108006] ...trying to set up timer (IRQ0) through the 8259A ... <2> failed
-> [    0.108006] ...trying to set up timer as Virtual Wire IRQ...<2> works.
-> 
-> The entire dmesg is at: http://www.sisk.pl/kernel/debug/20080616/dmesg-4.log
+> David Miller wrote:
+> > From: Max Krasnyanskiy <maxk@qualcomm.com>
+> > Date: Fri, 06 Jun 2008 13:21:06 -0700
+> > 
+> >> Acked-by: Max Krasnyansky <maxk@qualcomm.com>
+> >>
+> >> Dave, can you please add this patch to your tree.
+> > 
+> > I can't, the patch is severely whitespace damaged.
+> > 
+> Resend. Hopefully Thunderbird won't screw this time.
 
- Thanks -- this is very important and useful information as it shows the
-exact alternative used.
+Same problem, tabs were transformed into spaces, and
+lines composed of only whitespace were transformed into
+empty lines.
 
- With such a configuration the "x86: I/O APIC: timer through 8259A
-second-chance" patch should not matter, because the only change it
-introduces is an attempt to try the same I/O APIC pin again, but with the
-IRQ0 line of the master 8259A enabled.  That's not a terribly unusual 
-configuration and nothing should get confused in the system.
+This is frustrating enough, I'm just going to fix this up
+by hand for you, but please get your shit straight for next
+time because I won't do this twice.
 
- Barring the unlikely possibility of the 8259A actually being wired to 
-INTIN2 of the I/O APIC I can see two possible explanations:
-
-1. The 8259A interrupt actually escapes to the CPU somehow and is handled
-   as an ExtINTA interrupt.  This would make the code in check_timer()  
-   decide it has found a working configuration, while actually it has been
-   fooled.
-
-2. There is a bug in this patch or an assumption it makes which results 
-   in the state of some component not to be restored correctly.  
-   Unfortunately I have no resources to test the 64-bit variation of the 
-   code, so something may have escaped my attention.
-
- I'd like to find out which one is the case -- can you please reapply the
-patch and send me the corresponding section of the bootstrap log?  If the
-system hangs before you can retrieve the log, please just place:
-
-while (1);
-
-or something like that after the out: label in check_timer().
-
- Thanks.
-
-  Maciej
+Thanks.
