@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753322AbYFRKF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753825AbYFRKH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753322AbYFRKF0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 06:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbYFRKFT
+	id S1753825AbYFRKH1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 06:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbYFRKHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 06:05:19 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:57869 "EHLO atmel-es2.atmel.fr"
+	Wed, 18 Jun 2008 06:07:18 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56794 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752104AbYFRKFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 06:05:17 -0400
-Message-ID: <4858DDC1.6080802@atmel.com>
-Date: Wed, 18 Jun 2008 12:04:49 +0200
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	id S1752175AbYFRKHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 06:07:17 -0400
+Date: Wed, 18 Jun 2008 12:06:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, torvalds@linux-foundation.org
+Subject: Re: [PATCH] shm: Remove silly double assignment
+Message-ID: <20080618100624.GE15255@elte.hu>
+References: <20080610125338.GB3165@hmsreliant.think-freely.org> <20080611034506.05ad07ae.akpm@linux-foundation.org> <20080611170321.GA23507@hmsreliant.think-freely.org>
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus@drzeus.cx>,
-       =?ISO-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>
-CC: Marc Pignat <marc.pignat@hevs.ch>, Eric BENARD <ebenard@free.fr>,
-       Andrew Victor <linux@maxim.org.za>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Anti Sullin <anti.sullin@artecdesign.ee>,
-       =?ISO-8859-1?Q?Hans-J=FCrgen_?= =?ISO-8859-1?Q?Koch?= 
-	<hjk@linutronix.de>
-Subject: Re: [PATCH 0/7] mmc: at91_mci: rework to allow better transfer
-References: <483FE9E7.7020707@atmel.com>	<20080609124623.5b6bda48@mjolnir.drzeus.cx>	<484E4F61.7010007@atmel.com> <20080614182831.0360bd77@mjolnir.drzeus.cx>
-In-Reply-To: <20080614182831.0360bd77@mjolnir.drzeus.cx>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080611170321.GA23507@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman :
-> On Tue, 10 Jun 2008 11:54:41 +0200
-> Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
-> 
->> Russell King highlights that patch #4 is not well inserted in the series 
->> : it have to be after #5 (after correcting bytes_xfered update).
->>
->> If you want I can reorder them... or you manage to do it.
->>
->> I will take into account Marc's comment and new Ville patch series in 
->> another round ;-)
-> 
-> Will you redo this series, or are you planning further patches? (i.e.
-> should I merge this set or wait for an update?)
 
-You can merge this patch series (7 patches)
+* Neil Horman <nhorman@tuxdriver.com> wrote:
 
-You can also merge
-http://lists.arm.linux.org.uk/lurker/message/20080610.092729.beef9e64.en.html
-"at91_mci: manage cmd error and data error independently" (1 patch)
+> > Not silly, really.  Look:
+> > 
+> > 	err = -ENOMEM;
+> > 	if (expr1)
+> > 		goto out;
+> > 
+> > 	err = -ENOMEM;
+> > 	if (expr2)
+> > 		goto out;
+> > 
+> > each of these two units is a separate, self-contained clause.  
+> > Removing the second assignment to `err' breaks that separation and 
+> > will make one clause undesirably dependent upon the other.
+>
+> yes, I see that keeping the second assignment lets you insert code in 
+> the middle without having up to update afterwards.  I just don't think 
+> the redundant assignment is worth keeping just for that purpose.
 
-And 3 patches from Ville Syrjälä that I have just signed:
-http://lists.arm.linux.org.uk/lurker/message/20080614.172720.dd0e776e.en.html
-"at91_mci: AT91SAM9260/9263 12 byte write erratum (v2)"
+cleanups is all about having familar, robust, predictable, 
+self-contained patterns of code that are easy to recognize, easy to 
+review and easy to keep working well.
 
+In this case we've got an admittedly boundary case: removing the 
+technically redundant piece of code, while a valid cleanup at first 
+sight, makes the code less robust against future changes.
 
-http://lists.arm.linux.org.uk/lurker/message/20080609.190644.3f64ff91.en.html
-"at91_mci: Cover more AT91RM9200 and AT91SAM9261 errata."
-
-
-http://lists.arm.linux.org.uk/lurker/message/20080609.190645.2998e511.en.html
-"at91_mci: Fix byte mode transitions."
-
-=> 11 patches.
-
-Thanks a lot, regards,
--- 
-Nicolas Ferre
-
+	Ingo
