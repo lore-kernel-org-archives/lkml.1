@@ -1,354 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753059AbYFRIEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752160AbYFRIRK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753059AbYFRIEj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 04:04:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbYFRIEQ
+	id S1752160AbYFRIRK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 04:17:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbYFRIQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 04:04:16 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:50923 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751608AbYFRIEK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 04:04:10 -0400
-Message-ID: <4858C111.8050806@cn.fujitsu.com>
-Date: Wed, 18 Jun 2008 16:02:25 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Paul Jackson <pj@sgi.com>
-Subject: [RFC] [PATCH] cgroup: add "procs" control file
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Jun 2008 04:16:57 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:48457 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750997AbYFRIQz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 04:16:55 -0400
+X-Greylist: delayed 3598 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Jun 2008 04:16:54 EDT
+Subject: NULL pointer dereference while setting sched_rt_period_us
+From: Dario Faggioli <raistlin@linux.it>
+To: Michael Trimarchi <trimarchimichael@yahoo.it>, peterz@infradead.org,
+       mingo@elte.hu, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-OaJzNE1uS742PwRFSrI8"
+Date: Wed, 18 Jun 2008 09:18:38 +0200
+Message-Id: <1213773519.5371.8.camel@Palanthas.Krynn>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This control file is the equivalent of the "tasks" control file, but
-acting/reporting on entire thread groups.
 
-For example, we have a process with pid 1000 and its sub-thread with
-tid 1001, to attach them into a cgroup:
- # echo 1000 > procs
-Then show the process list and the task list respectively:
- # cat procs
- 1000
- # cat tasks
- 1000
- 1001
+--=-OaJzNE1uS742PwRFSrI8
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Questions:
-- What to do if the attaching of a thread failed? continue to attach
-  other threads, or stop and return error?
-- When a sub-thread of a process is in the cgroup, but not its thread
-  cgroup leader, what to do when 'cat procs'? just skip those threads?
+Hi all,
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+When CONFIG_RT_GROUP_SCHED and =EF=BB=BFCONFIG_CGROUP_SCHED are enabled, wi=
+th:
+
+ echo 10000 > /proc/sys/kernel/sched_rt_period_us
+
+We get this:
+
+ BUG: unable to handle kernel NULL pointer dereference at 0000008c
+ [  947.682233] IP: [<c0216b72>] __rt_schedulable+0x12/0x160
+ [  947.683123] *pde =3D 00000000=20
+ [  947.683782] Oops: 0000 [#1]=20
+ [  947.684307] Modules linked in:
+ [  947.684308]=20
+ [  947.684308] Pid: 2359, comm: bash Not tainted (2.6.26-rc6 #8)
+ [  947.684308] EIP: 0060:[<c0216b72>] EFLAGS: 00000246 CPU: 0
+ [  947.684308] EIP is at __rt_schedulable+0x12/0x160
+ [  947.684308] EAX: 00000000 EBX: 00000000 ECX: 00000000 EDX: 00000001
+ [  947.684308] ESI: c0521db4 EDI: 00000001 EBP: c6cc9f00 ESP: c6cc9ed0
+ [  947.684308]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+ [  947.684308] Process bash (pid: 2359, ti=3Dc6cc8000 task=3Dc7a54f00=20
+ task.ti=3Dc6cc8000)
+ [  947.684308] Stack: c0222790 00000000 080f8c08 c0521db4 c6cc9f00=20
+ 00000001 00000000 00000000=20
+ [  947.684308]        c6cc9f9c 00000000 c0521db4 00000001 c6cc9f28=20
+ c0216d40 00000000 00000000=20
+ [  947.684308]        c6cc9f9c 000f4240 000e7ef0 ffffffff c0521db4=20
+ c79dfb60 c6cc9f58 c02af2cc=20
+ [  947.684308] Call Trace:
+ [  947.684308]  [<c0222790>] ? do_proc_dointvec_conv+0x0/0x50
+ [  947.684308]  [<c0216d40>] ? sched_rt_handler+0x80/0x110
+ [  947.684308]  [<c02af2cc>] ? proc_sys_call_handler+0x9c/0xb0
+ [  947.684308]  [<c02af2fa>] ? proc_sys_write+0x1a/0x20
+ [  947.684308]  [<c0273c36>] ? vfs_write+0x96/0x160
+ [  947.684308]  [<c02af2e0>] ? proc_sys_write+0x0/0x20
+ [  947.684308]  [<c027423d>] ? sys_write+0x3d/0x70
+ [  947.684308]  [<c0202ef5>] ? sysenter_past_esp+0x6a/0x91
+ [  947.684308]  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D
+ [  947.684308] Code: 24 04 e8 62 b1 0e 00 89 c7 89 f8 8b 5d f4 8b 75
+ f8 8b 7d fc 89 ec 5d c3 90 55 89 e5 57 56 53 83 ec 24 89 45 ec 89 55 e4
+ 89 4d e8 <8b> b8 8c 00 00 00 85 ff 0f 84 c9 00 00 00 8b 57 24 39 55 e8
+ 8b=20
+ [  947.684308] EIP: [<c0216b72>] __rt_schedulable+0x12/0x160 SS:ESP =20
+ 0068:c6cc9ed0
+
+
+We think the following patch solves the issue.
+
+Hope this is of some help.
+
+Regards,
+Dario Faggioli
+
+Signed-off-by: Dario Faggioli <raistlin@linux.it>
+Signed-off-by: Michael Trimarchi <trimarchimichael@yahoo.it>
 ---
- Documentation/cgroups.txt |    9 ++++
- include/linux/cgroup.h    |    2 +-
- kernel/cgroup.c           |  112 ++++++++++++++++++++++++++++++++++++++------
- kernel/cpuset.c           |    2 +-
- 4 files changed, 107 insertions(+), 18 deletions(-)
+diff --git a/kernel/sched.c b/kernel/sched.c
+index eaf6751..7205e25 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -8348,7 +8348,7 @@ static unsigned long to_ratio(u64 period, u64
+runtime)
+ #ifdef CONFIG_CGROUP_SCHED
+ static int __rt_schedulable(struct task_group *tg, u64 period, u64
+runtime)
+ {
+-	struct task_group *tgi, *parent =3D tg->parent;
++	struct task_group *tgi, *parent =3D tg ? tg->parent : NULL;
+ 	unsigned long total =3D 0;
+=20
+ 	if (!parent) {
 
-diff --git a/Documentation/cgroups.txt b/Documentation/cgroups.txt
-index 8252f5b..03c7b21 100644
---- a/Documentation/cgroups.txt
-+++ b/Documentation/cgroups.txt
-@@ -227,6 +227,7 @@ Each cgroup is represented by a directory in the cgroup file system
- containing the following files describing that cgroup:
- 
-  - tasks: list of tasks (by pid) attached to that cgroup
-+ - procs: list of processes (by pid) attached to that cgroup
-  - releasable flag: cgroup currently removeable?
-  - notify_on_release flag: run the release agent on exit?
-  - release_agent: the path to use for release notifications (this file
-@@ -380,6 +381,8 @@ reference).
- 2.2 Attaching processes
- -----------------------
- 
-+To attach a task to a cgroup:
-+
- # /bin/echo PID > tasks
- 
- Note that it is PID, not PIDs. You can only attach ONE task at a time.
-@@ -390,6 +393,12 @@ If you have several tasks to attach, you have to do it one after another:
- 	...
- # /bin/echo PIDn > tasks
- 
-+To attach an entire thread group to a cgroup:
-+
-+# /bin/echo PID > procs
-+
-+PID should be the pid of the thread group leader.
-+
- 3. Kernel API
- =============
- 
-diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
-index fc99ba4..f125324 100644
---- a/include/linux/cgroup.h
-+++ b/include/linux/cgroup.h
-@@ -376,7 +376,7 @@ struct task_struct *cgroup_iter_next(struct cgroup *cgrp,
- 					struct cgroup_iter *it);
- void cgroup_iter_end(struct cgroup *cgrp, struct cgroup_iter *it);
- int cgroup_scan_tasks(struct cgroup_scanner *scan);
--int cgroup_attach_task(struct cgroup *, struct task_struct *);
-+int cgroup_attach_task(struct cgroup *, struct task_struct *, struct css_set *);
- 
- #else /* !CONFIG_CGROUPS */
- 
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index a4c8671..2cfc733 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -1246,17 +1246,18 @@ static void get_first_subsys(const struct cgroup *cgrp,
-  * cgroup_attach_task - attach task 'tsk' to cgroup 'cgrp'
-  * @cgrp: the cgroup the task is attaching to
-  * @tsk: the task to be attached
-+ * @newcg: the new css_set for this task, can be NULL
-  *
-  * Call holding cgroup_mutex. May take task_lock of
-  * the task 'tsk' during call.
-  */
--int cgroup_attach_task(struct cgroup *cgrp, struct task_struct *tsk)
-+int cgroup_attach_task(struct cgroup *cgrp, struct task_struct *tsk,
-+		       struct css_set *newcg)
- {
- 	int retval = 0;
- 	struct cgroup_subsys *ss;
- 	struct cgroup *oldcgrp;
- 	struct css_set *cg = tsk->cgroups;
--	struct css_set *newcg;
- 	struct cgroupfs_root *root = cgrp->root;
- 	int subsys_id;
- 
-@@ -1279,9 +1280,12 @@ int cgroup_attach_task(struct cgroup *cgrp, struct task_struct *tsk)
- 	 * Locate or allocate a new css_set for this task,
- 	 * based on its final set of cgroups
- 	 */
--	newcg = find_css_set(cg, cgrp);
--	if (!newcg)
--		return -ENOMEM;
-+	if (!newcg) {
-+		newcg = find_css_set(cg, cgrp);
-+		if (!newcg)
-+			return -ENOMEM;
-+	} else
-+		get_css_set(newcg);
- 
- 	task_lock(tsk);
- 	if (tsk->flags & PF_EXITING) {
-@@ -1311,24 +1315,23 @@ int cgroup_attach_task(struct cgroup *cgrp, struct task_struct *tsk)
- }
- 
- /*
-- * Attach task with pid 'pid' to cgroup 'cgrp'. Call with
-- * cgroup_mutex, may take task_lock of task
-+ * Get the task with the provided pid. The caller should
-+ * call put_task_struct() with the returned task.
-  */
--static int attach_task_by_pid(struct cgroup *cgrp, char *pidbuf)
-+static struct task_struct *attach_get_task(struct cgroup *cgrp, char *pidbuf)
- {
- 	pid_t pid;
- 	struct task_struct *tsk;
--	int ret;
- 
- 	if (sscanf(pidbuf, "%d", &pid) != 1)
--		return -EIO;
-+		return ERR_PTR(-EIO);
- 
- 	if (pid) {
- 		rcu_read_lock();
- 		tsk = find_task_by_vpid(pid);
- 		if (!tsk || tsk->flags & PF_EXITING) {
- 			rcu_read_unlock();
--			return -ESRCH;
-+			return ERR_PTR(-ESRCH);
- 		}
- 		get_task_struct(tsk);
- 		rcu_read_unlock();
-@@ -1336,23 +1339,82 @@ static int attach_task_by_pid(struct cgroup *cgrp, char *pidbuf)
- 		if ((current->euid) && (current->euid != tsk->uid)
- 		    && (current->euid != tsk->suid)) {
- 			put_task_struct(tsk);
--			return -EACCES;
-+			return ERR_PTR(-EACCES);
- 		}
- 	} else {
- 		tsk = current;
- 		get_task_struct(tsk);
- 	}
- 
--	ret = cgroup_attach_task(cgrp, tsk);
-+	return tsk;
-+}
-+
-+/*
-+ * Attach task with pid 'pid' to cgroup 'cgrp'. Call with
-+ * cgroup_mutex, may take task_lock of task
-+ */
-+static int attach_task_by_pid(struct cgroup *cgrp, char *pidbuf)
-+{
-+	struct task_struct *tsk;
-+	int ret;
-+
-+	tsk = attach_get_task(cgrp, pidbuf);
-+	if (IS_ERR(tsk))
-+		return PTR_ERR(tsk);
-+
-+	ret = cgroup_attach_task(cgrp, tsk, NULL);
- 	put_task_struct(tsk);
- 	return ret;
- }
- 
-+/*
-+ * Attach the entire thread groups whose group leader is 'pid'. Call
-+ * with cgroup_mutex, may take task_lock of task.
-+ */
-+static int attach_thread_group(struct cgroup *cgrp, char *pidbuf)
-+{
-+	struct task_struct *tsk;
-+	struct task_struct *t;
-+	struct css_set *cg;
-+	int ret1, ret2;
-+
-+	tsk = attach_get_task(cgrp, pidbuf);
-+	if (IS_ERR(tsk))
-+		return PTR_ERR(tsk);
-+
-+	/* attach thread group leader */
-+	ret1 = cgroup_attach_task(cgrp, tsk, NULL);
-+	if (ret1) {
-+		put_task_struct(tsk);
-+		return ret1;
-+	}
-+
-+	cg = tsk->cgroups;
-+
-+	/* attach all sub-threads */
-+	rcu_read_lock();
-+	for (t = next_thread(tsk); t != tsk; t = next_thread(t)) {
-+		get_task_struct(t);
-+		ret2 = cgroup_attach_task(cgrp, t, cg);
-+		if (ret2) {
-+			printk(KERN_ERR "cgroup: failed to attach thread %d\n",
-+			       (int)task_pid_vnr(t));
-+			ret1 = ret2;
-+		}
-+		put_task_struct(t);
-+	}
-+	rcu_read_unlock();
-+
-+	put_task_struct(tsk);
-+	return ret1;
-+}
-+
- /* The various types of files and directories in a cgroup file system */
- enum cgroup_filetype {
- 	FILE_ROOT,
- 	FILE_DIR,
- 	FILE_TASKLIST,
-+	FILE_PROCLIST,
- 	FILE_NOTIFY_ON_RELEASE,
- 	FILE_RELEASE_AGENT,
- };
-@@ -1431,6 +1493,9 @@ static ssize_t cgroup_common_file_write(struct cgroup *cgrp,
- 	case FILE_TASKLIST:
- 		retval = attach_task_by_pid(cgrp, buffer);
- 		break;
-+	case FILE_PROCLIST:
-+		retval = attach_thread_group(cgrp, buffer);
-+		break;
- 	case FILE_NOTIFY_ON_RELEASE:
- 		clear_bit(CGRP_RELEASABLE, &cgrp->flags);
- 		if (simple_strtoul(buffer, NULL, 10) != 0)
-@@ -2081,7 +2146,8 @@ struct ctr_struct {
-  * read section, so the css_set can't go away, and is
-  * immutable after creation.
-  */
--static int pid_array_load(pid_t *pidarray, int npids, struct cgroup *cgrp)
-+static int pid_array_load(pid_t *pidarray, int npids,
-+			  struct cgroup *cgrp, int procs)
- {
- 	int n = 0;
- 	struct cgroup_iter it;
-@@ -2090,6 +2156,8 @@ static int pid_array_load(pid_t *pidarray, int npids, struct cgroup *cgrp)
- 	while ((tsk = cgroup_iter_next(cgrp, &it))) {
- 		if (unlikely(n == npids))
- 			break;
-+		if (procs && !thread_group_leader(tsk))
-+			continue;
- 		pidarray[n++] = task_pid_vnr(tsk);
- 	}
- 	cgroup_iter_end(cgrp, &it);
-@@ -2178,9 +2246,11 @@ static int pid_array_to_buf(char *buf, int sz, pid_t *a, int npids)
- static int cgroup_tasks_open(struct inode *unused, struct file *file)
- {
- 	struct cgroup *cgrp = __d_cgrp(file->f_dentry->d_parent);
-+	struct cftype *cft = __d_cft(file->f_dentry);
- 	struct ctr_struct *ctr;
- 	pid_t *pidarray;
- 	int npids;
-+	int procs;
- 	char c;
- 
- 	if (!(file->f_mode & FMODE_READ))
-@@ -2202,7 +2272,8 @@ static int cgroup_tasks_open(struct inode *unused, struct file *file)
- 		if (!pidarray)
- 			goto err1;
- 
--		npids = pid_array_load(pidarray, npids, cgrp);
-+		procs = (cft->private == FILE_PROCLIST);
-+		npids = pid_array_load(pidarray, npids, cgrp, procs);
- 		sort(pidarray, npids, sizeof(pid_t), cmppid, NULL);
- 
- 		/* Call pid_array_to_buf() twice, first just to get bufsz */
-@@ -2271,6 +2342,15 @@ static struct cftype files[] = {
- 	},
- 
- 	{
-+		.name = "procs",
-+		.open = cgroup_tasks_open,
-+		.read = cgroup_tasks_read,
-+		.write = cgroup_common_file_write,
-+		.release = cgroup_tasks_release,
-+		.private = FILE_PROCLIST,
-+	},
-+
-+	{
- 		.name = "notify_on_release",
- 		.read_u64 = cgroup_read_notify_on_release,
- 		.write = cgroup_common_file_write,
-@@ -3002,7 +3082,7 @@ int cgroup_clone(struct task_struct *tsk, struct cgroup_subsys *subsys)
- 	}
- 
- 	/* All seems fine. Finish by moving the task into the new cgroup */
--	ret = cgroup_attach_task(child, tsk);
-+	ret = cgroup_attach_task(child, tsk, NULL);
- 	mutex_unlock(&cgroup_mutex);
- 
-  out_release:
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index 039baa4..dec96cf 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -1754,7 +1754,7 @@ static void cpuset_do_move_task(struct task_struct *tsk,
- 	struct cpuset_hotplug_scanner *chsp;
- 
- 	chsp = container_of(scan, struct cpuset_hotplug_scanner, scan);
--	cgroup_attach_task(chsp->to, tsk);
-+	cgroup_attach_task(chsp->to, tsk, NULL);
- }
- 
- /**
--- 
-1.5.4.rc3
+--=20
+<<This happens because I choose it to happen!>>
+(Raistlin Majere, DragonLance Chronicles -Dragons of Spring Drawning-)
+----------------------------------------------------------------------
+Dario Faggioli
+GNU/Linux Registered User: #340657
+Web: http://www.linux.it/~raistlin
+Blog: http://blog.linux.it/raistlin
+SIP Account: dario.faggioli@sipproxy.wengo.fr or
+             raistlin@ekiga.net
+Jabber Account: dario.faggioli@jabber.org/WengoPhone
+GnuPG Key ID: 4DC83AC4
+GnuPG Key Fingerprint: 2A78 AD5D B9CF A082 0836 08AD 9385 DA04 4DC8 3AC4
 
+--=-OaJzNE1uS742PwRFSrI8
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkhYts4ACgkQk4XaBE3IOsQNiACffcPctmEZV/ttZD3F/VYHY0n7
+HI0AmwZNbUIW+YEHCcedI6aL2YRirKEl
+=dIFn
+-----END PGP SIGNATURE-----
+
+--=-OaJzNE1uS742PwRFSrI8--
 
