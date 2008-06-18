@@ -1,73 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753609AbYFRLPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbYFRLQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753609AbYFRLPs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 07:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbYFRLPi
+	id S1753909AbYFRLQh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 07:16:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbYFRLQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 07:15:38 -0400
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:29778 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752083AbYFRLPh convert rfc822-to-8bit (ORCPT
+	Wed, 18 Jun 2008 07:16:29 -0400
+Received: from smtp-vbr2.xs4all.nl ([194.109.24.22]:3578 "EHLO
+	smtp-vbr2.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752673AbYFRLQ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 07:15:37 -0400
-Date: Wed, 18 Jun 2008 13:15:14 +0200
-From: Maxim Shchetynin <maxim@linux.vnet.ibm.com>
-To: linux-fsdevel@vger.kernel.org
-Cc: Jan Engelhardt <jengelh@medozas.de>, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel@vger.kernel.org
-Subject: Re: AZFS file system proposal
-Message-ID: <20080618131514.7ea8af7e@mercedes-benz.boeblingen.de.ibm.com>
-In-Reply-To: <alpine.LNX.1.10.0806171634040.32473@fbirervta.pbzchgretzou.qr>
-References: <20080609104650.4f220492@mercedes-benz.boeblingen.de.ibm.com>
-	<20080609125530.GF30405@parisc-linux.org>
-	<20080610104919.504b9826@mercedes-benz.boeblingen.de.ibm.com>
-	<alpine.LNX.1.10.0806110000560.20733@fbirervta.pbzchgretzou.qr>
-	<20080617110655.59c915da@mercedes-benz.boeblingen.de.ibm.com>
-	<alpine.LNX.1.10.0806171133220.6620@fbirervta.pbzchgretzou.qr>
-	<20080617135722.374673b9@mercedes-benz.boeblingen.de.ibm.com>
-	<alpine.LNX.1.10.0806171634040.32473@fbirervta.pbzchgretzou.qr>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 18 Jun 2008 07:16:29 -0400
+Date: Wed, 18 Jun 2008 13:16:07 +0200
+From: Erik Mouw <mouw@nl.linux.org>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Victor <linux@maxim.org.za>, Pierre Ossman <drzeus@drzeus.cx>,
+       Eric BENARD <ebenard@free.fr>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       hjk@linutronix.de, Russell King <rmk@arm.linux.org.uk>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH 0/7] mmc: at91_mci: rework to allow better transfer
+Message-ID: <20080618111607.GB6788@gateway.home>
+References: <483FE9E7.7020707@atmel.com> <20080609124623.5b6bda48@mjolnir.drzeus.cx> <484E4F61.7010007@atmel.com> <20080614182831.0360bd77@mjolnir.drzeus.cx> <4858DDC1.6080802@atmel.com> <20080618104723.GA6788@gateway.home>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="NMuMz9nt05w80d4+"
+Content-Disposition: inline
+In-Reply-To: <20080618104723.GA6788@gateway.home>
+Organization: Eric Conspiracy Secret Labs
+X-Eric-Conspiracy: There is no conspiracy!
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >> >> (a) What is axonram?
-> >> >> (b) why is axonram direct_access, and my other devices (including
-> >> >> standard PC RAM) not?
-> >> >
-> >> >[Axonram is a module specific for IBM CellBlade and allows access to
-> >> >a DDR2 memory attached onto Axon controller.] You don't need
-> >> >direct_access and not azfs for main memory because there is already
-> >> >a pretty nice tmpfs for it.
-> >> 
-> >> So the reason azfs could be useful is...?
-> >
-> >The "?" at the end of your sentence might mean a question. I would
-> >be really happy to give an answer on it if I could understand it.
-> 
-> If one does not need direct_access nor azfs, and ext2 plus XIP minus
-> caching or tmpfs plus XIP can achieve the same effect, what can azfs
-> that we could not already do without azfs?
 
-Our users want to have a file system with bigger block sizes (64KB, 16MB, ...). They also don't want to keep metadata on DDR2 media, but to be able to use a complete DDR2 for their applications data.
+--NMuMz9nt05w80d4+
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Mit freundlichen Grüßen / met vriendelijke groeten / avec regards
+On Wed, Jun 18, 2008 at 12:47:23PM +0200, Erik Mouw wrote:
+> On Wed, Jun 18, 2008 at 12:04:49PM +0200, Nicolas Ferre wrote:
+>=20
+> [...]
+>=20
+> Could you all drop =3D?ISO-8859-1?Q?Hans-J=3DFCrgen_?=3D from the Cc list=
+ in
+> this thread? The address is invalid because it has no domain part and
+> hence causes quite some bounces on the list because some strict email
+> checkers reject invalid addresses in the Cc list.
+>=20
+> I'm trying to figure out what went wrong, but in the mean time please
+> drop =3D?ISO-8859-1?Q?Hans-J=3DFCrgen_?=3D from the Cc list.
 
-    Maxim V. Shchetynin
-    Linux Kernel Entwicklung
-    IBM Deutschland Entwicklung GmbH
-    Linux für Cell, Abteilung 3250
-    Schönaicher Straße 220
-    71032 Böblingen
+Found it, Mailman is to blame. On the linux-kernel mailing list, the
+address shows up ok: "=3D?ISO-8859-1?Q?Hans-J=3DFCrgen_?=3D
+=3D?ISO-8859-1?Q?Koch?=3D <hjk@linutronix.de>".
 
-Vorsitzender des Aufsichtsrats: Johann Weihen
-Geschäftsführung: Herbert Kircher
-Sitz der Gesellschaft: Böblingen
-Registriergericht: Amtsgericht Stuttgart, HRB 243294
+What probably happens: Mailman tries to check if the addresses in the
+To and CC fields are subscribed to the list (linux-arm-kernel). If that
+is the case and the subscriber enabled "prevent doubles", it won't send
+that particular subscriber the message. Of course, this should have
+been implemented by a simple strncmp() on the To and CC fields, but I
+guess Mailman first breaks up the To and CC fields, then does the
+"prevent double" check, and then reassembles the To and CC fields.
+Apparently there is an error in the break up or reassembly. Now how to
+fix this without breaking Mailman alltogether...
 
-Fahr nur so schnell wie dein Schutzengel fliegen kann!
+In the mean time, could you just use Hans-J=FCrgen's address
+(hjk@linutronix.de>) and not his name in the CC field?
+
+
+Erik
+[linux-arm-kernel-owner #2]
+(thanks to David Woodhouse for helping to debug the problem)
+
+--=20
+Erik Mouw -- mouw@nl.linux.org
+
+--NMuMz9nt05w80d4+
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD4DBQFIWO53/PlVHJtIto0RAhGjAJjfQG+QU/8f6ImLrBtQpDDYCEL9AJ0T1lI3
+4HyPkvcEUYbxBxQpGEGZhw==
+=8rgF
+-----END PGP SIGNATURE-----
+
+--NMuMz9nt05w80d4+--
