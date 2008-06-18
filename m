@@ -1,90 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754969AbYFRMRj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbYFRMUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754969AbYFRMRj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 08:17:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbYFRMRb
+	id S1754628AbYFRMUO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 08:20:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753746AbYFRMUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 08:17:31 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48596 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753289AbYFRMRa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 08:17:30 -0400
-Subject: Re: [PATCH][resubmit] x86: enable preemption in delay
-From: Peter Zijlstra <peterz@infradead.org>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Marin Mitov <mitov@issp.bas.bg>,
-       Andi Kleen <andi-suse@firstfloor.org>,
-       Clark Williams <clark.williams@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>, akpm@osdl.org,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>
-In-Reply-To: <4858C286.BA47.005A.0@novell.com>
-References: <200805252108.25011.mitov@issp.bas.bg>
-	 <200806091911.21850.mitov@issp.bas.bg> <20080609161606.GA24841@elte.hu>
-	 <200806152058.17142.mitov@issp.bas.bg> <20080618075518.GD4135@elte.hu>
-	 <4858C286.BA47.005A.0@novell.com>
-Content-Type: text/plain
-Date: Wed, 18 Jun 2008 14:16:56 +0200
-Message-Id: <1213791416.16944.222.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Wed, 18 Jun 2008 08:20:01 -0400
+Received: from ozlabs.org ([203.10.76.45]:40834 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751564AbYFRMUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 08:20:01 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: 2.6.26-git: NULL pointer deref in __switch_to
+Date: Wed, 18 Jun 2008 22:19:46 +1000
+User-Agent: KMail/1.9.9
+Cc: Simon Holm =?iso-8859-1?q?Th=F8gersen?= <odie@cs.aau.dk>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Patrick McHardy <kaber@trash.net>,
+       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+       Chuck Ebbert <cebbert@redhat.com>, "x86@kernel.org" <x86@kernel.org>
+References: <4852B19E.4010202@trash.net> <200806181534.24085.rusty@rustcorp.com.au> <20080618062357.GC23370@linux-os.sc.intel.com>
+In-Reply-To: <20080618062357.GC23370@linux-os.sc.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806182219.46892.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-06-18 at 06:08 -0600, Gregory Haskins wrote:
-> >>> On Wed, Jun 18, 2008 at  3:55 AM, in message <20080618075518.GD4135@elte.hu>,
-> Ingo Molnar <mingo@elte.hu> wrote: 
-> 
-> > * Marin Mitov <mitov@issp.bas.bg> wrote:
-> > 
-> >> Why not something like that (do keep in mind I am not an expert :-):
-> >> 
-> >> static void delay_tsc(unsigned long loops)
-> >> {
-> >> 	get and store the mask of allowed cpus;
-> >> 	/*     prevent the migration   */
-> >> 	set the mask of allowed cpus to the current cpu only;
-> >> 	/*     is it possible? could it be guaranteed?    */
-> >> 	loop for the delay;
-> >> 	restore the old mask of allowed cpus;
-> >> }
-> >> 
-> >> You have got the idea. Could it be realized? Is it more expensive than 
-> >> the current realization? So, comments, please.
-> > 
-> > hm, changing/saving/restorig cpus_allowed is really considered a 'heavy' 
-> > operation compared to preempt_disable(). On a 4096 CPUs box cpus_allowed 
-> > is 4096 bits which is half a kilobyte ...
-> > 
-> > preempt_disable()/enable() on the other hand only touches a single 
-> > variable, (thread_info->preempt_count which is an u32)
-> > 
-> > 	Ingo
-> 
-> FWIW:  I had submitted some "migration disable" patches a while back
-> that would solve this without the cpus_allowed manipulations described
-> here.  Its more expensive than a preempt-disable (but its
-> preemptible), yet its way cheaper (and more correct / less racy) than
-> chaning cpus_allowed.  I could resubmit if there was any interest,
-> though I think Ingo said he didnt like the concept on the first pass.
-> Anyway, FYI.
+On Wednesday 18 June 2008 16:23:57 Suresh Siddha wrote:
+> hi Rusty,
+>
+> On Tue, Jun 17, 2008 at 10:34:23PM -0700, Rusty Russell wrote:
+> >    Firstly, thanks for figuring this out.  But math_state_restore() has
+> > nasty semantics now.  Currently lguest will work, because no code path
+> > following this call relies on being on the same CPU.
+> >
+> > So, this patch is fine, but I wonder if I should just be forcing fpu
+> > allocation earlier for lguest tasks, so I can avoid this altogether?
+>
+> Even with force fpu allocation, we need these fixes(except for the SYSENTER
+> hunk)
+>
+> Just to clarify, dynamic fpu allocation didn't create these problems.
+> Some of these problems were there before aswell, and would show up as
+> fpu corruption for some of the tasks inside the lguest. With the
+> dynamic fpu allocation, it showed up as host kernel oops.
+>
+> In future, if lguest driver code ever has a code path which relies
+> on running on the same cpu after math_state_restore(), yes they
+> can force allocate, by doing early math_state_restore() before
+> the guest starts.
+>
+> But the current usage of lguest_set_ts() is clearly broken and violates
+> certain behavior expected by the fpu context switch handling routines.
 
-(please teach your mailer to wrap text)
+OK, lguest pieces Acked-by: Rusty Russell <rusty@rustcorp.com.au>
 
-Yeah - migrate_disable() has been proposed several times. The reason I
-don't like it is that is creates scheduling artefacts like latencies by
-not being able to load-balance (and thereby complicates all that, and
-you know we don't need more complication there).
+Since this has non-lguest pieces, please send via Ingo.
 
-Things like preempt latency and irq off latency are rather easy to
-notice and debug in general. migrate_disable() would be fully
-preemptable/schedulable which makes it much much harder to instrument or
-even detect we have an issue. Which in turn makes it much harder to find
-abuse.
-
+Cheers,
+Rusty.
