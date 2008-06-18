@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756384AbYFRWI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755057AbYFRWJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756384AbYFRWI5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 18:08:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbYFRWIt
+	id S1755057AbYFRWJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 18:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbYFRWJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 18:08:49 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:51997 "EHLO pardus.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754145AbYFRWIs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 18:08:48 -0400
-From: "=?iso-8859-9?q?S=2E=C7a=F0lar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>
-Subject: Re: [WATCHDOG] v2.6.26 hpwdt.c fixes
-Date: Thu, 19 Jun 2008 01:08:42 +0300
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Wim Van Sebroeck <wim@iguana.be>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <20080618194917.GC2741@infomag.infomag.iguana.be> <200806190058.29330.caglar@pardus.org.tr> <183C1D5A376DE343AA8F94FC2A1EC1491BFC2E90FC@GVW1091EXB.americas.hpqcorp.net>
-In-Reply-To: <183C1D5A376DE343AA8F94FC2A1EC1491BFC2E90FC@GVW1091EXB.americas.hpqcorp.net>
+	Wed, 18 Jun 2008 18:09:17 -0400
+Received: from webmail.e-teleport.net ([213.190.83.68]:57163 "EHLO
+	mail.imsnet.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754145AbYFRWJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 18:09:16 -0400
+Message-ID: <48598784.40306@e-teleport.net>
+Date: Thu, 19 Jun 2008 00:09:08 +0200
+From: =?ISO-8859-1?Q?S=E9guier_R=E9gis?= <rseguier@e-teleport.net>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-9"
+To: Francois Romieu <romieu@fr.zoreil.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, alan@redhat.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] net: via-velocity.c fix sleep-with-spinlock bug during
+ MTU change
+References: <20080531184615.350bac00@infradead.org> <20080603134019.df2f51d4.akpm@linux-foundation.org> <20080603215155.GA9712@electric-eye.fr.zoreil.com> <20080604215909.GA17446@electric-eye.fr.zoreil.com> <20080614212341.GA12976@electric-eye.fr.zoreil.com> <4856DA62.7080803@e-teleport.net> <20080617214538.GA6388@electric-eye.fr.zoreil.com> <48584AA4.8040801@e-teleport.net> <48593E35.1010409@e-teleport.net> <20080618201012.GA4019@electric-eye.fr.zoreil.com>
+In-Reply-To: <20080618201012.GA4019@electric-eye.fr.zoreil.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200806190108.43975.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi;
+Francois Romieu a écrit :
+> Séguier Régis <rseguier@e-teleport.net> :
+> [...]
+>   
+>> This correction seems to work.
+>>
+>> I read somewhere pci_free_consistent (in velocity_free_dma_rings) couldn't 
+>> be use in a spin_lock.
+>>     
+>
+> Yup.
+>
+>   
+>> When I move velocity_free_rings outside the spin_lock, error desappeare but 
+>> data transfert doesn't work after the mtu change.
+>> When I add velocity_give_many_rx_descs all work.
+>>     
+>
+> I have updated http://userweb.kernel.org/~romieu/via-velocity/2.6.26-rc6/
+> accordingly. Can you check whether it is fine or not ?
+>
+>   
+Patch 0001 doesn't work,
 
-19 Haz 2008 Per tarihinde, Mingarelli, Thomas þunlarý yazmýþtý: 
-> Is this with 64 bit Linux?
+if I don't make a mistake skb->len is not modified in skb_pad{,to}when 
+the padding is applied. In this case, we need to attribute ETH_ZLEN to len.
 
-Nope, as i wrote, its 32 bit...
-
-[...]
-> I have both the hardware and the compiler related (gcc-4.3.1) bug :) (see [1])
-> 
-> Your modifications works like a charm with 32bit 2.6.25.7, kernel no longer opps and watchdog lives happily with hardware.
-					     ^^^^^^^^^^^^^^
-Cheers
 -- 
-S.Çaðlar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
-
-Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
+Régis
