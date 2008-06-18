@@ -1,82 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbYFROgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756092AbYFROha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755229AbYFROgX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 10:36:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbYFROgO
+	id S1756092AbYFROha (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 10:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbYFROhW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 10:36:14 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44063 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752421AbYFROgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 10:36:13 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
-Date: Wed, 18 Jun 2008 16:37:21 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <alpine.LFD.1.10.0806181000440.3395@apollo.tec.linutronix.de> <alpine.LFD.1.10.0806181421320.3395@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.10.0806181421320.3395@apollo.tec.linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 18 Jun 2008 10:37:22 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38518 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753434AbYFROhW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 10:37:22 -0400
+Subject: Re: RT-Scheduler/cgroups: Possible overuse of resources assigned
+	via cpu.rt_period_us and cpu.rt_runtime_us
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Daniel K." <dk@uw.no>
+Cc: mingo@elte.hu, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Max Krasnyanskiy <maxk@qualcomm.com>, Paul Jackson <pj@sgi.com>,
+       Gregory Haskins <ghaskins@novell.com>
+In-Reply-To: <485917CF.1010401@uw.no>
+References: <485917CF.1010401@uw.no>
+Content-Type: text/plain
+Date: Wed, 18 Jun 2008 16:37:16 +0200
+Message-Id: <1213799836.16944.244.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806181637.22241.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 18 of June 2008, Thomas Gleixner wrote:
-> On Wed, 18 Jun 2008, Thomas Gleixner wrote:
-> > On Wed, 18 Jun 2008, Rafael J. Wysocki wrote:
-> > > On Wednesday, 18 of June 2008, Rafael J. Wysocki wrote:
-> > > > On Tuesday, 17 of June 2008, Rafael J. Wysocki wrote:
-> > > > > On Tuesday, 17 of June 2008, Thomas Gleixner wrote:
-> > > > > > On Tue, 17 Jun 2008, Rafael J. Wysocki wrote:
-> > > > > > > 
-> > > > > > > BTW, with the C1E patches reverted I don't get the
-> > > > > > > WARNING: at /home/rafael/src/linux-next/kernel/smp.c:215 smp_call_function_single+0x3d/0xa2
-> > > > > > > in the log.  Thomas?
-> > > > > > 
-> > > > > > Yeah, my bad. Fix below.
-> > > > > 
-> > > > > Thanks, it eliminates the WARNING, but still the box doesn't work with
-> > > > > the "x86: add C1E aware idle function" patch applied, even with 'highres=off'.
-> > > > > 
-> > > > > The main symptom is that CPU loads are computed incorrectly (I got X using 126%
-> > > > > of CPU time from 'top', for example).  Apart from this, some processes (like
-> > > > > gkrellm) seem to be 'frozen' and only change their state in 'jumps', as though
-> > > > > they only got CPU from time to time at random.
-> > > > > 
-> > > > > Reverting the above-mentioned patch fixes those problems.
-> > > > 
-> > > > Ah.  If your fix is replaced with the appended one, the system happily works
-> > > > with C1E and highres.
-> > > 
-> > > Scratch that.  The symptoms appeared later this time, that's all.  I've just got
-> > > b43 consuming 90+ % of the CPU time. :-(
-> > 
-> > I would have been pretty surprised if it had helped :)
-> > 
-> > Does the box boot when you disable the local apic timer on the kernel
-> > command line with the patch applied ?
-> > 
-> > Also does forcing hpet change anything ?
+On Wed, 2008-06-18 at 16:12 +0200, Daniel K. wrote:
+> mkdir /dev/cgroup
+> mount -t cgroup -o cpu,cpuset cgroup /dev/cgroup
 > 
-> I just checked that the original c1e series and the affected code in
-> tip are not different. IIRC you confirmed that the C1E patches would
-> work on your box. So I wonder what else got changed which causes these
-> problems.
+> mkdir /dev/cgroup/0
+> 
+> echo 3 > /dev/cgroup/0/cpuset.cpus
+> echo 0 > /dev/cgroup/0/cpuset.mems
+> echo 100000 > /dev/cgroup/0/cpu.rt_period_us
+> echo   5000 > /dev/cgroup/0/cpu.rt_runtime_us
+> 
+> schedtool -R -p 1 -e burnP6 &
+> [1] 3309
+> echo 3309 > /dev/cgroup/0/tasks
+> 
+> At this point I'd expect the burnP6 task to use 5% of the available CPU
+> resources in the cgroup (5000/100000), but the real CPU usage, as
+> reported by top, is 20% This is 4 times the expected result, and as I
+> have 4 cores, I think there is a strong hint of correlation there.
+> 
+> Maybe with a 4 core system there really is 4 000 000 us available for
+> every 1 wall-time second?
 
-Well, probably I didn't test that long enough.
+Indeed. In effect each cpu (see below on specifics) gets the
+runtime/period you specify, and it moves unused runtime between cpus.
 
-The symptoms do not always appear immediately, they sometimes appear only
-after several minutes.
+> However, I have only assigned one core (3) to _this_ cgroup, so I think
+> this cgroup is overusing its assigned resources.
+> 
+> What do you think?
 
-Thanks,
-Rafael
+I think you're on to something :-)
+
+It uses root domains, that is the largest domain this cpu is part of
+that has load-balancing enabled.
+
+So while you have made your process part of the cgroup and the cpuset,
+there is no strong relation between them, that is to say, I could either
+mount the cpuset or cpu controller on a different mount point and add
+tasks to one but not the other.
+
+So the relation I used is that of load-balance domains.
+
+So in order to get what you intended, do something like:
+
+
+mount none /dev/cpuset cgroup -o cpuset
+mount none /cgroup/cpu cgroup -o cpu
+
+mkdir /dev/cpuset/root
+mkdir /dev/cpuset/rt
+
+#
+# this might not actually make the kernel happy
+# as it might attempt (and possibly succeed in)
+# moving cpu bound kernel threads
+#
+for i in `cat /dev/cpuset/tasks`; do
+	echo $i > /dev/cpuset/root/tasks;
+done
+
+echo 0-2 > /dev/cpuset/root/cpuset.cpus
+echo 3 > /dev/cpuset/rt/cpuset.cpus
+
+echo 0 > /dev/cpuset/cpuset.sched_load_balance
+
+mkdir /cgroup/cpu/foo
+echo 100000 > /cgroup/cpu/foo/cpu.rt_period_us
+echo   5000 > /cgroup/cpu/foo/cpu.rt_runtime_us
+
+echo $$ > /dev/cpuset/rt/tasks
+echo $$ > /cgroup/cpu/foo/tasks
+
+chrt -r -p 1 burnP6 &
+
+
+
+
