@@ -1,135 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755245AbYFRUCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182AbYFRUJJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755245AbYFRUCb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 16:02:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbYFRUCY
+	id S1755182AbYFRUJJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 16:09:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbYFRUI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 16:02:24 -0400
-Received: from gw.goop.org ([64.81.55.164]:53693 "EHLO mail.goop.org"
+	Wed, 18 Jun 2008 16:08:56 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58159 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751937AbYFRUCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 16:02:23 -0400
-Message-ID: <485969A4.6090406@goop.org>
-Date: Wed, 18 Jun 2008 13:01:40 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1752114AbYFRUIz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 16:08:55 -0400
+Date: Wed, 18 Jun 2008 22:08:06 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: David Miller <davem@davemloft.net>, vgusev@openvz.org,
+       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, rjw@sisk.pl, mcmanus@ducksong.com,
+       ilpo.jarvinen@helsinki.fi, kuznet@ms2.inr.ac.ru, xemul@openvz.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [E1000-devel] [TCP]: TCP_DEFER_ACCEPT causes leak sockets
+Message-ID: <20080618200805.GA18756@elte.hu>
+References: <20080617083220.GA11393@elte.hu> <20080617.020840.169830916.davem@davemloft.net> <20080617092706.GB20621@elte.hu> <20080617.022909.173003136.davem@davemloft.net> <20080617093929.GA10334@elte.hu> <48595910.8000905@intel.com>
 MIME-Version: 1.0
-To: Jan Beulich <jbeulich@novell.com>
-CC: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] i386: fix vmalloc_sync_all() for Xen
-References: <48591049.76E4.0078.0@novell.com>
-In-Reply-To: <48591049.76E4.0078.0@novell.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48595910.8000905@intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
-> Since the fourth PDPT entry cannot be shared under Xen,
-> vmalloc_sync_all() must iterate over pmd-s rather than pgd-s here.
-> Luckily, the code isn't used for native PAE (SHARED_KERNEL_PMD is 1)
-> and the change is benign to non-PAE.
->
-> Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
->
-> ---
->  arch/x86/mm/fault.c |   29 ++++++++++++++++++++---------
->  1 file changed, 20 insertions(+), 9 deletions(-)
->
-> --- linux-2.6.26-rc6/arch/x86/mm/fault.c	2008-06-18 09:56:16.000000000 +0200
-> +++ 2.6.26-rc6-i386-xen-vmalloc_sync_all/arch/x86/mm/fault.c	2008-06-06 08:51:52.000000000 +0200
-> @@ -921,32 +921,43 @@ void vmalloc_sync_all(void)
->  	 * start are only improving performance (without affecting correctness
->  	 * if undone).
->  	 */
-> -	static DECLARE_BITMAP(insync, PTRS_PER_PGD);
-> +#define sync_index(a) ((a) >> PMD_SHIFT)
-> +	static DECLARE_BITMAP(insync, PTRS_PER_PGD*PTRS_PER_PMD);
->   
 
-Given that the usermode PGDs will never need syncing, I think it would 
-be better to use KERNEL_PGD_PTRS, and define
+* Kok, Auke <auke-jan.h.kok@intel.com> wrote:
 
-#define sync_index(a) (((a) >> PMD_SHIFT) - KERNEL_PGD_BOUNDARY)
+> > Any ideas about what i should try next?
+> 
+> have you tried e1000e?
 
-for a massive 192 byte saving in bss.
+will try it.
 
->  	static unsigned long start = TASK_SIZE;
->  	unsigned long address;
->  
->  	if (SHARED_KERNEL_PMD)
->  		return;
->  
-> -	BUILD_BUG_ON(TASK_SIZE & ~PGDIR_MASK);
-> -	for (address = start; address >= TASK_SIZE; address += PGDIR_SIZE) {
-> -		if (!test_bit(pgd_index(address), insync)) {
-> +	BUILD_BUG_ON(TASK_SIZE & ~PMD_MASK);
-> +	for (address = start; address >= TASK_SIZE; address += PMD_SIZE) {
->   
+But even it if solves the problem it's a nasty complication: given how 
+many times i have to bisect back into the times when there was only 
+e1000 around, how do i handle the transition? I have automated bisection 
+tools, etc. and i bisect very frequently.
 
-Would it be better - especially for the Xen case - to only iterate from 
-TASK_SIZE to FIXADDR_TOP rather than wrapping around?  What will 
-vmalloc_sync_one do on Xen mappings?
+It's a real practical problem for me: if i have E1000E=y in my .config 
+and go back to an older kernel, i lose that .config setting in 'make 
+oldconfig'. Then when the bisection run happens to go back into the 
+E1000E times, 'make oldconfig' picks up E1000E with a default-off 
+setting - and things break or work differently.
 
-> +		if (!test_bit(sync_index(address), insync)) {
->   
-It's probably worth reversing this test and removing a layer of indentation.
->  			unsigned long flags;
->  			struct page *page;
->  
->  			spin_lock_irqsave(&pgd_lock, flags);
-> +			if (unlikely(list_empty(&pgd_list))) {
-> +				spin_unlock_irqrestore(&pgd_lock, flags);
-> +				return;
-> +			}
->   
+no other Linux driver i'm using forces me to do that and i rely on many 
+of them and i rely on proper 'make oldconfig' behavior on a daily basis. 
+Until now i was able to do automatic bisection back for _years_, to the 
+v2.6.19 times. You broke that.
 
-This seems a bit warty.  If the list is empty, then won't the 
-list_for_each_entry() just fall through?  Presumably this only applies 
-to boot, since pgd_list won't be empty on a running system with usermode 
-processes.  Is there a correctness issue here, or is it just a 
-micro-optimisation?
+And that's just one driver out of thousands of Linux drivers. Imagine 
+what happened to bisectability and migration quality if every driver 
+version update was this careless about its installed base as 
+e1000/e1000e.
 
->  			list_for_each_entry(page, &pgd_list, lru) {
->  				if (!vmalloc_sync_one(page_address(page),
-> -						      address))
-> +						      address)) {
-> +					BUG_ON(list_first_entry(&pgd_list,
-> +								struct page,
-> +								lru) != page);
->   
+The e1000 -> e1000e migration it was not only done in an incompetent, 
+amateurish way, you also ignored real feedback and that combined 
+together is totally lame and inacceptable behavior in my book. You 
+should not expect praise and roses from me as long as you do stupid 
+things like that.
 
-What condition is this testing for?
-
-> +					page = NULL;
->  					break;
-> +				}
->  			}
->  			spin_unlock_irqrestore(&pgd_lock, flags);
-> -			if (!page)
-> -				set_bit(pgd_index(address), insync);
-> +			if (page)
-> +				set_bit(sync_index(address), insync);
->  		}
-> -		if (address == start && test_bit(pgd_index(address), insync))
-> -			start = address + PGDIR_SIZE;
-> +		if (address == start && test_bit(sync_index(address), insync))
-> +			start = address + PMD_SIZE;
->  	}
-> +#undef sync_index
->  #else /* CONFIG_X86_64 */
->  	/*
->  	 * Note that races in the updates of insync and start aren't
->   
-
-Any chance of unifying this with the very similar-looking loop below it?
-
-(I have to admit I don't understand why 64-bit needs to worry about 
-syncing stuff.  Doesn't it have enough pgds to go around?  Is it because 
-it wants to put modules within the same 2G chunk as the kernel?)
-
-    J
+	Ingo
