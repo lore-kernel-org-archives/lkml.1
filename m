@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755997AbYFRRSa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbYFRRXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755997AbYFRRSa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 13:18:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbYFRRSW
+	id S1755463AbYFRRXs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 13:23:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYFRRXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 13:18:22 -0400
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:47892 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752514AbYFRRSV (ORCPT
+	Wed, 18 Jun 2008 13:23:40 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:13206 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752360AbYFRRXj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 13:18:21 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Zqn1mgFxAtNqSBjfua6gy6dDK2509LQfNYBAgl7H5aQfNcEdx7RgXrKIcQ1YpE70hG2I8TX4Thu2xnoNXKv+UGcp/QiSRyYRD0Yl3RuT6s5tBXxBV9OBqit/SC6PHNzkyHx94ik0Ae7f6xR6tojWNZ3bH+dnXZXAwfjO0YrhfiQ=  ;
-X-YMail-OSG: JiwovwkVM1l_bj2_8nFP5MO__w31e3MIltUoamd43fOXEA7U7B_ejWWSwdfsE6tLBg1poC5Qk8gYFo2vf97Q8EpsedA1O3emvVrJXy7mwQ--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH][resubmit] x86: enable preemption in delay
-Date: Thu, 19 Jun 2008 03:18:07 +1000
-User-Agent: KMail/1.9.5
-Cc: Gregory Haskins <ghaskins@novell.com>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <andi-suse@firstfloor.org>,
-       Clark Williams <clark.williams@gmail.com>,
-       Marin Mitov <mitov@issp.bas.bg>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>, akpm@osdl.org,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>
-References: <200805252108.25011.mitov@issp.bas.bg> <200806182242.49245.nickpiggin@yahoo.com.au> <Pine.LNX.4.58.0806181215120.29622@gandalf.stny.rr.com>
-In-Reply-To: <Pine.LNX.4.58.0806181215120.29622@gandalf.stny.rr.com>
+	Wed, 18 Jun 2008 13:23:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=dU+D7pjbbv1zPsDopr7xmMhMWMBUaX8FxIDRJSP92lWhHsarIad17c8DIBsarngGl+
+         WUOLsgn33iQLCVku/yZaIN5IHkDn/aZmPRnPchRp9BzoLsO4JzkP52jwmGC5aZWlCEXc
+         5i1bd6WvalVwGcbLvq5ev3KtHTovz7ogzxlqY=
+Date: Wed, 18 Jun 2008 21:23:16 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: nmi_watchdog suspicious
+Message-ID: <20080618172316.GA10431@cvg>
+References: <20080610185759.GA7353@cvg> <Pine.LNX.4.55.0806160040270.11995@cliff.in.clinika.pl> <20080616170000.GC7273@cvg> <Pine.LNX.4.55.0806161819500.20218@cliff.in.clinika.pl> <20080617155120.GA9440@cvg> <Pine.LNX.4.55.0806181654450.4857@cliff.in.clinika.pl> <20080618163905.GB7117@cvg> <Pine.LNX.4.55.0806181749050.4857@cliff.in.clinika.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806190318.07684.nickpiggin@yahoo.com.au>
+In-Reply-To: <Pine.LNX.4.55.0806181749050.4857@cliff.in.clinika.pl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 June 2008 02:16, Steven Rostedt wrote:
-> On Wed, 18 Jun 2008, Nick Piggin wrote:
-> > There are _some_ cases where it can be used, but nobody has been
-> > able to come up with compelling uses really. I don't think this
-> > case is helped very much either because the logic in there using
-> > preempt-disable is fine, isn't it?
-> >
-> > Except that it should also have a cond_resched in it. Seems like
-> > an ideal place to put cond_resched because it is not a fastpath.
->
-> Does it really need a cond_resched? preempt_enable when it goes to zero
-> will already check to see if it should schedule.
+[Maciej W. Rozycki - Wed, Jun 18, 2008 at 05:54:32PM +0100]
+| On Wed, 18 Jun 2008, Cyrill Gorcunov wrote:
+| 
+| > Maciej, it seems we are talking about different code snippets ;)
+| > I'm talking only about touch_nmi_watchdog(). By now (in -tip tree
+| > we have)
+| > 
+| > void touch_nmi_watchdog(void)
+| > {
+| > 	if (nmi_watchdog == NMI_LOCAL_APIC ||
+| > 		nmi_watchdog == NMI_IO_APIC) {
+| > 		unsigned cpu;
+| > 		...
+| > 
+| > so we check explicitly the values (so if touch_nmi_watchdog
+| > was called when nmi_watchdog = 0 or -1U this code will not
+| > be executed anyway). So I think I'm a bit lost, Maciej... I just
+| > can't figure out what is wrong with this code, so please help
+| > me ;). If you're talking about apic code in _general_ design
+| > then...well, I think I need some time to _understand_ the code
+| > say byte-by-byte first.
+| 
+|  The value of nmi_watchdog being NMI_IO_APIC or NMI_LOCAL_APIC does not 
+| mean the watchdog has been set up already.  This observation applies both 
+| here and elsewhere, e.g. to nmi_watchdog_tick().
+| 
+|   Maciej
+|
 
-It doesn't really need one, but of course having one would help
-non preempt kernels.
+If you mean the case we get NMI physical line assetred while configuring APIC
+(ie nmi watchdog is not properly configured yet) then I wonder why we has
+this checking at all...
+
+		- Cyrill -
