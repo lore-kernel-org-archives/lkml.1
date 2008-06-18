@@ -1,51 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756399AbYFRULW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbYFRUNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756399AbYFRULW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 16:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbYFRULL
+	id S1755984AbYFRUNR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 16:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753693AbYFRUNE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 16:11:11 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:48982 "EHLO
-	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753877AbYFRULJ (ORCPT
+	Wed, 18 Jun 2008 16:13:04 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:45659 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752285AbYFRUNC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 16:11:09 -0400
-Date: Wed, 18 Jun 2008 22:10:12 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: =?unknown-8bit?B?U8OpZ3VpZXIgUsOpZ2lz?= <rseguier@e-teleport.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, alan@redhat.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net: via-velocity.c fix sleep-with-spinlock bug during
-	MTU change
-Message-ID: <20080618201012.GA4019@electric-eye.fr.zoreil.com>
-References: <20080531184615.350bac00@infradead.org> <20080603134019.df2f51d4.akpm@linux-foundation.org> <20080603215155.GA9712@electric-eye.fr.zoreil.com> <20080604215909.GA17446@electric-eye.fr.zoreil.com> <20080614212341.GA12976@electric-eye.fr.zoreil.com> <4856DA62.7080803@e-teleport.net> <20080617214538.GA6388@electric-eye.fr.zoreil.com> <48584AA4.8040801@e-teleport.net> <48593E35.1010409@e-teleport.net>
+	Wed, 18 Jun 2008 16:13:02 -0400
+Date: Wed, 18 Jun 2008 13:11:07 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Louis Rilling <Louis.Rilling@kerlabs.com>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: Re: [BUGFIX][PATCH 3/3] configfs: Fix failing symlink() making
+	rmdir() fail
+Message-ID: <20080618201107.GF16780@ca-server1.us.oracle.com>
+Mail-Followup-To: Louis Rilling <Louis.Rilling@kerlabs.com>,
+	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+References: <1213724243-29183-1-git-send-email-louis.rilling@kerlabs.com> <1213724243-29183-4-git-send-email-louis.rilling@kerlabs.com> <20080617221528.GA29091@mail.oracle.com> <20080618114043.GB30804@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=unknown-8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <48593E35.1010409@e-teleport.net>
-X-Organisation: Land of Sunshine Inc.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080618114043.GB30804@localhost>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Séguier Régis <rseguier@e-teleport.net> :
-[...]
-> This correction seems to work.
->
-> I read somewhere pci_free_consistent (in velocity_free_dma_rings) couldn't 
-> be use in a spin_lock.
+On Wed, Jun 18, 2008 at 01:40:43PM +0200, Louis Rilling wrote:
+> The problem is rmdir() of the target item (see below). ATTACHING only protects
+> us from rmdir() of the parent. This is the exact reason why I attach the link to
+> the target in last place, where we know that we won't have to rollback.
 
-Yup.
+	Why wouldn't it protect the target, given that detach_prep()
+will be called against the target if it's being rmdir'd?
 
-> When I move velocity_free_rings outside the spin_lock, error desappeare but 
-> data transfert doesn't work after the mtu change.
-> When I add velocity_give_many_rx_descs all work.
+> 	And AFAICS, creating a VFS object can not hurt as long as we hold the
+> parent i_mutex, right? Otherwise there already is a problem in
+> configfs_attach_item() where a failure in populate_attrs() leads to rollback the
+> creation of the VFS object already created for the item.
 
-I have updated http://userweb.kernel.org/~romieu/via-velocity/2.6.26-rc6/
-accordingly. Can you check whether it is fine or not ?
+	We *can* do that, but we try to isolate it - hand-building VFS
+objects is complex and error prone, and I try to isolate that to
+specific cases.  I'd rather avoid it when not necessary.
+
+> > 		spin_lock(&configfs_dirent_lock);
+> > 		parent_sd->s_type &= ~CONFIGFS_USET_ATTACHING;
+> > 		if (ret) {
+> 
+> Here, if detach_prep() of the target failed because of the link attached above,
+> it had no means to retry. rmdir() of the target fails because of this
+> temporary link, which results in a failing symlink() making rmdir() of the
+> target fail.
+
+	How so?  It sees ATTACHING, it gets -EAGAIN, it tries again,
+just like before.  What's different?
+
+Joel
 
 -- 
-Ueimor
+
+"Anything that is too stupid to be spoken is sung."  
+        - Voltaire
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
