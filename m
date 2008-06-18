@@ -1,53 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753286AbYFRO7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753871AbYFRPFr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753286AbYFRO7U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 10:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbYFRO7I
+	id S1753871AbYFRPFr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 11:05:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248AbYFRPFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 10:59:08 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:43591 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751384AbYFRO7H (ORCPT
+	Wed, 18 Jun 2008 11:05:37 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:24404 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750979AbYFRPFg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 10:59:07 -0400
-Message-ID: <4859223A.50700@s5r6.in-berlin.de>
-Date: Wed, 18 Jun 2008 16:56:58 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
+	Wed, 18 Jun 2008 11:05:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=EjL+cHudiwiaBjkRKM9cSN3PW4S3zj7qTu0ruTOXqQZFPbvYaMb7qIg1TW6ScLLeSG
+         mZKm94r8BmrZ+jPi08rcQKV3Nl/gQGXn+Zm/ImpNR4L1EYh1qQVIILRyVl2zbdi2sqSi
+         WOyKQ5M6lslqKiO/qlVaiwU1MyArkC3WoVzk0=
+Date: Thu, 19 Jun 2008 00:04:14 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Christoph Hellwig <hch@lst.de>, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] add kernel-doc for simple_read_from_buffer and
+	memory_read_from_buffer
+Message-ID: <20080618150412.GA9533@localhost.localdomain>
 MIME-Version: 1.0
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-CC: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>, Ingo Molnar <mingo@elte.hu>,
-       tglx <tglx@linutronix.de>, hpa <hpa@zytor.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH] x86: coding style fixes to arch/x86/math-emu/reg_constant
-References: <20080614204452.25378bd0@paolo-desktop>	 <48590926.5060009@movial.fi> <4d8e3fd30806180719j718a3b1ds461495c4d3de8236@mail.gmail.com>
-In-Reply-To: <4d8e3fd30806180719j718a3b1ds461495c4d3de8236@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-2022-jp
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, Jun 18, 2008 at 3:09 PM, Dmitri Vorobiev
-> <dmitri.vorobiev@movial.fi> wrote:
->> Paolo Ciarrocchi wrote:
->>>
->>> -static void fld_const(FPU_REG const *c, int adj, u_char tag)
->>> +static void fld_const(FPU_REG const * c, int adj, u_char tag)
->> ________________________________________^
->>
->> The above does not seem to me like a big improvement in code quality. A
->> false positive from checkpatch.pl?
+Add kernel-doc comments describing simple_read_from_buffer and
+memory_read_from_buffer.
 
-It should obviously be
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+ fs/libfs.c |   28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
 
- static void fld_const(const FPU_REG *c, int adj, u_char tag)
-
-FPU_REG is not an appropriate type name though.  Is "typedef struct
-fpu__reg FPU_REG;" necessary at all?  (Removing it would create some
-code churn all over x86/math-emu/ though. Maybe not desirable.)
--- 
-Stefan Richter
--=====-==--- -==- =--=-
-http://arcgraph.de/sr/
+Index: 2.6-git/fs/libfs.c
+===================================================================
+--- 2.6-git.orig/fs/libfs.c
++++ 2.6-git/fs/libfs.c
+@@ -512,6 +512,20 @@ void simple_release_fs(struct vfsmount *
+ 	mntput(mnt);
+ }
+ 
++/**
++ * simple_read_from_buffer - copy data from the buffer to user space
++ * @to: the user space buffer to read to
++ * @count: the maximum number of bytes to read
++ * @ppos: the current position in the buffer
++ * @from: the buffer to read from
++ * @available: the size of the buffer
++ *
++ * The simple_read_from_buffer() function reads up to @count bytes from the
++ * buffer @from at offset @ppos into the user space address starting at @to.
++ *
++ * On success, the number of bytes read is returned and the offset @ppos is
++ * advanced by this number, or negative value is returned on error.
++ **/
+ ssize_t simple_read_from_buffer(void __user *to, size_t count, loff_t *ppos,
+ 				const void *from, size_t available)
+ {
+@@ -528,6 +542,20 @@ ssize_t simple_read_from_buffer(void __u
+ 	return count;
+ }
+ 
++/**
++ * memory_read_from_buffer - copy data from the buffer
++ * @to: the kernel space buffer to read to
++ * @count: the maximum number of bytes to read
++ * @ppos: the current position in the buffer
++ * @from: the buffer to read from
++ * @available: the size of the buffer
++ *
++ * The memory_read_from_buffer() function reads up to @count bytes from the
++ * buffer @from at offset @ppos into the kernel space address starting at @to.
++ *
++ * On success, the number of bytes read is returned and the offset @ppos is
++ * advanced by this number, or negative value is returned on error.
++ **/
+ ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
+ 				const void *from, size_t available)
+ {
