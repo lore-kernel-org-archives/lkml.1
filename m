@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754916AbYFRMJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754433AbYFRMM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754916AbYFRMJe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 08:09:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbYFRMJ0
+	id S1754433AbYFRMM6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 08:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbYFRMMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 08:09:26 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:2814 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753286AbYFRMJZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 08:09:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=f6mwAcVYfdhGpQ+h8RnS6wCCLNRvdxgu38qvJfrBIjLzmUfwXHfWELmicsFCfG8UW8
-         nOnX7lHzYb29XtuRR9kLJ6S4WjsX7SQzlUFJxk5MuJPnaWku44qoXxbZZ1FGLBlN392G
-         dK6L8n1cdWMMYdN/dEzEHxJmDFLUHAVORSHo4=
-Message-ID: <c49e66200806180509g6a391f8fi1567f21cd353c71c@mail.gmail.com>
-Date: Wed, 18 Jun 2008 14:09:23 +0200
-From: "Pieter Steyn" <pieterste@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] eth_v10.c phy fix
-Cc: jesper.nilsson@axis.com
-In-Reply-To: <c49e66200806130900i26b3c284q262aef2d85d61f61@mail.gmail.com>
+	Wed, 18 Jun 2008 08:12:50 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60305 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752917AbYFRMMt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 08:12:49 -0400
+Date: Wed, 18 Jun 2008 14:12:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Ingo Molnar <mingo@redhat.com>, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andi Kleen <andi@firstfloor.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH 1/1] MM: virtual address debug
+Message-ID: <20080618121221.GB13714@elte.hu>
+References: <1213271800-1556-1-git-send-email-jirislaby@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <c49e66200806130804u280fdfa1gd1027f3401ae7f4f@mail.gmail.com>
-	 <c49e66200806130900i26b3c284q262aef2d85d61f61@mail.gmail.com>
+In-Reply-To: <1213271800-1556-1-git-send-email-jirislaby@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi guys,
 
-Any word on this?
+* Jiri Slaby <jirislaby@gmail.com> wrote:
 
-Thanks,
-Pieter
+> Add some (configurable) expensive sanity checking to catch wrong address
+> translations on x86.
+> 
+> - create linux/mmdebug.h file to be able include this file in
+>   asm headers to not get unsolvable loops in header files
+> - __phys_addr on x86_32 became a function in ioremap.c since
+>   PAGE_OFFSET, is_vmalloc_addr and VMALLOC_* non-constasts are undefined
+>   if declared in page_32.h
+> - add __phys_addr_const for initializing doublefault_tss.__cr3
 
-> On 6/13/08, Pieter Steyn <pieterste@gmail.com> wrote:
-> Ah, I did not consider case when searching...DOH! :]
->
->  I've now cc'ed in Jesper who seems to be the maintainer.
->
->  Cheers,
->
-> Pieter Steyn
->
->
->  > On 6/13/08, Pieter Steyn <pieterste@gmail.com> wrote:
->  > Hi guys,
->  >
->  >  This patch allows you to set phy address parameters through ethtool, like:
->  >
->  >  /bin/ethtool -s eth0 phyad 8
->  >
->  >  --- drivers/net/cris/eth_v10.c  2008-06-12 14:12:33.000000000 +0200
->  >  +++ drivers/net/cris/eth_v10.c  2008-06-12 14:19:35.000000000 +0200
->  >  @@ -1430,7 +1430,11 @@
->  >                 e100_set_duplex(dev, ecmd->duplex == DUPLEX_HALF ? half : full);
->  >                 e100_set_speed(dev, ecmd->speed == SPEED_10 ? 10: 100);
->  >         }
->  >  -
->  >  +        //Honor ethtool phy address parameter, which was simply
->  >  discarded before this.
->  >  +        if (ecmd->phy_address <= 31)
->  >  +                mdio_phy_addr = ecmd->phy_address;
->  >  +        else if (ecmd->phy_address == 32)
->  >  +                return -ENODEV;
->  >         return 0;
->  >   }
->  >
->  >  I've searched the MAINTAINERS file and haven't seen anything regarding
->  >  either the source file name or cris.  Please consider applying my
->  >  patch to main kernel...
->  >
->  >  Thanks,
->  >
->  > Pieter Steyn
->  >
->  >
->
+applied, thanks Jiri. I have created a new tip/x86/mm-debug topic for 
+this because the patch touches mm/vmalloc.c and other MM bits.
+
+Andrew, is that fine for you, can we push it into linux-next via 
+auto-x86-next if it passes testing?
+
+	Ingo
