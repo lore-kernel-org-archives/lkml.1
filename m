@@ -1,84 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760109AbYFREyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759038AbYFRE4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760109AbYFREyp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 00:54:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758712AbYFREyc
+	id S1759038AbYFRE4i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 00:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753168AbYFRE4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 00:54:32 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:47135 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759464AbYFREy0 (ORCPT
+	Wed, 18 Jun 2008 00:56:30 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48004
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753131AbYFRE4a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 00:54:26 -0400
-Date: Wed, 18 Jun 2008 13:59:11 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-Subject: Re: [PATCH][RFC] fix kernel BUG at mm/migrate.c:719! in
- 2.6.26-rc5-mm3
-Message-Id: <20080618135911.a27ce151.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080618134128.828156bc.nishimura@mxp.nes.nec.co.jp>
-References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
-	<20080617163501.7cf411ee.nishimura@mxp.nes.nec.co.jp>
-	<20080618003129.DE27.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20080618105400.b9f1b664.nishimura@mxp.nes.nec.co.jp>
-	<20080618134128.828156bc.nishimura@mxp.nes.nec.co.jp>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Wed, 18 Jun 2008 00:56:30 -0400
+Date: Tue, 17 Jun 2008 21:56:30 -0700 (PDT)
+Message-Id: <20080617.215630.47207590.davem@davemloft.net>
+To: rweikusat@mssgmbh.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.25.7] af_unix: fix 'poll for write'/ connected
+ DGRAM sockets
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <871w2wca3r.fsf@fever.mssgmbh.com>
+References: <871w2wca3r.fsf@fever.mssgmbh.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jun 2008 13:41:28 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+From: Rainer Weikusat <rweikusat@mssgmbh.com>
+Date: Tue, 17 Jun 2008 20:47:02 +0200
 
-> On Wed, 18 Jun 2008 10:54:00 +0900, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > On Wed, 18 Jun 2008 00:33:18 +0900, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> > > > @@ -715,13 +725,7 @@ unlock:
-> > > >   		 * restored.
-> > > >   		 */
-> > > >   		list_del(&page->lru);
-> > > > -		if (!page->mapping) {
-> > > > -			VM_BUG_ON(page_count(page) != 1);
-> > > > -			unlock_page(page);
-> > > > -			put_page(page);		/* just free the old page */
-> > > > -			goto end_migration;
-> > > > -		} else
-> > > > -			unlock = putback_lru_page(page);
-> > > > +		unlock = putback_lru_page(page);
-> > > >  	}
-> > > >  
-> > > >  	if (unlock)
-> > > 
-> > > this part is really necessary?
-> > > I tryed to remove it, but any problem doesn't happend.
-> > > 
-> > I made this part first, and added a fix for migration_entry_wait later.
-> > 
-> > So, I haven't test without this part, and I think it will cause
-> > VM_BUG_ON() here without this part.
-> > 
-> > Anyway, I will test it.
-> > 
-> I got this VM_BUG_ON() as expected only by doing:
+> The unix_dgram_sendmsg routine implements a (somewhat crude)
+> form of receiver-imposed flow control by comparing the length of the
+> receive queue of the 'peer socket' with the max_ack_backlog value
+> stored in the corresponding sock structure, either blocking
+> the thread which caused the send-routine to be called or returning
+> EAGAIN. This routine is used by both SOCK_DGRAM and SOCK_SEQPACKET
+> sockets. The poll-implementation for these socket types is
+> datagram_poll from core/datagram.c. A socket is deemed to be writeable
+> by this routine when the memory presently consumed by datagrams
+> owned by it is less than the configured socket send buffer size. This
+> is always wrong for connected PF_UNIX non-stream sockets when the
+> abovementioned receive queue is currently considered to be full.
+> 'poll' will then return, indicating that the socket is writeable, but
+> a subsequent write result in EAGAIN, effectively causing an
+> (usual) application to 'poll for writeability by repeated send request
+> with O_NONBLOCK set' until it has consumed its time quantum.
 > 
->   # echo $$ >/cgroup/cpuset/02/tasks
+> The change below uses a suitably modified variant of the datagram_poll
+> routines for both type of PF_UNIX sockets, which tests if the
+> recv-queue of the peer a socket is connected to is presently
+> considered to be 'full' as part of the 'is this socket
+> writeable'-checking code. The socket being polled is additionally
+> put onto the peer_wait wait queue associated with its peer, because the
+> unix_dgram_sendmsg routine does a wake up on this queue after a
+> datagram was received and the 'other wakeup call' is done implicitly
+> as part of skb destruction, meaning, a process blocked in poll
+> because of a full peer receive queue could otherwise sleep forever
+> if no datagram owned by its socket was already sitting on this queue.
+> Among this change is a small (inline) helper routine named
+> 'unix_recvq_full', which consolidates the actual testing code (in three
+> different places) into a single location.
 > 
-> So, I beleive that both fixes for migration_entry_wait and
-> unmap_and_move (and, of course, removal VM_BUG_ON from
-> putback_lru_page) are needed.
-> 
-> 
-yes, but I'm now trying to rewrite putback_lru_page(). For avoid more complication.
+> Signed-off-by: <rweikusat@mssgmbh.com>
 
-Thanks,
--Kame
+Thank you for fixing this bug.
 
+I'm going to review the logic in the new poll routing a little
+bit more, then apply it to net-2.6 unless I find some problems.
+
+Thanks again.
