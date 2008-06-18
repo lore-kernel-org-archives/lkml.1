@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760371AbYFRCgQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760174AbYFRClG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760371AbYFRCgQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 22:36:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759614AbYFRCgH
+	id S1760174AbYFRClG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 22:41:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759656AbYFRCky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 22:36:07 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:46976 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759592AbYFRCgG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 22:36:06 -0400
-Date: Wed, 18 Jun 2008 12:21:15 +1000
-From: Bron Gondwana <brong@fastmail.fm>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Bron Gondwana <brong@fastmail.fm>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rob Mueller <robm@fastmail.fm>
-Subject: Re: BUG: mmapfile/writev spurious zero bytes (x86_64/not i386,
-	bisected, reproducable)
-Message-ID: <20080618022115.GA1383@brong.net>
-References: <1213682410.13174.1258837181@webmail.messagingengine.com> <1213682570.13708.1258839317@webmail.messagingengine.com> <alpine.LFD.1.10.0806170947380.25099@woody.linux-foundation.org>
+	Tue, 17 Jun 2008 22:40:54 -0400
+Received: from iabervon.org ([66.92.72.58]:58752 "EHLO iabervon.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759626AbYFRCky (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 22:40:54 -0400
+Date: Tue, 17 Jun 2008 22:40:52 -0400 (EDT)
+From: Daniel Barkalow <barkalow@iabervon.org>
+To: Greg KH <gregkh@suse.de>
+cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       arjan@linux.intel.com, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       tglx@linutronix.de, linville@tuxdriver.com, davej@redhat.com
+Subject: Re: Oops report for the week preceding June 16th, 2008
+In-Reply-To: <20080617224856.GA16933@suse.de>
+Message-ID: <alpine.LNX.1.00.0806171852550.19665@iabervon.org>
+References: <4856AFDF.5080901@linux.intel.com> <20080617092023.GA20621@elte.hu> <20080617.022652.76635616.davem@davemloft.net> <20080617153356.GA3510@elte.hu> <20080617175414.GA9866@suse.de> <alpine.LNX.1.00.0806171428320.19665@iabervon.org>
+ <20080617224856.GA16933@suse.de>
+User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0806170947380.25099@woody.linux-foundation.org>
-Organization: brong.net
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 17, 2008 at 10:08:24AM -0700, Linus Torvalds wrote:
-> On Tue, 17 Jun 2008, Bron Gondwana wrote:
+On Tue, 17 Jun 2008, Greg KH wrote:
+
+> On Tue, Jun 17, 2008 at 02:43:02PM -0400, Daniel Barkalow wrote:
 > > 
-> > And I appear to have sent the one without the usage comments at the top.
-> > Here they are:
+> > On the other hand, it would be good if there were a way to include 
+> > unstable APIs in the mainline kernel so that they could get some exposure 
+> > before they're set in stone, and that would also eliminate that reason for 
+> > keeping drivers out so long.
 > 
-> Very interesting. There's certainly something there. 
-> 
-> That said, there's a distracting bug which is visible when doing an strace
-> 
->  lseek(4, 140333890921392, SEEK_SET)     = -1 EINVAL (Invalid argument)
->  write(4, "\0\0\0\0", 4)                 = 4
+> That's exactly what the documentation in Documentation/ABI is there for.
+> Document your "experimental" API, along with any userspace programs that
+> are using it, and work to try to finalize it.
 
-Bah - crap.  Sorry about that.  I sent you the wrong version of the
-code.  That's what I get for not putting it in revision control.
+Documentation/ABI/README doesn't list an "experimental" level of 
+stability. I suppose a developer with an API they expect to change could 
+create it as "obsolete" (since the experimental verison will get removed 
+when the real one is done), but that's a little odd as a use of that 
+category. Also, that doesn't stop people from looking through sysfs for 
+useful stuff they expect to be undocumented but easy enough to figure out, 
+and starting to use it without realizing that it's not intended to be 
+maintained. And the "stable/syscalls" entry implies that all syscalls are 
+stable when they get merged, which means that a patch that adds a syscall 
+can't stablize in mainline.
 
-That bug exists because I did an htonl on a value that I shouldn't
-have.
+If there are people, like the Nouveau developers, using the instability of 
+their userspace API as a reason not to submit their drivers, and we would 
+ideally like the drivers to stabilize with mainline exposure, then we need 
+to do something more to address these authors' concerns.
 
-Bron ( now to read the rest of the thread! )
+	-Daniel
+*This .sig left intentionally blank*
