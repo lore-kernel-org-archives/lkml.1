@@ -1,81 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756561AbYFRXkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756766AbYFRXnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756561AbYFRXkT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 19:40:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbYFRXkF
+	id S1756766AbYFRXnU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 19:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbYFRXnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 19:40:05 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:50266 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754760AbYFRXkD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 19:40:03 -0400
-Subject: Re: [Ksummit-2008-discuss] Request for discussion on when to merge
-	drivers
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: benh@kernel.crashing.org
-Cc: ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1213831894.8011.29.camel@pasglop>
-References: <1213802866.3515.24.camel@localhost.localdomain>
-	 <1213831894.8011.29.camel@pasglop>
-Content-Type: text/plain
-Date: Wed, 18 Jun 2008 18:39:59 -0500
-Message-Id: <1213832399.3515.109.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Jun 2008 19:43:08 -0400
+Received: from [213.77.9.205] ([213.77.9.205]:64179 "EHLO serum.com.pl"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752161AbYFRXnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 19:43:06 -0400
+Date: Thu, 19 Jun 2008 00:39:33 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
+In-Reply-To: <200806190011.38548.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.55.0806182345380.7802@cliff.in.clinika.pl>
+References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806180053.40044.rjw@sisk.pl>
+ <Pine.LNX.4.55.0806180400070.28110@cliff.in.clinika.pl> <200806190011.38548.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-06-19 at 09:31 +1000, Benjamin Herrenschmidt wrote:
-> > The only slight wrinkle (at least for me) is that often the process of
-> > cleaning up a driver is fairly intensive for a maintainer and turn
-> > around is a lot faster if you're doing it in a tree you control.  (All
-> > the scsi drivers we've done like this have lived in temporary branches
-> > while they were being worked on).  So perhaps in addition we should be
-> > encouraging maintainers to run staging branches under similar rules in
-> > the staging tree, but allowing inclusion into linux-next?
+On Thu, 19 Jun 2008, Rafael J. Wysocki wrote:
+
+> >  With such a configuration the "x86: I/O APIC: timer through 8259A
+> > second-chance" patch should not matter, because the only change it
+> > introduces is an attempt to try the same I/O APIC pin again, but with the
+> > IRQ0 line of the master 8259A enabled.  That's not a terribly unusual 
+> > configuration and nothing should get confused in the system.
 > 
->  .../...
+> But it _does_ get confused, really.
+
+ Something certainly gets confused, but so far I am not sure which bit 
+exactly it is, are you?
+
+> >  Barring the unlikely possibility of the 8259A actually being wired to 
+> > INTIN2 of the I/O APIC I can see two possible explanations:
+> > 
+> > 1. The 8259A interrupt actually escapes to the CPU somehow and is handled
+> >    as an ExtINTA interrupt.  This would make the code in check_timer()  
+> >    decide it has found a working configuration, while actually it has been
+> >    fooled.
+[...]
+> Here you go:
 > 
-> linux-next should, imho, exclusively be for things we are pretty much
-> commited to merge in the next release. ie, a staging place to fixup
-> things like build breakages, patch conflicts, etc...
+> [    0.108006] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
+> [    0.108006] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
+> [    0.108006] ...trying to set up timer (IRQ0) through the 8259A ... <3>
+> [    0.108006] ..... (found apic 0 pin 2) ...<3> works.
 > 
-> Or else, it will just be another -mm ....
+> The full dmesg is at: http://www.sisk.pl/kernel/debug/20080618/dmesg-1.log
 
-Well, as Greg said for his driver staging tree, I think we can elide
-this requirement for new drivers.  The good thing about drivers is that
-there's nothing we're really doing to break anything: before the driver
-the hardware was just plane unusable with Linux after the driver well,
-we're hoping it might be ...
+ Thanks.  In this case I suspect the case #1 quoted above happens, that is
+the 8259A manages to deliver its interrupt somehow.  Note at this stage it
+is meant to be in the AEOI mode, so it can happily resubmit the interrupt
+indefinitely with no additional handling as long as it receives INTA
+cycles.
 
-> So while what you say makes sense, I think we should only put drivers in
-> once we have pretty much decided that the drivers in question would be
-> merged... in which case, why not straight upstream ?
+ Can you please try the patch below on top of "x86: I/O APIC: timer
+through 8259A second-chance" to see whether my hypothesis is true?  It
+modifies the through-8259A setup path so that the APIC input gets masked,
+but the 8259A has the timer interrupt still enabled.  Let me know how the
+timer interrupt is routed in this case.
 
-The reason for staging early in linux-next is twofold
+ BTW, do we have any piece of technical information about the chipset
+used?  The southbridge used is an ATI SB400, which is where I would
+normally expect two 8259A and an I/O APIC core to be placed.
 
-     1. We want to encourage the driver submitter that something is
-        being done
-     2. we want to make the driver available to a pool of testers who
-        might have the hardware but might not otherwise find it so they
-        can report errors that aren't picked up via the normal code
-        inspection and analysis methods.
+  Maciej
 
-Arguably, I can do this by putting it into my upstream tree (which feeds
-into linux-next) the reason for not doing so is that Linus likes us to
-preserve history in there when we can.  If I need to pull the driver for
-a reroll it really screws the git history (plus makes it hard for me).
-If it's in its own branch, I can toy with it as much as I need to
-without affecting my upstream tree.  Plus the commitment is that
-anything which goes into my upstream tree should be for the next merge
-window.  A driver with substantive code issues (or which shows problems
-under test) might not be such a candidate until the issues are sorted
-out.
-
-James
-
-
+--- a/arch/x86/kernel/io_apic_64.c	2008-06-18 22:53:34.000000000 +0000
++++ b/arch/x86/kernel/io_apic_64.c	2008-06-18 22:58:45.000000000 +0000
+@@ -1714,6 +1714,7 @@ static inline void __init check_timer(vo
+ 		/* replace_pin_at_irq(0, apic1, pin1, apic2, pin2); */
+ 		setup_timer_IRQ0_pin(apic2, pin2, cfg->vector);
+ 		unmask_IO_APIC_irq(0);
++		clear_IO_APIC_pin(apic2, pin2);
+ 		enable_8259A_irq(0);
+ 		if (timer_irq_works()) {
+ 			apic_printk(APIC_VERBOSE," works.\n");
