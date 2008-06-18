@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753692AbYFRJwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752772AbYFRJ5G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753692AbYFRJwA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 05:52:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752157AbYFRJvx
+	id S1752772AbYFRJ5G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 05:57:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbYFRJ4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 05:51:53 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44030 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750955AbYFRJvw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 05:51:52 -0400
-Date: Wed, 18 Jun 2008 11:51:28 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH 5/5 v2] x86: PAT: make pat_x_mtrr_type() more readable
-Message-ID: <20080618095128.GB15255@elte.hu>
-References: <20080610140755.GI5024@alberich.amd.com> <20080616125821.GA5213@alberich.amd.com> <Pine.LNX.4.64.0806161753060.13075@blonde.site>
+	Wed, 18 Jun 2008 05:56:52 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:35718 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751636AbYFRJ4v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 05:56:51 -0400
+Date: Wed, 18 Jun 2008 10:56:46 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: "Zhang, Rui" <rui.zhang@intel.com>
+Cc: Pavel Machek <pavel@suse.cz>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, trenn@suse.de
+Subject: Re: [Patch v2] Implement thermal limiting in the generic thermal class
+Message-ID: <20080618095646.GA20079@srcf.ucam.org>
+References: <20080611100647.GA20013@srcf.ucam.org> <20080616085544.GA17813@srcf.ucam.org> <20080616092648.GA18506@srcf.ucam.org> <20080617185345.GA5847@ucw.cz> <823A93EED437D048963A3697DB0E35DE0171191C@pdsmsx414.ccr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0806161753060.13075@blonde.site>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <823A93EED437D048963A3697DB0E35DE0171191C@pdsmsx414.ccr.corp.intel.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jun 18, 2008 at 05:28:01PM +0800, Zhang, Rui wrote:
+> One thing I'm concerning is that if we could enable polling in Linux.
+> Bug #8842 shows that polling may break some laptops.
+> And we have known that windows never enable polling.
+> Although this patch will not break the laptop in #8842, it still may
+> bring some potential risks if we enable polling in Linux.
+> IMO, a dmi entry would be much more acceptable...
 
-* Hugh Dickins <hugh@veritas.com> wrote:
+If it breaks anything, we can revisit the decision. I'd be surprised if 
+it did.
 
-> Clean up over-complications in pat_x_mtrr_type(). And if 
-> reserve_memtype() ignores stray req_type bits when pat_enabled, it's 
-> better to mask them off when not also.
-
-applied, to tip/x86/pat, thanks Hugh. Andreas, if there's any other 
-clean up you can think of here please send a delta patch.
-
-	Ingo
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
