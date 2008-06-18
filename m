@@ -1,44 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752971AbYFRQJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753334AbYFRQLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752971AbYFRQJh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 12:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751219AbYFRQJa
+	id S1753334AbYFRQLo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 12:11:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbYFRQLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 12:09:30 -0400
-Received: from [213.77.9.205] ([213.77.9.205]:63433 "EHLO serum.com.pl"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751194AbYFRQJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 12:09:29 -0400
-Date: Wed, 18 Jun 2008 17:06:29 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: nmi_watchdog suspicious
-In-Reply-To: <20080617155120.GA9440@cvg>
-Message-ID: <Pine.LNX.4.55.0806181654450.4857@cliff.in.clinika.pl>
-References: <20080610185759.GA7353@cvg> <Pine.LNX.4.55.0806160040270.11995@cliff.in.clinika.pl>
- <20080616170000.GC7273@cvg> <Pine.LNX.4.55.0806161819500.20218@cliff.in.clinika.pl>
- <20080617155120.GA9440@cvg>
+	Wed, 18 Jun 2008 12:11:37 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:33040 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751317AbYFRQLg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 12:11:36 -0400
+Date: Wed, 18 Jun 2008 09:08:12 -0700
+From: Greg KH <greg@kroah.com>
+To: Jason Baron <jbaron@redhat.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, joe@perches.com,
+       nick@nick-andrew.net, randy.dunlap@oracle.com
+Subject: Re: [PATCH 2/8] dynamic debug - core infrastructure
+Message-ID: <20080618160812.GB9453@kroah.com>
+References: <20080613190039.GC8813@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080613190039.GC8813@redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jun 2008, Cyrill Gorcunov wrote:
+On Fri, Jun 13, 2008 at 03:00:39PM -0400, Jason Baron wrote:
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -595,6 +595,22 @@ extern const char *dev_driver_string(struct device *dev);
+>  #ifdef DEBUG
+>  #define dev_dbg(dev, format, arg...)		\
+>  	dev_printk(KERN_DEBUG , dev , format , ## arg)
+> +#elif defined(CONFIG_DYNAMIC_PRINTK_DEBUG)
+> +#define dev_dbg(dev, format, ...) do {				    	     \
+> +	static char mod_name[]						     \
+> +	__attribute__((section("__verbose_strings")))			     \
+> +	 = KBUILD_MODNAME;						     \
+> +	static struct mod_debug foobar					     \
+> +	__used								     \
+> +	__attribute__((section("__verbose"), aligned(8))) =		     \
+> +	{ mod_name, mod_name, "0", "0", NULL };				     \
 
-> Thanks a lot Maciej for comments! I've marked them. I'm not sure but it seems
-> I wrote a bit unclear /my english bad indeed/ ;) I mean - this say 'slipping'
-> (ie useless code executions) _was_ before the patch applied. Now it doesn't
-> slip on this since we do mention explicitly in which case there should be
-> alert counters reset. Other then that - will try to handle your notes. Thanks!
+Does the compiler merge all of these variables together into one within
+the same file?
 
- It will happen regardless if touch_nmi_watchdog() is called before the
-NMI watchdog has been set up in setup_nmi() or lapic_watchdog_init().  It
-may also happen during that window if an NMI is signalled without any NMI
-status bits set in the Port B register at 0x61 -- in theory that should
-not happen except for a broken configuration, but reality out there seems
-to be quite creative about breakage.
+If not, should we have a new macro, one per file, for this information?
 
-  Maciej
+> --- a/include/linux/kernel.h
+> +++ b/include/linux/kernel.h
+> @@ -14,6 +14,7 @@
+>  #include <linux/compiler.h>
+>  #include <linux/bitops.h>
+>  #include <linux/log2.h>
+> +#include <linux/dynamic_printk.h>
+>  #include <asm/byteorder.h>
+>  #include <asm/bug.h>
+>  
+> @@ -288,15 +289,86 @@ extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
+>  #define pr_info(fmt, arg...) \
+>  	printk(KERN_INFO fmt, ##arg)
+>  
+> -#ifdef DEBUG
+> -/* If you are writing a driver, please use dev_dbg instead */
+
+Hm, this comment is still correct, please don't delete it :)
+
+Other than those minor nits, and the fact that your patch has a lot of
+trailing whitespace, it's looking very good so far.
+
+thanks,
+
+greg k-h
