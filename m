@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760032AbYFRDhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753131AbYFRECM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760032AbYFRDhS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 23:37:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757786AbYFRDhE
+	id S1753131AbYFRECM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 00:02:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbYFREB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 23:37:04 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43756
+	Wed, 18 Jun 2008 00:01:59 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40346
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757309AbYFRDhD (ORCPT
+	by vger.kernel.org with ESMTP id S1750749AbYFREB7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 23:37:03 -0400
-Date: Tue, 17 Jun 2008 20:37:03 -0700 (PDT)
-Message-Id: <20080617.203703.254889774.davem@davemloft.net>
-To: yanmin_zhang@linux.intel.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org
-Subject: Re: IPF Montvale machine panic when running a network-relevent
- testing
+	Wed, 18 Jun 2008 00:01:59 -0400
+Date: Tue, 17 Jun 2008 21:01:59 -0700 (PDT)
+Message-Id: <20080617.210159.141238856.davem@davemloft.net>
+To: mpatocka@redhat.com
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, agk@redhat.com
+Subject: Re: stack overflow on Sparc64
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1213759663.25608.33.camel@ymzhang>
-References: <1213345160.25608.3.camel@ymzhang>
-	<1213759663.25608.33.camel@ymzhang>
+In-Reply-To: <Pine.LNX.4.64.0806171954060.2560@engineering.redhat.com>
+References: <Pine.LNX.4.64.0806171954060.2560@engineering.redhat.com>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m5I3bNfq009830
 
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Date: Wed, 18 Jun 2008 11:27:43 +0800
+From: Mikulas Patocka <mpatocka@redhat.com>
+Date: Tue, 17 Jun 2008 20:47:57 -0400 (EDT)
 
-> This issue is caused by tcp defer accept. Mostly, process context calls lock_sock
-> to apply a sleeping lock. BH (SoftIRQ) context calls bh_lock_sock(_nested) to just apply
-> for the sk->sk_lock.slock without sleeping, then do appropriate processing based on
-> if sk->sk_lock.owned==0. That works well if both process context and BH context operate
-> the same sk at the same time. But with ï»¿tcp defer accept, it doesn't, because
-> process context(for example, in inet_csk_accept) locks the listen sk, while BH
-> context (in tcp_v4_rcv, for example) locks the child sk and calls
-> ï»¿tcp_defer_accept_checkï»¿ => inet_csk_reqsk_queue_add => reqsk_queue_add, so there is a race
-> to access the listen sock.
-> 
-> Below patch against 2.6.26-rc6 fixes the issue.
-> 
-> ï»¿ï»¿Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
+> Wait queue waking looks like being written by a high-level maniac --- it 
+> contains 8 levels of calls (none of them inlined). 7 of these calls (until 
+> try_to_wake_up) do nothing but pass arguments to lower level call. And 
+> each of these calls allocate at least 192 bytes of stack space. All these 
+> 7 useless calls consume 1360 bytes of stack (and cause windows traps that 
+> needlessly damage performance). Would you agree to inline most of the 
+> calls to save stack? Or do you see another solution?
 
-We reverted the guilty defer accept changes, please test Linus's
-current tree.
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Some of them could be inlined but there are a few limiting
+factors here.
+
+Even spin lock acquisitions are function calls, limiting how
+much leaf function and tail call optimizations can be done.
+
+Also, wake_up_bit has this aggregate local variable "key" whose
+address is passed down to subsequent functions, which limits
+optimizations even further.
+
+It could still be improved a lot, however.
+
+> Long-term consideration: Is it possible to implement interrupt stacks on 
+> sparc64? Functions on sparc eat stack much more aggressively than on other 
+> architectures (minimum stack size for a function is 192 bytes).
+
+I had a patch but at the time I wrote it (several years ago) I
+couldn't make it stable enough to put mainline, I may resurrect it.
+
+I just did a quick scan and I can't find the last copy I had, and
+things have changed enough that I'd probably work from scratch
+anyways.
+
+But the level of recursion possible by the current device layer is
+excessive and needs to be curtained irrespective of these generic
+wakeup and sparc64 interrupt stack issues.
