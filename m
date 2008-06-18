@@ -1,64 +1,346 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbYFRWar@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756746AbYFRWbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756015AbYFRWar (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 18:30:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbYFRWah
+	id S1756746AbYFRWbX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 18:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbYFRWbM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 18:30:37 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:57416 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754186AbYFRWag (ORCPT
+	Wed, 18 Jun 2008 18:31:12 -0400
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:20634 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752464AbYFRWbK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 18:30:36 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Thu, 19 Jun 2008 00:30:27 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: backlog of firewire fixes
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-Message-ID: <tkrat.6c5fe8fdad483627@s5r6.in-berlin.de>
+	Wed, 18 Jun 2008 18:31:10 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=bkMnp/n6rXyNBEcI98tc6VfPRHBFzGTtzkGgEoOvz0AEbHwEeDL9yYQAfgD2joBvIIDxmgQeGXrpI9pjavFA1YVrJxXJEpTQgHs4O+pqQ92v1zKaaMCoZjXMhs1xnxS+9SRv4BJ9JHfH+GX5etIc7lCPb/R4rdZ+Zgq7Pf4SVEc=  ;
+X-YMail-OSG: aY8Z0akVM1myz4y3W.KR4TtKKW92jrgzLe1QNWQqUdt7AOxiJp0kzPyFIG5QOuE.ENcXfDseocWBXvs3jCqMYF8qqMUWpKBWlhe4KamPeHIRUyfxXMVmu3X0ozFz9j2uyRA-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch 2.6.26-rc6-mm] gpio: mcp23s08 handles multiple chips per chipselect
+Date: Wed, 18 Jun 2008 15:31:07 -0700
+User-Agent: KMail/1.9.9
+Cc: lkml <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806181531.07878.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi lists,
+Teach the mcp23s08 driver about a curious feature of these chips:
+up to four of them can share the same chipselect, with the SPI
+signals wired in parallel, by matching two bits in the first
+protocol byte against two address lines on the chip.
 
-this is a heads-up that I plan to send the following updates to Linus on
-Friday --- unless anybody has issues with them; please tell me so.  The
-diffstat looks quite big for this late -rc phase, but the bulk of it is
-just Kconfig documentation rewording and reordering, and indentation
-churn by the printk prefixes patch.
+This is handled by three software changes:
 
-The updates are staged in
+  * Platform data now holds an array of per-chip structs, not
+    just one chip's address and pullup configuration.
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
+  * Probe() and remove() now use another level of structure,
+    wrapping an instance of the original structure for each
+    mcp23s08 chip sharing that chipselect.
 
-and consist of
+  * The HAEN bit is set, so that the hardware address bits can no
+    longer be ignored (boot firmware may not have set HAEN).
 
-Stefan Richter (9):
-      firewire: don't panic on invalid AR request buffer
-      firewire: fw-ohci: use of uninitialized data in AR handler
-      firewire: fw-ohci: disable PHY packet reception into AR context
-      firewire: fw-ohci: write selfIDBufferPtr before LinkControl.rcvSelfID
-      firewire: fill_bus_reset_event needs lock protection
-      firewire: fw-ohci: unify printk prefixes
-      firewire: deadline for PHY config transmission
-      firewire: Kconfig menu touch-up
-      ieee1394: Kconfig menu touch-up
+The "one struct per chip" preserves the guts of the current code,
+but platform_data will need minor changes.
 
- drivers/firewire/Kconfig          |   32 ++++----
- drivers/firewire/fw-cdev.c        |    9 ++-
- drivers/firewire/fw-ohci.c        |  110 ++++++++++++++-------------
- drivers/firewire/fw-transaction.c |   52 +++++++++----
- drivers/ieee1394/Kconfig          |  118 ++++++++++++++++-------------
- 5 files changed, 180 insertions(+), 141 deletions(-)
+    OLD:
+	/* incorrect "slave" ID may not have mattered */
+	.slave = 3,
+	.pullups = BIT(3) | BIT(1) | BIT(0),
 
-All patches have been seen on linux1394-devel and on lkml.
--- 
-Stefan Richter
--=====-==--- -==- =--==
-http://arcgraph.de/sr/
+    NEW:
+	/* slave address _must_ match chip's wiring */
+	.chip[3] = {
+		.is_present = true,
+		.pullups = BIT(3) | BIT(1) | BIT(0),
+	},
 
+There's no change in how things behave for spi_device nodes with
+a single mcp23s08 chip.  New multi-chip configurations assign GPIOs
+in sequence, without holes.  The spi_device just resembles a bigger
+controller, but internally it has multiple gpio_chip instances.
+
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ drivers/gpio/mcp23s08.c      |  133 ++++++++++++++++++++++++++++++++-----------
+ include/linux/spi/mcp23s08.h |   25 +++++---
+ 2 files changed, 118 insertions(+), 40 deletions(-)
+
+--- a/drivers/gpio/mcp23s08.c	2008-06-18 09:52:04.000000000 -0700
++++ b/drivers/gpio/mcp23s08.c	2008-06-18 14:12:48.000000000 -0700
+@@ -40,15 +40,26 @@ struct mcp23s08 {
+ 	struct spi_device	*spi;
+ 	u8			addr;
+ 
++	u8			cache[11];
+ 	/* lock protects the cached values */
+ 	struct mutex		lock;
+-	u8			cache[11];
+ 
+ 	struct gpio_chip	chip;
+ 
+ 	struct work_struct	work;
+ };
+ 
++/* A given spi_device can represent up to four mcp23s08 chips
++ * sharing the same chipselect but using different addresses
++ * (e.g. chips #0 and #3 might be populated, but not #1 or $2).
++ * Driver data holds all the per-chip data.
++ */
++struct mcp23s08_driver_data {
++	unsigned		ngpio;
++	struct mcp23s08		*mcp[4];
++	struct mcp23s08		chip[];
++};
++
+ static int mcp23s08_read(struct mcp23s08 *mcp, unsigned reg)
+ {
+ 	u8	tx[2], rx[1];
+@@ -208,25 +219,18 @@ done:
+ 
+ /*----------------------------------------------------------------------*/
+ 
+-static int mcp23s08_probe(struct spi_device *spi)
++static int mcp23s08_probe_one(struct spi_device *spi, unsigned addr,
++		unsigned base, unsigned pullups)
+ {
+-	struct mcp23s08			*mcp;
+-	struct mcp23s08_platform_data	*pdata;
++	struct mcp23s08_driver_data	*data = spi_get_drvdata(spi);
++	struct mcp23s08			*mcp = data->mcp[addr];
+ 	int				status;
+ 	int				do_update = 0;
+ 
+-	pdata = spi->dev.platform_data;
+-	if (!pdata || pdata->slave > 3 || !pdata->base)
+-		return -ENODEV;
+-
+-	mcp = kzalloc(sizeof *mcp, GFP_KERNEL);
+-	if (!mcp)
+-		return -ENOMEM;
+-
+ 	mutex_init(&mcp->lock);
+ 
+ 	mcp->spi = spi;
+-	mcp->addr = 0x40 | (pdata->slave << 1);
++	mcp->addr = 0x40 | (addr << 1);
+ 
+ 	mcp->chip.label = "mcp23s08",
+ 
+@@ -236,27 +240,28 @@ static int mcp23s08_probe(struct spi_dev
+ 	mcp->chip.set = mcp23s08_set;
+ 	mcp->chip.dbg_show = mcp23s08_dbg_show;
+ 
+-	mcp->chip.base = pdata->base;
++	mcp->chip.base = base;
+ 	mcp->chip.ngpio = 8;
+ 	mcp->chip.can_sleep = 1;
+ 	mcp->chip.dev = &spi->dev;
+ 	mcp->chip.owner = THIS_MODULE;
+ 
+-	spi_set_drvdata(spi, mcp);
+-
+-	/* verify MCP_IOCON.SEQOP = 0, so sequential reads work */
++	/* verify MCP_IOCON.SEQOP = 0, so sequential reads work,
++	 * and MCP_IOCON.HAEN = 1, so we work with all chips.
++	 */
+ 	status = mcp23s08_read(mcp, MCP_IOCON);
+ 	if (status < 0)
+ 		goto fail;
+-	if (status & IOCON_SEQOP) {
++	if ((status & IOCON_SEQOP) || !(status & IOCON_HAEN)) {
+ 		status &= ~IOCON_SEQOP;
++		status |= IOCON_HAEN;
+ 		status = mcp23s08_write(mcp, MCP_IOCON, (u8) status);
+ 		if (status < 0)
+ 			goto fail;
+ 	}
+ 
+ 	/* configure ~100K pullups */
+-	status = mcp23s08_write(mcp, MCP_GPPU, pdata->pullups);
++	status = mcp23s08_write(mcp, MCP_GPPU, pullups);
+ 	if (status < 0)
+ 		goto fail;
+ 
+@@ -283,11 +288,58 @@ static int mcp23s08_probe(struct spi_dev
+ 		tx[1] = MCP_IPOL;
+ 		memcpy(&tx[2], &mcp->cache[MCP_IPOL], sizeof(tx) - 2);
+ 		status = spi_write_then_read(mcp->spi, tx, sizeof tx, NULL, 0);
+-
+-		/* FIXME check status... */
++		if (status < 0)
++			goto fail;
+ 	}
+ 
+ 	status = gpiochip_add(&mcp->chip);
++fail:
++	if (status < 0)
++		dev_dbg(&spi->dev, "can't setup chip %d, --> %d\n",
++				addr, status);
++	return status;
++}
++
++static int mcp23s08_probe(struct spi_device *spi)
++{
++	struct mcp23s08_platform_data	*pdata;
++	unsigned			addr;
++	unsigned			chips = 0;
++	struct mcp23s08_driver_data	*data;
++	int				status;
++	unsigned			base;
++
++	pdata = spi->dev.platform_data;
++	if (!pdata || !gpio_is_valid(pdata->base))
++		return -ENODEV;
++
++	for (addr = 0; addr < 4; addr++) {
++		if (!pdata->chip[addr].is_present)
++			continue;
++		chips++;
++	}
++	if (!chips)
++		return -ENODEV;
++
++	data = kzalloc(sizeof *data + chips * sizeof(struct mcp23s08),
++			GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++	spi_set_drvdata(spi, data);
++
++	base = pdata->base;
++	for (addr = 0; addr < 4; addr++) {
++		if (!pdata->chip[addr].is_present)
++			continue;
++		chips--;
++		data->mcp[addr] = &data->chip[chips];
++		status = mcp23s08_probe_one(spi, addr, base,
++				pdata->chip[addr].pullups);
++		if (status < 0)
++			goto fail;
++		base += 8;
++	}
++	data->ngpio = base - pdata->base;
+ 
+ 	/* NOTE:  these chips have a relatively sane IRQ framework, with
+ 	 * per-signal masking and level/edge triggering.  It's not yet
+@@ -295,8 +347,9 @@ static int mcp23s08_probe(struct spi_dev
+ 	 */
+ 
+ 	if (pdata->setup) {
+-		status = pdata->setup(spi, mcp->chip.base,
+-				mcp->chip.ngpio, pdata->context);
++		status = pdata->setup(spi,
++				pdata->base, data->ngpio,
++				pdata->context);
+ 		if (status < 0)
+ 			dev_dbg(&spi->dev, "setup --> %d\n", status);
+ 	}
+@@ -304,19 +357,29 @@ static int mcp23s08_probe(struct spi_dev
+ 	return 0;
+ 
+ fail:
+-	kfree(mcp);
++	for (addr = 0; addr < 4; addr++) {
++		int tmp;
++
++		if (!data->mcp[addr])
++			continue;
++		tmp = gpiochip_remove(&data->mcp[addr]->chip);
++		if (tmp < 0)
++			dev_err(&spi->dev, "%s --> %d\n", "remove", tmp);
++	}
++	kfree(data);
+ 	return status;
+ }
+ 
+ static int mcp23s08_remove(struct spi_device *spi)
+ {
+-	struct mcp23s08			*mcp = spi_get_drvdata(spi);
++	struct mcp23s08_driver_data	*data = spi_get_drvdata(spi);
+ 	struct mcp23s08_platform_data	*pdata = spi->dev.platform_data;
++	unsigned			addr;
+ 	int				status = 0;
+ 
+ 	if (pdata->teardown) {
+ 		status = pdata->teardown(spi,
+-				mcp->chip.base, mcp->chip.ngpio,
++				pdata->base, data->ngpio,
+ 				pdata->context);
+ 		if (status < 0) {
+ 			dev_err(&spi->dev, "%s --> %d\n", "teardown", status);
+@@ -324,11 +387,20 @@ static int mcp23s08_remove(struct spi_de
+ 		}
+ 	}
+ 
+-	status = gpiochip_remove(&mcp->chip);
++	for (addr = 0; addr < 4; addr++) {
++		int tmp;
++
++		if (!data->mcp[addr])
++			continue;
++
++		tmp = gpiochip_remove(&data->mcp[addr]->chip);
++		if (tmp < 0) {
++			dev_err(&spi->dev, "%s --> %d\n", "remove", tmp);
++			status = tmp;
++		}
++	}
+ 	if (status == 0)
+-		kfree(mcp);
+-	else
+-		dev_err(&spi->dev, "%s --> %d\n", "remove", status);
++		kfree(data);
+ 	return status;
+ }
+ 
+@@ -356,4 +428,3 @@ static void __exit mcp23s08_exit(void)
+ module_exit(mcp23s08_exit);
+ 
+ MODULE_LICENSE("GPL");
+-
+--- a/include/linux/spi/mcp23s08.h	2008-06-18 09:35:17.000000000 -0700
++++ b/include/linux/spi/mcp23s08.h	2008-06-18 14:11:37.000000000 -0700
+@@ -1,18 +1,25 @@
+ 
+-/* FIXME driver should be able to handle all four slaves that
+- * can be hooked up to each chipselect, as well as IRQs...
+- */
++/* FIXME driver should be able to handle IRQs...  */
++
++struct mcp23s08_chip_info {
++	bool	is_present;		/* true iff populated */
++	u8	pullups;		/* BIT(x) means enable pullup x */
++};
+ 
+ struct mcp23s08_platform_data {
+-	/* four slaves can share one SPI chipselect */
+-	u8		slave;
++	/* Four slaves (numbered 0..3) can share one SPI chipselect, and
++	 * will provide 8..32 GPIOs using 1..4 gpio_chip instances.
++	 */
++	struct mcp23s08_chip_info	chip[4];
+ 
+-	/* number assigned to the first GPIO */
++	/* "base" is the number of the first GPIO.  Dynamic assignment is
++	 * not currently supported, and even if there are gaps in chip
++	 * addressing the GPIO numbers are sequential .. so for example
++	 * if only slaves 0 and 3 are present, their GPIOs range from
++	 * base to base+15.
++	 */
+ 	unsigned	base;
+ 
+-	/* pins with pullups */
+-	u8		pullups;
+-
+ 	void		*context;	/* param to setup/teardown */
+ 
+ 	int		(*setup)(struct spi_device *spi,
