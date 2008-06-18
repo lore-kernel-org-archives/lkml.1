@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951AbYFRKTZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753799AbYFRKVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753951AbYFRKTZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 06:19:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbYFRKTQ
+	id S1753799AbYFRKVH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 06:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbYFRKU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 06:19:16 -0400
-Received: from jenny.ondioline.org ([66.220.1.122]:46356 "EHLO
-	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752506AbYFRKTP (ORCPT
+	Wed, 18 Jun 2008 06:20:56 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:57680 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752027AbYFRKUy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 06:19:15 -0400
-From: Paul Collins <paul@burly.ondioline.org>
-To: "Phil Endecott" <phil_tuhck_endecott@chezphil.org>
-Cc: <jkosina@suse.cz>, <linux-input@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>,
-       "Marcel Holtmann" <marcel@holtmann.org>
-Subject: Re: [PATCH] [RESEND] fix HID quirks for aluminium apple wireless keyboards
-References: <87tzfwiguc.fsf@burly.wgtn.ondioline.org>
-	<1213447893811@dmwebmail.dmwebmail.chezphil.org>
-Mail-Followup-To: "Phil Endecott" <phil_tuhck_endecott@chezphil.org>,
-	<jkosina@suse.cz>, <linux-input@vger.kernel.org>,
-	<linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>, "Marcel
-	Holtmann" <marcel@holtmann.org>
-Date: Wed, 18 Jun 2008 22:19:13 +1200
-In-Reply-To: <1213447893811@dmwebmail.dmwebmail.chezphil.org> (Phil Endecott's
-	message of "Sat, 14 Jun 2008 13:51:33 +0100")
-Message-ID: <87mylj2ggu.fsf@burly.wgtn.ondioline.org>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.60 (gnu/linux)
+	Wed, 18 Jun 2008 06:20:54 -0400
+Date: Wed, 18 Jun 2008 19:20:20 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [Bad page] trying to free locked page? (Re: [PATCH][RFC] fix kernel BUG at mm/migrate.c:719! in 2.6.26-rc5-mm3)
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
+In-Reply-To: <20080618113235.c89ec08d.nishimura@mxp.nes.nec.co.jp>
+References: <20080618003334.DE2A.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080618113235.c89ec08d.nishimura@mxp.nes.nec.co.jp>
+Message-Id: <20080618191814.37BC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Phil Endecott" <phil_tuhck_endecott@chezphil.org> writes:
+> > > I got bad_page after hundreds times of page migration.
+> > > It seems that a locked page is being freed.
+> > 
+> > I can't reproduce this bad page.
+> > I'll try again tomorrow ;)
+> 
+> OK. I'll report on my test more precisely.
 
-> Why do you set HID_QUIRK_APPLE_NUMLOCK_EMULATION ?  I don't know what
-> that quirk really does, but since these keyboards have neither a
-> numeric keypad nor a numlock key I can't see any benefit.
+Thank you verbose explain.
+I ran its testcase >3H today.
+but unfortunately, I couldn't reproduce it.
 
->From a quick skim of the code (drivers/hid/hid-input.c) it looks like
-it's supposed to allow a laptop-style numeric keymap mapping to be
-enabled with F6, but I can't make it do anything here.  Perhaps it is
-best removed after the hid-bus merge, otherwise there'll be different
-quirks in different places for the same devices.
+Hmm...
 
--- 
-Paul Collins
-Wellington, New Zealand
 
-Dag vijandelijk luchtschip de huismeester is dood
