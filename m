@@ -1,330 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752556AbYFRJPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752166AbYFRJQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752556AbYFRJPP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 05:15:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbYFRJPD
+	id S1752166AbYFRJQS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 05:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYFRJP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 05:15:03 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:11064 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751249AbYFRJPA (ORCPT
+	Wed, 18 Jun 2008 05:15:59 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40221
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751829AbYFRJP4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 05:15:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :message-id;
-        b=xGQMUi5Bq98U+dEEEWL8vzKQf0wxZL2i8OWxoOrlWWOgsKXmfyLbBpA11l2I6Cg3ac
-         DuCft1sTZaHPSZvZGM9VcSoYeAjb3M1K23wuaCJKQhchvZ8ci691qr+3GSiDyK1t6gJV
-         rEAKut8Dec7Lest5HP2dwTY0jkXIoAR5XrHDI=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Dave Jones <davej@redhat.com>
-Subject: [PATCH] x86: make 64bit identify_cpu use cpu_dev
-Date: Wed, 18 Jun 2008 02:15:53 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 18 Jun 2008 05:15:56 -0400
+Date: Wed, 18 Jun 2008 02:15:57 -0700 (PDT)
+Message-Id: <20080618.021557.81064413.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806180215.53755.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-may need to move some functions to common.c later
+To my knowledge all of the major 2.6.26 networking regressions
+should be fixed after this pull.
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+1) The SSH connection stall is fixed, by reverting an optimization
+   we tried to make in the mac80211 stack.  I know how to do it
+   correctly, but that is 2.6.27 material at this point.
 
-Index: linux-2.6/arch/x86/kernel/cpu/amd_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/amd_64.c
-+++ linux-2.6/arch/x86/kernel/cpu/amd_64.c
-@@ -7,8 +7,7 @@
- 
- #include <mach_apic.h>
- 
--extern int __cpuinit get_model_name(struct cpuinfo_x86 *c);
--extern void __cpuinit display_cacheinfo(struct cpuinfo_x86 *c);
-+#include "cpu.h"
- 
- int force_mwait __cpuinitdata;
- 
-@@ -109,7 +108,7 @@ static void __cpuinit early_init_amd_mc(
- #endif
- }
- 
--void __cpuinit early_init_amd(struct cpuinfo_x86 *c)
-+static void __cpuinit early_init_amd(struct cpuinfo_x86 *c)
- {
- 	early_init_amd_mc(c);
- 
-@@ -118,7 +117,7 @@ void __cpuinit early_init_amd(struct cpu
- 		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
- }
- 
--void __cpuinit init_amd(struct cpuinfo_x86 *c)
-+static void __cpuinit init_amd(struct cpuinfo_x86 *c)
- {
- 	unsigned level;
- 
-@@ -200,3 +199,13 @@ void __cpuinit init_amd(struct cpuinfo_x
- 			set_memory_4k((unsigned long)__va(tseg), 1);
- 	}
- }
-+
-+static struct cpu_dev amd_cpu_dev __cpuinitdata = {
-+	.c_vendor	= "AMD",
-+	.c_ident	= { "AuthenticAMD" },
-+	.c_early_init   = early_init_amd,
-+	.c_init		= init_amd,
-+};
-+
-+cpu_vendor_dev_register(X86_VENDOR_AMD, &amd_cpu_dev);
-+
-Index: linux-2.6/arch/x86/kernel/cpu/centaur_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/centaur_64.c
-+++ linux-2.6/arch/x86/kernel/cpu/centaur_64.c
-@@ -4,13 +4,15 @@
- #include <asm/cpufeature.h>
- #include <asm/processor.h>
- 
--void __cpuinit early_init_centaur(struct cpuinfo_x86 *c)
-+#include "cpu.h"
-+
-+static void __cpuinit early_init_centaur(struct cpuinfo_x86 *c)
- {
- 	if (c->x86 == 0x6 && c->x86_model >= 0xf)
- 		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
- }
- 
--void __cpuinit init_centaur(struct cpuinfo_x86 *c)
-+static void __cpuinit init_centaur(struct cpuinfo_x86 *c)
- {
- 	/* Cache sizes */
- 	unsigned n;
-@@ -29,3 +31,13 @@ void __cpuinit init_centaur(struct cpuin
- 	}
- 	set_cpu_cap(c, X86_FEATURE_LFENCE_RDTSC);
- }
-+
-+static struct cpu_dev centaur_cpu_dev __cpuinitdata = {
-+	.c_vendor	= "Centaur",
-+	.c_ident	= { "CentaurHauls" },
-+	.c_early_init	= early_init_centaur,
-+	.c_init		= init_centaur,
-+};
-+
-+cpu_vendor_dev_register(X86_VENDOR_CENTAUR, &centaur_cpu_dev);
-+
-Index: linux-2.6/arch/x86/kernel/cpu/cpu.h
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/cpu.h
-+++ linux-2.6/arch/x86/kernel/cpu/cpu.h
-@@ -1,4 +1,6 @@
--#ifdef CONFIG_X86_32
-+#ifndef ARCH_X86_CPU_H
-+
-+#define ARCH_X86_CPU_H
- 
- struct cpu_model_info {
- 	int vendor;
-@@ -38,4 +40,4 @@ extern struct cpu_vendor_dev __x86cpuven
- extern int get_model_name(struct cpuinfo_x86 *c);
- extern void display_cacheinfo(struct cpuinfo_x86 *c);
- 
--#endif /* CONFIG_X86_32 */
-+#endif
-Index: linux-2.6/arch/x86/kernel/cpu/intel_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/intel_64.c
-+++ linux-2.6/arch/x86/kernel/cpu/intel_64.c
-@@ -5,7 +5,9 @@
- #include <asm/topology.h>
- #include <asm/numa_64.h>
- 
--void __cpuinit early_init_intel(struct cpuinfo_x86 *c)
-+#include "cpu.h"
-+
-+static void __cpuinit early_init_intel(struct cpuinfo_x86 *c)
- {
- 	if ((c->x86 == 0xf && c->x86_model >= 0x03) ||
- 	    (c->x86 == 0x6 && c->x86_model >= 0x0e))
-@@ -48,7 +50,7 @@ static void __cpuinit srat_detect_node(v
- #endif
- }
- 
--void __cpuinit init_intel(struct cpuinfo_x86 *c)
-+static void __cpuinit init_intel(struct cpuinfo_x86 *c)
- {
- 	/* Cache sizes */
- 	unsigned n;
-@@ -90,3 +92,12 @@ void __cpuinit init_intel(struct cpuinfo
- 
- 	srat_detect_node();
- }
-+
-+static struct cpu_dev intel_cpu_dev __cpuinitdata = {
-+	.c_vendor	= "Intel",
-+	.c_ident	= { "GenuineIntel" },
-+	.c_early_init   = early_init_intel,
-+	.c_init		= init_intel,
-+};
-+cpu_vendor_dev_register(X86_VENDOR_INTEL, &intel_cpu_dev);
-+
-Index: linux-2.6/arch/x86/kernel/setup_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup_64.c
-+++ linux-2.6/arch/x86/kernel/setup_64.c
-@@ -81,6 +81,8 @@
- #define ARCH_SETUP
- #endif
- 
-+#include "cpu/cpu.h"
-+
- /* We need valid kernel segments for data and code in long mode too
-  * IRET will check the segment types  kkeil 2000/10/28
-  * Also sysret mandates a special GDT layout
-@@ -180,6 +182,7 @@ static struct resource bss_resource = {
- 	.flags = IORESOURCE_RAM,
- };
- 
-+static void __init early_cpu_init(void);
- static void __cpuinit early_identify_cpu(struct cpuinfo_x86 *c);
- 
- #ifdef CONFIG_PROC_VMCORE
-@@ -341,6 +344,7 @@ void __init setup_arch(char **cmdline_p)
- 	bss_resource.start = virt_to_phys(&__bss_start);
- 	bss_resource.end = virt_to_phys(&__bss_stop)-1;
- 
-+	early_cpu_init();
- 	early_identify_cpu(&boot_cpu_data);
- 
- 	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
-@@ -527,6 +531,19 @@ void __init setup_arch(char **cmdline_p)
- 	check_enable_amd_mmconf_dmi();
- }
- 
-+struct cpu_dev *cpu_devs[X86_VENDOR_NUM] = {};
-+
-+static void __cpuinit default_init(struct cpuinfo_x86 *c)
-+{
-+	display_cacheinfo(c);
-+}
-+
-+static struct cpu_dev __cpuinitdata default_cpu = {
-+	.c_init	= default_init,
-+	.c_vendor = "Unknown",
-+};
-+static struct cpu_dev *this_cpu __cpuinitdata = &default_cpu;
-+
- int __cpuinit get_model_name(struct cpuinfo_x86 *c)
- {
- 	unsigned int *v;
-@@ -628,24 +645,37 @@ out:
- static void __cpuinit get_cpu_vendor(struct cpuinfo_x86 *c)
- {
- 	char *v = c->x86_vendor_id;
-+	int i;
-+	static int printed;
- 
--	if (!strcmp(v, "AuthenticAMD"))
--		c->x86_vendor = X86_VENDOR_AMD;
--	else if (!strcmp(v, "GenuineIntel"))
--		c->x86_vendor = X86_VENDOR_INTEL;
--	else if (!strcmp(v, "CentaurHauls"))
--		c->x86_vendor = X86_VENDOR_CENTAUR;
--	else
--		c->x86_vendor = X86_VENDOR_UNKNOWN;
-+	for (i = 0; i < X86_VENDOR_NUM; i++) {
-+		if (cpu_devs[i]) {
-+			if (!strcmp(v, cpu_devs[i]->c_ident[0]) ||
-+			    (cpu_devs[i]->c_ident[1] &&
-+			    !strcmp(v, cpu_devs[i]->c_ident[1]))) {
-+				c->x86_vendor = i;
-+				this_cpu = cpu_devs[i];
-+				return;
-+			}
-+		}
-+	}
-+	if (!printed) {
-+		printed++;
-+		printk(KERN_ERR "CPU: Vendor unknown, using generic init.\n");
-+		printk(KERN_ERR "CPU: Your system may be unstable.\n");
-+	}
-+	c->x86_vendor = X86_VENDOR_UNKNOWN;
- }
- 
--// FIXME: Needs to use cpu_vendor_dev_register
--extern void __cpuinit early_init_amd(struct cpuinfo_x86 *c);
--extern void __cpuinit init_amd(struct cpuinfo_x86 *c);
--extern void __cpuinit early_init_intel(struct cpuinfo_x86 *c);
--extern void __cpuinit init_intel(struct cpuinfo_x86 *c);
--extern void __cpuinit early_init_centaur(struct cpuinfo_x86 *c);
--extern void __cpuinit init_centaur(struct cpuinfo_x86 *c);
-+static void __init early_cpu_init(void)
-+{
-+        struct cpu_vendor_dev *cvdev;
-+
-+        for (cvdev = __x86cpuvendor_start ;
-+             cvdev < __x86cpuvendor_end   ;
-+             cvdev++)
-+                cpu_devs[cvdev->vendor] = cvdev->cpu_dev;
-+}
- 
- /* Do some early cpuid on the boot CPU to get some parameter that are
-    needed before check_bugs. Everything advanced is in identify_cpu
-@@ -725,17 +755,9 @@ static void __cpuinit early_identify_cpu
- 	if (c->extended_cpuid_level >= 0x80000007)
- 		c->x86_power = cpuid_edx(0x80000007);
- 
--	switch (c->x86_vendor) {
--	case X86_VENDOR_AMD:
--		early_init_amd(c);
--		break;
--	case X86_VENDOR_INTEL:
--		early_init_intel(c);
--		break;
--	case X86_VENDOR_CENTAUR:
--		early_init_centaur(c);
--		break;
--	}
-+	if (c->x86_vendor != X86_VENDOR_UNKNOWN &&
-+	    cpu_devs[c->x86_vendor]->c_early_init)
-+		cpu_devs[c->x86_vendor]->c_early_init(c);
- 
- 	validate_pat_support(c);
- }
-@@ -763,24 +785,8 @@ void __cpuinit identify_cpu(struct cpuin
- 	 * At the end of this section, c->x86_capability better
- 	 * indicate the features this CPU genuinely supports!
- 	 */
--	switch (c->x86_vendor) {
--	case X86_VENDOR_AMD:
--		init_amd(c);
--		break;
--
--	case X86_VENDOR_INTEL:
--		init_intel(c);
--		break;
--
--	case X86_VENDOR_CENTAUR:
--		init_centaur(c);
--		break;
--
--	case X86_VENDOR_UNKNOWN:
--	default:
--		display_cacheinfo(c);
--		break;
--	}
-+	if (this_cpu->c_init)
-+		this_cpu->c_init(c);
- 
- 	detect_ht(c);
- 
+2) Poll was busted on UNIX sockets.  The callback test and the
+   ->poll() test for "write space" was not the same.  Also
+   connected datagram waiting was not being done correctly.
+   Fix from Rainer Weikusat.
+
+3) Netfilter NAT RCU bug fix (caused OOPS) and H323 conntrack
+   leak/crash fixes from Patrick McHardy.
+
+4) Wireless bug fixes from John Linville and co.
+
+5) Wired driver bug fixes from Jeff Garzik and co.
+
+6) HTB scheduler hysteresis hack gives horrible behavior.  It's
+   meant to decrease cpu utilization but doesn't even do that
+   very well.  Turn off by default, and provide a knob so folks
+   can re-enable it if this happens to cause some problems.
+   From Jesper Dangaard Brouer.
+
+7) ATM bug fixes from Chas Williams, Eric Kinzie, Jorge Boncompte, and
+   Robert T. Johnson.
+
+8) Revert the rest of the 2.6.26 defer accept changes just to be
+   safe.  All of this can be revisited in 2.6.27
+
+9) VLAN TX checksum offload fix from Ben Hutchings.
+
+10) SCTP bug fixes from Vlad Yasevich and Wei Yongjun.
+
+11) IPV6 tunnel user interface fix from YOSHIFUJI Hideaki.
+
+12) Eric Dumazet noticed that newlines got unintentionally removed
+    from /proc/net/raw's output.
+
+13) Patrick McHardy fixes a circular locking dependency in genetlink
+    reported by lockdep.
+
+Please pull, thanks a lot!
+
+The following changes since commit 7775c9753b94fe429dc4323360d6502c95e0dd6e:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../kyle/parisc-2.6
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Abhijeet Kolekar (1):
+      mac80211 : fix for iwconfig in ad-hoc mode
+
+Ang Way Chuang (1):
+      tun: Proper handling of IPv6 header in tun driver when TUN_NO_PI is set
+
+Ben Hutchings (1):
+      net: Fix test for VLAN TX checksum offload capability
+
+Chas Williams (2):
+      atm: [he] only support suni driver on multimode interfaces
+      atm: [he] send idle cells instead of unassigned when in SDH mode
+
+David Brownell (2):
+      net/enc28j60: section fix
+      net/enc28j60: low power mode
+
+David S. Miller (4):
+      Merge branch 'master' of master.kernel.org:/.../linville/wireless-2.6
+      tcp: Revert reset of deferred accept changes in 2.6.26
+      Merge branch 'davem-fixes' of master.kernel.org:/.../jgarzik/netdev-2.6
+      Revert "mac80211: Use skb_header_cloned() on TX path."
+
+Dhananjay Phadke (4):
+      netxen: fix portnum for hp mezz cards
+      netxen: remove global physical_port array
+      netxen: cleanup debug messages
+      netxen: download firmware in pci probe
+
+Eric Dumazet (1):
+      raw: Restore /proc/net/raw correct behavior
+
+Eric Kinzie (1):
+      atm: [br2864] fix routed vcmux support
+
+Gertjan van Wingerde (1):
+      rt2x00: Restrict DMA to 32-bit addresses.
+
+Ivo van Doorn (2):
+      rt2x00: Don't kill guardian_urb when it wasn't created
+      rt2x00: Add D-link DWA111 support
+
+Jesper Dangaard Brouer (2):
+      pkt_sched: HTB scheduler, change default hysteresis mode to off.
+      pkt_sched: Change HTB_HYSTERESIS to a runtime parameter htb_hysteresis.
+
+Jorge Boncompte [DTI2] (3):
+      atm: [br2684] Fix oops due to skb->dev being NULL
+      atm: [iphase] set drvdata before enabling interrupts
+      atm: [iphase] doesn't call phy->start due to a bogus #ifndef
+
+Josh Boyer (1):
+      ibm_newemac: select CRC32 in Kconfig
+
+Michael Buesch (3):
+      b43: Fix possible NULL pointer dereference in DMA code
+      b43: Fix noise calculation WARN_ON
+      ssb: Fix coherent DMA mask for PCI devices
+
+Patrick McHardy (4):
+      netfilter: nf_nat: fix RCU races
+      netfilter: nf_conntrack_h323: fix memory leak in module initialization error path
+      netfilter: nf_conntrack_h323: fix module unload crash
+      netlink: genl: fix circular locking
+
+Radu Cristescu (1):
+      atl1: relax eeprom mac address error check
+
+Rainer Weikusat (1):
+      af_unix: fix 'poll for write'/ connected DGRAM sockets
+
+Rami Rosen (1):
+      ipv4: Remove unused definitions in net/ipv4/tcp_ipv4.c.
+
+Randy Dunlap (2):
+      rt2x00: INPUT build failure
+      rt2x00: LEDS build failure
+
+Robert T. Johnson (1):
+      atm: [he] limit queries to the device's register space
+
+Steffen Klassert (1):
+      xfrm: fix fragmentation for ipv4 xfrm tunnel
+
+Stephen Hemminger (1):
+      sky2: 88E8040T pci device id
+
+Tomas Winkler (1):
+      mac80211: add missing new line in debug print HT_DEBUG
+
+Vlad Yasevich (1):
+      sctp: Correclty set changeover_active for SFR-CACC
+
+Wei Yongjun (1):
+      sctp: Correctly cleanup procfs entries upon failure.
+
+YOSHIFUJI Hideaki (1):
+      ipv6 sit: Avoid extra need for compat layer in PRL management.
+
+ drivers/atm/he.c                            |   11 ++-
+ drivers/atm/he.h                            |   13 +--
+ drivers/atm/iphase.c                        |   27 +++---
+ drivers/net/atlx/atl1.c                     |    1 -
+ drivers/net/enc28j60.c                      |   87 ++++++++++++------
+ drivers/net/ibm_newemac/Kconfig             |    1 +
+ drivers/net/netxen/netxen_nic.h             |   18 +----
+ drivers/net/netxen/netxen_nic_ethtool.c     |    6 +-
+ drivers/net/netxen/netxen_nic_hw.c          |  112 ++++++++++-------------
+ drivers/net/netxen/netxen_nic_init.c        |   46 ++++-----
+ drivers/net/netxen/netxen_nic_isr.c         |    4 +-
+ drivers/net/netxen/netxen_nic_main.c        |  133 ++++++++------------------
+ drivers/net/netxen/netxen_nic_niu.c         |   22 ++--
+ drivers/net/sky2.c                          |    1 +
+ drivers/net/tun.c                           |   15 +++
+ drivers/net/wireless/b43/b43.h              |    1 -
+ drivers/net/wireless/b43/dma.c              |   65 +++++++-------
+ drivers/net/wireless/b43/main.c             |   16 ++-
+ drivers/net/wireless/rt2x00/Kconfig         |   19 ++--
+ drivers/net/wireless/rt2x00/rt2x00pci.c     |    3 +-
+ drivers/net/wireless/rt2x00/rt2x00usb.c     |    6 +
+ drivers/net/wireless/rt2x00/rt73usb.c       |    1 +
+ drivers/ssb/main.c                          |   12 ++-
+ include/linux/if_tunnel.h                   |    2 +-
+ include/net/netfilter/nf_conntrack_extend.h |    1 +
+ net/atm/br2684.c                            |   78 +++++++++-------
+ net/core/dev.c                              |   34 +++++--
+ net/ipv4/inet_connection_sock.c             |    6 +-
+ net/ipv4/netfilter/nf_nat_core.c            |    3 +-
+ net/ipv4/raw.c                              |    2 +-
+ net/ipv4/tcp_ipv4.c                         |    4 -
+ net/ipv4/xfrm4_mode_tunnel.c                |    2 +-
+ net/ipv6/sit.c                              |   44 +++++----
+ net/mac80211/tx.c                           |    4 +-
+ net/mac80211/wext.c                         |    3 +-
+ net/mac80211/wme.c                          |    2 +-
+ net/netfilter/nf_conntrack_extend.c         |    9 ++-
+ net/netfilter/nf_conntrack_h323_main.c      |   22 +++--
+ net/netlink/genetlink.c                     |   15 +--
+ net/sched/sch_htb.c                         |   23 +++--
+ net/sctp/associola.c                        |   13 ++-
+ net/sctp/protocol.c                         |   15 +++-
+ net/unix/af_unix.c                          |   79 ++++++++++++++--
+ 43 files changed, 544 insertions(+), 437 deletions(-)
