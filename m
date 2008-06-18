@@ -1,54 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753745AbYFRQQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbYFRQT5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753745AbYFRQQe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 12:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbYFRQQZ
+	id S1753856AbYFRQT5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 12:19:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbYFRQTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 12:16:25 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:61522 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751356AbYFRQQZ (ORCPT
+	Wed, 18 Jun 2008 12:19:50 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:10296 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751142AbYFRQTt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 12:16:25 -0400
-Date: Wed, 18 Jun 2008 12:16:21 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Gregory Haskins <ghaskins@novell.com>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <andi-suse@firstfloor.org>,
-       Clark Williams <clark.williams@gmail.com>,
-       Marin Mitov <mitov@issp.bas.bg>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>, akpm@osdl.org,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH][resubmit] x86: enable preemption in delay
-In-Reply-To: <200806182242.49245.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.58.0806181215120.29622@gandalf.stny.rr.com>
-References: <200805252108.25011.mitov@issp.bas.bg> <1213791416.16944.222.camel@twins>
- <4858C68C.BA47.005A.0@novell.com> <200806182242.49245.nickpiggin@yahoo.com.au>
+	Wed, 18 Jun 2008 12:19:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=dTHVZWwU1T8lmKF/m1fcQjqCgsxyOo5h67Zyfky35tYp/shV0rmuoeLVBFWeYlemL/
+         HLjMJDOs6RsI9zOf8WuMzN+iCJPvEGWyvX3R0/L6OREtsNzrLUqTI/RoFIKoC8+bXrTV
+         PaHfwG04XzLKh8GVxSNR5KAWPl9PoDZryqxnw=
+Message-ID: <19f34abd0806180919v5a8c21e7ua7e1f928d8a53ab4@mail.gmail.com>
+Date: Wed, 18 Jun 2008 18:19:46 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] x86: more header fixes
+Cc: linux-kernel@vger.kernel.org, "the arch/x86 maintainers" <x86@kernel.org>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+In-Reply-To: <20080618103006.GF15255@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080610214544.GA14824@damson.getinternet.no>
+	 <20080618103006.GF15255@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 18 Jun 2008, Nick Piggin wrote:
-
-> There are _some_ cases where it can be used, but nobody has been
-> able to come up with compelling uses really. I don't think this
-> case is helped very much either because the logic in there using
-> preempt-disable is fine, isn't it?
+On Wed, Jun 18, 2008 at 12:30 PM, Ingo Molnar <mingo@elte.hu> wrote:
 >
-> Except that it should also have a cond_resched in it. Seems like
-> an ideal place to put cond_resched because it is not a fastpath.
+> * Vegard Nossum <vegard.nossum@gmail.com> wrote:
+>> PS: I now have a pretty cool framework in Perl for parsing and
+>> checking headers. And it can be used to transform them automatically
+>> too. So if you want to standardize the guard format of all the headers
+>> in one go, we have the means to do it quickly and efficiently...
 >
+> very nice! I think the reference should be something like the unified
+> include/asm-x86/processor.h.
+>
+> could you try a run with that and put the result into a git tree for me
+> to pull for review? I think we want to finetune that result and do a
+> flag day for those cleanups, right after all the x86 topics went into
+> v2.6.27.
 
-Does it really need a cond_resched? preempt_enable when it goes to zero
-will already check to see if it should schedule.
+Done! You can pull the 'for-x86' branch of
 
--- Steve
+    git pull git://git.kernel.org/pub/scm/linux/kernel/git/vegard/linux-2.6-headers.git
+for-x86
 
+(that's gonna wrap.) The first commit
+(d160e5c4f1b912ec7c1583c393bb3db66cdb63c2) is the interesting one, the
+rest are just manual fix-ups.
+
+I've looked over most of it to make sure everything's okay; in
+addition, the diff consists of change in preprocessor lines only.
+'make headers_check' also succeeds, although no change here should
+change the result of that.
+
+
+The headers that still need to be looked at manually (probably because
+there was no guard there in the first place), are:
+
+# add include/asm-x86/mach-visws/entry_arch.h
+# add include/asm-x86/mach-visws/setup_arch.h
+# add include/asm-x86/mach-visws/smpboot_hooks.h
+# add include/asm-x86/posix_types.h
+# add include/asm-x86/mach-default/pci-functions.h
+# add include/asm-x86/mach-default/entry_arch.h
+# add include/asm-x86/mach-default/do_timer.h
+# add include/asm-x86/mach-default/smpboot_hooks.h
+# add include/asm-x86/vic.h
+# add include/asm-x86/suspend_32.h
+# add include/asm-x86/calling.h
+# add include/asm-x86/alternative-asm.h
+# add include/asm-x86/processor-cyrix.h
+# add include/asm-x86/mach-voyager/entry_arch.h
+# add include/asm-x86/mach-voyager/do_timer.h
+# add include/asm-x86/mach-voyager/setup_arch.h
+# add include/asm-x86/mach-rdc321x/rdc321x_defs.h
+# add include/asm-x86/unistd.h
+# add include/asm-x86/irqflags.h
+# add include/asm-x86/vmi.h
+# add include/asm-x86/voyager.h
+# add include/asm-x86/frame.h
+
+
+Vegard (a.k.a. "The Churninator")
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
