@@ -1,77 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760112AbYFRCOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760203AbYFRC1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760112AbYFRCOY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 22:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759488AbYFRCOO
+	id S1760203AbYFRC1d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 22:27:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759527AbYFRC1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 22:14:14 -0400
-Received: from [219.93.2.80] ([219.93.2.80]:55396 "EHLO nav6.org"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1759259AbYFRCOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 22:14:14 -0400
-Message-ID: <48586F4B.4060404@nav6.org>
-Date: Wed, 18 Jun 2008 10:13:31 +0800
-From: Ang Way Chuang <wcang@nav6.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Tue, 17 Jun 2008 22:27:23 -0400
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:40231 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759495AbYFRC1X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Jun 2008 22:27:23 -0400
+X-Greylist: delayed 356 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Jun 2008 22:27:23 EDT
+Date: Wed, 18 Jun 2008 12:27:12 +1000
+From: Bron Gondwana <brong@fastmail.fm>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Bron Gondwana <brong@fastmail.fm>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rob Mueller <robm@fastmail.fm>, Andi Kleen <andi@firstfloor.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: BUG: mmapfile/writev spurious zero bytes (x86_64/not i386,
+	bisected, reproducable)
+Message-ID: <20080618022712.GB1383@brong.net>
+References: <1213682410.13174.1258837181@webmail.messagingengine.com> <1213682570.13708.1258839317@webmail.messagingengine.com> <alpine.LFD.1.10.0806170947380.25099@woody.linux-foundation.org> <alpine.LFD.1.10.0806171041560.25099@woody.linux-foundation.org> <alpine.LFD.1.10.0806171309130.2981@woody.linux-foundation.org> <alpine.LFD.1.10.0806171331460.2908@woody.linux-foundation.org> <alpine.LFD.1.10.0806171356320.2908@woody.linux-foundation.org> <alpine.LFD.1.10.0806171415060.2907@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: maxk@qualcomm.com, steve.zabele@baesystems.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] NET: Proper handling of IPv6 header in tun driver when
- TUN_NO_PI is set
-References: <4849162D.7000401@nav6.org>	<48499C32.6070703@qualcomm.com> <20080617.163205.160864233.davem@davemloft.net>
-In-Reply-To: <20080617.163205.160864233.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0806171415060.2907@woody.linux-foundation.org>
+Organization: brong.net
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Max Krasnyanskiy <maxk@qualcomm.com>
-> Date: Fri, 06 Jun 2008 13:21:06 -0700
+On Tue, Jun 17, 2008 at 02:20:49PM -0700, Linus Torvalds wrote:
 > 
->> Acked-by: Max Krasnyansky <maxk@qualcomm.com>
->>
->> Dave, can you please add this patch to your tree.
 > 
-> I can't, the patch is severely whitespace damaged.
+> On Tue, 17 Jun 2008, Linus Torvalds wrote:
+> > 
+> > Hmm. Something like this *may* salvage it.
+> > 
+> > Untested, so far (I'll reboot and test soon enough), but even if it fixes 
+> > things, it's not really very good. 
 > 
-Resend. Hopefully Thunderbird won't screw this time.
+> Ok, so I just rebooted with this, and it does indeed fix the bug.
+> 
+> I'd be happier with a more complete fix (ie being byte-accurate and 
+> actually doing the partial copy when it hits a fault in the middle), but 
+> this seems to be the minimal fix, and at least fixes the totally bogus 
+> return values from the x86-64 __copy_user*() functions.
+> 
+> Not that I checked that I got _all_ cases correct (and maybe there are 
+> other versions of __copy_user that I missed entirely), but Bron's 
+> test-case at least seems to work properly for me now.
+> 
+> Bron? If you have a more complete test-suite (ie the real-world case that 
+> made you find this), it would be good to verify the whole thing. 
 
-By default, tun.c running in TUN_TUN_DEV mode will set the protocol of packet
-to IPv4 if TUN_NO_PI is set. My program failed to work when I assumed that
-the driver will check the first nibble of packet, determine IP version and set
-the appropriate protocol.
+I have a real world test case using "cyr_dbtool" from Cyrus 2.3.12 on a
+known-bug-inducing piece of data (the key and value sizes in the example
+code were taken from that.  Indeed, the example code started off
+building byte-for-byte identical files, then I changed it to write only
+a single character across the entire key and value so the hexdump was
+shorter)
 
-Signed-off-by: Ang Way Chuang <wcang@nav6.org>
----
+I'll give it a go.
 
-diff --git a/drivers/net/tun.c b/drivers/net/tun.c
-index 0ce07a3..f97bb9b 100644
---- a/drivers/net/tun.c
-+++ b/drivers/net/tun.c
-@@ -313,6 +313,21 @@ static __inline__ ssize_t tun_get_user(struct tun_struct *tun, struct iovec *iv,
-
-        switch (tun->flags & TUN_TYPE_MASK) {
-        case TUN_TUN_DEV:
-+                if (tun->flags & TUN_NO_PI) {
-+                        switch (skb->data[0] & 0xf0) {
-+                        case 0x40:
-+                                pi.proto = htons(ETH_P_IP);
-+                                break;
-+                        case 0x60:
-+                                pi.proto = htons(ETH_P_IPV6);
-+                                break;
-+                        default:
-+                                tun->dev->stats.rx_dropped++;
-+                                kfree_skb(skb);
-+                                return -EINVAL;
-+                        }
-+                }
-+
-                skb_reset_mac_header(skb);
-                skb->protocol = pi.proto;
-                skb->dev = tun->dev;
-
---
+Bron.
