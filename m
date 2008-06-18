@@ -1,95 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752874AbYFRQ3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752075AbYFRQ3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752874AbYFRQ3S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 12:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbYFRQ2r
+	id S1752075AbYFRQ3t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 12:29:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbYFRQ3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 12:28:47 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:38602 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752150AbYFRQ2q (ORCPT
+	Wed, 18 Jun 2008 12:29:39 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:41377 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752518AbYFRQ3g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 12:28:46 -0400
-Date: Wed, 18 Jun 2008 17:28:16 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [PATCH 5/5 v2] x86: PAT: make pat_x_mtrr_type() more readable
-In-Reply-To: <20080618133857.GB5213@alberich.amd.com>
-Message-ID: <Pine.LNX.4.64.0806181717380.20372@blonde.site>
-References: <20080610140755.GI5024@alberich.amd.com> <20080616125821.GA5213@alberich.amd.com>
- <Pine.LNX.4.64.0806161753060.13075@blonde.site> <20080618133857.GB5213@alberich.amd.com>
+	Wed, 18 Jun 2008 12:29:36 -0400
+Date: Wed, 18 Jun 2008 09:26:49 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, josh@freedesktop.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       dino@in.ibm.com, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, vegard.nossum@gmail.com,
+       adobriyan@gmail.com, oleg@tv-sign.ru, bunk@kernel.org, rjw@sisk.pl
+Subject: [PATCH] Make rcutorture more vicious: reinstate boot-time testing
+Message-ID: <20080618162649.GA18326@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080618122144.GA27143@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080618122144.GA27143@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jun 2008, Andreas Herrmann wrote:
-> And the attached patch makes it even shorter.
-> (patch against tip/x86/pat -- where your patch is already residing)
+Hello again!
 
-Yes, that's delightful, even better, thanks.  After accusing you
-of an uninteresting BUG on a fifth value from 2 bits, I had an
-inkling that maybe my patch was therefore still stupidly verbose.
+This patch re-institutes the ability to build rcutorture directly into
+the Linux kernel.  The reason that this capability was removed was that
+this could result in your kernel being pretty much useless, as rcutorture
+would be running starting from early boot.  This problem has been avoided
+by (1) making rcutorture run only three seconds of every six by default,
+(2) adding a CONFIG_RCU_TORTURE_TEST_RUNNABLE that permits rcutorture
+to be quiesced at boot time, and (3) adding a sysctl in /proc named
+/proc/sys/kernel/rcutorture_runnable that permits rcutorture to be
+quiesced and unquiesced when built into the kernel.
 
-> ---
-> [PATCH] x86: shrink pat_x_mtrr_type to its essentials
-> 
-> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+Please note that this /proc file is -not- available when rcutorture
+is built as a module.  Please also note that to get the earlier
+take-no-prisoners behavior, you must use the boot command line to set
+rcutorture's "stutter" parameter to zero.
 
-Acked-by: Hugh Dickins <hugh@veritas.com>
+The rcutorture quiescing mechanism is currently quite crude: loops
+in each rcutorture process that poll a global variable once per tick.
+Suggestions for improvement are welcome.  The default action will
+be to reduce the polling rate to a few times per second.
 
-> ---
->  arch/x86/mm/pat.c |   30 +++++++++++-------------------
->  1 files changed, 11 insertions(+), 19 deletions(-)
-> 
-> diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-> index ac3a2b1..227df3c 100644
-> --- a/arch/x86/mm/pat.c
-> +++ b/arch/x86/mm/pat.c
-> @@ -161,29 +161,21 @@ static DEFINE_SPINLOCK(memtype_lock); 	/* protects memtype list */
->   */
->  static unsigned long pat_x_mtrr_type(u64 start, u64 end, unsigned long req_type)
->  {
-> -	u8 mtrr_type;
-> -
-> -	/*
-> -	 * We return the PAT request directly for types where PAT takes
-> -	 * precedence with respect to MTRR and for UC_MINUS.
-> -	 * Consistency checks with other PAT requests is done later
-> -	 * while going through memtype list.
-> -	 */
-> -	if (req_type == _PAGE_CACHE_WC ||
-> -	    req_type == _PAGE_CACHE_UC_MINUS ||
-> -	    req_type == _PAGE_CACHE_UC)
-> -		return req_type;
-> -
->  	/*
->  	 * Look for MTRR hint to get the effective type in case where PAT
->  	 * request is for WB.
->  	 */
-> -	mtrr_type = mtrr_type_lookup(start, end);
-> -	if (mtrr_type == MTRR_TYPE_UNCACHABLE)
-> -		return _PAGE_CACHE_UC;
-> -	if (mtrr_type == MTRR_TYPE_WRCOMB)
-> -		return _PAGE_CACHE_WC;
-> -	return _PAGE_CACHE_WB;
-> +	if (req_type == _PAGE_CACHE_WB) {
-> +		u8 mtrr_type;
-> +
-> +		mtrr_type = mtrr_type_lookup(start, end);
-> +		if (mtrr_type == MTRR_TYPE_UNCACHABLE)
-> +			return _PAGE_CACHE_UC;
-> +		if (mtrr_type == MTRR_TYPE_WRCOMB)
-> +			return _PAGE_CACHE_WC;
-> +	}
-> +
-> +	return req_type;
->  }
->  
->  /*
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Suggested-by: Ingo Molnar <mingo@elte.hu>
+---
+
+ Documentation/RCU/torture.txt |   21 ++++++++++++++-------
+ kernel/rcutorture.c           |    9 ++++++++-
+ kernel/sysctl.c               |   13 +++++++++++++
+ lib/Kconfig.debug             |   20 +++++++++++++++++++-
+ 4 files changed, 54 insertions(+), 9 deletions(-)
+
+diff -urpNa -X dontdiff linux-2.6.26-rc4-rcut1-stutter/Documentation/RCU/torture.txt linux-2.6.26-rc4-rcut2-proc/Documentation/RCU/torture.txt
+--- linux-2.6.26-rc4-rcut1-stutter/Documentation/RCU/torture.txt	2008-06-18 05:15:43.000000000 -0700
++++ linux-2.6.26-rc4-rcut2-proc/Documentation/RCU/torture.txt	2008-06-18 08:11:19.000000000 -0700
+@@ -10,13 +10,20 @@ status messages via printk(), which can 
+ command (perhaps grepping for "torture").  The test is started
+ when the module is loaded, and stops when the module is unloaded.
+ 
+-However, actually setting this config option to "y" results in the system
+-running the test immediately upon boot, and ending only when the system
+-is taken down.  Normally, one will instead want to build the system
+-with CONFIG_RCU_TORTURE_TEST=m and to use modprobe and rmmod to control
+-the test, perhaps using a script similar to the one shown at the end of
+-this document.  Note that you will need CONFIG_MODULE_UNLOAD in order
+-to be able to end the test.
++CONFIG_RCU_TORTURE_TEST_RUNNABLE
++
++It is also possible to specify CONFIG_RCU_TORTURE_TEST=y, which will
++result in the tests being loaded into the base kernel.  In this case,
++the CONFIG_RCU_TORTURE_TEST_RUNNABLE config option is used to specify
++whether the RCU torture tests are to be started immediately during
++boot or whether the /proc/sys/kernel/rcutorture_runnable file is used
++to enable them.  This /proc file can be used to repeatedly pause and
++restart the tests, regardless of the initial state specified by the
++CONFIG_RCU_TORTURE_TEST_RUNNABLE config option.
++
++You will normally -not- want to start the RCU torture tests during boot
++(and thus the default is CONFIG_RCU_TORTURE_TEST_RUNNABLE=n), but doing
++this can sometimes be useful in finding boot-time bugs.
+ 
+ 
+ MODULE PARAMETERS
+diff -urpNa -X dontdiff linux-2.6.26-rc4-rcut1-stutter/kernel/rcutorture.c linux-2.6.26-rc4-rcut2-proc/kernel/rcutorture.c
+--- linux-2.6.26-rc4-rcut1-stutter/kernel/rcutorture.c	2008-06-18 04:54:41.000000000 -0700
++++ linux-2.6.26-rc4-rcut2-proc/kernel/rcutorture.c	2008-06-18 07:38:11.000000000 -0700
+@@ -125,6 +125,13 @@ static struct list_head rcu_torture_remo
+ 
+ static int stutter_pause_test = 0;
+ 
++#if defined(MODULE) || defined(CONFIG_RCU_TORTURE_TEST_RUNNABLE)
++#define RCUTORTURE_RUNNABLE_INIT 1
++#else
++#define RCUTORTURE_RUNNABLE_INIT 0
++#endif
++int rcutorture_runnable = RCUTORTURE_RUNNABLE_INIT;
++
+ /*
+  * Allocate an element from the rcu_tortures pool.
+  */
+@@ -188,7 +195,7 @@ rcu_random(struct rcu_random_state *rrsp
+ static void
+ rcu_stutter_wait(void)
+ {
+-	while (stutter_pause_test)
++	while (stutter_pause_test || !rcutorture_runnable)
+ 		schedule_timeout_interruptible(1);
+ }
+ 
+diff -urpNa -X dontdiff linux-2.6.26-rc4-rcut1-stutter/kernel/sysctl.c linux-2.6.26-rc4-rcut2-proc/kernel/sysctl.c
+--- linux-2.6.26-rc4-rcut1-stutter/kernel/sysctl.c	2008-05-30 04:39:01.000000000 -0700
++++ linux-2.6.26-rc4-rcut2-proc/kernel/sysctl.c	2008-06-18 07:35:26.000000000 -0700
+@@ -82,6 +82,9 @@ extern int maps_protect;
+ extern int sysctl_stat_interval;
+ extern int latencytop_enabled;
+ extern int sysctl_nr_open_min, sysctl_nr_open_max;
++#ifdef CONFIG_RCU_TORTURE_TEST
++extern int rcutorture_runnable;
++#endif /* #ifdef CONFIG_RCU_TORTURE_TEST */
+ 
+ /* Constants used for minimum and  maximum */
+ #if defined(CONFIG_DETECT_SOFTLOCKUP) || defined(CONFIG_HIGHMEM)
+@@ -813,6 +816,16 @@ static struct ctl_table kern_table[] = {
+ 		.child		= key_sysctls,
+ 	},
+ #endif
++#ifdef CONFIG_RCU_TORTURE_TEST
++	{
++		.ctl_name       = CTL_UNNUMBERED,
++		.procname       = "rcutorture_runnable",
++		.data           = &rcutorture_runnable,
++		.maxlen         = sizeof(int),
++		.mode           = 0644,
++		.proc_handler   = &proc_dointvec,
++	},
++#endif
+ /*
+  * NOTE: do not add new entries to this table unless you have read
+  * Documentation/sysctl/ctl_unnumbered.txt
+diff -urpNa -X dontdiff linux-2.6.26-rc4-rcut1-stutter/lib/Kconfig.debug linux-2.6.26-rc4-rcut2-proc/lib/Kconfig.debug
+--- linux-2.6.26-rc4-rcut1-stutter/lib/Kconfig.debug	2008-05-30 04:39:01.000000000 -0700
++++ linux-2.6.26-rc4-rcut2-proc/lib/Kconfig.debug	2008-06-18 06:32:48.000000000 -0700
+@@ -531,16 +531,34 @@ config BOOT_PRINTK_DELAY
+ config RCU_TORTURE_TEST
+ 	tristate "torture tests for RCU"
+ 	depends on DEBUG_KERNEL
+-	depends on m
+ 	default n
+ 	help
+ 	  This option provides a kernel module that runs torture tests
+ 	  on the RCU infrastructure.  The kernel module may be built
+ 	  after the fact on the running kernel to be tested, if desired.
+ 
++	  Say Y here if you want RCU torture tests to be built into
++	  the kernel.
+ 	  Say M if you want the RCU torture tests to build as a module.
+ 	  Say N if you are unsure.
+ 
++config RCU_TORTURE_TEST_RUNNABLE
++	bool "torture tests for RCU runnable by default"
++	depends on RCU_TORTURE_TEST = y
++	default n
++	help
++	  This option provides a way to build the RCU torture tests
++	  directly into the kernel without them starting up at boot
++	  time.  You can use /proc/sys/kernel/rcutorture_runnable
++	  to manually override this setting.  This /proc file is
++	  available only when the RCU torture tests have been built
++	  into the kernel.
++
++	  Say Y here if you want the RCU torture tests to start during
++	  boot (you probably don't).
++	  Say N here if you want the RCU torture tests to start only
++	  after being manually enabled via /proc.
++
+ config KPROBES_SANITY_TEST
+ 	bool "Kprobes sanity tests"
+ 	depends on DEBUG_KERNEL
