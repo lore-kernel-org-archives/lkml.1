@@ -1,44 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbYFRObA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbYFROgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756034AbYFRObA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 10:31:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbYFROaw
+	id S1755229AbYFROgX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 10:36:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbYFROgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 10:30:52 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59391 "EHLO mx3.mail.elte.hu"
+	Wed, 18 Jun 2008 10:36:14 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44063 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752514AbYFROaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 10:30:52 -0400
-Date: Wed, 18 Jun 2008 16:30:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: merge setup_memory_map with e820
-Message-ID: <20080618143040.GL11501@elte.hu>
-References: <200806161303.31997.yhlu.kernel@gmail.com> <200806161958.28627.yhlu.kernel@gmail.com>
+	id S1752421AbYFROgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 10:36:13 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
+Date: Wed, 18 Jun 2008 16:37:21 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <alpine.LFD.1.10.0806181000440.3395@apollo.tec.linutronix.de> <alpine.LFD.1.10.0806181421320.3395@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.10.0806181421320.3395@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200806161958.28627.yhlu.kernel@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200806181637.22241.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday, 18 of June 2008, Thomas Gleixner wrote:
+> On Wed, 18 Jun 2008, Thomas Gleixner wrote:
+> > On Wed, 18 Jun 2008, Rafael J. Wysocki wrote:
+> > > On Wednesday, 18 of June 2008, Rafael J. Wysocki wrote:
+> > > > On Tuesday, 17 of June 2008, Rafael J. Wysocki wrote:
+> > > > > On Tuesday, 17 of June 2008, Thomas Gleixner wrote:
+> > > > > > On Tue, 17 Jun 2008, Rafael J. Wysocki wrote:
+> > > > > > > 
+> > > > > > > BTW, with the C1E patches reverted I don't get the
+> > > > > > > WARNING: at /home/rafael/src/linux-next/kernel/smp.c:215 smp_call_function_single+0x3d/0xa2
+> > > > > > > in the log.  Thomas?
+> > > > > > 
+> > > > > > Yeah, my bad. Fix below.
+> > > > > 
+> > > > > Thanks, it eliminates the WARNING, but still the box doesn't work with
+> > > > > the "x86: add C1E aware idle function" patch applied, even with 'highres=off'.
+> > > > > 
+> > > > > The main symptom is that CPU loads are computed incorrectly (I got X using 126%
+> > > > > of CPU time from 'top', for example).  Apart from this, some processes (like
+> > > > > gkrellm) seem to be 'frozen' and only change their state in 'jumps', as though
+> > > > > they only got CPU from time to time at random.
+> > > > > 
+> > > > > Reverting the above-mentioned patch fixes those problems.
+> > > > 
+> > > > Ah.  If your fix is replaced with the appended one, the system happily works
+> > > > with C1E and highres.
+> > > 
+> > > Scratch that.  The symptoms appeared later this time, that's all.  I've just got
+> > > b43 consuming 90+ % of the CPU time. :-(
+> > 
+> > I would have been pretty surprised if it had helped :)
+> > 
+> > Does the box boot when you disable the local apic timer on the kernel
+> > command line with the patch applied ?
+> > 
+> > Also does forcing hpet change anything ?
+> 
+> I just checked that the original c1e series and the affected code in
+> tip are not different. IIRC you confirmed that the C1E patches would
+> work on your box. So I wonder what else got changed which causes these
+> problems.
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+Well, probably I didn't test that long enough.
 
-> and kill e820_32/64.c and e820_32/64.h
+The symptoms do not always appear immediately, they sometimes appear only
+after several minutes.
 
-whee - applied :-)
-
-	Ingo
+Thanks,
+Rafael
