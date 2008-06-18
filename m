@@ -1,45 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752772AbYFRJ5G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbYFRJ5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752772AbYFRJ5G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 05:57:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbYFRJ4w
+	id S1753843AbYFRJ5m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 05:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121AbYFRJ5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 05:56:52 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:35718 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751636AbYFRJ4v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 05:56:51 -0400
-Date: Wed, 18 Jun 2008 10:56:46 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: "Zhang, Rui" <rui.zhang@intel.com>
-Cc: Pavel Machek <pavel@suse.cz>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, trenn@suse.de
-Subject: Re: [Patch v2] Implement thermal limiting in the generic thermal class
-Message-ID: <20080618095646.GA20079@srcf.ucam.org>
-References: <20080611100647.GA20013@srcf.ucam.org> <20080616085544.GA17813@srcf.ucam.org> <20080616092648.GA18506@srcf.ucam.org> <20080617185345.GA5847@ucw.cz> <823A93EED437D048963A3697DB0E35DE0171191C@pdsmsx414.ccr.corp.intel.com>
+	Wed, 18 Jun 2008 05:57:33 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44267 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751978AbYFRJ5c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 05:57:32 -0400
+Date: Wed, 18 Jun 2008 11:57:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] modules: Take a shortcut for checking if an address is
+	in a module
+Message-ID: <20080618095711.GC15255@elte.hu>
+References: <20080610130519.21bc66f3@infradead.org> <200806112112.08623.rusty@rustcorp.com.au> <20080611081847.0b22079c@infradead.org> <19f34abd0806111154q77739a2m8dcff24e2f9a3922@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <823A93EED437D048963A3697DB0E35DE0171191C@pdsmsx414.ccr.corp.intel.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <19f34abd0806111154q77739a2m8dcff24e2f9a3922@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 18, 2008 at 05:28:01PM +0800, Zhang, Rui wrote:
-> One thing I'm concerning is that if we could enable polling in Linux.
-> Bug #8842 shows that polling may break some laptops.
-> And we have known that windows never enable polling.
-> Although this patch will not break the laptop in #8842, it still may
-> bring some potential risks if we enable polling in Linux.
-> IMO, a dmi entry would be much more acceptable...
 
-If it breaks anything, we can revisit the decision. I'd be surprised if 
-it did.
+* Vegard Nossum <vegard.nossum@gmail.com> wrote:
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> >  > > Various pieces of the kernel (lockdep, latencytop, etc) tend to 
+> >  > > store backtraces, sometimes at a relatively high frequency. In 
+> >  > > itself this isn't a big performance deal (after all you're 
+> >  > > using diagnostics features), but there have been some 
+> >  > > complaints from people who have over 100 modules loaded that 
+> >  > > this is a tad too slow.
+> 
+> Would it be overkill to simply drop the module addresses in an rbtree 
+> and use that instead of a linear search over all the modules?
+> 
+> It would probably take a fair number of lines in C, and with a little 
+> memory overhead, but the speed-up should be great. Should I give it a 
+> try? (It would be arch-independent too.)
+
+that's a tempting idea. rbtrees seem to be equally robust to plain lists 
+in my experience, so i'd not find the extra complexity a showstopper, as 
+long as the changes are well-tested. (radix trees on the other hand ... 
+;-)
+
+Rusty, Peter, Linus, any fundamental objections to Vegard's idea? Being 
+able to take a transparent stack-trace signature for debugging or 
+instrumentation purposes is important and performance does matter there 
+IMO.
+
+	Ingo
