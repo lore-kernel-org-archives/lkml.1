@@ -1,94 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbYFRMnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753986AbYFRMn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754172AbYFRMnN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 08:43:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753874AbYFRMm6
+	id S1753986AbYFRMn3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 08:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754890AbYFRMnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 08:42:58 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:59665 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753350AbYFRMm5 (ORCPT
+	Wed, 18 Jun 2008 08:43:17 -0400
+Received: from smtp114.mail.mud.yahoo.com ([209.191.84.67]:27140 "HELO
+	smtp114.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754843AbYFRMnP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 08:42:57 -0400
-Date: Wed, 18 Jun 2008 18:22:16 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net
-Cc: varunc@linux.vnet.ibm.com, jbarnes@virtuousgeek.org, greg@kroah.com
-Subject: Strange problem with e1000 driver - ping packet loss
-Message-ID: <20080618125215.GC3988@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
+	Wed, 18 Jun 2008 08:43:15 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=KC0q4S4eNPLwY56D3/UDAx19GNPO7rZbz8heERBVymCQUXtDLztNDwSiu74kiAHCYihWECZQfkr2qlPIexQzhM19jd5mwQJm7ZVG2T5I544f+3n0m33w7OavGEhWYUGKOEBYH2rgwbo0dybZQ3wsmwdKOWUYFrlp1PuDdQKOnUk=  ;
+X-YMail-OSG: Lx4ytoQVM1kd7gcvpWEuOJoPMDllGs8dhU8ni6mEj59oJwwU1Z.Ba.BkgpVi1i01RjbR3HcK5zmBcVn4BkitD36NLOaJXASR4AbiKTX0uulSgx9.LKkb4imi6hHWeBeQxyw-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: "Gregory Haskins" <ghaskins@novell.com>
+Subject: Re: [PATCH][resubmit] x86: enable preemption in delay
+Date: Wed, 18 Jun 2008 22:42:48 +1000
+User-Agent: KMail/1.9.5
+Cc: "Peter Zijlstra" <peterz@infradead.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andi Kleen" <andi-suse@firstfloor.org>,
+       "Clark Williams" <clark.williams@gmail.com>,
+       "Steven Rostedt" <rostedt@goodmis.org>,
+       "Marin Mitov" <mitov@issp.bas.bg>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>, akpm@osdl.org,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       "LKML" <linux-kernel@vger.kernel.org>,
+       "linux-rt-users" <linux-rt-users@vger.kernel.org>
+References: <200805252108.25011.mitov@issp.bas.bg> <1213791416.16944.222.camel@twins> <4858C68C.BA47.005A.0@novell.com>
+In-Reply-To: <4858C68C.BA47.005A.0@novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200806182242.49245.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-	I happened to look at a system which was exhibiting poor ping
-performance with e1000 driver (in 2.6.25) and had some questions regarding that.
+On Wednesday 18 June 2008 22:25, Gregory Haskins wrote:
+> >>> On Wed, Jun 18, 2008 at  8:16 AM, in message
 
-Ping test was done between the system and a laptop, which were connected
-using a straight ethernet cable. Ping reported round trip times running
-into seconds (!) and also packet loss.
+> > Yeah - migrate_disable() has been proposed several times. The reason I
+> > don't like it is that is creates scheduling artefacts like latencies by
+> > not being able to load-balance (and thereby complicates all that, and
+> > you know we don't need more complication there).
+>
+> True, and good point.  But this concept would certainly be useful to avoid
+> the heavyweight (w.r.t. latency) preempt-disable() in quite a few different
+> areas, so if we can make it work with reasonable visibility, it might be
+> nice to have.
 
-Upon some investigation, I found that the interrupt count field in
-/proc/interrupts (associated with eth1) is not incrementing as fast as
-it should. Moreover eth1 interrupt line is shared with the hard disk
-interrupt (ata_piix) as below:
+It just seems like pretty worthless bloat to me.
 
-# cat /proc/interrupts
+There are _some_ cases where it can be used, but nobody has been
+able to come up with compelling uses really. I don't think this
+case is helped very much either because the logic in there using
+preempt-disable is fine, isn't it?
 
-..
-
- 10:       2296    XT-PIC-XT        ata_piix, eth0, eth1
-
-..
-
-IRQ10 is thus being shared by both the hard disk and eth0/eth1.
-
-Here's the strange observation I made:
-
-When I initiate some disk activity (ex: dd if=/dev/zero of=/tmp/file), ping 
-performance suddently shot up (round trip time in double digits ms, 0% packet 
-loss)! I presume this is because that e1000 intr handler is called
-whenever there was a interrupt from hard disk on IRQ10, which polled
-NIC and processed packets immediately.
-
-As soon as I kill the background disk-write intensive job, ping
-performance again dropped.
-
-This meant that e1000 NIC is having trouble interrupting the OS.
-
-Before I could jump up and say this is a hardware issue, I was told
-that Windows works just fine on the server (and as well as 2.4 kernel,
-which I couldnt verify) :(
-
-
-Some more observations:
-
-1. I tried setting e1000 parameters (RxIntDelay=0, RxAbsIntDelay=0,
-   TxIntDelay=0, TxAbsIntDelay=0, InterruptThrottleRate=0). None of
-   them helped.
-
-2. When ping performance was poor, readprofile showed that system
-   is mostly idle. This confirms that OS is not getting very
-   frequenty interrupts from eth1 and hence idling.
-
-3. When ping performance was poor, ethtool -S eth1 showed that
-   rx_bytes was incrementing at a good pace, showing that the 
-   NIC was receiving ping responses back, but not handing them over
-   to OS for further processing
-
-4. e1000 chipset is 82546GB
-
-5. e1000e driver didnt work at all (it doesnt recognize the cards).
-
-
-Any advice on how to fix this problem?
-
-
--- 
-Regards,
-vatsa
+Except that it should also have a cond_resched in it. Seems like
+an ideal place to put cond_resched because it is not a fastpath.
