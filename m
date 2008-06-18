@@ -1,53 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbYFRWMg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755244AbYFRWSJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756402AbYFRWMg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 18:12:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbYFRWMY
+	id S1755244AbYFRWSJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 18:18:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbYFRWR4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 18:12:24 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51484
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753874AbYFRWMX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 18:12:23 -0400
-Date: Wed, 18 Jun 2008 15:12:24 -0700 (PDT)
-Message-Id: <20080618.151224.211093487.davem@davemloft.net>
-To: auke-jan.h.kok@intel.com
-Cc: mingo@elte.hu, vgusev@openvz.org, e1000-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@sisk.pl,
-       mcmanus@ducksong.com, ilpo.jarvinen@helsinki.fi, kuznet@ms2.inr.ac.ru,
-       xemul@openvz.org, torvalds@linux-foundation.org, jeff@garzik.org,
-       arjan@linux.intel.com
-Subject: Re: [E1000-devel] [TCP]: TCP_DEFER_ACCEPT causes leak sockets
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <48597D48.5090604@intel.com>
-References: <48595910.8000905@intel.com>
-	<20080618200805.GA18756@elte.hu>
-	<48597D48.5090604@intel.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Jun 2008 18:17:56 -0400
+Received: from www.tglx.de ([62.245.132.106]:36097 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752150AbYFRWR4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 18:17:56 -0400
+Date: Thu, 19 Jun 2008 00:17:33 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Veen <arjan@infradead.org>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>
+Subject: Re: [patch 6/6] x86: add c1e aware idle function
+In-Reply-To: <200806190004.12235.rjw@sisk.pl>
+Message-ID: <alpine.LFD.1.10.0806190012420.3395@apollo.tec.linutronix.de>
+References: <20080610171639.551369443@linutronix.de> <200806182226.07590.rjw@sisk.pl> <alpine.LFD.1.10.0806182354280.3395@apollo.tec.linutronix.de> <200806190004.12235.rjw@sisk.pl>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Date: Wed, 18 Jun 2008 14:25:28 -0700
+On Thu, 19 Jun 2008, Rafael J. Wysocki wrote:
+> On Wednesday, 18 of June 2008, Thomas Gleixner wrote:
+> > On Wed, 18 Jun 2008, Rafael J. Wysocki wrote:
+> > > On Wednesday, 18 of June 2008, Pavel Machek wrote:
+> > > > On Thu 2008-06-12 10:29:00, Thomas Gleixner wrote:
+> > > > > C1E on AMD machines is like C3 but without control from the OS. Up to
+> > > > > now we disabled the local apic timer for those machines as it stops
+> > > > > when the CPU goes into C1E. This excludes those machines from high
+> > > > > resolution timers / dynamic ticks, which hurts especially the X2 based
+> > > > > laptops.
+> > > > > 
+> > > > > The current boot time C1E detection has another more serious flaw:
+> > > > > some BIOSes do not enable C1E until the ACPI processor module is
+> > > > > loaded. This causes systems to stop working after that point.
+> > > > > 
+> > > > > To work nicely with C1E enabled machines we use a separate idle
+> > > > > function, which checks on idle entry whether C1E was enabled in the
+> > > > > Interrupt Pending Message MSR. This allows us to do timer broadcasting
+> > > > 
+> > > > Entering idle is quite a common operation, and reading MSR is quite
+> > > > slow. Is it possible to do better here?
+> > > > 
+> > > > What happens if ACPI BIOS toggles MSR on all cpus *while* we are
+> > > > entering idle? This seems inherently racy...
+> > 
+> > Well, on most of the machines we see the C1E bit on the first idle
+> > entry either on CPU0 or on CPU1.
+> > 
+> > I know of exactly one machine which has the C1E thing enabled late
+> > when the ACPI stuff runs.
+> >  
+> > > Yes, and that fits the picture I'm observing on the nx6325 (see the
+> > > "linux-next: Tree for June 13: IO APIC breakage on HP nx6325" thread).
+> > 
+> > Hmm, when is the C1E detected on current mainline ? Does the boot CPU
+> > have it or is it when the second CPU comes up ?
+> 
+> How can I check that?
 
-> You only complain and do not provide a single solution to your
-> problem. Your continued screaming and whining is totally not
-> productive nor constructive at all, and frankly is insulting since
-> you completely ignore the fact that we worked with the the community
-> more than two-year to come to some maintainable situation.
+When the boot cpu has it then it prints:
 
-I completely and %100 agree with you.
+"Disabling APIC timer"
 
-> Until I see such a thing I can't do much else than ignore
-> your childish whining.
+when the secondary CPU has it then it prints:
 
-Join the club.
+"AMD C1E detected late. Force timer broadcast."
 
-I'm also ignoring everything he writes until he changes his modus
-operandi to one that is more constructive than the pure hurtful
-whining he is emitting as of late.
+Current mainline does not check for the late ACPI case so I'm pretty
+sure that on your box it is detected during early boot way before we
+can switch to highres/dyntick.
+
+Thanks,
+
+	tglx
