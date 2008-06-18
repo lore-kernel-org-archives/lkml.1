@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760063AbYFRDfL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760032AbYFRDhS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760063AbYFRDfL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Jun 2008 23:35:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757975AbYFRDe7
+	id S1760032AbYFRDhS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Jun 2008 23:37:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757786AbYFRDhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Jun 2008 23:34:59 -0400
-Received: from mga06.intel.com ([134.134.136.21]:12344 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757805AbYFRDe7 (ORCPT
+	Tue, 17 Jun 2008 23:37:04 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43756
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757309AbYFRDhD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Jun 2008 23:34:59 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,662,1204531200"; 
-   d="scan'208";a="296408257"
-Message-ID: <48588255.9060400@linux.intel.com>
-Date: Tue, 17 Jun 2008 20:34:45 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Johannes Berg <johannes@sipsolutions.net>,
-       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       arjan@linux.intel.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, linville@tuxdriver.com, gregkh@suse.de
-Subject: Re: Oops report for the week preceding June 16th, 2008
-References: <4856AFDF.5080901@linux.intel.com> <20080617092023.GA20621@elte.hu> <20080617.022652.76635616.davem@davemloft.net> <20080617153356.GA3510@elte.hu> <1213730654.3803.122.camel@johannes.berg> <20080617194105.GA18177@redhat.com>
-In-Reply-To: <20080617194105.GA18177@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Jun 2008 23:37:03 -0400
+Date: Tue, 17 Jun 2008 20:37:03 -0700 (PDT)
+Message-Id: <20080617.203703.254889774.davem@davemloft.net>
+To: yanmin_zhang@linux.intel.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ia64@vger.kernel.org
+Subject: Re: IPF Montvale machine panic when running a network-relevent
+ testing
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1213759663.25608.33.camel@ymzhang>
+References: <1213345160.25608.3.camel@ymzhang>
+	<1213759663.25608.33.camel@ymzhang>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m5I3bNfq009830
 
-Dave Jones wrote:
-> On Tue, Jun 17, 2008 at 09:24:14PM +0200, Johannes Berg wrote:
->  > 
->  > > i have no gripes about the current situation of wireless in linux-next, 
->  > > other than it all came 1-2 years too late:
->  > 
->  > Clearly, you don't have a clue about wireless. I'll admit to being
->  > pissed off by statements like this because I personally spent a lot of
->  > time getting wireless code into shape for merging, and it took a long
->  > time.
->  > 
->  > If we'd have merged the existing wireless drivers 2 years ago, we would
->  > have (at least) four 802.11 stacks in the kernel now, at least two
->  > legally questionable drivers (the ath5k legal situation would probably
->  > never have been cleared up, acx100 still isn't), no uniform API so it
->  > would be impossible to write userspace support tools etc.
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Date: Wed, 18 Jun 2008 11:27:43 +0800
+
+> This issue is caused by tcp defer accept. Mostly, process context calls lock_sock
+> to apply a sleeping lock. BH (SoftIRQ) context calls bh_lock_sock(_nested) to just apply
+> for the sk->sk_lock.slock without sleeping, then do appropriate processing based on
+> if sk->sk_lock.owned==0. That works well if both process context and BH context operate
+> the same sk at the same time. But with ï»¿tcp defer accept, it doesn't, because
+> process context(for example, in inet_csk_accept) locks the listen sk, while BH
+> context (in tcp_v4_rcv, for example) locks the child sk and calls
+> ï»¿tcp_defer_accept_checkï»¿ => inet_csk_reqsk_queue_add => reqsk_queue_add, so there is a race
+> to access the listen sock.
 > 
-> FWIW, the fact that there's so much churn happening in wireless right
-> now is IMO, a sign of its health.
-
-I totally agree with that. In fact I'm quite happy with the progress.
-
-
-> It's been something of a double edged sword.  It's great that users are
-> getting the latest drivers & fixes, but at the same time, it means they
-> get exposed to all the latest breakage at the same time.
-> Given the volume of change occuring, cherry-picking isn't an enviable task,
-> so distros are stuck between this reality, or leaving users hanging until we
-> get to the next point release.
+> Below patch against 2.6.26-rc6 fixes the issue.
 > 
-> FWIW, wireless isn't unique in this regard. For eg, the last few months we've
-> always been shipping the latest ALSA bits rather than what's in kernel.org too,
-> for similar reasons -- when bugs appear, the developers want to know
-> "does it still happen with the latest bits?"
-> 
+> ï»¿ï»¿Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
 
-
-this is the part that concerns me.  The fact that you feel the need to use "not yet in mainline" pieces
-(I'm not so much talking about backporting from 2.6.26-git to 2.6.25; that's perfectly fine, but I'm
-talking about code not in 2.6.26-git) is NOT a healthy sign.... if that truely is the case then that code surely
-deserves to be in mainline as well?
+We reverted the guilty defer accept changes, please test Linus's
+current tree.
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
