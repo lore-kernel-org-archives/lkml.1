@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbYFRUNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbYFRUQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755984AbYFRUNR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 16:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753693AbYFRUNE
+	id S1755609AbYFRUQg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 16:16:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbYFRUQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 16:13:04 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:45659 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752285AbYFRUNC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 16:13:02 -0400
-Date: Wed, 18 Jun 2008 13:11:07 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Louis Rilling <Louis.Rilling@kerlabs.com>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: Re: [BUGFIX][PATCH 3/3] configfs: Fix failing symlink() making
-	rmdir() fail
-Message-ID: <20080618201107.GF16780@ca-server1.us.oracle.com>
-Mail-Followup-To: Louis Rilling <Louis.Rilling@kerlabs.com>,
-	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-References: <1213724243-29183-1-git-send-email-louis.rilling@kerlabs.com> <1213724243-29183-4-git-send-email-louis.rilling@kerlabs.com> <20080617221528.GA29091@mail.oracle.com> <20080618114043.GB30804@localhost>
-MIME-Version: 1.0
+	Wed, 18 Jun 2008 16:16:29 -0400
+Received: from dspnet.fr.eu.org ([213.186.44.138]:4629 "EHLO dspnet.fr.eu.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751036AbYFRUQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 16:16:28 -0400
+X-Greylist: delayed 528 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Jun 2008 16:16:28 EDT
+Date: Wed, 18 Jun 2008 22:07:38 +0200
+From: Olivier Galibert <galibert@pobox.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Hans-Peter Jansen <hpj@urpla.net>, linux-kernel@vger.kernel.org,
+       "R.L. Horn" <lists@eastcheap.org>
+Subject: Re: 2.6.25.3: serial problem (minicom)
+Message-ID: <20080618200738.GB23861@dspnet.fr.eu.org>
+Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Hans-Peter Jansen <hpj@urpla.net>, linux-kernel@vger.kernel.org,
+	"R.L. Horn" <lists@eastcheap.org>
+References: <alpine.LNX.1.00.0806131635260.1294@hani.compact.internal> <alpine.LNX.1.00.0806162306400.10919@hani.compact.internal> <20080617095827.0f4f77de@lxorguk.ukuu.org.uk> <200806180215.45925.hpj@urpla.net> <20080618185534.5f969f63@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080618114043.GB30804@localhost>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+In-Reply-To: <20080618185534.5f969f63@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 18, 2008 at 01:40:43PM +0200, Louis Rilling wrote:
-> The problem is rmdir() of the target item (see below). ATTACHING only protects
-> us from rmdir() of the parent. This is the exact reason why I attach the link to
-> the target in last place, where we know that we won't have to rollback.
-
-	Why wouldn't it protect the target, given that detach_prep()
-will be called against the target if it's being rmdir'd?
-
-> 	And AFAICS, creating a VFS object can not hurt as long as we hold the
-> parent i_mutex, right? Otherwise there already is a problem in
-> configfs_attach_item() where a failure in populate_attrs() leads to rollback the
-> creation of the VFS object already created for the item.
-
-	We *can* do that, but we try to isolate it - hand-building VFS
-objects is complex and error prone, and I try to isolate that to
-specific cases.  I'd rather avoid it when not necessary.
-
-> > 		spin_lock(&configfs_dirent_lock);
-> > 		parent_sd->s_type &= ~CONFIGFS_USET_ATTACHING;
-> > 		if (ret) {
+On Wed, Jun 18, 2008 at 06:55:34PM +0100, Alan Cox wrote:
+> On Wed, 18 Jun 2008 02:15:45 +0200
+> "Hans-Peter Jansen" <hpj@urpla.net> wrote:
 > 
-> Here, if detach_prep() of the target failed because of the link attached above,
-> it had no means to retry. rmdir() of the target fails because of this
-> temporary link, which results in a failing symlink() making rmdir() of the
-> target fail.
+> > Am Dienstag, 17. Juni 2008 schrieb Alan Cox:
+> > > On Mon, 16 Jun 2008 23:22:54 -0500 (CDT)
+> > >
+> > > Ah ok I know what the bug is - it was fixed in 2.6.26-rc as follows
+> > >
+> > > +       /* Don't rewrite B0 */
+> > > +       if (tty_termios_baud_rate(termios))
+> > > +               tty_termios_encode_baud_rate(termios, baud, baud);
+> > >  }
+> > 
+> > Alan, could this issue lead to dysfunctional serial dcf77 receivers, too? 
+> > (and could you point my to the related git changeset?)
+> 
+> I don't generally work via git so I don't offhand know the changeset id.
 
-	How so?  It sees ATTACHING, it gets -EAGAIN, it tries again,
-just like before.  What's different?
+e991a2bd4fa0b2f475b67dfe8f33e8ecbdcbb40b
 
-Joel
+git blame drivers/serial/8250.c then look for "rewrite B0" (which gets
+you e991a2bd) then git show e991a2bd.
 
--- 
-
-"Anything that is too stupid to be spoken is sung."  
-        - Voltaire
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+  OG.
