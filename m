@@ -1,97 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754051AbYFRLkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754214AbYFRLky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754051AbYFRLkR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 07:40:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbYFRLkF
+	id S1754214AbYFRLky (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 07:40:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbYFRLkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 07:40:05 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:26364 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752997AbYFRLkE convert rfc822-to-8bit (ORCPT
+	Wed, 18 Jun 2008 07:40:46 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:47444 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753058AbYFRLkp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 07:40:04 -0400
-Message-Id: <48591049.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Wed, 18 Jun 2008 12:40:25 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH] i386: fix vmalloc_sync_all() for Xen
+	Wed, 18 Jun 2008 07:40:45 -0400
+Date: Wed, 18 Jun 2008 13:40:43 +0200
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: Joel Becker <Joel.Becker@oracle.com>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: Re: [BUGFIX][PATCH 3/3] configfs: Fix failing symlink() making
+	rmdir() fail
+Message-ID: <20080618114043.GB30804@localhost>
+Reply-To: Louis.Rilling@kerlabs.com
+References: <1213724243-29183-1-git-send-email-louis.rilling@kerlabs.com> <1213724243-29183-4-git-send-email-louis.rilling@kerlabs.com> <20080617221528.GA29091@mail.oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-10153-1213789154-0001-2"
 Content-Disposition: inline
+In-Reply-To: <20080617221528.GA29091@mail.oracle.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since the fourth PDPT entry cannot be shared under Xen,
-vmalloc_sync_all() must iterate over pmd-s rather than pgd-s here.
-Luckily, the code isn't used for native PAE (SHARED_KERNEL_PMD is 1)
-and the change is benign to non-PAE.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+--=_bohort-10153-1213789154-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
----
- arch/x86/mm/fault.c |   29 ++++++++++++++++++++---------
- 1 file changed, 20 insertions(+), 9 deletions(-)
+On Tue, Jun 17, 2008 at 03:15:28PM -0700, Joel Becker wrote:
+> On Tue, Jun 17, 2008 at 07:37:23PM +0200, Louis Rilling wrote:
+> > For the parent's rmdir() case, we can use the same solution as with mkd=
+ir() vs
+> > rmdir(). For the target's rmdir() case, we cannot, since we do not and =
+cannot
+> > lock the target's inode while in symlink(). Fortunately, once create_li=
+nk()
+> > terminates, no further operation can fail in symlink(). So we first reo=
+rder the
+> > operations in create_link() to attach the new symlink to its target in =
+last
+> > place, and second handle symlink creation failure the same way as a new=
+ item
+> > creation failure.
+>=20
+> 	Oh, no, ugh.  We don't want to create vfs objects first and ask
+> questions later.  Otherwise we wouldn't need ATTACHING - we'd just
+> create the symlink, then check dropping.
+> 	If you have ATTACHING set, the rmdir cannot continue - you can
+> check dropping at that time.  That is, you keep the DROPPING check where
+> it is - if it is already set, you know that rmdir() is going to complete
+> successfully.  You can bail before even calling configfs_create_link().
+> If, however, it isn't set, your ATTACHING protects you from rmdir
+> throughout.
 
---- linux-2.6.26-rc6/arch/x86/mm/fault.c	2008-06-18 09:56:16.000000000 +0200
-+++ 2.6.26-rc6-i386-xen-vmalloc_sync_all/arch/x86/mm/fault.c	2008-06-06 08:51:52.000000000 +0200
-@@ -921,32 +921,43 @@ void vmalloc_sync_all(void)
- 	 * start are only improving performance (without affecting correctness
- 	 * if undone).
- 	 */
--	static DECLARE_BITMAP(insync, PTRS_PER_PGD);
-+#define sync_index(a) ((a) >> PMD_SHIFT)
-+	static DECLARE_BITMAP(insync, PTRS_PER_PGD*PTRS_PER_PMD);
- 	static unsigned long start = TASK_SIZE;
- 	unsigned long address;
- 
- 	if (SHARED_KERNEL_PMD)
- 		return;
- 
--	BUILD_BUG_ON(TASK_SIZE & ~PGDIR_MASK);
--	for (address = start; address >= TASK_SIZE; address += PGDIR_SIZE) {
--		if (!test_bit(pgd_index(address), insync)) {
-+	BUILD_BUG_ON(TASK_SIZE & ~PMD_MASK);
-+	for (address = start; address >= TASK_SIZE; address += PMD_SIZE) {
-+		if (!test_bit(sync_index(address), insync)) {
- 			unsigned long flags;
- 			struct page *page;
- 
- 			spin_lock_irqsave(&pgd_lock, flags);
-+			if (unlikely(list_empty(&pgd_list))) {
-+				spin_unlock_irqrestore(&pgd_lock, flags);
-+				return;
-+			}
- 			list_for_each_entry(page, &pgd_list, lru) {
- 				if (!vmalloc_sync_one(page_address(page),
--						      address))
-+						      address)) {
-+					BUG_ON(list_first_entry(&pgd_list,
-+								struct page,
-+								lru) != page);
-+					page = NULL;
- 					break;
-+				}
- 			}
- 			spin_unlock_irqrestore(&pgd_lock, flags);
--			if (!page)
--				set_bit(pgd_index(address), insync);
-+			if (page)
-+				set_bit(sync_index(address), insync);
- 		}
--		if (address == start && test_bit(pgd_index(address), insync))
--			start = address + PGDIR_SIZE;
-+		if (address == start && test_bit(sync_index(address), insync))
-+			start = address + PMD_SIZE;
- 	}
-+#undef sync_index
- #else /* CONFIG_X86_64 */
- 	/*
- 	 * Note that races in the updates of insync and start aren't
+The problem is rmdir() of the target item (see below). ATTACHING only prote=
+cts
+us from rmdir() of the parent. This is the exact reason why I attach the li=
+nk to
+the target in last place, where we know that we won't have to rollback.
+	And AFAICS, creating a VFS object can not hurt as long as we hold the
+parent i_mutex, right? Otherwise there already is a problem in
+configfs_attach_item() where a failure in populate_attrs() leads to rollbac=
+k the
+creation of the VFS object already created for the item.
 
+> =20
+> 	sl =3D kmalloc(sizeof(struct configfs_symlink), GFP_KERNEL);
+>  	if (sl) {
+>  		sl->sl_target =3D config_item_get(item);
+>  		spin_lock(&configfs_dirent_lock);
+> 		if (target_sd->s_type & CONFIGFS_USET_DROPPING) {
+> 			spin_unlock(&configfs_dirent_lock);
+> 			config_item_put(item);
+> 			kfree(sl);
+> 			return -ENOENT;
+> 			/*
+> 		 	* Force rmdir() of parent_item to wait until we know
+> 		 	* if we succeed.
+> 		 	*/
+> 			parent_sd->s_type |=3D CONFIGFS_USET_ATTACHING;
+> 		}
+> 		list_add(&sl->sl_list, &target_sd->s_links);
+>  		spin_unlock(&configfs_dirent_lock);
+>  		ret =3D configfs_create_link(sl, parent_item->ci_dentry,
+>  					   dentry);
+> 		spin_lock(&configfs_dirent_lock);
+> 		parent_sd->s_type &=3D ~CONFIGFS_USET_ATTACHING;
+> 		if (ret) {
 
+Here, if detach_prep() of the target failed because of the link attached ab=
+ove,
+it had no means to retry. rmdir() of the target fails because of this
+temporary link, which results in a failing symlink() making rmdir() of the
+target fail.
 
+> 			list_del_init(&sl->sl_list);
+>  			spin_unlock(&configfs_dirent_lock);
+>  			config_item_put(item);
+>  			kfree(sl);
+>  		} else
+> 			spin_unlock(&configfs_dirent_lock);
+>  	}
+> =20
+>  	return ret;
+>=20
+
+--=20
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
+
+--=_bohort-10153-1213789154-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIWPQ7VKcRuvQ9Q1QRAvstAJ9b1QhYHTdZLYwD3XMVJEV2VvnHRgCghEnL
+0aZ98ZQ/tXIDob0MfuQNQyc=
+=KQ34
+-----END PGP SIGNATURE-----
+
+--=_bohort-10153-1213789154-0001-2--
