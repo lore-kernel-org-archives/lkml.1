@@ -1,115 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbYFRVQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754795AbYFRV3G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756667AbYFRVQP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 17:16:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbYFRVQA
+	id S1754795AbYFRV3G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 17:29:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbYFRV2z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 17:16:00 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:51844 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754070AbYFRVP6 (ORCPT
+	Wed, 18 Jun 2008 17:28:55 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54663 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752240AbYFRV2y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 17:15:58 -0400
-Date: Wed, 18 Jun 2008 14:15:55 -0700
-From: Eric B Munson <ebmunson@us.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [RFC PATCH V2] Keep 3 high personality bytes across exec
-Message-ID: <20080618211555.GA21865@us.ibm.com>
-References: <20080618060651.GA8251@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="dDRMvlgZJXvWKvBx"
-Content-Disposition: inline
-In-Reply-To: <20080618060651.GA8251@us.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 18 Jun 2008 17:28:54 -0400
+Date: Wed, 18 Jun 2008 14:28:49 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Ryan Hope" <rmh3093@gmail.com>
+Cc: linux-mm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] Lockless patches cause hardlock under heavy IO
+Message-ID: <20080618142849.13e90c6d@infradead.org>
+In-Reply-To: <48f7fe350806181415l4eba61b3i1d206de03147575e@mail.gmail.com>
+References: <48f7fe350806181415l4eba61b3i1d206de03147575e@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 18 Jun 2008 17:15:08 -0400
+"Ryan Hope" <rmh3093@gmail.com> wrote:
 
---dDRMvlgZJXvWKvBx
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> I applied the following patches from 2.6-26-rc5-mm3
 
-Currently when a 32 bit process is exec'd on a powerpc 64 bit host the value
-in the top three bytes of the personality is clobbered.  This patch adds a
-check in the SET_PERSONALITY macro that will carry all the values in the top
-three bytes across the exec.
+> 
+> I am on an x86_64. I dont know what other info you need...
+> 
 
-These three bytes currently carry flags to disable address randomisation,
-limit the address space, force zeroing of an mmapped page, etc.  Should an
-application set any of these bits they will be maintained and honoured on
-homogeneous environment but discarded and ignored on a heterogeneous
-environment.  So if an application requires all mmapped pages to be initial=
-ised
-to zero and a wrapper is used to setup the personality and exec the target,
-these flags will remain set on an all 32 or all 64 bit envrionment, but they
-will be lost in the exec on a mixed 32/64 bit environment.  Losing these bi=
-ts
-means that the same application would behave differently in different
-environments.  Tested on a POWER5+ machine with 64bit kernel and a mixed
-64/32 bit user space.
+if it's locking related, enabling LOCKDEP is a first good test to do.
 
-Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
-
----
-V2
-
-Changes from V1:
-Updated changelog with a better description of why this change is useful
-
-Based on 2.6.26-rc6
-
- include/asm-powerpc/elf.h   |    3 ++-
- include/linux/personality.h |    6 ++++++
- 2 files changed, 8 insertions(+), 1 deletions(-)
-
-diff --git a/include/asm-powerpc/elf.h b/include/asm-powerpc/elf.h
-index 9080d85..2f11a0e 100644
---- a/include/asm-powerpc/elf.h
-+++ b/include/asm-powerpc/elf.h
-@@ -257,7 +257,8 @@ do {								\
- 	else							\
- 		clear_thread_flag(TIF_ABI_PENDING);		\
- 	if (personality(current->personality) !=3D PER_LINUX32)	\
--		set_personality(PER_LINUX);			\
-+		set_personality(PER_LINUX |			\
-+			(current->personality & PER_INHERIT));	\
- } while (0)
- /*
-  * An executable for which elf_read_implies_exec() returns TRUE will
-diff --git a/include/linux/personality.h b/include/linux/personality.h
-index a84e9ff..362eb90 100644
---- a/include/linux/personality.h
-+++ b/include/linux/personality.h
-@@ -36,6 +36,12 @@ enum {
- 	ADDR_LIMIT_3GB =3D 	0x8000000,
- };
-=20
-+/* Mask for the above personality values */
-+#define PER_INHERIT (ADDR_NO_RANDOMIZE|FDPIC_FUNCPTRS|MMAP_PAGE_ZERO| \
-+			ADDR_COMPAT_LAYOUT|READ_IMPLIES_EXEC|ADDR_LIMIT_32BIT| \
-+			SHORT_INODE|WHOLE_SECONDS|STICKY_TIMEOUTS| \
-+			ADDR_LIMIT_3GB)
-+
- /*
-  * Security-relevant compatibility flags that must be
-  * cleared upon setuid or setgid exec:
+CONFIG_PROVE_LOCKING=y
+as well as the various spinlock/mutex lock debug questions
 
 
---dDRMvlgZJXvWKvBx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIWXsLsnv9E83jkzoRAmvvAKD2suHEuv/a0lIssNGonxgQjIixAQCg7GIc
-bRVSwh+iGam+oxJVs+GpgFQ=
-=zVLk
------END PGP SIGNATURE-----
-
---dDRMvlgZJXvWKvBx--
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
