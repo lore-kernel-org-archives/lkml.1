@@ -1,119 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbYFRTSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbYFRTUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754603AbYFRTSm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 15:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbYFRTSd
+	id S1755514AbYFRTUK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 15:20:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbYFRTT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 15:18:33 -0400
-Received: from mga11.intel.com ([192.55.52.93]:32988 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751001AbYFRTSc convert rfc822-to-8bit (ORCPT
+	Wed, 18 Jun 2008 15:19:58 -0400
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:47813 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750801AbYFRTT5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 15:18:32 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,667,1204531200"; 
-   d="scan'208";a="343004691"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 18 Jun 2008 15:19:57 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=nt/eG0fe7Ppv58lWZJvZqwJvg4EMbkK+Mv9VYUv08+HwDsBoa1psncP7H5jUg9rEmz5NCzPnPF5vDDtDK+3eZROderBCyVCtB1aB+j2BfjLYyi8yRn4j7m3klbj9GnKPFlXOmlP1y+j32SLeKcs0OGwefuiDIdFBXIpOtMa3Xik=  ;
+X-YMail-OSG: awdeK9kVM1lllyC1KIUC9vqgYDe2uM0yjTesojnSYfOojVRnnrQizlweIGNE3599H32dJN0GQXugkHj7WiwVg.oQbN81XWp44szaJ5MooJh_V_VymnSBhaU83mOp0Fn.CrM-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch 2.6.26-rc6-mm] gpio: updates to sysfs support
+Date: Wed, 18 Jun 2008 12:19:55 -0700
+User-Agent: KMail/1.9.9
+Cc: lkml <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Strange problem with e1000 driver - ping packet loss
-Date: Wed, 18 Jun 2008 12:18:30 -0700
-Message-ID: <36D9DB17C6DE9E40B059440DB8D95F52056F2AC0@orsmsx418.amr.corp.intel.com>
-In-Reply-To: <20080618125215.GC3988@linux.vnet.ibm.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Strange problem with e1000 driver - ping packet loss
-Thread-Index: AcjRQrd5OjgLPLLfS92B968WpqRRMgAHqOIA
-References: <20080618125215.GC3988@linux.vnet.ibm.com>
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-To: <vatsa@linux.vnet.ibm.com>, <linux-kernel@vger.kernel.org>,
-       <e1000-devel@lists.sourceforge.net>
-Cc: <greg@kroah.com>, <varunc@linux.vnet.ibm.com>, <jbarnes@virtuousgeek.org>
-X-OriginalArrivalTime: 18 Jun 2008 19:18:31.0049 (UTC) FILETIME=[1816D790:01C8D178]
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806181219.55628.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Srivatsa Vaddagiri wrote:
-> Hi,
-> 	I happened to look at a system which was exhibiting poor ping
-> performance with e1000 driver (in 2.6.25) and had some questions
-> regarding that. 
-> ...
+Update and bugfix the patch adding sysfs GPIO support:
 
-> Upon some investigation, I found that the interrupt count field in
-> /proc/interrupts (associated with eth1) is not incrementing as fast as
-> it should. Moreover eth1 interrupt line is shared with the hard disk
-> interrupt (ata_piix) as below:
-> 
-> # cat /proc/interrupts
->  10:       2296    XT-PIC-XT        ata_piix, eth0, eth1
+  * Bugfix:  the test initializing the IS_OUT flag for output-only
+    GPIOs had the sense inverted.
 
-whats wrong with your system that you can't use acpi and/or apic?  It
-would probably orthoginally solve the problem by unsharing your
-interrupt.
+  * Update:  when gpio_chip.dev is provided, list it in the debugfs
+    dump.  Device nodes are unique; the "label" isn't.
 
-> IRQ10 is thus being shared by both the hard disk and eth0/eth1.
+The bug of course caused output-only GPIOs to misbehave, but it also
+made just-exported (or generally:  only-requested) GPIOs always appear
+to be outputs in sysfs and debugfs.  That's wrong more often than it's
+right, although it gets corrected when the direction is assigned.
 
-bad for performance but should really work okay.
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ drivers/gpio/gpiolib.c |   28 +++++++++++++++++++++++-----
+ 1 files changed, 23 insertions(+), 5 deletions(-)
+
+--- a/drivers/gpio/gpiolib.c	2008-06-17 23:15:17.000000000 -0700
++++ b/drivers/gpio/gpiolib.c	2008-06-18 09:48:32.000000000 -0700
+@@ -685,7 +685,14 @@ int gpiochip_add(struct gpio_chip *chip)
+ 	if (status == 0) {
+ 		for (id = base; id < base + chip->ngpio; id++) {
+ 			gpio_desc[id].chip = chip;
+-			gpio_desc[id].flags = chip->direction_input
++
++			/* REVISIT:  most hardware initializes GPIOs as
++			 * inputs (often with pullups enabled) so power
++			 * usage is minimized.  Linux code should set the
++			 * gpio direction first thing; but until it does,
++			 * we may expose the wrong direction in sysfs.
++			 */
++			gpio_desc[id].flags = !chip->direction_input
+ 				? (1 << FLAG_IS_OUT)
+ 				: 0;
+ 		}
+@@ -1108,17 +1115,28 @@ static int gpiolib_show(struct seq_file 
+ 	/* REVISIT this isn't locked against gpio_chip removal ... */
  
-> Here's the strange observation I made:
-> 
-> When I initiate some disk activity (ex: dd if=/dev/zero
-> ...
-
-> This meant that e1000 NIC is having trouble interrupting the OS.
-
-you're correct here, there appears to be some problem on your system
-either with interrupt delivery or with the driver masking off interrupts
-and leaving them disabled.
+ 	for (gpio = 0; gpio_is_valid(gpio); gpio++) {
++		struct device *dev;
++
+ 		if (chip == gpio_desc[gpio].chip)
+ 			continue;
+ 		chip = gpio_desc[gpio].chip;
+ 		if (!chip)
+ 			continue;
  
-> Before I could jump up and say this is a hardware issue, I was told
-> that Windows works just fine on the server (and as well as 2.4 kernel,
-> which I couldnt verify) :(
-
-well it might be a bios issue, but would likely be solved by using boot
-option acpi=force and/or lapci (see kernel-parameters.txt
-
-> Some more observations:
-> 
-> 1. I tried setting e1000 parameters (RxIntDelay=0, RxAbsIntDelay=0,
->    TxIntDelay=0, TxAbsIntDelay=0, InterruptThrottleRate=0). None of
->    them helped.
-
-these won't help you get an interrupt delivered or re-enabled
- 
-> 2. When ping performance was poor, readprofile showed that system
->    is mostly idle. This confirms that OS is not getting very
->    frequenty interrupts from eth1 and hence idling.
-
-expected, thanks for checking.
-
-> 3. When ping performance was poor, ethtool -S eth1 showed that
->    rx_bytes was incrementing at a good pace, showing that the
->    NIC was receiving ping responses back, but not handing them over
->    to OS for further processing
-
-also expected for an interrupt problem.
- 
-> 4. e1000 chipset is 82546GB
-> 
-> 5. e1000e driver didnt work at all (it doesnt recognize the cards).
-
-expected, this is a PCI-X adapter.
- 
-
-> Any advice on how to fix this problem?
-
-try the boot options first, then if that doesn't work for you, download
-ethregs from e1000.sourceforge.net download area and compile/run it and
-send me the output in private email.
-
-if you have a spare moment, you can try the e1000-8.X driver from
-sourceforge and let me know if it works okay, that would imply we just
-need to patch the in-kernel driver to fix an already known issue.
-
-Jesse
+-		seq_printf(s, "%sGPIOs %d-%d, %s%s:\n",
++		seq_printf(s, "%sGPIOs %d-%d",
+ 				started ? "\n" : "",
+-				chip->base, chip->base + chip->ngpio - 1,
+-				chip->label ? : "generic",
+-				chip->can_sleep ? ", can sleep" : "");
++				chip->base, chip->base + chip->ngpio - 1);
++		dev = chip->dev;
++		if (dev)
++			seq_printf(s, ", %s/%s",
++				dev->bus ? dev->bus->name : "no-bus",
++				dev->bus_id);
++		if (chip->label)
++			seq_printf(s, ", %s", chip->label);
++		if (chip->can_sleep)
++			seq_printf(s, ", can sleep");
++		seq_printf(s, ":\n");
++
+ 		started = 1;
+ 		if (chip->dbg_show)
+ 			chip->dbg_show(s, chip);
