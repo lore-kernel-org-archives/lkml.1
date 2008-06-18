@@ -1,58 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754431AbYFRPta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754647AbYFRPxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754431AbYFRPta (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 11:49:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbYFRPtU
+	id S1754647AbYFRPxk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 11:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753015AbYFRPxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 11:49:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60785 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751957AbYFRPtT (ORCPT
+	Wed, 18 Jun 2008 11:53:33 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:54350 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752531AbYFRPxc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 11:49:19 -0400
-Date: Wed, 18 Jun 2008 08:48:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>,
-       Jan Engelhardt <jengelh@gmx.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: RFC [PATCH] x86: try to remove arch_get_ram_range
-Message-Id: <20080618084850.40adb1a8.akpm@linux-foundation.org>
-In-Reply-To: <20080618140726.GF11501@elte.hu>
-References: <200806162010.55495.yhlu.kernel@gmail.com>
-	<20080618140726.GF11501@elte.hu>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+	Wed, 18 Jun 2008 11:53:32 -0400
+Subject: Re: Starvation of one RT task when the runtime of another exceeds
+	period.
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Daniel K." <dk@uw.no>
+Cc: mingo@elte.hu, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <48592A4D.2090100@uw.no>
+References: <48592A4D.2090100@uw.no>
+Content-Type: text/plain
+Date: Wed, 18 Jun 2008 17:53:20 +0200
+Message-Id: <1213804400.16944.248.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jun 2008 16:07:26 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+On Wed, 2008-06-18 at 17:31 +0200, Daniel K. wrote:
+> I will demonstrate how to get an RT task stuck, and not rescheduled by
+> (ab)using cgroups and RT scheduling. This is on a 4 core system running
+> 2.6.26-rc6 with two patches applied to make it work at all.
+> 
+> http://marc.info/?i=1213732878.3223.95.camel@lappy.programming.kicks-ass.net
+> http://marc.info/?i=1213789854.16944.216.camel@twins
+> 
+> mkdir /dev/cgroup
+> mount -t cgroup -o cpu,cpuset cgroup /dev/cgroup
+> 
+> # Set up cgroup 0
+> mkdir /dev/cgroup/0
+> echo 3 > /dev/cgroup/0/cpuset.cpus
+> echo 0 > /dev/cgroup/0/cpuset.mems
+> echo 100000 > /dev/cgroup/0/cpu.rt_period_us
+> echo   5000 > /dev/cgroup/0/cpu.rt_runtime_us
+> 
+> # Set up cgroup 1
+> mkdir /dev/cgroup/1
+> echo 3 > /dev/cgroup/1/cpuset.cpus
+> echo 0 > /dev/cgroup/1/cpuset.mems
+> echo 100000 > /dev/cgroup/1/cpu.rt_period_us
+> echo   5000 > /dev/cgroup/1/cpu.rt_runtime_us
+> 
+> # Start task 1, and assign it to cgroup 0
+> schedtool -R -p 1 -e burnP6 &
+> [1] 3309
+> echo 3309 > /dev/cgroup/0/tasks
+> 
+> At this point task 1 use 20% CPU.
+> 
+> # Start task 2, and assign it to cgroup 1
+> schedtool -R -p 1 -e burnP6 &
+> [2] 3313
+> echo 3313 > /dev/cgroup/1/tasks
+> 
+> At this point task 2 use 20% CPU.
+> Both tasks use 40% of CPU core#3 in total.
+> 
+> # Assign an insane amount of runtime (over 100%, ref. my other mail)
+> echo 30000  > /dev/cgroup/1/cpu.rt_runtime_us
+> 
+> Now, task 2 use 100% of the CPU, and completely starves task 1, which
+> ceases to get scheduled.
+> 
+> # Cut down on the insanity
+> echo  5000 > /dev/cgroup/1/cpu.rt_runtime_us
+> 
+> Now task 2 use only 20% of the CPU again, task 1 does still not get
+> scheduled.
+> 
+> Let's call this state 'stuck'
+> 
+> I can make task 1 get unstuck by assigning its PID to another cgroup.
+> 
+> # Kick task 1, so it gets scheduled again.
+> echo 3309 > /dev/cgroup/1/tasks
+> 
+> Assuming we go back to state 'stuck', a 'killall burnP6' will only kill
+> task 2, task 1 is still waiting for someone to come and kick it in the
+> butt. As soon as that happens, it will get killed as well.
+> 
+> One time even both tasks got stuck and did not get scheduled, and I
+> needed to kick both tasks to get them going again.
+> 
+> Well, this wasn't really a question, but I'm sure this is not how it's
+> supposed to behave?
 
-> 
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> 
-> > want to remove arch_get_ram_range, and use early_node_map instead.
-> 
-> (small request: please include diffstat output in your patches in the 
-> future if possible: "quilt refresh --diffstat" will do that - this way 
-> people will know why they were Cc:-ed)
-> 
-> this touches the MM:
-> 
->  arch/x86/mm/init_32.c     |    6 +++--
->  drivers/pci/intel-iommu.c |   51 +++++++++++++++++++++++++++++++++-------------
->  include/linux/mm.h        |    2 -
->  mm/page_alloc.c           |   10 ++++++---
->  4 files changed, 49 insertions(+), 20 deletions(-)
-> 
-> but has many dependencies on ongoing arch/x86 work. Andrew, is this 
-> change fine with with you?
-> 
+Humm, indeed, I have a suspicion, but would need to think about this a
+bit - again thanks for the detailed report.
 
-Beats me - I don't even have a mm/page_alloc.c:work_with_active_regions()
-in my tree.
