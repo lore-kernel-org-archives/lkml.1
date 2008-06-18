@@ -1,101 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754647AbYFRPxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754361AbYFRP7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754647AbYFRPxk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 11:53:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753015AbYFRPxd
+	id S1754361AbYFRP7r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 11:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751084AbYFRP7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 11:53:33 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54350 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752531AbYFRPxc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 11:53:32 -0400
-Subject: Re: Starvation of one RT task when the runtime of another exceeds
-	period.
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Daniel K." <dk@uw.no>
-Cc: mingo@elte.hu, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <48592A4D.2090100@uw.no>
-References: <48592A4D.2090100@uw.no>
-Content-Type: text/plain
-Date: Wed, 18 Jun 2008 17:53:20 +0200
-Message-Id: <1213804400.16944.248.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Jun 2008 11:59:37 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:41954 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750880AbYFRP7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 11:59:37 -0400
+Date: Wed, 18 Jun 2008 11:59:26 -0400
+To: Neil Brown <neilb@suse.de>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Chuck Lever <chucklever@gmail.com>,
+       Peter Staubach <staubach@redhat.com>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] knfsd: nfsd: Handle ERESTARTSYS from syscalls.
+Message-ID: <20080618155926.GA25297@fieldses.org>
+References: <20080613213759.26929.patches@notabene> <1080613114215.27095@suse.de> <48565F19.10508@redhat.com> <76bd70e30806160809o495dd50fw88a80ec0673c0dc1@mail.gmail.com> <1213635286.7238.13.camel@localhost> <18519.24997.34761.283298@notabene.brown>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18519.24997.34761.283298@notabene.brown>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-06-18 at 17:31 +0200, Daniel K. wrote:
-> I will demonstrate how to get an RT task stuck, and not rescheduled by
-> (ab)using cgroups and RT scheduling. This is on a 4 core system running
-> 2.6.26-rc6 with two patches applied to make it work at all.
+On Tue, Jun 17, 2008 at 05:03:01PM +1000, Neil Brown wrote:
+> On Monday June 16, trond.myklebust@fys.uio.no wrote:
+> > On Mon, 2008-06-16 at 11:09 -0400, Chuck Lever wrote:
+> > 
+> > > I think an error reply is much better than no reply in nearly every
+> > > case.  NFS3ERR_JUKEBOX/NFS4ERR_DELAY is an interesting idea, but
+> > > something else again will probably be required for v4.1 with sessions.
+> > 
+> > NFS3ERR_JUKEBOX/NFS4ERR_DELAY may be inappropriate if the nfs daemon has
+> > already started handling the RPC call, since you may be interrupting a
+> > non-idempotent operation.
 > 
-> http://marc.info/?i=1213732878.3223.95.camel@lappy.programming.kicks-ass.net
-> http://marc.info/?i=1213789854.16944.216.camel@twins
+> If the filesystem allows you to interrupt a non-idempotent operation
+> part way through, then the filesystem is doing something very wrong.
 > 
-> mkdir /dev/cgroup
-> mount -t cgroup -o cpu,cpuset cgroup /dev/cgroup
+> The observed behaviour is that multiple 32K writes are outstanding
+> (in different nfsd threads) when a signal is delivered to each nfsd.
 > 
-> # Set up cgroup 0
-> mkdir /dev/cgroup/0
-> echo 3 > /dev/cgroup/0/cpuset.cpus
-> echo 0 > /dev/cgroup/0/cpuset.mems
-> echo 100000 > /dev/cgroup/0/cpu.rt_period_us
-> echo   5000 > /dev/cgroup/0/cpu.rt_runtime_us
+> OCFS2 appears to be serialising these writes.
 > 
-> # Set up cgroup 1
-> mkdir /dev/cgroup/1
-> echo 3 > /dev/cgroup/1/cpuset.cpus
-> echo 0 > /dev/cgroup/1/cpuset.mems
-> echo 100000 > /dev/cgroup/1/cpu.rt_period_us
-> echo   5000 > /dev/cgroup/1/cpu.rt_runtime_us
+> One of the writes completes returning a length that is less than 32K.
+> This length is returned to the client.  A quick look at the client
+> code suggests that it complains with a printk, and tries to write the
+> remainder, which seems correct.
 > 
-> # Start task 1, and assign it to cgroup 0
-> schedtool -R -p 1 -e burnP6 &
-> [1] 3309
-> echo 3309 > /dev/cgroup/0/tasks
+> The other writes all complete with ERESTARTSYS.  Presumably they
+> haven't started at all.  If they had, you might expect a partial
+> return from them too.
 > 
-> At this point task 1 use 20% CPU.
+> So far, what OCFS2 is doing seems credible and doesn't leave us in an
+> awkward position with respect to incomplete idempotent operations.
 > 
-> # Start task 2, and assign it to cgroup 1
-> schedtool -R -p 1 -e burnP6 &
-> [2] 3313
-> echo 3313 > /dev/cgroup/1/tasks
+> I cannot be certain, but I'm willing to believe that OCFS2 only
+> returns ERESTARTSYS when the operation hasn't been performed at all
+> (or has been wound-back to the starting condition).
 > 
-> At this point task 2 use 20% CPU.
-> Both tasks use 40% of CPU core#3 in total.
-> 
-> # Assign an insane amount of runtime (over 100%, ref. my other mail)
-> echo 30000  > /dev/cgroup/1/cpu.rt_runtime_us
-> 
-> Now, task 2 use 100% of the CPU, and completely starves task 1, which
-> ceases to get scheduled.
-> 
-> # Cut down on the insanity
-> echo  5000 > /dev/cgroup/1/cpu.rt_runtime_us
-> 
-> Now task 2 use only 20% of the CPU again, task 1 does still not get
-> scheduled.
-> 
-> Let's call this state 'stuck'
-> 
-> I can make task 1 get unstuck by assigning its PID to another cgroup.
-> 
-> # Kick task 1, so it gets scheduled again.
-> echo 3309 > /dev/cgroup/1/tasks
-> 
-> Assuming we go back to state 'stuck', a 'killall burnP6' will only kill
-> task 2, task 1 is still waiting for someone to come and kick it in the
-> butt. As soon as that happens, it will get killed as well.
-> 
-> One time even both tasks got stuck and did not get scheduled, and I
-> needed to kick both tasks to get them going again.
-> 
-> Well, this wasn't really a question, but I'm sure this is not how it's
-> supposed to behave?
+> I agree that NFS3ERR_JUKEBOX is more appropriate than no reply, but I
+> don't think there is any reason to suspect that will not be
+> sufficient.
 
-Humm, indeed, I have a suspicion, but would need to think about this a
-bit - again thanks for the detailed report.
+OK.  Want to send a replacement patch?
 
+--b.
