@@ -1,95 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760259AbYFRGHI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760520AbYFRGJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760259AbYFRGHI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 02:07:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758356AbYFRGG4
+	id S1760520AbYFRGJe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 02:09:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755941AbYFRGJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 02:06:56 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:47082 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757524AbYFRGGz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 02:06:55 -0400
-Date: Tue, 17 Jun 2008 23:06:51 -0700
-From: Eric B Munson <ebmunson@us.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [RFC PATCH] Keep 3 high personality bytes across exec
-Message-ID: <20080618060651.GA8251@us.ibm.com>
+	Wed, 18 Jun 2008 02:09:26 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52662 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754250AbYFRGJZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 02:09:25 -0400
+Date: Wed, 18 Jun 2008 15:08:02 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>,
+       Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH][-mm] fix incorrect Mlocked field of /proc/meminfo.
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20080618150253.37AD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="h31gzZEtNLTqOjlF"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Against: 2.6.26-rc5-mm3
 
---h31gzZEtNLTqOjlF
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Mlocked field of /proc/meminfo display silly number.
+because trivial mistake exist in meminfo_read_proc().
 
-Currently when a 32 bit process is exec'd on a powerpc 64 bit host the valu=
-es
-of the top three bytes of the personality are clobbered.  This patch adds a
-check in the SET_PERSONALITY macro that will carry all the values in the top
-three bytes across the exec.
 
-Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
 ---
+ fs/proc/proc_misc.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Based on 2.6.26-rc6
-
- include/asm-powerpc/elf.h   |    3 ++-
- include/linux/personality.h |    6 ++++++
- 2 files changed, 8 insertions(+), 1 deletions(-)
-
-diff --git a/include/asm-powerpc/elf.h b/include/asm-powerpc/elf.h
-index 9080d85..2f11a0e 100644
---- a/include/asm-powerpc/elf.h
-+++ b/include/asm-powerpc/elf.h
-@@ -257,7 +257,8 @@ do {								\
- 	else							\
- 		clear_thread_flag(TIF_ABI_PENDING);		\
- 	if (personality(current->personality) !=3D PER_LINUX32)	\
--		set_personality(PER_LINUX);			\
-+		set_personality(PER_LINUX |			\
-+			(current->personality & PER_INHERIT));	\
- } while (0)
- /*
-  * An executable for which elf_read_implies_exec() returns TRUE will
-diff --git a/include/linux/personality.h b/include/linux/personality.h
-index a84e9ff..362eb90 100644
---- a/include/linux/personality.h
-+++ b/include/linux/personality.h
-@@ -36,6 +36,12 @@ enum {
- 	ADDR_LIMIT_3GB =3D 	0x8000000,
- };
-=20
-+/* Mask for the above personality values */
-+#define PER_INHERIT (ADDR_NO_RANDOMIZE|FDPIC_FUNCPTRS|MMAP_PAGE_ZERO| \
-+			ADDR_COMPAT_LAYOUT|READ_IMPLIES_EXEC|ADDR_LIMIT_32BIT| \
-+			SHORT_INODE|WHOLE_SECONDS|STICKY_TIMEOUTS| \
-+			ADDR_LIMIT_3GB)
-+
- /*
-  * Security-relevant compatibility flags that must be
-  * cleared upon setuid or setgid exec:
+Index: b/fs/proc/proc_misc.c
+===================================================================
+--- a/fs/proc/proc_misc.c
++++ b/fs/proc/proc_misc.c
+@@ -216,7 +216,7 @@ static int meminfo_read_proc(char *page,
+ 		K(pages[LRU_INACTIVE_FILE]),
+ #ifdef CONFIG_UNEVICTABLE_LRU
+ 		K(pages[LRU_UNEVICTABLE]),
+-		K(pages[NR_MLOCK]),
++		K(global_page_state(NR_MLOCK)),
+ #endif
+ #ifdef CONFIG_HIGHMEM
+ 		K(i.totalhigh),
 
 
---h31gzZEtNLTqOjlF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIWKX7snv9E83jkzoRAi9lAKDZZre2ksNhC3llJrNF7vzLVJFXNwCgo2k/
-NNHS5lCbE/ZKJtm3UfjS1do=
-=wIy8
------END PGP SIGNATURE-----
-
---h31gzZEtNLTqOjlF--
