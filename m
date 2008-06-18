@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbYFRU5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756046AbYFRVAK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755210AbYFRU5R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 16:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbYFRU5E
+	id S1756046AbYFRVAK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 17:00:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbYFRU75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 16:57:04 -0400
-Received: from lazybastard.de ([212.112.238.170]:38055 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752645AbYFRU5E (ORCPT
+	Wed, 18 Jun 2008 16:59:57 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:27592 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752419AbYFRU74 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 16:57:04 -0400
-Date: Wed, 18 Jun 2008 22:56:07 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Maxim Shchetynin <maxim@linux.vnet.ibm.com>
-Cc: linux-fsdevel@vger.kernel.org, Jan Engelhardt <jengelh@medozas.de>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org
-Subject: Re: AZFS file system proposal
-Message-ID: <20080618205607.GI10271@logfs.org>
-References: <20080609104650.4f220492@mercedes-benz.boeblingen.de.ibm.com> <20080609125530.GF30405@parisc-linux.org> <20080610104919.504b9826@mercedes-benz.boeblingen.de.ibm.com> <alpine.LNX.1.10.0806110000560.20733@fbirervta.pbzchgretzou.qr> <20080617110655.59c915da@mercedes-benz.boeblingen.de.ibm.com> <alpine.LNX.1.10.0806171133220.6620@fbirervta.pbzchgretzou.qr> <20080617135722.374673b9@mercedes-benz.boeblingen.de.ibm.com> <alpine.LNX.1.10.0806171634040.32473@fbirervta.pbzchgretzou.qr> <20080618131514.7ea8af7e@mercedes-benz.boeblingen.de.ibm.com>
+	Wed, 18 Jun 2008 16:59:56 -0400
+Message-ID: <48597735.50905@codemonkey.ws>
+Date: Wed, 18 Jun 2008 15:59:33 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080618131514.7ea8af7e@mercedes-benz.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Avi Kivity <avi@qumranet.com>
+CC: Martin Michlmayr <tbm@cyrius.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Linux with kvm-intel locks up VMplayer guest is started
+References: <20080616150550.GA16086@deprecation.cyrius.com> <48568503.90607@codemonkey.ws> <20080617123918.GA2397@deprecation.cyrius.com> <4857B92F.9020309@codemonkey.ws> <20080617133234.GE2397@deprecation.cyrius.com> <4857FDE3.8050602@codemonkey.ws> <48591412.2060602@qumranet.com>
+In-Reply-To: <48591412.2060602@qumranet.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 June 2008 13:15:14 +0200, Maxim Shchetynin wrote:
-> 
-> Our users want to have a file system with bigger block sizes (64KB, 16MB, ...).
+Avi Kivity wrote:
+> Anthony Liguori wrote:
+>>
+>> We know exactly what the problem is.  KVM activates VT 
+>> unconditionally.  There's no hardware mechanism to arbitrate access 
+>> to VT.  KVM is the only thing in the Linux kernel that uses VT so we 
+>> don't have a software mechanism to arbitrate access to VT.
+>>
+>> If the VMware code was upstream, then we could work together to make 
+>> a software arbitration mechanism.  It's not, and worse yet, it's 
+>> closed source so there's no chance it will be.  Even if someone wrote 
+>> an arbitration mechanism and got VMware to use it, it still shouldn't 
+>> be merged because KVM would be the only thing using that mechanism 
+>> upstream.  I'm not interested in adding kernel infrastructure to 
+>> support external binary kernel modules.
+>
+> Well a recent patch from Eli Collins mentioned VMware are 
+> standardizing CR4.VMXE as an indicator of whether someone is using the 
+> VT hardware or not, and now kvm clears that bit when unloading.  We 
+> could check the bit and fail if is set, thus have working mutual 
+> exclusion.  Of course, it will only work with newer versions of kvm 
+> and vmware.
 
-Good reason.
+Yup, but the original bug reporter would not be helped by this.
 
-> They also don't want to keep metadata on DDR2 media, but to be able to use a complete DDR2 for their applications data.
+> I don't see any reason to poke sticks into the wheels here.
 
-This I find surprising.  Isn't DDR2 actually the slower type of memory?
-So you spend fast memory to store metadata in order to save slow memory?
+An occasional poke at binary kernel modules is always a good thing IMHO :-)
 
-Jörn
+Regards,
 
--- 
-The wise man seeks everything in himself; the ignorant man tries to get
-everything from somebody else.
--- unknown
+Anthony Liguori
+
