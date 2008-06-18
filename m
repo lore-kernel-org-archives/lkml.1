@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755368AbYFRRAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbYFRRC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755368AbYFRRAO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 13:00:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbYFRRAA
+	id S1754892AbYFRRC4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 13:02:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbYFRRCr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 13:00:00 -0400
-Received: from multi.imgtec.com ([194.200.65.239]:51679 "EHLO multi.imgtec.com"
+	Wed, 18 Jun 2008 13:02:47 -0400
+Received: from multi.imgtec.com ([194.200.65.239]:16886 "EHLO multi.imgtec.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752487AbYFRQ77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 12:59:59 -0400
-X-Greylist: delayed 740 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Jun 2008 12:59:59 EDT
-From: Will Newton <will.newton@imgtec.com>
+	id S1750837AbYFRRCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 13:02:47 -0400
+From: Will Newton <will.newton@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-usb@vger.kernel.org, Will Newton <will.newton@gmail.com>
 Subject: [PATCH] sisusbvga: Fix oops on disconnect.
-Date: Wed, 18 Jun 2008 17:59:57 +0100
-Message-Id: <1213808397-17450-1-git-send-email-will.newton@imgtec.com>
+Date: Wed, 18 Jun 2008 17:47:38 +0100
+Message-Id: <1213807658-16208-1-git-send-email-will.newton@gmail.com>
 X-Mailer: git-send-email 1.5.5.2
-X-OriginalArrivalTime: 18 Jun 2008 16:59:58.0069 (UTC) FILETIME=[BD2AC250:01C8D164]
-X-SEF-Processed: 6_0_1_111__2008_06_18_17_59_58
+X-OriginalArrivalTime: 18 Jun 2008 16:47:39.0049 (UTC) FILETIME=[04AD4190:01C8D163]
+X-SEF-Processed: 6_0_1_111__2008_06_18_17_47_39
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-
-From: Will Newton <will.newton@gmail.com>
 
 Remove the message printed with dev_info on disconnect after sisusb_dev has
 potentially been zeroed by sisusb_delete. The message does not provide
