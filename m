@@ -1,247 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760037AbYFRFac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760271AbYFRFfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760037AbYFRFac (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 01:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbYFRFaZ
+	id S1760271AbYFRFfT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 01:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbYFRFfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 01:30:25 -0400
-Received: from mga02.intel.com ([134.134.136.20]:50980 "EHLO mga02.intel.com"
+	Wed, 18 Jun 2008 01:35:06 -0400
+Received: from ozlabs.org ([203.10.76.45]:54127 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753769AbYFRFaY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 01:30:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,663,1204531200"; 
-   d="asc'?scan'208";a="296439700"
-Date: Wed, 18 Jun 2008 13:23:00 +0800
-From: Zhenyu Wang <zhenyu.z.wang@intel.com>
-To: Dave Airlie <airlied@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] [AGP] intel_agp: Add support for Intel 4 series chipsets
-Message-ID: <20080618052300.GA16715@zhen-devel.sh.intel.com>
-Mail-Followup-To: Dave Airlie <airlied@redhat.com>,
-	LKML <linux-kernel@vger.kernel.org>
+	id S1753534AbYFRFfF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 01:35:05 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: 2.6.26-git: NULL pointer deref in __switch_to
+Date: Wed, 18 Jun 2008 15:34:23 +1000
+User-Agent: KMail/1.9.9
+Cc: Simon Holm =?iso-8859-1?q?Th=F8gersen?= <odie@cs.aau.dk>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Patrick McHardy <kaber@trash.net>,
+       Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>,
+       Chuck Ebbert <cebbert@redhat.com>, "x86@kernel.org" <x86@kernel.org>
+References: <4852B19E.4010202@trash.net> <1213651283.2495.46.camel@odie.local> <20080617235022.GA23370@linux-os.sc.intel.com>
+In-Reply-To: <20080617235022.GA23370@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="M9NhX3UHpAaciwkO"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200806181534.24085.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 18 June 2008 09:50:22 Suresh Siddha wrote:
+> On Mon, Jun 16, 2008 at 02:21:23PM -0700, Simon Holm Thøgersen wrote:
+> > > Can you please upload it some where? I will also try with another guest
+> > > image meanwhile.
+> >
+> > [access provided to Suresh in private email]
+>
+> Simon, Thanks.
+>
+> Simon, Patrick, I am able to reproduce the oops in __switch_to()
+> with lguest.  My debug showed that there is atleast one lguest specific
+> issue (which should be present in 2.6.25 and before aswell) and it got
+> exposed with a kernel oops with the recent fpu dynamic allocation patches.
+>
+> In addition to the previous possible scenario (with fpu_counter), in the
+> presence of lguest, it is possible that the cpu's TS bit it still set and
+> the lguest launcher task's thread_info has TS_USEDFPU still set.
+>
+> This is because of the way the lguest launcher handling the guest's TS bit.
+> (look at lguest_set_ts() in lguest_arch_run_guest()). This can result
+> in a DNA fault while doing unlazy_fpu() in __switch_to(). This will
+> end up causing a DNA fault in the context of new process thats
+> getting context switched in (as opossed to handling DNA fault in the
+> context of lguest launcher/helper process).
+>
+> This is wrong in both pre and post 2.6.25 kernels. In the recent
+> 2.6.26-rc series, this is showing up as NULL pointer dereferences or
+> sleeping function called from atomic context(__switch_to()), as
+> we free and dynamically allocate the FPU context for the newly
+> created threads. Older kernels might show some FPU corruption for processes
+> running inside of lguest.
+>
+> With the appended patch, my test system is running for more than 50 mins
+> now. So atleast some of your oops (hopefully all!) should get fixed.
+> Please give it a try. I will spend more time with this fix tomorrow.
+>
+> Apart from the last hunk(MSR_IA32_SYSENTER_CS changes), I believe
+> the below patch is needed for 2.6.25 aswell.
+>
+> Thanks.
+>
+> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> ---
+>
+> diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+> index 6d54833..e2db9ac 100644
+> --- a/arch/x86/kernel/process_32.c
+> +++ b/arch/x86/kernel/process_32.c
+> @@ -333,6 +333,7 @@ void flush_thread(void)
+>  	/*
+>  	 * Forget coprocessor state..
+>  	 */
+> +	tsk->fpu_counter = 0;
+>  	clear_fpu(tsk);
+>  	clear_used_math();
+>  }
+> diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
+> index ac54ff5..c6eb5c9 100644
+> --- a/arch/x86/kernel/process_64.c
+> +++ b/arch/x86/kernel/process_64.c
+> @@ -294,6 +294,7 @@ void flush_thread(void)
+>  	/*
+>  	 * Forget coprocessor state..
+>  	 */
+> +	tsk->fpu_counter = 0;
+>  	clear_fpu(tsk);
+>  	clear_used_math();
+>  }
+> diff --git a/drivers/lguest/x86/core.c b/drivers/lguest/x86/core.c
+> index 5126d5d..4a98404 100644
+> --- a/drivers/lguest/x86/core.c
+> +++ b/drivers/lguest/x86/core.c
+> @@ -176,7 +176,7 @@ void lguest_arch_run_guest(struct lg_cpu *cpu)
+>  	 * we set it now, so we can trap and pass that trap to the Guest if it
+>  	 * uses the FPU. */
+>  	if (cpu->ts)
+> -		lguest_set_ts();
+> +		unlazy_fpu(current);
+>
+>  	/* SYSENTER is an optimized way of doing system calls.  We can't allow
+>  	 * it because it always jumps to privilege level 0.  A normal Guest
+> @@ -196,6 +196,10 @@ void lguest_arch_run_guest(struct lg_cpu *cpu)
+>  	 * trap made the switcher code come back, and an error code which some
+>  	 * traps set.  */
+>
+> +	/* Restore SYSENTER if it's supposed to be on. */
+> +	if (boot_cpu_has(X86_FEATURE_SEP))
+> +		wrmsr(MSR_IA32_SYSENTER_CS, __KERNEL_CS, 0);
+> +
+>  	/* If the Guest page faulted, then the cr2 register will tell us the
+>  	 * bad virtual address.  We have to grab this now, because once we
+>  	 * re-enable interrupts an interrupt could fault and thus overwrite
+> @@ -203,13 +207,12 @@ void lguest_arch_run_guest(struct lg_cpu *cpu)
+>  	if (cpu->regs->trapnum == 14)
+>  		cpu->arch.last_pagefault = read_cr2();
+>  	/* Similarly, if we took a trap because the Guest used the FPU,
+> -	 * we have to restore the FPU it expects to see. */
+> +	 * we have to restore the FPU it expects to see.
+> +	 * math_state_restore() may sleep and we may even move off to
+> +	 * a different CPU. So all the critical stuff should be done
+> +	 * before this.  */
+>  	else if (cpu->regs->trapnum == 7)
+>  		math_state_restore();
 
---M9NhX3UHpAaciwkO
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Suresh,
 
+   Firstly, thanks for figuring this out.  But math_state_restore() has nasty 
+semantics now.  Currently lguest will work, because no code path following 
+this call relies on being on the same CPU.
 
-Dave, here's the patch against current git master.
+So, this patch is fine, but I wonder if I should just be forcing fpu 
+allocation earlier for lguest tasks, so I can avoid this altogether?
 
-Thanks.
-
-[AGP] intel_agp: Add support for Intel 4 series chipsets
-
-Signed-off-by: Zhenyu Wang <zhenyu.z.wang@intel.com>
----
- drivers/char/agp/intel-agp.c |   82 ++++++++++++++++++++++++++++++++++++--=
----
- 1 files changed, 72 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
-index eeea50a..76731db 100644
---- a/drivers/char/agp/intel-agp.c
-+++ b/drivers/char/agp/intel-agp.c
-@@ -34,6 +34,12 @@
- #define PCI_DEVICE_ID_INTEL_Q33_IG          0x29D2
- #define PCI_DEVICE_ID_INTEL_IGD_HB          0x2A40
- #define PCI_DEVICE_ID_INTEL_IGD_IG          0x2A42
-+#define PCI_DEVICE_ID_INTEL_IGD_E_HB        0x2E00
-+#define PCI_DEVICE_ID_INTEL_IGD_E_IG        0x2E02
-+#define PCI_DEVICE_ID_INTEL_Q45_HB          0x2E10
-+#define PCI_DEVICE_ID_INTEL_Q45_IG          0x2E12
-+#define PCI_DEVICE_ID_INTEL_G45_HB          0x2E20
-+#define PCI_DEVICE_ID_INTEL_G45_IG          0x2E22
-=20
- /* cover 915 and 945 variants */
- #define IS_I915 (agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_E7221_=
-HB || \
-@@ -55,6 +61,10 @@
- 		agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_Q35_HB || \
- 		agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_Q33_HB)
-=20
-+#define IS_G4X	(agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_IGD_E_H=
-B || \
-+                 agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_Q45_HB=
- || \
-+                 agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_G45_HB)
-+
- extern int agp_memory_reserved;
-=20
-=20
-@@ -80,8 +90,12 @@ extern int agp_memory_reserved;
- #define I915_PTEADDR	0x1C
- #define I915_GMCH_GMS_STOLEN_48M	(0x6 << 4)
- #define I915_GMCH_GMS_STOLEN_64M	(0x7 << 4)
--#define G33_GMCH_GMS_STOLEN_128M       (0x8 << 4)
--#define G33_GMCH_GMS_STOLEN_256M       (0x9 << 4)
-+#define G33_GMCH_GMS_STOLEN_128M        (0x8 << 4)
-+#define G33_GMCH_GMS_STOLEN_256M        (0x9 << 4)
-+#define INTEL_GMCH_GMS_STOLEN_96M	(0xa << 4)
-+#define INTEL_GMCH_GMS_STOLEN_160M	(0xb << 4)
-+#define INTEL_GMCH_GMS_STOLEN_224M	(0xc << 4)
-+#define INTEL_GMCH_GMS_STOLEN_352M	(0xd << 4)
- #define I915_IFPADDR    0x60
-=20
- /* Intel 965G registers */
-@@ -504,6 +518,10 @@ static void intel_i830_init_gtt_entries(void)
- 			size =3D 512;
- 		}
- 		size +=3D 4;
-+	} else if (IS_G4X) {
-+		/* On 4 Series hardware, GTT stolen is seperate from graphics
-+		 * stolen, ignore it in stolen gtt entries counting */
-+		size =3D 0;
- 	} else {
- 		/* On previous hardware, the GTT size was just what was
- 		 * required to map the aperture.
-@@ -552,30 +570,54 @@ static void intel_i830_init_gtt_entries(void)
- 			break;
- 		case I915_GMCH_GMS_STOLEN_48M:
- 			/* Check it's really I915G */
--			if (IS_I915 || IS_I965 || IS_G33)
-+			if (IS_I915 || IS_I965 || IS_G33 || IS_G4X)
- 				gtt_entries =3D MB(48) - KB(size);
- 			else
- 				gtt_entries =3D 0;
- 			break;
- 		case I915_GMCH_GMS_STOLEN_64M:
- 			/* Check it's really I915G */
--			if (IS_I915 || IS_I965 || IS_G33)
-+			if (IS_I915 || IS_I965 || IS_G33 || IS_G4X)
- 				gtt_entries =3D MB(64) - KB(size);
- 			else
- 				gtt_entries =3D 0;
- 			break;
- 		case G33_GMCH_GMS_STOLEN_128M:
--			if (IS_G33)
-+			if (IS_G33 || IS_I965 || IS_G4X)
- 				gtt_entries =3D MB(128) - KB(size);
- 			else
- 				gtt_entries =3D 0;
- 			break;
- 		case G33_GMCH_GMS_STOLEN_256M:
--			if (IS_G33)
-+			if (IS_G33 || IS_I965 || IS_G4X)
- 				gtt_entries =3D MB(256) - KB(size);
- 			else
- 				gtt_entries =3D 0;
- 			break;
-+		case INTEL_GMCH_GMS_STOLEN_96M:
-+			if (IS_I965 || IS_G4X)
-+				gtt_entries =3D MB(96) - KB(size);
-+			else
-+				gtt_entries =3D 0;
-+			break;
-+		case INTEL_GMCH_GMS_STOLEN_160M:
-+			if (IS_I965 || IS_G4X)
-+				gtt_entries =3D MB(160) - KB(size);
-+			else
-+				gtt_entries =3D 0;
-+			break;
-+		case INTEL_GMCH_GMS_STOLEN_224M:
-+			if (IS_I965 || IS_G4X)
-+				gtt_entries =3D MB(224) - KB(size);
-+			else
-+				gtt_entries =3D 0;
-+			break;
-+		case INTEL_GMCH_GMS_STOLEN_352M:
-+			if (IS_I965 || IS_G4X)
-+				gtt_entries =3D MB(352) - KB(size);
-+			else
-+				gtt_entries =3D 0;
-+			break;
- 		default:
- 			gtt_entries =3D 0;
- 			break;
-@@ -1134,6 +1176,20 @@ static unsigned long intel_i965_mask_memory(struct a=
-gp_bridge_data *bridge,
- 	return addr | bridge->driver->masks[type].mask;
- }
-=20
-+static void intel_i965_get_gtt_range(int *gtt_offset, int *gtt_size)
-+{
-+    switch(agp_bridge->dev->device) {
-+	case PCI_DEVICE_ID_INTEL_IGD_HB:
-+	case PCI_DEVICE_ID_INTEL_IGD_E_HB:
-+	case PCI_DEVICE_ID_INTEL_Q45_HB:
-+	case PCI_DEVICE_ID_INTEL_G45_HB:
-+	    *gtt_offset =3D *gtt_size =3D MB(2);
-+	    break;
-+	default:
-+	    *gtt_offset =3D *gtt_size =3D KB(512);
-+    }
-+}
-+
- /* The intel i965 automatically initializes the agp aperture during POST.
-  * Use the memory already set aside for in the GTT.
-  */
-@@ -1154,10 +1210,7 @@ static int intel_i965_create_gatt_table(struct agp_b=
-ridge_data *bridge)
-=20
-        temp &=3D 0xfff00000;
-=20
--       if (agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_IGD_HB)
--	       gtt_offset =3D gtt_size =3D MB(2);
--       else
--	       gtt_offset =3D gtt_size =3D KB(512);
-+       intel_i965_get_gtt_range(&gtt_offset, &gtt_size);
-=20
-        intel_private.gtt =3D ioremap((temp + gtt_offset) , gtt_size);
-=20
-@@ -2063,6 +2116,12 @@ static const struct intel_driver_description {
- 		NULL, &intel_g33_driver },
- 	{ PCI_DEVICE_ID_INTEL_IGD_HB, PCI_DEVICE_ID_INTEL_IGD_IG, 0,
- 	    "Intel Integrated Graphics Device", NULL, &intel_i965_driver },
-+	{ PCI_DEVICE_ID_INTEL_IGD_E_HB, PCI_DEVICE_ID_INTEL_IGD_E_IG, 0,
-+	    "Intel Integrated Graphics Device", NULL, &intel_i965_driver },
-+	{ PCI_DEVICE_ID_INTEL_Q45_HB, PCI_DEVICE_ID_INTEL_Q45_IG, 0,
-+	    "Q45/Q43", NULL, &intel_i965_driver },
-+	{ PCI_DEVICE_ID_INTEL_G45_HB, PCI_DEVICE_ID_INTEL_G45_IG, 0,
-+	    "G45/G43", NULL, &intel_i965_driver },
- 	{ 0, 0, 0, NULL, NULL, NULL }
- };
-=20
-@@ -2254,6 +2313,9 @@ static struct pci_device_id agp_intel_pci_table[] =3D=
- {
- 	ID(PCI_DEVICE_ID_INTEL_Q35_HB),
- 	ID(PCI_DEVICE_ID_INTEL_Q33_HB),
- 	ID(PCI_DEVICE_ID_INTEL_IGD_HB),
-+	ID(PCI_DEVICE_ID_INTEL_IGD_E_HB),
-+	ID(PCI_DEVICE_ID_INTEL_Q45_HB),
-+	ID(PCI_DEVICE_ID_INTEL_G45_HB),
- 	{ }
- };
-=20
---=20
-1.5.4
-
---=20
-Open Source Technology Center, Intel ltd.
-
-$gpg --keyserver wwwkeys.pgp.net --recv-keys 4D781827
-
---M9NhX3UHpAaciwkO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhYm7QACgkQsQQaM014GCdAsACfaE+JE1m/wS3kxDGJbc8xsxVE
-6EYAoJAKENXoOnTytyXg7PfsSjc1nEPP
-=2btC
------END PGP SIGNATURE-----
-
---M9NhX3UHpAaciwkO--
+Thanks,
+Rusty.
