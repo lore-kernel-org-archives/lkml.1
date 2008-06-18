@@ -1,155 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756461AbYFRUkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbYFRUlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756461AbYFRUkz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 16:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbYFRUko
+	id S1756793AbYFRUlV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 16:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbYFRUlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 16:40:44 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:32838 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753461AbYFRUkm (ORCPT
+	Wed, 18 Jun 2008 16:41:05 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:1491 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756651AbYFRUlD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 16:40:42 -0400
-Subject: Re: [regression] CD-DA delay needed after insertion
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0806171530340.22840@vixen.sonytel.be>
-References: <Pine.LNX.4.64.0806131352360.2141@vixen.sonytel.be>
-	 <1213540781.3517.18.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0806161659440.30122@vixen.sonytel.be>
-	 <1213648258.3420.12.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0806171530340.22840@vixen.sonytel.be>
-Content-Type: text/plain
-Date: Wed, 18 Jun 2008 15:40:38 -0500
-Message-Id: <1213821638.3515.81.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+	Wed, 18 Jun 2008 16:41:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=oK2m3gvPzDS3pT7xYGfOOxBnh/HTgPM8e9jmJlQ2jITZtTycCNGlGKaeLYcuWwrph2
+         Cj9ORa17TiK8mJPqpnwS+DKTpL8wj/vzjEWGgo98NEL84sEybRAboWEGJZ52eYCbvtuB
+         lIBnoMBxejfAc93lHOp8R8/e3rg2gnsgpDEJs=
+Message-ID: <86802c440806181341w7c2ac2det817548c68d00040c@mail.gmail.com>
+Date: Wed, 18 Jun 2008 13:41:00 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: webmaster@dragonslave.de
+Subject: Re: linux-next Regression: Unable to locate IOAPIC
+Cc: "Alexey Starikovskiy" <aystarik@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-acpi@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <200806182157.04120.dex@dragonslave.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200806051100.12885.dex@dragonslave.de>
+	 <200806152114.33007.dex@dragonslave.de>
+	 <86802c440806151220l358ca541s9d87fe2acc360e8@mail.gmail.com>
+	 <200806182157.04120.dex@dragonslave.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-06-17 at 15:31 +0200, Geert Uytterhoeven wrote:
-> On Mon, 16 Jun 2008, James Bottomley wrote:
-> > On Mon, 2008-06-16 at 17:05 +0200, Geert Uytterhoeven wrote:
-> > > On Sun, 15 Jun 2008, James Bottomley wrote:
-> > > > On Fri, 2008-06-13 at 13:57 +0200, Geert Uytterhoeven wrote:
-> > > > > We've found another regression in 2.6.25 w.r.t. CD media change on PS3.
-> > > > > 
-> > > > > It can easily be reproduced by:
-> > > > > 
-> > > > >   1. Inserting an audio CD
-> > > > >   2. Running the following command as soon as the blue CD/DVD/BD drive LED
-> > > > >      stops blinking and is lit continuously:
-> > > > >       
-> > > > > 	 cdparanoia -Z -q 1-1[:1] /dev/null || echo failed
-> > > > > 
-> > > > > On 2.6.25 (and current mainline), you have to wait ca. 10 seconds after
-> > > > > insertion, or it will fail.
-> > > > > On 2.6.24 and older, it just works immediately.
-> > > > > 
-> > > > > It does not matter whether
-> > > > > http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fjejb%2Fscsi-rc-fixes-2.6.git;a=commitdiff_plain;h=d1daeabf0da5bfa1943272ce508e2ba785730bf0
-> > > > > is applied or not.
-> > > > > 
-> > > > > We haven't bisected it yet.
-> > > > 
-> > > > There aren't that many commits affecting sr between 2.6.24 and 2.6.25,
-> > > > so I'd bet on the previous culprits.
-> > > > 
-> > > > This time, the taxonomy looks like NOT_READY isn't being waited for
-> > > > properly.  I'd still tend to blame
-> > > > 210ba1d1724f5c4ed87a2ab1a21ca861a915f734 it's just that this time I
-> > > 
-> > > Reverting that commit doesn't fix the problem.
-> > 
-> > That's a bit of a problem.  Particularly as:
-> > 
-> > > > suspect this to be the problem line:
-> > > > 
-> > > > 	if (sshdr.sense_key == NOT_READY && sshdr.asc == 0x04)
-> > > > 		return CDS_DISC_OK;
-> > > > 
-> > > > Previously the code would have returned CDS_NO_DISC for the not ready
-> > > > case.  The CD would have tried to close the door but (and this is the
-> > > > key) it would have waited for the door to close before trying again.
-> > > 
-> > > I tried the patch below.
-> > > 
-> > > Now the kernel spits out messages every 2 seconds:
-> > > 
-> > > | G: CDS_NO_DISC
-> > > | G: CDS_NO_DISC
-> > > 
-> > > Insert CD-DA media
-> > > 
-> > > Reading from CD using cdparanioa fails
-> > > 
-> > > | F: CDS_DISC_OK
-> > > | F: CDS_DISC_OK
-> > > | F: CDS_DISC_OK
-> > > | F: CDS_DISC_OK
-> > > | F: CDS_DISC_OK
-> > 
-> > That's in the two lines I fingered as the source of the problem ...
-> > however, if reversing the apparently bad commit (that introduces those
-> > lines) doesn't work there's something else wrong.
-> > 
-> > Could you try altering your F: case to return CDS_DRIVE_NOT_READY, but
-> > if that doesn't work, it's going to take a bit of bisection, I'm
-> > afraid ...
-> 
-> Doesn't make any difference.
-> 
-> git-bisect taught me it was introduced by
-> 
-> commit 38582a62ecd337de4212004c7d4844899dc57890
-> Author: James Bottomley <James.Bottomley@HansenPartnership.com>
-> Date:   Wed Feb 6 13:01:58 2008 -0600
-> 
->     [SCSI] sr: fix test unit ready responses
->     
->     Commit 210ba1d1724f5c4ed87a2ab1a21ca861a915f734 updated sr.c to use
->     the scsi_test_unit_ready() function.  Unfortunately, this has the
->     wrong characteristic of eating NOT_READY returns which sr.c relies on
->     for tray status.
->     
->     Fix by rolling an internal sr_test_unit_ready() that doesn't do this.
+On Wed, Jun 18, 2008 at 12:57 PM, Daniel Exner <dex@dragonslave.de> wrote:
+> Yinghai Lu wrote:
+>> On Sun, Jun 15, 2008 at 12:14 PM, Daniel Exner <dex@dragonslave.de> wrote:
+>> > Hi all,
+>> >
+>> > Yinghai Lu wrote:
+>> >> >> To clarify myself:
+>> >> >> 2.6.25.5:  --> relatively fast no IOAPIC Errors in dmesg
+>> >> >> 2.6.26-rc5:   --> relatively  no IOAPIC Errors in dmesg
+>> >> >> 2.6.26-rc5 + git-acpi Patch:   --> relatively  no IOAPIC Errors in
+>> >> >> dmesg 2.6.26-rc5 +  linux-next snapshot 20080604 --> even slower than
+>> >> >> before my ide Patch many "unable to locate IOAPIC" Errors
+>> >> >>
+>> >> >>
+>> >> >> So I think the problem lies not in the acpi tree but somewhre else.
+>> >> >>
+>> >> >> Is it possible to tell git to explicitly _exclude_ a specific tree
+>> >> >> while bisecting?
+>> >>
+>> >> can you check if the attached patch fix the problem?
+>> >> it will not check entries before MP_intsrc_info...
+>> >
+>> > This fixed it, thanks :)
+>> >
+>> > Also maschine feels not as fast as with 2.6.25.x but noticeable faster :)
+>> >
+>> > I guss you no longer need the complete dmesg output?
+>>
+>> still need that... wonder why your irq routing have same entris from
+>> your BIOS/ACPI?
+> Again, sorry for the delay. I raised the Kernel buffer and added an output,
+> done using rc6.
+>
 
-OK, that basically just replaced scsi_test_unit_ready with
-sr_test_unit_ready.  The only difference I can see is that
-scsi_test_unit_ready treats NOT_READY as a media change event and the
-new code doesn't.  This seems slightly wrong:  NOT_READY can indeed mean
-I have no medium, which is obviously what it's looking for.  However, it
-can also mean there's another command in progress.  If this is some type
-of write or format, you don't necessarily want the cd treating it as a
-disk change.
+thanks for the dmesg
 
-However, before we get into serious debugging, could you try this patch
-(applies over the previous fix for the capacity problem)?  I think it
-should restore the old not ready == medium change behaviour.
+in dmesg
+> Local APIC disabled by BIOS -- you can enable it with "lapic"
 
-Thanks,
+sound interesting...
 
-James
-
----
-diff --git a/drivers/scsi/sr.c b/drivers/scsi/sr.c
-index c82df8b..a9acbc8 100644
---- a/drivers/scsi/sr.c
-+++ b/drivers/scsi/sr.c
-@@ -179,7 +179,8 @@ int sr_test_unit_ready(struct scsi_device *sdev, struct scsi_sense_hdr *sshdr)
- 					      0, sshdr, SR_TIMEOUT,
- 					      retries--);
- 		if (scsi_sense_valid(sshdr) &&
--		    sshdr->sense_key == UNIT_ATTENTION)
-+		    (sshdr->sense_key == UNIT_ATTENTION ||
-+		     sshdr->sense_key == NOT_READY))
- 			sdev->changed = 1;
- 
- 	} while (retries > 0 &&
-
-
-
+YH
