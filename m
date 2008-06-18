@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbYFRRXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755166AbYFRR3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755463AbYFRRXs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 13:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYFRRXk
+	id S1755166AbYFRR3Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 13:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbYFRR3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 13:23:40 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:13206 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752360AbYFRRXj (ORCPT
+	Wed, 18 Jun 2008 13:29:14 -0400
+Received: from wr-out-0506.google.com ([64.233.184.229]:48777 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752251AbYFRR3N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 13:23:39 -0400
+	Wed, 18 Jun 2008 13:29:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=dU+D7pjbbv1zPsDopr7xmMhMWMBUaX8FxIDRJSP92lWhHsarIad17c8DIBsarngGl+
-         WUOLsgn33iQLCVku/yZaIN5IHkDn/aZmPRnPchRp9BzoLsO4JzkP52jwmGC5aZWlCEXc
-         5i1bd6WvalVwGcbLvq5ev3KtHTovz7ogzxlqY=
-Date: Wed, 18 Jun 2008 21:23:16 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: nmi_watchdog suspicious
-Message-ID: <20080618172316.GA10431@cvg>
-References: <20080610185759.GA7353@cvg> <Pine.LNX.4.55.0806160040270.11995@cliff.in.clinika.pl> <20080616170000.GC7273@cvg> <Pine.LNX.4.55.0806161819500.20218@cliff.in.clinika.pl> <20080617155120.GA9440@cvg> <Pine.LNX.4.55.0806181654450.4857@cliff.in.clinika.pl> <20080618163905.GB7117@cvg> <Pine.LNX.4.55.0806181749050.4857@cliff.in.clinika.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.55.0806181749050.4857@cliff.in.clinika.pl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=UfHPwqR4ymDvcEjmfAeAzziIXP/MoxWaonIjceTuXX9xNZdaOi4MyzZrmDUq5xwHll
+         YCo8sg1AcFt5qY8904zcVfIrFcAHSnO6u1fXFNIBiiT84zMcWOpQc1YEvBq6e+KJpZ/B
+         IctFMXZO0qx165ZynRJ4sfcAYgpCePAK2w9hY=
+Subject: [PATCH] w100fb: do not depend on SHARPSL
+From: Philipp Zabel <philipp.zabel@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Alberto Mardegan <mardy@users.sourceforge.net>, Ian Molton <spyro@f2s.com>,
+       Richard Purdie <rpurdie@rpsys.net>
+Content-Type: text/plain
+Date: Wed, 18 Jun 2008 19:29:06 +0200
+Message-Id: <1213810146.8144.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Maciej W. Rozycki - Wed, Jun 18, 2008 at 05:54:32PM +0100]
-| On Wed, 18 Jun 2008, Cyrill Gorcunov wrote:
-| 
-| > Maciej, it seems we are talking about different code snippets ;)
-| > I'm talking only about touch_nmi_watchdog(). By now (in -tip tree
-| > we have)
-| > 
-| > void touch_nmi_watchdog(void)
-| > {
-| > 	if (nmi_watchdog == NMI_LOCAL_APIC ||
-| > 		nmi_watchdog == NMI_IO_APIC) {
-| > 		unsigned cpu;
-| > 		...
-| > 
-| > so we check explicitly the values (so if touch_nmi_watchdog
-| > was called when nmi_watchdog = 0 or -1U this code will not
-| > be executed anyway). So I think I'm a bit lost, Maciej... I just
-| > can't figure out what is wrong with this code, so please help
-| > me ;). If you're talking about apic code in _general_ design
-| > then...well, I think I need some time to _understand_ the code
-| > say byte-by-byte first.
-| 
-|  The value of nmi_watchdog being NMI_IO_APIC or NMI_LOCAL_APIC does not 
-| mean the watchdog has been set up already.  This observation applies both 
-| here and elsewhere, e.g. to nmi_watchdog_tick().
-| 
-|   Maciej
-|
+Apart from Sharp SL-Cxx series, there are a few other devices that have
+ATI Imageon chips, among them HP iPAQ hx4700.
 
-If you mean the case we get NMI physical line assetred while configuring APIC
-(ie nmi watchdog is not properly configured yet) then I wonder why we has
-this checking at all...
+Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
+---
+ drivers/video/Kconfig |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-		- Cyrill -
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 002b61b..e0c5f96 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1825,12 +1825,13 @@ config FB_FSL_DIU
+ 
+ config FB_W100
+ 	tristate "W100 frame buffer support"
+-	depends on FB && PXA_SHARPSL
++	depends on FB && ARCH_PXA
+  	select FB_CFB_FILLRECT
+  	select FB_CFB_COPYAREA
+  	select FB_CFB_IMAGEBLIT
+ 	---help---
+ 	  Frame buffer driver for the w100 as found on the Sharp SL-Cxx series.
++	  It can also drive the w3220 chip found on iPAQ hx4700.
+ 
+ 	  This driver is also available as a module ( = code which can be
+ 	  inserted and removed from the running kernel whenever you want). The
+-- 
+1.5.5.4
+
+
