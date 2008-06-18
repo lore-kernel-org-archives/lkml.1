@@ -1,113 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753346AbYFRLOA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753609AbYFRLPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753346AbYFRLOA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 07:14:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbYFRLNt
+	id S1753609AbYFRLPs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 07:15:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbYFRLPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 07:13:49 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:34615 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752388AbYFRLNr (ORCPT
+	Wed, 18 Jun 2008 07:15:38 -0400
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:29778 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752083AbYFRLPh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 07:13:47 -0400
-Date: Wed, 18 Jun 2008 13:13:45 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Alessandro Suardi <alessandro.suardi@gmail.com>
-cc: "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-       David Martin <tasio@hierro.tasio.net>, linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Maarten Bressers <mbres@gentoo.org>, Daniel Drake <dsd@gentoo.org>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>
-Subject: Re: [Cbe-oss-dev] [regression/bisected] corrupt CD data after media
- change and delay
-In-Reply-To: <5a4c581d0806180147qf8fc731y527c79bfb73401b2@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0806181156460.13297@vixen.sonytel.be>
-References: <Pine.LNX.4.64.0806061458300.6228@vixen.sonytel.be>
- <Pine.LNX.4.64.0806131932350.30730@vixen.sonytel.be>
- <5a4c581d0806180147qf8fc731y527c79bfb73401b2@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-698854956-1213787625=:13297"
+	Wed, 18 Jun 2008 07:15:37 -0400
+Date: Wed, 18 Jun 2008 13:15:14 +0200
+From: Maxim Shchetynin <maxim@linux.vnet.ibm.com>
+To: linux-fsdevel@vger.kernel.org
+Cc: Jan Engelhardt <jengelh@medozas.de>, Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel@vger.kernel.org
+Subject: Re: AZFS file system proposal
+Message-ID: <20080618131514.7ea8af7e@mercedes-benz.boeblingen.de.ibm.com>
+In-Reply-To: <alpine.LNX.1.10.0806171634040.32473@fbirervta.pbzchgretzou.qr>
+References: <20080609104650.4f220492@mercedes-benz.boeblingen.de.ibm.com>
+	<20080609125530.GF30405@parisc-linux.org>
+	<20080610104919.504b9826@mercedes-benz.boeblingen.de.ibm.com>
+	<alpine.LNX.1.10.0806110000560.20733@fbirervta.pbzchgretzou.qr>
+	<20080617110655.59c915da@mercedes-benz.boeblingen.de.ibm.com>
+	<alpine.LNX.1.10.0806171133220.6620@fbirervta.pbzchgretzou.qr>
+	<20080617135722.374673b9@mercedes-benz.boeblingen.de.ibm.com>
+	<alpine.LNX.1.10.0806171634040.32473@fbirervta.pbzchgretzou.qr>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----584349381-698854956-1213787625=:13297
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Wed, 18 Jun 2008, Alessandro Suardi wrote:
-> On Fri, Jun 13, 2008 at 7:33 PM, Geert Uytterhoeven
-> <Geert.Uytterhoeven@sonycom.com> wrote:
-> > On Fri, 6 Jun 2008, Geert Uytterhoeven wrote:
-> >> When mounting a CD/DVD more than 30 seconds after inserting it, and reading
-> >> from it, we get:
+> >> >> (a) What is axonram?
+> >> >> (b) why is axonram direct_access, and my other devices (including
+> >> >> standard PC RAM) not?
+> >> >
+> >> >[Axonram is a module specific for IBM CellBlade and allows access to
+> >> >a DDR2 memory attached onto Axon controller.] You don't need
+> >> >direct_access and not azfs for main memory because there is already
+> >> >a pretty nice tmpfs for it.
+> >> 
+> >> So the reason azfs could be useful is...?
 > >
-> > Apparently the fix didn't make it to all the CCed lists...
-> >
-> > http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fjejb%2Fscsi-rc-fixes-2.6.git;a=commitdiff_plain;h=d1daeabf0da5bfa1943272ce508e2ba785730bf0
+> >The "?" at the end of your sentence might mean a question. I would
+> >be really happy to give an answer on it if I could understand it.
 > 
-> Oh, that's in mainline ? I still have the problem of having to
+> If one does not need direct_access nor azfs, and ext2 plus XIP minus
+> caching or tmpfs plus XIP can achieve the same effect, what can azfs
+> that we could not already do without azfs?
 
-Not yet, it's in the scsi-rc-fixes-2.6 tree.
+Our users want to have a file system with bigger block sizes (64KB, 16MB, ...). They also don't want to keep metadata on DDR2 media, but to be able to use a complete DDR2 for their applications data.
 
->  insert DVD / try accessing it and get errors / eject / re-insert
->  and then it magically works... the messages have changed
->  from what they were as reported here
-> 
-> http://bugzilla.kernel.org/show_bug.cgi?id=10116
-> 
->  (see comments #8 and #9) to these ones, in 2.6.26-rc6-git4:
-> 
-> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] Result:
-> hostbyte=0x00 driverbyte=0x08
-> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] Sense Key : 0x3 [current]
-> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] ASC=0x11 ASCQ=0x0
-> Jun 17 22:38:43 sandman kernel: end_request: I/O error, dev sr0, sector 232
-> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 29
-> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 30
-> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 31
-> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 32
-> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 33
-> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 34
-> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 35
-> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 36
-> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 37
-> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 38
-> 
-> here I eject and reinsert the disc, and:
-> 
-> Jun 17 22:39:10 sandman kernel: UDF-fs: No VRS found
-> 
->  lo and behold, no problem.
-> 
-> This does not, alas, happen every time. It might be at the first
->  DVD access after booting the laptop, but I haven't investigated
->  in this detail yet.
+-- 
+Mit freundlichen Grüßen / met vriendelijke groeten / avec regards
 
-Does /sys/block/sr0/size reflect the correct size of the DVD?
+    Maxim V. Shchetynin
+    Linux Kernel Entwicklung
+    IBM Deutschland Entwicklung GmbH
+    Linux für Cell, Abteilung 3250
+    Schönaicher Straße 220
+    71032 Böblingen
 
-Did you try applying the patch?
+Vorsitzender des Aufsichtsrats: Johann Weihen
+Geschäftsführung: Herbert Kircher
+Sitz der Gesellschaft: Böblingen
+Registriergericht: Amtsgericht Stuttgart, HRB 243294
 
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-Sony Technology and Software Centre Europe
-A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
-VAT BE 0413.825.160 · RPR Brussels
-Fortis 293-0376800-10 GEBA-BE-BB
----584349381-698854956-1213787625=:13297--
+Fahr nur so schnell wie dein Schutzengel fliegen kann!
