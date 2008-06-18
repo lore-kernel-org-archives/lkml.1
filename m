@@ -1,63 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756442AbYFRVPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbYFRVQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756442AbYFRVPZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 17:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbYFRVPJ
+	id S1756667AbYFRVQP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 17:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbYFRVQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 17:15:09 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:24861 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752714AbYFRVPI (ORCPT
+	Wed, 18 Jun 2008 17:16:00 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:51844 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754070AbYFRVP6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 17:15:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=AgKWFmk9NpSHqrBbaU8iBmdu8iBmnR1eiLzi/ozJRU9bmuJlAhHauY7XBiUGJ+G8ch
-         LmBKcN5FUTLJpKUeYekSWPfndkn3se6OWrc6Or4s+NA+fYNeWZi3wiH+/+A3clq9iEJR
-         0nHuojuJK0xw3Qg7Z4mhVm2VdivFNxVBsFlAg=
-Message-ID: <48f7fe350806181415l4eba61b3i1d206de03147575e@mail.gmail.com>
-Date: Wed, 18 Jun 2008 17:15:08 -0400
-From: "Ryan Hope" <rmh3093@gmail.com>
-To: linux-mm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [BUG] Lockless patches cause hardlock under heavy IO
+	Wed, 18 Jun 2008 17:15:58 -0400
+Date: Wed, 18 Jun 2008 14:15:55 -0700
+From: Eric B Munson <ebmunson@us.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [RFC PATCH V2] Keep 3 high personality bytes across exec
+Message-ID: <20080618211555.GA21865@us.ibm.com>
+References: <20080618060651.GA8251@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="dDRMvlgZJXvWKvBx"
 Content-Disposition: inline
+In-Reply-To: <20080618060651.GA8251@us.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I applied the following patches from 2.6-26-rc5-mm3 to 2.6.26-rc6 and
-they caused a hardlock under heavy IO:
 
-x86-implement-pte_special.patch
-mm-introduce-get_user_pages_fast.patch
-mm-introduce-get_user_pages_fast-fix.patch
-mm-introduce-get_user_pages_fast-checkpatch-fixes.patch
-x86-lockless-get_user_pages_fast.patch
-x86-lockless-get_user_pages_fast-checkpatch-fixes.patch
-x86-lockless-get_user_pages_fast-fix.patch
-x86-lockless-get_user_pages_fast-fix-2.patch
-x86-lockless-get_user_pages_fast-fix-2-fix-fix.patch
-x86-lockless-get_user_pages_fast-fix-warning.patch
-dio-use-get_user_pages_fast.patch
-splice-use-get_user_pages_fast.patch
-x86-support-1gb-hugepages-with-get_user_pages_lockless.patch
-#
-mm-readahead-scan-lockless.patch
-radix-tree-add-gang_lookup_slot-gang_lookup_slot_tag.patch
-#mm-speculative-page-references.patch: clameter saw bustage
-mm-speculative-page-references.patch
-mm-speculative-page-references-fix.patch
-mm-speculative-page-references-fix-fix.patch
-mm-speculative-page-references-hugh-fix3.patch
-mm-lockless-pagecache.patch
-mm-spinlock-tree_lock.patch
-powerpc-implement-pte_special.patch
+--dDRMvlgZJXvWKvBx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I am on an x86_64. I dont know what other info you need...
+Currently when a 32 bit process is exec'd on a powerpc 64 bit host the value
+in the top three bytes of the personality is clobbered.  This patch adds a
+check in the SET_PERSONALITY macro that will carry all the values in the top
+three bytes across the exec.
 
--Ryan
+These three bytes currently carry flags to disable address randomisation,
+limit the address space, force zeroing of an mmapped page, etc.  Should an
+application set any of these bits they will be maintained and honoured on
+homogeneous environment but discarded and ignored on a heterogeneous
+environment.  So if an application requires all mmapped pages to be initial=
+ised
+to zero and a wrapper is used to setup the personality and exec the target,
+these flags will remain set on an all 32 or all 64 bit envrionment, but they
+will be lost in the exec on a mixed 32/64 bit environment.  Losing these bi=
+ts
+means that the same application would behave differently in different
+environments.  Tested on a POWER5+ machine with 64bit kernel and a mixed
+64/32 bit user space.
+
+Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
+
+---
+V2
+
+Changes from V1:
+Updated changelog with a better description of why this change is useful
+
+Based on 2.6.26-rc6
+
+ include/asm-powerpc/elf.h   |    3 ++-
+ include/linux/personality.h |    6 ++++++
+ 2 files changed, 8 insertions(+), 1 deletions(-)
+
+diff --git a/include/asm-powerpc/elf.h b/include/asm-powerpc/elf.h
+index 9080d85..2f11a0e 100644
+--- a/include/asm-powerpc/elf.h
++++ b/include/asm-powerpc/elf.h
+@@ -257,7 +257,8 @@ do {								\
+ 	else							\
+ 		clear_thread_flag(TIF_ABI_PENDING);		\
+ 	if (personality(current->personality) !=3D PER_LINUX32)	\
+-		set_personality(PER_LINUX);			\
++		set_personality(PER_LINUX |			\
++			(current->personality & PER_INHERIT));	\
+ } while (0)
+ /*
+  * An executable for which elf_read_implies_exec() returns TRUE will
+diff --git a/include/linux/personality.h b/include/linux/personality.h
+index a84e9ff..362eb90 100644
+--- a/include/linux/personality.h
++++ b/include/linux/personality.h
+@@ -36,6 +36,12 @@ enum {
+ 	ADDR_LIMIT_3GB =3D 	0x8000000,
+ };
+=20
++/* Mask for the above personality values */
++#define PER_INHERIT (ADDR_NO_RANDOMIZE|FDPIC_FUNCPTRS|MMAP_PAGE_ZERO| \
++			ADDR_COMPAT_LAYOUT|READ_IMPLIES_EXEC|ADDR_LIMIT_32BIT| \
++			SHORT_INODE|WHOLE_SECONDS|STICKY_TIMEOUTS| \
++			ADDR_LIMIT_3GB)
++
+ /*
+  * Security-relevant compatibility flags that must be
+  * cleared upon setuid or setgid exec:
+
+
+--dDRMvlgZJXvWKvBx
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIWXsLsnv9E83jkzoRAmvvAKD2suHEuv/a0lIssNGonxgQjIixAQCg7GIc
+bRVSwh+iGam+oxJVs+GpgFQ=
+=zVLk
+-----END PGP SIGNATURE-----
+
+--dDRMvlgZJXvWKvBx--
