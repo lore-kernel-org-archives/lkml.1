@@ -1,132 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752160AbYFRIRK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752202AbYFRIZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752160AbYFRIRK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 04:17:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbYFRIQ5
+	id S1752202AbYFRIZc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 04:25:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbYFRIZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 04:16:57 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:48457 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750997AbYFRIQz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 04:16:55 -0400
-X-Greylist: delayed 3598 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Jun 2008 04:16:54 EDT
-Subject: NULL pointer dereference while setting sched_rt_period_us
-From: Dario Faggioli <raistlin@linux.it>
-To: Michael Trimarchi <trimarchimichael@yahoo.it>, peterz@infradead.org,
-       mingo@elte.hu, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-OaJzNE1uS742PwRFSrI8"
-Date: Wed, 18 Jun 2008 09:18:38 +0200
-Message-Id: <1213773519.5371.8.camel@Palanthas.Krynn>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Wed, 18 Jun 2008 04:25:21 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50873 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751219AbYFRIZS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 04:25:18 -0400
+Date: Wed, 18 Jun 2008 10:25:01 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, akpm@osdl.org
+Subject: Re: [PATCH -v2] ftrace: disable function tracing bringing up new
+	CPU
+Message-ID: <20080618082501.GE4135@elte.hu>
+References: <Pine.LNX.4.58.0806051648380.13380@gandalf.stny.rr.com> <Pine.LNX.4.58.0806051916190.16872@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0806051916190.16872@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-OaJzNE1uS742PwRFSrI8
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Hi all,
+> Peter Zijlstra found that taking down and bringing up a new CPU caused 
+> ftrace to crash the kernel. This was due to some arch calls that were 
+> being traced by the function tracer before the smp_processor_id was 
+> set up. Since the function tracer uses smp_processor_id it caused a 
+> triple fault.
+> 
+> Instead of adding notrace all over the architecture code to prevent 
+> this problem, it is easier to simply disable the function tracer when 
+> bringing up a new CPU.
 
-When CONFIG_RT_GROUP_SCHED and =EF=BB=BFCONFIG_CGROUP_SCHED are enabled, wi=
-th:
+this patch brought lockdep trouble - see below.
 
- echo 10000 > /proc/sys/kernel/sched_rt_period_us
+	Ingo
 
-We get this:
+------------------->
+calling  pcibios_irq_init+0x0/0x449
+PCI: Using IRQ router PIIX/ICH [8086/2440] at 0000:00:1f.0
 
- BUG: unable to handle kernel NULL pointer dereference at 0000008c
- [  947.682233] IP: [<c0216b72>] __rt_schedulable+0x12/0x160
- [  947.683123] *pde =3D 00000000=20
- [  947.683782] Oops: 0000 [#1]=20
- [  947.684307] Modules linked in:
- [  947.684308]=20
- [  947.684308] Pid: 2359, comm: bash Not tainted (2.6.26-rc6 #8)
- [  947.684308] EIP: 0060:[<c0216b72>] EFLAGS: 00000246 CPU: 0
- [  947.684308] EIP is at __rt_schedulable+0x12/0x160
- [  947.684308] EAX: 00000000 EBX: 00000000 ECX: 00000000 EDX: 00000001
- [  947.684308] ESI: c0521db4 EDI: 00000001 EBP: c6cc9f00 ESP: c6cc9ed0
- [  947.684308]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
- [  947.684308] Process bash (pid: 2359, ti=3Dc6cc8000 task=3Dc7a54f00=20
- task.ti=3Dc6cc8000)
- [  947.684308] Stack: c0222790 00000000 080f8c08 c0521db4 c6cc9f00=20
- 00000001 00000000 00000000=20
- [  947.684308]        c6cc9f9c 00000000 c0521db4 00000001 c6cc9f28=20
- c0216d40 00000000 00000000=20
- [  947.684308]        c6cc9f9c 000f4240 000e7ef0 ffffffff c0521db4=20
- c79dfb60 c6cc9f58 c02af2cc=20
- [  947.684308] Call Trace:
- [  947.684308]  [<c0222790>] ? do_proc_dointvec_conv+0x0/0x50
- [  947.684308]  [<c0216d40>] ? sched_rt_handler+0x80/0x110
- [  947.684308]  [<c02af2cc>] ? proc_sys_call_handler+0x9c/0xb0
- [  947.684308]  [<c02af2fa>] ? proc_sys_write+0x1a/0x20
- [  947.684308]  [<c0273c36>] ? vfs_write+0x96/0x160
- [  947.684308]  [<c02af2e0>] ? proc_sys_write+0x0/0x20
- [  947.684308]  [<c027423d>] ? sys_write+0x3d/0x70
- [  947.684308]  [<c0202ef5>] ? sysenter_past_esp+0x6a/0x91
- [  947.684308]  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D
- [  947.684308] Code: 24 04 e8 62 b1 0e 00 89 c7 89 f8 8b 5d f4 8b 75
- f8 8b 7d fc 89 ec 5d c3 90 55 89 e5 57 56 53 83 ec 24 89 45 ec 89 55 e4
- 89 4d e8 <8b> b8 8c 00 00 00 85 ff 0f 84 c9 00 00 00 8b 57 24 39 55 e8
- 8b=20
- [  947.684308] EIP: [<c0216b72>] __rt_schedulable+0x12/0x160 SS:ESP =20
- 0068:c6cc9ed0
+=======================================================
+[ INFO: possible circular locking dependency detected ]
+2.6.26-rc5-00070-g53ec472-dirty #697
+-------------------------------------------------------
+ftraced/27 is trying to acquire lock:
+ (&cpu_hotplug.lock){--..}, at: [<c0125d44>] get_online_cpus+0x31/0x43
+
+but task is already holding lock:
+ (ftraced_lock){--..}, at: [<c014f6ad>] ftraced+0x47/0x136
+
+which lock already depends on the new lock.
 
 
-We think the following patch solves the issue.
+the existing dependency chain (in reverse order) is:
 
-Hope this is of some help.
+-> #2 (ftraced_lock){--..}:
+       [<c01412ff>] __lock_acquire+0x9f8/0xb5f
+       [<c0141872>] lock_acquire+0x6a/0x90
+       [<c06efb64>] mutex_lock_nested+0xdd/0x27a
+       [<c014f6ad>] ftraced+0x47/0x136
+       [<c0135820>] kthread+0x40/0x68
+       [<c0103c27>] kernel_thread_helper+0x7/0x10
+       [<ffffffff>] 0xffffffff
 
-Regards,
-Dario Faggioli
+-> #1 (ftrace_sysctl_lock){--..}:
+       [<c01412ff>] __lock_acquire+0x9f8/0xb5f
+       [<c0141872>] lock_acquire+0x6a/0x90
+       [<c06efb64>] mutex_lock_nested+0xdd/0x27a
+       [<c014e7ea>] ftrace_disable+0xf/0x25
+       [<c06edb43>] _cpu_up+0x8a/0xf1
+       [<c06edbf3>] cpu_up+0x49/0x59
+       [<c0a3d599>] kernel_init+0x8e/0x264
+       [<c0103c27>] kernel_thread_helper+0x7/0x10
+       [<ffffffff>] 0xffffffff
 
-Signed-off-by: Dario Faggioli <raistlin@linux.it>
-Signed-off-by: Michael Trimarchi <trimarchimichael@yahoo.it>
----
-diff --git a/kernel/sched.c b/kernel/sched.c
-index eaf6751..7205e25 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -8348,7 +8348,7 @@ static unsigned long to_ratio(u64 period, u64
-runtime)
- #ifdef CONFIG_CGROUP_SCHED
- static int __rt_schedulable(struct task_group *tg, u64 period, u64
-runtime)
- {
--	struct task_group *tgi, *parent =3D tg->parent;
-+	struct task_group *tgi, *parent =3D tg ? tg->parent : NULL;
- 	unsigned long total =3D 0;
-=20
- 	if (!parent) {
+-> #0 (&cpu_hotplug.lock){--..}:
+       [<c0141226>] __lock_acquire+0x91f/0xb5f
+       [<c0141872>] lock_acquire+0x6a/0x90
+       [<c06efb64>] mutex_lock_nested+0xdd/0x27a
+       [<c0125d44>] get_online_cpus+0x31/0x43
+       [<c0147c34>] stop_machine_run+0x16/0x3d
+       [<c014f00a>] ftrace_update_code+0x2f/0x3a
+       [<c014f6cc>] ftraced+0x66/0x136
+       [<c0135820>] kthread+0x40/0x68
+       [<c0103c27>] kernel_thread_helper+0x7/0x10
+       [<ffffffff>] 0xffffffff
 
---=20
-<<This happens because I choose it to happen!>>
-(Raistlin Majere, DragonLance Chronicles -Dragons of Spring Drawning-)
-----------------------------------------------------------------------
-Dario Faggioli
-GNU/Linux Registered User: #340657
-Web: http://www.linux.it/~raistlin
-Blog: http://blog.linux.it/raistlin
-SIP Account: dario.faggioli@sipproxy.wengo.fr or
-             raistlin@ekiga.net
-Jabber Account: dario.faggioli@jabber.org/WengoPhone
-GnuPG Key ID: 4DC83AC4
-GnuPG Key Fingerprint: 2A78 AD5D B9CF A082 0836 08AD 9385 DA04 4DC8 3AC4
+other info that might help us debug this:
 
---=-OaJzNE1uS742PwRFSrI8
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+2 locks held by ftraced/27:
+ #0:  (ftrace_sysctl_lock){--..}, at: [<c014f6a1>] ftraced+0x3b/0x136
+ #1:  (ftraced_lock){--..}, at: [<c014f6ad>] ftraced+0x47/0x136
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkhYts4ACgkQk4XaBE3IOsQNiACffcPctmEZV/ttZD3F/VYHY0n7
-HI0AmwZNbUIW+YEHCcedI6aL2YRirKEl
-=dIFn
------END PGP SIGNATURE-----
-
---=-OaJzNE1uS742PwRFSrI8--
-
+stack backtrace:
+Pid: 27, comm: ftraced Not tainted 2.6.26-rc5-00070-g53ec472-dirty #697
+ [<c013f6b1>] print_circular_bug_tail+0x5b/0x66
+ [<c013ef59>] ? print_circular_bug_entry+0x39/0x43
+ [<c0141226>] __lock_acquire+0x91f/0xb5f
+ [<c0141872>] lock_acquire+0x6a/0x90
+ [<c0125d44>] ? get_online_cpus+0x31/0x43
+ [<c06efb64>] mutex_lock_nested+0xdd/0x27a
+ [<c0125d44>] ? get_online_cpus+0x31/0x43
+ [<c0125d44>] ? get_online_cpus+0x31/0x43
+ [<c014ec54>] ? __ftrace_update_code+0x0/0x12e
+ [<c0125d44>] get_online_cpus+0x31/0x43
+ [<c0147c34>] stop_machine_run+0x16/0x3d
+ [<c014f666>] ? ftraced+0x0/0x136
+ [<c014f00a>] ftrace_update_code+0x2f/0x3a
+ [<c014f6cc>] ftraced+0x66/0x136
+ [<c014f666>] ? ftraced+0x0/0x136
+ [<c0135820>] kthread+0x40/0x68
+ [<c01357e0>] ? kthread+0x0/0x68
+ [<c0103c27>] kernel_thread_helper+0x7/0x10
+ =======================
+PCI->APIC IRQ transform: 0000:00:1f.2[D] -> IRQ 19
+PCI->APIC IRQ transform: 0000:00:1f.3[B] -> IRQ 17
+PCI->APIC IRQ transform: 0000:00:1f.4[C] -> IRQ 23
+PCI->APIC IRQ transform: 0000:00:1f.5[B] -> IRQ 17
+PCI->APIC IRQ transform: 0000:01:00.0[A] -> IRQ 22
+PCI->APIC IRQ transform: 0000:03:04.0[A] -> IRQ 18
