@@ -1,72 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759038AbYFRE4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbYFRFLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759038AbYFRE4i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 00:56:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753168AbYFRE4a
+	id S1759301AbYFRFLl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 01:11:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYFRFLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 00:56:30 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48004
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753131AbYFRE4a (ORCPT
+	Wed, 18 Jun 2008 01:11:31 -0400
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:54870 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751805AbYFRFLa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 00:56:30 -0400
-Date: Tue, 17 Jun 2008 21:56:30 -0700 (PDT)
-Message-Id: <20080617.215630.47207590.davem@davemloft.net>
-To: rweikusat@mssgmbh.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.25.7] af_unix: fix 'poll for write'/ connected
- DGRAM sockets
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <871w2wca3r.fsf@fever.mssgmbh.com>
-References: <871w2wca3r.fsf@fever.mssgmbh.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Jun 2008 01:11:30 -0400
+Date: Wed, 18 Jun 2008 15:11:19 +1000
+From: Bron Gondwana <brong@fastmail.fm>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Bron Gondwana <brong@fastmail.fm>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rob Mueller <robm@fastmail.fm>, Andi Kleen <andi@firstfloor.org>,
+       Ingo Molnar <mingo@elte.hu>, Ken Murchison <murch@andrew.cmu.edu>
+Subject: Cyrus mmap vs lseek/write usage - (WAS: BUG: mmapfile/writev
+	spurious zero bytes (x86_64/not i386, bisected, reproducable))
+Message-ID: <20080618051119.GA10754@brong.net>
+References: <1213682410.13174.1258837181@webmail.messagingengine.com> <1213682570.13708.1258839317@webmail.messagingengine.com> <alpine.LFD.1.10.0806170947380.25099@woody.linux-foundation.org> <alpine.LFD.1.10.0806171041560.25099@woody.linux-foundation.org> <alpine.LFD.1.10.0806171309130.2981@woody.linux-foundation.org> <alpine.LFD.1.10.0806171331460.2908@woody.linux-foundation.org> <alpine.LFD.1.10.0806171356320.2908@woody.linux-foundation.org> <alpine.LFD.1.10.0806171415060.2907@woody.linux-foundation.org> <20080618031406.GA4326@brong.net> <alpine.LFD.1.10.0806172057450.2907@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0806172057450.2907@woody.linux-foundation.org>
+Organization: brong.net
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rainer Weikusat <rweikusat@mssgmbh.com>
-Date: Tue, 17 Jun 2008 20:47:02 +0200
-
-> The unix_dgram_sendmsg routine implements a (somewhat crude)
-> form of receiver-imposed flow control by comparing the length of the
-> receive queue of the 'peer socket' with the max_ack_backlog value
-> stored in the corresponding sock structure, either blocking
-> the thread which caused the send-routine to be called or returning
-> EAGAIN. This routine is used by both SOCK_DGRAM and SOCK_SEQPACKET
-> sockets. The poll-implementation for these socket types is
-> datagram_poll from core/datagram.c. A socket is deemed to be writeable
-> by this routine when the memory presently consumed by datagrams
-> owned by it is less than the configured socket send buffer size. This
-> is always wrong for connected PF_UNIX non-stream sockets when the
-> abovementioned receive queue is currently considered to be full.
-> 'poll' will then return, indicating that the socket is writeable, but
-> a subsequent write result in EAGAIN, effectively causing an
-> (usual) application to 'poll for writeability by repeated send request
-> with O_NONBLOCK set' until it has consumed its time quantum.
+On Tue, Jun 17, 2008 at 09:03:17PM -0700, Linus Torvalds wrote:
+> On Wed, 18 Jun 2008, Bron Gondwana wrote:
+> > 
+> > For my sins, I appear to be becoming the world expert on 
+> > that particular file.
 > 
-> The change below uses a suitably modified variant of the datagram_poll
-> routines for both type of PF_UNIX sockets, which tests if the
-> recv-queue of the peer a socket is connected to is presently
-> considered to be 'full' as part of the 'is this socket
-> writeable'-checking code. The socket being polled is additionally
-> put onto the peer_wait wait queue associated with its peer, because the
-> unix_dgram_sendmsg routine does a wake up on this queue after a
-> datagram was received and the 'other wakeup call' is done implicitly
-> as part of skb destruction, meaning, a process blocked in poll
-> because of a full peer receive queue could otherwise sleep forever
-> if no datagram owned by its socket was already sitting on this queue.
-> Among this change is a small (inline) helper routine named
-> 'unix_recvq_full', which consolidates the actual testing code (in three
-> different places) into a single location.
+> Heh. Congrats ;)
 > 
-> Signed-off-by: <rweikusat@mssgmbh.com>
+> > I've debugged skiplist bugs many times over, and completely rewritten 
+> > the locking code.  It really does some pretty evil things - the memory 
+> > accesses look something like this:
+> > 
+> > [file...................]
+> > [mmap^....^.^........^^..................................]
+> > [file...................++++++++++++]
+> > [mmap^....^.^........^^.^^ ^      ^^.....................]
+> > 
+> > Where (^) is the bits that get accessed.  All reads are via
+> > the mmap, all writes are done with retry_write or 
+> > retry_writev (Cyrus library functions that keep hammering
+> > until all the bytes are written)
+> 
+> Is there any reason it doesn't use mmap(MAP_SHARED) and make the 
+> modifications that way too?
 
-Thank you for fixing this bug.
+Portability[tm].
 
-I'm going to review the logic in the new poll routing a little
-bit more, then apply it to net-2.6 unless I find some problems.
+It actually does use MAP_SHARED already, but only for reading.
+Writing is all done with seeks and writes, followed by a map
+"refresh", which is really just an unmmap/mmap if the file has
+extended past the "SLOP" (between 8 and 16 k after the end of
+the file length at last mapping).
 
-Thanks again.
+I can't just right now find the place where the reasoning behind
+this was explained to me.  The theory I think was that mmap write
+support is unreliable across systems, but read support is pretty 
+good (except HPUX for which there is map_stupidshared.c)
+
+> Because quite frankly, the mixture of doing mmap() and write() system 
+> calls is quite fragile - and I'm not saying that just because of this 
+> particular bug, but because there are all kinds of nasty cache aliasing 
+> issues with virtually indexed caches etc that just fundamentally mean that 
+> it's often a mistake to mix mmap with read/write at the same time.
+
+I'm not actually a maintainer for Cyrus, I just write patches to
+keep our mail servers working.  I'll pass this on.
+
+> (For the same reason it's not a good idea to mix writing through an mmap() 
+> and then using read() to read it - again, you can have some nasty aliasing 
+> going on there).
+>
+> So this particular issue was definitely a kernel bug (and big thanks for 
+> making such a good test-case), but in general, it does sound like Cyrus is 
+> actively trying to dig itself into a nasty hole there.
+
+Yeah, indeed.
+
+I suspect the response from the Cyrus side might include a
+small dose of "POSIX says it's valid to do this, and making
+it work is the kernel programmers' lookout".
+
+Ahh - I found the explaination in doc/internal/hacking in
+the Cyrus source tree.  While 'ack' is a nice tool, it
+doesn't check files with no extention by default.  Ho hum:
+
+- map_refresh and map_free
+
+  - In many cases, it is far more effective to read a file via the operating
+    system's mmap facility than it is to via the traditional read() and
+    lseek system calls.  To this end, Cyrus provides an operating system
+    independent wrapper around the mmap() services (or lack thereof) of the
+    operating system.
+
+  - Cyrus currently only supports read-only memory maps, all writes back
+    to a file need to be done via the more traditional facilities.  This is
+    to enable very low-performance support for operating systems which do not
+    provide an mmap() facility via a fake userspace mmap.
+
+  - To create a map, simply call map_refresh on the map (details are in
+    lib/map.h).  To free it, call map_free on the same map.
+
+  - Despite the fact that the maps are read-only, it is often useful to open
+    the file descriptors O_RDWR, especially if the file decriptors could
+    possibly be used for writing elsewhere in the code. Some operating
+    systems REQUIRE file descriptors that are mmap()ed to be opened
+    O_RDWR, so just do it.
+
+If I was God in the Cyrus world (woot) I suspect I'd 
+provide some sort of OS independent wrapper around the 
+various write functions, using mmap where appropriate,
+while still working via lseek/write for those systems 
+without mmap support.
+
+(Added CC: Ken Murchison, on the grounds that he actually 
+is God in the Cyrus world)
+
+Thanks for the good explaination.  I'll have a look at the
+Cyrus code and see just how tricky that would actually be
+(even just doing the skiplist, index and cache code would
+hit 99% of the cases where files are both mmaped and
+written concurrently)
+
+Bron.
+
