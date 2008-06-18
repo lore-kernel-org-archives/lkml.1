@@ -1,108 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbYFRMQE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754969AbYFRMRj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754648AbYFRMQE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 08:16:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbYFRMPw
+	id S1754969AbYFRMRj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 08:17:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbYFRMRb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 08:15:52 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:14457 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753427AbYFRMPv (ORCPT
+	Wed, 18 Jun 2008 08:17:31 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48596 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753289AbYFRMRa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 08:15:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=xwrrdM0vDmsnWk4As5EjyWDG3dRaaTV3Q4XoUHOoSYgZ9WDElj7mD21UFm+Agk/1b2
-         ImGx5nLmZR35FQ4b/OojQ7TgZ2kuUgaQFPGIv/TKkLtWTObq3KLZfDPV5eInypSJA4DP
-         mwg7gGKzoSbYhjIHdk63VBN+zBS1GC0EaWikk=
-Message-ID: <5a4c581d0806180515g5f24e9d9m85369bfa0a5f2228@mail.gmail.com>
-Date: Wed, 18 Jun 2008 14:15:49 +0200
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [Cbe-oss-dev] [regression/bisected] corrupt CD data after media change and delay
-Cc: "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-       "David Martin" <tasio@hierro.tasio.net>, linux-scsi@vger.kernel.org,
-       "Linux Kernel Development" <linux-kernel@vger.kernel.org>,
-       "Maarten Bressers" <mbres@gentoo.org>, "Daniel Drake" <dsd@gentoo.org>,
-       "Cell Broadband Engine OSS Development" <cbe-oss-dev@ozlabs.org>
-In-Reply-To: <Pine.LNX.4.64.0806181156460.13297@vixen.sonytel.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 18 Jun 2008 08:17:30 -0400
+Subject: Re: [PATCH][resubmit] x86: enable preemption in delay
+From: Peter Zijlstra <peterz@infradead.org>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Marin Mitov <mitov@issp.bas.bg>,
+       Andi Kleen <andi-suse@firstfloor.org>,
+       Clark Williams <clark.williams@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>, akpm@osdl.org,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>
+In-Reply-To: <4858C286.BA47.005A.0@novell.com>
+References: <200805252108.25011.mitov@issp.bas.bg>
+	 <200806091911.21850.mitov@issp.bas.bg> <20080609161606.GA24841@elte.hu>
+	 <200806152058.17142.mitov@issp.bas.bg> <20080618075518.GD4135@elte.hu>
+	 <4858C286.BA47.005A.0@novell.com>
+Content-Type: text/plain
+Date: Wed, 18 Jun 2008 14:16:56 +0200
+Message-Id: <1213791416.16944.222.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0806061458300.6228@vixen.sonytel.be>
-	 <Pine.LNX.4.64.0806131932350.30730@vixen.sonytel.be>
-	 <5a4c581d0806180147qf8fc731y527c79bfb73401b2@mail.gmail.com>
-	 <Pine.LNX.4.64.0806181156460.13297@vixen.sonytel.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 18, 2008 at 1:13 PM, Geert Uytterhoeven
-<Geert.Uytterhoeven@sonycom.com> wrote:
-> On Wed, 18 Jun 2008, Alessandro Suardi wrote:
->> On Fri, Jun 13, 2008 at 7:33 PM, Geert Uytterhoeven
->> <Geert.Uytterhoeven@sonycom.com> wrote:
->> > On Fri, 6 Jun 2008, Geert Uytterhoeven wrote:
->> >> When mounting a CD/DVD more than 30 seconds after inserting it, and reading
->> >> from it, we get:
->> >
->> > Apparently the fix didn't make it to all the CCed lists...
->> >
->> > http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fjejb%2Fscsi-rc-fixes-2.6.git;a=commitdiff_plain;h=d1daeabf0da5bfa1943272ce508e2ba785730bf0
->>
->> Oh, that's in mainline ? I still have the problem of having to
->
-> Not yet, it's in the scsi-rc-fixes-2.6 tree.
->
->>  insert DVD / try accessing it and get errors / eject / re-insert
->>  and then it magically works... the messages have changed
->>  from what they were as reported here
->>
->> http://bugzilla.kernel.org/show_bug.cgi?id=10116
->>
->>  (see comments #8 and #9) to these ones, in 2.6.26-rc6-git4:
->>
->> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] Result:
->> hostbyte=0x00 driverbyte=0x08
->> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] Sense Key : 0x3 [current]
->> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] ASC=0x11 ASCQ=0x0
->> Jun 17 22:38:43 sandman kernel: end_request: I/O error, dev sr0, sector 232
->> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 29
->> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 30
->> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 31
->> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 32
->> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 33
->> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 34
->> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 35
->> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 36
->> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 37
->> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 38
->>
->> here I eject and reinsert the disc, and:
->>
->> Jun 17 22:39:10 sandman kernel: UDF-fs: No VRS found
->>
->>  lo and behold, no problem.
->>
->> This does not, alas, happen every time. It might be at the first
->>  DVD access after booting the laptop, but I haven't investigated
->>  in this detail yet.
->
-> Does /sys/block/sr0/size reflect the correct size of the DVD?
->
-> Did you try applying the patch?
+On Wed, 2008-06-18 at 06:08 -0600, Gregory Haskins wrote:
+> >>> On Wed, Jun 18, 2008 at  3:55 AM, in message <20080618075518.GD4135@elte.hu>,
+> Ingo Molnar <mingo@elte.hu> wrote: 
+> 
+> > * Marin Mitov <mitov@issp.bas.bg> wrote:
+> > 
+> >> Why not something like that (do keep in mind I am not an expert :-):
+> >> 
+> >> static void delay_tsc(unsigned long loops)
+> >> {
+> >> 	get and store the mask of allowed cpus;
+> >> 	/*     prevent the migration   */
+> >> 	set the mask of allowed cpus to the current cpu only;
+> >> 	/*     is it possible? could it be guaranteed?    */
+> >> 	loop for the delay;
+> >> 	restore the old mask of allowed cpus;
+> >> }
+> >> 
+> >> You have got the idea. Could it be realized? Is it more expensive than 
+> >> the current realization? So, comments, please.
+> > 
+> > hm, changing/saving/restorig cpus_allowed is really considered a 'heavy' 
+> > operation compared to preempt_disable(). On a 4096 CPUs box cpus_allowed 
+> > is 4096 bits which is half a kilobyte ...
+> > 
+> > preempt_disable()/enable() on the other hand only touches a single 
+> > variable, (thread_info->preempt_count which is an u32)
+> > 
+> > 	Ingo
+> 
+> FWIW:  I had submitted some "migration disable" patches a while back
+> that would solve this without the cpus_allowed manipulations described
+> here.  Its more expensive than a preempt-disable (but its
+> preemptible), yet its way cheaper (and more correct / less racy) than
+> chaning cpus_allowed.  I could resubmit if there was any interest,
+> though I think Ingo said he didnt like the concept on the first pass.
+> Anyway, FYI.
 
-ATM I'm away from home (as usual), I'll post back when
- I have the info you asked for and tried applying the
- above patch. Thanks !
+(please teach your mailer to wrap text)
 
---alessandro
+Yeah - migrate_disable() has been proposed several times. The reason I
+don't like it is that is creates scheduling artefacts like latencies by
+not being able to load-balance (and thereby complicates all that, and
+you know we don't need more complication there).
 
- "Give me love / Or give me hate
- Give me anything that's not just ok"
+Things like preempt latency and irq off latency are rather easy to
+notice and debug in general. migrate_disable() would be fully
+preemptable/schedulable which makes it much much harder to instrument or
+even detect we have an issue. Which in turn makes it much harder to find
+abuse.
 
- (Sophia, 'Weightless')
