@@ -1,73 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754437AbYFRMm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbYFRMnN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754437AbYFRMm1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 08:42:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbYFRMmP
+	id S1754172AbYFRMnN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 08:43:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753874AbYFRMm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 08:42:15 -0400
-Received: from www.tglx.de ([62.245.132.106]:49677 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751908AbYFRMmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 08:42:14 -0400
-Date: Wed, 18 Jun 2008 14:41:35 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
-In-Reply-To: <alpine.LFD.1.10.0806181000440.3395@apollo.tec.linutronix.de>
-Message-ID: <alpine.LFD.1.10.0806181421320.3395@apollo.tec.linutronix.de>
-References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806172244.24026.rjw@sisk.pl> <200806180019.49628.rjw@sisk.pl> <200806180025.20504.rjw@sisk.pl> <alpine.LFD.1.10.0806181000440.3395@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 18 Jun 2008 08:42:58 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:59665 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753350AbYFRMm5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 08:42:57 -0400
+Date: Wed, 18 Jun 2008 18:22:16 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net
+Cc: varunc@linux.vnet.ibm.com, jbarnes@virtuousgeek.org, greg@kroah.com
+Subject: Strange problem with e1000 driver - ping packet loss
+Message-ID: <20080618125215.GC3988@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jun 2008, Thomas Gleixner wrote:
-> On Wed, 18 Jun 2008, Rafael J. Wysocki wrote:
-> > On Wednesday, 18 of June 2008, Rafael J. Wysocki wrote:
-> > > On Tuesday, 17 of June 2008, Rafael J. Wysocki wrote:
-> > > > On Tuesday, 17 of June 2008, Thomas Gleixner wrote:
-> > > > > On Tue, 17 Jun 2008, Rafael J. Wysocki wrote:
-> > > > > > 
-> > > > > > BTW, with the C1E patches reverted I don't get the
-> > > > > > WARNING: at /home/rafael/src/linux-next/kernel/smp.c:215 smp_call_function_single+0x3d/0xa2
-> > > > > > in the log.  Thomas?
-> > > > > 
-> > > > > Yeah, my bad. Fix below.
-> > > > 
-> > > > Thanks, it eliminates the WARNING, but still the box doesn't work with
-> > > > the "x86: add C1E aware idle function" patch applied, even with 'highres=off'.
-> > > > 
-> > > > The main symptom is that CPU loads are computed incorrectly (I got X using 126%
-> > > > of CPU time from 'top', for example).  Apart from this, some processes (like
-> > > > gkrellm) seem to be 'frozen' and only change their state in 'jumps', as though
-> > > > they only got CPU from time to time at random.
-> > > > 
-> > > > Reverting the above-mentioned patch fixes those problems.
-> > > 
-> > > Ah.  If your fix is replaced with the appended one, the system happily works
-> > > with C1E and highres.
-> > 
-> > Scratch that.  The symptoms appeared later this time, that's all.  I've just got
-> > b43 consuming 90+ % of the CPU time. :-(
-> 
-> I would have been pretty surprised if it had helped :)
-> 
-> Does the box boot when you disable the local apic timer on the kernel
-> command line with the patch applied ?
-> 
-> Also does forcing hpet change anything ?
+Hi,
+	I happened to look at a system which was exhibiting poor ping
+performance with e1000 driver (in 2.6.25) and had some questions regarding that.
 
-I just checked that the original c1e series and the affected code in
-tip are not different. IIRC you confirmed that the C1E patches would
-work on your box. So I wonder what else got changed which causes these
-problems.
+Ping test was done between the system and a laptop, which were connected
+using a straight ethernet cable. Ping reported round trip times running
+into seconds (!) and also packet loss.
 
-Thanks,
-	tglx
+Upon some investigation, I found that the interrupt count field in
+/proc/interrupts (associated with eth1) is not incrementing as fast as
+it should. Moreover eth1 interrupt line is shared with the hard disk
+interrupt (ata_piix) as below:
+
+# cat /proc/interrupts
+
+..
+
+ 10:       2296    XT-PIC-XT        ata_piix, eth0, eth1
+
+..
+
+IRQ10 is thus being shared by both the hard disk and eth0/eth1.
+
+Here's the strange observation I made:
+
+When I initiate some disk activity (ex: dd if=/dev/zero of=/tmp/file), ping 
+performance suddently shot up (round trip time in double digits ms, 0% packet 
+loss)! I presume this is because that e1000 intr handler is called
+whenever there was a interrupt from hard disk on IRQ10, which polled
+NIC and processed packets immediately.
+
+As soon as I kill the background disk-write intensive job, ping
+performance again dropped.
+
+This meant that e1000 NIC is having trouble interrupting the OS.
+
+Before I could jump up and say this is a hardware issue, I was told
+that Windows works just fine on the server (and as well as 2.4 kernel,
+which I couldnt verify) :(
+
+
+Some more observations:
+
+1. I tried setting e1000 parameters (RxIntDelay=0, RxAbsIntDelay=0,
+   TxIntDelay=0, TxAbsIntDelay=0, InterruptThrottleRate=0). None of
+   them helped.
+
+2. When ping performance was poor, readprofile showed that system
+   is mostly idle. This confirms that OS is not getting very
+   frequenty interrupts from eth1 and hence idling.
+
+3. When ping performance was poor, ethtool -S eth1 showed that
+   rx_bytes was incrementing at a good pace, showing that the 
+   NIC was receiving ping responses back, but not handing them over
+   to OS for further processing
+
+4. e1000 chipset is 82546GB
+
+5. e1000e driver didnt work at all (it doesnt recognize the cards).
+
+
+Any advice on how to fix this problem?
+
+
+-- 
+Regards,
+vatsa
