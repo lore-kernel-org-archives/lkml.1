@@ -1,104 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751341AbYFRHk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751773AbYFRHll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751341AbYFRHk3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 03:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750737AbYFRHkV
+	id S1751773AbYFRHll (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 03:41:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750744AbYFRHle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 03:40:21 -0400
-Received: from smtp111.mail.mud.yahoo.com ([209.191.84.64]:35067 "HELO
-	smtp111.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750717AbYFRHkU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 03:40:20 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=a269rwNGTr13x3cZb98SitQiTljY3repl6KQQT3dL9yrxaeaub2TqMiLSw8DbMuEsdoUu/KLK7MSzreOTaCm2gkBvI+gBY4LAAuy+B9GGpTLUMATPmDNp27B+XAe6d3lCZRQDSVVx6yhkBAlmaK7XwLC0Iuihm1q1ZPcYVgX57g=  ;
-X-YMail-OSG: nIsmuaUVM1kfNmTlOGS02Jljjv7Iw.Q7adn6wQWsli7MUx2N5Za4IfQhlikNID7gZ0ICLM7UdXXGn_YFBRq2i_ydMMUteG1CCeCciDUR_.PTxlxX6plLVoLAQt2LRLcv9zo-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH -mm][BUGFIX] migration_entry_wait fix. v2
-Date: Wed, 18 Jun 2008 17:40:07 +1000
-User-Agent: KMail/1.9.5
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       "hugh@veritas.com" <hugh@veritas.com>
-References: <20080611225945.4da7bb7f.akpm@linux-foundation.org> <20080618155233.7dd79312.kamezawa.hiroyu@jp.fujitsu.com> <20080618162944.2f8fd265.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080618162944.2f8fd265.kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 18 Jun 2008 03:41:34 -0400
+Received: from mga01.intel.com ([192.55.52.88]:43725 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750737AbYFRHld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 03:41:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,663,1204531200"; 
+   d="asc'?scan'208";a="579154231"
+Date: Wed, 18 Jun 2008 15:34:07 +0800
+From: Zhenyu Wang <zhenyu.z.wang@intel.com>
+To: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
+Cc: Dave Airlie <airlied@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [AGP] intel_agp: Add support for Intel 4 series
+	chipsets
+Message-ID: <20080618073407.GA18084@zhen-devel.sh.intel.com>
+Mail-Followup-To: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>,
+	Dave Airlie <airlied@redhat.com>,
+	LKML <linux-kernel@vger.kernel.org>
+References: <20080618052300.GA16715@zhen-devel.sh.intel.com> <4858B892.8080909@movial.fi>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="1yeeQ81UyVL57Vl7"
 Content-Disposition: inline
-Message-Id: <200806181740.07749.nickpiggin@yahoo.com.au>
+In-Reply-To: <4858B892.8080909@movial.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 18 June 2008 17:29, KAMEZAWA Hiroyuki wrote:
-> In speculative page cache look up protocol, page_count(page) is set to 0
-> while radix-tree modification is going on, truncation, migration, etc...
->
-> While page migration, a page fault to page under migration does
->  - look up page table
->  - find it is migration_entry_pte
->  - decode pfn from migration_entry_pte and get page of pfn_page(pfn)
->  - wait until page is unlocked
->
-> It does get_page() -> wait_on_page_locked() -> put_page() now.
->
-> In page migration's radix-tree replacement, page_freeze_refs() ->
-> page_unfreeze_refs() is called. And page_count(page) turns to be zero
-> and must be kept to be zero while radix-tree replacement.
->
-> If get_page() is called against a page under radix-tree replacement,
-> the kernel panics(). To avoid this, we shouldn't increment page_count()
-> if it is zero. This patch uses get_page_unless_zero().
->
-> Even if get_page_unless_zero() fails, the caller just retries.
-> But will be a bit busier.
->
-> Change log v1->v2:
->  - rewrote the patch description and added comments.
->
 
-Thanks
+--1yeeQ81UyVL57Vl7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Acked-by: Nick Piggin <npiggin@suse.de>
+On 2008.06.18 10:26:10 +0300, Dmitri Vorobiev wrote:
+> > +	} else if (IS_G4X) {
+> > +		/* On 4 Series hardware, GTT stolen is seperate from graphics
+>=20
+> You have a spelling error here. Should be "separate".
+>=20
 
-Andrew, this is a bugfix to mm-speculative-page-references.patch
+Thanks, updated as below with typo and indent fix.
 
-> From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  mm/migrate.c |   11 +++++++++--
->  1 file changed, 9 insertions(+), 2 deletions(-)
->
-> Index: test-2.6.26-rc5-mm3/mm/migrate.c
-> ===================================================================
-> --- test-2.6.26-rc5-mm3.orig/mm/migrate.c
-> +++ test-2.6.26-rc5-mm3/mm/migrate.c
-> @@ -242,8 +242,15 @@ void migration_entry_wait(struct mm_stru
->  		goto out;
->
->  	page = migration_entry_to_page(entry);
-> -
-> -	get_page(page);
-> +	/*
-> +	 * Once radix-tree replacement of page migration started, page_count
-> +	 * *must* be zero. And, we don't want to call wait_on_page_locked()
-> +	 * against a page without get_page().
-> +	 * So, we use get_page_unless_zero(), here. Even failed, page fault
-> +	 * will occur again.
-> +	 */
-> +	if (!get_page_unless_zero(page))
-> +		goto out;
->  	pte_unmap_unlock(ptep, ptl);
->  	wait_on_page_locked(page);
->  	put_page(page);
+[AGP] intel_agp: Add support for Intel 4 series chipsets
+
+Signed-off-by: Zhenyu Wang <zhenyu.z.wang@intel.com>
+---
+ drivers/char/agp/intel-agp.c |   82 ++++++++++++++++++++++++++++++++++++--=
+---
+ 1 files changed, 72 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+index eeea50a..efd6132 100644
+--- a/drivers/char/agp/intel-agp.c
++++ b/drivers/char/agp/intel-agp.c
+@@ -34,6 +34,12 @@
+ #define PCI_DEVICE_ID_INTEL_Q33_IG          0x29D2
+ #define PCI_DEVICE_ID_INTEL_IGD_HB          0x2A40
+ #define PCI_DEVICE_ID_INTEL_IGD_IG          0x2A42
++#define PCI_DEVICE_ID_INTEL_IGD_E_HB        0x2E00
++#define PCI_DEVICE_ID_INTEL_IGD_E_IG        0x2E02
++#define PCI_DEVICE_ID_INTEL_Q45_HB          0x2E10
++#define PCI_DEVICE_ID_INTEL_Q45_IG          0x2E12
++#define PCI_DEVICE_ID_INTEL_G45_HB          0x2E20
++#define PCI_DEVICE_ID_INTEL_G45_IG          0x2E22
+=20
+ /* cover 915 and 945 variants */
+ #define IS_I915 (agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_E7221_=
+HB || \
+@@ -55,6 +61,10 @@
+ 		agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_Q35_HB || \
+ 		agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_Q33_HB)
+=20
++#define IS_G4X	(agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_IGD_E_H=
+B || \
++		 agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_Q45_HB || \
++		 agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_G45_HB)
++
+ extern int agp_memory_reserved;
+=20
+=20
+@@ -80,8 +90,12 @@ extern int agp_memory_reserved;
+ #define I915_PTEADDR	0x1C
+ #define I915_GMCH_GMS_STOLEN_48M	(0x6 << 4)
+ #define I915_GMCH_GMS_STOLEN_64M	(0x7 << 4)
+-#define G33_GMCH_GMS_STOLEN_128M       (0x8 << 4)
+-#define G33_GMCH_GMS_STOLEN_256M       (0x9 << 4)
++#define G33_GMCH_GMS_STOLEN_128M        (0x8 << 4)
++#define G33_GMCH_GMS_STOLEN_256M        (0x9 << 4)
++#define INTEL_GMCH_GMS_STOLEN_96M	(0xa << 4)
++#define INTEL_GMCH_GMS_STOLEN_160M	(0xb << 4)
++#define INTEL_GMCH_GMS_STOLEN_224M	(0xc << 4)
++#define INTEL_GMCH_GMS_STOLEN_352M	(0xd << 4)
+ #define I915_IFPADDR    0x60
+=20
+ /* Intel 965G registers */
+@@ -504,6 +518,10 @@ static void intel_i830_init_gtt_entries(void)
+ 			size =3D 512;
+ 		}
+ 		size +=3D 4;
++	} else if (IS_G4X) {
++		/* On 4 Series hardware, GTT stolen is separate from graphics
++		 * stolen, ignore it in stolen gtt entries counting */
++		size =3D 0;
+ 	} else {
+ 		/* On previous hardware, the GTT size was just what was
+ 		 * required to map the aperture.
+@@ -552,30 +570,54 @@ static void intel_i830_init_gtt_entries(void)
+ 			break;
+ 		case I915_GMCH_GMS_STOLEN_48M:
+ 			/* Check it's really I915G */
+-			if (IS_I915 || IS_I965 || IS_G33)
++			if (IS_I915 || IS_I965 || IS_G33 || IS_G4X)
+ 				gtt_entries =3D MB(48) - KB(size);
+ 			else
+ 				gtt_entries =3D 0;
+ 			break;
+ 		case I915_GMCH_GMS_STOLEN_64M:
+ 			/* Check it's really I915G */
+-			if (IS_I915 || IS_I965 || IS_G33)
++			if (IS_I915 || IS_I965 || IS_G33 || IS_G4X)
+ 				gtt_entries =3D MB(64) - KB(size);
+ 			else
+ 				gtt_entries =3D 0;
+ 			break;
+ 		case G33_GMCH_GMS_STOLEN_128M:
+-			if (IS_G33)
++			if (IS_G33 || IS_I965 || IS_G4X)
+ 				gtt_entries =3D MB(128) - KB(size);
+ 			else
+ 				gtt_entries =3D 0;
+ 			break;
+ 		case G33_GMCH_GMS_STOLEN_256M:
+-			if (IS_G33)
++			if (IS_G33 || IS_I965 || IS_G4X)
+ 				gtt_entries =3D MB(256) - KB(size);
+ 			else
+ 				gtt_entries =3D 0;
+ 			break;
++		case INTEL_GMCH_GMS_STOLEN_96M:
++			if (IS_I965 || IS_G4X)
++				gtt_entries =3D MB(96) - KB(size);
++			else
++				gtt_entries =3D 0;
++			break;
++		case INTEL_GMCH_GMS_STOLEN_160M:
++			if (IS_I965 || IS_G4X)
++				gtt_entries =3D MB(160) - KB(size);
++			else
++				gtt_entries =3D 0;
++			break;
++		case INTEL_GMCH_GMS_STOLEN_224M:
++			if (IS_I965 || IS_G4X)
++				gtt_entries =3D MB(224) - KB(size);
++			else
++				gtt_entries =3D 0;
++			break;
++		case INTEL_GMCH_GMS_STOLEN_352M:
++			if (IS_I965 || IS_G4X)
++				gtt_entries =3D MB(352) - KB(size);
++			else
++				gtt_entries =3D 0;
++			break;
+ 		default:
+ 			gtt_entries =3D 0;
+ 			break;
+@@ -1134,6 +1176,20 @@ static unsigned long intel_i965_mask_memory(struct a=
+gp_bridge_data *bridge,
+ 	return addr | bridge->driver->masks[type].mask;
+ }
+=20
++static void intel_i965_get_gtt_range(int *gtt_offset, int *gtt_size)
++{
++	switch (agp_bridge->dev->device) {
++	case PCI_DEVICE_ID_INTEL_IGD_HB:
++	case PCI_DEVICE_ID_INTEL_IGD_E_HB:
++	case PCI_DEVICE_ID_INTEL_Q45_HB:
++	case PCI_DEVICE_ID_INTEL_G45_HB:
++	    *gtt_offset =3D *gtt_size =3D MB(2);
++	    break;
++	default:
++	    *gtt_offset =3D *gtt_size =3D KB(512);
++	}
++}
++
+ /* The intel i965 automatically initializes the agp aperture during POST.
+  * Use the memory already set aside for in the GTT.
+  */
+@@ -1154,10 +1210,7 @@ static int intel_i965_create_gatt_table(struct agp_b=
+ridge_data *bridge)
+=20
+        temp &=3D 0xfff00000;
+=20
+-       if (agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_IGD_HB)
+-	       gtt_offset =3D gtt_size =3D MB(2);
+-       else
+-	       gtt_offset =3D gtt_size =3D KB(512);
++       intel_i965_get_gtt_range(&gtt_offset, &gtt_size);
+=20
+        intel_private.gtt =3D ioremap((temp + gtt_offset) , gtt_size);
+=20
+@@ -2063,6 +2116,12 @@ static const struct intel_driver_description {
+ 		NULL, &intel_g33_driver },
+ 	{ PCI_DEVICE_ID_INTEL_IGD_HB, PCI_DEVICE_ID_INTEL_IGD_IG, 0,
+ 	    "Intel Integrated Graphics Device", NULL, &intel_i965_driver },
++	{ PCI_DEVICE_ID_INTEL_IGD_E_HB, PCI_DEVICE_ID_INTEL_IGD_E_IG, 0,
++	    "Intel Integrated Graphics Device", NULL, &intel_i965_driver },
++	{ PCI_DEVICE_ID_INTEL_Q45_HB, PCI_DEVICE_ID_INTEL_Q45_IG, 0,
++	    "Q45/Q43", NULL, &intel_i965_driver },
++	{ PCI_DEVICE_ID_INTEL_G45_HB, PCI_DEVICE_ID_INTEL_G45_IG, 0,
++	    "G45/G43", NULL, &intel_i965_driver },
+ 	{ 0, 0, 0, NULL, NULL, NULL }
+ };
+=20
+@@ -2254,6 +2313,9 @@ static struct pci_device_id agp_intel_pci_table[] =3D=
+ {
+ 	ID(PCI_DEVICE_ID_INTEL_Q35_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_Q33_HB),
+ 	ID(PCI_DEVICE_ID_INTEL_IGD_HB),
++	ID(PCI_DEVICE_ID_INTEL_IGD_E_HB),
++	ID(PCI_DEVICE_ID_INTEL_Q45_HB),
++	ID(PCI_DEVICE_ID_INTEL_G45_HB),
+ 	{ }
+ };
+=20
+--=20
+1.5.4
+
+
+--=20
+Open Source Technology Center, Intel ltd.
+
+$gpg --keyserver wwwkeys.pgp.net --recv-keys 4D781827
+
+--1yeeQ81UyVL57Vl7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhYum8ACgkQsQQaM014GCciiQCffRrT2+QTv7C0c5Zab3oRFVp6
+nnMAn0bGxt6nDOehgOhB+TsSgKHYlMt+
+=5OkF
+-----END PGP SIGNATURE-----
+
+--1yeeQ81UyVL57Vl7--
