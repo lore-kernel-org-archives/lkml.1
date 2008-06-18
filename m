@@ -1,346 +1,323 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756746AbYFRWbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757017AbYFRWbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756746AbYFRWbX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 18:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbYFRWbM
+	id S1757017AbYFRWbj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 18:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbYFRWb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 18:31:12 -0400
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:20634 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752464AbYFRWbK (ORCPT
+	Wed, 18 Jun 2008 18:31:28 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:63190 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756774AbYFRWb0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 18:31:10 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=bkMnp/n6rXyNBEcI98tc6VfPRHBFzGTtzkGgEoOvz0AEbHwEeDL9yYQAfgD2joBvIIDxmgQeGXrpI9pjavFA1YVrJxXJEpTQgHs4O+pqQ92v1zKaaMCoZjXMhs1xnxS+9SRv4BJ9JHfH+GX5etIc7lCPb/R4rdZ+Zgq7Pf4SVEc=  ;
-X-YMail-OSG: aY8Z0akVM1myz4y3W.KR4TtKKW92jrgzLe1QNWQqUdt7AOxiJp0kzPyFIG5QOuE.ENcXfDseocWBXvs3jCqMYF8qqMUWpKBWlhe4KamPeHIRUyfxXMVmu3X0ozFz9j2uyRA-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 2.6.26-rc6-mm] gpio: mcp23s08 handles multiple chips per chipselect
-Date: Wed, 18 Jun 2008 15:31:07 -0700
-User-Agent: KMail/1.9.9
-Cc: lkml <linux-kernel@vger.kernel.org>
+	Wed, 18 Jun 2008 18:31:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=rIJKXuhOaHXxOBV4a4d1/MtuPxPwxnGg+Vw3FI7+PKOIfRjJAvzPjS1Z2vb/ge8tVz
+         RWr4Eir1qdAwEGPruMeCMBh8wolNjQRb5OUShprz1+7fbqmnmZbXhWyVTeWZOswJBbS6
+         RdGi6bgPCpybczF0vua9EpD1h3yq+I9ak5C84=
+Message-ID: <48598CB7.2000507@gmail.com>
+Date: Thu, 19 Jun 2008 00:31:19 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Swiftdove 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Carl Henrik Lunde <chlunde@ping.uio.no>
+CC: balbir@linux.vnet.ibm.com, menage@google.com, matt@bluehost.com,
+       roberto@unbit.it, randy.dunlap@oracle.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] i/o bandwidth controller infrastructure
+References: <1212791250-32320-3-git-send-email-righi.andrea@gmail.com> <20080618175710.GA2737@ping.uio.no>
+In-Reply-To: <20080618175710.GA2737@ping.uio.no>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806181531.07878.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Teach the mcp23s08 driver about a curious feature of these chips:
-up to four of them can share the same chipselect, with the SPI
-signals wired in parallel, by matching two bits in the first
-protocol byte against two address lines on the chip.
+Carl Henrik Lunde wrote:
+> On Sat, Jun 07, 2008 at 12:27:29AM +0200, Andrea Righi wrote:
+>> This is the core io-throttle kernel infrastructure. It creates the basic
+>> interfaces to cgroups and implements the I/O measurement and throttling
+>> functions.
+> [...]
+>> +void cgroup_io_account(struct block_device *bdev, size_t bytes)
+> [...]
+>> +	/* Account the I/O activity  */
+>> +	node->req += bytes;
+>> +
+>> +	/* Evaluate if we need to throttle the current process */
+>> +	delta = (long)jiffies - (long)node->last_request;
+>> +	if (!delta)
+>> +		goto out;
+>> +
+>> +	t = msecs_to_jiffies(node->req / node->iorate);
+>> +	if (!t)
+>> +		goto out;
+>> +
+>> +	sleep = t - delta;
+>> +	if (unlikely(sleep > 0)) {
+>> +		spin_unlock_irq(&iot->lock);
+>> +		if (__cant_sleep())
+>> +			return;
+>> +		pr_debug("io-throttle: task %p (%s) must sleep %lu jiffies\n",
+>> +			 current, current->comm, sleep);
+>> +		schedule_timeout_killable(sleep);
+>> +		return;
+>> +	}
+>> +
+>> +	/* Reset I/O accounting */
+>> +	node->req = 0;
+>> +	node->last_request = jiffies;
+> [...]
+> 
+> Did you consider using token bucket instead of this (leaky bucket?)?
+> 
+> I've attached a patch which implements token bucket.  Although not as
+> precise as the leaky bucket the performance is better at high bandwidth
+> streaming loads.
 
-This is handled by three software changes:
+Interesting! it could be great to have both available at runtime and
+just switch between leaky or token bucket, e.g. by echo-ing "leaky" or
+"token" to a file in the cgroup filesystem, ummm, block.limiting-algorithm?
 
-  * Platform data now holds an array of per-chip structs, not
-    just one chip's address and pullup configuration.
+> 
+> The leaky bucket stops at around 53 MB/s while token bucket works for
+> up to 64 MB/s.  The baseline (no cgroups) is 66 MB/s.
+> 
+> benchmark:
+> two streaming readers (fio) with block size 128k, bucket size 4 MB
+> 90% of the bandwidth was allocated to one process, the other gets 10%
 
-  * Probe() and remove() now use another level of structure,
-    wrapping an instance of the original structure for each
-    mcp23s08 chip sharing that chipselect.
+Thanks for posting the results, I'll look closely at your patch, test
+it as well and try merge your work.
 
-  * The HAEN bit is set, so that the hardware address bits can no
-    longer be ignored (boot firmware may not have set HAEN).
+I also did some improvements in v2 in terms of scalability, in
+particular I've replaced the rbtree with a liked list, in order to
+remove the spinlocks and replace them by RCU to protect the list
+structure. I need to do some stress tests before, but I'll post a v3
+soon.
 
-The "one struct per chip" preserves the guts of the current code,
-but platform_data will need minor changes.
+Some minor comments below for now.
 
-    OLD:
-	/* incorrect "slave" ID may not have mattered */
-	.slave = 3,
-	.pullups = BIT(3) | BIT(1) | BIT(0),
+> diff --git a/block/blk-io-throttle.c b/block/blk-io-throttle.c
+> index 804df88..9ed0c7c 100644
+> --- a/block/blk-io-throttle.c
+> +++ b/block/blk-io-throttle.c
+> @@ -40,7 +40,8 @@ struct iothrottle_node {
+>  	struct rb_node node;
+>  	dev_t dev;
+>  	unsigned long iorate;
+> -	unsigned long req;
+> +	long bucket_size; /* Max value for t */
+> +	long t;
+>  	unsigned long last_request;
+>  };
+>  
+> @@ -180,18 +181,20 @@ static ssize_t iothrottle_read(struct cgroup *cont,
+>  	iothrottle_for_each(n, &iot->tree) {
+>  		struct iothrottle_node *node =
+>  				rb_entry(n, struct iothrottle_node, node);
+> -		unsigned long delta = (long)jiffies - (long)node->last_request;
+> +		unsigned long delta = (((long)jiffies - (long)node->last_request) * 1000) / HZ;
 
-    NEW:
-	/* slave address _must_ match chip's wiring */
-	.chip[3] = {
-		.is_present = true,
-		.pullups = BIT(3) | BIT(1) | BIT(0),
-	},
+Better to use jiffies_to_msecs() here.
 
-There's no change in how things behave for spi_device nodes with
-a single mcp23s08 chip.  New multi-chip configurations assign GPIOs
-in sequence, without holes.  The spi_device just resembles a bigger
-controller, but internally it has multiple gpio_chip instances.
+>  
+>  		BUG_ON(!node->dev);
+>  		s += snprintf(s, nbytes - (s - buffer),
+>  				  "=== device (%u,%u) ===\n"
+>  				  "bandwidth-max: %lu KiB/sec\n"
+> -				  "    requested: %lu bytes\n"
+> -				  " last request: %lu jiffies\n"
+> -				  "        delta: %lu jiffies\n",
+> +				  "bucket size  : %ld KiB\n"
+> +				  "bucket fill  : %ld KiB (after last request)\n"
+> +				  "last request : %lu ms ago\n",
+>  				  MAJOR(node->dev), MINOR(node->dev),
+> -				  node->iorate, node->req,
+> -				  node->last_request, delta);
+> +				  node->iorate,
+> +				  node->bucket_size / 1024,
+> +				  node->t / 1024,
+> +				  delta);
+>  	}
+>  	spin_unlock_irq(&iot->lock);
+>  	buffer[nbytes] = '\0';
+> @@ -220,21 +223,33 @@ static inline dev_t devname2dev_t(const char *buf)
+>  	return ret;
+>  }
+>  
+> -static inline int iothrottle_parse_args(char *buf, size_t nbytes,
+> -					dev_t *dev, unsigned long *val)
+> +static inline int iothrottle_parse_args(char *buf, size_t nbytes, dev_t *dev,
+> +					unsigned long *iorate,
+> +					unsigned long *bucket_size)
+>  {
+> -	char *p;
+> +	char *ioratep, *bucket_sizep;
+>  
+> -	p = memchr(buf, ':', nbytes);
+> -	if (!p)
+> +	ioratep = memchr(buf, ':', nbytes);
+> +	if (!ioratep)
+>  		return -EINVAL;
+> -	*p++ = '\0';
+> +	*ioratep++ = '\0';
+> +
+> +	bucket_sizep = memchr(ioratep, ':', nbytes + ioratep - buf);
+> +	if (!bucket_sizep)
+> +		return -EINVAL;
+> +	*bucket_sizep++ = '\0';
+>  
+>  	*dev = devname2dev_t(buf);
+>  	if (!*dev)
+>  		return -ENOTBLK;
+>  
+> -	return strict_strtoul(p, 10, val);
+> +	if (strict_strtoul(ioratep, 10, iorate))
+> +		return -EINVAL;
+> +
+> +	if (strict_strtoul(bucket_sizep, 10, bucket_size))
+> +		return -EINVAL;
+> +
+> +	return 0;
+>  }
+>  
+>  static ssize_t iothrottle_write(struct cgroup *cont,
+> @@ -247,7 +262,7 @@ static ssize_t iothrottle_write(struct cgroup *cont,
+>  	struct iothrottle_node *node, *tmpn = NULL;
+>  	char *buffer, *tmpp;
+>  	dev_t dev;
+> -	unsigned long val;
+> +	unsigned long iorate, bucket_size;
+>  	int ret;
+>  
+>  	if (unlikely(!nbytes))
+> @@ -265,7 +280,7 @@ static ssize_t iothrottle_write(struct cgroup *cont,
+>  	buffer[nbytes] = '\0';
+>  	tmpp = strstrip(buffer);
+>  
+> -	ret = iothrottle_parse_args(tmpp, nbytes, &dev, &val);
+> +	ret = iothrottle_parse_args(tmpp, nbytes, &dev, &iorate, &bucket_size);
+>  	if (ret)
+>  		goto out1;
+>  
+> @@ -284,7 +299,7 @@ static ssize_t iothrottle_write(struct cgroup *cont,
+>  	iot = cgroup_to_iothrottle(cont);
+>  
+>  	spin_lock_irq(&iot->lock);
+> -	if (!val) {
+> +	if (!iorate) {
+>  		/* Delete a block device limiting rule */
+>  		iothrottle_delete_node(iot, dev);
+>  		ret = nbytes;
+> @@ -293,8 +308,9 @@ static ssize_t iothrottle_write(struct cgroup *cont,
+>  	node = iothrottle_search_node(iot, dev);
+>  	if (node) {
+>  		/* Update a block device limiting rule */
+> -		node->iorate = val;
+> -		node->req = 0;
+> +		node->iorate = iorate;
+> +		node->bucket_size = bucket_size * 1024;
+> +		node->t = 0;
+>  		node->last_request = jiffies;
+>  		ret = nbytes;
+>  		goto out3;
+> @@ -307,8 +323,9 @@ static ssize_t iothrottle_write(struct cgroup *cont,
+>  	node = tmpn;
+>  	tmpn = NULL;
+>  
+> -	node->iorate = val;
+> -	node->req = 0;
+> +	node->iorate = iorate;
+> +	node->bucket_size = bucket_size * 1024;
+> +	node->t = 0;
+>  	node->last_request = jiffies;
+>  	node->dev = dev;
+>  	ret = iothrottle_insert_node(iot, node);
+> @@ -355,7 +372,7 @@ void cgroup_io_account(struct block_device *bdev, size_t bytes)
+>  {
+>  	struct iothrottle *iot;
+>  	struct iothrottle_node *node;
+> -	unsigned long delta, t;
+> +	unsigned long delta;
+>  	long sleep;
+>  
+>  	if (unlikely(!bdev))
+> @@ -370,36 +387,37 @@ void cgroup_io_account(struct block_device *bdev, size_t bytes)
+>  	spin_lock_irq(&iot->lock);
+>  
+>  	node = iothrottle_search_node(iot, bdev->bd_inode->i_rdev);
+> -	if (!node || !node->iorate)
+> -		goto out;
+> -
+> -	/* Account the I/O activity  */
+> -	node->req += bytes;
+> +	if (!node || !node->iorate) {
+> +		spin_unlock_irq(&iot->lock);
+> +		return;
+> +	}
+>  
+> -	/* Evaluate if we need to throttle the current process */
+> +	/* Add tokens for time elapsed since last read */
+>  	delta = (long)jiffies - (long)node->last_request;
+> -	if (!delta)
+> -		goto out;
+> +	if (delta) {
+> +		node->last_request = jiffies;
+> +		node->t += (node->iorate * 1024 * delta) / HZ;
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- drivers/gpio/mcp23s08.c      |  133 ++++++++++++++++++++++++++++++++-----------
- include/linux/spi/mcp23s08.h |   25 +++++---
- 2 files changed, 118 insertions(+), 40 deletions(-)
+The same here:
+		node->t += node->iorate * 1024
+			 * jiffies_to_msec(delta) * MSEC_PER_SEC;
 
---- a/drivers/gpio/mcp23s08.c	2008-06-18 09:52:04.000000000 -0700
-+++ b/drivers/gpio/mcp23s08.c	2008-06-18 14:12:48.000000000 -0700
-@@ -40,15 +40,26 @@ struct mcp23s08 {
- 	struct spi_device	*spi;
- 	u8			addr;
- 
-+	u8			cache[11];
- 	/* lock protects the cached values */
- 	struct mutex		lock;
--	u8			cache[11];
- 
- 	struct gpio_chip	chip;
- 
- 	struct work_struct	work;
- };
- 
-+/* A given spi_device can represent up to four mcp23s08 chips
-+ * sharing the same chipselect but using different addresses
-+ * (e.g. chips #0 and #3 might be populated, but not #1 or $2).
-+ * Driver data holds all the per-chip data.
-+ */
-+struct mcp23s08_driver_data {
-+	unsigned		ngpio;
-+	struct mcp23s08		*mcp[4];
-+	struct mcp23s08		chip[];
-+};
-+
- static int mcp23s08_read(struct mcp23s08 *mcp, unsigned reg)
- {
- 	u8	tx[2], rx[1];
-@@ -208,25 +219,18 @@ done:
- 
- /*----------------------------------------------------------------------*/
- 
--static int mcp23s08_probe(struct spi_device *spi)
-+static int mcp23s08_probe_one(struct spi_device *spi, unsigned addr,
-+		unsigned base, unsigned pullups)
- {
--	struct mcp23s08			*mcp;
--	struct mcp23s08_platform_data	*pdata;
-+	struct mcp23s08_driver_data	*data = spi_get_drvdata(spi);
-+	struct mcp23s08			*mcp = data->mcp[addr];
- 	int				status;
- 	int				do_update = 0;
- 
--	pdata = spi->dev.platform_data;
--	if (!pdata || pdata->slave > 3 || !pdata->base)
--		return -ENODEV;
--
--	mcp = kzalloc(sizeof *mcp, GFP_KERNEL);
--	if (!mcp)
--		return -ENOMEM;
--
- 	mutex_init(&mcp->lock);
- 
- 	mcp->spi = spi;
--	mcp->addr = 0x40 | (pdata->slave << 1);
-+	mcp->addr = 0x40 | (addr << 1);
- 
- 	mcp->chip.label = "mcp23s08",
- 
-@@ -236,27 +240,28 @@ static int mcp23s08_probe(struct spi_dev
- 	mcp->chip.set = mcp23s08_set;
- 	mcp->chip.dbg_show = mcp23s08_dbg_show;
- 
--	mcp->chip.base = pdata->base;
-+	mcp->chip.base = base;
- 	mcp->chip.ngpio = 8;
- 	mcp->chip.can_sleep = 1;
- 	mcp->chip.dev = &spi->dev;
- 	mcp->chip.owner = THIS_MODULE;
- 
--	spi_set_drvdata(spi, mcp);
--
--	/* verify MCP_IOCON.SEQOP = 0, so sequential reads work */
-+	/* verify MCP_IOCON.SEQOP = 0, so sequential reads work,
-+	 * and MCP_IOCON.HAEN = 1, so we work with all chips.
-+	 */
- 	status = mcp23s08_read(mcp, MCP_IOCON);
- 	if (status < 0)
- 		goto fail;
--	if (status & IOCON_SEQOP) {
-+	if ((status & IOCON_SEQOP) || !(status & IOCON_HAEN)) {
- 		status &= ~IOCON_SEQOP;
-+		status |= IOCON_HAEN;
- 		status = mcp23s08_write(mcp, MCP_IOCON, (u8) status);
- 		if (status < 0)
- 			goto fail;
- 	}
- 
- 	/* configure ~100K pullups */
--	status = mcp23s08_write(mcp, MCP_GPPU, pdata->pullups);
-+	status = mcp23s08_write(mcp, MCP_GPPU, pullups);
- 	if (status < 0)
- 		goto fail;
- 
-@@ -283,11 +288,58 @@ static int mcp23s08_probe(struct spi_dev
- 		tx[1] = MCP_IPOL;
- 		memcpy(&tx[2], &mcp->cache[MCP_IPOL], sizeof(tx) - 2);
- 		status = spi_write_then_read(mcp->spi, tx, sizeof tx, NULL, 0);
--
--		/* FIXME check status... */
-+		if (status < 0)
-+			goto fail;
- 	}
- 
- 	status = gpiochip_add(&mcp->chip);
-+fail:
-+	if (status < 0)
-+		dev_dbg(&spi->dev, "can't setup chip %d, --> %d\n",
-+				addr, status);
-+	return status;
-+}
-+
-+static int mcp23s08_probe(struct spi_device *spi)
-+{
-+	struct mcp23s08_platform_data	*pdata;
-+	unsigned			addr;
-+	unsigned			chips = 0;
-+	struct mcp23s08_driver_data	*data;
-+	int				status;
-+	unsigned			base;
-+
-+	pdata = spi->dev.platform_data;
-+	if (!pdata || !gpio_is_valid(pdata->base))
-+		return -ENODEV;
-+
-+	for (addr = 0; addr < 4; addr++) {
-+		if (!pdata->chip[addr].is_present)
-+			continue;
-+		chips++;
-+	}
-+	if (!chips)
-+		return -ENODEV;
-+
-+	data = kzalloc(sizeof *data + chips * sizeof(struct mcp23s08),
-+			GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+	spi_set_drvdata(spi, data);
-+
-+	base = pdata->base;
-+	for (addr = 0; addr < 4; addr++) {
-+		if (!pdata->chip[addr].is_present)
-+			continue;
-+		chips--;
-+		data->mcp[addr] = &data->chip[chips];
-+		status = mcp23s08_probe_one(spi, addr, base,
-+				pdata->chip[addr].pullups);
-+		if (status < 0)
-+			goto fail;
-+		base += 8;
-+	}
-+	data->ngpio = base - pdata->base;
- 
- 	/* NOTE:  these chips have a relatively sane IRQ framework, with
- 	 * per-signal masking and level/edge triggering.  It's not yet
-@@ -295,8 +347,9 @@ static int mcp23s08_probe(struct spi_dev
- 	 */
- 
- 	if (pdata->setup) {
--		status = pdata->setup(spi, mcp->chip.base,
--				mcp->chip.ngpio, pdata->context);
-+		status = pdata->setup(spi,
-+				pdata->base, data->ngpio,
-+				pdata->context);
- 		if (status < 0)
- 			dev_dbg(&spi->dev, "setup --> %d\n", status);
- 	}
-@@ -304,19 +357,29 @@ static int mcp23s08_probe(struct spi_dev
- 	return 0;
- 
- fail:
--	kfree(mcp);
-+	for (addr = 0; addr < 4; addr++) {
-+		int tmp;
-+
-+		if (!data->mcp[addr])
-+			continue;
-+		tmp = gpiochip_remove(&data->mcp[addr]->chip);
-+		if (tmp < 0)
-+			dev_err(&spi->dev, "%s --> %d\n", "remove", tmp);
-+	}
-+	kfree(data);
- 	return status;
- }
- 
- static int mcp23s08_remove(struct spi_device *spi)
- {
--	struct mcp23s08			*mcp = spi_get_drvdata(spi);
-+	struct mcp23s08_driver_data	*data = spi_get_drvdata(spi);
- 	struct mcp23s08_platform_data	*pdata = spi->dev.platform_data;
-+	unsigned			addr;
- 	int				status = 0;
- 
- 	if (pdata->teardown) {
- 		status = pdata->teardown(spi,
--				mcp->chip.base, mcp->chip.ngpio,
-+				pdata->base, data->ngpio,
- 				pdata->context);
- 		if (status < 0) {
- 			dev_err(&spi->dev, "%s --> %d\n", "teardown", status);
-@@ -324,11 +387,20 @@ static int mcp23s08_remove(struct spi_de
- 		}
- 	}
- 
--	status = gpiochip_remove(&mcp->chip);
-+	for (addr = 0; addr < 4; addr++) {
-+		int tmp;
-+
-+		if (!data->mcp[addr])
-+			continue;
-+
-+		tmp = gpiochip_remove(&data->mcp[addr]->chip);
-+		if (tmp < 0) {
-+			dev_err(&spi->dev, "%s --> %d\n", "remove", tmp);
-+			status = tmp;
-+		}
-+	}
- 	if (status == 0)
--		kfree(mcp);
--	else
--		dev_err(&spi->dev, "%s --> %d\n", "remove", status);
-+		kfree(data);
- 	return status;
- }
- 
-@@ -356,4 +428,3 @@ static void __exit mcp23s08_exit(void)
- module_exit(mcp23s08_exit);
- 
- MODULE_LICENSE("GPL");
--
---- a/include/linux/spi/mcp23s08.h	2008-06-18 09:35:17.000000000 -0700
-+++ b/include/linux/spi/mcp23s08.h	2008-06-18 14:11:37.000000000 -0700
-@@ -1,18 +1,25 @@
- 
--/* FIXME driver should be able to handle all four slaves that
-- * can be hooked up to each chipselect, as well as IRQs...
-- */
-+/* FIXME driver should be able to handle IRQs...  */
-+
-+struct mcp23s08_chip_info {
-+	bool	is_present;		/* true iff populated */
-+	u8	pullups;		/* BIT(x) means enable pullup x */
-+};
- 
- struct mcp23s08_platform_data {
--	/* four slaves can share one SPI chipselect */
--	u8		slave;
-+	/* Four slaves (numbered 0..3) can share one SPI chipselect, and
-+	 * will provide 8..32 GPIOs using 1..4 gpio_chip instances.
-+	 */
-+	struct mcp23s08_chip_info	chip[4];
- 
--	/* number assigned to the first GPIO */
-+	/* "base" is the number of the first GPIO.  Dynamic assignment is
-+	 * not currently supported, and even if there are gaps in chip
-+	 * addressing the GPIO numbers are sequential .. so for example
-+	 * if only slaves 0 and 3 are present, their GPIOs range from
-+	 * base to base+15.
-+	 */
- 	unsigned	base;
- 
--	/* pins with pullups */
--	u8		pullups;
--
- 	void		*context;	/* param to setup/teardown */
- 
- 	int		(*setup)(struct spi_device *spi,
+>  
+> -	t = msecs_to_jiffies(node->req / node->iorate);
+> -	if (!t)
+> -		goto out;
+> +		if (node->t > node->bucket_size)
+> +			node->t = node->bucket_size;
+> +	}
+>  
+> -	sleep = t - delta;
+> -	if (unlikely(sleep > 0)) {
+> -		spin_unlock_irq(&iot->lock);
+> -		if (__cant_sleep())
+> -			return;
+> -		pr_debug("io-throttle: task %p (%s) must sleep %lu jiffies\n",
+> -			 current, current->comm, sleep);
+> -		schedule_timeout_killable(sleep);
+> -		return;
+> +	/* Account the I/O activity  */
+> +	node->t -= bytes;
+> +
+> +	if (node->t < 0) {
+> +		sleep = (-node->t) * HZ / (node->iorate * 1024);
+
+And again:
+		sleep = msec_to_jiffies(-node->t / (node->iorate * 1024)
+					* MSEC_PER_SEC);
+
+> +	} else {
+> +		sleep = 0;
+>  	}
+>  
+> -	/* Reset I/O accounting */
+> -	node->req = 0;
+> -	node->last_request = jiffies;
+> -out:
+>  	spin_unlock_irq(&iot->lock);
+> +
+> +	if (sleep && !__cant_sleep()) {
+> +		pr_debug("io-throttle: %s[%d] must sleep %ld jiffies\n",
+> +			 current->comm, current->pid, sleep);
+> +
+> +		schedule_timeout_killable(sleep);
+> +	}
+>  }
+>  EXPORT_SYMBOL(cgroup_io_account);
+
+Thanks,
+-Andrea
