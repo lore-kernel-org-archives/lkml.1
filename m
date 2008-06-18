@@ -1,88 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbYFRWKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbYFRWMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756723AbYFRWKg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 18:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753770AbYFRWK1
+	id S1756402AbYFRWMg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 18:12:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbYFRWMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 18:10:27 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45804 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753558AbYFRWK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 18:10:26 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
-Date: Thu, 19 Jun 2008 00:11:37 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806180053.40044.rjw@sisk.pl> <Pine.LNX.4.55.0806180400070.28110@cliff.in.clinika.pl>
-In-Reply-To: <Pine.LNX.4.55.0806180400070.28110@cliff.in.clinika.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 18 Jun 2008 18:12:24 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51484
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753874AbYFRWMX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 18:12:23 -0400
+Date: Wed, 18 Jun 2008 15:12:24 -0700 (PDT)
+Message-Id: <20080618.151224.211093487.davem@davemloft.net>
+To: auke-jan.h.kok@intel.com
+Cc: mingo@elte.hu, vgusev@openvz.org, e1000-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@sisk.pl,
+       mcmanus@ducksong.com, ilpo.jarvinen@helsinki.fi, kuznet@ms2.inr.ac.ru,
+       xemul@openvz.org, torvalds@linux-foundation.org, jeff@garzik.org,
+       arjan@linux.intel.com
+Subject: Re: [E1000-devel] [TCP]: TCP_DEFER_ACCEPT causes leak sockets
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <48597D48.5090604@intel.com>
+References: <48595910.8000905@intel.com>
+	<20080618200805.GA18756@elte.hu>
+	<48597D48.5090604@intel.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806190011.38548.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 18 of June 2008, Maciej W. Rozycki wrote:
-> On Wed, 18 Jun 2008, Rafael J. Wysocki wrote:
-> 
-> > Here you go.  Below is the relevant snippet from the yesterday's linux-next
-> > dmesg with the patches:
-> > "x86: I/O APIC: timer through 8259A second-chance"
-> > "x86: add C1E aware idle function"
-> > reverted and the appended debug patch applied.
-> > 
-> > [    0.108006] TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
-> > [    0.108006] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
-> > [    0.108006] ...trying to set up timer (IRQ0) through the 8259A ... <2> failed
-> > [    0.108006] ...trying to set up timer as Virtual Wire IRQ...<2> works.
-> > 
-> > The entire dmesg is at: http://www.sisk.pl/kernel/debug/20080616/dmesg-4.log
-> 
->  Thanks -- this is very important and useful information as it shows the
-> exact alternative used.
-> 
->  With such a configuration the "x86: I/O APIC: timer through 8259A
-> second-chance" patch should not matter, because the only change it
-> introduces is an attempt to try the same I/O APIC pin again, but with the
-> IRQ0 line of the master 8259A enabled.  That's not a terribly unusual 
-> configuration and nothing should get confused in the system.
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Date: Wed, 18 Jun 2008 14:25:28 -0700
 
-But it _does_ get confused, really.
+> You only complain and do not provide a single solution to your
+> problem. Your continued screaming and whining is totally not
+> productive nor constructive at all, and frankly is insulting since
+> you completely ignore the fact that we worked with the the community
+> more than two-year to come to some maintainable situation.
 
->  Barring the unlikely possibility of the 8259A actually being wired to 
-> INTIN2 of the I/O APIC I can see two possible explanations:
-> 
-> 1. The 8259A interrupt actually escapes to the CPU somehow and is handled
->    as an ExtINTA interrupt.  This would make the code in check_timer()  
->    decide it has found a working configuration, while actually it has been
->    fooled.
-> 
-> 2. There is a bug in this patch or an assumption it makes which results 
->    in the state of some component not to be restored correctly.  
->    Unfortunately I have no resources to test the 64-bit variation of the 
->    code, so something may have escaped my attention.
-> 
->  I'd like to find out which one is the case -- can you please reapply the
-> patch and send me the corresponding section of the bootstrap log?  If the
-> system hangs before you can retrieve the log, please just place:
+I completely and %100 agree with you.
 
-Here you go:
+> Until I see such a thing I can't do much else than ignore
+> your childish whining.
 
-[    0.108006] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
-[    0.108006] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
-[    0.108006] ...trying to set up timer (IRQ0) through the 8259A ... <3>
-[    0.108006] ..... (found apic 0 pin 2) ...<3> works.
+Join the club.
 
-The full dmesg is at: http://www.sisk.pl/kernel/debug/20080618/dmesg-1.log
-
-Thanks,
-Rafael
+I'm also ignoring everything he writes until he changes his modus
+operandi to one that is more constructive than the pure hurtful
+whining he is emitting as of late.
