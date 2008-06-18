@@ -1,426 +1,325 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbYFRSX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbYFRSbH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756057AbYFRSX0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 14:23:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbYFRSXQ
+	id S1755241AbYFRSbH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 14:31:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbYFRSay
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 14:23:16 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:10033 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753161AbYFRSXP (ORCPT
+	Wed, 18 Jun 2008 14:30:54 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:34284 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752880AbYFRSax (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 14:23:15 -0400
-Subject: Re: [Experimental][PATCH] putback_lru_page rework
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-In-Reply-To: <20080618184000.a855dfe0.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
-	 <20080617163501.7cf411ee.nishimura@mxp.nes.nec.co.jp>
-	 <20080617164709.de4db070.nishimura@mxp.nes.nec.co.jp>
-	 <20080618184000.a855dfe0.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Wed, 18 Jun 2008 14:21:06 -0400
-Message-Id: <1213813266.6497.14.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Wed, 18 Jun 2008 14:30:53 -0400
+From: Louis Rilling <louis.rilling@kerlabs.com>
+To: Joel.Becker@oracle.com
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
+       Louis Rilling <louis.rilling@kerlabs.com>
+Subject: [RFC][PATCH] configfs: Report errors in config_*_init_type_name()
+Date: Wed, 18 Jun 2008 20:30:51 +0200
+Message-Id: <1213813851-7359-1-git-send-email-louis.rilling@kerlabs.com>
+X-Mailer: git-send-email 1.5.5.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-06-18 at 18:40 +0900, KAMEZAWA Hiroyuki wrote:
-> Lee-san, how about this ?
-> Tested on x86-64 and tried Nisimura-san's test at el. works good now.
+ [ applies on top of http://lkml.org/lkml/2008/6/12/427 ]
 
-I have been testing with my work load on both ia64 and x86_64 and it
-seems to be working well.  I'll let them run for a day or so.
+config_item_set_name() may fail but its error code is not checked in
+config_*_init_type_name().
 
-> -Kame
-> ==
-> putback_lru_page()/unevictable page handling rework.
-> 
-> Now, putback_lru_page() requires that the page is locked.
-> And in some special case, implicitly unlock it.
-> 
-> This patch tries to make putback_lru_pages() to be lock_page() free.
-> (Of course, some callers must take the lock.)
-> 
-> The main reason that putback_lru_page() assumes that page is locked
-> is to avoid the change in page's status among Mlocked/Not-Mlocked.
-> 
-> Once it is added to unevictable list, the page is removed from
-> unevictable list only when page is munlocked. (there are other special
-> case. but we ignore the special case.)
-> So, status change during putback_lru_page() is fatal and page should 
-> be locked.
-> 
-> putback_lru_page() in this patch has a new concepts.
-> When it adds page to unevictable list, it checks the status is 
-> changed or not again. if changed, retry to putback.
+This patch adds the missing error checking and make config_*_init_type_name()
+report errors. In-tree users are updated to report errors as well.
 
-Given that the race that would activate this retry is likely quite rare,
-this approach makes sense.  
+Signed-off-by: Louis Rilling <louis.rilling@kerlabs.com>
+---
+ drivers/net/netconsole.c       |    8 +++++-
+ fs/configfs/item.c             |   18 +++++++++++---
+ fs/dlm/config.c                |   48 ++++++++++++++++++++++++++++++++-------
+ fs/ocfs2/cluster/heartbeat.c   |   10 +++++--
+ fs/ocfs2/cluster/nodemanager.c |   18 ++++++++++----
+ include/linux/configfs.h       |    8 +++---
+ 6 files changed, 84 insertions(+), 26 deletions(-)
 
-> 
-> This patche changes also caller side and cleaning up lock/unlock_page().
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroy@jp.fujitsu.com>
-
-A couple of minor comments below, but:
-
-Acked-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
-
-> 
-> ---
->  mm/internal.h |    2 -
->  mm/migrate.c  |   23 +++----------
->  mm/mlock.c    |   24 +++++++-------
->  mm/vmscan.c   |   96 +++++++++++++++++++++++++---------------------------------
->  4 files changed, 61 insertions(+), 84 deletions(-)
-> 
-> Index: test-2.6.26-rc5-mm3/mm/vmscan.c
-> ===================================================================
-> --- test-2.6.26-rc5-mm3.orig/mm/vmscan.c
-> +++ test-2.6.26-rc5-mm3/mm/vmscan.c
-> @@ -486,73 +486,63 @@ int remove_mapping(struct address_space 
->   * Page may still be unevictable for other reasons.
->   *
->   * lru_lock must not be held, interrupts must be enabled.
-> - * Must be called with page locked.
-> - *
-> - * return 1 if page still locked [not truncated], else 0
->   */
-> -int putback_lru_page(struct page *page)
-> +#ifdef CONFIG_UNEVICTABLE_LRU
-> +void putback_lru_page(struct page *page)
->  {
->  	int lru;
-> -	int ret = 1;
->  	int was_unevictable;
->  
-> -	VM_BUG_ON(!PageLocked(page));
->  	VM_BUG_ON(PageLRU(page));
->  
-> -	lru = !!TestClearPageActive(page);
->  	was_unevictable = TestClearPageUnevictable(page); /* for page_evictable() */
->  
-> -	if (unlikely(!page->mapping)) {
-> -		/*
-> -		 * page truncated.  drop lock as put_page() will
-> -		 * free the page.
-> -		 */
-> -		VM_BUG_ON(page_count(page) != 1);
-> -		unlock_page(page);
-> -		ret = 0;
-> -	} else if (page_evictable(page, NULL)) {
-> -		/*
-> -		 * For evictable pages, we can use the cache.
-> -		 * In event of a race, worst case is we end up with an
-> -		 * unevictable page on [in]active list.
-> -		 * We know how to handle that.
-> -		 */
-> +redo:
-> +	lru = !!TestClearPageActive(page);
-> +	if (page_evictable(page, NULL)) {
->  		lru += page_is_file_cache(page);
->  		lru_cache_add_lru(page, lru);
-> -		mem_cgroup_move_lists(page, lru);
-> -#ifdef CONFIG_UNEVICTABLE_LRU
-> -		if (was_unevictable)
-> -			count_vm_event(NORECL_PGRESCUED);
-> -#endif
->  	} else {
-> -		/*
-> -		 * Put unevictable pages directly on zone's unevictable
-> -		 * list.
-> -		 */
-> +		lru = LRU_UNEVICTABLE;
->  		add_page_to_unevictable_list(page);
-> -		mem_cgroup_move_lists(page, LRU_UNEVICTABLE);
-> -#ifdef CONFIG_UNEVICTABLE_LRU
-> -		if (!was_unevictable)
-> -			count_vm_event(NORECL_PGCULLED);
-> -#endif
->  	}
-> +	mem_cgroup_move_lists(page, lru);
-> +
-> +	/*
-> +	 * page's status can change while we move it among lru. If an evictable
-> +	 * page is on unevictable list, it never be freed. To avoid that,
-> +	 * check after we added it to the list, again.
-> +	 */
-> +	if (lru == LRU_UNEVICTABLE && page_evictable(page, NULL)) {
-> +		if (!isolate_lru_page(page)) {
-> +			put_page(page);
-> +			goto redo;
-> +		}
-> +		/* This means someone else dropped this page from LRU
-> +		 * So, it will be freed or putback to LRU again. There is
-> +		 * nothing to do here.
-> +		 */
-> +	}
-> +
-> +	if (was_unevictable && lru != LRU_UNEVICTABLE)
-> +		count_vm_event(NORECL_PGRESCUED);
-> +	else if (!was_unevictable && lru == LRU_UNEVICTABLE)
-> +		count_vm_event(NORECL_PGCULLED);
->  
->  	put_page(page);		/* drop ref from isolate */
-> -	return ret;		/* ret => "page still locked" */
->  }
-> -
-> -/*
-> - * Cull page that shrink_*_list() has detected to be unevictable
-> - * under page lock to close races with other tasks that might be making
-> - * the page evictable.  Avoid stranding an evictable page on the
-> - * unevictable list.
-> - */
-> -static void cull_unevictable_page(struct page *page)
-> +#else
-> +void putback_lru_page(struct page *page)
->  {
-> -	lock_page(page);
-> -	if (putback_lru_page(page))
-> -		unlock_page(page);
-> +	int lru;
-> +	VM_BUG_ON(PageLRU(page));
-> +
-> +	lru = !!TestClearPageActive(page) + page_is_file_cache(page);
-> +	lru_cache_add_lru(page, lru);
-> +	mem_cgroup_move_lists(page, lru);
-> +	put_page(page);
->  }
-> +#endif
->  
->  /*
->   * shrink_page_list() returns the number of reclaimed pages
-> @@ -746,8 +736,8 @@ free_it:
->  		continue;
->  
->  cull_mlocked:
-> -		if (putback_lru_page(page))
-> -			unlock_page(page);
-> +		unlock_page(page);
-> +		putback_lru_page(page);
->  		continue;
->  
->  activate_locked:
-> @@ -1127,7 +1117,7 @@ static unsigned long shrink_inactive_lis
->  			list_del(&page->lru);
->  			if (unlikely(!page_evictable(page, NULL))) {
->  				spin_unlock_irq(&zone->lru_lock);
-> -				cull_unevictable_page(page);
-> +				putback_lru_page(page);
->  				spin_lock_irq(&zone->lru_lock);
->  				continue;
->  			}
-> @@ -1231,7 +1221,7 @@ static void shrink_active_list(unsigned 
->  		list_del(&page->lru);
->  
->  		if (unlikely(!page_evictable(page, NULL))) {
-> -			cull_unevictable_page(page);
-> +			putback_lru_page(page);
->  			continue;
->  		}
->  
-> @@ -2393,8 +2383,6 @@ int zone_reclaim(struct zone *zone, gfp_
->  int page_evictable(struct page *page, struct vm_area_struct *vma)
->  {
->  
-> -	VM_BUG_ON(PageUnevictable(page));
-> -
->  	if (mapping_unevictable(page_mapping(page)))
->  		return 0;
->  
-> Index: test-2.6.26-rc5-mm3/mm/mlock.c
-> ===================================================================
-> --- test-2.6.26-rc5-mm3.orig/mm/mlock.c
-> +++ test-2.6.26-rc5-mm3/mm/mlock.c
-> @@ -55,7 +55,6 @@ EXPORT_SYMBOL(can_do_mlock);
->   */
->  void __clear_page_mlock(struct page *page)
->  {
-> -	VM_BUG_ON(!PageLocked(page));	/* for LRU isolate/putback */
->  
->  	dec_zone_page_state(page, NR_MLOCK);
->  	count_vm_event(NORECL_PGCLEARED);
-> @@ -79,7 +78,6 @@ void __clear_page_mlock(struct page *pag
->   */
->  void mlock_vma_page(struct page *page)
->  {
-> -	BUG_ON(!PageLocked(page));
->  
->  	if (!TestSetPageMlocked(page)) {
->  		inc_zone_page_state(page, NR_MLOCK);
-> @@ -109,7 +107,6 @@ void mlock_vma_page(struct page *page)
->   */
->  static void munlock_vma_page(struct page *page)
->  {
-> -	BUG_ON(!PageLocked(page));
->  
->  	if (TestClearPageMlocked(page)) {
->  		dec_zone_page_state(page, NR_MLOCK);
-> @@ -169,7 +166,8 @@ static int __mlock_vma_pages_range(struc
->  
->  		/*
->  		 * get_user_pages makes pages present if we are
-> -		 * setting mlock.
-> +		 * setting mlock. and this extra reference count will
-> +		 * disable migration of this page.
->  		 */
->  		ret = get_user_pages(current, mm, addr,
->  				min_t(int, nr_pages, ARRAY_SIZE(pages)),
-> @@ -197,14 +195,8 @@ static int __mlock_vma_pages_range(struc
->  		for (i = 0; i < ret; i++) {
->  			struct page *page = pages[i];
->  
-> -			/*
-> -			 * page might be truncated or migrated out from under
-> -			 * us.  Check after acquiring page lock.
-> -			 */
-> -			lock_page(page);
-
-Hmmm.  Still thinking about this.  No need to protect against in flight
-truncation or migration?
-
-> -			if (page->mapping)
-> +			if (page_mapcount(page))
->  				mlock_vma_page(page);
-> -			unlock_page(page);
->  			put_page(page);		/* ref from get_user_pages() */
->  
->  			/*
-> @@ -240,6 +232,9 @@ static int __munlock_pte_handler(pte_t *
->  	struct page *page;
->  	pte_t pte;
->  
-> +	/*
-> +	 * page is never be unmapped by page-reclaim. we lock this page now.
-> +	 */
-
-I don't understand what you're trying to say here.  That is, what the
-point of this comment is...
-
->  retry:
->  	pte = *ptep;
->  	/*
-> @@ -261,7 +256,15 @@ retry:
->  		goto out;
->  
->  	lock_page(page);
-> -	if (!page->mapping) {
-> +	/*
-> +	 * Because we lock page here, we have to check 2 cases.
-> +	 * - the page is migrated.
-> +	 * - the page is truncated (file-cache only)
-> +	 * Note: Anonymous page doesn't clear page->mapping even if it
-> +	 * is removed from rmap.
-> +	 */
-> +	if (!page->mapping ||
-> +	     (PageAnon(page) && !page_mapcount(page))) {
->  		unlock_page(page);
->  		goto retry;
->  	}
-> Index: test-2.6.26-rc5-mm3/mm/migrate.c
-> ===================================================================
-> --- test-2.6.26-rc5-mm3.orig/mm/migrate.c
-> +++ test-2.6.26-rc5-mm3/mm/migrate.c
-> @@ -67,9 +67,7 @@ int putback_lru_pages(struct list_head *
->  
->  	list_for_each_entry_safe(page, page2, l, lru) {
->  		list_del(&page->lru);
-> -		lock_page(page);
-> -		if (putback_lru_page(page))
-> -			unlock_page(page);
-> +		putback_lru_page(page);
->  		count++;
->  	}
->  	return count;
-> @@ -571,7 +569,6 @@ static int fallback_migrate_page(struct 
->  static int move_to_new_page(struct page *newpage, struct page *page)
->  {
->  	struct address_space *mapping;
-> -	int unlock = 1;
->  	int rc;
->  
->  	/*
-> @@ -610,12 +607,11 @@ static int move_to_new_page(struct page 
->  		 * Put back on LRU while holding page locked to
->  		 * handle potential race with, e.g., munlock()
->  		 */
-> -		unlock = putback_lru_page(newpage);
-> +		putback_lru_page(newpage);
->  	} else
->  		newpage->mapping = NULL;
->  
-> -	if (unlock)
-> -		unlock_page(newpage);
-> +	unlock_page(newpage);
->  
->  	return rc;
->  }
-> @@ -632,7 +628,6 @@ static int unmap_and_move(new_page_t get
->  	struct page *newpage = get_new_page(page, private, &result);
->  	int rcu_locked = 0;
->  	int charge = 0;
-> -	int unlock = 1;
->  
->  	if (!newpage)
->  		return -ENOMEM;
-> @@ -713,6 +708,7 @@ rcu_unlock:
->  		rcu_read_unlock();
->  
->  unlock:
-> +	unlock_page(page);
->  
->  	if (rc != -EAGAIN) {
->   		/*
-> @@ -722,18 +718,9 @@ unlock:
->   		 * restored.
->   		 */
->   		list_del(&page->lru);
-> -		if (!page->mapping) {
-> -			VM_BUG_ON(page_count(page) != 1);
-> -			unlock_page(page);
-> -			put_page(page);		/* just free the old page */
-> -			goto end_migration;
-> -		} else
-> -			unlock = putback_lru_page(page);
-> +		putback_lru_page(page);
->  	}
->  
-> -	if (unlock)
-> -		unlock_page(page);
-> -
->  end_migration:
->  	if (!charge)
->  		mem_cgroup_end_migration(newpage);
-> Index: test-2.6.26-rc5-mm3/mm/internal.h
-> ===================================================================
-> --- test-2.6.26-rc5-mm3.orig/mm/internal.h
-> +++ test-2.6.26-rc5-mm3/mm/internal.h
-> @@ -43,7 +43,7 @@ static inline void __put_page(struct pag
->   * in mm/vmscan.c:
->   */
->  extern int isolate_lru_page(struct page *page);
-> -extern int putback_lru_page(struct page *page);
-> +extern void putback_lru_page(struct page *page);
->  
->  /*
->   * in mm/page_alloc.c
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+diff --git a/drivers/net/netconsole.c b/drivers/net/netconsole.c
+index 387a133..9f74746 100644
+--- a/drivers/net/netconsole.c
++++ b/drivers/net/netconsole.c
+@@ -591,6 +591,7 @@ static int make_netconsole_target(struct config_group *group,
+ {
+ 	unsigned long flags;
+ 	struct netconsole_target *nt;
++	int err;
+ 
+ 	/*
+ 	 * Allocate and initialize with defaults.
+@@ -609,7 +610,12 @@ static int make_netconsole_target(struct config_group *group,
+ 	memset(nt->np.remote_mac, 0xff, ETH_ALEN);
+ 
+ 	/* Initialize the config_item member */
+-	config_item_init_type_name(&nt->item, name, &netconsole_target_type);
++	err = config_item_init_type_name(&nt->item, name,
++					 &netconsole_target_type);
++	if (err) {
++		kfree(nt);
++		return err;
++	}
+ 
+ 	/* Adding, but it is disabled */
+ 	spin_lock_irqsave(&target_list_lock, flags);
+diff --git a/fs/configfs/item.c b/fs/configfs/item.c
+index 76dc4c3..adccddd 100644
+--- a/fs/configfs/item.c
++++ b/fs/configfs/item.c
+@@ -112,22 +112,32 @@ int config_item_set_name(struct config_item * item, const char * fmt, ...)
+ 
+ EXPORT_SYMBOL(config_item_set_name);
+ 
+-void config_item_init_type_name(struct config_item *item,
++int config_item_init_type_name(struct config_item *item,
+ 				const char *name,
+ 				struct config_item_type *type)
+ {
+-	config_item_set_name(item, name);
++	int error;
++
++	error = config_item_set_name(item, name);
++	if (error)
++		return error;
+ 	item->ci_type = type;
+ 	config_item_init(item);
++	return 0;
+ }
+ EXPORT_SYMBOL(config_item_init_type_name);
+ 
+-void config_group_init_type_name(struct config_group *group, const char *name,
++int config_group_init_type_name(struct config_group *group, const char *name,
+ 			 struct config_item_type *type)
+ {
+-	config_item_set_name(&group->cg_item, name);
++	int error;
++
++	error = config_item_set_name(&group->cg_item, name);
++	if (error)
++		return error;
+ 	group->cg_item.ci_type = type;
+ 	config_group_init(group);
++	return 0;
+ }
+ EXPORT_SYMBOL(config_group_init_type_name);
+ 
+diff --git a/fs/dlm/config.c b/fs/dlm/config.c
+index 492d8ca..dff563f 100644
+--- a/fs/dlm/config.c
++++ b/fs/dlm/config.c
+@@ -403,6 +403,7 @@ static int make_cluster(struct config_group *g, const char *name,
+ 	struct spaces *sps = NULL;
+ 	struct comms *cms = NULL;
+ 	void *gps = NULL;
++	int ret = -ENOMEM;
+ 
+ 	cl = kzalloc(sizeof(struct cluster), GFP_KERNEL);
+ 	gps = kcalloc(3, sizeof(struct config_group *), GFP_KERNEL);
+@@ -412,9 +413,16 @@ static int make_cluster(struct config_group *g, const char *name,
+ 	if (!cl || !gps || !sps || !cms)
+ 		goto fail;
+ 
+-	config_group_init_type_name(&cl->group, name, &cluster_type);
+-	config_group_init_type_name(&sps->ss_group, "spaces", &spaces_type);
+-	config_group_init_type_name(&cms->cs_group, "comms", &comms_type);
++	ret = config_group_init_type_name(&cl->group, name, &cluster_type);
++	if (ret)
++		goto fail;
++	ret = config_group_init_type_name(&sps->ss_group,
++					  "spaces", &spaces_type);
++	if (ret)
++		goto fail_sps;
++	ret = config_group_init_type_name(&cms->cs_group, "comms", &comms_type);
++	if (ret)
++		goto fail_cms;
+ 
+ 	cl->group.default_groups = gps;
+ 	cl->group.default_groups[0] = &sps->ss_group;
+@@ -438,12 +446,16 @@ static int make_cluster(struct config_group *g, const char *name,
+ 	*new_g = &cl->group;
+ 	return 0;
+ 
++ fail_cms:
++	config_group_put(&sps->ss_group);
++ fail_sps:
++	config_group_put(&cl->group);
+  fail:
+ 	kfree(cl);
+ 	kfree(gps);
+ 	kfree(sps);
+ 	kfree(cms);
+-	return -ENOMEM;
++	return ret;
+ }
+ 
+ static void drop_cluster(struct config_group *g, struct config_item *i)
+@@ -477,6 +489,7 @@ static int make_space(struct config_group *g, const char *name,
+ 	struct space *sp = NULL;
+ 	struct nodes *nds = NULL;
+ 	void *gps = NULL;
++	int ret = -ENOMEM;
+ 
+ 	sp = kzalloc(sizeof(struct space), GFP_KERNEL);
+ 	gps = kcalloc(2, sizeof(struct config_group *), GFP_KERNEL);
+@@ -485,8 +498,14 @@ static int make_space(struct config_group *g, const char *name,
+ 	if (!sp || !gps || !nds)
+ 		goto fail;
+ 
+-	config_group_init_type_name(&sp->group, name, &space_type);
+-	config_group_init_type_name(&nds->ns_group, "nodes", &nodes_type);
++	ret = config_group_init_type_name(&sp->group, name, &space_type);
++	if (ret)
++		goto fail;
++	ret = config_group_init_type_name(&nds->ns_group, "nodes", &nodes_type);
++	if (ret) {
++		config_group_put(&sp->group);
++		goto fail;
++	}
+ 
+ 	sp->group.default_groups = gps;
+ 	sp->group.default_groups[0] = &nds->ns_group;
+@@ -502,7 +521,7 @@ static int make_space(struct config_group *g, const char *name,
+ 	kfree(sp);
+ 	kfree(gps);
+ 	kfree(nds);
+-	return -ENOMEM;
++	return ret;
+ }
+ 
+ static void drop_space(struct config_group *g, struct config_item *i)
+@@ -533,12 +552,17 @@ static int make_comm(struct config_group *g, const char *name,
+ 		     struct config_item **new_i)
+ {
+ 	struct comm *cm;
++	int ret;
+ 
+ 	cm = kzalloc(sizeof(struct comm), GFP_KERNEL);
+ 	if (!cm)
+ 		return -ENOMEM;
+ 
+-	config_item_init_type_name(&cm->item, name, &comm_type);
++	ret = config_item_init_type_name(&cm->item, name, &comm_type);
++	if (ret) {
++		kfree(cm);
++		return ret;
++	}
+ 	cm->nodeid = -1;
+ 	cm->local = 0;
+ 	cm->addr_count = 0;
+@@ -568,12 +592,18 @@ static int make_node(struct config_group *g, const char *name,
+ {
+ 	struct space *sp = to_space(g->cg_item.ci_parent);
+ 	struct node *nd;
++	int ret;
+ 
+ 	nd = kzalloc(sizeof(struct node), GFP_KERNEL);
+ 	if (!nd)
+ 		return -ENOMEM;
+ 
+-	config_item_init_type_name(&nd->item, name, &node_type);
++	ret = config_item_init_type_name(&nd->item, name, &node_type);
++	if (ret) {
++		kfree(nd);
++		return ret;
++	}
++
+ 	nd->nodeid = -1;
+ 	nd->weight = 1;  /* default weight of 1 if none is set */
+ 	nd->new = 1;     /* set to 0 once it's been read by dlm_nodeid_list() */
+diff --git a/fs/ocfs2/cluster/heartbeat.c b/fs/ocfs2/cluster/heartbeat.c
+index 443d108..564d000 100644
+--- a/fs/ocfs2/cluster/heartbeat.c
++++ b/fs/ocfs2/cluster/heartbeat.c
+@@ -1502,7 +1502,10 @@ static int o2hb_heartbeat_group_make_item(struct config_group *group,
+ 		goto out;
+ 	}
+ 
+-	config_item_init_type_name(&reg->hr_item, name, &o2hb_region_type);
++	ret = config_item_init_type_name(&reg->hr_item, name,
++					 &o2hb_region_type);
++	if (ret)
++		goto out;
+ 
+ 	*new_item = &reg->hr_item;
+ 
+@@ -1641,8 +1644,9 @@ struct config_group *o2hb_alloc_hb_set(void)
+ 	if (hs == NULL)
+ 		goto out;
+ 
+-	config_group_init_type_name(&hs->hs_group, "heartbeat",
+-				    &o2hb_heartbeat_group_type);
++	if (config_group_init_type_name(&hs->hs_group, "heartbeat",
++					&o2hb_heartbeat_group_type))
++		goto out;
+ 
+ 	ret = &hs->hs_group;
+ out:
+diff --git a/fs/ocfs2/cluster/nodemanager.c b/fs/ocfs2/cluster/nodemanager.c
+index fe09cc3..ed97c04 100644
+--- a/fs/ocfs2/cluster/nodemanager.c
++++ b/fs/ocfs2/cluster/nodemanager.c
+@@ -723,7 +723,9 @@ static int o2nm_node_group_make_item(struct config_group *group,
+ 	}
+ 
+ 	strcpy(node->nd_name, name); /* use item.ci_namebuf instead? */
+-	config_item_init_type_name(&node->nd_item, name, &o2nm_node_type);
++	ret = config_item_init_type_name(&node->nd_item, name, &o2nm_node_type);
++	if (ret)
++		goto out;
+ 	spin_lock_init(&node->nd_lock);
+ 
+ 	*new_item = &node->nd_item;
+@@ -842,10 +844,16 @@ static int o2nm_cluster_group_make_group(struct config_group *group,
+ 		goto out;
+ 	}
+ 
+-	config_group_init_type_name(&cluster->cl_group, name,
+-				    &o2nm_cluster_type);
+-	config_group_init_type_name(&ns->ns_group, "node",
+-				    &o2nm_node_group_type);
++	ret = config_group_init_type_name(&cluster->cl_group, name,
++					  &o2nm_cluster_type);
++	if (ret)
++		goto out;
++	ret = config_group_init_type_name(&ns->ns_group, "node",
++					  &o2nm_node_group_type);
++	if (ret) {
++		config_group_put(&cluster->cl_group);
++		goto out;
++	}
+ 
+ 	cluster->cl_group.default_groups = defs;
+ 	cluster->cl_group.default_groups[0] = &ns->ns_group;
+diff --git a/include/linux/configfs.h b/include/linux/configfs.h
+index 0488f93..a6e13f7 100644
+--- a/include/linux/configfs.h
++++ b/include/linux/configfs.h
+@@ -71,9 +71,9 @@ static inline char *config_item_name(struct config_item * item)
+ }
+ 
+ extern void config_item_init(struct config_item *);
+-extern void config_item_init_type_name(struct config_item *item,
+-				       const char *name,
+-				       struct config_item_type *type);
++extern int config_item_init_type_name(struct config_item *item,
++				      const char *name,
++				      struct config_item_type *type);
+ 
+ extern struct config_item * config_item_get(struct config_item *);
+ extern void config_item_put(struct config_item *);
+@@ -97,7 +97,7 @@ struct config_group {
+ };
+ 
+ extern void config_group_init(struct config_group *group);
+-extern void config_group_init_type_name(struct config_group *group,
++extern int config_group_init_type_name(struct config_group *group,
+ 					const char *name,
+ 					struct config_item_type *type);
+ 
+-- 
+1.5.5.3
 
