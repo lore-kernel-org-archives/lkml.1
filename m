@@ -1,70 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755671AbYFRWCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756350AbYFRWDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755671AbYFRWCv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 18:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbYFRWCo
+	id S1756350AbYFRWDt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 18:03:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbYFRWDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 18:02:44 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45772 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754169AbYFRWCn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 18:02:43 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 6/6] x86: add c1e aware idle function
-Date: Thu, 19 Jun 2008 00:04:11 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Veen <arjan@infradead.org>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>
-References: <20080610171639.551369443@linutronix.de> <200806182226.07590.rjw@sisk.pl> <alpine.LFD.1.10.0806182354280.3395@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.10.0806182354280.3395@apollo.tec.linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806190004.12235.rjw@sisk.pl>
+	Wed, 18 Jun 2008 18:03:42 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56515 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752681AbYFRWDl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 18:03:41 -0400
+To: mingo@elte.hu, tglx@linutronix.de
+Subject: [PATCH] X86: reboot-notify additions
+Cc: linux-kernel@vger.kernel.org
+Message-Id: <E1K95kd-00081i-B6@eag09.americas.sgi.com>
+From: Cliff Wickman <cpw@sgi.com>
+Date: Wed, 18 Jun 2008 17:03:35 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 18 of June 2008, Thomas Gleixner wrote:
-> On Wed, 18 Jun 2008, Rafael J. Wysocki wrote:
-> > On Wednesday, 18 of June 2008, Pavel Machek wrote:
-> > > On Thu 2008-06-12 10:29:00, Thomas Gleixner wrote:
-> > > > C1E on AMD machines is like C3 but without control from the OS. Up to
-> > > > now we disabled the local apic timer for those machines as it stops
-> > > > when the CPU goes into C1E. This excludes those machines from high
-> > > > resolution timers / dynamic ticks, which hurts especially the X2 based
-> > > > laptops.
-> > > > 
-> > > > The current boot time C1E detection has another more serious flaw:
-> > > > some BIOSes do not enable C1E until the ACPI processor module is
-> > > > loaded. This causes systems to stop working after that point.
-> > > > 
-> > > > To work nicely with C1E enabled machines we use a separate idle
-> > > > function, which checks on idle entry whether C1E was enabled in the
-> > > > Interrupt Pending Message MSR. This allows us to do timer broadcasting
-> > > 
-> > > Entering idle is quite a common operation, and reading MSR is quite
-> > > slow. Is it possible to do better here?
-> > > 
-> > > What happens if ACPI BIOS toggles MSR on all cpus *while* we are
-> > > entering idle? This seems inherently racy...
-> 
-> Well, on most of the machines we see the C1E bit on the first idle
-> entry either on CPU0 or on CPU1.
-> 
-> I know of exactly one machine which has the C1E thing enabled late
-> when the ACPI stuff runs.
->  
-> > Yes, and that fits the picture I'm observing on the nx6325 (see the
-> > "linux-next: Tree for June 13: IO APIC breakage on HP nx6325" thread).
-> 
-> Hmm, when is the C1E detected on current mainline ? Does the boot CPU
-> have it or is it when the second CPU comes up ?
 
-How can I check that?
 
-Rafael
+From: Cliff Wickman <cpw@sgi.com>
+
+X86 reboot-notify additions.
+
+This patch adds scans of the "reboot_notifier_list" callback chain in
+a three other places where the kernel is being stopped and/or restarted.
+
+Adds calls to blocking_notifier_call_chain() in:
+   crash_kexec(), emergency_restart(), sys_kexec_load()
+
+In the crash_kexec() and emergency_restart() cases it is indicated to the
+called-back function that the system is not in a sane state, so that
+it can avoid taking a lock or some such potentially blocking action.
+
+These callbacks are important to a partition system. The stopped kernel needs
+to inform other partitions of their need to disconnect (stop sharing memory).
+
+Diffed against 2.6.26-rc6
+
+Signed-off-by: Cliff Wickman <cpw@sgi.com>
+---
+ include/linux/notifier.h |    4 ++++
+ kernel/kexec.c           |    5 +++++
+ kernel/sys.c             |    1 +
+ 3 files changed, 10 insertions(+)
+
+Index: linux/include/linux/notifier.h
+===================================================================
+--- linux.orig/include/linux/notifier.h
++++ linux/include/linux/notifier.h
+@@ -202,6 +202,10 @@ static inline int notifier_to_errno(int 
+ #define SYS_RESTART	SYS_DOWN
+ #define SYS_HALT	0x0002	/* Notify of system halt */
+ #define SYS_POWER_OFF	0x0003	/* Notify of system power off */
++#define SYS_INSANE	0x0004	/* Notify of system error/panic/oops */
++/* For the SYS_INSANE case, no locks should be taken by the called-back
++ * function.  The kernel is ready for an immediate reboot.
++ */
+ 
+ #define NETLINK_URELEASE	0x0001	/* Unicast netlink socket released */
+ 
+Index: linux/kernel/kexec.c
+===================================================================
+--- linux.orig/kernel/kexec.c
++++ linux/kernel/kexec.c
+@@ -1001,6 +1001,9 @@ asmlinkage long sys_kexec_load(unsigned 
+ 		if (result)
+ 			goto out;
+ 	}
++
++	blocking_notifier_call_chain(&reboot_notifier_list, SYS_RESTART, NULL);
++
+ 	/* Install the new kernel, and  Uninstall the old */
+ 	image = xchg(dest_image, image);
+ 
+@@ -1068,6 +1071,8 @@ void crash_kexec(struct pt_regs *regs)
+ 	if (!locked) {
+ 		if (kexec_crash_image) {
+ 			struct pt_regs fixed_regs;
++			blocking_notifier_call_chain(&reboot_notifier_list,
++				SYS_INSANE, NULL);
+ 			crash_setup_regs(&fixed_regs, regs);
+ 			crash_save_vmcoreinfo();
+ 			machine_crash_shutdown(&fixed_regs);
+Index: linux/kernel/sys.c
+===================================================================
+--- linux.orig/kernel/sys.c
++++ linux/kernel/sys.c
+@@ -270,6 +270,7 @@ out_unlock:
+  */
+ void emergency_restart(void)
+ {
++	blocking_notifier_call_chain(&reboot_notifier_list, SYS_INSANE, NULL);
+ 	machine_emergency_restart();
+ }
+ EXPORT_SYMBOL_GPL(emergency_restart);
