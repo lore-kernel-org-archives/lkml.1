@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbYFSCLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755569AbYFSCN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754572AbYFSCLy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 22:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbYFSCLo
+	id S1755569AbYFSCN2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 22:13:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbYFSCNU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 22:11:44 -0400
-Received: from vms046pub.verizon.net ([206.46.252.46]:58271 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750749AbYFSCLn (ORCPT
+	Wed, 18 Jun 2008 22:13:20 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:62731 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751544AbYFSCNT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 22:11:43 -0400
-Date: Wed, 18 Jun 2008 22:11:31 -0400 (EDT)
+	Wed, 18 Jun 2008 22:13:19 -0400
+Date: Wed, 18 Jun 2008 22:13:00 -0400 (EDT)
 From: Len Brown <lenb@kernel.org>
-Subject: [stable PATCH 2.6.22, 2.6.23, 2.6.24,
- 2.6.25] ACPICA: Ignore ACPI table signature for Load() operator
+Subject: [stable PATCH 2.6.21] ACPICA: Ignore ACPI table signature for Load()
+ operator
 X-X-Sender: lenb@localhost.localdomain
 To: stable@kernel.org
 Cc: linux-acpi@vger.kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <alpine.LFD.1.10.0806182151270.3074@localhost.localdomain>
+Message-id: <alpine.LFD.1.10.0806182211330.3613@localhost.localdomain>
 MIME-version: 1.0
 Content-type: TEXT/PLAIN; charset=US-ASCII
 User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
@@ -30,14 +30,13 @@ From: Bob Moore <robert.moore@intel.com>
 
 upstream bc45b1d39a925b56796bebf8a397a0491489d85c
 
-Without this patch booting with acpi_osi="!Windows 2006" is required
-for several machines to function properly with cpufreq
-due to failure to load a Vista specific table with a bad signature.
-
 Only "SSDT" is acceptable to the ACPI spec, but tables are
 seen with OEMx and null sigs. Therefore, signature validation
 is worthless.  Apparently MS ACPI accepts such signatures, ACPICA
 must be compatible.
+
+Without this patch booting with acpi_osi="!Windows 2006" is required
+for several machines to function properly with cpufreq.
 
 http://bugzilla.kernel.org/show_bug.cgi?id=9919
 http://bugzilla.kernel.org/show_bug.cgi?id=10383
@@ -51,22 +50,22 @@ Signed-off-by: Len Brown <len.brown@intel.com>
  drivers/acpi/tables/tbinstal.c |   25 +++++++------------------
  1 files changed, 7 insertions(+), 18 deletions(-)
 
-Index: linux-2.6.25.y/drivers/acpi/tables/tbinstal.c
+Index: linux-2.6.21.y/drivers/acpi/tables/tbinstal.c
 ===================================================================
---- linux-2.6.25.y.orig/drivers/acpi/tables/tbinstal.c
-+++ linux-2.6.25.y/drivers/acpi/tables/tbinstal.c
+--- linux-2.6.21.y.orig/drivers/acpi/tables/tbinstal.c
++++ linux-2.6.21.y/drivers/acpi/tables/tbinstal.c
 @@ -123,17 +123,13 @@ acpi_tb_add_table(struct acpi_table_desc
  		}
  	}
  
--	/* The table must be either an SSDT or a PSDT or an OEMx */
+-	/* The table must be either an SSDT or a PSDT */
 -
 -	if ((!ACPI_COMPARE_NAME(table_desc->pointer->signature, ACPI_SIG_PSDT))
 -	    &&
--	    (!ACPI_COMPARE_NAME(table_desc->pointer->signature, ACPI_SIG_SSDT))
--	    && (strncmp(table_desc->pointer->signature, "OEM", 3))) {
+-	    (!ACPI_COMPARE_NAME(table_desc->pointer->signature, ACPI_SIG_SSDT)))
+-	{
 -		ACPI_ERROR((AE_INFO,
--			    "Table has invalid signature [%4.4s], must be SSDT, PSDT or OEMx",
+-			    "Table has invalid signature [%4.4s], must be SSDT or PSDT",
 -			    table_desc->pointer->signature));
 -		return_ACPI_STATUS(AE_BAD_SIGNATURE);
 -	}
