@@ -1,116 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbYFSOH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757601AbYFSOPN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758030AbYFSOH6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 10:07:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757378AbYFSOHt
+	id S1757601AbYFSOPN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 10:15:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755580AbYFSOPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 10:07:49 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:61988 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756985AbYFSOHr (ORCPT
+	Thu, 19 Jun 2008 10:15:00 -0400
+Received: from mss-uk.mssgmbh.com ([217.174.251.109]:58047 "EHLO
+	mss-uk.mssgmbh.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754832AbYFSOO7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 10:07:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=wl1U5cLqL89xTskIb1IGLlzGCXE7RP3BBHguSlwqUe53/ocbp7+telKj/UdSlbFx54
-         x/pcdggGZw7EDs4Pk94Gp7YZRxEasKBKZrtFGDwAtTn3W8H3gcOCFtXFjwOluXApu+mc
-         wq6ZMv2qf2IXvUOGlmQ5H43jOp+gwqf371qCY=
-Message-ID: <a4423d670806190707k7ae6da8cud80a826a1603d941@mail.gmail.com>
-Date: Thu, 19 Jun 2008 18:07:46 +0400
-From: "Alexander Beregalov" <a.beregalov@gmail.com>
-To: "David Miller" <davem@davemloft.net>, kernel-testers@vger.kernel.org,
-       sparclinux@vger.kernel.org,
-       "kernel list" <linux-kernel@vger.kernel.org>
-Subject: 2.6.26-rc: SPARC: Sun Ultra 10 can not boot
+	Thu, 19 Jun 2008 10:14:59 -0400
+To: David Miller <davem@davemloft.net>
+Cc: rweikusat@mssgmbh.com, linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.25.7 v1-v2] af_unix: fix 'poll for write'/connected DGRAM sockets
+In-Reply-To: <20080618.144830.35409576.davem@davemloft.net> (David Miller's message of "Wed, 18 Jun 2008 14:48:30 -0700 (PDT)")
+References: <871w2wca3r.fsf@fever.mssgmbh.com>
+	<20080617.215630.47207590.davem@davemloft.net>
+	<874p7qsz5g.fsf@fever.mssgmbh.com>
+	<20080618.144830.35409576.davem@davemloft.net>
+From: Rainer Weikusat <rweikusat@mssgmbh.com>
+Date: Thu, 19 Jun 2008 16:14:48 +0200
+Message-ID: <87tzfpse93.fsf_-_@fever.mssgmbh.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+From: Rainer Weikusat <rweikusat@mssgmbh.com>
 
-Sun Ultra 10 can not boot the last 2.6.26-rc6-git, it hangs right after
+For n:1 'datagram connections' (eg /dev/log), the unix_dgram_sendmsg
+routine implements a form of receiver-imposed flow control by
+comparing the length of the receive queue of the 'peer socket' with
+the max_ack_backlog value stored in the corresponding sock structure,
+either blocking the thread which caused the send-routine to be called
+or returning EAGAIN. This routine is used by both SOCK_DGRAM and
+SOCK_SEQPACKET sockets. The poll-implementation for these socket types
+is datagram_poll from core/datagram.c. A socket is deemed to be
+writeable by this routine when the memory presently consumed by
+datagrams owned by it is less than the configured socket send buffer
+size. This is always wrong for PF_UNIX non-stream sockets connected to
+server sockets dealing with (potentially) multiple clients if the
+abovementioned receive queue is currently considered to be full.
+'poll' will then return, indicating that the socket is writeable, but
+a subsequent write result in EAGAIN, effectively causing an (usual)
+application to 'poll for writeability by repeated send request with
+O_NONBLOCK set' until it has consumed its time quantum.
 
-Console: colour dummy device 80x25
-console handover: boot [earlyprom0] -> real [tty0]
+The change below uses a suitably modified variant of the datagram_poll
+routines for both type of PF_UNIX sockets, which tests if the
+recv-queue of the peer a socket is connected to is presently
+considered to be 'full' as part of the 'is this socket
+writeable'-checking code. The socket being polled is additionally
+put onto the peer_wait wait queue associated with its peer, because the
+unix_dgram_recvmsg routine does a wake up on this queue after a
+datagram was received and the 'other wakeup call' is done implicitly
+as part of skb destruction, meaning, a process blocked in poll
+because of a full peer receive queue could otherwise sleep forever
+if no datagram owned by its socket was already sitting on this queue.
+Among this change is a small (inline) helper routine named
+'unix_recvq_full', which consolidates the actual testing code (in three
+different places) into a single location.
 
-netconsole does not work at this early stage.
-It is a boot log of the closest to bad commit  working kernel:
-
-PROMLIB: Sun IEEE Boot Prom 'OBP 3.25.3 2000/06/29 14:12'
-PROMLIB: Root node compatible:
-Linux version 2.6.26-rc3-00123-g3651751 (alexb@sparky) (gcc version
-4.1.2 (Gentoo 4.1.2 p1.0.1)) #21 PREEMPT Thu Jun 19 17:42:45 MSD 2008
-console [earlyprom0] enabled
-ARCH: SUN4U
-Ethernet address: 08:00:20:ff:e6:ff
-Kernel: Using 3 locked TLB entries for main kernel image.
-Remapping the kernel... done.
-OF stdout device is: /pci@1f,0/pci@1,1/SUNW,m64B@2
-PROM: Built device tree with 42083 bytes of memory.
-Top of RAM: 0x1ff46000, Total RAM: 0x1ff44000
-Memory hole size: 0MB
-Entering add_active_range(0, 0, 65407) 0 entries of 256 used
-Entering add_active_range(0, 65408, 65443) 1 entries of 256 used
-[0000000200000000-fffff80001000000] page_structs=131072 node=0 entry=0/0
-[0000000200000000-fffff80001400000] page_structs=131072 node=0 entry=1/0
-Allocated 532480 bytes for kernel page tables.
-Zone PFN ranges:
-  Normal          0 ->    65443
-Movable zone start PFN for each node
-early_node_map[2] active PFN ranges
-    0:        0 ->    65407
-    0:    65408 ->    65443
-On node 0 totalpages: 65442
-  Normal zone: 447 pages used for memmap
-  Normal zone: 0 pages reserved
-  Normal zone: 64995 pages, LIFO batch:15
-  Movable zone: 0 pages used for memmap
-Booting Linux...
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 64995
-Kernel command line: root=/dev/sda2
-Preemptible RCU implementation.
-PID hash table entries: 2048 (order: 11, 16384 bytes)
-clocksource: mult[245d1] shift[16]
-clockevent: mult[70a3d70a] shift[32]
-Console: colour dummy device 80x25
-console handover: boot [earlyprom0] -> real [tty0]
-======= It hangs here! =======
-Lock dependency validator: Copyright (c) 2006 Red Hat, Inc., Ingo Molnar
-... MAX_LOCKDEP_SUBCLASSES:    8
-... MAX_LOCK_DEPTH:          48
-... MAX_LOCKDEP_KEYS:        2048
-... CLASSHASH_SIZE:           1024
-... MAX_LOCKDEP_ENTRIES:     8192
-... MAX_LOCKDEP_CHAINS:      16384
-... CHAINHASH_SIZE:          8192
- memory used by lock dependency info: 1648 kB
- per task-struct memory footprint: 2688 bytes
-
-
-I have done bisect:
-
-a051bc5bb1ac6dc138d529077fa20cbbc6622d95 is first bad commit
-commit a051bc5bb1ac6dc138d529077fa20cbbc6622d95
-Author: David S. Miller <davem@davemloft.net>
-Date:   Wed May 21 18:14:28 2008 -0700
-
-    sparc64: Fix kernel thread stack termination.
-
-    Because of the silly way I set up the initial stack for
-    new kernel threads, there is a loop at the top of the
-    stack.
-
-    To fix this, properly add another stack frame that is copied
-    from the parent and terminate it in the child by setting
-    the frame pointer in that frame to zero.
-
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-:040000 040000 beba7e8c740188a7c19a3569f08b1edd25b8000d
-aed42d5af3ab9a84ccb3dfe07eb444a78f9001fa M      arch
+Signed-off-by: <rweikusat@mssgmbh.com>
+---
+diff -pru linux-2.6.25.7-old/net/unix/af_unix.c linux-2.6.25.7-new/net/unix/af_unix.c
+--- linux-2.6.25.7-old/net/unix/af_unix.c	2008-06-19 11:31:36.000000000 +0200
++++ linux-2.6.25.7-new/net/unix/af_unix.c	2008-06-19 11:32:05.000000000 +0200
+@@ -487,7 +487,7 @@ static int unix_socketpair(struct socket
+ static int unix_accept(struct socket *, struct socket *, int);
+ static int unix_getname(struct socket *, struct sockaddr *, int *, int);
+ static unsigned int unix_poll(struct file *, struct socket *, poll_table *);
+-static unsigned int unix_datagram_poll(struct file *, struct socket *,
++static unsigned int unix_dgram_poll(struct file *, struct socket *,
+ 				       poll_table *);
+ static int unix_ioctl(struct socket *, unsigned int, unsigned long);
+ static int unix_shutdown(struct socket *, int);
+@@ -534,7 +534,7 @@ static const struct proto_ops unix_dgram
+ 	.socketpair =	unix_socketpair,
+ 	.accept =	sock_no_accept,
+ 	.getname =	unix_getname,
+-	.poll =		unix_datagram_poll,
++	.poll =		unix_dgram_poll,
+ 	.ioctl =	unix_ioctl,
+ 	.listen =	sock_no_listen,
+ 	.shutdown =	unix_shutdown,
+@@ -555,7 +555,7 @@ static const struct proto_ops unix_seqpa
+ 	.socketpair =	unix_socketpair,
+ 	.accept =	unix_accept,
+ 	.getname =	unix_getname,
+-	.poll =		unix_datagram_poll,
++	.poll =		unix_dgram_poll,
+ 	.ioctl =	unix_ioctl,
+ 	.listen =	unix_listen,
+ 	.shutdown =	unix_shutdown,
+@@ -1990,29 +1990,13 @@ static unsigned int unix_poll(struct fil
+ 	return mask;
+ }
+ 
+-static unsigned int unix_datagram_poll(struct file *file, struct socket *sock,
+-				       poll_table *wait)
++static unsigned int unix_dgram_poll(struct file *file, struct socket *sock,
++				    poll_table *wait)
+ {
+-	struct sock *sk = sock->sk, *peer;
+-	unsigned int mask;
++	struct sock *sk = sock->sk, *other;
++	unsigned int mask, writable;
+ 
+ 	poll_wait(file, sk->sk_sleep, wait);
+-
+-	peer = unix_peer_get(sk);
+-	if (peer) {
+-		if (peer != sk)
+-			/*
+-			 * Writability of a connected socket additionally
+-			 * depends on the state of the receive queue of the
+-			 * peer.
+-			 */
+-			poll_wait(file, &unix_sk(peer)->peer_wait, wait);
+-		else {
+-			sock_put(peer);
+-			peer = NULL;
+-		}
+-	}
+-
+ 	mask = 0;
+ 
+ 	/* exceptional events? */
+@@ -2038,14 +2022,26 @@ static unsigned int unix_datagram_poll(s
+ 	}
+ 
+ 	/* writable? */
+-	if (unix_writable(sk) && !(peer && unix_recvq_full(peer)))
++	writable = unix_writable(sk);
++	if (writable) {
++		other = unix_peer_get(sk);
++		if (other) {
++			if (unix_peer(other) != sk) {
++				poll_wait(file, &unix_sk(other)->peer_wait,
++					  wait);
++				if (unix_recvq_full(other))
++					writable = 0;
++			}
++
++			sock_put(other);
++		}
++	}
++
++	if (writable)
+ 		mask |= POLLOUT | POLLWRNORM | POLLWRBAND;
+ 	else
+ 		set_bit(SOCK_ASYNC_NOSPACE, &sk->sk_socket->flags);
+ 
+-	if (peer)
+-	    sock_put(peer);
+-
+ 	return mask;
+ }
+ 
