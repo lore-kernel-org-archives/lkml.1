@@ -1,134 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbYFSBzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbYFSCLy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753534AbYFSBzc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 21:55:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750729AbYFSBzX
+	id S1754572AbYFSCLy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 22:11:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbYFSCLo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 21:55:23 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54035 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750712AbYFSBzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 21:55:22 -0400
-Message-ID: <4859BBA8.6070808@cn.fujitsu.com>
-Date: Thu, 19 Jun 2008 09:51:36 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "containers@lists.osdl.org" <containers@lists.osdl.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Paul Jackson <pj@sgi.com>
-Subject: [PATCH] cgroup: support checking of subsystem dependencies (v2)
-References: <4858C0ED.2080905@cn.fujitsu.com> <6599ad830806181413y5d0ef1bfyfc54c17ee904d744@mail.gmail.com>
-In-Reply-To: <6599ad830806181413y5d0ef1bfyfc54c17ee904d744@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Jun 2008 22:11:44 -0400
+Received: from vms046pub.verizon.net ([206.46.252.46]:58271 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750749AbYFSCLn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 22:11:43 -0400
+Date: Wed, 18 Jun 2008 22:11:31 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+Subject: [stable PATCH 2.6.22, 2.6.23, 2.6.24,
+ 2.6.25] ACPICA: Ignore ACPI table signature for Load() operator
+X-X-Sender: lenb@localhost.localdomain
+To: stable@kernel.org
+Cc: linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <alpine.LFD.1.10.0806182151270.3074@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This allows one subsystem to require that it only be mounted when some
-other subsystems are also present in the proposed hierarchy.
+From: Bob Moore <robert.moore@intel.com>
 
-For example if subsystem foo depends on bar, the following will fail:
- # mount -t cgroup -ofoo xxx /dev/cgroup
+upstream bc45b1d39a925b56796bebf8a397a0491489d85c
 
-You should mount with both subsystems:
- # mount -t cgroup -ofoo,bar xxx /dev/cgroup
+Without this patch booting with acpi_osi="!Windows 2006" is required
+for several machines to function properly with cpufreq
+due to failure to load a Vista specific table with a bad signature.
 
-foo may implement the subsys_depend() callback this way:
+Only "SSDT" is acceptable to the ACPI spec, but tables are
+seen with OEMx and null sigs. Therefore, signature validation
+is worthless.  Apparently MS ACPI accepts such signatures, ACPICA
+must be compatible.
 
-static int foo_cgroup_subsys_depend(struct cgroup_subsys *ss,
-				    unsigned long subsys_bits)
-{
-	if (!test_bit(bar_cgroup_subsys_id, &subsys_bits))
-		return -EINVAL;
-	return 0;
-}
+http://bugzilla.kernel.org/show_bug.cgi?id=9919
+http://bugzilla.kernel.org/show_bug.cgi?id=10383
+http://bugzilla.kernel.org/show_bug.cgi?id=10454
+https://bugzilla.novell.com/show_bug.cgi?id=396311
 
-Changelog:
-- call check_subsys_depend() in parse_cgroupfs_options(), but not in mount
-  and remount code.
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Signed-off-by: Bob Moore <robert.moore@intel.com>
+Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- Documentation/cgroups.txt |    6 ++++++
- include/linux/cgroup.h    |    2 ++
- kernel/cgroup.c           |   21 ++++++++++++++++++++-
- 3 files changed, 28 insertions(+), 1 deletions(-)
+ drivers/acpi/tables/tbinstal.c |   25 +++++++------------------
+ 1 files changed, 7 insertions(+), 18 deletions(-)
 
-diff --git a/Documentation/cgroups.txt b/Documentation/cgroups.txt
-index 824fc02..8252f5b 100644
---- a/Documentation/cgroups.txt
-+++ b/Documentation/cgroups.txt
-@@ -530,6 +530,12 @@ and root cgroup. Currently this will only involve movement between
- the default hierarchy (which never has sub-cgroups) and a hierarchy
- that is being created/destroyed (and hence has no sub-cgroups).
+Index: linux-2.6.25.y/drivers/acpi/tables/tbinstal.c
+===================================================================
+--- linux-2.6.25.y.orig/drivers/acpi/tables/tbinstal.c
++++ linux-2.6.25.y/drivers/acpi/tables/tbinstal.c
+@@ -123,17 +123,13 @@ acpi_tb_add_table(struct acpi_table_desc
+ 		}
+ 	}
  
-+int subsys_depend(struct cgroup_subsys *ss, unsigned long subsys_bits)
-+
-+Called when a cgroup subsystem wants to check if some other subsystems
-+are also present in the proposed hierarchy. If this method returns error,
-+the mount of the cgroup filesystem will fail.
-+
- 4. Questions
- ============
+-	/* The table must be either an SSDT or a PSDT or an OEMx */
+-
+-	if ((!ACPI_COMPARE_NAME(table_desc->pointer->signature, ACPI_SIG_PSDT))
+-	    &&
+-	    (!ACPI_COMPARE_NAME(table_desc->pointer->signature, ACPI_SIG_SSDT))
+-	    && (strncmp(table_desc->pointer->signature, "OEM", 3))) {
+-		ACPI_ERROR((AE_INFO,
+-			    "Table has invalid signature [%4.4s], must be SSDT, PSDT or OEMx",
+-			    table_desc->pointer->signature));
+-		return_ACPI_STATUS(AE_BAD_SIGNATURE);
+-	}
++	/*
++	 * Originally, we checked the table signature for "SSDT" or "PSDT" here.
++	 * Next, we added support for OEMx tables, signature "OEM".
++	 * Valid tables were encountered with a null signature, so we've just
++	 * given up on validating the signature, since it seems to be a waste
++	 * of code. The original code was removed (05/2008).
++	 */
  
-diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
-index e155aa7..fc99ba4 100644
---- a/include/linux/cgroup.h
-+++ b/include/linux/cgroup.h
-@@ -305,6 +305,8 @@ struct cgroup_subsys {
- 			struct cgroup *cgrp);
- 	void (*post_clone)(struct cgroup_subsys *ss, struct cgroup *cgrp);
- 	void (*bind)(struct cgroup_subsys *ss, struct cgroup *root);
-+	int (*subsys_depend)(struct cgroup_subsys *ss,
-+			      unsigned long subsys_bits);
- 	/*
- 	 * This routine is called with the task_lock of mm->owner held
- 	 */
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 15ac0e1..18e8132 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -774,6 +774,25 @@ static int cgroup_show_options(struct seq_file *seq, struct vfsmount *vfs)
- 	return 0;
- }
+ 	(void)acpi_ut_acquire_mutex(ACPI_MTX_TABLES);
  
-+static int check_subsys_dependency(unsigned long subsys_bits)
-+{
-+	int i;
-+	int ret;
-+	struct cgroup_subsys *ss;
-+
-+	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
-+		ss = subsys[i];
-+
-+		if (test_bit(i, &subsys_bits) && ss->subsys_depend) {
-+			ret = ss->subsys_depend(ss, subsys_bits);
-+			if (ret)
-+				return ret;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- struct cgroup_sb_opts {
- 	unsigned long subsys_bits;
- 	unsigned long flags;
-@@ -834,7 +853,7 @@ static int parse_cgroupfs_options(char *data,
- 	if (!opts->subsys_bits)
- 		return -EINVAL;
- 
--	return 0;
-+	return check_subsys_dependency(opts->subsys_bits);
- }
- 
- static int cgroup_remount(struct super_block *sb, int *flags, char *data)
--- 
-1.5.4.rc3
-
