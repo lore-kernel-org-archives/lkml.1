@@ -1,230 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759699AbYFSMhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760453AbYFSMky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759699AbYFSMhl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 08:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758460AbYFSMfg
+	id S1760453AbYFSMky (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 08:40:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755952AbYFSMkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 08:35:36 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:44117 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758286AbYFSMfd (ORCPT
+	Thu, 19 Jun 2008 08:40:46 -0400
+Received: from hosted02.westnet.com.au ([203.10.1.213]:56603 "EHLO
+	hosted02.westnet.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755601AbYFSMkn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 08:35:33 -0400
-Message-Id: <20080619123314.049253081@chello.nl>
-References: <20080619122218.971447669@chello.nl>
-User-Agent: quilt/0.46-1
-Date: Thu, 19 Jun 2008 14:22:23 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "Daniel K." <dk@uw.no>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 05/10] sched: rt-bandwidth: fix cpu-hotplug interaction
-Content-Disposition: inline; filename=sched-rt_bandwidth-vs-hotplug.patch
-X-Bad-Reply: References but no 'Re:' in Subject.
+	Thu, 19 Jun 2008 08:40:43 -0400
+X-Greylist: delayed 1923 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Jun 2008 08:40:42 EDT
+Message-ID: <485A4C3D.5050909@snapgear.com>
+Date: Thu, 19 Jun 2008 22:08:29 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, dhowells@redhat.com, ralf@linux-mips.org,
+       linux-mips@linux-mips.org, lethal@linux-sh.org,
+       linux-sh@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [2.6 patch] remove pcibios_update_resource() functions
+References: <20080617223332.GM25911@cs181133002.pp.htv.fi>
+In-Reply-To: <20080617223332.GM25911@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-PMX-Branch: TNG-Outgoing
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Restore the bandwidth to offlining cpus so we don't leak/gain bandwidth.
+Adrian Bunk wrote:
+> Russell King did the following back in 2003:
+> 
+> <--  snip  -->
+> 
+>     [PCI] pci-9: Kill per-architecture pcibios_update_resource()
+>     
+>     Kill pcibios_update_resource(), replacing it with pci_update_resource().
+>     pci_update_resource() uses pcibios_resource_to_bus() to convert a
+>     resource to a device BAR - the transformation should be exactly the
+>     same as the transformation used for the PCI bridges.
+>     
+>     pci_update_resource "knows" about 64-bit BARs, but doesn't attempt to
+>     set the high 32-bits to anything non-zero - currently no architecture
+>     attempts to do something different.  If anyone cares, please fix; I'm
+>     going to reflect current behaviour for the time being.
+>     
+>     Ivan pointed out the following architectures need to examine their
+>     pcibios_update_resource() implementation - they should make sure that
+>     this new implementation does the right thing.  #warning's have been
+>     added where appropriate.
+>     
+>         ia64
+>         mips
+>         mips64
+>     
+>     This cset also includes a fix for the problem reported by AKPM where
+>     64-bit arch compilers complain about the resource mask being placed
+>     in a u32.
+> 
+> <--  snip  -->
+> 
+> 
+> This patch removes the unused pcibios_update_resource() functions the 
+> kernel gained since.
+> 
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/sched.c    |   15 +++++--
- kernel/sched_rt.c |  108 +++++++++++++++++++++++++++++++++++++++++++++++++++---
- 2 files changed, 114 insertions(+), 9 deletions(-)
+The comempci.c change looks fine, for that part:
 
-Index: linux-2.6/kernel/sched_rt.c
-===================================================================
---- linux-2.6.orig/kernel/sched_rt.c
-+++ linux-2.6/kernel/sched_rt.c
-@@ -280,6 +280,9 @@ static int balance_runtime(struct rt_rq 
- 			continue;
- 
- 		spin_lock(&iter->rt_runtime_lock);
-+		if (iter->rt_runtime == RUNTIME_INF)
-+			goto next;
-+
- 		diff = iter->rt_runtime - iter->rt_time;
- 		if (diff > 0) {
- 			do_div(diff, weight);
-@@ -293,12 +296,104 @@ static int balance_runtime(struct rt_rq 
- 				break;
- 			}
- 		}
-+next:
- 		spin_unlock(&iter->rt_runtime_lock);
- 	}
- 	spin_unlock(&rt_b->rt_runtime_lock);
- 
- 	return more;
- }
-+
-+static void __disable_runtime(struct rq *rq)
-+{
-+	struct root_domain *rd = rq->rd;
-+	struct rt_rq *rt_rq;
-+
-+	if (unlikely(!scheduler_running))
-+		return;
-+
-+	for_each_leaf_rt_rq(rt_rq, rq) {
-+		struct rt_bandwidth *rt_b = sched_rt_bandwidth(rt_rq);
-+		s64 want;
-+		int i;
-+
-+		spin_lock(&rt_b->rt_runtime_lock);
-+		spin_lock(&rt_rq->rt_runtime_lock);
-+		if (rt_rq->rt_runtime == RUNTIME_INF ||
-+				rt_rq->rt_runtime == rt_b->rt_runtime)
-+			goto balanced;
-+		spin_unlock(&rt_rq->rt_runtime_lock);
-+
-+		want = rt_b->rt_runtime - rt_rq->rt_runtime;
-+
-+		for_each_cpu_mask(i, rd->span) {
-+			struct rt_rq *iter = sched_rt_period_rt_rq(rt_b, i);
-+			s64 diff;
-+
-+			if (iter == rt_rq)
-+				continue;
-+
-+			spin_lock(&iter->rt_runtime_lock);
-+			if (want > 0) {
-+				diff = min_t(s64, iter->rt_runtime, want);
-+				iter->rt_runtime -= diff;
-+				want -= diff;
-+			} else {
-+				iter->rt_runtime -= want;
-+				want -= want;
-+			}
-+			spin_unlock(&iter->rt_runtime_lock);
-+
-+			if (!want)
-+				break;
-+		}
-+
-+		spin_lock(&rt_rq->rt_runtime_lock);
-+		BUG_ON(want);
-+balanced:
-+		rt_rq->rt_runtime = RUNTIME_INF;
-+		spin_unlock(&rt_rq->rt_runtime_lock);
-+		spin_unlock(&rt_b->rt_runtime_lock);
-+	}
-+}
-+
-+static void disable_runtime(struct rq *rq)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&rq->lock, flags);
-+	__disable_runtime(rq);
-+	spin_unlock_irqrestore(&rq->lock, flags);
-+}
-+
-+static void __enable_runtime(struct rq *rq)
-+{
-+	struct rt_rq *rt_rq;
-+
-+	if (unlikely(!scheduler_running))
-+		return;
-+
-+	for_each_leaf_rt_rq(rt_rq, rq) {
-+		struct rt_bandwidth *rt_b = sched_rt_bandwidth(rt_rq);
-+
-+		spin_lock(&rt_b->rt_runtime_lock);
-+		spin_lock(&rt_rq->rt_runtime_lock);
-+		rt_rq->rt_runtime = rt_b->rt_runtime;
-+		rt_rq->rt_time = 0;
-+		spin_unlock(&rt_rq->rt_runtime_lock);
-+		spin_unlock(&rt_b->rt_runtime_lock);
-+	}
-+}
-+
-+static void enable_runtime(struct rq *rq)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&rq->lock, flags);
-+	__enable_runtime(rq);
-+	spin_unlock_irqrestore(&rq->lock, flags);
-+}
-+
- #endif
- 
- static inline int rt_se_prio(struct sched_rt_entity *rt_se)
-@@ -328,14 +423,13 @@ static int sched_rt_runtime_exceeded(str
- 
- #ifdef CONFIG_SMP
- 	if (rt_rq->rt_time > runtime) {
--		int more;
--
- 		spin_unlock(&rt_rq->rt_runtime_lock);
--		more = balance_runtime(rt_rq);
-+		balance_runtime(rt_rq);
- 		spin_lock(&rt_rq->rt_runtime_lock);
- 
--		if (more)
--			runtime = sched_rt_runtime(rt_rq);
-+		runtime = sched_rt_runtime(rt_rq);
-+		if (runtime == RUNTIME_INF)
-+			return 0;
- 	}
- #endif
- 
-@@ -1166,6 +1260,8 @@ static void join_domain_rt(struct rq *rq
- {
- 	if (rq->rt.overloaded)
- 		rt_set_overload(rq);
-+
-+	__enable_runtime(rq);
- }
- 
- /* Assumes rq->lock is held */
-@@ -1173,6 +1269,8 @@ static void leave_domain_rt(struct rq *r
- {
- 	if (rq->rt.overloaded)
- 		rt_clear_overload(rq);
-+
-+	__disable_runtime(rq);
- }
- 
- /*
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -7461,20 +7461,27 @@ int sched_create_sysfs_power_savings_ent
- static int update_sched_domains(struct notifier_block *nfb,
- 				unsigned long action, void *hcpu)
- {
-+	int cpu = (int)(long)hcpu;
-+
- 	switch (action) {
--	case CPU_UP_PREPARE:
--	case CPU_UP_PREPARE_FROZEN:
- 	case CPU_DOWN_PREPARE:
- 	case CPU_DOWN_PREPARE_FROZEN:
-+		disable_runtime(cpu_rq(cpu));
-+		/* fall-through */
-+	case CPU_UP_PREPARE:
-+	case CPU_UP_PREPARE_FROZEN:
- 		detach_destroy_domains(&cpu_online_map);
- 		return NOTIFY_OK;
- 
--	case CPU_UP_CANCELED:
--	case CPU_UP_CANCELED_FROZEN:
-+
- 	case CPU_DOWN_FAILED:
- 	case CPU_DOWN_FAILED_FROZEN:
- 	case CPU_ONLINE:
- 	case CPU_ONLINE_FROZEN:
-+		enable_runtime(cpu_rq(cpu));
-+		/* fall-through */
-+	case CPU_UP_CANCELED:
-+	case CPU_UP_CANCELED_FROZEN:
- 	case CPU_DEAD:
- 	case CPU_DEAD_FROZEN:
- 		/*
+Acked-by: Greg Ungerer <gerg@uclinux.org>
+
+
+> ---
+> 
+>  arch/frv/mb93090-mb00/pci-frv.c    |   30 ------------------------
+>  arch/m68knommu/kernel/comempci.c   |    9 -------
+>  arch/mips/pmc-sierra/yosemite/ht.c |   36 -----------------------------
+>  arch/sh/drivers/pci/pci.c          |   32 -------------------------
+>  4 files changed, 107 deletions(-)
+> 
+> ebd37440bafbb6f9f5ecd6315ac9953cf97f20e9 diff --git a/arch/frv/mb93090-mb00/pci-frv.c b/arch/frv/mb93090-mb00/pci-frv.c
+> index 4f165c9..edae117 100644
+> --- a/arch/frv/mb93090-mb00/pci-frv.c
+> +++ b/arch/frv/mb93090-mb00/pci-frv.c
+> @@ -19,36 +19,6 @@
+>  
+>  #include "pci-frv.h"
+>  
+> -#if 0
+> -void
+> -pcibios_update_resource(struct pci_dev *dev, struct resource *root,
+> -			struct resource *res, int resource)
+> -{
+> -	u32 new, check;
+> -	int reg;
+> -
+> -	new = res->start | (res->flags & PCI_REGION_FLAG_MASK);
+> -	if (resource < 6) {
+> -		reg = PCI_BASE_ADDRESS_0 + 4*resource;
+> -	} else if (resource == PCI_ROM_RESOURCE) {
+> -		res->flags |= IORESOURCE_ROM_ENABLE;
+> -		new |= PCI_ROM_ADDRESS_ENABLE;
+> -		reg = dev->rom_base_reg;
+> -	} else {
+> -		/* Somebody might have asked allocation of a non-standard resource */
+> -		return;
+> -	}
+> -
+> -	pci_write_config_dword(dev, reg, new);
+> -	pci_read_config_dword(dev, reg, &check);
+> -	if ((new ^ check) & ((new & PCI_BASE_ADDRESS_SPACE_IO) ? PCI_BASE_ADDRESS_IO_MASK : PCI_BASE_ADDRESS_MEM_MASK)) {
+> -		printk(KERN_ERR "PCI: Error while updating region "
+> -		       "%s/%d (%08x != %08x)\n", pci_name(dev), resource,
+> -		       new, check);
+> -	}
+> -}
+> -#endif
+> -
+>  /*
+>   * We need to avoid collisions with `mirrored' VGA ports
+>   * and other strange ISA hardware, so we always want the
+> diff --git a/arch/m68knommu/kernel/comempci.c b/arch/m68knommu/kernel/comempci.c
+> index 6ee00ef..0a68b5a 100644
+> --- a/arch/m68knommu/kernel/comempci.c
+> +++ b/arch/m68knommu/kernel/comempci.c
+> @@ -375,15 +375,6 @@ int pcibios_enable_device(struct pci_dev *dev, int mask)
+>  
+>  /*****************************************************************************/
+>  
+> -void pcibios_update_resource(struct pci_dev *dev, struct resource *root, struct resource *r, int resource)
+> -{
+> -	printk(KERN_WARNING "%s(%d): no support for changing PCI resources...\n",
+> -		__FILE__, __LINE__);
+> -}
+> -
+> -
+> -/*****************************************************************************/
+> -
+>  /*
+>   *	Local routines to interrcept the standard I/O and vector handling
+>   *	code. Don't include this 'till now - initialization code above needs
+> diff --git a/arch/mips/pmc-sierra/yosemite/ht.c b/arch/mips/pmc-sierra/yosemite/ht.c
+> index 6380662..678388f 100644
+> --- a/arch/mips/pmc-sierra/yosemite/ht.c
+> +++ b/arch/mips/pmc-sierra/yosemite/ht.c
+> @@ -345,42 +345,6 @@ int pcibios_enable_device(struct pci_dev *dev, int mask)
+>          return pcibios_enable_resources(dev);
+>  }
+>  
+> -
+> -
+> -void pcibios_update_resource(struct pci_dev *dev, struct resource *root,
+> -                             struct resource *res, int resource)
+> -{
+> -        u32 new, check;
+> -        int reg;
+> -
+> -        return;
+> -
+> -        new = res->start | (res->flags & PCI_REGION_FLAG_MASK);
+> -        if (resource < 6) {
+> -                reg = PCI_BASE_ADDRESS_0 + 4 * resource;
+> -        } else if (resource == PCI_ROM_RESOURCE) {
+> -		res->flags |= IORESOURCE_ROM_ENABLE;
+> -                reg = dev->rom_base_reg;
+> -        } else {
+> -                /*
+> -                 * Somebody might have asked allocation of a non-standard
+> -                 * resource
+> -                 */
+> -                return;
+> -        }
+> -
+> -        pci_write_config_dword(dev, reg, new);
+> -        pci_read_config_dword(dev, reg, &check);
+> -        if ((new ^ check) &
+> -            ((new & PCI_BASE_ADDRESS_SPACE_IO) ? PCI_BASE_ADDRESS_IO_MASK :
+> -             PCI_BASE_ADDRESS_MEM_MASK)) {
+> -                printk(KERN_ERR "PCI: Error while updating region "
+> -                       "%s/%d (%08x != %08x)\n", pci_name(dev), resource,
+> -                       new, check);
+> -        }
+> -}
+> -
+> -
+>  void pcibios_align_resource(void *data, struct resource *res,
+>                              resource_size_t size, resource_size_t align)
+>  {
+> diff --git a/arch/sh/drivers/pci/pci.c b/arch/sh/drivers/pci/pci.c
+> index 08d2e73..f57095a 100644
+> --- a/arch/sh/drivers/pci/pci.c
+> +++ b/arch/sh/drivers/pci/pci.c
+> @@ -76,38 +76,6 @@ void __devinit __weak pcibios_fixup_bus(struct pci_bus *bus)
+>  	pci_read_bridge_bases(bus);
+>  }
+>  
+> -void
+> -pcibios_update_resource(struct pci_dev *dev, struct resource *root,
+> -			struct resource *res, int resource)
+> -{
+> -	u32 new, check;
+> -	int reg;
+> -
+> -	new = res->start | (res->flags & PCI_REGION_FLAG_MASK);
+> -	if (resource < 6) {
+> -		reg = PCI_BASE_ADDRESS_0 + 4*resource;
+> -	} else if (resource == PCI_ROM_RESOURCE) {
+> -		res->flags |= IORESOURCE_ROM_ENABLE;
+> -		new |= PCI_ROM_ADDRESS_ENABLE;
+> -		reg = dev->rom_base_reg;
+> -	} else {
+> -		/*
+> -		 * Somebody might have asked allocation of a non-standard
+> -		 * resource
+> -		 */
+> -		return;
+> -	}
+> -
+> -	pci_write_config_dword(dev, reg, new);
+> -	pci_read_config_dword(dev, reg, &check);
+> -	if ((new ^ check) & ((new & PCI_BASE_ADDRESS_SPACE_IO) ?
+> -		PCI_BASE_ADDRESS_IO_MASK : PCI_BASE_ADDRESS_MEM_MASK)) {
+> -		printk(KERN_ERR "PCI: Error while updating region "
+> -		       "%s/%d (%08x != %08x)\n", pci_name(dev), resource,
+> -		       new, check);
+> -	}
+> -}
+> -
+>  void pcibios_align_resource(void *data, struct resource *res,
+>  			    resource_size_t size, resource_size_t align)
+>  			    __attribute__ ((weak));
+> 
+> 
+
 
 -- 
-
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+SnapGear -- a Secure Computing Company      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
