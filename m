@@ -1,97 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbYFSTvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753395AbYFST41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752638AbYFSTvf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 15:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbYFSTv2
+	id S1753395AbYFST41 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 15:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbYFST4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 15:51:28 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:36166 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750736AbYFSTv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 15:51:27 -0400
-Subject: Re: Performance of ext4
-From: Mingming <cmm@us.ibm.com>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Eric Sandeen <sandeen@redhat.com>, Holger Kiehl <Holger.Kiehl@dwd.de>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
-       Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080619174211.GB9119@mit.edu>
-References: <20080612131928.GB18229@mit.edu>
-	 <Pine.LNX.4.64.0806121333480.27806@diagnostix.dwd.de>
-	 <20080612180605.GD22481@skywalker>
-	 <Pine.LNX.4.64.0806121940020.2974@diagnostix.dwd.de>
-	 <Pine.LNX.4.64.0806130753100.7097@diagnostix.dwd.de>
-	 <20080616175408.GF3279@atrey.karlin.mff.cuni.cz>
-	 <20080616181353.GA20686@skywalker>
-	 <Pine.LNX.4.64.0806171001200.6307@diagnostix.dwd.de>
-	 <20080619155645.GA8582@mit.edu> <485A8C2D.1090806@redhat.com>
-	 <20080619174211.GB9119@mit.edu>
-Content-Type: text/plain
-Date: Thu, 19 Jun 2008 12:51:58 -0700
-Message-Id: <1213905118.27507.148.camel@BVR-FS.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Thu, 19 Jun 2008 15:56:18 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:46372 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750834AbYFST4R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 15:56:17 -0400
+Message-ID: <485AB95E.5070609@s5r6.in-berlin.de>
+Date: Thu, 19 Jun 2008 21:54:06 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
+MIME-Version: 1.0
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       dsd@gentoo.org, mdharm-usb@one-eyed-alien.net,
+       linux-usb@vger.kernel.org, vegardno@ifi.uio.no,
+       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
+       Greg KH <greg@kroah.com>
+Subject: Re: [RFC/PATCH] usb-storage: wait for device scanning before mounting
+ root
+References: <Pine.LNX.4.44L0.0804241704220.14840-100000@iolanthe.rowland.org> <Pine.LNX.4.64.0804250022160.1209@sbz-30.cs.Helsinki.FI> <48118DDD.8010507@s5r6.in-berlin.de> <Pine.LNX.4.64.0804251110400.758@sbz-30.cs.Helsinki.FI> <20080425091122.GA14990@parisc-linux.org> <20080619182310.GA30833@parisc-linux.org> <485AA7EA.6080105@s5r6.in-berlin.de> <20080619185419.GN4392@parisc-linux.org>
+In-Reply-To: <20080619185419.GN4392@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2008-06-19 at 13:42 -0400, Theodore Tso wrote:
-> On Thu, Jun 19, 2008 at 11:41:17AM -0500, Eric Sandeen wrote:
-> > 
-> > It might be worth runninga "simple" fsx under your kernel too; last time
-> > I tested fsx it was still happy and it exercises fs ops (including
-> > truncate) at random...
-> > 
+Matthew Wilcox wrote:
+> On Thu, Jun 19, 2008 at 08:39:38PM +0200, Stefan Richter wrote:
+>> The problem is AFAIU not exactly how many Scsi_Host instances (initiator 
+>> port representations, or something remotely related to that) are 
+>> instantiated, but rather _when_ they are instantiated.  On multi 
+>> protocol buses or networks like USB and FireWire, it makes sense to 
+>> create the SCSI initiator port representation when we discovered that 
+>> there are actually SCSI targets on the bus or network.
 > 
-> From what Holger described, it's doubtful that the bug is in the
-> truncate operation.  It sounds like i_size is actually dropping in
-> size at some pointer long after the file was written.  If I had to
-> guess the value in the inode cache is correct; and perhaps so is the
-> value on the journal.  But somehow, the wrong value is getting written
-> to disk (remember the jbd layer can keep up to three different
-> versions of filesystem metadata in memory, because most of the time we
-> don't block modifications to the filesystem while we are in the middle
-> of writing a previous commit to disk).  So depending on whether the
-> inode gets redirtied or not, the inconsistency could self-heal, and if
-> the inode never gets pushed out of memory due to memory pressure, the
-> problem might not be noticed until the system reboots or the
-> filesystem is unmounted.
-> 
-> This is one of the reasons why I'm a bit suspicious that the problem
-> may lie in the delayed allocation code; changing i_size without first
-> starting a transaction could lead to this sort of problem, for
-> example, and the delayed allocation could represent a different code
-> path where file blocks get allocated and i_size gets changed.
-> 
+> I'm not convinced of that.
 
-I tend to agree.  Without delayed allocation, the in-memory i_size and
-on-disk i_disksize normally match each other, since we do block
-allocation at prepare_write/write_begin time, and the i_size update just
-immedietly around that time. However, with delayed allocation, the in
-memory i_size is being update around prepare_write/commit_write, but the
-i_disksize won't updated until later writepage/writepages() time. The
-window now gets much larger.
+Drivers like usb-storage and sbp2 are high-level drivers (protocol
+drivers) on top of driver stacks.  They a priori talk to struct device
+instances which represent subunits on "external" devices; they don't
+have much business with the local host controller device.  For them,
+"SCSI initiator port" is a rather hazy and, in the implementation,
+uninteresting concept.  (That's how it is with sbp2; I'm only guessing
+how it is with usb-storage.)
 
-With writeback mode, since there is no ordering there, I think it's
-possible the the inode dirty pages have been sync to disk and the inode
-structure being pushed out of the memory due to memory pressure, before
-the i_disksize update cached in jbd2 reach to disk. Perhaps that explain
-the "truncation"?
+However, there are several ways to accomplish the same thing in the
+implementation.  I heard there were more constraints under Linux 2.4;
+some current implementation details may just be legacy.
 
-Not sure if this still a issue with the delalloc on new ordered mode, I
-guess as long as the inode is on jinode list, and that inode can't push
-out of memeory due to memory pressure since jbd is referencing it, then
-this seems couldn't happen...
+> Why shouldn't we create one scsi host for
+> all USB scsi devices?
 
+Or one for each USB HCD.
 
+I thought about that for FireWire but never started to actually try it
+out.  Parent-child relationships of struct devices would be different
+from what we have today.
 
->      	   	       	   	     	 	- Ted
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+[...]
+> The mail that I just pinged described a way to enhance the
+> API -- letting you tell scsi "I've started scanning, save me a place in
+> the queue" and "I've finished scanning, hook me up".
 
+When would be the right time to say "I've started scanning"?  SCSI
+transport driver initialization?  Or end of USB/FireWire/... HCD
+registration?
+
+When to say "I've finished scanning"? --- I think the answer is:  When
+(a) probing of a configurable number of SCSI targets or logical units
+was finished or (b) a configurable timeout occurs, whatever of the two
+happens first.
+
+(Explanation, if one is necessary:  SCSI targets may pop out of the
+woods any time; it is impossible to say "from this moment on there won't
+show up any new ones anymore".  This is just as true for cold boot and
+warm boot as it is for subsequent operation.)
+-- 
+Stefan Richter
+-=====-==--- -==- =--==
+http://arcgraph.de/sr/
