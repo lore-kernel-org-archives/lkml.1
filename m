@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752306AbYFSV16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754169AbYFSVbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752306AbYFSV16 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 17:27:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131AbYFSV1t
+	id S1754169AbYFSVbs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 17:31:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbYFSVbk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 17:27:49 -0400
-Received: from ns2.suse.de ([195.135.220.15]:42442 "EHLO mx2.suse.de"
+	Thu, 19 Jun 2008 17:31:40 -0400
+Received: from mx2.suse.de ([195.135.220.15]:42627 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752064AbYFSV1t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 17:27:49 -0400
-Date: Thu, 19 Jun 2008 14:26:22 -0700
+	id S1751064AbYFSVbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 17:31:38 -0400
+Date: Thu, 19 Jun 2008 14:29:40 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,55 +21,172 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [00/15] 2.6.25-stable review
-Message-ID: <20080619212621.GA20267@suse.de>
+       alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>,
+       Andi Kleen <andi@firstfloor.org>, Al Viro <viro@ZenIV.linux.org.uk>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 01/15] x86-64: Fix "bytes left to copy" return value for
+	copy_from_user()
+Message-ID: <20080619212940.GB20267@suse.de>
+References: <20080619211313.834170620@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Disposition: inline; filename="x86-64-fix-bytes-left-to-copy-return-value-for-copy_from_user.patch"
+In-Reply-To: <20080619212621.GA20267@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.25.8 release.
-There are 15 patches in this series, all will be posted as a response
-to this one.  If anyone has any issues with these being applied, please
-let us know.  If anyone is a maintainer of the proper subsystem, and
-wants to add a Signed-off-by: line to the patch, please respond with it.
+2.6.25-stable review patch.  If anyone has any objections, please let us know.
 
-These patches are sent out with a number of different people on the
-Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
-to add your name to the list.  If you want to be off the reviewer list,
-also email us.
-
-Responses should be made by June 21, 20:00:00 UTC.  Anything received after
-that time might be too late.
-
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.25.8-rc1.gz
-and the diffstat can be found below.
+------------------
 
 
-thanks,
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-the -stable release team
+commit 42a886af728c089df8da1b0017b0e7e6c81b5335 upstream
 
+Most users by far do not care about the exact return value (they only
+really care about whether the copy succeeded in its entirety or not),
+but a few special core routines actually care deeply about exactly how
+many bytes were copied from user space.
 
- Makefile                               |    2 +-
- arch/x86/kernel/process_32.c           |   23 +++++++++++++++++++++--
- arch/x86/kernel/process_64.c           |   24 +++++++++++++++++++++---
- arch/x86/lib/copy_user_64.S            |   25 +++++++++++--------------
- arch/x86/lib/copy_user_nocache_64.S    |   25 +++++++++++--------------
- drivers/acpi/tables/tbinstal.c         |   18 +++++++-----------
- drivers/ide/pci/opti621.c              |   23 ++++-------------------
- drivers/net/virtio_net.c               |    8 +++++---
- drivers/net/wireless/b43/b43.h         |    1 -
- drivers/net/wireless/b43/dma.c         |    2 +-
- drivers/net/wireless/b43/main.c        |   16 ++++++++++------
- drivers/scsi/hosts.c                   |    5 +++--
- drivers/scsi/sr.c                      |    3 +++
- drivers/serial/8250.c                  |    4 +++-
- net/netfilter/nf_conntrack_core.c      |    3 +--
- net/netfilter/nf_conntrack_h323_main.c |   22 +++++++++++++++-------
- 16 files changed, 117 insertions(+), 87 deletions(-)
+And the unrolled versions of the x86-64 user copy routines would
+sometimes report that it had copied more bytes than it actually had.
+
+Very few uses actually have partial copies to begin with, but to make
+this bug even harder to trigger, most x86 CPU's use the "rep string"
+instructions for normal user copies, and that version didn't have this
+issue.
+
+To make it even harder to hit, the one user of this that really cared
+about the return value (and used the uncached version of the copy that
+doesn't use the "rep string" instructions) was the generic write
+routine, which pre-populated its source, once more hiding the problem by
+avoiding the exception case that triggers the bug.
+
+In other words, very special thanks to Bron Gondwana who not only
+triggered this, but created a test-program to show it, and bisected the
+behavior down to commit 08291429cfa6258c4cd95d8833beb40f828b194e ("mm:
+fix pagecache write deadlocks") which changed the access pattern just
+enough that you can now trigger it with 'writev()' with multiple
+iovec's.
+
+That commit itself was not the cause of the bug, it just allowed all the
+stars to align just right that you could trigger the problem.
+
+[ Side note: this is just the minimal fix to make the copy routines
+  (with __copy_from_user_inatomic_nocache as the particular version that
+  was involved in showing this) have the right return values.
+
+  We really should improve on the exceptional case further - to make the
+  copy do a byte-accurate copy up to the exact page limit that causes it
+  to fail.  As it is, the callers have to do extra work to handle the
+  limit case gracefully. ]
+
+Reported-by: Bron Gondwana <brong@fastmail.fm>
+Cc: Nick Piggin <npiggin@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>
+Acked-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ arch/x86/lib/copy_user_64.S         |   25 +++++++++++--------------
+ arch/x86/lib/copy_user_nocache_64.S |   25 +++++++++++--------------
+ 2 files changed, 22 insertions(+), 28 deletions(-)
+
+--- a/arch/x86/lib/copy_user_64.S
++++ b/arch/x86/lib/copy_user_64.S
+@@ -217,19 +217,19 @@ ENTRY(copy_user_generic_unrolled)
+ 	/* table sorted by exception address */
+ 	.section __ex_table,"a"
+ 	.align 8
+-	.quad .Ls1,.Ls1e
+-	.quad .Ls2,.Ls2e
+-	.quad .Ls3,.Ls3e
+-	.quad .Ls4,.Ls4e
+-	.quad .Ld1,.Ls1e
++	.quad .Ls1,.Ls1e	/* Ls1-Ls4 have copied zero bytes */
++	.quad .Ls2,.Ls1e
++	.quad .Ls3,.Ls1e
++	.quad .Ls4,.Ls1e
++	.quad .Ld1,.Ls1e	/* Ld1-Ld4 have copied 0-24 bytes */
+ 	.quad .Ld2,.Ls2e
+ 	.quad .Ld3,.Ls3e
+ 	.quad .Ld4,.Ls4e
+-	.quad .Ls5,.Ls5e
+-	.quad .Ls6,.Ls6e
+-	.quad .Ls7,.Ls7e
+-	.quad .Ls8,.Ls8e
+-	.quad .Ld5,.Ls5e
++	.quad .Ls5,.Ls5e	/* Ls5-Ls8 have copied 32 bytes */
++	.quad .Ls6,.Ls5e
++	.quad .Ls7,.Ls5e
++	.quad .Ls8,.Ls5e
++	.quad .Ld5,.Ls5e	/* Ld5-Ld8 have copied 32-56 bytes */
+ 	.quad .Ld6,.Ls6e
+ 	.quad .Ld7,.Ls7e
+ 	.quad .Ld8,.Ls8e
+@@ -244,11 +244,8 @@ ENTRY(copy_user_generic_unrolled)
+ 	.quad .Le5,.Le_zero
+ 	.previous
+ 
+-	/* compute 64-offset for main loop. 8 bytes accuracy with error on the
+-	   pessimistic side. this is gross. it would be better to fix the
+-	   interface. */
+ 	/* eax: zero, ebx: 64 */
+-.Ls1e: 	addl $8,%eax
++.Ls1e: 	addl $8,%eax		/* eax is bytes left uncopied within the loop (Ls1e: 64 .. Ls8e: 8) */
+ .Ls2e: 	addl $8,%eax
+ .Ls3e: 	addl $8,%eax
+ .Ls4e: 	addl $8,%eax
+--- a/arch/x86/lib/copy_user_nocache_64.S
++++ b/arch/x86/lib/copy_user_nocache_64.S
+@@ -145,19 +145,19 @@ ENTRY(__copy_user_nocache)
+ 	/* table sorted by exception address */
+ 	.section __ex_table,"a"
+ 	.align 8
+-	.quad .Ls1,.Ls1e
+-	.quad .Ls2,.Ls2e
+-	.quad .Ls3,.Ls3e
+-	.quad .Ls4,.Ls4e
+-	.quad .Ld1,.Ls1e
++	.quad .Ls1,.Ls1e	/* .Ls[1-4] - 0 bytes copied */
++	.quad .Ls2,.Ls1e
++	.quad .Ls3,.Ls1e
++	.quad .Ls4,.Ls1e
++	.quad .Ld1,.Ls1e	/* .Ld[1-4] - 0..24 bytes coped */
+ 	.quad .Ld2,.Ls2e
+ 	.quad .Ld3,.Ls3e
+ 	.quad .Ld4,.Ls4e
+-	.quad .Ls5,.Ls5e
+-	.quad .Ls6,.Ls6e
+-	.quad .Ls7,.Ls7e
+-	.quad .Ls8,.Ls8e
+-	.quad .Ld5,.Ls5e
++	.quad .Ls5,.Ls5e	/* .Ls[5-8] - 32 bytes copied */
++	.quad .Ls6,.Ls5e
++	.quad .Ls7,.Ls5e
++	.quad .Ls8,.Ls5e
++	.quad .Ld5,.Ls5e	/* .Ld[5-8] - 32..56 bytes copied */
+ 	.quad .Ld6,.Ls6e
+ 	.quad .Ld7,.Ls7e
+ 	.quad .Ld8,.Ls8e
+@@ -172,11 +172,8 @@ ENTRY(__copy_user_nocache)
+ 	.quad .Le5,.Le_zero
+ 	.previous
+ 
+-	/* compute 64-offset for main loop. 8 bytes accuracy with error on the
+-	   pessimistic side. this is gross. it would be better to fix the
+-	   interface. */
+ 	/* eax: zero, ebx: 64 */
+-.Ls1e: 	addl $8,%eax
++.Ls1e: 	addl $8,%eax	/* eax: bytes left uncopied: Ls1e: 64 .. Ls8e: 8 */
+ .Ls2e: 	addl $8,%eax
+ .Ls3e: 	addl $8,%eax
+ .Ls4e: 	addl $8,%eax
+
+-- 
