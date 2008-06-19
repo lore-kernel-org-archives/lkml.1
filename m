@@ -1,41 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759907AbYFSRWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760073AbYFSRXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759907AbYFSRWM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 13:22:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754652AbYFSRV7
+	id S1760073AbYFSRXT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 13:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758629AbYFSRXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 13:21:59 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:51198 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754471AbYFSRV6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 13:21:58 -0400
-Subject: Re: [PATCH] jedec_probe: Fix SST 16-bit chip detection
-From: David Woodhouse <dwmw2@infradead.org>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-In-Reply-To: <20080619.163648.262833678.nemoto@toshiba-tops.co.jp>
-References: <20080619.163648.262833678.nemoto@toshiba-tops.co.jp>
-Content-Type: text/plain
-Date: Thu, 19 Jun 2008 18:21:53 +0100
-Message-Id: <1213896113.26255.1434.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Thu, 19 Jun 2008 13:23:12 -0400
+Received: from tetsuo.zabbo.net ([207.173.201.20]:49691 "EHLO tetsuo.zabbo.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758611AbYFSRXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 13:23:11 -0400
+Message-ID: <485A95FE.9080308@oracle.com>
+Date: Thu, 19 Jun 2008 10:23:10 -0700
+From: Zach Brown <zach.brown@oracle.com>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
+MIME-Version: 1.0
+To: Jeff Moyer <jmoyer@redhat.com>
+CC: akpm@linux-foundation.org, linux-aio@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] aio: invalidate async directio writes
+References: <x49ej6uy5qo.fsf@segfault.boston.devel.redhat.com>
+In-Reply-To: <x49ej6uy5qo.fsf@segfault.boston.devel.redhat.com>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-06-19 at 16:36 +0900, Atsushi Nemoto wrote:
-> -               .devtypes       = CFI_DEVICETYPE_X16|CFI_DEVICETYPE_X8,
-> +               .devtypes       = CFI_DEVICETYPE_X16,
 
-I believe you about the uaddr -- but can these devices really not be
-used in 8-bit mode?
+> +static DECLARE_WORK(aio_complete_work, aio_complete_fn, NULL);
+> +static DEFINE_SPINLOCK(iocb_completion_list_lock);
+> +static LIST_HEAD(iocb_completion_list);
 
--- 
-dwmw2
+It seems like a bad idea to funnel all AIO DIO completion in the system
+through one cacheline.  Should we have per-cpu lists and work structs?
 
+> +			unsigned long flags;
+> +			spin_lock_irqsave(&iocb_completion_list_lock, flags);
+> +			list_add(&dio->done_list, &iocb_completion_list);
+> +			spin_unlock_irqrestore(&iocb_completion_list_lock, flags);
+> +			schedule_work(&aio_complete_work);
+
+And we should probably use list_add_tail() here so that we don't reverse
+ the order of IO completion and end_io() callbacks.
+
+And hopefully going per-cpu could simplify the locking so that we don't
+have even more per-io locking.
+
+- z
