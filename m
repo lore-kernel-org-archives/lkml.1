@@ -1,76 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752947AbYFSVls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbYFSVuK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752947AbYFSVls (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 17:41:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbYFSVlj
+	id S1754689AbYFSVuK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 17:50:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbYFSVt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 17:41:39 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:42539 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751259AbYFSVlj (ORCPT
+	Thu, 19 Jun 2008 17:49:57 -0400
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:64454 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751304AbYFSVt5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 17:41:39 -0400
-Date: Thu, 19 Jun 2008 14:17:25 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       josh@freedesktop.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       dino@in.ibm.com, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, vegard.nossum@gmail.com,
-       adobriyan@gmail.com, oleg@tv-sign.ru, bunk@kernel.org, rjw@sisk.pl
-Subject: Re: [PATCH] Make rcutorture more vicious: reinstate boot-time
- testing
-Message-Id: <20080619141725.2d231fc1.randy.dunlap@oracle.com>
-In-Reply-To: <20080619155854.GA5084@linux.vnet.ibm.com>
-References: <20080618122144.GA27143@linux.vnet.ibm.com>
-	<20080618162649.GA18326@linux.vnet.ibm.com>
-	<20080619092914.GB15228@elte.hu>
-	<20080619155854.GA5084@linux.vnet.ibm.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 19 Jun 2008 17:49:57 -0400
+Date: Thu, 19 Jun 2008 23:49:45 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Avi Kivity <avi@qumranet.com>,
+       linux-kernel@vger.kernel.org,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [BUG] CFS vs cpu hotplug
+Message-ID: <20080619214945.GA12640@osiris.ibm.com>
+References: <20080619161949.GA11062@osiris.ibm.com> <1213898711.3223.107.camel@lappy.programming.kicks-ass.net> <1213911149.3223.135.camel@lappy.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1213911149.3223.135.camel@lappy.programming.kicks-ass.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jun 2008 08:58:54 -0700 Paul E. McKenney wrote:
-
-> On Thu, Jun 19, 2008 at 11:29:14AM +0200, Ingo Molnar wrote:
-> > 
-> > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > 
-> > > Hello again!
-> > > 
+On Thu, Jun 19, 2008 at 11:32:29PM +0200, Peter Zijlstra wrote:
+> On Thu, 2008-06-19 at 20:05 +0200, Peter Zijlstra wrote:
+> > On Thu, 2008-06-19 at 18:19 +0200, Heiko Carstens wrote:
 > 
->  Documentation/RCU/torture.txt      |   21 
->  Documentation/RCU/torture.txt.orig |    8 
-                                ~~~~~
+> > > The sched_entity that belongs to the cfs_rq:
+> > > 
+> > > >> px *(sched_entity *) 0x759300
+> > > struct sched_entity {
+> > >         load = struct load_weight {
+> > >                 weight = 0x800
+> > >                 inv_weight = 0x1ffc01
+> > >         }
+> > >         run_node = struct rb_node {
+> > >                 rb_parent_color = 0x1
+> > >                 rb_right = (nil)
+> > >                 rb_left = (nil)
+> > >         }
+> > >         group_node = struct list_head {
+> > >                 next = 0x75a3b8
+> > >                 prev = 0x75a3b8
+> > >         }
+> > >         on_rq = 0x1
+> > >         exec_start = 0x189685acb4aa46
+> > >         sum_exec_runtime = 0x188a2b84c
+> > >         vruntime = 0xd036bd29
+> > >         prev_sum_exec_runtime = 0x1672e3f62
+> > >         last_wakeup = 0x0
+> > >         avg_overlap = 0x0
+> > >         parent = (nil)
+> > >         cfs_rq = 0x75a380
+> > >         my_q = 0x759400
+> > > }
+> 
+> If you still have this dump, could you give the output of:
+> 
+> px *(struct cfs_rq *) 0x759400
+> 
+> And possibly walk down the chain getting its curr and then my_q again
+> etc..
 
->  kernel/rcutorture.c                |   14 
->  kernel/rcutorture.c.orig           |   59 
-                       !!!!
+Sure, fortunately just a very short chain:
 
->  kernel/sysctl.c                    |   13 
->  kernel/sysctl.c.orig               | 2851 +++++++++++++++++++++++++++++++++++++
-                   ~~~~
+>> px *(struct cfs_rq *) 0x759400
+struct cfs_rq {
+        load = struct load_weight {
+                weight = 0xc31
+                inv_weight = 0x0
+        }
+        nr_running = 0x1
+        exec_clock = 0x0
+        min_vruntime = 0x4f216b005
+        tasks_timeline = struct rb_root {
+                rb_node = 0x2fca4d40
+        }
+        rb_leftmost = 0x2fca4d40
+        tasks = struct list_head {
+                next = 0x2fca4d58
+                prev = 0x2fca4d58
+        }
+        balance_iterator = 0x2e29e700
+        curr = 0x2ef4f388
+        next = (nil)
+        nr_spread_over = 0x0
+        rq = 0x75a300
+        leaf_cfs_rq_list = struct list_head {
+                next = 0x75aaa0
+                prev = 0x2e1eca70
+        }
+        tg = 0x564910
+}
 
->  lib/Kconfig.debug                  |   20 
->  lib/Kconfig.debug.orig             |  679 ++++++++
-                     ~~~~
-
-What's with all of these .orig files, eh??
-
-
->  8 files changed, 3651 insertions(+), 14 deletions(-)
-
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+>> px *(sched_entity *) 0x2ef4f388
+struct sched_entity {
+        load = struct load_weight {
+                weight = 0x400
+                inv_weight = 0x400000
+        }
+        run_node = struct rb_node {
+                rb_parent_color = 0x2f07b399
+                rb_right = (nil)
+                rb_left = (nil)
+        }
+        group_node = struct list_head {
+                next = 0x2ef4f3b0
+                prev = 0x2ef4f3b0
+        }
+        on_rq = 0x0
+        exec_start = 0x189685c9a77b96
+        sum_exec_runtime = 0x3c51111
+        vruntime = 0x493becf68
+        prev_sum_exec_runtime = 0x3c50997
+        last_wakeup = 0x0
+        avg_overlap = 0x4b67d1
+        parent = 0x763300
+        cfs_rq = 0x763400
+        my_q = (nil)
+}
