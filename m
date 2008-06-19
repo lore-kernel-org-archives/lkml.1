@@ -1,112 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760705AbYFSSRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760785AbYFSST2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760705AbYFSSRz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 14:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758709AbYFSSRi
+	id S1760785AbYFSST2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 14:19:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755047AbYFSSTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 14:17:38 -0400
-Received: from gw.goop.org ([64.81.55.164]:46100 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758563AbYFSSRh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 14:17:37 -0400
-Message-ID: <485AA296.6070008@goop.org>
-Date: Thu, 19 Jun 2008 11:16:54 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 19 Jun 2008 14:19:19 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:64270 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751340AbYFSSTR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 14:19:17 -0400
+Date: Thu, 19 Jun 2008 19:17:54 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
+In-Reply-To: <20080619093541.GC15228@elte.hu>
+Message-ID: <Pine.LNX.4.55.0806191619560.12929@cliff.in.clinika.pl>
+References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806180053.40044.rjw@sisk.pl>
+ <Pine.LNX.4.55.0806180400070.28110@cliff.in.clinika.pl> <200806190011.38548.rjw@sisk.pl>
+ <Pine.LNX.4.55.0806182345380.7802@cliff.in.clinika.pl> <20080619093541.GC15228@elte.hu>
 MIME-Version: 1.0
-To: Jan Beulich <jbeulich@novell.com>
-CC: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       hpa@zytor.com
-Subject: Re: [PATCH] i386: fix vmalloc_sync_all() for Xen
-References: <48591049.76E4.0078.0@novell.com> <485969A4.6090406@goop.org> <485A465D.76E4.0078.0@novell.com> <485A7122.8090200@goop.org> <485A9EF5.76E4.0078.0@novell.com>
-In-Reply-To: <485A9EF5.76E4.0078.0@novell.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
-> Since start is a static variable, it must be updated this way. The intention
-> here is to shorten the loop in later runs - since kernel page table entries
-> never go away, this is possible. Possibly just using the insync array would
-> be sufficient, but when I first coded this I wanted to avoid as much
-> overhead as was possible.
->   
+On Thu, 19 Jun 2008, Ingo Molnar wrote:
 
-Yes, I see.  How often does this get called?  alloc_vm_area() and 
-register_notify_die().  alloc_vm_area is only called by the grant-table 
-code, and register_notify_die() is boot-time init.  Is this worth 
-optimising at all?
+> * Maciej W. Rozycki <macro@linux-mips.org> wrote:
+> 
+> > --- a/arch/x86/kernel/io_apic_64.c	2008-06-18 22:53:34.000000000 +0000
+> > +++ b/arch/x86/kernel/io_apic_64.c	2008-06-18 22:58:45.000000000 +0000
+> > @@ -1714,6 +1714,7 @@ static inline void __init check_timer(vo
+> >  		/* replace_pin_at_irq(0, apic1, pin1, apic2, pin2); */
+> >  		setup_timer_IRQ0_pin(apic2, pin2, cfg->vector);
+> >  		unmask_IO_APIC_irq(0);
+> > +		clear_IO_APIC_pin(apic2, pin2);
+> >  		enable_8259A_irq(0);
+> >  		if (timer_irq_works()) {
+> >  			apic_printk(APIC_VERBOSE," works.\n");
+> 
+> would it be fine with you if we applied this to tip/x86, as it unbreaks 
+> Rafael's box?
 
+ It makes no sense to push it anyweher -- it is a diagnostic check only
+which makes most of the surrounding code useless.  It masks the APIC input
+selected for use so that it can be seen whether the 8259A delivers its
+interrupt regardless.  Obviously in this case it does not, so I must
+conclude the 8259A is really wired to this I/O APIC input.
 
->>>>>  			spin_lock_irqsave(&pgd_lock, flags);
->>>>> +			if (unlikely(list_empty(&pgd_list))) {
->>>>> +				spin_unlock_irqrestore(&pgd_lock, flags);
->>>>> +				return;
->>>>> +			}
->>>>>   
->>>>>       
->>>>>           
->>>> This seems a bit warty.  If the list is empty, then won't the 
->>>> list_for_each_entry() just fall through?  Presumably this only applies 
->>>> to boot, since pgd_list won't be empty on a running system with usermode 
->>>> processes.  Is there a correctness issue here, or is it just a 
->>>> micro-optimisation?
->>>>     
->>>>         
->>> No, it isn't. Note the setting to NULL of page, which after the loop gets
->>> tested for. list_for_each_entry() would never yield a NULL page, even
->>> if the list is empty.
->>>       
->> Does that matter?  If pgd_list is empty, then it's in sync by 
->> definition.  Why does it need special-casing?
->>     
->
-> Yes, certainly. But it would result in all insync bits set, which would be
-> wrong - only non-empty page directory entries can be in sync.
->   
+ As expressed before, unfortunately a lot of diagnostic APIC messages have
+been disabled in the 64-bit variation.  The result is I was unable to get
+good results from my Internet search for bootstrap logs from other systems
+using this southbridge.  Fortunately at least ACPI messages are present
+and what I noticed is some of the systems do not provide an IRQ0 override
+and still work correctly.  So it is quite possible the chip actually wires
+the timer interrupt to INTIN0 and the virtual wire cascade to INTIN2 (that
+would make the ACPI override provided by this machine incorrect).  That
+would be unusual, but not unreasonable, especially for someone like ATI
+doing their first chipset with no legacy burden carried over.  I'll post a
+patch shortly, that will make it possible to determine that.
 
-I think it would be better to separately test whether the vmalloc 
-mapping is present in the init_mm and skip the syncing loop in that 
-case, rather than this somewhat convoluted logic to overload the test in 
-vmalloc_sync_one.
+ Overall, it would really help to see the a piece of documentation for the
+SB400.  Now that ATI has been taken over by AMD it might be a bit easier.  
+Both companies have a reasonably good record of providing technical
+documentation, but AMD's track seems a little bit better.  At least to me.
+Perhaps someone who cooperates with AMD officially could approach them?
 
->>>>>  			list_for_each_entry(page, &pgd_list, lru) {
->>>>>  				if (!vmalloc_sync_one(page_address(page),
->>>>> -						      address))
->>>>> +						      address)) {
->>>>> +					BUG_ON(list_first_entry(&pgd_list,
->>>>> +								struct page,
->>>>> +								lru) != page);
->>>>>   
->>>>>       
->>>>>           
->>>> What condition is this testing for?
->>>>     
->>>>         
->>> This is a replacement of the BUG_ON() that an earlier patch from you
->>> removed: Failure of vmalloc_sync_one() must happen on the first
->>> entry or never, and this is what is being checked for here.
->>>   
->>>       
->> Could you add a comment?
->>     
->
-> Sure, though there was none originally, and the intention seemed
-> quite clear to me.
+> does PIT programming matter? One detail which might matter and which 
+> touches IRQ0 generation is the clockevent driver on nohz/highres. See 
+> arch/x86/kernel/i8253.c:init_pit_timer():
+> 
+>         case CLOCK_EVT_MODE_SHUTDOWN:
+>         case CLOCK_EVT_MODE_UNUSED:
+>                 if (evt->mode == CLOCK_EVT_MODE_PERIODIC ||
+>                     evt->mode == CLOCK_EVT_MODE_ONESHOT) {
+>                         outb_pit(0x30, PIT_MODE);
+>                         outb_pit(0, PIT_CH0);
+>                         outb_pit(0, PIT_CH0);
+>                 }
+>                 pit_disable_clocksource();
+>                 break;
+> 
+>         case CLOCK_EVT_MODE_ONESHOT:
+>                 /* One shot setup */
+>                 pit_disable_clocksource();
+>                 outb_pit(0x38, PIT_MODE);
+>                 break;
 
-Well, looks to me like vmalloc_sync_one can only return NULL iff the 
-vmalloc mapping is absent in init_mm, so that's going to be invariant 
-with respect to any other pgd you pass in.  So I don't think the BUG_ON 
-will ever fire, and it's unclear what actual logical property it's 
-testing for.
+ It does, though not necessarily in this case.  In principle all this
+8254-through-APIC timer validation code assumes the source retriggers
+automatically and if an edge is lost because the APIC input targeted is
+masked or not configured yet, another one will follow shortly by itself.  
+It used to be the case when this code was implemented as we never used any
+of the single-shot modes of the 8254 back then.
 
-I think all this can be cleaned up quite a bit, but this patch is an 
-improvement over what's currently there.
+ Is it now possible at the time check_timer() is called the 8254 has been
+put in one of the single-shot modes?  If so, then additional code has to
+be put in place either to switch the timer into the periodic mode for the
+duration of check_timer() or to rearm the timer if in a single-shot mode
+each time timer_irq_works() is called.
 
-Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-
-    J
-
+  Maciej
