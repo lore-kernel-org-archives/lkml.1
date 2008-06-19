@@ -1,42 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757898AbYFSNk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbYFSNwO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757898AbYFSNk3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 09:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755634AbYFSNkU
+	id S1758183AbYFSNwO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 09:52:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756836AbYFSNwF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 09:40:20 -0400
-Received: from mga10.intel.com ([192.55.52.92]:26058 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754994AbYFSNkT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 09:40:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,672,1204531200"; 
-   d="scan'208";a="343327744"
-Message-ID: <485A61B5.90003@linux.intel.com>
-Date: Thu, 19 Jun 2008 06:40:05 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Thu, 19 Jun 2008 09:52:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58317 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756997AbYFSNwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 09:52:04 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: akpm@linux-foundation.org, zach.brown@oracle.com, linux-aio@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] aio: invalidate async directio writes
+References: <x49ej6uy5qo.fsf@segfault.boston.devel.redhat.com>
+	<1213861885.16944.255.camel@twins>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Thu, 19 Jun 2008 09:50:54 -0400
+In-Reply-To: <1213861885.16944.255.camel@twins> (Peter Zijlstra's message of
+	"Thu, 19 Jun 2008 09:51:25 +0200")
+Message-ID: <x49skv9wn29.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Dave Airlie <airlied@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: kerneloops.org: 2.6.26-rc possible regression in ext3
-References: <4859F075.2050207@linux.intel.com> <21d7e9970806182242na130e47i85839c4550b4ba03@mail.gmail.com> <20080619081146.GC17630@cs181133002.pp.htv.fi>
-In-Reply-To: <20080619081146.GC17630@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> 
-> Expect a lot more of this to pop up in the future.
-> Should we #error for gcc 4.3.1?
-> 
+Peter Zijlstra <peterz@infradead.org> writes:
 
-it/s better to find if the gcc guys made a testcase for this bug (they normally do) and
-test based on that.
+> On Wed, 2008-06-18 at 14:09 -0400, Jeff Moyer wrote:
+>> Hi, Andrew,
+>> 
+>> This is a follow-up to:
+>> 
+>> commit bdb76ef5a4bc8676a81034a443f1eda450b4babb
+>> Author: Zach Brown <zach.brown@oracle.com>
+>> Date:   Tue Oct 30 11:45:46 2007 -0700
+>> 
+>>     dio: fix cache invalidation after sync writes
+>>     
+>>     Commit commit 65b8291c4000e5f38fc94fb2ca0cb7e8683c8a1b ("dio: invalidate
+>>     clean pages before dio write") introduced a bug which stopped dio from
+>>     ever invalidating the page cache after writes.  It still invalidated it
+>>     before writes so most users were fine.
+>>     
+>>     Karl Schendel reported ( http://lkml.org/lkml/2007/10/26/481 ) hitting
+>>     this bug when he had a buffered reader immediately reading file data
+>>     after an O_DIRECT [writer] had written the data.  The kernel issued
+>>     read-ahead beyond the position of the reader which overlapped with the
+>>     O_DIRECT writer.  The failure to invalidate after writes caused the
+>>     reader to see stale data from the read-ahead.
+>>     
+>>     The following patch is originally from Karl.  The following commentary
+>>     is his:
+>>     
+>>         The below 3rd try takes on your suggestion of just invalidating
+>>         no matter what the retval from the direct_IO call.  I ran it
+>>         thru the test-case several times and it has worked every time.
+>>         The post-invalidate is probably still too early for async-directio,
+>>         but I don't have a testcase for that;  just sync.  And, this
+>>         won't be any worse in the async case.
+>>     
+>>     I added a test to the aio-dio-regress repository which mimics Karl's IO
+>>     pattern.  It verifed the bad behaviour and that the patch fixed it.  I
+>>     agree with Karl, this still doesn't help the case where a buffered
+>>     reader follows an AIO O_DIRECT writer.  That will require a bit more
+>>     work.
+>>     
+>>     This gives up on the idea of returning EIO to indicate to userspace that
+>>     stale data remains if the invalidation failed.
+>> 
+>> Note the second-to-last paragraph, where it mentions that this does not fix
+>> the AIO case.  I updated the regression test to also perform asynchronous
+>> I/O and verified that the problem does exist.
+>> 
+>> To fix the problem, we need to invalidate the pages that were under write
+>> I/O after the I/O completes.  Because the I/O completion handler can be called
+>> in interrupt context (and invalidate_inode_pages2 cannot be called in interrupt
+>> context), this patch opts to defer the completion to a workqueue.  That
+>> workqueue is responsible for invalidating the page cache pages and completing
+>> the I/O.
+>> 
+>> I verified that the test case passes with the following patch applied.
+>
+> I'm utterly ignorant of all thing [AD]IO, but doesn't deferring the
+> invalidate open up/widen a race window?
+
+We weren't doing the invalidate at all before this patch.  This patch
+introduces the invalidation, but we can't do it in interrupt context.
+
+Cheers,
+
+Jeff
