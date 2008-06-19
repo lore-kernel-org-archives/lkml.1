@@ -1,41 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757587AbYFSGn1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756962AbYFSGya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757587AbYFSGn1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 02:43:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756015AbYFSGnS
+	id S1756962AbYFSGya (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 02:54:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbYFSGyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 02:43:18 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42270 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755344AbYFSGnR (ORCPT
+	Thu, 19 Jun 2008 02:54:19 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:33344 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752420AbYFSGyS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 02:43:17 -0400
-Date: Wed, 18 Jun 2008 23:42:46 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Dave Airlie <airlied@gmail.com>
-cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: kerneloops.org: 2.6.26-rc possible regression in ext3
-In-Reply-To: <21d7e9970806182242na130e47i85839c4550b4ba03@mail.gmail.com>
-Message-ID: <alpine.LFD.1.10.0806182341000.2907@woody.linux-foundation.org>
-References: <4859F075.2050207@linux.intel.com> <21d7e9970806182242na130e47i85839c4550b4ba03@mail.gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 19 Jun 2008 02:54:18 -0400
+Date: Wed, 18 Jun 2008 23:52:12 -0700
+From: Greg KH <greg@kroah.com>
+To: Karen Xie <kxie@chelsio.com>
+Cc: michaelc@cs.wisc.edu, Divy Le Ray <divy@chelsio.com>,
+       netdev@vger.kernel.org, security@kernel.org,
+       open-iscsi@googlegroups.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [Security] [PATCH 0/3 2.6.27] cxgb3i: Add iSCSI driver
+Message-ID: <20080619065212.GA9107@kroah.com>
+References: <8A71B368A89016469F72CD08050AD334D71285@maui.asicdesigners.com> <8A71B368A89016469F72CD08050AD334D7128B@maui.asicdesigners.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8A71B368A89016469F72CD08050AD334D7128B@maui.asicdesigners.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 19 Jun 2008, Dave Airlie wrote:
+On Wed, Jun 18, 2008 at 10:10:00PM -0700, Karen Xie wrote:
 > 
-> This is a bug in rawhide in gcc miscompiling something...
-> 
-> https://bugzilla.redhat.com/show_bug.cgi?id=451068
+> Please review the iSCSI drivers for Chelsio CXGB3 (S3XX) devices.  
 
-Gaah. I should read all my email instead of wasting my time trying to 
-match up the code with what I can reproduce..
+Is there some reason you send this to security@kernel.org?
 
-		Linus
+confused,
+
+greg k-h
