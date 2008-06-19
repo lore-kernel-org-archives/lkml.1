@@ -1,70 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761618AbYFSQC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760746AbYFSQGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761618AbYFSQC6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 12:02:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761528AbYFSQCr
+	id S1760746AbYFSQGl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 12:06:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbYFSQGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 12:02:47 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:12437 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761535AbYFSQCo (ORCPT
+	Thu, 19 Jun 2008 12:06:33 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:41171 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753873AbYFSQGc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 12:02:44 -0400
+	Thu, 19 Jun 2008 12:06:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=P5PSLDjacIGKLhuymp0h3dtwdkte4gKgMO9DRh/dUDsmig0dljGiQpXCmWnBSIgtjK
-         qm9Pz5anivAqz/sNJGpavnGHMSprhOolZb3V8SsgzQqGPzEKKVSaV7TXC/zneyBNbW4M
-         VUYAcSdGeWdFR7w8YIEev8pziMK3iYsIqF7wE=
-Message-ID: <a4423d670806190902l48c542e0i6a7380a2d3e7f520@mail.gmail.com>
-Date: Thu, 19 Jun 2008 20:02:44 +0400
-From: "Alexander Beregalov" <a.beregalov@gmail.com>
-To: "David Miller" <davem@davemloft.net>, kernel-testers@vger.kernel.org,
-       sparclinux@vger.kernel.org,
-       "kernel list" <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.26-rc: SPARC: Sun Ultra 10 can not boot
-In-Reply-To: <a4423d670806190707k7ae6da8cud80a826a1603d941@mail.gmail.com>
+        b=p4HHmfT1DDfspipQ28UlndMXZZwrHIEvUxu2Ml9Moe1ftxiNh8LfaL2kTPIJ2RqI84
+         GTV2jO5n1kbepiYEdOXWZHrkG5mBBMl10T+iVWxjy2j7XR0fpPkH0jydFJBFn4vCZ4ZN
+         Wf7P6OFiH144lbhIOI2HP71mRdx+j5NW9pLkM=
+Message-ID: <74d0deb30806190906w6f6628b7qb3069c7d97de2192@mail.gmail.com>
+Date: Thu, 19 Jun 2008 18:06:29 +0200
+From: "pHilipp Zabel" <philipp.zabel@gmail.com>
+To: Dmitry <dbaryshkov@gmail.com>
+Subject: Re: [PATCH] MFD maintainer
+Cc: ian <spyro@f2s.com>, "Samuel Ortiz" <sameo@openedhand.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ben Dooks" <ben-linux@fluff.org>,
+       "Russell King - ARM Linux" <linux@arm.linux.org.uk>
+In-Reply-To: <bc64b4640806190832s6fd14128o4ef142f06a52fe8b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <a4423d670806190707k7ae6da8cud80a826a1603d941@mail.gmail.com>
+References: <20080618214223.GE22566@caravaggio>
+	 <74d0deb30806190259l2ff7931fo819ededc7aec02f7@mail.gmail.com>
+	 <1213872881.17281.32.camel@wirenth>
+	 <bc64b4640806190412m70cbb15dr76a25ecb99c245dc@mail.gmail.com>
+	 <1213888192.17281.45.camel@wirenth>
+	 <bc64b4640806190832s6fd14128o4ef142f06a52fe8b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/6/19 Alexander Beregalov <a.beregalov@gmail.com>:
-> Hi
+On Thu, Jun 19, 2008 at 5:32 PM, Dmitry <dbaryshkov@gmail.com> wrote:
+> Hi,
 >
-> Sun Ultra 10 can not boot the last 2.6.26-rc6-git, it hangs right after
+> 2008/6/19 ian <spyro@f2s.com>:
+>> On Thu, 2008-06-19 at 15:12 +0400, Dmitry wrote:
+>>
+>>> > I'll tidy up the code and pop a branch on my git server for people to
+>>> > review, if thats what people want.
+>>>
+>>> It's better to send patches to some ML.
+>>
+>> Well, the code I had is updated to match linus -git branch
+>> eseries_release7 if anyones curious. (no real changes since last time
+>> though)
+>>
+>>> > Dmitry - if you have any pending patches now is the time to send them on
+>>> > over ;-)
+>>>
+>>> Actually the code I'm using has diverged a bit from the last code I've
+>>> sent before this merging pulse.
+>>
+>> All progress is good :)
+>>
+>>> As you have seen, I've tried to submit parts of the core and tmio-nand
+>>> driver as a start.
+>>
+>> Has any of that got merged yet? If so, I'll adapt my strategy to match
+>> that, otherwise I'll try to keep all the drivers in parallel.
+>>
+>>>  Then I'd suggest to merge other tmio core bits (support for tc6387xb
+>>>  and t7l66xb). The MMC, usb and fb cell drivers could benefit from
+>>>  clocklib patches I'm trying to get in.
+>>
+>> I'd like to see those. I'll get MMC and USB updated ASAP.
+>>
+>> have you solved the clock-api-tied-to-platform-architecture problem ?
 >
-> Console: colour dummy device 80x25
-> console handover: boot [earlyprom0] -> real [tty0]
-<cut>
-> I have done bisect:
->
-> a051bc5bb1ac6dc138d529077fa20cbbc6622d95 is first bad commit
-> commit a051bc5bb1ac6dc138d529077fa20cbbc6622d95
-> Author: David S. Miller <davem@davemloft.net>
-> Date:   Wed May 21 18:14:28 2008 -0700
->
->    sparc64: Fix kernel thread stack termination.
->
->    Because of the silly way I set up the initial stack for
->    new kernel threads, there is a loop at the top of the
->    stack.
->
->    To fix this, properly add another stack frame that is copied
->    from the parent and terminate it in the child by setting
->    the frame pointer in that frame to zero.
->
->    Signed-off-by: David S. Miller <davem@davemloft.net>
->
-> :040000 040000 beba7e8c740188a7c19a3569f08b1edd25b8000d
-> aed42d5af3ab9a84ccb3dfe07eb444a78f9001fa M      arch
->
+> There were plenty of tries to merge clocklib. Check lkml archives.
 
-I have reverted this commit and
-2.6.26-rc6-00233-g99d3b2d works fine. It can boot.
+How could we stir up some interest in those patches again? The last
+round didn't receive any comments.
+
+regards
+Philipp
