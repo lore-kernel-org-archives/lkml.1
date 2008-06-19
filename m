@@ -1,61 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757647AbYFSBJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbYFSBKF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757647AbYFSBJR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 21:09:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756738AbYFSBJB
+	id S1758067AbYFSBKF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 21:10:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbYFSBJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 21:09:01 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:41814 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751595AbYFSBJA (ORCPT
+	Wed, 18 Jun 2008 21:09:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48644 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754350AbYFSBJw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 21:09:00 -0400
-Date: Wed, 18 Jun 2008 18:08:56 -0700 (PDT)
-From: Eli Collins <ecollins@vmware.com>
-X-X-Sender: ecollins@ecollins-dev1.eng.vmware.com
-To: Martin Michlmayr <tbm@cyrius.com>
-Cc: "devzero@web.de" <devzero@web.de>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Javier Guerra <javier@guerrag.com>,
-       Anthony Liguori <anthony@codemonkey.ws>
-Subject: Re: Linux with kvm-intel locks up VMplayer guest is started
-In-Reply-To: <48596780.7080004@codemonkey.ws>
-Message-ID: <alpine.DEB.1.10.0806181552130.14608@ecollins-dev1.eng.vmware.com>
-References: <322174127@web.de> <48596780.7080004@codemonkey.ws>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 18 Jun 2008 21:09:52 -0400
+Date: Wed, 18 Jun 2008 21:09:47 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: NeilBrown <neilb@suse.de>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH - take 2] knfsd: nfsd: Handle ERESTARTSYS from syscalls.
+Message-ID: <20080618210947.2110a541@tleilax.poochiereds.net>
+In-Reply-To: <1080619001109.24338@suse.de>
+References: <20080619101025.24263.patches@notabene>
+	<1080619001109.24338@suse.de>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 19 Jun 2008 10:11:09 +1000
+NeilBrown <neilb@suse.de> wrote:
 
-Hi Martin,
+> 
+> OCFS2 can return -ERESTARTSYS from write requests (and possibly
+> elsewhere) if there is a signal pending.
+> 
+> If nfsd is shutdown (by sending a signal to each thread) while there
+> is still an IO load from the client, each thread could handle one last
+> request with a signal pending.  This can result in -ERESTARTSYS
+> which is not understood by nfserrno() and so is reflected back to
+> the client as nfserr_io aka -EIO.  This is wrong.
+> 
+> Instead, interpret ERESTARTSYS to mean "try again later" by returning
+> nfserr_jukebox.  The client will resend and - if the server is
+> restarted - the write will (hopefully) be successful and everyone will
+> be happy.
+> 
+>  The symptom that I narrowed down to this was:
+>     copy a large file via NFS to an OCFS2 filesystem, and restart
+>     the nfs server during the copy.
+>     The 'cp' might get an -EIO, and the file will be corrupted -
+>     presumably holes in the middle where writes appeared to fail.
+> 
+> 
+> Signed-off-by: Neil Brown <neilb@suse.de>
+> 
+> ### Diffstat output
+>  ./fs/nfsd/nfsproc.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff .prev/fs/nfsd/nfsproc.c ./fs/nfsd/nfsproc.c
+> --- .prev/fs/nfsd/nfsproc.c	2008-06-19 10:06:36.000000000 +1000
+> +++ ./fs/nfsd/nfsproc.c	2008-06-19 10:07:58.000000000 +1000
+> @@ -614,6 +614,7 @@ nfserrno (int errno)
+>  #endif
+>  		{ nfserr_stale, -ESTALE },
+>  		{ nfserr_jukebox, -ETIMEDOUT },
+> +		{ nfserr_jukebox, -ERESTARTSYS },
+>  		{ nfserr_dropit, -EAGAIN },
+>  		{ nfserr_dropit, -ENOMEM },
+>  		{ nfserr_badname, -ESRCH },
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-This lockup is fixed in the latest dot releases of Workstation, Player, 
-and Server.
+No objection to the patch, but what signal was being sent to nfsd when
+you saw this? If it's anything but a SIGKILL, then I wonder if we have
+a race that we need to deal with. My understanding is that we have nfsd
+flip between 2 sigmasks to prevent anything but a SIGKILL from being
+delivered while we're handling the local filesystem operation.
 
-The vmmon module now checks if VT is already enabled (actually it just 
-tests if CR4.VMXE is set since checking if the cpu is in VMX mode is a 
-pain). The vmmon module enables VMX mode when world switching to our 
-monitor and disables it when world switching back to the host. The 
-kvm-intel module puts the cpu(s) in VMX mode and does not exit VMX mode 
-until the module is unloaded, so if you want to run player and kvm you 
-need to first unload the kvm-intel module. However, this only works with 
-very recent kvm modules. If you're using a kvm-intel module that doesn't 
-contain the patch I submitted a couple weeks ago then even unloading the 
-kvm-intel module is not enough since it leaves CR4.VMXE set. So for "old" 
-modules you need to not load the kvm-intel module in the first place.
+>From nfsd():
 
-Note that the above is only relevant to kvm-intel. The vmmon and kvm-amd 
-modules do not need exclusive access to SVM mode. I've run VMs on kvm-69 
-and Workstation 6.5 beta simultaneously on an AMD-V host without any 
-issues.
+----------[snip]-----------
+                sigprocmask(SIG_SETMASK, &shutdown_mask, NULL);
 
-Also note that this issue is relevant for any software that wants to use 
-VT: QEMU, VirtualBox, Parallels, etc. won't be able to if the host (via 
-the kvm-intel module) has already claimed it.
+                /*
+                 * Find a socket with data available and call its
+                 * recvfrom routine.
+                 */
+                while ((err = svc_recv(rqstp, 60*60*HZ)) == -EAGAIN)
+                        ;
+                if (err < 0)
+                        break;
+                update_thread_usage(atomic_read(&nfsd_busy));
+                atomic_inc(&nfsd_busy);
 
-Thanks,
-Eli
+                /* Lock the export hash tables for reading. */
+                exp_readlock();
+
+                /* Process request with signals blocked.  */
+                sigprocmask(SIG_SETMASK, &allowed_mask, NULL);
+
+                svc_process(rqstp);
+
+----------[snip]-----------
+
+What happens if this catches a SIGINT after the err<0 check, but before
+the mask is set to allowed_mask? Does svc_process() then get called with
+a signal pending?
+
+-- 
+Jeff Layton <jlayton@redhat.com>
