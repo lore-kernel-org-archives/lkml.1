@@ -1,71 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760689AbYFSMtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759038AbYFSMuc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760689AbYFSMtt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 08:49:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757016AbYFSMtl
+	id S1759038AbYFSMuc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 08:50:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755731AbYFSMuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 08:49:41 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34588 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754939AbYFSMtl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 08:49:41 -0400
-Date: Thu, 19 Jun 2008 14:49:14 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Exner <dex@dragonslave.de>, Len Brown <lenb@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: let MPS support selectable
-Message-ID: <20080619124914.GA1843@elte.hu>
-References: <200805041823.57198.yhlu.kernel@gmail.com> <200806181432.57204.yhlu.kernel@gmail.com> <200806181729.31464.yhlu.kernel@gmail.com> <200806190018.45944.yhlu.kernel@gmail.com> <20080619121319.GE7640@elte.hu>
+	Thu, 19 Jun 2008 08:50:25 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39184 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754939AbYFSMuY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 08:50:24 -0400
+Message-ID: <485A5606.6080600@firstfloor.org>
+Date: Thu, 19 Jun 2008 14:50:14 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080619121319.GE7640@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jan Beulich <jbeulich@novell.com>, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH] x86-64: remove unnecessary ptregs call stubs
+References: <485910B3.76E4.0078.0@novell.com> <20080619122538.GH7640@elte.hu>
+In-Reply-To: <20080619122538.GH7640@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> * Jan Beulich <jbeulich@novell.com> wrote:
+> 
+>> A few of the ptregs call stubs are superfluous these days - the called 
+>> functions don't have a trailing 'struct pt_regs *' parameter anymore.
+> 
+> applied to tip/x86/cleanups - thanks Jan.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Just want to point out that not having a pt_regs * argument is not necessarily
+sufficient for not needing a ptregs stub. Some code also accesses ptregs directly
+through the stack top from get_thread_info() and might assume a full one. That said I *think*
+it's ok for sigsuspend et.al. as in Jan's patch, but I haven't audited the complete code paths
+in question that they never do that.
 
-> applied to tip/x86/mpparse, thanks.
+Would be good to clarify that in the commit log.
 
--tip testing found an early 64-bit bootup crash:
-
-
-SMP: Allowing 0 CPUs, 0 hotplug CPUs
-PANIC: early exception 0e rip 10:ffffffff804aeb32 error 2 cr2 
-ffff810040000000
-Pid: 0, comm: swapper Not tainted 2.6.26-rc6 #8188
-
-Call Trace:
- [<ffffffff80233f59>] ? printk+0x77/0x98
- [<ffffffff80d78196>] early_idt_handler+0x56/0x6a
- [<ffffffff804aeb32>] ? memset+0x32/0xc0
- [<ffffffff80d88026>] ? __alloc_bootmem_core+0x1ce/0x372
- [<ffffffff80d88343>] __alloc_bootmem_nopanic+0x35/0x60
- [<ffffffff80d8837f>] __alloc_bootmem+0x11/0x3a
- [<ffffffff80d7d329>] setup_per_cpu_areas+0x8d/0x249
- [<ffffffff80d78d61>] start_kernel+0x175/0x3a4
- [<ffffffff80d78365>] x86_64_start_kernel+0x165/0x16e
-
-RIP 0x10
-
-with this config (1GB RAM system):
-
-  http://redhat.com/~mingo/misc/config-Thu_Jun_19_14_22_37_CEST_2008.bad
-
-so i reverted this patch for now.
-
-	Ingo
+-Andi
