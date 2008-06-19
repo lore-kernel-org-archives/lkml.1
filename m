@@ -1,256 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760935AbYFSPxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761055AbYFSPya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760935AbYFSPxx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 11:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755177AbYFSPxp
+	id S1761055AbYFSPya (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 11:54:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbYFSPyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 11:53:45 -0400
-Received: from mailman2.ppco.com ([138.32.41.14]:34944 "EHLO mailman2.ppco.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754317AbYFSPxn convert rfc822-to-8bit (ORCPT
+	Thu, 19 Jun 2008 11:54:20 -0400
+Received: from mail-sin.bigfish.com ([207.46.51.74]:7917 "EHLO
+	mail183-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751049AbYFSPyT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 11:53:43 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
-Date: Thu, 19 Jun 2008 10:53:28 -0500
-Message-ID: <0122F800A3B64C449565A9E8C297701002D75DD4@hoexmb9.conoco.net>
-In-Reply-To: <20080616174340.GA27083@fieldses.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
-Thread-Index: AcjP2JVE9Pv4ptMjT/KbDnru1UB6IgCOyUbA
-References: <20080611195222.GP15380@fieldses.org> <20080611160947.5f08fb16@tleilax.poochiereds.net> <20080611205749.GA25194@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DAA@hoexmb9.conoco.net> <20080611225431.GD25194@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DAE@hoexmb9.conoco.net> <20080613201552.GH8501@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DB6@hoexmb9.conoco.net> <20080613220422.GC14338@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DB7@hoexmb9.conoco.net> <20080616174340.GA27083@fieldses.org>
-From: "Weathers, Norman R." <Norman.R.Weathers@conocophillips.com>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: "Jeff Layton" <jlayton@poochiereds.net>, <linux-kernel@vger.kernel.org>,
-       <linux-nfs@vger.kernel.org>, "Neil Brown" <neilb@suse.de>
-X-OriginalArrivalTime: 19 Jun 2008 15:53:29.0564 (UTC) FILETIME=[9E3EF1C0:01C8D224]
+	Thu, 19 Jun 2008 11:54:19 -0400
+X-BigFish: VPS3(zzzz10d3izzz32i87i65h)
+X-Spam-TCS-SCL: 4:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
+X-WSS-ID: 0K2PW5Z-01-ZFF-01
+From: Robert Richter <robert.richter@amd.com>
+To: stephane eranian <eranian@googlemail.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       perfmon2-devel@lists.sourceforge.net,
+       Robert Richter <robert.richter@amd.com>
+Subject: [PATCH 1/2] AMD64: Removing PCI ECS workaround
+Date: Thu, 19 Jun 2008 17:50:39 +0200
+Message-Id: <1213890640-4444-1-git-send-email-robert.richter@amd.com>
+X-Mailer: git-send-email 1.5.5.3
+In-Reply-To: <7c86c4470804300651u5a8fc98dr56fd1834ba902a0e@mail.gmail.com>
+References: <7c86c4470804300651u5a8fc98dr56fd1834ba902a0e@mail.gmail.com>
+X-OriginalArrivalTime: 19 Jun 2008 15:54:01.0621 (UTC) FILETIME=[B15A7450:01C8D224]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch removes the workaround to access the Extended Config Space
+that is needed to setup IBS interrupts. PCI functions are replaced by
+standard PCI functions that support now ECS access.
+
+Signed-off-by: Robert Richter <robert.richter@amd.com>
+---
+ arch/x86/pci/common.c            |    1 -
+ arch/x86/perfmon/perfmon_amd64.c |  100 +------------------------------------
+ 2 files changed, 3 insertions(+), 98 deletions(-)
+
+diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
+index 400960b..6e64aaf 100644
+--- a/arch/x86/pci/common.c
++++ b/arch/x86/pci/common.c
+@@ -76,7 +76,6 @@ int pcibios_scanned;
+  * configuration space.
+  */
+ DEFINE_SPINLOCK(pci_config_lock);
+-EXPORT_SYMBOL(pci_config_lock);
  
-
-> -----Original Message-----
-> From: J. Bruce Fields [mailto:bfields@fieldses.org] 
-> Sent: Monday, June 16, 2008 12:44 PM
-> To: Weathers, Norman R.
-> Cc: Jeff Layton; linux-kernel@vger.kernel.org; 
-> linux-nfs@vger.kernel.org; Neil Brown
-> Subject: Re: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
-> 
-> On Fri, Jun 13, 2008 at 05:53:20PM -0500, Weathers, Norman R. wrote:
-> >  
-> > 
-> > > -----Original Message-----
-> > > From: J. Bruce Fields [mailto:bfields@fieldses.org] 
-> > > Sent: Friday, June 13, 2008 5:04 PM
-> > > To: Weathers, Norman R.
-> > > Cc: Jeff Layton; linux-kernel@vger.kernel.org; 
-> > > linux-nfs@vger.kernel.org; Neil Brown
-> > > Subject: Re: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
-> > > 
-> > > On Fri, Jun 13, 2008 at 04:53:31PM -0500, Weathers, 
-> Norman R. wrote:
-> > > >  
-> > > > 
-> > > > > > The big one seems to be the __alloc_skb. (This is with 16 
-> > > > > threads, and
-> > > > > > it says that we are using up somewhere between 12 and 14 GB 
-> > > > > of memory,
-> > > > > > about 2 to 3 gig of that is disk cache).  If I were to 
-> > > put anymore
-> > > > > > threads out there, the server would become almost 
-> > > > > unresponsive (it was
-> > > > > > bad enough as it was).   
-> > > > > > 
-> > > > > > At the same time, I also noticed this:
-> > > > > > 
-> > > > > > skbuff_fclone_cache: 1842524 __alloc_skb+0x50/0x170
-> > > > > > 
-> > > > > > Don't know for sure if that is meaningful or not....
-> > > > > 
-> > > > > OK, so, starting at net/core/skbuff.c, this means that 
-> > > this memory was
-> > > > > allocated by __alloc_skb() calls with something nonzero 
-> > > in the third
-> > > > > ("fclone") argument.  The only such caller is 
-> alloc_skb_fclone().
-> > > > > Callers of alloc_skb_fclone() include:
-> > > > > 
-> > > > > 	sk_stream_alloc_skb:
-> > > > > 		do_tcp_sendpages
-> > > > > 		tcp_sendmsg
-> > > > > 		tcp_fragment
-> > > > > 		tso_fragment
-> > > > 
-> > > > Interesting you should mention the tso...  We recently went 
-> > > through and
-> > > > turned on TSO on all of our systems, trying it out to see 
-> > > if it helped
-> > > > with performance...  This could be something to do with 
-> > > that.  I can try
-> > > > disabling the tso on all of the servers and see if that 
-> > > helps with the
-> > > > memory.  Actually, I think I will, and I will monitor the 
-> > > situation.  I
-> > > > think it might help some, but I still think there may be 
-> > > something else
-> > > > going on in a deep corner...
-> > > 
-> > > I'll plead total ignorance about TSO, and it sounds like a long
-> > > shot--but sure, it'd be worth trying, thanks.
-> > > 
-> > 
-> > Tried it, not for sure if I like the results yet or not...  
-> Didn't seem
-> > to make a huge difference, but here is something that will 
-> really make
-> > you want to drink, the 2.6.25.4 kernel does not go into the 
-> size-4096
-> > hell.
-> 
-> Remind me what the most recent *bad* kernel was of those you tested?
-> (2.6.25?)
-> 
-
-The kernel that we were really seeing the problem with was 2.6.25.4, but
-I think we may have figured out the 4096 problem, and it was probably a
-mistake on my part, but it is important for the NFS users to see it so
-they don't make the same mistake.  I had found some performance tuning
-guides, and in trying some of the suggestions, found that the setting
-changes did seem to help on some things, but of course I never got to
-run a check under full load (800 + clients).  A suggestion was to change
-the tcp_reordering tunable under /proc/sys/net/ipv4 from the default 3
-to 127.  We think that this was actually causing the issue.  I was able
-to trace back through all of the changes, and I changed this setting
-back to the default 3, and it immediately fixed the size-4096 hell.  It
-appears that the reordering just eats into the memory, especially in
-high demand situations, and I guess that should make perfect sense if we
-are actually buffering up packets for reorder, and we are slamming the
-box with thousands of requests per minute.
-
-We still have other performance issues now, but it appears to be more of
-a bottleneck, the nodes do not appear to be backing off when the servers
-are becoming congested.
-
-
-> Nothing jumped out at me in a quick skim through the commits 
-> from 2.6.25
-> to 2.6.25.4.
-> 
-> > The largest users of slab there are the size-1024 and still the
-> > skbuff_fclone_cache.  On a box with 16 threads, it will 
-> cache up about 5
-> > GB of disk data, and still use about 6 GB of slab to put 
-> the information
-> > out there (without TSO on), but at least it is not causing the disk
-> > cache to be evicted, and it appears to be a little more 
-> responsive.  If
-> > I up it to 32 or more threads, however, it gets very 
-> sluggish, but then
-> > again, I am hitting it with a lot of nodes.
-> > 
-> > > > 
-> > > > > 		tcp_mtu_probe
-> > > > > 	tcp_send_fin
-> > > > > 	tcp_connect
-> > > > > 	buf_acquire:
-> > > > > 		lots of callers in tipc code (whatever that is).
-> > > > > 
-> > > > > So unless you're using tipc, or you have something in 
-> > > userspace going
-> > > > > haywire (perhaps netstat would help rule that out?), then 
-> > > I suppose
-> > > > > there's something wrong with knfsd's tcp code.  Which 
-> > > makes sense, I
-> > > > > guess.
-> > > > > 
-> > > > 
-> > > > Not for sure what tipc is either....
-> > > > 
-> > > > > I'd think this sort of allocation would be limited by the 
-> > > number of
-> > > > > sockets times the size of the send and receive buffers.
-> > > > > svc_xprt.c:svc_check_conn_limits() claims to be limiting 
-> > > the number of
-> > > > > sockets to (nrthreads+3)*20.  (You aren't hitting the 
-> > > "too many open
-> > > > > connections" printk there, are you?)  The total buffer 
-> > > size should be
-> > > > > bounded by something like 4 megs.
-> > > > > 
-> > > > > --b.
-> > > > > 
-> > > > 
-> > > > Yes, we are getting a continuous stream of the too many 
-> > > open connections
-> > > > scrolling across our logs.  
-> > > 
-> > > That's interesting!  So we should probably look more 
-> closely at the
-> > > svc_check_conn_limits() behavior.  I wonder whether some 
-> pathological
-> > > behavior is triggered in the case where you're constantly 
-> > > over the limit
-> > > it's trying to enforce.
-> > > 
-> > > (Remind me how many active clients you have?)
-> > > 
-> > 
-> > 
-> > We currently are hitting with somewhere around 600 to 800 
-> nodes, but it
-> > can go up to over 1000 nodes.  We are artificially starving with a
-> > limited number of threads (2 to 3) right now on the older 2.6.22.14
-> > kernel because of that memory issue (which may or may not be tso
-> > related)...
-> 
-> So with that many clients all making requests to the server at once,
-> we'd start hitting that (serv->sv_nrthreads+3)*20 limit when 
-> the number
-> of threads was set to less than 30-50.  That doesn't seem to be the
-> point where you're seeing a change in behavior, though.
-> 
-
-We were estimating between 40 and 50 threads was the cut off for being
-able to service all of the (current) requests at once.  I haven't ramped
-back up to that level yet.  I wasn't comfortable yet with letting it all
-hang back out just in case we get into that hellish mode again, it can
-be a pain to try and get into those systems once they are overloaded
-(even over serial, sometimes it can just timeout the login).  We had to
-actually bring online a second option to help alleviate some of the back
-congestion because the servers couldn't handle the workload.  
+ static int __devinit can_skip_ioresource_align(const struct dmi_system_id *d)
+ {
+diff --git a/arch/x86/perfmon/perfmon_amd64.c b/arch/x86/perfmon/perfmon_amd64.c
+index 6349e77..d8ad321 100644
+--- a/arch/x86/perfmon/perfmon_amd64.c
++++ b/arch/x86/perfmon/perfmon_amd64.c
+@@ -142,106 +142,12 @@ static struct pfm_context *pfm_nb_task_owner;
+ 
+ static struct pfm_pmu_config pfm_amd64_pmu_conf;
+ 
+-/* Functions for accessing extended PCI config space. Can be removed
+-   when Kernel API exists. */
+-extern spinlock_t pci_config_lock;
+-
+-#define PCI_CONF1_ADDRESS(bus, devfn, reg) \
+-	(0x80000000 | ((reg & 0xF00) << 16) | ((bus & 0xFF) << 16) \
+-	| (devfn << 8) | (reg & 0xFC))
+-
+ #define is_ibs_pmc(x) (x == 4 || x == 5)
+ 
+-static int pci_read(unsigned int seg, unsigned int bus,
+-		    unsigned int devfn, int reg, int len, u32 *value)
+-{
+-	unsigned long flags;
+-
+-	if ((bus > 255) || (devfn > 255) || (reg > 4095)) {
+-		*value = -1;
+-		return -EINVAL;
+-	}
+-
+-	spin_lock_irqsave(&pci_config_lock, flags);
+-
+-	outl(PCI_CONF1_ADDRESS(bus, devfn, reg), 0xCF8);
+-
+-	switch (len) {
+-	case 1:
+-		*value = inb(0xCFC + (reg & 3));
+-		break;
+-	case 2:
+-		*value = inw(0xCFC + (reg & 2));
+-		break;
+-	case 4:
+-		*value = inl(0xCFC);
+-		break;
+-	}
+-
+-	spin_unlock_irqrestore(&pci_config_lock, flags);
+-
+-	return 0;
+-}
+-
+-static int pci_write(unsigned int seg, unsigned int bus,
+-		     unsigned int devfn, int reg, int len, u32 value)
+-{
+-	unsigned long flags;
+-
+-	if ((bus > 255) || (devfn > 255) || (reg > 4095))
+-		return -EINVAL;
+-
+-	spin_lock_irqsave(&pci_config_lock, flags);
+-
+-	outl(PCI_CONF1_ADDRESS(bus, devfn, reg), 0xCF8);
+-
+-	switch (len) {
+-	case 1:
+-		outb((u8)value, 0xCFC + (reg & 3));
+-		break;
+-	case 2:
+-		outw((u16)value, 0xCFC + (reg & 2));
+-		break;
+-	case 4:
+-		outl((u32)value, 0xCFC);
+-		break;
+-	}
+-
+-	spin_unlock_irqrestore(&pci_config_lock, flags);
+-
+-	return 0;
+-}
+-
+-static inline int
+-pci_read_ext_config_dword(struct pci_dev *dev, int where, u32 *val)
+-{
+-	return pci_read(0, dev->bus->number, dev->devfn, where, 4, val);
+-}
+-
+-static inline int
+-pci_write_ext_config_dword(struct pci_dev *dev, int where, u32 val)
+-{
+-	return pci_write(0, dev->bus->number, dev->devfn, where, 4, val);
+-}
+-
+-static void pfm_amd64_enable_pci_ecs_per_cpu(void)
+-{
+-#define ENABLE_CF8_EXT_CFG		(1ULL << 46)
+-	u64 reg;
+-	/* enable PCI extended config space */
+-	rdmsrl(MSR_AMD64_NB_CFG, reg);
+-	if (reg & ENABLE_CF8_EXT_CFG)
+-		return;
+-	reg |= ENABLE_CF8_EXT_CFG;
+-	wrmsrl(MSR_AMD64_NB_CFG, reg);
+-}
+-
+ static void pfm_amd64_setup_eilvt_per_cpu(void *info)
+ {
+ 	u8 lvt_off;
+ 
+-	pfm_amd64_enable_pci_ecs_per_cpu();
+-
+ 	/* program the IBS vector to the perfmon vector */
+ 	lvt_off =  setup_APIC_eilvt_ibs(LOCAL_PERFMON_VECTOR,
+ 					APIC_EILVT_MSG_FIX, 0);
+@@ -269,9 +175,9 @@ static int pfm_amd64_setup_eilvt(void)
+ 		if (!cpu_cfg)
+ 			break;
+ 		++nodes;
+-		pci_write_ext_config_dword(cpu_cfg, IBSCTL, ibs_eilvt_off
+-					   | IBSCTL_LVTOFFSETVAL);
+-		pci_read_ext_config_dword(cpu_cfg, IBSCTL, &value);
++		pci_write_config_dword(cpu_cfg, IBSCTL, ibs_eilvt_off
++				       | IBSCTL_LVTOFFSETVAL);
++		pci_read_config_dword(cpu_cfg, IBSCTL, &value);
+ 		if (value != (ibs_eilvt_off | IBSCTL_LVTOFFSETVAL)) {
+ 			PFM_DBG("Failed to setup IBS LVT offset, "
+ 				"IBSCTL = 0x%08x", value);
+-- 
+1.5.5.3
 
 
-> > I really want to move forward to the newer kernel, but we 
-> had an issue
-> > where clients all of the sudden wouldn't connect, yet other clients
-> > could, to the exact same server NFS export.  I had booted the server
-> > into the 2.6.25.4 kernel at the time, and the other admin 
-> set us back to
-> > the 2.6.22.14 to see if that was it.  The clients started 
-> working again,
-> > and he left it there (he also took out my options in the 
-> exports file,
-> > no_subtree_check and insecure).  I know that we are running over the
-> > number of privelaged ports, and we probably need the 
-> insecure, but I am
-> > having a hard time wrapping my self around all of the problems at
-> > once....
-> 
-> The secure ports limitation should be a problem for a client 
-> that does a
-> lot of nfs mounts, not for a server with a lot of clients.
-> 
-
-
-Ah, OK.  That makes sense.
-
-> --b.
-> 
