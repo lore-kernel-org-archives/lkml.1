@@ -1,84 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758633AbYFSOXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758596AbYFSOcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758633AbYFSOXT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 10:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756474AbYFSOXN
+	id S1758596AbYFSOcS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 10:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbYFSOcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 10:23:13 -0400
-Received: from 187.Red-80-37-203.staticIP.rima-tde.net ([80.37.203.187]:16762
-	"EHLO betty.it.uc3m.es" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755654AbYFSOXM (ORCPT
+	Thu, 19 Jun 2008 10:32:06 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:31473 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751945AbYFSOcF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 10:23:12 -0400
-X-Greylist: delayed 711 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Jun 2008 10:23:12 EDT
-From: "Peter T. Breuer" <ptb@inv.it.uc3m.es>
-Message-Id: <200806191411.m5JEBE56008942@betty.it.uc3m.es>
-Subject: zero-copy recv ?
-X-ELM-OSV: (Our standard violations) hdr-charset=US-ASCII; no-hdr-encoding=1
-To: linux kernel <linux-kernel@vger.kernel.org>
-Date: Thu, 19 Jun 2008 16:11:14 +0200 (CEST)
-Reply-To: ptb@inv.it.uc3m.es
-X-Anonymously-To: 
-X-message-flag: Had your Outlook virus, today?
- http://www.counterpane.com/crypto-gram-0103.html#4
-X-WebTV-Stationery: Standard\; BGColor=black\; TextColor=black
-X-Mailer: ELM [version 2.4ME+ PL123]
-MIME-Version: 1.0
+	Thu, 19 Jun 2008 10:32:05 -0400
+Message-Id: <485A8A16.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Thu, 19 Jun 2008 15:32:22 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <andi@firstfloor.org>
+Cc: "the arch/x86 maintainers" <x86@kernel.org>, <tglx@linutronix.de>,
+       <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
+Subject: Re: [PATCH] x86-64: remove unnecessary ptregs call stubs
+References: <485910B3.76E4.0078.0@novell.com>
+ <20080619122538.GH7640@elte.hu> <485A5606.6080600@firstfloor.org>
+In-Reply-To: <485A5606.6080600@firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-G'day all
+>>> Andi Kleen <andi@firstfloor.org> 19.06.08 14:50 >>>
+>Ingo Molnar wrote:
+>> * Jan Beulich <jbeulich@novell.com> wrote:
+>> 
+>>> A few of the ptregs call stubs are superfluous these days - the called 
+>>> functions don't have a trailing 'struct pt_regs *' parameter anymore.
+>> 
+>> applied to tip/x86/cleanups - thanks Jan.
+>
+>Just want to point out that not having a pt_regs * argument is not necessarily
+>sufficient for not needing a ptregs stub. Some code also accesses ptregs directly
+>through the stack top from get_thread_info() and might assume a full one. That said I *think*
+>it's ok for sigsuspend et.al. as in Jan's patch, but I haven't audited the complete code paths
+>in question that they never do that.
+>
+>Would be good to clarify that in the commit log.
 
-I've been mmapping the request's bio buffers received on my block device
-driver for userspace to use directly as tcp send/receive buffers.
-However ...
+Looking at both the source and disassembly of sys_rt_sigsuspend() and
+sys32_sigsuspend(), I cannot see anything pt_regs related. All these
+functions call are copy_from_user(), spin_lock_irq(), recalc_sigpending(),
+and schedule(), and besides that they just update some global and task
+state.
 
-  1) this works fantastically for (zero-copy) tcp send (i.e.
-    from the address in user space that my mmap trick provides for the
-    request buffers),
-    
-  2) tcp recv hangs.
-
-What's going on? I'd be grateful for any clues as to how to fix this as
-it's tcp zero-copy on recv when it goes OK!
-
-What does tcp socket recv need exactly by way of an mmapped buffer?
-
-Is there some set of flags that needs to be set on the pages that make
-up the mmap?
-
-Recv() hangs somewhere inside the tcp recv call inside kernel paths that
-I cannot trace.  I see "recv(5, ...)" via strace.  The data is sent out
-on the wire from the other side and apparently comes in, but the socket
-tcp recv never progresses.
-
-If, OTOH, I have previously written the device at that point, then
-reading the device causes a request to appear at the device driver
-with pages carrying the flags
-
-    40001826
-
-(referenced|error|lru|private|writeback)
-
-and all works fantastically in the sense that recv called with those
-pages mmapped into userspace as the recv buffer works just like it
-should.
-
-When the device has not been written at that point previously, then
-I see pages appearing in the request bio buffers with pretty
-random-looking flags, such as
-
-    40020801
-
-(locked|private|readahead)
-
-and recv does its hang trick.
-
-Does anyone have any insight as to what is going on?
-
-Thanks
-
-
-Peter
+Jan
 
