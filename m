@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760613AbYFSPpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757523AbYFSPq7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760613AbYFSPpa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 11:45:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757183AbYFSPpM
+	id S1757523AbYFSPq7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 11:46:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbYFSPqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 11:45:12 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:57749 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751559AbYFSPpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 11:45:11 -0400
-Date: Thu, 19 Jun 2008 18:43:35 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Dave Airlie <airlied@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: kerneloops.org: 2.6.26-rc possible regression in ext3
-Message-ID: <20080619154335.GC2721@cs181133002.pp.htv.fi>
-References: <4859F075.2050207@linux.intel.com> <21d7e9970806182242na130e47i85839c4550b4ba03@mail.gmail.com> <20080619081146.GC17630@cs181133002.pp.htv.fi> <485A61B5.90003@linux.intel.com> <20080619151016.GA2721@cs181133002.pp.htv.fi> <485A78CF.7050401@linux.intel.com> <20080619152500.GB2721@cs181133002.pp.htv.fi> <485A7AF4.4080307@linux.intel.com>
+	Thu, 19 Jun 2008 11:46:48 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:24061 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751608AbYFSPqr convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 11:46:47 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <485A7AF4.4080307@linux.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [Security] [PATCH 0/3 2.6.27] cxgb3i: Add iSCSI driver
+Date: Thu, 19 Jun 2008 08:45:43 -0700
+Message-ID: <8A71B368A89016469F72CD08050AD33402F43B5E@maui.asicdesigners.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [Security] [PATCH 0/3 2.6.27] cxgb3i: Add iSCSI driver
+Thread-Index: AcjR2UUjGDIzq+EVQruRuluibSFu1wASs61Q
+References: <8A71B368A89016469F72CD08050AD334D71285@maui.asicdesigners.com> <8A71B368A89016469F72CD08050AD334D7128B@maui.asicdesigners.com> <20080619065212.GA9107@kroah.com>
+From: "Karen Xie" <kxie@chelsio.com>
+To: "Greg KH" <greg@kroah.com>
+Cc: <michaelc@cs.wisc.edu>, "Divy Le Ray" <divy@chelsio.com>,
+       <netdev@vger.kernel.org>, <security@kernel.org>,
+       <open-iscsi@googlegroups.com>, <linux-kernel@vger.kernel.org>,
+       <linux-scsi@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 19, 2008 at 08:27:48AM -0700, Arjan van de Ven wrote:
-> Adrian Bunk wrote:
->> On Thu, Jun 19, 2008 at 08:18:39AM -0700, Arjan van de Ven wrote:
->>> Adrian Bunk wrote:
->>>> On Thu, Jun 19, 2008 at 06:40:05AM -0700, Arjan van de Ven wrote:
->>>>> Adrian Bunk wrote:
->>>>>> Expect a lot more of this to pop up in the future.
->>>>>> Should we #error for gcc 4.3.1?
->>>>> it/s better to find if the gcc guys made a testcase for this bug (they normally do) and
->>>>> test based on that.
->>>> The gcc Bugzilla contains a testcase.
->>>>
->>>> But how do you plan to integrate it into a kernel build?
->>> we already have several of these.
->>> Just look at scripts/gcc-x86_64-has-stack-protector.sh for an example of such a beast.
->>
->> Checking whether gcc supports some flags is easy.
->
-> have you actually looked at this script?
-> You didn't, since the script doesn't check if gcc supports some flag.
-> It checks very specifically for a code generation pattern...
->
-> Please go look at the script first before responding.
+Greg,
 
-I did look, but I missed the last pipe...
+We'd like to export security_inet_conn_established() from
+security/security.c.
 
-Do we know for sure this bug can only trigger on 32bit x86?
+Thanks.
+Karen
 
-Or is there anything else I miss in gcc-x86_64-has-stack-protector.sh 
-that allows to use this approach to check for wrong code generation 
-caused by platform independent gcc bugs?
+-----Original Message-----
+From: Greg KH [mailto:greg@kroah.com] 
+Sent: Wednesday, June 18, 2008 11:52 PM
+To: Karen Xie
+Cc: michaelc@cs.wisc.edu; Divy Le Ray; netdev@vger.kernel.org;
+security@kernel.org; open-iscsi@googlegroups.com;
+linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org
+Subject: Re: [Security] [PATCH 0/3 2.6.27] cxgb3i: Add iSCSI driver
 
-cu
-Adrian
+On Wed, Jun 18, 2008 at 10:10:00PM -0700, Karen Xie wrote:
+> 
+> Please review the iSCSI drivers for Chelsio CXGB3 (S3XX) devices.  
 
--- 
+Is there some reason you send this to security@kernel.org?
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+confused,
 
+greg k-h
