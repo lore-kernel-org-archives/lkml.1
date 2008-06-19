@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757082AbYFSVeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757354AbYFSVel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757082AbYFSVeZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 17:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbYFSVcQ
+	id S1757354AbYFSVel (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 17:34:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755254AbYFSVcV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 17:32:16 -0400
-Received: from ns1.suse.de ([195.135.220.2]:38136 "EHLO mx1.suse.de"
+	Thu, 19 Jun 2008 17:32:21 -0400
+Received: from mx1.suse.de ([195.135.220.2]:38166 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755137AbYFSVcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 17:32:13 -0400
-Date: Thu, 19 Jun 2008 14:30:00 -0700
+	id S1755213AbYFSVcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 17:32:18 -0400
+Date: Thu, 19 Jun 2008 14:30:03 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -21,80 +21,62 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-acpi@vger.kernel.org,
-       Bob Moore <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>,
-       Len Brown <len.brown@intel.com>
-Subject: [patch 09/15] ACPICA: Ignore ACPI table signature for Load()
-	operator
-Message-ID: <20080619213000.GJ20267@suse.de>
+       alan@lxorguk.ukuu.org.uk,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [patch 10/15] SCSI: sr: fix corrupt CD data after media change and
+	delay
+Message-ID: <20080619213003.GK20267@suse.de>
 References: <20080619211313.834170620@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpica-ignore-acpi-table-signature-for-load-operator.patch"
+Content-Disposition: inline; filename="scsi-sr-fix-corrupt-cd-data-after-media-change-and-delay.patch"
 In-Reply-To: <20080619212621.GA20267@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.25-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Bob Moore <robert.moore@intel.com>
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
 
-upstream bc45b1d39a925b56796bebf8a397a0491489d85c
+commit: d1daeabf0da5bfa1943272ce508e2ba785730bf0 upstream
 
-Without this patch booting with acpi_osi="!Windows 2006" is required
-for several machines to function properly with cpufreq
-due to failure to load a Vista specific table with a bad signature.
+Reported-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-Only "SSDT" is acceptable to the ACPI spec, but tables are
-seen with OEMx and null sigs. Therefore, signature validation
-is worthless.  Apparently MS ACPI accepts such signatures, ACPICA
-must be compatible.
+If you delay 30s or more before mounting a CD after inserting it then
+the kernel has the wrong value for the CD size.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9919
-http://bugzilla.kernel.org/show_bug.cgi?id=10383
-http://bugzilla.kernel.org/show_bug.cgi?id=10454
-https://bugzilla.novell.com/show_bug.cgi?id=396311
+http://marc.info/?t=121276133000001
 
-Signed-off-by: Bob Moore <robert.moore@intel.com>
-Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
+The problem is in sr_test_unit_ready(): the function eats unit
+attentions without adjusting the sdev->changed status.  This means
+that when the CD signals changed media via unit attention, we can
+ignore it.  Fix by making sr_test_unit_ready() adjust the changed
+status.
+
+Reported-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Tested-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/tables/tbinstal.c |   18 +++++++-----------
- 1 file changed, 7 insertions(+), 11 deletions(-)
+ drivers/scsi/sr.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/drivers/acpi/tables/tbinstal.c
-+++ b/drivers/acpi/tables/tbinstal.c
-@@ -123,17 +123,13 @@ acpi_tb_add_table(struct acpi_table_desc
- 		}
- 	}
+--- a/drivers/scsi/sr.c
++++ b/drivers/scsi/sr.c
+@@ -178,6 +178,9 @@ int sr_test_unit_ready(struct scsi_devic
+ 		the_result = scsi_execute_req(sdev, cmd, DMA_NONE, NULL,
+ 					      0, sshdr, SR_TIMEOUT,
+ 					      retries--);
++		if (scsi_sense_valid(sshdr) &&
++		    sshdr->sense_key == UNIT_ATTENTION)
++			sdev->changed = 1;
  
--	/* The table must be either an SSDT or a PSDT or an OEMx */
--
--	if ((!ACPI_COMPARE_NAME(table_desc->pointer->signature, ACPI_SIG_PSDT))
--	    &&
--	    (!ACPI_COMPARE_NAME(table_desc->pointer->signature, ACPI_SIG_SSDT))
--	    && (strncmp(table_desc->pointer->signature, "OEM", 3))) {
--		ACPI_ERROR((AE_INFO,
--			    "Table has invalid signature [%4.4s], must be SSDT, PSDT or OEMx",
--			    table_desc->pointer->signature));
--		return_ACPI_STATUS(AE_BAD_SIGNATURE);
--	}
-+	/*
-+	 * Originally, we checked the table signature for "SSDT" or "PSDT" here.
-+	 * Next, we added support for OEMx tables, signature "OEM".
-+	 * Valid tables were encountered with a null signature, so we've just
-+	 * given up on validating the signature, since it seems to be a waste
-+	 * of code. The original code was removed (05/2008).
-+	 */
- 
- 	(void)acpi_ut_acquire_mutex(ACPI_MTX_TABLES);
- 
+ 	} while (retries > 0 &&
+ 		 (!scsi_status_is_good(the_result) ||
 
 -- 
