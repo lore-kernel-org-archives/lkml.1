@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759491AbYFSSbG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007AbYFSSkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759491AbYFSSbG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 14:31:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbYFSSaz
+	id S1756007AbYFSSkc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 14:40:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbYFSSkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 14:30:55 -0400
-Received: from mk-outboundfilter-5.mail.uk.tiscali.com ([212.74.114.1]:9075
-	"EHLO mk-outboundfilter-5.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751993AbYFSSay (ORCPT
+	Thu, 19 Jun 2008 14:40:15 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:51487 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753641AbYFSSkO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 14:30:54 -0400
-X-Trace: 46447435/mk-outboundfilter-5.mail.uk.tiscali.com/F2S/$ACCEPTED/freedom2Surf-customers/195.137.94.162
-X-SBRS: None
-X-RemoteIP: 195.137.94.162
-X-IP-MAIL-FROM: spyro@f2s.com
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqkAAFY9WkjDiV6i/2dsb2JhbAAIsHQ
-X-IronPort-AV: E=Sophos;i="4.27,673,1204502400"; 
-   d="scan'208";a="46447435"
-X-IP-Direction: IN
-Subject: Re: [PATCH] MFD maintainer
-From: ian <spyro@f2s.com>
-To: pHilipp Zabel <philipp.zabel@gmail.com>
-Cc: Dmitry <dbaryshkov@gmail.com>, Samuel Ortiz <sameo@openedhand.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ben Dooks <ben-linux@fluff.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>
-In-Reply-To: <74d0deb30806190906w6f6628b7qb3069c7d97de2192@mail.gmail.com>
-References: <20080618214223.GE22566@caravaggio>
-	 <74d0deb30806190259l2ff7931fo819ededc7aec02f7@mail.gmail.com>
-	 <1213872881.17281.32.camel@wirenth>
-	 <bc64b4640806190412m70cbb15dr76a25ecb99c245dc@mail.gmail.com>
-	 <1213888192.17281.45.camel@wirenth>
-	 <bc64b4640806190832s6fd14128o4ef142f06a52fe8b@mail.gmail.com>
-	 <74d0deb30806190906w6f6628b7qb3069c7d97de2192@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 19 Jun 2008 19:30:49 +0100
-Message-Id: <1213900249.17281.54.camel@wirenth>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Thu, 19 Jun 2008 14:40:14 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <485AA7EA.6080105@s5r6.in-berlin.de>
+Date: Thu, 19 Jun 2008 20:39:38 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080614 SeaMonkey/1.1.9
+MIME-Version: 1.0
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       dsd@gentoo.org, mdharm-usb@one-eyed-alien.net,
+       linux-usb@vger.kernel.org, vegardno@ifi.uio.no,
+       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
+       Greg KH <greg@kroah.com>
+Subject: Re: [RFC/PATCH] usb-storage: wait for device scanning before mounting
+ root
+References: <Pine.LNX.4.44L0.0804241704220.14840-100000@iolanthe.rowland.org> <Pine.LNX.4.64.0804250022160.1209@sbz-30.cs.Helsinki.FI> <48118DDD.8010507@s5r6.in-berlin.de> <Pine.LNX.4.64.0804251110400.758@sbz-30.cs.Helsinki.FI> <20080425091122.GA14990@parisc-linux.org> <20080619182310.GA30833@parisc-linux.org>
+In-Reply-To: <20080619182310.GA30833@parisc-linux.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-06-19 at 18:06 +0200, pHilipp Zabel wrote:
-> > There were plenty of tries to merge clocklib. Check lkml archives.
-> 
-> How could we stir up some interest in those patches again? The last
-> round didn't receive any comments.
+> On Fri, Apr 25, 2008 at 03:11:23AM -0600, Matthew Wilcox wrote:
+>> The problem is that USB has one scsi_host per device (rather than, say,
+>> having one scsi_host and adding new devices to it as they're found on
+>> the USB bus).
+>>
+>> I'm certainly open to ideas of hooking into the mechanism -- it's just a
+>> list of completions after all.  Something like this:
+[...]
 
-I dont know how either.
+The problem is AFAIU not exactly how many Scsi_Host instances (initiator 
+port representations, or something remotely related to that) are 
+instantiated, but rather _when_ they are instantiated.  On multi 
+protocol buses or networks like USB and FireWire, it makes sense to 
+create the SCSI initiator port representation when we discovered that 
+there are actually SCSI targets on the bus or network.
 
-I really like this approach though and think we should persevere...
-
+scsi_scan's API is geared towards drivers which create one or more 
+initiator port representations right up front before going on target 
+discovery, right?
+-- 
+Stefan Richter
+-=====-==--- -==- =--==
+http://arcgraph.de/sr/
