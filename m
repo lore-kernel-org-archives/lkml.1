@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbYFSGgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757518AbYFSGh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757389AbYFSGgP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 02:36:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087AbYFSGgA
+	id S1757518AbYFSGh0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 02:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755344AbYFSGhO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 02:36:00 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:23876 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755126AbYFSGf7 (ORCPT
+	Thu, 19 Jun 2008 02:37:14 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47514
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755087AbYFSGhN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 02:35:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=UMRdErxs0SQzypIjGlvGzSoqB5uXiGn3YXx6Enu86Y76iD8AMDg1Mom5p4Ifbl6J5m
-         XOGqk+RfQayCZBrM5C6XQNFhnP4UbjKmfV+9/Zho4OM6xlavoGoDYRXIzJCdR1Ndn/ND
-         2gXZbYacRqb9y2BJOS7ZS2LvAqiJhKkcYgxHM=
-Message-ID: <86802c440806182335i6434a7ecj512dae852c4a41eb@mail.gmail.com>
-Date: Wed, 18 Jun 2008 23:35:58 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: update mptable v7
-Cc: "Len Brown" <lenb@kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4859FCA4.4050606@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 19 Jun 2008 02:37:13 -0400
+Date: Wed, 18 Jun 2008 23:37:13 -0700 (PDT)
+Message-Id: <20080618.233713.87158879.davem@davemloft.net>
+To: mpatocka@redhat.com
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, agk@redhat.com
+Subject: Re: stack overflow on Sparc64
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0806190041080.31418@engineering.redhat.com>
+References: <Pine.LNX.4.64.0806182318170.27388@engineering.redhat.com>
+	<20080618.205948.107681537.davem@davemloft.net>
+	<Pine.LNX.4.64.0806190041080.31418@engineering.redhat.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200805041823.57198.yhlu.kernel@gmail.com>
-	 <200805251600.26325.yhlu.kernel@gmail.com>
-	 <200806011317.38622.yhlu.kernel@gmail.com>
-	 <alpine.LFD.1.10.0806181812580.3074@localhost.localdomain>
-	 <86802c440806181532g348864e1u3d067f8366046a7f@mail.gmail.com>
-	 <alpine.LFD.1.10.0806182031060.3074@localhost.localdomain>
-	 <86802c440806181749g2faf1892iea693717ea919631@mail.gmail.com>
-	 <alpine.LFD.1.10.0806190113290.3613@localhost.localdomain>
-	 <86802c440806182326m8c3ad56j29242895507e074d@mail.gmail.com>
-	 <4859FCA4.4050606@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 18, 2008 at 11:28 PM, H. Peter Anvin <hpa@zytor.com> wrote:
-> Yinghai Lu wrote:
->>>
->>> Can somebody clue me into why this concept
->>> is something other than totally insane?
->>
->> for system that have 6 pcie slots and more, with full populated cards.
->> when boot with mptable, BIOS will use irq < 16 for all pci devices,
->> and several devices will share same irq.
->> but when acpi is enabled, irqs are spanned all over.
->>
->> also when pci card with several pci bridges is plugged in, the mptable
->> is totally messed up, some slot will work, and some doesn't work.
->
-> And the reason to worry about supporting non-ACPI on such hardware is what?
+From: Mikulas Patocka <mpatocka@redhat.com>
+Date: Thu, 19 Jun 2008 01:17:39 -0400 (EDT)
 
-1. some other os doesn't support acpi well, and still use mptable.
-2. show BIOS engineer how to fix mptable.
+> I see ... the callee writes arguments into caller's stack frame, if it has 
+> variable number of arguments. That it misdesign, the callee should write 
+> registers arguments into it's own frame like on AMD64 (then this space 
+> would be allocated only if needed).
 
-YH
+The callee can do this even for non-variable argument lists.
+
+It's like a set of pre-allocated stack slots for those incoming
+argument registers when reloading under register pressure.
+
+In my opinion it is better to put this onus on the callee because only
+the callee knows if it needs to pop these values onto the stack to
+alleviate register pressure.
+
+I think it might be possible for the compiler to only use 176 bytes.
+I'll take a look at the gcc sparc backend and the ABI specification
+to see if this is the case.
