@@ -1,133 +1,230 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760246AbYFSMiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759699AbYFSMhl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760246AbYFSMiv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 08:38:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759888AbYFSMhz
+	id S1759699AbYFSMhl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 08:37:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758460AbYFSMfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 08:37:55 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:63331 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759868AbYFSMhx (ORCPT
+	Thu, 19 Jun 2008 08:35:36 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:44117 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758286AbYFSMfd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 08:37:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=KfXsJrzXjzj9jTGkyeKsd15fZ8txaLpSndOzyc2UvlOOmaQame+3W2XxckD3GCEckh
-         gCEcVHuWjNXUpV3+e0PAmO8gYIvfIVyUKGDQ6zvipNX+6a1cEB6apWTaqwsodYKLTfIG
-         pKiw5NCb9r8gJaIxwfpS/qRqHpMurTmOyXhSw=
-Message-ID: <6278d2220806190537u7b781309q415f904390e02f3@mail.gmail.com>
-Date: Thu, 19 Jun 2008 13:37:48 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Jeff Layton" <jlayton@redhat.com>
-Subject: Re: [2.6.26-rc4] mount.nfsv4/memory poisoning issues...
-Cc: chucklever@gmail.com, linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       "Trond Myklebust" <trond.myklebust@fys.uio.no>
-In-Reply-To: <20080619081420.24645bc4@tleilax.poochiereds.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6278d2220806041633n3bfe3dd2ke9602697697228b@mail.gmail.com>
-	 <76bd70e30806041643j4d632a6exf64b29c34173d40f@mail.gmail.com>
-	 <6278d2220806151110x68ee91fej8cf8e6b591ce1319@mail.gmail.com>
-	 <20080619081420.24645bc4@tleilax.poochiereds.net>
+	Thu, 19 Jun 2008 08:35:33 -0400
+Message-Id: <20080619123314.049253081@chello.nl>
+References: <20080619122218.971447669@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Thu, 19 Jun 2008 14:22:23 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "Daniel K." <dk@uw.no>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH 05/10] sched: rt-bandwidth: fix cpu-hotplug interaction
+Content-Disposition: inline; filename=sched-rt_bandwidth-vs-hotplug.patch
+X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 19, 2008 at 1:14 PM, Jeff Layton <jlayton@redhat.com> wrote:
-> On Sun, 15 Jun 2008 19:10:27 +0100
-> "Daniel J Blueman" <daniel.blueman@gmail.com> wrote:
->
->> On Thu, Jun 5, 2008 at 12:43 AM, Chuck Lever <chuck.lever@oracle.com> wrote:
->> > Hi Daniel-
->> >
->> > On Wed, Jun 4, 2008 at 7:33 PM, Daniel J Blueman
->> > <daniel.blueman@gmail.com> wrote:
->> >> Having experienced 'mount.nfs4: internal error' when mounting nfsv4 in
->> >> the past, I have a minimal test-case I sometimes run:
->> >>
->> >> $ while :; do mount -t nfs4 filer:/store /store; umount /store; done
->> >>
->> >> After ~100 iterations, I saw the 'mount.nfs4: internal error',
->> >> followed by symptoms of memory corruption [1], a locking issue with
->> >> the reporting [2] and another (related?) memory-corruption issue
->> >> (off-by-1?) [3]. A little analysis shows memory being overwritten by
->> >> (likely) a poison value, which gets complicated if it's not
->> >> use-after-free...
->> >>
->> >> Anyone dare confirm this issue? NFSv4 server is x86-64 Ubuntu 8.04
->> >> 2.6.24-18, client U8.04 2.6.26-rc4; batteries included [4].
->> >
->> > We have some other reports of late model kernels with memory
->> > corruption issues during NFS mount.  The problem is that by the time
->> > these canaries start singing, the evidence of what did the corrupting
->> > is long gone.
->> >
->> >> I'm happy to decode addresses, test patches etc.
->> >
->> > If these crashes are more or less reliably reproduced, it would be
->> > helpful if you could do a 'git bisect' on the client to figure out at
->> > what point in the kernel revision history this problem was introduced.
->> >
->> > Have you seen the problem on client kernels earlier than 2.6.25?
->>
->> Firstly, I had omitted that I'd booted the kernel with
->> debug_objects=1, which provides the canary here.
->>
->> The primary failure I see is 'mount.nfs4: internal error', and always
->> after 358 umount/mount cycles (plus 1 initial mount) which gives us a
->> clue; 'netstat' shows all these connections in a TIME_WAIT state, thus
->> the bug relates to the inability to allocate a socket error path. I
->> found that after the connection lifetime expired, you can mount again,
->> which corroborates this theory.
->>
->> In this case, we saw the mount() syscall result in the mount.nfsv4
->> process being SEGV'd when booted with 'debug_object=1', without this
->> option, we see:
->>
->> # strace /sbin/mount.nfs4 x1:/ /store
->> ...
->> mount("x1:/", "/store", "nfs4", 0,
->> "addr=192.168.0.250,clientaddr=19"...) = -1 EIO (Input/output error)
->>
->> So, it's impossible to tell when the corruption was introduced, as it
->> has only become detectable recently.
->>
->> It's worth a look-over of the socket-allocation error path, if someone
->> can check, and reproduces 100% with the 'debug_object=1' param,
->> available since 2.6.26-rc1 and 359 mounts in quick succession.
->>
->
-> For some strange reason (probably something I'm doing wrong or maybe
-> something environmental), I've not been able to reproduce this panic on
-> a stock kernel. I did, however, apply the following fault injection
-> patch and was able to reproduce it on the second mount attempt. The 3
-> patch set that I posted last week definitely prevents the oops. If
-> you're able to confirm that it also fixes your panic it would be a
-> helpful data point.
->
-> The fault injection patch I'm using is attached. It just simulates
-> nfs4_init_client() consistently returning an error.
+Restore the bandwidth to offlining cpus so we don't leak/gain bandwidth.
 
-Thanks! I hope to get time for this tonight and will get back to you;
-I appreciate your help, Jeff.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/sched.c    |   15 +++++--
+ kernel/sched_rt.c |  108 +++++++++++++++++++++++++++++++++++++++++++++++++++---
+ 2 files changed, 114 insertions(+), 9 deletions(-)
 
-The config I used to reproduce it on the client is
-http://www.quora.org/config-debug and is relevant to (at least)
-2.6.26-rc5. I was able to reproduce it by exporting a single NFSv4
-export on 2.6.25 (eg Ubuntu 8.04 server); client and server were
-x86-64.
+Index: linux-2.6/kernel/sched_rt.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_rt.c
++++ linux-2.6/kernel/sched_rt.c
+@@ -280,6 +280,9 @@ static int balance_runtime(struct rt_rq 
+ 			continue;
+ 
+ 		spin_lock(&iter->rt_runtime_lock);
++		if (iter->rt_runtime == RUNTIME_INF)
++			goto next;
++
+ 		diff = iter->rt_runtime - iter->rt_time;
+ 		if (diff > 0) {
+ 			do_div(diff, weight);
+@@ -293,12 +296,104 @@ static int balance_runtime(struct rt_rq 
+ 				break;
+ 			}
+ 		}
++next:
+ 		spin_unlock(&iter->rt_runtime_lock);
+ 	}
+ 	spin_unlock(&rt_b->rt_runtime_lock);
+ 
+ 	return more;
+ }
++
++static void __disable_runtime(struct rq *rq)
++{
++	struct root_domain *rd = rq->rd;
++	struct rt_rq *rt_rq;
++
++	if (unlikely(!scheduler_running))
++		return;
++
++	for_each_leaf_rt_rq(rt_rq, rq) {
++		struct rt_bandwidth *rt_b = sched_rt_bandwidth(rt_rq);
++		s64 want;
++		int i;
++
++		spin_lock(&rt_b->rt_runtime_lock);
++		spin_lock(&rt_rq->rt_runtime_lock);
++		if (rt_rq->rt_runtime == RUNTIME_INF ||
++				rt_rq->rt_runtime == rt_b->rt_runtime)
++			goto balanced;
++		spin_unlock(&rt_rq->rt_runtime_lock);
++
++		want = rt_b->rt_runtime - rt_rq->rt_runtime;
++
++		for_each_cpu_mask(i, rd->span) {
++			struct rt_rq *iter = sched_rt_period_rt_rq(rt_b, i);
++			s64 diff;
++
++			if (iter == rt_rq)
++				continue;
++
++			spin_lock(&iter->rt_runtime_lock);
++			if (want > 0) {
++				diff = min_t(s64, iter->rt_runtime, want);
++				iter->rt_runtime -= diff;
++				want -= diff;
++			} else {
++				iter->rt_runtime -= want;
++				want -= want;
++			}
++			spin_unlock(&iter->rt_runtime_lock);
++
++			if (!want)
++				break;
++		}
++
++		spin_lock(&rt_rq->rt_runtime_lock);
++		BUG_ON(want);
++balanced:
++		rt_rq->rt_runtime = RUNTIME_INF;
++		spin_unlock(&rt_rq->rt_runtime_lock);
++		spin_unlock(&rt_b->rt_runtime_lock);
++	}
++}
++
++static void disable_runtime(struct rq *rq)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&rq->lock, flags);
++	__disable_runtime(rq);
++	spin_unlock_irqrestore(&rq->lock, flags);
++}
++
++static void __enable_runtime(struct rq *rq)
++{
++	struct rt_rq *rt_rq;
++
++	if (unlikely(!scheduler_running))
++		return;
++
++	for_each_leaf_rt_rq(rt_rq, rq) {
++		struct rt_bandwidth *rt_b = sched_rt_bandwidth(rt_rq);
++
++		spin_lock(&rt_b->rt_runtime_lock);
++		spin_lock(&rt_rq->rt_runtime_lock);
++		rt_rq->rt_runtime = rt_b->rt_runtime;
++		rt_rq->rt_time = 0;
++		spin_unlock(&rt_rq->rt_runtime_lock);
++		spin_unlock(&rt_b->rt_runtime_lock);
++	}
++}
++
++static void enable_runtime(struct rq *rq)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&rq->lock, flags);
++	__enable_runtime(rq);
++	spin_unlock_irqrestore(&rq->lock, flags);
++}
++
+ #endif
+ 
+ static inline int rt_se_prio(struct sched_rt_entity *rt_se)
+@@ -328,14 +423,13 @@ static int sched_rt_runtime_exceeded(str
+ 
+ #ifdef CONFIG_SMP
+ 	if (rt_rq->rt_time > runtime) {
+-		int more;
+-
+ 		spin_unlock(&rt_rq->rt_runtime_lock);
+-		more = balance_runtime(rt_rq);
++		balance_runtime(rt_rq);
+ 		spin_lock(&rt_rq->rt_runtime_lock);
+ 
+-		if (more)
+-			runtime = sched_rt_runtime(rt_rq);
++		runtime = sched_rt_runtime(rt_rq);
++		if (runtime == RUNTIME_INF)
++			return 0;
+ 	}
+ #endif
+ 
+@@ -1166,6 +1260,8 @@ static void join_domain_rt(struct rq *rq
+ {
+ 	if (rq->rt.overloaded)
+ 		rt_set_overload(rq);
++
++	__enable_runtime(rq);
+ }
+ 
+ /* Assumes rq->lock is held */
+@@ -1173,6 +1269,8 @@ static void leave_domain_rt(struct rq *r
+ {
+ 	if (rq->rt.overloaded)
+ 		rt_clear_overload(rq);
++
++	__disable_runtime(rq);
+ }
+ 
+ /*
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -7461,20 +7461,27 @@ int sched_create_sysfs_power_savings_ent
+ static int update_sched_domains(struct notifier_block *nfb,
+ 				unsigned long action, void *hcpu)
+ {
++	int cpu = (int)(long)hcpu;
++
+ 	switch (action) {
+-	case CPU_UP_PREPARE:
+-	case CPU_UP_PREPARE_FROZEN:
+ 	case CPU_DOWN_PREPARE:
+ 	case CPU_DOWN_PREPARE_FROZEN:
++		disable_runtime(cpu_rq(cpu));
++		/* fall-through */
++	case CPU_UP_PREPARE:
++	case CPU_UP_PREPARE_FROZEN:
+ 		detach_destroy_domains(&cpu_online_map);
+ 		return NOTIFY_OK;
+ 
+-	case CPU_UP_CANCELED:
+-	case CPU_UP_CANCELED_FROZEN:
++
+ 	case CPU_DOWN_FAILED:
+ 	case CPU_DOWN_FAILED_FROZEN:
+ 	case CPU_ONLINE:
+ 	case CPU_ONLINE_FROZEN:
++		enable_runtime(cpu_rq(cpu));
++		/* fall-through */
++	case CPU_UP_CANCELED:
++	case CPU_UP_CANCELED_FROZEN:
+ 	case CPU_DEAD:
+ 	case CPU_DEAD_FROZEN:
+ 		/*
 
-Daniel
-
-> Cheers,
-> --
-> Jeff Layton <jlayton@redhat.com>
 -- 
-Daniel J Blueman
+
