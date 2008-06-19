@@ -1,133 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751486AbYFSEEn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751917AbYFSEPR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751486AbYFSEEn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 00:04:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbYFSEEd
+	id S1751917AbYFSEPR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 00:15:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750807AbYFSEPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 00:04:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41238 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750823AbYFSEEc (ORCPT
+	Thu, 19 Jun 2008 00:15:04 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:55011 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750768AbYFSEOp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 00:04:32 -0400
-Date: Wed, 18 Jun 2008 21:03:26 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: benh@kernel.crashing.org, xen-devel <xen-devel@lists.xensource.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>, x86@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1 of 4] mm: add a ptep_modify_prot transaction
- abstraction
-In-Reply-To: <alpine.LFD.1.10.0806181743390.2907@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0806182050470.2907@woody.linux-foundation.org>
-References: <b020e42384197b824320.1213615800@localhost> <1213831403.8011.24.camel@pasglop> <4859A149.9090004@goop.org> <4859A528.1010107@goop.org> <alpine.LFD.1.10.0806181723400.2907@woody.linux-foundation.org> <4859AA47.2020903@goop.org>
- <alpine.LFD.1.10.0806181743390.2907@woody.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 19 Jun 2008 00:14:45 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAPh4WUh5LG+u/2dsb2JhbACwMw
+X-IronPort-AV: E=Sophos;i="4.27,670,1204464600"; 
+   d="scan'208";a="129718666"
+Date: Thu, 19 Jun 2008 14:14:41 +1000
+From: Dave Chinner <david@fromorbit.com>
+To: Marco Berizzi <pupilla@hotmail.com>
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: XFS: 2.6.26-rc6 link count mismatch for inode
+Message-ID: <20080619041441.GW3700@disturbed>
+Mail-Followup-To: Marco Berizzi <pupilla@hotmail.com>,
+	linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+References: <BAY103-DAV69C0718B7EDB534D9337FB2A90@phx.gbl> <20080618161252.GV3700@disturbed> <BAY103-DAV10F0AFAC45572E50A384AB2AB0@phx.gbl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <BAY103-DAV10F0AFAC45572E50A384AB2AB0@phx.gbl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 18 Jun 2008, Linus Torvalds wrote:
+On Wed, Jun 18, 2008 at 06:39:59PM +0200, Marco Berizzi wrote:
+> Dave Chinner wrote:
 > 
-> And yes, the "lock andl" should be noticeably faster than the xchgl.
+> > On Mon, Jun 16, 2008 at 11:11:31AM +0200, Marco Berizzi wrote:
+> > > Hi Folk,
+> > >
+> > > I was tring to compile firefox 3.0rc3
+> > > and while I was erasing a previous
+> > > /tmp/mozilla tree, I started a new
+> > > tar xjf mozilla-blabla.
+> > > After a while linux 2.6.26-rc6 was
+> > > unresponsive: I have unplugged the
+> > > power cable. No problem at startup,
+> > > but:
+> >
+> > What are your mount options?
+> 
+> root@Venus:/etc# cat mtab
+> /dev/sda2 / xfs rw 0 0
+> 
+> root@Venus:/etc# cat fstab
+> /dev/sda2        /                xfs         defaults         1   1
 
-I dunno. Here's a untested (!!) patch that turns constant-bit 
-set/clear_bit ops into byte mask ops (lock orb/andb).
+[...]
 
-It's not exactly pretty. The reason for using the byte versions is that a 
-locked op is serialized in the memory pipeline anyway, so there are no 
-forwarding issues (that could slow down things when we access things with 
-different sizes), and the byte ops are a lot smaller than 32-bit and 
-particularly 64-bit ops (big constants, and the 64-bit ops need the REX 
-prefix byte too).
+> XFS mounting filesystem sda2
+> Ending clean XFS mount for filesystem: sda2
+> VFS: Mounted root (xfs filesystem) readonly.
+> 
+> > I ask because I've
+> > seen this sort of directory corruption before when using volatile
+> > write caches and yanking the power....
+> >
+> > i.e. the corruption could have been caused by the way you reset the
+> > system, not because of the hang. Do you have any information on what
+> > caused the hang?
+> 
+> The tar xf mozilla-source.tarball was not responding
+> nor writing anything on the disk. I did issue also a
+> kill -9 'pid of tar xf' but it did not want to die.
+> So I think the problem was on the filesystem before
+> the incorrect shutdown.
 
-[ Side note: I wonder if we should turn the "test_bit()" C version into a 
-  "char *" version too.. It could actually help with alias analysis, since 
-  char pointers can alias anything. So it might be the RightThing(tm) to 
-  do for multiple reasons. I dunno. It's a separate issue. ]
+Yeah, it sounds like the I/O subsystem hung somewhere. Without
+details I can't say what went wrong. If it happens again doing
+this:
 
-It does actually shrink the kernel image a bit (a couple of hundred bytes 
-on the text segment for my everything-compiled-in image), and while it's 
-totally untested the (admittedly few) code generation points I looked at 
-seemed sane. And "lock orb" should be noticeably faster than "lock bts".
+# echo w > /proc/sysrq-trigger
 
-If somebody wants to play with it, go wild. I didn't do "change_bit()", 
-because nobody sane uses that thing anyway. I guarantee nothing. And if it 
-breaks, nobody saw me do anything.  You can't prove this email wasn't sent 
-by somebody who is good at forging smtp.
+To get a dump of all the blocked processes on the console. That
+may contain enough info to tell us what the problem is.
 
-This does require a gcc that is recent enough for "__builtin_constant_p()" 
-to work in an inline function, but I suspect our kernel requirements are 
-already higher than that. And if you do have an old gcc that is supported, 
-the worst that would happen is that the optimization doesn't trigger.
+> I can retry the test. Let me know if I can do a
+> xfs_repair.
 
-		Linus
+Sure, go ahead and fix it up.
 
----
- include/asm-x86/bitops.h |   27 ++++++++++++++++++++++-----
- 1 files changed, 22 insertions(+), 5 deletions(-)
+Cheers,
 
-diff --git a/include/asm-x86/bitops.h b/include/asm-x86/bitops.h
-index ee4b3ea..c1b7f91 100644
---- a/include/asm-x86/bitops.h
-+++ b/include/asm-x86/bitops.h
-@@ -23,11 +23,22 @@
- #if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 1)
- /* Technically wrong, but this avoids compilation errors on some gcc
-    versions. */
--#define ADDR "=m" (*(volatile long *) addr)
-+#define BITOP_ADDR(x) "=m" (*(volatile long *) (x))
- #else
--#define ADDR "+m" (*(volatile long *) addr)
-+#define BITOP_ADDR(x) "+m" (*(volatile long *) (x))
- #endif
- 
-+#define ADDR BITOP_ADDR(addr)
-+
-+/*
-+ * We do the locked ops that don't return the old value as
-+ * a mask operation on a byte.
-+ */
-+#define IS_IMMEDIATE(nr) \
-+	(__builtin_constant_p(nr))
-+#define CONST_MASK_ADDR BITOP_ADDR(addr + (nr>>3))
-+#define CONST_MASK (1 << (nr & 7))
-+
- /**
-  * set_bit - Atomically set a bit in memory
-  * @nr: the bit to set
-@@ -43,9 +54,12 @@
-  * Note that @nr may be almost arbitrarily large; this function is not
-  * restricted to acting on a single-word quantity.
-  */
--static inline void set_bit(int nr, volatile void *addr)
-+static inline void set_bit(unsigned int nr, volatile void *addr)
- {
--	asm volatile(LOCK_PREFIX "bts %1,%0" : ADDR : "Ir" (nr) : "memory");
-+	if (IS_IMMEDIATE(nr))
-+		asm volatile(LOCK_PREFIX "orb %1,%0" : CONST_MASK_ADDR : "i" (CONST_MASK) : "memory");
-+	else
-+		asm volatile(LOCK_PREFIX "bts %1,%0" : ADDR : "Ir" (nr) : "memory");
- }
- 
- /**
-@@ -74,7 +88,10 @@ static inline void __set_bit(int nr, volatile void *addr)
-  */
- static inline void clear_bit(int nr, volatile void *addr)
- {
--	asm volatile(LOCK_PREFIX "btr %1,%0" : ADDR : "Ir" (nr));
-+	if (IS_IMMEDIATE(nr))
-+		asm volatile(LOCK_PREFIX "andb %1,%0" : CONST_MASK_ADDR : "i" (~CONST_MASK));
-+	else
-+		asm volatile(LOCK_PREFIX "btr %1,%0" : ADDR : "Ir" (nr));
- }
- 
- /*
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
