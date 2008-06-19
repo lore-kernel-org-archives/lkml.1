@@ -1,254 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757883AbYFSBE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757962AbYFSBGm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757883AbYFSBE1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 21:04:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755698AbYFSBEU
+	id S1757962AbYFSBGm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 21:06:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755698AbYFSBGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 21:04:20 -0400
-Received: from mga02.intel.com ([134.134.136.20]:1640 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756122AbYFSBET (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 21:04:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,668,1204531200"; 
-   d="asc'?scan'208";a="399183813"
-Date: Thu, 19 Jun 2008 08:56:48 +0800
-From: Zhenyu Wang <zhenyu.z.wang@intel.com>
-To: Dave Airlie <airlied@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [AGP] intel_agp: Add support for Intel 4 series
-	chipsets
-Message-ID: <20080619005648.GB22454@zhen-devel.sh.intel.com>
-Mail-Followup-To: Dave Airlie <airlied@redhat.com>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <20080618052300.GA16715@zhen-devel.sh.intel.com> <4858B892.8080909@movial.fi> <20080618073407.GA18084@zhen-devel.sh.intel.com> <20080619005510.GA22454@zhen-devel.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="QTprm0S8XgL7H0Dt"
-Content-Disposition: inline
-In-Reply-To: <20080619005510.GA22454@zhen-devel.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 18 Jun 2008 21:06:35 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:39841 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755645AbYFSBGe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 21:06:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=LpOudoRrnJM46zFi2R4z6MWr4pkJISLACW+UKQtC3PVPNjYDtidgihC7D1l5XySAkE
+         YzGlH8FkFugCtJHtc8uidGbxZKDO2nya5rR5xl615d+DcGHGVLMwHrd9xI9FUgFiq7Hx
+         s856b6HD7hS0Je64LD4BpstI56VIntvhM7Ayw=
+Subject: [PATCH] ecryptfs: Use unaligned byteswapping helpers
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Pavel Roskin <proski@gnu.org>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 18 Jun 2008 18:06:35 -0700
+Message-Id: <1213837595.2125.36.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rather than memcpy and cpu_to_be16/32.
 
---QTprm0S8XgL7H0Dt
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On 2008.06.19 08:55:10 +0800, Zhenyu Wang wrote:
-> I believe now that this one might be better to be split,
-> as it does contain a fix on IGD_GM chipset for extra stolen
-> memory size available, and it's good to be included in 2.6.26.
-> New Intel 4 series chipset enabling patch could be queued for
-> next kernel.
->=20
-
-[AGP] intel_agp: Add support for Intel 4 series chipsets
-
-Signed-off-by: Zhenyu Wang <zhenyu.z.wang@intel.com>
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/char/agp/intel-agp.c |   84 ++++++++++++++++++++++++++++++++++++--=
-----
- 1 files changed, 72 insertions(+), 12 deletions(-)
+ fs/ecryptfs/crypto.c |   37 +++++++++++++++++--------------------
+ 1 files changed, 17 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
-index ba9718f..189b325 100644
---- a/drivers/char/agp/intel-agp.c
-+++ b/drivers/char/agp/intel-agp.c
-@@ -34,6 +34,12 @@
- #define PCI_DEVICE_ID_INTEL_Q33_IG          0x29D2
- #define PCI_DEVICE_ID_INTEL_IGD_HB          0x2A40
- #define PCI_DEVICE_ID_INTEL_IGD_IG          0x2A42
-+#define PCI_DEVICE_ID_INTEL_IGD_E_HB        0x2E00
-+#define PCI_DEVICE_ID_INTEL_IGD_E_IG        0x2E02
-+#define PCI_DEVICE_ID_INTEL_Q45_HB          0x2E10
-+#define PCI_DEVICE_ID_INTEL_Q45_IG          0x2E12
-+#define PCI_DEVICE_ID_INTEL_G45_HB          0x2E20
-+#define PCI_DEVICE_ID_INTEL_G45_IG          0x2E22
-=20
- /* cover 915 and 945 variants */
- #define IS_I915 (agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_E7221_=
-HB || \
-@@ -55,6 +61,10 @@
- 		agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_Q35_HB || \
- 		agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_Q33_HB)
-=20
-+#define IS_G4X	(agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_IGD_E_H=
-B || \
-+		 agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_Q45_HB || \
-+		 agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_G45_HB)
-+
- extern int agp_memory_reserved;
-=20
-=20
-@@ -80,8 +90,12 @@ extern int agp_memory_reserved;
- #define I915_PTEADDR	0x1C
- #define I915_GMCH_GMS_STOLEN_48M	(0x6 << 4)
- #define I915_GMCH_GMS_STOLEN_64M	(0x7 << 4)
--#define G33_GMCH_GMS_STOLEN_128M       (0x8 << 4)
--#define G33_GMCH_GMS_STOLEN_256M       (0x9 << 4)
-+#define G33_GMCH_GMS_STOLEN_128M	(0x8 << 4)
-+#define G33_GMCH_GMS_STOLEN_256M	(0x9 << 4)
-+#define INTEL_GMCH_GMS_STOLEN_96M	(0xa << 4)
-+#define INTEL_GMCH_GMS_STOLEN_160M	(0xb << 4)
-+#define INTEL_GMCH_GMS_STOLEN_224M	(0xc << 4)
-+#define INTEL_GMCH_GMS_STOLEN_352M	(0xd << 4)
- #define I915_IFPADDR    0x60
-=20
- /* Intel 965G registers */
-@@ -504,6 +518,10 @@ static void intel_i830_init_gtt_entries(void)
- 			size =3D 512;
- 		}
- 		size +=3D 4;
-+	} else if (IS_G4X) {
-+		/* On 4 Series hardware, GTT stolen is separate from graphics
-+		 * stolen, ignore it in stolen gtt entries counting */
-+		size =3D 0;
- 	} else {
- 		/* On previous hardware, the GTT size was just what was
- 		 * required to map the aperture.
-@@ -551,31 +569,53 @@ static void intel_i830_init_gtt_entries(void)
- 			gtt_entries =3D MB(32) - KB(size);
- 			break;
- 		case I915_GMCH_GMS_STOLEN_48M:
--			/* Check it's really I915G */
--			if (IS_I915 || IS_I965 || IS_G33)
-+			if (IS_I915 || IS_I965 || IS_G33 || IS_G4X)
- 				gtt_entries =3D MB(48) - KB(size);
- 			else
- 				gtt_entries =3D 0;
- 			break;
- 		case I915_GMCH_GMS_STOLEN_64M:
--			/* Check it's really I915G */
--			if (IS_I915 || IS_I965 || IS_G33)
-+			if (IS_I915 || IS_I965 || IS_G33 || IS_G4X)
- 				gtt_entries =3D MB(64) - KB(size);
- 			else
- 				gtt_entries =3D 0;
- 			break;
- 		case G33_GMCH_GMS_STOLEN_128M:
--			if (IS_G33 || IS_I965)
-+			if (IS_G33 || IS_I965 || IS_G4X)
- 				gtt_entries =3D MB(128) - KB(size);
- 			else
- 				gtt_entries =3D 0;
- 			break;
- 		case G33_GMCH_GMS_STOLEN_256M:
--			if (IS_G33 || IS_I965)
-+			if (IS_G33 || IS_I965 || IS_G4X)
- 				gtt_entries =3D MB(256) - KB(size);
- 			else
- 				gtt_entries =3D 0;
- 			break;
-+		case INTEL_GMCH_GMS_STOLEN_96M:
-+			if (IS_I965 || IS_G4X)
-+				gtt_entries =3D MB(96) - KB(size);
-+			else
-+				gtt_entries =3D 0;
-+			break;
-+		case INTEL_GMCH_GMS_STOLEN_160M:
-+			if (IS_I965 || IS_G4X)
-+				gtt_entries =3D MB(160) - KB(size);
-+			else
-+				gtt_entries =3D 0;
-+			break;
-+		case INTEL_GMCH_GMS_STOLEN_224M:
-+			if (IS_I965 || IS_G4X)
-+				gtt_entries =3D MB(224) - KB(size);
-+			else
-+				gtt_entries =3D 0;
-+			break;
-+		case INTEL_GMCH_GMS_STOLEN_352M:
-+			if (IS_I965 || IS_G4X)
-+				gtt_entries =3D MB(352) - KB(size);
-+			else
-+				gtt_entries =3D 0;
-+			break;
- 		default:
- 			gtt_entries =3D 0;
- 			break;
-@@ -1134,6 +1174,20 @@ static unsigned long intel_i965_mask_memory(struct a=
-gp_bridge_data *bridge,
- 	return addr | bridge->driver->masks[type].mask;
- }
-=20
-+static void intel_i965_get_gtt_range(int *gtt_offset, int *gtt_size)
-+{
-+	switch (agp_bridge->dev->device) {
-+	case PCI_DEVICE_ID_INTEL_IGD_HB:
-+	case PCI_DEVICE_ID_INTEL_IGD_E_HB:
-+	case PCI_DEVICE_ID_INTEL_Q45_HB:
-+	case PCI_DEVICE_ID_INTEL_G45_HB:
-+	    *gtt_offset =3D *gtt_size =3D MB(2);
-+	    break;
-+	default:
-+	    *gtt_offset =3D *gtt_size =3D KB(512);
-+	}
-+}
-+
- /* The intel i965 automatically initializes the agp aperture during POST.
-  * Use the memory already set aside for in the GTT.
-  */
-@@ -1154,10 +1208,7 @@ static int intel_i965_create_gatt_table(struct agp_b=
-ridge_data *bridge)
-=20
-        temp &=3D 0xfff00000;
-=20
--       if (agp_bridge->dev->device =3D=3D PCI_DEVICE_ID_INTEL_IGD_HB)
--	       gtt_offset =3D gtt_size =3D MB(2);
--       else
--	       gtt_offset =3D gtt_size =3D KB(512);
-+       intel_i965_get_gtt_range(&gtt_offset, &gtt_size);
-=20
-        intel_private.gtt =3D ioremap((temp + gtt_offset) , gtt_size);
-=20
-@@ -2063,6 +2114,12 @@ static const struct intel_driver_description {
- 		NULL, &intel_g33_driver },
- 	{ PCI_DEVICE_ID_INTEL_IGD_HB, PCI_DEVICE_ID_INTEL_IGD_IG, 0,
- 	    "Intel Integrated Graphics Device", NULL, &intel_i965_driver },
-+	{ PCI_DEVICE_ID_INTEL_IGD_E_HB, PCI_DEVICE_ID_INTEL_IGD_E_IG, 0,
-+	    "Intel Integrated Graphics Device", NULL, &intel_i965_driver },
-+	{ PCI_DEVICE_ID_INTEL_Q45_HB, PCI_DEVICE_ID_INTEL_Q45_IG, 0,
-+	    "Q45/Q43", NULL, &intel_i965_driver },
-+	{ PCI_DEVICE_ID_INTEL_G45_HB, PCI_DEVICE_ID_INTEL_G45_IG, 0,
-+	    "G45/G43", NULL, &intel_i965_driver },
- 	{ 0, 0, 0, NULL, NULL, NULL }
- };
-=20
-@@ -2254,6 +2311,9 @@ static struct pci_device_id agp_intel_pci_table[] =3D=
+diff --git a/fs/ecryptfs/crypto.c b/fs/ecryptfs/crypto.c
+index e2832bc..c6d4448 100644
+--- a/fs/ecryptfs/crypto.c
++++ b/fs/ecryptfs/crypto.c
+@@ -33,6 +33,7 @@
+ #include <linux/crypto.h>
+ #include <linux/file.h>
+ #include <linux/scatterlist.h>
++#include <asm/unaligned.h>
+ #include "ecryptfs_kernel.h"
+ 
+ static int
+@@ -1032,10 +1033,9 @@ static int contains_ecryptfs_marker(char *data)
  {
- 	ID(PCI_DEVICE_ID_INTEL_Q35_HB),
- 	ID(PCI_DEVICE_ID_INTEL_Q33_HB),
- 	ID(PCI_DEVICE_ID_INTEL_IGD_HB),
-+	ID(PCI_DEVICE_ID_INTEL_IGD_E_HB),
-+	ID(PCI_DEVICE_ID_INTEL_Q45_HB),
-+	ID(PCI_DEVICE_ID_INTEL_G45_HB),
- 	{ }
- };
-=20
---=20
-1.5.4
+ 	u32 m_1, m_2;
+ 
+-	memcpy(&m_1, data, 4);
+-	m_1 = be32_to_cpu(m_1);
+-	memcpy(&m_2, (data + 4), 4);
+-	m_2 = be32_to_cpu(m_2);
++	m_1 = get_unaligned_be32(data);
++	m_2 = get_unaligned_be32(data + 4);
++
+ 	if ((m_1 ^ MAGIC_ECRYPTFS_MARKER) == m_2)
+ 		return 1;
+ 	ecryptfs_printk(KERN_DEBUG, "m_1 = [0x%.8x]; m_2 = [0x%.8x]; "
+@@ -1073,8 +1073,8 @@ static int ecryptfs_process_flags(struct ecryptfs_crypt_stat *crypt_stat,
+ 	int i;
+ 	u32 flags;
+ 
+-	memcpy(&flags, page_virt, 4);
+-	flags = be32_to_cpu(flags);
++	flags = get_unaligned_be32(page_virt);
++
+ 	for (i = 0; i < ((sizeof(ecryptfs_flag_map)
+ 			  / sizeof(struct ecryptfs_flag_map_elem))); i++)
+ 		if (flags & ecryptfs_flag_map[i].file_flag) {
+@@ -1100,9 +1100,9 @@ static void write_ecryptfs_marker(char *page_virt, size_t *written)
+ 
+ 	get_random_bytes(&m_1, (MAGIC_ECRYPTFS_MARKER_SIZE_BYTES / 2));
+ 	m_2 = (m_1 ^ MAGIC_ECRYPTFS_MARKER);
+-	m_1 = cpu_to_be32(m_1);
++	cpu_to_be32s(&m_1);
+ 	memcpy(page_virt, &m_1, (MAGIC_ECRYPTFS_MARKER_SIZE_BYTES / 2));
+-	m_2 = cpu_to_be32(m_2);
++	cpu_to_be32s(&m_2);
+ 	memcpy(page_virt + (MAGIC_ECRYPTFS_MARKER_SIZE_BYTES / 2), &m_2,
+ 	       (MAGIC_ECRYPTFS_MARKER_SIZE_BYTES / 2));
+ 	(*written) = MAGIC_ECRYPTFS_MARKER_SIZE_BYTES;
+@@ -1121,8 +1121,7 @@ write_ecryptfs_flags(char *page_virt, struct ecryptfs_crypt_stat *crypt_stat,
+ 			flags |= ecryptfs_flag_map[i].file_flag;
+ 	/* Version is in top 8 bits of the 32-bit flag vector */
+ 	flags |= ((((u8)crypt_stat->file_version) << 24) & 0xFF000000);
+-	flags = cpu_to_be32(flags);
+-	memcpy(page_virt, &flags, 4);
++	put_unaligned_be32(flags, page_virt);
+ 	(*written) = 4;
+ }
+ 
+@@ -1238,11 +1237,9 @@ ecryptfs_write_header_metadata(char *virt,
+ 	num_header_extents_at_front =
+ 		(u16)(crypt_stat->num_header_bytes_at_front
+ 		      / crypt_stat->extent_size);
+-	header_extent_size = cpu_to_be32(header_extent_size);
+-	memcpy(virt, &header_extent_size, 4);
++	put_unaligned_be32(header_extent_size, virt);
+ 	virt += 4;
+-	num_header_extents_at_front = cpu_to_be16(num_header_extents_at_front);
+-	memcpy(virt, &num_header_extents_at_front, 2);
++	put_unaligned_be16(num_header_extents_at_front, virt);
+ 	(*written) = 6;
+ }
+ 
+@@ -1410,15 +1407,15 @@ static int parse_header_metadata(struct ecryptfs_crypt_stat *crypt_stat,
+ 	u32 header_extent_size;
+ 	u16 num_header_extents_at_front;
+ 
+-	memcpy(&header_extent_size, virt, sizeof(u32));
+-	header_extent_size = be32_to_cpu(header_extent_size);
+-	virt += sizeof(u32);
+-	memcpy(&num_header_extents_at_front, virt, sizeof(u16));
+-	num_header_extents_at_front = be16_to_cpu(num_header_extents_at_front);
++	header_extent_size = get_unaligned_be32(virt);
++	virt += sizeof(__be32);
++	num_header_extents_at_front = get_unaligned_be16(virt);
++	virt += sizeof(__be16);
++
+ 	crypt_stat->num_header_bytes_at_front =
+ 		(((size_t)num_header_extents_at_front
+ 		  * (size_t)header_extent_size));
+-	(*bytes_read) = (sizeof(u32) + sizeof(u16));
++	(*bytes_read) = (sizeof(__be32) + sizeof(__be16));
+ 	if ((validate_header_size == ECRYPTFS_VALIDATE_HEADER_SIZE)
+ 	    && (crypt_stat->num_header_bytes_at_front
+ 		< ECRYPTFS_MINIMUM_HEADER_EXTENT_SIZE)) {
+-- 
+1.5.6.rc3.295.gdca2e
 
 
 
---=20
-Open Source Technology Center, Intel ltd.
-
-$gpg --keyserver wwwkeys.pgp.net --recv-keys 4D781827
-
---QTprm0S8XgL7H0Dt
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhZrtAACgkQsQQaM014GCcEBQCfVIJ8E9y6Zm4pLmbqCd/Q0Xdw
-DvQAoIddgoW17nEpuKyd5uItXJjNX4J3
-=jaDG
------END PGP SIGNATURE-----
-
---QTprm0S8XgL7H0Dt--
