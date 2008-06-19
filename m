@@ -1,73 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753081AbYFSUTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbYFSUWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753081AbYFSUTV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 16:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750973AbYFSUTN
+	id S1753304AbYFSUWx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 16:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbYFSUWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 16:19:13 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:43608 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750834AbYFSUTM (ORCPT
+	Thu, 19 Jun 2008 16:22:44 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:38962 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750834AbYFSUWn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 16:19:12 -0400
-Message-ID: <20080619221941.588r3j9ascw0oco4@intran0x.frec.bull.fr>
-Date: Thu, 19 Jun 2008 22:19:41 +0200
-From: "Benjamin Thery " <Benjamin.Thery@bull.net>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Tejun Heo <htejun@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 01/11] sysfs: Support for preventing unmounts.
-References: <20080618170729.808539948@theryb.frec.bull.fr>
-	<20080618170730.256129077@theryb.frec.bull.fr>
-	<1213811063.7922.39.camel@nimitz> <m18wx2o638.fsf@frodo.ebiederm.org>
-	<1213893131.7922.67.camel@nimitz>
-In-Reply-To: <1213893131.7922.67.camel@nimitz>
+	Thu, 19 Jun 2008 16:22:43 -0400
+Date: Thu, 19 Jun 2008 14:22:26 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       dsd@gentoo.org, mdharm-usb@one-eyed-alien.net,
+       linux-usb@vger.kernel.org, vegardno@ifi.uio.no,
+       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
+       Greg KH <greg@kroah.com>
+Subject: Re: [RFC/PATCH] usb-storage: wait for device scanning before mounting root
+Message-ID: <20080619202226.GP4392@parisc-linux.org>
+References: <Pine.LNX.4.44L0.0804241704220.14840-100000@iolanthe.rowland.org> <Pine.LNX.4.64.0804250022160.1209@sbz-30.cs.Helsinki.FI> <48118DDD.8010507@s5r6.in-berlin.de> <Pine.LNX.4.64.0804251110400.758@sbz-30.cs.Helsinki.FI> <20080425091122.GA14990@parisc-linux.org> <20080619182310.GA30833@parisc-linux.org> <485AA7EA.6080105@s5r6.in-berlin.de> <20080619185419.GN4392@parisc-linux.org> <485AB95E.5070609@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
+In-Reply-To: <485AB95E.5070609@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Dave Hansen <dave@linux.vnet.ibm.com>:
+On Thu, Jun 19, 2008 at 09:54:06PM +0200, Stefan Richter wrote:
+> [...]
+> > The mail that I just pinged described a way to enhance the
+> > API -- letting you tell scsi "I've started scanning, save me a place in
+> > the queue" and "I've finished scanning, hook me up".
+> 
+> When would be the right time to say "I've started scanning"?  SCSI
+> transport driver initialization?  Or end of USB/FireWire/... HCD
+> registration?
 
-> On Wed, 2008-06-18 at 13:12 -0700, Eric W. Biederman wrote:
->>
->> - The data in sysfs fundamentally changes behind the back of the
->>   VFS and we need to keep the VFS in sync.  Essentially this is the
->>   distributed filesystem problem.
->>
->> - In particular for sysfs_rename and sysfs_move_dir we need to support
->> finding
->>   the dcache entries and calling d_move.  So that the dcache does not
->>   get into an inconsistent state.  Timeouts and invalidates like NFS
->>   uses are to be  avoided if at all possible.
->
-> Much clearer now, thanks!
->
-> Can we get this description into the changelog, pretty please?
+You would need to call it before you could attempt to register any
+devices.  So fairly early on in the initialisation of sbp2/usb-storage.
 
-Yes sure.
-I'll add it to the patch introduction.
+> When to say "I've finished scanning"? --- I think the answer is:  When
+> (a) probing of a configurable number of SCSI targets or logical units
+> was finished or (b) a configurable timeout occurs, whatever of the two
+> happens first.
+> 
+> (Explanation, if one is necessary:  SCSI targets may pop out of the
+> woods any time; it is impossible to say "from this moment on there won't
+> show up any new ones anymore".  This is just as true for cold boot and
+> warm boot as it is for subsequent operation.)
 
-Benjamin
+Yes, I do see the problem.  There's no way the SCSI core can know when
+a driver has finished scanning, so I've punted to the driver to set its
+own timeout here.  I know that new devices really can show up at any
+time, but I think it's reasonable to say that if a machine is booted
+with the same configuration as last time, the drives should show up with
+the same names.
 
->
-> -- Dave
->
->
->
-
-
-
-----------------------------------------------------------------
-This message was sent using IMP, the Internet Messaging Program.
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
