@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbYFSG66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbYFSHAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757218AbYFSG66 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 02:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbYFSG6u
+	id S1757389AbYFSHAZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 03:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbYFSHAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 02:58:50 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:48282 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752942AbYFSG6t (ORCPT
+	Thu, 19 Jun 2008 03:00:14 -0400
+Received: from mail4.hitachi.co.jp ([133.145.228.5]:57021 "EHLO
+	mail4.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751398AbYFSHAN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 02:58:49 -0400
-Date: Thu, 19 Jun 2008 00:58:44 -0600
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: Performance of ext4
-In-reply-to: <Pine.LNX.4.64.0806180546370.20901@diagnostix.dwd.de>
-To: Holger Kiehl <Holger.Kiehl@dwd.de>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Jan Kara <jack@suse.cz>, Theodore Tso <tytso@mit.edu>,
-       Solofo.Ramangalahy@bull.net, Nick Dokos <nicholas.dokos@hp.com>,
-       linux-ext4@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Message-id: <20080619065844.GQ3726@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <Pine.LNX.4.64.0806121154090.27806@diagnostix.dwd.de>
- <20080612131928.GB18229@mit.edu>
- <Pine.LNX.4.64.0806121333480.27806@diagnostix.dwd.de>
- <20080612180605.GD22481@skywalker>
- <Pine.LNX.4.64.0806121940020.2974@diagnostix.dwd.de>
- <Pine.LNX.4.64.0806130753100.7097@diagnostix.dwd.de>
- <20080616175408.GF3279@atrey.karlin.mff.cuni.cz>
- <20080616181353.GA20686@skywalker>
- <Pine.LNX.4.64.0806171001200.6307@diagnostix.dwd.de>
- <Pine.LNX.4.64.0806180546370.20901@diagnostix.dwd.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 19 Jun 2008 03:00:13 -0400
+X-AuditID: 0ac90647-ad124ba000004aeb-26-485a03fa46f5
+Message-ID: <485A03E6.2090509@hitachi.com>
+Date: Thu, 19 Jun 2008 15:59:50 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       linux-mm@kvack.org, sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>, rusty@rustcorp.com.au
+Subject: [BUG][PATCH -mm] avoid BUG() in __stop_machine_run()
+References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
+In-Reply-To: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 18, 2008  05:58 +0000, Holger Kiehl wrote:
->      1.03       ------Sequential Output------ --Sequential Input- --Random-
->                 -Per Chr- --Block-- -Rewrite- -Per Chr- --Block-- --Seeks--
-> ext4               K/sec %CP K/sec %CP K/sec %CP K/sec %CP K/sec %CP  /sec %CP
->                16G 52133  98 221378 95 106873 32 55707  99 297065 42  1546   4
->                16G 52042  98 220931 93 107715 32 55939  98 298810 42  1543   3
->                16G 52975  98 220976 93 108060 31 56426  98 298906 42  1452   4
->
->ext4(patchqueue)16G 59727  98 252733 52 110177 25 55821  98 296739 42  1553   5
->>               16G 61047  99 239242 48 111664 25 55706  98 297151 42  1545   4
->>               16G 60503  99 241532 47 109655 25 55671  98 297648 42  1552   3
->
-> I forgot to mention that for bonnie ext4-patch-queue reduces CPU-load
-> a lot. For block writting it is nearly halved.
+When a process loads a kernel module, __stop_machine_run() is called, and
+it calls sched_setscheduler() to give newly created kernel threads highest
+priority.  However, the process can have no CAP_SYS_NICE which required
+for sched_setscheduler() to increase the priority.  For example, SystemTap
+loads its module with only CAP_SYS_MODULE.  In this case,
+sched_setscheduler() returns -EPERM, then BUG() is called.
 
-That was the main reason for developing mballoc.  With this patch it
-would be able to drive almost 500MB/s write, 600MB/s read on the above
-system instead of being CPU limited at 250/300MB/s.
+Failure of sched_setscheduler() wouldn't be a real problem, so this
+patch just ignores it.
+Or, should we give the CAP_SYS_NICE capability temporarily?
 
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+---
+ kernel/stop_machine.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+Index: linux-2.6.26-rc5-mm3/kernel/stop_machine.c
+===================================================================
+--- linux-2.6.26-rc5-mm3.orig/kernel/stop_machine.c
++++ linux-2.6.26-rc5-mm3/kernel/stop_machine.c
+@@ -143,8 +143,7 @@ int __stop_machine_run(int (*fn)(void *)
+ 		kthread_bind(threads[i], i);
+ 
+ 		/* Make it highest prio. */
+-		if (sched_setscheduler(threads[i], SCHED_FIFO, &param) != 0)
+-			BUG();
++		sched_setscheduler(threads[i], SCHED_FIFO, &param);
+ 	}
+ 
+ 	/* We've created all the threads.  Wake them all: hold this CPU so one
+
 
