@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbYFSVd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757082AbYFSVeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756783AbYFSVd6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 17:33:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755139AbYFSVcM
+	id S1757082AbYFSVeZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 17:34:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbYFSVcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 17:32:12 -0400
-Received: from cantor.suse.de ([195.135.220.2]:38109 "EHLO mx1.suse.de"
+	Thu, 19 Jun 2008 17:32:16 -0400
+Received: from ns1.suse.de ([195.135.220.2]:38136 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755092AbYFSVcK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 17:32:10 -0400
-Date: Thu, 19 Jun 2008 14:29:58 -0700
+	id S1755137AbYFSVcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 17:32:13 -0400
+Date: Thu, 19 Jun 2008 14:30:00 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,76 +21,80 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mike Christie <michaelc@cs.wisc.edu>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [patch 08/15] scsi_host regression: fix scsi host leak
-Message-ID: <20080619212958.GI20267@suse.de>
+       alan@lxorguk.ukuu.org.uk, linux-acpi@vger.kernel.org,
+       Bob Moore <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>,
+       Len Brown <len.brown@intel.com>
+Subject: [patch 09/15] ACPICA: Ignore ACPI table signature for Load()
+	operator
+Message-ID: <20080619213000.GJ20267@suse.de>
 References: <20080619211313.834170620@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="scsi_host-regression-fix-scsi-host-leak.patch"
+Content-Disposition: inline; filename="acpica-ignore-acpi-table-signature-for-load-operator.patch"
 In-Reply-To: <20080619212621.GA20267@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.25-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
-From: Mike Christie <michaelc@cs.wisc.edu>
+From: Bob Moore <robert.moore@intel.com>
 
-The patch is upstream as commit 3ed7897242b7efe977f3a8d06d4e5a4ebe28b10e
+upstream bc45b1d39a925b56796bebf8a397a0491489d85c
 
-A different backport is necessary because of the class_device to device
-conversion post 2.6.25.
+Without this patch booting with acpi_osi="!Windows 2006" is required
+for several machines to function properly with cpufreq
+due to failure to load a Vista specific table with a bad signature.
 
+Only "SSDT" is acceptable to the ACPI spec, but tables are
+seen with OEMx and null sigs. Therefore, signature validation
+is worthless.  Apparently MS ACPI accepts such signatures, ACPICA
+must be compatible.
 
-commit 9c7701088a61cc0cf8a6e1c68d1e74e3cc2ee0b7
-Author: Dave Young <hidave.darkstar@gmail.com>
-Date:   Tue Jan 22 14:01:34 2008 +0800
+http://bugzilla.kernel.org/show_bug.cgi?id=9919
+http://bugzilla.kernel.org/show_bug.cgi?id=10383
+http://bugzilla.kernel.org/show_bug.cgi?id=10454
+https://bugzilla.novell.com/show_bug.cgi?id=396311
 
-    scsi: use class iteration api
-
-Isn't a correct replacement for the original hand rolled host
-lookup. The problem is that class_find_child would get a reference to
-the host's class device which is never released.  Since the host class
-device holds a reference to the host gendev, the host can never be
-freed.
-
-In 2.6.25 we started using class_find_device, and this function also
-gets a reference to the device, so we end up with an extra ref
-and the host will not get released.
-
-This patch adds a class_put_device to balance the class_find_device()
-get. I kept the scsi_host_get in scsi_host_lookup, because the target
-layer is using scsi_host_lookup and it looks like it needs the SHOST_DEL
-check.
-
-Signed-off-by: Mike Christie <michaelc@cs.wisc.edu>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+Signed-off-by: Bob Moore <robert.moore@intel.com>
+Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- drivers/scsi/hosts.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/acpi/tables/tbinstal.c |   18 +++++++-----------
+ 1 file changed, 7 insertions(+), 11 deletions(-)
 
---- a/drivers/scsi/hosts.c
-+++ b/drivers/scsi/hosts.c
-@@ -455,9 +455,10 @@ struct Scsi_Host *scsi_host_lookup(unsig
- 	struct Scsi_Host *shost = ERR_PTR(-ENXIO);
+--- a/drivers/acpi/tables/tbinstal.c
++++ b/drivers/acpi/tables/tbinstal.c
+@@ -123,17 +123,13 @@ acpi_tb_add_table(struct acpi_table_desc
+ 		}
+ 	}
  
- 	cdev = class_find_child(&shost_class, &hostnum, __scsi_host_match);
--	if (cdev)
-+	if (cdev) {
- 		shost = scsi_host_get(class_to_shost(cdev));
+-	/* The table must be either an SSDT or a PSDT or an OEMx */
 -
-+		class_device_put(cdev);
-+	}
- 	return shost;
- }
- EXPORT_SYMBOL(scsi_host_lookup);
+-	if ((!ACPI_COMPARE_NAME(table_desc->pointer->signature, ACPI_SIG_PSDT))
+-	    &&
+-	    (!ACPI_COMPARE_NAME(table_desc->pointer->signature, ACPI_SIG_SSDT))
+-	    && (strncmp(table_desc->pointer->signature, "OEM", 3))) {
+-		ACPI_ERROR((AE_INFO,
+-			    "Table has invalid signature [%4.4s], must be SSDT, PSDT or OEMx",
+-			    table_desc->pointer->signature));
+-		return_ACPI_STATUS(AE_BAD_SIGNATURE);
+-	}
++	/*
++	 * Originally, we checked the table signature for "SSDT" or "PSDT" here.
++	 * Next, we added support for OEMx tables, signature "OEM".
++	 * Valid tables were encountered with a null signature, so we've just
++	 * given up on validating the signature, since it seems to be a waste
++	 * of code. The original code was removed (05/2008).
++	 */
+ 
+ 	(void)acpi_ut_acquire_mutex(ACPI_MTX_TABLES);
+ 
 
 -- 
