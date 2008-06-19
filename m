@@ -1,45 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756937AbYFSGMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757102AbYFSGOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756937AbYFSGMx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 02:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbYFSGMp
+	id S1757102AbYFSGOY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 02:14:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754423AbYFSGOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 02:12:45 -0400
-Received: from mga05.intel.com ([192.55.52.89]:44454 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753267AbYFSGMp (ORCPT
+	Thu, 19 Jun 2008 02:14:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59950 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754102AbYFSGOP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 02:12:45 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,671,1204531200"; 
-   d="scan'208";a="579551528"
-Message-ID: <4859F8CE.7010203@linux.intel.com>
-Date: Wed, 18 Jun 2008 23:12:30 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Thu, 19 Jun 2008 02:14:15 -0400
+Date: Wed, 18 Jun 2008 23:14:12 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Al Viro <viro@zeniv.linux.org.uk>
 Subject: Re: kerneloops.org: 2.6.26-rc possible regression in ext3
-References: <4859EFE2.2090202@linux.intel.com> <alpine.LFD.1.10.0806182242390.2907@woody.linux-foundation.org>
 In-Reply-To: <alpine.LFD.1.10.0806182242390.2907@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Message-ID: <alpine.LFD.1.10.0806182302340.2907@woody.linux-foundation.org>
+References: <4859EFE2.2090202@linux.intel.com> <alpine.LFD.1.10.0806182242390.2907@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+
+
+On Wed, 18 Jun 2008, Linus Torvalds wrote:
+> 
 > One thing I note is that all the oopses seem to be i686 - are there that 
 > few x86-64 fc10 users (I'd have assumed that 64-bit is starting to be the 
 > norm for people who live on the edge, but perhaps I'm just out of touch)? 
 > 
+> Or could this perhaps be an indication that it is specific to i686 some 
+> way (eg a compiler issue?)
 
-for rawhide the 64/32 ratio seems to be 106/135
-for fedora 9 the 64/32 ratio is 4946/13636
+The oops code is odd:
 
-(nr of oopses for the specific architecture/releases)
+  27:	8d 4c 18 fe          	lea    0xfffffffe(%eax,%ebx,1),%ecx
+  2b:*	8b 19                	mov    (%ecx),%ebx     <-- trapping instruction
+  2d:	83 e9 08             	sub    $0x8,%ecx
+  30:	89 d8                	mov    %ebx,%eax
+  32:	66 d1 e8             	shr    %ax
+  35:	0f b7 c0             	movzwl %ax,%eax
 
-so your assumption of the experimental rawhide users are more likely to use 64 bit seems to be quite correct.
+and that "lea" is doing an address computation of "eax+2*ebx-2". Which 
+does *not* look like an address to a 32-bit entity, but to a 16-bit one. 
+Yeah, it's not conclusive, but it is suggestive.
+
+And the 16-bit "shr+movzwl" further strengthens the case that it is 
+actually working on a 16-bit entity. The trapping instruction _should_ 
+possibly have been a "movzwl (%ecx),%ebx" to begin with.
+
+But it did a 32-bit load, and in this case it looks as if the 16-bit load 
+would have been correct! The value of ECX in this example was
+
+	ECX: dc384ffe
+
+ie it was indeed a two-byte aligned thing at the end of the page, and if 
+the load had been a 16-bit load (like the data seems to be), it would 
+never have oopsed! The page fault seems to be due to DEBUG_PAGEALLOC and 
+the next page being unmapped because it's not allocated.
+
+I only looked closer at one particular oops (25906, in case anybody 
+cares), but at least judging from that particular one I would indeed 
+suspect a compiler bug.
+
+Of course, the main reason I say that is that none of the ext3 or VFS 
+changes look even _remotely_ relevant to any of this. They really don't 
+look like they could possibly matter for "do_split()" unless there is 
+something really odd going on.
+
+			Linus
