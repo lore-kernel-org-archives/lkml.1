@@ -1,45 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757575AbYFSAZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbYFSA2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757575AbYFSAZq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 20:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756453AbYFSAZh
+	id S1755555AbYFSA2n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 20:28:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbYFSA2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 20:25:37 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55386 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755788AbYFSAZg (ORCPT
+	Wed, 18 Jun 2008 20:28:33 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:48029 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754187AbYFSA2c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 20:25:36 -0400
-Date: Wed, 18 Jun 2008 17:24:30 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: benh@kernel.crashing.org, xen-devel <xen-devel@lists.xensource.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>, x86@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1 of 4] mm: add a ptep_modify_prot transaction
- abstraction
-In-Reply-To: <4859A528.1010107@goop.org>
-Message-ID: <alpine.LFD.1.10.0806181723400.2907@woody.linux-foundation.org>
-References: <b020e42384197b824320.1213615800@localhost> <1213831403.8011.24.camel@pasglop> <4859A149.9090004@goop.org> <4859A528.1010107@goop.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 18 Jun 2008 20:28:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=itlUzTwSjgp5UoxvYn4gOJ19hciD/JF2vlvyRwc0J9hZXCBEI5lH2y1pEe7Gc98rc1
+         QSk7b0hvBwC4/CUT5VZqQ1v2FB212dVu/Py5hCITsFb0/g9T2MBbiWBde/o1UkZv5tDr
+         0baOMlXRR1DXc7dDP/ahqtKn4x9Tk6fc3WOns=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] x86: cleanup machine_specific_memory_setup v2
+Date: Wed, 18 Jun 2008 17:27:08 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <200806161303.31997.yhlu.kernel@gmail.com> <200806161958.28627.yhlu.kernel@gmail.com> <200806181106.08491.yhlu.kernel@gmail.com>
+In-Reply-To: <200806181106.08491.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806181727.08918.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+1. let 64bit support 88 and e801 too
+2. introduce default_machine_specific_memory_setup, and reuse it
+   for voyager
 
-On Wed, 18 Jun 2008, Jeremy Fitzhardinge wrote:
->
-> Along the lines of:
+v2: fix 64 bit compiling
 
-Hell no. There's a reason we have a special set_wrprotect() thing. We can 
-do it more efficiently on native hardware by just clearing the bit 
-atomically. No need to do the cmpxchg games.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-		Linus
+---
+ arch/x86/kernel/e820.c        |   13 +++++++------
+ arch/x86/mach-voyager/setup.c |   32 +-------------------------------
+ include/asm-x86/e820.h        |    3 +--
+ include/asm-x86/setup.h       |    3 ++-
+ 4 files changed, 11 insertions(+), 40 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/e820.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/e820.c
++++ linux-2.6/arch/x86/kernel/e820.c
+@@ -1029,7 +1029,7 @@ void __init e820_reserve_resources(void)
+ 	}
+ }
+ 
+-char *__init __attribute__((weak)) machine_specific_memory_setup(void)
++char *__init default_machine_specific_memory_setup(void)
+ {
+ 	char *who = "BIOS-e820";
+ 	int new_nr;
+@@ -1045,10 +1045,7 @@ char *__init __attribute__((weak)) machi
+ 			&new_nr);
+ 	boot_params.e820_entries = new_nr;
+ 	if (copy_e820_map(boot_params.e820_map, boot_params.e820_entries) < 0) {
+-#ifdef CONFIG_X86_64
+-		early_panic("Cannot find a valid memory map");
+-#else
+-		unsigned long mem_size;
++		u64 mem_size;
+ 
+ 		/* compare results from other methods and take the greater */
+ 		if (boot_params.alt_mem_k
+@@ -1063,13 +1060,17 @@ char *__init __attribute__((weak)) machi
+ 		e820.nr_map = 0;
+ 		e820_add_region(0, LOWMEMSIZE(), E820_RAM);
+ 		e820_add_region(HIGH_MEMORY, mem_size << 10, E820_RAM);
+-#endif
+ 	}
+ 
+ 	/* In case someone cares... */
+ 	return who;
+ }
+ 
++char *__init __attribute__((weak)) machine_specific_memory_setup(void)
++{
++	return default_machine_specific_memory_setup();
++}
++
+ /* Overridden in paravirt.c if CONFIG_PARAVIRT */
+ char * __init __attribute__((weak)) memory_setup(void)
+ {
+Index: linux-2.6/arch/x86/mach-voyager/setup.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mach-voyager/setup.c
++++ linux-2.6/arch/x86/mach-voyager/setup.c
+@@ -104,35 +104,5 @@ char *__init machine_specific_memory_set
+ 		return who;
+ 	}
+ 
+-	who = "BIOS-e820";
+-
+-	/*
+-	 * Try to copy the BIOS-supplied E820-map.
+-	 *
+-	 * Otherwise fake a memory map; one section from 0k->640k,
+-	 * the next section from 1mb->appropriate_mem_k
+-	 */
+-	new_nr = boot_params.e820_entries;
+-	sanitize_e820_map(boot_params.e820_map,
+-			ARRAY_SIZE(boot_params.e820_map),
+-			&new_nr);
+-	boot_params.e820_entries = new_nr;
+-	if (copy_e820_map(boot_params.e820_map, boot_params.e820_entries)
+-	    < 0) {
+-		unsigned long mem_size;
+-
+-		/* compare results from other methods and take the greater */
+-		if (boot_params.alt_mem_k < boot_params.screen_info.ext_mem_k) {
+-			mem_size = boot_params.screen_info.ext_mem_k;
+-			who = "BIOS-88";
+-		} else {
+-			mem_size = boot_params.alt_mem_k;
+-			who = "BIOS-e801";
+-		}
+-
+-		e820.nr_map = 0;
+-		e820_add_region(0, LOWMEMSIZE(), E820_RAM);
+-		e820_add_region(HIGH_MEMORY, mem_size << 10, E820_RAM);
+-	}
+-	return who;
++	return default_machine_specific_memory_setup();
+ }
+Index: linux-2.6/include/asm-x86/e820.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/e820.h
++++ linux-2.6/include/asm-x86/e820.h
+@@ -102,6 +102,7 @@ extern u64 e820_hole_size(u64 start, u64
+ extern void finish_e820_parsing(void);
+ extern void e820_reserve_resources(void);
+ extern void setup_memory_map(void);
++extern char *default_machine_specific_memory_setup(void);
+ extern char *machine_specific_memory_setup(void);
+ extern char *memory_setup(void);
+ 
+@@ -116,9 +117,7 @@ extern char *memory_setup(void);
+ #ifdef __KERNEL__
+ #include <linux/ioport.h>
+ 
+-#ifdef CONFIG_X86_32
+ #define HIGH_MEMORY	(1024*1024)
+-#endif
+ #endif /* __KERNEL__ */
+ 
+ #endif  /* __ASM_E820_H */
+Index: linux-2.6/include/asm-x86/setup.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/setup.h
++++ linux-2.6/include/asm-x86/setup.h
+@@ -42,13 +42,14 @@ void vsmp_init(void);
+  */
+ extern struct boot_params boot_params;
+ 
+-#ifdef __i386__
+ /*
+  * Do NOT EVER look at the BIOS memory size location.
+  * It does not work on many machines.
+  */
+ #define LOWMEMSIZE()	(0x9f000)
+ 
++#ifdef __i386__
++
+ void __init i386_start_kernel(void);
+ 
+ extern unsigned long init_pg_tables_start;
