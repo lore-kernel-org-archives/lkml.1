@@ -1,169 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758936AbYFSOeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756295AbYFSOjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758936AbYFSOeo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 10:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbYFSOef
+	id S1756295AbYFSOjm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 10:39:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbYFSOjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 10:34:35 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:58785 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751702AbYFSOef (ORCPT
+	Thu, 19 Jun 2008 10:39:35 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:24877 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751816AbYFSOje (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 10:34:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:from;
-        b=Ql7R8b4C9mHk4q5UIRuE3MZbpxJKmuttTHYarJI3LqfoK2xrJuGYEoFpSIHhlRrqka
-         7+nER38Xw2MOh1USdvP8IBW2ikMKtWcHj1DRPalbWJXK70nh2KtHQAh/W0dLmlMvDhB2
-         h+qE4m0hxL85goSR7L1fUshnG+8nZd7A7kbkc=
-Date: Thu, 19 Jun 2008 16:34:26 +0200
-To: stable@kernel.org
-Cc: Greg KH <greg@kroah.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [stable PATCH 2/2] x86: disable mwait for AMD family 10H/11H CPUs
-Message-ID: <20080619143426.GB3243@damson.getinternet.no>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+	Thu, 19 Jun 2008 10:39:34 -0400
+Subject: Re: 2.6.26-rc5-mm3
+From: Daniel Walker <dwalker@mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Byron Bradley <byron.bbradley@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, linux-mm@kvack.org,
+       Hua Zhong <hzhong@gmail.com>
+In-Reply-To: <20080619091337.GA15228@elte.hu>
+References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
+	 <alpine.DEB.1.00.0806130006490.14928@gamma>
+	 <1213811751.11203.73.camel@localhost.localdomain>
+	 <20080619091337.GA15228@elte.hu>
+Content-Type: text/plain
+Date: Thu, 19 Jun 2008 07:39:30 -0700
+Message-Id: <1213886370.11203.80.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Fri, 16 May 2008 22:55:26 +0200
-Subject: [PATCH] x86: disable mwait for AMD family 10H/11H CPUs
 
-The previous revert of 0c07ee38c9d4eb081758f5ad14bbffa7197e1aec left
-out the mwait disable condition for AMD family 10H/11H CPUs.
+On Thu, 2008-06-19 at 11:13 +0200, Ingo Molnar wrote:
 
-Andreas Herrman said:
+> the better fix would be to add likely_prof.o to this list of exceptions 
+> in lib/Makefile:
+> 
+>  ifdef CONFIG_FTRACE
+>  # Do not profile string.o, since it may be used in early boot or vdso
+>  CFLAGS_REMOVE_string.o = -pg
+>  # Also do not profile any debug utilities
+>  CFLAGS_REMOVE_spinlock_debug.o = -pg
+>  CFLAGS_REMOVE_list_debug.o = -pg
+>  CFLAGS_REMOVE_debugobjects.o = -pg
+>  endif
+> 
+> instead of adding notrace to the source.
+> 
+> 	Ingo
 
-It depends on the CPU. For AMD CPUs that support MWAIT this is wrong.
-Family 0x10 and 0x11 CPUs will enter C1 on HLT. Powersavings then
-depend on a clock divisor and current Pstate of the core.
+Here's the fix mentioned above.
 
-If all cores of a processor are in halt state (C1) the processor can
-enter the C1E (C1 enhanced) state. If mwait is used this will never
-happen.
+--
 
-Thus HLT saves more power than MWAIT here.
+Remove tracing from likely profiling since it could cause recursion if
+ftrace uses likely/unlikely macro's internally.
 
-It might be best to switch off the mwait flag for these AMD CPU
-families like it was introduced with commit
-f039b754714a422959027cb18bb33760eb8153f0 (x86: Don't use MWAIT on AMD
-Family 10)
+Signed-off-by: Daniel Walker <dwalker@mvista.com>
 
-Re-add the AMD families 10H/11H check and disable the mwait usage for
-those.
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-[back-ported from upstream commit e9623b35599fcdbc00c16535cbefbb4d5578f4ab]
-
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
 ---
- arch/x86/kernel/process_32.c |   29 ++++++++++++++++++++++++++++-
- arch/x86/kernel/process_64.c |   29 ++++++++++++++++++++++++++++-
- 2 files changed, 56 insertions(+), 2 deletions(-)
+ lib/Makefile |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index 54bb813..39b1b7e 100644
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -259,6 +259,33 @@ static void mwait_idle(void)
- 	mwait_idle_with_hints(0, 0);
- }
+Index: linux-2.6.25/lib/Makefile
+===================================================================
+--- linux-2.6.25.orig/lib/Makefile
++++ linux-2.6.25/lib/Makefile
+@@ -15,6 +15,8 @@ CFLAGS_REMOVE_string.o = -pg
+ CFLAGS_REMOVE_spinlock_debug.o = -pg
+ CFLAGS_REMOVE_list_debug.o = -pg
+ CFLAGS_REMOVE_debugobjects.o = -pg
++# likely profiling can cause recursion in ftrace, so don't trace it.
++CFLAGS_REMOVE_likely_prof.o = -pg
+ endif
  
-+/*
-+ * mwait selection logic:
-+ *
-+ * It depends on the CPU. For AMD CPUs that support MWAIT this is
-+ * wrong. Family 0x10 and 0x11 CPUs will enter C1 on HLT. Powersavings
-+ * then depend on a clock divisor and current Pstate of the core. If
-+ * all cores of a processor are in halt state (C1) the processor can
-+ * enter the C1E (C1 enhanced) state. If mwait is used this will never
-+ * happen.
-+ *
-+ * idle=mwait overrides this decision and forces the usage of mwait.
-+ */
-+static int __cpuinit mwait_usable(const struct cpuinfo_x86 *c)
-+{
-+	if (force_mwait)
-+		return 1;
-+
-+	if (c->x86_vendor == X86_VENDOR_AMD) {
-+		switch(c->x86) {
-+		case 0x10:
-+		case 0x11:
-+			return 0;
-+		}
-+	}
-+	return 1;
-+}
-+
- void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
- {
- 	static int selected;
-@@ -271,7 +298,7 @@ void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
- 			" performance may degrade.\n");
- 	}
- #endif
--	if (cpu_has(c, X86_FEATURE_MWAIT)) {
-+	if (cpu_has(c, X86_FEATURE_MWAIT) && mwait_usable(c)) {
- 		/*
- 		 * Skip, if setup has overridden idle.
- 		 * One CPU supports mwait => All CPUs supports mwait
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index fbb171f..53b9c4c 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -254,6 +254,33 @@ static void mwait_idle(void)
- 	}
- }
- 
-+/*
-+ * mwait selection logic:
-+ *
-+ * It depends on the CPU. For AMD CPUs that support MWAIT this is
-+ * wrong. Family 0x10 and 0x11 CPUs will enter C1 on HLT. Powersavings
-+ * then depend on a clock divisor and current Pstate of the core. If
-+ * all cores of a processor are in halt state (C1) the processor can
-+ * enter the C1E (C1 enhanced) state. If mwait is used this will never
-+ * happen.
-+ *
-+ * idle=mwait overrides this decision and forces the usage of mwait.
-+ */
-+static int __cpuinit mwait_usable(const struct cpuinfo_x86 *c)
-+{
-+	if (force_mwait)
-+		return 1;
-+
-+	if (c->x86_vendor == X86_VENDOR_AMD) {
-+		switch(c->x86) {
-+		case 0x10:
-+		case 0x11:
-+			return 0;
-+		}
-+	}
-+	return 1;
-+}
-+
- void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
- {
- 	static int selected;
-@@ -266,7 +293,7 @@ void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
- 			" performance may degrade.\n");
- 	}
- #endif
--	if (cpu_has(c, X86_FEATURE_MWAIT)) {
-+	if (cpu_has(c, X86_FEATURE_MWAIT) && mwait_usable(c)) {
- 		/*
- 		 * Skip, if setup has overridden idle.
- 		 * One CPU supports mwait => All CPUs supports mwait
--- 
-1.5.4.1
+ lib-$(CONFIG_MMU) += ioremap.o
+
 
