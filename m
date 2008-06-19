@@ -1,55 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757912AbYFSAae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758035AbYFSAas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757912AbYFSAae (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 20:30:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757653AbYFSAaM
+	id S1758035AbYFSAas (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 20:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757702AbYFSAaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 20:30:12 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:19107 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756579AbYFSAaJ (ORCPT
+	Wed, 18 Jun 2008 20:30:15 -0400
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:61719 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757649AbYFSAaM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 20:30:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=cb+wCGbNoYK9O2+1vQK5T/AssxyA52xp5FtwyUw9s9rnUbodOHO3rhuWCVKcYhdehR
-         h/jTPdGYMho6IhmRBaQzgtnpjZE3OVdRqdZOWn4tFl2ykzpvexEfr5PNnZCdCUJcGU03
-         IAa6gpnY+hMjBaE1/rR417NVi5gzK7AI3bqC0=
-Message-ID: <a01a16b50806181730gec225fbgf2057a727089c997@mail.gmail.com>
-Date: Thu, 19 Jun 2008 02:30:08 +0200
-From: "=?UTF-8?Q?H=C3=A5kon_L=C3=B8vdal?=" <hlovdal@gmail.com>
-To: "=?UTF-8?Q?Ilpo_J=C3=A4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
-Cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0806111636330.16829@wrl-59.cs.helsinki.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-References: <20080526115628.GA31316@elte.hu>
-	 <Pine.LNX.4.64.0805312332270.2760@wrl-59.cs.helsinki.fi>
-	 <a01a16b50806031710u54b9297bkf1fad9c4f8fd581f@mail.gmail.com>
-	 <Pine.LNX.4.64.0806041402211.16829@wrl-59.cs.helsinki.fi>
-	 <a01a16b50806040700h1efce63cq2a27b087df0d25be@mail.gmail.com>
-	 <Pine.LNX.4.64.0806041802360.2580@wrl-59.cs.helsinki.fi>
-	 <a01a16b50806060232u1eff3867u24fecc539fda1d14@mail.gmail.com>
-	 <Pine.LNX.4.64.0806091422180.16829@wrl-59.cs.helsinki.fi>
-	 <a01a16b50806101626i2942ebam462410ad26050829@mail.gmail.com>
-	 <Pine.LNX.4.64.0806111636330.16829@wrl-59.cs.helsinki.fi>
+	Wed, 18 Jun 2008 20:30:12 -0400
+From: Nathan Lynch <ntl@pobox.com>
+To: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+       Ingo Molnar <mingo@elte.hu>, Anton Blanchard <anton@samba.org>
+Subject: [RFC/PATCH 1/3] sched: support arch override of sched_group cpu power
+Date: Wed, 18 Jun 2008 19:29:32 -0500
+Message-Id: <1213835374-10868-2-git-send-email-ntl@pobox.com>
+X-Mailer: git-send-email 1.5.5
+In-Reply-To: <1213835374-10868-1-git-send-email-ntl@pobox.com>
+References: <1213835374-10868-1-git-send-email-ntl@pobox.com>
+X-Pobox-Relay-ID: E06D66E8-3D96-11DD-8BD8-3113EBD4C077-04752483!a-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m5J0Uqfq002846
 
-2008/6/11 Ilpo JÃ¤rvinen <ilpo.jarvinen@helsinki.fi>:> On Wed, 11 Jun 2008, HÃ¥kon LÃ¸vdal wrote:>> I do not have any good explanation (bad memory?). When checking the>> copytest003.capture.bz2 file in the http server storage directory>> I get the same results as you. However I also have the original file>> stored still and comparing them with cmp -l gives>>  20558656 124 104>> so obviously a bit has been flipped.>> ...Yeah, which is a bad thing because now we don't know if that same error> causes the TCP stops too.>>> I have now replaced the erroneous file with a good copy, so you should>> be able to download again.>> I'll have a look if there's some common denominator but this whole issue> might well be due to hw failure.>
-Hi. I tested the old pc with memtest86 and memtest86+ for 16 and 50hours without any errors detected, so apparently the ram is ok.
-I now just did another test from a freshley booted old pc, standingidle for around 2 hours before I started the testing (no network activitybefore I plugged in the cable just before starting testing).
-The copying failed after just 2.62GB, so the logs are short andnice. Stored on same server as earlier, new 2008-06-19 directory. Onething I noticed in the dmesg output on the old pc was the following:
-BUG: unable to handle kernel paging request at virtual address ffff3cffprinting eip: ffff3cff *pde = 00793067 *pte = 00000000Oops: 0000 [#1] PREEMPTModules linked in: ...Pid: 18103, comm: sshd Not tainted (2.6.24-gafd564a8 #4)...Call Trace: [<f8c45b39>] nf_conntrack_find_get+0x36/0x3a [nf_conntrack] [<f8c46379>] nf_conntrack_in+0x135/0x3e8 [nf_conntrack] [<c0423c5d>] local_bh_disable+0xa/0xb [<c0626d54>] _read_lock_bh+0x12/0x1a...
-BR HÃ¥kon LÃ¸vdalÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Add a new sched domain flag, SD_ASYM_CPU_POWER, which signifies that
+the architecture may override the cpu power for a cpu via a hook in
+init_sched_groups_power().  Add a dummy definition of arch_cpu_power()
+which conforms with the existing behavior.
+
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
+---
+ include/linux/sched.h |    1 +
+ kernel/sched.c        |   14 ++++++++++++++
+ 2 files changed, 15 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index c5d3f84..cfbefca 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -713,6 +713,7 @@ enum cpu_idle_type {
+ #define SD_SHARE_PKG_RESOURCES	512	/* Domain members share cpu pkg resources */
+ #define SD_SERIALIZE		1024	/* Only a single load balancing instance */
+ #define SD_WAKE_IDLE_FAR	2048	/* Gain latency sacrificing cache hit */
++#define SD_ASYM_CPU_POWER	4096	/* Domain members of unequal power */
+ 
+ #define BALANCE_FOR_MC_POWER	\
+ 	(sched_smt_power_savings ? SD_POWERSAVINGS_BALANCE : 0)
+diff --git a/kernel/sched.c b/kernel/sched.c
+index eaf6751..3fba083 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -6761,6 +6761,13 @@ static void free_sched_groups(const cpumask_t *cpu_map, cpumask_t *nodemask)
+ }
+ #endif
+ 
++#ifndef arch_cpu_power
++static inline unsigned int arch_cpu_power(int cpu, unsigned int default_power)
++{
++	return default_power;
++}
++#endif
++
+ /*
+  * Initialize sched groups cpu_power.
+  *
+@@ -6789,6 +6796,13 @@ static void init_sched_groups_power(int cpu, struct sched_domain *sd)
+ 
+ 	sd->groups->__cpu_power = 0;
+ 
++	if (!child && (sd->flags & SD_ASYM_CPU_POWER)) {
++		unsigned int power = arch_cpu_power(cpu, SCHED_LOAD_SCALE);
++
++		sg_inc_cpu_power(sd->groups, power);
++		return;
++	}
++
+ 	/*
+ 	 * For perf policy, if the groups in child domain share resources
+ 	 * (for example cores sharing some portions of the cache hierarchy
+-- 
+1.5.5
+
