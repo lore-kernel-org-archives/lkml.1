@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbYFSDJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755661AbYFSDNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756652AbYFSDJg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 23:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbYFSDJY
+	id S1755661AbYFSDNz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 23:13:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbYFSDNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 23:09:24 -0400
-Received: from elcamino.pasemi.com ([67.155.108.98]:38582 "EHLO
-	elcamino.pasemi.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752230AbYFSDJX (ORCPT
+	Wed, 18 Jun 2008 23:13:48 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54069 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751564AbYFSDNr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 23:09:23 -0400
-X-Greylist: delayed 621 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Jun 2008 23:09:23 EDT
-X-Spam-Flag: NO
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       Anton Blanchard <anton@samba.org>
-Message-Id: <BD25BA47-04A5-4FF7-86FD-959BCDB898A0@lixom.net>
-From: Olof Johansson <olof@lixom.net>
-To: Nathan Lynch <ntl@pobox.com>
-In-Reply-To: <1213835374-10868-4-git-send-email-ntl@pobox.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Wed, 18 Jun 2008 23:13:47 -0400
+Date: Thu, 19 Jun 2008 12:17:10 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Jackson <pj@sgi.com>
+Subject: Re: [RFC] [PATCH] cgroup: add "procs" control file
+Message-Id: <20080619121710.d6834a43.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4859CD62.8090402@cn.fujitsu.com>
+References: <4858C111.8050806@cn.fujitsu.com>
+	<20080619091436.0a441351.kamezawa.hiroyu@jp.fujitsu.com>
+	<4859CD62.8090402@cn.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [RFC/PATCH 3/3] adjust cpu power for secondary threads on POWER6
-Date: Wed, 18 Jun 2008 21:58:59 -0500
-References: <1213835374-10868-1-git-send-email-ntl@pobox.com> <1213835374-10868-4-git-send-email-ntl@pobox.com>
-X-Mailer: Apple Mail (2.924)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 19 Jun 2008 11:07:14 +0800
+Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-> +static unsigned int pseries_cpu_power(int cpu, unsigned int  
-> default_power)
-> +{
-> +	struct device_node *np;
-> +	unsigned int thread, power;
-> +
-> +	if (!cpu_has_feature(CPU_FTR_ASYM_POWER))
-> +		return default_power;
-> +
-> +	power = default_power;
+> > So, how about this kind of interface ? showing both of TID and PID.
+> > 
+> > %/cat/procs
+> > TID  PID
+> > 1001 1001
+> > 1234 1001
+> > 3856 1001
+> > 728  728
+> > ....
+> > ....
+> > 
+> > nonsense ?
+> > 
+> 
+> Then the left column is exactly the same with the contents of `cat tasks`, so IMO
+> it won't be useful. Besides, the tasks of pids listed in the right column may not
+> all belongs to that group, so how we can make use of this column?
+> 
+Then, how useful /procs is ;)  it's of-no-use.
 
-Why not just NULL out the cpu_power function pointers on platforms  
-that don't have the feature bit instead? (or the other way around:  
-NULL by default, and set only on platforms that have imbalanced threads.
-
-It'd be even nicer to do so without using up a cpu feature bit, since  
-it'd then only be used in determining whether to set the ppc_md  
-function pointer or not, but I don't know if there's a convenient way  
-to probe for this at runtime (cpu device tree node properties?).
-
-
--Olof
+Thanks,
+-Kame
 
