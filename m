@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755247AbYFSWP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbYFSWV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755247AbYFSWP7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 18:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbYFSWPv
+	id S1755264AbYFSWV4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 18:21:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750929AbYFSWVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 18:15:51 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:53270 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751904AbYFSWPv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 18:15:51 -0400
-Date: Thu, 19 Jun 2008 15:08:53 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Louis Rilling <Louis.Rilling@kerlabs.com>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: Re: [RFC][PATCH] configfs: Report errors in
-	config_*_init_type_name()
-Message-ID: <20080619220853.GD10888@mail.oracle.com>
-Mail-Followup-To: Louis Rilling <Louis.Rilling@kerlabs.com>,
-	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-References: <1213813851-7359-1-git-send-email-louis.rilling@kerlabs.com> <20080618202226.GG16780@ca-server1.us.oracle.com> <20080619091003.GJ30804@localhost>
+	Thu, 19 Jun 2008 18:21:46 -0400
+Received: from gw.goop.org ([64.81.55.164]:33301 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750782AbYFSWVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 18:21:46 -0400
+Message-ID: <485ADBCF.5040101@goop.org>
+Date: Thu, 19 Jun 2008 15:21:03 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080619091003.GJ30804@localhost>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+To: Mike Travis <travis@sgi.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>
+Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
+ area
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.509483000@polaris-admin.engr.sgi.com> <20080605102222.GA21319@elte.hu> <484EF29C.7080100@sgi.com> <485947A8.8060801@goop.org> <4859511E.5050605@sgi.com> <48596315.6020104@goop.org> <48596893.4040908@sgi.com> <485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org> <485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org> <485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com> <485AD138.4010404@goop.org> <485ADA12.5010505@sgi.com>
+In-Reply-To: <485ADA12.5010505@sgi.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 19, 2008 at 11:10:03AM +0200, Louis Rilling wrote:
-> On Wed, Jun 18, 2008 at 01:22:26PM -0700, Joel Becker wrote:
-> > 1) Make your changes to return errors from config_*_init_type_name(),
-> >    but don't check the errors on known-safe usage (small static
-> >    strings).
-> 
-> I don't like it very much, since users should check for the value of
-> CONFIGFS_ITEM_NAME_LEN to ensure that this is a safe usage.
+Mike Travis wrote:
+> Jeremy Fitzhardinge wrote:
+>
+>   
+>> Why not use the real pda for all cpus?
+>>     
+>
+> Yeah, I figured that out after doing some more thinking... ;-)
+>
+>   
+>> Do you move the boot-cpu's per-cpu data? (Please don't)  If not, you can
+>> just use percpu__pda from the start without having to do anything else,
+>> and then set up %gs pointing to the pda base for each secondary cpu.
+>>     
+>
+> The problem is that the static percpu area is removed as it lies
+> in the initdata section, so the pda is removed as well.
+>   
 
-	Yeah, I don't much like it either.  I just threw it out there as
-a possibility.
+Well, that's easy to fix...
 
-> > 2) Provide two API, one that is void and one that is not, so that
-> >    known-safe usage can use the void call (and BUG_ON() if the strlen()
-> >    is off), while other usage checks the errors.
-> 
-> Ok. What about config_*_init_type_long_name()?
+> But I took your suggestion to move the fixup to before secondary_startup.
+>
+> Below is a revised version. 
 
-	Well, that's better than any names I could come up with.  Let's
-run with it.
+(Incremental diffs are easier to review and work with.)
 
-Joel
+>  It builds but I'll have to test it tomorrow.
+> Note the addition of:
+>
+> +       initial_pda = (unsigned long)get_percpu_pda(cpu);
+>
+> in do_boot_cpu.
+>
+> I'm not sure yet what to put into acpi_save_state_mem:
+>
+>         initial_code = (unsigned long)wakeup_long64;
+> +       /* ZZZ initial_pda = (unsigned long)?; */
+>   
 
--- 
+You'll need to change wakeup_long64 to load the right value into the 
+GS_BASE msr anyway.
 
-"Every day I get up and look through the Forbes list of the richest
- people in America. If I'm not there, I go to work."
-        - Robert Orben
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+    J
