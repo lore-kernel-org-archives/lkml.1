@@ -1,86 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbYFSJOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592AbYFSJP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756767AbYFSJOT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 05:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755738AbYFSJOE
+	id S1756592AbYFSJP4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 05:15:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbYFSJPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 05:14:04 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54042 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752430AbYFSJOB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 05:14:01 -0400
+	Thu, 19 Jun 2008 05:15:48 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:45299 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752692AbYFSJPr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 05:15:47 -0400
+Message-ID: <485A2341.9020406@s5r6.in-berlin.de>
 Date: Thu, 19 Jun 2008 11:13:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Byron Bradley <byron.bbradley@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, linux-mm@kvack.org,
-       Hua Zhong <hzhong@gmail.com>
-Subject: Re: 2.6.26-rc5-mm3
-Message-ID: <20080619091337.GA15228@elte.hu>
-References: <20080611225945.4da7bb7f.akpm@linux-foundation.org> <alpine.DEB.1.00.0806130006490.14928@gamma> <1213811751.11203.73.camel@localhost.localdomain>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1213811751.11203.73.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: benh@kernel.crashing.org, ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [Ksummit-2008-discuss] Request for discussion on when to merge
+ drivers
+References: <1213802866.3515.24.camel@localhost.localdomain>	 <1213831894.8011.29.camel@pasglop> <1213832399.3515.109.camel@localhost.localdomain>
+In-Reply-To: <1213832399.3515.109.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Daniel Walker <dwalker@mvista.com> wrote:
-
+James Bottomley wrote:
+> On Thu, 2008-06-19 at 09:31 +1000, Benjamin Herrenschmidt wrote:
+>> linux-next should, imho, exclusively be for things we are pretty much
+>> commited to merge in the next release. ie, a staging place to fixup
+>> things like build breakages, patch conflicts, etc...
+>> 
+>> Or else, it will just be another -mm ....
 > 
-> On Fri, 2008-06-13 at 00:32 +0100, Byron Bradley wrote:
-> > Looks like x86 and ARM both fail to boot if PROFILE_LIKELY, FTRACE and 
-> > DYNAMIC_FTRACE are selected. If any one of those three are disabled it 
-> > boots (or fails in some other way which I'm looking at now). The serial 
-> > console output from both machines when they fail to boot is below, let me 
-> > know if there is any other information I can provide.
-> 
-> I was able to reproduce a hang on x86 with those options. The patch
-> below is a potential fix. I think we don't want to trace
-> do_check_likely(), since the ftrace internals might use likely/unlikely
-> macro's which will just cause recursion back to do_check_likely()..
-> 
-> Signed-off-by: Daniel Walker <dwalker@mvista.com>
-> 
-> ---
->  lib/likely_prof.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6.25/lib/likely_prof.c
-> ===================================================================
-> --- linux-2.6.25.orig/lib/likely_prof.c
-> +++ linux-2.6.25/lib/likely_prof.c
-> @@ -22,7 +22,7 @@
->  
->  static struct likeliness *likeliness_head;
->  
-> -int do_check_likely(struct likeliness *likeliness, unsigned int ret)
-> +int notrace do_check_likely(struct likeliness *likeliness, unsigned int ret)
+> Well, as Greg said for his driver staging tree, I think we can elide
+> this requirement for new drivers.  The good thing about drivers is that
+> there's nothing we're really doing to break anything: before the driver
+> the hardware was just plane unusable with Linux after the driver well,
+> we're hoping it might be ...
 
-the better fix would be to add likely_prof.o to this list of exceptions 
-in lib/Makefile:
+This requires that the staged driver does not contain build bugs on any
+architecture.
 
- ifdef CONFIG_FTRACE
- # Do not profile string.o, since it may be used in early boot or vdso
- CFLAGS_REMOVE_string.o = -pg
- # Also do not profile any debug utilities
- CFLAGS_REMOVE_spinlock_debug.o = -pg
- CFLAGS_REMOVE_list_debug.o = -pg
- CFLAGS_REMOVE_debugobjects.o = -pg
- endif
+Besides, the definition of what we published in -next so far was:
 
-instead of adding notrace to the source.
+    Everything in -next is *merge-ready* now (from a subsystem
+    maintainer's POV).  The only reason that it is not merged yet
+    is that Linus doesn't have a merge window open right now.
 
-	Ingo
+And the goal of -next was to check for potential integration problems
+that cannot be detected in a maintainer's tree.
+
+So IMO the question is not whether to put stuff which is not ready to be
+merged into -next.  It shouldn't, IMO.  The questions rather are:
+  - What are criteria for merge-readiness of drivers?
+    (When do we have to / are we able to address issues like CamelCase
+    names or use of obsolete APIs --- before or after merge?)
+  - How to publish drivers which are not yet merge-ready but should get
+    into the hands of testers?
+
+IMO the answer to the latter question is still not -next, because the
+testing that -next gets is (from what I understood) also with the
+specific goal to detect potential integration problems.  Remember, you
+publish code in -next of which you can say:  This is ready for mainline,
+except that there is little experience yet WRT potential integration issues.
+-- 
+Stefan Richter
+-=====-==--- -==- =--==
+http://arcgraph.de/sr/
