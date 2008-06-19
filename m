@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757045AbYFSQsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758672AbYFSQwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757045AbYFSQsT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 12:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbYFSQsM
+	id S1758672AbYFSQwS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 12:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbYFSQwF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 12:48:12 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33835 "EHLO mx3.mail.elte.hu"
+	Thu, 19 Jun 2008 12:52:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42064 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752184AbYFSQsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 12:48:11 -0400
-Date: Thu, 19 Jun 2008 18:47:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, benh@kernel.crashing.org,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>, x86@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Hugh Dickins <hugh@veritas.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1 of 4] mm: add a ptep_modify_prot transaction
-	abstraction
-Message-ID: <20080619164708.GA32190@elte.hu>
-References: <b020e42384197b824320.1213615800@localhost> <1213831403.8011.24.camel@pasglop> <4859A149.9090004@goop.org> <4859A528.1010107@goop.org> <alpine.LFD.1.10.0806181723400.2907@woody.linux-foundation.org> <4859AA47.2020903@goop.org> <alpine.LFD.1.10.0806181743390.2907@woody.linux-foundation.org> <alpine.LFD.1.10.0806182050470.2907@woody.linux-foundation.org> <20080619115832.GM15228@elte.hu> <alpine.LFD.1.10.0806190928100.2907@woody.linux-foundation.org>
+	id S1752089AbYFSQwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 12:52:04 -0400
+Message-ID: <485A8C2D.1090806@redhat.com>
+Date: Thu, 19 Jun 2008 11:41:17 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0806190928100.2907@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Theodore Tso <tytso@mit.edu>, Holger Kiehl <Holger.Kiehl@dwd.de>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
+       Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Performance of ext4
+References: <18513.345.553912.449710@frecb006361.adech.frec.bull.fr> <Pine.LNX.4.64.0806121154090.27806@diagnostix.dwd.de> <20080612131928.GB18229@mit.edu> <Pine.LNX.4.64.0806121333480.27806@diagnostix.dwd.de> <20080612180605.GD22481@skywalker> <Pine.LNX.4.64.0806121940020.2974@diagnostix.dwd.de> <Pine.LNX.4.64.0806130753100.7097@diagnostix.dwd.de> <20080616175408.GF3279@atrey.karlin.mff.cuni.cz> <20080616181353.GA20686@skywalker> <Pine.LNX.4.64.0806171001200.6307@diagnostix.dwd.de> <20080619155645.GA8582@mit.edu>
+In-Reply-To: <20080619155645.GA8582@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Thu, 19 Jun 2008, Ingo Molnar wrote:
-> > 
-> > Below is the commit, it needed a small amount of massaging to apply the 
-> > void * -> unsigned long * change in the x86/bitops topic.
+Theodore Tso wrote:
+> On Tue, Jun 17, 2008 at 11:42:36AM +0000, Holger Kiehl wrote:
+>> Note how the size of file results.24033.helena.dwd.de changes from
+>> 9230 before the test to 8208 bytes after the test. Also note the
+>> date both have the same timestamp "2008-06-17 04:35". I have made a
+>> copy of results.24033.helena.dwd.de before the test and compared it
+>> with that after the test. The file is just truncated by 1022 bytes
+>> and there is no garbage.
 > 
-> Well, that's your bug right there.
+> So the corruption is always a truncation, correct?
 > 
-> The macros very much depended on the pointers being "void *", due to 
-> the pointer arithmetic (which is a gcc extension that we use 
-> extensively - "void *" arithmetic works as if it was a byte pointer).
+> Did you notice the problem with ext4 w/o the patch queue?  I have a
+> suspicion that the problem may have been introduced by the delayed
+> allocation code, but I don't have hard evidence.  When you rerun your
+> benchmark (which seems to be the closest thing we have to a
+> reproduction case), it would be interesting to know if the problem
+> goes away with -o nodelalloc (again, it would localize where we need
+> to look).
+> 
+> Thanks, regards,
 
-duh, yeah - of course. Will retry with that fixed :)
+It might be worth runninga "simple" fsx under your kernel too; last time
+I tested fsx it was still happy and it exercises fs ops (including
+truncate) at random...
 
-	Ingo
+-Eric
