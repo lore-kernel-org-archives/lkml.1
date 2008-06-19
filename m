@@ -1,162 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757601AbYFSOPN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758322AbYFSOR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757601AbYFSOPN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 10:15:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755580AbYFSOPA
+	id S1758322AbYFSOR3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 10:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755605AbYFSORV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 10:15:00 -0400
-Received: from mss-uk.mssgmbh.com ([217.174.251.109]:58047 "EHLO
-	mss-uk.mssgmbh.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754832AbYFSOO7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 10:14:59 -0400
-To: David Miller <davem@davemloft.net>
-Cc: rweikusat@mssgmbh.com, linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.25.7 v1-v2] af_unix: fix 'poll for write'/connected DGRAM sockets
-In-Reply-To: <20080618.144830.35409576.davem@davemloft.net> (David Miller's message of "Wed, 18 Jun 2008 14:48:30 -0700 (PDT)")
-References: <871w2wca3r.fsf@fever.mssgmbh.com>
-	<20080617.215630.47207590.davem@davemloft.net>
-	<874p7qsz5g.fsf@fever.mssgmbh.com>
-	<20080618.144830.35409576.davem@davemloft.net>
-From: Rainer Weikusat <rweikusat@mssgmbh.com>
-Date: Thu, 19 Jun 2008 16:14:48 +0200
-Message-ID: <87tzfpse93.fsf_-_@fever.mssgmbh.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
+	Thu, 19 Jun 2008 10:17:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57639 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754689AbYFSORU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 10:17:20 -0400
+Message-ID: <485A6A69.8090402@redhat.com>
+Date: Thu, 19 Jun 2008 09:17:13 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Arjan van de Ven <arjan@linux.intel.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: kerneloops.org: 2.6.26-rc possible regression in ext3
+References: <4859F075.2050207@linux.intel.com> <485A668D.3050306@redhat.com> <485A680B.3020004@linux.intel.com>
+In-Reply-To: <485A680B.3020004@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rainer Weikusat <rweikusat@mssgmbh.com>
+Arjan van de Ven wrote:
+> Eric Sandeen wrote:
+>> Arjan van de Ven wrote:
+>>> In the kerneloops.org stats, a new oops is rapidly climbing the charts.
+>>> The oops is a page fault in the ext3 "do_slit" function, and the first
+>>> report of it was with 2.6.26-rc6-git3.
+>>>
+>>> It happens with various applications; the backtraces are at:
+>>>
+>>> http://www.kerneloops.org/search.php?search=do_split
+>> Arjan, I was just looking at kerneloops last night, seeing the count for
+>> this oops climb, and was wishing there were some way to annotate an oops
+>> signature with more info.  If I could have tagged this with the RH
+>> bugzilla nr. it might have saved a lot of time for folks.  Is this
+>> feasible?  Or is finding the oops text in bugzilla the only way?
+>>
+> 
+> there's a way to add a description to oopses (you might have seen some of these
+> descriptions already); however I've not implemented an account system yet so for
+> now it's only me who can add these.
 
-For n:1 'datagram connections' (eg /dev/log), the unix_dgram_sendmsg
-routine implements a form of receiver-imposed flow control by
-comparing the length of the receive queue of the 'peer socket' with
-the max_ack_backlog value stored in the corresponding sock structure,
-either blocking the thread which caused the send-routine to be called
-or returning EAGAIN. This routine is used by both SOCK_DGRAM and
-SOCK_SEQPACKET sockets. The poll-implementation for these socket types
-is datagram_poll from core/datagram.c. A socket is deemed to be
-writeable by this routine when the memory presently consumed by
-datagrams owned by it is less than the configured socket send buffer
-size. This is always wrong for PF_UNIX non-stream sockets connected to
-server sockets dealing with (potentially) multiple clients if the
-abovementioned receive queue is currently considered to be full.
-'poll' will then return, indicating that the socket is writeable, but
-a subsequent write result in EAGAIN, effectively causing an (usual)
-application to 'poll for writeability by repeated send request with
-O_NONBLOCK set' until it has consumed its time quantum.
+Ok, that was my guess.  I'll shoot you an email next time.  :)
 
-The change below uses a suitably modified variant of the datagram_poll
-routines for both type of PF_UNIX sockets, which tests if the
-recv-queue of the peer a socket is connected to is presently
-considered to be 'full' as part of the 'is this socket
-writeable'-checking code. The socket being polled is additionally
-put onto the peer_wait wait queue associated with its peer, because the
-unix_dgram_recvmsg routine does a wake up on this queue after a
-datagram was received and the 'other wakeup call' is done implicitly
-as part of skb destruction, meaning, a process blocked in poll
-because of a full peer receive queue could otherwise sleep forever
-if no datagram owned by its socket was already sitting on this queue.
-Among this change is a small (inline) helper routine named
-'unix_recvq_full', which consolidates the actual testing code (in three
-different places) into a single location.
-
-Signed-off-by: <rweikusat@mssgmbh.com>
----
-diff -pru linux-2.6.25.7-old/net/unix/af_unix.c linux-2.6.25.7-new/net/unix/af_unix.c
---- linux-2.6.25.7-old/net/unix/af_unix.c	2008-06-19 11:31:36.000000000 +0200
-+++ linux-2.6.25.7-new/net/unix/af_unix.c	2008-06-19 11:32:05.000000000 +0200
-@@ -487,7 +487,7 @@ static int unix_socketpair(struct socket
- static int unix_accept(struct socket *, struct socket *, int);
- static int unix_getname(struct socket *, struct sockaddr *, int *, int);
- static unsigned int unix_poll(struct file *, struct socket *, poll_table *);
--static unsigned int unix_datagram_poll(struct file *, struct socket *,
-+static unsigned int unix_dgram_poll(struct file *, struct socket *,
- 				       poll_table *);
- static int unix_ioctl(struct socket *, unsigned int, unsigned long);
- static int unix_shutdown(struct socket *, int);
-@@ -534,7 +534,7 @@ static const struct proto_ops unix_dgram
- 	.socketpair =	unix_socketpair,
- 	.accept =	sock_no_accept,
- 	.getname =	unix_getname,
--	.poll =		unix_datagram_poll,
-+	.poll =		unix_dgram_poll,
- 	.ioctl =	unix_ioctl,
- 	.listen =	sock_no_listen,
- 	.shutdown =	unix_shutdown,
-@@ -555,7 +555,7 @@ static const struct proto_ops unix_seqpa
- 	.socketpair =	unix_socketpair,
- 	.accept =	unix_accept,
- 	.getname =	unix_getname,
--	.poll =		unix_datagram_poll,
-+	.poll =		unix_dgram_poll,
- 	.ioctl =	unix_ioctl,
- 	.listen =	unix_listen,
- 	.shutdown =	unix_shutdown,
-@@ -1990,29 +1990,13 @@ static unsigned int unix_poll(struct fil
- 	return mask;
- }
- 
--static unsigned int unix_datagram_poll(struct file *file, struct socket *sock,
--				       poll_table *wait)
-+static unsigned int unix_dgram_poll(struct file *file, struct socket *sock,
-+				    poll_table *wait)
- {
--	struct sock *sk = sock->sk, *peer;
--	unsigned int mask;
-+	struct sock *sk = sock->sk, *other;
-+	unsigned int mask, writable;
- 
- 	poll_wait(file, sk->sk_sleep, wait);
--
--	peer = unix_peer_get(sk);
--	if (peer) {
--		if (peer != sk)
--			/*
--			 * Writability of a connected socket additionally
--			 * depends on the state of the receive queue of the
--			 * peer.
--			 */
--			poll_wait(file, &unix_sk(peer)->peer_wait, wait);
--		else {
--			sock_put(peer);
--			peer = NULL;
--		}
--	}
--
- 	mask = 0;
- 
- 	/* exceptional events? */
-@@ -2038,14 +2022,26 @@ static unsigned int unix_datagram_poll(s
- 	}
- 
- 	/* writable? */
--	if (unix_writable(sk) && !(peer && unix_recvq_full(peer)))
-+	writable = unix_writable(sk);
-+	if (writable) {
-+		other = unix_peer_get(sk);
-+		if (other) {
-+			if (unix_peer(other) != sk) {
-+				poll_wait(file, &unix_sk(other)->peer_wait,
-+					  wait);
-+				if (unix_recvq_full(other))
-+					writable = 0;
-+			}
-+
-+			sock_put(other);
-+		}
-+	}
-+
-+	if (writable)
- 		mask |= POLLOUT | POLLWRNORM | POLLWRBAND;
- 	else
- 		set_bit(SOCK_ASYNC_NOSPACE, &sk->sk_socket->flags);
- 
--	if (peer)
--	    sock_put(peer);
--
- 	return mask;
- }
- 
+Thanks,
+-Eric
