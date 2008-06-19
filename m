@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758127AbYFSPOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758734AbYFSPPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758127AbYFSPOR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 11:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbYFSPOF
+	id S1758734AbYFSPPW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 11:15:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753962AbYFSPPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 11:14:05 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54522 "EHLO mx2.mail.elte.hu"
+	Thu, 19 Jun 2008 11:15:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37194 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752299AbYFSPOE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 11:14:04 -0400
-Date: Thu, 19 Jun 2008 17:13:33 +0200
+	id S1752977AbYFSPPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 11:15:07 -0400
+Date: Thu, 19 Jun 2008 17:14:50 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
-Subject: [git pull] x86 fixes
-Message-ID: <20080619151333.GA8952@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [git pull] scheduler fixes
+Message-ID: <20080619151450.GA10024@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,181 +34,289 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-please pull the latest x86 fixes git tree from:
+Please pull the latest scheduler fixes git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
 
 Thanks,
 
 	Ingo
 
 ------------------>
-Bernhard Walle (1):
-      x86: use BOOTMEM_EXCLUSIVE on 32-bit
+Bharath Ravi (1):
+      sched, delay accounting: fix incorrect delay time when constantly waiting on runqueue
 
-Jeremy Fitzhardinge (1):
-      x86: set PAE PHYSICAL_MASK_SHIFT to 44 bits.
+Dario Faggioli (1):
+      sched: NULL pointer dereference while setting sched_rt_period_us
 
-Jordan Crouse (1):
-      x86, geode: add a VSA2 ID for General Software
+Max Krasnyansky (1):
+      sched: CPU hotplug events must not destroy scheduler domains created by the cpusets
 
-Mikael Pettersson (1):
-      x86, 32-bit: fix boot failure on TSC-less processors
+Peter Zijlstra (3):
+      sched: rt-group: fix hierarchy
+      sched: rt-group: heirarchy aware throttle
+      sched: rt-group: fix RR buglet
 
-Suresh Siddha (1):
-      x86: fix NULL pointer deref in __switch_to
+Rabin Vincent (1):
+      sched: fix defined-but-unused warning
 
- arch/x86/kernel/geode_32.c   |    5 ++++-
- arch/x86/kernel/process_32.c |    1 +
- arch/x86/kernel/process_64.c |    1 +
- arch/x86/kernel/setup_32.c   |   10 ++++++++--
- arch/x86/kernel/tsc_32.c     |   18 ++++++++----------
- include/asm-x86/geode.h      |    4 ++--
- include/asm-x86/page_32.h    |    3 ++-
- 7 files changed, 26 insertions(+), 16 deletions(-)
+ kernel/cpuset.c      |    6 ++++
+ kernel/sched.c       |   27 +++++++++++++++++++-
+ kernel/sched_rt.c    |   63 ++++++++++++++++++++++++++++---------------------
+ kernel/sched_stats.h |    6 ++++
+ 4 files changed, 73 insertions(+), 29 deletions(-)
 
-diff --git a/arch/x86/kernel/geode_32.c b/arch/x86/kernel/geode_32.c
-index e8edd63..9b08e85 100644
---- a/arch/x86/kernel/geode_32.c
-+++ b/arch/x86/kernel/geode_32.c
-@@ -166,6 +166,8 @@ int geode_has_vsa2(void)
- 	static int has_vsa2 = -1;
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index 039baa4..bceb895 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -1890,6 +1890,12 @@ static void common_cpu_mem_hotplug_unplug(void)
+ 	top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
+ 	scan_for_empty_cpusets(&top_cpuset);
  
- 	if (has_vsa2 == -1) {
-+		u16 val;
++	/*
++	 * Scheduler destroys domains on hotplug events.
++	 * Rebuild them based on the current settings.
++	 */
++	rebuild_sched_domains();
 +
- 		/*
- 		 * The VSA has virtual registers that we can query for a
- 		 * signature.
-@@ -173,7 +175,8 @@ int geode_has_vsa2(void)
- 		outw(VSA_VR_UNLOCK, VSA_VRC_INDEX);
- 		outw(VSA_VR_SIGNATURE, VSA_VRC_INDEX);
- 
--		has_vsa2 = (inw(VSA_VRC_DATA) == VSA_SIG);
-+		val = inw(VSA_VRC_DATA);
-+		has_vsa2 = (val == AMD_VSA_SIG || val == GSW_VSA_SIG);
- 	}
- 
- 	return has_vsa2;
-diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index 6d54833..e2db9ac 100644
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -333,6 +333,7 @@ void flush_thread(void)
- 	/*
- 	 * Forget coprocessor state..
- 	 */
-+	tsk->fpu_counter = 0;
- 	clear_fpu(tsk);
- 	clear_used_math();
+ 	cgroup_unlock();
  }
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index ac54ff5..c6eb5c9 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -294,6 +294,7 @@ void flush_thread(void)
- 	/*
- 	 * Forget coprocessor state..
- 	 */
-+	tsk->fpu_counter = 0;
- 	clear_fpu(tsk);
- 	clear_used_math();
+ 
+diff --git a/kernel/sched.c b/kernel/sched.c
+index eaf6751..4a3cb06 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1127,6 +1127,7 @@ static enum hrtimer_restart hrtick(struct hrtimer *timer)
+ 	return HRTIMER_NORESTART;
  }
-diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
-index 2c5f8b2..5a2f8e0 100644
---- a/arch/x86/kernel/setup_32.c
-+++ b/arch/x86/kernel/setup_32.c
-@@ -532,10 +532,16 @@ static void __init reserve_crashkernel(void)
- 					(unsigned long)(crash_size >> 20),
- 					(unsigned long)(crash_base >> 20),
- 					(unsigned long)(total_mem >> 20));
-+
-+			if (reserve_bootmem(crash_base, crash_size,
-+					BOOTMEM_EXCLUSIVE) < 0) {
-+				printk(KERN_INFO "crashkernel reservation "
-+					"failed - memory is in use\n");
-+				return;
-+			}
-+
- 			crashk_res.start = crash_base;
- 			crashk_res.end   = crash_base + crash_size - 1;
--			reserve_bootmem(crash_base, crash_size,
--					BOOTMEM_DEFAULT);
- 		} else
- 			printk(KERN_INFO "crashkernel reservation failed - "
- 					"you have to specify a base address\n");
-diff --git a/arch/x86/kernel/tsc_32.c b/arch/x86/kernel/tsc_32.c
-index 068759d..65b7063 100644
---- a/arch/x86/kernel/tsc_32.c
-+++ b/arch/x86/kernel/tsc_32.c
-@@ -14,7 +14,10 @@
  
- #include "mach_timer.h"
++#ifdef CONFIG_SMP
+ static void hotplug_hrtick_disable(int cpu)
+ {
+ 	struct rq *rq = cpu_rq(cpu);
+@@ -1182,6 +1183,7 @@ static void init_hrtick(void)
+ {
+ 	hotcpu_notifier(hotplug_hrtick, 0);
+ }
++#endif /* CONFIG_SMP */
  
--static int tsc_disabled;
-+/* native_sched_clock() is called before tsc_init(), so
-+   we must start with the TSC soft disabled to prevent
-+   erroneous rdtsc usage on !cpu_has_tsc processors */
-+static int tsc_disabled = -1;
+ static void init_rq_hrtick(struct rq *rq)
+ {
+@@ -7236,6 +7238,18 @@ void __attribute__((weak)) arch_update_cpu_topology(void)
+ }
  
  /*
-  * On some systems the TSC frequency does not
-@@ -402,25 +405,20 @@ void __init tsc_init(void)
- {
- 	int cpu;
++ * Free current domain masks.
++ * Called after all cpus are attached to NULL domain.
++ */
++static void free_sched_domains(void)
++{
++	ndoms_cur = 0;
++	if (doms_cur != &fallback_doms)
++		kfree(doms_cur);
++	doms_cur = &fallback_doms;
++}
++
++/*
+  * Set up scheduler domains and groups. Callers must hold the hotplug lock.
+  * For now this just excludes isolated cpus, but could be used to
+  * exclude other special cases in the future.
+@@ -7382,6 +7396,7 @@ int arch_reinit_sched_domains(void)
+ 	get_online_cpus();
+ 	mutex_lock(&sched_domains_mutex);
+ 	detach_destroy_domains(&cpu_online_map);
++	free_sched_domains();
+ 	err = arch_init_sched_domains(&cpu_online_map);
+ 	mutex_unlock(&sched_domains_mutex);
+ 	put_online_cpus();
+@@ -7467,6 +7482,7 @@ static int update_sched_domains(struct notifier_block *nfb,
+ 	case CPU_DOWN_PREPARE:
+ 	case CPU_DOWN_PREPARE_FROZEN:
+ 		detach_destroy_domains(&cpu_online_map);
++		free_sched_domains();
+ 		return NOTIFY_OK;
  
--	if (!cpu_has_tsc || tsc_disabled) {
--		/* Disable the TSC in case of !cpu_has_tsc */
--		tsc_disabled = 1;
-+	if (!cpu_has_tsc || tsc_disabled > 0)
- 		return;
--	}
- 
- 	cpu_khz = calculate_cpu_khz();
- 	tsc_khz = cpu_khz;
- 
- 	if (!cpu_khz) {
- 		mark_tsc_unstable("could not calculate TSC khz");
--		/*
--		 * We need to disable the TSC completely in this case
--		 * to prevent sched_clock() from using it.
--		 */
--		tsc_disabled = 1;
- 		return;
+ 	case CPU_UP_CANCELED:
+@@ -7485,8 +7501,16 @@ static int update_sched_domains(struct notifier_block *nfb,
+ 		return NOTIFY_DONE;
  	}
  
-+	/* now allow native_sched_clock() to use rdtsc */
-+	tsc_disabled = 0;
++#ifndef CONFIG_CPUSETS
++	/*
++	 * Create default domain partitioning if cpusets are disabled.
++	 * Otherwise we let cpusets rebuild the domains based on the
++	 * current setup.
++	 */
 +
- 	printk("Detected %lu.%03lu MHz processor.\n",
- 				(unsigned long)cpu_khz / 1000,
- 				(unsigned long)cpu_khz % 1000);
-diff --git a/include/asm-x86/geode.h b/include/asm-x86/geode.h
-index 6e64588..bb06027 100644
---- a/include/asm-x86/geode.h
-+++ b/include/asm-x86/geode.h
-@@ -112,8 +112,8 @@ extern int geode_get_dev_base(unsigned int dev);
- #define VSA_VR_UNLOCK		0xFC53	/* unlock virtual register */
- #define VSA_VR_SIGNATURE	0x0003
- #define VSA_VR_MEM_SIZE		0x0200
--#define VSA_SIG			0x4132	/* signature is ascii 'VSA2' */
+ 	/* The hotplug lock is already held by cpu_up/cpu_down */
+ 	arch_init_sched_domains(&cpu_online_map);
++#endif
+ 
+ 	return NOTIFY_OK;
+ }
+@@ -7626,7 +7650,6 @@ static void init_tg_rt_entry(struct task_group *tg, struct rt_rq *rt_rq,
+ 	else
+ 		rt_se->rt_rq = parent->my_q;
+ 
+-	rt_se->rt_rq = &rq->rt;
+ 	rt_se->my_q = rt_rq;
+ 	rt_se->parent = parent;
+ 	INIT_LIST_HEAD(&rt_se->run_list);
+@@ -8348,7 +8371,7 @@ static unsigned long to_ratio(u64 period, u64 runtime)
+ #ifdef CONFIG_CGROUP_SCHED
+ static int __rt_schedulable(struct task_group *tg, u64 period, u64 runtime)
+ {
+-	struct task_group *tgi, *parent = tg->parent;
++	struct task_group *tgi, *parent = tg ? tg->parent : NULL;
+ 	unsigned long total = 0;
+ 
+ 	if (!parent) {
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index 3432d57..1dad5bb 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -449,13 +449,19 @@ void dec_rt_tasks(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
+ #endif
+ }
+ 
+-static void enqueue_rt_entity(struct sched_rt_entity *rt_se)
++static void __enqueue_rt_entity(struct sched_rt_entity *rt_se)
+ {
+ 	struct rt_rq *rt_rq = rt_rq_of_se(rt_se);
+ 	struct rt_prio_array *array = &rt_rq->active;
+ 	struct rt_rq *group_rq = group_rt_rq(rt_se);
+ 
+-	if (group_rq && rt_rq_throttled(group_rq))
++	/*
++	 * Don't enqueue the group if its throttled, or when empty.
++	 * The latter is a consequence of the former when a child group
++	 * get throttled and the current group doesn't have any other
++	 * active members.
++	 */
++	if (group_rq && (rt_rq_throttled(group_rq) || !group_rq->rt_nr_running))
+ 		return;
+ 
+ 	list_add_tail(&rt_se->run_list, array->queue + rt_se_prio(rt_se));
+@@ -464,7 +470,7 @@ static void enqueue_rt_entity(struct sched_rt_entity *rt_se)
+ 	inc_rt_tasks(rt_se, rt_rq);
+ }
+ 
+-static void dequeue_rt_entity(struct sched_rt_entity *rt_se)
++static void __dequeue_rt_entity(struct sched_rt_entity *rt_se)
+ {
+ 	struct rt_rq *rt_rq = rt_rq_of_se(rt_se);
+ 	struct rt_prio_array *array = &rt_rq->active;
+@@ -480,11 +486,10 @@ static void dequeue_rt_entity(struct sched_rt_entity *rt_se)
+  * Because the prio of an upper entry depends on the lower
+  * entries, we must remove entries top - down.
+  */
+-static void dequeue_rt_stack(struct task_struct *p)
++static void dequeue_rt_stack(struct sched_rt_entity *rt_se)
+ {
+-	struct sched_rt_entity *rt_se, *back = NULL;
++	struct sched_rt_entity *back = NULL;
+ 
+-	rt_se = &p->rt;
+ 	for_each_sched_rt_entity(rt_se) {
+ 		rt_se->back = back;
+ 		back = rt_se;
+@@ -492,7 +497,26 @@ static void dequeue_rt_stack(struct task_struct *p)
+ 
+ 	for (rt_se = back; rt_se; rt_se = rt_se->back) {
+ 		if (on_rt_rq(rt_se))
+-			dequeue_rt_entity(rt_se);
++			__dequeue_rt_entity(rt_se);
++	}
++}
++
++static void enqueue_rt_entity(struct sched_rt_entity *rt_se)
++{
++	dequeue_rt_stack(rt_se);
++	for_each_sched_rt_entity(rt_se)
++		__enqueue_rt_entity(rt_se);
++}
++
++static void dequeue_rt_entity(struct sched_rt_entity *rt_se)
++{
++	dequeue_rt_stack(rt_se);
++
++	for_each_sched_rt_entity(rt_se) {
++		struct rt_rq *rt_rq = group_rt_rq(rt_se);
++
++		if (rt_rq && rt_rq->rt_nr_running)
++			__enqueue_rt_entity(rt_se);
+ 	}
+ }
+ 
+@@ -506,32 +530,15 @@ static void enqueue_task_rt(struct rq *rq, struct task_struct *p, int wakeup)
+ 	if (wakeup)
+ 		rt_se->timeout = 0;
+ 
+-	dequeue_rt_stack(p);
 -
-+#define AMD_VSA_SIG		0x4132	/* signature is ascii 'VSA2' */
-+#define GSW_VSA_SIG		0x534d  /* General Software signature */
- /* GPIO */
+-	/*
+-	 * enqueue everybody, bottom - up.
+-	 */
+-	for_each_sched_rt_entity(rt_se)
+-		enqueue_rt_entity(rt_se);
++	enqueue_rt_entity(rt_se);
+ }
  
- #define GPIO_OUTPUT_VAL		0x00
-diff --git a/include/asm-x86/page_32.h b/include/asm-x86/page_32.h
-index 424e82f..ccf0ba3 100644
---- a/include/asm-x86/page_32.h
-+++ b/include/asm-x86/page_32.h
-@@ -14,7 +14,8 @@
- #define __PAGE_OFFSET		_AC(CONFIG_PAGE_OFFSET, UL)
+ static void dequeue_task_rt(struct rq *rq, struct task_struct *p, int sleep)
+ {
+ 	struct sched_rt_entity *rt_se = &p->rt;
+-	struct rt_rq *rt_rq;
  
- #ifdef CONFIG_X86_PAE
--#define __PHYSICAL_MASK_SHIFT	36
-+/* 44=32+12, the limit we can fit into an unsigned long pfn */
-+#define __PHYSICAL_MASK_SHIFT	44
- #define __VIRTUAL_MASK_SHIFT	32
- #define PAGETABLE_LEVELS	3
+ 	update_curr_rt(rq);
+-
+-	dequeue_rt_stack(p);
+-
+-	/*
+-	 * re-enqueue all non-empty rt_rq entities.
+-	 */
+-	for_each_sched_rt_entity(rt_se) {
+-		rt_rq = group_rt_rq(rt_se);
+-		if (rt_rq && rt_rq->rt_nr_running)
+-			enqueue_rt_entity(rt_se);
+-	}
++	dequeue_rt_entity(rt_se);
+ }
  
+ /*
+@@ -542,8 +549,10 @@ static
+ void requeue_rt_entity(struct rt_rq *rt_rq, struct sched_rt_entity *rt_se)
+ {
+ 	struct rt_prio_array *array = &rt_rq->active;
++	struct list_head *queue = array->queue + rt_se_prio(rt_se);
+ 
+-	list_move_tail(&rt_se->run_list, array->queue + rt_se_prio(rt_se));
++	if (on_rt_rq(rt_se))
++		list_move_tail(&rt_se->run_list, queue);
+ }
+ 
+ static void requeue_task_rt(struct rq *rq, struct task_struct *p)
+diff --git a/kernel/sched_stats.h b/kernel/sched_stats.h
+index a38878e..80179ef 100644
+--- a/kernel/sched_stats.h
++++ b/kernel/sched_stats.h
+@@ -198,6 +198,9 @@ static inline void sched_info_queued(struct task_struct *t)
+ /*
+  * Called when a process ceases being the active-running process, either
+  * voluntarily or involuntarily.  Now we can calculate how long we ran.
++ * Also, if the process is still in the TASK_RUNNING state, call
++ * sched_info_queued() to mark that it has now again started waiting on
++ * the runqueue.
+  */
+ static inline void sched_info_depart(struct task_struct *t)
+ {
+@@ -206,6 +209,9 @@ static inline void sched_info_depart(struct task_struct *t)
+ 
+ 	t->sched_info.cpu_time += delta;
+ 	rq_sched_info_depart(task_rq(t), delta);
++
++	if (t->state == TASK_RUNNING)
++		sched_info_queued(t);
+ }
+ 
+ /*
