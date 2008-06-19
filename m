@@ -1,65 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbYFSBaF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbYFSBzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756505AbYFSBaF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 21:30:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbYFSB3v
+	id S1753534AbYFSBzc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 21:55:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750729AbYFSBzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 21:29:51 -0400
-Received: from mail.windriver.com ([147.11.1.11]:33965 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751064AbYFSB3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 21:29:51 -0400
-Message-ID: <4859B650.9030208@windriver.com>
-Date: Wed, 18 Jun 2008 20:28:48 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+	Wed, 18 Jun 2008 21:55:23 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:54035 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750712AbYFSBzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 21:55:22 -0400
+Message-ID: <4859BBA8.6070808@cn.fujitsu.com>
+Date: Thu, 19 Jun 2008 09:51:36 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Ben Dooks <ben-linux@fluff.org>
-CC: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: fix vector initialisation when !CONFIG_KGDB
-References: <20080618165021.GJ10351@trinity.fluff.org>
-In-Reply-To: <20080618165021.GJ10351@trinity.fluff.org>
+To: Paul Menage <menage@google.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "containers@lists.osdl.org" <containers@lists.osdl.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Paul Jackson <pj@sgi.com>
+Subject: [PATCH] cgroup: support checking of subsystem dependencies (v2)
+References: <4858C0ED.2080905@cn.fujitsu.com> <6599ad830806181413y5d0ef1bfyfc54c17ee904d744@mail.gmail.com>
+In-Reply-To: <6599ad830806181413y5d0ef1bfyfc54c17ee904d744@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Jun 2008 01:28:49.0672 (UTC) FILETIME=[D36BA880:01C8D1AB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This allows one subsystem to require that it only be mounted when some
+other subsystems are also present in the proposed hierarchy.
 
+For example if subsystem foo depends on bar, the following will fail:
+ # mount -t cgroup -ofoo xxx /dev/cgroup
 
-Ben Dooks wrote:
-> It seems in the changes for adding CONFIG_KGDB that the ARM
-> trap initialisation has been turned off if the configuration
-> is not enabled. If CONFIG_KGDB is not set, the system locks
-> up as soon as the kernel turns the IRQs on for the first
-> time in init/main.c.
->
-> The fix is to remove the dependency on calling early_trap_init()
-> on CONFIG_KGDB, so that the vectors are initialised before
-> the init sequence enables the IRQs.
->
-> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
->
-> --- linux-2.6.26-rc6-q1.orig/arch/arm/kernel/setup.c	2008-06-18 15:17:31.000000000 +0100
-> +++ linux-2.6.26-rc6-q1/arch/arm/kernel/setup.c	2008-06-18 15:17:45.000000000 +0100
-> @@ -855,9 +855,7 @@ void __init setup_arch(char **cmdline_p)
->  #endif
->  #endif
->  
-> -#if defined(CONFIG_KGDB)
->  	early_trap_init();
-> -#endif
->  }
->
->   
+You should mount with both subsystems:
+ # mount -t cgroup -ofoo,bar xxx /dev/cgroup
 
-That is absolutely correct.  Thanks for catching this.
+foo may implement the subsys_depend() callback this way:
 
-I folded this into the general ARM kgdb patch as there is no sense in
-generating a patch bisecting failure.  The change is in the kgdb-next
-branch which feeds into the linux-next, which means it should show up in
-the next day or so.
+static int foo_cgroup_subsys_depend(struct cgroup_subsys *ss,
+				    unsigned long subsys_bits)
+{
+	if (!test_bit(bar_cgroup_subsys_id, &subsys_bits))
+		return -EINVAL;
+	return 0;
+}
 
-Thanks,
-Jason.
+Changelog:
+- call check_subsys_depend() in parse_cgroupfs_options(), but not in mount
+  and remount code.
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ Documentation/cgroups.txt |    6 ++++++
+ include/linux/cgroup.h    |    2 ++
+ kernel/cgroup.c           |   21 ++++++++++++++++++++-
+ 3 files changed, 28 insertions(+), 1 deletions(-)
+
+diff --git a/Documentation/cgroups.txt b/Documentation/cgroups.txt
+index 824fc02..8252f5b 100644
+--- a/Documentation/cgroups.txt
++++ b/Documentation/cgroups.txt
+@@ -530,6 +530,12 @@ and root cgroup. Currently this will only involve movement between
+ the default hierarchy (which never has sub-cgroups) and a hierarchy
+ that is being created/destroyed (and hence has no sub-cgroups).
+ 
++int subsys_depend(struct cgroup_subsys *ss, unsigned long subsys_bits)
++
++Called when a cgroup subsystem wants to check if some other subsystems
++are also present in the proposed hierarchy. If this method returns error,
++the mount of the cgroup filesystem will fail.
++
+ 4. Questions
+ ============
+ 
+diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+index e155aa7..fc99ba4 100644
+--- a/include/linux/cgroup.h
++++ b/include/linux/cgroup.h
+@@ -305,6 +305,8 @@ struct cgroup_subsys {
+ 			struct cgroup *cgrp);
+ 	void (*post_clone)(struct cgroup_subsys *ss, struct cgroup *cgrp);
+ 	void (*bind)(struct cgroup_subsys *ss, struct cgroup *root);
++	int (*subsys_depend)(struct cgroup_subsys *ss,
++			      unsigned long subsys_bits);
+ 	/*
+ 	 * This routine is called with the task_lock of mm->owner held
+ 	 */
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index 15ac0e1..18e8132 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -774,6 +774,25 @@ static int cgroup_show_options(struct seq_file *seq, struct vfsmount *vfs)
+ 	return 0;
+ }
+ 
++static int check_subsys_dependency(unsigned long subsys_bits)
++{
++	int i;
++	int ret;
++	struct cgroup_subsys *ss;
++
++	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
++		ss = subsys[i];
++
++		if (test_bit(i, &subsys_bits) && ss->subsys_depend) {
++			ret = ss->subsys_depend(ss, subsys_bits);
++			if (ret)
++				return ret;
++		}
++	}
++
++	return 0;
++}
++
+ struct cgroup_sb_opts {
+ 	unsigned long subsys_bits;
+ 	unsigned long flags;
+@@ -834,7 +853,7 @@ static int parse_cgroupfs_options(char *data,
+ 	if (!opts->subsys_bits)
+ 		return -EINVAL;
+ 
+-	return 0;
++	return check_subsys_dependency(opts->subsys_bits);
+ }
+ 
+ static int cgroup_remount(struct super_block *sb, int *flags, char *data)
+-- 
+1.5.4.rc3
+
