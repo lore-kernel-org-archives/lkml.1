@@ -1,95 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760126AbYFSR2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760248AbYFSR35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760126AbYFSR2V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 13:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbYFSR2N
+	id S1760248AbYFSR35 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 13:29:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751522AbYFSR3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 13:28:13 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:15071 "EHLO
-	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754361AbYFSR2M (ORCPT
+	Thu, 19 Jun 2008 13:29:50 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:38851 "EHLO
+	ns1.utah-nac.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750834AbYFSR3t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 13:28:12 -0400
-Date: Thu, 19 Jun 2008 11:25:12 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Strange problem with e1000 driver - ping packet loss
-In-reply-to: <fa.QBOn2aWyqGnBJJticG4h09lpxD0@ifi.uio.no>
-To: vatsa@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net,
-       varunc@linux.vnet.ibm.com, jbarnes@virtuousgeek.org, greg@kroah.com
-Message-id: <485A9678.5000707@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.QBOn2aWyqGnBJJticG4h09lpxD0@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Thu, 19 Jun 2008 13:29:49 -0400
+X-Greylist: delayed 603 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Jun 2008 13:29:49 EDT
+Message-ID: <1548.69.2.248.210.1213895504.squirrel@webmail.wolfmountaingroup.com>
+Date: Thu, 19 Jun 2008 11:11:44 -0600 (MDT)
+Subject: Question about sys_ind (Partition ID fields)
+From: jmerkey@wolfmountaingroup.com
+To: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Srivatsa Vaddagiri wrote:
-> Hi,
-> 	I happened to look at a system which was exhibiting poor ping
-> performance with e1000 driver (in 2.6.25) and had some questions regarding that.
-> 
-> Ping test was done between the system and a laptop, which were connected
-> using a straight ethernet cable. Ping reported round trip times running
-> into seconds (!) and also packet loss.
-> 
-> Upon some investigation, I found that the interrupt count field in
-> /proc/interrupts (associated with eth1) is not incrementing as fast as
-> it should. Moreover eth1 interrupt line is shared with the hard disk
-> interrupt (ata_piix) as below:
-> 
-> # cat /proc/interrupts
-> 
-> .
-> 
->  10:       2296    XT-PIC-XT        ata_piix, eth0, eth1
-> 
-> .
-> 
-> IRQ10 is thus being shared by both the hard disk and eth0/eth1.
-> 
-> Here's the strange observation I made:
-> 
-> When I initiate some disk activity (ex: dd if=/dev/zero of=/tmp/file), ping 
-> performance suddently shot up (round trip time in double digits ms, 0% packet 
-> loss)! I presume this is because that e1000 intr handler is called
-> whenever there was a interrupt from hard disk on IRQ10, which polled
-> NIC and processed packets immediately.
-> 
-> As soon as I kill the background disk-write intensive job, ping
-> performance again dropped.
-> 
-> This meant that e1000 NIC is having trouble interrupting the OS.
-> 
-> Before I could jump up and say this is a hardware issue, I was told
-> that Windows works just fine on the server (and as well as 2.4 kernel,
-> which I couldnt verify) :(
-> 
-> 
-> Some more observations:
-> 
-> 1. I tried setting e1000 parameters (RxIntDelay=0, RxAbsIntDelay=0,
->    TxIntDelay=0, TxAbsIntDelay=0, InterruptThrottleRate=0). None of
->    them helped.
-> 
-> 2. When ping performance was poor, readprofile showed that system
->    is mostly idle. This confirms that OS is not getting very
->    frequenty interrupts from eth1 and hence idling.
-> 
-> 3. When ping performance was poor, ethtool -S eth1 showed that
->    rx_bytes was incrementing at a good pace, showing that the 
->    NIC was receiving ping responses back, but not handing them over
->    to OS for further processing
-> 
-> 4. e1000 chipset is 82546GB
-> 
-> 5. e1000e driver didnt work at all (it doesnt recognize the cards).
-> 
-> 
-> Any advice on how to fix this problem?
 
-Can you post your dmesg output from bootup with no special options 
-(noacpi, etc.) enabled?
+Is there a reason why the sys_ind field (The partition ID) s not cached in
+the hd_struct persistently?  I noticed that after the initial
+check_partition calls through check_part[]() read all this data and only
+remember the starting sector and size of a given partition.  Perhaps I am
+missing something, and its stored somewhere else, but I have not located
+it yet.
+
+This seems somwhat wasteful since it requires the partition tables and/or
+partitions to be re-read all the time instead of just remembering what
+sys_ind was previously set.   The argument that it is this way for
+supporting dynamic rescanning doesn't seem to match up to the way its
+implemented since you have to rescan anyway in most cases.  It makes it
+somewhat ackward whem you are instrumenting multi-partition storage
+modules.
+
+Jeff
+
