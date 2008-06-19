@@ -1,135 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753632AbYFSUsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754605AbYFSUu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753632AbYFSUsn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 16:48:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbYFSUsg
+	id S1754605AbYFSUu2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 16:50:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbYFSUuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 16:48:36 -0400
-Received: from old-tantale.fifi.org ([64.81.30.200]:33412 "EHLO
-	old-tantale.fifi.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751105AbYFSUsf (ORCPT
+	Thu, 19 Jun 2008 16:50:13 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:37633 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751142AbYFSUuL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 16:48:35 -0400
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: USB HID: Missing keys on Gyration Media Center Universal Remote Control
-References: <871w2xnehf.fsf@old-tantale.fifi.org>
-	<Pine.LNX.4.64.0806181139490.10085@jikos.suse.cz>
-Mail-Copies-To: nobody
-From: Philippe Troin <phil@fifi.org>
-Date: 19 Jun 2008 13:48:29 -0700
-In-Reply-To: <Pine.LNX.4.64.0806181139490.10085@jikos.suse.cz>
-Message-ID: <87bq1xgnhe.fsf@old-tantale.fifi.org>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.2
+	Thu, 19 Jun 2008 16:50:11 -0400
+Date: Thu, 19 Jun 2008 14:49:55 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       dsd@gentoo.org, linux-usb@vger.kernel.org, vegardno@ifi.uio.no,
+       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
+       Greg KH <greg@kroah.com>
+Subject: Re: [RFC/PATCH] usb-storage: wait for device scanning before mounting root
+Message-ID: <20080619204954.GQ4392@parisc-linux.org>
+References: <Pine.LNX.4.44L0.0804241704220.14840-100000@iolanthe.rowland.org> <Pine.LNX.4.64.0804250022160.1209@sbz-30.cs.Helsinki.FI> <48118DDD.8010507@s5r6.in-berlin.de> <Pine.LNX.4.64.0804251110400.758@sbz-30.cs.Helsinki.FI> <20080425091122.GA14990@parisc-linux.org> <20080619182310.GA30833@parisc-linux.org> <485AA7EA.6080105@s5r6.in-berlin.de> <20080619185419.GN4392@parisc-linux.org> <20080619195240.GX19934@one-eyed-alien.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080619195240.GX19934@one-eyed-alien.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina <jkosina@suse.cz> writes:
+On Thu, Jun 19, 2008 at 12:52:40PM -0700, Matthew Dharm wrote:
+> First, there are usb-storage devices which are USB<->SCSI bridges and
+> therefore support multiple target devices.
 
-> Please compile your kernel with 'CONFIG_HID_DEBUG', modprobe the 'hid' 
-> module with 'debug=2' parameter, and send me the output that appears is 
-> dmesg output when you press the non-working keys.
+This is true.
 
-debug=2 didn't work.  dmesg said:
+> Second, you would still need multiple hosts when you have more than 15
+> target USB devices, anyway.
 
-  hid: `2' invalid for parameter debug.
+This isn't true.  Look at topologies like fibre channel which can have
+thousands of targets on a single host.
 
-With debug=1, I get the following output.
+I would suggest that you want one 'channel' per usb endpoint.
 
-But first, info:
-
-kernel 2.6.25.6 - no extra patches
-
-/proc/bus/usb/devices
-
-T:  Bus=05 Lev=01 Prnt=01 Port=01 Cnt=01 Dev#=  2 Spd=1.5 MxCh= 0
-D:  Ver= 1.10 Cls=00(>ifc ) Sub=00 Prot=00 MxPS= 8 #Cfgs=  1
-P:  Vendor=0c16 ProdID=0002 Rev= 2.20
-S:  Manufacturer=Gyration
-S:  Product=Gyration RF Technology Receiver
-C:* #Ifs= 2 Cfg#= 1 Atr=a0 MxPwr= 98mA
-I:* If#= 0 Alt= 0 #EPs= 1 Cls=03(HID  ) Sub=01 Prot=01 Driver=(none)
-E:  Ad=81(I) Atr=03(Int.) MxPS=   8 Ivl=10ms
-I:* If#= 1 Alt= 0 #EPs= 1 Cls=03(HID  ) Sub=01 Prot=02 Driver=(none)
-E:  Ad=82(I) Atr=03(Int.) MxPS=   8 Ivl=10ms
-
-There are 6 six keys which do not work at all:
-
- * "MCE Home key - green button"
-
-First time pressed:
-
-drivers/hid/hid-core.c: report (size 3) (numbered)
-drivers/hid/hid-core.c: report 6 (size 2) =  00 00
-
-Second and subsequent times pressed:
-
-drivers/hid/hid-core.c: report (size 3) (numbered)
-drivers/hid/hid-core.c: report 6 (size 2) =  0d 00
-hid-debug: input ffbc.000d = 1
-drivers/hid/hid-core.c: report (size 3) (numbered)
-drivers/hid/hid-core.c: report 6 (size 2) =  00 00
-hid-debug: input ffbc.000d = 0
-
- * "Pictures" shortcut button
-
-drivers/hid/hid-core.c: report (size 3) (numbered)
-drivers/hid/hid-core.c: report 6 (size 2) =  49 00
-hid-debug: input ffbc.0049 = 1
-drivers/hid/hid-core.c: report (size 3) (numbered)
-drivers/hid/hid-core.c: report 6 (size 2) =  00 00
-hid-debug: input ffbc.0049 = 0
-
- * "TV" shortcut button
-
-drivers/hid/hid-core.c: report (size 3) (numbered)
-drivers/hid/hid-core.c: report 6 (size 2) =  46 00
-hid-debug: input ffbc.0046 = 1
-drivers/hid/hid-core.c: report (size 3) (numbered)
-drivers/hid/hid-core.c: report 6 (size 2) =  00 00
-hid-debug: input ffbc.0046 = 0
-
- * "Music" shortcut button
-
-drivers/hid/hid-core.c: report (size 3) (numbered)
-drivers/hid/hid-core.c: report 6 (size 2) =  47 00
-hid-debug: input ffbc.0047 = 1
-drivers/hid/hid-core.c: report (size 3) (numbered)
-drivers/hid/hid-core.c: report 6 (size 2) =  00 00
-hid-debug: input ffbc.0047 = 0
-
- * "Movies" shortcut button
-
-drivers/hid/hid-core.c: report (size 3) (numbered)
-drivers/hid/hid-core.c: report 6 (size 2) =  4a 00
-hid-debug: input ffbc.004a = 1
-drivers/hid/hid-core.c: report (size 3) (numbered)
-drivers/hid/hid-core.c: report 6 (size 2) =  00 00
-hid-debug: input ffbc.004a = 0
-
- * "Live TV" button
-
-drivers/hid/hid-core.c: report (size 3) (numbered)
-drivers/hid/hid-core.c: report 6 (size 2) =  25 00
-hid-debug: input ffbc.0025 = 1
-drivers/hid/hid-core.c: report (size 3) (numbered)
-drivers/hid/hid-core.c: report 6 (size 2) =  00 00
-hid-debug: input ffbc.0025 = 0
-
-
-Also, the "Power" button keeps repeating once pressed:
-
-drivers/hid/hid-core.c: report (size 2) (numbered)
-drivers/hid/hid-core.c: report 3 (size 1) =  82
-hid-debug: input GenericDesktop.SystemPowerDown = 0
-hid-debug: input GenericDesktop.SystemSleep = 1
-hid-debug: input GenericDesktop.SystemWakeUp = 0
-
-
-There you are.
-Let me know if there is anything else I can do.
-
-Phil.
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
