@@ -1,85 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757625AbYFSHhO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757277AbYFSHvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757625AbYFSHhO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 03:37:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756123AbYFSHhC
+	id S1757277AbYFSHvo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 03:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbYFSHve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 03:37:02 -0400
-Received: from topsns2.toshiba-tops.co.jp ([202.230.225.126]:13197 "EHLO
-	topsns2.toshiba-tops.co.jp" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755323AbYFSHhA (ORCPT
+	Thu, 19 Jun 2008 03:51:34 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:60977 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752834AbYFSHve (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 03:37:00 -0400
-Date: Thu, 19 Jun 2008 16:36:48 +0900 (JST)
-Message-Id: <20080619.163648.262833678.nemoto@toshiba-tops.co.jp>
-To: linux-mtd@lists.infradead.org
-Cc: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: [PATCH] jedec_probe: Fix SST 16-bit chip detection
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 6.1 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+	Thu, 19 Jun 2008 03:51:34 -0400
+Subject: Re: [patch] aio: invalidate async directio writes
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: akpm@linux-foundation.org, zach.brown@oracle.com, linux-aio@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <x49ej6uy5qo.fsf@segfault.boston.devel.redhat.com>
+References: <x49ej6uy5qo.fsf@segfault.boston.devel.redhat.com>
+Content-Type: text/plain
+Date: Thu, 19 Jun 2008 09:51:25 +0200
+Message-Id: <1213861885.16944.255.camel@twins>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The unlock_addr rework in kernel 2.6.25 breaks 16-bit SST chips.  SST
-39LF160 and SST 39VF1601 are both 16-bit only chip and new uaddr value
-is not correct for them.  Add MTD_UADDR_0xAAAA_0x5555 for those chips.
-Tested with SST 39VF1601 chip.
+On Wed, 2008-06-18 at 14:09 -0400, Jeff Moyer wrote:
+> Hi, Andrew,
+> 
+> This is a follow-up to:
+> 
+> commit bdb76ef5a4bc8676a81034a443f1eda450b4babb
+> Author: Zach Brown <zach.brown@oracle.com>
+> Date:   Tue Oct 30 11:45:46 2007 -0700
+> 
+>     dio: fix cache invalidation after sync writes
+>     
+>     Commit commit 65b8291c4000e5f38fc94fb2ca0cb7e8683c8a1b ("dio: invalidate
+>     clean pages before dio write") introduced a bug which stopped dio from
+>     ever invalidating the page cache after writes.  It still invalidated it
+>     before writes so most users were fine.
+>     
+>     Karl Schendel reported ( http://lkml.org/lkml/2007/10/26/481 ) hitting
+>     this bug when he had a buffered reader immediately reading file data
+>     after an O_DIRECT [writer] had written the data.  The kernel issued
+>     read-ahead beyond the position of the reader which overlapped with the
+>     O_DIRECT writer.  The failure to invalidate after writes caused the
+>     reader to see stale data from the read-ahead.
+>     
+>     The following patch is originally from Karl.  The following commentary
+>     is his:
+>     
+>         The below 3rd try takes on your suggestion of just invalidating
+>         no matter what the retval from the direct_IO call.  I ran it
+>         thru the test-case several times and it has worked every time.
+>         The post-invalidate is probably still too early for async-directio,
+>         but I don't have a testcase for that;  just sync.  And, this
+>         won't be any worse in the async case.
+>     
+>     I added a test to the aio-dio-regress repository which mimics Karl's IO
+>     pattern.  It verifed the bad behaviour and that the patch fixed it.  I
+>     agree with Karl, this still doesn't help the case where a buffered
+>     reader follows an AIO O_DIRECT writer.  That will require a bit more
+>     work.
+>     
+>     This gives up on the idea of returning EIO to indicate to userspace that
+>     stale data remains if the invalidation failed.
+> 
+> Note the second-to-last paragraph, where it mentions that this does not fix
+> the AIO case.  I updated the regression test to also perform asynchronous
+> I/O and verified that the problem does exist.
+> 
+> To fix the problem, we need to invalidate the pages that were under write
+> I/O after the I/O completes.  Because the I/O completion handler can be called
+> in interrupt context (and invalidate_inode_pages2 cannot be called in interrupt
+> context), this patch opts to defer the completion to a workqueue.  That
+> workqueue is responsible for invalidating the page cache pages and completing
+> the I/O.
+> 
+> I verified that the test case passes with the following patch applied.
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
- drivers/mtd/chips/jedec_probe.c |   14 ++++++++++----
- 1 files changed, 10 insertions(+), 4 deletions(-)
+I'm utterly ignorant of all thing [AD]IO, but doesn't deferring the
+invalidate open up/widen a race window?
 
-diff --git a/drivers/mtd/chips/jedec_probe.c b/drivers/mtd/chips/jedec_probe.c
-index aa07575..97395be 100644
---- a/drivers/mtd/chips/jedec_probe.c
-+++ b/drivers/mtd/chips/jedec_probe.c
-@@ -191,6 +191,7 @@ enum uaddr {
- 	MTD_UADDR_0x0555_0x0AAA,
- 	MTD_UADDR_0x5555_0x2AAA,
- 	MTD_UADDR_0x0AAA_0x0555,
-+	MTD_UADDR_0xAAAA_0x5555,
- 	MTD_UADDR_DONT_CARE,		/* Requires an arbitrary address */
- 	MTD_UADDR_UNNECESSARY,		/* Does not require any address */
- };
-@@ -238,6 +239,11 @@ static const struct unlock_addr  unlock_addrs[] = {
- 		.addr2 = 0x0555
- 	},
- 
-+	[MTD_UADDR_0xAAAA_0x5555] = {
-+		.addr1 = 0xaaaa,
-+		.addr2 = 0x5555
-+	},
-+
- 	[MTD_UADDR_DONT_CARE] = {
- 		.addr1 = 0x0000,      /* Doesn't matter which address */
- 		.addr2 = 0x0000       /* is used - must be last entry */
-@@ -1392,8 +1398,8 @@ static const struct amd_flash_info jedec_table[] = {
- 		.mfr_id		= MANUFACTURER_SST,     /* should be CFI */
- 		.dev_id		= SST39LF160,
- 		.name		= "SST 39LF160",
--		.devtypes	= CFI_DEVICETYPE_X16|CFI_DEVICETYPE_X8,
--		.uaddr		= MTD_UADDR_0x5555_0x2AAA,	/* ???? */
-+		.devtypes	= CFI_DEVICETYPE_X16,
-+		.uaddr		= MTD_UADDR_0xAAAA_0x5555,
- 		.dev_size	= SIZE_2MiB,
- 		.cmd_set	= P_ID_AMD_STD,
- 		.nr_regions	= 2,
-@@ -1405,8 +1411,8 @@ static const struct amd_flash_info jedec_table[] = {
- 		.mfr_id		= MANUFACTURER_SST,     /* should be CFI */
- 		.dev_id		= SST39VF1601,
- 		.name		= "SST 39VF1601",
--		.devtypes	= CFI_DEVICETYPE_X16|CFI_DEVICETYPE_X8,
--		.uaddr		= MTD_UADDR_0x5555_0x2AAA,	/* ???? */
-+		.devtypes	= CFI_DEVICETYPE_X16,
-+		.uaddr		= MTD_UADDR_0xAAAA_0x5555,
- 		.dev_size	= SIZE_2MiB,
- 		.cmd_set	= P_ID_AMD_STD,
- 		.nr_regions	= 2,
