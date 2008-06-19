@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759271AbYFSPUL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756623AbYFSP0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759271AbYFSPUL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 11:20:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753809AbYFSPT7
+	id S1756623AbYFSP0x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 11:26:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbYFSP0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 11:19:59 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54576 "EHLO mx3.mail.elte.hu"
+	Thu, 19 Jun 2008 11:26:42 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:42806 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750963AbYFSPT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 11:19:58 -0400
-Date: Thu, 19 Jun 2008 17:19:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jack Steiner <steiner@sgi.com>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       Mike Travis <travis@sgi.com>, the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH] - Increase MAX_APICS for very large x86_64 configs
-Message-ID: <20080619151940.GA14899@elte.hu>
-References: <20080616170910.GA24930@sgi.com> <20080619101030.GF15228@elte.hu> <20080619103242.GA13213@elte.hu> <20080619150209.GA9295@sgi.com> <20080619151732.GA12964@elte.hu>
+	id S1751238AbYFSP0g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 11:26:36 -0400
+Date: Thu, 19 Jun 2008 18:25:01 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Dave Airlie <airlied@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: kerneloops.org: 2.6.26-rc possible regression in ext3
+Message-ID: <20080619152500.GB2721@cs181133002.pp.htv.fi>
+References: <4859F075.2050207@linux.intel.com> <21d7e9970806182242na130e47i85839c4550b4ba03@mail.gmail.com> <20080619081146.GC17630@cs181133002.pp.htv.fi> <485A61B5.90003@linux.intel.com> <20080619151016.GA2721@cs181133002.pp.htv.fi> <485A78CF.7050401@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080619151732.GA12964@elte.hu>
+In-Reply-To: <485A78CF.7050401@linux.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jun 19, 2008 at 08:18:39AM -0700, Arjan van de Ven wrote:
+> Adrian Bunk wrote:
+>> On Thu, Jun 19, 2008 at 06:40:05AM -0700, Arjan van de Ven wrote:
+>>> Adrian Bunk wrote:
+>>>> Expect a lot more of this to pop up in the future.
+>>>> Should we #error for gcc 4.3.1?
+>>> it/s better to find if the gcc guys made a testcase for this bug (they normally do) and
+>>> test based on that.
+>>
+>> The gcc Bugzilla contains a testcase.
+>>
+>> But how do you plan to integrate it into a kernel build?
+>
+> we already have several of these.
+> Just look at scripts/gcc-x86_64-has-stack-protector.sh for an example of such a beast.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Checking whether gcc supports some flags is easy.
 
-> * Jack Steiner <steiner@sgi.com> wrote:
-> 
-> > > unfortunately it didnt last long, -tip randconfig auto-testing found 
-> > > that your patch causes a bootup crash:
-> > 
-> > I built a "git-checkout -b tip-latest tip/auto-latest" tree but get 
-> > compile errors. Is this the right tree??
-> 
-> no, you should check out tip/master.
+But miscompilations are a different issue.
 
-ah, i see - the readme was suggesting auto-latest - my bad. I've updated 
-the readme.
+Especially since we also want to reject broken gcc versions for cross 
+compilations.
 
-	Ingo
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
