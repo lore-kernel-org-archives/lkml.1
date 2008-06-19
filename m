@@ -1,87 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757277AbYFSHvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757277AbYFSIBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757277AbYFSHvo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 03:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbYFSHve
+	id S1757277AbYFSIBZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 04:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755077AbYFSIBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 03:51:34 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60977 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752834AbYFSHve (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 03:51:34 -0400
-Subject: Re: [patch] aio: invalidate async directio writes
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: akpm@linux-foundation.org, zach.brown@oracle.com, linux-aio@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <x49ej6uy5qo.fsf@segfault.boston.devel.redhat.com>
-References: <x49ej6uy5qo.fsf@segfault.boston.devel.redhat.com>
-Content-Type: text/plain
-Date: Thu, 19 Jun 2008 09:51:25 +0200
-Message-Id: <1213861885.16944.255.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Jun 2008 04:01:12 -0400
+Received: from styx.suse.cz ([82.119.242.94]:54816 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751638AbYFSIBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 04:01:10 -0400
+Date: Thu, 19 Jun 2008 10:01:08 +0200
+From: Jan Kara <jack@suse.cz>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, sct@redhat.com,
+       adilger@clusterfs.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, Jan Kara <jack@suse.cz>,
+       Josef Bacik <jbacik@redhat.com>, Mingming Cao <cmm@us.ibm.com>,
+       "Theodore Ts'o" <tytso@mit.edu>, sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: Re: [PATCH] jbd: don't abort if flushing file data failed
+Message-ID: <20080619080108.GB12244@duck.suse.cz>
+References: <4859FD82.1000306@hitachi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4859FD82.1000306@hitachi.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-06-18 at 14:09 -0400, Jeff Moyer wrote:
-> Hi, Andrew,
+On Thu 19-06-08 15:32:34, Hidehiro Kawai wrote:
+> In ordered mode, the current jbd aborts the journal if a file data
+> buffer has an error.  But this behavior is unintended, and we found
+> that it has been adopted accidentally.
 > 
-> This is a follow-up to:
+> This patch undoes it and just calls printk() instead of aborting
+> the journal.  Additionally, set AS_EIO into the address_space
+> object of the failed buffer which is submitted by
+> journal_do_submit_data() so that fsync() can get -EIO.
 > 
-> commit bdb76ef5a4bc8676a81034a443f1eda450b4babb
-> Author: Zach Brown <zach.brown@oracle.com>
-> Date:   Tue Oct 30 11:45:46 2007 -0700
+> Missing error checkings are also added to inform errors on file
+> data buffers to the user.  The following buffers are targeted.
 > 
->     dio: fix cache invalidation after sync writes
->     
->     Commit commit 65b8291c4000e5f38fc94fb2ca0cb7e8683c8a1b ("dio: invalidate
->     clean pages before dio write") introduced a bug which stopped dio from
->     ever invalidating the page cache after writes.  It still invalidated it
->     before writes so most users were fine.
->     
->     Karl Schendel reported ( http://lkml.org/lkml/2007/10/26/481 ) hitting
->     this bug when he had a buffered reader immediately reading file data
->     after an O_DIRECT [writer] had written the data.  The kernel issued
->     read-ahead beyond the position of the reader which overlapped with the
->     O_DIRECT writer.  The failure to invalidate after writes caused the
->     reader to see stale data from the read-ahead.
->     
->     The following patch is originally from Karl.  The following commentary
->     is his:
->     
->         The below 3rd try takes on your suggestion of just invalidating
->         no matter what the retval from the direct_IO call.  I ran it
->         thru the test-case several times and it has worked every time.
->         The post-invalidate is probably still too early for async-directio,
->         but I don't have a testcase for that;  just sync.  And, this
->         won't be any worse in the async case.
->     
->     I added a test to the aio-dio-regress repository which mimics Karl's IO
->     pattern.  It verifed the bad behaviour and that the patch fixed it.  I
->     agree with Karl, this still doesn't help the case where a buffered
->     reader follows an AIO O_DIRECT writer.  That will require a bit more
->     work.
->     
->     This gives up on the idea of returning EIO to indicate to userspace that
->     stale data remains if the invalidation failed.
+>   (a) the buffer which has already been written out by pdflush
+>   (b) the buffer which has been unlocked before scanned in the
+>       t_locked_list loop
 > 
-> Note the second-to-last paragraph, where it mentions that this does not fix
-> the AIO case.  I updated the regression test to also perform asynchronous
-> I/O and verified that the problem does exist.
-> 
-> To fix the problem, we need to invalidate the pages that were under write
-> I/O after the I/O completes.  Because the I/O completion handler can be called
-> in interrupt context (and invalidate_inode_pages2 cannot be called in interrupt
-> context), this patch opts to defer the completion to a workqueue.  That
-> workqueue is responsible for invalidating the page cache pages and completing
-> the I/O.
-> 
-> I verified that the test case passes with the following patch applied.
+> Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+  You can add Acked-by: Jan Kara <jack@suse.cz>
 
-I'm utterly ignorant of all thing [AD]IO, but doesn't deferring the
-invalidate open up/widen a race window?
+  I have just one minor comment: Could you add device on which an error
+happened to the error message in journal_commit_transaction()? It could
+help the user in some cases...
+  Thanks for fixing this.
 
+									Honza
+> ---
+>  fs/jbd/commit.c |   32 +++++++++++++++++++++++++-------
+>  1 file changed, 25 insertions(+), 7 deletions(-)
+> 
+> Index: linux-2.6.26-rc5-mm3/fs/jbd/commit.c
+> ===================================================================
+> --- linux-2.6.26-rc5-mm3.orig/fs/jbd/commit.c
+> +++ linux-2.6.26-rc5-mm3/fs/jbd/commit.c
+> @@ -172,7 +172,7 @@ static void journal_do_submit_data(struc
+>  /*
+>   *  Submit all the data buffers to disk
+>   */
+> -static void journal_submit_data_buffers(journal_t *journal,
+> +static int journal_submit_data_buffers(journal_t *journal,
+>  				transaction_t *commit_transaction)
+>  {
+>  	struct journal_head *jh;
+> @@ -180,6 +180,7 @@ static void journal_submit_data_buffers(
+>  	int locked;
+>  	int bufs = 0;
+>  	struct buffer_head **wbuf = journal->j_wbuf;
+> +	int err = 0;
+>  
+>  	/*
+>  	 * Whenever we unlock the journal and sleep, things can get added
+> @@ -253,6 +254,8 @@ write_out_data:
+>  			put_bh(bh);
+>  		} else {
+>  			BUFFER_TRACE(bh, "writeout complete: unfile");
+> +			if (unlikely(!buffer_uptodate(bh)))
+> +				err = -EIO;
+>  			__journal_unfile_buffer(jh);
+>  			jbd_unlock_bh_state(bh);
+>  			if (locked)
+> @@ -271,6 +274,8 @@ write_out_data:
+>  	}
+>  	spin_unlock(&journal->j_list_lock);
+>  	journal_do_submit_data(wbuf, bufs);
+> +
+> +	return err;
+>  }
+>  
+>  /*
+> @@ -410,8 +415,7 @@ void journal_commit_transaction(journal_
+>  	 * Now start flushing things to disk, in the order they appear
+>  	 * on the transaction lists.  Data blocks go first.
+>  	 */
+> -	err = 0;
+> -	journal_submit_data_buffers(journal, commit_transaction);
+> +	err = journal_submit_data_buffers(journal, commit_transaction);
+>  
+>  	/*
+>  	 * Wait for all previously submitted IO to complete.
+> @@ -426,10 +430,21 @@ void journal_commit_transaction(journal_
+>  		if (buffer_locked(bh)) {
+>  			spin_unlock(&journal->j_list_lock);
+>  			wait_on_buffer(bh);
+> -			if (unlikely(!buffer_uptodate(bh)))
+> -				err = -EIO;
+>  			spin_lock(&journal->j_list_lock);
+>  		}
+> +		if (unlikely(!buffer_uptodate(bh))) {
+> +			if (TestSetPageLocked(bh->b_page)) {
+> +				spin_unlock(&journal->j_list_lock);
+> +				lock_page(bh->b_page);
+> +				spin_lock(&journal->j_list_lock);
+> +			}
+> +			if (bh->b_page->mapping)
+> +				set_bit(AS_EIO, &bh->b_page->mapping->flags);
+> +
+> +			unlock_page(bh->b_page);
+> +			SetPageError(bh->b_page);
+> +			err = -EIO;
+> +		}
+>  		if (!inverted_lock(journal, bh)) {
+>  			put_bh(bh);
+>  			spin_lock(&journal->j_list_lock);
+> @@ -448,8 +463,11 @@ void journal_commit_transaction(journal_
+>  	}
+>  	spin_unlock(&journal->j_list_lock);
+>  
+> -	if (err)
+> -		journal_abort(journal, err);
+> +	if (err) {
+> +		printk(KERN_WARNING
+> +		       "JBD: Detected IO errors during flushing file data\n");
+> +		err = 0;
+> +	}
+>  
+>  	journal_write_revoke_records(journal, commit_transaction);
+>  
+> 
+> 
+> 
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
