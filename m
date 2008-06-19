@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760862AbYFSMwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759197AbYFSM4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760862AbYFSMwS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 08:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbYFSMwJ
+	id S1759197AbYFSM4U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 08:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756136AbYFSM4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 08:52:09 -0400
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:55475 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756206AbYFSMwI (ORCPT
+	Thu, 19 Jun 2008 08:56:12 -0400
+Received: from emerald.lightlink.com ([64.57.176.19]:4866 "EHLO
+	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756121AbYFSM4M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 08:52:08 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ar4EAOnxWUhMQW1O/2dsb2JhbACBWq5T
-Date: Thu, 19 Jun 2008 08:51:57 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: lttng git.kernel.org tree
-Message-ID: <20080619125157.GA14561@Krystal>
+	Thu, 19 Jun 2008 08:56:12 -0400
+X-Greylist: delayed 1153 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Jun 2008 08:56:11 EDT
+Date: Thu, 19 Jun 2008 08:33:04 -0400
+From: "Mark M. Hoffman" <mhoffman@lightlink.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>
+Subject: [GIT PATCH] hwmon updates vs. v2.6.26-rc6
+Message-ID: <20080619123304.GF7306@mars.solarsys.private>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 08:43:42 up 14 days, 17:24,  2 users,  load average: 2.18, 2.30,
-	1.42
-User-Agent: Mutt/1.5.16 (2007-06-11)
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
+Hi Linus:
 
-I've been posting my LTTng work through patchsets for a while, but I
-start to think it would be good to deploy a LTTng tree on
-git.kernel.org, do you agree ?
+Please pull from:
+	git://lm-sensors.org/kernel/mhoffman/hwmon-2.6.git release
 
-Also, I guess I might have to do frequent rebases to follow mainline
-because the LTTng patchset touches a lot of files (including the
-low-level stuff, the architecture independant and arch. specific
-instrumentation and the tracer itself). My current diffstat states :
+You'll get a few bugfixes, a couple of updates to abituguru3, and a couple of
+documentation updates.
 
- 271 files changed, 10319 insertions(+), 674 deletions(-)
+Hopefully this is the last you'll hear from me before 2.6.26 final.
 
-in 118 patches.
+Thanks & regards,
 
-Is there some documentation that describes what would be the best way to
-manage such a tree ? (frequent rebases or not ?)
+ Documentation/hwmon/sysfs-interface |   33 +++++++++++++--------------------
+ MAINTAINERS                         |    6 +++---
+ drivers/hwmon/abituguru3.c          |   18 +++++++++++++++---
+ drivers/hwmon/adt7473.c             |    3 +++
+ drivers/hwmon/lm75.c                |   20 +++++++++++++++-----
+ drivers/hwmon/lm85.c                |   25 +++++++++++--------------
+ 6 files changed, 60 insertions(+), 45 deletions(-)
 
-Thanks,
+David Brownell (1):
+      hwmon: (lm75) sensor reading bugfix
 
-Mathieu
+Hans de Goede (2):
+      hwmon: (abituguru3) Identify Abit AW8D board as such
+      hwmon: (abituguru3) update driver detection
+
+Jean Delvare (3):
+      hwmon: (lm85) Fix function RANGE_TO_REG()
+      hwmon: (adt7473) Initialize max_duty_at_overheat before use
+      hwmon: Update the sysfs interface documentation
+
+Marc Hulsman (1):
+      hwmon: (w83791d) new maintainer
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Mark M. Hoffman
+mhoffman@lightlink.com
+
