@@ -1,143 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756304AbYFSW6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755883AbYFSXCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756304AbYFSW6W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 18:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbYFSW6K
+	id S1755883AbYFSXCj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 19:02:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbYFSXCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 18:58:10 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:37884 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752811AbYFSW6I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 18:58:08 -0400
-Subject: [PATCH 2/2] acpi based pci gap caluculation
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: "Brown, Len" <len.brown@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-acpi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Thu, 19 Jun 2008 15:58:06 -0700
-Message-Id: <1213916286.27983.37.camel@promb-2n-dhcp368.eng.vmware.com>
+	Thu, 19 Jun 2008 19:02:31 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:52989 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753545AbYFSXCa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 19:02:30 -0400
+Date: Fri, 20 Jun 2008 01:02:14 +0200
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Jaroslav Kysela <perex@perex.cz>
+Cc: Takashi Iwai <tiwai@suse.de>, Rene Herman <rene.herman@keyaccess.nl>,
+       ALSA devel <alsa-devel@alsa-project.org>, mulix@mulix.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [alsa-devel] looping S/PDIF data
+Message-ID: <20080620010214.2185225e@mjolnir.drzeus.cx>
+In-Reply-To: <Pine.LNX.4.61.0806191435270.1798@tm8103-a.perex-int.cz>
+References: <20080531112606.5884a1c9@mjolnir.drzeus.cx>
+	<20080617215504.3203a5ed@mjolnir.drzeus.cx>
+	<4858B84B.4030800@keyaccess.nl>
+	<s5hej6t91u1.wl%tiwai@suse.de>
+	<Pine.LNX.4.61.0806191435270.1798@tm8103-a.perex-int.cz>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
+X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-21577-1213916048-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evaluates the _CRS object under PCI0 looking for producer resources.
-Then searches the e820 memory space for a gap within these producer resources.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Allows us to find a gap for the unclaimed pci resources or MMIO resources
-for hotplug devices within the BIOS allowed pci regions.
+--=_freyr.drzeus.cx-21577-1213916048-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Alok N Kataria <akataria@vmware.com>
+On Thu, 19 Jun 2008 14:39:05 +0200 (CEST)
+Jaroslav Kysela <perex@perex.cz> wrote:
 
-Index: linux-2.6/arch/x86/pci/acpi.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/acpi.c	2008-06-13 13:58:53.000000000 -0700
-+++ linux-2.6/arch/x86/pci/acpi.c	2008-06-13 14:10:05.000000000 -0700
-@@ -4,6 +4,7 @@
- #include <linux/irq.h>
- #include <linux/dmi.h>
- #include <asm/numa.h>
-+#include <asm/e820.h>
- #include "pci.h"
- 
- struct pci_root_info {
-@@ -14,6 +15,11 @@
- 	int busnum;
- };
- 
-+struct gap_info {
-+	unsigned long gapstart;
-+	unsigned long gapsize;
-+};
-+
- static acpi_status
- resource_to_addr(struct acpi_resource *resource,
- 			struct acpi_resource_address64 *addr)
-@@ -110,6 +116,70 @@
- 	}
- }
- 
-+static acpi_status search_gap(struct acpi_resource *resource, void *data)
-+{
-+	struct acpi_resource_address64 addr;
-+	acpi_status status;
-+	struct gap_info *gap = data;
-+
-+	status = resource_to_addr(resource, &addr);
-+	if (ACPI_SUCCESS(status) &&
-+	    addr.resource_type == ACPI_MEMORY_RANGE &&
-+	    addr.address_length > gap->gapsize) {
-+		e820_search_gap(&gap->gapstart, &gap->gapsize,
-+				(addr.minimum + addr.translation_offset));
-+	}
-+
-+	return AE_OK;
-+}
-+
-+/*
-+ * Search for a hole in the 32 bit address space for PCI to assign MMIO
-+ * resources for hotplug or unconfigured resources.
-+ * We query the CRS object of the PCI root device to look for possible producer
-+ * resources in the tree and consider these while calulating the start address
-+ * for this hole.
-+ */
-+static void pci_setup_gap(acpi_handle *handle)
-+{
-+	struct gap_info gap;
-+	acpi_status status;
-+
-+	gap.gapstart = 0;
-+	gap.gapsize = 0x400000;
-+
-+	status = acpi_walk_resources(handle, METHOD_NAME__CRS,
-+				     search_gap, &gap);
-+
-+	if (ACPI_SUCCESS(status)) {
-+		unsigned long round;
-+
-+		if (!gap.gapstart) {
-+			printk(KERN_ERR "ACPI_PCI: Warning: Cannot find a gap "
-+					"in the 32bit address range\n"
-+					"ACPI_PCI: May collide with the "
-+					"hotpluggable memory address range\n");
-+		}
-+		/*
-+		 * Round the gapstart, uses the same logic as in
-+		 * e820_gap_setup
-+		 */
-+		round = 0x100000;
-+		while ((gap.gapsize >> 4) > round)
-+			round += round;
-+		/* Fun with two's complement */
-+		pci_mem_start = (gap.gapstart + round) & -round;
-+
-+		printk(KERN_INFO "ACPI_PCI: PCI resources should "
-+				"start at %lx (gap: %lx:%lx)\n",
-+				pci_mem_start, gap.gapstart, gap.gapsize);
-+	} else {
-+		printk(KERN_ERR "ACPI_PCI: Error while searching for gap in "
-+				"the 32bit address range for PCI\n");
-+	}
-+}
-+
-+
- static void
- get_current_resources(struct acpi_device *device, int busnum,
- 			int domain, struct pci_bus *bus)
-@@ -215,6 +285,8 @@
- 
- 	if (bus && (pci_probe & PCI_USE__CRS))
- 		get_current_resources(device, busnum, domain, bus);
-+
-+	pci_setup_gap(device->handle);
- 	return bus;
- }
- 
+>=20
+> I don't think that this patch is correct. DMA transfers should be disable=
+d=20
+> by:
+>=20
+> outl(what, TRID_REG(trident, T4D_STOP_B));
+> outl(val, TRID_REG(trident, T4D_AINTEN_B));
+>=20
+> lines. Adding &=3D ~SPDIF_EN can disable output from AC97 to S/PDIF as we=
+ll.
+>=20
 
+FWIW, the patch had zero effect on the system here.
 
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Use end-to-end encryption where
+  possible.
+
+--=_freyr.drzeus.cx-21577-1213916048-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkha5XsACgkQ7b8eESbyJLjGnwCgoKvMtl4xbSydjOXP5punXG3u
+WOIAoJhw2GouT726EBx2kZXcSuJt0e+u
+=imtr
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-21577-1213916048-0001-2--
