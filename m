@@ -1,66 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbYFSHAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757518AbYFSHCN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757389AbYFSHAZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 03:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbYFSHAO
+	id S1757518AbYFSHCN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 03:02:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755655AbYFSHB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 03:00:14 -0400
-Received: from mail4.hitachi.co.jp ([133.145.228.5]:57021 "EHLO
-	mail4.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751398AbYFSHAN (ORCPT
+	Thu, 19 Jun 2008 03:01:56 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:61130 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753347AbYFSHBz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 03:00:13 -0400
-X-AuditID: 0ac90647-ad124ba000004aeb-26-485a03fa46f5
-Message-ID: <485A03E6.2090509@hitachi.com>
-Date: Thu, 19 Jun 2008 15:59:50 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
+	Thu, 19 Jun 2008 03:01:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent;
+        b=vqzqVlEgf1WIi0CpMQm1uXiumbd1nc/wC5PcqvH3F7TGp6HenzdKSEZFP+7c2ACeIK
+         puaNLk8VBWPxr9asUpfa0HwWfStCbf+kUZbNB+vH8RenUJ1pAaD30UL0+ihWTErbYYpt
+         78UFYNGvqqQj0xwt4mfenDuXVQzYw4Xo0cUlA=
+Date: Thu, 19 Jun 2008 07:06:08 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: auke-jan.h.kok@intel.com, vgusev@openvz.org, jeff@garzik.org,
+       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, rjw@sisk.pl, arjan@linux.intel.com,
+       mcmanus@ducksong.com, ilpo.jarvinen@helsinki.fi, kuznet@ms2.inr.ac.ru,
+       mingo@elte.hu, torvalds@linux-foundation.org, xemul@openvz.org
+Subject: Re: [TCP]: TCP_DEFER_ACCEPT causes leak sockets
+Message-ID: <20080619070608.GA4150@ff.dom.local>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       linux-mm@kvack.org, sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>, rusty@rustcorp.com.au
-Subject: [BUG][PATCH -mm] avoid BUG() in __stop_machine_run()
-References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
-In-Reply-To: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080618.151224.211093487.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When a process loads a kernel module, __stop_machine_run() is called, and
-it calls sched_setscheduler() to give newly created kernel threads highest
-priority.  However, the process can have no CAP_SYS_NICE which required
-for sched_setscheduler() to increase the priority.  For example, SystemTap
-loads its module with only CAP_SYS_MODULE.  In this case,
-sched_setscheduler() returns -EPERM, then BUG() is called.
+On 19-06-2008 00:12, David Miller wrote:
+> From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+> Date: Wed, 18 Jun 2008 14:25:28 -0700
+> 
+>> You only complain and do not provide a single solution to your
+>> problem.
 
-Failure of sched_setscheduler() wouldn't be a real problem, so this
-patch just ignores it.
-Or, should we give the CAP_SYS_NICE capability temporarily?
+Technically, Ingo has asked for a solution (but btw. he gave some
+proposal), so this argument is wrong.
 
-Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
----
- kernel/stop_machine.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+>> Your continued screaming and whining is totally not
+>> productive nor constructive at all,
 
-Index: linux-2.6.26-rc5-mm3/kernel/stop_machine.c
-===================================================================
---- linux-2.6.26-rc5-mm3.orig/kernel/stop_machine.c
-+++ linux-2.6.26-rc5-mm3/kernel/stop_machine.c
-@@ -143,8 +143,7 @@ int __stop_machine_run(int (*fn)(void *)
- 		kthread_bind(threads[i], i);
- 
- 		/* Make it highest prio. */
--		if (sched_setscheduler(threads[i], SCHED_FIFO, &param) != 0)
--			BUG();
-+		sched_setscheduler(threads[i], SCHED_FIFO, &param);
- 	}
- 
- 	/* We've created all the threads.  Wake them all: hold this CPU so one
+Actually, screaming and whining often "helps" to have things done,
+so this argument is wrong too.
 
+>> and frankly is insulting
 
+This one is right.
+
+>> since
+>> you completely ignore the fact that we worked with the the community
+>> more than two-year to come to some maintainable situation.
+
+Two-year work doesn't guarantee the solution is right (but it might be
+right),so - wrong argument.
+
+> 
+> I completely and %100 agree with you.
+
+I give 25...
+
+Regards,
+Jarek P.
