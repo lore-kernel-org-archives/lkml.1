@@ -1,99 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757601AbYFSITw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758036AbYFSIUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757601AbYFSITw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 04:19:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756413AbYFSITe
+	id S1758036AbYFSIUR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 04:20:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756890AbYFSITn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 04:19:34 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36664 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751545AbYFSITc (ORCPT
+	Thu, 19 Jun 2008 04:19:43 -0400
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:24376 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756697AbYFSITk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 04:19:32 -0400
-Date: Thu, 19 Jun 2008 17:24:09 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-Subject: Re: [Experimental][PATCH] putback_lru_page rework
-Message-Id: <20080619172409.9fd80838.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080619170059.60b42e73.nishimura@mxp.nes.nec.co.jp>
-References: <20080617164709.de4db070.nishimura@mxp.nes.nec.co.jp>
-	<20080618184000.a855dfe0.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080618195009.37BF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20080618205540.11a1644b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080619170059.60b42e73.nishimura@mxp.nes.nec.co.jp>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 19 Jun 2008 04:19:40 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=UmQdDzqp7bMRE0i5sv0CEGV5bY4or2wCcJe0ggOlk8CR0HwFgMAEQOzb80VFcnkgMRqAkwA1rNRMzplMsy12wixSiwvZnx0Y2KrYDwpVsN0T71FugtITxp7kgM+v7H5vmoJol5hencWhXmDn9cyqfxmTfFdb9uyAfOPaBuNfz80=  ;
+X-YMail-OSG: 1s7hLi4VM1nJlo.SCS68tM1143VxbGNwfEMG9YpZ49.I1wbSEWpvyHTVOkyybr7kcKPviyyTD6gZY0VK.yHqQK_hc8EUa7vypO56p27PLJ3YUPCoZhXrE60zTzTFwDbr10g-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [BUG] Lockless patches cause hardlock under heavy IO
+Date: Thu, 19 Jun 2008 18:19:31 +1000
+User-Agent: KMail/1.9.5
+Cc: Ryan Hope <rmh3093@gmail.com>, linux-mm@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+References: <48f7fe350806181415l4eba61b3i1d206de03147575e@mail.gmail.com> <1213863122.16944.257.camel@twins>
+In-Reply-To: <1213863122.16944.257.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806191819.31968.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jun 2008 17:00:59 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+On Thursday 19 June 2008 18:12, Peter Zijlstra wrote:
+> On Wed, 2008-06-18 at 17:15 -0400, Ryan Hope wrote:
+> > I applied the following patches from 2.6-26-rc5-mm3 to 2.6.26-rc6 and
+> > they caused a hardlock under heavy IO:
+>
+> What kind of machine, how much memory, how many spindles, what
+> filesystem and what is heavy load?
+>
+> Furthermore, try the NMI watchdog with serial/net-console to capture its
+> output.
 
-> > > > -		unlock = putback_lru_page(newpage);
-> > > > +		putback_lru_page(newpage);
-> > > >  	} else
-> > > >  		newpage->mapping = NULL;
-> > > 
-> > > originally move_to_lru() called in unmap_and_move().
-> > > unevictable infrastructure patch move to this point for 
-> > > calling putback_lru_page() under page locked.
-> > > 
-> > > So, your patch remove page locked dependency.
-> > > move to unmap_and_move() again is better.
-> > > 
-> > > it become page lock holding time reducing.
-> > > 
-> > ok, will look into again.
-> > 
-> 
-> I agree with Kosaki-san.
-> 
-> And VM_BUG_ON(page_count(newpage) != 1) in unmap_and_move()
-> is not correct again, IMHO.
-> I got this BUG actually when testing this patch(with
-> migratin_entry_wait fix).
-> 
-> unmap_and_move()
-> 	move_to_new_page()
-> 		migrate_page()
-> 		remove_migration_ptes()
-> 		putback_lru_page()			(*1)
-> 	  :
->         if (!newpage->mapping)				(*2)
-> 		VM_BUG_ON(page_count(newpage) != 1)
-> 
-> If a anonymous page(without mapping) is migrated successfully,
-> this page is moved back to lru by putback_lru_page()(*1),
-> and the page count becomes 1(pte only).
-> 
-yes.
 
-> At the same time(between *1 and *2), if the process
-> that owns this page are freeing this page, the page count
-> becomes 0 and ->mapping becomes NULL by free_hot_cold_page(),
-> so this BUG is caused.
-> 
-Agree, I see.
+Good suggestions. A trace would be really helpful.
 
-> I've not seen this BUG on real HW yet(seen twice on fake-numa
-> hvm guest of Xen), but I think it can happen theoretically.
-> 
-That's (maybe) because page->mapping is not cleared when it's removed
-from rmap. (and there is pagevec to dealy freeing....)
+As Arjan suggested, debug options especially CONFIG_DEBUG_VM would be
+a good idea to turn on if you haven't already.
 
-But ok, I see your point. KOSAKI-san is now writing patch set to
-fix the whole. please see it.
+BTW. what was the reason for applying those patches? Did you hit the
+problem with -mm also, and hope to narrow it down?
 
-Thanks,
--Kame
 
+> > x86-implement-pte_special.patch
+> > mm-introduce-get_user_pages_fast.patch
+> > mm-introduce-get_user_pages_fast-fix.patch
+> > mm-introduce-get_user_pages_fast-checkpatch-fixes.patch
+> > x86-lockless-get_user_pages_fast.patch
+> > x86-lockless-get_user_pages_fast-checkpatch-fixes.patch
+> > x86-lockless-get_user_pages_fast-fix.patch
+> > x86-lockless-get_user_pages_fast-fix-2.patch
+> > x86-lockless-get_user_pages_fast-fix-2-fix-fix.patch
+> > x86-lockless-get_user_pages_fast-fix-warning.patch
+> > dio-use-get_user_pages_fast.patch
+> > splice-use-get_user_pages_fast.patch
+> > x86-support-1gb-hugepages-with-get_user_pages_lockless.patch
+> > #
+> > mm-readahead-scan-lockless.patch
+> > radix-tree-add-gang_lookup_slot-gang_lookup_slot_tag.patch
+> > #mm-speculative-page-references.patch: clameter saw bustage
+> > mm-speculative-page-references.patch
+> > mm-speculative-page-references-fix.patch
+> > mm-speculative-page-references-fix-fix.patch
+> > mm-speculative-page-references-hugh-fix3.patch
+> > mm-lockless-pagecache.patch
+> > mm-spinlock-tree_lock.patch
+> > powerpc-implement-pte_special.patch
+> >
+> > I am on an x86_64. I dont know what other info you need...
+
+Can you isolate it to one of the two groups of patches? I suspect it
+might be the latter so you might try that first -- this version of
+speculative page references is very nice in theory but it is a little
+more complex to implement the slowpaths so it could be an error there.
