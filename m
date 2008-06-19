@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757827AbYFSIML@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757883AbYFSINg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757827AbYFSIML (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 04:12:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756319AbYFSIL5
+	id S1757883AbYFSINg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 04:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756413AbYFSINW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 04:11:57 -0400
-Received: from casper.infradead.org ([85.118.1.10]:43175 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756249AbYFSIL4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 04:11:56 -0400
-Subject: Re: [BUG] Lockless patches cause hardlock under heavy IO
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ryan Hope <rmh3093@gmail.com>
-Cc: linux-mm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-In-Reply-To: <48f7fe350806181415l4eba61b3i1d206de03147575e@mail.gmail.com>
-References: <48f7fe350806181415l4eba61b3i1d206de03147575e@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 19 Jun 2008 10:12:02 +0200
-Message-Id: <1213863122.16944.257.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Jun 2008 04:13:22 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:60778 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756249AbYFSINV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 04:13:21 -0400
+Date: Thu, 19 Jun 2008 11:11:46 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Dave Airlie <airlied@gmail.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: kerneloops.org: 2.6.26-rc possible regression in ext3
+Message-ID: <20080619081146.GC17630@cs181133002.pp.htv.fi>
+References: <4859F075.2050207@linux.intel.com> <21d7e9970806182242na130e47i85839c4550b4ba03@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <21d7e9970806182242na130e47i85839c4550b4ba03@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-06-18 at 17:15 -0400, Ryan Hope wrote:
-> I applied the following patches from 2.6-26-rc5-mm3 to 2.6.26-rc6 and
-> they caused a hardlock under heavy IO:
-
-What kind of machine, how much memory, how many spindles, what
-filesystem and what is heavy load?
-
-Furthermore, try the NMI watchdog with serial/net-console to capture its
-output.
-
-> x86-implement-pte_special.patch
-> mm-introduce-get_user_pages_fast.patch
-> mm-introduce-get_user_pages_fast-fix.patch
-> mm-introduce-get_user_pages_fast-checkpatch-fixes.patch
-> x86-lockless-get_user_pages_fast.patch
-> x86-lockless-get_user_pages_fast-checkpatch-fixes.patch
-> x86-lockless-get_user_pages_fast-fix.patch
-> x86-lockless-get_user_pages_fast-fix-2.patch
-> x86-lockless-get_user_pages_fast-fix-2-fix-fix.patch
-> x86-lockless-get_user_pages_fast-fix-warning.patch
-> dio-use-get_user_pages_fast.patch
-> splice-use-get_user_pages_fast.patch
-> x86-support-1gb-hugepages-with-get_user_pages_lockless.patch
-> #
-> mm-readahead-scan-lockless.patch
-> radix-tree-add-gang_lookup_slot-gang_lookup_slot_tag.patch
-> #mm-speculative-page-references.patch: clameter saw bustage
-> mm-speculative-page-references.patch
-> mm-speculative-page-references-fix.patch
-> mm-speculative-page-references-fix-fix.patch
-> mm-speculative-page-references-hugh-fix3.patch
-> mm-lockless-pagecache.patch
-> mm-spinlock-tree_lock.patch
-> powerpc-implement-pte_special.patch
+On Thu, Jun 19, 2008 at 03:42:34PM +1000, Dave Airlie wrote:
+> On Thu, Jun 19, 2008 at 3:36 PM, Arjan van de Ven <arjan@linux.intel.com> wrote:
+> > In the kerneloops.org stats, a new oops is rapidly climbing the charts.
+> > The oops is a page fault in the ext3 "do_slit" function, and the first
+> > report of it was with 2.6.26-rc6-git3.
+> >
+> > It happens with various applications; the backtraces are at:
+> >
+> > http://www.kerneloops.org/search.php?search=do_split
 > 
-> I am on an x86_64. I dont know what other info you need...
+> This is a bug in rawhide in gcc miscompiling something...
+> 
+> https://bugzilla.redhat.com/show_bug.cgi?id=451068
 
+If I understand it correctly that's a bug in upstream gcc 4.3.1
+(but not in gcc 4.3.0)?
+
+Expect a lot more of this to pop up in the future.
+Should we #error for gcc 4.3.1?
+
+> Dave.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
