@@ -1,145 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760651AbYFSRcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757434AbYFSRj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760651AbYFSRcs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 13:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbYFSRcj
+	id S1757434AbYFSRj0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 13:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbYFSRjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 13:32:39 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:23585 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751168AbYFSRci (ORCPT
+	Thu, 19 Jun 2008 13:39:18 -0400
+Received: from rn-out-0910.google.com ([64.233.170.187]:16609 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751640AbYFSRjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 13:32:38 -0400
+	Thu, 19 Jun 2008 13:39:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=IGGmTBQTMXlqV1vZDl+vhanlAX47FPKEVC94CAaSAQ95mh/300jvjYESujhHWRBMyw
-         L6nL0IU1tPIFomgFHQLr/aKwuWweTO/D6Wvpk+e1hZSL1KKD9e4EmXT48CxEwWGQHJXF
-         wAGHrx6aw16HQyHlYHHYzZ+B12V0WoJ/tGZAQ=
-Message-ID: <76bd70e30806191032w6d2f1acao8fd4daad45597ffc@mail.gmail.com>
-Date: Thu, 19 Jun 2008 13:32:34 -0400
-From: "Chuck Lever" <chucklever@gmail.com>
-To: "Daniel J Blueman" <daniel.blueman@gmail.com>,
-       "Jeff Layton" <jlayton@redhat.com>
-Subject: Re: [2.6.26-rc4] mount.nfsv4/memory poisoning issues...
-Cc: linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       "Trond Myklebust" <trond.myklebust@fys.uio.no>
-In-Reply-To: <6278d2220806190537u7b781309q415f904390e02f3@mail.gmail.com>
+        b=sXGQNFA3yDk08AwFOlgX041ia9obIR5dvOTzsYnwZYhlbAde7o8dOM31C2o4dheaXa
+         8qN2tWw7DwBR2ODDaPBOWqt3Rbj362G+aLaMmCaiUf6yWjFLV0ERSMpbOtvbcNrlmLpH
+         QgqqpHOUdwRT0/Tdg44IIHMp41QKcOxKsxP0A=
+Message-ID: <86802c440806191039q5c6a2266p82d319a61a3bba3c@mail.gmail.com>
+Date: Thu, 19 Jun 2008 10:39:16 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH] x86: let MPS support selectable
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Daniel Exner" <dex@dragonslave.de>, "Len Brown" <lenb@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.55.0806191600290.12929@cliff.in.clinika.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <6278d2220806041633n3bfe3dd2ke9602697697228b@mail.gmail.com>
-	 <76bd70e30806041643j4d632a6exf64b29c34173d40f@mail.gmail.com>
-	 <6278d2220806151110x68ee91fej8cf8e6b591ce1319@mail.gmail.com>
-	 <20080619081420.24645bc4@tleilax.poochiereds.net>
-	 <6278d2220806190537u7b781309q415f904390e02f3@mail.gmail.com>
+References: <200805041823.57198.yhlu.kernel@gmail.com>
+	 <200806181432.57204.yhlu.kernel@gmail.com>
+	 <200806181729.31464.yhlu.kernel@gmail.com>
+	 <200806190018.45944.yhlu.kernel@gmail.com>
+	 <Pine.LNX.4.55.0806191600290.12929@cliff.in.clinika.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 19, 2008 at 8:37 AM, Daniel J Blueman
-<daniel.blueman@gmail.com> wrote:
-> On Thu, Jun 19, 2008 at 1:14 PM, Jeff Layton <jlayton@redhat.com> wrote:
->> On Sun, 15 Jun 2008 19:10:27 +0100
->> "Daniel J Blueman" <daniel.blueman@gmail.com> wrote:
->>
->>> On Thu, Jun 5, 2008 at 12:43 AM, Chuck Lever <chuck.lever@oracle.com> wrote:
->>> > Hi Daniel-
->>> >
->>> > On Wed, Jun 4, 2008 at 7:33 PM, Daniel J Blueman
->>> > <daniel.blueman@gmail.com> wrote:
->>> >> Having experienced 'mount.nfs4: internal error' when mounting nfsv4 in
->>> >> the past, I have a minimal test-case I sometimes run:
->>> >>
->>> >> $ while :; do mount -t nfs4 filer:/store /store; umount /store; done
->>> >>
->>> >> After ~100 iterations, I saw the 'mount.nfs4: internal error',
->>> >> followed by symptoms of memory corruption [1], a locking issue with
->>> >> the reporting [2] and another (related?) memory-corruption issue
->>> >> (off-by-1?) [3]. A little analysis shows memory being overwritten by
->>> >> (likely) a poison value, which gets complicated if it's not
->>> >> use-after-free...
->>> >>
->>> >> Anyone dare confirm this issue? NFSv4 server is x86-64 Ubuntu 8.04
->>> >> 2.6.24-18, client U8.04 2.6.26-rc4; batteries included [4].
->>> >
->>> > We have some other reports of late model kernels with memory
->>> > corruption issues during NFS mount.  The problem is that by the time
->>> > these canaries start singing, the evidence of what did the corrupting
->>> > is long gone.
->>> >
->>> >> I'm happy to decode addresses, test patches etc.
->>> >
->>> > If these crashes are more or less reliably reproduced, it would be
->>> > helpful if you could do a 'git bisect' on the client to figure out at
->>> > what point in the kernel revision history this problem was introduced.
->>> >
->>> > Have you seen the problem on client kernels earlier than 2.6.25?
->>>
->>> Firstly, I had omitted that I'd booted the kernel with
->>> debug_objects=1, which provides the canary here.
->>>
->>> The primary failure I see is 'mount.nfs4: internal error', and always
->>> after 358 umount/mount cycles (plus 1 initial mount) which gives us a
->>> clue; 'netstat' shows all these connections in a TIME_WAIT state, thus
->>> the bug relates to the inability to allocate a socket error path. I
->>> found that after the connection lifetime expired, you can mount again,
->>> which corroborates this theory.
->>>
->>> In this case, we saw the mount() syscall result in the mount.nfsv4
->>> process being SEGV'd when booted with 'debug_object=1', without this
->>> option, we see:
->>>
->>> # strace /sbin/mount.nfs4 x1:/ /store
->>> ...
->>> mount("x1:/", "/store", "nfs4", 0,
->>> "addr=192.168.0.250,clientaddr=19"...) = -1 EIO (Input/output error)
->>>
->>> So, it's impossible to tell when the corruption was introduced, as it
->>> has only become detectable recently.
->>>
->>> It's worth a look-over of the socket-allocation error path, if someone
->>> can check, and reproduces 100% with the 'debug_object=1' param,
->>> available since 2.6.26-rc1 and 359 mounts in quick succession.
->>>
->>
->> For some strange reason (probably something I'm doing wrong or maybe
->> something environmental), I've not been able to reproduce this panic on
->> a stock kernel. I did, however, apply the following fault injection
->> patch and was able to reproduce it on the second mount attempt. The 3
->> patch set that I posted last week definitely prevents the oops. If
->> you're able to confirm that it also fixes your panic it would be a
->> helpful data point.
->>
->> The fault injection patch I'm using is attached. It just simulates
->> nfs4_init_client() consistently returning an error.
+On Thu, Jun 19, 2008 at 8:10 AM, Maciej W. Rozycki <macro@linux-mips.org> wrote:
+> On Thu, 19 Jun 2008, Yinghai Lu wrote:
 >
-> Thanks! I hope to get time for this tonight and will get back to you;
-> I appreciate your help, Jeff.
+>> @@ -233,6 +233,19 @@ config SMP
+>>
+>>         If you don't know what to do here, say N.
+>>
+>> +config X86_FIND_SMP_CONFIG
+>> +     def_bool y
+>> +     depends on X86_MPPARSE || X86_VOYAGER || X86_VISWS
+>> +     depends on X86_32
+>> +
+>> +config X86_MPPARSE
+>> +     def_bool y
+>> +     bool "Enable MPS table"
+>> +     depends on (X86_32 && (X86_LOCAL_APIC && !X86_VISWS)) || X86_64
+>> +     help
+>> +       For old smp systems that do not have proper acpi support. Newer systems
+>> +       (esp with 64bit cpus) with acpi support, MADT and DSDT will override it
+>> +
+>>  choice
+>>       prompt "Subarchitecture Type"
+>>       default X86_PC
 >
-> The config I used to reproduce it on the client is
-> http://www.quora.org/config-debug and is relevant to (at least)
-> 2.6.26-rc5. I was able to reproduce it by exporting a single NFSv4
-> export on 2.6.25 (eg Ubuntu 8.04 server); client and server were
-> x86-64.
+>  First of all you want to make sure at least one of ACPI and X86_MPPARSE
+> is enabled if X86_LOCAL_APIC or you risk a known-broken kernel
+> configuration, e.g. SMP which has no slightest chance to work.
+>
+>  Personally I'd be happy to see CONFIG_ACPI_BOOT we used to have at one
+> point back just so that you can use ACPI tables to run an SMP system
+> without the need to pull all the power management stuff.  Useful if the MP
+> table is broken beyond recovery.  I am assuming it has been removed for a
+> reason though.
 
-For the record, I was able to reproduce with a dual core 2.6.26-rc4
-x86 client (using SLUB, not SLAB) on Fedora 8 against a Solaris 2008.5
-NFSv4 server.  When the client runs out of ports, the mount commands
-start to fail with EIO.  Then after a few dozen of these, the mounting
-process hangs.  Sometimes it will BUG because freed & poisoned memory
-is passed to kthread_stop().  I haven't seen some of the other
-subsequent issues that Daniel initially reported.
+thanks. will try to add CONFIG_ACPI_BOOT...
 
--- 
-I am certain that these presidents will understand the cry of the
-people of Bolivia, of the people of Latin America and the whole world,
-which wants to have more food and not more cars. First food, then if
-something's left over, more cars, more automobiles. I think that life
-has to come first.
--- Evo Morales
+YH
