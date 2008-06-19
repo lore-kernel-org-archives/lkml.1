@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759032AbYFSRnz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759434AbYFSRu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759032AbYFSRnz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 13:43:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbYFSRnq
+	id S1759434AbYFSRu4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 13:50:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbYFSRur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 13:43:46 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:48678 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751828AbYFSRnq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 13:43:46 -0400
-Date: Thu, 19 Jun 2008 13:42:11 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Holger Kiehl <Holger.Kiehl@dwd.de>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
-       Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Performance of ext4
-Message-ID: <20080619174211.GB9119@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Eric Sandeen <sandeen@redhat.com>,
-	Holger Kiehl <Holger.Kiehl@dwd.de>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
-	Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <20080612131928.GB18229@mit.edu> <Pine.LNX.4.64.0806121333480.27806@diagnostix.dwd.de> <20080612180605.GD22481@skywalker> <Pine.LNX.4.64.0806121940020.2974@diagnostix.dwd.de> <Pine.LNX.4.64.0806130753100.7097@diagnostix.dwd.de> <20080616175408.GF3279@atrey.karlin.mff.cuni.cz> <20080616181353.GA20686@skywalker> <Pine.LNX.4.64.0806171001200.6307@diagnostix.dwd.de> <20080619155645.GA8582@mit.edu> <485A8C2D.1090806@redhat.com>
+	Thu, 19 Jun 2008 13:50:47 -0400
+Received: from tetsuo.zabbo.net ([207.173.201.20]:50197 "EHLO tetsuo.zabbo.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751819AbYFSRur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 13:50:47 -0400
+Message-ID: <485A9C76.8050301@oracle.com>
+Date: Thu, 19 Jun 2008 10:50:46 -0700
+From: Zach Brown <zach.brown@oracle.com>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <485A8C2D.1090806@redhat.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Jeff Moyer <jmoyer@redhat.com>, akpm@linux-foundation.org,
+       linux-aio@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch] aio: invalidate async directio writes
+References: <x49ej6uy5qo.fsf@segfault.boston.devel.redhat.com> <1213861885.16944.255.camel@twins>
+In-Reply-To: <1213861885.16944.255.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 19, 2008 at 11:41:17AM -0500, Eric Sandeen wrote:
-> 
-> It might be worth runninga "simple" fsx under your kernel too; last time
-> I tested fsx it was still happy and it exercises fs ops (including
-> truncate) at random...
-> 
 
->From what Holger described, it's doubtful that the bug is in the
-truncate operation.  It sounds like i_size is actually dropping in
-size at some pointer long after the file was written.  If I had to
-guess the value in the inode cache is correct; and perhaps so is the
-value on the journal.  But somehow, the wrong value is getting written
-to disk (remember the jbd layer can keep up to three different
-versions of filesystem metadata in memory, because most of the time we
-don't block modifications to the filesystem while we are in the middle
-of writing a previous commit to disk).  So depending on whether the
-inode gets redirtied or not, the inconsistency could self-heal, and if
-the inode never gets pushed out of memory due to memory pressure, the
-problem might not be noticed until the system reboots or the
-filesystem is unmounted.
+> I'm utterly ignorant of all thing [AD]IO, but doesn't deferring the
+> invalidate open up/widen a race window?
 
-This is one of the reasons why I'm a bit suspicious that the problem
-may lie in the delayed allocation code; changing i_size without first
-starting a transaction could lead to this sort of problem, for
-example, and the delayed allocation could represent a different code
-path where file blocks get allocated and i_size gets changed.
+The case we care about making consistent are buffered reads which the
+user politely only issues after O_DIRECT writes have completed.
 
-     	   	       	   	     	 	- Ted
+If they issue buffered reads that race with O_DIRECT writes, well, they
+get to see weird versions of the data.  Just like if they issue buffered
+reads that race with buffered writes.
+
+But we must make sure that reads issued after the O_DIRECT writes are
+not satisfied by cached data which was populated during a nasty racing
+read.  So we invalidate cached pages in the range of the write after the
+O_DIRECT write is on disk but before we tell the user that the write has
+completed.
+
+This is made even worse by the observation that racing buffered reads
+might be issued behind the user's back as part of read-ahead.  People
+have hit this very issue in systems where they have a ring buffer in a
+file, an O_DIRECT writer, and a buffered reader that reads the blocks
+just after they're written.
+
+- z
