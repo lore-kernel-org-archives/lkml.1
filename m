@@ -1,246 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760453AbYFSMky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757559AbYFSMml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760453AbYFSMky (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 08:40:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755952AbYFSMkq
+	id S1757559AbYFSMml (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 08:42:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755559AbYFSMmd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 08:40:46 -0400
-Received: from hosted02.westnet.com.au ([203.10.1.213]:56603 "EHLO
-	hosted02.westnet.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755601AbYFSMkn (ORCPT
+	Thu, 19 Jun 2008 08:42:33 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:49770 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754621AbYFSMmb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 08:40:43 -0400
-X-Greylist: delayed 1923 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Jun 2008 08:40:42 EDT
-Message-ID: <485A4C3D.5050909@snapgear.com>
-Date: Thu, 19 Jun 2008 22:08:29 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 19 Jun 2008 08:42:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=O+MjwAgm/SqbKF0/ytS6h0/oDzRsUFm27F23svJNrAvkvD67534dVdj+bfFInDfmuU
+         JFkQqqpJXqEmB41D9CZv4Uz2cgilNev4/s+8Q+Ho++oOzs8LVPf3xNUV2fWDNg/VqKIZ
+         Sr+umxiN7zpYy3+R1iwZS+JtpyP8pAC9nisCM=
+Message-ID: <386072610806190542l167445b1o3c75c7b7f77033f1@mail.gmail.com>
+Date: Thu, 19 Jun 2008 20:42:30 +0800
+From: "Bryan Wu" <cooloney@kernel.org>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel List" <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] Blackfin arch updates for 2.6.26-rc6
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, dhowells@redhat.com, ralf@linux-mips.org,
-       linux-mips@linux-mips.org, lethal@linux-sh.org,
-       linux-sh@vger.kernel.org, Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [2.6 patch] remove pcibios_update_resource() functions
-References: <20080617223332.GM25911@cs181133002.pp.htv.fi>
-In-Reply-To: <20080617223332.GM25911@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-PMX-Branch: TNG-Outgoing
+Content-Disposition: inline
+X-Google-Sender-Auth: 74a091a87ea97a24
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> Russell King did the following back in 2003:
-> 
-> <--  snip  -->
-> 
->     [PCI] pci-9: Kill per-architecture pcibios_update_resource()
->     
->     Kill pcibios_update_resource(), replacing it with pci_update_resource().
->     pci_update_resource() uses pcibios_resource_to_bus() to convert a
->     resource to a device BAR - the transformation should be exactly the
->     same as the transformation used for the PCI bridges.
->     
->     pci_update_resource "knows" about 64-bit BARs, but doesn't attempt to
->     set the high 32-bits to anything non-zero - currently no architecture
->     attempts to do something different.  If anyone cares, please fix; I'm
->     going to reflect current behaviour for the time being.
->     
->     Ivan pointed out the following architectures need to examine their
->     pcibios_update_resource() implementation - they should make sure that
->     this new implementation does the right thing.  #warning's have been
->     added where appropriate.
->     
->         ia64
->         mips
->         mips64
->     
->     This cset also includes a fix for the problem reported by AKPM where
->     64-bit arch compilers complain about the resource mask being placed
->     in a u32.
-> 
-> <--  snip  -->
-> 
-> 
-> This patch removes the unused pcibios_update_resource() functions the 
-> kernel gained since.
-> 
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Hi Linus,
 
-The comempci.c change looks fine, for that part:
+Please pull from 'for-linus' branch of
 
-Acked-by: Greg Ungerer <gerg@uclinux.org>
+master.kernel.org:/pub/scm/linux/kernel/git/cooloney/blackfin-2.6.git for-linus
 
+to receive the following updates:
 
-> ---
-> 
->  arch/frv/mb93090-mb00/pci-frv.c    |   30 ------------------------
->  arch/m68knommu/kernel/comempci.c   |    9 -------
->  arch/mips/pmc-sierra/yosemite/ht.c |   36 -----------------------------
->  arch/sh/drivers/pci/pci.c          |   32 -------------------------
->  4 files changed, 107 deletions(-)
-> 
-> ebd37440bafbb6f9f5ecd6315ac9953cf97f20e9 diff --git a/arch/frv/mb93090-mb00/pci-frv.c b/arch/frv/mb93090-mb00/pci-frv.c
-> index 4f165c9..edae117 100644
-> --- a/arch/frv/mb93090-mb00/pci-frv.c
-> +++ b/arch/frv/mb93090-mb00/pci-frv.c
-> @@ -19,36 +19,6 @@
->  
->  #include "pci-frv.h"
->  
-> -#if 0
-> -void
-> -pcibios_update_resource(struct pci_dev *dev, struct resource *root,
-> -			struct resource *res, int resource)
-> -{
-> -	u32 new, check;
-> -	int reg;
-> -
-> -	new = res->start | (res->flags & PCI_REGION_FLAG_MASK);
-> -	if (resource < 6) {
-> -		reg = PCI_BASE_ADDRESS_0 + 4*resource;
-> -	} else if (resource == PCI_ROM_RESOURCE) {
-> -		res->flags |= IORESOURCE_ROM_ENABLE;
-> -		new |= PCI_ROM_ADDRESS_ENABLE;
-> -		reg = dev->rom_base_reg;
-> -	} else {
-> -		/* Somebody might have asked allocation of a non-standard resource */
-> -		return;
-> -	}
-> -
-> -	pci_write_config_dword(dev, reg, new);
-> -	pci_read_config_dword(dev, reg, &check);
-> -	if ((new ^ check) & ((new & PCI_BASE_ADDRESS_SPACE_IO) ? PCI_BASE_ADDRESS_IO_MASK : PCI_BASE_ADDRESS_MEM_MASK)) {
-> -		printk(KERN_ERR "PCI: Error while updating region "
-> -		       "%s/%d (%08x != %08x)\n", pci_name(dev), resource,
-> -		       new, check);
-> -	}
-> -}
-> -#endif
-> -
->  /*
->   * We need to avoid collisions with `mirrored' VGA ports
->   * and other strange ISA hardware, so we always want the
-> diff --git a/arch/m68knommu/kernel/comempci.c b/arch/m68knommu/kernel/comempci.c
-> index 6ee00ef..0a68b5a 100644
-> --- a/arch/m68knommu/kernel/comempci.c
-> +++ b/arch/m68knommu/kernel/comempci.c
-> @@ -375,15 +375,6 @@ int pcibios_enable_device(struct pci_dev *dev, int mask)
->  
->  /*****************************************************************************/
->  
-> -void pcibios_update_resource(struct pci_dev *dev, struct resource *root, struct resource *r, int resource)
-> -{
-> -	printk(KERN_WARNING "%s(%d): no support for changing PCI resources...\n",
-> -		__FILE__, __LINE__);
-> -}
-> -
-> -
-> -/*****************************************************************************/
-> -
->  /*
->   *	Local routines to interrcept the standard I/O and vector handling
->   *	code. Don't include this 'till now - initialization code above needs
-> diff --git a/arch/mips/pmc-sierra/yosemite/ht.c b/arch/mips/pmc-sierra/yosemite/ht.c
-> index 6380662..678388f 100644
-> --- a/arch/mips/pmc-sierra/yosemite/ht.c
-> +++ b/arch/mips/pmc-sierra/yosemite/ht.c
-> @@ -345,42 +345,6 @@ int pcibios_enable_device(struct pci_dev *dev, int mask)
->          return pcibios_enable_resources(dev);
->  }
->  
-> -
-> -
-> -void pcibios_update_resource(struct pci_dev *dev, struct resource *root,
-> -                             struct resource *res, int resource)
-> -{
-> -        u32 new, check;
-> -        int reg;
-> -
-> -        return;
-> -
-> -        new = res->start | (res->flags & PCI_REGION_FLAG_MASK);
-> -        if (resource < 6) {
-> -                reg = PCI_BASE_ADDRESS_0 + 4 * resource;
-> -        } else if (resource == PCI_ROM_RESOURCE) {
-> -		res->flags |= IORESOURCE_ROM_ENABLE;
-> -                reg = dev->rom_base_reg;
-> -        } else {
-> -                /*
-> -                 * Somebody might have asked allocation of a non-standard
-> -                 * resource
-> -                 */
-> -                return;
-> -        }
-> -
-> -        pci_write_config_dword(dev, reg, new);
-> -        pci_read_config_dword(dev, reg, &check);
-> -        if ((new ^ check) &
-> -            ((new & PCI_BASE_ADDRESS_SPACE_IO) ? PCI_BASE_ADDRESS_IO_MASK :
-> -             PCI_BASE_ADDRESS_MEM_MASK)) {
-> -                printk(KERN_ERR "PCI: Error while updating region "
-> -                       "%s/%d (%08x != %08x)\n", pci_name(dev), resource,
-> -                       new, check);
-> -        }
-> -}
-> -
-> -
->  void pcibios_align_resource(void *data, struct resource *res,
->                              resource_size_t size, resource_size_t align)
->  {
-> diff --git a/arch/sh/drivers/pci/pci.c b/arch/sh/drivers/pci/pci.c
-> index 08d2e73..f57095a 100644
-> --- a/arch/sh/drivers/pci/pci.c
-> +++ b/arch/sh/drivers/pci/pci.c
-> @@ -76,38 +76,6 @@ void __devinit __weak pcibios_fixup_bus(struct pci_bus *bus)
->  	pci_read_bridge_bases(bus);
->  }
->  
-> -void
-> -pcibios_update_resource(struct pci_dev *dev, struct resource *root,
-> -			struct resource *res, int resource)
-> -{
-> -	u32 new, check;
-> -	int reg;
-> -
-> -	new = res->start | (res->flags & PCI_REGION_FLAG_MASK);
-> -	if (resource < 6) {
-> -		reg = PCI_BASE_ADDRESS_0 + 4*resource;
-> -	} else if (resource == PCI_ROM_RESOURCE) {
-> -		res->flags |= IORESOURCE_ROM_ENABLE;
-> -		new |= PCI_ROM_ADDRESS_ENABLE;
-> -		reg = dev->rom_base_reg;
-> -	} else {
-> -		/*
-> -		 * Somebody might have asked allocation of a non-standard
-> -		 * resource
-> -		 */
-> -		return;
-> -	}
-> -
-> -	pci_write_config_dword(dev, reg, new);
-> -	pci_read_config_dword(dev, reg, &check);
-> -	if ((new ^ check) & ((new & PCI_BASE_ADDRESS_SPACE_IO) ?
-> -		PCI_BASE_ADDRESS_IO_MASK : PCI_BASE_ADDRESS_MEM_MASK)) {
-> -		printk(KERN_ERR "PCI: Error while updating region "
-> -		       "%s/%d (%08x != %08x)\n", pci_name(dev), resource,
-> -		       new, check);
-> -	}
-> -}
-> -
->  void pcibios_align_resource(void *data, struct resource *res,
->  			    resource_size_t size, resource_size_t align)
->  			    __attribute__ ((weak));
-> 
-> 
+ drivers/serial/bfin_5xx.c                         |   40 +++++++++-----------
+ include/asm-blackfin/mach-bf527/bfin_serial_5xx.h |    2 +-
+ include/asm-blackfin/mach-bf533/bfin_serial_5xx.h |    2 +-
+ include/asm-blackfin/mach-bf537/bfin_serial_5xx.h |    2 +-
+ include/asm-blackfin/mach-bf548/bfin_serial_5xx.h |    6 ++--
+ include/asm-blackfin/mach-bf561/bfin_serial_5xx.h |    2 +-
+ 6 files changed, 25 insertions(+), 29 deletions(-)
 
+Sonic Zhang (2):
+      Blackfin arch: fix typo error in bf548 serial header file
+      Blackfin Serial Driver: Use timer to poll CTS PIN instead of workqueue.
 
--- 
-------------------------------------------------------------------------
-Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
-SnapGear -- a Secure Computing Company      PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c
+index f20952c..fd9bb77 100644
+--- a/drivers/serial/bfin_5xx.c
++++ b/drivers/serial/bfin_5xx.c
+@@ -49,6 +49,7 @@
+ #define DMA_RX_YCOUNT		(PAGE_SIZE / DMA_RX_XCOUNT)
+
+ #define DMA_RX_FLUSH_JIFFIES	(HZ / 50)
++#define CTS_CHECK_JIFFIES	(HZ / 50)
+
+ #ifdef CONFIG_SERIAL_BFIN_DMA
+ static void bfin_serial_dma_tx_chars(struct bfin_serial_port *uart);
+@@ -290,11 +291,6 @@ static void bfin_serial_tx_chars(struct
+bfin_serial_port *uart)
+ {
+ 	struct circ_buf *xmit = &uart->port.info->xmit;
+
+-	if (uart->port.x_char) {
+-		UART_PUT_CHAR(uart, uart->port.x_char);
+-		uart->port.icount.tx++;
+-		uart->port.x_char = 0;
+-	}
+ 	/*
+ 	 * Check the modem control lines before
+ 	 * transmitting anything.
+@@ -306,6 +302,12 @@ static void bfin_serial_tx_chars(struct
+bfin_serial_port *uart)
+ 		return;
+ 	}
+
++	if (uart->port.x_char) {
++		UART_PUT_CHAR(uart, uart->port.x_char);
++		uart->port.icount.tx++;
++		uart->port.x_char = 0;
++	}
++
+ 	while ((UART_GET_LSR(uart) & THRE) && xmit->tail != xmit->head) {
+ 		UART_PUT_CHAR(uart, xmit->buf[xmit->tail]);
+ 		xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
+@@ -345,15 +347,6 @@ static irqreturn_t bfin_serial_tx_int(int irq,
+void *dev_id)
+ }
+ #endif
+
+-#ifdef CONFIG_SERIAL_BFIN_CTSRTS
+-static void bfin_serial_do_work(struct work_struct *work)
+-{
+-	struct bfin_serial_port *uart = container_of(work, struct
+bfin_serial_port, cts_workqueue);
+-
+-	bfin_serial_mctrl_check(uart);
+-}
+-#endif
+-
+ #ifdef CONFIG_SERIAL_BFIN_DMA
+ static void bfin_serial_dma_tx_chars(struct bfin_serial_port *uart)
+ {
+@@ -361,6 +354,12 @@ static void bfin_serial_dma_tx_chars(struct
+bfin_serial_port *uart)
+
+ 	uart->tx_done = 0;
+
++	/*
++	 * Check the modem control lines before
++	 * transmitting anything.
++	 */
++	bfin_serial_mctrl_check(uart);
++
+ 	if (uart_circ_empty(xmit) || uart_tx_stopped(&uart->port)) {
+ 		uart->tx_count = 0;
+ 		uart->tx_done = 1;
+@@ -373,12 +372,6 @@ static void bfin_serial_dma_tx_chars(struct
+bfin_serial_port *uart)
+ 		uart->port.x_char = 0;
+ 	}
+
+-	/*
+-	 * Check the modem control lines before
+-	 * transmitting anything.
+-	 */
+-	bfin_serial_mctrl_check(uart);
+-
+ 	uart->tx_count = CIRC_CNT(xmit->head, xmit->tail, UART_XMIT_SIZE);
+ 	if (uart->tx_count > (UART_XMIT_SIZE - xmit->tail))
+ 		uart->tx_count = UART_XMIT_SIZE - xmit->tail;
+@@ -565,7 +558,10 @@ static void bfin_serial_mctrl_check(struct
+bfin_serial_port *uart)
+ 	uart_handle_cts_change(&uart->port, status & TIOCM_CTS);
+ 	if (!(status & TIOCM_CTS)) {
+ 		tty->hw_stopped = 1;
+-		schedule_work(&uart->cts_workqueue);
++		uart->cts_timer.data = (unsigned long)(uart);
++		uart->cts_timer.function = (void *)bfin_serial_mctrl_check;
++		uart->cts_timer.expires = jiffies + CTS_CHECK_JIFFIES;
++		add_timer(&(uart->cts_timer));
+ 	} else {
+ 		tty->hw_stopped = 0;
+ 	}
+@@ -885,7 +881,7 @@ static void __init bfin_serial_init_ports(void)
+ 		init_timer(&(bfin_serial_ports[i].rx_dma_timer));
+ #endif
+ #ifdef CONFIG_SERIAL_BFIN_CTSRTS
+-		INIT_WORK(&bfin_serial_ports[i].cts_workqueue, bfin_serial_do_work);
++		init_timer(&(bfin_serial_ports[i].cts_timer));
+ 		bfin_serial_ports[i].cts_pin	    =
+ 			bfin_serial_resource[i].uart_cts_pin;
+ 		bfin_serial_ports[i].rts_pin	    =
+diff --git a/include/asm-blackfin/mach-bf527/bfin_serial_5xx.h
+b/include/asm-blackfin/mach-bf527/bfin_serial_5xx.h
+index 96bd09e..2526b6e 100644
+--- a/include/asm-blackfin/mach-bf527/bfin_serial_5xx.h
++++ b/include/asm-blackfin/mach-bf527/bfin_serial_5xx.h
+@@ -96,7 +96,7 @@ struct bfin_serial_port {
+ 	struct work_struct tx_dma_workqueue;
+ #endif
+ #ifdef CONFIG_SERIAL_BFIN_CTSRTS
+-	struct work_struct cts_workqueue;
++	struct timer_list cts_timer;
+ 	int cts_pin;
+ 	int rts_pin;
+ #endif
+diff --git a/include/asm-blackfin/mach-bf533/bfin_serial_5xx.h
+b/include/asm-blackfin/mach-bf533/bfin_serial_5xx.h
+index e924569..ebf592b 100644
+--- a/include/asm-blackfin/mach-bf533/bfin_serial_5xx.h
++++ b/include/asm-blackfin/mach-bf533/bfin_serial_5xx.h
+@@ -88,7 +88,7 @@ struct bfin_serial_port {
+ # endif
+ #endif
+ #ifdef CONFIG_SERIAL_BFIN_CTSRTS
+-	struct work_struct 	cts_workqueue;
++	struct timer_list       cts_timer;
+ 	int			cts_pin;
+ 	int			rts_pin;
+ #endif
+diff --git a/include/asm-blackfin/mach-bf537/bfin_serial_5xx.h
+b/include/asm-blackfin/mach-bf537/bfin_serial_5xx.h
+index 41d7b64..1bf56ff 100644
+--- a/include/asm-blackfin/mach-bf537/bfin_serial_5xx.h
++++ b/include/asm-blackfin/mach-bf537/bfin_serial_5xx.h
+@@ -96,7 +96,7 @@ struct bfin_serial_port {
+ 	struct work_struct	tx_dma_workqueue;
+ #endif
+ #ifdef CONFIG_SERIAL_BFIN_CTSRTS
+-	struct work_struct 	cts_workqueue;
++	struct timer_list 	cts_timer;
+ 	int		cts_pin;
+ 	int 		rts_pin;
+ #endif
+diff --git a/include/asm-blackfin/mach-bf548/bfin_serial_5xx.h
+b/include/asm-blackfin/mach-bf548/bfin_serial_5xx.h
+index 59b4ad4..5e29446 100644
+--- a/include/asm-blackfin/mach-bf548/bfin_serial_5xx.h
++++ b/include/asm-blackfin/mach-bf548/bfin_serial_5xx.h
+@@ -99,7 +99,7 @@ struct bfin_serial_port {
+ 	struct work_struct	tx_dma_workqueue;
+ #endif
+ #ifdef CONFIG_SERIAL_BFIN_CTSRTS
+-	struct work_struct 	cts_workqueue;
++	struct timer_list 	cts_timer;
+ 	int		cts_pin;
+ 	int 		rts_pin;
+ #endif
+@@ -187,7 +187,7 @@ static void bfin_serial_hw_init(struct
+bfin_serial_port *uart)
+
+ #ifdef CONFIG_BFIN_UART1_CTSRTS
+ 	peripheral_request(P_UART1_RTS, DRIVER_NAME);
+-	peripheral_request(P_UART1_CTS DRIVER_NAME);
++	peripheral_request(P_UART1_CTS, DRIVER_NAME);
+ #endif
+ #endif
+
+@@ -202,7 +202,7 @@ static void bfin_serial_hw_init(struct
+bfin_serial_port *uart)
+
+ #ifdef CONFIG_BFIN_UART3_CTSRTS
+ 	peripheral_request(P_UART3_RTS, DRIVER_NAME);
+-	peripheral_request(P_UART3_CTS DRIVER_NAME);
++	peripheral_request(P_UART3_CTS, DRIVER_NAME);
+ #endif
+ #endif
+ 	SSYNC();
+diff --git a/include/asm-blackfin/mach-bf561/bfin_serial_5xx.h
+b/include/asm-blackfin/mach-bf561/bfin_serial_5xx.h
+index 30d90b5..8aa0278 100644
+--- a/include/asm-blackfin/mach-bf561/bfin_serial_5xx.h
++++ b/include/asm-blackfin/mach-bf561/bfin_serial_5xx.h
+@@ -88,7 +88,7 @@ struct bfin_serial_port {
+ # endif
+ #endif
+ #ifdef CONFIG_SERIAL_BFIN_CTSRTS
+-	struct work_struct 	cts_workqueue;
++	struct timer_list       cts_timer;
+ 	int			cts_pin;
+ 	int			rts_pin;
+ #endif
