@@ -1,145 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbYFSGdN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbYFSGgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757308AbYFSGdN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 02:33:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087AbYFSGc5
+	id S1757389AbYFSGgP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 02:36:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087AbYFSGgA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 02:32:57 -0400
-Received: from mail7.hitachi.co.jp ([133.145.228.42]:37840 "EHLO
-	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753192AbYFSGc4 (ORCPT
+	Thu, 19 Jun 2008 02:36:00 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:23876 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755126AbYFSGf7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 02:32:56 -0400
-X-AuditID: 0ac90650-ad08dba0000062df-92-4859fd96e722
-Message-ID: <4859FD82.1000306@hitachi.com>
-Date: Thu, 19 Jun 2008 15:32:34 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
+	Thu, 19 Jun 2008 02:35:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=UMRdErxs0SQzypIjGlvGzSoqB5uXiGn3YXx6Enu86Y76iD8AMDg1Mom5p4Ifbl6J5m
+         XOGqk+RfQayCZBrM5C6XQNFhnP4UbjKmfV+9/Zho4OM6xlavoGoDYRXIzJCdR1Ndn/ND
+         2gXZbYacRqb9y2BJOS7ZS2LvAqiJhKkcYgxHM=
+Message-ID: <86802c440806182335i6434a7ecj512dae852c4a41eb@mail.gmail.com>
+Date: Wed, 18 Jun 2008 23:35:58 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: update mptable v7
+Cc: "Len Brown" <lenb@kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4859FCA4.4050606@zytor.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>, sct@redhat.com
-Cc: adilger@clusterfs.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, Jan Kara <jack@suse.cz>,
-       Josef Bacik <jbacik@redhat.com>, Mingming Cao <cmm@us.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
-Subject: [PATCH] jbd: don't abort if flushing file data failed
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
+Content-Disposition: inline
+References: <200805041823.57198.yhlu.kernel@gmail.com>
+	 <200805251600.26325.yhlu.kernel@gmail.com>
+	 <200806011317.38622.yhlu.kernel@gmail.com>
+	 <alpine.LFD.1.10.0806181812580.3074@localhost.localdomain>
+	 <86802c440806181532g348864e1u3d067f8366046a7f@mail.gmail.com>
+	 <alpine.LFD.1.10.0806182031060.3074@localhost.localdomain>
+	 <86802c440806181749g2faf1892iea693717ea919631@mail.gmail.com>
+	 <alpine.LFD.1.10.0806190113290.3613@localhost.localdomain>
+	 <86802c440806182326m8c3ad56j29242895507e074d@mail.gmail.com>
+	 <4859FCA4.4050606@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In ordered mode, the current jbd aborts the journal if a file data
-buffer has an error.  But this behavior is unintended, and we found
-that it has been adopted accidentally.
+On Wed, Jun 18, 2008 at 11:28 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Yinghai Lu wrote:
+>>>
+>>> Can somebody clue me into why this concept
+>>> is something other than totally insane?
+>>
+>> for system that have 6 pcie slots and more, with full populated cards.
+>> when boot with mptable, BIOS will use irq < 16 for all pci devices,
+>> and several devices will share same irq.
+>> but when acpi is enabled, irqs are spanned all over.
+>>
+>> also when pci card with several pci bridges is plugged in, the mptable
+>> is totally messed up, some slot will work, and some doesn't work.
+>
+> And the reason to worry about supporting non-ACPI on such hardware is what?
 
-This patch undoes it and just calls printk() instead of aborting
-the journal.  Additionally, set AS_EIO into the address_space
-object of the failed buffer which is submitted by
-journal_do_submit_data() so that fsync() can get -EIO.
+1. some other os doesn't support acpi well, and still use mptable.
+2. show BIOS engineer how to fix mptable.
 
-Missing error checkings are also added to inform errors on file
-data buffers to the user.  The following buffers are targeted.
-
-  (a) the buffer which has already been written out by pdflush
-  (b) the buffer which has been unlocked before scanned in the
-      t_locked_list loop
-
-Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
----
- fs/jbd/commit.c |   32 +++++++++++++++++++++++++-------
- 1 file changed, 25 insertions(+), 7 deletions(-)
-
-Index: linux-2.6.26-rc5-mm3/fs/jbd/commit.c
-===================================================================
---- linux-2.6.26-rc5-mm3.orig/fs/jbd/commit.c
-+++ linux-2.6.26-rc5-mm3/fs/jbd/commit.c
-@@ -172,7 +172,7 @@ static void journal_do_submit_data(struc
- /*
-  *  Submit all the data buffers to disk
-  */
--static void journal_submit_data_buffers(journal_t *journal,
-+static int journal_submit_data_buffers(journal_t *journal,
- 				transaction_t *commit_transaction)
- {
- 	struct journal_head *jh;
-@@ -180,6 +180,7 @@ static void journal_submit_data_buffers(
- 	int locked;
- 	int bufs = 0;
- 	struct buffer_head **wbuf = journal->j_wbuf;
-+	int err = 0;
- 
- 	/*
- 	 * Whenever we unlock the journal and sleep, things can get added
-@@ -253,6 +254,8 @@ write_out_data:
- 			put_bh(bh);
- 		} else {
- 			BUFFER_TRACE(bh, "writeout complete: unfile");
-+			if (unlikely(!buffer_uptodate(bh)))
-+				err = -EIO;
- 			__journal_unfile_buffer(jh);
- 			jbd_unlock_bh_state(bh);
- 			if (locked)
-@@ -271,6 +274,8 @@ write_out_data:
- 	}
- 	spin_unlock(&journal->j_list_lock);
- 	journal_do_submit_data(wbuf, bufs);
-+
-+	return err;
- }
- 
- /*
-@@ -410,8 +415,7 @@ void journal_commit_transaction(journal_
- 	 * Now start flushing things to disk, in the order they appear
- 	 * on the transaction lists.  Data blocks go first.
- 	 */
--	err = 0;
--	journal_submit_data_buffers(journal, commit_transaction);
-+	err = journal_submit_data_buffers(journal, commit_transaction);
- 
- 	/*
- 	 * Wait for all previously submitted IO to complete.
-@@ -426,10 +430,21 @@ void journal_commit_transaction(journal_
- 		if (buffer_locked(bh)) {
- 			spin_unlock(&journal->j_list_lock);
- 			wait_on_buffer(bh);
--			if (unlikely(!buffer_uptodate(bh)))
--				err = -EIO;
- 			spin_lock(&journal->j_list_lock);
- 		}
-+		if (unlikely(!buffer_uptodate(bh))) {
-+			if (TestSetPageLocked(bh->b_page)) {
-+				spin_unlock(&journal->j_list_lock);
-+				lock_page(bh->b_page);
-+				spin_lock(&journal->j_list_lock);
-+			}
-+			if (bh->b_page->mapping)
-+				set_bit(AS_EIO, &bh->b_page->mapping->flags);
-+
-+			unlock_page(bh->b_page);
-+			SetPageError(bh->b_page);
-+			err = -EIO;
-+		}
- 		if (!inverted_lock(journal, bh)) {
- 			put_bh(bh);
- 			spin_lock(&journal->j_list_lock);
-@@ -448,8 +463,11 @@ void journal_commit_transaction(journal_
- 	}
- 	spin_unlock(&journal->j_list_lock);
- 
--	if (err)
--		journal_abort(journal, err);
-+	if (err) {
-+		printk(KERN_WARNING
-+		       "JBD: Detected IO errors during flushing file data\n");
-+		err = 0;
-+	}
- 
- 	journal_write_revoke_records(journal, commit_transaction);
- 
-
-
-
+YH
