@@ -1,81 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757860AbYFSKAB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755247AbYFSKAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757860AbYFSKAB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 06:00:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754937AbYFSJ7x
+	id S1755247AbYFSKAZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 06:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755344AbYFSJ7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 05:59:53 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:23090 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754809AbYFSJ7v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 05:59:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=I7XzGwkmGeZJB7uWPSWIWPazhLKwfh6iABgGj3S0A+y8FiY85D0TWov3ZKL5vTJB0N
-         gREsC0d89wd6Q0qOU3Q3PzYqwiLlNlrGkQTS9CnhMPiVy+cczRk/S/fP7NraMwvf/Bva
-         qi1w6S2/bwhKCHF67SUBm8clP5W2M9B0OfGpE=
-Message-ID: <74d0deb30806190259l2ff7931fo819ededc7aec02f7@mail.gmail.com>
-Date: Thu, 19 Jun 2008 11:59:50 +0200
-From: "pHilipp Zabel" <philipp.zabel@gmail.com>
-To: "Samuel Ortiz" <sameo@openedhand.com>
-Subject: Re: [PATCH] MFD maintainer
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ben Dooks" <ben-linux@fluff.org>, "Ian Molton" <spyro@f2s.com>,
-       "Dmitry Baryshkov" <dbaryshkov@gmail.com>,
-       "Russell King - ARM Linux" <linux@arm.linux.org.uk>
-In-Reply-To: <20080618214223.GE22566@caravaggio>
+	Thu, 19 Jun 2008 05:59:55 -0400
+Received: from ping.pong.ch ([212.103.71.101]:59215 "EHLO ping.pong.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755205AbYFSJ7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 05:59:54 -0400
+Date: Thu, 19 Jun 2008 11:59:52 +0200
+From: Gaudenz Steinlin <gaudenz@debian.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+       486798@bugs.debian.org, josejx@gentoo.org
+Subject: Re: [PATCH] restore export of handle_mm_fault for Mac on Linux
+Message-ID: <20080619095952.GB28907@soziologie.ch>
+References: <20080618101402.GF15718@soziologie.ch> <20080618114906.GA23788@infradead.org> <18521.846.628816.525787@cargo.ozlabs.ibm.com> <20080618125131.GA2097@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080618214223.GE22566@caravaggio>
+In-Reply-To: <20080618125131.GA2097@infradead.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added Ian, Dmitry and Russell to Cc.
+On Wed, Jun 18, 2008 at 08:51:31AM -0400, Christoph Hellwig wrote:
+> On Wed, Jun 18, 2008 at 10:45:02PM +1000, Paul Mackerras wrote:
+> > > Has been rejected a few times.  An now that we actually have kvm
+> > > for powerpc in tree MOL should just merge with that project and
+> > > do the right things in tree instead of beeing a really hacky
+> > > module subverting the VM.
+> > 
+> > We don't have KVM for the "classic" 32-bit PowerPC processors, only
+> > for the 44x family.  And doing KVM for the classic 32-bit processors
+> > would probably involve just as much hackery as MOL. :)
+> 
+> I don't think so.  Doing it properly in-tree will mean that it is
+> 
+>   a) properly reviewed
+>   b) means we can do the major VM bits in the kernel without these
+>      really stupid exports
+> 
+> Have you looked at MOL recently?  It's more than disgusting.
+> 
+> And in addition to these issue we do of course as policy not add
+> random hooks in the kernel tree for out of tree stuff.  Especially
+> for hacks like this that don't even have the intention to get merged.
 
-On Wed, Jun 18, 2008 at 11:42 PM, Samuel Ortiz <sameo@openedhand.com> wrote:
-> Hi,
->
-> We probably need someone to look after the few drivers/mfd patches coming
-> every now and then. As agreed with Andrew, I'm ok to do so and my employer
-> is fine with me spending a few working hours on it, if needed.
+This is not true anymore. See my other message to this thread. Joseph
+Jezak is working on a mergeable module.
 
-Right now quite some of the MFD patches go through arm-kernel, but I
-guess once that initial rush of ARM machine patches depending on MFD
-patches submitted at the same time is over, it's a very good idea to
-have a proper path into the kernel.
+Gaudenz
 
-regards
-Philipp
-
-> Signed-off-by: Samuel Ortiz <sameo@openedhand.com>
-> --
->
->  MAINTAINERS |    6 ++++++
->  1 files changed, 6 insertions(+), 0 deletions(-)
->
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index cd587ee..f45938b 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2814,6 +2814,12 @@ W:       https://tango.0pointer.de/mailman/listinfo/s270-linux
->  W:     http://0pointer.de/lennart/tchibo.html
->  S:     Maintained
->
-> +MULTIFUNCTION DEVICES (MFD)
-> +P:     Samuel Ortiz
-> +M:     sameo@openedhand.com
-> +L:     linux-kernel@vger.kernel.org
-> +S:     Supported
-> +
->  MULTIMEDIA CARD (MMC), SECURE DIGITAL (SD) AND SDIO SUBSYSTEM
->  P:     Pierre Ossman
->  M:     drzeus-mmc@drzeus.cx
->
+-- 
+Ever tried. Ever failed. No matter.
+Try again. Fail again. Fail better.
+~ Samuel Beckett ~
