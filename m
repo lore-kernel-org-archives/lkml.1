@@ -1,183 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbYFSA2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757767AbYFSA24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755555AbYFSA2n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 20:28:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbYFSA2d
+	id S1757767AbYFSA24 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 20:28:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756698AbYFSA2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 20:28:33 -0400
+	Wed, 18 Jun 2008 20:28:36 -0400
 Received: from wa-out-1112.google.com ([209.85.146.176]:48029 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754187AbYFSA2c (ORCPT
+	with ESMTP id S1756452AbYFSA2e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 20:28:32 -0400
+	Wed, 18 Jun 2008 20:28:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
          :mime-version:content-type:content-transfer-encoding
          :content-disposition:message-id;
-        b=itlUzTwSjgp5UoxvYn4gOJ19hciD/JF2vlvyRwc0J9hZXCBEI5lH2y1pEe7Gc98rc1
-         QSk7b0hvBwC4/CUT5VZqQ1v2FB212dVu/Py5hCITsFb0/g9T2MBbiWBde/o1UkZv5tDr
-         0baOMlXRR1DXc7dDP/ahqtKn4x9Tk6fc3WOns=
+        b=VpWHUef6tbI2wAtWSzUoxbyrssTnT8WpxANOuceNGcqtsr9WQYHurTIjObrVw1VqUx
+         764Hj97TH3a/+43ZdVmepsI8ucTIffVylaLKS+VK6eZG1jWVc7pbSn4+4mQiF3qK9t4D
+         bWqWpx03GcBmFiExmk418M9FMSzsajPaFLJTY=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: cleanup machine_specific_memory_setup v2
-Date: Wed, 18 Jun 2008 17:27:08 -0700
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Exner <dex@dragonslave.de>, Len Brown <lenb@kernel.org>
+Subject: [PATCH] x86: update mptable fix with no ioapic v2
+Date: Wed, 18 Jun 2008 17:29:31 -0700
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200806161303.31997.yhlu.kernel@gmail.com> <200806161958.28627.yhlu.kernel@gmail.com> <200806181106.08491.yhlu.kernel@gmail.com>
-In-Reply-To: <200806181106.08491.yhlu.kernel@gmail.com>
+References: <200805041823.57198.yhlu.kernel@gmail.com> <200806011317.38622.yhlu.kernel@gmail.com> <200806181432.57204.yhlu.kernel@gmail.com>
+In-Reply-To: <200806181432.57204.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806181727.08918.yhlu.kernel@gmail.com>
+Message-Id: <200806181729.31464.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-1. let 64bit support 88 and e801 too
-2. introduce default_machine_specific_memory_setup, and reuse it
-   for voyager
+if the system doesn't have ioapic, we don't need to store entries for mptable
+update
 
-v2: fix 64 bit compiling
+also let mp_config_acpi_gsi not call func in mpparse
+so later could decouple mpparse with acpi more easily
 
+Reported-by: Daniel Exner <dex@dragonslave.de>
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
 ---
- arch/x86/kernel/e820.c        |   13 +++++++------
- arch/x86/mach-voyager/setup.c |   32 +-------------------------------
- include/asm-x86/e820.h        |    3 +--
- include/asm-x86/setup.h       |    3 ++-
- 4 files changed, 11 insertions(+), 40 deletions(-)
+ arch/x86/kernel/acpi/boot.c |   87 ++++++++++++++++++++++++++++----------------
+ arch/x86/kernel/mpparse.c   |   19 ++++-----
+ include/asm-x86/mpspec.h    |    2 -
+ 3 files changed, 65 insertions(+), 43 deletions(-)
 
-Index: linux-2.6/arch/x86/kernel/e820.c
+Index: linux-2.6/arch/x86/kernel/acpi/boot.c
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820.c
-+++ linux-2.6/arch/x86/kernel/e820.c
-@@ -1029,7 +1029,7 @@ void __init e820_reserve_resources(void)
- 	}
+--- linux-2.6.orig/arch/x86/kernel/acpi/boot.c
++++ linux-2.6/arch/x86/kernel/acpi/boot.c
+@@ -958,10 +958,37 @@ void __init mp_register_ioapic(int id, u
+ 	nr_ioapics++;
  }
  
--char *__init __attribute__((weak)) machine_specific_memory_setup(void)
-+char *__init default_machine_specific_memory_setup(void)
- {
- 	char *who = "BIOS-e820";
- 	int new_nr;
-@@ -1045,10 +1045,7 @@ char *__init __attribute__((weak)) machi
- 			&new_nr);
- 	boot_params.e820_entries = new_nr;
- 	if (copy_e820_map(boot_params.e820_map, boot_params.e820_entries) < 0) {
--#ifdef CONFIG_X86_64
--		early_panic("Cannot find a valid memory map");
--#else
--		unsigned long mem_size;
-+		u64 mem_size;
- 
- 		/* compare results from other methods and take the greater */
- 		if (boot_params.alt_mem_k
-@@ -1063,13 +1060,17 @@ char *__init __attribute__((weak)) machi
- 		e820.nr_map = 0;
- 		e820_add_region(0, LOWMEMSIZE(), E820_RAM);
- 		e820_add_region(HIGH_MEMORY, mem_size << 10, E820_RAM);
--#endif
- 	}
- 
- 	/* In case someone cares... */
- 	return who;
- }
- 
-+char *__init __attribute__((weak)) machine_specific_memory_setup(void)
++static void assign_to_mp_irq(struct mp_config_intsrc *m,
++				    struct mp_config_intsrc *mp_irq)
 +{
-+	return default_machine_specific_memory_setup();
++	memcpy(mp_irq, m, sizeof(struct mp_config_intsrc));
 +}
 +
- /* Overridden in paravirt.c if CONFIG_PARAVIRT */
- char * __init __attribute__((weak)) memory_setup(void)
- {
-Index: linux-2.6/arch/x86/mach-voyager/setup.c
-===================================================================
---- linux-2.6.orig/arch/x86/mach-voyager/setup.c
-+++ linux-2.6/arch/x86/mach-voyager/setup.c
-@@ -104,35 +104,5 @@ char *__init machine_specific_memory_set
- 		return who;
- 	}
- 
--	who = "BIOS-e820";
--
--	/*
--	 * Try to copy the BIOS-supplied E820-map.
--	 *
--	 * Otherwise fake a memory map; one section from 0k->640k,
--	 * the next section from 1mb->appropriate_mem_k
--	 */
--	new_nr = boot_params.e820_entries;
--	sanitize_e820_map(boot_params.e820_map,
--			ARRAY_SIZE(boot_params.e820_map),
--			&new_nr);
--	boot_params.e820_entries = new_nr;
--	if (copy_e820_map(boot_params.e820_map, boot_params.e820_entries)
--	    < 0) {
--		unsigned long mem_size;
--
--		/* compare results from other methods and take the greater */
--		if (boot_params.alt_mem_k < boot_params.screen_info.ext_mem_k) {
--			mem_size = boot_params.screen_info.ext_mem_k;
--			who = "BIOS-88";
--		} else {
--			mem_size = boot_params.alt_mem_k;
--			who = "BIOS-e801";
--		}
--
--		e820.nr_map = 0;
--		e820_add_region(0, LOWMEMSIZE(), E820_RAM);
--		e820_add_region(HIGH_MEMORY, mem_size << 10, E820_RAM);
--	}
--	return who;
-+	return default_machine_specific_memory_setup();
- }
-Index: linux-2.6/include/asm-x86/e820.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/e820.h
-+++ linux-2.6/include/asm-x86/e820.h
-@@ -102,6 +102,7 @@ extern u64 e820_hole_size(u64 start, u64
- extern void finish_e820_parsing(void);
- extern void e820_reserve_resources(void);
- extern void setup_memory_map(void);
-+extern char *default_machine_specific_memory_setup(void);
- extern char *machine_specific_memory_setup(void);
- extern char *memory_setup(void);
- 
-@@ -116,9 +117,7 @@ extern char *memory_setup(void);
- #ifdef __KERNEL__
- #include <linux/ioport.h>
- 
--#ifdef CONFIG_X86_32
- #define HIGH_MEMORY	(1024*1024)
--#endif
- #endif /* __KERNEL__ */
- 
- #endif  /* __ASM_E820_H */
-Index: linux-2.6/include/asm-x86/setup.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/setup.h
-+++ linux-2.6/include/asm-x86/setup.h
-@@ -42,13 +42,14 @@ void vsmp_init(void);
-  */
- extern struct boot_params boot_params;
- 
--#ifdef __i386__
- /*
-  * Do NOT EVER look at the BIOS memory size location.
-  * It does not work on many machines.
-  */
- #define LOWMEMSIZE()	(0x9f000)
- 
-+#ifdef __i386__
++static int mp_irq_cmp(struct mp_config_intsrc *mp_irq,
++				struct mp_config_intsrc *m)
++{
++	return memcmp(mp_irq, m, sizeof(struct mp_config_intsrc));
++}
 +
- void __init i386_start_kernel(void);
++static void save_mp_irq(struct mp_config_intsrc *m)
++{
++	int i;
++
++	for (i = 0; i < mp_irq_entries; i++) {
++		if (!mp_irq_cmp(&mp_irqs[i], m))
++			return;
++	}
++
++	assign_to_mp_irq(m, &mp_irqs[mp_irq_entries]);
++	if (++mp_irq_entries == MAX_IRQ_SOURCES)
++		panic("Max # of irq sources exceeded!!\n");
++}
++
+ void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger, u32 gsi)
+ {
+ 	int ioapic;
+ 	int pin;
++	struct mp_config_intsrc mp_irq;
  
- extern unsigned long init_pg_tables_start;
+ 	/*
+ 	 * Convert 'gsi' to 'ioapic.pin'.
+@@ -979,18 +1006,15 @@ void __init mp_override_legacy_irq(u8 bu
+ 	if ((bus_irq == 0) && (trigger == 3))
+ 		trigger = 1;
+ 
+-	mp_irqs[mp_irq_entries].mp_type = MP_INTSRC;
+-	mp_irqs[mp_irq_entries].mp_irqtype = mp_INT;
+-	mp_irqs[mp_irq_entries].mp_irqflag = (trigger << 2) | polarity;
+-	mp_irqs[mp_irq_entries].mp_srcbus = MP_ISA_BUS;
+-	mp_irqs[mp_irq_entries].mp_srcbusirq = bus_irq;	/* IRQ */
+-	mp_irqs[mp_irq_entries].mp_dstapic =
+-			mp_ioapics[ioapic].mp_apicid;	/* APIC ID */
+-	mp_irqs[mp_irq_entries].mp_dstirq = pin;	/* INTIN# */
+-
+-	if (++mp_irq_entries == MAX_IRQ_SOURCES)
+-		panic("Max # of irq sources exceeded!!\n");
++	mp_irq.mp_type = MP_INTSRC;
++	mp_irq.mp_irqtype = mp_INT;
++	mp_irq.mp_irqflag = (trigger << 2) | polarity;
++	mp_irq.mp_srcbus = MP_ISA_BUS;
++	mp_irq.mp_srcbusirq = bus_irq;	/* IRQ */
++	mp_irq.mp_dstapic = mp_ioapics[ioapic].mp_apicid; /* APIC ID */
++	mp_irq.mp_dstirq = pin;	/* INTIN# */
+ 
++	save_mp_irq(&mp_irq);
+ }
+ 
+ void __init mp_config_acpi_legacy_irqs(void)
+@@ -998,6 +1022,7 @@ void __init mp_config_acpi_legacy_irqs(v
+ 	int i;
+ 	int ioapic;
+ 	unsigned int dstapic;
++	struct mp_config_intsrc mp_irq;
+ 
+ #if defined (CONFIG_MCA) || defined (CONFIG_EISA)
+ 	/*
+@@ -1050,16 +1075,15 @@ void __init mp_config_acpi_legacy_irqs(v
+ 			continue;	/* IRQ already used */
+ 		}
+ 
+-		mp_irqs[mp_irq_entries].mp_type = MP_INTSRC;
+-		mp_irqs[mp_irq_entries].mp_irqflag = 0;	/* Conforming */
+-		mp_irqs[mp_irq_entries].mp_srcbus = MP_ISA_BUS;
+-		mp_irqs[mp_irq_entries].mp_dstapic = dstapic;
+-		mp_irqs[mp_irq_entries].mp_irqtype = mp_INT;
+-		mp_irqs[mp_irq_entries].mp_srcbusirq = i; /* Identity mapped */
+-		mp_irqs[mp_irq_entries].mp_dstirq = i;
++		mp_irq.mp_type = MP_INTSRC;
++		mp_irq.mp_irqflag = 0;	/* Conforming */
++		mp_irq.mp_srcbus = MP_ISA_BUS;
++		mp_irq.mp_dstapic = dstapic;
++		mp_irq.mp_irqtype = mp_INT;
++		mp_irq.mp_srcbusirq = i; /* Identity mapped */
++		mp_irq.mp_dstirq = i;
+ 
+-		if (++mp_irq_entries == MAX_IRQ_SOURCES)
+-			panic("Max # of irq sources exceeded!!\n");
++		save_mp_irq(&mp_irq);
+ 	}
+ }
+ 
+@@ -1167,25 +1191,26 @@ int mp_register_gsi(u32 gsi, int trigger
+ int mp_config_acpi_gsi(unsigned char number, unsigned int devfn, u8 pin,
+ 			u32 gsi, int triggering, int polarity)
+ {
+-	struct mpc_config_intsrc intsrc;
++#ifdef CONFIG_X86_MPPARSE
++	struct mp_config_intsrc mp_irq;
+ 	int ioapic;
+ 
+-	if (!enable_update_mptable)
++	if (!acpi_ioapic)
+ 		return 0;
+ 
+ 	/* print the entry should happen on mptable identically */
+-	intsrc.mpc_type = MP_INTSRC;
+-	intsrc.mpc_irqtype = mp_INT;
+-	intsrc.mpc_irqflag = (triggering == ACPI_EDGE_SENSITIVE ? 4 : 0x0c) |
++	mp_irq.mp_type = MP_INTSRC;
++	mp_irq.mp_irqtype = mp_INT;
++	mp_irq.mp_irqflag = (triggering == ACPI_EDGE_SENSITIVE ? 4 : 0x0c) |
+ 				(polarity == ACPI_ACTIVE_HIGH ? 1 : 3);
+-	intsrc.mpc_srcbus = number;
+-	intsrc.mpc_srcbusirq = (((devfn >> 3) & 0x1f) << 2) | ((pin - 1) & 3);
++	mp_irq.mp_srcbus = number;
++	mp_irq.mp_srcbusirq = (((devfn >> 3) & 0x1f) << 2) | ((pin - 1) & 3);
+ 	ioapic = mp_find_ioapic(gsi);
+-	intsrc.mpc_dstapic = mp_ioapic_routing[ioapic].apic_id;
+-	intsrc.mpc_dstirq = gsi - mp_ioapic_routing[ioapic].gsi_base;
+-
+-	MP_intsrc_info(&intsrc);
++	mp_irq.mp_dstapic = mp_ioapic_routing[ioapic].apic_id;
++	mp_irq.mp_dstirq = gsi - mp_ioapic_routing[ioapic].gsi_base;
+ 
++	save_mp_irq(&mp_irq);
++#endif
+ 	return 0;
+ }
+ 
+Index: linux-2.6/arch/x86/kernel/mpparse.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/mpparse.c
++++ linux-2.6/arch/x86/kernel/mpparse.c
+@@ -34,8 +34,6 @@
+ #include <mach_mpparse.h>
+ #endif
+ 
+-int enable_update_mptable;
+-
+ /*
+  * Checksum an MP configuration block.
+  */
+@@ -246,7 +244,7 @@ static void __init print_mp_irq_info(str
+ 		mp_irq->mp_srcbusirq, mp_irq->mp_dstapic, mp_irq->mp_dstirq);
+ }
+ 
+-static void assign_to_mp_irq(struct mpc_config_intsrc *m,
++static void __init assign_to_mp_irq(struct mpc_config_intsrc *m,
+ 				    struct mp_config_intsrc *mp_irq)
+ {
+ 	mp_irq->mp_dstapic = m->mpc_dstapic;
+@@ -270,7 +268,7 @@ static void __init assign_to_mpc_intsrc(
+ 	m->mpc_dstirq = mp_irq->mp_dstirq;
+ }
+ 
+-static int mp_irq_mpc_intsrc_cmp(struct mp_config_intsrc *mp_irq,
++static int __init mp_irq_mpc_intsrc_cmp(struct mp_config_intsrc *mp_irq,
+ 					struct mpc_config_intsrc *m)
+ {
+ 	if (mp_irq->mp_dstapic != m->mpc_dstapic)
+@@ -291,17 +289,16 @@ static int mp_irq_mpc_intsrc_cmp(struct 
+ 	return 0;
+ }
+ 
+-void MP_intsrc_info(struct mpc_config_intsrc *m)
++static void __init MP_intsrc_info(struct mpc_config_intsrc *m)
+ {
+ 	int i;
+ 
+ 	print_MP_intsrc_info(m);
+ 
+-	if (enable_update_mptable)
+-		for (i = 0; i < mp_irq_entries; i++) {
+-			if (!mp_irq_mpc_intsrc_cmp(&mp_irqs[i], m))
+-				return;
+-		}
++	for (i = 0; i < mp_irq_entries; i++) {
++		if (!mp_irq_mpc_intsrc_cmp(&mp_irqs[i], m))
++			return;
++	}
+ 
+ 	assign_to_mp_irq(m, &mp_irqs[mp_irq_entries]);
+ 	if (++mp_irq_entries == MAX_IRQ_SOURCES)
+@@ -1113,6 +1110,8 @@ out:
+ 	return 0;
+ }
+ 
++static int __initdata enable_update_mptable;
++
+ static int __init update_mptable_setup(char *str)
+ {
+ 	enable_update_mptable = 1;
+Index: linux-2.6/include/asm-x86/mpspec.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/mpspec.h
++++ linux-2.6/include/asm-x86/mpspec.h
+@@ -59,9 +59,7 @@ extern void mp_override_legacy_irq(u8 bu
+ 				   u32 gsi);
+ extern void mp_config_acpi_legacy_irqs(void);
+ extern int mp_register_gsi(u32 gsi, int edge_level, int active_high_low);
+-extern void MP_intsrc_info(struct mpc_config_intsrc *m);
+ #ifdef CONFIG_X86_IO_APIC
+-extern int enable_update_mptable;
+ extern int mp_config_acpi_gsi(unsigned char number, unsigned int devfn, u8 pin,
+ 				u32 gsi, int triggering, int polarity);
+ #else
