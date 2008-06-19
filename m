@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755890AbYFSPMH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757607AbYFSPMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755890AbYFSPMH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 11:12:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbYFSPLz
+	id S1757607AbYFSPMw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 11:12:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbYFSPMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 11:11:55 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:50648 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751288AbYFSPLy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 11:11:54 -0400
-Date: Thu, 19 Jun 2008 18:10:18 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Dave Airlie <airlied@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: kerneloops.org: 2.6.26-rc possible regression in ext3
-Message-ID: <20080619151016.GA2721@cs181133002.pp.htv.fi>
-References: <4859F075.2050207@linux.intel.com> <21d7e9970806182242na130e47i85839c4550b4ba03@mail.gmail.com> <20080619081146.GC17630@cs181133002.pp.htv.fi> <485A61B5.90003@linux.intel.com>
+	Thu, 19 Jun 2008 11:12:44 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:62329 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752961AbYFSPMn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 11:12:43 -0400
+Date: Thu, 19 Jun 2008 16:10:44 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Exner <dex@dragonslave.de>, Len Brown <lenb@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: let MPS support selectable
+In-Reply-To: <200806190018.45944.yhlu.kernel@gmail.com>
+Message-ID: <Pine.LNX.4.55.0806191600290.12929@cliff.in.clinika.pl>
+References: <200805041823.57198.yhlu.kernel@gmail.com>
+ <200806181432.57204.yhlu.kernel@gmail.com> <200806181729.31464.yhlu.kernel@gmail.com>
+ <200806190018.45944.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <485A61B5.90003@linux.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 19, 2008 at 06:40:05AM -0700, Arjan van de Ven wrote:
-> Adrian Bunk wrote:
->>
->> Expect a lot more of this to pop up in the future.
->> Should we #error for gcc 4.3.1?
->
-> it/s better to find if the gcc guys made a testcase for this bug (they normally do) and
-> test based on that.
+On Thu, 19 Jun 2008, Yinghai Lu wrote:
 
-The gcc Bugzilla contains a testcase.
+> @@ -233,6 +233,19 @@ config SMP
+>  
+>  	  If you don't know what to do here, say N.
+>  
+> +config X86_FIND_SMP_CONFIG
+> +	def_bool y
+> +	depends on X86_MPPARSE || X86_VOYAGER || X86_VISWS
+> +	depends on X86_32
+> +
+> +config X86_MPPARSE
+> +	def_bool y
+> +	bool "Enable MPS table"
+> +	depends on (X86_32 && (X86_LOCAL_APIC && !X86_VISWS)) || X86_64
+> +	help
+> +	  For old smp systems that do not have proper acpi support. Newer systems
+> +	  (esp with 64bit cpus) with acpi support, MADT and DSDT will override it
+> +
+>  choice
+>  	prompt "Subarchitecture Type"
+>  	default X86_PC
 
-But how do you plan to integrate it into a kernel build?
+ First of all you want to make sure at least one of ACPI and X86_MPPARSE
+is enabled if X86_LOCAL_APIC or you risk a known-broken kernel
+configuration, e.g. SMP which has no slightest chance to work.
 
-cu
-Adrian
+ Personally I'd be happy to see CONFIG_ACPI_BOOT we used to have at one
+point back just so that you can use ACPI tables to run an SMP system
+without the need to pull all the power management stuff.  Useful if the MP
+table is broken beyond recovery.  I am assuming it has been removed for a
+reason though.
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+  Maciej
