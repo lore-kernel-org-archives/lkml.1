@@ -1,97 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751917AbYFSEPR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751961AbYFSE3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751917AbYFSEPR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 00:15:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750807AbYFSEPE
+	id S1751961AbYFSE3U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 00:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbYFSE3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 00:15:04 -0400
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:55011 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750768AbYFSEOp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 00:14:45 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAPh4WUh5LG+u/2dsb2JhbACwMw
-X-IronPort-AV: E=Sophos;i="4.27,670,1204464600"; 
-   d="scan'208";a="129718666"
-Date: Thu, 19 Jun 2008 14:14:41 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Marco Berizzi <pupilla@hotmail.com>
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: XFS: 2.6.26-rc6 link count mismatch for inode
-Message-ID: <20080619041441.GW3700@disturbed>
-Mail-Followup-To: Marco Berizzi <pupilla@hotmail.com>,
-	linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-References: <BAY103-DAV69C0718B7EDB534D9337FB2A90@phx.gbl> <20080618161252.GV3700@disturbed> <BAY103-DAV10F0AFAC45572E50A384AB2AB0@phx.gbl>
+	Thu, 19 Jun 2008 00:29:11 -0400
+Received: from mx1.suse.de ([195.135.220.2]:57464 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750885AbYFSE3K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 00:29:10 -0400
+From: Neil Brown <neilb@suse.de>
+To: Jan De Luyck <ml_linuxkernel_20060528@kcore.org>
+Date: Thu, 19 Jun 2008 14:29:03 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <BAY103-DAV10F0AFAC45572E50A384AB2AB0@phx.gbl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18521.57487.410817.953075@notabene.brown>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Raid auto-assembly on LDM?
+In-Reply-To: message from Jan De Luyck on Sunday June 15
+References: <485577EE.9050806@kcore.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 18, 2008 at 06:39:59PM +0200, Marco Berizzi wrote:
-> Dave Chinner wrote:
+On Sunday June 15, ml_linuxkernel_20060528@kcore.org wrote:
+> Hello folks,
 > 
-> > On Mon, Jun 16, 2008 at 11:11:31AM +0200, Marco Berizzi wrote:
-> > > Hi Folk,
-> > >
-> > > I was tring to compile firefox 3.0rc3
-> > > and while I was erasing a previous
-> > > /tmp/mozilla tree, I started a new
-> > > tar xjf mozilla-blabla.
-> > > After a while linux 2.6.26-rc6 was
-> > > unresponsive: I have unplugged the
-> > > power cable. No problem at startup,
-> > > but:
-> >
-> > What are your mount options?
+> I'm trying something which is probably slightly crazy, but I can't get it to work.
 > 
-> root@Venus:/etc# cat mtab
-> /dev/sda2 / xfs rw 0 0
+> What I'm trying is to get the linux kernel to auto-assembly my raid-1 sets, 
+> which are based on volumes on two LDM disks.
 > 
-> root@Venus:/etc# cat fstab
-> /dev/sda2        /                xfs         defaults         1   1
+> The problem is that the kernel looks for partitiontypes of 0xfd, which I can't 
+> set (or haven't found yet how to set) for LDM volumes. The assembly fails, and 
+> the kernel panics.
 
-[...]
+Sorry, acronym failure:  What is LDM??
 
-> XFS mounting filesystem sda2
-> Ending clean XFS mount for filesystem: sda2
-> VFS: Mounted root (xfs filesystem) readonly.
 > 
-> > I ask because I've
-> > seen this sort of directory corruption before when using volatile
-> > write caches and yanking the power....
-> >
-> > i.e. the corruption could have been caused by the way you reset the
-> > system, not because of the hang. Do you have any information on what
-> > caused the hang?
+> Another possibility would be to use an initrd/initramfs, but then I'm once again 
+> stuck with a disk that is not in raid, and ergo a point of failure when the disk 
+> might crash.
+
+I don't understand your conclusion.
+The initrd/initramfs is stored where ever your kernel is stored.  If
+storing an initrd introduces a single point of failure, then storing
+your Linux kernel will too.
+
+
+Confused.
+
+NeilBrown 
+
+
 > 
-> The tar xf mozilla-source.tarball was not responding
-> nor writing anything on the disk. I did issue also a
-> kill -9 'pid of tar xf' but it did not want to die.
-> So I think the problem was on the filesystem before
-> the incorrect shutdown.
-
-Yeah, it sounds like the I/O subsystem hung somewhere. Without
-details I can't say what went wrong. If it happens again doing
-this:
-
-# echo w > /proc/sysrq-trigger
-
-To get a dump of all the blocked processes on the console. That
-may contain enough info to tell us what the problem is.
-
-> I can retry the test. Let me know if I can do a
-> xfs_repair.
-
-Sure, go ahead and fix it up.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+> (The reason to use LDM is that this way I also can put the other OS on the disk 
+> in mirror.)
+> 
+> Does anyone have any other ideas? I've searched the web, but noone really seems 
+> inclined to do it this way...
+> 
+> Kind regards,
+> 
+> Jan
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
