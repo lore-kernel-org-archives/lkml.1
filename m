@@ -1,130 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758332AbYFSVgG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbYFSVg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758332AbYFSVgG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 17:36:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbYFSVck
+	id S1758598AbYFSVg2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 17:36:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755649AbYFSVcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 17:32:40 -0400
-Received: from ns2.suse.de ([195.135.220.15]:42784 "EHLO mx2.suse.de"
+	Thu, 19 Jun 2008 17:32:43 -0400
+Received: from smtp.cs.aau.dk ([130.225.194.6]:51893 "EHLO smtp.cs.aau.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755553AbYFSVcj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 17:32:39 -0400
-Date: Thu, 19 Jun 2008 14:30:12 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Greg KH <greg@kroah.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       x86@kernel.org, Vegard Nossum <vegard.nossum@gmail.com>
-Subject: [patch 14/15] x86: remove mwait capability C-state check
-Message-ID: <20080619213012.GO20267@suse.de>
-References: <20080619211313.834170620@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-remove-mwait-capability-c-state-check.patch"
-In-Reply-To: <20080619212621.GA20267@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1755598AbYFSVcm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 17:32:42 -0400
+Subject: Re: [git pull] x86 fixes
+From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
+To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Patrick McHardy <kaber@trash.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
+In-Reply-To: <20080619151333.GA8952@elte.hu>
+References: <20080619151333.GA8952@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 19 Jun 2008 23:29:46 +0200
+Message-Id: <1213910986.21443.42.camel@odie.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.25-stable review patch.  If anyone has any objections, please let us
-know.
+tor, 19 06 2008 kl. 17:13 +0200, skrev Ingo Molnar:
+> Linus,
+> 
+> please pull the latest x86 fixes git tree from:
+> 
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+> 
 
-------------------
-From: Ingo Molnar <mingo@elte.hu>
+> Suresh Siddha (1):
+>       x86: fix NULL pointer deref in __switch_to
 
-back-ported from upstream commit a738d897b7b03b83488ae74a9bc03d26a2875dc6 by Vegard Nossum
+Ingo, Rusty and Suresh
 
-Vegard Nossum reports:
+This doesn't contain the lguest part of the fix that Patrick and I
+reported were necessary to fix the problem we reported. Is this being
+pushed via another path?
 
-| powertop shows between 200-400 wakeups/second with the description
-| "<kernel IPI>: Rescheduling interrupts" when all processors have load (e.g.
-| I need to run two busy-loops on my 2-CPU system for this to show up).
-|
-| The bisect resulted in this commit:
-|
-| commit 0c07ee38c9d4eb081758f5ad14bbffa7197e1aec
-| Date:   Wed Jan 30 13:33:16 2008 +0100
-|
-|     x86: use the correct cpuid method to detect MWAIT support for C states
 
-remove the functional effects of this patch and make mwait unconditional.
+Simon Holm Th﻿øgersen
 
-A future patch will turn off mwait on specific CPUs where that causes
-power to be wasted.
-
-Bisected-by: Vegard Nossum <vegard.nossum@gmail.com>
-Tested-by: Vegard Nossum <vegard.nossum@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- arch/x86/kernel/process_32.c |   10 +---------
- arch/x86/kernel/process_64.c |   11 +----------
- 2 files changed, 2 insertions(+), 19 deletions(-)
-
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -259,14 +259,6 @@ static void mwait_idle(void)
- 	mwait_idle_with_hints(0, 0);
- }
- 
--static int __cpuinit mwait_usable(const struct cpuinfo_x86 *c)
--{
--	if (force_mwait)
--		return 1;
--	/* Any C1 states supported? */
--	return c->cpuid_level >= 5 && ((cpuid_edx(5) >> 4) & 0xf) > 0;
--}
--
- void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
- {
- 	static int selected;
-@@ -279,7 +271,7 @@ void __cpuinit select_idle_routine(const
- 			" performance may degrade.\n");
- 	}
- #endif
--	if (cpu_has(c, X86_FEATURE_MWAIT) && mwait_usable(c)) {
-+	if (cpu_has(c, X86_FEATURE_MWAIT)) {
- 		/*
- 		 * Skip, if setup has overridden idle.
- 		 * One CPU supports mwait => All CPUs supports mwait
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -254,15 +254,6 @@ static void mwait_idle(void)
- 	}
- }
- 
--
--static int __cpuinit mwait_usable(const struct cpuinfo_x86 *c)
--{
--	if (force_mwait)
--		return 1;
--	/* Any C1 states supported? */
--	return c->cpuid_level >= 5 && ((cpuid_edx(5) >> 4) & 0xf) > 0;
--}
--
- void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
- {
- 	static int selected;
-@@ -275,7 +266,7 @@ void __cpuinit select_idle_routine(const
- 			" performance may degrade.\n");
- 	}
- #endif
--	if (cpu_has(c, X86_FEATURE_MWAIT) && mwait_usable(c)) {
-+	if (cpu_has(c, X86_FEATURE_MWAIT)) {
- 		/*
- 		 * Skip, if setup has overridden idle.
- 		 * One CPU supports mwait => All CPUs supports mwait
-
--- 
