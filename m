@@ -1,121 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbYFSJ2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756389AbYFSJaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756018AbYFSJ2y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 05:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbYFSJ2p
+	id S1756389AbYFSJaV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 05:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbYFSJaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 05:28:45 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:39296 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751609AbYFSJ2o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 05:28:44 -0400
-Date: Thu, 19 Jun 2008 11:28:42 +0200
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: Joel Becker <Joel.Becker@oracle.com>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: Re: [BUGFIX][PATCH 3/3] configfs: Fix failing symlink() making
-	rmdir() fail
-Message-ID: <20080619092842.GK30804@localhost>
-Reply-To: Louis.Rilling@kerlabs.com
-References: <1213724243-29183-1-git-send-email-louis.rilling@kerlabs.com> <1213724243-29183-4-git-send-email-louis.rilling@kerlabs.com> <20080617221528.GA29091@mail.oracle.com> <20080618114043.GB30804@localhost> <20080618201107.GF16780@ca-server1.us.oracle.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-23497-1213867632-0001-2"
+	Thu, 19 Jun 2008 05:30:08 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51464 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751143AbYFSJaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 05:30:06 -0400
+Date: Thu, 19 Jun 2008 11:29:14 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, josh@freedesktop.org, dvhltc@us.ibm.com,
+       niv@us.ibm.com, dino@in.ibm.com, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, vegard.nossum@gmail.com,
+       adobriyan@gmail.com, oleg@tv-sign.ru, bunk@kernel.org, rjw@sisk.pl
+Subject: Re: [PATCH] Make rcutorture more vicious: reinstate boot-time
+	testing
+Message-ID: <20080619092914.GB15228@elte.hu>
+References: <20080618122144.GA27143@linux.vnet.ibm.com> <20080618162649.GA18326@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080618201107.GF16780@ca-server1.us.oracle.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080618162649.GA18326@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_bohort-23497-1213867632-0001-2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-On Wed, Jun 18, 2008 at 01:11:07PM -0700, Joel Becker wrote:
-> On Wed, Jun 18, 2008 at 01:40:43PM +0200, Louis Rilling wrote:
-> > The problem is rmdir() of the target item (see below). ATTACHING only p=
-rotects
-> > us from rmdir() of the parent. This is the exact reason why I attach th=
-e link to
-> > the target in last place, where we know that we won't have to rollback.
->=20
-> 	Why wouldn't it protect the target, given that detach_prep()
-> will be called against the target if it's being rmdir'd?
+> Hello again!
+> 
+> This patch re-institutes the ability to build rcutorture directly into 
+> the Linux kernel.  The reason that this capability was removed was 
+> that this could result in your kernel being pretty much useless, as 
+> rcutorture would be running starting from early boot.  This problem 
+> has been avoided by (1) making rcutorture run only three seconds of 
+> every six by default, (2) adding a CONFIG_RCU_TORTURE_TEST_RUNNABLE 
+> that permits rcutorture to be quiesced at boot time, and (3) adding a 
+> sysctl in /proc named /proc/sys/kernel/rcutorture_runnable that 
+> permits rcutorture to be quiesced and unquiesced when built into the 
+> kernel.
+> 
+> Please note that this /proc file is -not- available when rcutorture is 
+> built as a module.  Please also note that to get the earlier 
+> take-no-prisoners behavior, you must use the boot command line to set 
+> rcutorture's "stutter" parameter to zero.
+> 
+> The rcutorture quiescing mechanism is currently quite crude: loops in 
+> each rcutorture process that poll a global variable once per tick. 
+> Suggestions for improvement are welcome.  The default action will be 
+> to reduce the polling rate to a few times per second.
 
-Because
-1/ setting and clearing ATTACHING could badly interact with mkdir()/symlink=
-()
-inside the target item (for instance clear the flag before mkdir() has fini=
-shed
-attaching a new item); to avoid this we could use a different flag, but
-2/ rmdir() of the target cannot lock the inode of the new symlink's parent =
-like
-it does for mkdir(), otherwise we would risk a deadlock with other symlink(=
-) and
-sys_rename(). This means that rmdir() should retry aggressively, in a busy
-waiting loop, or replacing mutex_lock()/mutex_unlock() with yield().
+applied to tip/core/rcu - thanks Paul!
 
->=20
-> > 	And AFAICS, creating a VFS object can not hurt as long as we hold the
-> > parent i_mutex, right? Otherwise there already is a problem in
-> > configfs_attach_item() where a failure in populate_attrs() leads to rol=
-lback the
-> > creation of the VFS object already created for the item.
->=20
-> 	We *can* do that, but we try to isolate it - hand-building VFS
-> objects is complex and error prone, and I try to isolate that to
-> specific cases.  I'd rather avoid it when not necessary.
+FYI, yesterday's rcutorture-stutter feature survived a few hundred 
+random bootup tests in -tip testing already.
 
-In the case of symlink(), building a new inode is what all filesystems must=
- do.
-The only "bad" side-effect I can figure out of having to rollback is that t=
-he
-new entry will be visible for a short time until it is removed.
+a possible area for enhancement would be the following code:
 
-Anyway, do you think that the "solutions" above are more acceptable?
+static void
+rcu_stutter_wait(void)
+{
+        while (stutter_pause_test || !rcutorture_runnable)
+                schedule_timeout_interruptible(1);
+}
 
->=20
-> > > 		spin_lock(&configfs_dirent_lock);
-> > > 		parent_sd->s_type &=3D ~CONFIGFS_USET_ATTACHING;
-> > > 		if (ret) {
-> >=20
-> > Here, if detach_prep() of the target failed because of the link attache=
-d above,
-> > it had no means to retry. rmdir() of the target fails because of this
-> > temporary link, which results in a failing symlink() making rmdir() of =
-the
-> > target fail.
->=20
-> 	How so?  It sees ATTACHING, it gets -EAGAIN, it tries again,
-> just like before.  What's different?
+will cause HZ number of IRQs on nohz systems, even if rcutorture is 
+disabled. While it's fine to poll if rcutorture_runnable==1, the sleep 
+should be at least 1 second when !rcutorture_runnable.
 
-See above the reasons for not using ATTACHING on the target.
+[ Or it might even make sense to completely stop the threads from a 
+  sysctl handler - to make it event-driven and to cause no extra IRQs at 
+  all when rcutorture is disabled via /proc. ]
 
-Louis
-
---=20
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
-
---=_bohort-23497-1213867632-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIWibKVKcRuvQ9Q1QRAvYKAJ0Td13sLHxqTC15Z053MUdj/dO4PwCcCOrx
-Xctu7LQhb2IkwUOiKqyQjfY=
-=0x6/
------END PGP SIGNATURE-----
-
---=_bohort-23497-1213867632-0001-2--
+	Ingo
