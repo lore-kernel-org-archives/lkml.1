@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758148AbYFSLGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758533AbYFSLGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758148AbYFSLGf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 07:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756597AbYFSLG0
+	id S1758533AbYFSLGs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 07:06:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758056AbYFSLGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 07:06:26 -0400
-Received: from saeurebad.de ([85.214.36.134]:40479 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756592AbYFSLG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 07:06:26 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug 10741] bug in `tty: BKL pushdown'?
-References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
-	<Jn7irxIunJK.A.B-E.dKDVIB@albercik> <873andbst2.fsf@saeurebad.de>
-	<20080616113313.2f932f8d@lxorguk.ukuu.org.uk>
-	<20080616124602.54910afd@lxorguk.ukuu.org.uk>
-	<87ve099yyt.fsf@saeurebad.de>
-	<20080616192255.312b6be5@lxorguk.ukuu.org.uk>
-Date: Thu, 19 Jun 2008 13:06:18 +0200
-In-Reply-To: <20080616192255.312b6be5@lxorguk.ukuu.org.uk> (Alan Cox's message
-	of "Mon, 16 Jun 2008 19:22:55 +0100")
-Message-ID: <87tzfp4rbp.fsf@skyscraper.fehenstaub.lan>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Thu, 19 Jun 2008 07:06:33 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37285 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757916AbYFSLGc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 07:06:32 -0400
+Date: Thu, 19 Jun 2008 04:01:45 -0700
+From: Greg KH <greg@kroah.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Gaudenz Steinlin <gaudenz@debian.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       486798@bugs.debian.org, josejx@gentoo.org
+Subject: Re: [PATCH] restore export of handle_mm_fault for Mac on Linux
+Message-ID: <20080619110145.GA27196@kroah.com>
+References: <20080618101402.GF15718@soziologie.ch> <20080618181856.3474859d@lxorguk.ukuu.org.uk> <20080619095805.GA28907@soziologie.ch> <20080619103837.GA16331@infradead.org> <84144f020806190346t6c27fa02w77de08a14bd5cb89@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Disposition: inline
+In-Reply-To: <84144f020806190346t6c27fa02w77de08a14bd5cb89@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Jun 19, 2008 at 01:46:57PM +0300, Pekka Enberg wrote:
+> On Thu, Jun 19, 2008 at 11:58:05AM +0200, Gaudenz Steinlin wrote:
+> >> There is an effort underway to bring the MOL kernel modules into
+> >> a mergeable form. But it's not there yet. Joseph Jezak, the MOl main
+> >> developer nowdays is working on it. So MOL no longer want's to hide out
+> >> of tree. It just needs some more time.
+> 
+> On Thu, Jun 19, 2008 at 1:38 PM, Christoph Hellwig <hch@infradead.org> wrote:
+> > It would be useful if you could send some status-updates to lkml and
+> > the kvm list.
+> 
+> And why not submit MOL to the new linux-staging tree?
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+That sounds good to me, send them over when you have something that
+builds and looks semi-sane :)
 
->> tty->session =
->> tty->pgrp =
->> spin_unlock()
->> 
->> That does not fix it.
->
-> Thanks. That rules out the one case I could see that might have pointed
-> to a potential bug.
+thanks,
 
-The second bisection was the wrong one, sorry for the confusion.
-
-I tried again (manually) and the result is (still) this:
-
-Everything fine with HEAD at e5238442 "serial_core: Prepare for BKL push
-down".
-  
-Weird behaviour as described with HEAD at 04f378b19 "tty: BKL pushdown".
-
-	Hannes
+greg k-h
