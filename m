@@ -1,100 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758676AbYFSPFF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758917AbYFSPFx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758676AbYFSPFF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 11:05:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbYFSPEz
+	id S1758917AbYFSPFx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 11:05:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753650AbYFSPFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 11:04:55 -0400
-Received: from dwdmx4.dwd.de ([141.38.3.230]:48329 "EHLO dwdmx4.dwd.de"
+	Thu, 19 Jun 2008 11:05:45 -0400
+Received: from mail.macqel.be ([194.78.208.39]:4484 "EHLO mail.macqel.be"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752083AbYFSPEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 11:04:53 -0400
-Date: Thu, 19 Jun 2008 15:04:39 +0000 (GMT)
-From: Holger Kiehl <Holger.Kiehl@dwd.de>
-X-X-Sender: kiehl@diagnostix.dwd.de
-To: Theodore Tso <tytso@mit.edu>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
-       Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Performance of ext4
-In-Reply-To: <20080619110947.GB11516@mit.edu>
-Message-ID: <Pine.LNX.4.64.0806191440450.24740@diagnostix.dwd.de>
-References: <Pine.LNX.4.64.0806121154090.27806@diagnostix.dwd.de>
- <20080612131928.GB18229@mit.edu> <Pine.LNX.4.64.0806121333480.27806@diagnostix.dwd.de>
- <20080612180605.GD22481@skywalker> <Pine.LNX.4.64.0806121940020.2974@diagnostix.dwd.de>
- <Pine.LNX.4.64.0806130753100.7097@diagnostix.dwd.de>
- <20080616175408.GF3279@atrey.karlin.mff.cuni.cz> <20080616181353.GA20686@skywalker>
- <Pine.LNX.4.64.0806171001200.6307@diagnostix.dwd.de>
- <Pine.LNX.4.64.0806180546370.20901@diagnostix.dwd.de> <20080619110947.GB11516@mit.edu>
+	id S1752518AbYFSPFo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 11:05:44 -0400
+Date: Thu, 19 Jun 2008 17:05:37 +0200
+From: Philippe De Muyter <phdm@macqel.be>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] pcmcia ide kingston compactflash's have a new manufacturer
+	id
+Message-ID: <20080619150537.GA19698@frolo.macqel>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jun 2008, Theodore Tso wrote:
+Hi everybody,
 
-> On Wed, Jun 18, 2008 at 05:58:00AM +0000, Holger Kiehl wrote:
->> For afdbench: 5336.41 files per second 15.63 MiB/s
->>
->> So it seems that for afdbench the ext4-patch-queue is a slowdown.
->
-> Can you remind me where afdbench can be downloaded?  And if I remember
-> correctly, it creates and deletes large numbers of small files,
-> correct?
->
-Yes and yes.
+Up to now, Kingston compactflash cards (ab)used the Toshiba Manufacturer's ID,
+In their new CF cards, they use a new one.  Let's the ide subsystem
+recognize CF cards with the new id.
 
-You can download the benchmark but it is complicated to setup. You can
-download it from ftp://ftp.dwd.de/pub/afd/afdbench-2.0.0.tar.bz2 and
-you will also need ftp://ftp.dwd.de/pub/afd/development/afd-1.4.0pre1.tar.bz2
+Signed-off-by: Christophe Niclaes <cniclaes@develtech.com>
+Acked-by: Philippe De Muyter <phdm@macqel.be>
 
-Here a short guide how you need to set this up (there is also a SETUP
-file in afdbench-2.0.0.tar.bz2):
-
-    - create a new user for example afdbench
-    - untar afdbench-2.0.0.tar.bz2 where ever your test filesystem is mounted
-      eg /home
-    - ln -s /home/afdbench-2.0.0 /home/afdbench
-    - ensure that in .bash_profile of user afdbench you have:
-         PATH=$PATH:$HOME/bin
-    - login as afdbench
-    - Untar afd-1.4.0pre1.tar.bz2
-    - cd afd-1.4.0pre1
-    - ./configure --prefix=$HOME --enable-ftp_reuse_data_port --enable-passwd_in_msg --enable-expand_path_in_message --enable-compiler-optimizations --enable-with_afdbench_settings --enable-splice_support --enable-sendfile_support
-    - make
-    - make install-strip
-    - In afdbench script change BENCH_PASSWD to whatever you have set the
-      password of user afdbench.
-
-If you have problems because you do not have openmotif or lesstif, just use
-the configure switch --with-gui=none. Also make sure you have an FTP-server
-running, I always used vsftpd. To run the test I just called tiny-bench,
-in it you will find how you can start it. You can also run without FTP-server
-but I do not know if the problems are reproduceable.
-
-> It would be interesting to see which new feature introduced by the
-> ext4 patch queue --- probably dellayed allocation or mballoc --- is
-> responsible for the slowdown.  One or the other (or both) can be
-> disabled by mounting the filesystem (using a kernel with the ext4
-> patch queue) with the mount options -O nomballoc or -O nodelalloc.
->
-> If it turns out that nomballoc restores the speed for afdbench, for
-> example, then it will tell us where we need to look more closely.
-> Ideally we would not want to have one mount option needed to optimize
-> filesystem operations for large amoutns of modifications to small
-> files, and another mode of operation when mostly writing to large
-> files.  So if you could do a round of tests using the ext4 patch queue
-> kernel, with -O nomballoc and -O nodelalloc (and if both seem to
-> improve things, try "-O nomballoc,nodelalloc" and see if you get back
-> to the pre-ext4 patch queue speed), it would be very much appreciated.
->
-Yes, I will try and redo the test as suggested, it might just take a while
-since I just made my testing system operational.
-
-What worries me more is the truncation of files, it makes the filesystem
-unusable since you loose data. I hope there will be a solution for this.
-
-Holger
-
+diff -r 60ebd5153c48 drivers/ide/legacy/ide-cs.c
+--- a/drivers/ide/legacy/ide-cs.c	Wed Jun 18 22:12:50 2008 -0700
++++ b/drivers/ide/legacy/ide-cs.c	Thu Jun 19 16:35:29 2008 +0200
+@@ -410,6 +410,7 @@ static struct pcmcia_device_id ide_ids[]
+ 	PCMCIA_DEVICE_MANF_CARD(0x001c, 0x0001),	/* Mitsubishi CFA */
+ 	PCMCIA_DEVICE_MANF_CARD(0x0032, 0x0704),
+ 	PCMCIA_DEVICE_MANF_CARD(0x0045, 0x0401),	/* SanDisk CFA */
++	PCMCIA_DEVICE_MANF_CARD(0x004f, 0x0000),	/* Kingston */
+ 	PCMCIA_DEVICE_MANF_CARD(0x0098, 0x0000),	/* Toshiba */
+ 	PCMCIA_DEVICE_MANF_CARD(0x00a4, 0x002d),
+ 	PCMCIA_DEVICE_MANF_CARD(0x00ce, 0x0000),	/* Samsung */
