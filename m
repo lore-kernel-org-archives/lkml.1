@@ -1,62 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752400AbYFSToY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbYFSTvf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752400AbYFSToY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 15:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750792AbYFSToQ
+	id S1752638AbYFSTvf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 15:51:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbYFSTv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 15:44:16 -0400
-Received: from bq8.dotserv.com ([193.201.35.47]:34049 "EHLO bq8.dotserv.com"
+	Thu, 19 Jun 2008 15:51:28 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:36166 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750736AbYFSToQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 15:44:16 -0400
-X-Greylist: delayed 391 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Jun 2008 15:44:15 EDT
-Message-ID: <485AB581.9070509@doredevelopment.dk>
-Date: Thu, 19 Jun 2008 21:37:37 +0200
-From: Esben Haabendal <eha@doredevelopment.dk>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Add support for IRQ_NOAUTOEN in __set_irq_handler
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	id S1750736AbYFSTv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 15:51:27 -0400
+Subject: Re: Performance of ext4
+From: Mingming <cmm@us.ibm.com>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Eric Sandeen <sandeen@redhat.com>, Holger Kiehl <Holger.Kiehl@dwd.de>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
+       Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080619174211.GB9119@mit.edu>
+References: <20080612131928.GB18229@mit.edu>
+	 <Pine.LNX.4.64.0806121333480.27806@diagnostix.dwd.de>
+	 <20080612180605.GD22481@skywalker>
+	 <Pine.LNX.4.64.0806121940020.2974@diagnostix.dwd.de>
+	 <Pine.LNX.4.64.0806130753100.7097@diagnostix.dwd.de>
+	 <20080616175408.GF3279@atrey.karlin.mff.cuni.cz>
+	 <20080616181353.GA20686@skywalker>
+	 <Pine.LNX.4.64.0806171001200.6307@diagnostix.dwd.de>
+	 <20080619155645.GA8582@mit.edu> <485A8C2D.1090806@redhat.com>
+	 <20080619174211.GB9119@mit.edu>
+Content-Type: text/plain
+Date: Thu, 19 Jun 2008 12:51:58 -0700
+Message-Id: <1213905118.27507.148.camel@BVR-FS.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Any reason for __set_irq_handler not supporting the IRQ_NOAUTOEN flag?
 
-/Esben
+On Thu, 2008-06-19 at 13:42 -0400, Theodore Tso wrote:
+> On Thu, Jun 19, 2008 at 11:41:17AM -0500, Eric Sandeen wrote:
+> > 
+> > It might be worth runninga "simple" fsx under your kernel too; last time
+> > I tested fsx it was still happy and it exercises fs ops (including
+> > truncate) at random...
+> > 
+> 
+> From what Holger described, it's doubtful that the bug is in the
+> truncate operation.  It sounds like i_size is actually dropping in
+> size at some pointer long after the file was written.  If I had to
+> guess the value in the inode cache is correct; and perhaps so is the
+> value on the journal.  But somehow, the wrong value is getting written
+> to disk (remember the jbd layer can keep up to three different
+> versions of filesystem metadata in memory, because most of the time we
+> don't block modifications to the filesystem while we are in the middle
+> of writing a previous commit to disk).  So depending on whether the
+> inode gets redirtied or not, the inconsistency could self-heal, and if
+> the inode never gets pushed out of memory due to memory pressure, the
+> problem might not be noticed until the system reboots or the
+> filesystem is unmounted.
+> 
+> This is one of the reasons why I'm a bit suspicious that the problem
+> may lie in the delayed allocation code; changing i_size without first
+> starting a transaction could lead to this sort of problem, for
+> example, and the delayed allocation could represent a different code
+> path where file blocks get allocated and i_size gets changed.
+> 
 
- kernel/irq/chip.c |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
+I tend to agree.  Without delayed allocation, the in-memory i_size and
+on-disk i_disksize normally match each other, since we do block
+allocation at prepare_write/write_begin time, and the i_size update just
+immedietly around that time. However, with delayed allocation, the in
+memory i_size is being update around prepare_write/commit_write, but the
+i_disksize won't updated until later writepage/writepages() time. The
+window now gets much larger.
 
-diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
-index 964964b..42bb163 100644
---- a/kernel/irq/chip.c
-+++ b/kernel/irq/chip.c
-@@ -584,10 +584,15 @@ __set_irq_handler(unsigned int irq,
-irq_flow_handler_t handle, int is_chained,
- 	desc->name = name;
+With writeback mode, since there is no ordering there, I think it's
+possible the the inode dirty pages have been sync to disk and the inode
+structure being pushed out of the memory due to memory pressure, before
+the i_disksize update cached in jbd2 reach to disk. Perhaps that explain
+the "truncation"?
 
- 	if (handle != handle_bad_irq && is_chained) {
--		desc->status &= ~IRQ_DISABLED;
- 		desc->status |= IRQ_NOREQUEST | IRQ_NOPROBE;
--		desc->depth = 0;
--		desc->chip->unmask(irq);
-+		if (!(desc->status & IRQ_NOAUTOEN)) {
-+			desc->depth = 0;
-+			desc->status &= ~IRQ_DISABLED;
-+			desc->chip->unmask(irq);
-+		} else {
-+			/* Undo nested disables: */
-+			desc->depth = 1;
-+		}
- 	}
- 	spin_unlock_irqrestore(&desc->lock, flags);
- }
+Not sure if this still a issue with the delalloc on new ordered mode, I
+guess as long as the inode is on jinode list, and that inode can't push
+out of memeory due to memory pressure since jbd is referencing it, then
+this seems couldn't happen...
 
--- 
-Esben Haabendal, Senior Software Consultant
-DoréDevelopment ApS, Ved Stranden 1, 9560 Hadsund, DK-Denmark
-Tlf: +45 51 92 53 93, mail: eha@doredevelopment.dk
-WWW: http://www.doredevelopment.dk
+
+
+>      	   	       	   	     	 	- Ted
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
