@@ -1,96 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757817AbYFSKdQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758247AbYFSKd3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757817AbYFSKdQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 06:33:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755482AbYFSKdE
+	id S1758247AbYFSKd3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 06:33:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756243AbYFSKdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 06:33:04 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57238 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755462AbYFSKdB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 06:33:01 -0400
-Date: Thu, 19 Jun 2008 12:32:42 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jack Steiner <steiner@sgi.com>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       Mike Travis <travis@sgi.com>, the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH] - Increase MAX_APICS for very large x86_64 configs
-Message-ID: <20080619103242.GA13213@elte.hu>
-References: <20080616170910.GA24930@sgi.com> <20080619101030.GF15228@elte.hu>
+	Thu, 19 Jun 2008 06:33:10 -0400
+Received: from kuber.nabble.com ([216.139.236.158]:51522 "EHLO
+	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756196AbYFSKdJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 06:33:09 -0400
+Message-ID: <18005751.post@talk.nabble.com>
+Date: Thu, 19 Jun 2008 03:33:09 -0700 (PDT)
+From: SHUperb <lin.en.shu@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: IP layer send packet
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080619101030.GF15228@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Nabble-From: lin.en.shu@gmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Hi kernel experts,
 
-> > The patch has no effect on any 32-bit kernel. It adds ~4k to the 
-> > size of 64-bit kernels but only if NR_CPUS > 255.
-> > 
-> > This is a repost of an earlier patch (4/16) that was implicated in a 
-> > random-qa failure. I have not been able to reproduce the failure 
-> > using the same boot args & config.  Best guess is that some other 
-> > patch caused random data corruption & this patch was a victim.
-> 
-> i have just re-tested the previously failing config on tip/master:
-> 
->   http://redhat.com/~mingo/misc/config-Thu_Apr_17_10_17_14_CEST_2008.bad
->   http://people.redhat.com/mingo/tip.git/README
-> 
-> and the good news is that it does not crash on bootup anymore. Perhaps 
-> one of Mike's fixes/improvements did the trick?
+I’m trying to modify the IP packet src & dest address after receiving from
+the wire and reconstruct the packet at kernel layer without going to apps
+layer and ultimately send out the packet. So, the recommended API to be used
+is ip_finish_output() (as it is the only exported symbol to send UDP
+packets). However, since the IP header content are changed, the system must
+automatically recalculate checksum and needs mac address as well, and most
+of the time mac address of unknown hosts.
 
-unfortunately it didnt last long, -tip randconfig auto-testing found 
-that your patch causes a bootup crash:
+Currently, when I try, I need to invoke mac address resolution via arp by
+manually calling neigh_lookup of existing arp entry before sending the
+packet by calling dev_queue_xmit(). 
 
-[    0.352022] SMP mode deactivated.
-[    0.355356] enabled ExtINT on CPU#0
-[    0.358861] SMP disabled
-[    0.361829] BUG: unable to handle kernel NULL pointer dereference at 00000000000008b0
-[    0.364022] IP: [<ffffffff8028127b>] debug_mutex_add_waiter+0x4e/0x61
-[    0.364022] PGD 0
-[    0.364022] Thread overran stack, or stack corrupted
+My questions is how can I change (dest/src IP and port number) at before
+ip_finish_output() by accessing specific struct should I want to send the
+packet to unknown hosts (unknown means remote hosts that do not have an arp
+entry in local host's arp table) by calling ip_finish_output().
 
-config, log and bzImage can be found here:
+Thank you very much for your advice.
 
-  http://redhat.com/~mingo/misc/config-Thu_Jun_19_12_10_40_CEST_2008.bad
-  http://redhat.com/~mingo/misc/crash-Thu_Jun_19_12_10_40_CEST_2008.log
-  http://redhat.com/~mingo/misc/bzImage-Thu_Jun_19_12_10_40_CEST_2008.bad
+-- 
+View this message in context: http://www.nabble.com/IP-layer-send-packet-tp18005751p18005751.html
+Sent from the linux-kernel mailing list archive at Nabble.com.
 
-reverting your patch fixes the crash.
-
-if you have trouble reproducing the problem then you should be able to 
-stick the bzImage into any 64-bit PC's /etc/grub.conf (no initrd needed) 
-and it should just crash straight away during bootup.
-
-NOTE: -tip auto-testing randomizes various commonly used boot parameters 
-as well, you can find them in the bootup log:
-
-root=/dev/sda6 console=ttyS0,115200 earlyprintk=serial,ttyS0,115200 
-debug initcall_debug apic=verbose sysrq_always_enabled ignore_loglevel 
-selinux=0 maxcpus=1 nosmp no_hz=off highres=0 nmi_watchdog=0 noapic 
-nolapic_timer hpet=disable idle=mwait idle=poll highmem=512m nopat notsc 
-acpi=off pci=nomsi
-
-this might be material to reproducing the crash.
-
-NOTE2: the bzImage above will have the above boot parameters 
-auto-appended, no need for you to configure them. But if you build your 
-own kernel from tip/master using the above config you might have to add 
-these boot parameters to the 'kernel' line of /etc/grub.conf to 
-reproduce the crash.
-
-	Ingo
