@@ -1,46 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759038AbYFSMuc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760795AbYFSMvc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759038AbYFSMuc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 08:50:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755731AbYFSMuZ
+	id S1760795AbYFSMvc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 08:51:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbYFSMvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 08:50:25 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:39184 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754939AbYFSMuY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 08:50:24 -0400
-Message-ID: <485A5606.6080600@firstfloor.org>
-Date: Thu, 19 Jun 2008 14:50:14 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jan Beulich <jbeulich@novell.com>, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH] x86-64: remove unnecessary ptregs call stubs
-References: <485910B3.76E4.0078.0@novell.com> <20080619122538.GH7640@elte.hu>
-In-Reply-To: <20080619122538.GH7640@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Jun 2008 08:51:24 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:40547 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753659AbYFSMvX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 08:51:23 -0400
+Date: Thu, 19 Jun 2008 16:51:15 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Andre Haupt <andre@bitwigglers.org>
+Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Subject: Re: [PATCH] crypto: remove duplicate include of linux/interrupt.h
+Message-ID: <20080619125115.GA10549@2ka.mipt.ru>
+References: <1213879388-11418-1-git-send-email-andre@bitwigglers.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1213879388-11418-1-git-send-email-andre@bitwigglers.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jan Beulich <jbeulich@novell.com> wrote:
-> 
->> A few of the ptregs call stubs are superfluous these days - the called 
->> functions don't have a trailing 'struct pt_regs *' parameter anymore.
-> 
-> applied to tip/x86/cleanups - thanks Jan.
+Hi.
 
-Just want to point out that not having a pt_regs * argument is not necessarily
-sufficient for not needing a ptregs stub. Some code also accesses ptregs directly
-through the stack top from get_thread_info() and might assume a full one. That said I *think*
-it's ok for sigsuspend et.al. as in Jan's patch, but I haven't audited the complete code paths
-in question that they never do that.
+On Thu, Jun 19, 2008 at 02:43:08PM +0200, Andre Haupt (andre@bitwigglers.org) wrote:
+> Signed-off-by: Andre Haupt <andre@bitwigglers.org>
 
-Would be good to clarify that in the commit log.
+Thank you for the patch,  but similar one from Huang Weiyi is in Herbert Xu
+cryptodev-2.6 tree an will be pushed upstream in upcoming merge window.
 
--Andi
+-- 
+	Evgeniy Polyakov
