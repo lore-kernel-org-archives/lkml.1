@@ -1,155 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757277AbYFSIBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbYFSICS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757277AbYFSIBZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 04:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755077AbYFSIBM
+	id S1757447AbYFSICS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 04:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbYFSIB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 04:01:12 -0400
-Received: from styx.suse.cz ([82.119.242.94]:54816 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751638AbYFSIBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 04:01:10 -0400
-Date: Thu, 19 Jun 2008 10:01:08 +0200
-From: Jan Kara <jack@suse.cz>
-To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, sct@redhat.com,
-       adilger@clusterfs.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, Jan Kara <jack@suse.cz>,
-       Josef Bacik <jbacik@redhat.com>, Mingming Cao <cmm@us.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
-Subject: Re: [PATCH] jbd: don't abort if flushing file data failed
-Message-ID: <20080619080108.GB12244@duck.suse.cz>
-References: <4859FD82.1000306@hitachi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4859FD82.1000306@hitachi.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 19 Jun 2008 04:01:58 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:38289 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752772AbYFSIB5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 04:01:57 -0400
+Date: Thu, 19 Jun 2008 17:00:59 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
+Subject: Re: [Experimental][PATCH] putback_lru_page rework
+Message-Id: <20080619170059.60b42e73.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20080618205540.11a1644b.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080617164709.de4db070.nishimura@mxp.nes.nec.co.jp>
+	<20080618184000.a855dfe0.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080618195009.37BF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080618205540.11a1644b.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 19-06-08 15:32:34, Hidehiro Kawai wrote:
-> In ordered mode, the current jbd aborts the journal if a file data
-> buffer has an error.  But this behavior is unintended, and we found
-> that it has been adopted accidentally.
+> > > -		unlock = putback_lru_page(newpage);
+> > > +		putback_lru_page(newpage);
+> > >  	} else
+> > >  		newpage->mapping = NULL;
+> > 
+> > originally move_to_lru() called in unmap_and_move().
+> > unevictable infrastructure patch move to this point for 
+> > calling putback_lru_page() under page locked.
+> > 
+> > So, your patch remove page locked dependency.
+> > move to unmap_and_move() again is better.
+> > 
+> > it become page lock holding time reducing.
+> > 
+> ok, will look into again.
 > 
-> This patch undoes it and just calls printk() instead of aborting
-> the journal.  Additionally, set AS_EIO into the address_space
-> object of the failed buffer which is submitted by
-> journal_do_submit_data() so that fsync() can get -EIO.
-> 
-> Missing error checkings are also added to inform errors on file
-> data buffers to the user.  The following buffers are targeted.
-> 
->   (a) the buffer which has already been written out by pdflush
->   (b) the buffer which has been unlocked before scanned in the
->       t_locked_list loop
-> 
-> Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-  You can add Acked-by: Jan Kara <jack@suse.cz>
 
-  I have just one minor comment: Could you add device on which an error
-happened to the error message in journal_commit_transaction()? It could
-help the user in some cases...
-  Thanks for fixing this.
+I agree with Kosaki-san.
 
-									Honza
-> ---
->  fs/jbd/commit.c |   32 +++++++++++++++++++++++++-------
->  1 file changed, 25 insertions(+), 7 deletions(-)
-> 
-> Index: linux-2.6.26-rc5-mm3/fs/jbd/commit.c
-> ===================================================================
-> --- linux-2.6.26-rc5-mm3.orig/fs/jbd/commit.c
-> +++ linux-2.6.26-rc5-mm3/fs/jbd/commit.c
-> @@ -172,7 +172,7 @@ static void journal_do_submit_data(struc
->  /*
->   *  Submit all the data buffers to disk
->   */
-> -static void journal_submit_data_buffers(journal_t *journal,
-> +static int journal_submit_data_buffers(journal_t *journal,
->  				transaction_t *commit_transaction)
->  {
->  	struct journal_head *jh;
-> @@ -180,6 +180,7 @@ static void journal_submit_data_buffers(
->  	int locked;
->  	int bufs = 0;
->  	struct buffer_head **wbuf = journal->j_wbuf;
-> +	int err = 0;
->  
->  	/*
->  	 * Whenever we unlock the journal and sleep, things can get added
-> @@ -253,6 +254,8 @@ write_out_data:
->  			put_bh(bh);
->  		} else {
->  			BUFFER_TRACE(bh, "writeout complete: unfile");
-> +			if (unlikely(!buffer_uptodate(bh)))
-> +				err = -EIO;
->  			__journal_unfile_buffer(jh);
->  			jbd_unlock_bh_state(bh);
->  			if (locked)
-> @@ -271,6 +274,8 @@ write_out_data:
->  	}
->  	spin_unlock(&journal->j_list_lock);
->  	journal_do_submit_data(wbuf, bufs);
-> +
-> +	return err;
->  }
->  
->  /*
-> @@ -410,8 +415,7 @@ void journal_commit_transaction(journal_
->  	 * Now start flushing things to disk, in the order they appear
->  	 * on the transaction lists.  Data blocks go first.
->  	 */
-> -	err = 0;
-> -	journal_submit_data_buffers(journal, commit_transaction);
-> +	err = journal_submit_data_buffers(journal, commit_transaction);
->  
->  	/*
->  	 * Wait for all previously submitted IO to complete.
-> @@ -426,10 +430,21 @@ void journal_commit_transaction(journal_
->  		if (buffer_locked(bh)) {
->  			spin_unlock(&journal->j_list_lock);
->  			wait_on_buffer(bh);
-> -			if (unlikely(!buffer_uptodate(bh)))
-> -				err = -EIO;
->  			spin_lock(&journal->j_list_lock);
->  		}
-> +		if (unlikely(!buffer_uptodate(bh))) {
-> +			if (TestSetPageLocked(bh->b_page)) {
-> +				spin_unlock(&journal->j_list_lock);
-> +				lock_page(bh->b_page);
-> +				spin_lock(&journal->j_list_lock);
-> +			}
-> +			if (bh->b_page->mapping)
-> +				set_bit(AS_EIO, &bh->b_page->mapping->flags);
-> +
-> +			unlock_page(bh->b_page);
-> +			SetPageError(bh->b_page);
-> +			err = -EIO;
-> +		}
->  		if (!inverted_lock(journal, bh)) {
->  			put_bh(bh);
->  			spin_lock(&journal->j_list_lock);
-> @@ -448,8 +463,11 @@ void journal_commit_transaction(journal_
->  	}
->  	spin_unlock(&journal->j_list_lock);
->  
-> -	if (err)
-> -		journal_abort(journal, err);
-> +	if (err) {
-> +		printk(KERN_WARNING
-> +		       "JBD: Detected IO errors during flushing file data\n");
-> +		err = 0;
-> +	}
->  
->  	journal_write_revoke_records(journal, commit_transaction);
->  
-> 
-> 
-> 
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+And VM_BUG_ON(page_count(newpage) != 1) in unmap_and_move()
+is not correct again, IMHO.
+I got this BUG actually when testing this patch(with
+migratin_entry_wait fix).
+
+unmap_and_move()
+	move_to_new_page()
+		migrate_page()
+		remove_migration_ptes()
+		putback_lru_page()			(*1)
+	  :
+        if (!newpage->mapping)				(*2)
+		VM_BUG_ON(page_count(newpage) != 1)
+
+If a anonymous page(without mapping) is migrated successfully,
+this page is moved back to lru by putback_lru_page()(*1),
+and the page count becomes 1(pte only).
+
+At the same time(between *1 and *2), if the process
+that owns this page are freeing this page, the page count
+becomes 0 and ->mapping becomes NULL by free_hot_cold_page(),
+so this BUG is caused.
+
+I've not seen this BUG on real HW yet(seen twice on fake-numa
+hvm guest of Xen), but I think it can happen theoretically.
+
+
+Thanks,
+Daisuke Nishimura.
