@@ -1,245 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758042AbYFSOzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbYFSO7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758042AbYFSOzQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 10:55:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbYFSOzF
+	id S1754025AbYFSO7s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 10:59:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbYFSO7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 10:55:05 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:38799 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750907AbYFSOzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 10:55:03 -0400
-Date: Thu, 19 Jun 2008 09:54:53 -0500
-From: Cliff Wickman <cpw@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>, andi@firstfloor.org
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       the arch/x86 maintainers <x86@kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] X86: reboot-notify additions
-Message-ID: <20080619145453.GA11929@sgi.com>
-References: <E1K95kd-00081i-B6@eag09.americas.sgi.com> <20080619110214.GJ15228@elte.hu>
+	Thu, 19 Jun 2008 10:59:40 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:37535 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750858AbYFSO7k convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 10:59:40 -0400
+From: "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Wim Van Sebroeck <wim@iguana.be>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Date: Thu, 19 Jun 2008 14:58:40 +0000
+Subject: RE: [WATCHDOG] v2.6.26 hpwdt.c fixes
+Thread-Topic: [WATCHDOG] v2.6.26 hpwdt.c fixes
+Thread-Index: AcjRgjQ95fouv7IlQY6ynNieA4ujfQAmTgqA
+Message-ID: <183C1D5A376DE343AA8F94FC2A1EC1491BFC2E931E@GVW1091EXB.americas.hpqcorp.net>
+References: <20080618194917.GC2741@infomag.infomag.iguana.be>
+ <alpine.LFD.1.10.0806181256010.2907@woody.linux-foundation.org>
+ <alpine.LFD.1.10.0806181327390.2907@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0806181327390.2907@woody.linux-foundation.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080619110214.GJ15228@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I agree that that portion of the driver can be improved upon immensely. It was a pain getting something to work. Your 32 bit changes have been tested by two separate parties and proven to work without the -O flag.
 
-On Thu, Jun 19, 2008 at 01:02:14PM +0200, Ingo Molnar wrote:
-> 
-> * Cliff Wickman <cpw@sgi.com> wrote:
-> 
-> > From: Cliff Wickman <cpw@sgi.com>
-> > 
-> > X86 reboot-notify additions.
+I am in the process of testing the 64 bit changes and will post the results asap.
 
-As Andi Kleen pointed out, this is not X86-specific.  (it started out
-to be, but what I hoped to achieve for X86 turns out to be generic).
 
-> > This patch adds scans of the "reboot_notifier_list" callback chain in
-> > a three other places where the kernel is being stopped and/or restarted.
-> > 
-> > Adds calls to blocking_notifier_call_chain() in:
-> >    crash_kexec(), emergency_restart(), sys_kexec_load()
-> > 
-> > In the crash_kexec() and emergency_restart() cases it is indicated to the
-> > called-back function that the system is not in a sane state, so that
-> > it can avoid taking a lock or some such potentially blocking action.
-> > 
-> > These callbacks are important to a partition system. The stopped kernel needs
-> > to inform other partitions of their need to disconnect (stop sharing memory).
-> > 
-> > Diffed against 2.6.26-rc6
-> > 
-> > Signed-off-by: Cliff Wickman <cpw@sgi.com>
-> > ---
-> >  include/linux/notifier.h |    4 ++++
-> >  kernel/kexec.c           |    5 +++++
-> >  kernel/sys.c             |    1 +
-> >  3 files changed, 10 insertions(+)
-> > 
-> > Index: linux/include/linux/notifier.h
-> > ===================================================================
-> > --- linux.orig/include/linux/notifier.h
-> > +++ linux/include/linux/notifier.h
-> > @@ -202,6 +202,10 @@ static inline int notifier_to_errno(int 
-> >  #define SYS_RESTART	SYS_DOWN
-> >  #define SYS_HALT	0x0002	/* Notify of system halt */
-> >  #define SYS_POWER_OFF	0x0003	/* Notify of system power off */
-> > +#define SYS_INSANE	0x0004	/* Notify of system error/panic/oops */
-> > +/* For the SYS_INSANE case, no locks should be taken by the called-back
-> > + * function.  The kernel is ready for an immediate reboot.
-> > + */
-> >  
-> >  #define NETLINK_URELEASE	0x0001	/* Unicast netlink socket released */
-> >  
-> > Index: linux/kernel/kexec.c
-> > ===================================================================
-> > --- linux.orig/kernel/kexec.c
-> > +++ linux/kernel/kexec.c
-> > @@ -1001,6 +1001,9 @@ asmlinkage long sys_kexec_load(unsigned 
-> >  		if (result)
-> >  			goto out;
-> >  	}
-> > +
-> > +	blocking_notifier_call_chain(&reboot_notifier_list, SYS_RESTART, NULL);
-> > +
-> >  	/* Install the new kernel, and  Uninstall the old */
-> >  	image = xchg(dest_image, image);
-> >  
-> > @@ -1068,6 +1071,8 @@ void crash_kexec(struct pt_regs *regs)
-> >  	if (!locked) {
-> >  		if (kexec_crash_image) {
-> >  			struct pt_regs fixed_regs;
-> > +			blocking_notifier_call_chain(&reboot_notifier_list,
-> > +				SYS_INSANE, NULL);
-> >  			crash_setup_regs(&fixed_regs, regs);
-> >  			crash_save_vmcoreinfo();
-> >  			machine_crash_shutdown(&fixed_regs);
-> > Index: linux/kernel/sys.c
-> > ===================================================================
-> > --- linux.orig/kernel/sys.c
-> > +++ linux/kernel/sys.c
-> > @@ -270,6 +270,7 @@ out_unlock:
-> >   */
-> >  void emergency_restart(void)
-> >  {
-> > +	blocking_notifier_call_chain(&reboot_notifier_list, SYS_INSANE, NULL);
-> >  	machine_emergency_restart();
-> >  }
-> >  EXPORT_SYMBOL_GPL(emergency_restart);
-> 
-> i dont think this is a good idea. reboot_notifier_list is a blocking 
-> notifier, i.e. it comes with a notifier->rwsem read-write mutex that is 
-> taken when blocking_notifier_call_chain() is executed.
-> 
-> i.e. this patch puts a sleeping mutex operation (a down_read()) into a 
-> highly critical code path of the kernel. This will decrease the 
-> reliability of the kernel.
+Thanks,
 
-Andi pointed this out, too.
+Tom
 
-For these emergency cases (I'll change "SYS_INSANE" to "SYS_EMERGENCY")
-I probably should be using raw_notifier_call_chain(), which requires
-a slightly different form of list header but doesn't try to protect
-against someone else adding to the notifier list.
-> 
-> what exactly are you trying to achieve?
-> 
-> 	Ingo
-
-The impetus for these additions is to call back a driver in every case
-that the kernel is going down.  In a partitioned system we need such a
-driver to inform all other partitions that they need to disconnect from
-the rebooting/halting/panicing partition (kernel image).  If they are not
-informed, they may bring themselves crashing down as well.
-(xpc is such a cross_partition driver)
+-----Original Message-----
+From: Linus Torvalds [mailto:torvalds@linux-foundation.org]
+Sent: Wednesday, June 18, 2008 3:30 PM
+To: Wim Van Sebroeck
+Cc: Andrew Morton; LKML; Mingarelli, Thomas
+Subject: Re: [WATCHDOG] v2.6.26 hpwdt.c fixes
 
 
 
-I propose this revision of the patch instead:
+On Wed, 18 Jun 2008, Linus Torvalds wrote:
+>
+> Quite frankly, this is *not* the right thing to do either: the proper
+> thing to do is to just move the low-level call into the "asm" statement,
+> and leave all the function prologue/epilogue entirely to the compiler.
 
+Something like the following.
 
-Subject: [PATCH] reboot-notify additions
+AGAIN! This is totally untested. It's meant as an *example* of how to use
+inline asm properly, not meant to necessarily work or do the right thing.
+It may be buggy as hell, for all I know. And there are probably better
+ways to do this.
 
-reboot-notify additions
+(This one does just the 64-bit version, because it's a bit easier: the
+32-bit version needs to probably do some of the loading and storing of
+registers manually in the inline asm just to avoid running out of them,
+since the register pressure is worse).
 
-This patch adds scans of the "reboot_notifier_list" callback chain in
-the remaining places where the kernel is being stopped and/or restarted.
+                Linus
 
-Adds 3 calls to {raw|blocking}_notifier_call_chain() in:
-   crash_kexec(), sys_kexec_load(), emergency_restart()
-
-Diffed against 2.6.26-rc6
-
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
 ---
- include/linux/notifier.h |    3 +++
- kernel/kexec.c           |   10 ++++++++++
- kernel/sys.c             |    7 +++++++
- 3 files changed, 20 insertions(+)
+ drivers/watchdog/hpwdt.c |   50 +++++++++++++++------------------------------
+ 1 files changed, 17 insertions(+), 33 deletions(-)
 
-Index: linux/include/linux/notifier.h
-===================================================================
---- linux.orig/include/linux/notifier.h
-+++ linux/include/linux/notifier.h
-@@ -202,6 +202,9 @@ static inline int notifier_to_errno(int 
- #define SYS_RESTART	SYS_DOWN
- #define SYS_HALT	0x0002	/* Notify of system halt */
- #define SYS_POWER_OFF	0x0003	/* Notify of system power off */
-+#define SYS_EMERGENCY	0x0004	/* Notify of system error/panic/oops */
-+/* For the SYS_EMERGENCY case, no locks should be taken by the called-back
-+ * function. */
- 
- #define NETLINK_URELEASE	0x0001	/* Unicast netlink socket released */
- 
-Index: linux/kernel/kexec.c
-===================================================================
---- linux.orig/kernel/kexec.c
-+++ linux/kernel/kexec.c
-@@ -24,6 +24,7 @@
- #include <linux/utsrelease.h>
- #include <linux/utsname.h>
- #include <linux/numa.h>
-+#include <linux/notifier.h>
- 
- #include <asm/page.h>
- #include <asm/uaccess.h>
-@@ -1001,6 +1002,9 @@ asmlinkage long sys_kexec_load(unsigned 
- 		if (result)
- 			goto out;
- 	}
-+
-+	blocking_notifier_call_chain(&reboot_notifier_list, SYS_RESTART, NULL);
-+
- 	/* Install the new kernel, and  Uninstall the old */
- 	image = xchg(dest_image, image);
- 
-@@ -1063,11 +1067,17 @@ void crash_kexec(struct pt_regs *regs)
- 	 * If the crash kernel was not located in a fixed area
- 	 * of memory the xchg(&kexec_crash_image) would be
- 	 * sufficient.  But since I reuse the memory...
-+	 *
-+	 * The reboot_notifier_list uses a header for a blocking-form scan.
-+	 * Use a local header suitable for a non-blocking scan.
- 	 */
- 	locked = xchg(&kexec_lock, 1);
- 	if (!locked) {
- 		if (kexec_crash_image) {
- 			struct pt_regs fixed_regs;
-+        		struct raw_notifier_head rh;
-+        		rh.head = reboot_notifier_list.head;
-+        		raw_notifier_call_chain(&rh, SYS_EMERGENCY, NULL);
- 			crash_setup_regs(&fixed_regs, regs);
- 			crash_save_vmcoreinfo();
- 			machine_crash_shutdown(&fixed_regs);
-Index: linux/kernel/sys.c
-===================================================================
---- linux.orig/kernel/sys.c
-+++ linux/kernel/sys.c
-@@ -267,9 +267,16 @@ out_unlock:
-  *	reboot the system.  This is called when we know we are in
-  *	trouble so this is our best effort to reboot.  This is
-  *	safe to call in interrupt context.
-+ *
-+ *	The reboot_notifier_list uses a header for a blocking-form scan.
-+ *	Use a local header suitable for a non-blocking scan.
-  */
- void emergency_restart(void)
+diff --git a/drivers/watchdog/hpwdt.c b/drivers/watchdog/hpwdt.c
+index 2686f3e..028c957 100644
+--- a/drivers/watchdog/hpwdt.c
++++ b/drivers/watchdog/hpwdt.c
+@@ -336,39 +336,23 @@ static int __devinit detect_cru_service(void)
+ asmlinkage void asminline_call(struct cmn_registers *pi86Regs,
+                               unsigned long *pRomEntry)
  {
-+	struct raw_notifier_head rh;
-+
-+	rh.head = reboot_notifier_list.head;
-+	raw_notifier_call_chain(&rh, SYS_EMERGENCY, NULL);
- 	machine_emergency_restart();
+-       asm("pushq      %rbp            \n\t"
+-           "movq       %rsp, %rbp      \n\t"
+-           "pushq      %rax            \n\t"
+-           "pushq      %rbx            \n\t"
+-           "pushq      %rdx            \n\t"
+-           "pushq      %r12            \n\t"
+-           "pushq      %r9             \n\t"
+-           "movq       %rsi, %r12      \n\t"
+-           "movq       %rdi, %r9       \n\t"
+-           "movl       4(%r9),%ebx     \n\t"
+-           "movl       8(%r9),%ecx     \n\t"
+-           "movl       12(%r9),%edx    \n\t"
+-           "movl       16(%r9),%esi    \n\t"
+-           "movl       20(%r9),%edi    \n\t"
+-           "movl       (%r9),%eax      \n\t"
+-           "call       *%r12           \n\t"
+-           "pushfq                     \n\t"
+-           "popq        %r12           \n\t"
+-           "popfq                      \n\t"
+-           "movl       %eax, (%r9)     \n\t"
+-           "movl       %ebx, 4(%r9)    \n\t"
+-           "movl       %ecx, 8(%r9)    \n\t"
+-           "movl       %edx, 12(%r9)   \n\t"
+-           "movl       %esi, 16(%r9)   \n\t"
+-           "movl       %edi, 20(%r9)   \n\t"
+-           "movq       %r12, %rax      \n\t"
+-           "movl       %eax, 28(%r9)   \n\t"
+-           "popq       %r9             \n\t"
+-           "popq       %r12            \n\t"
+-           "popq       %rdx            \n\t"
+-           "popq       %rbx            \n\t"
+-           "popq       %rax            \n\t"
+-           "leave                      \n\t" "ret");
++       asm("pushq %0 ; popfq ; call *%6; pushfq; popfq %0"
++               :"=r" (pi86Regs->reflags),
++                "=a" (pi86Regs->u1.reax),
++                "=b" (pi86Regs->u2.rebx),
++                "=c" (pi86Regs->u3.recx),
++                "=d" (pi86Regs->u4.redx),
++                "=S" (pi86Regs->resi),
++                "=D" (pi86Regs->redi)
++               :"r" (pRomEntry),
++                "0" (pi86Regs->reflags),
++                "1" (pi86Regs->u1.reax),
++                "2" (pi86Regs->u2.rebx),
++                "3" (pi86Regs->u3.recx),
++                "4" (pi86Regs->u4.redx),
++                "5" (pi86Regs->resi),
++                "6" (pi86Regs->redi)
++               :"cc", "memory");
  }
- EXPORT_SYMBOL_GPL(emergency_restart);
 
--- 
-Cliff Wickman
-Silicon Graphics, Inc.
-cpw@sgi.com
-(651) 683-3824
+ /*
