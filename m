@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757280AbYFSAQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757403AbYFSARn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757280AbYFSAQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 20:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbYFSAQV
+	id S1757403AbYFSARn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 20:17:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755616AbYFSARf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 20:16:21 -0400
-Received: from gw.goop.org ([64.81.55.164]:40803 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753159AbYFSAQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 20:16:20 -0400
-Message-ID: <4859A528.1010107@goop.org>
-Date: Wed, 18 Jun 2008 17:15:36 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: benh@kernel.crashing.org
-CC: xen-devel <xen-devel@lists.xensource.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>, x86@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1 of 4] mm: add a ptep_modify_prot transaction	abstraction
-References: <b020e42384197b824320.1213615800@localhost>	<1213831403.8011.24.camel@pasglop> <4859A149.9090004@goop.org>
-In-Reply-To: <4859A149.9090004@goop.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 18 Jun 2008 20:17:35 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46188 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753268AbYFSARe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 20:17:34 -0400
+Date: Thu, 19 Jun 2008 09:22:42 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
+Subject: Re: [Experimental][PATCH] putback_lru_page rework
+Message-Id: <20080619092242.79648592.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1213813266.6497.14.camel@lts-notebook>
+References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
+	<20080617163501.7cf411ee.nishimura@mxp.nes.nec.co.jp>
+	<20080617164709.de4db070.nishimura@mxp.nes.nec.co.jp>
+	<20080618184000.a855dfe0.kamezawa.hiroyu@jp.fujitsu.com>
+	<1213813266.6497.14.camel@lts-notebook>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Benjamin Herrenschmidt wrote:
->   
->> On Mon, 2008-06-16 at 04:30 -0700, Jeremy Fitzhardinge wrote:
->>   
->>     
->>> The only current user of this interface is mprotect
->>>     
->>>       
->> Do you plan to use it with fork ultimately ?
->>   
->>     
->
-> Good point, I'd overlooked that.  I guess that means using it in 
-> ptep_set_wrprotect().
-Along the lines of:
+On Wed, 18 Jun 2008 14:21:06 -0400
+Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
 
---- a/include/asm-x86/pgtable.h	Wed Jun 18 13:54:49 2008 -0700
-+++ b/include/asm-x86/pgtable.h	Wed Jun 18 17:03:39 2008 -0700
-@@ -491,7 +491,11 @@
- static inline void ptep_set_wrprotect(struct mm_struct *mm,
- 				      unsigned long addr, pte_t *ptep)
- {
--	clear_bit(_PAGE_BIT_RW, (unsigned long *)&ptep->pte);
-+	pte_t pte = ptep_modify_prot_start(mm, addr, ptep);
-+	
-+	pte = pte_wrprotect(pte);
-+
-+	ptep_modify_prot_commit(mm, addr, ptep, pte);
- 	pte_update(mm, addr, ptep);
- }
- 
+> On Wed, 2008-06-18 at 18:40 +0900, KAMEZAWA Hiroyuki wrote:
+> > Lee-san, how about this ?
+> > Tested on x86-64 and tried Nisimura-san's test at el. works good now.
+> 
+> I have been testing with my work load on both ia64 and x86_64 and it
+> seems to be working well.  I'll let them run for a day or so.
+> 
+thank you.
+<snip>
 
-	J
+> > @@ -240,6 +232,9 @@ static int __munlock_pte_handler(pte_t *
+> >  	struct page *page;
+> >  	pte_t pte;
+> >  
+> > +	/*
+> > +	 * page is never be unmapped by page-reclaim. we lock this page now.
+> > +	 */
+> 
+> I don't understand what you're trying to say here.  That is, what the
+> point of this comment is...
+> 
+We access the page-table without taking pte_lock. But this vm is MLOCKED
+and migration-race is handled. So we don't need to be too nervous to access
+the pte. I'll consider more meaningful words.
+
+Thanks,
+-Kame
 
