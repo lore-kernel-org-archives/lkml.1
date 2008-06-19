@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757122AbYFSKFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752528AbYFSKGL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757122AbYFSKFx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 06:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754972AbYFSKFp
+	id S1752528AbYFSKGL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 06:06:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbYFSKF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 06:05:45 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:48944 "EHLO mx2.suse.de"
+	Thu, 19 Jun 2008 06:05:56 -0400
+Received: from ns1.suse.de ([195.135.220.2]:33953 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754909AbYFSKFo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 06:05:44 -0400
-Date: Thu, 19 Jun 2008 12:05:42 +0200
-Message-ID: <s5hej6t91u1.wl%tiwai@suse.de>
+	id S1757354AbYFSKF4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 06:05:56 -0400
+Date: Thu, 19 Jun 2008 12:05:53 +0200
+Message-ID: <s5hd4md91tq.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Pierre Ossman <drzeus@drzeus.cx>, ALSA devel <alsa-devel@alsa-project.org>,
