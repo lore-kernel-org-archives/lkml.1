@@ -1,93 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757069AbYFSAGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757182AbYFSALZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757069AbYFSAGR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 20:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754835AbYFSAGG
+	id S1757182AbYFSALZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 20:11:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755333AbYFSALR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 20:06:06 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:45637 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750801AbYFSAGF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 20:06:05 -0400
-X-Greylist: delayed 1205 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Jun 2008 20:06:05 EDT
-Message-Id: <1213832759.32537.1259210597@webmail.messagingengine.com>
-X-Sasl-Enc: vg6HSDmTplnuyxesb3I3pgqdwm1axmNEj01e3KyRxMBq 1213832759
-From: "Robert Mueller" <robm@fastmail.fm>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Bron Gondwana" <brong@fastmail.fm>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Nick Piggin" <npiggin@suse.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Andi Kleen" <andi@firstfloor.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Ken Murchison" <murch@andrew.cmu.edu>
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="ISO-8859-1"
-MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <1213682410.13174.1258837181@webmail.messagingengine.com>
- <1213682570.13708.1258839317@webmail.messagingengine.com>
- <alpine.LFD.1.10.0806170947380.25099@woody.linux-foundation.org>
- <alpine.LFD.1.10.0806171041560.25099@woody.linux-foundation.org>
- <alpine.LFD.1.10.0806171309130.2981@woody.linux-foundation.org>
- <alpine.LFD.1.10.0806171331460.2908@woody.linux-foundation.org>
- <alpine.LFD.1.10.0806171356320.2908@woody.linux-foundation.org>
- <alpine.LFD.1.10.0806171415060.2907@woody.linux-foundation.org>
- <20080618031406.GA4326@brong.net>
- <alpine.LFD.1.10.0806172057450.2907@woody.linux-foundation.org>
- <20080618051119.GA10754@brong.net>
- <alpine.LFD.1.10.0806180858250.2907@woody.linux-foundation.org>
-Subject: Re: Cyrus mmap vs lseek/write usage - (WAS: BUG: mmapfile/writev
- spurious zero bytes (x86_64/not i386, bisected, reproducable))
-In-Reply-To: <alpine.LFD.1.10.0806180858250.2907@woody.linux-foundation.org>
-Reply-To: robm@fastmail.fm
-Date: Thu, 19 Jun 2008 09:45:59 +1000
+	Wed, 18 Jun 2008 20:11:17 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:35518 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752947AbYFSALQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 20:11:16 -0400
+From: NeilBrown <neilb@suse.de>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Date: Thu, 19 Jun 2008 10:11:09 +1000
+Message-Id: <1080619001109.24338@suse.de>
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH - take 2] knfsd: nfsd: Handle ERESTARTSYS from syscalls.
+References: <20080619101025.24263.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->> It actually does use MAP_SHARED already, but only for reading.
->> Writing is all done with seeks and writes, followed by a map
->> "refresh", which is really just an unmmap/mmap if the file has
->> extended past the "SLOP" (between 8 and 16 k after the end of the
->> file length at last mapping).
->
-> So the more traditional way would be to do an all-mmap thing, and
-> extend the file with ftruncate(), not write. That's somethign that
-> programs like nntpd have been doing for decades, so it's a very
-> "traditional" model and thus much more likely to be safe. It also
-> avoids all the aliasing issues, if all accesses are done the same way.
+OCFS2 can return -ERESTARTSYS from write requests (and possibly
+elsewhere) if there is a signal pending.
 
-As noted above, one thing cyrus does which does seem to be plain "wrong"
-is that it mmaps a region greater the file size (rounds to an 8k
-boundary, but 8k-16k past the current end of the file) and then assumes
-that when it writes to the end of the file (but less than the end of the
-mmap region) that there's no need to remmap and that data is immediately
-available within the previous mmaped region.
+If nfsd is shutdown (by sending a signal to each thread) while there
+is still an IO load from the client, each thread could handle one last
+request with a signal pending.  This can result in -ERESTARTSYS
+which is not understood by nfserrno() and so is reflected back to
+the client as nfserr_io aka -EIO.  This is wrong.
 
-Apparently that works on most OS's (but is what this bug actually
-exposed), but according to the mmap docs:
+Instead, interpret ERESTARTSYS to mean "try again later" by returning
+nfserr_jukebox.  The client will resend and - if the server is
+restarted - the write will (hopefully) be successful and everyone will
+be happy.
 
----
-If the size of the mapped file changes after the call to mmap() as a
-result of some other operation on the mapped file, the effect of
-references to portions of the mapped region that correspond to added or
-removed portions of the file is unspecified.
----
+ The symptom that I narrowed down to this was:
+    copy a large file via NFS to an OCFS2 filesystem, and restart
+    the nfs server during the copy.
+    The 'cp' might get an -EIO, and the file will be corrupted -
+    presumably holes in the middle where writes appeared to fail.
 
-The way I read that, even if you mmap a file with a size past the end of
-the file currently, if you subsequently write to the end of that file,
-you shouldn't assume that written data is available in the region you
-previously mmaped, which cyrus definitely does do.
 
-Amazingly (apart from HP/UX) no OS actually seems to have a problem with
-this since there would be massive cyrus bug reports otherwise.
+Signed-off-by: Neil Brown <neilb@suse.de>
 
-Rob
+### Diffstat output
+ ./fs/nfsd/nfsproc.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-----------
-robm@fastmail.fm
-Sign up at http://fastmail.fm for fast, ad free, IMAP accessible email
-
+diff .prev/fs/nfsd/nfsproc.c ./fs/nfsd/nfsproc.c
+--- .prev/fs/nfsd/nfsproc.c	2008-06-19 10:06:36.000000000 +1000
++++ ./fs/nfsd/nfsproc.c	2008-06-19 10:07:58.000000000 +1000
+@@ -614,6 +614,7 @@ nfserrno (int errno)
+ #endif
+ 		{ nfserr_stale, -ESTALE },
+ 		{ nfserr_jukebox, -ETIMEDOUT },
++		{ nfserr_jukebox, -ERESTARTSYS },
+ 		{ nfserr_dropit, -EAGAIN },
+ 		{ nfserr_dropit, -ENOMEM },
+ 		{ nfserr_badname, -ESRCH },
