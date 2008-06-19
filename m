@@ -1,44 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbYFSDOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbYFSDYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756670AbYFSDOb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 23:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbYFSDOX
+	id S1755954AbYFSDYg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 23:24:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbYFSDYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 23:14:23 -0400
-Received: from elcamino.pasemi.com ([67.155.108.98]:39055 "EHLO
-	elcamino.pasemi.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751564AbYFSDOX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 23:14:23 -0400
-X-Spam-Flag: NO
-Cc: Nathan Lynch <ntl@pobox.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
-Message-Id: <02FCB4F0-AA68-479F-9BF3-15FC54714C2D@lixom.net>
-From: Olof Johansson <olof@lixom.net>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <BD25BA47-04A5-4FF7-86FD-959BCDB898A0@lixom.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: [RFC/PATCH 3/3] adjust cpu power for secondary threads on POWER6
-Date: Wed, 18 Jun 2008 22:03:27 -0500
-References: <1213835374-10868-1-git-send-email-ntl@pobox.com> <1213835374-10868-4-git-send-email-ntl@pobox.com> <BD25BA47-04A5-4FF7-86FD-959BCDB898A0@lixom.net>
-X-Mailer: Apple Mail (2.924)
+	Wed, 18 Jun 2008 23:24:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56941 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752016AbYFSDYY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 23:24:24 -0400
+Date: Wed, 18 Jun 2008 23:24:20 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+To: David Miller <davem@davemloft.net>
+cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, agk@redhat.com
+Subject: Re: stack overflow on Sparc64
+In-Reply-To: <20080617.210159.141238856.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0806182318170.27388@engineering.redhat.com>
+References: <Pine.LNX.4.64.0806171954060.2560@engineering.redhat.com>
+ <20080617.210159.141238856.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 17 Jun 2008, David Miller wrote:
 
-On Jun 18, 2008, at 9:58 PM, Olof Johansson wrote:
+> From: Mikulas Patocka <mpatocka@redhat.com>
+> Date: Tue, 17 Jun 2008 20:47:57 -0400 (EDT)
+>
+>> Wait queue waking looks like being written by a high-level maniac --- it
+>> contains 8 levels of calls (none of them inlined). 7 of these calls (until
+>> try_to_wake_up) do nothing but pass arguments to lower level call. And
+>> each of these calls allocate at least 192 bytes of stack space. All these
+>> 7 useless calls consume 1360 bytes of stack (and cause windows traps that
+>> needlessly damage performance). Would you agree to inline most of the
+>> calls to save stack? Or do you see another solution?
+>
+> Some of them could be inlined but there are a few limiting
+> factors here.
 
-> Why not just NULL out the cpu_power function pointers on platforms  
-> that don't have the feature bit instead? (or the other way around:  
-> NULL by default, and set only on platforms that have imbalanced  
-> threads.
+I inlined three of them, I think I can inline another two. So hopefully, 
+I'll be able to shring 8-call depth to 3-call depth.
 
-Nevermind; bogus optimization. I just noticed that it's only used when  
-setting up the sched domains, and isn't adding path length later on. :)
+> Even spin lock acquisitions are function calls, limiting how
+> much leaf function and tail call optimizations can be done.
 
+Tail call optimization is not done at all if you compile kernel with stack 
+checking. This contributes to the stack overflow too.
 
--Olof
+> Also, wake_up_bit has this aggregate local variable "key" whose
+> address is passed down to subsequent functions, which limits
+> optimizations even further.
+>
+> It could still be improved a lot, however.
+>
+> But the level of recursion possible by the current device layer is
+> excessive and needs to be curtained irrespective of these generic
+> wakeup and sparc64 interrupt stack issues.
+
+I fixed that too.
+
+BTW. what's the purpose of having 192-byte stack frame? There are 16 
+8-byte registers being saved per function call, so 128-byte frame should 
+be sufficient, shoudn't? The ABI specifies that some additional entries 
+must be present even if unused, but I don't see reason for them. Would 
+something bad happen if GCC started to generate 128-byte stacks?
+
+Mikulas
