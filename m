@@ -1,127 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbYFSVuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbYFSVzH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754689AbYFSVuK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 17:50:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbYFSVt5
+	id S1754776AbYFSVzH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 17:55:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbYFSVy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 17:49:57 -0400
-Received: from mtagate2.uk.ibm.com ([195.212.29.135]:64454 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751304AbYFSVt5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 17:49:57 -0400
-Date: Thu, 19 Jun 2008 23:49:45 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Avi Kivity <avi@qumranet.com>,
-       linux-kernel@vger.kernel.org,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [BUG] CFS vs cpu hotplug
-Message-ID: <20080619214945.GA12640@osiris.ibm.com>
-References: <20080619161949.GA11062@osiris.ibm.com> <1213898711.3223.107.camel@lappy.programming.kicks-ass.net> <1213911149.3223.135.camel@lappy.programming.kicks-ass.net>
+	Thu, 19 Jun 2008 17:54:56 -0400
+Received: from gw.goop.org ([64.81.55.164]:57642 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751304AbYFSVyz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 17:54:55 -0400
+Message-ID: <485AD584.1040908@goop.org>
+Date: Thu, 19 Jun 2008 14:54:12 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1213911149.3223.135.camel@lappy.programming.kicks-ass.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Mike Travis <travis@sgi.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
+ area
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.509483000@polaris-admin.engr.sgi.com> <20080605102222.GA21319@elte.hu> <484EF29C.7080100@sgi.com> <485947A8.8060801@goop.org> <4859511E.5050605@sgi.com> <48596315.6020104@goop.org> <48596893.4040908@sgi.com> <485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org> <485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org> <485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com> <485AD138.4010404@goop.org>
+In-Reply-To: <485AD138.4010404@goop.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 19, 2008 at 11:32:29PM +0200, Peter Zijlstra wrote:
-> On Thu, 2008-06-19 at 20:05 +0200, Peter Zijlstra wrote:
-> > On Thu, 2008-06-19 at 18:19 +0200, Heiko Carstens wrote:
-> 
-> > > The sched_entity that belongs to the cfs_rq:
-> > > 
-> > > >> px *(sched_entity *) 0x759300
-> > > struct sched_entity {
-> > >         load = struct load_weight {
-> > >                 weight = 0x800
-> > >                 inv_weight = 0x1ffc01
-> > >         }
-> > >         run_node = struct rb_node {
-> > >                 rb_parent_color = 0x1
-> > >                 rb_right = (nil)
-> > >                 rb_left = (nil)
-> > >         }
-> > >         group_node = struct list_head {
-> > >                 next = 0x75a3b8
-> > >                 prev = 0x75a3b8
-> > >         }
-> > >         on_rq = 0x1
-> > >         exec_start = 0x189685acb4aa46
-> > >         sum_exec_runtime = 0x188a2b84c
-> > >         vruntime = 0xd036bd29
-> > >         prev_sum_exec_runtime = 0x1672e3f62
-> > >         last_wakeup = 0x0
-> > >         avg_overlap = 0x0
-> > >         parent = (nil)
-> > >         cfs_rq = 0x75a380
-> > >         my_q = 0x759400
-> > > }
-> 
-> If you still have this dump, could you give the output of:
-> 
-> px *(struct cfs_rq *) 0x759400
-> 
-> And possibly walk down the chain getting its curr and then my_q again
-> etc..
+Jeremy Fitzhardinge wrote:
+> 64-bit inherits 32-bit's use of per-cpu gdts, though its mostly 
+> useless on 64-bit.
 
-Sure, fortunately just a very short chain:
+Note to self: Not really true; they're still needed for 32-on-64.
 
->> px *(struct cfs_rq *) 0x759400
-struct cfs_rq {
-        load = struct load_weight {
-                weight = 0xc31
-                inv_weight = 0x0
-        }
-        nr_running = 0x1
-        exec_clock = 0x0
-        min_vruntime = 0x4f216b005
-        tasks_timeline = struct rb_root {
-                rb_node = 0x2fca4d40
-        }
-        rb_leftmost = 0x2fca4d40
-        tasks = struct list_head {
-                next = 0x2fca4d58
-                prev = 0x2fca4d58
-        }
-        balance_iterator = 0x2e29e700
-        curr = 0x2ef4f388
-        next = (nil)
-        nr_spread_over = 0x0
-        rq = 0x75a300
-        leaf_cfs_rq_list = struct list_head {
-                next = 0x75aaa0
-                prev = 0x2e1eca70
-        }
-        tg = 0x564910
-}
-
->> px *(sched_entity *) 0x2ef4f388
-struct sched_entity {
-        load = struct load_weight {
-                weight = 0x400
-                inv_weight = 0x400000
-        }
-        run_node = struct rb_node {
-                rb_parent_color = 0x2f07b399
-                rb_right = (nil)
-                rb_left = (nil)
-        }
-        group_node = struct list_head {
-                next = 0x2ef4f3b0
-                prev = 0x2ef4f3b0
-        }
-        on_rq = 0x0
-        exec_start = 0x189685c9a77b96
-        sum_exec_runtime = 0x3c51111
-        vruntime = 0x493becf68
-        prev_sum_exec_runtime = 0x3c50997
-        last_wakeup = 0x0
-        avg_overlap = 0x4b67d1
-        parent = 0x763300
-        cfs_rq = 0x763400
-        my_q = (nil)
-}
+    J
