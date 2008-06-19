@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761515AbYFSQcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761897AbYFSQcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761515AbYFSQcT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 12:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760162AbYFSQcB
+	id S1761897AbYFSQcd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 12:32:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761728AbYFSQcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 12:32:01 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54644 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751305AbYFSQcA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 12:32:00 -0400
-Date: Thu, 19 Jun 2008 09:30:20 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>, benh@kernel.crashing.org,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>, x86@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Hugh Dickins <hugh@veritas.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1 of 4] mm: add a ptep_modify_prot transaction
- abstraction
-In-Reply-To: <20080619115832.GM15228@elte.hu>
-Message-ID: <alpine.LFD.1.10.0806190928100.2907@woody.linux-foundation.org>
-References: <b020e42384197b824320.1213615800@localhost> <1213831403.8011.24.camel@pasglop> <4859A149.9090004@goop.org> <4859A528.1010107@goop.org> <alpine.LFD.1.10.0806181723400.2907@woody.linux-foundation.org> <4859AA47.2020903@goop.org>
- <alpine.LFD.1.10.0806181743390.2907@woody.linux-foundation.org> <alpine.LFD.1.10.0806182050470.2907@woody.linux-foundation.org> <20080619115832.GM15228@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 19 Jun 2008 12:32:23 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:42715 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761671AbYFSQcW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 12:32:22 -0400
+Subject: Re: [PATCH 01/11] sysfs: Support for preventing unmounts.
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Tejun Heo <htejun@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Thery <benjamin.thery@bull.net>
+In-Reply-To: <m18wx2o638.fsf@frodo.ebiederm.org>
+References: <20080618170729.808539948@theryb.frec.bull.fr>
+	 <20080618170730.256129077@theryb.frec.bull.fr>
+	 <1213811063.7922.39.camel@nimitz>  <m18wx2o638.fsf@frodo.ebiederm.org>
+Content-Type: text/plain
+Date: Thu, 19 Jun 2008 09:32:11 -0700
+Message-Id: <1213893131.7922.67.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 19 Jun 2008, Ingo Molnar wrote:
+On Wed, 2008-06-18 at 13:12 -0700, Eric W. Biederman wrote:
 > 
-> Below is the commit, it needed a small amount of massaging to apply the 
-> void * -> unsigned long * change in the x86/bitops topic.
+> - The data in sysfs fundamentally changes behind the back of the
+>   VFS and we need to keep the VFS in sync.  Essentially this is the
+>   distributed filesystem problem.
+> 
+> - In particular for sysfs_rename and sysfs_move_dir we need to support
+> finding
+>   the dcache entries and calling d_move.  So that the dcache does not
+>   get into an inconsistent state.  Timeouts and invalidates like NFS
+>   uses are to be  avoided if at all possible.
 
-Well, that's your bug right there.
+Much clearer now, thanks!
 
-The macros very much depended on the pointers being "void *", due to the 
-pointer arithmetic (which is a gcc extension that we use extensively - 
-"void *" arithmetic works as if it was a byte pointer).
+Can we get this description into the changelog, pretty please?
 
-When you changed "addr" to "volatile unsigned long *", now the arithmetic 
-ended up multiplying the offset by the size of "long" before adding it.
+-- Dave
 
-That said, the _original_ patch wasn't tested either, but quite frankly, 
-looking over the patch one more time, I can't really see how it could 
-break.
-
-		Linus
