@@ -1,63 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbYFSR55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758944AbYFSSEd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758094AbYFSR55 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 13:57:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbYFSR5t
+	id S1758944AbYFSSEd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 14:04:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbYFSSEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 13:57:49 -0400
-Received: from gw.goop.org ([64.81.55.164]:56200 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752524AbYFSR5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 13:57:49 -0400
-Message-ID: <485A9DEC.8010406@goop.org>
-Date: Thu, 19 Jun 2008 10:57:00 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: benh@kernel.crashing.org
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>, x86@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1 of 4] mm: add a ptep_modify_prot	transaction	abstraction
-References: <b020e42384197b824320.1213615800@localhost>	 <1213831403.8011.24.camel@pasglop> <4859A149.9090004@goop.org>	 <4859A528.1010107@goop.org>	 <alpine.LFD.1.10.0806181723400.2907@woody.linux-foundation.org>	 <1213835971.8011.54.camel@pasglop>  <4859E8AF.30306@goop.org> <1213860031.8011.65.camel@pasglop>
-In-Reply-To: <1213860031.8011.65.camel@pasglop>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Jun 2008 14:04:25 -0400
+Received: from vms173001pub.verizon.net ([206.46.173.1]:47882 "EHLO
+	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751497AbYFSSEY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 14:04:24 -0400
+Date: Thu, 19 Jun 2008 14:03:56 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] x86: let MPS support selectable
+In-reply-to: <86802c440806191039q5c6a2266p82d319a61a3bba3c@mail.gmail.com>
+X-X-Sender: lenb@localhost.localdomain
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Exner <dex@dragonslave.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Message-id: <alpine.LFD.1.10.0806191350530.3040@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <200805041823.57198.yhlu.kernel@gmail.com>
+ <200806181432.57204.yhlu.kernel@gmail.com>
+ <200806181729.31464.yhlu.kernel@gmail.com>
+ <200806190018.45944.yhlu.kernel@gmail.com>
+ <Pine.LNX.4.55.0806191600290.12929@cliff.in.clinika.pl>
+ <86802c440806191039q5c6a2266p82d319a61a3bba3c@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
->> Which architecture are you interested in?  If it isn't x86, you can 
->> probably get anything past Linus ;)
->>
->> I'll do some measurements to see what effect the batchable 
->> ptep_set_wrprotect() has on native.  If it's significant, I'll propose 
->> making it conditional on CONFIG_PARAVIRT.
->>     
->
-> Oh, I mostly think about powerpc, I just wondered if I could re-use
-> your new stuff in that context. Mostly idle thoughts at this stage, I
-> haven't looked seriously.
->   
 
-There are general-purpose hooks in the common code which architectures 
-can implement however they like.  In x86-land we hook them up to pvops, 
-but you can handle them however you want.
 
-> I have an old patch set to batch forks (and mprotect etc...) TLB
-> invalidations (which is what I really want to batch on powerpc, more
-> than the actual PTE changes) that involves subtle changes to the
-> batching mechanisms etc...
->   
+On Thu, 19 Jun 2008, Yinghai Lu wrote:
 
-Do you mean setting up batches of per-page tlb shootdowns rather than 
-going a global tlb flush at the end?
+> On Thu, Jun 19, 2008 at 8:10 AM, Maciej W. Rozycki <macro@linux-mips.org> wrote:
+> > On Thu, 19 Jun 2008, Yinghai Lu wrote:
+> >
+> >> @@ -233,6 +233,19 @@ config SMP
+> >>
+> >>         If you don't know what to do here, say N.
+> >>
+> >> +config X86_FIND_SMP_CONFIG
+> >> +     def_bool y
+> >> +     depends on X86_MPPARSE || X86_VOYAGER || X86_VISWS
+> >> +     depends on X86_32
+> >> +
+> >> +config X86_MPPARSE
+> >> +     def_bool y
+> >> +     bool "Enable MPS table"
+> >> +     depends on (X86_32 && (X86_LOCAL_APIC && !X86_VISWS)) || X86_64
+> >> +     help
+> >> +       For old smp systems that do not have proper acpi support. Newer systems
+> >> +       (esp with 64bit cpus) with acpi support, MADT and DSDT will override it
+> >> +
+> >>  choice
+> >>       prompt "Subarchitecture Type"
+> >>       default X86_PC
+> >
+> >  First of all you want to make sure at least one of ACPI and X86_MPPARSE
+> > is enabled if X86_LOCAL_APIC or you risk a known-broken kernel
+> > configuration, e.g. SMP which has no slightest chance to work.
+> >
+> >  Personally I'd be happy to see CONFIG_ACPI_BOOT we used to have at one
+> > point back just so that you can use ACPI tables to run an SMP system
+> > without the need to pull all the power management stuff.  Useful if the MP
+> > table is broken beyond recovery.  I am assuming it has been removed for a
+> > reason though.
+> 
+> thanks. will try to add CONFIG_ACPI_BOOT...
 
-    J
+NAK.
+
+CONFIG_ACPI_BOOT was removed because it was fundamentally ill-conceived
+and created a situation which was not only more difficult to maintain
+but also didn't work on most machines.
+ACPI interrupt configuration depends on the ACPI interpreter, so to boot
+properly and configure interrupts with ACPI, you need 90% of the kernel's
+ACPI code present anyway.
+The other 10% are the Linux policy drivers, fan, processor, etc, and those
+can be already be de-configured one by one if desired.
+
+If you want to use ACPI just for enumerating processors, ie to see
+the HT that MPS usually doesn't include, you can boot with "acpi=ht",
+which will not enter ACPI mode or use ACPI for anything else.
+We used to have a compile option for this, but most people who used
+it did so by mistake and then complained that all sorts of things,
+(starting with the power button) didn't work, so it was removed.
+
+I don't think we should be going out of our way to enhance MPS support.
+There probably isn't a single system shipped in this century that has MPS
+that doesen't have ACPI, while there are millions of systems that
+have ACPI and no MPS.  MPS is going away, and making
+it a config option prepares us for the day when we completely
+don't care about it any more.
+
+However, I think that adding CONFIG_MPS before removing ACPI's
+depencency on mpparse.c has all risk and no value.
+
+thanks,
+-Len
+
+
+
