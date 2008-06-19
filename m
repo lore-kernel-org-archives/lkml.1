@@ -1,116 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbYFSBKF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbYFSBaF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758067AbYFSBKF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 21:10:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbYFSBJy
+	id S1756505AbYFSBaF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 21:30:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbYFSB3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 21:09:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48644 "EHLO mx1.redhat.com"
+	Wed, 18 Jun 2008 21:29:51 -0400
+Received: from mail.windriver.com ([147.11.1.11]:33965 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754350AbYFSBJw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 21:09:52 -0400
-Date: Wed, 18 Jun 2008 21:09:47 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: NeilBrown <neilb@suse.de>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH - take 2] knfsd: nfsd: Handle ERESTARTSYS from syscalls.
-Message-ID: <20080618210947.2110a541@tleilax.poochiereds.net>
-In-Reply-To: <1080619001109.24338@suse.de>
-References: <20080619101025.24263.patches@notabene>
-	<1080619001109.24338@suse.de>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	id S1751064AbYFSB3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 21:29:51 -0400
+Message-ID: <4859B650.9030208@windriver.com>
+Date: Wed, 18 Jun 2008 20:28:48 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+MIME-Version: 1.0
+To: Ben Dooks <ben-linux@fluff.org>
+CC: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: fix vector initialisation when !CONFIG_KGDB
+References: <20080618165021.GJ10351@trinity.fluff.org>
+In-Reply-To: <20080618165021.GJ10351@trinity.fluff.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Jun 2008 01:28:49.0672 (UTC) FILETIME=[D36BA880:01C8D1AB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jun 2008 10:11:09 +1000
-NeilBrown <neilb@suse.de> wrote:
 
-> 
-> OCFS2 can return -ERESTARTSYS from write requests (and possibly
-> elsewhere) if there is a signal pending.
-> 
-> If nfsd is shutdown (by sending a signal to each thread) while there
-> is still an IO load from the client, each thread could handle one last
-> request with a signal pending.  This can result in -ERESTARTSYS
-> which is not understood by nfserrno() and so is reflected back to
-> the client as nfserr_io aka -EIO.  This is wrong.
-> 
-> Instead, interpret ERESTARTSYS to mean "try again later" by returning
-> nfserr_jukebox.  The client will resend and - if the server is
-> restarted - the write will (hopefully) be successful and everyone will
-> be happy.
-> 
->  The symptom that I narrowed down to this was:
->     copy a large file via NFS to an OCFS2 filesystem, and restart
->     the nfs server during the copy.
->     The 'cp' might get an -EIO, and the file will be corrupted -
->     presumably holes in the middle where writes appeared to fail.
-> 
-> 
-> Signed-off-by: Neil Brown <neilb@suse.de>
-> 
-> ### Diffstat output
->  ./fs/nfsd/nfsproc.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff .prev/fs/nfsd/nfsproc.c ./fs/nfsd/nfsproc.c
-> --- .prev/fs/nfsd/nfsproc.c	2008-06-19 10:06:36.000000000 +1000
-> +++ ./fs/nfsd/nfsproc.c	2008-06-19 10:07:58.000000000 +1000
-> @@ -614,6 +614,7 @@ nfserrno (int errno)
+
+Ben Dooks wrote:
+> It seems in the changes for adding CONFIG_KGDB that the ARM
+> trap initialisation has been turned off if the configuration
+> is not enabled. If CONFIG_KGDB is not set, the system locks
+> up as soon as the kernel turns the IRQs on for the first
+> time in init/main.c.
+>
+> The fix is to remove the dependency on calling early_trap_init()
+> on CONFIG_KGDB, so that the vectors are initialised before
+> the init sequence enables the IRQs.
+>
+> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+>
+> --- linux-2.6.26-rc6-q1.orig/arch/arm/kernel/setup.c	2008-06-18 15:17:31.000000000 +0100
+> +++ linux-2.6.26-rc6-q1/arch/arm/kernel/setup.c	2008-06-18 15:17:45.000000000 +0100
+> @@ -855,9 +855,7 @@ void __init setup_arch(char **cmdline_p)
 >  #endif
->  		{ nfserr_stale, -ESTALE },
->  		{ nfserr_jukebox, -ETIMEDOUT },
-> +		{ nfserr_jukebox, -ERESTARTSYS },
->  		{ nfserr_dropit, -EAGAIN },
->  		{ nfserr_dropit, -ENOMEM },
->  		{ nfserr_badname, -ESRCH },
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+>  #endif
+>  
+> -#if defined(CONFIG_KGDB)
+>  	early_trap_init();
+> -#endif
+>  }
+>
+>   
 
-No objection to the patch, but what signal was being sent to nfsd when
-you saw this? If it's anything but a SIGKILL, then I wonder if we have
-a race that we need to deal with. My understanding is that we have nfsd
-flip between 2 sigmasks to prevent anything but a SIGKILL from being
-delivered while we're handling the local filesystem operation.
+That is absolutely correct.  Thanks for catching this.
 
->From nfsd():
+I folded this into the general ARM kgdb patch as there is no sense in
+generating a patch bisecting failure.  The change is in the kgdb-next
+branch which feeds into the linux-next, which means it should show up in
+the next day or so.
 
-----------[snip]-----------
-                sigprocmask(SIG_SETMASK, &shutdown_mask, NULL);
-
-                /*
-                 * Find a socket with data available and call its
-                 * recvfrom routine.
-                 */
-                while ((err = svc_recv(rqstp, 60*60*HZ)) == -EAGAIN)
-                        ;
-                if (err < 0)
-                        break;
-                update_thread_usage(atomic_read(&nfsd_busy));
-                atomic_inc(&nfsd_busy);
-
-                /* Lock the export hash tables for reading. */
-                exp_readlock();
-
-                /* Process request with signals blocked.  */
-                sigprocmask(SIG_SETMASK, &allowed_mask, NULL);
-
-                svc_process(rqstp);
-
-----------[snip]-----------
-
-What happens if this catches a SIGINT after the err<0 check, but before
-the mask is set to allowed_mask? Does svc_process() then get called with
-a signal pending?
-
--- 
-Jeff Layton <jlayton@redhat.com>
+Thanks,
+Jason.
