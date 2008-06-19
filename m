@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbYFSNC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759417AbYFSNHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759427AbYFSNC2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 09:02:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbYFSNCU
+	id S1759417AbYFSNHm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 09:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755979AbYFSNHe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 09:02:20 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41970 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754185AbYFSNCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 09:02:19 -0400
-Date: Thu, 19 Jun 2008 09:01:58 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-To: David Miller <davem@davemloft.net>
-cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, agk@redhat.com
-Subject: Re: stack overflow on Sparc64
-In-Reply-To: <20080618.233713.87158879.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0806190845300.6330@engineering.redhat.com>
-References: <Pine.LNX.4.64.0806182318170.27388@engineering.redhat.com>
- <20080618.205948.107681537.davem@davemloft.net>
- <Pine.LNX.4.64.0806190041080.31418@engineering.redhat.com>
- <20080618.233713.87158879.davem@davemloft.net>
+	Thu, 19 Jun 2008 09:07:34 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:63793 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755915AbYFSNHd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 09:07:33 -0400
+Date: Thu, 19 Jun 2008 14:55:08 +0200
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Andre Haupt <andre@bitwigglers.org>, linux-kernel@vger.kernel.org,
+       linux-crypto@vger.kernel.org
+Subject: Re: [PATCH] crypto: remove duplicate include of linux/interrupt.h
+Message-ID: <20080619125508.GA11645@ahaupt-debian-vm.localdomain>
+References: <1213879388-11418-1-git-send-email-andre@bitwigglers.org> <20080619125115.GA10549@2ka.mipt.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080619125115.GA10549@2ka.mipt.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Andre Haupt <andre@bitwigglers.org>
+X-Provags-ID: V01U2FsdGVkX1/e4QAUE0UFfkc7yYxR6zHT5zrucrFoAvdVZAn
+ XhGXaYIsMvalve7IVl6q4ueAxKUPkyyvimnWWm448zLQnjD7J7
+ DPy2PSCiPNzYpUjZqn/ugIDBmJfxR7ye1VLlci6Vm8=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Jun 2008, David Miller wrote:
+On Thu, Jun 19, 2008 at 04:51:15PM +0400, Evgeniy Polyakov wrote:
+> Hi.
+> 
+> On Thu, Jun 19, 2008 at 02:43:08PM +0200, Andre Haupt (andre@bitwigglers.org) wrote:
+> > Signed-off-by: Andre Haupt <andre@bitwigglers.org>
+> 
+> Thank you for the patch,  but similar one from Huang Weiyi is in Herbert Xu
+> cryptodev-2.6 tree an will be pushed upstream in upcoming merge window.
+> 
+Ok, didn't notice that.
 
-> From: Mikulas Patocka <mpatocka@redhat.com>
-> Date: Thu, 19 Jun 2008 01:17:39 -0400 (EDT)
->
->> I see ... the callee writes arguments into caller's stack frame, if it has
->> variable number of arguments. That it misdesign, the callee should write
->> registers arguments into it's own frame like on AMD64 (then this space
->> would be allocated only if needed).
->
-> The callee can do this even for non-variable argument lists.
->
-> It's like a set of pre-allocated stack slots for those incoming
-> argument registers when reloading under register pressure.
->
-> In my opinion it is better to put this onus on the callee because only
-> the callee knows if it needs to pop these values onto the stack to
-> alleviate register pressure.
->
-> I think it might be possible for the compiler to only use 176 bytes.
-> I'll take a look at the gcc sparc backend and the ABI specification
-> to see if this is the case.
+regards,
 
-Yes, it could be shrunk to 176 bytes. Maybe there could be some 
-performance problems if the spills are cacheline-unaligned. Or better --- 
-make special -mkernel-abi function to gcc that will drop this area at all 
-and make 128-byte frames. In kernel it wouldn't matter that ABI is 
-incompatible.
+Andre
 
-Mikulas
+
+> -- 
+> 	Evgeniy Polyakov
