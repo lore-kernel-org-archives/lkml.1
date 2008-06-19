@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756735AbYFSKKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757663AbYFSKMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756735AbYFSKKw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 06:10:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbYFSKKp
+	id S1757663AbYFSKMm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 06:12:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755011AbYFSKMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 06:10:45 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35783 "EHLO mx3.mail.elte.hu"
+	Thu, 19 Jun 2008 06:12:35 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40376 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754244AbYFSKKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 06:10:44 -0400
-Date: Thu, 19 Jun 2008 12:10:30 +0200
+	id S1755022AbYFSKMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 06:12:34 -0400
+Date: Thu, 19 Jun 2008 12:12:24 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Jack Steiner <steiner@sgi.com>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH] - Increase MAX_APICS for very large x86_64 configs
-Message-ID: <20080619101030.GF15228@elte.hu>
-References: <20080616170910.GA24930@sgi.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Dario Faggioli <raistlin@linux.it>,
+       Michael Trimarchi <trimarchimichael@yahoo.it>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: NULL pointer dereference while setting sched_rt_period_us
+Message-ID: <20080619101224.GG15228@elte.hu>
+References: <1213773519.5371.8.camel@Palanthas.Krynn> <1213775311.16944.199.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080616170910.GA24930@sgi.com>
+In-Reply-To: <1213775311.16944.199.camel@twins>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,33 +36,17 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jack Steiner <steiner@sgi.com> wrote:
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-> Increase the maximum number of apics when running very large 
-> configurations. This patch has no affect on most systems.
+> On Wed, 2008-06-18 at 09:18 +0200, Dario Faggioli wrote:
+> > Hi all,
 > 
-> Signed-off-by: Jack Steiner <steiner@sgi.com>
+> Thanks! I'll push it fwd with my other rt-group fixes
 
-applied to tip/x86/uv - thanks Jack.
+applied Dario's fix to tip/sched/urgent:
 
-> The patch has no effect on any 32-bit kernel. It adds ~4k to the size 
-> of 64-bit kernels but only if NR_CPUS > 255.
-> 
-> This is a repost of an earlier patch (4/16) that was implicated in a 
-> random-qa failure. I have not been able to reproduce the failure using 
-> the same boot args & config.  Best guess is that some other patch 
-> caused random data corruption & this patch was a victim.
-
-i have just re-tested the previously failing config on tip/master:
-
-  http://redhat.com/~mingo/misc/config-Thu_Apr_17_10_17_14_CEST_2008.bad
   http://people.redhat.com/mingo/tip.git/README
 
-and the good news is that it does not crash on bootup anymore. Perhaps 
-one of Mike's fixes/improvements did the trick?
-
-Nevertheless i'll keep an eye on this change and wont propagate it to 
-linux-next for a few days to make sure it's all robust on a wide range 
-of x86 testsystems.
+thanks Dario and Peter.
 
 	Ingo
