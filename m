@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759441AbYFSP6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761276AbYFSP7k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759441AbYFSP6R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 11:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbYFSP6E
+	id S1761276AbYFSP7k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 11:59:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbYFSP7c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 11:58:04 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:45778 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751185AbYFSP6D (ORCPT
+	Thu, 19 Jun 2008 11:59:32 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:16044 "EHLO
+	IE1EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751449AbYFSP7b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 11:58:03 -0400
-Date: Thu, 19 Jun 2008 11:56:45 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Holger Kiehl <Holger.Kiehl@dwd.de>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
-       Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Performance of ext4
-Message-ID: <20080619155645.GA8582@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Holger Kiehl <Holger.Kiehl@dwd.de>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
-	Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <18513.345.553912.449710@frecb006361.adech.frec.bull.fr> <Pine.LNX.4.64.0806121154090.27806@diagnostix.dwd.de> <20080612131928.GB18229@mit.edu> <Pine.LNX.4.64.0806121333480.27806@diagnostix.dwd.de> <20080612180605.GD22481@skywalker> <Pine.LNX.4.64.0806121940020.2974@diagnostix.dwd.de> <Pine.LNX.4.64.0806130753100.7097@diagnostix.dwd.de> <20080616175408.GF3279@atrey.karlin.mff.cuni.cz> <20080616181353.GA20686@skywalker> <Pine.LNX.4.64.0806171001200.6307@diagnostix.dwd.de>
+	Thu, 19 Jun 2008 11:59:31 -0400
+X-BigFish: VPS-40(zz1432R98dR62a3L7efV1805Mzz10d3izzz32i6bh87i62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0K2PWEQ-01-ZRO-01
+Date: Thu, 19 Jun 2008 17:59:19 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: stephane eranian <eranian@googlemail.com>
+CC: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       perfmon2-devel@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 2/2] x86: add PCI extended config space access for AMD
+	Barcelona
+Message-ID: <20080619155918.GD10019@erda.amd.com>
+References: <7c86c4470804300651u5a8fc98dr56fd1834ba902a0e@mail.gmail.com> <1213890640-4444-2-git-send-email-robert.richter@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0806171001200.6307@diagnostix.dwd.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <1213890640-4444-2-git-send-email-robert.richter@amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 19 Jun 2008 15:59:19.0259 (UTC) FILETIME=[6EAE2AB0:01C8D225]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 17, 2008 at 11:42:36AM +0000, Holger Kiehl wrote:
-> Note how the size of file results.24033.helena.dwd.de changes from
-> 9230 before the test to 8208 bytes after the test. Also note the
-> date both have the same timestamp "2008-06-17 04:35". I have made a
-> copy of results.24033.helena.dwd.de before the test and compared it
-> with that after the test. The file is just truncated by 1022 bytes
-> and there is no garbage.
+On 19.06.08 17:50:40, Robert Richter wrote:
+> This patch implements PCI extended configuration space access for
+> AMD's Barcelona CPUs. It extends the method using CF8/CFC IO
+> addresses. An x86 capability bit has been introduced that is set for
+> CPUs supporting PCI extended config space accesses.
+> 
+> Signed-off-by: Robert Richter <robert.richter@amd.com>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  arch/x86/kernel/cpu/cpu.h |    3 +
+>  arch/x86/pci/Makefile_32  |    1 +
+>  arch/x86/pci/Makefile_64  |    2 +-
+>  arch/x86/pci/amd_bus.c    |  560 +++++++++++++++++++++++++++++++++++++++++++++
+>  arch/x86/pci/direct.c     |   25 ++-
+>  arch/x86/pci/k8-bus_64.c  |  528 ------------------------------------------
+>  arch/x86/pci/pci.h        |    1 +
+>  7 files changed, 584 insertions(+), 536 deletions(-)
+>  create mode 100644 arch/x86/pci/amd_bus.c
+>  delete mode 100644 arch/x86/pci/k8-bus_64.c
 
-So the corruption is always a truncation, correct?
+These patches are for the perfmon/master tree. They are based upon
+tip/x86/cpu.
 
-Did you notice the problem with ext4 w/o the patch queue?  I have a
-suspicion that the problem may have been introduced by the delayed
-allocation code, but I don't have hard evidence.  When you rerun your
-benchmark (which seems to be the closest thing we have to a
-reproduction case), it would be interesting to know if the problem
-goes away with -o nodelalloc (again, it would localize where we need
-to look).
+-Robert
 
-Thanks, regards,
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
 
-						- Ted
