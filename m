@@ -1,133 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758495AbYFSOqq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756800AbYFSOwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758495AbYFSOqq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 10:46:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755173AbYFSOqh
+	id S1756800AbYFSOwu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 10:52:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbYFSOwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 10:46:37 -0400
-Received: from gw.goop.org ([64.81.55.164]:53715 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754439AbYFSOqg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 10:46:36 -0400
-Message-ID: <485A7122.8090200@goop.org>
-Date: Thu, 19 Jun 2008 07:45:54 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 19 Jun 2008 10:52:39 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:28558 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750792AbYFSOwi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 10:52:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=G+VkSQOIg/Afcs+a5wYrBUn2gHXhIP4/Nk6kTR9hl6q3y3tXShwSLDlSVPsaEekN1h
+         NF0zAPziR55AX6V1DzPxKtE/VMNWgUnSmj3paXwMpFv0Yaeaz7skE2218bJdRPLHVgAA
+         RqQuJq/bKFkj+kKDziuu3yJp3l8MNTTPnrS24=
+Message-ID: <48f7fe350806190752h5bde0c80mb048d2456bd65be2@mail.gmail.com>
+Date: Thu, 19 Jun 2008 10:52:38 -0400
+From: "Ryan Hope" <rmh3093@gmail.com>
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+Subject: Re: [BUG] Lockless patches cause hardlock under heavy IO
+Cc: "Peter Zijlstra" <peterz@infradead.org>, linux-mm@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200806191819.31968.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-To: Jan Beulich <jbeulich@novell.com>
-CC: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       hpa@zytor.com
-Subject: Re: [PATCH] i386: fix vmalloc_sync_all() for Xen
-References: <48591049.76E4.0078.0@novell.com> <485969A4.6090406@goop.org> <485A465D.76E4.0078.0@novell.com>
-In-Reply-To: <485A465D.76E4.0078.0@novell.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48f7fe350806181415l4eba61b3i1d206de03147575e@mail.gmail.com>
+	 <1213863122.16944.257.camel@twins>
+	 <200806191819.31968.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
->> Given that the usermode PGDs will never need syncing, I think it would 
->> be better to use KERNEL_PGD_PTRS, and define
+The reason for applying these patches was because users of my patchset
+have been wanting me to include lockless again. It was pretty popular
+among the users but we removed it because it would cause hardlocks. I
+though I would try it out again now that its in -mm.
+
+I guess I could start reverting patches and see if the issue goes away.
+
+On Thu, Jun 19, 2008 at 4:19 AM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> On Thursday 19 June 2008 18:12, Peter Zijlstra wrote:
+>> On Wed, 2008-06-18 at 17:15 -0400, Ryan Hope wrote:
+>> > I applied the following patches from 2.6-26-rc5-mm3 to 2.6.26-rc6 and
+>> > they caused a hardlock under heavy IO:
 >>
->> #define sync_index(a) (((a) >> PMD_SHIFT) - KERNEL_PGD_BOUNDARY)
+>> What kind of machine, how much memory, how many spindles, what
+>> filesystem and what is heavy load?
 >>
->> for a massive 192 byte saving in bss.
->>     
+>> Furthermore, try the NMI watchdog with serial/net-console to capture its
+>> output.
 >
-> I was considering that, too, but didn't do so for simplicity's sake. If I'll
-> have to re-spin the patch, I may as well do it.
 >
->   
->>> +	for (address = start; address >= TASK_SIZE; address += PMD_SIZE) {
->>>   
->>>       
->> Would it be better - especially for the Xen case - to only iterate from 
->> TASK_SIZE to FIXADDR_TOP rather than wrapping around?  What will 
->> vmalloc_sync_one do on Xen mappings?
->>     
+> Good suggestions. A trace would be really helpful.
 >
-> Could be done, but since there will never be any out-of-sync Xen entries,
-> it doesn't hurt doing the full pass. I agree it would possibly be more
-> correct,though.
+> As Arjan suggested, debug options especially CONFIG_DEBUG_VM would be
+> a good idea to turn on if you haven't already.
 >
->   
->>> +		if (!test_bit(sync_index(address), insync)) {
->>>   
->>>       
->> It's probably worth reversing this test and removing a layer of indentation.
->>     
+> BTW. what was the reason for applying those patches? Did you hit the
+> problem with -mm also, and hope to narrow it down?
 >
-> How? There's a second if() following this one, so we can't just 'continue;'
-> here.
->   
-
-That second if() block seems completely redundant:
-
-		if (address == start && test_bit(pgd_index(address), insync))
-			start = address + PGDIR_SIZE;
-
-All it does it update "start", but start isn't used anywhere else in the 
-loop.
-
->>>  			spin_lock_irqsave(&pgd_lock, flags);
->>> +			if (unlikely(list_empty(&pgd_list))) {
->>> +				spin_unlock_irqrestore(&pgd_lock, flags);
->>> +				return;
->>> +			}
->>>   
->>>       
->> This seems a bit warty.  If the list is empty, then won't the 
->> list_for_each_entry() just fall through?  Presumably this only applies 
->> to boot, since pgd_list won't be empty on a running system with usermode 
->> processes.  Is there a correctness issue here, or is it just a 
->> micro-optimisation?
->>     
 >
-> No, it isn't. Note the setting to NULL of page, which after the loop gets
-> tested for. list_for_each_entry() would never yield a NULL page, even
-> if the list is empty.
-
-Does that matter?  If pgd_list is empty, then it's in sync by 
-definition.  Why does it need special-casing?
-
-
->  And
+>> > x86-implement-pte_special.patch
+>> > mm-introduce-get_user_pages_fast.patch
+>> > mm-introduce-get_user_pages_fast-fix.patch
+>> > mm-introduce-get_user_pages_fast-checkpatch-fixes.patch
+>> > x86-lockless-get_user_pages_fast.patch
+>> > x86-lockless-get_user_pages_fast-checkpatch-fixes.patch
+>> > x86-lockless-get_user_pages_fast-fix.patch
+>> > x86-lockless-get_user_pages_fast-fix-2.patch
+>> > x86-lockless-get_user_pages_fast-fix-2-fix-fix.patch
+>> > x86-lockless-get_user_pages_fast-fix-warning.patch
+>> > dio-use-get_user_pages_fast.patch
+>> > splice-use-get_user_pages_fast.patch
+>> > x86-support-1gb-hugepages-with-get_user_pages_lockless.patch
+>> > #
+>> > mm-readahead-scan-lockless.patch
+>> > radix-tree-add-gang_lookup_slot-gang_lookup_slot_tag.patch
+>> > #mm-speculative-page-references.patch: clameter saw bustage
+>> > mm-speculative-page-references.patch
+>> > mm-speculative-page-references-fix.patch
+>> > mm-speculative-page-references-fix-fix.patch
+>> > mm-speculative-page-references-hugh-fix3.patch
+>> > mm-lockless-pagecache.patch
+>> > mm-spinlock-tree_lock.patch
+>> > powerpc-implement-pte_special.patch
+>> >
+>> > I am on an x86_64. I dont know what other info you need...
 >
->   
->>>  			list_for_each_entry(page, &pgd_list, lru) {
->>>  				if (!vmalloc_sync_one(page_address(page),
->>> -						      address))
->>> +						      address)) {
->>> +					BUG_ON(list_first_entry(&pgd_list,
->>> +								struct page,
->>> +								lru) != page);
->>>   
->>>       
->> What condition is this testing for?
->>     
+> Can you isolate it to one of the two groups of patches? I suspect it
+> might be the latter so you might try that first -- this version of
+> speculative page references is very nice in theory but it is a little
+> more complex to implement the slowpaths so it could be an error there.
 >
-> This is a replacement of the BUG_ON() that an earlier patch from you
-> removed: Failure of vmalloc_sync_one() must happen on the first
-> entry or never, and this is what is being checked for here.
->   
-
-Could you add a comment?
-
-> No, just like on 32-bit it's because modules loaded may access
-> vmalloc()-ed memory from notifiers that are called in contexts (NMI)
-> where taking even simple (propagation) page faults cannot be
-> tolerated (since the final IRET would result in finishing the NMI
-> handling from a CPU (or hypervisor) perspective.
->   
-
-Well, 32-bit PAE avoids any syncing by having all pagetables share the 
-same pmd containing the vmalloc mappings (ignoring the complications Xen 
-adds here).  Couldn't 64-bit do the same thing at the pud level 
-(preallocate as many puds needed to fill out the vmalloc area size).
-
-Uh, I guess that's not practical with 64TB of vmalloc address space 
-reserved...
-
-    J
