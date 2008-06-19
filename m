@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910AbYFSUAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751843AbYFSUMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753910AbYFSUAq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 16:00:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750957AbYFSUAi
+	id S1751843AbYFSUMp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 16:12:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbYFSUMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 16:00:38 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:22081 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750867AbYFSUAh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 16:00:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=J0FrqP0gsP3EJUwbr72+c7Hne2Bs1fDuhRxf+hjm0ILXDK680Dud1L7OxRVpzUrESI
-         NrSbM1j57DHnMb/9ICOd5T1SoyFXJ9GbQ8TAP5UOFUSi1BHbR2cQar//3MHI/P3QJiap
-         iogLReUUFqsAfVZZNS14CMrHDIGscRq+An5a0=
-Message-ID: <86802c440806191300l1a840140q9cbef4f42b10f741@mail.gmail.com>
-Date: Thu, 19 Jun 2008 13:00:36 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: make 64bit identify_cpu use cpu_dev
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Dave Jones" <davej@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080619090323.GA1575@elte.hu>
+	Thu, 19 Jun 2008 16:12:38 -0400
+Received: from in.cluded.net ([195.159.98.120]:33036 "EHLO in.cluded.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750792AbYFSUMh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 16:12:37 -0400
+Message-ID: <485ABD3A.9090704@uw.no>
+Date: Thu, 19 Jun 2008 20:10:34 +0000
+From: "Daniel K." <dk@uw.no>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9a1) Gecko/20060307 SeaMonkey/1.5a
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 10/10] sched: rt: dont stop the period timer when there
+ are tasks wanting to run
+References: <20080619122218.971447669@chello.nl> <20080619123314.398446193@chello.nl>
+In-Reply-To: <20080619123314.398446193@chello.nl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200806180215.53755.yhlu.kernel@gmail.com>
-	 <20080618141759.GG11501@elte.hu> <20080619090323.GA1575@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 19, 2008 at 2:03 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Ingo Molnar <mingo@elte.hu> wrote:
->
->> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->>
->> > may need to move some functions to common.c later
->> >
->> > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->>
->> applied to tip/x86/cpu, thanks Yinghai.
->
-> -tip testing found a boot failure on 64-bit, the bootup just hangs early
-> during bootup. I bisected it down to this patch and reverting the patch
-> solves the lockup.
->
-> Here is the config that triggers it:
->
->  http://redhat.com/~mingo/misc/config-Thu_Jun_19_10_11_15_CEST_2008.bad
+Peter Zijlstra wrote:
+> When a runnable group failed to get any runtime within a period it would be
+> found idle and the period timer would be stopped.
+> 
+> So if the group ever gets throttled, it will never wake up again.
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Reported-by: "Daniel K." <dk@uw.no>
+Tested-by: Daniel K. <dk@uw.no>
 
-can not duplicate that here.
+I think this should go into .26 as well, due to the non-intuitiveness
+of the knobs that cause this if they are fiddled with in the wrong way.
 
-can you send me the boot log on your system?
 
-YH
+Daniel K.
+
+> ---
+>  kernel/sched_rt.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/kernel/sched_rt.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/sched_rt.c
+> +++ linux-2.6/kernel/sched_rt.c
+> @@ -408,7 +408,8 @@ static int do_sched_rt_period_timer(stru
+>  			if (rt_rq->rt_time || rt_rq->rt_nr_running)
+>  				idle = 0;
+>  			spin_unlock(&rt_rq->rt_runtime_lock);
+> -		}
+> +		} else if (rt_rq->rt_nr_running)
+> +			idle = 0;
+>  
+>  		if (enqueue)
+>  			sched_rt_rq_enqueue(rt_rq);
+> 
+
