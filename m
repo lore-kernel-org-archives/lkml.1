@@ -1,90 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758105AbYFSSQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759127AbYFSSRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758105AbYFSSQO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 14:16:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754038AbYFSSP7
+	id S1759127AbYFSSRl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 14:17:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754161AbYFSSRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 14:15:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59749 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752572AbYFSSP6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 14:15:58 -0400
-Subject: [PATCH] Hugetlb: stop race when reading proc meminfo
-From: Eric Paris <eparis@redhat.com>
-To: wli@holomorphy.com
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Thu, 19 Jun 2008 14:15:42 -0400
-Message-Id: <1213899342.16752.39.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Jun 2008 14:17:33 -0400
+Received: from vms173005pub.verizon.net ([206.46.173.5]:64859 "EHLO
+	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754038AbYFSSRc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 14:17:32 -0400
+Date: Thu, 19 Jun 2008 14:16:36 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] x86: update mptable v7
+In-reply-to: <86802c440806190031q17049054md2a790224d30d29@mail.gmail.com>
+X-X-Sender: lenb@localhost.localdomain
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Message-id: <alpine.LFD.1.10.0806191412100.3040@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <200805041823.57198.yhlu.kernel@gmail.com>
+ <200805251600.26325.yhlu.kernel@gmail.com>
+ <200806011317.38622.yhlu.kernel@gmail.com>
+ <alpine.LFD.1.10.0806181812580.3074@localhost.localdomain>
+ <86802c440806181532g348864e1u3d067f8366046a7f@mail.gmail.com>
+ <alpine.LFD.1.10.0806182031060.3074@localhost.localdomain>
+ <86802c440806181749g2faf1892iea693717ea919631@mail.gmail.com>
+ <m1mylim4e6.fsf@frodo.ebiederm.org>
+ <alpine.LFD.1.10.0806190121210.3613@localhost.localdomain>
+ <m1abhilyl0.fsf@frodo.ebiederm.org>
+ <86802c440806190031q17049054md2a790224d30d29@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-minor nit that hugetlb_report_{,node_}meminfo() does not lock the
-reading of nr_huge_pages, free_huge_pages, and friends so this is not an
-atomic set of information put into the buffer.  If /proc/meminfo is read
-while the number of hugetlb pages is in flux it is possible to get
-incorrect output such as:
 
-HugePages_Total:     7
-HugePages_Free:      8
-HugePages_Rsvd:      0
-Hugepagesize:     4096 kB
 
-(test available at https://bugzilla.redhat.com/attachment.cgi?id=309864)
+NAK on this entire direction.
 
-With the patch we beat on a number of boxes for hours with the above
-test and saw no inconsistencies in the meminfo output.
+> >>> >>> > Is this an effort to boot an ACPI-mode kernel,
+> >>> >>> > and then kexec a non-ACPI kernel?
+> >>> >>>
+> >>> >>> Yes,
+> >>> >>
+> >>> >> Why is this feature needed?
+> >>> >> There are a number of ways that the resulting kernel may fail,
+> >>> >> all platform specific.
+> >>> >
+> >>> > other os still doesn't have update acpi irq routing support. but has
+> >>> > broken mptable.
+> >>>
+> >>> Which is at least in part a reason to go back to the BIOS manufacturer
+> >>> and get them to fix their table.
+> >>
+> >> Who says it is broken?
+> >
+> > In the common case if not in general the MP table and the ACPI
+> > version of the same table, provide the same data in slight different
+> > formats.
+> >
+> >>> I can see a warning coming from the kernel if these two tables are
+> >> inconsistent
+> >>> though.
+> >>
+> >> Again, there may not *be* an MPS table, and if there is but the
+> >> interrupt links are programmable, the MPS table may have very little
+> >> in common with the state of the machine in ACPI mode.
+> >
+> > That I will believe.
+> >
+> >> I'm sorry, kexec continues to sound like science fiction to me.
+> >> I don't understand why scribbling on upstream Linux in the name
+> >> of science fiction makes any sense.
+> >>
+> >> I just don't get it.
+> >
+> > In the normal kexec case not the kexec on panic (aka kdump) we should
+> > have shutdown ACPI on the way down.  So the machine won't be running
+> > in ACPI mode.  I assume ACPI supports that.
+> >
+> > What YH is doing does sound potentially dangerous.  If you can indeed compare
+> > the two tables and in fact see they are inconsistent.  That is a good case
+> > for printing a warning message.  YH clearly started this because in his
+> > testing the MP table was broken and he had an older Enterprise kernel to run
+> > that had unusable ACPI support.  That however is a BIOS bug.  Pushing back
+> > on BIOS bugs and making them easy to find is always a good deal.  Silently
+> > fixing them (not just working around them) seems unprecedented.
+> 
+> the patch did print out the old and updated mptable.
+> 
+> and that feature is enabled via "update_mptable" command line.
+> 
+> 
+> also it is useful for kexec from acpi kernel to no acpi kernel on MB
+> with nvidia chipset with AMI BIOS.
+> becuase irq routing is different from mptable and acpi.
+> 
+> amd8111/amd8131 chipset with AMI bios has same irq routing from
+> mptable and acpi.
+> 
+> Phonix BIOS, has one setup option APIC/PIC, and if select APIC, then
+> irq routing from mptable and acpi is the same with
+> nvidia chipset.
 
-Signed-off-by: Eric Paris <eparis@redhat.com>
+So you know this can't NEVER be reliable, yet you continue to push for 
+upstream changes that carry risk for all systems that DO work.
 
----
+Please clue me into the use model that justifies risking a single line of 
+Linux code for this effort.
 
- mm/hugetlb.c |   12 ++++++++++--
- 1 files changed, 10 insertions(+), 2 deletions(-)
-
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index ab17127..fe074d1 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -687,7 +687,9 @@ int hugetlb_overcommit_handler(struct ctl_table *table, int write,
- 
- int hugetlb_report_meminfo(char *buf)
- {
--	return sprintf(buf,
-+	int ret;
-+	spin_lock(&hugetlb_lock);
-+	ret = sprintf(buf,
- 			"HugePages_Total: %5lu\n"
- 			"HugePages_Free:  %5lu\n"
- 			"HugePages_Rsvd:  %5lu\n"
-@@ -698,17 +700,23 @@ int hugetlb_report_meminfo(char *buf)
- 			resv_huge_pages,
- 			surplus_huge_pages,
- 			HPAGE_SIZE/1024);
-+	spin_unlock(&hugetlb_lock);
-+	return ret;
- }
- 
- int hugetlb_report_node_meminfo(int nid, char *buf)
- {
--	return sprintf(buf,
-+	int ret;
-+	spin_lock(&hugetlb_lock);
-+	ret = sprintf(buf,
- 		"Node %d HugePages_Total: %5u\n"
- 		"Node %d HugePages_Free:  %5u\n"
- 		"Node %d HugePages_Surp:  %5u\n",
- 		nid, nr_huge_pages_node[nid],
- 		nid, free_huge_pages_node[nid],
- 		nid, surplus_huge_pages_node[nid]);
-+	spin_unlock(&hugetlb_lock);
-+	return ret;
- }
- 
- /* Return the number pages of memory we physically have, in PAGE_SIZE units. */
-
+-Len
 
