@@ -1,83 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbYFSPKL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755890AbYFSPMH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754744AbYFSPKL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 11:10:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750864AbYFSPJ7
+	id S1755890AbYFSPMH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 11:12:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbYFSPLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 11:09:59 -0400
-Received: from mk-outboundfilter-3.mail.uk.tiscali.com ([212.74.114.23]:54848
-	"EHLO mk-outboundfilter-3.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750720AbYFSPJ6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 11:09:58 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhEBAEBvV0jDiV6i/2dsb2JhbAAIrnw
-X-IronPort-AV: E=Sophos;i="4.27,672,1204502400"; 
-   d="scan'208";a="133605434"
-X-IP-Direction: IN
-Subject: Re: [PATCH] MFD maintainer
-From: ian <spyro@f2s.com>
-To: Dmitry <dbaryshkov@gmail.com>
-Cc: pHilipp Zabel <philipp.zabel@gmail.com>,
-       Samuel Ortiz <sameo@openedhand.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ben Dooks <ben-linux@fluff.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>
-In-Reply-To: <bc64b4640806190412m70cbb15dr76a25ecb99c245dc@mail.gmail.com>
-References: <20080618214223.GE22566@caravaggio>
-	 <74d0deb30806190259l2ff7931fo819ededc7aec02f7@mail.gmail.com>
-	 <1213872881.17281.32.camel@wirenth>
-	 <bc64b4640806190412m70cbb15dr76a25ecb99c245dc@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 19 Jun 2008 16:09:52 +0100
-Message-Id: <1213888192.17281.45.camel@wirenth>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Jun 2008 11:11:55 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:50648 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751288AbYFSPLy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 11:11:54 -0400
+Date: Thu, 19 Jun 2008 18:10:18 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Dave Airlie <airlied@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: kerneloops.org: 2.6.26-rc possible regression in ext3
+Message-ID: <20080619151016.GA2721@cs181133002.pp.htv.fi>
+References: <4859F075.2050207@linux.intel.com> <21d7e9970806182242na130e47i85839c4550b4ba03@mail.gmail.com> <20080619081146.GC17630@cs181133002.pp.htv.fi> <485A61B5.90003@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <485A61B5.90003@linux.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-06-19 at 15:12 +0400, Dmitry wrote:
+On Thu, Jun 19, 2008 at 06:40:05AM -0700, Arjan van de Ven wrote:
+> Adrian Bunk wrote:
+>>
+>> Expect a lot more of this to pop up in the future.
+>> Should we #error for gcc 4.3.1?
+>
+> it/s better to find if the gcc guys made a testcase for this bug (they normally do) and
+> test based on that.
 
-> > I'll tidy up the code and pop a branch on my git server for people to
-> > review, if thats what people want.
-> 
-> It's better to send patches to some ML.
+The gcc Bugzilla contains a testcase.
 
-Well, the code I had is updated to match linus -git branch
-eseries_release7 if anyones curious. (no real changes since last time
-though)
+But how do you plan to integrate it into a kernel build?
 
-> > Dmitry - if you have any pending patches now is the time to send them on
-> > over ;-)
-> 
-> Actually the code I'm using has diverged a bit from the last code I've
-> sent before this merging pulse.
+cu
+Adrian
 
-All progress is good :)
+-- 
 
-> As you have seen, I've tried to submit parts of the core and tmio-nand
-> driver as a start.
-
-Has any of that got merged yet? If so, I'll adapt my strategy to match
-that, otherwise I'll try to keep all the drivers in parallel.
-
->  Then I'd suggest to merge other tmio core bits (support for tc6387xb
->  and t7l66xb). The MMC, usb and fb cell drivers could benefit from
->  clocklib patches I'm trying to get in.
-
-I'd like to see those. I'll get MMC and USB updated ASAP.
-
-have you solved the clock-api-tied-to-platform-architecture problem ?
-
->  I'll submit the updated version of mfd-core patch this evening,
-
-Looking forward to it.
-
->  however some other bits will require  more time from my side.
-
-Lets rock :-)
-
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
