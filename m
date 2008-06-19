@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757632AbYFSSoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753617AbYFSSqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757632AbYFSSoX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 14:44:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbYFSSoJ
+	id S1753617AbYFSSqk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 14:46:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbYFSSqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 14:44:09 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:51544 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752536AbYFSSoI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 14:44:08 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <485AA8E5.7030805@s5r6.in-berlin.de>
-Date: Thu, 19 Jun 2008 20:43:49 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080614 SeaMonkey/1.1.9
+	Thu, 19 Jun 2008 14:46:31 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:57739 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753034AbYFSSqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 14:46:30 -0400
+Date: Thu, 19 Jun 2008 14:46:26 -0400
+To: "Weathers, Norman R." <Norman.R.Weathers@conocophillips.com>
+Cc: Jeff Layton <jlayton@poochiereds.net>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org, Neil Brown <neilb@suse.de>
+Subject: Re: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
+Message-ID: <20080619184626.GH18557@fieldses.org>
+References: <20080611205749.GA25194@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DAA@hoexmb9.conoco.net> <20080611225431.GD25194@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DAE@hoexmb9.conoco.net> <20080613201552.GH8501@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DB6@hoexmb9.conoco.net> <20080613220422.GC14338@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DB7@hoexmb9.conoco.net> <20080616174340.GA27083@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DD4@hoexmb9.conoco.net>
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
-       dsd@gentoo.org, mdharm-usb@one-eyed-alien.net,
-       linux-usb@vger.kernel.org, vegardno@ifi.uio.no,
-       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
-       Greg KH <greg@kroah.com>
-Subject: Re: [RFC/PATCH] usb-storage: wait for device scanning before mounting
- root
-References: <Pine.LNX.4.44L0.0804241704220.14840-100000@iolanthe.rowland.org> <Pine.LNX.4.64.0804250022160.1209@sbz-30.cs.Helsinki.FI> <48118DDD.8010507@s5r6.in-berlin.de> <Pine.LNX.4.64.0804251110400.758@sbz-30.cs.Helsinki.FI> <20080425091122.GA14990@parisc-linux.org> <20080619182310.GA30833@parisc-linux.org> <485AA7EA.6080105@s5r6.in-berlin.de>
-In-Reply-To: <485AA7EA.6080105@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <0122F800A3B64C449565A9E8C297701002D75DD4@hoexmb9.conoco.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> The problem is AFAIU not exactly how many Scsi_Host instances (initiator 
-> port representations, or something remotely related to that) are 
-> instantiated, but rather _when_ they are instantiated.  On multi 
-> protocol buses or networks like USB and FireWire, it makes sense to 
-> create the SCSI initiator port representation when we discovered that 
-> there are actually SCSI targets on the bus or network.
+On Thu, Jun 19, 2008 at 10:53:28AM -0500, Weathers, Norman R. wrote:
+> The kernel that we were really seeing the problem with was 2.6.25.4, but
+> I think we may have figured out the 4096 problem, and it was probably a
+> mistake on my part, but it is important for the NFS users to see it so
+> they don't make the same mistake.  I had found some performance tuning
+> guides, and in trying some of the suggestions, found that the setting
+> changes did seem to help on some things, but of course I never got to
+> run a check under full load (800 + clients).  A suggestion was to change
+> the tcp_reordering tunable under /proc/sys/net/ipv4 from the default 3
+> to 127.  We think that this was actually causing the issue.  I was able
+> to trace back through all of the changes, and I changed this setting
+> back to the default 3, and it immediately fixed the size-4096 hell.  It
+> appears that the reordering just eats into the memory, especially in
+> high demand situations, and I guess that should make perfect sense if we
+> are actually buffering up packets for reorder, and we are slamming the
+> box with thousands of requests per minute.
+
+OK, sounds plausible, though I won't pretend to understand exactly how
+that reordering code is using memory.
+
+> We still have other performance issues now, but it appears to be more of
+> a bottleneck, the nodes do not appear to be backing off when the servers
+> are becoming congested.
+...
+> > So with that many clients all making requests to the server at once,
+> > we'd start hitting that (serv->sv_nrthreads+3)*20 limit when 
+> > the number
+> > of threads was set to less than 30-50.  That doesn't seem to be the
+> > point where you're seeing a change in behavior, though.
+> > 
 > 
-> scsi_scan's API
+> We were estimating between 40 and 50 threads was the cut off for being
+> able to service all of the (current) requests at once.  I haven't ramped
+> back up to that level yet.  I wasn't comfortable yet with letting it all
+> hang back out just in case we get into that hellish mode again, it can
+> be a pain to try and get into those systems once they are overloaded
+> (even over serial, sometimes it can just timeout the login).  We had to
+> actually bring online a second option to help alleviate some of the back
+> congestion because the servers couldn't handle the workload.  
 
-scsi_wait_scan's API
+Thanks for the update, and let us know if you figure out anything more.
 
-> is geared towards drivers which create one or more 
-> initiator port representations right up front before going on target 
-> discovery, right?
--- 
-Stefan Richter
--=====-==--- -==- =--==
-http://arcgraph.de/sr/
+--b.
