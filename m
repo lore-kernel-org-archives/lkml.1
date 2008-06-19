@@ -1,71 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753617AbYFSSqk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756788AbYFSSv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753617AbYFSSqk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 14:46:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbYFSSqb
+	id S1756788AbYFSSv6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 14:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbYFSSvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 14:46:31 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:57739 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753034AbYFSSqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 14:46:30 -0400
-Date: Thu, 19 Jun 2008 14:46:26 -0400
-To: "Weathers, Norman R." <Norman.R.Weathers@conocophillips.com>
-Cc: Jeff Layton <jlayton@poochiereds.net>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, Neil Brown <neilb@suse.de>
-Subject: Re: CONFIG_DEBUG_SLAB_LEAK omits size-4096 and larger?
-Message-ID: <20080619184626.GH18557@fieldses.org>
-References: <20080611205749.GA25194@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DAA@hoexmb9.conoco.net> <20080611225431.GD25194@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DAE@hoexmb9.conoco.net> <20080613201552.GH8501@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DB6@hoexmb9.conoco.net> <20080613220422.GC14338@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DB7@hoexmb9.conoco.net> <20080616174340.GA27083@fieldses.org> <0122F800A3B64C449565A9E8C297701002D75DD4@hoexmb9.conoco.net>
+	Thu, 19 Jun 2008 14:51:51 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:64632 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752837AbYFSSvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 14:51:50 -0400
+Date: Thu, 19 Jun 2008 19:48:51 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Len Brown <lenb@kernel.org>
+cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Exner <dex@dragonslave.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: let MPS support selectable
+In-Reply-To: <alpine.LFD.1.10.0806191350530.3040@localhost.localdomain>
+Message-ID: <Pine.LNX.4.55.0806191920080.12929@cliff.in.clinika.pl>
+References: <200805041823.57198.yhlu.kernel@gmail.com>
+ <200806181432.57204.yhlu.kernel@gmail.com> <200806181729.31464.yhlu.kernel@gmail.com>
+ <200806190018.45944.yhlu.kernel@gmail.com> <Pine.LNX.4.55.0806191600290.12929@cliff.in.clinika.pl>
+ <86802c440806191039q5c6a2266p82d319a61a3bba3c@mail.gmail.com>
+ <alpine.LFD.1.10.0806191350530.3040@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0122F800A3B64C449565A9E8C297701002D75DD4@hoexmb9.conoco.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 19, 2008 at 10:53:28AM -0500, Weathers, Norman R. wrote:
-> The kernel that we were really seeing the problem with was 2.6.25.4, but
-> I think we may have figured out the 4096 problem, and it was probably a
-> mistake on my part, but it is important for the NFS users to see it so
-> they don't make the same mistake.  I had found some performance tuning
-> guides, and in trying some of the suggestions, found that the setting
-> changes did seem to help on some things, but of course I never got to
-> run a check under full load (800 + clients).  A suggestion was to change
-> the tcp_reordering tunable under /proc/sys/net/ipv4 from the default 3
-> to 127.  We think that this was actually causing the issue.  I was able
-> to trace back through all of the changes, and I changed this setting
-> back to the default 3, and it immediately fixed the size-4096 hell.  It
-> appears that the reordering just eats into the memory, especially in
-> high demand situations, and I guess that should make perfect sense if we
-> are actually buffering up packets for reorder, and we are slamming the
-> box with thousands of requests per minute.
+On Thu, 19 Jun 2008, Len Brown wrote:
 
-OK, sounds plausible, though I won't pretend to understand exactly how
-that reordering code is using memory.
+> CONFIG_ACPI_BOOT was removed because it was fundamentally ill-conceived
+> and created a situation which was not only more difficult to maintain
+> but also didn't work on most machines.
+> ACPI interrupt configuration depends on the ACPI interpreter, so to boot
+> properly and configure interrupts with ACPI, you need 90% of the kernel's
+> ACPI code present anyway.
 
-> We still have other performance issues now, but it appears to be more of
-> a bottleneck, the nodes do not appear to be backing off when the servers
-> are becoming congested.
-...
-> > So with that many clients all making requests to the server at once,
-> > we'd start hitting that (serv->sv_nrthreads+3)*20 limit when 
-> > the number
-> > of threads was set to less than 30-50.  That doesn't seem to be the
-> > point where you're seeing a change in behavior, though.
-> > 
-> 
-> We were estimating between 40 and 50 threads was the cut off for being
-> able to service all of the (current) requests at once.  I haven't ramped
-> back up to that level yet.  I wasn't comfortable yet with letting it all
-> hang back out just in case we get into that hellish mode again, it can
-> be a pain to try and get into those systems once they are overloaded
-> (even over serial, sometimes it can just timeout the login).  We had to
-> actually bring online a second option to help alleviate some of the back
-> congestion because the servers couldn't handle the workload.  
+ Fair enough.
 
-Thanks for the update, and let us know if you figure out anything more.
+> If you want to use ACPI just for enumerating processors, ie to see
+> the HT that MPS usually doesn't include, you can boot with "acpi=ht",
+> which will not enter ACPI mode or use ACPI for anything else.
 
---b.
+ Hmm, that's quite obscure an option name!  I would imagine most modern
+systems used as servers would not want to do any power management, but
+would still prefer to use ACPI for enumeration of processors (including
+real ones!) and interrupts, because I gather it has become common if an MP
+table is included in a system at all, it is not exactly correct, because
+the responsible BIOS engineer simply had no clue to either fix it or
+discard entirely.
+
+> I don't think we should be going out of our way to enhance MPS support.
+> There probably isn't a single system shipped in this century that has MPS
+> that doesen't have ACPI, while there are millions of systems that
+> have ACPI and no MPS.  MPS is going away, and making
+
+ It looks like I have a fortunate exception, manufactured Dec 2007, which
+has both in quite a good shape. :)
+
+> it a config option prepares us for the day when we completely
+> don't care about it any more.
+
+ Well, this is why I think it is important to be able to drop unwanted
+parts of the framework, such as the P from the ACPI acronym.  If you say
+"acpi=ht" will do, that's great; otherwise relying on the MP table used to
+be the alternative.
+
+ I don't think we'll be able to drop MP table support entirely in the
+foreseeable future though, like we haven't dropped support for the
+original 80386 yet.  Old SMP systems with MP table support only are going
+to be around for a while -- I have a couple myself and I am sure they are
+still quite common.
+
+> However, I think that adding CONFIG_MPS before removing ACPI's
+> depencency on mpparse.c has all risk and no value.
+
+ Agreed.
+
+  Maciej
