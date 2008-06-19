@@ -1,90 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759539AbYFSMjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760246AbYFSMiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759539AbYFSMjY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 08:39:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757416AbYFSMjM
+	id S1760246AbYFSMiv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 08:38:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759888AbYFSMhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 08:39:12 -0400
-Received: from mail1.perex.cz ([212.20.107.53]:6637 "EHLO mail1.perex.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756594AbYFSMjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 08:39:10 -0400
-Date: Thu, 19 Jun 2008 14:39:05 +0200 (CEST)
-From: Jaroslav Kysela <perex@perex.cz>
-X-X-Sender: perex@tm8103-a.perex-int.cz
-To: Takashi Iwai <tiwai@suse.de>
-cc: Rene Herman <rene.herman@keyaccess.nl>,
-       ALSA devel <alsa-devel@alsa-project.org>, mulix@mulix.org,
-       Pierre Ossman <drzeus@drzeus.cx>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [alsa-devel] looping S/PDIF data
-In-Reply-To: <s5hej6t91u1.wl%tiwai@suse.de>
-Message-ID: <Pine.LNX.4.61.0806191435270.1798@tm8103-a.perex-int.cz>
-References: <20080531112606.5884a1c9@mjolnir.drzeus.cx>
- <20080617215504.3203a5ed@mjolnir.drzeus.cx> <4858B84B.4030800@keyaccess.nl>
- <s5hej6t91u1.wl%tiwai@suse.de>
+	Thu, 19 Jun 2008 08:37:55 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:63331 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759868AbYFSMhx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 08:37:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=KfXsJrzXjzj9jTGkyeKsd15fZ8txaLpSndOzyc2UvlOOmaQame+3W2XxckD3GCEckh
+         gCEcVHuWjNXUpV3+e0PAmO8gYIvfIVyUKGDQ6zvipNX+6a1cEB6apWTaqwsodYKLTfIG
+         pKiw5NCb9r8gJaIxwfpS/qRqHpMurTmOyXhSw=
+Message-ID: <6278d2220806190537u7b781309q415f904390e02f3@mail.gmail.com>
+Date: Thu, 19 Jun 2008 13:37:48 +0100
+From: "Daniel J Blueman" <daniel.blueman@gmail.com>
+To: "Jeff Layton" <jlayton@redhat.com>
+Subject: Re: [2.6.26-rc4] mount.nfsv4/memory poisoning issues...
+Cc: chucklever@gmail.com, linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       "Trond Myklebust" <trond.myklebust@fys.uio.no>
+In-Reply-To: <20080619081420.24645bc4@tleilax.poochiereds.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6278d2220806041633n3bfe3dd2ke9602697697228b@mail.gmail.com>
+	 <76bd70e30806041643j4d632a6exf64b29c34173d40f@mail.gmail.com>
+	 <6278d2220806151110x68ee91fej8cf8e6b591ce1319@mail.gmail.com>
+	 <20080619081420.24645bc4@tleilax.poochiereds.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jun 2008, Takashi Iwai wrote:
+On Thu, Jun 19, 2008 at 1:14 PM, Jeff Layton <jlayton@redhat.com> wrote:
+> On Sun, 15 Jun 2008 19:10:27 +0100
+> "Daniel J Blueman" <daniel.blueman@gmail.com> wrote:
+>
+>> On Thu, Jun 5, 2008 at 12:43 AM, Chuck Lever <chuck.lever@oracle.com> wrote:
+>> > Hi Daniel-
+>> >
+>> > On Wed, Jun 4, 2008 at 7:33 PM, Daniel J Blueman
+>> > <daniel.blueman@gmail.com> wrote:
+>> >> Having experienced 'mount.nfs4: internal error' when mounting nfsv4 in
+>> >> the past, I have a minimal test-case I sometimes run:
+>> >>
+>> >> $ while :; do mount -t nfs4 filer:/store /store; umount /store; done
+>> >>
+>> >> After ~100 iterations, I saw the 'mount.nfs4: internal error',
+>> >> followed by symptoms of memory corruption [1], a locking issue with
+>> >> the reporting [2] and another (related?) memory-corruption issue
+>> >> (off-by-1?) [3]. A little analysis shows memory being overwritten by
+>> >> (likely) a poison value, which gets complicated if it's not
+>> >> use-after-free...
+>> >>
+>> >> Anyone dare confirm this issue? NFSv4 server is x86-64 Ubuntu 8.04
+>> >> 2.6.24-18, client U8.04 2.6.26-rc4; batteries included [4].
+>> >
+>> > We have some other reports of late model kernels with memory
+>> > corruption issues during NFS mount.  The problem is that by the time
+>> > these canaries start singing, the evidence of what did the corrupting
+>> > is long gone.
+>> >
+>> >> I'm happy to decode addresses, test patches etc.
+>> >
+>> > If these crashes are more or less reliably reproduced, it would be
+>> > helpful if you could do a 'git bisect' on the client to figure out at
+>> > what point in the kernel revision history this problem was introduced.
+>> >
+>> > Have you seen the problem on client kernels earlier than 2.6.25?
+>>
+>> Firstly, I had omitted that I'd booted the kernel with
+>> debug_objects=1, which provides the canary here.
+>>
+>> The primary failure I see is 'mount.nfs4: internal error', and always
+>> after 358 umount/mount cycles (plus 1 initial mount) which gives us a
+>> clue; 'netstat' shows all these connections in a TIME_WAIT state, thus
+>> the bug relates to the inability to allocate a socket error path. I
+>> found that after the connection lifetime expired, you can mount again,
+>> which corroborates this theory.
+>>
+>> In this case, we saw the mount() syscall result in the mount.nfsv4
+>> process being SEGV'd when booted with 'debug_object=1', without this
+>> option, we see:
+>>
+>> # strace /sbin/mount.nfs4 x1:/ /store
+>> ...
+>> mount("x1:/", "/store", "nfs4", 0,
+>> "addr=192.168.0.250,clientaddr=19"...) = -1 EIO (Input/output error)
+>>
+>> So, it's impossible to tell when the corruption was introduced, as it
+>> has only become detectable recently.
+>>
+>> It's worth a look-over of the socket-allocation error path, if someone
+>> can check, and reproduces 100% with the 'debug_object=1' param,
+>> available since 2.6.26-rc1 and 359 mounts in quick succession.
+>>
+>
+> For some strange reason (probably something I'm doing wrong or maybe
+> something environmental), I've not been able to reproduce this panic on
+> a stock kernel. I did, however, apply the following fault injection
+> patch and was able to reproduce it on the second mount attempt. The 3
+> patch set that I posted last week definitely prevents the oops. If
+> you're able to confirm that it also fixes your panic it would be a
+> helpful data point.
+>
+> The fault injection patch I'm using is attached. It just simulates
+> nfs4_init_client() consistently returning an error.
 
-> At Wed, 18 Jun 2008 09:24:59 +0200,
-> Rene Herman wrote:
-> > 
-> > On 17-06-08 21:55, Pierre Ossman wrote:
-> > 
-> > > Ping
-> > > 
-> > > On Sat, 31 May 2008 11:26:06 +0200
-> > > Pierre Ossman <drzeus-list@drzeus.cx> wrote:
-> > > 
-> > >> I have a minor annoyance with the snd_trident driver that I was hoping
-> > >> you might have a fix for:
-> > >>
-> > >> Pausing the output does not seem to take on the S/PDIF output. Analog
-> > >> outputs properly stop in their tracks, but the S/PDIF port keeps
-> > >> looping the current data buffer, which gives a rather unpleasant end
-> > >> result. :)
-> > 
-> > Try the alsa-devel list...
-> 
-> Does the patch below help?
-> 
-> 
-> Takashi
-> 
-> diff --git a/sound/pci/trident/trident_main.c b/sound/pci/trident/trident_main.c
-> index bbcee2c..916d4b8 100644
-> --- a/sound/pci/trident/trident_main.c
-> +++ b/sound/pci/trident/trident_main.c
-> @@ -1593,7 +1593,11 @@ static int snd_trident_trigger(struct snd_pcm_substream *substream,
->  			outb(trident->spdif_pcm_ctrl, TRID_REG(trident, NX_SPCTRL_SPCSO + 3));
->  		} else {
->  			outl(trident->spdif_pcm_bits, TRID_REG(trident, SI_SPDIF_CS));
-> -			val = inl(TRID_REG(trident, SI_SERIAL_INTF_CTRL)) | SPDIF_EN;
-> +			val = inl(TRID_REG(trident, SI_SERIAL_INTF_CTRL));
-> +			if (go)
-> +				val |= SPDIF_EN;
-> +			else
-> +				val &= ~SPDIF_EN;
->  			outl(val, TRID_REG(trident, SI_SERIAL_INTF_CTRL));
->  		}
->  	}
+Thanks! I hope to get time for this tonight and will get back to you;
+I appreciate your help, Jeff.
 
-I don't think that this patch is correct. DMA transfers should be disabled 
-by:
+The config I used to reproduce it on the client is
+http://www.quora.org/config-debug and is relevant to (at least)
+2.6.26-rc5. I was able to reproduce it by exporting a single NFSv4
+export on 2.6.25 (eg Ubuntu 8.04 server); client and server were
+x86-64.
 
-outl(what, TRID_REG(trident, T4D_STOP_B));
-outl(val, TRID_REG(trident, T4D_AINTEN_B));
+Daniel
 
-lines. Adding &= ~SPDIF_EN can disable output from AC97 to S/PDIF as well.
-
-						Jaroslav
-
------
-Jaroslav Kysela <perex@perex.cz>
-Linux Kernel Sound Maintainer
-ALSA Project, Red Hat, Inc.
-
+> Cheers,
+> --
+> Jeff Layton <jlayton@redhat.com>
+-- 
+Daniel J Blueman
