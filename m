@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754609AbYFSVQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065AbYFSVSv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754609AbYFSVQf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 17:16:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbYFSVQX
+	id S1754065AbYFSVSv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 17:18:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbYFSVSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 17:16:23 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:44427 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751290AbYFSVQU (ORCPT
+	Thu, 19 Jun 2008 17:18:43 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:58148 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751820AbYFSVSm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 17:16:20 -0400
-Message-ID: <485ACCA1.6070507@firstfloor.org>
-Date: Thu, 19 Jun 2008 23:16:17 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Thu, 19 Jun 2008 17:18:42 -0400
+Date: Thu, 19 Jun 2008 23:17:48 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, Avi Kivity <avi@qumranet.com>,
+       linux-kernel@vger.kernel.org,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: [BUG] CFS vs cpu hotplug
+Message-ID: <20080619211748.GB6180@osiris.ibm.com>
+References: <20080619161949.GA11062@osiris.ibm.com> <1213898711.3223.107.camel@lappy.programming.kicks-ass.net>
 MIME-Version: 1.0
-To: Max Asbock <masbock@us.ibm.com>
-CC: lkml <linux-kernel@vger.kernel.org>, venkatesh.pallipadi@intel.com
-Subject: Re: mce_64.c: mce_cpu_quirks being ignored
-References: <1213908276.5942.16.camel@w-amax.beaverton.ibm.com>
-In-Reply-To: <1213908276.5942.16.camel@w-amax.beaverton.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1213898711.3223.107.camel@lappy.programming.kicks-ass.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Max Asbock wrote:
-
-
-
-> static void __cpuinit mce_cpu_quirks(struct cpuinfo_x86 *c)
-> {
->         /* This should be disabled by the BIOS, but isn't always */
->         if (c->x86_vendor == X86_VENDOR_AMD) {
->                 if(c->x86 == 15)
->                         /* disable GART TBL walk error reporting, which trips off
->                            incorrectly with the IOMMU & 3ware & Cerberus. */
->                         clear_bit(10, &bank[4]);
-> ....
+On Thu, Jun 19, 2008 at 08:05:10PM +0200, Peter Zijlstra wrote:
+> On Thu, 2008-06-19 at 18:19 +0200, Heiko Carstens wrote:
+> > Hi Ingo, Peter,
+> > 
+> > I'm still seeing kernel crashes on cpu hotplug with Linus' current git tree.
+> > All I have to do is to make all cpus busy (make -j4 of the kernel source is
+> > sufficient) and then start cpu hotplug stress.
+> > It usually takes below a minute to crash the system like this:
+> > 
+> > Unable to handle kernel pointer dereference at virtual kernel address 005a800000031000
+> > Oops: 0038 [#1] PREEMPT SMP
+> > Modules linked in:
+> > CPU: 1 Not tainted 2.6.26-rc6-00232-g9bedbcb #356
+> > Process swapper (pid: 0, task: 000000002fe7ccf8, ksp: 000000002fe93d78)
+> > Krnl PSW : 0400e00180000000 0000000000032c6c (pick_next_task_fair+0x34/0xb0)
 > 
-> Is turning off that bit still needed?
+> I presume this is:
+> 
+>                 se = pick_next_entity(cfs_rq);
 
-Yes it is. Also referencing the bank is needed for other reasons anyways,
-otherwise it would ignore the user sysfs choice on reconfiguration.
-
-Venki, I did a patch for dynamic banks anyways, but haven't submitted it yet.
-
--Andi
-
+Yes, that is correct. Sorry, missed to tell about this detail.
