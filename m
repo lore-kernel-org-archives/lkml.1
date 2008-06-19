@@ -1,164 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758227AbYFSQbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759374AbYFSQb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758227AbYFSQbT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 12:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbYFSQbG
+	id S1759374AbYFSQb5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 12:31:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbYFSQbu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 12:31:06 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:57069 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751101AbYFSQbD (ORCPT
+	Thu, 19 Jun 2008 12:31:50 -0400
+Received: from gate.critical-links.com ([62.28.57.164]:43699 "EHLO
+	gate.critical-links.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751305AbYFSQbs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 12:31:03 -0400
-Date: Thu, 19 Jun 2008 22:00:44 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, sct@redhat.com,
-       adilger@clusterfs.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, Jan Kara <jack@suse.cz>,
-       Josef Bacik <jbacik@redhat.com>, Mingming Cao <cmm@us.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
-Subject: Re: [PATCH] jbd: don't abort if flushing file data failed
-Message-ID: <20080619163044.GB7874@skywalker>
-References: <4859FD82.1000306@hitachi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4859FD82.1000306@hitachi.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 19 Jun 2008 12:31:48 -0400
+Date: Thu, 19 Jun 2008 17:29:32 +0100
+From: WANG Cong <wcong@critical-links.com>
+To: mtk.manpages@gmail.com
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [Patch] Add the ENOSYS description for syslog(2)
+Message-ID: <20080619172932.0509e359@hack>
+Organization: critical-links.com
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-edgeBOX-MailScanner-Information: Please contact the ISP for more information
+X-edgeBOX-MailScanner: Found to be clean
+X-edgeBOX-MailScanner-From: wcong@critical-links.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 19, 2008 at 03:32:34PM +0900, Hidehiro Kawai wrote:
-> In ordered mode, the current jbd aborts the journal if a file data
-> buffer has an error.  But this behavior is unintended, and we found
-> that it has been adopted accidentally.
 
-Do you have more information on this ?  Isn't ordered mode required to
-guarantee that file data hit the disk and if there are errors in sending
-data to the disk, should we not mark the file system readonly by aborting
-the journal ?
+Hi, Michael!
 
+syslog(2) just returns ENOSYS when CONFIG_PRINTK is not enabled.
+This should be described in man pages, I think.
 
-> 
-> This patch undoes it and just calls printk() instead of aborting
-> the journal.  Additionally, set AS_EIO into the address_space
-> object of the failed buffer which is submitted by
-> journal_do_submit_data() so that fsync() can get -EIO.
-> 
-> Missing error checkings are also added to inform errors on file
-> data buffers to the user.  The following buffers are targeted.
-> 
->   (a) the buffer which has already been written out by pdflush
->   (b) the buffer which has been unlocked before scanned in the
->       t_locked_list loop
-> 
-> Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Patch is below.
 
+Thanks.
 
-We may want a similar patch for jbd2 also. IF you are doing that can you
-make sure  you do that against the patch queue at
-http://repo.or.cz/w/ext4-patch-queue.git. There are some changes in the
-same area in the patch queue.
+Sigend-off-by: WANG Cong <wcong@critical-links.com>
 
-> ---
->  fs/jbd/commit.c |   32 +++++++++++++++++++++++++-------
->  1 file changed, 25 insertions(+), 7 deletions(-)
-> 
-> Index: linux-2.6.26-rc5-mm3/fs/jbd/commit.c
-> ===================================================================
-> --- linux-2.6.26-rc5-mm3.orig/fs/jbd/commit.c
-> +++ linux-2.6.26-rc5-mm3/fs/jbd/commit.c
-> @@ -172,7 +172,7 @@ static void journal_do_submit_data(struc
->  /*
->   *  Submit all the data buffers to disk
->   */
-> -static void journal_submit_data_buffers(journal_t *journal,
-> +static int journal_submit_data_buffers(journal_t *journal,
->  				transaction_t *commit_transaction)
->  {
->  	struct journal_head *jh;
-> @@ -180,6 +180,7 @@ static void journal_submit_data_buffers(
->  	int locked;
->  	int bufs = 0;
->  	struct buffer_head **wbuf = journal->j_wbuf;
-> +	int err = 0;
-> 
->  	/*
->  	 * Whenever we unlock the journal and sleep, things can get added
-> @@ -253,6 +254,8 @@ write_out_data:
->  			put_bh(bh);
->  		} else {
->  			BUFFER_TRACE(bh, "writeout complete: unfile");
-> +			if (unlikely(!buffer_uptodate(bh)))
-> +				err = -EIO;
->  			__journal_unfile_buffer(jh);
->  			jbd_unlock_bh_state(bh);
->  			if (locked)
-> @@ -271,6 +274,8 @@ write_out_data:
->  	}
->  	spin_unlock(&journal->j_list_lock);
->  	journal_do_submit_data(wbuf, bufs);
-> +
-> +	return err;
->  }
-> 
->  /*
-> @@ -410,8 +415,7 @@ void journal_commit_transaction(journal_
->  	 * Now start flushing things to disk, in the order they appear
->  	 * on the transaction lists.  Data blocks go first.
->  	 */
-> -	err = 0;
-> -	journal_submit_data_buffers(journal, commit_transaction);
-> +	err = journal_submit_data_buffers(journal, commit_transaction);
-> 
->  	/*
->  	 * Wait for all previously submitted IO to complete.
-> @@ -426,10 +430,21 @@ void journal_commit_transaction(journal_
->  		if (buffer_locked(bh)) {
->  			spin_unlock(&journal->j_list_lock);
->  			wait_on_buffer(bh);
-> -			if (unlikely(!buffer_uptodate(bh)))
-> -				err = -EIO;
->  			spin_lock(&journal->j_list_lock);
->  		}
-> +		if (unlikely(!buffer_uptodate(bh))) {
-> +			if (TestSetPageLocked(bh->b_page)) {
-> +				spin_unlock(&journal->j_list_lock);
-> +				lock_page(bh->b_page);
-> +				spin_lock(&journal->j_list_lock);
-> +			}
-> +			if (bh->b_page->mapping)
-> +				set_bit(AS_EIO, &bh->b_page->mapping->flags);
-> +
-> +			unlock_page(bh->b_page);
-> +			SetPageError(bh->b_page);
-> +			err = -EIO;
-> +		}
->  		if (!inverted_lock(journal, bh)) {
->  			put_bh(bh);
->  			spin_lock(&journal->j_list_lock);
-> @@ -448,8 +463,11 @@ void journal_commit_transaction(journal_
->  	}
->  	spin_unlock(&journal->j_list_lock);
-> 
-> -	if (err)
-> -		journal_abort(journal, err);
-> +	if (err) {
-> +		printk(KERN_WARNING
-> +		       "JBD: Detected IO errors during flushing file data\n");
-> +		err = 0;
-> +	}
-> 
->  	journal_write_revoke_records(journal, commit_transaction);
-> 
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+---
+diff -Nrup man-pages-3.00/man2/syslog.2 man-pages-3.00.modified/man2/syslog.2
+--- man-pages-3.00/man2/syslog.2	2008-06-11 05:20:46.000000000 +0100
++++ man-pages-3.00.modified/man2/syslog.2	2008-06-19 17:13:00.000000000 +0100
+@@ -235,6 +235,12 @@ capability).
+ .B ERESTARTSYS
+ System call was interrupted by a signal; nothing was read.
+ (This can be seen only during a trace.)
++.TP
++.B ENOSYS
++This system call is not enabled when the operating system
++kernel was compiled.
++The kernel configuration parameter controlling this is
++.BR CONFIG_PRINTK .
+ .SH "CONFORMING TO"
+ This system call is Linux-specific and should not be used in programs
+ intended to be portable.
+
