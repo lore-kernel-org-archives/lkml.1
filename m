@@ -1,60 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755247AbYFSKAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757792AbYFSKBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755247AbYFSKAZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 06:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755344AbYFSJ7z
+	id S1757792AbYFSKBm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 06:01:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbYFSKBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 05:59:55 -0400
-Received: from ping.pong.ch ([212.103.71.101]:59215 "EHLO ping.pong.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755205AbYFSJ7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 05:59:54 -0400
-Date: Thu, 19 Jun 2008 11:59:52 +0200
-From: Gaudenz Steinlin <gaudenz@debian.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-       486798@bugs.debian.org, josejx@gentoo.org
-Subject: Re: [PATCH] restore export of handle_mm_fault for Mac on Linux
-Message-ID: <20080619095952.GB28907@soziologie.ch>
-References: <20080618101402.GF15718@soziologie.ch> <20080618114906.GA23788@infradead.org> <18521.846.628816.525787@cargo.ozlabs.ibm.com> <20080618125131.GA2097@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080618125131.GA2097@infradead.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 19 Jun 2008 06:01:33 -0400
+Received: from casper.infradead.org ([85.118.1.10]:59917 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752528AbYFSKBd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 06:01:33 -0400
+Subject: Re: [PATCH] Delay accounting, fix incorrect delay time when
+	constantly waiting on runqueue
+From: Peter Zijlstra <peterz@infradead.org>
+To: bharathravi1@gmail.com
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, dhaval@linux.vnet.ibm.com,
+       vatsa@in.ibm.com, balbir@in.ibm.com, Madhava K R <madhavakr@gmail.com>
+In-Reply-To: <1213609261-9554-1-git-send-email-bharathravi1@gmail.com>
+References: <1213609261-9554-1-git-send-email-bharathravi1@gmail.com>
+Content-Type: text/plain
+Date: Thu, 19 Jun 2008 12:01:22 +0200
+Message-Id: <1213869682.10476.2.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 18, 2008 at 08:51:31AM -0400, Christoph Hellwig wrote:
-> On Wed, Jun 18, 2008 at 10:45:02PM +1000, Paul Mackerras wrote:
-> > > Has been rejected a few times.  An now that we actually have kvm
-> > > for powerpc in tree MOL should just merge with that project and
-> > > do the right things in tree instead of beeing a really hacky
-> > > module subverting the VM.
-> > 
-> > We don't have KVM for the "classic" 32-bit PowerPC processors, only
-> > for the 44x family.  And doing KVM for the classic 32-bit processors
-> > would probably involve just as much hackery as MOL. :)
+On Mon, 2008-06-16 at 15:11 +0530, bharathravi1@gmail.com wrote:
+> From: Bharath Ravi <bharathravi1@gmail.com>
 > 
-> I don't think so.  Doing it properly in-tree will mean that it is
+> This patch corrects the incorrect value of per process run-queue wait time
+> reported by delay statistics. The anomaly was due to the following reason.
+> When a process leaves the CPU and immediately starts waiting for CPU on
+> the runqueue (which means it remains in the TASK_RUNNABLE state), the time
+> of re-entry into the run-queue is never recorded. Due to this, the waiting time
+> on the runqueue from this point of re-entry upto the next time it hits the CPU
+> is not accounted for. This is solved by recording the time of re-entry of a
+> process leaving the CPU in the sched_info_depart() function IF the process will
+> go back to waiting on the run-queue. This IF condition is verified by checking
+> whether the process is still in the TASK_RUNNABLE state.
 > 
->   a) properly reviewed
->   b) means we can do the major VM bits in the kernel without these
->      really stupid exports
+> The patch was tested on 2.6.26-rc6 using two simple CPU hog programs. The
+> values noted prior to the fix did not account for the time spent on the
+> runqueue waiting. After the fix, the correct values were reported back
+> to user space.
 > 
-> Have you looked at MOL recently?  It's more than disgusting.
-> 
-> And in addition to these issue we do of course as policy not add
-> random hooks in the kernel tree for out of tree stuff.  Especially
-> for hacks like this that don't even have the intention to get merged.
+> Signed-off-by: Bharath Ravi <bharathravi1@gmail.com>
+> Signed-off-by: Madhava K R  <madhavakr@gmail.com>
 
-This is not true anymore. See my other message to this thread. Joseph
-Jezak is working on a mergeable module.
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-Gaudenz
+> ---
+>  kernel/sched_stats.h |    6 ++++++
+>  1 files changed, 6 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/sched_stats.h b/kernel/sched_stats.h
+> index a38878e..80179ef 100644
+> --- a/kernel/sched_stats.h
+> +++ b/kernel/sched_stats.h
+> @@ -198,6 +198,9 @@ static inline void sched_info_queued(struct task_struct *t)
+>  /*
+>   * Called when a process ceases being the active-running process, either
+>   * voluntarily or involuntarily.  Now we can calculate how long we ran.
+> + * Also, if the process is still in the TASK_RUNNING state, call
+> + * sched_info_queued() to mark that it has now again started waiting on
+> + * the runqueue.
+>   */
+>  static inline void sched_info_depart(struct task_struct *t)
+>  {
+> @@ -206,6 +209,9 @@ static inline void sched_info_depart(struct task_struct *t)
+>  
+>  	t->sched_info.cpu_time += delta;
+>  	rq_sched_info_depart(task_rq(t), delta);
+> +
+> +	if (t->state == TASK_RUNNING)
+> +		sched_info_queued(t);
+>  }
+>  
+>  /*
 
--- 
-Ever tried. Ever failed. No matter.
-Try again. Fail again. Fail better.
-~ Samuel Beckett ~
