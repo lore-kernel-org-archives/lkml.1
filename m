@@ -1,67 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752334AbYFSUQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753081AbYFSUTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752334AbYFSUQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 16:16:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751023AbYFSUQw
+	id S1753081AbYFSUTV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 16:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750973AbYFSUTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 16:16:52 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48187 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750985AbYFSUQv (ORCPT
+	Thu, 19 Jun 2008 16:19:13 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:43608 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750834AbYFSUTM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 16:16:51 -0400
-Subject: Re: [PATCH 10/10] sched: rt: dont stop the period timer when there
-	are tasks wanting to run
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Daniel K." <dk@uw.no>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <485ABD3A.9090704@uw.no>
-References: <20080619122218.971447669@chello.nl>
-	 <20080619123314.398446193@chello.nl>  <485ABD3A.9090704@uw.no>
-Content-Type: text/plain
-Date: Thu, 19 Jun 2008 22:16:17 +0200
-Message-Id: <1213906578.3223.113.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Thu, 19 Jun 2008 16:19:12 -0400
+Message-ID: <20080619221941.588r3j9ascw0oco4@intran0x.frec.bull.fr>
+Date: Thu, 19 Jun 2008 22:19:41 +0200
+From: "Benjamin Thery " <Benjamin.Thery@bull.net>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Tejun Heo <htejun@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 01/11] sysfs: Support for preventing unmounts.
+References: <20080618170729.808539948@theryb.frec.bull.fr>
+	<20080618170730.256129077@theryb.frec.bull.fr>
+	<1213811063.7922.39.camel@nimitz> <m18wx2o638.fsf@frodo.ebiederm.org>
+	<1213893131.7922.67.camel@nimitz>
+In-Reply-To: <1213893131.7922.67.camel@nimitz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-06-19 at 20:10 +0000, Daniel K. wrote:
-> Peter Zijlstra wrote:
-> > When a runnable group failed to get any runtime within a period it would be
-> > found idle and the period timer would be stopped.
-> > 
-> > So if the group ever gets throttled, it will never wake up again.
-> > 
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > Reported-by: "Daniel K." <dk@uw.no>
-> Tested-by: Daniel K. <dk@uw.no>
-> 
-> I think this should go into .26 as well, due to the non-intuitiveness
-> of the knobs that cause this if they are fiddled with in the wrong way.
+Quoting Dave Hansen <dave@linux.vnet.ibm.com>:
 
-Sounds reasonable, Ingo?
+> On Wed, 2008-06-18 at 13:12 -0700, Eric W. Biederman wrote:
+>>
+>> - The data in sysfs fundamentally changes behind the back of the
+>>   VFS and we need to keep the VFS in sync.  Essentially this is the
+>>   distributed filesystem problem.
+>>
+>> - In particular for sysfs_rename and sysfs_move_dir we need to support
+>> finding
+>>   the dcache entries and calling d_move.  So that the dcache does not
+>>   get into an inconsistent state.  Timeouts and invalidates like NFS
+>>   uses are to be  avoided if at all possible.
+>
+> Much clearer now, thanks!
+>
+> Can we get this description into the changelog, pretty please?
 
-> > ---
-> >  kernel/sched_rt.c |    3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6/kernel/sched_rt.c
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/sched_rt.c
-> > +++ linux-2.6/kernel/sched_rt.c
-> > @@ -408,7 +408,8 @@ static int do_sched_rt_period_timer(stru
-> >  			if (rt_rq->rt_time || rt_rq->rt_nr_running)
-> >  				idle = 0;
-> >  			spin_unlock(&rt_rq->rt_runtime_lock);
-> > -		}
-> > +		} else if (rt_rq->rt_nr_running)
-> > +			idle = 0;
-> >  
-> >  		if (enqueue)
-> >  			sched_rt_rq_enqueue(rt_rq);
-> > 
-> 
+Yes sure.
+I'll add it to the patch introduction.
+
+Benjamin
+
+>
+> -- Dave
+>
+>
+>
+
+
+
+----------------------------------------------------------------
+This message was sent using IMP, the Internet Messaging Program.
 
