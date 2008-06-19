@@ -1,64 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbYFSXJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756537AbYFSXKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755834AbYFSXJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 19:09:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753622AbYFSXJr
+	id S1756537AbYFSXKX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 19:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753622AbYFSXKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 19:09:47 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:16118 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753346AbYFSXJr (ORCPT
+	Thu, 19 Jun 2008 19:10:07 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45314
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753673AbYFSXKF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 19:09:47 -0400
-Date: Thu, 19 Jun 2008 16:03:29 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, samr <sam@ravnborg.org>,
-       dbrownell@users.sourceforge.net
-Subject: [PATCH] kernel-doc: handle/strip __init
-Message-Id: <20080619160329.1a4fe917.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Thu, 19 Jun 2008 19:10:05 -0400
+Date: Thu, 19 Jun 2008 16:10:05 -0700 (PDT)
+Message-Id: <20080619.161005.235931417.davem@davemloft.net>
+To: a.beregalov@gmail.com
+Cc: kernel-testers@vger.kernel.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.26-rc: SPARC: Sun Ultra 10 can not boot
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <a4423d670806190902l48c542e0i6a7380a2d3e7f520@mail.gmail.com>
+References: <a4423d670806190707k7ae6da8cud80a826a1603d941@mail.gmail.com>
+	<a4423d670806190902l48c542e0i6a7380a2d3e7f520@mail.gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+Date: Thu, 19 Jun 2008 20:02:44 +0400
 
-cc: David Brownell <dbrownell@users.sourceforge.net>
+> I have reverted this commit and
+> 2.6.26-rc6-00233-g99d3b2d works fine. It can boot.
 
-Handle __init in functions with kernel-doc notation by stripping the
-__init away from the output doc.  This is already being done for
-"__devinit".  This patch fixes these kernel-doc error/aborts:
+Thanks for your report, I'll look into this.
 
-Error(linux-next-20080619//drivers/usb/gadget/config.c:132): cannot understand prototype: 'struct usb_descriptor_header **__init usb_copy_descriptors(struct usb_descriptor_header **src) '
-Error(linux-next-20080619//drivers/usb/gadget/config.c:182): cannot understand prototype: 'struct usb_endpoint_descriptor *__init usb_find_endpoint( 	struct usb_descriptor_header **src, 	struct usb_descriptor_header **copy, 	struct usb_endpoint_descriptor *match ) '
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- scripts/kernel-doc |    1 +
- 1 file changed, 1 insertion(+)
-
---- linux-next-20080619.orig/scripts/kernel-doc
-+++ linux-next-20080619/scripts/kernel-doc
-@@ -1643,6 +1643,7 @@ sub dump_function($$) {
-     $prototype =~ s/^__always_inline +//;
-     $prototype =~ s/^noinline +//;
-     $prototype =~ s/__devinit +//;
-+    $prototype =~ s/__init +//;
-     $prototype =~ s/^#define\s+//; #ak added
-     $prototype =~ s/__attribute__\s*\(\([a-z,]*\)\)//;
- 
-
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+The irony is that this changeset was added to fix a
+hang with lockdep enabled :-)
