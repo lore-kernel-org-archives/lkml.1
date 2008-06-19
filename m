@@ -1,75 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbYFSWV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbYFSWWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755264AbYFSWV4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 18:21:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750929AbYFSWVq
+	id S1755897AbYFSWWe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 18:22:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750929AbYFSWWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 18:21:46 -0400
-Received: from gw.goop.org ([64.81.55.164]:33301 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750782AbYFSWVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 18:21:46 -0400
-Message-ID: <485ADBCF.5040101@goop.org>
-Date: Thu, 19 Jun 2008 15:21:03 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 19 Jun 2008 18:22:21 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:64944 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755544AbYFSWWL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 18:22:11 -0400
+Date: Thu, 19 Jun 2008 15:16:05 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Louis Rilling <louis.rilling@kerlabs.com>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: Re: [BUGFIX][PATCH 3/3] configfs: Fix failing symlink() making
+	rmdir() fail
+Message-ID: <20080619221605.GE10888@mail.oracle.com>
+Mail-Followup-To: Louis Rilling <louis.rilling@kerlabs.com>,
+	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+References: <1213724243-29183-1-git-send-email-louis.rilling@kerlabs.com> <1213724243-29183-4-git-send-email-louis.rilling@kerlabs.com>
 MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.509483000@polaris-admin.engr.sgi.com> <20080605102222.GA21319@elte.hu> <484EF29C.7080100@sgi.com> <485947A8.8060801@goop.org> <4859511E.5050605@sgi.com> <48596315.6020104@goop.org> <48596893.4040908@sgi.com> <485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org> <485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org> <485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com> <485AD138.4010404@goop.org> <485ADA12.5010505@sgi.com>
-In-Reply-To: <485ADA12.5010505@sgi.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1213724243-29183-4-git-send-email-louis.rilling@kerlabs.com>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> Jeremy Fitzhardinge wrote:
->
->   
->> Why not use the real pda for all cpus?
->>     
->
-> Yeah, I figured that out after doing some more thinking... ;-)
->
->   
->> Do you move the boot-cpu's per-cpu data? (Please don't)  If not, you can
->> just use percpu__pda from the start without having to do anything else,
->> and then set up %gs pointing to the pda base for each secondary cpu.
->>     
->
-> The problem is that the static percpu area is removed as it lies
-> in the initdata section, so the pda is removed as well.
->   
+On Tue, Jun 17, 2008 at 07:37:23PM +0200, Louis Rilling wrote:
 
-Well, that's easy to fix...
+	Ok, I can see some of why I hated this.
 
-> But I took your suggestion to move the fixup to before secondary_startup.
->
-> Below is a revised version. 
+> +
+>  		spin_lock(&configfs_dirent_lock);
+> -		if (target_sd->s_type & CONFIGFS_USET_DROPPING) {
+> -			spin_unlock(&configfs_dirent_lock);
+> -			config_item_put(item);
+> -			kfree(sl);
+> -			return -EPERM;
+> -		}
+> -		list_add(&sl->sl_list, &target_sd->s_links);
+> +		/*
+> +		 * Force rmdir() of parent_item to wait until we know if we
+> +		 * succeed.
+> +		 */
+> +		parent_sd->s_type |= CONFIGFS_USET_ATTACHING;
+>  		spin_unlock(&configfs_dirent_lock);
+> +
+>  		ret = configfs_create_link(sl, parent_item->ci_dentry,
+>  					   dentry);
+> -		if (ret) {
+> -			spin_lock(&configfs_dirent_lock);
+> -			list_del_init(&sl->sl_list);
+> +
+> +		spin_lock(&configfs_dirent_lock);
+> +		parent_sd->s_type &= ~CONFIGFS_USET_ATTACHING;
+> +
+> +		if (ret || target_sd->s_type & CONFIGFS_USET_DROPPING) {
 
-(Incremental diffs are easier to review and work with.)
+	Use parenthesis.  Actually, separate out the error cases.
 
->  It builds but I'll have to test it tomorrow.
-> Note the addition of:
->
-> +       initial_pda = (unsigned long)get_percpu_pda(cpu);
->
-> in do_boot_cpu.
->
-> I'm not sure yet what to put into acpi_save_state_mem:
->
->         initial_code = (unsigned long)wakeup_long64;
-> +       /* ZZZ initial_pda = (unsigned long)?; */
->   
+> +			struct configfs_dirent *sd = NULL;
+> +
+> +			if (!ret) {
+> +				sd = dentry->d_fsdata;
+> +				list_del_init(&sd->s_sibling);
+> +			}
+>  			spin_unlock(&configfs_dirent_lock);
+> +
+> +			if (!ret) {
+> +				configfs_drop_dentry(sd, dentry->d_parent);
+> +				d_delete(dentry);
+> +				configfs_put(sd);
+> +			}
 
-You'll need to change wakeup_long64 to load the right value into the 
-GS_BASE msr anyway.
+	This open-code of the VFS munging is ripe to break when the VFS
+changes or other configfs changes happen.  The real issue is that you
+are reimplementing the core of configfs_unlink().  Note how the core VFS
+munging of configfs_rmdir() is separated out so that configfs_mkdir()
+can also use it in the failure case?  Do the same with unlink() and it
+will read much better ("if (DROPPING) configfs_delete_link()").  Call it
+configfs_remove_link() or configfs_delete_link().
 
-    J
+Joel
+
+-- 
+
+Life's Little Instruction Book #337
+
+	"Reread your favorite book."
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
