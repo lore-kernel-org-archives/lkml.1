@@ -1,58 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbYFSFEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbYFSFJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754894AbYFSFEe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 01:04:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbYFSFE0
+	id S1755002AbYFSFJA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 01:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbYFSFIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 01:04:26 -0400
-Received: from gw.goop.org ([64.81.55.164]:53097 "EHLO mail.goop.org"
+	Thu, 19 Jun 2008 01:08:52 -0400
+Received: from gw.goop.org ([64.81.55.164]:53129 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751205AbYFSFE0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 01:04:26 -0400
-Message-ID: <4859E8AF.30306@goop.org>
-Date: Wed, 18 Jun 2008 22:03:43 -0700
+	id S1751251AbYFSFIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 01:08:51 -0400
+Message-ID: <4859E9B8.9040406@goop.org>
+Date: Wed, 18 Jun 2008 22:08:08 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>, x86@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1 of 4] mm: add a ptep_modify_prot transaction	abstraction
-References: <b020e42384197b824320.1213615800@localhost>	 <1213831403.8011.24.camel@pasglop> <4859A149.9090004@goop.org>	 <4859A528.1010107@goop.org>	 <alpine.LFD.1.10.0806181723400.2907@woody.linux-foundation.org> <1213835971.8011.54.camel@pasglop>
-In-Reply-To: <1213835971.8011.54.camel@pasglop>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, jeremy@xensource.com,
+       chrisw@sous-sol.org, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, virtualization@lists.osdl.org
+Subject: Re: linux-next: Tree for June 18 (XEN build error)
+References: <20080618175753.2a519b71.sfr@canb.auug.org.au> <20080618124331.04e27900.randy.dunlap@oracle.com>
+In-Reply-To: <20080618124331.04e27900.randy.dunlap@oracle.com>
 X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
-> On Wed, 2008-06-18 at 17:24 -0700, Linus Torvalds wrote:
->   
->> On Wed, 18 Jun 2008, Jeremy Fitzhardinge wrote:
->>     
->>> Along the lines of:
->>>       
->> Hell no. There's a reason we have a special set_wrprotect() thing. We can 
->> do it more efficiently on native hardware by just clearing the bit 
->> atomically. No need to do the cmpxchg games.
->>     
->
-> But we can't batch ... 
+Randy Dunlap wrote:
+> linux-next-20080618/drivers/xen/manage.c: In function 'xen_suspend':
+> linux-next-20080618/drivers/xen/manage.c:66: error: too few arguments to function 'device_power_up'
+> linux-next-20080618/drivers/xen/manage.c: In function 'do_suspend':
+> linux-next-20080618/drivers/xen/manage.c:115: error: too few arguments to function 'device_resume'
+> make[3]: *** [drivers/xen/manage.o] Error 1
 >   
 
-Which architecture are you interested in?  If it isn't x86, you can 
-probably get anything past Linus ;)
-
-I'll do some measurements to see what effect the batchable 
-ptep_set_wrprotect() has on native.  If it's significant, I'll propose 
-making it conditional on CONFIG_PARAVIRT.
+What argument(s) do device_power_up() and device_resume() want now?
 
     J
