@@ -1,81 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755569AbYFSCN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbYFSC3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755569AbYFSCN2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Jun 2008 22:13:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbYFSCNU
+	id S1754572AbYFSC3e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Jun 2008 22:29:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751093AbYFSC3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Jun 2008 22:13:20 -0400
-Received: from vms173003pub.verizon.net ([206.46.173.3]:62731 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751544AbYFSCNT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Jun 2008 22:13:19 -0400
-Date: Wed, 18 Jun 2008 22:13:00 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-Subject: [stable PATCH 2.6.21] ACPICA: Ignore ACPI table signature for Load()
- operator
-X-X-Sender: lenb@localhost.localdomain
-To: stable@kernel.org
-Cc: linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <alpine.LFD.1.10.0806182211330.3613@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 18 Jun 2008 22:29:25 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:44178 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750999AbYFSC3Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Jun 2008 22:29:24 -0400
+From: Neil Brown <neilb@suse.de>
+To: Jeff Layton <jlayton@redhat.com>
+Date: Thu, 19 Jun 2008 12:29:16 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18521.50300.572838.123366@notabene.brown>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH - take 2] knfsd: nfsd: Handle ERESTARTSYS from syscalls.
+In-Reply-To: message from Jeff Layton on Wednesday June 18
+References: <20080619101025.24263.patches@notabene>
+	<1080619001109.24338@suse.de>
+	<20080618210947.2110a541@tleilax.poochiereds.net>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bob Moore <robert.moore@intel.com>
+On Wednesday June 18, jlayton@redhat.com wrote:
+> 
+> No objection to the patch, but what signal was being sent to nfsd when
+> you saw this? If it's anything but a SIGKILL, then I wonder if we have
+> a race that we need to deal with. My understanding is that we have nfsd
+> flip between 2 sigmasks to prevent anything but a SIGKILL from being
+> delivered while we're handling the local filesystem operation.
 
-upstream bc45b1d39a925b56796bebf8a397a0491489d85c
+SuSE /etc/init.d/nfsserver does
 
-Only "SSDT" is acceptable to the ACPI spec, but tables are
-seen with OEMx and null sigs. Therefore, signature validation
-is worthless.  Apparently MS ACPI accepts such signatures, ACPICA
-must be compatible.
+        killproc -n -KILL nfsd 
 
-Without this patch booting with acpi_osi="!Windows 2006" is required
-for several machines to function properly with cpufreq.
+so it looks like a SIGKILL.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9919
-http://bugzilla.kernel.org/show_bug.cgi?id=10383
-http://bugzilla.kernel.org/show_bug.cgi?id=10454
-https://bugzilla.novell.com/show_bug.cgi?id=396311
 
-Signed-off-by: Bob Moore <robert.moore@intel.com>
-Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- drivers/acpi/tables/tbinstal.c |   25 +++++++------------------
- 1 files changed, 7 insertions(+), 18 deletions(-)
+> 
+> From nfsd():
+> 
+> ----------[snip]-----------
+>                 sigprocmask(SIG_SETMASK, &shutdown_mask, NULL);
+> 
+>                 /*
+>                  * Find a socket with data available and call its
+>                  * recvfrom routine.
+>                  */
+>                 while ((err = svc_recv(rqstp, 60*60*HZ)) == -EAGAIN)
+>                         ;
+>                 if (err < 0)
+>                         break;
+>                 update_thread_usage(atomic_read(&nfsd_busy));
+>                 atomic_inc(&nfsd_busy);
+> 
+>                 /* Lock the export hash tables for reading. */
+>                 exp_readlock();
+> 
+>                 /* Process request with signals blocked.  */
+>                 sigprocmask(SIG_SETMASK, &allowed_mask, NULL);
+> 
+>                 svc_process(rqstp);
+> 
+> ----------[snip]-----------
+> 
+> What happens if this catches a SIGINT after the err<0 check, but before
+> the mask is set to allowed_mask? Does svc_process() then get called with
+> a signal pending?
 
-Index: linux-2.6.21.y/drivers/acpi/tables/tbinstal.c
-===================================================================
---- linux-2.6.21.y.orig/drivers/acpi/tables/tbinstal.c
-+++ linux-2.6.21.y/drivers/acpi/tables/tbinstal.c
-@@ -123,17 +123,13 @@ acpi_tb_add_table(struct acpi_table_desc
- 		}
- 	}
- 
--	/* The table must be either an SSDT or a PSDT */
--
--	if ((!ACPI_COMPARE_NAME(table_desc->pointer->signature, ACPI_SIG_PSDT))
--	    &&
--	    (!ACPI_COMPARE_NAME(table_desc->pointer->signature, ACPI_SIG_SSDT)))
--	{
--		ACPI_ERROR((AE_INFO,
--			    "Table has invalid signature [%4.4s], must be SSDT or PSDT",
--			    table_desc->pointer->signature));
--		return_ACPI_STATUS(AE_BAD_SIGNATURE);
--	}
-+	/*
-+	 * Originally, we checked the table signature for "SSDT" or "PSDT" here.
-+	 * Next, we added support for OEMx tables, signature "OEM".
-+	 * Valid tables were encountered with a null signature, so we've just
-+	 * given up on validating the signature, since it seems to be a waste
-+	 * of code. The original code was removed (05/2008).
-+	 */
- 
- 	(void)acpi_ut_acquire_mutex(ACPI_MTX_TABLES);
- 
+Yes, I suspect it does.
+
+I wonder why we have all this mucking about this signal masks anyway.
+Anyone have any ideas about what it actually achieves?
+
+NeilBrown
