@@ -1,77 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757102AbYFSGOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756890AbYFSG0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757102AbYFSGOY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 02:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754423AbYFSGOQ
+	id S1756890AbYFSG0Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 02:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753881AbYFSG0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 02:14:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59950 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754102AbYFSGOP (ORCPT
+	Thu, 19 Jun 2008 02:26:14 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:18445 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755139AbYFSG0N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 02:14:15 -0400
-Date: Wed, 18 Jun 2008 23:14:12 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: kerneloops.org: 2.6.26-rc possible regression in ext3
-In-Reply-To: <alpine.LFD.1.10.0806182242390.2907@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0806182302340.2907@woody.linux-foundation.org>
-References: <4859EFE2.2090202@linux.intel.com> <alpine.LFD.1.10.0806182242390.2907@woody.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 19 Jun 2008 02:26:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=NaA2WXy61s0dUGAdp0IJ//MKB22J1hLBlz4xLrK0HZq42j9aoH41NTtrDFyK36QMbt
+         a3RHagFFZt1dE9XCTyrqX4HmB8XWAdmXvGB/GDqTh7xoV7TM+TOoa5f/7G59gH/s7tPG
+         q+zeWevEg9/lQ10ZefFE18N1LLbCa45epudY8=
+Message-ID: <86802c440806182326m8c3ad56j29242895507e074d@mail.gmail.com>
+Date: Wed, 18 Jun 2008 23:26:11 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Len Brown" <lenb@kernel.org>
+Subject: Re: [PATCH] x86: update mptable v7
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.1.10.0806190113290.3613@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200805041823.57198.yhlu.kernel@gmail.com>
+	 <200805191252.36814.yhlu.kernel@gmail.com>
+	 <200805251600.26325.yhlu.kernel@gmail.com>
+	 <200806011317.38622.yhlu.kernel@gmail.com>
+	 <alpine.LFD.1.10.0806181812580.3074@localhost.localdomain>
+	 <86802c440806181532g348864e1u3d067f8366046a7f@mail.gmail.com>
+	 <alpine.LFD.1.10.0806182031060.3074@localhost.localdomain>
+	 <86802c440806181749g2faf1892iea693717ea919631@mail.gmail.com>
+	 <alpine.LFD.1.10.0806190113290.3613@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jun 18, 2008 at 10:20 PM, Len Brown <lenb@kernel.org> wrote:
+>
+>
+>> >> >> make mptable to be consistent to acpi routing, so we could
+>> >> >> 1. kexec kernel with acpi=off
+>> >> >> 2. workaround BIOS that acpi routing is working, but mptable is not right.
+>> >> >>    so can use kernel/kexec to start other os that doesn't have good acpi support
+>> >> >
+>> >> > Is this an effort to boot an ACPI-mode kernel,
+>> >> > and then kexec a non-ACPI kernel?
+>> >>
+>> >> Yes,
+>> >
+>> > Why is this feature needed?
+>> > There are a number of ways that the resulting kernel may fail,
+>> > all platform specific.
+>>
+>> other os still doesn't have update acpi irq routing support. but has
+>> broken mptable.
+>
+> I don't see how this can work.
+>
+> What if the the platform doesn't suport MPS -- the
+> 2nd OS will try to run in PIC mode and will see
+> only the legacy interrupts?
 
+if the system doesn't support mps, this patch will bail out, because
+it can not find mptable
 
-On Wed, 18 Jun 2008, Linus Torvalds wrote:
-> 
-> One thing I note is that all the oopses seem to be i686 - are there that 
-> few x86-64 fc10 users (I'd have assumed that 64-bit is starting to be the 
-> norm for people who live on the edge, but perhaps I'm just out of touch)? 
-> 
-> Or could this perhaps be an indication that it is specific to i686 some 
-> way (eg a compiler issue?)
+>
+> What if it does support MPS but ACPI has configured
+> its PCI Interrupt Link Devices to direct interrupts
+> to different IRQs that are described by MPS?
 
-The oops code is odd:
+it will use irq from mptable that is updated according to acpi
 
-  27:	8d 4c 18 fe          	lea    0xfffffffe(%eax,%ebx,1),%ecx
-  2b:*	8b 19                	mov    (%ecx),%ebx     <-- trapping instruction
-  2d:	83 e9 08             	sub    $0x8,%ecx
-  30:	89 d8                	mov    %ebx,%eax
-  32:	66 d1 e8             	shr    %ax
-  35:	0f b7 c0             	movzwl %ax,%eax
+when acpi irq set routing, and it will set some bits in pci config in
+southbridge, and the irq routing is consistent between HW and irq
+returned by acpi.
+when first kernel is shutdown, it doesn't restore the bits about irq
+routing in pci config. So if keep updated mptable has correct pin,
+then device on second
+kernel will work.
 
-and that "lea" is doing an address computation of "eax+2*ebx-2". Which 
-does *not* look like an address to a 32-bit entity, but to a 16-bit one. 
-Yeah, it's not conclusive, but it is suggestive.
+>
+>> >> > Doing so could confuse the heck out of the platform firmware,
+>> >> > which will think that an ACPI-mode kernel is still running.
+>
+> There is state in the chip-set that the ACPI OS has set
+> that makes no sense in an non-ACPI context and can lead
+> to bizzare behaviour.  The Links above is just one example.
+>
+> the ACPI SCI interrupt is configured in ACPI mode only.
+> What happens when the non-ACPI OS boots and GPE's
+> fire and result in SCI's?  They'll not get serviced
+> and will kill that IRQ and anything else on it.
 
-And the 16-bit "shr+movzwl" further strengthens the case that it is 
-actually working on a 16-bit entity. The trapping instruction _should_ 
-possibly have been a "movzwl (%ecx),%ebx" to begin with.
+the patch doesn't change entries in mptable that pin < 16 and irq is
+not for pci device...
 
-But it did a 32-bit load, and in this case it looks as if the 16-bit load 
-would have been correct! The value of ECX in this example was
+and normal sci/acpi is using 9..., and even mptable even doesn't has that entry.
+and there is no pci device share that irq with sci/acpi..., so it will
+be put into updated mptable.
+so next kernel will mask that.
 
-	ECX: dc384ffe
+>
+> Can somebody clue me into why this concept
+> is something other than totally insane?
 
-ie it was indeed a two-byte aligned thing at the end of the page, and if 
-the load had been a 16-bit load (like the data seems to be), it would 
-never have oopsed! The page fault seems to be due to DEBUG_PAGEALLOC and 
-the next page being unmapped because it's not allocated.
+for system that have 6 pcie slots and more, with full populated cards.
+when boot with mptable, BIOS will use irq < 16 for all pci devices,
+and several devices will share same irq.
+but when acpi is enabled, irqs are spanned all over.
 
-I only looked closer at one particular oops (25906, in case anybody 
-cares), but at least judging from that particular one I would indeed 
-suspect a compiler bug.
+also when pci card with several pci bridges is plugged in, the mptable
+is totally messed up, some slot will work, and some doesn't work.
 
-Of course, the main reason I say that is that none of the ext3 or VFS 
-changes look even _remotely_ relevant to any of this. They really don't 
-look like they could possibly matter for "do_split()" unless there is 
-something really odd going on.
-
-			Linus
+YH
