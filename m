@@ -1,55 +1,488 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757444AbYFSJSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbYFSJUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757444AbYFSJSX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 05:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754304AbYFSJSQ
+	id S1757218AbYFSJUK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 05:20:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754485AbYFSJT5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 05:18:16 -0400
-Received: from smtp.movial.fi ([62.236.91.34]:53713 "EHLO smtp.movial.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753615AbYFSJSP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 05:18:15 -0400
-Message-ID: <485A249F.9070506@movial.fi>
-Date: Thu, 19 Jun 2008 12:19:27 +0300
-From: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
-Organization: Movial Creative Technologies
-User-Agent: Icedove 1.5.0.14eol (X11/20080509)
+	Thu, 19 Jun 2008 05:19:57 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39361 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754304AbYFSJTz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 05:19:55 -0400
+Date: Thu, 19 Jun 2008 18:20:21 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: [-mm][PATCH 5/5] putback_lru_page()/unevictable page handling rework v2
+Cc: kosaki.motohiro@jp.fujitsu.com
+In-Reply-To: <20080619172241.E7FC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20080619172241.E7FC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-Id: <20080619181707.E80E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>, Ingo Molnar <mingo@elte.hu>
-CC: Andy Whitcroft <apw@shadowen.org>, tglx <tglx@linutronix.de>,
-       hpa <hpa@zytor.com>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: coding style fixes to arch/x86/math-emu/reg_constant
-References: <20080614204452.25378bd0@paolo-desktop> <48590926.5060009@movial.fi> <4d8e3fd30806180719j718a3b1ds461495c4d3de8236@mail.gmail.com> <20080619090715.GK30959@shadowen.org>
-In-Reply-To: <20080619090715.GK30959@shadowen.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Whitcroft wrote:
-> On Wed, Jun 18, 2008 at 04:19:38PM +0200, Paolo Ciarrocchi wrote:
->> On Wed, Jun 18, 2008 at 3:09 PM, Dmitri Vorobiev
->> <dmitri.vorobiev@movial.fi> wrote:
->>> Paolo Ciarrocchi wrote:
->>>> -static void fld_const(FPU_REG const *c, int adj, u_char tag)
->>>> +static void fld_const(FPU_REG const * c, int adj, u_char tag)
->>> ________________________________________^
->>>
->>> The above does not seem to me like a big improvement in code quality. A
->>> false positive from checkpatch.pl?
->> Yes, I think you are right.
->> Andy CC'ed so that he can have a look at that.
-> 
-> That would be a false positive if we are recommending that.  I have
-> pushed this fragment in isolation through all versions back to 0.15 and
-> none of them recommend it.
-> 
-> Ahh, but if I push the whole patch through 0.19 spits it out.  Ok this
-> is a subtle bug in modifier procesing and is fixed in the head of my
-> tree.  Will be fixed in the next batch which goes up to -mm.
 
-Maybe it makes sense for Ingo to revert the original Paolo's patch now?
+this patch is folding several patches and obsolete to
 
-Dmitri
+Lee's  "fix double unlock_page()" patches
+
+   http://marc.info/?l=linux-mm&m=121337119621958&w=2
+   http://marc.info/?l=linux-kernel&m=121362782406478&w=2
+
+and Nishimura-san's "remove redundant page->mapping check" patch.
+
+   http://marc.info/?l=linux-mm&m=121377572909776&w=2
+
+
+-----------------------------------------
+From: KAMEZAWA Hiroyuki <kamezawa.hiroy@jp.fujitsu.com>
+
+putback_lru_page()/unevictable page handling rework.
+
+Now, putback_lru_page() requires that the page is locked.
+And in some special case, implicitly unlock it.
+
+This patch tries to make putback_lru_pages() to be lock_page() free.
+(Of course, some callers must take the lock.)
+
+The main reason that putback_lru_page() assumes that page is locked
+is to avoid the change in page's status among Mlocked/Not-Mlocked.
+
+Once it is added to unevictable list, the page is removed from
+unevictable list only when page is munlocked. (there are other special
+case. but we ignore the special case.)
+So, status change during putback_lru_page() is fatal and page should 
+be locked.
+
+putback_lru_page() in this patch has a new concepts.
+When it adds page to unevictable list, it checks the status is 
+changed or not again. if changed, retry to putback.
+
+This patche changes also caller side and cleaning up lock/unlock_page().
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroy@jp.fujitsu.com>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+
+---
+ mm/internal.h |    2 -
+ mm/migrate.c  |   60 +++++++++++++---------------------------
+ mm/mlock.c    |   51 +++++++++++++++++++---------------
+ mm/vmscan.c   |   87 +++++++++++++++++++++++++++++-----------------------------
+ 4 files changed, 94 insertions(+), 106 deletions(-)
+
+Index: b/mm/vmscan.c
+===================================================================
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -486,31 +486,21 @@ int remove_mapping(struct address_space 
+  * Page may still be unevictable for other reasons.
+  *
+  * lru_lock must not be held, interrupts must be enabled.
+- * Must be called with page locked.
+- *
+- * return 1 if page still locked [not truncated], else 0
+  */
+-int putback_lru_page(struct page *page)
++#ifdef CONFIG_UNEVICTABLE_LRU
++void putback_lru_page(struct page *page)
+ {
+ 	int lru;
+-	int ret = 1;
+ 	int was_unevictable;
+ 
+-	VM_BUG_ON(!PageLocked(page));
+ 	VM_BUG_ON(PageLRU(page));
+ 
+-	lru = !!TestClearPageActive(page);
+ 	was_unevictable = TestClearPageUnevictable(page); /* for page_evictable() */
+ 
+-	if (unlikely(!page->mapping)) {
+-		/*
+-		 * page truncated.  drop lock as put_page() will
+-		 * free the page.
+-		 */
+-		VM_BUG_ON(page_count(page) != 1);
+-		unlock_page(page);
+-		ret = 0;
+-	} else if (page_evictable(page, NULL)) {
++redo:
++	lru = !!TestClearPageActive(page);
++
++	if (page_evictable(page, NULL)) {
+ 		/*
+ 		 * For evictable pages, we can use the cache.
+ 		 * In event of a race, worst case is we end up with an
+@@ -519,11 +509,6 @@ int putback_lru_page(struct page *page)
+ 		 */
+ 		lru += page_is_file_cache(page);
+ 		lru_cache_add_lru(page, lru);
+-		mem_cgroup_move_lists(page, lru);
+-#ifdef CONFIG_UNEVICTABLE_LRU
+-		if (was_unevictable)
+-			count_vm_event(NORECL_PGRESCUED);
+-#endif
+ 	} else {
+ 		/*
+ 		 * Put unevictable pages directly on zone's unevictable
+@@ -531,28 +516,47 @@ int putback_lru_page(struct page *page)
+ 		 */
+ 		add_page_to_unevictable_list(page);
+ 		mem_cgroup_move_lists(page, LRU_UNEVICTABLE);
+-#ifdef CONFIG_UNEVICTABLE_LRU
+-		if (!was_unevictable)
+-			count_vm_event(NORECL_PGCULLED);
+-#endif
+ 	}
+ 
++	mem_cgroup_move_lists(page, lru);
++
++	/*
++	 * page's status can change while we move it among lru. If an evictable
++	 * page is on unevictable list, it never be freed. To avoid that,
++	 * check after we added it to the list, again.
++	 */
++	if (lru == LRU_UNEVICTABLE && page_evictable(page, NULL)) {
++		if (!isolate_lru_page(page)) {
++			put_page(page);
++			goto redo;
++		}
++		/* This means someone else dropped this page from LRU
++		 * So, it will be freed or putback to LRU again. There is
++		 * nothing to do here.
++		 */
++	}
++
++	if (was_unevictable && lru != LRU_UNEVICTABLE)
++		count_vm_event(NORECL_PGRESCUED);
++	else if (!was_unevictable && lru == LRU_UNEVICTABLE)
++		count_vm_event(NORECL_PGCULLED);
++
+ 	put_page(page);		/* drop ref from isolate */
+-	return ret;		/* ret => "page still locked" */
+ }
+ 
+-/*
+- * Cull page that shrink_*_list() has detected to be unevictable
+- * under page lock to close races with other tasks that might be making
+- * the page evictable.  Avoid stranding an evictable page on the
+- * unevictable list.
+- */
+-static void cull_unevictable_page(struct page *page)
++#else
++
++void putback_lru_page(struct page *page)
+ {
+-	lock_page(page);
+-	if (putback_lru_page(page))
+-		unlock_page(page);
++	int lru;
++	VM_BUG_ON(PageLRU(page));
++
++	lru = !!TestClearPageActive(page) + page_is_file_cache(page);
++	lru_cache_add_lru(page, lru);
++	mem_cgroup_move_lists(page, lru);
++	put_page(page);
+ }
++#endif
+ 
+ /*
+  * shrink_page_list() returns the number of reclaimed pages
+@@ -746,8 +750,8 @@ free_it:
+ 		continue;
+ 
+ cull_mlocked:
+-		if (putback_lru_page(page))
+-			unlock_page(page);
++		unlock_page(page);
++		putback_lru_page(page);
+ 		continue;
+ 
+ activate_locked:
+@@ -1127,7 +1131,7 @@ static unsigned long shrink_inactive_lis
+ 			list_del(&page->lru);
+ 			if (unlikely(!page_evictable(page, NULL))) {
+ 				spin_unlock_irq(&zone->lru_lock);
+-				cull_unevictable_page(page);
++				putback_lru_page(page);
+ 				spin_lock_irq(&zone->lru_lock);
+ 				continue;
+ 			}
+@@ -1231,7 +1235,7 @@ static void shrink_active_list(unsigned 
+ 		list_del(&page->lru);
+ 
+ 		if (unlikely(!page_evictable(page, NULL))) {
+-			cull_unevictable_page(page);
++			putback_lru_page(page);
+ 			continue;
+ 		}
+ 
+@@ -2392,9 +2396,6 @@ int zone_reclaim(struct zone *zone, gfp_
+  */
+ int page_evictable(struct page *page, struct vm_area_struct *vma)
+ {
+-
+-	VM_BUG_ON(PageUnevictable(page));
+-
+ 	if (mapping_unevictable(page_mapping(page)))
+ 		return 0;
+ 
+Index: b/mm/mlock.c
+===================================================================
+--- a/mm/mlock.c
++++ b/mm/mlock.c
+@@ -55,21 +55,22 @@ EXPORT_SYMBOL(can_do_mlock);
+  */
+ void __clear_page_mlock(struct page *page)
+ {
+-	VM_BUG_ON(!PageLocked(page));	/* for LRU isolate/putback */
+ 
+ 	dec_zone_page_state(page, NR_MLOCK);
+ 	count_vm_event(NORECL_PGCLEARED);
+-	if (!isolate_lru_page(page)) {
+-		putback_lru_page(page);
+-	} else {
+-		/*
+-		 * Page not on the LRU yet.  Flush all pagevecs and retry.
+-		 */
+-		lru_add_drain_all();
+-		if (!isolate_lru_page(page))
++	if (page->mapping) {	/* truncated ? */
++		if (!isolate_lru_page(page)) {
+ 			putback_lru_page(page);
+-		else if (PageUnevictable(page))
+-			count_vm_event(NORECL_PGSTRANDED);
++		} else {
++			/*
++			 *Page not on the LRU yet. Flush all pagevecs and retry.
++			 */
++			lru_add_drain_all();
++			if (!isolate_lru_page(page))
++				putback_lru_page(page);
++			else if (PageUnevictable(page))
++				count_vm_event(NORECL_PGSTRANDED);
++		}
+ 	}
+ }
+ 
+@@ -79,7 +80,7 @@ void __clear_page_mlock(struct page *pag
+  */
+ void mlock_vma_page(struct page *page)
+ {
+-	BUG_ON(!PageLocked(page));
++	VM_BUG_ON(!page->mapping);
+ 
+ 	if (!TestSetPageMlocked(page)) {
+ 		inc_zone_page_state(page, NR_MLOCK);
+@@ -109,7 +110,7 @@ void mlock_vma_page(struct page *page)
+  */
+ static void munlock_vma_page(struct page *page)
+ {
+-	BUG_ON(!PageLocked(page));
++	VM_BUG_ON(!page->mapping);
+ 
+ 	if (TestClearPageMlocked(page)) {
+ 		dec_zone_page_state(page, NR_MLOCK);
+@@ -169,7 +170,8 @@ static int __mlock_vma_pages_range(struc
+ 
+ 		/*
+ 		 * get_user_pages makes pages present if we are
+-		 * setting mlock.
++		 * setting mlock. and this extra reference count will
++		 * disable migration of this page.
+ 		 */
+ 		ret = get_user_pages(current, mm, addr,
+ 				min_t(int, nr_pages, ARRAY_SIZE(pages)),
+@@ -197,14 +199,8 @@ static int __mlock_vma_pages_range(struc
+ 		for (i = 0; i < ret; i++) {
+ 			struct page *page = pages[i];
+ 
+-			/*
+-			 * page might be truncated or migrated out from under
+-			 * us.  Check after acquiring page lock.
+-			 */
+-			lock_page(page);
+-			if (page->mapping)
++			if (page_mapcount(page))
+ 				mlock_vma_page(page);
+-			unlock_page(page);
+ 			put_page(page);		/* ref from get_user_pages() */
+ 
+ 			/*
+@@ -240,6 +236,9 @@ static int __munlock_pte_handler(pte_t *
+ 	struct page *page;
+ 	pte_t pte;
+ 
++	/*
++	 * page is never be unmapped by page-reclaim. we lock this page now.
++	 */
+ retry:
+ 	pte = *ptep;
+ 	/*
+@@ -261,7 +260,15 @@ retry:
+ 		goto out;
+ 
+ 	lock_page(page);
+-	if (!page->mapping) {
++	/*
++	 * Because we lock page here, we have to check 2 cases.
++	 * - the page is migrated.
++	 * - the page is truncated (file-cache only)
++	 * Note: Anonymous page doesn't clear page->mapping even if it
++	 * is removed from rmap.
++	 */
++	if (!page->mapping ||
++	     (PageAnon(page) && !page_mapcount(page))) {
+ 		unlock_page(page);
+ 		goto retry;
+ 	}
+Index: b/mm/migrate.c
+===================================================================
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -67,9 +67,7 @@ int putback_lru_pages(struct list_head *
+ 
+ 	list_for_each_entry_safe(page, page2, l, lru) {
+ 		list_del(&page->lru);
+-		lock_page(page);
+-		if (putback_lru_page(page))
+-			unlock_page(page);
++		putback_lru_page(page);
+ 		count++;
+ 	}
+ 	return count;
+@@ -572,7 +570,6 @@ static int fallback_migrate_page(struct 
+ static int move_to_new_page(struct page *newpage, struct page *page)
+ {
+ 	struct address_space *mapping;
+-	int unlock = 1;
+ 	int rc;
+ 
+ 	/*
+@@ -607,16 +604,10 @@ static int move_to_new_page(struct page 
+ 
+ 	if (!rc) {
+ 		remove_migration_ptes(page, newpage);
+-		/*
+-		 * Put back on LRU while holding page locked to
+-		 * handle potential race with, e.g., munlock()
+-		 */
+-		unlock = putback_lru_page(newpage);
+ 	} else
+ 		newpage->mapping = NULL;
+ 
+-	if (unlock)
+-		unlock_page(newpage);
++	unlock_page(newpage);
+ 
+ 	return rc;
+ }
+@@ -633,19 +624,18 @@ static int unmap_and_move(new_page_t get
+ 	struct page *newpage = get_new_page(page, private, &result);
+ 	int rcu_locked = 0;
+ 	int charge = 0;
+-	int unlock = 1;
+ 
+ 	if (!newpage)
+ 		return -ENOMEM;
+ 
+ 	if (page_count(page) == 1)
+ 		/* page was freed from under us. So we are done. */
+-		goto end_migration;
++		goto move_newpage;
+ 
+ 	charge = mem_cgroup_prepare_migration(page, newpage);
+ 	if (charge == -ENOMEM) {
+ 		rc = -ENOMEM;
+-		goto end_migration;
++		goto move_newpage;
+ 	}
+ 	/* prepare cgroup just returns 0 or -ENOMEM */
+ 	BUG_ON(charge);
+@@ -653,7 +643,7 @@ static int unmap_and_move(new_page_t get
+ 	rc = -EAGAIN;
+ 	if (TestSetPageLocked(page)) {
+ 		if (!force)
+-			goto end_migration;
++			goto move_newpage;
+ 		lock_page(page);
+ 	}
+ 
+@@ -714,39 +704,29 @@ rcu_unlock:
+ 		rcu_read_unlock();
+ 
+ unlock:
++	unlock_page(page);
+ 
+ 	if (rc != -EAGAIN) {
+  		/*
+- 		 * A page that has been migrated has all references
+- 		 * removed and will be freed. A page that has not been
+- 		 * migrated will have kepts its references and be
+- 		 * restored.
+- 		 */
+- 		list_del(&page->lru);
+-		if (!page->mapping) {
+-			VM_BUG_ON(page_count(page) != 1);
+-			unlock_page(page);
+-			put_page(page);		/* just free the old page */
+-			goto end_migration;
+-		} else
+-			unlock = putback_lru_page(page);
++		 * A page that has been migrated has all references
++		 * removed and will be freed. A page that has not been
++		 * migrated will have kepts its references and be
++		 * restored.
++		 */
++		list_del(&page->lru);
++		putback_lru_page(page);
+ 	}
+ 
+-	if (unlock)
+-		unlock_page(page);
+-
+-end_migration:
++move_newpage:
+ 	if (!charge)
+ 		mem_cgroup_end_migration(newpage);
+ 
+-	if (!newpage->mapping) {
+-		/*
+-		 * Migration failed or was never attempted.
+-		 * Free the newpage.
+-		 */
+-		VM_BUG_ON(page_count(newpage) != 1);
+-		put_page(newpage);
+-	}
++	/*
++	 * Move the new page to the LRU. If migration was not successful
++	 * then this will free the page.
++	 */
++	putback_lru_page(newpage);
++
+ 	if (result) {
+ 		if (rc)
+ 			*result = rc;
+Index: b/mm/internal.h
+===================================================================
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -43,7 +43,7 @@ static inline void __put_page(struct pag
+  * in mm/vmscan.c:
+  */
+ extern int isolate_lru_page(struct page *page);
+-extern int putback_lru_page(struct page *page);
++extern void putback_lru_page(struct page *page);
+ 
+ /*
+  * in mm/page_alloc.c
+
 
