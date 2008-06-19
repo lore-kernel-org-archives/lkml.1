@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757792AbYFSGle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757587AbYFSGn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757792AbYFSGle (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 02:41:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755344AbYFSGlJ
+	id S1757587AbYFSGn1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 02:43:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756015AbYFSGnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 02:41:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46397 "EHLO
+	Thu, 19 Jun 2008 02:43:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42270 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754147AbYFSGlG (ORCPT
+	by vger.kernel.org with ESMTP id S1755344AbYFSGnR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 02:41:06 -0400
-Date: Wed, 18 Jun 2008 23:40:34 -0700 (PDT)
+	Thu, 19 Jun 2008 02:43:17 -0400
+Date: Wed, 18 Jun 2008 23:42:46 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
+To: Dave Airlie <airlied@gmail.com>
+cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: kerneloops.org: 2.6.26-rc possible regression in ext3
-In-Reply-To: <alpine.LFD.1.10.0806182302340.2907@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0806182325540.2907@woody.linux-foundation.org>
-References: <4859EFE2.2090202@linux.intel.com> <alpine.LFD.1.10.0806182242390.2907@woody.linux-foundation.org> <alpine.LFD.1.10.0806182302340.2907@woody.linux-foundation.org>
+In-Reply-To: <21d7e9970806182242na130e47i85839c4550b4ba03@mail.gmail.com>
+Message-ID: <alpine.LFD.1.10.0806182341000.2907@woody.linux-foundation.org>
+References: <4859F075.2050207@linux.intel.com> <21d7e9970806182242na130e47i85839c4550b4ba03@mail.gmail.com>
 User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -29,61 +29,13 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Wed, 18 Jun 2008, Linus Torvalds wrote:
+On Thu, 19 Jun 2008, Dave Airlie wrote:
 > 
-> and that "lea" is doing an address computation of "eax+2*ebx-2". Which 
-> does *not* look like an address to a 32-bit entity, but to a 16-bit one. 
-> Yeah, it's not conclusive, but it is suggestive.
+> This is a bug in rawhide in gcc miscompiling something...
+> 
+> https://bugzilla.redhat.com/show_bug.cgi?id=451068
 
-I'm wrong, that's just "eax+ebx-2". The *2 was just a brainfart on my 
-part.
-
-But I think I have pinpointed where it comes from: it's the 
-
-	struct dx_map_entry *map;
-
-which is a structure like this:
-
-	struct dx_map_entry
-	{
-	        u32 hash;
-	        u16 offs;
-	        u16 size;
-	};
-
-and it does look like it's the
-
-	if (size + map[i].size/2 > blocksize/2)
-
-calculation, where "i" counts backwards from "count-1" to 0.
-
-In particular, the code
-
-  27:	8d 4c 18 fe          	lea    0xfffffffe(%eax,%ebx,1),%ecx
-  2b:*	8b 19                	mov    (%ecx),%ebx     <-- trapping instruction
-  2d:	83 e9 08             	sub    $0x8,%ecx
-  30:	89 d8                	mov    %ebx,%eax
-  32:	66 d1 e8             	shr    %ax
-  38:	8d 04 02             	lea    (%edx,%eax,1),%eax
-
-seems to be that "size + map[i].size/2" calculation, but I have a hard 
-time trying to line it up with wat _my_ compiler gives me. But the nearest 
-match I have is:
-
-        movw    6(%ecx), %bx    # <variable>.size, D.21305
-        subl    $8, %ecx        #, ivtmp.921
-        movl    -104(%ebp), %edx        # blocksize, tmp179
-        movl    %ebx, %eax      # D.21305, tmp176
-        shrw    %ax     # tmp176
-        movzwl  %ax, %eax       # tmp176, tmp177
-        leal    (%esi,%eax), %eax       #, tmp178
-
-which seems to be largely the same thing (except I have a "movw" to load 
-the size, and %ecx is offset by one 'map' entry - so the offset is 6 (in 
-the memop) instead of that "-2" (from the lea).
-
-I think I'll give up, but that's the closest match I can find. No 
-guarantees, but it seems to support the notion of "wrong 32-bit load where 
-it should have used a 16-bit one".
+Gaah. I should read all my email instead of wasting my time trying to 
+match up the code with what I can reproduce..
 
 		Linus
