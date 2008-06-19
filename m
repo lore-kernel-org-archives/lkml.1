@@ -1,80 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755871AbYFSJNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbYFSJOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755871AbYFSJNr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 05:13:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752430AbYFSJNk
+	id S1756767AbYFSJOT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 05:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755738AbYFSJOE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 05:13:40 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39079 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751600AbYFSJNj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 05:13:39 -0400
-Date: Thu, 19 Jun 2008 18:13:59 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>
-Subject: [-mm][PATCH 2/5] migration_entry_wait fix.
-Cc: kosaki.motohiro@jp.fujitsu.com
-In-Reply-To: <20080619172241.E7FC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080619172241.E7FC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-Id: <20080619180856.E805.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Thu, 19 Jun 2008 05:14:04 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54042 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752430AbYFSJOB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 05:14:01 -0400
+Date: Thu, 19 Jun 2008 11:13:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Byron Bradley <byron.bbradley@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, linux-mm@kvack.org,
+       Hua Zhong <hzhong@gmail.com>
+Subject: Re: 2.6.26-rc5-mm3
+Message-ID: <20080619091337.GA15228@elte.hu>
+References: <20080611225945.4da7bb7f.akpm@linux-foundation.org> <alpine.DEB.1.00.0806130006490.14928@gamma> <1213811751.11203.73.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1213811751.11203.73.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 
-In speculative page cache lookup protocol, page_count(page) is set to 0
-while radix-tree modification is going on, truncation, migration, etc...
+* Daniel Walker <dwalker@mvista.com> wrote:
 
-While page migration, a page fault to page under migration should wait
-unlock_page() and migration_entry_wait() waits for the page from its
-pte entry. It does get_page() -> wait_on_page_locked() -> put_page() now.
+> 
+> On Fri, 2008-06-13 at 00:32 +0100, Byron Bradley wrote:
+> > Looks like x86 and ARM both fail to boot if PROFILE_LIKELY, FTRACE and 
+> > DYNAMIC_FTRACE are selected. If any one of those three are disabled it 
+> > boots (or fails in some other way which I'm looking at now). The serial 
+> > console output from both machines when they fail to boot is below, let me 
+> > know if there is any other information I can provide.
+> 
+> I was able to reproduce a hang on x86 with those options. The patch
+> below is a potential fix. I think we don't want to trace
+> do_check_likely(), since the ftrace internals might use likely/unlikely
+> macro's which will just cause recursion back to do_check_likely()..
+> 
+> Signed-off-by: Daniel Walker <dwalker@mvista.com>
+> 
+> ---
+>  lib/likely_prof.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6.25/lib/likely_prof.c
+> ===================================================================
+> --- linux-2.6.25.orig/lib/likely_prof.c
+> +++ linux-2.6.25/lib/likely_prof.c
+> @@ -22,7 +22,7 @@
+>  
+>  static struct likeliness *likeliness_head;
+>  
+> -int do_check_likely(struct likeliness *likeliness, unsigned int ret)
+> +int notrace do_check_likely(struct likeliness *likeliness, unsigned int ret)
 
-In page migration, page_freeze_refs() -> page_unfreeze_refs() is called.
+the better fix would be to add likely_prof.o to this list of exceptions 
+in lib/Makefile:
 
-Here, page_unfreeze_refs() expects page_count(page) == 0 and panics
-if page_count(page) != 0. To avoid this, we shouldn't touch page_count()
-if it is zero. This patch uses page_cache_get_speculative() to avoid
-the panic.
+ ifdef CONFIG_FTRACE
+ # Do not profile string.o, since it may be used in early boot or vdso
+ CFLAGS_REMOVE_string.o = -pg
+ # Also do not profile any debug utilities
+ CFLAGS_REMOVE_spinlock_debug.o = -pg
+ CFLAGS_REMOVE_list_debug.o = -pg
+ CFLAGS_REMOVE_debugobjects.o = -pg
+ endif
 
-Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Acked-by: Nick Piggin <npiggin@suse.de>
+instead of adding notrace to the source.
 
----
- mm/migrate.c |   10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
-
-Index: b/mm/migrate.c
-===================================================================
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -243,7 +243,15 @@ void migration_entry_wait(struct mm_stru
- 
- 	page = migration_entry_to_page(entry);
- 
--	get_page(page);
-+	/*
-+	 * Once radix-tree replacement of page migration started, page_count
-+	 * *must* be zero. And, we don't want to call wait_on_page_locked()
-+	 * against a page without get_page().
-+	 * So, we use get_page_unless_zero(), here. Even failed, page fault
-+	 * will occur again.
-+	 */
-+	if (!get_page_unless_zero(page))
-+		goto out;
- 	pte_unmap_unlock(ptep, ptl);
- 	wait_on_page_locked(page);
- 	put_page(page);
-
-
+	Ingo
