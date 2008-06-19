@@ -1,96 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755042AbYFSWDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbYFSWEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755042AbYFSWDr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 18:03:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751702AbYFSWDj
+	id S1755483AbYFSWEY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 18:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbYFSWEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 18:03:39 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:49297 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751580AbYFSWDi (ORCPT
+	Thu, 19 Jun 2008 18:04:10 -0400
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:25418 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752735AbYFSWEI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 18:03:38 -0400
-Date: Thu, 19 Jun 2008 15:03:03 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Louis Rilling <Louis.Rilling@kerlabs.com>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: Re: [BUGFIX][PATCH 3/3] configfs: Fix failing symlink() making
-	rmdir() fail
-Message-ID: <20080619220303.GB10888@mail.oracle.com>
-Mail-Followup-To: Louis Rilling <Louis.Rilling@kerlabs.com>,
-	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-References: <1213724243-29183-1-git-send-email-louis.rilling@kerlabs.com> <1213724243-29183-4-git-send-email-louis.rilling@kerlabs.com> <20080617221528.GA29091@mail.oracle.com> <20080618114043.GB30804@localhost> <20080618201107.GF16780@ca-server1.us.oracle.com> <20080619092842.GK30804@localhost>
+	Thu, 19 Jun 2008 18:04:08 -0400
+X-IronPort-AV: E=Sophos;i="4.27,674,1204531200"; 
+   d="scan'208";a="81790203"
+From: Roland Dreier <rdreier@cisco.com>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu
+Cc: Eli Cohen <eli@dev.mellanox.co.il>, general@lists.openfabrics.org
+Subject: wait_for_completion_timeout() spurious failure under heavy load?
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 19 Jun 2008 15:04:07 -0700
+Message-ID: <ada63s5w088.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080619092842.GK30804@localhost>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-OriginalArrivalTime: 19 Jun 2008 22:04:07.0411 (UTC) FILETIME=[65091C30:01C8D258]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 19, 2008 at 11:28:42AM +0200, Louis Rilling wrote:
-> On Wed, Jun 18, 2008 at 01:11:07PM -0700, Joel Becker wrote:
-> > On Wed, Jun 18, 2008 at 01:40:43PM +0200, Louis Rilling wrote:
-> > > The problem is rmdir() of the target item (see below). ATTACHING only protects
-> > > us from rmdir() of the parent. This is the exact reason why I attach the link to
-> > > the target in last place, where we know that we won't have to rollback.
-> > 
-> > 	Why wouldn't it protect the target, given that detach_prep()
-> > will be called against the target if it's being rmdir'd?
-> 
-> Because
-> 1/ setting and clearing ATTACHING could badly interact with mkdir()/symlink()
-> inside the target item (for instance clear the flag before mkdir() has finished
-> attaching a new item); to avoid this we could use a different flag, but
+It seems that the current implementaton of wait_for_completion_timeout()
+has a small problem under very high load for the common pattern:
 
-	Ok, true, we don't have a lock to protect mkdir.
+	if (!wait_for_completion_timeout(&done, timeout))
+		/* handle failure */
 
-> 2/ rmdir() of the target cannot lock the inode of the new symlink's parent like
-> it does for mkdir(), otherwise we would risk a deadlock with other symlink() and
-> sys_rename(). This means that rmdir() should retry aggressively, in a busy
-> waiting loop, or replacing mutex_lock()/mutex_unlock() with yield().
+because the implementation very roughly does (lots of code deleted to
+show the basic flow):
 
-	Yup, we'd have to have some other form of retry - note that this
-is all spinlock territory.  Thus, it should be fast.  By the time
-rmdir() gets back out to the toplevel, symlink/mkdir should be done
-creating whatever they needed and waiting on the dirnet_lock.  Then
-rmdir waits again on the lock.  It "should" be bang-bang.
-	Yes, I know, assumptions all around.
+	static inline long __sched
+	do_wait_for_common(struct completion *x, long timeout, int state)
+	{
+		if (x->done)
+			return timeout;
 
-> > 	We *can* do that, but we try to isolate it - hand-building VFS
-> > objects is complex and error prone, and I try to isolate that to
-> > specific cases.  I'd rather avoid it when not necessary.
-> 
-> In the case of symlink(), building a new inode is what all filesystems must do.
-> The only "bad" side-effect I can figure out of having to rollback is that the
-> new entry will be visible for a short time until it is removed.
+		do {
+			timeout = schedule_timeout(timeout);
+	
+			if (!timeout)
+				return timeout;
+	
+		} while (!x->done);
+	
+		return timeout;
+	}
 
-	It won't be visible, because we hold i_mutex until we're done.
+so if the system is very busy and x->done is not set when
+do_wait_for_common() is entered, it is possible that the first call to
+schedule_timeout() returns 0 because the task doing wait_for_completion
+doesn't get rescheduled for a long time, even if it is woken up early
+enough.  In this case, wait_for_completion_timeout() returns 0 without
+even checking x->done again, and the code above falls into its failure
+case purely for scheduler reasons, even if the hardware event or
+whatever was being waited for happened early enough.
 
-> Anyway, do you think that the "solutions" above are more acceptable?
+So would it make sense to add an extra test to do_wait_for() in the
+timeout case and, say, return 1 if x->done is actually set?  Something
+like the patch below?
 
-	The code for create then destroy was quite ugly.  Maybe it
-struck me because of that.
+A quick audit (not exhaustive) of wait_for_completion_timeout() callers
+seems to indicate that no one actually cares about the return value in
+the success case -- they just test for 0 (timed out) versus non-zero
+(wait succeeded).
 
-Joel
+Thanks,
+  Roland
 
--- 
-
- print STDOUT q
- Just another Perl hacker,
- unless $spring
-	- Larry Wall
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+diff --git a/kernel/sched.c b/kernel/sched.c
+index eaf6751..3d04ec1 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4405,7 +4405,12 @@ do_wait_for_common(struct completion *x, long timeout, int state)
+ 			spin_lock_irq(&x->wait.lock);
+ 			if (!timeout) {
+ 				__remove_wait_queue(&x->wait, &wait);
+-				return timeout;
++				if (x->done) {
++					x->done--;
++					return 1;
++				} else {
++					return 0;
++				}
+ 			}
+ 		} while (!x->done);
+ 		__remove_wait_queue(&x->wait, &wait);
