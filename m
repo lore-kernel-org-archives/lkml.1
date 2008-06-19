@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbYFSWgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282AbYFSW5H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756189AbYFSWgV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 18:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbYFSWgJ
+	id S1755282AbYFSW5H (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 18:57:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbYFSW4x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 18:36:09 -0400
-Received: from 187.Red-80-37-203.staticIP.rima-tde.net ([80.37.203.187]:10955
-	"EHLO betty.it.uc3m.es" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752514AbYFSWgH (ORCPT
+	Thu, 19 Jun 2008 18:56:53 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:37822 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752711AbYFSW4w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 18:36:07 -0400
-From: "Peter T. Breuer" <ptb@inv.it.uc3m.es>
-Message-Id: <200806192235.m5JMZsYD007864@betty.it.uc3m.es>
-Subject: Re: zero-copy recv ?
-X-ELM-OSV: (Our standard violations) hdr-charset=US-ASCII; no-hdr-encoding=1
-To: linux kernel <linux-kernel@vger.kernel.org>
-Date: Fri, 20 Jun 2008 00:35:53 +0200 (CEST)
-Reply-To: ptb@inv.it.uc3m.es
-X-Anonymously-To: 
-X-message-flag: Had your Outlook virus, today?
- http://www.counterpane.com/crypto-gram-0103.html#4
-X-WebTV-Stationery: Standard\; BGColor=black\; TextColor=black
-X-Mailer: ELM [version 2.4ME+ PL123]
-MIME-Version: 1.0
+	Thu, 19 Jun 2008 18:56:52 -0400
+Subject: [PCI_ACPI] Modify PCI gap calculation
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: "Brown, Len" <len.brown@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Thu, 19 Jun 2008 15:56:49 -0700
+Message-Id: <1213916210.27983.32.camel@promb-2n-dhcp368.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-References: <200806191411.m5JEBE56008942@betty.it.uc3m.es>
+Today, we calculate a gap in the low 32bit address space for PCI devices
+to assign MMIO resources for hotplug or unconfigured devices,
+(pci_mem_start). 
+This gap calculation is done by walking the e820 memory space, this
+calculation ignores the SRAT for any possible reservations that the
+BIOS might have done for memory hotplug. In some cases the
+PCI device resources (f.e. Expansion ROMS) end up sharing the address
+space with memory hotplug capable regions. 
 
-Gah .. I wrote an answer to this and it seems to have got lost. If you
-saw the answer, please forward to me!
+As a result, when we try to hotadd memory to a system which has less
+than 4GB memory to start with, we see resource clashes and the hotadd
+requests fail. 
 
-> On Thu, Jun 19, 2008 at 04:11:14PM +0200, Peter T. Breuer wrote:
-> > I've been mmapping the request's bio buffers received on my block device
-> > driver for userspace to use directly as tcp send/receive buffers.
-> Is the code available somewhere by any chance?
+The solution here is to find a PCI gap in the PCI reserved regions as
+exported by the ACPI table. We read the _CRS object under PCI0 for
+possible producer regions and search for a big enough unclaimed gap
+within these producer regions.
 
-It's just the daily development snapshot for the enbd driver: 
+There are 2 patches 
+1. cleanup of the e820_search_gap function
+2. code which walks ACPI resources searching for gap within producer
+regions.
 
- ftp://oboe.it.uc3m.es/pub/Programs/enbd-2.4.36.tgz
+I have kept the original e820_find_gap function since in systems with
+ACPI disabled we still may need to calculate the gap.
 
-and mirrors.
+Please have a look. 
 
-I wrote a quick summary of the relevant code in my lost answer :(.
-Please ask me to repeat if it is really AWOL.
+Thanks,
+Alok
 
-
-Peter
