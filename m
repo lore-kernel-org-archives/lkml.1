@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759482AbYFTVO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756179AbYFTVTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759482AbYFTVO4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 17:14:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755013AbYFTVOq
+	id S1756179AbYFTVTo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 17:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbYFTVTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 17:14:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35082 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752187AbYFTVOp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 17:14:45 -0400
-Date: Fri, 20 Jun 2008 17:14:41 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-To: David Miller <davem@davemloft.net>
-cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, agk@redhat.com
-Subject: Re: stack overflow on Sparc64
-In-Reply-To: <20080620.102601.06998427.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0806201707270.8990@engineering.redhat.com>
-References: <Pine.LNX.4.64.0806171954060.2560@engineering.redhat.com>
- <20080617.210159.141238856.davem@davemloft.net>
- <Pine.LNX.4.64.0806201143110.8789@engineering.redhat.com>
- <20080620.102601.06998427.davem@davemloft.net>
+	Fri, 20 Jun 2008 17:19:34 -0400
+Received: from wx-out-0506.google.com ([66.249.82.224]:15908 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752421AbYFTVTb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 17:19:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=l6DxDYHVkyrr7E/GgqdQK6jk67p+p1Xn9gxwPL+EeAmND6Btw9TaRrOplnkKCmAmOv
+         XFdZzKbvZi0PT3DChf79cvi+576L1PI3xl9Kb0qdqTGA5hX1N7RiNeJzeYfLmAV5EOB1
+         lRCiSYU0LzCEsJY/5Vs3YMIL1FpBejuW6bqgU=
+Message-ID: <a4423d670806201419i2f0c0982j69eb423f9ecd239d@mail.gmail.com>
+Date: Sat, 21 Jun 2008 01:19:29 +0400
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: 2.6.26-rc: SPARC: Sun Ultra 10 can not boot
+Cc: kernel-testers@vger.kernel.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080619.190048.193701955.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a4423d670806190707k7ae6da8cud80a826a1603d941@mail.gmail.com>
+	 <a4423d670806190902l48c542e0i6a7380a2d3e7f520@mail.gmail.com>
+	 <20080619.190048.193701955.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 20 Jun 2008, David Miller wrote:
-
-> From: Mikulas Patocka <mpatocka@redhat.com>
-> Date: Fri, 20 Jun 2008 11:47:12 -0400 (EDT)
+2008/6/20 David Miller <davem@davemloft.net>:
+> When you revert that changeset, there is a loop in the backtrace of
+> all kernel threads, and therefore lockdep turns itself off when all of
+> the stack backtrace slots get consumed by that loop in the backtraces.
 >
->> I took another few traces (to track the whole stack content) and there is
->> another problem: nested interrupts. Does Sparc64 limit them somehow?
+> After the revert you should see a set of kernel messages like:
 >
-> Two levels should be the deepest you will ever see, and this is
-> equivalent to what you get on other platforms.
+> BUG: MAX_STACK_TRACE_ENTRIES too low!
+> turning off the locking correctness validator.
+>
+> and that would confirm my theory.
 
-Are you sure? What about this:
-ide-io.c:ide_intr
-         if (drive->unmask)
-                 local_irq_enable_in_hardirq();
-
-or this:
-kernel/irq/handle.c:handle_IRQ_event
-         if (!(action->flags & IRQF_DISABLED))
-                 local_irq_enable_in_hardirq();
-
-
---- how is number of nested interrupts here supposed to be limited?
-
-If these things are not limited, you get at most as many nested handlers 
-as there are hardware interrupts, which means crash.
-
-Mikulas
-
-> That path occurs when softirq processing re-enabled HW interrupts when
-> returning from the top-level interrupt.
+No, I do not have such messages.
+Does it mean that we need different explanation?
