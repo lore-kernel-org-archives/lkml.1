@@ -1,63 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757490AbYFTOGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757546AbYFTOL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757490AbYFTOGS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 10:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754704AbYFTOGK
+	id S1757546AbYFTOL4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 10:11:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754234AbYFTOLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 10:06:10 -0400
-Received: from ns.suse.de ([195.135.220.2]:59165 "EHLO mx1.suse.de"
+	Fri, 20 Jun 2008 10:11:48 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:53992 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754260AbYFTOGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 10:06:09 -0400
-Date: Fri, 20 Jun 2008 16:06:45 +0200
-From: Bernhard Walle <bwalle@suse.de>
+	id S1751531AbYFTOLs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 10:11:48 -0400
+Date: Fri, 20 Jun 2008 18:14:00 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, yhlu.kernel@gmail.com,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH] Unify crashkernel reservation for 32 and 64 bit
-Message-ID: <20080620160645.4b793593@halley.suse.de>
-In-Reply-To: <20080620135847.GE8135@elte.hu>
-References: <1213969102-17400-1-git-send-email-bwalle@suse.de>
-	<20080620135847.GE8135@elte.hu>
-Organization: SUSE Linux Products GmbH
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
- D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
- vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
- pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
+Cc: Jiri Slaby <jirislaby@gmail.com>, Roland Dreier <rdreier@cisco.com>,
+       linux-kernel@vger.kernel.org, Eli Cohen <eli@dev.mellanox.co.il>,
+       general@lists.openfabrics.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: wait_for_completion_timeout() spurious failure under heavy load?
+Message-ID: <20080620141400.GA411@tv-sign.ru>
+References: <ada63s5w088.fsf@cisco.com> <485B50F1.2020802@gmail.com> <20080620112042.GE7439@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080620112042.GE7439@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar [2008-06-20 15:58]:
+On 06/20, Ingo Molnar wrote:
 >
-> also, tip/x86 has a ton of pending changes here already so your patch 
-> does not apply:
-> 
->  patching file arch/x86/kernel/setup.c
->  Hunk #3 FAILED at 406.
->  1 out of 3 hunks FAILED -- rejects in file arch/x86/kernel/setup.c
->  patching file arch/x86/kernel/setup_32.c
->  Hunk #1 FAILED at 429.
->  1 out of 1 hunk FAILED -- rejects in file arch/x86/kernel/setup_32.c
->  patching file arch/x86/kernel/setup_64.c
->  Hunk #1 FAILED at 244.
->  1 out of 1 hunk FAILED -- rejects in file arch/x86/kernel/setup_64.c
->  patching file include/asm-x86/setup.h
->  Hunk #1 FAILED at 8.
->  1 out of 1 hunk FAILED -- rejects in file include/asm-x86/setup.h
-> 
-> you can pick up tip/master via:
-> 
->   http://people.redhat.com/mingo/tip.git/README
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -4405,6 +4405,16 @@ do_wait_for_common(struct completion *x, long timeout, int state)
+>  			spin_unlock_irq(&x->wait.lock);
+>  			timeout = schedule_timeout(timeout);
+>  			spin_lock_irq(&x->wait.lock);
+> +
+> +			/*
+> +			 * If the completion has arrived meanwhile
+> +			 * then return 1 jiffy time left:
+> +			 */
+> +			if (x->done && !timeout) {
+> +				timeout = 1;
+> +				break;
+> +			}
+> +
+>  			if (!timeout) {
+>  				__remove_wait_queue(&x->wait, &wait);
+>  				return timeout;
 
-That applies here without problems.
+This is the real nitpick, but I wonder what is the right behaviour
+of wait_for_completion_timeout(x, 0) when x->done != 0. Perhaps we
+can return 1 in that case too, just for the consistency?
 
+IOW, how about the patch below? this also makes the code a bit
+simpler because we factor out __remove_wait_queue().
 
+Oleg.
 
-Bernhard
--- 
-Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
+--- kernel/sched.c
++++ kernel/sched.c
+@@ -4746,15 +4746,13 @@ do_wait_for_common(struct completion *x,
+ 			spin_unlock_irq(&x->wait.lock);
+ 			timeout = schedule_timeout(timeout);
+ 			spin_lock_irq(&x->wait.lock);
+-			if (!timeout) {
+-				__remove_wait_queue(&x->wait, &wait);
+-				return timeout;
+-			}
+-		} while (!x->done);
++		} while (!x->done && timeout);
+ 		__remove_wait_queue(&x->wait, &wait);
++		if (!x->done)
++			return 0;
+ 	}
+ 	x->done--;
+-	return timeout;
++	return timeout ?: 1;
+ }
+ 
+ static long __sched
+
