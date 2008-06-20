@@ -1,98 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbYFTRZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757948AbYFTR0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755992AbYFTRZn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 13:25:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbYFTRZg
+	id S1757948AbYFTR0S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 13:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbYFTRZ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 13:25:36 -0400
-Received: from gw.goop.org ([64.81.55.164]:58816 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752528AbYFTRZf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 13:25:35 -0400
-Message-ID: <485BE80E.10209@goop.org>
-Date: Fri, 20 Jun 2008 10:25:34 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>
-CC: Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.509483000@polaris-admin.engr.sgi.com> <20080605102222.GA21319@elte.hu> <484EF29C.7080100@sgi.com> <485947A8.8060801@goop.org> <4859511E.5050605@sgi.com> <48596315.6020104@goop.org> <48596893.4040908@sgi.com> <485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org> <485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org> <485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com> <485AD138.4010404@goop.org> <485ADA12.5010505@sgi.com> <485ADC73.60009@goop.org> <485BDB04.4090709@sgi.com>
-In-Reply-To: <485BDB04.4090709@sgi.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Jun 2008 13:25:59 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:43932 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753339AbYFTRZ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 13:25:58 -0400
+Date: Fri, 20 Jun 2008 19:25:49 +0200
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: "Ram kumar" <ramkumar.research@gmail.com>
+Cc: "Nicolas Ferre" <nicolas.ferre@atmel.com>,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>,
+       "ARM Linux Mailing List" <linux-arm-kernel@lists.arm.linux.org.uk>,
+       "Eric BENARD" <ebenard@free.fr>, "Andrew Victor" <linux@maxim.org.za>
+Subject: Re: [PATCH 0/7] mmc: at91_mci: rework to allow better transfer
+Message-ID: <20080620192549.651d4fa9@mjolnir.drzeus.cx>
+In-Reply-To: <6306c640806201005n17aba42ag6f0bc344256a1ad@mail.gmail.com>
+References: <483FE9E7.7020707@atmel.com>
+	<20080609124623.5b6bda48@mjolnir.drzeus.cx>
+	<484E4F61.7010007@atmel.com>
+	<20080614182831.0360bd77@mjolnir.drzeus.cx>
+	<4858DDC1.6080802@atmel.com>
+	<20080620183005.13b53235@mjolnir.drzeus.cx>
+	<6306c640806201005n17aba42ag6f0bc344256a1ad@mail.gmail.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
+X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-30468-1213982253-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> Jeremy Fitzhardinge wrote:
->   
->> Mike Travis wrote:
->>     
->>> @@ -132,6 +133,12 @@ ident_complete:
->>>  #ifdef CONFIG_SMP
->>>      addq    %rbp, trampoline_level4_pgt + 0(%rip)
->>>      addq    %rbp, trampoline_level4_pgt + (511*8)(%rip)
->>> +
->>> +    /*
->>> +     * Fix up per_cpu__gdt_page offset when basing percpu
->>> +     * variables at zero.  This is only needed for the boot cpu.
->>> +     */
->>> +    addq    $__per_cpu_load, early_gdt_descr_base
->>>   
->>>       
->> This needs to be rip-relative.  An absolute reference here will fail
->> because you're still running in physical addresses.
->>
->>    J
->>     
->
-> Still bombs right at boot up... ;-(
->   
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Yep.  I see the triple-fault at the "mov %eax,%ds", which means it's 
-having trouble with the gdt.  Either 1) the lgdt pointed to a bad 
-address, or 2) there's something wrong with the descriptor there.
+--=_freyr.drzeus.cx-30468-1213982253-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-The dump is:
+On Fri, 20 Jun 2008 10:05:51 -0700
+"Ram kumar" <ramkumar.research@gmail.com> wrote:
 
-(XEN) hvm.c:767:d14 Triple fault on VCPU0 - invoking HVM system reset.
-(XEN) ----[ Xen-3.3-unstable  x86_64  debug=n  Not tainted ]----
-(XEN) CPU:    0
-(XEN) RIP:    0010:[<ffffffff80200167>]
-(XEN) RFLAGS: 0000000000010002   CONTEXT: hvm
-(XEN) rax: 0000000000000018   rbx: 0000000000000000   rcx: ffffffff808d6000
-(XEN) rdx: 0000000000000000   rsi: 0000000000092f40   rdi: 0000000020100800
-(XEN) rbp: 0000000000000000   rsp: ffffffff80827ff8   r8:  0000000000208000
-(XEN) r9:  0000000000000000   r10: 0000000000000000   r11: 00000000000000d8
-(XEN) r12: 0000000000000000   r13: 0000000000000000   r14: 0000000000000000
-(XEN) r15: 0000000000000000   cr0: 0000000080050033   cr4: 00000000000000a0
-(XEN) cr3: 0000000000201000   cr2: 0000000000000000
-(XEN) ds: 0000   es: 0000   fs: 0000   gs: 0000   ss: 0000   cs: 0010
+> Will it be available on maxim.org.za also.?  Because i have downloaded the
+> linux 2.6.24 patches from maxim website.I dont know where the arm patches
+> are in the http://kernel.org can you just tell me where the patches are ?
+>=20
+> What about the 6 series patches ? Will it be available too....?
+>=20
 
+This will be in my -next branch, based on mainline linux. For anything
+else, you'll have to ask the maintainer of the relevant tree.
 
-I loaded early_gdt_descr+2 into %rcx, which looks reasonable.  Hm, but 
-loading the __KERNEL_DS descriptor into %rdx, which is all zero.
+--=20
+     -- Pierre Ossman
 
-So it seems the problem is that the pre-initialized gdt_page is being 
-lost and replaced with zero.  Linker script bug?
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Use end-to-end encryption where
+  possible.
 
-    J
+--=_freyr.drzeus.cx-30468-1213982253-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
 
---- a/arch/x86/kernel/head_64.S	Fri Jun 20 09:50:02 2008 -0700
-+++ b/arch/x86/kernel/head_64.S	Fri Jun 20 10:19:20 2008 -0700
-@@ -213,6 +213,8 @@
- 	 * because in 32bit we couldn't load a 64bit linear address.
- 	 */
- 	lgdt	early_gdt_descr(%rip)
-+	movq	early_gdt_descr+2(%rip), %rcx
-+	movq	__KERNEL_DS(%rcx), %rdx
- 
- 	/* set up data segments. actually 0 would do too */
- 	movl $__KERNEL_DS,%eax
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
 
+iEYEARECAAYFAkhb6CIACgkQ7b8eESbyJLhC4wCfUojxY7W3fTcVSuuCn2Tg6sug
+jLYAn1/pUwT2CEyQTkA4wZg+JWcaOKu8
+=YTNJ
+-----END PGP SIGNATURE-----
 
+--=_freyr.drzeus.cx-30468-1213982253-0001-2--
