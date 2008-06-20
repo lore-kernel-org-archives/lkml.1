@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759474AbYFTRH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbYFTRIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759474AbYFTRH2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 13:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbYFTRHT
+	id S1754508AbYFTRIo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 13:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906AbYFTRIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 13:07:19 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:46520 "EHLO smtp.drzeus.cx"
+	Fri, 20 Jun 2008 13:08:37 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:48621 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752576AbYFTRHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 13:07:18 -0400
-Date: Fri, 20 Jun 2008 19:07:14 +0200
+	id S1753568AbYFTRIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 13:08:37 -0400
+Date: Fri, 20 Jun 2008 19:08:33 +0200
 From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: ben@fluff.org.uk
-Cc: linux-kernel@vger.kernel.org, Nicolas Pitre <nico@cam.org>,
-       Ben Dooks <ben-linux@fluff.org>
-Subject: Re: MMC: correct card drivers MODULE_LICENSE() statements
-Message-ID: <20080620190714.3435a8e2@mjolnir.drzeus.cx>
-In-Reply-To: <20080620110702.706950986@fluff.org.uk>
-References: <20080620110702.706950986@fluff.org.uk>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: linux-kernel@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>
+Subject: Re: MMC: card test driver should not be builtin with other card
+ support
+Message-ID: <20080620190833.04e664d5@mjolnir.drzeus.cx>
+In-Reply-To: <20080620110115.GB21835@fluff.org.uk>
+References: <20080620105802.173598466@fluff.org.uk>
+	<20080620110115.GB21835@fluff.org.uk>
 X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,20 +27,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jun 2008 12:07:02 +0100
-ben@fluff.org.uk wrote:
+On Fri, 20 Jun 2008 12:01:15 +0100
+Ben Dooks <ben-linux@fluff.org> wrote:
 
-> Both the mmc_test and sdio_uart drivers' headers show that
-> they are licenses under GPL version 2, but the MODULE_LICENSE
-> statements say "GPL". Change the licensing statement to better
-> reflect their licensing.
+> On Fri, Jun 20, 2008 at 11:58:02AM +0100, ben@fluff.org.uk wrote:
+> > The mmc test driver and mmc block driver will attempt to bind
+> > to any card present in the system, which means only one of these
+> > drivers will end up with the card. If either one of these is selected
+> > as builtin, ensure the other does not get built.
+> > 
+> 
+> This is what I would have liked to have done in Kconfig, but of course
+> the system fails with a circular dependency error. Is there any way
+> to get this done without some horrible hacks?
 > 
 
-This is the same in the entire drivers/mmc subtree. Also, some are v2
-only, some are v2 or later. I don't know if there is a consensus on the
-naming of these yet. Anyway, it's just used for protecting GPL-only
-symbols, so I don't see much point in extending the tag beyond its
-current form.
+AFAIK, you can manually control the driver binding using sysfs. Should
+be solvable for the rootfs case using an initrd.
 
 Rgds
 -- 
