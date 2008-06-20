@@ -1,74 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbYFTTHL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbYFTTJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753047AbYFTTHL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 15:07:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022AbYFTTGs
+	id S1755192AbYFTTJS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 15:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbYFTTJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 15:06:48 -0400
-Received: from gw.goop.org ([64.81.55.164]:57184 "EHLO mail.goop.org"
+	Fri, 20 Jun 2008 15:09:07 -0400
+Received: from vena.lwn.net ([206.168.112.25]:47199 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753282AbYFTTGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 15:06:47 -0400
-Message-ID: <485BFFC4.3070902@goop.org>
-Date: Fri, 20 Jun 2008 12:06:44 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>, benh@kernel.crashing.org,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>, x86@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Hugh Dickins <hugh@veritas.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1 of 4] mm: add a ptep_modify_prot transaction	abstraction
-References: <1213831403.8011.24.camel@pasglop> <4859A149.9090004@goop.org> <4859A528.1010107@goop.org> <alpine.LFD.1.10.0806181723400.2907@woody.linux-foundation.org> <4859AA47.2020903@goop.org> <alpine.LFD.1.10.0806181743390.2907@woody.linux-foundation.org> <alpine.LFD.1.10.0806182050470.2907@woody.linux-foundation.org> <20080619115832.GM15228@elte.hu> <alpine.LFD.1.10.0806190928100.2907@woody.linux-foundation.org> <20080619164708.GA32190@elte.hu> <20080620101028.GA23664@elte.hu>
-In-Reply-To: <20080620101028.GA23664@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1752231AbYFTTJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 15:09:07 -0400
+Date: Fri, 20 Jun 2008 13:09:05 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [PATCH, RFC] fasync() BKL pushdown
+Message-ID: <20080620130905.6694a7be@bike.lwn.net>
+In-Reply-To: <485BEEF7.2020404@firstfloor.org>
+References: <20080620112914.783be428@bike.lwn.net>
+	<485BEEF7.2020404@firstfloor.org>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
->
->   
->> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
->>
->>     
->>> On Thu, 19 Jun 2008, Ingo Molnar wrote:
->>>       
->>>> Below is the commit, it needed a small amount of massaging to apply the 
->>>> void * -> unsigned long * change in the x86/bitops topic.
->>>>         
->>> Well, that's your bug right there.
->>>
->>> The macros very much depended on the pointers being "void *", due to 
->>> the pointer arithmetic (which is a gcc extension that we use 
->>> extensively - "void *" arithmetic works as if it was a byte 
->>> pointer).
->>>       
->> duh, yeah - of course. Will retry with that fixed :)
->>     
->
-> yep, the patch below got it all going and it passed 5 hours of testing 
-> already. Thanks,
->   
+On Fri, 20 Jun 2008 19:55:03 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
 
-Blows up on "gcc version 3.4.4 20050314 (prerelease) (Debian 3.4.3-13)":
+> Jonathan Corbet wrote:
+> 
+> > The majority of fasync() functions just call fasync_helper() with a
+> > pointer to an fasync_struct reachable from the file structure.
+> > Given that (1) the struct file will not go away while fasync() is
+> > running, and (2) the VFS-level fasync() stuff is protected with the
+> > Big Fasync Lock, I contend that these simple implementations have
+> > no need for the BKL.  
+> 
+> Not necessarily true, they might require BKL still for fd live time
+> issues.
 
-  CC      init/main.o
-include2/asm/bitops.h: In function `start_kernel':
-include2/asm/bitops.h:59: warning: asm operand 1 probably doesn't match constraints
-include2/asm/bitops.h:59: warning: asm operand 1 probably doesn't match constraints
-include2/asm/bitops.h:59: warning: asm operand 1 probably doesn't match constraints
-include2/asm/bitops.h:59: error: impossible constraint in `asm'
-include2/asm/bitops.h:59: error: impossible constraint in `asm'
-include2/asm/bitops.h:59: error: impossible constraint in `asm'
+Could you help me out a bit here?  I'm even slower than usual when it
+comes to VFS stuff.  As far as I can tell, the given file cannot go
+away during the call to fasync(), as sys_fcntl() holds a reference on
+it.  Are you saying that something else can happen during that time?
 
-	J
+Thanks,
 
-
+jon
