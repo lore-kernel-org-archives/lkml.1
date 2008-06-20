@@ -1,55 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752759AbYFTS0I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbYFTS17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752759AbYFTS0I (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 14:26:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751036AbYFTSZy
+	id S1753368AbYFTS17 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 14:27:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbYFTS1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 14:25:54 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:48470 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750861AbYFTSZy (ORCPT
+	Fri, 20 Jun 2008 14:27:49 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:17187 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751036AbYFTS1s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 14:25:54 -0400
-Subject: Re: Is e820_setup_gap broken ??
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, yhlu.kernel@gmail.com
-In-Reply-To: <1213985651.31598.11.camel@promb-2n-dhcp368.eng.vmware.com>
-References: <1213985651.31598.11.camel@promb-2n-dhcp368.eng.vmware.com>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Fri, 20 Jun 2008 11:25:52 -0700
-Message-Id: <1213986352.31598.16.camel@promb-2n-dhcp368.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
+	Fri, 20 Jun 2008 14:27:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=Z5kgbJmPu4y7v68ZU5pFRYQmp5vB+IU64H1QyE8xj6H4KtC8GVXsjKNQ9aCyDqWNeo
+         7otrIIPDiclQAc6w9Zj8CoBeCaK7ya0+iH963iT2OkFbsG9EAvFgB0l1Cz0xzYc9LTb1
+         4X9fJc5o7ytZ1VvSkICSi/Op1RNIsY9WoQhDA=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH 1/2] ide: move ide_pci_setup_ports() call out from do_ide_setup_pci_device()
+Date: Fri, 20 Jun 2008 20:27:14 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806202027.14924.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-06-20 at 11:14 -0700, Alok Kataria wrote:
-> I am looking at the e820_setup_gap function in tip/master tree.
-> 
-> For i386 if we don't find a big enough gap in e820 map, we keep the
-> gapstart value to "0x10000000". Don't print any warning messages for the
-> user that we were unable to find gap in the 32bit address range. 
-> 
-> Now this address 0x10000000 can actually be used by the system ram or
-> may have been reserved for some reason. Wouldn't the system break if the
-> PCI devices started using this gap in such a case ?
+* Move ide_pci_setup_ports() call out from do_ide_setup_pci_device()
+  to ide_setup_pci_device[s]().
 
-Ok I take this back.
-In the PCI code path when we actually use this gap start address for
-allocating the resource...allocate_resource will shout about the memory
-address being already in use. And the pci device won't be allocated
-which is the right thing to do.
+* Drop no longer needed idx argument from do_ide_setup_pci_device().
 
+There should be no functional changes caused by this patch.
 
-> Also note that this is not just a problem with the tip/master tree in
-> the current mainline tree too we do similar stuff for i386 kernel. 
-> 
-> Thanks,
-> Alok
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+against IDE tree + the recent ide-pmac patches
 
+ drivers/ide/setup-pci.c |   20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
+
+Index: b/drivers/ide/setup-pci.c
+===================================================================
+--- a/drivers/ide/setup-pci.c
++++ b/drivers/ide/setup-pci.c
+@@ -479,7 +479,7 @@ EXPORT_SYMBOL_GPL(ide_pci_setup_ports);
+  */
+ static int do_ide_setup_pci_device(struct pci_dev *dev,
+ 				   const struct ide_port_info *d,
+-				   u8 *idx, u8 noisy)
++				   u8 noisy)
+ {
+ 	int tried_config = 0;
+ 	int pciirq, ret;
+@@ -528,9 +528,7 @@ static int do_ide_setup_pci_device(struc
+ 				d->name, pciirq);
+ 	}
+ 
+-	/* FIXME: silent failure can happen */
+-
+-	ide_pci_setup_ports(dev, d, pciirq, idx);
++	ret = pciirq;
+ out:
+ 	return ret;
+ }
+@@ -540,10 +538,14 @@ int ide_setup_pci_device(struct pci_dev 
+ 	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
+ 	int ret;
+ 
+-	ret = do_ide_setup_pci_device(dev, d, &idx[0], 1);
++	ret = do_ide_setup_pci_device(dev, d, 1);
++
++	if (ret >= 0) {
++		/* FIXME: silent failure can happen */
++		ide_pci_setup_ports(dev, d, ret, &idx[0]);
+ 
+-	if (ret >= 0)
+ 		ide_device_add(idx, d);
++	}
+ 
+ 	return ret;
+ }
+@@ -557,13 +559,17 @@ int ide_setup_pci_devices(struct pci_dev
+ 	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
+ 
+ 	for (i = 0; i < 2; i++) {
+-		ret = do_ide_setup_pci_device(pdev[i], d, &idx[i*2], !i);
++		ret = do_ide_setup_pci_device(pdev[i], d, !i);
++
+ 		/*
+ 		 * FIXME: Mom, mom, they stole me the helper function to undo
+ 		 * do_ide_setup_pci_device() on the first device!
+ 		 */
+ 		if (ret < 0)
+ 			goto out;
++
++		/* FIXME: silent failure can happen */
++		ide_pci_setup_ports(pdev[i], d, ret, &idx[i*2]);
+ 	}
+ 
+ 	ide_device_add(idx, d);
