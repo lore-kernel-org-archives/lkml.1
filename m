@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759230AbYFTQLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760238AbYFTQLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759230AbYFTQLZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 12:11:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbYFTQLR
+	id S1760238AbYFTQLq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 12:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbYFTQLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 12:11:17 -0400
-Received: from gw.goop.org ([64.81.55.164]:45314 "EHLO mail.goop.org"
+	Fri, 20 Jun 2008 12:11:36 -0400
+Received: from smtp01.uc3m.es ([163.117.176.131]:58635 "EHLO smtp01.uc3m.es"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751326AbYFTQLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 12:11:17 -0400
-Message-ID: <485BD6A4.2010508@goop.org>
-Date: Fri, 20 Jun 2008 09:11:16 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/4] x86: unify asm-x86/fixmap*.h
-References: <4858056D.7000500@goop.org> <20080620131041.GA19740@elte.hu>
-In-Reply-To: <20080620131041.GA19740@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1753227AbYFTQLg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 12:11:36 -0400
+From: "Peter T. Breuer" <ptb@inv.it.uc3m.es>
+Message-Id: <200806201611.m5KGBDN02249@inv.it.uc3m.es>
+Subject: Re: [PATCH 1/3] i/o bandwidth controller documentation
+In-Reply-To: <200806201602.m5KG2Zx32671@inv.it.uc3m.es> from "Peter T. 
+	Breuer"at "Jun 20, 2008 06:02:35 pm"
+To: "linux kernel" <linux-kernel@vger.kernel.org>
+Date: Fri, 20 Jun 2008 18:11:13 +0200 (MET DST)
+X-Anonymously-To: 
+Reply-To: ptb@inv.it.uc3m.es
+X-message-flag: Had your Outlook virus, today?  
+	http://www.counterpane.com/crypto-gram-0103.html#4
+X-WebTV-Stationery: Standard\; BGColor=black\; TextColor=black
+Reply-By: Sat, 1 Apr 2006 14:21:08 -0700
+X-Mailer: ELM [version 2.4ME+ PL66 (25)]
+X-imss-version: 2.051
+X-imss-result: Passed
+X-imss-scanInfo: M:B L:E SM:2
+X-imss-tmaseResult: TT:1 TS:-2.8630 TC:1F TRN:23 TV:5.5.1026(15982.007)
+X-imss-scores: Clean:100.00000 C:0 M:0 S:0 R:0
+X-imss-settings: Baseline:1 C:1 M:1 S:1 R:1 (0.0000 0.0000)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->
->   
->> Almost everything aside from the actual fixmap slot definitions is 
->> common, so move it all into the common fixmap.h header.
->>     
->
-> nice patches! I have created a new -tip topic for them: tip/x86/fixmap, 
-> and have added them there. (This topic will also be in auto-x86-next on 
-> the next integration run.)
+> +               Block device I/O bandwidth controller
 
-Your scripts seem to have lost the first paragraph of the commit comment 
-for these changes.
+How can this work?  You will limit the number of available buffer heads 
+per second?
 
-    J
+Unfortunaely, the problem is the fs above the block device.  If the
+block device is artificially slowed then the fs will still happily allow
+a process to fill buffers forever until memory is full, while the block
+device continues to trickle the buffers away.
+
+What one wants is for the fs buffering to be linked to the underlying
+block device i/o speed. One wants the rate at which fs buffers are
+filled to be no more than (modulu brief spurts) the rate  at which the
+device operates.
+
+That way networked block devices have a chance of having some memory
+left to send the dirty buffers out to the net with. B/w limiting the
+device itself doesn't seem to me to do any good.
+
+Peter
