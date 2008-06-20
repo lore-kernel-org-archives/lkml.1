@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762606AbYFTUXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762696AbYFTUYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762606AbYFTUXs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 16:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760578AbYFTUS1
+	id S1762696AbYFTUYI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 16:24:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757630AbYFTUTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 16:18:27 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35173 "EHLO
+	Fri, 20 Jun 2008 16:19:10 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35177 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760560AbYFTUSY (ORCPT
+	with ESMTP id S1760768AbYFTUSu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 16:18:24 -0400
+	Fri, 20 Jun 2008 16:18:50 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 22/70] tty: add more tty_port fields
+Subject: [PATCH 24/70] whiteheat: coding style
 To: linux-kernel@vger.kernel.org
-Date: Fri, 20 Jun 2008 21:00:58 +0100
-Message-ID: <20080620200057.1479.2974.stgit@localhost.localdomain>
+Date: Fri, 20 Jun 2008 21:01:17 +0100
+Message-ID: <20080620200114.1479.93917.stgit@localhost.localdomain>
 In-Reply-To: <20080620195406.1479.12620.stgit@localhost.localdomain>
 References: <20080620195406.1479.12620.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.1
@@ -27,1243 +27,1176 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@redhat.com>
 
-Move more bits into the tty_port structure
+Bring ezusb and whiteheat into line with the coding style
 
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/char/cyclades.c      |   28 ++++----
- drivers/char/isicom.c        |   28 ++++----
- drivers/char/moxa.c          |    8 +-
- drivers/char/mxser.c         |   29 +++-----
- drivers/char/riscom8.c       |   24 +++----
- drivers/char/riscom8.h       |    2 -
- drivers/char/rocket.c        |   23 +++---
- drivers/char/rocket.h        |    4 +
- drivers/char/rocket_int.h    |    2 -
- drivers/char/specialix.c     |  153 ++++++++++++++++++++----------------------
- drivers/char/specialix_io8.h |    8 --
- drivers/char/sx.c            |    2 -
- drivers/char/synclink.c      |   16 ++--
- drivers/char/synclink_gt.c   |   16 ++--
- drivers/char/synclinkmp.c    |   14 ++--
- drivers/char/tty_io.c        |    2 +
- include/linux/cyclades.h     |    6 +-
- include/linux/tty.h          |    2 +
- 18 files changed, 169 insertions(+), 198 deletions(-)
+ drivers/usb/serial/ezusb.c     |   22 +-
+ drivers/usb/serial/whiteheat.c |  429 ++++++++++++++++++++++------------------
+ drivers/usb/serial/whiteheat.h |   78 +++++--
+ 3 files changed, 302 insertions(+), 227 deletions(-)
 
 
-diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
-index e06f637..5ee9f46 100644
---- a/drivers/char/cyclades.c
-+++ b/drivers/char/cyclades.c
-@@ -2677,8 +2677,8 @@ static void cy_close(struct tty_struct *tty, struct file *filp)
- 	 */
- 	tty->closing = 1;
- 	spin_unlock_irqrestore(&card->card_lock, flags);
--	if (info->closing_wait != CY_CLOSING_WAIT_NONE)
--		tty_wait_until_sent(tty, info->closing_wait);
-+	if (info->port.closing_wait != CY_CLOSING_WAIT_NONE)
-+		tty_wait_until_sent(tty, info->port.closing_wait);
+diff --git a/drivers/usb/serial/ezusb.c b/drivers/usb/serial/ezusb.c
+index cc4fbd9..711e84f 100644
+--- a/drivers/usb/serial/ezusb.c
++++ b/drivers/usb/serial/ezusb.c
+@@ -20,7 +20,8 @@
+ /* EZ-USB Control and Status Register.  Bit 0 controls 8051 reset */
+ #define CPUCS_REG    0x7F92
  
- 	spin_lock_irqsave(&card->card_lock, flags);
+-int ezusb_writememory (struct usb_serial *serial, int address, unsigned char *data, int length, __u8 bRequest)
++int ezusb_writememory(struct usb_serial *serial, int address,
++				unsigned char *data, int length, __u8 request)
+ {
+ 	int result;
+ 	unsigned char *transfer_buffer;
+@@ -33,26 +34,27 @@ int ezusb_writememory (struct usb_serial *serial, int address, unsigned char *da
  
-@@ -2734,9 +2734,9 @@ static void cy_close(struct tty_struct *tty, struct file *filp)
- 	info->port.tty = NULL;
- 	if (info->port.blocked_open) {
- 		spin_unlock_irqrestore(&card->card_lock, flags);
--		if (info->close_delay) {
-+		if (info->port.close_delay) {
- 			msleep_interruptible(jiffies_to_msecs
--						(info->close_delay));
-+						(info->port.close_delay));
- 		}
- 		wake_up_interruptible(&info->port.open_wait);
- 		spin_lock_irqsave(&card->card_lock, flags);
-@@ -3382,8 +3382,8 @@ get_serial_info(struct cyclades_port *info,
- 		cinfo->first_line;
- 	tmp.irq = cinfo->irq;
- 	tmp.flags = info->port.flags;
--	tmp.close_delay = info->close_delay;
--	tmp.closing_wait = info->closing_wait;
-+	tmp.close_delay = info->port.close_delay;
-+	tmp.closing_wait = info->port.closing_wait;
- 	tmp.baud_base = info->baud;
- 	tmp.custom_divisor = info->custom_divisor;
- 	tmp.hub6 = 0;		/*!!! */
-@@ -3402,7 +3402,7 @@ set_serial_info(struct cyclades_port *info,
- 	old_info = *info;
- 
- 	if (!capable(CAP_SYS_ADMIN)) {
--		if (new_serial.close_delay != info->close_delay ||
-+		if (new_serial.close_delay != info->port.close_delay ||
- 				new_serial.baud_base != info->baud ||
- 				(new_serial.flags & ASYNC_FLAGS &
- 					~ASYNC_USR_MASK) !=
-@@ -3424,8 +3424,8 @@ set_serial_info(struct cyclades_port *info,
- 	info->custom_divisor = new_serial.custom_divisor;
- 	info->port.flags = (info->port.flags & ~ASYNC_FLAGS) |
- 			(new_serial.flags & ASYNC_FLAGS);
--	info->close_delay = new_serial.close_delay * HZ / 100;
--	info->closing_wait = new_serial.closing_wait * HZ / 100;
-+	info->port.close_delay = new_serial.close_delay * HZ / 100;
-+	info->port.closing_wait = new_serial.closing_wait * HZ / 100;
- 
- check_and_exit:
- 	if (info->port.flags & ASYNC_INITIALIZED) {
-@@ -3971,11 +3971,11 @@ cy_ioctl(struct tty_struct *tty, struct file *file,
- 		break;
- #endif				/* CONFIG_CYZ_INTR */
- 	case CYSETWAIT:
--		info->closing_wait = (unsigned short)arg * HZ / 100;
-+		info->port.closing_wait = (unsigned short)arg * HZ / 100;
- 		ret_val = 0;
- 		break;
- 	case CYGETWAIT:
--		ret_val = info->closing_wait / (HZ / 100);
-+		ret_val = info->port.closing_wait / (HZ / 100);
- 		break;
- 	case TIOCGSERIAL:
- 		ret_val = get_serial_info(info, argp);
-@@ -4376,13 +4376,13 @@ static int __devinit cy_init_card(struct cyclades_card *cinfo)
- 	for (port = cinfo->first_line; port < cinfo->first_line + nports;
- 			port++) {
- 		info = &cinfo->ports[port - cinfo->first_line];
-+		tty_port_init(&info->port);
- 		info->magic = CYCLADES_MAGIC;
- 		info->card = cinfo;
- 		info->line = port;
--		info->closing_wait = CLOSING_WAIT_DELAY;
--		info->close_delay = 5 * HZ / 10;
- 
--		tty_port_init(&info->port);
-+		info->port.closing_wait = CLOSING_WAIT_DELAY;
-+		info->port.close_delay = 5 * HZ / 10;
- 		info->port.flags = STD_COM_FLAGS;
- 		init_completion(&info->shutdown_wait);
- 		init_waitqueue_head(&info->delta_msr_wait);
-diff --git a/drivers/char/isicom.c b/drivers/char/isicom.c
-index 20be56f..fdc9420 100644
---- a/drivers/char/isicom.c
-+++ b/drivers/char/isicom.c
-@@ -199,10 +199,8 @@ struct	isi_board {
- struct	isi_port {
- 	unsigned short		magic;
- 	struct tty_port		port;
--	int			close_delay;
- 	u16			channel;
- 	u16			status;
--	u16			closing_wait;
- 	struct isi_board	*card;
- 	unsigned char		*xmit_buf;
- 	int			xmit_head;
-@@ -1051,8 +1049,8 @@ static void isicom_close(struct tty_struct *tty, struct file *filp)
- 	tty->closing = 1;
- 	spin_unlock_irqrestore(&card->card_lock, flags);
- 
--	if (port->closing_wait != ASYNC_CLOSING_WAIT_NONE)
--		tty_wait_until_sent(tty, port->closing_wait);
-+	if (port->port.closing_wait != ASYNC_CLOSING_WAIT_NONE)
-+		tty_wait_until_sent(tty, port->port.closing_wait);
- 	/* indicate to the card that no more data can be received
- 	   on this port */
- 	spin_lock_irqsave(&card->card_lock, flags);
-@@ -1071,10 +1069,10 @@ static void isicom_close(struct tty_struct *tty, struct file *filp)
- 
- 	if (port->port.blocked_open) {
- 		spin_unlock_irqrestore(&card->card_lock, flags);
--		if (port->close_delay) {
-+		if (port->port.close_delay) {
- 			pr_dbg("scheduling until time out.\n");
- 			msleep_interruptible(
--				jiffies_to_msecs(port->close_delay));
-+				jiffies_to_msecs(port->port.close_delay));
- 		}
- 		spin_lock_irqsave(&card->card_lock, flags);
- 		wake_up_interruptible(&port->port.open_wait);
-@@ -1256,8 +1254,8 @@ static int isicom_set_serial_info(struct isi_port *port,
- 		(newinfo.flags & ASYNC_SPD_MASK));
- 
- 	if (!capable(CAP_SYS_ADMIN)) {
--		if ((newinfo.close_delay != port->close_delay) ||
--				(newinfo.closing_wait != port->closing_wait) ||
-+		if ((newinfo.close_delay != port->port.close_delay) ||
-+				(newinfo.closing_wait != port->port.closing_wait) ||
- 				((newinfo.flags & ~ASYNC_USR_MASK) !=
- 				(port->port.flags & ~ASYNC_USR_MASK))) {
- 			unlock_kernel();
-@@ -1266,8 +1264,8 @@ static int isicom_set_serial_info(struct isi_port *port,
- 		port->port.flags = ((port->port.flags & ~ASYNC_USR_MASK) |
- 				(newinfo.flags & ASYNC_USR_MASK));
- 	} else {
--		port->close_delay = newinfo.close_delay;
--		port->closing_wait = newinfo.closing_wait;
-+		port->port.close_delay = newinfo.close_delay;
-+		port->port.closing_wait = newinfo.closing_wait;
- 		port->port.flags = ((port->port.flags & ~ASYNC_FLAGS) |
- 				(newinfo.flags & ASYNC_FLAGS));
+ 	transfer_buffer = kmemdup(data, length, GFP_KERNEL);
+ 	if (!transfer_buffer) {
+-		dev_err(&serial->dev->dev, "%s - kmalloc(%d) failed.\n", __func__, length);
++		dev_err(&serial->dev->dev, "%s - kmalloc(%d) failed.\n",
++							__func__, length);
+ 		return -ENOMEM;
  	}
-@@ -1294,8 +1292,8 @@ static int isicom_get_serial_info(struct isi_port *port,
- 	out_info.irq = port->card->irq;
- 	out_info.flags = port->port.flags;
- /*	out_info.baud_base = ? */
--	out_info.close_delay = port->close_delay;
--	out_info.closing_wait = port->closing_wait;
-+	out_info.close_delay = port->port.close_delay;
-+	out_info.closing_wait = port->port.closing_wait;
- 	unlock_kernel();
- 	if (copy_to_user(info, &out_info, sizeof(out_info)))
- 		return -EFAULT;
-@@ -1796,13 +1794,13 @@ static int __init isicom_init(void)
- 		isi_card[idx].ports = port;
- 		spin_lock_init(&isi_card[idx].card_lock);
- 		for (channel = 0; channel < 16; channel++, port++) {
-+			tty_port_init(&port->port);
- 			port->magic = ISICOM_MAGIC;
- 			port->card = &isi_card[idx];
- 			port->channel = channel;
--			port->close_delay = 50 * HZ/100;
--			port->closing_wait = 3000 * HZ/100;
-+			port->port.close_delay = 50 * HZ/100;
-+			port->port.closing_wait = 3000 * HZ/100;
- 			port->status = 0;
--			tty_port_init(&port->port);
- 			/*  . . .  */
- 		}
- 		isi_card[idx].base = 0;
-diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
-index bb9bcff..f8d48ed 100644
---- a/drivers/char/moxa.c
-+++ b/drivers/char/moxa.c
-@@ -135,7 +135,6 @@ struct moxa_port {
- 	void __iomem *tableAddr;
- 
- 	int type;
--	int close_delay;
- 	int cflag;
- 	unsigned long statusflags;
- 
-@@ -822,10 +821,9 @@ static int moxa_init_board(struct moxa_board_conf *brd, struct device *dev)
- 	}
- 
- 	for (i = 0, p = brd->ports; i < MAX_PORTS_PER_BOARD; i++, p++) {
-+		tty_port_init(&p->port);
- 		p->type = PORT_16550A;
--		p->close_delay = 5 * HZ / 10;
- 		p->cflag = B9600 | CS8 | CREAD | CLOCAL | HUPCL;
--		tty_port_init(&p->port);
- 	}
- 
- 	switch (brd->boardType) {
-@@ -2124,7 +2122,7 @@ static int moxa_get_serial_info(struct moxa_port *info,
- 		.line = info->port.tty->index,
- 		.flags = info->port.flags,
- 		.baud_base = 921600,
--		.close_delay = info->close_delay
-+		.close_delay = info->port.close_delay
- 	};
- 	return copy_to_user(retinfo, &tmp, sizeof(*retinfo)) ? -EFAULT : 0;
+-	result = usb_control_msg (serial->dev, usb_sndctrlpipe(serial->dev, 0), bRequest, 0x40, address, 0, transfer_buffer, length, 3000);
+-	kfree (transfer_buffer);
++	result = usb_control_msg(serial->dev, usb_sndctrlpipe(serial->dev, 0),
++		     request, 0x40, address, 0, transfer_buffer, length, 3000);
++	kfree(transfer_buffer);
+ 	return result;
  }
-@@ -2148,7 +2146,7 @@ static int moxa_set_serial_info(struct moxa_port *info,
- 		     (info->port.flags & ~ASYNC_USR_MASK)))
- 			return -EPERM;
- 	} else
--		info->close_delay = new_serial.close_delay * HZ / 100;
-+		info->port.close_delay = new_serial.close_delay * HZ / 100;
++EXPORT_SYMBOL_GPL(ezusb_writememory);
  
- 	new_serial.flags = (new_serial.flags & ~ASYNC_FLAGS);
- 	new_serial.flags |= (info->port.flags & ASYNC_FLAGS);
-diff --git a/drivers/char/mxser.c b/drivers/char/mxser.c
-index e83ccee..6307e30 100644
---- a/drivers/char/mxser.c
-+++ b/drivers/char/mxser.c
-@@ -243,10 +243,7 @@ struct mxser_port {
- 	unsigned char ldisc_stop_rx;
+-int ezusb_set_reset (struct usb_serial *serial, unsigned char reset_bit)
++int ezusb_set_reset(struct usb_serial *serial, unsigned char reset_bit)
+ {
+ 	int response;
  
- 	int custom_divisor;
--	int close_delay;
--	unsigned short closing_wait;
- 	unsigned char err_shadow;
--	unsigned long event;
- 
- 	struct async_icount icount; /* kernel counters for 4 input interrupts */
- 	int timeout;
-@@ -1199,8 +1196,8 @@ static void mxser_close(struct tty_struct *tty, struct file *filp)
- 	 * the line discipline to only process XON/XOFF characters.
- 	 */
- 	tty->closing = 1;
--	if (info->closing_wait != ASYNC_CLOSING_WAIT_NONE)
--		tty_wait_until_sent(tty, info->closing_wait);
-+	if (info->port.closing_wait != ASYNC_CLOSING_WAIT_NONE)
-+		tty_wait_until_sent(tty, info->port.closing_wait);
- 	/*
- 	 * At this point we stop accepting input.  To do this, we
- 	 * disable the receive line status interrupts, and tell the
-@@ -1231,11 +1228,10 @@ static void mxser_close(struct tty_struct *tty, struct file *filp)
- 	tty_ldisc_flush(tty);
- 
- 	tty->closing = 0;
--	info->event = 0;
- 	info->port.tty = NULL;
- 	if (info->port.blocked_open) {
--		if (info->close_delay)
--			schedule_timeout_interruptible(info->close_delay);
-+		if (info->port.close_delay)
-+			schedule_timeout_interruptible(info->port.close_delay);
- 		wake_up_interruptible(&info->port.open_wait);
- 	}
- 
-@@ -1370,8 +1366,8 @@ static int mxser_get_serial_info(struct mxser_port *info,
- 		.irq = info->board->irq,
- 		.flags = info->port.flags,
- 		.baud_base = info->baud_base,
--		.close_delay = info->close_delay,
--		.closing_wait = info->closing_wait,
-+		.close_delay = info->port.close_delay,
-+		.closing_wait = info->port.closing_wait,
- 		.custom_divisor = info->custom_divisor,
- 		.hub6 = 0
- 	};
-@@ -1402,7 +1398,7 @@ static int mxser_set_serial_info(struct mxser_port *info,
- 
- 	if (!capable(CAP_SYS_ADMIN)) {
- 		if ((new_serial.baud_base != info->baud_base) ||
--				(new_serial.close_delay != info->close_delay) ||
-+				(new_serial.close_delay != info->port.close_delay) ||
- 				((new_serial.flags & ~ASYNC_USR_MASK) != (info->port.flags & ~ASYNC_USR_MASK)))
- 			return -EPERM;
- 		info->port.flags = ((info->port.flags & ~ASYNC_USR_MASK) |
-@@ -1414,8 +1410,8 @@ static int mxser_set_serial_info(struct mxser_port *info,
- 		 */
- 		info->port.flags = ((info->port.flags & ~ASYNC_FLAGS) |
- 				(new_serial.flags & ASYNC_FLAGS));
--		info->close_delay = new_serial.close_delay * HZ / 100;
--		info->closing_wait = new_serial.closing_wait * HZ / 100;
-+		info->port.close_delay = new_serial.close_delay * HZ / 100;
-+		info->port.closing_wait = new_serial.closing_wait * HZ / 100;
- 		info->port.tty->low_latency =
- 				(info->port.flags & ASYNC_LOW_LATENCY) ? 1 : 0;
- 		info->port.tty->low_latency = 0;
-@@ -2214,7 +2210,6 @@ static void mxser_hangup(struct tty_struct *tty)
- 
- 	mxser_flush_buffer(tty);
- 	mxser_shutdown(info);
--	info->event = 0;
- 	info->port.count = 0;
- 	info->port.flags &= ~ASYNC_NORMAL_ACTIVE;
- 	info->port.tty = NULL;
-@@ -2545,6 +2540,7 @@ static int __devinit mxser_initbrd(struct mxser_board *brd,
- 
- 	for (i = 0; i < brd->info->nports; i++) {
- 		info = &brd->ports[i];
-+		tty_port_init(&info->port);
- 		info->board = brd;
- 		info->stop_rx = 0;
- 		info->ldisc_stop_rx = 0;
-@@ -2559,10 +2555,9 @@ static int __devinit mxser_initbrd(struct mxser_board *brd,
- 		process_txrx_fifo(info);
- 
- 		info->custom_divisor = info->baud_base * 16;
--		info->close_delay = 5 * HZ / 10;
--		info->closing_wait = 30 * HZ;
-+		info->port.close_delay = 5 * HZ / 10;
-+		info->port.closing_wait = 30 * HZ;
- 		info->normal_termios = mxvar_sdriver->init_termios;
--		tty_port_init(&info->port);
- 		init_waitqueue_head(&info->delta_msr_wait);
- 		memset(&info->mon_data, 0, sizeof(struct mxser_mon));
- 		info->err_shadow = 0;
-diff --git a/drivers/char/riscom8.c b/drivers/char/riscom8.c
-index 3ca8957..724b2b2 100644
---- a/drivers/char/riscom8.c
-+++ b/drivers/char/riscom8.c
-@@ -1032,8 +1032,8 @@ static void rc_close(struct tty_struct *tty, struct file *filp)
- 	 * the line discipline to only process XON/XOFF characters.
- 	 */
- 	tty->closing = 1;
--	if (port->closing_wait != ASYNC_CLOSING_WAIT_NONE)
--		tty_wait_until_sent(tty, port->closing_wait);
-+	if (port->port.closing_wait != ASYNC_CLOSING_WAIT_NONE)
-+		tty_wait_until_sent(tty, port->port.closing_wait);
- 	/*
- 	 * At this point we stop accepting input.  To do this, we
- 	 * disable the receive line status interrupts, and tell the
-@@ -1065,8 +1065,8 @@ static void rc_close(struct tty_struct *tty, struct file *filp)
- 	tty->closing = 0;
- 	port->port.tty = NULL;
- 	if (port->port.blocked_open) {
--		if (port->close_delay)
--			msleep_interruptible(jiffies_to_msecs(port->close_delay));
-+		if (port->port.close_delay)
-+			msleep_interruptible(jiffies_to_msecs(port->port.close_delay));
- 		wake_up_interruptible(&port->port.open_wait);
- 	}
- 	port->port.flags &= ~(ASYNC_NORMAL_ACTIVE|ASYNC_CLOSING);
-@@ -1295,8 +1295,8 @@ static int rc_set_serial_info(struct riscom_port *port,
- 			(tmp.flags & ASYNC_SPD_MASK));
- 
- 	if (!capable(CAP_SYS_ADMIN)) {
--		if ((tmp.close_delay != port->close_delay) ||
--		    (tmp.closing_wait != port->closing_wait) ||
-+		if ((tmp.close_delay != port->port.close_delay) ||
-+		    (tmp.closing_wait != port->port.closing_wait) ||
- 		    ((tmp.flags & ~ASYNC_USR_MASK) !=
- 		     (port->port.flags & ~ASYNC_USR_MASK)))
- 			return -EPERM;
-@@ -1305,8 +1305,8 @@ static int rc_set_serial_info(struct riscom_port *port,
- 	} else  {
- 		port->port.flags = ((port->port.flags & ~ASYNC_FLAGS) |
- 			       (tmp.flags & ASYNC_FLAGS));
--		port->close_delay = tmp.close_delay;
--		port->closing_wait = tmp.closing_wait;
-+		port->port.close_delay = tmp.close_delay;
-+		port->port.closing_wait = tmp.closing_wait;
- 	}
- 	if (change_speed)  {
- 		unsigned long flags;
-@@ -1331,8 +1331,8 @@ static int rc_get_serial_info(struct riscom_port *port,
- 	tmp.irq  = bp->irq;
- 	tmp.flags = port->port.flags;
- 	tmp.baud_base = (RC_OSCFREQ + CD180_TPC/2) / CD180_TPC;
--	tmp.close_delay = port->close_delay * HZ/100;
--	tmp.closing_wait = port->closing_wait * HZ/100;
-+	tmp.close_delay = port->port.close_delay * HZ/100;
-+	tmp.closing_wait = port->port.closing_wait * HZ/100;
- 	tmp.xmit_fifo_size = CD180_NFIFO;
- 	return copy_to_user(retinfo, &tmp, sizeof(tmp)) ? -EFAULT : 0;
+ 	/* dbg("%s - %d", __func__, reset_bit); */
+-	response = ezusb_writememory (serial, CPUCS_REG, &reset_bit, 1, 0xa0);
++	response = ezusb_writememory(serial, CPUCS_REG, &reset_bit, 1, 0xa0);
+ 	if (response < 0)
+-		dev_err(&serial->dev->dev, "%s- %d failed\n", __func__, reset_bit);
++		dev_err(&serial->dev->dev, "%s- %d failed\n",
++						__func__, reset_bit);
+ 	return response;
  }
-@@ -1549,10 +1549,8 @@ static int __init rc_init_drivers(void)
- 	}
- 	memset(rc_port, 0, sizeof(rc_port));
- 	for (i = 0; i < RC_NPORT * RC_NBOARD; i++)  {
--		rc_port[i].magic = RISCOM8_MAGIC;
--		rc_port[i].close_delay = 50 * HZ / 100;
--		rc_port[i].closing_wait = 3000 * HZ / 100;
- 		tty_port_init(&rc_port[i].port);
-+		rc_port[i].magic = RISCOM8_MAGIC;
- 	}
- 	return 0;
- }
-diff --git a/drivers/char/riscom8.h b/drivers/char/riscom8.h
-index 29ddbab..c9876b3 100644
---- a/drivers/char/riscom8.h
-+++ b/drivers/char/riscom8.h
-@@ -69,14 +69,12 @@ struct riscom_port {
- 	struct			tty_port port;
- 	int			baud_base;
- 	int			timeout;
--	int			close_delay;
- 	int			custom_divisor;
- 	int			xmit_head;
- 	int			xmit_tail;
- 	int			xmit_cnt;
- 	short			wakeup_chars;
- 	short			break_length;
--	unsigned short		closing_wait;
- 	unsigned char		mark_mask;
- 	unsigned char		IER;
- 	unsigned char		MSVR;
-diff --git a/drivers/char/rocket.c b/drivers/char/rocket.c
-index ab04adb..bdced0e 100644
---- a/drivers/char/rocket.c
-+++ b/drivers/char/rocket.c
-@@ -72,6 +72,7 @@
- #include <linux/tty.h>
- #include <linux/tty_driver.h>
- #include <linux/tty_flip.h>
-+#include <linux/serial.h>
- #include <linux/string.h>
- #include <linux/fcntl.h>
- #include <linux/ptrace.h>
-@@ -81,7 +82,7 @@
- #include <linux/completion.h>
- #include <linux/wait.h>
- #include <linux/pci.h>
+-
+-
+-EXPORT_SYMBOL_GPL(ezusb_writememory);
+ EXPORT_SYMBOL_GPL(ezusb_set_reset);
+ 
+diff --git a/drivers/usb/serial/whiteheat.c b/drivers/usb/serial/whiteheat.c
+index fdadf39..5a3ed57 100644
+--- a/drivers/usb/serial/whiteheat.c
++++ b/drivers/usb/serial/whiteheat.c
+@@ -12,29 +12,31 @@
+  *	the Free Software Foundation; either version 2 of the License, or
+  *	(at your option) any later version.
+  *
+- * See Documentation/usb/usb-serial.txt for more information on using this driver
++ * See Documentation/usb/usb-serial.txt for more information on using this
++ * driver
+  *
+  * (10/09/2002) Stuart MacDonald (stuartm@connecttech.com)
+  *	Upgrade to full working driver
+  *
+  * (05/30/2001) gkh
+- *	switched from using spinlock to a semaphore, which fixes lots of problems.
++ *	switched from using spinlock to a semaphore, which fixes lots of
++ *	problems.
+  *
+  * (04/08/2001) gb
+  *	Identify version on module load.
+- * 
++ *
+  * 2001_Mar_19 gkh
+- *	Fixed MOD_INC and MOD_DEC logic, the ability to open a port more 
++ *	Fixed MOD_INC and MOD_DEC logic, the ability to open a port more
+  *	than once, and the got the proper usb_device_id table entries so
+  *	the driver works again.
+  *
+  * (11/01/2000) Adam J. Richter
+  *	usb_device_id table support
+- * 
++ *
+  * (10/05/2000) gkh
+  *	Fixed bug with urb->dev not being set properly, now that the usb
+  *	core needs it.
+- * 
++ *
+  * (10/03/2000) smd
+  *	firmware is improved to guard against crap sent to device
+  *	firmware now replies CMD_FAILURE on bad things
+@@ -52,9 +54,9 @@
+  *	Fixed bug with port->minor that was found by Al Borchers
+  *
+  * (07/04/2000) gkh
+- *	Added support for port settings. Baud rate can now be changed. Line signals
+- *	are not transferred to and from the tty layer yet, but things seem to be 
+- *	working well now.
++ *	Added support for port settings. Baud rate can now be changed. Line
++ *	signals are not transferred to and from the tty layer yet, but things
++ *	seem to be working well now.
+  *
+  * (05/04/2000) gkh
+  *	First cut at open and close commands. Data can flow through the ports at
+@@ -62,7 +64,7 @@
+  *
+  * (03/26/2000) gkh
+  *	Split driver up into device specific pieces.
+- * 
++ *
+  */
+ 
+ #include <linux/kernel.h>
+@@ -75,14 +77,14 @@
+ #include <linux/module.h>
+ #include <linux/spinlock.h>
+ #include <linux/mutex.h>
 -#include <asm/uaccess.h>
 +#include <linux/uaccess.h>
- #include <asm/atomic.h>
- #include <asm/unaligned.h>
- #include <linux/bitops.h>
-@@ -648,8 +649,8 @@ static void init_r_port(int board, int aiop, int chan, struct pci_dev *pci_dev)
- 	info->board = board;
- 	info->aiop = aiop;
- 	info->chan = chan;
--	info->closing_wait = 3000;
--	info->close_delay = 50;
-+	info->port.closing_wait = 3000;
-+	info->port.close_delay = 50;
- 	init_waitqueue_head(&info->port.open_wait);
- 	init_completion(&info->close_wait);
- 	info->flags &= ~ROCKET_MODE_MASK;
-@@ -1137,8 +1138,8 @@ static void rp_close(struct tty_struct *tty, struct file *filp)
- 	/*
- 	 * Wait for the transmit buffer to clear
- 	 */
--	if (info->closing_wait != ROCKET_CLOSING_WAIT_NONE)
--		tty_wait_until_sent(tty, info->closing_wait);
-+	if (info->port.closing_wait != ROCKET_CLOSING_WAIT_NONE)
-+		tty_wait_until_sent(tty, info->port.closing_wait);
- 	/*
- 	 * Before we drop DTR, make sure the UART transmitter
- 	 * has completely drained; this is especially
-@@ -1168,8 +1169,8 @@ static void rp_close(struct tty_struct *tty, struct file *filp)
- 	clear_bit((info->aiop * 8) + info->chan, (void *) &xmit_flags[info->board]);
+ #include <asm/termbits.h>
+ #include <linux/usb.h>
+ #include <linux/serial_reg.h>
+ #include <linux/serial.h>
+ #include <linux/usb/serial.h>
+-#include "whiteheat_fw.h"		/* firmware for the ConnectTech WhiteHEAT device */
+-#include "whiteheat.h"			/* WhiteHEAT specific commands */
++#include "whiteheat_fw.h"	/* firmware for the ConnectTech WhiteHEAT */
++#include "whiteheat.h"		/* WhiteHEAT specific commands */
  
- 	if (info->port.blocked_open) {
--		if (info->close_delay) {
--			msleep_interruptible(jiffies_to_msecs(info->close_delay));
-+		if (info->port.close_delay) {
-+			msleep_interruptible(jiffies_to_msecs(info->port.close_delay));
- 		}
- 		wake_up_interruptible(&info->port.open_wait);
- 	} else {
-@@ -1327,8 +1328,8 @@ static int get_config(struct r_port *info, struct rocket_config __user *retinfo)
- 	memset(&tmp, 0, sizeof (tmp));
- 	tmp.line = info->line;
- 	tmp.flags = info->flags;
--	tmp.close_delay = info->close_delay;
--	tmp.closing_wait = info->closing_wait;
-+	tmp.close_delay = info->port.close_delay;
-+	tmp.closing_wait = info->port.closing_wait;
- 	tmp.port = rcktpt_io_addr[(info->line >> 5) & 3];
+ static int debug;
  
- 	if (copy_to_user(retinfo, &tmp, sizeof (*retinfo)))
-@@ -1353,8 +1354,8 @@ static int set_config(struct r_port *info, struct rocket_config __user *new_info
- 	}
+@@ -124,7 +126,7 @@ static struct usb_device_id id_table_combined [] = {
+ 	{ }						/* Terminating entry */
+ };
  
- 	info->flags = ((info->flags & ~ROCKET_FLAGS) | (new_serial.flags & ROCKET_FLAGS));
--	info->close_delay = new_serial.close_delay;
--	info->closing_wait = new_serial.closing_wait;
-+	info->port.close_delay = new_serial.close_delay;
-+	info->port.closing_wait = new_serial.closing_wait;
+-MODULE_DEVICE_TABLE (usb, id_table_combined);
++MODULE_DEVICE_TABLE(usb, id_table_combined);
  
- 	if ((info->flags & ROCKET_SPD_MASK) == ROCKET_SPD_HI)
- 		info->port.tty->alt_speed = 57600;
-diff --git a/drivers/char/rocket.h b/drivers/char/rocket.h
-index ae6b04f..a8b0919 100644
---- a/drivers/char/rocket.h
-+++ b/drivers/char/rocket.h
-@@ -64,8 +64,8 @@ struct rocket_version {
- /*
-  * For closing_wait and closing_wait2
-  */
--#define ROCKET_CLOSING_WAIT_NONE	65535
--#define ROCKET_CLOSING_WAIT_INF		0
-+#define ROCKET_CLOSING_WAIT_NONE	ASYNC_CLOSING_WAIT_NONE
-+#define ROCKET_CLOSING_WAIT_INF		ASYNC_CLOSING_WAIT_INF
+ static struct usb_driver whiteheat_driver = {
+ 	.name =		"whiteheat",
+@@ -135,26 +137,34 @@ static struct usb_driver whiteheat_driver = {
+ };
  
- /*
-  * Rocketport ioctls -- "RP"
-diff --git a/drivers/char/rocket_int.h b/drivers/char/rocket_int.h
-index 3affc48..21f3ff5 100644
---- a/drivers/char/rocket_int.h
-+++ b/drivers/char/rocket_int.h
-@@ -1133,8 +1133,6 @@ struct r_port {
- 	unsigned int chan:3;
- 	CONTROLLER_t *ctlp;
- 	CHANNEL_t channel;
--	int closing_wait;
--	int close_delay;
- 	int intmask;
- 	int xmit_fifo_room;	/* room in xmit fifo */
- 	unsigned char *xmit_buf;
-diff --git a/drivers/char/specialix.c b/drivers/char/specialix.c
-index 2ee4d98..037dc47 100644
---- a/drivers/char/specialix.c
-+++ b/drivers/char/specialix.c
-@@ -608,9 +608,9 @@ static inline struct specialix_port * sx_get_port(struct specialix_board * bp,
- 	dprintk (SX_DEBUG_CHAN, "channel: %d\n", channel);
- 	if (channel < CD186x_NCH) {
- 		port = &sx_port[board_No(bp) * SX_NPORT + channel];
--		dprintk (SX_DEBUG_CHAN, "port: %d %p flags: 0x%x\n",board_No(bp) * SX_NPORT + channel,  port, port->flags & ASYNC_INITIALIZED);
-+		dprintk (SX_DEBUG_CHAN, "port: %d %p flags: 0x%lx\n",board_No(bp) * SX_NPORT + channel,  port, port->port.flags & ASYNC_INITIALIZED);
+ /* function prototypes for the Connect Tech WhiteHEAT prerenumeration device */
+-static int  whiteheat_firmware_download	(struct usb_serial *serial, const struct usb_device_id *id);
+-static int  whiteheat_firmware_attach	(struct usb_serial *serial);
++static int  whiteheat_firmware_download(struct usb_serial *serial,
++					const struct usb_device_id *id);
++static int  whiteheat_firmware_attach(struct usb_serial *serial);
  
--		if (port->flags & ASYNC_INITIALIZED) {
-+		if (port->port.flags & ASYNC_INITIALIZED) {
- 			dprintk (SX_DEBUG_CHAN, "port: %d %p\n", channel, port);
- 			func_exit();
- 			return port;
-@@ -637,7 +637,7 @@ static inline void sx_receive_exc(struct specialix_board * bp)
- 		func_exit();
- 		return;
- 	}
--	tty = port->tty;
-+	tty = port->port.tty;
+ /* function prototypes for the Connect Tech WhiteHEAT serial converter */
+-static int  whiteheat_attach		(struct usb_serial *serial);
+-static void whiteheat_shutdown		(struct usb_serial *serial);
+-static int  whiteheat_open		(struct tty_struct *tty, struct usb_serial_port *port, struct file *filp);
+-static void whiteheat_close		(struct tty_struct *tty, struct usb_serial_port *port, struct file *filp);
+-static int  whiteheat_write		(struct tty_struct *tty, struct usb_serial_port *port, const unsigned char *buf, int count);
+-static int  whiteheat_write_room	(struct tty_struct *tty);
+-static int  whiteheat_ioctl		(struct tty_struct *tty, struct file * file, unsigned int cmd, unsigned long arg);
+-static void whiteheat_set_termios	(struct tty_struct *tty, struct usb_serial_port *port, struct ktermios * old);
+-static int  whiteheat_tiocmget		(struct tty_struct *tty, struct file *file);
+-static int  whiteheat_tiocmset		(struct tty_struct *tty, struct file *file, unsigned int set, unsigned int clear);
+-static void whiteheat_break_ctl		(struct tty_struct *tty, int break_state);
+-static int  whiteheat_chars_in_buffer	(struct tty_struct *tty);
+-static void whiteheat_throttle		(struct tty_struct *tty);
+-static void whiteheat_unthrottle	(struct tty_struct *tty);
+-static void whiteheat_read_callback	(struct urb *urb);
+-static void whiteheat_write_callback	(struct urb *urb);
++static int  whiteheat_attach(struct usb_serial *serial);
++static void whiteheat_shutdown(struct usb_serial *serial);
++static int  whiteheat_open(struct tty_struct *tty,
++			struct usb_serial_port *port, struct file *filp);
++static void whiteheat_close(struct tty_struct *tty,
++			struct usb_serial_port *port, struct file *filp);
++static int  whiteheat_write(struct tty_struct *tty,
++			struct usb_serial_port *port,
++			const unsigned char *buf, int count);
++static int  whiteheat_write_room(struct tty_struct *tty);
++static int  whiteheat_ioctl(struct tty_struct *tty, struct file *file,
++			unsigned int cmd, unsigned long arg);
++static void whiteheat_set_termios(struct tty_struct *tty,
++			struct usb_serial_port *port, struct ktermios *old);
++static int  whiteheat_tiocmget(struct tty_struct *tty, struct file *file);
++static int  whiteheat_tiocmset(struct tty_struct *tty, struct file *file,
++			unsigned int set, unsigned int clear);
++static void whiteheat_break_ctl(struct tty_struct *tty, int break_state);
++static int  whiteheat_chars_in_buffer(struct tty_struct *tty);
++static void whiteheat_throttle(struct tty_struct *tty);
++static void whiteheat_unthrottle(struct tty_struct *tty);
++static void whiteheat_read_callback(struct urb *urb);
++static void whiteheat_write_callback(struct urb *urb);
  
- 	status = sx_in(bp, CD186x_RCSR);
+ static struct usb_serial_driver whiteheat_fake_device = {
+ 	.driver = {
+@@ -201,7 +211,9 @@ struct whiteheat_command_private {
+ 	struct mutex		mutex;
+ 	__u8			port_running;
+ 	__u8			command_finished;
+-	wait_queue_head_t	wait_command;	/* for handling sleeping while waiting for a command to finish */
++	wait_queue_head_t	wait_command; /* for handling sleeping whilst
++						 waiting for a command to
++						 finish */
+ 	__u8			result_buffer[64];
+ };
  
-@@ -673,7 +673,7 @@ static inline void sx_receive_exc(struct specialix_board * bp)
- 		dprintk(SX_DEBUG_RX, "sx%d: port %d: Handling break...\n",
- 		       board_No(bp), port_No(port));
- 		flag = TTY_BREAK;
--		if (port->flags & ASYNC_SAK)
-+		if (port->port.flags & ASYNC_SAK)
- 			do_SAK(tty);
+@@ -238,11 +250,13 @@ static void command_port_write_callback(struct urb *urb);
+ static void command_port_read_callback(struct urb *urb);
  
- 	} else if (status & RCSR_PE)
-@@ -707,7 +707,7 @@ static inline void sx_receive(struct specialix_board * bp)
- 		func_exit();
- 		return;
- 	}
--	tty = port->tty;
-+	tty = port->port.tty;
+ static int start_port_read(struct usb_serial_port *port);
+-static struct whiteheat_urb_wrap *urb_to_wrap(struct urb *urb, struct list_head *head);
++static struct whiteheat_urb_wrap *urb_to_wrap(struct urb *urb,
++						struct list_head *head);
+ static struct list_head *list_first(struct list_head *head);
+ static void rx_data_softint(struct work_struct *work);
  
- 	count = sx_in(bp, CD186x_RDCR);
- 	dprintk (SX_DEBUG_RX, "port: %p: count: %d\n", port, count);
-@@ -734,7 +734,7 @@ static inline void sx_transmit(struct specialix_board * bp)
- 		return;
- 	}
- 	dprintk (SX_DEBUG_TX, "port: %p\n", port);
--	tty = port->tty;
-+	tty = port->port.tty;
+-static int firm_send_command(struct usb_serial_port *port, __u8 command, __u8 *data, __u8 datasize);
++static int firm_send_command(struct usb_serial_port *port, __u8 command,
++						__u8 *data, __u8 datasize);
+ static int firm_open(struct usb_serial_port *port);
+ static int firm_close(struct usb_serial_port *port);
+ static int firm_setup_port(struct tty_struct *tty);
+@@ -277,65 +291,67 @@ static int firm_report_tx_done(struct usb_serial_port *port);
+  - device renumerated itself and comes up as new device id with all
+    firmware download completed.
+ */
+-static int whiteheat_firmware_download (struct usb_serial *serial, const struct usb_device_id *id)
++static int whiteheat_firmware_download(struct usb_serial *serial,
++					const struct usb_device_id *id)
+ {
+ 	int response;
+ 	const struct whiteheat_hex_record *record;
+-	
++
+ 	dbg("%s", __func__);
+-	
+-	response = ezusb_set_reset (serial, 1);
++
++	response = ezusb_set_reset(serial, 1);
  
- 	if (port->IER & IER_TXEMPTY) {
- 		/* FIFO drained */
-@@ -811,7 +811,7 @@ static inline void sx_check_modem(struct specialix_board * bp)
- 	if (!(port = sx_get_port(bp, "Modem")))
- 		return;
- 
--	tty = port->tty;
-+	tty = port->port.tty;
- 
- 	mcr = sx_in(bp, CD186x_MCR);
- 	printk ("mcr = %02x.\n", mcr);
-@@ -821,7 +821,7 @@ static inline void sx_check_modem(struct specialix_board * bp)
- 		msvr_cd = sx_in(bp, CD186x_MSVR) & MSVR_CD;
- 		if (msvr_cd) {
- 			dprintk (SX_DEBUG_SIGNALS, "Waking up guys in open.\n");
--			wake_up_interruptible(&port->open_wait);
-+			wake_up_interruptible(&port->port.open_wait);
- 		} else {
- 			dprintk (SX_DEBUG_SIGNALS, "Sending HUP.\n");
- 			tty_hangup(tty);
-@@ -1030,7 +1030,7 @@ static void sx_change_speed(struct specialix_board *bp, struct specialix_port *p
- 
- 	func_enter();
- 
--	if (!(tty = port->tty) || !tty->termios) {
-+	if (!(tty = port->port.tty) || !tty->termios) {
- 		func_exit();
- 		return;
- 	}
-@@ -1052,9 +1052,9 @@ static void sx_change_speed(struct specialix_board *bp, struct specialix_port *p
- 	baud = tty_get_baud_rate(tty);
- 
- 	if (baud == 38400) {
--		if ((port->flags & ASYNC_SPD_MASK) == ASYNC_SPD_HI)
-+		if ((port->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_HI)
- 			baud = 57600;
--		if ((port->flags & ASYNC_SPD_MASK) == ASYNC_SPD_VHI)
-+		if ((port->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_VHI)
- 			baud = 115200;
- 	}
- 
-@@ -1244,7 +1244,7 @@ static int sx_setup_port(struct specialix_board *bp, struct specialix_port *port
- 
- 	func_enter();
- 
--	if (port->flags & ASYNC_INITIALIZED) {
-+	if (port->port.flags & ASYNC_INITIALIZED) {
- 		func_exit();
- 		return 0;
- 	}
-@@ -1268,12 +1268,12 @@ static int sx_setup_port(struct specialix_board *bp, struct specialix_port *port
- 
- 	spin_lock_irqsave(&port->lock, flags);
- 
--	if (port->tty)
--		clear_bit(TTY_IO_ERROR, &port->tty->flags);
-+	if (port->port.tty)
-+		clear_bit(TTY_IO_ERROR, &port->port.tty->flags);
- 
- 	port->xmit_cnt = port->xmit_head = port->xmit_tail = 0;
- 	sx_change_speed(bp, port);
--	port->flags |= ASYNC_INITIALIZED;
-+	port->port.flags |= ASYNC_INITIALIZED;
- 
- 	spin_unlock_irqrestore(&port->lock, flags);
- 
-@@ -1292,7 +1292,7 @@ static void sx_shutdown_port(struct specialix_board *bp, struct specialix_port *
- 
- 	func_enter();
- 
--	if (!(port->flags & ASYNC_INITIALIZED)) {
-+	if (!(port->port.flags & ASYNC_INITIALIZED)) {
- 		func_exit();
- 		return;
- 	}
-@@ -1315,7 +1315,7 @@ static void sx_shutdown_port(struct specialix_board *bp, struct specialix_port *
- 	spin_lock_irqsave(&bp->lock, flags);
- 	sx_out(bp, CD186x_CAR, port_No(port));
- 
--	if (!(tty = port->tty) || C_HUPCL(tty)) {
-+	if (!(tty = port->port.tty) || C_HUPCL(tty)) {
- 		/* Drop DTR */
- 		sx_out(bp, CD186x_MSVDTR, 0);
- 	}
-@@ -1330,7 +1330,7 @@ static void sx_shutdown_port(struct specialix_board *bp, struct specialix_port *
- 	spin_unlock_irqrestore(&bp->lock, flags);
- 	if (tty)
- 		set_bit(TTY_IO_ERROR, &tty->flags);
--	port->flags &= ~ASYNC_INITIALIZED;
-+	port->port.flags &= ~ASYNC_INITIALIZED;
- 
- 	if (!bp->count)
- 		sx_shutdown_board(bp);
-@@ -1354,9 +1354,9 @@ static int block_til_ready(struct tty_struct *tty, struct file * filp,
- 	 * If the device is in the middle of being closed, then block
- 	 * until it's done, and then try again.
- 	 */
--	if (tty_hung_up_p(filp) || port->flags & ASYNC_CLOSING) {
--		interruptible_sleep_on(&port->close_wait);
--		if (port->flags & ASYNC_HUP_NOTIFY) {
-+	if (tty_hung_up_p(filp) || port->port.flags & ASYNC_CLOSING) {
-+		interruptible_sleep_on(&port->port.close_wait);
-+		if (port->port.flags & ASYNC_HUP_NOTIFY) {
- 			func_exit();
- 			return -EAGAIN;
- 		} else {
-@@ -1371,7 +1371,7 @@ static int block_til_ready(struct tty_struct *tty, struct file * filp,
- 	 */
- 	if ((filp->f_flags & O_NONBLOCK) ||
- 	    (tty->flags & (1 << TTY_IO_ERROR))) {
--		port->flags |= ASYNC_NORMAL_ACTIVE;
-+		port->port.flags |= ASYNC_NORMAL_ACTIVE;
- 		func_exit();
- 		return 0;
- 	}
-@@ -1387,13 +1387,13 @@ static int block_til_ready(struct tty_struct *tty, struct file * filp,
- 	 * exit, either normal or abnormal.
- 	 */
- 	retval = 0;
--	add_wait_queue(&port->open_wait, &wait);
-+	add_wait_queue(&port->port.open_wait, &wait);
- 	spin_lock_irqsave(&port->lock, flags);
- 	if (!tty_hung_up_p(filp)) {
--		port->count--;
-+		port->port.count--;
- 	}
- 	spin_unlock_irqrestore(&port->lock, flags);
--	port->blocked_open++;
-+	port->port.blocked_open++;
- 	while (1) {
- 		spin_lock_irqsave(&bp->lock, flags);
- 		sx_out(bp, CD186x_CAR, port_No(port));
-@@ -1410,14 +1410,14 @@ static int block_til_ready(struct tty_struct *tty, struct file * filp,
- 		spin_unlock_irqrestore(&bp->lock, flags);
- 		set_current_state(TASK_INTERRUPTIBLE);
- 		if (tty_hung_up_p(filp) ||
--		    !(port->flags & ASYNC_INITIALIZED)) {
--			if (port->flags & ASYNC_HUP_NOTIFY)
-+		    !(port->port.flags & ASYNC_INITIALIZED)) {
-+			if (port->port.flags & ASYNC_HUP_NOTIFY)
- 				retval = -EAGAIN;
- 			else
- 				retval = -ERESTARTSYS;
+ 	record = &whiteheat_loader[0];
+ 	while (record->address != 0xffff) {
+-		response = ezusb_writememory (serial, record->address, 
+-				(unsigned char *)record->data, record->data_size, 0xa0);
++		response = ezusb_writememory(serial, record->address,
++				(unsigned char *)record->data,
++				record->data_size, 0xa0);
+ 		if (response < 0) {
+ 			err("%s - ezusb_writememory failed for loader (%d %04X %p %d)",
+-				__func__, response, record->address, record->data, record->data_size);
++				__func__, response, record->address,
++				record->data, record->data_size);
  			break;
  		}
--		if (!(port->flags & ASYNC_CLOSING) &&
-+		if (!(port->port.flags & ASYNC_CLOSING) &&
- 		    (do_clocal || CD))
+ 		++record;
+ 	}
+ 
+-	response = ezusb_set_reset (serial, 0);
++	response = ezusb_set_reset(serial, 0);
+ 
+ 	record = &whiteheat_firmware[0];
+-	while (record->address < 0x1b40) {
++	while (record->address < 0x1b40)
+ 		++record;
+-	}
+ 	while (record->address != 0xffff) {
+-		response = ezusb_writememory (serial, record->address, 
+-				(unsigned char *)record->data, record->data_size, 0xa3);
++		response = ezusb_writememory(serial, record->address,
++		      (unsigned char *)record->data, record->data_size, 0xa3);
+ 		if (response < 0) {
+-			err("%s - ezusb_writememory failed for first firmware step (%d %04X %p %d)", 
+-				__func__, response, record->address, record->data, record->data_size);
++			err("%s - ezusb_writememory failed for first firmware step (%d %04X %p %d)",
++					__func__, response, record->address,
++					record->data, record->data_size);
  			break;
- 		if (signal_pending(current)) {
-@@ -1428,19 +1428,19 @@ static int block_til_ready(struct tty_struct *tty, struct file * filp,
+ 		}
+ 		++record;
  	}
+-	
+-	response = ezusb_set_reset (serial, 1);
++
++	response = ezusb_set_reset(serial, 1);
  
- 	set_current_state(TASK_RUNNING);
--	remove_wait_queue(&port->open_wait, &wait);
-+	remove_wait_queue(&port->port.open_wait, &wait);
- 	spin_lock_irqsave(&port->lock, flags);
- 	if (!tty_hung_up_p(filp)) {
--		port->count++;
-+		port->port.count++;
+ 	record = &whiteheat_firmware[0];
+ 	while (record->address < 0x1b40) {
+-		response = ezusb_writememory (serial, record->address, 
+-				(unsigned char *)record->data, record->data_size, 0xa0);
++		response = ezusb_writememory(serial, record->address,
++		      (unsigned char *)record->data, record->data_size, 0xa0);
+ 		if (response < 0) {
+-			err("%s - ezusb_writememory failed for second firmware step (%d %04X %p %d)", 
+-				__func__, response, record->address, record->data, record->data_size);
++			err("%s - ezusb_writememory failed for second firmware step (%d %04X %p %d)",
++					__func__, response, record->address,
++					record->data, record->data_size);
+ 			break;
+ 		}
+ 		++record;
  	}
--	port->blocked_open--;
-+	port->port.blocked_open--;
- 	spin_unlock_irqrestore(&port->lock, flags);
- 	if (retval) {
- 		func_exit();
- 		return retval;
- 	}
- 
--	port->flags |= ASYNC_NORMAL_ACTIVE;
-+	port->port.flags |= ASYNC_NORMAL_ACTIVE;
- 	func_exit();
+-
+-	response = ezusb_set_reset (serial, 0);
+-
++	ezusb_set_reset(serial, 0);
  	return 0;
  }
-@@ -1484,10 +1484,10 @@ static int sx_open(struct tty_struct * tty, struct file * filp)
- 	}
  
- 	spin_lock_irqsave(&bp->lock, flags);
--	port->count++;
-+	port->port.count++;
- 	bp->count++;
- 	tty->driver_data = port;
--	port->tty = tty;
-+	port->port.tty = tty;
- 	spin_unlock_irqrestore(&bp->lock, flags);
  
- 	if ((error = sx_setup_port(bp, port))) {
-@@ -1547,15 +1547,15 @@ static void sx_close(struct tty_struct * tty, struct file * filp)
- 	}
+-static int whiteheat_firmware_attach (struct usb_serial *serial)
++static int whiteheat_firmware_attach(struct usb_serial *serial)
+ {
+ 	/* We want this device to fail to have a driver assigned to it */
+ 	return 1;
+@@ -345,7 +361,7 @@ static int whiteheat_firmware_attach (struct usb_serial *serial)
+ /*****************************************************************************
+  * Connect Tech's White Heat serial driver functions
+  *****************************************************************************/
+-static int whiteheat_attach (struct usb_serial *serial)
++static int whiteheat_attach(struct usb_serial *serial)
+ {
+ 	struct usb_serial_port *command_port;
+ 	struct whiteheat_command_private *command_info;
+@@ -366,43 +382,52 @@ static int whiteheat_attach (struct usb_serial *serial)
  
- 	bp = port_Board(port);
--	if ((tty->count == 1) && (port->count != 1)) {
-+	if ((tty->count == 1) && (port->port.count != 1)) {
- 		printk(KERN_ERR "sx%d: sx_close: bad port count;"
- 		       " tty->count is 1, port count is %d\n",
--		       board_No(bp), port->count);
--		port->count = 1;
-+		       board_No(bp), port->port.count);
-+		port->port.count = 1;
- 	}
+ 	command_port = serial->port[COMMAND_PORT];
  
--	if (port->count > 1) {
--		port->count--;
-+	if (port->port.count > 1) {
-+		port->port.count--;
- 		bp->count--;
- 
- 		spin_unlock_irqrestore(&port->lock, flags);
-@@ -1563,7 +1563,7 @@ static void sx_close(struct tty_struct * tty, struct file * filp)
- 		func_exit();
- 		return;
- 	}
--	port->flags |= ASYNC_CLOSING;
-+	port->port.flags |= ASYNC_CLOSING;
+-	pipe = usb_sndbulkpipe (serial->dev, command_port->bulk_out_endpointAddress);
++	pipe = usb_sndbulkpipe(serial->dev,
++			command_port->bulk_out_endpointAddress);
+ 	command = kmalloc(2, GFP_KERNEL);
+ 	if (!command)
+ 		goto no_command_buffer;
+ 	command[0] = WHITEHEAT_GET_HW_INFO;
+ 	command[1] = 0;
+-	
++
+ 	result = kmalloc(sizeof(*hw_info) + 1, GFP_KERNEL);
+ 	if (!result)
+ 		goto no_result_buffer;
  	/*
- 	 * Now we wait for the transmit buffer to clear; and we notify
- 	 * the line discipline to only process XON/XOFF characters.
-@@ -1571,8 +1571,8 @@ static void sx_close(struct tty_struct * tty, struct file * filp)
- 	tty->closing = 1;
- 	spin_unlock_irqrestore(&port->lock, flags);
- 	dprintk (SX_DEBUG_OPEN, "Closing\n");
--	if (port->closing_wait != ASYNC_CLOSING_WAIT_NONE) {
--		tty_wait_until_sent(tty, port->closing_wait);
-+	if (port->port.closing_wait != ASYNC_CLOSING_WAIT_NONE) {
-+		tty_wait_until_sent(tty, port->port.closing_wait);
- 	}
- 	/*
- 	 * At this point we stop accepting input.  To do this, we
-@@ -1582,7 +1582,7 @@ static void sx_close(struct tty_struct * tty, struct file * filp)
- 	 */
- 	dprintk (SX_DEBUG_OPEN, "Closed\n");
- 	port->IER &= ~IER_RXD;
--	if (port->flags & ASYNC_INITIALIZED) {
-+	if (port->port.flags & ASYNC_INITIALIZED) {
- 		port->IER &= ~IER_TXRDY;
- 		port->IER |= IER_TXEMPTY;
- 		spin_lock_irqsave(&bp->lock, flags);
-@@ -1611,10 +1611,10 @@ static void sx_close(struct tty_struct * tty, struct file * filp)
- 		       board_No(bp), bp->count, tty->index);
- 		bp->count = 0;
- 	}
--	if (--port->count < 0) {
-+	if (--port->port.count < 0) {
- 		printk(KERN_ERR "sx%d: sx_close: bad port count for tty%d: %d\n",
--		       board_No(bp), port_No(port), port->count);
--		port->count = 0;
-+		       board_No(bp), port_No(port), port->port.count);
-+		port->port.count = 0;
+ 	 * When the module is reloaded the firmware is still there and
+ 	 * the endpoints are still in the usb core unchanged. This is the
+-         * unlinking bug in disguise. Same for the call below.
+-         */
++	 * unlinking bug in disguise. Same for the call below.
++	 */
+ 	usb_clear_halt(serial->dev, pipe);
+-	ret = usb_bulk_msg (serial->dev, pipe, command, 2, &alen, COMMAND_TIMEOUT_MS);
++	ret = usb_bulk_msg(serial->dev, pipe, command, 2,
++						&alen, COMMAND_TIMEOUT_MS);
+ 	if (ret) {
+-		err("%s: Couldn't send command [%d]", serial->type->description, ret);
++		err("%s: Couldn't send command [%d]",
++				serial->type->description, ret);
+ 		goto no_firmware;
+ 	} else if (alen != 2) {
+-		err("%s: Send command incomplete [%d]", serial->type->description, alen);
++		err("%s: Send command incomplete [%d]",
++				serial->type->description, alen);
+ 		goto no_firmware;
  	}
  
- 	sx_shutdown_port(bp, port);
-@@ -1622,16 +1622,16 @@ static void sx_close(struct tty_struct * tty, struct file * filp)
- 	tty_ldisc_flush(tty);
- 	spin_lock_irqsave(&port->lock, flags);
- 	tty->closing = 0;
--	port->tty = NULL;
-+	port->port.tty = NULL;
- 	spin_unlock_irqrestore(&port->lock, flags);
--	if (port->blocked_open) {
--		if (port->close_delay) {
--			msleep_interruptible(jiffies_to_msecs(port->close_delay));
-+	if (port->port.blocked_open) {
-+		if (port->port.close_delay) {
-+			msleep_interruptible(jiffies_to_msecs(port->port.close_delay));
+-	pipe = usb_rcvbulkpipe (serial->dev, command_port->bulk_in_endpointAddress);
++	pipe = usb_rcvbulkpipe(serial->dev,
++				command_port->bulk_in_endpointAddress);
+ 	/* See the comment on the usb_clear_halt() above */
+ 	usb_clear_halt(serial->dev, pipe);
+-	ret = usb_bulk_msg (serial->dev, pipe, result, sizeof(*hw_info) + 1, &alen, COMMAND_TIMEOUT_MS);
++	ret = usb_bulk_msg(serial->dev, pipe, result,
++			sizeof(*hw_info) + 1, &alen, COMMAND_TIMEOUT_MS);
+ 	if (ret) {
+-		err("%s: Couldn't get results [%d]", serial->type->description, ret);
++		err("%s: Couldn't get results [%d]",
++				serial->type->description, ret);
+ 		goto no_firmware;
+ 	} else if (alen != sizeof(*hw_info) + 1) {
+-		err("%s: Get results incomplete [%d]", serial->type->description, alen);
++		err("%s: Get results incomplete [%d]",
++				serial->type->description, alen);
+ 		goto no_firmware;
+ 	} else if (result[0] != command[0]) {
+-		err("%s: Command failed [%d]", serial->type->description, result[0]);
++		err("%s: Command failed [%d]",
++				serial->type->description, result[0]);
+ 		goto no_firmware;
+ 	}
+ 
+@@ -416,7 +441,8 @@ static int whiteheat_attach (struct usb_serial *serial)
+ 
+ 		info = kmalloc(sizeof(struct whiteheat_private), GFP_KERNEL);
+ 		if (info == NULL) {
+-			err("%s: Out of memory for port structures\n", serial->type->description);
++			err("%s: Out of memory for port structures\n",
++					serial->type->description);
+ 			goto no_private;
  		}
--		wake_up_interruptible(&port->open_wait);
-+		wake_up_interruptible(&port->port.open_wait);
- 	}
--	port->flags &= ~(ASYNC_NORMAL_ACTIVE|ASYNC_CLOSING);
--	wake_up_interruptible(&port->close_wait);
-+	port->port.flags &= ~(ASYNC_NORMAL_ACTIVE|ASYNC_CLOSING);
-+	wake_up_interruptible(&port->port.close_wait);
  
- 	func_exit();
+@@ -486,9 +512,11 @@ static int whiteheat_attach (struct usb_serial *serial)
+ 		usb_set_serial_port_data(port, info);
+ 	}
+ 
+-	command_info = kmalloc(sizeof(struct whiteheat_command_private), GFP_KERNEL);
++	command_info = kmalloc(sizeof(struct whiteheat_command_private),
++								GFP_KERNEL);
+ 	if (command_info == NULL) {
+-		err("%s: Out of memory for port structures\n", serial->type->description);
++		err("%s: Out of memory for port structures\n",
++					serial->type->description);
+ 		goto no_command_private;
+ 	}
+ 
+@@ -505,9 +533,12 @@ static int whiteheat_attach (struct usb_serial *serial)
+ 
+ no_firmware:
+ 	/* Firmware likely not running */
+-	err("%s: Unable to retrieve firmware version, try replugging\n", serial->type->description);
+-	err("%s: If the firmware is not running (status led not blinking)\n", serial->type->description);
+-	err("%s: please contact support@connecttech.com\n", serial->type->description);
++	err("%s: Unable to retrieve firmware version, try replugging\n",
++					serial->type->description);
++	err("%s: If the firmware is not running (status led not blinking)\n",
++					serial->type->description);
++	err("%s: please contact support@connecttech.com\n",
++					serial->type->description);
+ 	kfree(result);
+ 	return -ENODEV;
+ 
+@@ -550,7 +581,7 @@ no_command_buffer:
  }
-@@ -1815,7 +1815,7 @@ static int sx_tiocmget(struct tty_struct *tty, struct file *file)
- 	dprintk (SX_DEBUG_INIT, "Got msvr[%d] = %02x, car = %d.\n",
- 		port_No(port), status, sx_in (bp, CD186x_CAR));
- 	dprintk (SX_DEBUG_INIT, "sx_port = %p, port = %p\n", sx_port, port);
--	if (SX_CRTSCTS(port->tty)) {
-+	if (SX_CRTSCTS(port->port.tty)) {
- 		result  = /*   (status & MSVR_RTS) ? */ TIOCM_DTR /* : 0) */
- 		          |   ((status & MSVR_DTR) ? TIOCM_RTS : 0)
- 		          |   ((status & MSVR_CD)  ? TIOCM_CAR : 0)
-@@ -1857,7 +1857,7 @@ static int sx_tiocmset(struct tty_struct *tty, struct file *file,
-    /*   if (set & TIOCM_DTR)
- 		port->MSVR |= MSVR_DTR; */
  
--	if (SX_CRTSCTS(port->tty)) {
-+	if (SX_CRTSCTS(port->port.tty)) {
- 		if (set & TIOCM_RTS)
- 			port->MSVR |= MSVR_DTR;
- 	} else {
-@@ -1869,7 +1869,7 @@ static int sx_tiocmset(struct tty_struct *tty, struct file *file,
- 		port->MSVR &= ~MSVR_RTS; */
-   /*    if (clear & TIOCM_DTR)
- 		port->MSVR &= ~MSVR_DTR; */
--	if (SX_CRTSCTS(port->tty)) {
-+	if (SX_CRTSCTS(port->port.tty)) {
- 		if (clear & TIOCM_RTS)
- 			port->MSVR &= ~MSVR_DTR;
- 	} else {
-@@ -1929,27 +1929,27 @@ static inline int sx_set_serial_info(struct specialix_port * port,
  
- 	lock_kernel();
+-static void whiteheat_shutdown (struct usb_serial *serial)
++static void whiteheat_shutdown(struct usb_serial *serial)
+ {
+ 	struct usb_serial_port *command_port;
+ 	struct usb_serial_port *port;
+@@ -565,7 +596,7 @@ static void whiteheat_shutdown (struct usb_serial *serial)
  
--	change_speed = ((port->flags & ASYNC_SPD_MASK) !=
-+	change_speed = ((port->port.flags & ASYNC_SPD_MASK) !=
- 			(tmp.flags & ASYNC_SPD_MASK));
- 	change_speed |= (tmp.custom_divisor != port->custom_divisor);
+ 	/* free up our private data for our command port */
+ 	command_port = serial->port[COMMAND_PORT];
+-	kfree (usb_get_serial_port_data(command_port));
++	kfree(usb_get_serial_port_data(command_port));
  
- 	if (!capable(CAP_SYS_ADMIN)) {
--		if ((tmp.close_delay != port->close_delay) ||
--		    (tmp.closing_wait != port->closing_wait) ||
-+		if ((tmp.close_delay != port->port.close_delay) ||
-+		    (tmp.closing_wait != port->port.closing_wait) ||
- 		    ((tmp.flags & ~ASYNC_USR_MASK) !=
--		     (port->flags & ~ASYNC_USR_MASK))) {
-+		     (port->port.flags & ~ASYNC_USR_MASK))) {
- 			func_exit();
- 			unlock_kernel();
- 			return -EPERM;
- 		}
--		port->flags = ((port->flags & ~ASYNC_USR_MASK) |
-+		port->port.flags = ((port->port.flags & ~ASYNC_USR_MASK) |
- 		                  (tmp.flags & ASYNC_USR_MASK));
- 		port->custom_divisor = tmp.custom_divisor;
- 	} else {
--		port->flags = ((port->flags & ~ASYNC_FLAGS) |
-+		port->port.flags = ((port->port.flags & ~ASYNC_FLAGS) |
- 		                  (tmp.flags & ASYNC_FLAGS));
--		port->close_delay = tmp.close_delay;
--		port->closing_wait = tmp.closing_wait;
-+		port->port.close_delay = tmp.close_delay;
-+		port->port.closing_wait = tmp.closing_wait;
- 		port->custom_divisor = tmp.custom_divisor;
- 	}
- 	if (change_speed) {
-@@ -1975,10 +1975,10 @@ static inline int sx_get_serial_info(struct specialix_port * port,
- 	tmp.line = port - sx_port;
- 	tmp.port = bp->base;
- 	tmp.irq  = bp->irq;
--	tmp.flags = port->flags;
-+	tmp.flags = port->port.flags;
- 	tmp.baud_base = (SX_OSCFREQ + CD186x_TPC/2) / CD186x_TPC;
--	tmp.close_delay = port->close_delay * HZ/100;
--	tmp.closing_wait = port->closing_wait * HZ/100;
-+	tmp.close_delay = port->port.close_delay * HZ/100;
-+	tmp.closing_wait = port->port.closing_wait * HZ/100;
- 	tmp.custom_divisor =  port->custom_divisor;
- 	tmp.xmit_fifo_size = CD186x_NFIFO;
- 	unlock_kernel();
-@@ -2199,17 +2199,17 @@ static void sx_hangup(struct tty_struct * tty)
- 
- 	sx_shutdown_port(bp, port);
- 	spin_lock_irqsave(&port->lock, flags);
--	bp->count -= port->count;
-+	bp->count -= port->port.count;
- 	if (bp->count < 0) {
- 		printk(KERN_ERR "sx%d: sx_hangup: bad board count: %d port: %d\n",
- 			board_No(bp), bp->count, tty->index);
- 		bp->count = 0;
- 	}
--	port->count = 0;
--	port->flags &= ~ASYNC_NORMAL_ACTIVE;
--	port->tty = NULL;
-+	port->port.count = 0;
-+	port->port.flags &= ~ASYNC_NORMAL_ACTIVE;
-+	port->port.tty = NULL;
- 	spin_unlock_irqrestore(&port->lock, flags);
--	wake_up_interruptible(&port->open_wait);
-+	wake_up_interruptible(&port->port.open_wait);
- 
- 	func_exit();
+ 	for (i = 0; i < serial->num_ports; i++) {
+ 		port = serial->port[i];
+@@ -592,8 +623,7 @@ static void whiteheat_shutdown (struct usb_serial *serial)
+ 	return;
  }
-@@ -2224,10 +2224,6 @@ static void sx_set_termios(struct tty_struct * tty, struct ktermios * old_termio
- 	if (sx_paranoia_check(port, tty->name, "sx_set_termios"))
- 		return;
  
--	if (tty->termios->c_cflag == old_termios->c_cflag &&
--	    tty->termios->c_iflag == old_termios->c_iflag)
--		return;
 -
- 	bp = port_Board(port);
- 	spin_lock_irqsave(&port->lock, flags);
- 	sx_change_speed(port_Board(port), port);
-@@ -2297,10 +2293,7 @@ static int sx_init_drivers(void)
- 	memset(sx_port, 0, sizeof(sx_port));
- 	for (i = 0; i < SX_NPORT * SX_NBOARD; i++) {
- 		sx_port[i].magic = SPECIALIX_MAGIC;
--		sx_port[i].close_delay = 50 * HZ/100;
--		sx_port[i].closing_wait = 3000 * HZ/100;
--		init_waitqueue_head(&sx_port[i].open_wait);
--		init_waitqueue_head(&sx_port[i].close_wait);
-+		tty_port_init(&sx_port[i].port);
- 		spin_lock_init(&sx_port[i].lock);
- 	}
+-static int whiteheat_open (struct tty_struct *tty,
++static int whiteheat_open(struct tty_struct *tty,
+ 			struct usb_serial_port *port, struct file *filp)
+ {
+ 	int		retval = 0;
+@@ -635,7 +665,8 @@ static int whiteheat_open (struct tty_struct *tty,
+ 	/* Start reading from the device */
+ 	retval = start_port_read(port);
+ 	if (retval) {
+-		err("%s - failed submitting read urb, error %d", __func__, retval);
++		err("%s - failed submitting read urb, error %d",
++				__func__, retval);
+ 		firm_close(port);
+ 		stop_command_port(port->serial);
+ 		goto exit;
+@@ -648,7 +679,7 @@ exit:
  
-diff --git a/drivers/char/specialix_io8.h b/drivers/char/specialix_io8.h
-index 3f2f85b..c630052 100644
---- a/drivers/char/specialix_io8.h
-+++ b/drivers/char/specialix_io8.h
-@@ -107,23 +107,17 @@ struct specialix_board {
  
- struct specialix_port {
- 	int			magic;
-+	struct tty_port		port;
- 	int			baud_base;
- 	int			flags;
--	struct tty_struct 	* tty;
--	int			count;
--	int			blocked_open;
- 	int			timeout;
--	int			close_delay;
- 	unsigned char 		* xmit_buf;
- 	int			custom_divisor;
- 	int			xmit_head;
- 	int			xmit_tail;
- 	int			xmit_cnt;
--	wait_queue_head_t	open_wait;
--	wait_queue_head_t	close_wait;
- 	short			wakeup_chars;
- 	short			break_length;
--	unsigned short		closing_wait;
- 	unsigned char		mark_mask;
- 	unsigned char		IER;
- 	unsigned char		MSVR;
-diff --git a/drivers/char/sx.c b/drivers/char/sx.c
-index b1239ee..d5cffcd 100644
---- a/drivers/char/sx.c
-+++ b/drivers/char/sx.c
-@@ -2395,6 +2395,7 @@ static int sx_init_portstructs(int nboards, int nports)
- 		board->ports = port;
- 		for (j = 0; j < boards[i].nports; j++) {
- 			sx_dprintk(SX_DEBUG_INIT, "initing port %d\n", j);
-+			tty_port_init(&port->gs.port);
- 			port->gs.magic = SX_MAGIC;
- 			port->gs.close_delay = HZ / 2;
- 			port->gs.closing_wait = 30 * HZ;
-@@ -2407,7 +2408,6 @@ static int sx_init_portstructs(int nboards, int nports)
- 			/*
- 			 * Initializing wait queue
- 			 */
--			tty_port_init(&port->gs.port);
- 			port++;
- 		}
- 	}
-diff --git a/drivers/char/synclink.c b/drivers/char/synclink.c
-index 734098f..9f14753 100644
---- a/drivers/char/synclink.c
-+++ b/drivers/char/synclink.c
-@@ -183,8 +183,6 @@ struct mgsl_struct {
- 	struct tty_port		port;
- 	int			line;
- 	int                     hw_version;
--	unsigned short		close_delay;
--	unsigned short		closing_wait;	/* time to wait before closing */
- 	
- 	struct mgsl_icount	icount;
- 	
-@@ -3142,11 +3140,11 @@ static void mgsl_close(struct tty_struct *tty, struct file * filp)
- 	
- 	/* wait for transmit data to clear all layers */
- 	
--	if (info->closing_wait != ASYNC_CLOSING_WAIT_NONE) {
-+	if (info->port.closing_wait != ASYNC_CLOSING_WAIT_NONE) {
- 		if (debug_level >= DEBUG_LEVEL_INFO)
- 			printk("%s(%d):mgsl_close(%s) calling tty_wait_until_sent\n",
- 				 __FILE__,__LINE__, info->device_name );
--		tty_wait_until_sent(tty, info->closing_wait);
-+		tty_wait_until_sent(tty, info->port.closing_wait);
- 	}
- 		
-  	if (info->port.flags & ASYNC_INITIALIZED)
-@@ -3162,8 +3160,8 @@ static void mgsl_close(struct tty_struct *tty, struct file * filp)
- 	info->port.tty = NULL;
- 	
- 	if (info->port.blocked_open) {
--		if (info->close_delay) {
--			msleep_interruptible(jiffies_to_msecs(info->close_delay));
-+		if (info->port.close_delay) {
-+			msleep_interruptible(jiffies_to_msecs(info->port.close_delay));
- 		}
- 		wake_up_interruptible(&info->port.open_wait);
- 	}
-@@ -4326,12 +4324,12 @@ static struct mgsl_struct* mgsl_allocate_device(void)
- 	if (!info) {
- 		printk("Error can't allocate device instance data\n");
- 	} else {
-+		tty_port_init(&info->port);
- 		info->magic = MGSL_MAGIC;
- 		INIT_WORK(&info->task, mgsl_bh_handler);
- 		info->max_frame_size = 4096;
--		info->close_delay = 5*HZ/10;
--		info->closing_wait = 30*HZ;
--		tty_port_init(&info->port);
-+		info->port.close_delay = 5*HZ/10;
-+		info->port.closing_wait = 30*HZ;
- 		init_waitqueue_head(&info->status_event_wait_q);
- 		init_waitqueue_head(&info->event_wait_q);
- 		spin_lock_init(&info->irq_spinlock);
-diff --git a/drivers/char/synclink_gt.c b/drivers/char/synclink_gt.c
-index fc71d98..07aa42a 100644
---- a/drivers/char/synclink_gt.c
-+++ b/drivers/char/synclink_gt.c
-@@ -261,8 +261,6 @@ struct slgt_info {
- 	struct slgt_info *port_array[SLGT_MAX_PORTS];
+ static void whiteheat_close(struct tty_struct *tty,
+-			struct usb_serial_port *port, struct file * filp)
++			struct usb_serial_port *port, struct file *filp)
+ {
+ 	struct whiteheat_private *info = usb_get_serial_port_data(port);
+ 	struct whiteheat_urb_wrap *wrap;
+@@ -749,16 +780,19 @@ static int whiteheat_write(struct tty_struct *tty,
  
- 	int			line;		/* tty line instance number */
--	unsigned short		close_delay;
--	unsigned short		closing_wait;	/* time to wait before closing */
+ 		wrap = list_entry(tmp, struct whiteheat_urb_wrap, list);
+ 		urb = wrap->urb;
+-		bytes = (count > port->bulk_out_size) ? port->bulk_out_size : count;
+-		memcpy (urb->transfer_buffer, buf + sent, bytes);
++		bytes = (count > port->bulk_out_size) ?
++					port->bulk_out_size : count;
++		memcpy(urb->transfer_buffer, buf + sent, bytes);
  
- 	struct mgsl_icount	icount;
+-		usb_serial_debug_data(debug, &port->dev, __func__, bytes, urb->transfer_buffer);
++		usb_serial_debug_data(debug, &port->dev,
++				__func__, bytes, urb->transfer_buffer);
  
-@@ -758,9 +756,9 @@ static void close(struct tty_struct *tty, struct file *filp)
- 
- 	/* wait for transmit data to clear all layers */
- 
--	if (info->closing_wait != ASYNC_CLOSING_WAIT_NONE) {
-+	if (info->port.closing_wait != ASYNC_CLOSING_WAIT_NONE) {
- 		DBGINFO(("%s call tty_wait_until_sent\n", info->device_name));
--		tty_wait_until_sent(tty, info->closing_wait);
-+		tty_wait_until_sent(tty, info->port.closing_wait);
- 	}
- 
-  	if (info->port.flags & ASYNC_INITIALIZED)
-@@ -774,8 +772,8 @@ static void close(struct tty_struct *tty, struct file *filp)
- 	info->port.tty = NULL;
- 
- 	if (info->port.blocked_open) {
--		if (info->close_delay) {
--			msleep_interruptible(jiffies_to_msecs(info->close_delay));
-+		if (info->port.close_delay) {
-+			msleep_interruptible(jiffies_to_msecs(info->port.close_delay));
- 		}
- 		wake_up_interruptible(&info->port.open_wait);
- 	}
-@@ -3448,13 +3446,13 @@ static struct slgt_info *alloc_dev(int adapter_num, int port_num, struct pci_dev
- 		DBGERR(("%s device alloc failed adapter=%d port=%d\n",
- 			driver_name, adapter_num, port_num));
- 	} else {
-+		tty_port_init(&info->port);
- 		info->magic = MGSL_MAGIC;
- 		INIT_WORK(&info->task, bh_handler);
- 		info->max_frame_size = 4096;
- 		info->raw_rx_size = DMABUFSIZE;
--		info->close_delay = 5*HZ/10;
--		info->closing_wait = 30*HZ;
--		tty_port_init(&info->port);
-+		info->port.close_delay = 5*HZ/10;
-+		info->port.closing_wait = 30*HZ;
- 		init_waitqueue_head(&info->status_event_wait_q);
- 		init_waitqueue_head(&info->event_wait_q);
- 		spin_lock_init(&info->netlock);
-diff --git a/drivers/char/synclinkmp.c b/drivers/char/synclinkmp.c
-index 5b5b292..c4bc090 100644
---- a/drivers/char/synclinkmp.c
-+++ b/drivers/char/synclinkmp.c
-@@ -846,11 +846,11 @@ static void close(struct tty_struct *tty, struct file *filp)
- 
- 	/* wait for transmit data to clear all layers */
- 
--	if (info->closing_wait != ASYNC_CLOSING_WAIT_NONE) {
-+	if (info->port.closing_wait != ASYNC_CLOSING_WAIT_NONE) {
- 		if (debug_level >= DEBUG_LEVEL_INFO)
- 			printk("%s(%d):%s close() calling tty_wait_until_sent\n",
- 				 __FILE__,__LINE__, info->device_name );
--		tty_wait_until_sent(tty, info->closing_wait);
-+		tty_wait_until_sent(tty, info->port.closing_wait);
- 	}
- 
-  	if (info->port.flags & ASYNC_INITIALIZED)
-@@ -866,8 +866,8 @@ static void close(struct tty_struct *tty, struct file *filp)
- 	info->port.tty = NULL;
- 
- 	if (info->port.blocked_open) {
--		if (info->close_delay) {
--			msleep_interruptible(jiffies_to_msecs(info->close_delay));
-+		if (info->port.close_delay) {
-+			msleep_interruptible(jiffies_to_msecs(info->port.close_delay));
- 		}
- 		wake_up_interruptible(&info->port.open_wait);
- 	}
-@@ -3802,12 +3802,12 @@ static SLMP_INFO *alloc_dev(int adapter_num, int port_num, struct pci_dev *pdev)
- 		printk("%s(%d) Error can't allocate device instance data for adapter %d, port %d\n",
- 			__FILE__,__LINE__, adapter_num, port_num);
- 	} else {
-+		tty_port_init(&info->port);
- 		info->magic = MGSL_MAGIC;
- 		INIT_WORK(&info->task, bh_handler);
- 		info->max_frame_size = 4096;
--		info->close_delay = 5*HZ/10;
--		info->closing_wait = 30*HZ;
--		tty_port_init(&info->port);
-+		info->port.close_delay = 5*HZ/10;
-+		info->port.closing_wait = 30*HZ;
- 		init_waitqueue_head(&info->status_event_wait_q);
- 		init_waitqueue_head(&info->event_wait_q);
- 		spin_lock_init(&info->netlock);
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index 87b1f9b..754feaa 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -2094,6 +2094,8 @@ void tty_port_init(struct tty_port *port)
- 	init_waitqueue_head(&port->open_wait);
- 	init_waitqueue_head(&port->close_wait);
- 	mutex_init(&port->mutex);
-+	port->close_delay = (50 * HZ) / 100;
-+	port->closing_wait = (3000 * HZ) / 100;
+ 		urb->dev = serial->dev;
+ 		urb->transfer_buffer_length = bytes;
+ 		result = usb_submit_urb(urb, GFP_ATOMIC);
+ 		if (result) {
+-			err("%s - failed submitting write urb, error %d", __func__, result);
++			err("%s - failed submitting write urb, error %d",
++							__func__, result);
+ 			sent = result;
+ 			spin_lock_irqsave(&info->lock, flags);
+ 			list_add(tmp, &info->tx_urbs_free);
+@@ -776,7 +810,6 @@ static int whiteheat_write(struct tty_struct *tty,
+ 	return sent;
  }
- EXPORT_SYMBOL(tty_port_init);
  
-diff --git a/include/linux/cyclades.h b/include/linux/cyclades.h
-index a982b74..2d3d1e0 100644
---- a/include/linux/cyclades.h
-+++ b/include/linux/cyclades.h
-@@ -567,8 +567,6 @@ struct cyclades_port {
- 	int			chip_rev;
- 	int			custom_divisor;
- 	u8			x_char; /* to be pushed out ASAP */
--	int			close_delay;
--	unsigned short		closing_wait;
- 	int                     breakon;
- 	int                     breakoff;
- 	int			xmit_head;
-@@ -586,8 +584,8 @@ struct cyclades_port {
+-
+ static int whiteheat_write_room(struct tty_struct *tty)
+ {
+ 	struct usb_serial_port *port = tty->driver_data;
+@@ -786,7 +819,7 @@ static int whiteheat_write_room(struct tty_struct *tty)
+ 	unsigned long flags;
+ 
+ 	dbg("%s - port %d", __func__, port->number);
+-	
++
+ 	spin_lock_irqsave(&info->lock, flags);
+ 	list_for_each(tmp, &info->tx_urbs_free)
+ 		room++;
+@@ -797,8 +830,7 @@ static int whiteheat_write_room(struct tty_struct *tty)
+ 	return (room);
+ }
+ 
+-
+-static int whiteheat_tiocmget (struct tty_struct *tty, struct file *file)
++static int whiteheat_tiocmget(struct tty_struct *tty, struct file *file)
+ {
+ 	struct usb_serial_port *port = tty->driver_data;
+ 	struct whiteheat_private *info = usb_get_serial_port_data(port);
+@@ -815,8 +847,7 @@ static int whiteheat_tiocmget (struct tty_struct *tty, struct file *file)
+ 	return modem_signals;
+ }
+ 
+-
+-static int whiteheat_tiocmset (struct tty_struct *tty, struct file *file,
++static int whiteheat_tiocmset(struct tty_struct *tty, struct file *file,
+ 			       unsigned int set, unsigned int clear)
+ {
+ 	struct usb_serial_port *port = tty->driver_data;
+@@ -840,7 +871,8 @@ static int whiteheat_tiocmset (struct tty_struct *tty, struct file *file,
+ }
+ 
+ 
+-static int whiteheat_ioctl (struct tty_struct *tty, struct file * file, unsigned int cmd, unsigned long arg)
++static int whiteheat_ioctl(struct tty_struct *tty, struct file *file,
++					unsigned int cmd, unsigned long arg)
+ {
+ 	struct usb_serial_port *port = tty->driver_data;
+ 	struct serial_struct serstruct;
+@@ -849,50 +881,38 @@ static int whiteheat_ioctl (struct tty_struct *tty, struct file * file, unsigned
+ 	dbg("%s - port %d, cmd 0x%.4x", __func__, port->number, cmd);
+ 
+ 	switch (cmd) {
+-		case TIOCGSERIAL:
+-			memset(&serstruct, 0, sizeof(serstruct));
+-			serstruct.type = PORT_16654;
+-			serstruct.line = port->serial->minor;
+-			serstruct.port = port->number;
+-			serstruct.flags = ASYNC_SKIP_TEST | ASYNC_AUTO_IRQ;
+-			serstruct.xmit_fifo_size = port->bulk_out_size;
+-			serstruct.custom_divisor = 0;
+-			serstruct.baud_base = 460800;
+-			serstruct.close_delay = CLOSING_DELAY;
+-			serstruct.closing_wait = CLOSING_DELAY;
+-
+-			if (copy_to_user(user_arg, &serstruct, sizeof(serstruct)))
+-				return -EFAULT;
+-
+-			break;
+-
+-		case TIOCSSERIAL:
+-			if (copy_from_user(&serstruct, user_arg, sizeof(serstruct)))
+-				return -EFAULT;
+-
+-			/*
+-			 * For now this is ignored. dip sets the ASYNC_[V]HI flags
+-			 * but this isn't used by us at all. Maybe someone somewhere
+-			 * will need the custom_divisor setting.
+-			 */
+-
+-			break;
+-
+-		default:
+-			break;
++	case TIOCGSERIAL:
++		memset(&serstruct, 0, sizeof(serstruct));
++		serstruct.type = PORT_16654;
++		serstruct.line = port->serial->minor;
++		serstruct.port = port->number;
++		serstruct.flags = ASYNC_SKIP_TEST | ASYNC_AUTO_IRQ;
++		serstruct.xmit_fifo_size = port->bulk_out_size;
++		serstruct.custom_divisor = 0;
++		serstruct.baud_base = 460800;
++		serstruct.close_delay = CLOSING_DELAY;
++		serstruct.closing_wait = CLOSING_DELAY;
++
++		if (copy_to_user(user_arg, &serstruct, sizeof(serstruct)))
++			return -EFAULT;
++		break;
++	default:
++		break;
+ 	}
+ 
+ 	return -ENOIOCTLCMD;
+ }
+ 
+ 
+-static void whiteheat_set_termios(struct tty_struct *tty, struct usb_serial_port *port, struct ktermios *old_termios)
++static void whiteheat_set_termios(struct tty_struct *tty,
++	struct usb_serial_port *port, struct ktermios *old_termios)
+ {
++	/* FIXME */
+ 	firm_setup_port(tty);
+ }
+ 
+-
+-static void whiteheat_break_ctl(struct tty_struct *tty, int break_state) {
++static void whiteheat_break_ctl(struct tty_struct *tty, int break_state)
++{
+ 	struct usb_serial_port *port = tty->driver_data;
+ 	firm_set_break(port, break_state);
+ }
+@@ -916,12 +936,12 @@ static int whiteheat_chars_in_buffer(struct tty_struct *tty)
+ 	}
+ 	spin_unlock_irqrestore(&info->lock, flags);
+ 
+-	dbg ("%s - returns %d", __func__, chars);
++	dbg("%s - returns %d", __func__, chars);
+ 	return chars;
+ }
+ 
+ 
+-static void whiteheat_throttle (struct tty_struct *tty)
++static void whiteheat_throttle(struct tty_struct *tty)
+ {
+ 	struct usb_serial_port *port = tty->driver_data;
+ 	struct whiteheat_private *info = usb_get_serial_port_data(port);
+@@ -937,7 +957,7 @@ static void whiteheat_throttle (struct tty_struct *tty)
+ }
+ 
+ 
+-static void whiteheat_unthrottle (struct tty_struct *tty)
++static void whiteheat_unthrottle(struct tty_struct *tty)
+ {
+ 	struct usb_serial_port *port = tty->driver_data;
+ 	struct whiteheat_private *info = usb_get_serial_port_data(port);
+@@ -986,7 +1006,7 @@ static void command_port_read_callback(struct urb *urb)
+ 
+ 	command_info = usb_get_serial_port_data(command_port);
+ 	if (!command_info) {
+-		dbg ("%s - command_info is NULL, exiting.", __func__);
++		dbg("%s - command_info is NULL, exiting.", __func__);
+ 		return;
+ 	}
+ 	if (status) {
+@@ -997,7 +1017,8 @@ static void command_port_read_callback(struct urb *urb)
+ 		return;
+ 	}
+ 
+-	usb_serial_debug_data(debug, &command_port->dev, __func__, urb->actual_length, data);
++	usb_serial_debug_data(debug, &command_port->dev,
++				__func__, urb->actual_length, data);
+ 
+ 	if (data[0] == WHITEHEAT_CMD_COMPLETE) {
+ 		command_info->command_finished = WHITEHEAT_CMD_COMPLETE;
+@@ -1006,21 +1027,23 @@ static void command_port_read_callback(struct urb *urb)
+ 		command_info->command_finished = WHITEHEAT_CMD_FAILURE;
+ 		wake_up(&command_info->wait_command);
+ 	} else if (data[0] == WHITEHEAT_EVENT) {
+-		/* These are unsolicited reports from the firmware, hence no waiting command to wakeup */
++		/* These are unsolicited reports from the firmware, hence no
++		   waiting command to wakeup */
+ 		dbg("%s - event received", __func__);
+ 	} else if (data[0] == WHITEHEAT_GET_DTR_RTS) {
+-		memcpy(command_info->result_buffer, &data[1], urb->actual_length - 1);
++		memcpy(command_info->result_buffer, &data[1],
++						urb->actual_length - 1);
+ 		command_info->command_finished = WHITEHEAT_CMD_COMPLETE;
+ 		wake_up(&command_info->wait_command);
+-	} else {
++	} else
+ 		dbg("%s - bad reply from firmware", __func__);
+-	}
+-	
++
+ 	/* Continue trying to always read */
+ 	command_port->read_urb->dev = command_port->serial->dev;
+ 	result = usb_submit_urb(command_port->read_urb, GFP_ATOMIC);
+ 	if (result)
+-		dbg("%s - failed resubmitting read urb, error %d", __func__, result);
++		dbg("%s - failed resubmitting read urb, error %d",
++			__func__, result);
+ }
+ 
+ 
+@@ -1053,7 +1076,8 @@ static void whiteheat_read_callback(struct urb *urb)
+ 		return;
+ 	}
+ 
+-	usb_serial_debug_data(debug, &port->dev, __func__, urb->actual_length, data);
++	usb_serial_debug_data(debug, &port->dev,
++				__func__, urb->actual_length, data);
+ 
+ 	spin_lock(&info->lock);
+ 	list_add_tail(&wrap->list, &info->rx_urb_q);
+@@ -1100,7 +1124,8 @@ static void whiteheat_write_callback(struct urb *urb)
+ /*****************************************************************************
+  * Connect Tech's White Heat firmware interface
+  *****************************************************************************/
+-static int firm_send_command(struct usb_serial_port *port, __u8 command, __u8 *data, __u8 datasize)
++static int firm_send_command(struct usb_serial_port *port, __u8 command,
++						__u8 *data, __u8 datasize)
+ {
+ 	struct usb_serial_port *command_port;
+ 	struct whiteheat_command_private *command_info;
+@@ -1115,13 +1140,13 @@ static int firm_send_command(struct usb_serial_port *port, __u8 command, __u8 *d
+ 	command_info = usb_get_serial_port_data(command_port);
+ 	mutex_lock(&command_info->mutex);
+ 	command_info->command_finished = false;
+-	
++
+ 	transfer_buffer = (__u8 *)command_port->write_urb->transfer_buffer;
+ 	transfer_buffer[0] = command;
+-	memcpy (&transfer_buffer[1], data, datasize);
++	memcpy(&transfer_buffer[1], data, datasize);
+ 	command_port->write_urb->transfer_buffer_length = datasize + 1;
+ 	command_port->write_urb->dev = port->serial->dev;
+-	retval = usb_submit_urb (command_port->write_urb, GFP_NOIO);
++	retval = usb_submit_urb(command_port->write_urb, GFP_NOIO);
+ 	if (retval) {
+ 		dbg("%s - submit urb failed", __func__);
+ 		goto exit;
+@@ -1148,36 +1173,41 @@ static int firm_send_command(struct usb_serial_port *port, __u8 command, __u8 *d
+ 	if (command_info->command_finished == WHITEHEAT_CMD_COMPLETE) {
+ 		dbg("%s - command completed.", __func__);
+ 		switch (command) {
+-			case WHITEHEAT_GET_DTR_RTS:
+-				info = usb_get_serial_port_data(port);
+-				memcpy(&info->mcr, command_info->result_buffer, sizeof(struct whiteheat_dr_info));
++		case WHITEHEAT_GET_DTR_RTS:
++			info = usb_get_serial_port_data(port);
++			memcpy(&info->mcr, command_info->result_buffer,
++					sizeof(struct whiteheat_dr_info));
+ 				break;
+ 		}
+ 	}
+-
+ exit:
+ 	mutex_unlock(&command_info->mutex);
+ 	return retval;
+ }
+ 
+ 
+-static int firm_open(struct usb_serial_port *port) {
++static int firm_open(struct usb_serial_port *port)
++{
+ 	struct whiteheat_simple open_command;
+ 
+ 	open_command.port = port->number - port->serial->minor + 1;
+-	return firm_send_command(port, WHITEHEAT_OPEN, (__u8 *)&open_command, sizeof(open_command));
++	return firm_send_command(port, WHITEHEAT_OPEN,
++		(__u8 *)&open_command, sizeof(open_command));
+ }
+ 
+ 
+-static int firm_close(struct usb_serial_port *port) {
++static int firm_close(struct usb_serial_port *port)
++{
+ 	struct whiteheat_simple close_command;
+ 
+ 	close_command.port = port->number - port->serial->minor + 1;
+-	return firm_send_command(port, WHITEHEAT_CLOSE, (__u8 *)&close_command, sizeof(close_command));
++	return firm_send_command(port, WHITEHEAT_CLOSE,
++			(__u8 *)&close_command, sizeof(close_command));
+ }
+ 
+ 
+-static int firm_setup_port(struct tty_struct *tty) {
++static int firm_setup_port(struct tty_struct *tty)
++{
+ 	struct usb_serial_port *port = tty->driver_data;
+ 	struct whiteheat_port_settings port_settings;
+ 	unsigned int cflag = tty->termios->c_cflag;
+@@ -1186,14 +1216,14 @@ static int firm_setup_port(struct tty_struct *tty) {
+ 
+ 	/* get the byte size */
+ 	switch (cflag & CSIZE) {
+-		case CS5:	port_settings.bits = 5;   break;
+-		case CS6:	port_settings.bits = 6;   break;
+-		case CS7:	port_settings.bits = 7;   break;
+-		default:
+-		case CS8:	port_settings.bits = 8;   break;
++	case CS5:	port_settings.bits = 5;   break;
++	case CS6:	port_settings.bits = 6;   break;
++	case CS7:	port_settings.bits = 7;   break;
++	default:
++	case CS8:	port_settings.bits = 8;   break;
+ 	}
+ 	dbg("%s - data bits = %d", __func__, port_settings.bits);
+-	
++
+ 	/* determine the parity */
+ 	if (cflag & PARENB)
+ 		if (cflag & CMSPAR)
+@@ -1219,7 +1249,8 @@ static int firm_setup_port(struct tty_struct *tty) {
+ 
+ 	/* figure out the flow control settings */
+ 	if (cflag & CRTSCTS)
+-		port_settings.hflow = (WHITEHEAT_HFLOW_CTS | WHITEHEAT_HFLOW_RTS);
++		port_settings.hflow = (WHITEHEAT_HFLOW_CTS |
++						WHITEHEAT_HFLOW_RTS);
+ 	else
+ 		port_settings.hflow = WHITEHEAT_HFLOW_NONE;
+ 	dbg("%s - hardware flow control = %s %s %s %s", __func__,
+@@ -1227,17 +1258,18 @@ static int firm_setup_port(struct tty_struct *tty) {
+ 	    (port_settings.hflow & WHITEHEAT_HFLOW_RTS) ? "RTS" : "",
+ 	    (port_settings.hflow & WHITEHEAT_HFLOW_DSR) ? "DSR" : "",
+ 	    (port_settings.hflow & WHITEHEAT_HFLOW_DTR) ? "DTR" : "");
+-	
++
+ 	/* determine software flow control */
+ 	if (I_IXOFF(tty))
+ 		port_settings.sflow = WHITEHEAT_SFLOW_RXTX;
+ 	else
+ 		port_settings.sflow = WHITEHEAT_SFLOW_NONE;
+ 	dbg("%s - software flow control = %c", __func__, port_settings.sflow);
+-	
++
+ 	port_settings.xon = START_CHAR(tty);
+ 	port_settings.xoff = STOP_CHAR(tty);
+-	dbg("%s - XON = %2x, XOFF = %2x", __func__, port_settings.xon, port_settings.xoff);
++	dbg("%s - XON = %2x, XOFF = %2x",
++			__func__, port_settings.xon, port_settings.xoff);
+ 
+ 	/* get the baud rate wanted */
+ 	port_settings.baud = tty_get_baud_rate(tty);
+@@ -1247,61 +1279,74 @@ static int firm_setup_port(struct tty_struct *tty) {
+ 	tty_encode_baud_rate(tty, port_settings.baud, port_settings.baud);
+ 	/* handle any settings that aren't specified in the tty structure */
+ 	port_settings.lloop = 0;
+-	
++
+ 	/* now send the message to the device */
+-	return firm_send_command(port, WHITEHEAT_SETUP_PORT, (__u8 *)&port_settings, sizeof(port_settings));
++	return firm_send_command(port, WHITEHEAT_SETUP_PORT,
++			(__u8 *)&port_settings, sizeof(port_settings));
+ }
+ 
+ 
+-static int firm_set_rts(struct usb_serial_port *port, __u8 onoff) {
++static int firm_set_rts(struct usb_serial_port *port, __u8 onoff)
++{
+ 	struct whiteheat_set_rdb rts_command;
+ 
+ 	rts_command.port = port->number - port->serial->minor + 1;
+ 	rts_command.state = onoff;
+-	return firm_send_command(port, WHITEHEAT_SET_RTS, (__u8 *)&rts_command, sizeof(rts_command));
++	return firm_send_command(port, WHITEHEAT_SET_RTS,
++			(__u8 *)&rts_command, sizeof(rts_command));
+ }
+ 
+ 
+-static int firm_set_dtr(struct usb_serial_port *port, __u8 onoff) {
++static int firm_set_dtr(struct usb_serial_port *port, __u8 onoff)
++{
+ 	struct whiteheat_set_rdb dtr_command;
+ 
+ 	dtr_command.port = port->number - port->serial->minor + 1;
+ 	dtr_command.state = onoff;
+-	return firm_send_command(port, WHITEHEAT_SET_RTS, (__u8 *)&dtr_command, sizeof(dtr_command));
++	return firm_send_command(port, WHITEHEAT_SET_RTS,
++			(__u8 *)&dtr_command, sizeof(dtr_command));
+ }
+ 
+ 
+-static int firm_set_break(struct usb_serial_port *port, __u8 onoff) {
++static int firm_set_break(struct usb_serial_port *port, __u8 onoff)
++{
+ 	struct whiteheat_set_rdb break_command;
+ 
+ 	break_command.port = port->number - port->serial->minor + 1;
+ 	break_command.state = onoff;
+-	return firm_send_command(port, WHITEHEAT_SET_RTS, (__u8 *)&break_command, sizeof(break_command));
++	return firm_send_command(port, WHITEHEAT_SET_RTS,
++			(__u8 *)&break_command, sizeof(break_command));
+ }
+ 
+ 
+-static int firm_purge(struct usb_serial_port *port, __u8 rxtx) {
++static int firm_purge(struct usb_serial_port *port, __u8 rxtx)
++{
+ 	struct whiteheat_purge purge_command;
+ 
+ 	purge_command.port = port->number - port->serial->minor + 1;
+ 	purge_command.what = rxtx;
+-	return firm_send_command(port, WHITEHEAT_PURGE, (__u8 *)&purge_command, sizeof(purge_command));
++	return firm_send_command(port, WHITEHEAT_PURGE,
++			(__u8 *)&purge_command, sizeof(purge_command));
+ }
+ 
+ 
+-static int firm_get_dtr_rts(struct usb_serial_port *port) {
++static int firm_get_dtr_rts(struct usb_serial_port *port)
++{
+ 	struct whiteheat_simple get_dr_command;
+ 
+ 	get_dr_command.port = port->number - port->serial->minor + 1;
+-	return firm_send_command(port, WHITEHEAT_GET_DTR_RTS, (__u8 *)&get_dr_command, sizeof(get_dr_command));
++	return firm_send_command(port, WHITEHEAT_GET_DTR_RTS,
++			(__u8 *)&get_dr_command, sizeof(get_dr_command));
+ }
+ 
+ 
+-static int firm_report_tx_done(struct usb_serial_port *port) {
++static int firm_report_tx_done(struct usb_serial_port *port)
++{
+ 	struct whiteheat_simple close_command;
+ 
+ 	close_command.port = port->number - port->serial->minor + 1;
+-	return firm_send_command(port, WHITEHEAT_REPORT_TX_DONE, (__u8 *)&close_command, sizeof(close_command));
++	return firm_send_command(port, WHITEHEAT_REPORT_TX_DONE,
++			(__u8 *)&close_command, sizeof(close_command));
+ }
+ 
+ 
+@@ -1313,7 +1358,7 @@ static int start_command_port(struct usb_serial *serial)
+ 	struct usb_serial_port *command_port;
+ 	struct whiteheat_command_private *command_info;
+ 	int retval = 0;
+-	
++
+ 	command_port = serial->port[COMMAND_PORT];
+ 	command_info = usb_get_serial_port_data(command_port);
+ 	mutex_lock(&command_info->mutex);
+@@ -1324,7 +1369,8 @@ static int start_command_port(struct usb_serial *serial)
+ 		command_port->read_urb->dev = serial->dev;
+ 		retval = usb_submit_urb(command_port->read_urb, GFP_KERNEL);
+ 		if (retval) {
+-			err("%s - failed submitting read urb, error %d", __func__, retval);
++			err("%s - failed submitting read urb, error %d",
++							__func__, retval);
+ 			goto exit;
+ 		}
+ 	}
+@@ -1394,7 +1440,8 @@ static int start_port_read(struct usb_serial_port *port)
+ }
+ 
+ 
+-static struct whiteheat_urb_wrap *urb_to_wrap(struct urb* urb, struct list_head *head)
++static struct whiteheat_urb_wrap *urb_to_wrap(struct urb *urb,
++						struct list_head *head)
+ {
+ 	struct whiteheat_urb_wrap *wrap;
+ 	struct list_head *tmp;
+@@ -1443,7 +1490,8 @@ static void rx_data_softint(struct work_struct *work)
+ 		urb = wrap->urb;
+ 
+ 		if (tty && urb->actual_length) {
+-			int len = tty_buffer_request_room(tty, urb->actual_length);
++			int len = tty_buffer_request_room(tty,
++							urb->actual_length);
+ 			/* This stuff can go away now I suspect */
+ 			if (unlikely(len < urb->actual_length)) {
+ 				spin_lock_irqsave(&info->lock, flags);
+@@ -1460,7 +1508,8 @@ static void rx_data_softint(struct work_struct *work)
+ 		urb->dev = port->serial->dev;
+ 		result = usb_submit_urb(urb, GFP_ATOMIC);
+ 		if (result) {
+-			err("%s - failed resubmitting read urb, error %d", __func__, result);
++			err("%s - failed resubmitting read urb, error %d",
++				__func__, result);
+ 			spin_lock_irqsave(&info->lock, flags);
+ 			list_add(tmp, &info->rx_urbs_free);
+ 			continue;
+@@ -1479,7 +1528,7 @@ static void rx_data_softint(struct work_struct *work)
+ /*****************************************************************************
+  * Connect Tech's White Heat module functions
+  *****************************************************************************/
+-static int __init whiteheat_init (void)
++static int __init whiteheat_init(void)
+ {
+ 	int retval;
+ 	retval = usb_serial_register(&whiteheat_fake_device);
+@@ -1502,19 +1551,19 @@ failed_fake_register:
+ }
+ 
+ 
+-static void __exit whiteheat_exit (void)
++static void __exit whiteheat_exit(void)
+ {
+-	usb_deregister (&whiteheat_driver);
+-	usb_serial_deregister (&whiteheat_fake_device);
+-	usb_serial_deregister (&whiteheat_device);
++	usb_deregister(&whiteheat_driver);
++	usb_serial_deregister(&whiteheat_fake_device);
++	usb_serial_deregister(&whiteheat_device);
+ }
+ 
+ 
+ module_init(whiteheat_init);
+ module_exit(whiteheat_exit);
+ 
+-MODULE_AUTHOR( DRIVER_AUTHOR );
+-MODULE_DESCRIPTION( DRIVER_DESC );
++MODULE_AUTHOR(DRIVER_AUTHOR);
++MODULE_DESCRIPTION(DRIVER_DESC);
+ MODULE_LICENSE("GPL");
+ 
+ module_param(urb_pool_size, int, 0);
+diff --git a/drivers/usb/serial/whiteheat.h b/drivers/usb/serial/whiteheat.h
+index f160797..38065df 100644
+--- a/drivers/usb/serial/whiteheat.h
++++ b/drivers/usb/serial/whiteheat.h
+@@ -2,7 +2,7 @@
+  * USB ConnectTech WhiteHEAT driver
+  *
+  *      Copyright (C) 2002
+- *          Connect Tech Inc.	
++ *          Connect Tech Inc.
+  *
+  *      Copyright (C) 1999, 2000
+  *          Greg Kroah-Hartman (greg@kroah.com)
+@@ -12,7 +12,8 @@
+  *      the Free Software Foundation; either version 2 of the License, or
+  *      (at your option) any later version.
+  *
+- * See Documentation/usb/usb-serial.txt for more information on using this driver
++ * See Documentation/usb/usb-serial.txt for more information on using this
++ * driver
+  *
+  */
+ 
+@@ -30,13 +31,16 @@
+ #define WHITEHEAT_DUMP			7	/* dump memory */
+ #define WHITEHEAT_STATUS		8	/* get status */
+ #define WHITEHEAT_PURGE			9	/* clear the UART fifos */
+-#define WHITEHEAT_GET_DTR_RTS		10	/* get the state of DTR and RTS for a port */
+-#define WHITEHEAT_GET_HW_INFO		11	/* get EEPROM info and hardware ID */
++#define WHITEHEAT_GET_DTR_RTS		10	/* get the state of DTR and RTS
++							for a port */
++#define WHITEHEAT_GET_HW_INFO		11	/* get EEPROM info and
++							hardware ID */
+ #define WHITEHEAT_REPORT_TX_DONE	12	/* get the next TX done */
+ #define WHITEHEAT_EVENT			13	/* unsolicited status events */
+-#define WHITEHEAT_ECHO			14	/* send data to the indicated IN endpoint */
+-#define WHITEHEAT_DO_TEST		15	/* perform the specified test */
+-#define WHITEHEAT_CMD_COMPLETE		16	/* reply for certain commands */
++#define WHITEHEAT_ECHO			14	/* send data to the indicated
++						   IN endpoint */
++#define WHITEHEAT_DO_TEST		15	/* perform specified test */
++#define WHITEHEAT_CMD_COMPLETE		16	/* reply for some commands */
+ #define WHITEHEAT_CMD_FAILURE		17	/* reply for failed commands */
+ 
+ 
+@@ -67,20 +71,28 @@ struct whiteheat_simple {
+ #define WHITEHEAT_PAR_MARK	'1'	/* mark (force 1) parity */
+ 
+ #define WHITEHEAT_SFLOW_NONE	'n'	/* no software flow control */
+-#define WHITEHEAT_SFLOW_RX	'r'	/* XOFF/ON is sent when RX fills/empties */
+-#define WHITEHEAT_SFLOW_TX	't'	/* when received XOFF/ON will stop/start TX */
++#define WHITEHEAT_SFLOW_RX	'r'	/* XOFF/ON is sent when RX
++					   fills/empties */
++#define WHITEHEAT_SFLOW_TX	't'	/* when received XOFF/ON will
++					   stop/start TX */
+ #define WHITEHEAT_SFLOW_RXTX	'b'	/* both SFLOW_RX and SFLOW_TX */
+ 
+ #define WHITEHEAT_HFLOW_NONE		0x00	/* no hardware flow control */
+-#define WHITEHEAT_HFLOW_RTS_TOGGLE	0x01	/* RTS is on during transmit, off otherwise */
+-#define WHITEHEAT_HFLOW_DTR		0x02	/* DTR is off/on when RX fills/empties */
+-#define WHITEHEAT_HFLOW_CTS		0x08	/* when received CTS off/on will stop/start TX */
+-#define WHITEHEAT_HFLOW_DSR		0x10	/* when received DSR off/on will stop/start TX */
+-#define WHITEHEAT_HFLOW_RTS		0x80	/* RTS is off/on when RX fills/empties */
++#define WHITEHEAT_HFLOW_RTS_TOGGLE	0x01	/* RTS is on during transmit,
++						   off otherwise */
++#define WHITEHEAT_HFLOW_DTR		0x02	/* DTR is off/on when RX
++						   fills/empties */
++#define WHITEHEAT_HFLOW_CTS		0x08	/* when received CTS off/on
++						   will stop/start TX */
++#define WHITEHEAT_HFLOW_DSR		0x10	/* when received DSR off/on
++						   will stop/start TX */
++#define WHITEHEAT_HFLOW_RTS		0x80	/* RTS is off/on when RX
++						   fills/empties */
+ 
+ struct whiteheat_port_settings {
+ 	__u8	port;		/* port number (1 to N) */
+-	__u32	baud;		/* any value 7 - 460800, firmware calculates best fit; arrives little endian */
++	__u32	baud;		/* any value 7 - 460800, firmware calculates
++				   best fit; arrives little endian */
+ 	__u8	bits;		/* 5, 6, 7, or 8 */
+ 	__u8	stop;		/* 1 or 2, default 1 (2 = 1.5 if bits = 5) */
+ 	__u8	parity;		/* see WHITEHEAT_PAR_* above */
+@@ -167,12 +179,14 @@ struct whiteheat_echo {
+  */
+ #define WHITEHEAT_TEST_UART_RW		0x01  /* read/write uart registers */
+ #define WHITEHEAT_TEST_UART_INTR	0x02  /* uart interrupt */
+-#define WHITEHEAT_TEST_SETUP_CONT	0x03  /* setup for PORT_CONT/PORT_DISCONT */
++#define WHITEHEAT_TEST_SETUP_CONT	0x03  /* setup for
++						PORT_CONT/PORT_DISCONT */
+ #define WHITEHEAT_TEST_PORT_CONT	0x04  /* port connect */
+ #define WHITEHEAT_TEST_PORT_DISCONT	0x05  /* port disconnect */
+ #define WHITEHEAT_TEST_UART_CLK_START	0x06  /* uart clock test start */
+ #define WHITEHEAT_TEST_UART_CLK_STOP	0x07  /* uart clock test stop */
+-#define WHITEHEAT_TEST_MODEM_FT		0x08  /* modem signals, requires a loopback cable/connector */
++#define WHITEHEAT_TEST_MODEM_FT		0x08  /* modem signals, requires a
++						loopback cable/connector */
+ #define WHITEHEAT_TEST_ERASE_EEPROM	0x09  /* erase eeprom */
+ #define WHITEHEAT_TEST_READ_EEPROM	0x0a  /* read eeprom */
+ #define WHITEHEAT_TEST_PROGRAM_EEPROM	0x0b  /* program eeprom */
+@@ -198,19 +212,27 @@ struct whiteheat_test {
+ #define WHITEHEAT_EVENT_CONNECT		0x08	/* connect field is valid */
+ 
+ #define WHITEHEAT_FLOW_NONE		0x00	/* no flow control active */
+-#define WHITEHEAT_FLOW_HARD_OUT		0x01	/* TX is stopped by CTS (waiting for CTS to go on) */
+-#define WHITEHEAT_FLOW_HARD_IN		0x02	/* remote TX is stopped by RTS */
+-#define WHITEHEAT_FLOW_SOFT_OUT		0x04	/* TX is stopped by XOFF received (waiting for XON) */
+-#define WHITEHEAT_FLOW_SOFT_IN		0x08	/* remote TX is stopped by XOFF transmitted */
++#define WHITEHEAT_FLOW_HARD_OUT		0x01	/* TX is stopped by CTS
++						  (waiting for CTS to go on) */
++#define WHITEHEAT_FLOW_HARD_IN		0x02	/* remote TX is stopped
++						  by RTS */
++#define WHITEHEAT_FLOW_SOFT_OUT		0x04	/* TX is stopped by XOFF
++						  received (waiting for XON) */
++#define WHITEHEAT_FLOW_SOFT_IN		0x08	/* remote TX is stopped by XOFF
++						  transmitted */
+ #define WHITEHEAT_FLOW_TX_DONE		0x80	/* TX has completed */
+ 
+ struct whiteheat_status_info {
+ 	__u8	port;		/* port number (1 to N) */
+-	__u8	event;		/* indicates what the current event is, see WHITEHEAT_EVENT_* above */
+-	__u8	modem;		/* modem signal status (copy of uart's MSR register) */
++	__u8	event;		/* indicates what the current event is,
++					see WHITEHEAT_EVENT_* above */
++	__u8	modem;		/* modem signal status (copy of uart's
++					MSR register) */
+ 	__u8	error;		/* line status (copy of uart's LSR register) */
+-	__u8	flow;		/* flow control state, see WHITEHEAT_FLOW_* above */
+-	__u8	connect;	/* 0 means not connected, non-zero means connected */
++	__u8	flow;		/* flow control state, see WHITEHEAT_FLOW_*
++					above */
++	__u8	connect;	/* 0 means not connected, non-zero means
++					connected */
  };
  
- #define	CLOSING_WAIT_DELAY	30*HZ
--#define CY_CLOSING_WAIT_NONE	65535
--#define CY_CLOSING_WAIT_INF	0
-+#define CY_CLOSING_WAIT_NONE	ASYNC_CLOSING_WAIT_NONE
-+#define CY_CLOSING_WAIT_INF	ASYNC_CLOSING_WAIT_INF
  
- 
- #define CyMAX_CHIPS_PER_CARD	8
-diff --git a/include/linux/tty.h b/include/linux/tty.h
-index 46008e8..4e58330 100644
---- a/include/linux/tty.h
-+++ b/include/linux/tty.h
-@@ -188,6 +188,8 @@ struct tty_port {
- 	unsigned long		flags;		/* TTY flags ASY_*/
- 	struct mutex		mutex;		/* Locking */
- 	unsigned char		*xmit_buf;	/* Optional buffer */
-+	int			close_delay;	/* Close port delay */
-+	int			closing_wait;	/* Delay for output */
+@@ -256,7 +278,8 @@ struct whiteheat_hw_info {
+ struct whiteheat_event_info {
+ 	__u8	port;		/* port number (1 to N) */
+ 	__u8	event;		/* see whiteheat_status_info.event */
+-	__u8	info;		/* see whiteheat_status_info.modem, .error, .flow, .connect */
++	__u8	info;		/* see whiteheat_status_info.modem, .error,
++					.flow, .connect */
  };
  
- /*
+ 
+@@ -269,7 +292,8 @@ struct whiteheat_event_info {
+ 
+ struct whiteheat_test_info {
+ 	__u8	port;		/* port number (1 to N) */
+-	__u8	test;		/* indicates which test this is a response for, see WHITEHEAT_DO_TEST above */
++	__u8	test;		/* indicates which test this is a response for,
++				   see WHITEHEAT_DO_TEST above */
+ 	__u8	status;		/* see WHITEHEAT_TEST_* above */
+ 	__u8	results[32];	/* test-dependent results */
+ };
 
