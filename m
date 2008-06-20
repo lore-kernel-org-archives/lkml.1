@@ -1,77 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757941AbYFTQak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757956AbYFTQkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757941AbYFTQak (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 12:30:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754918AbYFTQaS
+	id S1757956AbYFTQkZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 12:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbYFTQkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 12:30:18 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:44420 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754643AbYFTQaP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 12:30:15 -0400
-Date: Fri, 20 Jun 2008 18:30:05 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: Ville =?UTF-8?B?U3lyasOkbMOk?= <syrjala@sci.fi>,
-       Marc Pignat <marc.pignat@hevs.ch>, Eric BENARD <ebenard@free.fr>,
-       Andrew Victor <linux@maxim.org.za>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Anti Sullin <anti.sullin@artecdesign.ee>,
-       =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
-Subject: Re: [PATCH 0/7] mmc: at91_mci: rework to allow better transfer
-Message-ID: <20080620183005.13b53235@mjolnir.drzeus.cx>
-In-Reply-To: <4858DDC1.6080802@atmel.com>
-References: <483FE9E7.7020707@atmel.com>
-	<20080609124623.5b6bda48@mjolnir.drzeus.cx>
-	<484E4F61.7010007@atmel.com>
-	<20080614182831.0360bd77@mjolnir.drzeus.cx>
-	<4858DDC1.6080802@atmel.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
-X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-29955-1213978910-0001-2"
+	Fri, 20 Jun 2008 12:40:09 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:48994 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752150AbYFTQkI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 12:40:08 -0400
+Message-ID: <485BDCE4.2010303@s5r6.in-berlin.de>
+Date: Fri, 20 Jun 2008 18:37:56 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
+MIME-Version: 1.0
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Vegard Nossum <vegard.nossum@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       dsd@gentoo.org, mdharm-usb@one-eyed-alien.net,
+       linux-usb@vger.kernel.org, vegardno@ifi.uio.no,
+       James.Bottomley@hansenpartnership.com, linux-scsi@vger.kernel.org,
+       Greg KH <greg@kroah.com>
+Subject: Re: [RFC/PATCH] usb-storage: wait for device scanning before mounting
+ root
+References: <Pine.LNX.4.44L0.0806201130390.2719-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0806201130390.2719-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Alan Stern wrote:
+> New USB devices can appear at any time.  None are present when the 
+> system is started; they are all detected dynamically by the khubd 
+> thread.
+> 
+> While I'm not familiar with the details of any other hotpluggable 
+> buses (like Firewire), I imagine much the same is true for them.
 
---=_freyr.drzeus.cx-29955-1213978910-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+It's very similar with FireWire.  FireWire devices announce SBP-2 target
+capability (if they have it) after they became ready.  The ieee1394 or
+firewire core then scans or re-scans them in a process context.  Then
+upper layer drivers like the SBP-2 driver are matched, bound, probed.
 
-On Wed, 18 Jun 2008 12:04:49 +0200
-Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
-
->=20
-> You can merge this patch series (7 patches)
->=20
-
-Everything merged up. It'll be hitting kernel.org soon.
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Use end-to-end encryption where
-  possible.
-
---=_freyr.drzeus.cx-29955-1213978910-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkhb2xIACgkQ7b8eESbyJLitfwCeMmw37qNFJMj6gcmh4mwzbUKh
-XOMAoMjfOeeHiLrcThnU6/Z6Dg3kjX1y
-=a+lt
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-29955-1213978910-0001-2--
+If SBP-2 targets went through a power state change, they typically first
+power everything up (spin up media etc.) before they announce their
+protocol capabilities, and this may of course take a while.  Before that
+they just are inaccessible, and it is unknown whether they could become
+candidates for access by upper layer drivers.
+-- 
+Stefan Richter
+-=====-==--- -==- =-=--
+http://arcgraph.de/sr/
