@@ -1,83 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753306AbYFTHkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753876AbYFTHsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753306AbYFTHkj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 03:40:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbYFTHk1
+	id S1753876AbYFTHsm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 03:48:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbYFTHsd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 03:40:27 -0400
-Received: from vms173005pub.verizon.net ([206.46.173.5]:52678 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751453AbYFTHk1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 03:40:27 -0400
-Date: Fri, 20 Jun 2008 03:40:24 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-Subject: [GIT PATCH] ACPI patches for 2.6.26-rc6
-X-X-Sender: lenb@localhost.localdomain
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org,
-       Linux Power Management List <linux-pm@lists.osdl.org>
-Message-id: <alpine.LFD.1.10.0806200329450.22284@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 20 Jun 2008 03:48:33 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:47319 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751609AbYFTHsc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 03:48:32 -0400
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Andrew Victor <andrew@sanpeople.com>, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Subject: [PATCH 2/3] atmel_nand: Work around AT32AP7000 ECC errata
+Date: Fri, 20 Jun 2008 09:48:31 +0200
+Message-Id: <1213948112-22348-2-git-send-email-haavard.skinnemoen@atmel.com>
+X-Mailer: git-send-email 1.5.5.3
+In-Reply-To: <1213948112-22348-1-git-send-email-haavard.skinnemoen@atmel.com>
+References: <1213948112-22348-1-git-send-email-haavard.skinnemoen@atmel.com>
+X-OriginalArrivalTime: 20 Jun 2008 07:48:03.0582 (UTC) FILETIME=[F83889E0:01C8D2A9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+The ALE signal isn't correctly wired up to the ECC controller on the
+AP7000, so it starts calculating ECC during the address cycles.
 
-please pull from: 
+Work around this by resetting the ECC controller between the address and
+data cycles.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
+Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+---
+ drivers/mtd/nand/atmel_nand.c |   25 +++++++++++++++++++++++--
+ 1 files changed, 23 insertions(+), 2 deletions(-)
 
-This will update the files shown below.
-
-thanks!
-
--Len
-
-ps. individual patches are available on linux-acpi@vger.kernel.org
-and a consolidated plain patch is available here:
-ftp://ftp.kernel.org/pub/linux/kernel/people/lenb/acpi/patches/release/2.6.26/acpi-release-20080609-2.6.26-rc6.diff.gz
-
- drivers/acpi/ac.c    |    8 +++-----
- drivers/acpi/video.c |    3 ++-
- 2 files changed, 5 insertions(+), 6 deletions(-)
-
-through these commits:
-
-Len Brown (1):
-      ACPI: no AC status notification
-
-Zhang Rui (1):
-      ACPI Exception (video-1721): UNKNOWN_STATUS_CODE, Cant attach device
-
-with this log:
-
-commit f163ff5176a8e9c827d8ebe044710d67d40799c3
-Author: Len Brown <len.brown@intel.com>
-Date:   Sat Jun 14 01:26:37 2008 -0400
-
-    ACPI: no AC status notification
-    
-    http://bugzilla.kernel.org/show_bug.cgi?id=10695
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit d385c2a85877f0cb785070094edf9a624c090d68
-Author: Zhang Rui <rui.zhang@intel.com>
-Date:   Sat Jun 14 01:01:18 2008 -0400
-
-    ACPI Exception (video-1721): UNKNOWN_STATUS_CODE, Cant attach device
-    
-    The child of a video bus device is not alway a video device.
-    It should be a warn message rather than an exception here.
-    http://bugzilla.kernel.org/show_bug.cgi?id=9761
-    
-    Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
+diff --git a/drivers/mtd/nand/atmel_nand.c b/drivers/mtd/nand/atmel_nand.c
+index 4814fc9..99aec46 100644
+--- a/drivers/mtd/nand/atmel_nand.c
++++ b/drivers/mtd/nand/atmel_nand.c
+@@ -33,6 +33,7 @@
+ #include <linux/io.h>
+ 
+ #include <asm/arch/board.h>
++#include <asm/arch/cpu.h>
+ 
+ #ifdef CONFIG_MTD_NAND_ATMEL_ECC_HW
+ #define hard_ecc	1
+@@ -264,6 +265,19 @@ static int atmel_nand_read_page(struct mtd_info *mtd,
+ 	uint8_t *ecc_pos;
+ 	int stat;
+ 
++	/*
++	 * Errata: ALE is incorrectly wired up to the ECC controller
++	 * on the AP7000, so it will include the address cycles in the
++	 * ECC calculation.
++	 *
++	 * Workaround: Reset the parity registers before reading the
++	 * actual data.
++	 */
++	if (cpu_is_at32ap7000()) {
++		struct atmel_nand_host *host = chip->priv;
++		ecc_writel(host->ecc, CR, ATMEL_ECC_RST);
++	}
++
+ 	/* read the page */
+ 	chip->read_buf(mtd, p, eccsize);
+ 
+@@ -377,9 +391,16 @@ static int atmel_nand_correct(struct mtd_info *mtd, u_char *dat,
+ }
+ 
+ /*
+- * Enable HW ECC : unsused
++ * Enable HW ECC : unused on most chips
+  */
+-static void atmel_nand_hwctl(struct mtd_info *mtd, int mode) { ; }
++static void atmel_nand_hwctl(struct mtd_info *mtd, int mode)
++{
++	if (cpu_is_at32ap7000()) {
++		struct nand_chip *nand_chip = mtd->priv;
++		struct atmel_nand_host *host = nand_chip->priv;
++		ecc_writel(host->ecc, CR, ATMEL_ECC_RST);
++	}
++}
+ 
+ #ifdef CONFIG_MTD_PARTITIONS
+ static const char *part_probes[] = { "cmdlinepart", NULL };
+-- 
+1.5.5.3
 
