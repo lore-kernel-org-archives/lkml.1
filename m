@@ -1,67 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756697AbYFTUgB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758781AbYFTUfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756697AbYFTUgB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 16:36:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762160AbYFTUW1
+	id S1758781AbYFTUfU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 16:35:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762087AbYFTUWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 16:22:27 -0400
-Received: from gw.goop.org ([64.81.55.164]:46516 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762155AbYFTUWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 16:22:25 -0400
-Message-ID: <485C117E.8070706@goop.org>
-Date: Fri, 20 Jun 2008 13:22:22 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 20 Jun 2008 16:22:13 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35231 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762067AbYFTUWK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 16:22:10 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 51/70] keyspan: Use string flip functions when possible
+To: linux-kernel@vger.kernel.org
+Date: Fri, 20 Jun 2008 21:04:46 +0100
+Message-ID: <20080620200444.1479.24072.stgit@localhost.localdomain>
+In-Reply-To: <20080620195406.1479.12620.stgit@localhost.localdomain>
+References: <20080620195406.1479.12620.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: xen-devel <xen-devel@lists.xensource.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>, benh@kernel.crashing.org,
-       x86@kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1 of 4] mm: add a ptep_modify_prot transaction abstraction
-References: <alpine.LFD.1.10.0806181723400.2907@woody.linux-foundation.org>	<4859AA47.2020903@goop.org>	<alpine.LFD.1.10.0806181743390.2907@woody.linux-foundation.org>	<alpine.LFD.1.10.0806182050470.2907@woody.linux-foundation.org>	<20080619115832.GM15228@elte.hu>	<alpine.LFD.1.10.0806190928100.2907@woody.linux-foundation.org>	<20080619164708.GA32190@elte.hu>	<20080620101028.GA23664@elte.hu> <485BFFC4.3070902@goop.org>	<alpine.LFD.1.10.0806201211560.3167@woody.linux-foundation.org>	<20080620195620.GA20183@elte.hu>	<alpine.LFD.1.10.0806201302350.3167@woody.linux-foundation.org> <485C1000.8020806@goop.org>
-In-Reply-To: <485C1000.8020806@goop.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Linus Torvalds wrote:
->   
->> On Fri, 20 Jun 2008, Ingo Molnar wrote:
->>   
->>     
->>> okay - Jeremy, could you try the fix below? (or tip/master, i just 
->>> pushed this out)
->>>     
->>>       
->> Actually, don't try that one.
->>
->> It needs to be a _byte_ registers, so "ir" was wrong. You need "iq".
->>   
->>     
->
-> Doesn't work, unfortunately:
-> {standard input}:20511: Error: Incorrect register `%eax' used with `b' 
-> suffix
->
->         lock; orb %eax,1(%rdi)  # tmp64,
->   
+From: Alan Cox <alan@redhat.com>
 
-This does work:
 
-                asm volatile(LOCK_PREFIX "orb %1,%0"
-                        : CONST_MASK_ADDR(nr, addr)
-                        : "iq" ((u8)CONST_MASK(nr))
-                        : "memory");
 
-(ie, explicitly casting the mask to u8)
+Signed-off-by: Alan Cox <alan@redhat.com>
+---
 
-    J
+ drivers/usb/serial/keyspan.c |   18 ++++++++----------
+ 1 files changed, 8 insertions(+), 10 deletions(-)
+
+
+diff --git a/drivers/usb/serial/keyspan.c b/drivers/usb/serial/keyspan.c
+index 8c7dc40..a90098a 100644
+--- a/drivers/usb/serial/keyspan.c
++++ b/drivers/usb/serial/keyspan.c
+@@ -575,7 +575,7 @@ static void	usa26_glocont_callback(struct urb *urb)
+ 
+ static void usa28_indat_callback(struct urb *urb)
+ {
+-	int                     i, err;
++	int                     err;
+ 	struct usb_serial_port  *port;
+ 	struct tty_struct       *tty;
+ 	unsigned char           *data;
+@@ -604,8 +604,7 @@ static void usa28_indat_callback(struct urb *urb)
+ 
+ 		tty = port->port.tty;
+ 		if (urb->actual_length) {
+-			for (i = 0; i < urb->actual_length ; ++i)
+-				tty_insert_flip_char(tty, data[i], 0);
++			tty_insert_flip_string(tty, data, urb->actual_length);
+ 			tty_flip_buffer_push(tty);
+ 		}
+ 
+@@ -831,8 +830,8 @@ static void	usa49_indat_callback(struct urb *urb)
+ 		/* 0x80 bit is error flag */
+ 		if ((data[0] & 0x80) == 0) {
+ 			/* no error on any byte */
+-			for (i = 1; i < urb->actual_length ; ++i)
+-				tty_insert_flip_char(tty, data[i], 0);
++			tty_insert_flip_string(tty, data + 1,
++						urb->actual_length - 1);
+ 		} else {
+ 			/* some bytes had errors, every byte has status */
+ 			for (i = 0; i + 1 < urb->actual_length; i += 2) {
+@@ -971,10 +970,9 @@ static void usa90_indat_callback(struct urb *urb)
+ 		/* if current mode is DMA, looks like usa28 format
+ 		   otherwise looks like usa26 data format */
+ 
+-		if (p_priv->baud > 57600) {
+-			for (i = 0; i < urb->actual_length ; ++i)
+-				tty_insert_flip_char(tty, data[i], 0);
+-		} else {
++		if (p_priv->baud > 57600)
++			tty_insert_flip_string(tty, data, urb->actual_length);
++		else {
+ 			/* 0x80 bit is error flag */
+ 			if ((data[0] & 0x80) == 0) {
+ 				/* no errors on individual bytes, only
+@@ -1665,7 +1663,7 @@ static int keyspan_usa19_calc_baud(u32 baud_rate, u32 baudclk, u8 *rate_hi,
+ 	dbg("%s - %d.", __func__, baud_rate);
+ 
+ 	/* prevent divide by zero...  */
+-	b16 = baud_rate * 16L
++	b16 = baud_rate * 16L;
+ 	if (b16 == 0)
+ 		return KEYSPAN_INVALID_BAUD_RATE;
+ 	/* Any "standard" rate over 57k6 is marginal on the USA-19
+
