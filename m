@@ -1,53 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757987AbYFTQTE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759191AbYFTQTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757987AbYFTQTE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 12:19:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbYFTQSy
+	id S1759191AbYFTQTg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 12:19:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbYFTQTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 12:18:54 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34941 "EHLO mx3.mail.elte.hu"
+	Fri, 20 Jun 2008 12:19:25 -0400
+Received: from bu3sch.de ([62.75.166.246]:59529 "EHLO vs166246.vserver.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752603AbYFTQSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 12:18:53 -0400
-Date: Fri, 20 Jun 2008 18:18:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Joe Buehler <aspam@cox.net>
-Cc: linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH]  Add PCI ID for 6300ESB force hpet
-Message-ID: <20080620161837.GA23432@elte.hu>
-References: <4845f281.8dQsWzXdrYDR2glC%ole@ans.pl> <g2j97o$es2$1@ger.gmane.org>
+	id S1751977AbYFTQTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 12:19:24 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH/RFC] remove irqs_disabled warning from local_bh_enable
+Date: Fri, 20 Jun 2008 18:18:34 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       David Ellingsworth <david@identd.dyndns.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+References: <1213739834.3803.137.camel@johannes.berg> <20080620155541.GC6656@elte.hu> <200806201801.09858.mb@bu3sch.de>
+In-Reply-To: <200806201801.09858.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <g2j97o$es2$1@ger.gmane.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0021]
+Message-Id: <200806201818.34904.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 20 June 2008 18:01:09 Michael Buesch wrote:
+> On Friday 20 June 2008 17:55:41 Ingo Molnar wrote:
+> > 
+> > * Michael Buesch <mb@bu3sch.de> wrote:
+> > 
+> > > On Friday 20 June 2008 17:27:48 Ingo Molnar wrote:
+> > > >  [<c012b361>] local_bh_enable_ip+0xd1/0xe0
+> > > >  [<c08d9f9f>] _spin_unlock_bh+0x2f/0x40
+> > > >  [<c0471b92>] vortex_timer+0xe2/0x3e0
+> > > 
+> > > > real bug or false positive?
+> > > 
+> > > Well, a timer runs with IRQs disabled, no? So this would be a bug.
+> > 
+> > indeed - agreed :) [no time for me to fix it, but can test any rfc patch.]
+> 
+> A quick workaround always is to convert the lock into an _irqsafe lock.
+> Although it introduces higher overhead (interrupt-wise), it prevents the bug.
+> A real fix would require to understand the locking in the driver, which I
+> don't, as I never looked at the driver. :)
 
-* Joe Buehler <aspam@cox.net> wrote:
 
-> Tested on Supermicro X6DVA-EG2.
->
-> # lspci
-> 00:1f.0 ISA bridge: Intel Corporation 6300ESB LPC Interface Controller (rev 02)
-> # lspci -n
-> 00:1f.0 Class 0601: 8086:25a1 (rev 02)
->
-> kernel: pci 0000:00:1f.0: Force enabled HPET at 0xfed00000
-> kernel: hpet clockevent registered
-> kernel: hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
-> kernel: hpet0: 3 64-bit timers, 14318180 Hz
+However, looking at the driver I think the fix actually is trivial:
 
-applied to tip/timers/hpet. Thanks Joe,
+Index: wireless-testing/drivers/net/3c59x.c
+===================================================================
+--- wireless-testing.orig/drivers/net/3c59x.c	2008-05-16 00:26:29.000000000 +0200
++++ wireless-testing/drivers/net/3c59x.c	2008-06-20 18:16:55.000000000 +0200
+@@ -1768,9 +1768,10 @@ vortex_timer(unsigned long data)
+ 	case XCVR_MII: case XCVR_NWAY:
+ 		{
+ 			ok = 1;
+-			spin_lock_bh(&vp->lock);
++			/* Interrupts are already disabled */
++			spin_lock(&vp->lock);
+ 			vortex_check_media(dev, 0);
+-			spin_unlock_bh(&vp->lock);
++			spin_unlock(&vp->lock);
+ 		}
+ 		break;
+ 	  default:					/* Other media types handled by Tx timeouts. */
 
-	Ingo
+
+vp->lock is also taken in hardware IRQ context, so we _have_ to always
+use irqsafe locking. As we run in a timer with IRQs disabled,
+we can simply use spin_lock.
+
+-- 
+Greetings Michael.
