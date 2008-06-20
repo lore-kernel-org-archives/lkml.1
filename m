@@ -1,83 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752144AbYFTFiN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752188AbYFTFp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752144AbYFTFiN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 01:38:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751060AbYFTFh5
+	id S1752188AbYFTFp0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 01:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751035AbYFTFpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 01:37:57 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:28006 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751034AbYFTFh4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 01:37:56 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=DBWRQDOu3pncvNAplGKMQgmNJ9OabmODfObSN8tKngplbSYgkj+6JfYOleY0BQCQH
-	mIxmOhWX9LU5srW5fBhzg==
-Message-ID: <6599ad830806192237y8b10c4ao923375074aff56c5@mail.gmail.com>
-Date: Thu, 19 Jun 2008 22:37:47 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Li Zefan" <lizf@cn.fujitsu.com>
-Subject: Re: [RFC] [PATCH] cgroup: add "procs" control file
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Linux Containers" <containers@lists.linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Paul Jackson" <pj@sgi.com>
-In-Reply-To: <4858C111.8050806@cn.fujitsu.com>
+	Fri, 20 Jun 2008 01:45:13 -0400
+Received: from mail.ku-gbr.de ([81.3.11.18]:42082 "EHLO ku-gbr.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750889AbYFTFpM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 01:45:12 -0400
+Date: Fri, 20 Jun 2008 07:45:04 +0200
+From: Konstantin Kletschke <lists@ku-gbr.de>
+To: Miquel van Smoorenburg <mikevs@xs4all.net>,
+       Oliver Pinter <oliver.pntr@gmail.com>, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
+       xfs-masters@oss.sgi.com
+Subject: Re: XFS internal error xfs_trans_cancel at line 1163 of file
+	fs/xfs/xfs_trans.c
+Message-ID: <20080620054504.GA2075@anita>
+Mail-Followup-To: Miquel van Smoorenburg <mikevs@xs4all.net>,
+	Oliver Pinter <oliver.pntr@gmail.com>, linux-kernel@vger.kernel.org,
+	Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
+	xfs-masters@oss.sgi.com
+References: <20080612123031.21594jyk6rjc1lfk@imp.ku-gbr.de> <6101e8c40806120733m3c8647ccy149eb237e2c6d027@mail.gmail.com> <1213309629.29745.8.camel@localhost.localdomain> <20080613030841.GC3700@disturbed> <20080620052716.GA2022@anita>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <4858C111.8050806@cn.fujitsu.com>
+In-Reply-To: <20080620052716.GA2022@anita>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 18, 2008 at 1:02 AM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> - What to do if the attaching of a thread failed? continue to attach
->  other threads, or stop and return error?
+Again. Before strace looks weird, this looks like the old one:
 
-I think this is something that will have to be handled in the design
-of transactional cgroup attach.
+ksymoops 2.4.11 on x86_64 2.6.26-rc6.  Options used
+     -V (default)
+     -k /proc/ksyms (default)
+     -l /proc/modules (default)
+     -o /lib/modules/2.6.26-rc6/ (default)
+     -m /usr/src/linux-2.6.26-rc6/System.map (specified)
 
-> - When a sub-thread of a process is in the cgroup, but not its thread
->  cgroup leader, what to do when 'cat procs'? just skip those threads?
+Error (regular_file): read_ksyms stat /proc/ksyms failed
+ksymoops: No such file or directory
+No modules in ksyms, skipping objects
+No ksyms, skipping lsmod
+Pid: 2137, comm: fetchnews Not tainted 2.6.26-rc6 #1
+Call Trace:
+ [<ffffffff802ffa42>]
+ [<ffffffff802fa35a>]
+ [<ffffffff802ffa42>]
+ [<ffffffff80308a29>]
+ [<ffffffff80262799>]
+ [<ffffffff8026500a>]
+ [<ffffffff80223506>]
+ [<ffffffff8023116c>]
+ [<ffffffff8025a0fa>]
+ [<ffffffff8020afab>]
+Warning (Oops_read): Code line not seen, dumping what data is available
 
-Sounds reasonable. I think that in general the procs file is more
-useful as a write API than a read API anyway, for the reasons you
-indicate there.
+
+Trace; ffffffff802ffa42 <xfs_create+41d/462>
+Trace; ffffffff802fa35a <xfs_trans_cancel+56/ee>
+Trace; ffffffff802ffa42 <xfs_create+41d/462>
+Trace; ffffffff80308a29 <xfs_vn_mknod+148/229>
+Trace; ffffffff80262799 <vfs_create+75/ba>
+Trace; ffffffff8026500a <do_filp_open+1dc/7c5>
+Trace; ffffffff80223506 <ns_to_timeval+9/27>
+Trace; ffffffff8023116c <__remove_hrtimer+6b/78>
+Trace; ffffffff8025a0fa <do_sys_open+4a/f1>
+Trace; ffffffff8020afab <system_call_after_swapgs+7b/80>
 
 
-> +       tsk = attach_get_task(cgrp, pidbuf);
-> +       if (IS_ERR(tsk))
-> +               return PTR_ERR(tsk);
-> +
-> +       /* attach thread group leader */
+1 warning and 1 error issued.  Results may not be reliable.
 
-Should we check that this is in fact a thread group leader?
 
-> +
-> +       /* attach all sub-threads */
-> +       rcu_read_lock();
-
-cgroup_attach_task() calls synchronize_rcu(), so it doesn't seem
-likely that rcu_read_lock() is useful here, and might even deadlock?
-
-What are you trying to protect against with the RCU lock?
-
->        {
-> +               .name = "procs",
-
-Maybe call it "cgroup.procs" to avoid name clashes in future? We had a
-debate a while back where I tried to get the cgroup files like "tasks"
-and "notify_on_release" prefixed with "cgroup." , which were argued
-against on grounds of backwards compatibility. But there's no
-compatibility issue here. The only question is whether it's too ugly
-to have the legacy filenames without a prefix and the new ones with a
-prefix.
-
-Paul
+-- 
+GPG KeyID EF62FCEF
+Fingerprint: 13C9 B16B 9844 EC15 CC2E  A080 1E69 3FDA EF62 FCEF
