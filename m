@@ -1,49 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759234AbYFTPCg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759350AbYFTPCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759234AbYFTPCg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 11:02:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758570AbYFTPCL
+	id S1759350AbYFTPCt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 11:02:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758622AbYFTPCO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 11:02:11 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59654 "EHLO mx3.mail.elte.hu"
+	Fri, 20 Jun 2008 11:02:14 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:49911 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758530AbYFTPCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 11:02:09 -0400
-Date: Fri, 20 Jun 2008 17:01:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: check command line when CONFIG_X86_MPPARSE is not
-	set
-Message-ID: <20080620150151.GA17373@elte.hu>
-References: <200805041823.57198.yhlu.kernel@gmail.com> <200806191213.10312.yhlu.kernel@gmail.com> <200806191215.01538.yhlu.kernel@gmail.com> <200806200742.36226.yhlu.kernel@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200806200742.36226.yhlu.kernel@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1758615AbYFTPCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 11:02:12 -0400
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: YAMAMOTO Takashi <yamamoto@valinux.co.jp>, Paul Menage <menage@google.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Date: Fri, 20 Jun 2008 20:31:52 +0530
+Message-Id: <20080620150152.16094.76790.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080620150132.16094.29151.sendpatchset@localhost.localdomain>
+References: <20080620150132.16094.29151.sendpatchset@localhost.localdomain>
+Subject: [2/2] memrlimit fix usage of tmp as a parameter name
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-> we can not use acpi=off, acpi=noirq and pci=noacpi when mps support is 
-> not there
+Fix the variable tmp being used in write_strategy. This patch replaces tmp
+with val, the fact that it is an output parameter can be interpreted from
+the pass by reference.
 
-hm, i think instead of a panic() we should print a warning and fall back 
-to nosmp - an UP bootup should work just fine without any mptable 
-information.
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
 
-	Ingo
+ mm/memrlimitcgroup.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff -puN mm/memrlimitcgroup.c~memrlimit-cgroup-simple-cleanup mm/memrlimitcgroup.c
+--- linux-2.6.26-rc5/mm/memrlimitcgroup.c~memrlimit-cgroup-simple-cleanup	2008-06-20 20:14:00.000000000 +0530
++++ linux-2.6.26-rc5-balbir/mm/memrlimitcgroup.c	2008-06-20 20:22:08.000000000 +0530
+@@ -118,13 +118,13 @@ static u64 memrlimit_cgroup_read(struct 
+ 					cft->private);
+ }
+ 
+-static int memrlimit_cgroup_write_strategy(char *buf, unsigned long long *tmp)
++static int memrlimit_cgroup_write_strategy(char *buf, unsigned long long *val)
+ {
+-	*tmp = memparse(buf, &buf);
++	*val = memparse(buf, &buf);
+ 	if (*buf != '\0')
+ 		return -EINVAL;
+ 
+-	*tmp = PAGE_ALIGN(*tmp);
++	*val = PAGE_ALIGN(*val);
+ 	return 0;
+ }
+ 
+_
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
