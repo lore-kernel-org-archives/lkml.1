@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475AbYFTKGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755803AbYFTKGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755475AbYFTKGf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 06:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbYFTKFo
+	id S1755803AbYFTKGv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 06:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbYFTKFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 06:05:44 -0400
-Received: from host102-127-dynamic.20-87-r.retail.telecomitalia.it ([87.20.127.102]:23699
+	Fri, 20 Jun 2008 06:05:49 -0400
+Received: from host102-127-dynamic.20-87-r.retail.telecomitalia.it ([87.20.127.102]:23732
 	"EHLO linux.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754252AbYFTKFk (ORCPT
+	with ESMTP id S1754399AbYFTKFr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 06:05:40 -0400
+	Fri, 20 Jun 2008 06:05:47 -0400
 From: Andrea Righi <righi.andrea@gmail.com>
 To: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
        Carl Henrik Lunde <chlunde@ping.uio.no>
@@ -17,9 +17,9 @@ Cc: axboe@kernel.dk, matt@bluehost.com, roberto@unbit.it,
        randy.dunlap@oracle.com, Divyesh Shah <dpshah@google.com>,
        akpm@linux-foundation.org, containers@lists.linux-foundation.org,
        linux-kernel@vger.kernel.org, Andrea Righi <righi.andrea@gmail.com>
-Subject: [PATCH 1/3] i/o bandwidth controller documentation
-Date: Fri, 20 Jun 2008 12:05:33 +0200
-Message-Id: <1213956335-29866-2-git-send-email-righi.andrea@gmail.com>
+Subject: [PATCH 3/3] i/o accounting and control
+Date: Fri, 20 Jun 2008 12:05:35 +0200
+Message-Id: <1213956335-29866-4-git-send-email-righi.andrea@gmail.com>
 X-Mailer: git-send-email 1.5.4.3
 In-Reply-To: <>
 References: <>
@@ -27,184 +27,180 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Documentation of the block device I/O bandwidth controller: description, usage,
-advantages and design.
+Apply the io-throttle controller to the opportune kernel functions. Both
+accounting and throttling functionalities are performed by
+cgroup_io_throttle().
 
 Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
 ---
- Documentation/controllers/io-throttle.txt |  163 +++++++++++++++++++++++++++++
- 1 files changed, 163 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/controllers/io-throttle.txt
+ block/blk-core.c    |    2 ++
+ fs/buffer.c         |   10 ++++++++++
+ fs/direct-io.c      |    3 +++
+ mm/page-writeback.c |    9 +++++++++
+ mm/readahead.c      |    5 +++++
+ 5 files changed, 29 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/controllers/io-throttle.txt b/Documentation/controllers/io-throttle.txt
-new file mode 100644
-index 0000000..e1df98a
---- /dev/null
-+++ b/Documentation/controllers/io-throttle.txt
-@@ -0,0 +1,163 @@
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 1905aab..8eddef5 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -26,6 +26,7 @@
+ #include <linux/swap.h>
+ #include <linux/writeback.h>
+ #include <linux/task_io_accounting_ops.h>
++#include <linux/blk-io-throttle.h>
+ #include <linux/interrupt.h>
+ #include <linux/cpu.h>
+ #include <linux/blktrace_api.h>
+@@ -1482,6 +1483,7 @@ void submit_bio(int rw, struct bio *bio)
+ 			count_vm_events(PGPGOUT, count);
+ 		} else {
+ 			task_io_account_read(bio->bi_size);
++			cgroup_io_throttle(bio->bi_bdev, bio->bi_size);
+ 			count_vm_events(PGPGIN, count);
+ 		}
+ 
+diff --git a/fs/buffer.c b/fs/buffer.c
+index a073f3f..c63dfe7 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -35,6 +35,7 @@
+ #include <linux/suspend.h>
+ #include <linux/buffer_head.h>
+ #include <linux/task_io_accounting_ops.h>
++#include <linux/blk-io-throttle.h>
+ #include <linux/bio.h>
+ #include <linux/notifier.h>
+ #include <linux/cpu.h>
+@@ -700,6 +701,9 @@ EXPORT_SYMBOL(mark_buffer_dirty_inode);
+ static int __set_page_dirty(struct page *page,
+ 		struct address_space *mapping, int warn)
+ {
++	struct block_device *bdev = NULL;
++	size_t cgroup_io_acct = 0;
 +
-+               Block device I/O bandwidth controller
+ 	if (unlikely(!mapping))
+ 		return !TestSetPageDirty(page);
+ 
+@@ -711,16 +715,22 @@ static int __set_page_dirty(struct page *page,
+ 		WARN_ON_ONCE(warn && !PageUptodate(page));
+ 
+ 		if (mapping_cap_account_dirty(mapping)) {
++			bdev = (mapping->host &&
++				mapping->host->i_sb->s_bdev) ?
++				mapping->host->i_sb->s_bdev : NULL;
 +
-+1. Description
+ 			__inc_zone_page_state(page, NR_FILE_DIRTY);
+ 			__inc_bdi_stat(mapping->backing_dev_info,
+ 					BDI_RECLAIMABLE);
+ 			task_io_account_write(PAGE_CACHE_SIZE);
++			cgroup_io_acct = PAGE_CACHE_SIZE;
+ 		}
+ 		radix_tree_tag_set(&mapping->page_tree,
+ 				page_index(page), PAGECACHE_TAG_DIRTY);
+ 	}
+ 	write_unlock_irq(&mapping->tree_lock);
+ 	__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
++	cgroup_io_throttle(bdev, cgroup_io_acct);
+ 
+ 	return 1;
+ }
+diff --git a/fs/direct-io.c b/fs/direct-io.c
+index 9e81add..fe991ac 100644
+--- a/fs/direct-io.c
++++ b/fs/direct-io.c
+@@ -35,6 +35,7 @@
+ #include <linux/buffer_head.h>
+ #include <linux/rwsem.h>
+ #include <linux/uio.h>
++#include <linux/blk-io-throttle.h>
+ #include <asm/atomic.h>
+ 
+ /*
+@@ -666,6 +667,8 @@ submit_page_section(struct dio *dio, struct page *page,
+ 		/*
+ 		 * Read accounting is performed in submit_bio()
+ 		 */
++		struct block_device *bdev = dio->bio ? dio->bio->bi_bdev : NULL;
++		cgroup_io_throttle(bdev, len);
+ 		task_io_account_write(len);
+ 	}
+ 
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 789b6ad..a2b820d 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -23,6 +23,7 @@
+ #include <linux/init.h>
+ #include <linux/backing-dev.h>
+ #include <linux/task_io_accounting_ops.h>
++#include <linux/blk-io-throttle.h>
+ #include <linux/blkdev.h>
+ #include <linux/mpage.h>
+ #include <linux/rmap.h>
+@@ -1077,6 +1078,8 @@ int __set_page_dirty_nobuffers(struct page *page)
+ 	if (!TestSetPageDirty(page)) {
+ 		struct address_space *mapping = page_mapping(page);
+ 		struct address_space *mapping2;
++		struct block_device *bdev = NULL;
++		size_t cgroup_io_acct = 0;
+ 
+ 		if (!mapping)
+ 			return 1;
+@@ -1087,10 +1090,15 @@ int __set_page_dirty_nobuffers(struct page *page)
+ 			BUG_ON(mapping2 != mapping);
+ 			WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
+ 			if (mapping_cap_account_dirty(mapping)) {
++				bdev = (mapping->host &&
++					mapping->host->i_sb->s_bdev) ?
++					mapping->host->i_sb->s_bdev : NULL;
 +
-+This controller allows to limit the I/O bandwidth of specific block devices for
-+specific process containers (cgroups) imposing additional delays on I/O
-+requests for those processes that exceed the limits defined in the control
-+group filesystem.
-+
-+Bandwidth limiting rules offer better control over QoS with respect to priority
-+or weight-based solutions that only give information about applications'
-+relative performance requirements.
-+
-+The goal of the I/O bandwidth controller is to improve performance
-+predictability and QoS of the different control groups sharing the same block
-+devices.
-+
-+NOTE #1: if you're looking for a way to improve the overall throughput of the
-+system probably you should use a different solution.
-+
-+NOTE #2: the current implementation does not guarantee minimum bandwidth
-+levels, the QoS is implemented only slowing down i/o "traffic" that exceeds the
-+limits specified by the user. Minimum i/o rate thresholds are supposed to be
-+guaranteed if the user configures a proper i/o bandwidth partitioning of the
-+block devices shared among the different cgroups (theoretically if the sum of
-+all the single limits defined for a block device doesn't exceed the total i/o
-+bandwidth of that device).
-+
-+2. User Interface
-+
-+A new I/O bandwidth limitation rule is described using the file
-+blockio.bandwidth.
-+
-+The same file can be used to set multiple rules for different block devices
-+relative to the same cgroup.
-+
-+The syntax is the following:
-+# /bin/echo DEVICE:BANDWIDTH > CGROUP/blockio.bandwidth
-+
-+- DEVICE is the name of the device the limiting rule is applied to,
-+- BANDWIDTH is the maximum I/O bandwidth on DEVICE allowed by CGROUP (we can
-+  use a suffix k, K, m, M, g or G to indicate bandwidth values in KB/s, MB/s
-+  or GB/s),
-+- CGROUP is the name of the limited process container.
-+
-+Examples:
-+
-+* Mount the cgroup filesystem (blockio subsystem):
-+  # mkdir /mnt/cgroup
-+  # mount -t cgroup -oblockio blockio /mnt/cgroup
-+
-+* Instantiate the new cgroup "foo":
-+  # mkdir /mnt/cgroup/foo
-+  --> the cgroup foo has been created
-+
-+* Add the current shell process to the cgroup "foo":
-+  # /bin/echo $$ > /mnt/cgroup/foo/tasks
-+  --> the current shell has been added to the cgroup "foo"
-+
-+* Give maximum 1MiB/s of I/O bandwidth on /dev/sda1 for the cgroup "foo":
-+  # /bin/echo /dev/sda1:1M > /mnt/cgroup/foo/blockio.bandwidth
-+  # sh
-+  --> the subshell 'sh' is running in cgroup "foo" and it can use a maximum I/O
-+      bandwidth of 1MiB/s on /dev/sda1 (blockio.bandwidth is expressed in
-+      KiB/s).
-+
-+* Give maximum 8MiB/s of I/O bandwidth on /dev/sdb for the cgroup "foo":
-+  # /bin/echo /dev/sda5:8M > /mnt/cgroup/foo/blockio.bandwidth
-+  # sh
-+  --> the subshell 'sh' is running in cgroup "foo" and it can use a maximum I/O
-+      bandwidth of 1MiB/s on /dev/sda1 and 8MiB/s on /dev/sda5.
-+      NOTE: each partition needs its own limitation rule! In this case, for
-+      example, there's no limitation on /dev/sda5 for cgroup "foo".
-+
-+* Run a benchmark doing I/O on /dev/sda1 and /dev/sda5; I/O limits and usage
-+  defined for cgroup "foo" can be shown as following:
-+  # cat /mnt/cgroup/foo/blockio.bandwidth
-+  === device (8,1) ===
-+    bandwidth limit: 1024 KiB/sec
-+  current i/o usage: 819 KiB/sec
-+  === device (8,5) ===
-+    bandwidth limit: 1024 KiB/sec
-+  current i/o usage: 3102 KiB/sec
-+
-+  Devices are reported using (major, minor) numbers when reading
-+  blockio.bandwidth.
-+
-+  The corresponding device names can be retrieved in /proc/diskstats (or in
-+  other places as well).
-+
-+  For example to find the name of the device (8,5):
-+  # sed -ne 's/^ \+8 \+5 \([^ ]\+\).*/\1/p' /proc/diskstats
-+  sda5
-+
-+  Current I/O usage can be greater than bandwidth limit, this means the i/o
-+  controller is going to impose the limitation.
-+
-+* Extend the maximum I/O bandwidth for the cgroup "foo" to 8MiB/s:
-+  # /bin/echo /dev/sda1:8M > /mnt/cgroup/foo/blockio-bandwidth
-+
-+* Remove limiting rule on /dev/sda1 for cgroup "foo":
-+  # /bin/echo /dev/sda1:0 > /mnt/cgroup/foo/blockio-bandwidth
-+
-+3. Advantages of providing this feature
-+
-+* Allow I/O traffic shaping for block device shared among different cgroups
-+* Improve I/O performance predictability on block devices shared between
-+  different cgroups
-+* Limiting rules do not depend of the particular I/O scheduler (anticipatory,
-+  deadline, CFQ, noop) and/or the type of the underlying block devices
-+* The bandwidth limitations are guaranteed both for synchronous and
-+  asynchronous operations, even the I/O passing through the page cache or
-+  buffers and not only direct I/O (see below for details)
-+* It is possible to implement a simple user-space application to dynamically
-+  adjust the I/O workload of different process containers at run-time,
-+  according to the particular users' requirements and applications' performance
-+  constraints
-+* It is even possible to implement event-based performance throttling
-+  mechanisms; for example the same user-space application could actively
-+  throttle the I/O bandwidth to reduce power consumption when the battery of a
-+  mobile device is running low (power throttling) or when the temperature of a
-+  hardware component is too high (thermal throttling)
-+* Provides zero overhead for non block device I/O bandwidth controller users
-+
-+4. Design
-+
-+The I/O throttling is performed imposing an explicit timeout, via
-+schedule_timeout_killable() on the processes that exceed the I/O bandwidth
-+dedicated to the cgroup they belong to. I/O accounting happens per cgroup.
-+
-+It just works as expected for read operations: the real I/O activity is reduced
-+synchronously according to the defined limitations.
-+
-+Write operations, instead, are modeled depending of the dirty pages ratio
-+(write throttling in memory), since the writes to the real block devices are
-+processed asynchronously by different kernel threads (pdflush). However, the
-+dirty pages ratio is directly proportional to the actual I/O that will be
-+performed on the real block device. So, due to the asynchronous transfers
-+through the page cache, the I/O throttling in memory can be considered a form
-+of anticipatory throttling to the underlying block devices.
-+
-+Multiple re-writes in already dirtied page cache areas are not considered for
-+accounting the I/O activity. This is valid for multiple re-reads of pages
-+already present in the page cache as well.
-+
-+This means that a process that re-writes and/or re-reads multiple times the
-+same blocks in a file (without re-creating it by truncate(), ftrunctate(),
-+creat(), etc.) is affected by the I/O limitations only for the actual I/O
-+performed to (or from) the underlying block devices.
-+
-+Multiple rules for different block devices are stored in a linked list, using
-+the dev_t number of each block device as key to uniquely identify each element
-+of the list. RCU synchronization is used to protect the whole list structure,
-+since the elements in the list are not supposed to change frequently (they
-+change only when a new rule is defined or an old rule is removed or updated),
-+while the reads in the list occur at each operation that generates I/O. This
-+allows to provide zero overhead for cgroups that do not use any limitation.
-+
-+WARNING: per-block device limiting rules always refer to the dev_t device
-+number. If a block device is unplugged (i.e. a USB device) the limiting rules
-+associated to that device persist and they are still valid if a new device is
-+plugged in the system and it uses the same major and minor numbers.
+ 				__inc_zone_page_state(page, NR_FILE_DIRTY);
+ 				__inc_bdi_stat(mapping->backing_dev_info,
+ 						BDI_RECLAIMABLE);
+ 				task_io_account_write(PAGE_CACHE_SIZE);
++				cgroup_io_acct = PAGE_CACHE_SIZE;
+ 			}
+ 			radix_tree_tag_set(&mapping->page_tree,
+ 				page_index(page), PAGECACHE_TAG_DIRTY);
+@@ -1100,6 +1108,7 @@ int __set_page_dirty_nobuffers(struct page *page)
+ 			/* !PageAnon && !swapper_space */
+ 			__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+ 		}
++		cgroup_io_throttle(bdev, cgroup_io_acct);
+ 		return 1;
+ 	}
+ 	return 0;
+diff --git a/mm/readahead.c b/mm/readahead.c
+index d8723a5..dff6b02 100644
+--- a/mm/readahead.c
++++ b/mm/readahead.c
+@@ -14,6 +14,7 @@
+ #include <linux/blkdev.h>
+ #include <linux/backing-dev.h>
+ #include <linux/task_io_accounting_ops.h>
++#include <linux/blk-io-throttle.h>
+ #include <linux/pagevec.h>
+ #include <linux/pagemap.h>
+ 
+@@ -58,6 +59,9 @@ int read_cache_pages(struct address_space *mapping, struct list_head *pages,
+ 			int (*filler)(void *, struct page *), void *data)
+ {
+ 	struct page *page;
++	struct block_device *bdev =
++		(mapping->host && mapping->host->i_sb->s_bdev) ?
++		mapping->host->i_sb->s_bdev : NULL;
+ 	int ret = 0;
+ 
+ 	while (!list_empty(pages)) {
+@@ -76,6 +80,7 @@ int read_cache_pages(struct address_space *mapping, struct list_head *pages,
+ 			break;
+ 		}
+ 		task_io_account_read(PAGE_CACHE_SIZE);
++		cgroup_io_throttle(bdev, PAGE_CACHE_SIZE);
+ 	}
+ 	return ret;
+ }
 -- 
 1.5.4.3
 
