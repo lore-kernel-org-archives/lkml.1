@@ -1,44 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758145AbYFTRsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758994AbYFTRut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758145AbYFTRsT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 13:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbYFTRsI
+	id S1758994AbYFTRut (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 13:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbYFTRul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 13:48:08 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:48749 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752622AbYFTRsH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 13:48:07 -0400
-Date: Fri, 20 Jun 2008 10:48:05 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Mike Travis <travis@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-In-Reply-To: <485BE80E.10209@goop.org>
-Message-ID: <Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com>
- <20080604003019.509483000@polaris-admin.engr.sgi.com> <20080605102222.GA21319@elte.hu>
- <484EF29C.7080100@sgi.com> <485947A8.8060801@goop.org> <4859511E.5050605@sgi.com>
- <48596315.6020104@goop.org> <48596893.4040908@sgi.com> <485AADAC.3070301@sgi.com>
- <485AB78B.5090904@goop.org> <485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org>
- <485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com> <485AD138.4010404@goop.org>
- <485ADA12.5010505@sgi.com> <485ADC73.60009@goop.org> <485BDB04.4090709@sgi.com>
- <485BE80E.10209@goop.org>
+	Fri, 20 Jun 2008 13:50:41 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:53500 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752652AbYFTRuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 13:50:39 -0400
+Date: Fri, 20 Jun 2008 13:50:36 -0400
+To: Jeff Layton <jlayton@redhat.com>
+Cc: Neil Brown <neilb@suse.de>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH - take 2] knfsd: nfsd: Handle ERESTARTSYS from syscalls.
+Message-ID: <20080620175036.GC563@fieldses.org>
+References: <20080619101025.24263.patches@notabene> <1080619001109.24338@suse.de> <20080618210947.2110a541@tleilax.poochiereds.net> <18521.50300.572838.123366@notabene.brown> <20080619063824.00ca6381@tleilax.poochiereds.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080619063824.00ca6381@tleilax.poochiereds.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jun 2008, Jeremy Fitzhardinge wrote:
+On Thu, Jun 19, 2008 at 06:38:24AM -0400, Jeff Layton wrote:
+> On Thu, 19 Jun 2008 12:29:16 +1000
+> Neil Brown <neilb@suse.de> wrote:
+> 
+> > On Wednesday June 18, jlayton@redhat.com wrote:
+> > > 
+> > > No objection to the patch, but what signal was being sent to nfsd when
+> > > you saw this? If it's anything but a SIGKILL, then I wonder if we have
+> > > a race that we need to deal with. My understanding is that we have nfsd
+> > > flip between 2 sigmasks to prevent anything but a SIGKILL from being
+> > > delivered while we're handling the local filesystem operation.
+> > 
+> > SuSE /etc/init.d/nfsserver does
+> > 
+> >         killproc -n -KILL nfsd 
+> > 
+> > so it looks like a SIGKILL.
+> > 
+> > 
+> > > 
+> > > From nfsd():
+> > > 
+> > > ----------[snip]-----------
+> > >                 sigprocmask(SIG_SETMASK, &shutdown_mask, NULL);
+> > > 
+> > >                 /*
+> > >                  * Find a socket with data available and call its
+> > >                  * recvfrom routine.
+> > >                  */
+> > >                 while ((err = svc_recv(rqstp, 60*60*HZ)) == -EAGAIN)
+> > >                         ;
+> > >                 if (err < 0)
+> > >                         break;
+> > >                 update_thread_usage(atomic_read(&nfsd_busy));
+> > >                 atomic_inc(&nfsd_busy);
+> > > 
+> > >                 /* Lock the export hash tables for reading. */
+> > >                 exp_readlock();
+> > > 
+> > >                 /* Process request with signals blocked.  */
+> > >                 sigprocmask(SIG_SETMASK, &allowed_mask, NULL);
+> > > 
+> > >                 svc_process(rqstp);
+> > > 
+> > > ----------[snip]-----------
+> > > 
+> > > What happens if this catches a SIGINT after the err<0 check, but before
+> > > the mask is set to allowed_mask? Does svc_process() then get called with
+> > > a signal pending?
+> > 
+> > Yes, I suspect it does.
+> > 
+> > I wonder why we have all this mucking about this signal masks anyway.
+> > Anyone have any ideas about what it actually achieves?
+> > 
+> 
+> HCH asked me the same question when I did the conversion to kthreads.
+> My interpretation (based on guesswork here) was that we wanted to
+> distinguish between SIGKILL and other allowed signals. A SIGKILL is
+> allowed to interrupt the underlying I/O, but other signals should not.
+> 
+> The question to answer here, I suppose, is whether masking a pending
+> signal is sufficient to make signal_pending() return false. If I'm
+> looking correctly then the answer should be "yes".
 
-> So it seems the problem is that the pre-initialized gdt_page is being lost and
-> replaced with zero.  Linker script bug?
+Just looking out of curiosity: signal_pending() checks whether some
+thread_info->flags has TIF_SIGPENDING set.
 
-Is the pre initialized gdt page in the per cpu area? Does not look like 
-it. The loader setup for the percpu section changes with zero basing. 
-Maybe that has bad side effects?
+sigprocmask() sets current->blocked to the given set, then calls
+recalc_sigpending(), which (ignoring some freezer and SIGSTOP code that
+I don't understand), clears TIF_SIGPENDING if any pending signals are in
+the newly blocked set.  So, yes.
 
+--b.
+
+> So I don't think we
+> have a race here after all. I suspect that if SuSE used a different
+> signal here, that would prevent this from happening. For the record,
+> both RHEL and Fedora's init scripts use SIGINT for this.
