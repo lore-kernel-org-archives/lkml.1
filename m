@@ -1,126 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933506AbYFTUrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933585AbYFTUsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933506AbYFTUrl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 16:47:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765199AbYFTUe6
+	id S933585AbYFTUsA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 16:48:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765585AbYFTUhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 16:34:58 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:44061 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765180AbYFTUew (ORCPT
+	Fri, 20 Jun 2008 16:37:07 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33601 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757256AbYFTUhG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 16:34:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=b85LDsIJpi8ZrERfziR1KO+Zvl1fcKCkbdFNKgr37S6ZR23nYs3vq0hB2TP2AIBv2J
-         kpr3j96G+yFz0Z/Vy1PNUcTd+UxqCpLBcq+B0SfxhphlKep4+x4vWbcvSdfaWlBrEYFO
-         88TD/gM1+ku+zP/Th6moyRsoIGVy0eNJvLDCc=
-Message-ID: <86802c440806201334s30cbc685se44326812841fdd2@mail.gmail.com>
-Date: Fri, 20 Jun 2008 13:34:48 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Bernhard Walle" <bwalle@suse.de>
-Subject: Re: [PATCH 3/3] Limit E820 map when a user-defined memory map is specified
-Cc: kexec@lists.infradead.org, x86@kernel.org, linux-kernel@vger.kernel.org,
-       vgoyal@redhat.com
-In-Reply-To: <1213977420-1555-4-git-send-email-bwalle@suse.de>
+	Fri, 20 Jun 2008 16:37:06 -0400
+Date: Fri, 20 Jun 2008 13:37:04 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mike Travis <travis@sgi.com>
+cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
+ area
+In-Reply-To: <485C0D48.3090008@sgi.com>
+Message-ID: <Pine.LNX.4.64.0806201336400.16501@schroedinger.engr.sgi.com>
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com>
+ <484EF29C.7080100@sgi.com> <485947A8.8060801@goop.org> <4859511E.5050605@sgi.com>
+ <48596315.6020104@goop.org> <48596893.4040908@sgi.com> <485AADAC.3070301@sgi.com>
+ <485AB78B.5090904@goop.org> <485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org>
+ <485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com> <485AD138.4010404@goop.org>
+ <485ADA12.5010505@sgi.com> <485ADC73.60009@goop.org> <485BDB04.4090709@sgi.com>
+ <485BE80E.10209@goop.org> <Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>
+ <485BF8F5.6010802@goop.org> <Pine.LNX.4.64.0806201148430.16227@schroedinger.engr.sgi.com>
+ <485BFF57.5090906@goop.org> <m1hcbnq4dw.fsf@frodo.ebiederm.org>
+ <485C0D48.3090008@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1213977420-1555-1-git-send-email-bwalle@suse.de>
-	 <1213977420-1555-4-git-send-email-bwalle@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 20, 2008 at 8:57 AM, Bernhard Walle <bwalle@suse.de> wrote:
-> This patch brings back limiting of the E820 map when a user-defined
-> E820 map is specified. While the behaviour of i386 (32 bit) was to limit
-> the E820 map (and /proc/iomem), the behaviour of x86-64 (64 bit) was not to
-> limit.
+On Fri, 20 Jun 2008, Mike Travis wrote:
 
-then if you kexec new kernel, the second kernel will be have that
-limitation too.
+> > Is this a change that only got tested on x86_32?
+> 
+> I'm only testing this on x86_64.  The zero-based percpu/pda changes worked fine
+> up until just recently.  At first it was one of Ingo's "randconfig" config files
+> that was tripping it up, but lately it's not working on any config.
 
-any problem that you encountered without this patch?
-
-YH
-
->
-> That patch limits the E820 map again for both x86 architectures.
->
-> Code was tested for compilation and booting on a 32 bit and 64 bit system.
->
->
-> Signed-off-by: Bernhard Walle <bwalle@suse.de>
-> ---
->  arch/x86/kernel/e820.c |   30 ++++++++++++++++++++++++++++++
->  1 files changed, 30 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-> index f5b1736..2e7d385 100644
-> --- a/arch/x86/kernel/e820.c
-> +++ b/arch/x86/kernel/e820.c
-> @@ -934,6 +934,33 @@ static void early_panic(char *msg)
->        panic(msg);
->  }
->
-> +void __init e820_limit_regions(unsigned long long size)
-> +{
-> +       unsigned long long current_addr;
-> +       int i;
-> +
-> +       for (i = 0; i < e820.nr_map; i++) {
-> +               current_addr = e820.map[i].addr + e820.map[i].size;
-> +               if (current_addr < size)
-> +                       continue;
-> +
-> +               if (e820.map[i].type != E820_RAM)
-> +                       continue;
-> +
-> +               if (e820.map[i].addr >= size) {
-> +                       /*
-> +                        * This region starts past the end of the
-> +                        * requested size, skip it completely.
-> +                        */
-> +                       e820.nr_map = i;
-> +               } else {
-> +                       e820.nr_map = i + 1;
-> +                       e820.map[i].size -= current_addr - size;
-> +               }
-> +               return;
-> +       }
-> +}
-> +
->  /* "mem=nopentium" disables the 4MB page tables. */
->  static int __init parse_memopt(char *p)
->  {
-> @@ -951,6 +978,8 @@ static int __init parse_memopt(char *p)
->
->        mem_size = memparse(p, &p);
->        end_user_pfn = mem_size>>PAGE_SHIFT;
-> +       e820_limit_regions(mem_size);
-> +
->        return 0;
->  }
->  early_param("mem", parse_memopt);
-> @@ -995,6 +1024,7 @@ static int __init parse_memmap_opt(char *p)
->                e820_add_region(start_at, mem_size, E820_RESERVED);
->        } else {
->                end_user_pfn = (mem_size >> PAGE_SHIFT);
-> +               e820_limit_regions(mem_size);
->        }
->        return *p == '\0' ? 0 : -EINVAL;
->  }
-> --
-> 1.5.4.5
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+x86_32 does not need the zero basing since it does not have a pda.
