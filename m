@@ -1,250 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757531AbYFTNhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756649AbYFTNp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757531AbYFTNhz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 09:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbYFTNhs
+	id S1756649AbYFTNp2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 09:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754327AbYFTNpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 09:37:48 -0400
-Received: from mail.suse.de ([195.135.220.2]:56779 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752893AbYFTNhr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 09:37:47 -0400
-From: Bernhard Walle <bwalle@suse.de>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, yhlu.kernel@gmail.com,
-       Bernhard Walle <bwalle@suse.de>
-Subject: [PATCH] Unify crashkernel reservation for 32 and 64 bit
-Date: Fri, 20 Jun 2008 15:38:22 +0200
-Message-Id: <1213969102-17400-1-git-send-email-bwalle@suse.de>
-X-Mailer: git-send-email 1.5.4.5
+	Fri, 20 Jun 2008 09:45:19 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:49233 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754212AbYFTNpS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 09:45:18 -0400
+Date: Fri, 20 Jun 2008 15:45:12 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Sam Ravnborg <sam@ravnborg.org>,
+       "Robert P. J. Day" <rpjday@mindspring.com>
+cc: linux-kbuild@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] kbuild: sparse needs CF not CHECKFLAGS
+Message-ID: <Pine.LNX.4.64.0806201542200.27182@vixen.sonytel.be>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-805383586-1213969512=:27182"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch moves the reserve_crashkernel() to setup.c and removes the
-architecture-specific version. Both versions were more or less the same.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
+---584349381-805383586-1213969512=:27182
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
+Documentation/sparse.txt tells to use:
+
+    make C=2 CHECKFLAGS="-D__CHECK_ENDIAN__"
+
+However, this still doesn't enable endian checks. The correct syntax is:
+
+    make C=2 CF="-D__CHECK_ENDIAN__"
+
+This documentation bug was introduced by the following commit:
+
+    commit 1c7bafe7206d928eaccbcbd08d868733e0fb7054
+    Author: Robert P. J. Day <rpjday@mindspring.com>
+    Date:   Wed Sep 13 07:57:50 2006 -0400
+
+	kbuild: clarify "make C=" build option
+	    
+	Clarify the use of "make C=" in the top-level Makefile, and fix a
+	typo in the Documentation file.
+
+	Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+
+This `typo' was not a typo, as `CF' had been introduced much earlier, by:
+
+    commit 7b49bb9aff8b14d15da58111d8908c877c0a525e
+    Author: viro@ZenIV.linux.org.uk <viro@ZenIV.linux.org.uk>
+    Date:   Fri Sep 9 21:14:35 2005 +0100
+
+	[PATCH] kbuild: CF=<arguments> passes arguments to sparse
+	
+	Allows to add to sparse arguments without mutilating makefiles - just
+	pass CF=<arguments> and they will be added to CHECKFLAGS.
+    
+    Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+    Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- arch/x86/kernel/setup.c    |   61 ++++++++++++++++++++++++++++++++++++++++++++
- arch/x86/kernel/setup_32.c |   53 --------------------------------------
- arch/x86/kernel/setup_64.c |   40 ----------------------------
- include/asm-x86/setup.h    |    3 ++
- 4 files changed, 64 insertions(+), 93 deletions(-)
+ Documentation/sparse.txt |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 542ff3c..915aa13 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -3,6 +3,7 @@
- #include <linux/init.h>
- #include <linux/bootmem.h>
- #include <linux/percpu.h>
-+#include <linux/kexec.h>
- #include <asm/smp.h>
- #include <asm/percpu.h>
- #include <asm/sections.h>
-@@ -11,6 +12,7 @@
- #include <asm/topology.h>
- #include <asm/mpspec.h>
- #include <asm/apicdef.h>
-+#include <asm/highmem.h>
+--- a/Documentation/sparse.txt
++++ b/Documentation/sparse.txt
+@@ -73,10 +73,10 @@ recompiled, or use "make C=2" to run spa
+ be recompiled or not.  The latter is a fast way to check the whole tree if you
+ have already built it.
  
- #ifdef CONFIG_X86_LOCAL_APIC
- unsigned int num_processors;
-@@ -404,3 +406,62 @@ EXPORT_SYMBOL(node_to_cpumask);
- #endif /* CONFIG_DEBUG_PER_CPU_MAPS */
+-The optional make variable CHECKFLAGS can be used to pass arguments to sparse.
+-The build system passes -Wbitwise to sparse automatically.  To perform
+-endianness checks, you may define __CHECK_ENDIAN__:
++The optional make variable CF can be used to pass arguments to sparse.  The
++build system passes -Wbitwise to sparse automatically.  To perform endianness
++checks, you may define __CHECK_ENDIAN__:
  
- #endif /* X86_64_NUMA */
-+
-+
-+/*
-+ * --------- Crashkernel reservation ------------------------------
-+ */
-+
-+static inline unsigned long long get_total_mem(void)
-+{
-+	unsigned long long total;
-+
-+	total = max_low_pfn - min_low_pfn;
-+#ifdef CONFIG_HIGHMEM
-+	total += highend_pfn - highstart_pfn;
-+#endif
-+
-+	return total << PAGE_SHIFT;
-+}
-+
-+#ifdef CONFIG_KEXEC
-+void __init reserve_crashkernel(void)
-+{
-+	unsigned long long total_mem;
-+	unsigned long long crash_size, crash_base;
-+	int ret;
-+
-+	total_mem = get_total_mem();
-+
-+	ret = parse_crashkernel(boot_command_line, total_mem,
-+			&crash_size, &crash_base);
-+	if (ret == 0 && crash_size > 0) {
-+		if (crash_base <= 0) {
-+			printk(KERN_INFO "crashkernel reservation failed - "
-+					"you have to specify a base address\n");
-+			return;
-+		}
-+
-+		if (reserve_bootmem_generic(crash_base, crash_size,
-+					BOOTMEM_EXCLUSIVE) < 0) {
-+			printk(KERN_INFO "crashkernel reservation failed - "
-+					"memory is in use\n");
-+			return;
-+		}
-+
-+		printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
-+				"for crashkernel (System RAM: %ldMB)\n",
-+				(unsigned long)(crash_size >> 20),
-+				(unsigned long)(crash_base >> 20),
-+				(unsigned long)(total_mem >> 20));
-+
-+		crashk_res.start = crash_base;
-+		crashk_res.end   = crash_base + crash_size - 1;
-+		insert_resource(&iomem_resource, &crashk_res);
-+	}
-+}
-+#else
-+void __init reserve_crashkernel(void)
-+{}
-+#endif
-+
-diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
-index 348dc8a..a00b71b 100644
---- a/arch/x86/kernel/setup_32.c
-+++ b/arch/x86/kernel/setup_32.c
-@@ -429,59 +429,6 @@ extern unsigned long __init setup_memory(void);
- extern void zone_sizes_init(void);
- #endif /* !CONFIG_NEED_MULTIPLE_NODES */
+-        make C=2 CHECKFLAGS="-D__CHECK_ENDIAN__"
++        make C=2 CF="-D__CHECK_ENDIAN__"
  
--static inline unsigned long long get_total_mem(void)
--{
--	unsigned long long total;
--
--	total = max_low_pfn - min_low_pfn;
--#ifdef CONFIG_HIGHMEM
--	total += highend_pfn - highstart_pfn;
--#endif
--
--	return total << PAGE_SHIFT;
--}
--
--#ifdef CONFIG_KEXEC
--static void __init reserve_crashkernel(void)
--{
--	unsigned long long total_mem;
--	unsigned long long crash_size, crash_base;
--	int ret;
--
--	total_mem = get_total_mem();
--
--	ret = parse_crashkernel(boot_command_line, total_mem,
--			&crash_size, &crash_base);
--	if (ret == 0 && crash_size > 0) {
--		if (crash_base <= 0) {
--			printk(KERN_INFO "crashkernel reservation failed - "
--					"you have to specify a base address\n");
--			return;
--		}
--
--		if (reserve_bootmem_generic(crash_base, crash_size,
--					BOOTMEM_EXCLUSIVE) < 0) {
--			printk(KERN_INFO "crashkernel reservation failed - "
--					"memory is in use\n");
--			return;
--		}
--
--		printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
--				"for crashkernel (System RAM: %ldMB)\n",
--				(unsigned long)(crash_size >> 20),
--				(unsigned long)(crash_base >> 20),
--				(unsigned long)(total_mem >> 20));
--
--		crashk_res.start = crash_base;
--		crashk_res.end   = crash_base + crash_size - 1;
--		insert_resource(&iomem_resource, &crashk_res);
--	}
--}
--#else
--static inline void __init reserve_crashkernel(void)
--{}
--#endif
--
- #ifdef CONFIG_BLK_DEV_INITRD
- 
- static bool do_relocate_initrd = false;
-diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
-index 6ad0fe4..076d61b 100644
---- a/arch/x86/kernel/setup_64.c
-+++ b/arch/x86/kernel/setup_64.c
-@@ -244,46 +244,6 @@ static inline void copy_edd(void)
- }
- #endif
- 
--#ifdef CONFIG_KEXEC
--static void __init reserve_crashkernel(void)
--{
--	unsigned long long total_mem;
--	unsigned long long crash_size, crash_base;
--	int ret;
--
--	total_mem = ((unsigned long long)max_low_pfn - min_low_pfn) << PAGE_SHIFT;
--
--	ret = parse_crashkernel(boot_command_line, total_mem,
--			&crash_size, &crash_base);
--	if (ret == 0 && crash_size) {
--		if (crash_base <= 0) {
--			printk(KERN_INFO "crashkernel reservation failed - "
--					"you have to specify a base address\n");
--			return;
--		}
--
--		if (reserve_bootmem_generic(crash_base, crash_size,
--					BOOTMEM_EXCLUSIVE) < 0) {
--			printk(KERN_INFO "crashkernel reservation failed - "
--					"memory is in use\n");
--			return;
--		}
--
--		printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
--				"for crashkernel (System RAM: %ldMB)\n",
--				(unsigned long)(crash_size >> 20),
--				(unsigned long)(crash_base >> 20),
--				(unsigned long)(total_mem >> 20));
--		crashk_res.start = crash_base;
--		crashk_res.end   = crash_base + crash_size - 1;
--		insert_resource(&iomem_resource, &crashk_res);
--	}
--}
--#else
--static inline void __init reserve_crashkernel(void)
--{}
--#endif
--
- /* Current gdt points %fs at the "master" per-cpu area: after this,
-  * it's on the real one. */
- void switch_to_new_gdt(void)
-diff --git a/include/asm-x86/setup.h b/include/asm-x86/setup.h
-index e14b6e7..b434bdd 100644
---- a/include/asm-x86/setup.h
-+++ b/include/asm-x86/setup.h
-@@ -8,6 +8,9 @@
- /* Interrupt control for vSMPowered x86_64 systems */
- void vsmp_init(void);
- 
-+/* Crashkernel reservation */
-+void reserve_crashkernel(void);
-+
- #ifndef CONFIG_PARAVIRT
- #define paravirt_post_allocator_init()	do {} while (0)
- #endif
--- 
-1.5.4.5
+ These checks are disabled by default as they generate a host of warnings.
 
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+Sony Technology and Software Centre Europe
+A division of Sony Service Centre (Europe) N.V.
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
+VAT BE 0413.825.160 · RPR Brussels
+Fortis 293-0376800-10 GEBA-BE-BB
+---584349381-805383586-1213969512=:27182--
