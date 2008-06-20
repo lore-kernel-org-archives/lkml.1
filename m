@@ -1,141 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbYFTWvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757485AbYFTXJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757065AbYFTWvu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 18:51:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbYFTWvl
+	id S1757485AbYFTXJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 19:09:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755583AbYFTXJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 18:51:41 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45949
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754357AbYFTWvj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 18:51:39 -0400
-Date: Fri, 20 Jun 2008 15:51:39 -0700 (PDT)
-Message-Id: <20080620.155139.224032701.davem@davemloft.net>
-To: a.beregalov@gmail.com
-Cc: kernel-testers@vger.kernel.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.26-rc: SPARC: Sun Ultra 10 can not boot
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <a4423d670806201542o5415cad7p6b9a38b67252cee1@mail.gmail.com>
-References: <a4423d670806201419i2f0c0982j69eb423f9ecd239d@mail.gmail.com>
-	<20080620.142137.242155859.davem@davemloft.net>
-	<a4423d670806201542o5415cad7p6b9a38b67252cee1@mail.gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 20 Jun 2008 19:09:20 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:41611 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755549AbYFTXJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 19:09:19 -0400
+Date: Sat, 21 Jun 2008 01:09:10 +0200
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Rene Herman <rene.herman@keyaccess.nl>, Takashi Iwai <tiwai@suse.de>,
+       Jaroslav Kysela <perex@perex.cz>
+Cc: ALSA devel <alsa-devel@alsa-project.org>, mulix@mulix.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [alsa-devel] looping S/PDIF data
+Message-ID: <20080621010910.018f880d@mjolnir.drzeus.cx>
+In-Reply-To: <485C2DF7.7080408@keyaccess.nl>
+References: <20080531112606.5884a1c9@mjolnir.drzeus.cx>
+	<20080617215504.3203a5ed@mjolnir.drzeus.cx>
+	<4858B84B.4030800@keyaccess.nl>
+	<s5hej6t91u1.wl%tiwai@suse.de>
+	<Pine.LNX.4.61.0806191435270.1798@tm8103-a.perex-int.cz>
+	<s5hskv97fqk.wl%tiwai@suse.de>
+	<20080620214516.28e9d3f3@mjolnir.drzeus.cx>
+	<485C0A97.7020909@keyaccess.nl>
+	<20080621000050.43160d47@mjolnir.drzeus.cx>
+	<485C2DF7.7080408@keyaccess.nl>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
+X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-722-1214002850-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Alexander Beregalov" <a.beregalov@gmail.com>
-Date: Sat, 21 Jun 2008 02:42:36 +0400
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-> I can not see such messages in lockdep output:
-> 
-> [   17.960404] Console: colour dummy device 80x25
-> [   18.060543] console handover: boot [earlyprom0] -> real [tty0]
-> [   18.169062] Lock dependency validator: Copyright (c) 2006 Red Hat, Inc.,
-> Ingo Molnar
-> [   18.169180] ... MAX_LOCKDEP_SUBCLASSES:    8
-> [   18.169246] ... MAX_LOCK_DEPTH:          48
-> [   18.169310] ... MAX_LOCKDEP_KEYS:        2048
-> [   18.169376] ... CLASSHASH_SIZE:           1024
-> [   18.169444] ... MAX_LOCKDEP_ENTRIES:     8192
-> [   18.169509] ... MAX_LOCKDEP_CHAINS:      16384
-> [   18.169577] ... CHAINHASH_SIZE:          8192
-> [   18.169643]  memory used by lock dependency info: 1648 kB
-> [   18.169722]  per task-struct memory footprint: 2688 bytes
-> [   18.169798] ------------------------
-> [   18.169855] | Locking API testsuite:
+--=_freyr.drzeus.cx-722-1214002850-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Something is screwey here... Hmmm...
+On Sat, 21 Jun 2008 00:23:51 +0200
+Rene Herman <rene.herman@keyaccess.nl> wrote:
 
-When I added the changeset in question, it fixed a problem in that
-any backtrace of a kernel thread would loop forever at the end.
-Any stack backtrace would hang or reach a safety limit (such as
-the one imposed by lockdep).
+> On 21-06-08 00:00, Pierre Ossman wrote:
+>=20
+> > On Fri, 20 Jun 2008 21:52:55 +0200 Rene Herman
+> > <rene.herman@keyaccess.nl> wrote:
+> >=20
+> >> On 20-06-08 21:45, Pierre Ossman wrote:
+> >>> Are there any specs on this hardware? I could play around a bit
+> >>> myself, but I can't really find any documentation on the
+> >>> registers.
+> >> At:
+> >>=20
+> >> ftp://ftp.alsa-project.org/pub/manuals/trident/
+> >>=20
+> >> there's a 4D-Wave DX technical reference manual and .doc files
+> >> which at first glance look useful.
+> >>=20
+> >=20
+> > Ah, thanks. This is an NX, but hopefully they don't differ that much.
+>=20
+> No idea, but if you come up with something and keep me in CC I'll test=20
+> it on a DX. Just acquired one on eBay a few days ago as a coincedence.
+>=20
 
-Please double check that you are precisely reverting this patch
-below _before_ doing these tests:
+Well aren't things just so much easier with a decent spec. I have this
+one solved now. :)
 
-commit a051bc5bb1ac6dc138d529077fa20cbbc6622d95
-Author: David S. Miller <davem@davemloft.net>
-Date:   Wed May 21 18:14:28 2008 -0700
+The following patch disables both the S/PDIF output, and the DMA engine
+when paused. As for Jaroslav's comment, the documentation seems to
+suggest that the DMA disabled by the main code path is just for the
+mixer engine, which is not used when feeding the S/PDIF directly. This
+is supported by my tests as S/PDIF output is paused when using hw:0.0
+(the mixer engine), but not with hw:0.2 (the raw S/PDIF).
 
-    sparc64: Fix kernel thread stack termination.
-    
-    Because of the silly way I set up the initial stack for
-    new kernel threads, there is a loop at the top of the
-    stack.
-    
-    To fix this, properly add another stack frame that is copied
-    from the parent and terminate it in the child by setting
-    the frame pointer in that frame to zero.
-    
-    Signed-off-by: David S. Miller <davem@davemloft.net>
+Regarding the DX, the docs say that the DX lacks S/PDIF, so it should
+be unaffected. For the SiS chip, Takashi's patch might still be needed.
 
-diff --git a/arch/sparc64/kernel/process.c b/arch/sparc64/kernel/process.c
-index 0a0c05f..2084f81 100644
---- a/arch/sparc64/kernel/process.c
-+++ b/arch/sparc64/kernel/process.c
-@@ -657,20 +657,39 @@ int copy_thread(int nr, unsigned long clone_flags, unsigned long sp,
- 		struct task_struct *p, struct pt_regs *regs)
- {
- 	struct thread_info *t = task_thread_info(p);
-+	struct sparc_stackf *parent_sf;
-+	unsigned long child_stack_sz;
- 	char *child_trap_frame;
-+	int kernel_thread;
- 
--	/* Calculate offset to stack_frame & pt_regs */
--	child_trap_frame = task_stack_page(p) + (THREAD_SIZE - (TRACEREG_SZ+STACKFRAME_SZ));
--	memcpy(child_trap_frame, (((struct sparc_stackf *)regs)-1), (TRACEREG_SZ+STACKFRAME_SZ));
-+	kernel_thread = (regs->tstate & TSTATE_PRIV) ? 1 : 0;
-+	parent_sf = ((struct sparc_stackf *) regs) - 1;
- 
--	t->flags = (t->flags & ~((0xffUL << TI_FLAG_CWP_SHIFT) | (0xffUL << TI_FLAG_CURRENT_DS_SHIFT))) |
-+	/* Calculate offset to stack_frame & pt_regs */
-+	child_stack_sz = ((STACKFRAME_SZ + TRACEREG_SZ) +
-+			  (kernel_thread ? STACKFRAME_SZ : 0));
-+	child_trap_frame = (task_stack_page(p) +
-+			    (THREAD_SIZE - child_stack_sz));
-+	memcpy(child_trap_frame, parent_sf, child_stack_sz);
-+
-+	t->flags = (t->flags & ~((0xffUL << TI_FLAG_CWP_SHIFT) |
-+				 (0xffUL << TI_FLAG_CURRENT_DS_SHIFT))) |
- 		(((regs->tstate + 1) & TSTATE_CWP) << TI_FLAG_CWP_SHIFT);
- 	t->new_child = 1;
- 	t->ksp = ((unsigned long) child_trap_frame) - STACK_BIAS;
--	t->kregs = (struct pt_regs *)(child_trap_frame+sizeof(struct sparc_stackf));
-+	t->kregs = (struct pt_regs *) (child_trap_frame +
-+				       sizeof(struct sparc_stackf));
- 	t->fpsaved[0] = 0;
- 
--	if (regs->tstate & TSTATE_PRIV) {
-+	if (kernel_thread) {
-+		struct sparc_stackf *child_sf = (struct sparc_stackf *)
-+			(child_trap_frame + (STACKFRAME_SZ + TRACEREG_SZ));
-+
-+		/* Zero terminate the stack backtrace.  */
-+		child_sf->fp = NULL;
-+		t->kregs->u_regs[UREG_FP] =
-+		  ((unsigned long) child_sf) - STACK_BIAS;
-+
- 		/* Special case, if we are spawning a kernel thread from
- 		 * a userspace task (via KMOD, NFS, or similar) we must
- 		 * disable performance counters in the child because the
-@@ -681,12 +700,7 @@ int copy_thread(int nr, unsigned long clone_flags, unsigned long sp,
- 			t->pcr_reg = 0;
- 			t->flags &= ~_TIF_PERFCTR;
- 		}
--		t->kregs->u_regs[UREG_FP] = t->ksp;
- 		t->flags |= ((long)ASI_P << TI_FLAG_CURRENT_DS_SHIFT);
--		flush_register_windows();
--		memcpy((void *)(t->ksp + STACK_BIAS),
--		       (void *)(regs->u_regs[UREG_FP] + STACK_BIAS),
--		       sizeof(struct sparc_stackf));
- 		t->kregs->u_regs[UREG_G6] = (unsigned long) t;
- 		t->kregs->u_regs[UREG_G4] = (unsigned long) t->task;
- 	} else {
+--
+
+trident: pause s/pdif output
+
+Stop the S/PDIF DMA engine and output when the device is told to pause.
+It will keep on looping the current buffer contents if this isn't done.
+
+Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+--
+
+diff --git a/sound/pci/trident/trident_main.c b/sound/pci/trident/trident_m=
+ain.c
+index bbcee2c..a69b420 100644
+--- a/sound/pci/trident/trident_main.c
++++ b/sound/pci/trident/trident_main.c
+@@ -1590,7 +1590,10 @@ static int snd_trident_trigger(struct snd_pcm_substr=
+eam *substream,
+        if (spdif_flag) {
+                if (trident->device !=3D TRIDENT_DEVICE_ID_SI7018) {
+                        outl(trident->spdif_pcm_bits, TRID_REG(trident, NX_=
+SPCSTATUS));
+-                       outb(trident->spdif_pcm_ctrl, TRID_REG(trident, NX_=
+SPCTRL_SPCSO + 3));
++                       val =3D trident->spdif_pcm_ctrl;
++                       if (!go)
++                               val &=3D ~(0x28);
++                       outb(val, TRID_REG(trident, NX_SPCTRL_SPCSO + 3));
+                } else {
+                        outl(trident->spdif_pcm_bits, TRID_REG(trident, SI_=
+SPDIF_CS));
+                        val =3D inl(TRID_REG(trident, SI_SERIAL_INTF_CTRL))=
+ | SPDIF_EN;
+
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Use end-to-end encryption where
+  possible.
+
+--=_freyr.drzeus.cx-722-1214002850-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkhcOJsACgkQ7b8eESbyJLiE/gCdHHBgnKvyoUkWvk0n4gHfSJ+o
+fewAn0e8nvNhAlEu5GmLGpKNzBpKTpj2
+=9Khl
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-722-1214002850-0001-2--
