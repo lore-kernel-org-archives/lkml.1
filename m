@@ -1,101 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756589AbYFTUCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757268AbYFTUE0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756589AbYFTUCQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 16:02:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbYFTUCF
+	id S1757268AbYFTUE0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 16:04:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYFTUES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 16:02:05 -0400
-Received: from webmail.chats.mrv.com ([66.43.110.3]:51001 "EHLO
-	chmailsrv.int.mrv.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753002AbYFTUCE (ORCPT
+	Fri, 20 Jun 2008 16:04:18 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:21252 "EHLO
+	VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752515AbYFTUER (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 16:02:04 -0400
-X-Greylist: delayed 910 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Jun 2008 16:02:04 EDT
-Date: Fri, 20 Jun 2008 12:46:50 -0700
-From: Nye Liu <nyet@mrv.com>
-To: panto@intracom.gr
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1] CPM1: Don't send break on TX_STOP, don't interrupt
-	RX/TX when adjusting termios parameters
-Message-ID: <20080620194650.GA30019@mrv.com>
+	Fri, 20 Jun 2008 16:04:17 -0400
+X-BigFish: VPS9(z34a4l1033izzz10d3izzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0K2S2EM-02-ZHI-01
+Date: Fri, 20 Jun 2008 22:04:02 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+CC: linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>
+Subject: [PATCH 4/7] x86: pat.c consolidate error/debug messages in
+	reserve_memtype
+Message-ID: <20080620200402.GF4105@alberich.amd.com>
+References: <20080620195503.GB4105@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 20 Jun 2008 19:48:29.0924 (UTC) FILETIME=[9D20E240:01C8D30E]
+In-Reply-To: <20080620195503.GB4105@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 20 Jun 2008 20:04:05.0202 (UTC) FILETIME=[CA98FB20:01C8D310]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nye Liu <nyet@mrv.com>
 
-Before setting STOP_TX, set _brkcr to 0 so the SMC does not send a break
-character. The driver appears to properly re-initialize _brkcr when the SMC is
-restarted.
+... and move last debug message out of locked section.
 
-Do not interrupt RX/TX when the termios is being adjusted; it results in
-corrupted characters appearing on the line.
-
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 ---
+ arch/x86/mm/pat.c |   51 +++++++++++----------------------------------------
+ 1 files changed, 11 insertions(+), 40 deletions(-)
 
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
-index a19dc7e..babd06b 100644
---- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -476,10 +476,13 @@ static void cpm_uart_shutdown(struct uart_port *port)
- 		}
+diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+index c996a36..1118288 100644
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -269,12 +269,6 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
+ 			}
  
- 		/* Shut them really down and reinit buffer descriptors */
--		if (IS_SMC(pinfo))
-+		if (IS_SMC(pinfo)) {
-+			out_be16(&pinfo->smcup->smc_brkcr, 0);
- 			cpm_line_cr_cmd(pinfo, CPM_CR_STOP_TX);
--		else
-+		} else {
-+			out_be16(&pinfo->sccup->scc_brkcr, 0);
- 			cpm_line_cr_cmd(pinfo, CPM_CR_GRA_STOP_TX);
-+		}
+ 			if (actual_type != entry->type) {
+-				printk(
+-		KERN_INFO "%s:%d conflicting memory types %Lx-%Lx %s<->%s\n",
+-					current->comm, current->pid,
+-					start, end,
+-					cattr_name(actual_type),
+-					cattr_name(entry->type));
+ 				err = -EBUSY;
+ 				break;
+ 			}
+@@ -290,12 +284,6 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
+ 				}
  
- 		cpm_uart_initbd(pinfo);
+ 				if (actual_type != entry->type) {
+-					printk(
+-		KERN_INFO "%s:%d conflicting memory types %Lx-%Lx %s<->%s\n",
+-						current->comm, current->pid,
+-						start, end,
+-						cattr_name(actual_type),
+-						cattr_name(entry->type));
+ 					err = -EBUSY;
+ 					break;
+ 				}
+@@ -321,12 +309,6 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
+ 			}
+ 
+ 			if (actual_type != entry->type) {
+-				printk(
+-		KERN_INFO "%s:%d conflicting memory types %Lx-%Lx %s<->%s\n",
+-					current->comm, current->pid,
+-					start, end,
+-					cattr_name(actual_type),
+-					cattr_name(entry->type));
+ 				err = -EBUSY;
+ 				break;
+ 			}
+@@ -342,12 +324,6 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
+ 				}
+ 
+ 				if (actual_type != entry->type) {
+-					printk(
+-		KERN_INFO "%s:%d conflicting memory types %Lx-%Lx %s<->%s\n",
+-						current->comm, current->pid,
+-						start, end,
+-						cattr_name(actual_type),
+-						cattr_name(entry->type));
+ 					err = -EBUSY;
+ 					break;
+ 				}
+@@ -367,10 +343,12 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
  	}
-@@ -590,9 +593,11 @@ static void cpm_uart_set_termios(struct uart_port *port,
- 		 * enables, because we want to put them back if they were
- 		 * present.
- 		 */
--		prev_mode = in_be16(&smcp->smc_smcmr);
--		out_be16(&smcp->smc_smcmr, smcr_mk_clen(bits) | cval | SMCMR_SM_UART);
--		setbits16(&smcp->smc_smcmr, (prev_mode & (SMCMR_REN | SMCMR_TEN)));
-+		prev_mode = in_be16(&smcp->smc_smcmr) & (SMCMR_REN | SMCMR_TEN);
-+		/* Output in *one* operation, so we don't interrupt RX/TX if they
-+		 * were already enabled. */
-+		out_be16(&smcp->smc_smcmr, smcr_mk_clen(bits) | cval |
-+		    SMCMR_SM_UART | prev_mode);
- 	} else {
- 		out_be16(&sccp->scc_psmr, (sbits << 12) | scval);
- 	}
-@@ -1324,12 +1329,14 @@ static int __init cpm_uart_console_setup(struct console *co, char *options)
- 	udbg_putc = NULL;
- #endif
  
--	cpm_line_cr_cmd(pinfo, CPM_CR_STOP_TX);
+ 	if (err) {
+-		printk(KERN_INFO
+-	"reserve_memtype failed 0x%Lx-0x%Lx, track %s, req %s\n",
+-			start, end, cattr_name(new->type),
+-			cattr_name(req_type));
++		printk(KERN_INFO "%s:%d conflicting memory types "
++		       "%Lx-%Lx %s<->%s\n", current->comm, current->pid, start,
++		       end, cattr_name(new->type), cattr_name(entry->type));
++		printk(KERN_INFO "reserve_memtype failed 0x%Lx-0x%Lx, "
++		       "track %s, req %s\n",
++		       start, end, cattr_name(new->type), cattr_name(req_type));
+ 		kfree(new);
+ 		spin_unlock(&memtype_lock);
+ 		return err;
+@@ -382,19 +360,12 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
+ 		dprintk("New Entry\n");
+ 	}
+ 
+-	if (new_type) {
+-		dprintk(
+-	"reserve_memtype added 0x%Lx-0x%Lx, track %s, req %s, ret %s\n",
+-			start, end, cattr_name(actual_type),
+-			cattr_name(req_type), cattr_name(*new_type));
+-	} else {
+-		dprintk(
+-	"reserve_memtype added 0x%Lx-0x%Lx, track %s, req %s\n",
+-			start, end, cattr_name(actual_type),
+-			cattr_name(req_type));
+-	}
 -
- 	if (IS_SMC(pinfo)) {
-+		out_be16(&pinfo->smcup->smc_brkcr, 0);
-+		cpm_line_cr_cmd(pinfo, CPM_CR_STOP_TX);
- 		clrbits8(&pinfo->smcp->smc_smcm, SMCM_RX | SMCM_TX);
- 		clrbits16(&pinfo->smcp->smc_smcmr, SMCMR_REN | SMCMR_TEN);
- 	} else {
-+		out_be16(&pinfo->sccup->scc_brkcr, 0);
-+		cpm_line_cr_cmd(pinfo, CPM_CR_GRA_STOP_TX);
- 		clrbits16(&pinfo->sccp->scc_sccm, UART_SCCM_TX | UART_SCCM_RX);
- 		clrbits32(&pinfo->sccp->scc_gsmrl, SCC_GSMRL_ENR | SCC_GSMRL_ENT);
- 	}
-
+ 	spin_unlock(&memtype_lock);
++
++	dprintk("reserve_memtype added 0x%Lx-0x%Lx, track %s, req %s, ret %s\n",
++		start, end, cattr_name(new->type), cattr_name(req_type),
++		new_type ? cattr_name(*new_type) : "-");
++
+ 	return err;
+ }
+ 
 -- 
-Nye Liu
-nliu@mrv.com
-(818) 772-6235x248
-(818) 772-0576 fax
+1.5.5.4
 
-"Who would be stupid enough to quote a fictitious character?"
-	-- Don Quixote
+
+
