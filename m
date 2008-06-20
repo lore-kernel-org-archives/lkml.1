@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752371AbYFTGac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752603AbYFTGlF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752371AbYFTGac (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 02:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYFTGaX
+	id S1752603AbYFTGlF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 02:41:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbYFTGky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 02:30:23 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50129 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750939AbYFTGaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 02:30:22 -0400
-Date: Fri, 20 Jun 2008 08:29:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Dave Jones <davej@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCH] x86: make 64bit identify_cpu use cpu_dev v2
-Message-ID: <20080620062958.GA31182@elte.hu>
-References: <200806180215.53755.yhlu.kernel@gmail.com> <200806191530.32354.yhlu.kernel@gmail.com>
+	Fri, 20 Jun 2008 02:40:54 -0400
+Received: from fk-out-0910.google.com ([209.85.128.184]:28985 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751251AbYFTGkx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 02:40:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=i/HjrAv+0gvA2jFeNQ2fRMV1c3FW/qwerun93mSNsPwkI7/4gmiQ5VH45f+U/q+k5b
+         LFujgUTx7qaOKevedxNgzxhMLcBAuiQV2RnpaFuyTgQkm/VMTpK1BQjhVKE4nWlNzRMQ
+         OKzsNPjGbmYlk5naGdvem1jVb4EEmO28+8H1k=
+Message-ID: <485B50F1.2020802@gmail.com>
+Date: Fri, 20 Jun 2008 08:40:49 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200806191530.32354.yhlu.kernel@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Roland Dreier <rdreier@cisco.com>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Eli Cohen <eli@dev.mellanox.co.il>, general@lists.openfabrics.org
+Subject: Re: wait_for_completion_timeout() spurious failure under heavy load?
+References: <ada63s5w088.fsf@cisco.com>
+In-Reply-To: <ada63s5w088.fsf@cisco.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Roland Dreier napsal(a):
+> It seems that the current implementaton of wait_for_completion_timeout()
+> has a small problem under very high load for the common pattern:
+> 
+> 	if (!wait_for_completion_timeout(&done, timeout))
+> 		/* handle failure */
+> 
+> because the implementation very roughly does (lots of code deleted to
+> show the basic flow):
+> 
+> 	static inline long __sched
+> 	do_wait_for_common(struct completion *x, long timeout, int state)
+> 	{
+> 		if (x->done)
+> 			return timeout;
+> 
+> 		do {
+> 			timeout = schedule_timeout(timeout);
+> 	
+> 			if (!timeout)
+> 				return timeout;
+> 	
+> 		} while (!x->done);
+> 	
+> 		return timeout;
+> 	}
+> 
+> so if the system is very busy and x->done is not set when
+> do_wait_for_common() is entered, it is possible that the first call to
+> schedule_timeout() returns 0 because the task doing wait_for_completion
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-
-> v2: fix early_panic on some conf
->     reason : struct cpu_vendor_dev size is 16, need to make table to be 16
->              byte alignment
->     also print out the cpu supported...
-
-applied to tip/x86/cpu, thanks Yinghai.
-
-> --- linux-2.6.orig/arch/x86/kernel/vmlinux_64.lds.S
-> +++ linux-2.6/arch/x86/kernel/vmlinux_64.lds.S
-> @@ -168,6 +168,7 @@ SECTIONS
->  	*(.con_initcall.init)
->    }
->    __con_initcall_end = .;
-> +  . = ALIGN(16);
->    __x86cpuvendor_start = .;
->    .x86cpuvendor.init : AT(ADDR(.x86cpuvendor.init) - LOAD_OFFSET) {
->  	*(.x86cpuvendor.init)
-
-ah, nice one!
-
-we broke that via v2.6.25-37-g03ae576 "x86: use ELF section to list CPU 
-vendor specific code" - should we backport your fix to mainline right 
-now? I'm wondering why it only triggered now - did alignment change in 
-this section due to your changes and thus this dormant bug became 
-triggerable?
-
-	Ingo
+Sorry, but how can schedule_timeout return 0 before the timeout expiration?
