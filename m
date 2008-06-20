@@ -1,118 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756601AbYFTT5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757050AbYFTT6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756601AbYFTT5b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 15:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbYFTT5Y
+	id S1757050AbYFTT6a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 15:58:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbYFTT6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 15:57:24 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44302 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752094AbYFTT5X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 15:57:23 -0400
-Date: Fri, 20 Jun 2008 21:56:20 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, benh@kernel.crashing.org,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>, x86@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Hugh Dickins <hugh@veritas.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1 of 4] mm: add a ptep_modify_prot transaction
-	abstraction
-Message-ID: <20080620195620.GA20183@elte.hu>
-References: <alpine.LFD.1.10.0806181723400.2907@woody.linux-foundation.org> <4859AA47.2020903@goop.org> <alpine.LFD.1.10.0806181743390.2907@woody.linux-foundation.org> <alpine.LFD.1.10.0806182050470.2907@woody.linux-foundation.org> <20080619115832.GM15228@elte.hu> <alpine.LFD.1.10.0806190928100.2907@woody.linux-foundation.org> <20080619164708.GA32190@elte.hu> <20080620101028.GA23664@elte.hu> <485BFFC4.3070902@goop.org> <alpine.LFD.1.10.0806201211560.3167@woody.linux-foundation.org>
+	Fri, 20 Jun 2008 15:58:22 -0400
+Received: from smtpout10.uol.com.br ([200.221.4.201]:59392 "EHLO
+	smtp.uol.com.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751756AbYFTT6W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 15:58:22 -0400
+Date: Fri, 20 Jun 2008 16:58:15 -0300
+From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
+To: Ivo van Doorn <ivdoorn@gmail.com>
+Cc: "John W. Linville" <linville@tuxdriver.com>, linux-kernel@vger.kernel.org,
+       rbrito@ime.usp.br
+Subject: Re: [2.6.26-rc4] Problems with rt2x00 USB interface on powerpc
+	(fwd)
+Message-ID: <20080620195815.GA2703@ime.usp.br>
+References: <20080620175729.GA3151@ime.usp.br> <200806202048.47239.IvDoorn@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0806201211560.3167@woody.linux-foundation.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200806202048.47239.IvDoorn@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SIG5: 6c54129a85d647e3244949d756fc0970
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi, Ivo. Thank you for your reply.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Fri, 20 Jun 2008, Jeremy Fitzhardinge wrote:
-> > 
-> > Blows up on "gcc version 3.4.4 20050314 (prerelease) (Debian 3.4.3-13)":
+On Jun 20 2008, Ivo van Doorn wrote:
+> Hi,
 > 
-> Yeah, I was a bit worried about that. Gcc sometimes does insane 
-> things.
+> > Did you receive my earlier message (attached here for reference)? I'm
+> > willing to experiment with the driver a little bit and I hope that the
+> > information that I have provided so far is helpful to chase the reason
+> > why the driver doesn't work on PowerPC.
 > 
-> We literally just tested that the asm should only _ever_ be generated 
-> with a constant value, but if some gcc dead-code removal thing doesn't 
-> work, it will then screw up and try to generate the asm even for a 
-> non-constant thing.
-> 
-> The fairly trivial fix is probably to just change the "i" to "ir", 
-> safe in the knowledge that any _sane_ case will never use the "r" 
-> possibility. I suspect even your insane case will end up then killing 
-> the bad choice later.
+> Sorry I have been quite busy with other things.
 
-okay - Jeremy, could you try the fix below? (or tip/master, i just 
-pushed this out)
+I'm terribly sorry for that, since I would like the driver to work with
+the USB stick still in the 2.6.26 release (since that's what some
+distributions will probably use).
 
-(i dont use gcc 3.x myself to build the kernel, had way too many 
-miscompilations in randconfig tests in the past.)
+> I have glanced over the register dumps, and there are no obvious
+> endian problems.
 
-	Ingo
+OK.
 
--------------->
-commit b68b80b8ab39c42707dc126c41e87d46edc97c27
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Fri Jun 20 21:50:20 2008 +0200
+> The reason most registers are different with the 16bits swapped is the way
+> rt2x00 sends the register information through debugfs. rt2500usb only has 16bit
+> registers and the way the information is dumped through debugfs assumes 32bit
+> registers.
 
-    x86, bitops: make constant-bit set/clear_bit ops faster, gcc workaround
-    
-    Jeremy Fitzhardinge reported this compiler bug:
-    
-    Suggestion from Linus: add "r" to the input constraint of the
-    set_bit()/clear_bit()'s constant 'nr' branch:
-    
-    Blows up on "gcc version 3.4.4 20050314 (prerelease) (Debian 3.4.3-13)":
-    
-     CC      init/main.o
-    include2/asm/bitops.h: In function `start_kernel':
-    include2/asm/bitops.h:59: warning: asm operand 1 probably doesn't match constraints
-    include2/asm/bitops.h:59: warning: asm operand 1 probably doesn't match constraints
-    include2/asm/bitops.h:59: warning: asm operand 1 probably doesn't match constraints
-    include2/asm/bitops.h:59: error: impossible constraint in `asm'
-    include2/asm/bitops.h:59: error: impossible constraint in `asm'
-    include2/asm/bitops.h:59: error: impossible constraint in `asm'
-    
-    Reported-by: Jeremy Fitzhardinge <jeremy@goop.org>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+I didn't know that and was surprised. I thought that it would have been
+something easier to fix, then.
 
-diff --git a/include/asm-x86/bitops.h b/include/asm-x86/bitops.h
-index 6c50548..4575de4 100644
---- a/include/asm-x86/bitops.h
-+++ b/include/asm-x86/bitops.h
-@@ -58,7 +58,7 @@ static inline void set_bit(unsigned int nr, volatile unsigned long *addr)
- 	if (IS_IMMEDIATE(nr)) {
- 		asm volatile(LOCK_PREFIX "orb %1,%0"
- 			: CONST_MASK_ADDR(nr, addr)
--			: "i" (CONST_MASK(nr))
-+			: "ir" (CONST_MASK(nr))
- 			: "memory");
- 	} else {
- 		asm volatile(LOCK_PREFIX "bts %1,%0"
-@@ -95,7 +95,7 @@ static inline void clear_bit(int nr, volatile unsigned long *addr)
- 	if (IS_IMMEDIATE(nr)) {
- 		asm volatile(LOCK_PREFIX "andb %1,%0"
- 			: CONST_MASK_ADDR(nr, addr)
--			: "i" (~CONST_MASK(nr)));
-+			: "ir" (~CONST_MASK(nr)));
- 	} else {
- 		asm volatile(LOCK_PREFIX "btr %1,%0"
- 			: BITOP_ADDR(addr)
+> I will go over the real register differences as soon as possible, but
+> as I said, I am momentarily quite busy with other things. :(
+
+Thanks anyway. I am willing to help as much as I can.
+
+
+Thanks, Rogério Brito.
+
+-- 
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
