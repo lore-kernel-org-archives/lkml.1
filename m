@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756842AbYFTU0M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763414AbYFTU0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756842AbYFTU0M (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 16:26:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760906AbYFTUTa
+	id S1763414AbYFTU0g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 16:26:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760966AbYFTUTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 16:19:30 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35189 "EHLO
+	Fri, 20 Jun 2008 16:19:37 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35191 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760902AbYFTUT3 (ORCPT
+	with ESMTP id S1760946AbYFTUTg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 16:19:29 -0400
+	Fri, 20 Jun 2008 16:19:36 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 30/70] cp2101: coding style
+Subject: [PATCH 31/70] cyberjack: Coding style
 To: linux-kernel@vger.kernel.org
-Date: Fri, 20 Jun 2008 21:02:04 +0100
-Message-ID: <20080620200203.1479.90065.stgit@localhost.localdomain>
+Date: Fri, 20 Jun 2008 21:02:11 +0100
+Message-ID: <20080620200210.1479.47644.stgit@localhost.localdomain>
 In-Reply-To: <20080620195406.1479.12620.stgit@localhost.localdomain>
 References: <20080620195406.1479.12620.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.1
@@ -27,491 +27,367 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@redhat.com>
 
-Bring up to coding style
+Coding style fixups
 
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/usb/serial/cp2101.c |  318 +++++++++++++++++++++----------------------
- 1 files changed, 158 insertions(+), 160 deletions(-)
+ drivers/usb/serial/cyberjack.c |  131 +++++++++++++++++++++-------------------
+ 1 files changed, 69 insertions(+), 62 deletions(-)
 
 
-diff --git a/drivers/usb/serial/cp2101.c b/drivers/usb/serial/cp2101.c
-index 908803e..16a0fda 100644
---- a/drivers/usb/serial/cp2101.c
-+++ b/drivers/usb/serial/cp2101.c
-@@ -25,7 +25,7 @@
+diff --git a/drivers/usb/serial/cyberjack.c b/drivers/usb/serial/cyberjack.c
+index 546178e..b4d7235 100644
+--- a/drivers/usb/serial/cyberjack.c
++++ b/drivers/usb/serial/cyberjack.c
+@@ -37,7 +37,7 @@
+ #include <linux/tty_flip.h>
  #include <linux/module.h>
- #include <linux/moduleparam.h>
- #include <linux/usb.h>
+ #include <linux/spinlock.h>
 -#include <asm/uaccess.h>
 +#include <linux/uaccess.h>
+ #include <linux/usb.h>
  #include <linux/usb/serial.h>
  
- /*
-@@ -45,12 +45,12 @@ static void cp2101_close(struct tty_struct *, struct usb_serial_port *,
- static void cp2101_get_termios(struct tty_struct *);
- static void cp2101_set_termios(struct tty_struct *, struct usb_serial_port *,
- 							struct ktermios*);
--static int cp2101_tiocmget (struct tty_struct *, struct file *);
--static int cp2101_tiocmset (struct tty_struct *, struct file *,
-+static int cp2101_tiocmget(struct tty_struct *, struct file *);
-+static int cp2101_tiocmset(struct tty_struct *, struct file *,
- 		unsigned int, unsigned int);
- static void cp2101_break_ctl(struct tty_struct *, int);
--static int cp2101_startup (struct usb_serial *);
--static void cp2101_shutdown(struct usb_serial*);
-+static int cp2101_startup(struct usb_serial *);
-+static void cp2101_shutdown(struct usb_serial *);
- 
- 
- static int debug;
-@@ -96,7 +96,7 @@ static struct usb_device_id id_table [] = {
- 	{ } /* Terminating Entry */
+@@ -65,7 +65,7 @@ static void cyberjack_close(struct tty_struct *tty,
+ 			struct usb_serial_port *port, struct file *filp);
+ static int cyberjack_write(struct tty_struct *tty,
+ 	struct usb_serial_port *port, const unsigned char *buf, int count);
+-static int cyberjack_write_room( struct tty_struct *tty);
++static int cyberjack_write_room(struct tty_struct *tty);
+ static void cyberjack_read_int_callback(struct urb *urb);
+ static void cyberjack_read_bulk_callback(struct urb *urb);
+ static void cyberjack_write_bulk_callback(struct urb *urb);
+@@ -75,7 +75,7 @@ static struct usb_device_id id_table [] = {
+ 	{ }			/* Terminating entry */
  };
  
 -MODULE_DEVICE_TABLE (usb, id_table);
 +MODULE_DEVICE_TABLE(usb, id_table);
  
- static struct usb_driver cp2101_driver = {
- 	.name		= "cp2101",
-@@ -205,12 +205,12 @@ static int cp2101_get_config(struct usb_serial_port *port, u8 request,
- 	request++;
- 
- 	/* Issue the request, attempting to read 'size' bytes */
--	result = usb_control_msg (serial->dev,usb_rcvctrlpipe (serial->dev, 0),
-+	result = usb_control_msg(serial->dev, usb_rcvctrlpipe(serial->dev, 0),
- 				request, REQTYPE_DEVICE_TO_HOST, 0x0000,
- 				0, buf, size, 300);
- 
- 	/* Convert data into an array of integers */
--	for (i=0; i<length; i++)
-+	for (i = 0; i < length; i++)
- 		data[i] = le32_to_cpu(buf[i]);
- 
- 	kfree(buf);
-@@ -253,12 +253,12 @@ static int cp2101_set_config(struct usb_serial_port *port, u8 request,
- 		buf[i] = cpu_to_le32(data[i]);
- 
- 	if (size > 2) {
--		result = usb_control_msg (serial->dev,
-+		result = usb_control_msg(serial->dev,
- 				usb_sndctrlpipe(serial->dev, 0),
- 				request, REQTYPE_HOST_TO_DEVICE, 0x0000,
- 				0, buf, size, 300);
- 	} else {
--		result = usb_control_msg (serial->dev,
-+		result = usb_control_msg(serial->dev,
- 				usb_sndctrlpipe(serial->dev, 0),
- 				request, REQTYPE_HOST_TO_DEVICE, data[0],
- 				0, NULL, 0, 300);
-@@ -274,7 +274,7 @@ static int cp2101_set_config(struct usb_serial_port *port, u8 request,
+ static struct usb_driver cyberjack_driver = {
+ 	.name =		"cyberjack",
+@@ -138,20 +138,20 @@ static int cyberjack_startup(struct usb_serial *serial)
+ 	for (i = 0; i < serial->num_ports; ++i) {
+ 		int result;
+ 		serial->port[i]->interrupt_in_urb->dev = serial->dev;
+-		result = usb_submit_urb(serial->port[i]->interrupt_in_urb, 
++		result = usb_submit_urb(serial->port[i]->interrupt_in_urb,
+ 					GFP_KERNEL);
+ 		if (result)
+ 			err(" usb_submit_urb(read int) failed");
+ 		dbg("%s - usb_submit_urb(int urb)", __func__);
  	}
  
- 	/* Single data value */
--	result = usb_control_msg (serial->dev,
-+	result = usb_control_msg(serial->dev,
- 			usb_sndctrlpipe(serial->dev, 0),
- 			request, REQTYPE_HOST_TO_DEVICE, data[0],
- 			0, NULL, 0, 300);
-@@ -292,7 +292,7 @@ static inline int cp2101_set_config_single(struct usb_serial_port *port,
- 	return cp2101_set_config(port, request, &data, 2);
+-	return( 0 );
++	return 0;
  }
  
--static int cp2101_open (struct tty_struct *tty, struct usb_serial_port *port,
-+static int cp2101_open(struct tty_struct *tty, struct usb_serial_port *port,
- 				struct file *filp)
- {
- 	struct usb_serial *serial = port->serial;
-@@ -307,7 +307,7 @@ static int cp2101_open (struct tty_struct *tty, struct usb_serial_port *port,
- 	}
- 
- 	/* Start reading from the device */
--	usb_fill_bulk_urb (port->read_urb, serial->dev,
-+	usb_fill_bulk_urb(port->read_urb, serial->dev,
- 			usb_rcvbulkpipe(serial->dev,
- 			port->bulk_in_endpointAddress),
- 			port->read_urb->transfer_buffer,
-@@ -330,7 +330,7 @@ static int cp2101_open (struct tty_struct *tty, struct usb_serial_port *port,
- 	return 0;
- }
- 
--static void cp2101_cleanup (struct usb_serial_port *port)
-+static void cp2101_cleanup(struct usb_serial_port *port)
- {
- 	struct usb_serial *serial = port->serial;
- 
-@@ -346,7 +346,7 @@ static void cp2101_cleanup (struct usb_serial_port *port)
- }
- 
- static void cp2101_close(struct tty_struct *tty, struct usb_serial_port *port,
--					struct file * filp)
-+					struct file *filp)
- {
- 	dbg("%s - port %d", __func__, port->number);
- 
-@@ -367,6 +367,7 @@ static void cp2101_close(struct tty_struct *tty, struct usb_serial_port *port,
-  * from the device, corrects any unsupported values, and configures the
-  * termios structure to reflect the state of the device
-  */
-+
- static void cp2101_get_termios(struct tty_struct *tty)
- {
- 	struct usb_serial_port *port = tty->driver_data;
-@@ -391,99 +392,97 @@ static void cp2101_get_termios(struct tty_struct *tty)
- 
- 	cp2101_get_config(port, CP2101_BITS, &bits, 2);
- 	cflag &= ~CSIZE;
--	switch(bits & BITS_DATA_MASK) {
--		case BITS_DATA_5:
--			dbg("%s - data bits = 5", __func__);
--			cflag |= CS5;
--			break;
--		case BITS_DATA_6:
--			dbg("%s - data bits = 6", __func__);
--			cflag |= CS6;
--			break;
--		case BITS_DATA_7:
--			dbg("%s - data bits = 7", __func__);
--			cflag |= CS7;
--			break;
--		case BITS_DATA_8:
--			dbg("%s - data bits = 8", __func__);
--			cflag |= CS8;
--			break;
--		case BITS_DATA_9:
--			dbg("%s - data bits = 9 (not supported, "
--					"using 8 data bits)", __func__);
--			cflag |= CS8;
--			bits &= ~BITS_DATA_MASK;
--			bits |= BITS_DATA_8;
--			cp2101_set_config(port, CP2101_BITS, &bits, 2);
--			break;
--		default:
--			dbg("%s - Unknown number of data bits, "
--					"using 8", __func__);
--			cflag |= CS8;
--			bits &= ~BITS_DATA_MASK;
--			bits |= BITS_DATA_8;
--			cp2101_set_config(port, CP2101_BITS, &bits, 2);
--			break;
-+	switch (bits & BITS_DATA_MASK) {
-+	case BITS_DATA_5:
-+		dbg("%s - data bits = 5", __func__);
-+		cflag |= CS5;
-+		break;
-+	case BITS_DATA_6:
-+		dbg("%s - data bits = 6", __func__);
-+		cflag |= CS6;
-+		break;
-+	case BITS_DATA_7:
-+		dbg("%s - data bits = 7", __func__);
-+		cflag |= CS7;
-+		break;
-+	case BITS_DATA_8:
-+		dbg("%s - data bits = 8", __func__);
-+		cflag |= CS8;
-+		break;
-+	case BITS_DATA_9:
-+		dbg("%s - data bits = 9 (not supported, using 8 data bits)",
-+								__func__);
-+		cflag |= CS8;
-+		bits &= ~BITS_DATA_MASK;
-+		bits |= BITS_DATA_8;
-+		cp2101_set_config(port, CP2101_BITS, &bits, 2);
-+		break;
-+	default:
-+		dbg("%s - Unknown number of data bits, using 8", __func__);
-+		cflag |= CS8;
-+		bits &= ~BITS_DATA_MASK;
-+		bits |= BITS_DATA_8;
-+		cp2101_set_config(port, CP2101_BITS, &bits, 2);
-+		break;
- 	}
- 
--	switch(bits & BITS_PARITY_MASK) {
--		case BITS_PARITY_NONE:
--			dbg("%s - parity = NONE", __func__);
--			cflag &= ~PARENB;
--			break;
--		case BITS_PARITY_ODD:
--			dbg("%s - parity = ODD", __func__);
--			cflag |= (PARENB|PARODD);
--			break;
--		case BITS_PARITY_EVEN:
--			dbg("%s - parity = EVEN", __func__);
--			cflag &= ~PARODD;
--			cflag |= PARENB;
--			break;
--		case BITS_PARITY_MARK:
--			dbg("%s - parity = MARK (not supported, "
--					"disabling parity)", __func__);
--			cflag &= ~PARENB;
--			bits &= ~BITS_PARITY_MASK;
--			cp2101_set_config(port, CP2101_BITS, &bits, 2);
--			break;
--		case BITS_PARITY_SPACE:
--			dbg("%s - parity = SPACE (not supported, "
--					"disabling parity)", __func__);
--			cflag &= ~PARENB;
--			bits &= ~BITS_PARITY_MASK;
--			cp2101_set_config(port, CP2101_BITS, &bits, 2);
--			break;
--		default:
--			dbg("%s - Unknown parity mode, "
--					"disabling parity", __func__);
--			cflag &= ~PARENB;
--			bits &= ~BITS_PARITY_MASK;
--			cp2101_set_config(port, CP2101_BITS, &bits, 2);
--			break;
-+	switch (bits & BITS_PARITY_MASK) {
-+	case BITS_PARITY_NONE:
-+		dbg("%s - parity = NONE", __func__);
-+		cflag &= ~PARENB;
-+		break;
-+	case BITS_PARITY_ODD:
-+		dbg("%s - parity = ODD", __func__);
-+		cflag |= (PARENB|PARODD);
-+		break;
-+	case BITS_PARITY_EVEN:
-+		dbg("%s - parity = EVEN", __func__);
-+		cflag &= ~PARODD;
-+		cflag |= PARENB;
-+		break;
-+	case BITS_PARITY_MARK:
-+		dbg("%s - parity = MARK (not supported, disabling parity)",
-+				__func__);
-+		cflag &= ~PARENB;
-+		bits &= ~BITS_PARITY_MASK;
-+		cp2101_set_config(port, CP2101_BITS, &bits, 2);
-+		break;
-+	case BITS_PARITY_SPACE:
-+		dbg("%s - parity = SPACE (not supported, disabling parity)",
-+				__func__);
-+		cflag &= ~PARENB;
-+		bits &= ~BITS_PARITY_MASK;
-+		cp2101_set_config(port, CP2101_BITS, &bits, 2);
-+		break;
-+	default:
-+		dbg("%s - Unknown parity mode, disabling parity", __func__);
-+		cflag &= ~PARENB;
-+		bits &= ~BITS_PARITY_MASK;
-+		cp2101_set_config(port, CP2101_BITS, &bits, 2);
-+		break;
- 	}
- 
- 	cflag &= ~CSTOPB;
--	switch(bits & BITS_STOP_MASK) {
--		case BITS_STOP_1:
--			dbg("%s - stop bits = 1", __func__);
--			break;
--		case BITS_STOP_1_5:
--			dbg("%s - stop bits = 1.5 (not supported, "
--					"using 1 stop bit)", __func__);
--			bits &= ~BITS_STOP_MASK;
--			cp2101_set_config(port, CP2101_BITS, &bits, 2);
--			break;
--		case BITS_STOP_2:
--			dbg("%s - stop bits = 2", __func__);
--			cflag |= CSTOPB;
--			break;
--		default:
--			dbg("%s - Unknown number of stop bits, "
--					"using 1 stop bit", __func__);
--			bits &= ~BITS_STOP_MASK;
--			cp2101_set_config(port, CP2101_BITS, &bits, 2);
--			break;
-+	switch (bits & BITS_STOP_MASK) {
-+	case BITS_STOP_1:
-+		dbg("%s - stop bits = 1", __func__);
-+		break;
-+	case BITS_STOP_1_5:
-+		dbg("%s - stop bits = 1.5 (not supported, using 1 stop bit)",
-+								__func__);
-+		bits &= ~BITS_STOP_MASK;
-+		cp2101_set_config(port, CP2101_BITS, &bits, 2);
-+		break;
-+	case BITS_STOP_2:
-+		dbg("%s - stop bits = 2", __func__);
-+		cflag |= CSTOPB;
-+		break;
-+	default:
-+		dbg("%s - Unknown number of stop bits, using 1 stop bit",
-+								__func__);
-+		bits &= ~BITS_STOP_MASK;
-+		cp2101_set_config(port, CP2101_BITS, &bits, 2);
-+		break;
- 	}
- 
- 	cp2101_get_config(port, CP2101_MODEMCTL, modem_ctl, 16);
-@@ -498,11 +497,11 @@ static void cp2101_get_termios(struct tty_struct *tty)
- 	tty->termios->c_cflag = cflag;
- }
- 
--static void cp2101_set_termios (struct tty_struct *tty,
-+static void cp2101_set_termios(struct tty_struct *tty,
- 		struct usb_serial_port *port, struct ktermios *old_termios)
- {
- 	unsigned int cflag, old_cflag;
--	int baud=0, bits;
-+	int baud = 0, bits;
- 	unsigned int modem_ctl[4];
- 
- 	dbg("%s - port %d", __func__, port->number);
-@@ -518,30 +517,30 @@ static void cp2101_set_termios (struct tty_struct *tty,
- 	/* If the baud rate is to be updated*/
- 	if (baud != tty_termios_baud_rate(old_termios)) {
- 		switch (baud) {
--			case 0:
--			case 600:
--			case 1200:
--			case 1800:
--			case 2400:
--			case 4800:
--			case 7200:
--			case 9600:
--			case 14400:
--			case 19200:
--			case 28800:
--			case 38400:
--			case 55854:
--			case 57600:
--			case 115200:
--			case 127117:
--			case 230400:
--			case 460800:
--			case 921600:
--			case 3686400:
--				break;
--			default:
--				baud = 9600;
--				break;
-+		case 0:
-+		case 600:
-+		case 1200:
-+		case 1800:
-+		case 2400:
-+		case 4800:
-+		case 7200:
-+		case 9600:
-+		case 14400:
-+		case 19200:
-+		case 28800:
-+		case 38400:
-+		case 55854:
-+		case 57600:
-+		case 115200:
-+		case 127117:
-+		case 230400:
-+		case 460800:
-+		case 921600:
-+		case 3686400:
-+			break;
-+		default:
-+			baud = 9600;
-+			break;
- 		}
- 
- 		if (baud) {
-@@ -563,28 +562,28 @@ static void cp2101_set_termios (struct tty_struct *tty,
- 		cp2101_get_config(port, CP2101_BITS, &bits, 2);
- 		bits &= ~BITS_DATA_MASK;
- 		switch (cflag & CSIZE) {
--			case CS5:
--				bits |= BITS_DATA_5;
--				dbg("%s - data bits = 5", __func__);
--				break;
--			case CS6:
--				bits |= BITS_DATA_6;
--				dbg("%s - data bits = 6", __func__);
--				break;
--			case CS7:
--				bits |= BITS_DATA_7;
--				dbg("%s - data bits = 7", __func__);
--				break;
--			case CS8:
--				bits |= BITS_DATA_8;
--				dbg("%s - data bits = 8", __func__);
--				break;
--			/*case CS9:
--			 	bits |= BITS_DATA_9;
--				dbg("%s - data bits = 9", __func__);
--				break;*/
--			default:
--				dev_err(&port->dev, "cp2101 driver does not "
-+		case CS5:
-+			bits |= BITS_DATA_5;
-+			dbg("%s - data bits = 5", __func__);
-+			break;
-+		case CS6:
-+			bits |= BITS_DATA_6;
-+			dbg("%s - data bits = 6", __func__);
-+			break;
-+		case CS7:
-+			bits |= BITS_DATA_7;
-+			dbg("%s - data bits = 7", __func__);
-+			break;
-+		case CS8:
-+			bits |= BITS_DATA_8;
-+			dbg("%s - data bits = 8", __func__);
-+			break;
-+		/*case CS9:
-+			bits |= BITS_DATA_9;
-+			dbg("%s - data bits = 9", __func__);
-+			break;*/
-+		default:
-+			dev_err(&port->dev, "cp2101 driver does not "
- 					"support the number of bits requested,"
- 					" using 8 bit mode\n");
- 				bits |= BITS_DATA_8;
-@@ -716,30 +715,29 @@ static void cp2101_break_ctl(struct tty_struct *tty, int break_state)
- 	else
- 		state = BREAK_ON;
- 	dbg("%s - turning break %s", __func__,
--			state==BREAK_OFF ? "off" : "on");
-+			state == BREAK_OFF ? "off" : "on");
- 	cp2101_set_config(port, CP2101_BREAK, &state, 2);
- }
- 
--static int cp2101_startup (struct usb_serial *serial)
-+static int cp2101_startup(struct usb_serial *serial)
- {
- 	/* CP2101 buffers behave strangely unless device is reset */
- 	usb_reset_device(serial->dev);
- 	return 0;
- }
- 
--static void cp2101_shutdown (struct usb_serial *serial)
-+static void cp2101_shutdown(struct usb_serial *serial)
+ static void cyberjack_shutdown(struct usb_serial *serial)
  {
  	int i;
- 
+-	
++
  	dbg("%s", __func__);
  
- 	/* Stop reads and writes on all ports */
--	for (i=0; i < serial->num_ports; ++i) {
-+	for (i = 0; i < serial->num_ports; ++i)
- 		cp2101_cleanup(serial->port[i]);
+ 	for (i = 0; i < serial->num_ports; ++i) {
+@@ -161,7 +161,7 @@ static void cyberjack_shutdown(struct usb_serial *serial)
+ 		usb_set_serial_port_data(serial->port[i], NULL);
+ 	}
+ }
+-	
++
+ static int  cyberjack_open(struct tty_struct *tty,
+ 			struct usb_serial_port *port, struct file *filp)
+ {
+@@ -171,7 +171,7 @@ static int  cyberjack_open(struct tty_struct *tty,
+ 
+ 	dbg("%s - port %d", __func__, port->number);
+ 
+-	dbg("%s - usb_clear_halt", __func__ );
++	dbg("%s - usb_clear_halt", __func__);
+ 	usb_clear_halt(port->serial->dev, port->write_urb->pipe);
+ 
+ 	/* force low_latency on so that our tty_push actually forces
+@@ -230,7 +230,7 @@ static int cyberjack_write(struct tty_struct *tty,
+ 
+ 	spin_lock_irqsave(&priv->lock, flags);
+ 
+-	if( (count+priv->wrfilled) > sizeof(priv->wrbuf) ) {
++	if (count+priv->wrfilled > sizeof(priv->wrbuf)) {
+ 		/* To much data for buffer. Reset buffer. */
+ 		priv->wrfilled = 0;
+ 		port->write_urb_busy = 0;
+@@ -239,42 +239,43 @@ static int cyberjack_write(struct tty_struct *tty,
+ 	}
+ 
+ 	/* Copy data */
+-	memcpy (priv->wrbuf+priv->wrfilled, buf, count);
++	memcpy(priv->wrbuf + priv->wrfilled, buf, count);
+ 
+ 	usb_serial_debug_data(debug, &port->dev, __func__, count,
+-		priv->wrbuf+priv->wrfilled);
++		priv->wrbuf + priv->wrfilled);
+ 	priv->wrfilled += count;
+ 
+-	if( priv->wrfilled >= 3 ) {
++	if (priv->wrfilled >= 3) {
+ 		wrexpected = ((int)priv->wrbuf[2]<<8)+priv->wrbuf[1]+3;
+ 		dbg("%s - expected data: %d", __func__, wrexpected);
+-	} else {
++	} else
+ 		wrexpected = sizeof(priv->wrbuf);
 -	}
+ 
+-	if( priv->wrfilled >= wrexpected ) {
++	if (priv->wrfilled >= wrexpected) {
+ 		/* We have enough data to begin transmission */
+ 		int length;
+ 
+ 		dbg("%s - transmitting data (frame 1)", __func__);
+-		length = (wrexpected > port->bulk_out_size) ? port->bulk_out_size : wrexpected;
++		length = (wrexpected > port->bulk_out_size) ?
++					port->bulk_out_size : wrexpected;
+ 
+-		memcpy (port->write_urb->transfer_buffer, priv->wrbuf, length );
+-		priv->wrsent=length;
++		memcpy(port->write_urb->transfer_buffer, priv->wrbuf, length);
++		priv->wrsent = length;
+ 
+ 		/* set up our urb */
+-		usb_fill_bulk_urb(port->write_urb, serial->dev, 
++		usb_fill_bulk_urb(port->write_urb, serial->dev,
+ 			      usb_sndbulkpipe(serial->dev, port->bulk_out_endpointAddress),
+ 			      port->write_urb->transfer_buffer, length,
+-			      ((serial->type->write_bulk_callback) ? 
+-			       serial->type->write_bulk_callback : 
+-			       cyberjack_write_bulk_callback), 
++			      ((serial->type->write_bulk_callback) ?
++			       serial->type->write_bulk_callback :
++			       cyberjack_write_bulk_callback),
+ 			      port);
+ 
+ 		/* send the data out the bulk port */
+ 		result = usb_submit_urb(port->write_urb, GFP_ATOMIC);
+ 		if (result) {
+-			err("%s - failed submitting write urb, error %d", __func__, result);
++			err("%s - failed submitting write urb, error %d",
++							__func__, result);
+ 			/* Throw away data. No better idea what to do with it. */
+ 			priv->wrfilled = 0;
+ 			priv->wrsent = 0;
+@@ -283,12 +284,12 @@ static int cyberjack_write(struct tty_struct *tty,
+ 			return 0;
+ 		}
+ 
+-		dbg("%s - priv->wrsent=%d", __func__,priv->wrsent);
+-		dbg("%s - priv->wrfilled=%d", __func__,priv->wrfilled);
++		dbg("%s - priv->wrsent=%d", __func__, priv->wrsent);
++		dbg("%s - priv->wrfilled=%d", __func__, priv->wrfilled);
+ 
+-		if( priv->wrsent>=priv->wrfilled ) {
++		if (priv->wrsent >= priv->wrfilled) {
+ 			dbg("%s - buffer cleaned", __func__);
+-			memset( priv->wrbuf, 0, sizeof(priv->wrbuf) );
++			memset(priv->wrbuf, 0, sizeof(priv->wrbuf));
+ 			priv->wrfilled = 0;
+ 			priv->wrsent = 0;
+ 		}
+@@ -296,8 +297,8 @@ static int cyberjack_write(struct tty_struct *tty,
+ 
+ 	spin_unlock_irqrestore(&priv->lock, flags);
+ 
+-	return (count);
+-} 
++	return count;
++}
+ 
+ static int cyberjack_write_room(struct tty_struct *tty)
+ {
+@@ -319,10 +320,11 @@ static void cyberjack_read_int_callback(struct urb *urb)
+ 	if (status)
+ 		return;
+ 
+-	usb_serial_debug_data(debug, &port->dev, __func__, urb->actual_length, data);
++	usb_serial_debug_data(debug, &port->dev, __func__,
++						urb->actual_length, data);
+ 
+ 	/* React only to interrupts signaling a bulk_in transfer */
+-	if( (urb->actual_length == 4) && (data[0] == 0x01) ) {
++	if (urb->actual_length == 4 && data[0] == 0x01) {
+ 		short old_rdtodo;
+ 
+ 		/* This is a announcement of coming bulk_ins. */
+@@ -332,8 +334,8 @@ static void cyberjack_read_int_callback(struct urb *urb)
+ 
+ 		old_rdtodo = priv->rdtodo;
+ 
+-		if( (old_rdtodo+size)<(old_rdtodo) ) {
+-			dbg( "To many bulk_in urbs to do." );
++		if (old_rdtodo + size < old_rdtodo) {
++			dbg("To many bulk_in urbs to do.");
+ 			spin_unlock(&priv->lock);
+ 			goto resubmit;
+ 		}
+@@ -345,10 +347,10 @@ static void cyberjack_read_int_callback(struct urb *urb)
+ 
+ 		spin_unlock(&priv->lock);
+ 
+-		if( !old_rdtodo ) {
++		if (!old_rdtodo) {
+ 			port->read_urb->dev = port->serial->dev;
+ 			result = usb_submit_urb(port->read_urb, GFP_ATOMIC);
+-			if( result )
++			if (result)
+ 				err("%s - failed resubmitting read urb, error %d", __func__, result);
+ 			dbg("%s - usb_submit_urb(read urb)", __func__);
+ 		}
+@@ -374,7 +376,8 @@ static void cyberjack_read_bulk_callback(struct urb *urb)
+ 
+ 	dbg("%s - port %d", __func__, port->number);
+ 
+-	usb_serial_debug_data(debug, &port->dev, __func__, urb->actual_length, data);
++	usb_serial_debug_data(debug, &port->dev, __func__,
++						urb->actual_length, data);
+ 	if (status) {
+ 		dbg("%s - nonzero read bulk status received: %d",
+ 		    __func__, status);
+@@ -389,15 +392,16 @@ static void cyberjack_read_bulk_callback(struct urb *urb)
+ 	if (urb->actual_length) {
+ 		tty_buffer_request_room(tty, urb->actual_length);
+ 		tty_insert_flip_string(tty, data, urb->actual_length);
+-	  	tty_flip_buffer_push(tty);
++		tty_flip_buffer_push(tty);
+ 	}
+ 
+ 	spin_lock(&priv->lock);
+ 
+ 	/* Reduce urbs to do by one. */
+-	priv->rdtodo-=urb->actual_length;
++	priv->rdtodo -= urb->actual_length;
+ 	/* Just to be sure */
+-	if ( priv->rdtodo<0 ) priv->rdtodo = 0;
++	if (priv->rdtodo < 0)
++		priv->rdtodo = 0;
+ 	todo = priv->rdtodo;
+ 
+ 	spin_unlock(&priv->lock);
+@@ -405,11 +409,12 @@ static void cyberjack_read_bulk_callback(struct urb *urb)
+ 	dbg("%s - rdtodo: %d", __func__, todo);
+ 
+ 	/* Continue to read if we have still urbs to do. */
+-	if( todo /* || (urb->actual_length==port->bulk_in_endpointAddress)*/ ) {
++	if (todo /* || (urb->actual_length==port->bulk_in_endpointAddress)*/) {
+ 		port->read_urb->dev = port->serial->dev;
+ 		result = usb_submit_urb(port->read_urb, GFP_ATOMIC);
+ 		if (result)
+-			err("%s - failed resubmitting read urb, error %d", __func__, result);
++			err("%s - failed resubmitting read urb, error %d",
++				__func__, result);
+ 		dbg("%s - usb_submit_urb(read urb)", __func__);
+ 	}
+ }
+@@ -432,7 +437,7 @@ static void cyberjack_write_bulk_callback(struct urb *urb)
+ 	spin_lock(&priv->lock);
+ 
+ 	/* only do something if we have more data to send */
+-	if( priv->wrfilled ) {
++	if (priv->wrfilled) {
+ 		int length, blksize, result;
+ 
+ 		dbg("%s - transmitting data (frame n)", __func__);
+@@ -440,37 +445,39 @@ static void cyberjack_write_bulk_callback(struct urb *urb)
+ 		length = ((priv->wrfilled - priv->wrsent) > port->bulk_out_size) ?
+ 			port->bulk_out_size : (priv->wrfilled - priv->wrsent);
+ 
+-		memcpy (port->write_urb->transfer_buffer, priv->wrbuf + priv->wrsent,
+-			length );
+-		priv->wrsent+=length;
++		memcpy(port->write_urb->transfer_buffer,
++					priv->wrbuf + priv->wrsent, length);
++		priv->wrsent += length;
+ 
+ 		/* set up our urb */
+-		usb_fill_bulk_urb(port->write_urb, port->serial->dev, 
++		usb_fill_bulk_urb(port->write_urb, port->serial->dev,
+ 			      usb_sndbulkpipe(port->serial->dev, port->bulk_out_endpointAddress),
+ 			      port->write_urb->transfer_buffer, length,
+-			      ((port->serial->type->write_bulk_callback) ? 
+-			       port->serial->type->write_bulk_callback : 
+-			       cyberjack_write_bulk_callback), 
++			      ((port->serial->type->write_bulk_callback) ?
++			       port->serial->type->write_bulk_callback :
++			       cyberjack_write_bulk_callback),
+ 			      port);
+ 
+ 		/* send the data out the bulk port */
+ 		result = usb_submit_urb(port->write_urb, GFP_ATOMIC);
+ 		if (result) {
+-			err("%s - failed submitting write urb, error %d", __func__, result);
++			err("%s - failed submitting write urb, error %d",
++								__func__, result);
+ 			/* Throw away data. No better idea what to do with it. */
+ 			priv->wrfilled = 0;
+ 			priv->wrsent = 0;
+ 			goto exit;
+ 		}
+ 
+-		dbg("%s - priv->wrsent=%d", __func__,priv->wrsent);
+-		dbg("%s - priv->wrfilled=%d", __func__,priv->wrfilled);
++		dbg("%s - priv->wrsent=%d", __func__, priv->wrsent);
++		dbg("%s - priv->wrfilled=%d", __func__, priv->wrfilled);
+ 
+ 		blksize = ((int)priv->wrbuf[2]<<8)+priv->wrbuf[1]+3;
+ 
+-		if( (priv->wrsent>=priv->wrfilled) || (priv->wrsent>=blksize) ) {
++		if (priv->wrsent >= priv->wrfilled ||
++					priv->wrsent >= blksize) {
+ 			dbg("%s - buffer cleaned", __func__);
+-			memset( priv->wrbuf, 0, sizeof(priv->wrbuf) );
++			memset(priv->wrbuf, 0, sizeof(priv->wrbuf));
+ 			priv->wrfilled = 0;
+ 			priv->wrsent = 0;
+ 		}
+@@ -481,14 +488,14 @@ exit:
+ 	usb_serial_port_softint(port);
  }
  
--static int __init cp2101_init (void)
-+static int __init cp2101_init(void)
+-static int __init cyberjack_init (void)
++static int __init cyberjack_init(void)
  {
  	int retval;
+ 	retval  = usb_serial_register(&cyberjack_device);
+ 	if (retval)
+ 		goto failed_usb_serial_register;
+ 	retval = usb_register(&cyberjack_driver);
+-	if (retval) 
++	if (retval)
+ 		goto failed_usb_register;
  
-@@ -759,10 +757,10 @@ static int __init cp2101_init (void)
- 	return 0;
+ 	info(DRIVER_VERSION " " DRIVER_AUTHOR);
+@@ -501,18 +508,18 @@ failed_usb_serial_register:
+ 	return retval;
  }
  
--static void __exit cp2101_exit (void)
-+static void __exit cp2101_exit(void)
+-static void __exit cyberjack_exit (void)
++static void __exit cyberjack_exit(void)
  {
--	usb_deregister (&cp2101_driver);
--	usb_serial_deregister (&cp2101_device);
-+	usb_deregister(&cp2101_driver);
-+	usb_serial_deregister(&cp2101_device);
+-	usb_deregister (&cyberjack_driver);
+-	usb_serial_deregister (&cyberjack_device);
++	usb_deregister(&cyberjack_driver);
++	usb_serial_deregister(&cyberjack_device);
  }
  
- module_init(cp2101_init);
+ module_init(cyberjack_init);
+ module_exit(cyberjack_exit);
+ 
+-MODULE_AUTHOR( DRIVER_AUTHOR );
+-MODULE_DESCRIPTION( DRIVER_DESC );
+-MODULE_VERSION( DRIVER_VERSION );
++MODULE_AUTHOR(DRIVER_AUTHOR);
++MODULE_DESCRIPTION(DRIVER_DESC);
++MODULE_VERSION(DRIVER_VERSION);
+ MODULE_LICENSE("GPL");
+ 
+ module_param(debug, bool, S_IRUGO | S_IWUSR);
 
