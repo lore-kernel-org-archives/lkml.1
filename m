@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759960AbYFTURY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760131AbYFTURj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759960AbYFTURY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 16:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759056AbYFTUQU
+	id S1760131AbYFTURj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 16:17:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759238AbYFTUQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 16:16:20 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51955 "EHLO
+	Fri, 20 Jun 2008 16:16:27 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51957 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758974AbYFTUQS (ORCPT
+	with ESMTP id S1759203AbYFTUQZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 16:16:18 -0400
+	Fri, 20 Jun 2008 16:16:25 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 05/70] tty.h: clean up
+Subject: [PATCH 06/70] epca: use tty_port
 To: linux-kernel@vger.kernel.org
-Date: Fri, 20 Jun 2008 20:58:54 +0100
-Message-ID: <20080620195848.1479.85619.stgit@localhost.localdomain>
+Date: Fri, 20 Jun 2008 20:59:01 +0100
+Message-ID: <20080620195859.1479.58910.stgit@localhost.localdomain>
 In-Reply-To: <20080620195406.1479.12620.stgit@localhost.localdomain>
 References: <20080620195406.1479.12620.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.1
@@ -27,269 +27,380 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@redhat.com>
 
-Coding style clean up and white space tidy
+Switch the EPCA driver to include and begin using a tty_port structure
 
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- include/linux/tty.h |  165 ++++++++++++++++++++++++++-------------------------
- 1 files changed, 85 insertions(+), 80 deletions(-)
+ drivers/char/epca.c |  106 ++++++++++++++++++++++++++-------------------------
+ drivers/char/epca.h |    7 ---
+ 2 files changed, 54 insertions(+), 59 deletions(-)
 
 
-diff --git a/include/linux/tty.h b/include/linux/tty.h
-index d7c695b..46008e8 100644
---- a/include/linux/tty.h
-+++ b/include/linux/tty.h
-@@ -71,7 +71,8 @@ struct tty_bufhead {
- 	struct tty_buffer *head;	/* Queue head */
- 	struct tty_buffer *tail;	/* Active buffer */
- 	struct tty_buffer *free;	/* Free queue head */
--	int memory_used;		/* Buffer space used excluding free queue */
-+	int memory_used;		/* Buffer space used excluding
-+								free queue */
+diff --git a/drivers/char/epca.c b/drivers/char/epca.c
+index aa8e19f..ac9995f 100644
+--- a/drivers/char/epca.c
++++ b/drivers/char/epca.c
+@@ -432,7 +432,7 @@ static void pc_close(struct tty_struct *tty, struct file *filp)
+ 			spin_unlock_irqrestore(&epca_lock, flags);
+ 			return;
+ 		}
+-		if (ch->count-- > 1)  {
++		if (ch->port.count-- > 1)  {
+ 			/* Begin channel is open more than once */
+ 			/*
+ 			 * Return without doing anything. Someone might still
+@@ -442,19 +442,19 @@ static void pc_close(struct tty_struct *tty, struct file *filp)
+ 			return;
+ 		}
+ 		/* Port open only once go ahead with shutdown & reset */
+-		BUG_ON(ch->count < 0);
++		BUG_ON(ch->port.count < 0);
+ 
+ 		/*
+ 		 * Let the rest of the driver know the channel is being closed.
+ 		 * This becomes important if an open is attempted before close
+ 		 * is finished.
+ 		 */
+-		ch->asyncflags |= ASYNC_CLOSING;
++		ch->port.flags |= ASYNC_CLOSING;
+ 		tty->closing = 1;
+ 
+ 		spin_unlock_irqrestore(&epca_lock, flags);
+ 
+-		if (ch->asyncflags & ASYNC_INITIALIZED)  {
++		if (ch->port.flags & ASYNC_INITIALIZED)  {
+ 			/* Setup an event to indicate when the
+ 			   transmit buffer empties */
+ 			setup_empty_event(tty, ch);
+@@ -469,17 +469,17 @@ static void pc_close(struct tty_struct *tty, struct file *filp)
+ 		spin_lock_irqsave(&epca_lock, flags);
+ 		tty->closing = 0;
+ 		ch->event = 0;
+-		ch->tty = NULL;
++		ch->port.tty = NULL;
+ 		spin_unlock_irqrestore(&epca_lock, flags);
+ 
+-		if (ch->blocked_open) {
++		if (ch->port.blocked_open) {
+ 			if (ch->close_delay)
+ 				msleep_interruptible(jiffies_to_msecs(ch->close_delay));
+-			wake_up_interruptible(&ch->open_wait);
++			wake_up_interruptible(&ch->port.open_wait);
+ 		}
+-		ch->asyncflags &= ~(ASYNC_NORMAL_ACTIVE | ASYNC_INITIALIZED |
++		ch->port.flags &= ~(ASYNC_NORMAL_ACTIVE | ASYNC_INITIALIZED |
+ 					ASYNC_CLOSING);
+-		wake_up_interruptible(&ch->close_wait);
++		wake_up_interruptible(&ch->port.close_wait);
+ 	}
+ }
+ 
+@@ -489,7 +489,7 @@ static void shutdown(struct channel *ch)
+ 	struct tty_struct *tty;
+ 	struct board_chan __iomem *bc;
+ 
+-	if (!(ch->asyncflags & ASYNC_INITIALIZED))
++	if (!(ch->port.flags & ASYNC_INITIALIZED))
+ 		return;
+ 
+ 	spin_lock_irqsave(&epca_lock, flags);
+@@ -504,7 +504,7 @@ static void shutdown(struct channel *ch)
+ 	 */
+ 	if (bc)
+ 		writeb(0, &bc->idata);
+-	tty = ch->tty;
++	tty = ch->port.tty;
+ 
+ 	/* If we're a modem control device and HUPCL is on, drop RTS & DTR. */
+ 	if (tty->termios->c_cflag & HUPCL)  {
+@@ -518,7 +518,7 @@ static void shutdown(struct channel *ch)
+ 	 * will have to reinitialized. Set a flag to indicate this.
+ 	 */
+ 	/* Prevent future Digi programmed interrupts from coming active */
+-	ch->asyncflags &= ~ASYNC_INITIALIZED;
++	ch->port.flags &= ~ASYNC_INITIALIZED;
+ 	spin_unlock_irqrestore(&epca_lock, flags);
+ }
+ 
+@@ -538,12 +538,12 @@ static void pc_hangup(struct tty_struct *tty)
+ 		shutdown(ch);
+ 
+ 		spin_lock_irqsave(&epca_lock, flags);
+-		ch->tty   = NULL;
++		ch->port.tty   = NULL;
+ 		ch->event = 0;
+-		ch->count = 0;
+-		ch->asyncflags &= ~(ASYNC_NORMAL_ACTIVE | ASYNC_INITIALIZED);
++		ch->port.count = 0;
++		ch->port.flags &= ~(ASYNC_NORMAL_ACTIVE | ASYNC_INITIALIZED);
+ 		spin_unlock_irqrestore(&epca_lock, flags);
+-		wake_up_interruptible(&ch->open_wait);
++		wake_up_interruptible(&ch->port.open_wait);
+ 	}
+ }
+ 
+@@ -795,7 +795,7 @@ static int block_til_ready(struct tty_struct *tty,
+ 	unsigned long flags;
+ 
+ 	if (tty_hung_up_p(filp)) {
+-		if (ch->asyncflags & ASYNC_HUP_NOTIFY)
++		if (ch->port.flags & ASYNC_HUP_NOTIFY)
+ 			retval = -EAGAIN;
+ 		else
+ 			retval = -ERESTARTSYS;
+@@ -806,10 +806,10 @@ static int block_til_ready(struct tty_struct *tty,
+ 	 * If the device is in the middle of being closed, then block until
+ 	 * it's done, and then try again.
+ 	 */
+-	if (ch->asyncflags & ASYNC_CLOSING) {
+-		interruptible_sleep_on(&ch->close_wait);
++	if (ch->port.flags & ASYNC_CLOSING) {
++		interruptible_sleep_on(&ch->port.close_wait);
+ 
+-		if (ch->asyncflags & ASYNC_HUP_NOTIFY)
++		if (ch->port.flags & ASYNC_HUP_NOTIFY)
+ 			return -EAGAIN;
+ 		else
+ 			return -ERESTARTSYS;
+@@ -820,7 +820,7 @@ static int block_til_ready(struct tty_struct *tty,
+ 		 * If non-blocking mode is set, then make the check up front
+ 		 * and then exit.
+ 		 */
+-		ch->asyncflags |= ASYNC_NORMAL_ACTIVE;
++		ch->port.flags |= ASYNC_NORMAL_ACTIVE;
+ 		return 0;
+ 	}
+ 	if (tty->termios->c_cflag & CLOCAL)
+@@ -828,24 +828,24 @@ static int block_til_ready(struct tty_struct *tty,
+ 	/* Block waiting for the carrier detect and the line to become free */
+ 
+ 	retval = 0;
+-	add_wait_queue(&ch->open_wait, &wait);
++	add_wait_queue(&ch->port.open_wait, &wait);
+ 
+ 	spin_lock_irqsave(&epca_lock, flags);
+ 	/* We dec count so that pc_close will know when to free things */
+ 	if (!tty_hung_up_p(filp))
+-		ch->count--;
+-	ch->blocked_open++;
++		ch->port.count--;
++	ch->port.blocked_open++;
+ 	while (1) {
+ 		set_current_state(TASK_INTERRUPTIBLE);
+ 		if (tty_hung_up_p(filp) ||
+-				!(ch->asyncflags & ASYNC_INITIALIZED)) {
+-			if (ch->asyncflags & ASYNC_HUP_NOTIFY)
++				!(ch->port.flags & ASYNC_INITIALIZED)) {
++			if (ch->port.flags & ASYNC_HUP_NOTIFY)
+ 				retval = -EAGAIN;
+ 			else
+ 				retval = -ERESTARTSYS;
+ 			break;
+ 		}
+-		if (!(ch->asyncflags & ASYNC_CLOSING) &&
++		if (!(ch->port.flags & ASYNC_CLOSING) &&
+ 			  (do_clocal || (ch->imodem & ch->dcd)))
+ 			break;
+ 		if (signal_pending(current)) {
+@@ -864,17 +864,17 @@ static int block_til_ready(struct tty_struct *tty,
+ 	}
+ 
+ 	__set_current_state(TASK_RUNNING);
+-	remove_wait_queue(&ch->open_wait, &wait);
++	remove_wait_queue(&ch->port.open_wait, &wait);
+ 	if (!tty_hung_up_p(filp))
+-		ch->count++;
+-	ch->blocked_open--;
++		ch->port.count++;
++	ch->port.blocked_open--;
+ 
+ 	spin_unlock_irqrestore(&epca_lock, flags);
+ 
+ 	if (retval)
+ 		return retval;
+ 
+-	ch->asyncflags |= ASYNC_NORMAL_ACTIVE;
++	ch->port.flags |= ASYNC_NORMAL_ACTIVE;
+ 	return 0;
+ }
+ 
+@@ -933,7 +933,7 @@ static int pc_open(struct tty_struct *tty, struct file *filp)
+ 	 * necessary because we do not wish to flush and shutdown the channel
+ 	 * until the last app holding the channel open, closes it.
+ 	 */
+-	ch->count++;
++	ch->port.count++;
+ 	/*
+ 	 * Set a kernel structures pointer to our local channel structure. This
+ 	 * way we can get to it when passed only a tty struct.
+@@ -957,14 +957,14 @@ static int pc_open(struct tty_struct *tty, struct file *filp)
+ 	writew(head, &bc->rout);
+ 
+ 	/* Set the channels associated tty structure */
+-	ch->tty = tty;
++	ch->port.tty = tty;
+ 
+ 	/*
+ 	 * The below routine generally sets up parity, baud, flow control
+ 	 * issues, etc.... It effect both control flags and input flags.
+ 	 */
+ 	epcaparam(tty, ch);
+-	ch->asyncflags |= ASYNC_INITIALIZED;
++	ch->port.flags |= ASYNC_INITIALIZED;
+ 	memoff(ch);
+ 	spin_unlock_irqrestore(&epca_lock, flags);
+ 
+@@ -976,7 +976,7 @@ static int pc_open(struct tty_struct *tty, struct file *filp)
+ 	 * waiting for the line...
+ 	 */
+ 	spin_lock_irqsave(&epca_lock, flags);
+-	ch->tty = tty;
++	ch->port.tty = tty;
+ 	globalwinon(ch);
+ 	/* Enable Digi Data events */
+ 	writeb(1, &bc->idata);
+@@ -1017,8 +1017,8 @@ static void __exit epca_module_exit(void)
+ 		}
+ 		ch = card_ptr[crd];
+ 		for (count = 0; count < bd->numports; count++, ch++) {
+-			if (ch && ch->tty)
+-				tty_hangup(ch->tty);
++			if (ch && ch->port.tty)
++				tty_hangup(ch->port.tty);
+ 		}
+ 	}
+ 	pci_unregister_driver(&epca_driver);
+@@ -1427,7 +1427,7 @@ static void post_fep_init(unsigned int crd)
+ 		ch->boardnum   = crd;
+ 		ch->channelnum = i;
+ 		ch->magic      = EPCA_MAGIC;
+-		ch->tty        = NULL;
++		ch->port.tty        = NULL;
+ 
+ 		if (shrinkmem) {
+ 			fepcmd(ch, SETBUFFER, 32, 0, 0, 0);
+@@ -1510,10 +1510,10 @@ static void post_fep_init(unsigned int crd)
+ 		ch->fepstopca = 0;
+ 
+ 		ch->close_delay = 50;
+-		ch->count = 0;
+-		ch->blocked_open = 0;
+-		init_waitqueue_head(&ch->open_wait);
+-		init_waitqueue_head(&ch->close_wait);
++		ch->port.count = 0;
++		ch->port.blocked_open = 0;
++		init_waitqueue_head(&ch->port.open_wait);
++		init_waitqueue_head(&ch->port.close_wait);
+ 
+ 		spin_unlock_irqrestore(&epca_lock, flags);
+ 	}
+@@ -1633,15 +1633,15 @@ static void doevent(int crd)
+ 		if (event & MODEMCHG_IND) {
+ 			/* A modem signal change has been indicated */
+ 			ch->imodem = mstat;
+-			if (ch->asyncflags & ASYNC_CHECK_CD) {
++			if (ch->port.flags & ASYNC_CHECK_CD) {
+ 				/* We are now receiving dcd */
+ 				if (mstat & ch->dcd)
+-					wake_up_interruptible(&ch->open_wait);
++					wake_up_interruptible(&ch->port.open_wait);
+ 				else	/* No dcd; hangup */
+ 					pc_sched_event(ch, EPCA_EVENT_HANGUP);
+ 			}
+ 		}
+-		tty = ch->tty;
++		tty = ch->port.tty;
+ 		if (tty) {
+ 			if (event & BREAK_IND) {
+ 				/* A break has been indicated */
+@@ -1880,9 +1880,9 @@ static void epcaparam(struct tty_struct *tty, struct channel *ch)
+ 		 * that the driver will wait on carrier detect.
+ 		 */
+ 		if (ts->c_cflag & CLOCAL)
+-			ch->asyncflags &= ~ASYNC_CHECK_CD;
++			ch->port.flags &= ~ASYNC_CHECK_CD;
+ 		else
+-			ch->asyncflags |= ASYNC_CHECK_CD;
++			ch->port.flags |= ASYNC_CHECK_CD;
+ 		mval = ch->m_dtr | ch->m_rts;
+ 	} /* End CBAUD not detected */
+ 	iflag = termios2digi_i(ch, ts->c_iflag);
+@@ -1972,7 +1972,7 @@ static void receive_data(struct channel *ch)
+ 	globalwinon(ch);
+ 	if (ch->statusflags & RXSTOPPED)
+ 		return;
+-	tty = ch->tty;
++	tty = ch->port.tty;
+ 	if (tty)
+ 		ts = tty->termios;
+ 	bc = ch->brdchan;
+@@ -2032,7 +2032,7 @@ static void receive_data(struct channel *ch)
+ 	globalwinon(ch);
+ 	writew(tail, &bc->rout);
+ 	/* Must be called with global data */
+-	tty_schedule_flip(ch->tty);
++	tty_schedule_flip(ch->port.tty);
+ }
+ 
+ static int info_ioctl(struct tty_struct *tty, struct file *file,
+@@ -2376,7 +2376,7 @@ static void pc_set_termios(struct tty_struct *tty, struct ktermios *old_termios)
+ 
+ 		if (!(old_termios->c_cflag & CLOCAL) &&
+ 			 (tty->termios->c_cflag & CLOCAL))
+-			wake_up_interruptible(&ch->open_wait);
++			wake_up_interruptible(&ch->port.open_wait);
+ 
+ 	} /* End if channel valid */
+ }
+@@ -2386,13 +2386,13 @@ static void do_softint(struct work_struct *work)
+ 	struct channel *ch = container_of(work, struct channel, tqueue);
+ 	/* Called in response to a modem change event */
+ 	if (ch && ch->magic == EPCA_MAGIC) {
+-		struct tty_struct *tty = ch->tty;
++		struct tty_struct *tty = ch->port.tty;
+ 
+ 		if (tty && tty->driver_data) {
+ 			if (test_and_clear_bit(EPCA_EVENT_HANGUP, &ch->event)) {
+ 				tty_hangup(tty);
+-				wake_up_interruptible(&ch->open_wait);
+-				ch->asyncflags &= ~ASYNC_NORMAL_ACTIVE;
++				wake_up_interruptible(&ch->port.open_wait);
++				ch->port.flags &= ~ASYNC_NORMAL_ACTIVE;
+ 			}
+ 		}
+ 	}
+diff --git a/drivers/char/epca.h b/drivers/char/epca.h
+index 3c77c02..d414bf2 100644
+--- a/drivers/char/epca.h
++++ b/drivers/char/epca.h
+@@ -84,6 +84,7 @@ static char *board_desc[] =
+ struct channel 
+ {
+ 	long   magic;
++	struct tty_port port;
+ 	unsigned char boardnum;
+ 	unsigned char channelnum;
+ 	unsigned char omodem;         /* FEP output modem status     */
+@@ -117,10 +118,7 @@ struct channel
+ 	unsigned short rxbufhead;
+ 	unsigned short rxbufsize;
+ 	int    close_delay;
+-	int    count;
+-	int    blocked_open;
+ 	unsigned long  event;
+-	int    asyncflags;
+ 	uint   dev;
+ 	unsigned long  statusflags;
+ 	unsigned long  c_iflag;
+@@ -132,9 +130,6 @@ struct channel
+ 	struct board_info           *board;
+ 	struct board_chan	    __iomem *brdchan;
+ 	struct digi_struct          digiext;
+-	struct tty_struct           *tty;
+-	wait_queue_head_t           open_wait;
+-	wait_queue_head_t           close_wait;
+ 	struct work_struct          tqueue;
+ 	struct global_data 	    __iomem *mailbox;
  };
- /*
-  * When a break, frame error, or parity error happens, these codes are
-@@ -101,68 +102,68 @@ struct tty_bufhead {
- #define LNEXT_CHAR(tty)	((tty)->termios->c_cc[VLNEXT])
- #define EOL2_CHAR(tty) ((tty)->termios->c_cc[VEOL2])
- 
--#define _I_FLAG(tty,f)	((tty)->termios->c_iflag & (f))
--#define _O_FLAG(tty,f)	((tty)->termios->c_oflag & (f))
--#define _C_FLAG(tty,f)	((tty)->termios->c_cflag & (f))
--#define _L_FLAG(tty,f)	((tty)->termios->c_lflag & (f))
--
--#define I_IGNBRK(tty)	_I_FLAG((tty),IGNBRK)
--#define I_BRKINT(tty)	_I_FLAG((tty),BRKINT)
--#define I_IGNPAR(tty)	_I_FLAG((tty),IGNPAR)
--#define I_PARMRK(tty)	_I_FLAG((tty),PARMRK)
--#define I_INPCK(tty)	_I_FLAG((tty),INPCK)
--#define I_ISTRIP(tty)	_I_FLAG((tty),ISTRIP)
--#define I_INLCR(tty)	_I_FLAG((tty),INLCR)
--#define I_IGNCR(tty)	_I_FLAG((tty),IGNCR)
--#define I_ICRNL(tty)	_I_FLAG((tty),ICRNL)
--#define I_IUCLC(tty)	_I_FLAG((tty),IUCLC)
--#define I_IXON(tty)	_I_FLAG((tty),IXON)
--#define I_IXANY(tty)	_I_FLAG((tty),IXANY)
--#define I_IXOFF(tty)	_I_FLAG((tty),IXOFF)
--#define I_IMAXBEL(tty)	_I_FLAG((tty),IMAXBEL)
--#define I_IUTF8(tty)	_I_FLAG((tty),IUTF8)
--
--#define O_OPOST(tty)	_O_FLAG((tty),OPOST)
--#define O_OLCUC(tty)	_O_FLAG((tty),OLCUC)
--#define O_ONLCR(tty)	_O_FLAG((tty),ONLCR)
--#define O_OCRNL(tty)	_O_FLAG((tty),OCRNL)
--#define O_ONOCR(tty)	_O_FLAG((tty),ONOCR)
--#define O_ONLRET(tty)	_O_FLAG((tty),ONLRET)
--#define O_OFILL(tty)	_O_FLAG((tty),OFILL)
--#define O_OFDEL(tty)	_O_FLAG((tty),OFDEL)
--#define O_NLDLY(tty)	_O_FLAG((tty),NLDLY)
--#define O_CRDLY(tty)	_O_FLAG((tty),CRDLY)
--#define O_TABDLY(tty)	_O_FLAG((tty),TABDLY)
--#define O_BSDLY(tty)	_O_FLAG((tty),BSDLY)
--#define O_VTDLY(tty)	_O_FLAG((tty),VTDLY)
--#define O_FFDLY(tty)	_O_FLAG((tty),FFDLY)
--
--#define C_BAUD(tty)	_C_FLAG((tty),CBAUD)
--#define C_CSIZE(tty)	_C_FLAG((tty),CSIZE)
--#define C_CSTOPB(tty)	_C_FLAG((tty),CSTOPB)
--#define C_CREAD(tty)	_C_FLAG((tty),CREAD)
--#define C_PARENB(tty)	_C_FLAG((tty),PARENB)
--#define C_PARODD(tty)	_C_FLAG((tty),PARODD)
--#define C_HUPCL(tty)	_C_FLAG((tty),HUPCL)
--#define C_CLOCAL(tty)	_C_FLAG((tty),CLOCAL)
--#define C_CIBAUD(tty)	_C_FLAG((tty),CIBAUD)
--#define C_CRTSCTS(tty)	_C_FLAG((tty),CRTSCTS)
--
--#define L_ISIG(tty)	_L_FLAG((tty),ISIG)
--#define L_ICANON(tty)	_L_FLAG((tty),ICANON)
--#define L_XCASE(tty)	_L_FLAG((tty),XCASE)
--#define L_ECHO(tty)	_L_FLAG((tty),ECHO)
--#define L_ECHOE(tty)	_L_FLAG((tty),ECHOE)
--#define L_ECHOK(tty)	_L_FLAG((tty),ECHOK)
--#define L_ECHONL(tty)	_L_FLAG((tty),ECHONL)
--#define L_NOFLSH(tty)	_L_FLAG((tty),NOFLSH)
--#define L_TOSTOP(tty)	_L_FLAG((tty),TOSTOP)
--#define L_ECHOCTL(tty)	_L_FLAG((tty),ECHOCTL)
--#define L_ECHOPRT(tty)	_L_FLAG((tty),ECHOPRT)
--#define L_ECHOKE(tty)	_L_FLAG((tty),ECHOKE)
--#define L_FLUSHO(tty)	_L_FLAG((tty),FLUSHO)
--#define L_PENDIN(tty)	_L_FLAG((tty),PENDIN)
--#define L_IEXTEN(tty)	_L_FLAG((tty),IEXTEN)
-+#define _I_FLAG(tty, f)	((tty)->termios->c_iflag & (f))
-+#define _O_FLAG(tty, f)	((tty)->termios->c_oflag & (f))
-+#define _C_FLAG(tty, f)	((tty)->termios->c_cflag & (f))
-+#define _L_FLAG(tty, f)	((tty)->termios->c_lflag & (f))
-+
-+#define I_IGNBRK(tty)	_I_FLAG((tty), IGNBRK)
-+#define I_BRKINT(tty)	_I_FLAG((tty), BRKINT)
-+#define I_IGNPAR(tty)	_I_FLAG((tty), IGNPAR)
-+#define I_PARMRK(tty)	_I_FLAG((tty), PARMRK)
-+#define I_INPCK(tty)	_I_FLAG((tty), INPCK)
-+#define I_ISTRIP(tty)	_I_FLAG((tty), ISTRIP)
-+#define I_INLCR(tty)	_I_FLAG((tty), INLCR)
-+#define I_IGNCR(tty)	_I_FLAG((tty), IGNCR)
-+#define I_ICRNL(tty)	_I_FLAG((tty), ICRNL)
-+#define I_IUCLC(tty)	_I_FLAG((tty), IUCLC)
-+#define I_IXON(tty)	_I_FLAG((tty), IXON)
-+#define I_IXANY(tty)	_I_FLAG((tty), IXANY)
-+#define I_IXOFF(tty)	_I_FLAG((tty), IXOFF)
-+#define I_IMAXBEL(tty)	_I_FLAG((tty), IMAXBEL)
-+#define I_IUTF8(tty)	_I_FLAG((tty), IUTF8)
-+
-+#define O_OPOST(tty)	_O_FLAG((tty), OPOST)
-+#define O_OLCUC(tty)	_O_FLAG((tty), OLCUC)
-+#define O_ONLCR(tty)	_O_FLAG((tty), ONLCR)
-+#define O_OCRNL(tty)	_O_FLAG((tty), OCRNL)
-+#define O_ONOCR(tty)	_O_FLAG((tty), ONOCR)
-+#define O_ONLRET(tty)	_O_FLAG((tty), ONLRET)
-+#define O_OFILL(tty)	_O_FLAG((tty), OFILL)
-+#define O_OFDEL(tty)	_O_FLAG((tty), OFDEL)
-+#define O_NLDLY(tty)	_O_FLAG((tty), NLDLY)
-+#define O_CRDLY(tty)	_O_FLAG((tty), CRDLY)
-+#define O_TABDLY(tty)	_O_FLAG((tty), TABDLY)
-+#define O_BSDLY(tty)	_O_FLAG((tty), BSDLY)
-+#define O_VTDLY(tty)	_O_FLAG((tty), VTDLY)
-+#define O_FFDLY(tty)	_O_FLAG((tty), FFDLY)
-+
-+#define C_BAUD(tty)	_C_FLAG((tty), CBAUD)
-+#define C_CSIZE(tty)	_C_FLAG((tty), CSIZE)
-+#define C_CSTOPB(tty)	_C_FLAG((tty), CSTOPB)
-+#define C_CREAD(tty)	_C_FLAG((tty), CREAD)
-+#define C_PARENB(tty)	_C_FLAG((tty), PARENB)
-+#define C_PARODD(tty)	_C_FLAG((tty), PARODD)
-+#define C_HUPCL(tty)	_C_FLAG((tty), HUPCL)
-+#define C_CLOCAL(tty)	_C_FLAG((tty), CLOCAL)
-+#define C_CIBAUD(tty)	_C_FLAG((tty), CIBAUD)
-+#define C_CRTSCTS(tty)	_C_FLAG((tty), CRTSCTS)
-+
-+#define L_ISIG(tty)	_L_FLAG((tty), ISIG)
-+#define L_ICANON(tty)	_L_FLAG((tty), ICANON)
-+#define L_XCASE(tty)	_L_FLAG((tty), XCASE)
-+#define L_ECHO(tty)	_L_FLAG((tty), ECHO)
-+#define L_ECHOE(tty)	_L_FLAG((tty), ECHOE)
-+#define L_ECHOK(tty)	_L_FLAG((tty), ECHOK)
-+#define L_ECHONL(tty)	_L_FLAG((tty), ECHONL)
-+#define L_NOFLSH(tty)	_L_FLAG((tty), NOFLSH)
-+#define L_TOSTOP(tty)	_L_FLAG((tty), TOSTOP)
-+#define L_ECHOCTL(tty)	_L_FLAG((tty), ECHOCTL)
-+#define L_ECHOPRT(tty)	_L_FLAG((tty), ECHOPRT)
-+#define L_ECHOKE(tty)	_L_FLAG((tty), ECHOKE)
-+#define L_FLUSHO(tty)	_L_FLAG((tty), FLUSHO)
-+#define L_PENDIN(tty)	_L_FLAG((tty), PENDIN)
-+#define L_IEXTEN(tty)	_L_FLAG((tty), IEXTEN)
- 
- struct device;
- struct signal_struct;
-@@ -177,7 +178,7 @@ struct signal_struct;
-  * of the tty object but in many cases port -> tty mappings are valid only
-  * until a hangup so don't use the wrong path.
-  */
-- 
-+
- struct tty_port {
- 	struct tty_struct	*tty;		/* Back pointer */
- 	int			blocked_open;	/* Waiting to open */
-@@ -273,14 +274,14 @@ struct tty_struct {
- 
- /*
-  * These bits are used in the flags field of the tty structure.
-- * 
-+ *
-  * So that interrupts won't be able to mess up the queues,
-  * copy_to_cooked must be atomic with respect to itself, as must
-  * tty->write.  Thus, you must use the inline functions set_bit() and
-  * clear_bit() to make things atomic.
-  */
- #define TTY_THROTTLED 		0	/* Call unthrottle() at threshold min */
--#define TTY_IO_ERROR 		1	/* Canse an I/O error (may be no ldisc too) */
-+#define TTY_IO_ERROR 		1	/* Cause an I/O error (may be no ldisc too) */
- #define TTY_OTHER_CLOSED 	2	/* Other side (if any) has closed */
- #define TTY_EXCLUSIVE 		3	/* Exclusive open mode */
- #define TTY_DEBUG 		4	/* Debugging */
-@@ -310,10 +311,10 @@ extern int vcs_init(void);
- extern int tty_paranoia_check(struct tty_struct *tty, struct inode *inode,
- 			      const char *routine);
- extern char *tty_name(struct tty_struct *tty, char *buf);
--extern void tty_wait_until_sent(struct tty_struct * tty, long timeout);
--extern int tty_check_change(struct tty_struct * tty);
--extern void stop_tty(struct tty_struct * tty);
--extern void start_tty(struct tty_struct * tty);
-+extern void tty_wait_until_sent(struct tty_struct *tty, long timeout);
-+extern int tty_check_change(struct tty_struct *tty);
-+extern void stop_tty(struct tty_struct *tty);
-+extern void start_tty(struct tty_struct *tty);
- extern int tty_register_ldisc(int disc, struct tty_ldisc_ops *new_ldisc);
- extern int tty_unregister_ldisc(int disc);
- extern int tty_register_driver(struct tty_driver *driver);
-@@ -335,10 +336,10 @@ extern int is_current_pgrp_orphaned(void);
- extern struct pid *tty_get_pgrp(struct tty_struct *tty);
- extern int is_ignored(int sig);
- extern int tty_signal(int sig, struct tty_struct *tty);
--extern void tty_hangup(struct tty_struct * tty);
--extern void tty_vhangup(struct tty_struct * tty);
-+extern void tty_hangup(struct tty_struct *tty);
-+extern void tty_vhangup(struct tty_struct *tty);
- extern void tty_unhangup(struct file *filp);
--extern int tty_hung_up_p(struct file * filp);
-+extern int tty_hung_up_p(struct file *filp);
- extern void do_SAK(struct tty_struct *tty);
- extern void __do_SAK(struct tty_struct *tty);
- extern void disassociate_ctty(int priv);
-@@ -347,8 +348,10 @@ extern void tty_flip_buffer_push(struct tty_struct *tty);
- extern speed_t tty_get_baud_rate(struct tty_struct *tty);
- extern speed_t tty_termios_baud_rate(struct ktermios *termios);
- extern speed_t tty_termios_input_baud_rate(struct ktermios *termios);
--extern void tty_termios_encode_baud_rate(struct ktermios *termios, speed_t ibaud, speed_t obaud);
--extern void tty_encode_baud_rate(struct tty_struct *tty, speed_t ibaud, speed_t obaud);
-+extern void tty_termios_encode_baud_rate(struct ktermios *termios,
-+						speed_t ibaud, speed_t obaud);
-+extern void tty_encode_baud_rate(struct tty_struct *tty,
-+						speed_t ibaud, speed_t obaud);
- extern void tty_termios_copy_hw(struct ktermios *new, struct ktermios *old);
- extern int tty_termios_hw_change(struct ktermios *a, struct ktermios *b);
- 
-@@ -390,7 +393,8 @@ extern void tty_audit_add_data(struct tty_struct *tty, unsigned char *data,
- extern void tty_audit_exit(void);
- extern void tty_audit_fork(struct signal_struct *sig);
- extern void tty_audit_push(struct tty_struct *tty);
--extern void tty_audit_push_task(struct task_struct *tsk, uid_t loginuid, u32 sessionid);
-+extern void tty_audit_push_task(struct task_struct *tsk,
-+					uid_t loginuid, u32 sessionid);
- #else
- static inline void tty_audit_add_data(struct tty_struct *tty,
- 				      unsigned char *data, size_t size)
-@@ -405,19 +409,20 @@ static inline void tty_audit_fork(struct signal_struct *sig)
- static inline void tty_audit_push(struct tty_struct *tty)
- {
- }
--static inline void tty_audit_push_task(struct task_struct *tsk, uid_t loginuid, u32 sessionid)
-+static inline void tty_audit_push_task(struct task_struct *tsk,
-+					uid_t loginuid, u32 sessionid)
- {
- }
- #endif
- 
- /* tty_ioctl.c */
--extern int n_tty_ioctl(struct tty_struct * tty, struct file * file,
-+extern int n_tty_ioctl(struct tty_struct *tty, struct file *file,
- 		       unsigned int cmd, unsigned long arg);
- 
- /* serial.c */
- 
- extern void serial_console_init(void);
-- 
-+
- /* pcxx.c */
- 
- extern int pcxe_open(struct tty_struct *tty, struct file *filp);
-@@ -428,7 +433,7 @@ extern void console_print(const char *);
- 
- /* vt.c */
- 
--extern int vt_ioctl(struct tty_struct *tty, struct file * file,
-+extern int vt_ioctl(struct tty_struct *tty, struct file *file,
- 		    unsigned int cmd, unsigned long arg);
- 
- #endif /* __KERNEL__ */
 
