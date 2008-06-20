@@ -1,87 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759234AbYFTRoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759510AbYFTRpl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759234AbYFTRoN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 13:44:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755587AbYFTRn6
+	id S1759510AbYFTRpl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 13:45:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbYFTRpd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 13:43:58 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:52020 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752867AbYFTRn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 13:43:57 -0400
-Date: Fri, 20 Jun 2008 19:43:46 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Manuel Lauss <mano@roarinelk.homelinux.net>
-Cc: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-       sshtylyov@ru.mvista.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/8] Alchemy: register mmc platform device for
- db1200/pb1200 boards.
-Message-ID: <20080620194346.574eedec@mjolnir.drzeus.cx>
-In-Reply-To: <485BE557.8080004@roarinelk.homelinux.net>
-References: <20080609063521.GA8724@roarinelk.homelinux.net>
-	<20080609063702.GC8724@roarinelk.homelinux.net>
-	<20080612090206.GB21601@linux-mips.org>
-	<20080612101839.GC21601@linux-mips.org>
-	<20080612121828.GA24603@roarinelk.homelinux.net>
-	<20080612122646.GA9493@linux-mips.org>
-	<20080612154248.5c9c5c9d@mjolnir.drzeus.cx>
-	<20080612134729.GA20015@linux-mips.org>
-	<20080612135810.GA25352@roarinelk.homelinux.net>
-	<20080620174607.50ad6874@mjolnir.drzeus.cx>
-	<20080620161239.GA31688@roarinelk.homelinux.net>
-	<20080620190340.5b1b31c9@mjolnir.drzeus.cx>
-	<485BE557.8080004@roarinelk.homelinux.net>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
-X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-30847-1213983329-0001-2"
+	Fri, 20 Jun 2008 13:45:33 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:44104 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752610AbYFTRpc convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 13:45:32 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ag0FABOKW0hMQW1O/2dsb2JhbACBW64k
+Date: Fri, 20 Jun 2008 13:45:29 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       Hideo AOKI <haoki@redhat.com>
+Subject: Re: [RFC][Patch 2/2] markers: example of irq regular kernel markers
+Message-ID: <20080620174529.GB10943@Krystal>
+References: <485BE2C6.1080901@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <485BE2C6.1080901@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:32:36 up 15 days, 22:13,  4 users,  load average: 1.19, 0.61,
+	0.50
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+* Masami Hiramatsu (mhiramat@redhat.com) wrote:
+> Add trace points of irq handle events ported from LTTng's markers.
+> 
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> ---
+> I just rewrote LTTng's irq event by using DEFINE_TRACE for example.
+> 
+>  include/linux/irq_trace.h |    6 ++++++
+>  kernel/irq/handle.c       |    6 ++++++
+>  2 files changed, 12 insertions(+)
+> 
+> Index: 2.6.26-rc5-mm3/include/linux/irq_trace.h
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ 2.6.26-rc5-mm3/include/linux/irq_trace.h	2008-06-16 12:27:51.000000000 -0400
+> @@ -0,0 +1,6 @@
+> +#include <linux/marker.h>
+> +
+> +DEFINE_TRACE(irq_entry, (int irq_id, int kernel_mode), irq_id, kernel_mode);
+> +
+> +DEFINE_TRACE(irq_exit, (void));
+> +
 
---=_freyr.drzeus.cx-30847-1213983329-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+All this work look good, thanks Masami! Sorry I did not find time to do
+it lately, I've been busy on other things. A small question though :
+since LTTng is configurable both as an external module or as an
+in-kernel tracer, I wonder if it would really hurt to add the format
+strings to DEFINE_TRACE, e.g. :
 
-On Fri, 20 Jun 2008 19:13:59 +0200
-Manuel Lauss <mano@roarinelk.homelinux.net> wrote:
+DEFINE_TRACE(name, prototype, format_string, args...)
 
-> Pierre Ossman wrote:
-> >=20
-> > The problem is still Ralf's DMA constants fix. Ralf, should I simply
-> > steal that patch from you?
->=20
-> Alternatively, Ralf could push patch 2/8 through the MIPS tree; the=20
-> other MMC patches don't depend on it.  Worst case scenario is a that=20
-> db1200 mmc won't work for a few revisions which would go unnoticed with=20
-> 99.9% probability, given the state of the rest of the au1000 code ;-)
->=20
+which would give :
 
-Fine with me. I'll queue up the rest of the patches for now.
+DEFINE_TRACE(irq_entry, (int irq_id, int kernel_mode), "%d %d",
+    irq_id, kernel_mode);
 
-Rgds
---=20
-     -- Pierre Ossman
+DEFINE_TRACE(irq_exit, (void), MARK_NOARGS);
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Use end-to-end encryption where
-  possible.
+and calling this in the kernel code :
 
---=_freyr.drzeus.cx-30847-1213983329-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
+trace_irq_entry(irq, (regs)?(!user_mode(regs)):(1));
+...
+trace_irq_exit();
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+and for quick-and-dirty debug usage, one would add this to kernel code :
 
-iEYEARECAAYFAkhb7FYACgkQ7b8eESbyJLiRQQCfaVGg7Az6fKndDmsPWkv/p43u
-ffwAmgO+zCTl39bi5XGpoVZ3UyDi0Mxz
-=663L
------END PGP SIGNATURE-----
+trace_mark(subsystem_event, "(int arg, struct task_struct *task)",
+ "%d %p", arg, current);
 
---=_freyr.drzeus.cx-30847-1213983329-0001-2--
+By doing so, we could leave a gcc format string check by passing the
+format string to __mark_check_format(). We could extract the field names
+from the prototype, so there is no need to duplicate field information
+in the format string.
+
+Since the format string information is hidden in a header but kept at
+the same location as the trace point definition, I think it reaches
+goals of being "neat", efficient for general purpose tracers and to keep
+the tracepoint information all in one place so we don't end up adding
+stuff to various information consumers whenever a new trace point is
+added.
+
+What do you think of these changes ?
+
+Mathieu
+
+
+> Index: 2.6.26-rc5-mm3/kernel/irq/handle.c
+> ===================================================================
+> --- 2.6.26-rc5-mm3.orig/kernel/irq/handle.c	2008-06-16 12:27:50.000000000 -0400
+> +++ 2.6.26-rc5-mm3/kernel/irq/handle.c	2008-06-16 12:27:51.000000000 -0400
+> @@ -15,6 +15,7 @@
+>  #include <linux/random.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/kernel_stat.h>
+> +#include <linux/irq_trace.h>
+> 
+>  #include "internals.h"
+> 
+> @@ -130,6 +131,9 @@ irqreturn_t handle_IRQ_event(unsigned in
+>  {
+>  	irqreturn_t ret, retval = IRQ_NONE;
+>  	unsigned int status = 0;
+> +	struct pt_regs *regs = get_irq_regs();
+> +
+> +	trace_irq_entry(irq, (regs)?(!user_mode(regs)):(1));
+> 
+>  	handle_dynamic_tick(action);
+> 
+> @@ -148,6 +152,8 @@ irqreturn_t handle_IRQ_event(unsigned in
+>  		add_interrupt_randomness(irq);
+>  	local_irq_disable();
+> 
+> +	trace_irq_exit();
+> +
+>  	return retval;
+>  }
+> 
+> -- 
+> Masami Hiramatsu
+> 
+> Software Engineer
+> Hitachi Computer Products (America) Inc.
+> Software Solutions Division
+> 
+> e-mail: mhiramat@redhat.com
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
