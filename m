@@ -1,73 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757050AbYFTT6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbYFTT7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757050AbYFTT6a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 15:58:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbYFTT6W
+	id S1754209AbYFTT7R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 15:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbYFTT7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 15:58:22 -0400
-Received: from smtpout10.uol.com.br ([200.221.4.201]:59392 "EHLO
-	smtp.uol.com.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751756AbYFTT6W (ORCPT
+	Fri, 20 Jun 2008 15:59:05 -0400
+Received: from mail-sin.bigfish.com ([207.46.51.74]:14699 "EHLO
+	mail126-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753001AbYFTT7E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 15:58:22 -0400
-Date: Fri, 20 Jun 2008 16:58:15 -0300
-From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Cc: "John W. Linville" <linville@tuxdriver.com>, linux-kernel@vger.kernel.org,
-       rbrito@ime.usp.br
-Subject: Re: [2.6.26-rc4] Problems with rt2x00 USB interface on powerpc
-	(fwd)
-Message-ID: <20080620195815.GA2703@ime.usp.br>
-References: <20080620175729.GA3151@ime.usp.br> <200806202048.47239.IvDoorn@gmail.com>
+	Fri, 20 Jun 2008 15:59:04 -0400
+X-BigFish: VPS6(z34a4lzzz10d3izzz32i6bh62h)
+X-Spam-TCS-SCL: 1:0
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
+X-WSS-ID: 0K2S25U-01-8B7-01
+Date: Fri, 20 Jun 2008 21:58:46 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>
+Subject: [PATCH 1/7] x86: introduce macro to check whether an address range
+	is in the ISA range
+Message-ID: <20080620195846.GC4105@alberich.amd.com>
+References: <20080620195503.GB4105@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200806202048.47239.IvDoorn@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SIG5: 6c54129a85d647e3244949d756fc0970
+In-Reply-To: <20080620195503.GB4105@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 20 Jun 2008 19:58:49.0002 (UTC) FILETIME=[0E20B0A0:01C8D310]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Ivo. Thank you for your reply.
 
-On Jun 20 2008, Ivo van Doorn wrote:
-> Hi,
-> 
-> > Did you receive my earlier message (attached here for reference)? I'm
-> > willing to experiment with the driver a little bit and I hope that the
-> > information that I have provided so far is helpful to chase the reason
-> > why the driver doesn't work on PowerPC.
-> 
-> Sorry I have been quite busy with other things.
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ arch/x86/mm/ioremap.c  |    2 +-
+ arch/x86/mm/pat.c      |    5 ++---
+ include/asm-x86/e820.h |    1 +
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-I'm terribly sorry for that, since I would like the driver to work with
-the USB stick still in the 2.6.26 release (since that's what some
-distributions will probably use).
-
-> I have glanced over the register dumps, and there are no obvious
-> endian problems.
-
-OK.
-
-> The reason most registers are different with the 16bits swapped is the way
-> rt2x00 sends the register information through debugfs. rt2500usb only has 16bit
-> registers and the way the information is dumped through debugfs assumes 32bit
-> registers.
-
-I didn't know that and was surprised. I thought that it would have been
-something easier to fix, then.
-
-> I will go over the real register differences as soon as possible, but
-> as I said, I am momentarily quite busy with other things. :(
-
-Thanks anyway. I am willing to help as much as I can.
-
-
-Thanks, Rogério Brito.
-
+diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+index 7452eb3..6d9960d 100644
+--- a/arch/x86/mm/ioremap.c
++++ b/arch/x86/mm/ioremap.c
+@@ -142,7 +142,7 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
+ 	/*
+ 	 * Don't remap the low PCI/ISA area, it's always mapped..
+ 	 */
+-	if (phys_addr >= ISA_START_ADDRESS && last_addr < ISA_END_ADDRESS)
++	if (is_ISA_range(phys_addr, last_addr))
+ 		return (__force void __iomem *)phys_to_virt(phys_addr);
+ 
+ 	/*
+diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+index 227df3c..5bbc22e 100644
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -215,7 +215,7 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
+ 	}
+ 
+ 	/* Low ISA region is always mapped WB in page table. No need to track */
+-	if (start >= ISA_START_ADDRESS && (end - 1) <= ISA_END_ADDRESS) {
++	if (is_ISA_range(start, end - 1)) {
+ 		if (ret_type)
+ 			*ret_type = _PAGE_CACHE_WB;
+ 
+@@ -415,9 +415,8 @@ int free_memtype(u64 start, u64 end)
+ 	}
+ 
+ 	/* Low ISA region is always mapped WB. No need to track */
+-	if (start >= ISA_START_ADDRESS && end <= ISA_END_ADDRESS) {
++	if (is_ISA_range(start, end - 1))
+ 		return 0;
+-	}
+ 
+ 	spin_lock(&memtype_lock);
+ 	list_for_each_entry(ml, &memtype_list, nd) {
+diff --git a/include/asm-x86/e820.h b/include/asm-x86/e820.h
+index 7004251..5103d0b 100644
+--- a/include/asm-x86/e820.h
++++ b/include/asm-x86/e820.h
+@@ -24,6 +24,7 @@ struct e820map {
+ 
+ #define ISA_START_ADDRESS	0xa0000
+ #define ISA_END_ADDRESS		0x100000
++#define is_ISA_range(s, e) ((s) >= ISA_START_ADDRESS && (e) < ISA_END_ADDRESS)
+ 
+ #define BIOS_BEGIN		0x000a0000
+ #define BIOS_END		0x00100000
 -- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+1.5.5.4
+
+
+
