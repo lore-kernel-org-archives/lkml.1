@@ -1,46 +1,570 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753920AbYFTIsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbYFTItk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753920AbYFTIsx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 04:48:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751656AbYFTIsp
+	id S1754290AbYFTItk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 04:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbYFTItc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 04:48:45 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37164 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751593AbYFTIso (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 04:48:44 -0400
-Date: Fri, 20 Jun 2008 10:47:09 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: LKML <linux-kernel@vger.kernel.org>, "Daniel K." <dk@uw.no>
-Subject: Re: [PATCH 00/10] sched: rt bandwidth/group fixes
-Message-ID: <20080620084709.GA31502@elte.hu>
-References: <20080619122218.971447669@chello.nl>
+	Fri, 20 Jun 2008 04:49:32 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:5422 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751593AbYFTIta (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 04:49:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=NQy5368JAyay2nWYNlzp/DFX/BcE1ZrKU/A1boBpjI1k0Jc1U10fH8t3p6rz8Vat4c
+         zCDhs9xei7sU1DkaGQMdPOD6xxM25WFsbRujwjxX2oC2epcaTivQpDYtIsCSyVmhxRiT
+         8CAKFoOhuCrEG9yDJ3LYFlYefbXb/5D/4w9Ac=
+Date: Fri, 20 Jun 2008 12:49:17 +0400
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: cbou@mail.ru, dwmw2@infradead.org
+Subject: [PATCH] Add support for power_supply on tosa
+Message-ID: <20080620084917.GA20577@doriath.ww600.siemens.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080619122218.971447669@chello.nl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Support the battery management on Sharp Zaurus SL-6000.
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+This patch depends on the tc6393xb support as found in the arm:devel
+or linux-next trees.
 
-> my current queue of fixes
-> 
-> 1-4 are pushed into sched-urgent and should be included in .26 the 
-> rest are less critical and should be queued for .27
+Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+---
+ drivers/power/Kconfig        |    7 +
+ drivers/power/Makefile       |    1 +
+ drivers/power/tosa_battery.c |  485 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 493 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/power/tosa_battery.c
 
-applied to tip/sched/devel - thanks Peter.
+diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+index 58c806e..e3a9c37 100644
+--- a/drivers/power/Kconfig
++++ b/drivers/power/Kconfig
+@@ -49,4 +49,11 @@ config BATTERY_OLPC
+ 	help
+ 	  Say Y to enable support for the battery on the OLPC laptop.
+ 
++config BATTERY_TOSA
++	tristate "Sharp SL-6000 (tosa) battery"
++	depends on MACH_TOSA && MFD_TC6393XB
++	help
++	  Say Y to enable support for the battery on the Sharp Zaurus
++	  SL-6000 (tosa) models.
++
+ endif # POWER_SUPPLY
+diff --git a/drivers/power/Makefile b/drivers/power/Makefile
+index 6413ded..1e408fa 100644
+--- a/drivers/power/Makefile
++++ b/drivers/power/Makefile
+@@ -20,3 +20,4 @@ obj-$(CONFIG_APM_POWER)		+= apm_power.o
+ obj-$(CONFIG_BATTERY_DS2760)	+= ds2760_battery.o
+ obj-$(CONFIG_BATTERY_PMU)	+= pmu_battery.o
+ obj-$(CONFIG_BATTERY_OLPC)	+= olpc_battery.o
++obj-$(CONFIG_BATTERY_TOSA)	+= tosa_battery.o
+diff --git a/drivers/power/tosa_battery.c b/drivers/power/tosa_battery.c
+new file mode 100644
+index 0000000..7a99203
+--- /dev/null
++++ b/drivers/power/tosa_battery.c
+@@ -0,0 +1,485 @@
++/*
++ * Battery and Power Management code for the Sharp SL-6000x
++ *
++ * Copyright (c) 2005 Dirk Opfer
++ * Copyright (c) 2008 Dmitry Baryshkov
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/power_supply.h>
++#include <linux/wm97xx.h>
++#include <linux/delay.h>
++#include <linux/spinlock.h>
++#include <linux/interrupt.h>
++#include <linux/gpio.h>
++
++#include <asm/mach-types.h>
++#include <asm/arch/tosa.h>
++
++static DEFINE_MUTEX(bat_lock); /* protects gpio pins */
++static struct work_struct bat_work;
++
++struct tosa_bat {
++	int status;
++	struct power_supply psy;
++	int full_chrg;
++
++	struct mutex work_lock; /* protects data */
++
++	bool (*is_present)(struct tosa_bat *bat);
++	int gpio_full;
++	int gpio_charge_off;
++
++	int technology;
++
++	int gpio_bat;
++	int adc_bat;
++	int adc_bat_divider;
++	int bat_max;
++	int bat_min;
++
++	int gpio_temp;
++	int adc_temp;
++	int adc_temp_divider;
++};
++
++static struct tosa_bat tosa_bat_main;
++static struct tosa_bat tosa_bat_jacket;
++
++static unsigned long tosa_read_bat(struct tosa_bat *bat)
++{
++	unsigned long value = 0;
++
++	if (bat->gpio_bat < 0 || bat->adc_bat < 0)
++		return 0;
++
++	mutex_lock(&bat_lock);
++	gpio_set_value(bat->gpio_bat, 1);
++	mdelay(5);
++	value = wm97xx_read_aux_adc(bat->psy.dev->parent->driver_data,
++			bat->adc_bat);
++	gpio_set_value(bat->gpio_bat, 0);
++	mutex_unlock(&bat_lock);
++
++	value = value * 1000000 / bat->adc_bat_divider;
++
++	return value;
++}
++
++static unsigned long tosa_read_temp(struct tosa_bat *bat)
++{
++	unsigned long value = 0;
++
++	if (bat->gpio_temp < 0 || bat->adc_temp < 0)
++		return 0;
++
++	mutex_lock(&bat_lock);
++	gpio_set_value(bat->gpio_temp, 1);
++	mdelay(5);
++	value = wm97xx_read_aux_adc(bat->psy.dev->parent->driver_data,
++			bat->adc_temp);
++	gpio_set_value(bat->gpio_temp, 0);
++	mutex_unlock(&bat_lock);
++
++	value = value * 10000 / bat->adc_temp_divider;
++
++	return value;
++}
++
++static int tosa_bat_get_property(struct power_supply *psy,
++			    enum power_supply_property psp,
++			    union power_supply_propval *val)
++{
++	int ret = 0;
++	struct tosa_bat *bat = container_of(psy, struct tosa_bat, psy);
++
++	if (bat->is_present && !bat->is_present(bat)
++			&& psp != POWER_SUPPLY_PROP_PRESENT) {
++		return -ENODEV;
++	}
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_STATUS:
++		val->intval = bat->status;
++		break;
++	case POWER_SUPPLY_PROP_TECHNOLOGY:
++		val->intval = bat->technology;
++		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++		val->intval = tosa_read_bat(bat);
++		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
++		if (bat->full_chrg == -1)
++			val->intval = bat->bat_max;
++		else
++			val->intval = bat->full_chrg;
++		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
++		val->intval = bat->bat_max;
++		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
++		val->intval = bat->bat_min;
++		break;
++	case POWER_SUPPLY_PROP_TEMP:
++		val->intval = tosa_read_temp(bat);
++		break;
++	case POWER_SUPPLY_PROP_PRESENT:
++		val->intval = bat->is_present ? bat->is_present(bat) : 1;
++		break;
++	default:
++		ret = -EINVAL;
++		break;
++	}
++	return ret;
++}
++
++static bool tosa_jacket_bat_is_present(struct tosa_bat *bat)
++{
++	return gpio_get_value(TOSA_GPIO_JACKET_DETECT) == 0;
++}
++
++static void tosa_bat_external_power_changed(struct power_supply *psy)
++{
++	schedule_work(&bat_work);
++}
++
++static irqreturn_t tosa_bat_gpio_isr(int irq, void *data)
++{
++	printk(KERN_ERR "bat_gpio irq: %d\n", gpio_get_value(irq_to_gpio(irq)));
++	schedule_work(&bat_work);
++	return IRQ_HANDLED;
++}
++
++static char *status_text[] = {
++	[POWER_SUPPLY_STATUS_UNKNOWN] =		"Unknown",
++	[POWER_SUPPLY_STATUS_CHARGING] =	"Charging",
++	[POWER_SUPPLY_STATUS_DISCHARGING] =	"Discharging",
++	[POWER_SUPPLY_STATUS_NOT_CHARGING] =	"Not charging",
++	[POWER_SUPPLY_STATUS_FULL] =		"Full",
++};
++
++static void tosa_bat_update(struct tosa_bat *bat)
++{
++	int old;
++	struct power_supply *psy = &bat->psy;
++
++	mutex_lock(&bat->work_lock);
++
++	old = bat->status;
++
++	if (bat->is_present && !bat->is_present(bat)) {
++		printk(KERN_NOTICE "%s not present\n", psy->name);
++		bat->status = POWER_SUPPLY_STATUS_NOT_CHARGING;
++		bat->full_chrg = -1;
++	} else if (power_supply_am_i_supplied(psy)) {
++		if (bat->status == POWER_SUPPLY_STATUS_DISCHARGING) {
++			gpio_set_value(bat->gpio_charge_off, 0);
++			mdelay(15);
++		}
++
++		if (gpio_get_value(bat->gpio_full)) {
++			if (old == POWER_SUPPLY_STATUS_CHARGING ||
++					bat->full_chrg == -1)
++				bat->full_chrg = tosa_read_bat(bat);
++
++			gpio_set_value(bat->gpio_charge_off, 1);
++			bat->status = POWER_SUPPLY_STATUS_FULL;
++		} else {
++			gpio_set_value(bat->gpio_charge_off, 0);
++			bat->status = POWER_SUPPLY_STATUS_CHARGING;
++		}
++	} else {
++		gpio_set_value(bat->gpio_charge_off, 1);
++		bat->status = POWER_SUPPLY_STATUS_DISCHARGING;
++	}
++
++	if (old != bat->status) {
++		printk(KERN_NOTICE "%s %s -> %s\n", psy->name,
++				status_text[old],
++				status_text[bat->status]);
++		power_supply_changed(psy);
++	}
++
++	mutex_unlock(&bat->work_lock);
++}
++
++static void tosa_bat_work(struct work_struct *work)
++{
++	tosa_bat_update(&tosa_bat_main);
++	tosa_bat_update(&tosa_bat_jacket);
++}
++
++
++static enum power_supply_property tosa_bat_main_props[] = {
++	POWER_SUPPLY_PROP_STATUS,
++	POWER_SUPPLY_PROP_TECHNOLOGY,
++	POWER_SUPPLY_PROP_VOLTAGE_NOW,
++	POWER_SUPPLY_PROP_VOLTAGE_MAX,
++	POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
++	POWER_SUPPLY_PROP_TEMP,
++	POWER_SUPPLY_PROP_PRESENT,
++};
++
++static enum power_supply_property tosa_bat_bu_props[] = {
++	POWER_SUPPLY_PROP_STATUS,
++	POWER_SUPPLY_PROP_TECHNOLOGY,
++	POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
++	POWER_SUPPLY_PROP_VOLTAGE_NOW,
++	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
++	POWER_SUPPLY_PROP_PRESENT,
++};
++
++static struct tosa_bat tosa_bat_main = {
++	.status = POWER_SUPPLY_STATUS_DISCHARGING,
++	.full_chrg = -1,
++	.psy = {
++		.name		= "main-battery",
++		.type		= POWER_SUPPLY_TYPE_BATTERY,
++		.properties	= tosa_bat_main_props,
++		.num_properties	= ARRAY_SIZE(tosa_bat_main_props),
++		.get_property	= tosa_bat_get_property,
++		.external_power_changed = tosa_bat_external_power_changed,
++		.use_for_apm	= 1,
++	},
++
++	.gpio_full = TOSA_GPIO_BAT0_CRG,
++	.gpio_charge_off = TOSA_GPIO_CHARGE_OFF,
++
++	.technology = POWER_SUPPLY_TECHNOLOGY_LIPO,
++
++	.gpio_bat = TOSA_GPIO_BAT0_V_ON,
++	.adc_bat = WM97XX_AUX_ID3,
++	.adc_bat_divider = 414,
++	.bat_max = 4310000,
++	.bat_min = 1551 * 1000000 / 414,
++
++	.gpio_temp = TOSA_GPIO_BAT1_TH_ON,
++	.adc_temp = WM97XX_AUX_ID2,
++	.adc_temp_divider = 10000,
++};
++
++static struct tosa_bat tosa_bat_jacket = {
++	.status = POWER_SUPPLY_STATUS_DISCHARGING,
++	.full_chrg = -1,
++	.psy = {
++		.name		= "jacket-battery",
++		.type		= POWER_SUPPLY_TYPE_BATTERY,
++		.properties	= tosa_bat_main_props,
++		.num_properties	= ARRAY_SIZE(tosa_bat_main_props),
++		.get_property	= tosa_bat_get_property,
++		.external_power_changed = tosa_bat_external_power_changed,
++	},
++
++	.is_present = tosa_jacket_bat_is_present,
++	.gpio_full = TOSA_GPIO_BAT1_CRG,
++	.gpio_charge_off = TOSA_GPIO_CHARGE_OFF_JC,
++
++	.technology = POWER_SUPPLY_TECHNOLOGY_LIPO,
++
++	.gpio_bat = TOSA_GPIO_BAT1_V_ON,
++	.adc_bat = WM97XX_AUX_ID3,
++	.adc_bat_divider = 414,
++	.bat_max = 4310000,
++	.bat_min = 1551 * 1000000 / 414,
++
++	.gpio_temp = TOSA_GPIO_BAT0_TH_ON,
++	.adc_temp = WM97XX_AUX_ID2,
++	.adc_temp_divider = 10000,
++};
++
++static struct tosa_bat tosa_bat_bu = {
++	.status = POWER_SUPPLY_STATUS_UNKNOWN,
++	.full_chrg = -1,
++
++	.psy = {
++		.name		= "backup-battery",
++		.type		= POWER_SUPPLY_TYPE_BATTERY,
++		.properties	= tosa_bat_bu_props,
++		.num_properties	= ARRAY_SIZE(tosa_bat_bu_props),
++		.get_property	= tosa_bat_get_property,
++		.external_power_changed = tosa_bat_external_power_changed,
++	},
++
++	.gpio_full = -1,
++	.gpio_charge_off = -1,
++
++	.technology = POWER_SUPPLY_TECHNOLOGY_LiMn,
++
++	.gpio_bat = TOSA_GPIO_BU_CHRG_ON,
++	.adc_bat = WM97XX_AUX_ID4,
++	.adc_bat_divider = 1266,
++
++	.gpio_temp = -1,
++	.adc_temp = -1,
++	.adc_temp_divider = -1,
++};
++
++static struct {
++	int gpio;
++	char *name;
++	bool output;
++	int value;
++} gpios[] = {
++	{ TOSA_GPIO_CHARGE_OFF,		"main charge off",	1, 1 },
++	{ TOSA_GPIO_CHARGE_OFF_JC,	"jacket charge off",	1, 1 },
++	{ TOSA_GPIO_BAT_SW_ON,		"battery switch",	1, 0 },
++	{ TOSA_GPIO_BAT0_V_ON,		"main battery",		1, 0 },
++	{ TOSA_GPIO_BAT1_V_ON,		"jacket battery",	1, 0 },
++	{ TOSA_GPIO_BAT1_TH_ON,		"main battery temp",	1, 0 },
++	{ TOSA_GPIO_BAT0_TH_ON,		"jacket battery temp",	1, 0 },
++	{ TOSA_GPIO_BU_CHRG_ON,		"backup battery",	1, 0 },
++	{ TOSA_GPIO_BAT0_CRG,		"main battery full",	0, 0 },
++	{ TOSA_GPIO_BAT1_CRG,		"jacket battery full",	0, 0 },
++	{ TOSA_GPIO_BAT0_LOW,		"main battery low",	0, 0 },
++	{ TOSA_GPIO_BAT1_LOW,		"jacket battery low",	0, 0 },
++	{ TOSA_GPIO_JACKET_DETECT,	"jacket detect",	0, 0 },
++};
++
++#ifdef CONFIG_PM
++static int tosa_bat_suspend(struct platform_device *dev, pm_message_t state)
++{
++	/* do nothing */
++	flush_scheduled_work();
++	return 0;
++}
++
++static int tosa_bat_resume(struct platform_device *dev)
++{
++	schedule_work(&bat_work);
++	return 0;
++}
++#else
++#define tosa_bat_suspend NULL
++#define tosa_bat_resume NULL
++#endif
++
++static int __devinit tosa_bat_probe(struct platform_device *dev)
++{
++	int ret;
++	int i;
++
++	if (!machine_is_tosa())
++		return -ENODEV;
++
++	for (i = 0; i < ARRAY_SIZE(gpios); i++) {
++		ret = gpio_request(gpios[i].gpio, gpios[i].name);
++		if (ret) {
++			i--;
++			goto err_gpio;
++		}
++
++		if (gpios[i].output)
++			ret = gpio_direction_output(gpios[i].gpio,
++					gpios[i].value);
++		else
++			ret = gpio_direction_input(gpios[i].gpio);
++
++		if (ret)
++			goto err_gpio;
++	}
++
++	mutex_init(&tosa_bat_main.work_lock);
++	mutex_init(&tosa_bat_jacket.work_lock);
++
++	INIT_WORK(&bat_work, tosa_bat_work);
++
++	ret = power_supply_register(&dev->dev, &tosa_bat_main.psy);
++	if (ret)
++		goto err_psy_reg_main;
++	ret = power_supply_register(&dev->dev, &tosa_bat_jacket.psy);
++	if (ret)
++		goto err_psy_reg_jacket;
++	ret = power_supply_register(&dev->dev, &tosa_bat_bu.psy);
++	if (ret)
++		goto err_psy_reg_bu;
++
++	ret = request_irq(gpio_to_irq(TOSA_GPIO_BAT0_CRG),
++				tosa_bat_gpio_isr,
++				IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
++				"main full", &tosa_bat_main);
++	if (ret)
++		goto err_req_main;
++
++	ret = request_irq(gpio_to_irq(TOSA_GPIO_BAT1_CRG),
++				tosa_bat_gpio_isr,
++				IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
++				"jacket full", &tosa_bat_jacket);
++	if (ret)
++		goto err_req_jacket;
++
++	ret = request_irq(gpio_to_irq(TOSA_GPIO_JACKET_DETECT),
++				tosa_bat_gpio_isr,
++				IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
++				"jacket detect", &tosa_bat_jacket);
++	if (!ret) {
++		schedule_work(&bat_work);
++		return 0;
++	}
++
++	free_irq(gpio_to_irq(TOSA_GPIO_BAT1_CRG), &tosa_bat_jacket);
++err_req_jacket:
++	free_irq(gpio_to_irq(TOSA_GPIO_BAT0_CRG), &tosa_bat_main);
++err_req_main:
++	power_supply_unregister(&tosa_bat_bu.psy);
++err_psy_reg_bu:
++	power_supply_unregister(&tosa_bat_jacket.psy);
++err_psy_reg_jacket:
++	power_supply_unregister(&tosa_bat_main.psy);
++err_psy_reg_main:
++
++	i--;
++err_gpio:
++	for (; i >= 0; i--)
++		gpio_free(gpios[i].gpio);
++
++	return ret;
++}
++
++static int __devexit tosa_bat_remove(struct platform_device *dev)
++{
++	int i;
++
++	free_irq(gpio_to_irq(TOSA_GPIO_JACKET_DETECT), &tosa_bat_jacket);
++	free_irq(gpio_to_irq(TOSA_GPIO_BAT1_CRG), &tosa_bat_jacket);
++	free_irq(gpio_to_irq(TOSA_GPIO_BAT0_CRG), &tosa_bat_main);
++
++	power_supply_unregister(&tosa_bat_bu.psy);
++	power_supply_unregister(&tosa_bat_jacket.psy);
++	power_supply_unregister(&tosa_bat_main.psy);
++
++	for (i = ARRAY_SIZE(gpios) - 1; i >= 0; i--)
++		gpio_free(gpios[i].gpio);
++
++	return 0;
++}
++
++static struct platform_driver tosa_bat_driver = {
++	.driver.name	= "wm97xx-battery",
++	.driver.owner	= THIS_MODULE,
++	.probe		= tosa_bat_probe,
++	.remove		= __devexit_p(tosa_bat_remove),
++	.suspend	= tosa_bat_suspend,
++	.resume		= tosa_bat_resume,
++};
++
++static int __init tosa_bat_init(void)
++{
++	return platform_driver_register(&tosa_bat_driver);
++}
++
++static void __exit tosa_bat_exit(void)
++{
++	platform_driver_unregister(&tosa_bat_driver);
++}
++
++module_init(tosa_bat_init);
++module_exit(tosa_bat_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Dmitry Baryshkov");
++MODULE_DESCRIPTION("Tosa battery driver");
+-- 
+1.5.5.3
 
-	Ingo
+
+-- 
+With best wishes
+Dmitry
+
