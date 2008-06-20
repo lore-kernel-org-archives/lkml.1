@@ -1,76 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760972AbYFTPj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761104AbYFTPko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760972AbYFTPj2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 11:39:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760852AbYFTPjJ
+	id S1761104AbYFTPko (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 11:40:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756519AbYFTPkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 11:39:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38618 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759716AbYFTPjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 11:39:08 -0400
-Date: Fri, 20 Jun 2008 11:38:22 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: Greg KH <greg@kroah.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, joe@perches.com,
-       nick@nick-andrew.net, randy.dunlap@oracle.com
-Subject: Re: [PATCH 2/8] dynamic debug - core infrastructure
-Message-ID: <20080620153822.GA10639@redhat.com>
-References: <20080613190039.GC8813@redhat.com> <20080618160812.GB9453@kroah.com>
+	Fri, 20 Jun 2008 11:40:36 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:44107 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751744AbYFTPkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 11:40:35 -0400
+Date: Fri, 20 Jun 2008 17:40:30 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: avorontsov@ru.mvista.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mmc: toughen get_ro() and get_cd() return values
+Message-ID: <20080620174030.3b563772@mjolnir.drzeus.cx>
+In-Reply-To: <20080617141607.GA2712@polina.dev.rtsoft.ru>
+References: <20080523154204.GA19803@polina.dev.rtsoft.ru>
+	<200806031207.49843.marc.pignat@hevs.ch>
+	<20080605144310.GA31596@polina.dev.rtsoft.ru>
+	<200806051759.00202.marc.pignat@hevs.ch>
+	<20080605171013.GA10513@polina.dev.rtsoft.ru>
+	<20080614163640.01e89c51@mjolnir.drzeus.cx>
+	<20080617141607.GA2712@polina.dev.rtsoft.ru>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080618160812.GB9453@kroah.com>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 18, 2008 at 09:08:12AM -0700, Greg KH wrote:
-> On Fri, Jun 13, 2008 at 03:00:39PM -0400, Jason Baron wrote:
-> > --- a/include/linux/device.h
-> > +++ b/include/linux/device.h
-> > @@ -595,6 +595,22 @@ extern const char *dev_driver_string(struct device *dev);
-> >  #ifdef DEBUG
-> >  #define dev_dbg(dev, format, arg...)		\
-> >  	dev_printk(KERN_DEBUG , dev , format , ## arg)
-> > +#elif defined(CONFIG_DYNAMIC_PRINTK_DEBUG)
-> > +#define dev_dbg(dev, format, ...) do {				    	     \
-> > +	static char mod_name[]						     \
-> > +	__attribute__((section("__verbose_strings")))			     \
-> > +	 = KBUILD_MODNAME;						     \
-> > +	static struct mod_debug foobar					     \
-> > +	__used								     \
-> > +	__attribute__((section("__verbose"), aligned(8))) =		     \
-> > +	{ mod_name, mod_name, "0", "0", NULL };				     \
+On Tue, 17 Jun 2008 18:16:07 +0400
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+
 > 
-> Does the compiler merge all of these variables together into one within
-> the same file?
+> Great, patches follows. Also added missing changes for the at91_mci host.
+> Now, I hope, every host is really converted.
 > 
 
-no.
+Applied the new set, thanks.
 
-> If not, should we have a new macro, one per file, for this information?
-> 
+-- 
+     -- Pierre Ossman
 
-With this feature enabled, the above 'meta-data' added ~32K to the .init.data
-section. This memory is freed when the system boots because it is placed in the
-.init.data section. The same is true for modules, the 'meta-data' is freed when
-the module loads.
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
 
-We could reduce the vmlinux by having 'register()' type calls for this
-infrastructure, or a new marco per file as you suggest, and i had something
-like that in an earlier iteration, but I think the memory savings is very
-small when compared to the increased complexity. The simplicity to just put a
-'pr_debug()" anywhere and just have it do the right thing is nice.
-
-Also, it should be noted that the total increase in the size of the 'vmlinux' 
-was 3%, or 2M, this is due to the above 'meta-data', the new code, and probably 
-most significantly, the strings, for the additinal printks. Thus, compressing
-the above meta-data, or eliminating it by some other means would only decrease
-the size of this infrastructure by 2% or so.
-
-thanks,
-
--Jason
-
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Use end-to-end encryption where
+  possible.
