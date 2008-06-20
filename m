@@ -1,105 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758447AbYFUAEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758784AbYFUAIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758447AbYFUAEa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 20:04:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087AbYFUAEW
+	id S1758784AbYFUAIS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 20:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYFUAIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 20:04:22 -0400
-Received: from mx2-2.mail.ru ([194.67.23.122]:27280 "EHLO mx2.mail.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753223AbYFUAEW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 20:04:22 -0400
-X-Greylist: delayed 62786 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Jun 2008 20:04:21 EDT
-From: Andrew Savchenko <Bircoph@list.ru>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: [RFC/PATCH] ipg: add jumbo frame support kconfig option
-Date: Sat, 21 Jun 2008 04:04:01 +0400
-User-Agent: KMail/1.9.1
-Cc: linux-kernel@vger.kernel.org, "Francois Romieu" <romieu@fr.zoreil.com>,
-       "Linux Netdev List" <netdev@vger.kernel.org>, shemminger@vyatta.com,
-       "Jeff Garzik" <jeff@garzik.org>, sorbica@icplus.com.tw,
-       "Jesse Huang" <jesse@icplus.com.tw>
-References: <200806201037.46687.Bircoph@list.ru> <84144f020806200412s5e0225eblbb2001ca139e7fdc@mail.gmail.com>
-In-Reply-To: <84144f020806200412s5e0225eblbb2001ca139e7fdc@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart28233583.XSXEtTLjSl";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200806210404.10558.Bircoph@list.ru>
-X-Spam: Not detected
+	Fri, 20 Jun 2008 20:08:06 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:27711 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752371AbYFUAIF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 20:08:05 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:references:user-agent:date:from:to:cc:
+	subject:content-disposition;
+	b=Cg1Vnw5CVkLj7XJgb5kT+qZGvs9+fnTUq/h5cXBLAljfYFHP9hzmytGXOh6k7Xxu5
+	FCIxXznA/tvh6K640iTQQ==
+Message-Id: <20080621000730.444845000@menage.corp.google.com>
+References: <20080620234358.182933000@menage.corp.google.com>
+User-Agent: quilt/0.45-1
+Date: Fri, 20 Jun 2008 16:44:02 -0700
+From: menage@google.com
+To: pj@sgi.com, xemul@openvz.org, balbir@in.ibm.com, serue@us.ibm.com,
+       akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+Subject: [PATCH 4/8] CGroup Files: Move notify_on_release file to separate write handler
+Content-Disposition: inline; filename=cgroup_notify_on_release_file.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart28233583.XSXEtTLjSl
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+This patch moves the write handler for the cgroups notify_on_release
+file into a separate handler. This handler requires no cgroups locking
+since it relies on atomic bitops for synchronization.
 
-Hi Pekka,
+Signed-off-by: Paul Menage <menage@google.com>
 
-On Friday 20 June 2008 15:12, Pekka Enberg wrote:
-> Hi Andrew,
->
-> (Please don't trim the cc.)
+---
+ kernel/cgroup.c |   21 +++++++++++++--------
+ 1 file changed, 13 insertions(+), 8 deletions(-)
 
-Oh, my apologies. I'm not subscribed to the list, so I mailed only=20
-to emails found on lkml web page with original top mail.
+Index: cws-2.6.26-rc5-mm3/kernel/cgroup.c
+===================================================================
+--- cws-2.6.26-rc5-mm3.orig/kernel/cgroup.c
++++ cws-2.6.26-rc5-mm3/kernel/cgroup.c
+@@ -1471,13 +1471,6 @@ static ssize_t cgroup_common_file_write(
+ 	case FILE_TASKLIST:
+ 		retval = attach_task_by_pid(cgrp, buffer);
+ 		break;
+-	case FILE_NOTIFY_ON_RELEASE:
+-		clear_bit(CGRP_RELEASABLE, &cgrp->flags);
+-		if (simple_strtoul(buffer, NULL, 10) != 0)
+-			set_bit(CGRP_NOTIFY_ON_RELEASE, &cgrp->flags);
+-		else
+-			clear_bit(CGRP_NOTIFY_ON_RELEASE, &cgrp->flags);
+-		break;
+ 	default:
+ 		retval = -EINVAL;
+ 		goto out2;
+@@ -2248,6 +2241,18 @@ static u64 cgroup_read_notify_on_release
+ 	return notify_on_release(cgrp);
+ }
+ 
++static int cgroup_write_notify_on_release(struct cgroup *cgrp,
++					  struct cftype *cft,
++					  u64 val)
++{
++	clear_bit(CGRP_RELEASABLE, &cgrp->flags);
++	if (val)
++		set_bit(CGRP_NOTIFY_ON_RELEASE, &cgrp->flags);
++	else
++		clear_bit(CGRP_NOTIFY_ON_RELEASE, &cgrp->flags);
++	return 0;
++}
++
+ /*
+  * for the common functions, 'private' gives the type of file
+  */
+@@ -2264,7 +2269,7 @@ static struct cftype files[] = {
+ 	{
+ 		.name = "notify_on_release",
+ 		.read_u64 = cgroup_read_notify_on_release,
+-		.write = cgroup_common_file_write,
++		.write_u64 = cgroup_write_notify_on_release,
+ 		.private = FILE_NOTIFY_ON_RELEASE,
+ 	},
+ };
 
-> On Fri, Jun 20, 2008 at 9:37 AM, Andrew Savchenko=20
-> <Bircoph@list.ru> wrote:=20
-[...]
-> As I don't have the hardware, I would appreciate if you could
-> test the following quilt tree:
->
-> =20
-> http://www.kernel.org/pub/linux/kernel/people/penberg/patches/ip
->g/2.6.26-rc6/
->
-> [Note: in case you're not familiar with quilt, the patches need
-> to be applied in the order specified by the quilt 'series' file
-> included there.]
-
-Thanks for the advice. I installed quilt on my system and applied=20
-your patchset to 2.6.26-rc6 kernel tree.
-
-> You can enable 10KB jumbo frames either by passing:
->
->   ipg.jumbo=3D10k
->
-> to the kernel command line or, alternatively, load the ipg
-> module as follows:
->
->   modprobe ipg jumbo=3D10k
->
-> You cannot enable or disable jumbo frame support once the module
-> is loaded so if you want to try out different frame sizes, you
-> first need to unload the module.
-
-Ok, but in practice I need to reboot the system: 1) usually I=20
-compile into the kernel all code related to frequently used=20
-hardware. 2) This is a remote system, so reload of network module=20
-which is in use will be quite tricky.
-
-I tested it with both jumbo frames disabled (no options), and=20
-enabled for 10k frames: ipg.jumbo=3D10k. It seems to work fine with=20
-all acceptable MTUs (max MTU =3D=3D 10240).
-
-Sincerely yours,
-Andrew
-
---nextPart28233583.XSXEtTLjSl
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBIXEVyAvwbVeyQBdURAgsZAJkBmkj3CabBhvbt0/yG0i86EO3zwQCgikrA
-jshKoV/eoa7yLFk439pU3Xo=
-=5c5x
------END PGP SIGNATURE-----
-
---nextPart28233583.XSXEtTLjSl--
+--
