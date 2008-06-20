@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933585AbYFTUsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933371AbYFTUqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933585AbYFTUsA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 16:48:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765585AbYFTUhH
+	id S933371AbYFTUqv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 16:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764948AbYFTUeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 16:37:07 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33601 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757256AbYFTUhG (ORCPT
+	Fri, 20 Jun 2008 16:34:12 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:29833 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762599AbYFTUeK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 16:37:06 -0400
-Date: Fri, 20 Jun 2008 13:37:04 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mike Travis <travis@sgi.com>
-cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-In-Reply-To: <485C0D48.3090008@sgi.com>
-Message-ID: <Pine.LNX.4.64.0806201336400.16501@schroedinger.engr.sgi.com>
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com>
- <484EF29C.7080100@sgi.com> <485947A8.8060801@goop.org> <4859511E.5050605@sgi.com>
- <48596315.6020104@goop.org> <48596893.4040908@sgi.com> <485AADAC.3070301@sgi.com>
- <485AB78B.5090904@goop.org> <485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org>
- <485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com> <485AD138.4010404@goop.org>
- <485ADA12.5010505@sgi.com> <485ADC73.60009@goop.org> <485BDB04.4090709@sgi.com>
- <485BE80E.10209@goop.org> <Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>
- <485BF8F5.6010802@goop.org> <Pine.LNX.4.64.0806201148430.16227@schroedinger.engr.sgi.com>
- <485BFF57.5090906@goop.org> <m1hcbnq4dw.fsf@frodo.ebiederm.org>
- <485C0D48.3090008@sgi.com>
+	Fri, 20 Jun 2008 16:34:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=gpRveXNAfPv67hCs12LCXYSmNoWgtw4NiRHC5qjwf5J0GMH6TIhnLlLh3UktcAKegJ
+         NNLIfnXAPiiWS+UzLA+yr9mzoye84RtT24sjeH/E8IG3Id8XdN9hIomWqSZ/LPJ0Im9S
+         ieAIlJFE//9r1kHE5D1qUMw4zAjY8Gwd7x9Dk=
+Message-ID: <dd18b0c30806201334r5e28902ehecebf7d70717a8ef@mail.gmail.com>
+Date: Fri, 20 Jun 2008 20:34:09 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: appletouch: atp_complete - usb_submit_urb failed with result -1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jun 2008, Mike Travis wrote:
+FWIW I've booted up osx just for the hell of it, and then back to
+linux, upon booting linux I'm seeing
+something new:  appletouch: atp_complete - usb_submit_urb failed with result -1
+when grepping appletouch I see:
 
-> > Is this a change that only got tested on x86_32?
-> 
-> I'm only testing this on x86_64.  The zero-based percpu/pda changes worked fine
-> up until just recently.  At first it was one of Ingo's "randconfig" config files
-> that was tripping it up, but lately it's not working on any config.
+[   15.986401] usbcore: registered new interface driver appletouch
+[   18.722161] appletouch 1-2:1.1: usb_probe_interface
+[   18.726984] appletouch 1-2:1.1: usb_probe_interface - got id
+[   18.743669] appletouch: Geyser mode initialized.
+[   18.743669] input: appletouch as /class/input/input8
+[   25.510074] appletouch: incomplete data package (first byte: 2, length: 4).
+[   25.510074] appletouch: atp_complete - usb_submit_urb failed with result -1
 
-x86_32 does not need the zero basing since it does not have a pda.
+even though this message is showing itself, my trackpad is working fine.
+regards;
+
+-- 
+Justin P. Mattock
