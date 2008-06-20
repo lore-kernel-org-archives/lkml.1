@@ -1,109 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbYFTS17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068AbYFTS22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753368AbYFTS17 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 14:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbYFTS1t
+	id S1754068AbYFTS22 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 14:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbYFTS2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 14:27:49 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:17187 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751036AbYFTS1s (ORCPT
+	Fri, 20 Jun 2008 14:28:14 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57946 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751398AbYFTS2N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 14:27:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=Z5kgbJmPu4y7v68ZU5pFRYQmp5vB+IU64H1QyE8xj6H4KtC8GVXsjKNQ9aCyDqWNeo
-         7otrIIPDiclQAc6w9Zj8CoBeCaK7ya0+iH963iT2OkFbsG9EAvFgB0l1Cz0xzYc9LTb1
-         4X9fJc5o7ytZ1VvSkICSi/Op1RNIsY9WoQhDA=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH 1/2] ide: move ide_pci_setup_ports() call out from do_ide_setup_pci_device()
-Date: Fri, 20 Jun 2008 20:27:14 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 20 Jun 2008 14:28:13 -0400
+Date: Fri, 20 Jun 2008 19:09:48 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [git patches] IDE fixes
+Message-ID: <20080620190948.537f7f7a@lxorguk.ukuu.org.uk>
+In-Reply-To: <200806202007.38081.bzolnier@gmail.com>
+References: <200806202007.38081.bzolnier@gmail.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806202027.14924.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Move ide_pci_setup_ports() call out from do_ide_setup_pci_device()
-  to ide_setup_pci_device[s]().
 
-* Drop no longer needed idx argument from do_ide_setup_pci_device().
+> +	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS1GCF45", 0x709b1bf1, 0xf68b632),
 
-There should be no functional changes caused by this patch.
+That one seems to be a digit short - is it 0x0f68b632 or a typo ?
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
-against IDE tree + the recent ide-pmac patches
 
- drivers/ide/setup-pci.c |   20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
-
-Index: b/drivers/ide/setup-pci.c
-===================================================================
---- a/drivers/ide/setup-pci.c
-+++ b/drivers/ide/setup-pci.c
-@@ -479,7 +479,7 @@ EXPORT_SYMBOL_GPL(ide_pci_setup_ports);
-  */
- static int do_ide_setup_pci_device(struct pci_dev *dev,
- 				   const struct ide_port_info *d,
--				   u8 *idx, u8 noisy)
-+				   u8 noisy)
- {
- 	int tried_config = 0;
- 	int pciirq, ret;
-@@ -528,9 +528,7 @@ static int do_ide_setup_pci_device(struc
- 				d->name, pciirq);
- 	}
- 
--	/* FIXME: silent failure can happen */
--
--	ide_pci_setup_ports(dev, d, pciirq, idx);
-+	ret = pciirq;
- out:
- 	return ret;
- }
-@@ -540,10 +538,14 @@ int ide_setup_pci_device(struct pci_dev 
- 	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
- 	int ret;
- 
--	ret = do_ide_setup_pci_device(dev, d, &idx[0], 1);
-+	ret = do_ide_setup_pci_device(dev, d, 1);
-+
-+	if (ret >= 0) {
-+		/* FIXME: silent failure can happen */
-+		ide_pci_setup_ports(dev, d, ret, &idx[0]);
- 
--	if (ret >= 0)
- 		ide_device_add(idx, d);
-+	}
- 
- 	return ret;
- }
-@@ -557,13 +559,17 @@ int ide_setup_pci_devices(struct pci_dev
- 	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
- 
- 	for (i = 0; i < 2; i++) {
--		ret = do_ide_setup_pci_device(pdev[i], d, &idx[i*2], !i);
-+		ret = do_ide_setup_pci_device(pdev[i], d, !i);
-+
- 		/*
- 		 * FIXME: Mom, mom, they stole me the helper function to undo
- 		 * do_ide_setup_pci_device() on the first device!
- 		 */
- 		if (ret < 0)
- 			goto out;
-+
-+		/* FIXME: silent failure can happen */
-+		ide_pci_setup_ports(pdev[i], d, ret, &idx[i*2]);
- 	}
- 
- 	ide_device_add(idx, d);
+Alan
