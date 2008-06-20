@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbYFTTGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbYFTTHL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755390AbYFTTGy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 15:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbYFTTGq
+	id S1753047AbYFTTHL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 15:07:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022AbYFTTGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 15:06:46 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:34557 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752819AbYFTTGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 15:06:46 -0400
-Message-ID: <485BFFC5.6020404@sgi.com>
-Date: Fri, 20 Jun 2008 12:06:45 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 20 Jun 2008 15:06:48 -0400
+Received: from gw.goop.org ([64.81.55.164]:57184 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753282AbYFTTGr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 15:06:47 -0400
+Message-ID: <485BFFC4.3070902@goop.org>
+Date: Fri, 20 Jun 2008 12:06:44 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.509483000@polaris-admin.engr.sgi.com> <20080605102222.GA21319@elte.hu> <484EF29C.7080100@sgi.com> <485947A8.8060801@goop.org> <4859511E.5050605@sgi.com> <48596315.6020104@goop.org> <48596893.4040908@sgi.com> <485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org> <485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org> <485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com> <485AD138.4010404@goop.org> <485ADA12.5010505@sgi.com> <485ADC73.60009@goop.org> <485BDB04.4090709@sgi.com> <485BE80E.10209@goop.org> <Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com> <485BF8F5.6010802@goop.org>
-In-Reply-To: <485BF8F5.6010802@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>, benh@kernel.crashing.org,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>, x86@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Hugh Dickins <hugh@veritas.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1 of 4] mm: add a ptep_modify_prot transaction	abstraction
+References: <1213831403.8011.24.camel@pasglop> <4859A149.9090004@goop.org> <4859A528.1010107@goop.org> <alpine.LFD.1.10.0806181723400.2907@woody.linux-foundation.org> <4859AA47.2020903@goop.org> <alpine.LFD.1.10.0806181743390.2907@woody.linux-foundation.org> <alpine.LFD.1.10.0806182050470.2907@woody.linux-foundation.org> <20080619115832.GM15228@elte.hu> <alpine.LFD.1.10.0806190928100.2907@woody.linux-foundation.org> <20080619164708.GA32190@elte.hu> <20080620101028.GA23664@elte.hu>
+In-Reply-To: <20080620101028.GA23664@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
 >
-> 
-> BTW, I think __per_cpu_load will cause trouble if you make a relocatable
-> kernel, being an absolute symbol.  But I have relocation off at the moment.
-> 
-...
-Here's where it's defined (in include/asm-generic/vmlinux.lds.h):
+>   
+>> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>>
+>>     
+>>> On Thu, 19 Jun 2008, Ingo Molnar wrote:
+>>>       
+>>>> Below is the commit, it needed a small amount of massaging to apply the 
+>>>> void * -> unsigned long * change in the x86/bitops topic.
+>>>>         
+>>> Well, that's your bug right there.
+>>>
+>>> The macros very much depended on the pointers being "void *", due to 
+>>> the pointer arithmetic (which is a gcc extension that we use 
+>>> extensively - "void *" arithmetic works as if it was a byte 
+>>> pointer).
+>>>       
+>> duh, yeah - of course. Will retry with that fixed :)
+>>     
+>
+> yep, the patch below got it all going and it passed 5 hours of testing 
+> already. Thanks,
+>   
 
-#ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
-#define PERCPU(align)                                                   \
-        . = ALIGN(align);                                               \
-        percpu : { } :percpu                                            \
-        __per_cpu_load = .;                                             \
-        .data.percpu 0 : AT(__per_cpu_load - LOAD_OFFSET) {             \
-                *(.data.percpu.first)                                   \
-                *(.data.percpu.shared_aligned)                          \
-                *(.data.percpu)                                         \
-                *(.data.percpu.page_aligned)                            \
-                ____per_cpu_size = .;                                   \
-        }                                                               \
-        . = __per_cpu_load + ____per_cpu_size;                          \
-        data : { } :data
-#else
+Blows up on "gcc version 3.4.4 20050314 (prerelease) (Debian 3.4.3-13)":
 
-Can we generate a new symbol which would account for LOAD_OFFSET?
+  CC      init/main.o
+include2/asm/bitops.h: In function `start_kernel':
+include2/asm/bitops.h:59: warning: asm operand 1 probably doesn't match constraints
+include2/asm/bitops.h:59: warning: asm operand 1 probably doesn't match constraints
+include2/asm/bitops.h:59: warning: asm operand 1 probably doesn't match constraints
+include2/asm/bitops.h:59: error: impossible constraint in `asm'
+include2/asm/bitops.h:59: error: impossible constraint in `asm'
+include2/asm/bitops.h:59: error: impossible constraint in `asm'
+
+	J
+
+
