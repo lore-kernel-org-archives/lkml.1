@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758435AbYFTOfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758579AbYFTOhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758435AbYFTOfs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 10:35:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755672AbYFTOfj
+	id S1758579AbYFTOhm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 10:37:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755869AbYFTOhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 10:35:39 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:45762 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750897AbYFTOfi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 10:35:38 -0400
-Date: Fri, 20 Jun 2008 11:35:39 -0300
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: venza@brownhat.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, salem@mandriva.com
-Subject: transmit timed out on module reload
-Message-ID: <20080620113539.25347b90@doriath.conectiva>
-Organization: Mandriva
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i586-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Jun 2008 10:37:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55631 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755778AbYFTOhe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 10:37:34 -0400
+Date: Fri, 20 Jun 2008 16:37:17 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Bernhard Walle <bwalle@suse.de>
+Cc: linux-kernel@vger.kernel.org, yhlu.kernel@gmail.com,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH] Unify crashkernel reservation for 32 and 64 bit
+Message-ID: <20080620143717.GH8135@elte.hu>
+References: <1213969102-17400-1-git-send-email-bwalle@suse.de> <20080620135645.GD8135@elte.hu> <20080620160223.4a0f1dd8@halley.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080620160223.4a0f1dd8@halley.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
- Hi there.
+* Bernhard Walle <bwalle@suse.de> wrote:
 
- We have a machine here which can trig the following warning if we
-remove its network module (sis900) and let ifplugd reload it:
+> > famous last words :)
+> > 
+> > can you see any functionality difference between them? If yes, that 
+> > should be declared.
+> 
+> The only difference was the calculation of memory -- it's more 
+> complicated on i386 because of high memory support, so that was 
+> outsourced to an inline function. However, because the highmem is in
+> 
+>   #ifdef CONFIG_HIGHMEM
+>   #endif
+> 
+> and CONFIG_HIGHMEM is off on x86-64, that doesn't matter. Do you see 
+> another issue?
 
-"""
-WARNING: at net/sched/sch_generic.c:222 dev_watchdog+0xfa/0x120()
-Modules linked in: sis900 ip_set fuse af_packet snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss ipv6 binfmt_misc loop dm_mod floppy cpufreq_ondemand cpufreq_conservative cpufreq_powersave p4_clockmod speedstep_lib freq_table ns558 gameport parport_pc parport rtc_cmos button thermal processor snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm snd_timer snd soundcore sr_mod snd_page_alloc sis_agp agpgart i2c_sis96x i2c_core mii shpchp pci_hotplug evdev sg ide_generic sis5513 ide_core pata_sis libata dock sd_mod scsi_mod ext3 jbd uhci_hcd ohci_hcd ehci_hcd
-usbcore [last unloaded: sis900]
-Pid: 0, comm: swapper Not tainted 2.6.26-desktop-0.rc6.1mnb #1
- [<c012da14>] warn_on_slowpath+0x54/0xa0
- [<c012e146>] ? wake_up_klogd+0x36/0x40
- [<c012439b>] ? default_wake_function+0xb/0x10
- [<c014252b>] ? autoremove_wake_function+0x1b/0x50
- [<de841965>] ? sis900_tx_timeout+0x125/0x180 [sis900]
- [<c02f2a3a>] dev_watchdog+0xfa/0x120
- [<c013768b>] run_timer_softirq+0x12b/0x1f0
- [<c02f2940>] ? dev_watchdog+0x0/0x120
- [<c02f2940>] ? dev_watchdog+0x0/0x120
- [<c01332e2>] __do_softirq+0x92/0x120
- [<c01333cd>] do_softirq+0x5d/0x60
- [<c0133565>] irq_exit+0x75/0xa0
- [<c0115508>] smp_apic_timer_interrupt+0x58/0x90
- [<c010a640>] ? mwait_idle+0x0/0x50
- [<c0104968>] apic_timer_interrupt+0x28/0x30
- [<c010a640>] ? mwait_idle+0x0/0x50
- [<c010a672>] ? mwait_idle+0x32/0x50
- [<c0102d6b>] cpu_idle+0x6b/0xf0
- [<c035df89>] start_secondary+0x16c/0x1e3
- =======================
----[ end trace 756c1e519796d652 ]---
-"""
+i can see no issue, i was just was confused a bit by the "more or less" 
+qualifier.
 
- Doesn't seem serious though, the card still works.
+I've applied your patch to tip/x86/mpparse, thanks Bernhard.
 
- Despite the kernel name, it's a vanilla 2.6.26-rc6-git3 kernel.
+> I tested it on both x86-64 and i386, with CONFIG_KEXEC on and off (so 
+> that it compiles).
 
--- 
-Luiz Fernando N. Capitulino
+that's always good to know - it's useful to know the amount and scope of 
+testing - i've put this into the changelog.
+
+	Ingo
