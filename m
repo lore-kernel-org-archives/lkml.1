@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753344AbYFTBxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752754AbYFTCA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753344AbYFTBxX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 21:53:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbYFTBxO
+	id S1752754AbYFTCA7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 22:00:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750830AbYFTCAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 21:53:14 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:49157 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750712AbYFTBxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 21:53:13 -0400
-Date: Fri, 20 Jun 2008 02:53:12 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org
-Subject: [git pull] agp one missing intel patch..
-Message-ID: <alpine.DEB.0.82.0806200252150.12492@skynet.skynet.ie>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 19 Jun 2008 22:00:49 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42877
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750712AbYFTCAs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 22:00:48 -0400
+Date: Thu, 19 Jun 2008 19:00:48 -0700 (PDT)
+Message-Id: <20080619.190048.193701955.davem@davemloft.net>
+To: a.beregalov@gmail.com
+Cc: kernel-testers@vger.kernel.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.26-rc: SPARC: Sun Ultra 10 can not boot
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <a4423d670806190902l48c542e0i6a7380a2d3e7f520@mail.gmail.com>
+References: <a4423d670806190707k7ae6da8cud80a826a1603d941@mail.gmail.com>
+	<a4423d670806190902l48c542e0i6a7380a2d3e7f520@mail.gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+Date: Thu, 19 Jun 2008 20:02:44 +0400
 
-Hi Linus,
+> I have reverted this commit and
+> 2.6.26-rc6-00233-g99d3b2d works fine. It can boot.
 
-Please pull the 'agp-patches' branch from
-ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/agp-2.6.git agp-patches
+I know what the problem is.
 
-Missed a chunk, no more hand applying whitespace damaged patches either.
+It's hanging because lockdep is starting to actually be used. :-)
+Beforehand various bugs caused lockdep to disable itself almost
+immediately.  So it was never actually enabled on sparc64.
 
-Dave.
+When you revert that changeset, there is a loop in the backtrace of
+all kernel threads, and therefore lockdep turns itself off when all of
+the stack backtrace slots get consumed by that loop in the backtraces.
 
- drivers/char/agp/intel-agp.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+After the revert you should see a set of kernel messages like:
 
-commit 7d15ddf79ec35ce79093832c80b86c0888eb5bce
-Author: Zhenyu Wang <zhenyu.z.wang@intel.com>
-Date:   Fri Jun 20 11:48:06 2008 +1000
+BUG: MAX_STACK_TRACE_ENTRIES too low!
+turning off the locking correctness validator.
 
-    [agp]: fixup chipset flush for new Intel G4x.
-    
-    Signed-off-by: Zhenyu Wang <zhenyu.z.wang@intel.com>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
+and that would confirm my theory.
+
+Lockdep really isn't usable on sparc64 at this time and it's one of
+the ongoing things I'm trying to get fully fixed.  The changeset in
+question fixes a real bug in stack backtrace output, so it should
+stay in the tree.
+
+FWIW, I just verified the above on my ultra5 box.
