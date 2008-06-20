@@ -1,255 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759895AbYFUAKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759946AbYFUALa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759895AbYFUAKy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 20:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759535AbYFUAKi
+	id S1759946AbYFUALa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 20:11:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759816AbYFUAKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 20:10:38 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:27945 "EHLO
+	Fri, 20 Jun 2008 20:10:50 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:27957 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759499AbYFUAKg (ORCPT
+	with ESMTP id S1759805AbYFUAKs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 20:10:36 -0400
+	Fri, 20 Jun 2008 20:10:48 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:message-id:references:user-agent:date:from:to:cc:
 	subject:content-disposition;
-	b=HUu6735FzM+roXv32Sp2LQWmP7hjxBc4I8Xab3xfraR8t226tsk2S7LmZwFOgAuPs
-	tv0h2w3yOaGicCFlYY7aQ==
-Message-Id: <20080621000730.255258000@menage.corp.google.com>
+	b=GV7IZgGImxZ4PI02YR0Omwi392k2RLgHxeUCuLysACSNXB0PD59FWFWtrx7aOUV2F
+	HFgnXhl/zMg4MfDmcHpvQ==
+Message-Id: <20080621000730.052131000@menage.corp.google.com>
 References: <20080620234358.182933000@menage.corp.google.com>
 User-Agent: quilt/0.45-1
-Date: Fri, 20 Jun 2008 16:44:01 -0700
+Date: Fri, 20 Jun 2008 16:44:00 -0700
 From: menage@google.com
 To: pj@sgi.com, xemul@openvz.org, balbir@in.ibm.com, serue@us.ibm.com,
        akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Subject: [PATCH 3/8] CGroup Files: Move the release_agent file to use typed handlers
-Content-Disposition: inline; filename=cgroup_release_agent_file.patch
+Subject: [PATCH 2/8] CGroup Files: Add write_string cgroup control file method
+Content-Disposition: inline; filename=cgroup-write-string.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adds cgroup_release_agent_write() and cgroup_release_agent_show()
-methods to handle writing/reading the path to a cgroup hierarchy's
-release agent. As a result, cgroup_common_file_read() is now unnecessary.
-
-As part of the change, a previously-tolerated race in
-cgroup_release_agent() is avoided by copying the current
-release_agent_path prior to calling call_usermode_helper().
+This patch adds a write_string() method for cgroups control files. The
+semantics are that a buffer is copied from userspace to kernelspace
+and the handler function invoked on that buffer.  The buffer is
+guaranteed to be nul-terminated, and no longer than max_write_len
+(defaulting to 64 bytes if unspecified). Later patches will convert
+existing raw file write handlers in control group subsystems to use
+this method.
 
 Signed-off-by: Paul Menage <menage@google.com>
 
 ---
- include/linux/cgroup.h |    2 
- kernel/cgroup.c        |  125 ++++++++++++++++++++++---------------------------
- 2 files changed, 59 insertions(+), 68 deletions(-)
+ include/linux/cgroup.h |   14 ++++++++++++++
+ kernel/cgroup.c        |   35 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 49 insertions(+)
 
-Index: cws-2.6.26-rc5-mm3/kernel/cgroup.c
-===================================================================
---- cws-2.6.26-rc5-mm3.orig/kernel/cgroup.c
-+++ cws-2.6.26-rc5-mm3/kernel/cgroup.c
-@@ -89,11 +89,7 @@ struct cgroupfs_root {
- 	/* Hierarchy-specific flags */
- 	unsigned long flags;
- 
--	/* The path to use for release notifications. No locking
--	 * between setting and use - so if userspace updates this
--	 * while child cgroups exist, you could miss a
--	 * notification. We ensure that it's always a valid
--	 * NUL-terminated string */
-+	/* The path to use for release notifications. */
- 	char release_agent_path[PATH_MAX];
- };
- 
-@@ -1329,6 +1325,45 @@ enum cgroup_filetype {
- 	FILE_RELEASE_AGENT,
- };
- 
-+/**
-+ * cgroup_lock_live_group - take cgroup_mutex and check that cgrp is alive.
-+ * @cgrp: the cgroup to be checked for liveness
-+ *
-+ * Returns true (with lock held) on success, or false (with no lock
-+ * held) on failure.
-+ */
-+int cgroup_lock_live_group(struct cgroup *cgrp)
-+{
-+	mutex_lock(&cgroup_mutex);
-+	if (cgroup_is_removed(cgrp)) {
-+		mutex_unlock(&cgroup_mutex);
-+		return false;
-+	}
-+	return true;
-+}
-+
-+static int cgroup_release_agent_write(struct cgroup *cgrp, struct cftype *cft,
-+				      const char *buffer)
-+{
-+	BUILD_BUG_ON(sizeof(cgrp->root->release_agent_path) < PATH_MAX);
-+	if (!cgroup_lock_live_group(cgrp))
-+		return -ENODEV;
-+	strcpy(cgrp->root->release_agent_path, buffer);
-+	mutex_unlock(&cgroup_mutex);
-+	return 0;
-+}
-+
-+static int cgroup_release_agent_show(struct cgroup *cgrp, struct cftype *cft,
-+				     struct seq_file *seq)
-+{
-+	if (!cgroup_lock_live_group(cgrp))
-+		return -ENODEV;
-+	seq_puts(seq, cgrp->root->release_agent_path);
-+	seq_putc(seq, '\n');
-+	mutex_unlock(&cgroup_mutex);
-+	return 0;
-+}
-+
- static ssize_t cgroup_write_X64(struct cgroup *cgrp, struct cftype *cft,
- 				struct file *file,
- 				const char __user *userbuf,
-@@ -1443,10 +1478,6 @@ static ssize_t cgroup_common_file_write(
- 		else
- 			clear_bit(CGRP_NOTIFY_ON_RELEASE, &cgrp->flags);
- 		break;
--	case FILE_RELEASE_AGENT:
--		BUILD_BUG_ON(sizeof(cgrp->root->release_agent_path) < PATH_MAX);
--		strcpy(cgrp->root->release_agent_path, buffer);
--		break;
- 	default:
- 		retval = -EINVAL;
- 		goto out2;
-@@ -1506,49 +1537,6 @@ static ssize_t cgroup_read_s64(struct cg
- 	return simple_read_from_buffer(buf, nbytes, ppos, tmp, len);
- }
- 
--static ssize_t cgroup_common_file_read(struct cgroup *cgrp,
--					  struct cftype *cft,
--					  struct file *file,
--					  char __user *buf,
--					  size_t nbytes, loff_t *ppos)
--{
--	enum cgroup_filetype type = cft->private;
--	char *page;
--	ssize_t retval = 0;
--	char *s;
--
--	if (!(page = (char *)__get_free_page(GFP_KERNEL)))
--		return -ENOMEM;
--
--	s = page;
--
--	switch (type) {
--	case FILE_RELEASE_AGENT:
--	{
--		struct cgroupfs_root *root;
--		size_t n;
--		mutex_lock(&cgroup_mutex);
--		root = cgrp->root;
--		n = strnlen(root->release_agent_path,
--			    sizeof(root->release_agent_path));
--		n = min(n, (size_t) PAGE_SIZE);
--		strncpy(s, root->release_agent_path, n);
--		mutex_unlock(&cgroup_mutex);
--		s += n;
--		break;
--	}
--	default:
--		retval = -EINVAL;
--		goto out;
--	}
--	*s++ = '\n';
--
--	retval = simple_read_from_buffer(buf, nbytes, ppos, page, s - page);
--out:
--	free_page((unsigned long)page);
--	return retval;
--}
--
- static ssize_t cgroup_file_read(struct file *file, char __user *buf,
- 				   size_t nbytes, loff_t *ppos)
- {
-@@ -1606,6 +1594,7 @@ static int cgroup_seqfile_release(struct
- 
- static struct file_operations cgroup_seqfile_operations = {
- 	.read = seq_read,
-+	.write = cgroup_file_write,
- 	.llseek = seq_lseek,
- 	.release = cgroup_seqfile_release,
- };
-@@ -2283,8 +2272,9 @@ static struct cftype files[] = {
- 
- static struct cftype cft_release_agent = {
- 	.name = "release_agent",
--	.read = cgroup_common_file_read,
--	.write = cgroup_common_file_write,
-+	.read_seq_string = cgroup_release_agent_show,
-+	.write_string = cgroup_release_agent_write,
-+	.max_write_len = PATH_MAX,
- 	.private = FILE_RELEASE_AGENT,
- };
- 
-@@ -3113,27 +3103,24 @@ static void cgroup_release_agent(struct 
- 	while (!list_empty(&release_list)) {
- 		char *argv[3], *envp[3];
- 		int i;
--		char *pathbuf;
-+		char *pathbuf = NULL, *agentbuf = NULL;
- 		struct cgroup *cgrp = list_entry(release_list.next,
- 						    struct cgroup,
- 						    release_list);
- 		list_del_init(&cgrp->release_list);
- 		spin_unlock(&release_list_lock);
- 		pathbuf = kmalloc(PAGE_SIZE, GFP_KERNEL);
--		if (!pathbuf) {
--			spin_lock(&release_list_lock);
--			continue;
--		}
--
--		if (cgroup_path(cgrp, pathbuf, PAGE_SIZE) < 0) {
--			kfree(pathbuf);
--			spin_lock(&release_list_lock);
--			continue;
--		}
-+		if (!pathbuf)
-+			goto continue_free;
-+		if (cgroup_path(cgrp, pathbuf, PAGE_SIZE) < 0)
-+			goto continue_free;
-+		agentbuf = kstrdup(cgrp->root->release_agent_path, GFP_KERNEL);
-+		if (!agentbuf)
-+			goto continue_free;
- 
- 		i = 0;
--		argv[i++] = cgrp->root->release_agent_path;
--		argv[i++] = (char *)pathbuf;
-+		argv[i++] = agentbuf;
-+		argv[i++] = pathbuf;
- 		argv[i] = NULL;
- 
- 		i = 0;
-@@ -3147,8 +3134,10 @@ static void cgroup_release_agent(struct 
- 		 * be a slow process */
- 		mutex_unlock(&cgroup_mutex);
- 		call_usermodehelper(argv[0], argv, envp, UMH_WAIT_EXEC);
--		kfree(pathbuf);
- 		mutex_lock(&cgroup_mutex);
-+ continue_free:
-+		kfree(pathbuf);
-+		kfree(agentbuf);
- 		spin_lock(&release_list_lock);
- 	}
- 	spin_unlock(&release_list_lock);
 Index: cws-2.6.26-rc5-mm3/include/linux/cgroup.h
 ===================================================================
 --- cws-2.6.26-rc5-mm3.orig/include/linux/cgroup.h
 +++ cws-2.6.26-rc5-mm3/include/linux/cgroup.h
-@@ -295,6 +295,8 @@ int cgroup_add_files(struct cgroup *cgrp
- 
- int cgroup_is_removed(const struct cgroup *cgrp);
- 
-+int cgroup_lock_live_group(struct cgroup *cgrp);
+@@ -205,6 +205,13 @@ struct cftype {
+ 	 * subsystem, followed by a period */
+ 	char name[MAX_CFTYPE_NAME];
+ 	int private;
 +
- int cgroup_path(const struct cgroup *cgrp, char *buf, int buflen);
++	/*
++	 * If non-zero, defines the maximum length of string that can
++	 * be passed to write_string; defaults to 64
++	 */
++	size_t max_write_len;
++
+ 	int (*open)(struct inode *inode, struct file *file);
+ 	ssize_t (*read)(struct cgroup *cgrp, struct cftype *cft,
+ 			struct file *file,
+@@ -249,6 +256,13 @@ struct cftype {
+ 	int (*write_s64)(struct cgroup *cgrp, struct cftype *cft, s64 val);
  
- int cgroup_task_count(const struct cgroup *cgrp);
+ 	/*
++	 * write_string() is passed a nul-terminated kernelspace
++	 * buffer of maximum length determined by max_write_len.
++	 * Returns 0 or -ve error code.
++	 */
++	int (*write_string)(struct cgroup *cgrp, struct cftype *cft,
++			    const char *buffer);
++	/*
+ 	 * trigger() callback can be used to get some kick from the
+ 	 * userspace, when the actual string written is not important
+ 	 * at all. The private field can be used to determine the
+Index: cws-2.6.26-rc5-mm3/kernel/cgroup.c
+===================================================================
+--- cws-2.6.26-rc5-mm3.orig/kernel/cgroup.c
++++ cws-2.6.26-rc5-mm3/kernel/cgroup.c
+@@ -1363,6 +1363,39 @@ static ssize_t cgroup_write_X64(struct c
+ 	return retval;
+ }
+ 
++static ssize_t cgroup_write_string(struct cgroup *cgrp, struct cftype *cft,
++				   struct file *file,
++				   const char __user *userbuf,
++				   size_t nbytes, loff_t *unused_ppos)
++{
++	char local_buffer[64];
++	int retval = 0;
++	size_t max_bytes = cft->max_write_len;
++	char *buffer = local_buffer;
++
++	if (!max_bytes)
++		max_bytes = sizeof(local_buffer) - 1;
++	if (nbytes >= max_bytes)
++		return -E2BIG;
++	/* Allocate a dynamic buffer if we need one */
++	if (nbytes >= sizeof(local_buffer)) {
++		buffer = kmalloc(nbytes + 1, GFP_KERNEL);
++		if (buffer == NULL)
++			return -ENOMEM;
++	}
++	if (nbytes && copy_from_user(buffer, userbuf, nbytes))
++		return -EFAULT;
++
++	buffer[nbytes] = 0;     /* nul-terminate */
++	strstrip(buffer);
++	retval = cft->write_string(cgrp, cft, buffer);
++	if (!retval)
++		retval = nbytes;
++	if (buffer != local_buffer)
++		kfree(buffer);
++	return retval;
++}
++
+ static ssize_t cgroup_common_file_write(struct cgroup *cgrp,
+ 					   struct cftype *cft,
+ 					   struct file *file,
+@@ -1440,6 +1473,8 @@ static ssize_t cgroup_file_write(struct 
+ 		return cft->write(cgrp, cft, file, buf, nbytes, ppos);
+ 	if (cft->write_u64 || cft->write_s64)
+ 		return cgroup_write_X64(cgrp, cft, file, buf, nbytes, ppos);
++	if (cft->write_string)
++		return cgroup_write_string(cgrp, cft, file, buf, nbytes, ppos);
+ 	if (cft->trigger) {
+ 		int ret = cft->trigger(cgrp, (unsigned int)cft->private);
+ 		return ret ? ret : nbytes;
 
 --
