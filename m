@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760131AbYFTURj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760279AbYFTUR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760131AbYFTURj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 16:17:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759238AbYFTUQ1
+	id S1760279AbYFTUR5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 16:17:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759358AbYFTUQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 16:16:27 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51957 "EHLO
+	Fri, 20 Jun 2008 16:16:36 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51959 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759203AbYFTUQZ (ORCPT
+	with ESMTP id S1759283AbYFTUQd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 16:16:25 -0400
+	Fri, 20 Jun 2008 16:16:33 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 06/70] epca: use tty_port
+Subject: [PATCH 07/70] esp: use tty_port
 To: linux-kernel@vger.kernel.org
-Date: Fri, 20 Jun 2008 20:59:01 +0100
-Message-ID: <20080620195859.1479.58910.stgit@localhost.localdomain>
+Date: Fri, 20 Jun 2008 20:59:08 +0100
+Message-ID: <20080620195906.1479.92798.stgit@localhost.localdomain>
 In-Reply-To: <20080620195406.1479.12620.stgit@localhost.localdomain>
 References: <20080620195406.1479.12620.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.1
@@ -27,380 +27,821 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@redhat.com>
 
-Switch the EPCA driver to include and begin using a tty_port structure
+Switch esp to use the new tty_port structures
 
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/char/epca.c |  106 ++++++++++++++++++++++++++-------------------------
- drivers/char/epca.h |    7 ---
- 2 files changed, 54 insertions(+), 59 deletions(-)
+ drivers/char/esp.c       |  272 +++++++++++++++++++++++-----------------------
+ include/linux/hayesesp.h |    9 --
+ 2 files changed, 138 insertions(+), 143 deletions(-)
 
 
-diff --git a/drivers/char/epca.c b/drivers/char/epca.c
-index aa8e19f..ac9995f 100644
---- a/drivers/char/epca.c
-+++ b/drivers/char/epca.c
-@@ -432,7 +432,7 @@ static void pc_close(struct tty_struct *tty, struct file *filp)
- 			spin_unlock_irqrestore(&epca_lock, flags);
- 			return;
- 		}
--		if (ch->count-- > 1)  {
-+		if (ch->port.count-- > 1)  {
- 			/* Begin channel is open more than once */
- 			/*
- 			 * Return without doing anything. Someone might still
-@@ -442,19 +442,19 @@ static void pc_close(struct tty_struct *tty, struct file *filp)
- 			return;
- 		}
- 		/* Port open only once go ahead with shutdown & reset */
--		BUG_ON(ch->count < 0);
-+		BUG_ON(ch->port.count < 0);
+diff --git a/drivers/char/esp.c b/drivers/char/esp.c
+index 84840ba..2eaf09f 100644
+--- a/drivers/char/esp.c
++++ b/drivers/char/esp.c
+@@ -128,9 +128,9 @@ static struct tty_driver *esp_driver;
  
- 		/*
- 		 * Let the rest of the driver know the channel is being closed.
- 		 * This becomes important if an open is attempted before close
- 		 * is finished.
- 		 */
--		ch->asyncflags |= ASYNC_CLOSING;
-+		ch->port.flags |= ASYNC_CLOSING;
- 		tty->closing = 1;
+ #if defined(MODULE) && defined(SERIAL_DEBUG_MCOUNT)
+ #define DBG_CNT(s) printk(KERN_DEBUG "(%s): [%x] refc=%d, serc=%d, ttyc=%d -> %s\n", \
+-				tty->name, info->flags, \
++				tty->name, info->port.flags, \
+ 				serial_driver.refcount, \
+-				info->count, tty->count, s)
++				info->port.count, tty->count, s)
+ #else
+ #define DBG_CNT(s)
+ #endif
+@@ -172,13 +172,13 @@ static inline int serial_paranoia_check(struct esp_struct *info,
  
- 		spin_unlock_irqrestore(&epca_lock, flags);
+ static inline unsigned int serial_in(struct esp_struct *info, int offset)
+ {
+-	return inb(info->port + offset);
++	return inb(info->io_port + offset);
+ }
  
--		if (ch->asyncflags & ASYNC_INITIALIZED)  {
-+		if (ch->port.flags & ASYNC_INITIALIZED)  {
- 			/* Setup an event to indicate when the
- 			   transmit buffer empties */
- 			setup_empty_event(tty, ch);
-@@ -469,17 +469,17 @@ static void pc_close(struct tty_struct *tty, struct file *filp)
- 		spin_lock_irqsave(&epca_lock, flags);
- 		tty->closing = 0;
- 		ch->event = 0;
--		ch->tty = NULL;
-+		ch->port.tty = NULL;
- 		spin_unlock_irqrestore(&epca_lock, flags);
+ static inline void serial_out(struct esp_struct *info, int offset,
+ 			      unsigned char value)
+ {
+-	outb(value, info->port+offset);
++	outb(value, info->io_port+offset);
+ }
  
--		if (ch->blocked_open) {
-+		if (ch->port.blocked_open) {
- 			if (ch->close_delay)
- 				msleep_interruptible(jiffies_to_msecs(ch->close_delay));
--			wake_up_interruptible(&ch->open_wait);
-+			wake_up_interruptible(&ch->port.open_wait);
- 		}
--		ch->asyncflags &= ~(ASYNC_NORMAL_ACTIVE | ASYNC_INITIALIZED |
-+		ch->port.flags &= ~(ASYNC_NORMAL_ACTIVE | ASYNC_INITIALIZED |
- 					ASYNC_CLOSING);
--		wake_up_interruptible(&ch->close_wait);
-+		wake_up_interruptible(&ch->port.close_wait);
+ /*
+@@ -273,7 +273,7 @@ static inline void release_pio_buffer(struct esp_pio_buffer *buf)
+ 
+ static inline void receive_chars_pio(struct esp_struct *info, int num_bytes)
+ {
+-	struct tty_struct *tty = info->tty;
++	struct tty_struct *tty = info->port.tty;
+ 	int i;
+ 	struct esp_pio_buffer *pio_buf;
+ 	struct esp_pio_buffer *err_buf;
+@@ -295,7 +295,7 @@ static inline void receive_chars_pio(struct esp_struct *info, int num_bytes)
+ 
+ 	for (i = 0; i < num_bytes - 1; i += 2) {
+ 		*((unsigned short *)(pio_buf->data + i)) =
+-			inw(info->port + UART_ESI_RX);
++			inw(info->io_port + UART_ESI_RX);
+ 		err_buf->data[i] = serial_in(info, UART_ESI_RWS);
+ 		err_buf->data[i + 1] = (err_buf->data[i] >> 3) & status_mask;
+ 		err_buf->data[i] &= status_mask;
+@@ -308,7 +308,7 @@ static inline void receive_chars_pio(struct esp_struct *info, int num_bytes)
  	}
- }
  
-@@ -489,7 +489,7 @@ static void shutdown(struct channel *ch)
- 	struct tty_struct *tty;
- 	struct board_chan __iomem *bc;
+ 	/* make sure everything is still ok since interrupts were enabled */
+-	tty = info->tty;
++	tty = info->port.tty;
  
--	if (!(ch->asyncflags & ASYNC_INITIALIZED))
-+	if (!(ch->port.flags & ASYNC_INITIALIZED))
- 		return;
+ 	if (!tty) {
+ 		release_pio_buffer(pio_buf);
+@@ -325,7 +325,7 @@ static inline void receive_chars_pio(struct esp_struct *info, int num_bytes)
  
- 	spin_lock_irqsave(&epca_lock, flags);
-@@ -504,7 +504,7 @@ static void shutdown(struct channel *ch)
- 	 */
- 	if (bc)
- 		writeb(0, &bc->idata);
--	tty = ch->tty;
-+	tty = ch->port.tty;
- 
- 	/* If we're a modem control device and HUPCL is on, drop RTS & DTR. */
- 	if (tty->termios->c_cflag & HUPCL)  {
-@@ -518,7 +518,7 @@ static void shutdown(struct channel *ch)
- 	 * will have to reinitialized. Set a flag to indicate this.
- 	 */
- 	/* Prevent future Digi programmed interrupts from coming active */
--	ch->asyncflags &= ~ASYNC_INITIALIZED;
-+	ch->port.flags &= ~ASYNC_INITIALIZED;
- 	spin_unlock_irqrestore(&epca_lock, flags);
- }
- 
-@@ -538,12 +538,12 @@ static void pc_hangup(struct tty_struct *tty)
- 		shutdown(ch);
- 
- 		spin_lock_irqsave(&epca_lock, flags);
--		ch->tty   = NULL;
-+		ch->port.tty   = NULL;
- 		ch->event = 0;
--		ch->count = 0;
--		ch->asyncflags &= ~(ASYNC_NORMAL_ACTIVE | ASYNC_INITIALIZED);
-+		ch->port.count = 0;
-+		ch->port.flags &= ~(ASYNC_NORMAL_ACTIVE | ASYNC_INITIALIZED);
- 		spin_unlock_irqrestore(&epca_lock, flags);
--		wake_up_interruptible(&ch->open_wait);
-+		wake_up_interruptible(&ch->port.open_wait);
- 	}
- }
- 
-@@ -795,7 +795,7 @@ static int block_til_ready(struct tty_struct *tty,
+ 			if (err_buf->data[i] & 0x04) {
+ 				flag = TTY_BREAK;
+-				if (info->flags & ASYNC_SAK)
++				if (info->port.flags & ASYNC_SAK)
+ 					do_SAK(tty);
+ 			} else if (err_buf->data[i] & 0x02)
+ 				flag = TTY_FRAME;
+@@ -370,7 +370,7 @@ static void receive_chars_dma(struct esp_struct *info, int num_bytes)
+ static inline void receive_chars_dma_done(struct esp_struct *info,
+ 					    int status)
+ {
+-	struct tty_struct *tty = info->tty;
++	struct tty_struct *tty = info->port.tty;
+ 	int num_bytes;
  	unsigned long flags;
  
- 	if (tty_hung_up_p(filp)) {
--		if (ch->asyncflags & ASYNC_HUP_NOTIFY)
-+		if (ch->port.flags & ASYNC_HUP_NOTIFY)
- 			retval = -EAGAIN;
- 		else
- 			retval = -ERESTARTSYS;
-@@ -806,10 +806,10 @@ static int block_til_ready(struct tty_struct *tty,
- 	 * If the device is in the middle of being closed, then block until
- 	 * it's done, and then try again.
- 	 */
--	if (ch->asyncflags & ASYNC_CLOSING) {
--		interruptible_sleep_on(&ch->close_wait);
-+	if (ch->port.flags & ASYNC_CLOSING) {
-+		interruptible_sleep_on(&ch->port.close_wait);
+@@ -396,7 +396,7 @@ static inline void receive_chars_dma_done(struct esp_struct *info,
+ 			if (status & 0x10) {
+ 				statflag = TTY_BREAK;
+ 				(info->icount.brk)++;
+-				if (info->flags & ASYNC_SAK)
++				if (info->port.flags & ASYNC_SAK)
+ 					do_SAK(tty);
+ 			} else if (status & 0x08) {
+ 				statflag = TTY_FRAME;
+@@ -451,7 +451,7 @@ static inline void transmit_chars_pio(struct esp_struct *info,
  
--		if (ch->asyncflags & ASYNC_HUP_NOTIFY)
-+		if (ch->port.flags & ASYNC_HUP_NOTIFY)
+ 		for (i = 0; i < space_avail - 1; i += 2) {
+ 			outw(*((unsigned short *)(pio_buf->data + i)),
+-			     info->port + UART_ESI_TX);
++			     info->io_port + UART_ESI_TX);
+ 		}
+ 
+ 		if (space_avail & 0x0001)
+@@ -470,8 +470,8 @@ static inline void transmit_chars_pio(struct esp_struct *info,
+ 	}
+ 
+ 	if (info->xmit_cnt < WAKEUP_CHARS) {
+-		if (info->tty)
+-			tty_wakeup(info->tty);
++		if (info->port.tty)
++			tty_wakeup(info->port.tty);
+ 
+ #ifdef SERIAL_DEBUG_INTR
+ 		printk("THRE...");
+@@ -507,8 +507,8 @@ static inline void transmit_chars_dma(struct esp_struct *info, int num_bytes)
+ 	info->xmit_tail = (info->xmit_tail + dma_bytes) & (ESP_XMIT_SIZE - 1);
+ 
+ 	if (info->xmit_cnt < WAKEUP_CHARS) {
+-		if (info->tty)
+-			tty_wakeup(info->tty);
++		if (info->port.tty)
++			tty_wakeup(info->port.tty);
+ 
+ #ifdef SERIAL_DEBUG_INTR
+ 		printk("THRE...");
+@@ -575,18 +575,18 @@ static void check_modem_status(struct esp_struct *info)
+ 		wake_up_interruptible(&info->delta_msr_wait);
+ 	}
+ 
+-	if ((info->flags & ASYNC_CHECK_CD) && (status & UART_MSR_DDCD)) {
++	if ((info->port.flags & ASYNC_CHECK_CD) && (status & UART_MSR_DDCD)) {
+ #if (defined(SERIAL_DEBUG_OPEN) || defined(SERIAL_DEBUG_INTR))
+ 		printk("ttys%d CD now %s...", info->line,
+ 		       (status & UART_MSR_DCD) ? "on" : "off");
+ #endif
+ 		if (status & UART_MSR_DCD)
+-			wake_up_interruptible(&info->open_wait);
++			wake_up_interruptible(&info->port.open_wait);
+ 		else {
+ #ifdef SERIAL_DEBUG_OPEN
+ 			printk("scheduling hangup...");
+ #endif
+-			tty_hangup(info->tty);
++			tty_hangup(info->port.tty);
+ 		}
+ 	}
+ }
+@@ -609,7 +609,7 @@ static irqreturn_t rs_interrupt_single(int irq, void *dev_id)
+ 
+ 	spin_lock(&info->lock);
+ 
+-	if (!info->tty) {
++	if (!info->port.tty) {
+ 		spin_unlock(&info->lock);
+ 		return IRQ_NONE;
+ 	}
+@@ -647,7 +647,7 @@ static irqreturn_t rs_interrupt_single(int irq, void *dev_id)
+ 		num_bytes = serial_in(info, UART_ESI_STAT1) << 8;
+ 		num_bytes |= serial_in(info, UART_ESI_STAT2);
+ 
+-		num_bytes = tty_buffer_request_room(info->tty, num_bytes);
++		num_bytes = tty_buffer_request_room(info->port.tty, num_bytes);
+ 
+ 		if (num_bytes) {
+ 			if (dma_bytes ||
+@@ -661,7 +661,7 @@ static irqreturn_t rs_interrupt_single(int irq, void *dev_id)
+ 
+ 	if (!(info->stat_flags & (ESP_STAT_DMA_RX | ESP_STAT_DMA_TX)) &&
+ 	    (scratch & 0x02) && (info->IER & UART_IER_THRI)) {
+-		if ((info->xmit_cnt <= 0) || info->tty->stopped) {
++		if ((info->xmit_cnt <= 0) || info->port.tty->stopped) {
+ 			info->IER &= ~UART_IER_THRI;
+ 			serial_out(info, UART_ESI_CMD1, ESI_SET_SRV_MASK);
+ 			serial_out(info, UART_ESI_CMD2, info->IER);
+@@ -782,7 +782,7 @@ static int startup(struct esp_struct *info)
+ 
+ 	spin_lock_irqsave(&info->lock, flags);
+ 
+-	if (info->flags & ASYNC_INITIALIZED)
++	if (info->port.flags & ASYNC_INITIALIZED)
+ 		goto out;
+ 
+ 	if (!info->xmit_buf) {
+@@ -806,7 +806,7 @@ static int startup(struct esp_struct *info)
+ 	num_chars |= serial_in(info, UART_ESI_STAT2);
+ 
+ 	while (num_chars > 1) {
+-		inw(info->port + UART_ESI_RX);
++		inw(info->io_port + UART_ESI_RX);
+ 		num_chars -= 2;
+ 	}
+ 
+@@ -834,9 +834,9 @@ static int startup(struct esp_struct *info)
+ 
+ 	if (retval) {
+ 		if (capable(CAP_SYS_ADMIN)) {
+-			if (info->tty)
++			if (info->port.tty)
+ 				set_bit(TTY_IO_ERROR,
+-					&info->tty->flags);
++					&info->port.tty->flags);
+ 			retval = 0;
+ 		}
+ 		goto out_unlocked;
+@@ -874,30 +874,30 @@ static int startup(struct esp_struct *info)
+ 	serial_out(info, UART_ESI_CMD1, ESI_SET_SRV_MASK);
+ 	serial_out(info, UART_ESI_CMD2, info->IER);
+ 
+-	if (info->tty)
+-		clear_bit(TTY_IO_ERROR, &info->tty->flags);
++	if (info->port.tty)
++		clear_bit(TTY_IO_ERROR, &info->port.tty->flags);
+ 	info->xmit_cnt = info->xmit_head = info->xmit_tail = 0;
+ 	spin_unlock_irqrestore(&info->lock, flags);
+ 
+ 	/*
+ 	 * Set up the tty->alt_speed kludge
+ 	 */
+-	if (info->tty) {
+-		if ((info->flags & ASYNC_SPD_MASK) == ASYNC_SPD_HI)
+-			info->tty->alt_speed = 57600;
+-		if ((info->flags & ASYNC_SPD_MASK) == ASYNC_SPD_VHI)
+-			info->tty->alt_speed = 115200;
+-		if ((info->flags & ASYNC_SPD_MASK) == ASYNC_SPD_SHI)
+-			info->tty->alt_speed = 230400;
+-		if ((info->flags & ASYNC_SPD_MASK) == ASYNC_SPD_WARP)
+-			info->tty->alt_speed = 460800;
++	if (info->port.tty) {
++		if ((info->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_HI)
++			info->port.tty->alt_speed = 57600;
++		if ((info->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_VHI)
++			info->port.tty->alt_speed = 115200;
++		if ((info->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_SHI)
++			info->port.tty->alt_speed = 230400;
++		if ((info->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_WARP)
++			info->port.tty->alt_speed = 460800;
+ 	}
+ 
+ 	/*
+ 	 * set the speed of the serial port
+ 	 */
+ 	change_speed(info);
+-	info->flags |= ASYNC_INITIALIZED;
++	info->port.flags |= ASYNC_INITIALIZED;
+ 	return 0;
+ 
+ out:
+@@ -914,7 +914,7 @@ static void shutdown(struct esp_struct *info)
+ {
+ 	unsigned long	flags, f;
+ 
+-	if (!(info->flags & ASYNC_INITIALIZED))
++	if (!(info->port.flags & ASYNC_INITIALIZED))
+ 		return;
+ 
+ #ifdef SERIAL_DEBUG_OPEN
+@@ -951,7 +951,7 @@ static void shutdown(struct esp_struct *info)
+ 
+ 		while (current_port) {
+ 			if ((current_port != info) &&
+-			    (current_port->flags & ASYNC_INITIALIZED))
++			    (current_port->port.flags & ASYNC_INITIALIZED))
+ 				break;
+ 
+ 			current_port = current_port->next_port;
+@@ -974,7 +974,7 @@ static void shutdown(struct esp_struct *info)
+ 	serial_out(info, UART_ESI_CMD1, ESI_SET_SRV_MASK);
+ 	serial_out(info, UART_ESI_CMD2, 0x00);
+ 
+-	if (!info->tty || (info->tty->termios->c_cflag & HUPCL))
++	if (!info->port.tty || (info->port.tty->termios->c_cflag & HUPCL))
+ 		info->MCR &= ~(UART_MCR_DTR|UART_MCR_RTS);
+ 
+ 	info->MCR &= ~UART_MCR_OUT2;
+@@ -982,10 +982,10 @@ static void shutdown(struct esp_struct *info)
+ 	serial_out(info, UART_ESI_CMD2, UART_MCR);
+ 	serial_out(info, UART_ESI_CMD2, info->MCR);
+ 
+-	if (info->tty)
+-		set_bit(TTY_IO_ERROR, &info->tty->flags);
++	if (info->port.tty)
++		set_bit(TTY_IO_ERROR, &info->port.tty->flags);
+ 
+-	info->flags &= ~ASYNC_INITIALIZED;
++	info->port.flags &= ~ASYNC_INITIALIZED;
+ 	spin_unlock_irqrestore(&info->lock, flags);
+ }
+ 
+@@ -1002,10 +1002,10 @@ static void change_speed(struct esp_struct *info)
+ 	unsigned char flow1 = 0, flow2 = 0;
+ 	unsigned long flags;
+ 
+-	if (!info->tty || !info->tty->termios)
++	if (!info->port.tty || !info->port.tty->termios)
+ 		return;
+-	cflag = info->tty->termios->c_cflag;
+-	port = info->port;
++	cflag = info->port.tty->termios->c_cflag;
++	port = info->io_port;
+ 
+ 	/* byte size and parity */
+ 	switch (cflag & CSIZE) {
+@@ -1029,9 +1029,9 @@ static void change_speed(struct esp_struct *info)
+ 	if (cflag & CMSPAR)
+ 		cval |= UART_LCR_SPAR;
+ #endif
+-	baud = tty_get_baud_rate(info->tty);
++	baud = tty_get_baud_rate(info->port.tty);
+ 	if (baud == 38400 &&
+-		((info->flags & ASYNC_SPD_MASK) == ASYNC_SPD_CUST))
++		((info->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_CUST))
+ 		quot = info->custom_divisor;
+ 	else {
+ 		if (baud == 134) /* Special case since 134 is really 134.5 */
+@@ -1046,49 +1046,49 @@ static void change_speed(struct esp_struct *info)
+ 	if (baud) {
+ 		/* Actual rate */
+ 		baud = BASE_BAUD/quot;
+-		tty_encode_baud_rate(info->tty, baud, baud);
++		tty_encode_baud_rate(info->port.tty, baud, baud);
+ 	}
+ 	info->timeout = ((1024 * HZ * bits * quot) / BASE_BAUD) + (HZ / 50);
+ 
+ 	/* CTS flow control flag and modem status interrupts */
+ 	/* info->IER &= ~UART_IER_MSI; */
+ 	if (cflag & CRTSCTS) {
+-		info->flags |= ASYNC_CTS_FLOW;
++		info->port.flags |= ASYNC_CTS_FLOW;
+ 		/* info->IER |= UART_IER_MSI; */
+ 		flow1 = 0x04;
+ 		flow2 = 0x10;
+ 	} else
+-		info->flags &= ~ASYNC_CTS_FLOW;
++		info->port.flags &= ~ASYNC_CTS_FLOW;
+ 	if (cflag & CLOCAL)
+-		info->flags &= ~ASYNC_CHECK_CD;
++		info->port.flags &= ~ASYNC_CHECK_CD;
+ 	else
+-		info->flags |= ASYNC_CHECK_CD;
++		info->port.flags |= ASYNC_CHECK_CD;
+ 
+ 	/*
+ 	 * Set up parity check flag
+ 	 */
+ 	info->read_status_mask = UART_LSR_OE | UART_LSR_THRE | UART_LSR_DR;
+-	if (I_INPCK(info->tty))
++	if (I_INPCK(info->port.tty))
+ 		info->read_status_mask |= UART_LSR_FE | UART_LSR_PE;
+-	if (I_BRKINT(info->tty) || I_PARMRK(info->tty))
++	if (I_BRKINT(info->port.tty) || I_PARMRK(info->port.tty))
+ 		info->read_status_mask |= UART_LSR_BI;
+ 
+ 	info->ignore_status_mask = 0;
+ #if 0
+ 	/* This should be safe, but for some broken bits of hardware... */
+-	if (I_IGNPAR(info->tty)) {
++	if (I_IGNPAR(info->port.tty)) {
+ 		info->ignore_status_mask |= UART_LSR_PE | UART_LSR_FE;
+ 		info->read_status_mask |= UART_LSR_PE | UART_LSR_FE;
+ 	}
+ #endif
+-	if (I_IGNBRK(info->tty)) {
++	if (I_IGNBRK(info->port.tty)) {
+ 		info->ignore_status_mask |= UART_LSR_BI;
+ 		info->read_status_mask |= UART_LSR_BI;
+ 		/*
+ 		 * If we're ignore parity and break indicators, ignore
+ 		 * overruns too.  (For real raw support).
+ 		 */
+-		if (I_IGNPAR(info->tty)) {
++		if (I_IGNPAR(info->port.tty)) {
+ 			info->ignore_status_mask |= UART_LSR_OE | \
+ 				UART_LSR_PE | UART_LSR_FE;
+ 			info->read_status_mask |= UART_LSR_OE | \
+@@ -1096,7 +1096,7 @@ static void change_speed(struct esp_struct *info)
+ 		}
+ 	}
+ 
+-	if (I_IXOFF(info->tty))
++	if (I_IXOFF(info->port.tty))
+ 		flow1 |= 0x81;
+ 
+ 	spin_lock_irqsave(&info->lock, flags);
+@@ -1116,10 +1116,10 @@ static void change_speed(struct esp_struct *info)
+ 	serial_out(info, UART_ESI_CMD2, flow2);
+ 
+ 	/* set flow control characters (XON/XOFF only) */
+-	if (I_IXOFF(info->tty)) {
++	if (I_IXOFF(info->port.tty)) {
+ 		serial_out(info, UART_ESI_CMD1, ESI_SET_FLOW_CHARS);
+-		serial_out(info, UART_ESI_CMD2, START_CHAR(info->tty));
+-		serial_out(info, UART_ESI_CMD2, STOP_CHAR(info->tty));
++		serial_out(info, UART_ESI_CMD2, START_CHAR(info->port.tty));
++		serial_out(info, UART_ESI_CMD2, STOP_CHAR(info->port.tty));
+ 		serial_out(info, UART_ESI_CMD2, 0x10);
+ 		serial_out(info, UART_ESI_CMD2, 0x21);
+ 		switch (cflag & CSIZE) {
+@@ -1355,9 +1355,9 @@ static int get_serial_info(struct esp_struct *info,
+ 	memset(&tmp, 0, sizeof(tmp));
+ 	tmp.type = PORT_16550A;
+ 	tmp.line = info->line;
+-	tmp.port = info->port;
++	tmp.port = info->io_port;
+ 	tmp.irq = info->irq;
+-	tmp.flags = info->flags;
++	tmp.flags = info->port.flags;
+ 	tmp.xmit_fifo_size = 1024;
+ 	tmp.baud_base = BASE_BAUD;
+ 	tmp.close_delay = info->close_delay;
+@@ -1407,7 +1407,7 @@ static int set_serial_info(struct esp_struct *info,
+ 
+ 	if ((new_serial.type != PORT_16550A) ||
+ 	    (new_serial.hub6) ||
+-	    (info->port != new_serial.port) ||
++	    (info->io_port != new_serial.port) ||
+ 	    (new_serial.baud_base != BASE_BAUD) ||
+ 	    (new_serial.irq > 15) ||
+ 	    (new_serial.irq < 2) ||
+@@ -1425,9 +1425,9 @@ static int set_serial_info(struct esp_struct *info,
+ 		if (change_irq ||
+ 		    (new_serial.close_delay != info->close_delay) ||
+ 		    ((new_serial.flags & ~ASYNC_USR_MASK) !=
+-		     (info->flags & ~ASYNC_USR_MASK)))
++		     (info->port.flags & ~ASYNC_USR_MASK)))
+ 			return -EPERM;
+-		info->flags = ((info->flags & ~ASYNC_USR_MASK) |
++		info->port.flags = ((info->port.flags & ~ASYNC_USR_MASK) |
+ 			       (new_serial.flags & ASYNC_USR_MASK));
+ 		info->custom_divisor = new_serial.custom_divisor;
+ 	} else {
+@@ -1441,9 +1441,9 @@ static int set_serial_info(struct esp_struct *info,
+ 				if ((current_async->line >= info->line) &&
+ 				    (current_async->line < (info->line + 8))) {
+ 					if (current_async == info) {
+-						if (current_async->count > 1)
++						if (current_async->port.count > 1)
+ 							return -EBUSY;
+-					} else if (current_async->count)
++					} else if (current_async->port.count)
+ 						return -EBUSY;
+ 				}
+ 
+@@ -1456,7 +1456,7 @@ static int set_serial_info(struct esp_struct *info,
+ 		 * At this point, we start making changes.....
+ 		 */
+ 
+-		info->flags = ((info->flags & ~ASYNC_FLAGS) |
++		info->port.flags = ((info->port.flags & ~ASYNC_FLAGS) |
+ 			       (new_serial.flags & ASYNC_FLAGS));
+ 		info->custom_divisor = new_serial.custom_divisor;
+ 		info->close_delay = new_serial.close_delay * HZ/100;
+@@ -1487,18 +1487,18 @@ static int set_serial_info(struct esp_struct *info,
+ 		}
+ 	}
+ 
+-	if (info->flags & ASYNC_INITIALIZED) {
+-		if (((old_info.flags & ASYNC_SPD_MASK) !=
+-		     (info->flags & ASYNC_SPD_MASK)) ||
++	if (info->port.flags & ASYNC_INITIALIZED) {
++		if (((old_info.port.flags & ASYNC_SPD_MASK) !=
++		     (info->port.flags & ASYNC_SPD_MASK)) ||
+ 		    (old_info.custom_divisor != info->custom_divisor)) {
+-			if ((info->flags & ASYNC_SPD_MASK) == ASYNC_SPD_HI)
+-				info->tty->alt_speed = 57600;
+-			if ((info->flags & ASYNC_SPD_MASK) == ASYNC_SPD_VHI)
+-				info->tty->alt_speed = 115200;
+-			if ((info->flags & ASYNC_SPD_MASK) == ASYNC_SPD_SHI)
+-				info->tty->alt_speed = 230400;
+-			if ((info->flags & ASYNC_SPD_MASK) == ASYNC_SPD_WARP)
+-				info->tty->alt_speed = 460800;
++			if ((info->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_HI)
++				info->port.tty->alt_speed = 57600;
++			if ((info->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_VHI)
++				info->port.tty->alt_speed = 115200;
++			if ((info->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_SHI)
++				info->port.tty->alt_speed = 230400;
++			if ((info->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_WARP)
++				info->port.tty->alt_speed = 460800;
+ 			change_speed(info);
+ 		}
+ 	} else
+@@ -1554,9 +1554,9 @@ static int set_esp_config(struct esp_struct *info,
+ 
+ 			while (current_async) {
+ 				if (current_async == info) {
+-					if (current_async->count > 1)
++					if (current_async->port.count > 1)
+ 						return -EBUSY;
+-				} else if (current_async->count)
++				} else if (current_async->port.count)
+ 					return -EBUSY;
+ 
+ 				current_async = current_async->next_port;
+@@ -1578,7 +1578,7 @@ static int set_esp_config(struct esp_struct *info,
+ 			spin_unlock_irqrestore(&info->lock, flags);
+ 		} else {
+ 			/* DMA mode to PIO mode only */
+-			if (info->count > 1)
++			if (info->port.count > 1)
+ 				return -EBUSY;
+ 
+ 			shutdown(info);
+@@ -1634,7 +1634,7 @@ static int set_esp_config(struct esp_struct *info,
+ 		spin_unlock_irqrestore(&info->lock, flags);
+ 	}
+ 
+-	if (!(info->flags & ASYNC_INITIALIZED))
++	if (!(info->port.flags & ASYNC_INITIALIZED))
+ 		retval = startup(info);
+ 
+ 	return retval;
+@@ -1917,9 +1917,9 @@ static void rs_close(struct tty_struct *tty, struct file *filp)
+ 
+ #ifdef SERIAL_DEBUG_OPEN
+ 	printk(KERN_DEBUG "rs_close ttys%d, count = %d\n",
+-						info->line, info->count);
++						info->line, info->port.count);
+ #endif
+-	if (tty->count == 1 && info->count != 1) {
++	if (tty->count == 1 && info->port.count != 1) {
+ 		/*
+ 		 * Uh, oh.  tty->count is 1, which means that the tty
+ 		 * structure will be freed.  Info->count should always
+@@ -1927,19 +1927,19 @@ static void rs_close(struct tty_struct *tty, struct file *filp)
+ 		 * one, we've got real problems, since it means the
+ 		 * serial port won't be shutdown.
+ 		 */
+-		printk(KERN_DEBUG "rs_close: bad serial port count; tty->count is 1, info->count is %d\n", info->count);
+-		info->count = 1;
++		printk(KERN_DEBUG "rs_close: bad serial port count; tty->count is 1, info->port.count is %d\n", info->port.count);
++		info->port.count = 1;
+ 	}
+-	if (--info->count < 0) {
++	if (--info->port.count < 0) {
+ 		printk(KERN_ERR "rs_close: bad serial port count for ttys%d: %d\n",
+-		       info->line, info->count);
+-		info->count = 0;
++		       info->line, info->port.count);
++		info->port.count = 0;
+ 	}
+-	if (info->count) {
++	if (info->port.count) {
+ 		DBG_CNT("before DEC-2");
+ 		goto out;
+ 	}
+-	info->flags |= ASYNC_CLOSING;
++	info->port.flags |= ASYNC_CLOSING;
+ 
+ 	spin_unlock_irqrestore(&info->lock, flags);
+ 	/*
+@@ -1958,7 +1958,7 @@ static void rs_close(struct tty_struct *tty, struct file *filp)
+ 	/* info->IER &= ~UART_IER_RLSI; */
+ 	info->IER &= ~UART_IER_RDI;
+ 	info->read_status_mask &= ~UART_LSR_DR;
+-	if (info->flags & ASYNC_INITIALIZED) {
++	if (info->port.flags & ASYNC_INITIALIZED) {
+ 
+ 		spin_lock_irqsave(&info->lock, flags);
+ 		serial_out(info, UART_ESI_CMD1, ESI_SET_SRV_MASK);
+@@ -1981,15 +1981,15 @@ static void rs_close(struct tty_struct *tty, struct file *filp)
+ 	rs_flush_buffer(tty);
+ 	tty_ldisc_flush(tty);
+ 	tty->closing = 0;
+-	info->tty = NULL;
++	info->port.tty = NULL;
+ 
+-	if (info->blocked_open) {
++	if (info->port.blocked_open) {
+ 		if (info->close_delay)
+ 			msleep_interruptible(jiffies_to_msecs(info->close_delay));
+-		wake_up_interruptible(&info->open_wait);
++		wake_up_interruptible(&info->port.open_wait);
+ 	}
+-	info->flags &= ~(ASYNC_NORMAL_ACTIVE|ASYNC_CLOSING);
+-	wake_up_interruptible(&info->close_wait);
++	info->port.flags &= ~(ASYNC_NORMAL_ACTIVE|ASYNC_CLOSING);
++	wake_up_interruptible(&info->port.close_wait);
+ 	return;
+ 
+ out:
+@@ -2047,10 +2047,10 @@ static void esp_hangup(struct tty_struct *tty)
+ 
+ 	rs_flush_buffer(tty);
+ 	shutdown(info);
+-	info->count = 0;
+-	info->flags &= ~ASYNC_NORMAL_ACTIVE;
+-	info->tty = NULL;
+-	wake_up_interruptible(&info->open_wait);
++	info->port.count = 0;
++	info->port.flags &= ~ASYNC_NORMAL_ACTIVE;
++	info->port.tty = NULL;
++	wake_up_interruptible(&info->port.open_wait);
+ }
+ 
+ /*
+@@ -2071,11 +2071,11 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 	 * until it's done, and then try again.
+ 	 */
+ 	if (tty_hung_up_p(filp) ||
+-	    (info->flags & ASYNC_CLOSING)) {
+-		if (info->flags & ASYNC_CLOSING)
+-			interruptible_sleep_on(&info->close_wait);
++	    (info->port.flags & ASYNC_CLOSING)) {
++		if (info->port.flags & ASYNC_CLOSING)
++			interruptible_sleep_on(&info->port.close_wait);
+ #ifdef SERIAL_DO_RESTART
+-		if (info->flags & ASYNC_HUP_NOTIFY)
++		if (info->port.flags & ASYNC_HUP_NOTIFY)
  			return -EAGAIN;
  		else
  			return -ERESTARTSYS;
-@@ -820,7 +820,7 @@ static int block_til_ready(struct tty_struct *tty,
- 		 * If non-blocking mode is set, then make the check up front
- 		 * and then exit.
- 		 */
--		ch->asyncflags |= ASYNC_NORMAL_ACTIVE;
-+		ch->port.flags |= ASYNC_NORMAL_ACTIVE;
+@@ -2090,7 +2090,7 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 	 */
+ 	if ((filp->f_flags & O_NONBLOCK) ||
+ 	    (tty->flags & (1 << TTY_IO_ERROR))) {
+-		info->flags |= ASYNC_NORMAL_ACTIVE;
++		info->port.flags |= ASYNC_NORMAL_ACTIVE;
  		return 0;
  	}
- 	if (tty->termios->c_cflag & CLOCAL)
-@@ -828,24 +828,24 @@ static int block_til_ready(struct tty_struct *tty,
- 	/* Block waiting for the carrier detect and the line to become free */
  
+@@ -2100,20 +2100,20 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 	/*
+ 	 * Block waiting for the carrier detect and the line to become
+ 	 * free (i.e., not in use by the callout).  While we are in
+-	 * this loop, info->count is dropped by one, so that
++	 * this loop, info->port.count is dropped by one, so that
+ 	 * rs_close() knows when to free things.  We restore it upon
+ 	 * exit, either normal or abnormal.
+ 	 */
  	retval = 0;
--	add_wait_queue(&ch->open_wait, &wait);
-+	add_wait_queue(&ch->port.open_wait, &wait);
- 
- 	spin_lock_irqsave(&epca_lock, flags);
- 	/* We dec count so that pc_close will know when to free things */
+-	add_wait_queue(&info->open_wait, &wait);
++	add_wait_queue(&info->port.open_wait, &wait);
+ #ifdef SERIAL_DEBUG_OPEN
+ 	printk(KERN_DEBUG "block_til_ready before block: ttys%d, count = %d\n",
+-	       info->line, info->count);
++	       info->line, info->port.count);
+ #endif
+ 	spin_lock_irqsave(&info->lock, flags);
  	if (!tty_hung_up_p(filp))
--		ch->count--;
--	ch->blocked_open++;
-+		ch->port.count--;
-+	ch->port.blocked_open++;
+-		info->count--;
+-	info->blocked_open++;
++		info->port.count--;
++	info->port.blocked_open++;
  	while (1) {
+ 		if ((tty->termios->c_cflag & CBAUD)) {
+ 			unsigned int scratch;
+@@ -2128,9 +2128,9 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 		}
  		set_current_state(TASK_INTERRUPTIBLE);
  		if (tty_hung_up_p(filp) ||
--				!(ch->asyncflags & ASYNC_INITIALIZED)) {
--			if (ch->asyncflags & ASYNC_HUP_NOTIFY)
-+				!(ch->port.flags & ASYNC_INITIALIZED)) {
-+			if (ch->port.flags & ASYNC_HUP_NOTIFY)
+-		    !(info->flags & ASYNC_INITIALIZED)) {
++		    !(info->port.flags & ASYNC_INITIALIZED)) {
+ #ifdef SERIAL_DO_RESTART
+-			if (info->flags & ASYNC_HUP_NOTIFY)
++			if (info->port.flags & ASYNC_HUP_NOTIFY)
  				retval = -EAGAIN;
  			else
  				retval = -ERESTARTSYS;
- 			break;
- 		}
--		if (!(ch->asyncflags & ASYNC_CLOSING) &&
-+		if (!(ch->port.flags & ASYNC_CLOSING) &&
- 			  (do_clocal || (ch->imodem & ch->dcd)))
+@@ -2144,7 +2144,7 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 		if (serial_in(info, UART_ESI_STAT2) & UART_MSR_DCD)
+ 			do_clocal = 1;
+ 
+-		if (!(info->flags & ASYNC_CLOSING) &&
++		if (!(info->port.flags & ASYNC_CLOSING) &&
+ 		    (do_clocal))
  			break;
  		if (signal_pending(current)) {
-@@ -864,17 +864,17 @@ static int block_til_ready(struct tty_struct *tty,
+@@ -2153,25 +2153,25 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 		}
+ #ifdef SERIAL_DEBUG_OPEN
+ 		printk(KERN_DEBUG "block_til_ready blocking: ttys%d, count = %d\n",
+-		       info->line, info->count);
++		       info->line, info->port.count);
+ #endif
+ 		spin_unlock_irqrestore(&info->lock, flags);
+ 		schedule();
+ 		spin_lock_irqsave(&info->lock, flags);
  	}
- 
- 	__set_current_state(TASK_RUNNING);
--	remove_wait_queue(&ch->open_wait, &wait);
-+	remove_wait_queue(&ch->port.open_wait, &wait);
+ 	set_current_state(TASK_RUNNING);
+-	remove_wait_queue(&info->open_wait, &wait);
++	remove_wait_queue(&info->port.open_wait, &wait);
  	if (!tty_hung_up_p(filp))
--		ch->count++;
--	ch->blocked_open--;
-+		ch->port.count++;
-+	ch->port.blocked_open--;
- 
- 	spin_unlock_irqrestore(&epca_lock, flags);
- 
+-		info->count++;
+-	info->blocked_open--;
++		info->port.count++;
++	info->port.blocked_open--;
+ 	spin_unlock_irqrestore(&info->lock, flags);
+ #ifdef SERIAL_DEBUG_OPEN
+ 	printk(KERN_DEBUG "block_til_ready after blocking: ttys%d, count = %d\n",
+-	       info->line, info->count);
++	       info->line, info->port.count);
+ #endif
  	if (retval)
  		return retval;
- 
--	ch->asyncflags |= ASYNC_NORMAL_ACTIVE;
-+	ch->port.flags |= ASYNC_NORMAL_ACTIVE;
+-	info->flags |= ASYNC_NORMAL_ACTIVE;
++	info->port.flags |= ASYNC_NORMAL_ACTIVE;
  	return 0;
  }
  
-@@ -933,7 +933,7 @@ static int pc_open(struct tty_struct *tty, struct file *filp)
- 	 * necessary because we do not wish to flush and shutdown the channel
- 	 * until the last app holding the channel open, closes it.
- 	 */
--	ch->count++;
-+	ch->port.count++;
- 	/*
- 	 * Set a kernel structures pointer to our local channel structure. This
- 	 * way we can get to it when passed only a tty struct.
-@@ -957,14 +957,14 @@ static int pc_open(struct tty_struct *tty, struct file *filp)
- 	writew(head, &bc->rout);
+@@ -2204,12 +2204,12 @@ static int esp_open(struct tty_struct *tty, struct file *filp)
+ 	}
  
- 	/* Set the channels associated tty structure */
--	ch->tty = tty;
-+	ch->port.tty = tty;
+ #ifdef SERIAL_DEBUG_OPEN
+-	printk(KERN_DEBUG "esp_open %s, count = %d\n", tty->name, info->count);
++	printk(KERN_DEBUG "esp_open %s, count = %d\n", tty->name, info->port.count);
+ #endif
+ 	spin_lock_irqsave(&info->lock, flags);
+-	info->count++;
++	info->port.count++;
+ 	tty->driver_data = info;
+-	info->tty = tty;
++	info->port.tty = tty;
  
- 	/*
- 	 * The below routine generally sets up parity, baud, flow control
- 	 * issues, etc.... It effect both control flags and input flags.
- 	 */
- 	epcaparam(tty, ch);
--	ch->asyncflags |= ASYNC_INITIALIZED;
-+	ch->port.flags |= ASYNC_INITIALIZED;
- 	memoff(ch);
- 	spin_unlock_irqrestore(&epca_lock, flags);
+ 	spin_unlock_irqrestore(&info->lock, flags);
  
-@@ -976,7 +976,7 @@ static int pc_open(struct tty_struct *tty, struct file *filp)
- 	 * waiting for the line...
- 	 */
- 	spin_lock_irqsave(&epca_lock, flags);
--	ch->tty = tty;
-+	ch->port.tty = tty;
- 	globalwinon(ch);
- 	/* Enable Digi Data events */
- 	writeb(1, &bc->idata);
-@@ -1017,8 +1017,8 @@ static void __exit epca_module_exit(void)
- 		}
- 		ch = card_ptr[crd];
- 		for (count = 0; count < bd->numports; count++, ch++) {
--			if (ch && ch->tty)
--				tty_hangup(ch->tty);
-+			if (ch && ch->port.tty)
-+				tty_hangup(ch->port.tty);
+@@ -2263,7 +2263,7 @@ static int autoconfig(struct esp_struct *info)
+ 	int port_detected = 0;
+ 	unsigned long flags;
+ 
+-	if (!request_region(info->port, REGION_SIZE, "esp serial"))
++	if (!request_region(info->io_port, REGION_SIZE, "esp serial"))
+ 		return -EIO;
+ 
+ 	spin_lock_irqsave(&info->lock, flags);
+@@ -2300,7 +2300,7 @@ static int autoconfig(struct esp_struct *info)
  		}
  	}
- 	pci_unregister_driver(&epca_driver);
-@@ -1427,7 +1427,7 @@ static void post_fep_init(unsigned int crd)
- 		ch->boardnum   = crd;
- 		ch->channelnum = i;
- 		ch->magic      = EPCA_MAGIC;
--		ch->tty        = NULL;
-+		ch->port.tty        = NULL;
+ 	if (!port_detected)
+-		release_region(info->port, REGION_SIZE);
++		release_region(info->io_port, REGION_SIZE);
  
- 		if (shrinkmem) {
- 			fepcmd(ch, SETBUFFER, 32, 0, 0, 0);
-@@ -1510,10 +1510,10 @@ static void post_fep_init(unsigned int crd)
- 		ch->fepstopca = 0;
+ 	spin_unlock_irqrestore(&info->lock, flags);
+ 	return (port_detected);
+@@ -2414,7 +2414,7 @@ static int __init espserial_init(void)
+ 	offset = 0;
  
- 		ch->close_delay = 50;
--		ch->count = 0;
--		ch->blocked_open = 0;
--		init_waitqueue_head(&ch->open_wait);
--		init_waitqueue_head(&ch->close_wait);
-+		ch->port.count = 0;
-+		ch->port.blocked_open = 0;
-+		init_waitqueue_head(&ch->port.open_wait);
-+		init_waitqueue_head(&ch->port.close_wait);
+ 	do {
+-		info->port = esp[i] + offset;
++		info->io_port = esp[i] + offset;
+ 		info->irq = irq[i];
+ 		info->line = (i * 8) + (offset / 8);
  
- 		spin_unlock_irqrestore(&epca_lock, flags);
- 	}
-@@ -1633,15 +1633,15 @@ static void doevent(int crd)
- 		if (event & MODEMCHG_IND) {
- 			/* A modem signal change has been indicated */
- 			ch->imodem = mstat;
--			if (ch->asyncflags & ASYNC_CHECK_CD) {
-+			if (ch->port.flags & ASYNC_CHECK_CD) {
- 				/* We are now receiving dcd */
- 				if (mstat & ch->dcd)
--					wake_up_interruptible(&ch->open_wait);
-+					wake_up_interruptible(&ch->port.open_wait);
- 				else	/* No dcd; hangup */
- 					pc_sched_event(ch, EPCA_EVENT_HANGUP);
- 			}
+@@ -2425,9 +2425,9 @@ static int __init espserial_init(void)
  		}
--		tty = ch->tty;
-+		tty = ch->port.tty;
- 		if (tty) {
- 			if (event & BREAK_IND) {
- 				/* A break has been indicated */
-@@ -1880,9 +1880,9 @@ static void epcaparam(struct tty_struct *tty, struct channel *ch)
- 		 * that the driver will wait on carrier detect.
- 		 */
- 		if (ts->c_cflag & CLOCAL)
--			ch->asyncflags &= ~ASYNC_CHECK_CD;
-+			ch->port.flags &= ~ASYNC_CHECK_CD;
- 		else
--			ch->asyncflags |= ASYNC_CHECK_CD;
-+			ch->port.flags |= ASYNC_CHECK_CD;
- 		mval = ch->m_dtr | ch->m_rts;
- 	} /* End CBAUD not detected */
- 	iflag = termios2digi_i(ch, ts->c_iflag);
-@@ -1972,7 +1972,7 @@ static void receive_data(struct channel *ch)
- 	globalwinon(ch);
- 	if (ch->statusflags & RXSTOPPED)
- 		return;
--	tty = ch->tty;
-+	tty = ch->port.tty;
- 	if (tty)
- 		ts = tty->termios;
- 	bc = ch->brdchan;
-@@ -2032,7 +2032,7 @@ static void receive_data(struct channel *ch)
- 	globalwinon(ch);
- 	writew(tail, &bc->rout);
- 	/* Must be called with global data */
--	tty_schedule_flip(ch->tty);
-+	tty_schedule_flip(ch->port.tty);
- }
  
- static int info_ioctl(struct tty_struct *tty, struct file *file,
-@@ -2376,7 +2376,7 @@ static void pc_set_termios(struct tty_struct *tty, struct ktermios *old_termios)
+ 		info->custom_divisor = (divisor[i] >> (offset / 2)) & 0xf;
+-		info->flags = STD_COM_FLAGS;
++		info->port.flags = STD_COM_FLAGS;
+ 		if (info->custom_divisor)
+-			info->flags |= ASYNC_SPD_CUST;
++			info->port.flags |= ASYNC_SPD_CUST;
+ 		info->magic = ESP_MAGIC;
+ 		info->close_delay = 5*HZ/10;
+ 		info->closing_wait = 30*HZ;
+@@ -2436,13 +2436,13 @@ static int __init espserial_init(void)
+ 		info->config.flow_off = flow_off;
+ 		info->config.pio_threshold = pio_threshold;
+ 		info->next_port = ports;
+-		init_waitqueue_head(&info->open_wait);
+-		init_waitqueue_head(&info->close_wait);
++		init_waitqueue_head(&info->port.open_wait);
++		init_waitqueue_head(&info->port.close_wait);
+ 		init_waitqueue_head(&info->delta_msr_wait);
+ 		init_waitqueue_head(&info->break_wait);
+ 		ports = info;
+ 		printk(KERN_INFO "ttyP%d at 0x%04x (irq = %d) is an ESP ",
+-			info->line, info->port, info->irq);
++			info->line, info->io_port, info->irq);
  
- 		if (!(old_termios->c_cflag & CLOCAL) &&
- 			 (tty->termios->c_cflag & CLOCAL))
--			wake_up_interruptible(&ch->open_wait);
-+			wake_up_interruptible(&ch->port.open_wait);
+ 		if (info->line % 8) {
+ 			printk("secondary port\n");
+@@ -2498,8 +2498,8 @@ static void __exit espserial_exit(void)
+ 	put_tty_driver(esp_driver);
  
- 	} /* End if channel valid */
- }
-@@ -2386,13 +2386,13 @@ static void do_softint(struct work_struct *work)
- 	struct channel *ch = container_of(work, struct channel, tqueue);
- 	/* Called in response to a modem change event */
- 	if (ch && ch->magic == EPCA_MAGIC) {
--		struct tty_struct *tty = ch->tty;
-+		struct tty_struct *tty = ch->port.tty;
+ 	while (ports) {
+-		if (ports->port)
+-			release_region(ports->port, REGION_SIZE);
++		if (ports->io_port)
++			release_region(ports->io_port, REGION_SIZE);
+ 		temp_async = ports->next_port;
+ 		kfree(ports);
+ 		ports = temp_async;
+diff --git a/include/linux/hayesesp.h b/include/linux/hayesesp.h
+index 2177ee5..940aeb5 100644
+--- a/include/linux/hayesesp.h
++++ b/include/linux/hayesesp.h
+@@ -76,11 +76,10 @@ struct hayes_esp_config {
  
- 		if (tty && tty->driver_data) {
- 			if (test_and_clear_bit(EPCA_EVENT_HANGUP, &ch->event)) {
- 				tty_hangup(tty);
--				wake_up_interruptible(&ch->open_wait);
--				ch->asyncflags &= ~ASYNC_NORMAL_ACTIVE;
-+				wake_up_interruptible(&ch->port.open_wait);
-+				ch->port.flags &= ~ASYNC_NORMAL_ACTIVE;
- 			}
- 		}
- 	}
-diff --git a/drivers/char/epca.h b/drivers/char/epca.h
-index 3c77c02..d414bf2 100644
---- a/drivers/char/epca.h
-+++ b/drivers/char/epca.h
-@@ -84,6 +84,7 @@ static char *board_desc[] =
- struct channel 
- {
- 	long   magic;
-+	struct tty_port port;
- 	unsigned char boardnum;
- 	unsigned char channelnum;
- 	unsigned char omodem;         /* FEP output modem status     */
-@@ -117,10 +118,7 @@ struct channel
- 	unsigned short rxbufhead;
- 	unsigned short rxbufsize;
- 	int    close_delay;
--	int    count;
--	int    blocked_open;
- 	unsigned long  event;
--	int    asyncflags;
- 	uint   dev;
- 	unsigned long  statusflags;
- 	unsigned long  c_iflag;
-@@ -132,9 +130,6 @@ struct channel
- 	struct board_info           *board;
- 	struct board_chan	    __iomem *brdchan;
- 	struct digi_struct          digiext;
--	struct tty_struct           *tty;
--	wait_queue_head_t           open_wait;
--	wait_queue_head_t           close_wait;
- 	struct work_struct          tqueue;
- 	struct global_data 	    __iomem *mailbox;
- };
+ struct esp_struct {
+ 	int			magic;
++	struct tty_port		port;
+ 	spinlock_t		lock;
+-	int			port;
++	int			io_port;
+ 	int			irq;
+-	int			flags; 		/* defined in tty.h */
+-	struct tty_struct 	*tty;
+ 	int			read_status_mask;
+ 	int			ignore_status_mask;
+ 	int			timeout;
+@@ -93,14 +92,10 @@ struct esp_struct {
+ 	int			MCR; 	/* Modem control register */
+ 	unsigned long		last_active;
+ 	int			line;
+-	int			count;	    /* # of fd on device */
+-	int			blocked_open; /* # of blocked opens */
+ 	unsigned char 		*xmit_buf;
+ 	int			xmit_head;
+ 	int			xmit_tail;
+ 	int			xmit_cnt;
+-	wait_queue_head_t	open_wait;
+-	wait_queue_head_t	close_wait;
+ 	wait_queue_head_t	delta_msr_wait;
+ 	wait_queue_head_t	break_wait;
+ 	struct async_icount	icount;	/* kernel counters for the 4 input interrupts */
 
