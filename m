@@ -1,46 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758423AbYFTOXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757461AbYFTOaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758423AbYFTOXs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 10:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755972AbYFTOXk
+	id S1757461AbYFTOaR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 10:30:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755910AbYFTOaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 10:23:40 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58104 "EHLO mx3.mail.elte.hu"
+	Fri, 20 Jun 2008 10:30:05 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:40255 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755996AbYFTOXk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 10:23:40 -0400
-Date: Fri, 20 Jun 2008 16:23:28 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: linux-kernel@vger.kernel.org, yhlu.kernel@gmail.com,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH] Unify crashkernel reservation for 32 and 64 bit
-Message-ID: <20080620142328.GG8135@elte.hu>
-References: <1213969102-17400-1-git-send-email-bwalle@suse.de> <20080620135847.GE8135@elte.hu> <20080620160645.4b793593@halley.suse.de>
-MIME-Version: 1.0
+	id S1755581AbYFTOaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 10:30:04 -0400
+Date: Fri, 20 Jun 2008 18:32:20 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Roland Dreier <rdreier@cisco.com>,
+       linux-kernel@vger.kernel.org, Eli Cohen <eli@dev.mellanox.co.il>,
+       general@lists.openfabrics.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: wait_for_completion_timeout() spurious failure under heavy load?
+Message-ID: <20080620143220.GA441@tv-sign.ru>
+References: <ada63s5w088.fsf@cisco.com> <485B50F1.2020802@gmail.com> <20080620112042.GE7439@elte.hu> <20080620141400.GA411@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080620160645.4b793593@halley.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080620141400.GA411@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Bernhard Walle <bwalle@suse.de> wrote:
-
-> >   http://people.redhat.com/mingo/tip.git/README
+On 06/20, Oleg Nesterov wrote:
+>
+> On 06/20, Ingo Molnar wrote:
+> >
+> > --- a/kernel/sched.c
+> > +++ b/kernel/sched.c
+> > @@ -4405,6 +4405,16 @@ do_wait_for_common(struct completion *x, long timeout, int state)
+> >  			spin_unlock_irq(&x->wait.lock);
+> >  			timeout = schedule_timeout(timeout);
+> >  			spin_lock_irq(&x->wait.lock);
+> > +
+> > +			/*
+> > +			 * If the completion has arrived meanwhile
+> > +			 * then return 1 jiffy time left:
+> > +			 */
+> > +			if (x->done && !timeout) {
+> > +				timeout = 1;
+> > +				break;
+> > +			}
+> > +
+> >  			if (!timeout) {
+> >  				__remove_wait_queue(&x->wait, &wait);
+> >  				return timeout;
 > 
-> That applies here without problems.
+> This is the real nitpick, but I wonder what is the right behaviour
+> of wait_for_completion_timeout(x, 0) when x->done != 0. Perhaps we
+> can return 1 in that case too, just for the consistency?
+> 
+> IOW, how about the patch below? this also makes the code a bit
+> simpler because we factor out __remove_wait_queue().
 
-oops, you are right - i was on -git and didnt notice! Sorry :-)
+Even better, we can kill the first __remove_wait_queue() as well.
 
-	Ingo
+Oleg.
+
+--- kernel/sched.c
++++ kernel/sched.c
+@@ -4739,22 +4739,20 @@ do_wait_for_common(struct completion *x,
+ 			     signal_pending(current)) ||
+ 			    (state == TASK_KILLABLE &&
+ 			     fatal_signal_pending(current))) {
+-				__remove_wait_queue(&x->wait, &wait);
+-				return -ERESTARTSYS;
++				timeout = -ERESTARTSYS;
++				break;
+ 			}
+ 			__set_current_state(state);
+ 			spin_unlock_irq(&x->wait.lock);
+ 			timeout = schedule_timeout(timeout);
+ 			spin_lock_irq(&x->wait.lock);
+-			if (!timeout) {
+-				__remove_wait_queue(&x->wait, &wait);
+-				return timeout;
+-			}
+-		} while (!x->done);
++		} while (!x->done && timeout);
+ 		__remove_wait_queue(&x->wait, &wait);
++		if (!x->done)
++			return timeout;
+ 	}
+ 	x->done--;
+-	return timeout;
++	return timeout ?: 1;
+ }
+ 
+ static long __sched
+
