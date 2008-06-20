@@ -1,88 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758661AbYFTRD7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759116AbYFTREx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758661AbYFTRD7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 13:03:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbYFTRDv
+	id S1759116AbYFTREx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 13:04:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756346AbYFTREp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 13:03:51 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:60991 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752665AbYFTRDu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 13:03:50 -0400
-Date: Fri, 20 Jun 2008 19:03:40 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Manuel Lauss <mano@roarinelk.homelinux.net>,
-       Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-mips@linux-mips.org, sshtylyov@ru.mvista.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/8] Alchemy: register mmc platform device for
- db1200/pb1200 boards.
-Message-ID: <20080620190340.5b1b31c9@mjolnir.drzeus.cx>
-In-Reply-To: <20080620161239.GA31688@roarinelk.homelinux.net>
-References: <20080609063521.GA8724@roarinelk.homelinux.net>
-	<20080609063702.GC8724@roarinelk.homelinux.net>
-	<20080612090206.GB21601@linux-mips.org>
-	<20080612101839.GC21601@linux-mips.org>
-	<20080612121828.GA24603@roarinelk.homelinux.net>
-	<20080612122646.GA9493@linux-mips.org>
-	<20080612154248.5c9c5c9d@mjolnir.drzeus.cx>
-	<20080612134729.GA20015@linux-mips.org>
-	<20080612135810.GA25352@roarinelk.homelinux.net>
-	<20080620174607.50ad6874@mjolnir.drzeus.cx>
-	<20080620161239.GA31688@roarinelk.homelinux.net>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
-X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-30350-1213980925-0001-2"
+	Fri, 20 Jun 2008 13:04:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56064 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756032AbYFTREo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 13:04:44 -0400
+Message-ID: <485BE2C4.5050101@redhat.com>
+Date: Fri, 20 Jun 2008 13:03:00 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>
+CC: Hideo AOKI <haoki@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: [RFC][Patch 1/2] markers: introduce DEFINE_TRACE for regular kernel
+ markers
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Hi,
 
---=_freyr.drzeus.cx-30350-1213980925-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+I wrote a DEFINE_TRACE patch according to my suggestion. Users can still
+use _trace_mark/trace_mark macro for their module.
 
-On Fri, 20 Jun 2008 18:12:39 +0200
-Manuel Lauss <mano@roarinelk.homelinux.net> wrote:
+This patch introduces DEFINE_TRACE() and _DEFINE_TRACE() macros for defining
+inline functions which wraps trace_mark() and hides the fmt string.
+These macros only for in-kernel regular markers, not for user-defined
+markers.
 
-> Hello Pierre,
->=20
-> On Fri, Jun 20, 2008 at 05:46:07PM +0200, Pierre Ossman wrote:
-> >=20
-> > This patch does not apply against HEAD. Are you sure there aren't any
-> > dependencies on what Ralf has in his tree? If so, perhaps this should
-> > be in the MIPS tree.
->=20
-> It was broken by commit dab8c6deaf1d654d09c3de8bd4c286d424df255a which we=
-nt
-> in this week; here's another updated version of [PATCH 2/8].
->=20
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+---
+TODO:
+- DEFINE_TRACE might better define 'trace_##name' marker instead of 'name'
+ for avoiding conflict of marker names.
 
-The problem is still Ralf's DMA constants fix. Ralf, should I simply
-steal that patch from you?
+ include/linux/marker.h |   41 +++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 39 insertions(+), 2 deletions(-)
 
---=20
-     -- Pierre Ossman
+Index: 2.6.26-rc5-mm3/include/linux/marker.h
+===================================================================
+--- 2.6.26-rc5-mm3.orig/include/linux/marker.h	2008-06-16 12:27:50.000000000 -0400
++++ 2.6.26-rc5-mm3/include/linux/marker.h	2008-06-16 12:27:50.000000000 -0400
+@@ -63,7 +63,7 @@ struct marker {
+  * If generic is true, a variable read is used.
+  * If generic is false, immediate values are used.
+  */
+-#define __trace_mark(generic, name, call_private, format, args...)	\
++#define ___trace_mark(generic, name, call_private, format, args...)	\
+ 	do {								\
+ 		static const char __mstrtab_##name[]			\
+ 		__attribute__((section("__markers_strings")))		\
+@@ -73,13 +73,18 @@ struct marker {
+ 		{ __mstrtab_##name, &__mstrtab_##name[sizeof(#name)],	\
+ 		0, 0, marker_probe_cb,					\
+ 		{ __mark_empty_function, NULL}, NULL };			\
+-		__mark_check_format(format, ## args);			\
+ 		if (unlikely(__mark_##name.state)) {			\
+ 			(*__mark_##name.call)				\
+ 				(&__mark_##name, call_private, ## args);\
+ 		}							\
+ 	} while (0)
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Use end-to-end encryption where
-  possible.
++#define __trace_mark(generic, name, call_private, format, args...)	\
++	do {								\
++		__mark_check_format(format, ## args);			\
++		___trace_mark(generic, name, call_private, format, ## args); \
++	} while (0)
++
+ extern void marker_update_probe_range(struct marker *begin,
+ 	struct marker *end);
+ #else /* !CONFIG_MARKERS */
+@@ -121,6 +126,38 @@ static inline void marker_update_probe_r
+  */
+ #define MARK_NOARGS " "
 
---=_freyr.drzeus.cx-30350-1213980925-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
++/**
++ * DEFINE_TRACE - define a regular kernel trace point with code patching
++ * @name: marker name, not quoted.
++ * @vargs: parenthetical virtual arguments with types.
++ * @args: real arguments, not parenthetical.
++ *
++ * Define an inline function named trace_##name for regular kernel trace point.
++ * If the trace point has no arguments, set vargs to (void).
++ */
++#define DEFINE_TRACE(name, vargs, args...)		\
++static inline void trace_##name vargs			\
++{							\
++	___trace_mark(0, name, NULL, #vargs, ##args);	\
++}
++/**
++ * _DEFINE_TRACE - define a regular kernel trace point with variable read
++ * @name: marker name, not quoted.
++ * @vargs: parenthetical virtual arguments with types.
++ * @args: real arguments, not parenthetical.
++ *
++ * Define an inline function named trace_##name for regular kernel trace point.
++ * If the trace point has no arguments, set vargs to (void).
++ * Should be used for trace points in code paths where instruction
++ * modification based enabling is not welcome. (__init and __exit
++ * functions, lockdep, some traps, printk).
++ */
++#define _DEFINE_TRACE(name, vargs, args...)		\
++static inline void trace_##name vargs			\
++{							\
++	___trace_mark(1, name, NULL, #vargs, ##args);	\
++}
++
+ /* To be used for string format validity checking with gcc */
+ static inline void __printf(1, 2) ___mark_check_format(const char *fmt, ...)
+ {
+-- 
+Masami Hiramatsu
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
-iEYEARECAAYFAkhb4vEACgkQ7b8eESbyJLi8TwCg+dwRurdlaXR1wT39NYU6jMeD
-TVkAoIRn1kmEJ3YPnpOr/owxw1qYl65t
-=40we
------END PGP SIGNATURE-----
+e-mail: mhiramat@redhat.com
 
---=_freyr.drzeus.cx-30350-1213980925-0001-2--
