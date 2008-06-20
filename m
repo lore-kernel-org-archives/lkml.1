@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbYFTRIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758652AbYFTROR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754508AbYFTRIo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 13:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906AbYFTRIh
+	id S1758652AbYFTROR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 13:14:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbYFTROE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 13:08:37 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:48621 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753568AbYFTRIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 13:08:37 -0400
-Date: Fri, 20 Jun 2008 19:08:33 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: linux-kernel@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>
-Subject: Re: MMC: card test driver should not be builtin with other card
- support
-Message-ID: <20080620190833.04e664d5@mjolnir.drzeus.cx>
-In-Reply-To: <20080620110115.GB21835@fluff.org.uk>
-References: <20080620105802.173598466@fluff.org.uk>
-	<20080620110115.GB21835@fluff.org.uk>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 20 Jun 2008 13:14:04 -0400
+Received: from fnoeppeil48.netpark.at ([217.175.205.176]:41460 "EHLO
+	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754055AbYFTROB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 13:14:01 -0400
+Message-ID: <485BE557.8080004@roarinelk.homelinux.net>
+Date: Fri, 20 Jun 2008 19:13:59 +0200
+From: Manuel Lauss <mano@roarinelk.homelinux.net>
+Organization: Private
+User-Agent: Thunderbird 2.0.0.14 (X11/20080620)
+MIME-Version: 1.0
+To: Pierre Ossman <drzeus@drzeus.cx>
+CC: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+       sshtylyov@ru.mvista.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/8] Alchemy: register mmc platform device for db1200/pb1200
+ boards.
+References: <20080609063521.GA8724@roarinelk.homelinux.net>	<20080609063702.GC8724@roarinelk.homelinux.net>	<20080612090206.GB21601@linux-mips.org>	<20080612101839.GC21601@linux-mips.org>	<20080612121828.GA24603@roarinelk.homelinux.net>	<20080612122646.GA9493@linux-mips.org>	<20080612154248.5c9c5c9d@mjolnir.drzeus.cx>	<20080612134729.GA20015@linux-mips.org>	<20080612135810.GA25352@roarinelk.homelinux.net>	<20080620174607.50ad6874@mjolnir.drzeus.cx>	<20080620161239.GA31688@roarinelk.homelinux.net> <20080620190340.5b1b31c9@mjolnir.drzeus.cx>
+In-Reply-To: <20080620190340.5b1b31c9@mjolnir.drzeus.cx>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jun 2008 12:01:15 +0100
-Ben Dooks <ben-linux@fluff.org> wrote:
-
-> On Fri, Jun 20, 2008 at 11:58:02AM +0100, ben@fluff.org.uk wrote:
-> > The mmc test driver and mmc block driver will attempt to bind
-> > to any card present in the system, which means only one of these
-> > drivers will end up with the card. If either one of these is selected
-> > as builtin, ensure the other does not get built.
-> > 
+Pierre Ossman wrote:
+> On Fri, 20 Jun 2008 18:12:39 +0200
+> Manuel Lauss <mano@roarinelk.homelinux.net> wrote:
 > 
-> This is what I would have liked to have done in Kconfig, but of course
-> the system fails with a circular dependency error. Is there any way
-> to get this done without some horrible hacks?
+>> Hello Pierre,
+>>
+>> On Fri, Jun 20, 2008 at 05:46:07PM +0200, Pierre Ossman wrote:
+>>> This patch does not apply against HEAD. Are you sure there aren't any
+>>> dependencies on what Ralf has in his tree? If so, perhaps this should
+>>> be in the MIPS tree.
+>> It was broken by commit dab8c6deaf1d654d09c3de8bd4c286d424df255a which went
+>> in this week; here's another updated version of [PATCH 2/8].
+>>
 > 
+> The problem is still Ralf's DMA constants fix. Ralf, should I simply
+> steal that patch from you?
 
-AFAIK, you can manually control the driver binding using sysfs. Should
-be solvable for the rootfs case using an initrd.
+Alternatively, Ralf could push patch 2/8 through the MIPS tree; the 
+other MMC patches don't depend on it.  Worst case scenario is a that 
+db1200 mmc won't work for a few revisions which would go unnoticed with 
+99.9% probability, given the state of the rest of the au1000 code ;-)
 
-Rgds
--- 
-     -- Pierre Ossman
+Manuel Lauss
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Use end-to-end encryption where
-  possible.
+
+
