@@ -1,181 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752174AbYFTFQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751981AbYFTF1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752174AbYFTFQY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 01:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750957AbYFTFQQ
+	id S1751981AbYFTF1f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 01:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751034AbYFTF1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 01:16:16 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:26313 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750889AbYFTFQP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 01:16:15 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=XxEuwVltdvYivHeM8cykLZT9HX5Hz93PWvCPt2UYTbzv5QEMHvG7UQ8vush/wfpei
-	z1sSvlHkvd0XLGYQ9jsUQ==
-Message-ID: <6599ad830806192216m41027e09r7605b9f85c283ae8@mail.gmail.com>
-Date: Thu, 19 Jun 2008 22:16:07 -0700
-From: "Paul Menage" <menage@google.com>
-To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 2/2] memcg: reduce usage at change limit
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20080617123604.c8cb1bd5.kamezawa.hiroyu@jp.fujitsu.com>
+	Fri, 20 Jun 2008 01:27:25 -0400
+Received: from mail.ku-gbr.de ([81.3.11.18]:42678 "EHLO ku-gbr.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751003AbYFTF1Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 01:27:24 -0400
+Date: Fri, 20 Jun 2008 07:27:17 +0200
+From: Konstantin Kletschke <lists@ku-gbr.de>
+To: Miquel van Smoorenburg <mikevs@xs4all.net>,
+       Oliver Pinter <oliver.pntr@gmail.com>, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
+       xfs-masters@oss.sgi.com
+Subject: Re: XFS internal error xfs_trans_cancel at line 1163 of file
+	fs/xfs/xfs_trans.c
+Message-ID: <20080620052716.GA2022@anita>
+Mail-Followup-To: Miquel van Smoorenburg <mikevs@xs4all.net>,
+	Oliver Pinter <oliver.pntr@gmail.com>, linux-kernel@vger.kernel.org,
+	Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
+	xfs-masters@oss.sgi.com
+References: <20080612123031.21594jyk6rjc1lfk@imp.ku-gbr.de> <6101e8c40806120733m3c8647ccy149eb237e2c6d027@mail.gmail.com> <1213309629.29745.8.camel@localhost.localdomain> <20080613030841.GC3700@disturbed>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080617123144.ce5a74fa.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20080617123604.c8cb1bd5.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080613030841.GC3700@disturbed>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 16, 2008 at 8:36 PM, KAMEZAWA Hiroyuki
-<kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> Reduce the usage of res_counter at the change of limit.
->
-> Changelog v4 -> v5.
->  - moved "feedback" alogrithm from res_counter to memcg.
+Am 2008-06-13 13:08 +1000 schrieb Dave Chinner:
 
-FWIW, I really thought it was much better having it in the generic res_counter.
+> This commit in 2.6.26 will probably fix it.
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=75de2a91c98a6f486f261c1367fe59f5583e15a3
 
-Paul
+If I am correct, this fix is included in 2.6.26-rc6:
 
->
-> Background:
->  - Now, mem->usage is not reduced at limit change. So, the users will see
->   usage > limit case in memcg every time. This patch fixes it.
->
->  Before:
->  - no usage change at setting limit.
->  - setting limit always returns 0 even if usage can never be less than zero.
->   (This can happen when memory is locked or there is no swap.)
->  - This is BUG, I think.
->  After:
->  - usage will be less than new limit at limit change.
->  - set limit returns -EBUSY when the usage cannot be reduced.
->
->
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->
-> ---
->  Documentation/controllers/memory.txt |    3 -
->  mm/memcontrol.c                      |   68 ++++++++++++++++++++++++++++-------
->  2 files changed, 56 insertions(+), 15 deletions(-)
->
-> Index: mm-2.6.26-rc5-mm3/mm/memcontrol.c
-> ===================================================================
-> --- mm-2.6.26-rc5-mm3.orig/mm/memcontrol.c
-> +++ mm-2.6.26-rc5-mm3/mm/memcontrol.c
-> @@ -852,18 +852,30 @@ out:
->        css_put(&mem->css);
->        return ret;
->  }
-> +/*
-> + * try to set limit and reduce usage if necessary.
-> + * returns 0 at success.
-> + * returns -EBUSY if memory cannot be dropped.
-> + */
->
-> -static int mem_cgroup_write_strategy(char *buf, unsigned long long *tmp)
-> +static inline int mem_cgroup_resize_limit(struct cgroup *cont,
-> +                                       unsigned long long val)
->  {
-> -       *tmp = memparse(buf, &buf);
-> -       if (*buf != '\0')
-> -               return -EINVAL;
-> +       struct mem_cgroup *memcg = mem_cgroup_from_cont(cont);
-> +       int retry_count = 0;
-> +       int progress;
->
-> -       /*
-> -        * Round up the value to the closest page size
-> -        */
-> -       *tmp = ((*tmp + PAGE_SIZE - 1) >> PAGE_SHIFT) << PAGE_SHIFT;
-> -       return 0;
-> +retry:
-> +       if (!res_counter_set_limit(&memcg->res, val))
-> +               return 0;
-> +       if (retry_count == MEM_CGROUP_RECLAIM_RETRIES)
-> +               return -EBUSY;
-> +
-> +       cond_resched();
-> +       progress = try_to_free_mem_cgroup_pages(memcg, GFP_KERNEL);
-> +       if (!progress)
-> +               retry_count++;
-> +       goto retry;
->  }
->
->  static u64 mem_cgroup_read(struct cgroup *cont, struct cftype *cft)
-> @@ -874,11 +886,41 @@ static u64 mem_cgroup_read(struct cgroup
->
->  static ssize_t mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
->                                struct file *file, const char __user *userbuf,
-> -                               size_t nbytes, loff_t *ppos)
-> +                               size_t bbytes, loff_t *ppos)
->  {
-> -       return res_counter_write(&mem_cgroup_from_cont(cont)->res,
-> -                               cft->private, userbuf, nbytes, ppos,
-> -                               mem_cgroup_write_strategy);
-> +       char *buf, *end;
-> +       unsigned long long val;
-> +       int ret;
-> +
-> +       buf = kmalloc(bbytes + 1, GFP_KERNEL);
-> +       if (!buf)
-> +               return -ENOMEM;
-> +       buf[bbytes] = '\0';
-> +       ret = -EFAULT;
-> +       if (copy_from_user(buf, userbuf, bbytes))
-> +               goto out;
-> +
-> +       ret = -EINVAL;
-> +       strstrip(buf);
-> +       val = memparse(buf, &end);
-> +       if (*end != '\0')
-> +               goto out;
-> +       /* Round to page size */
-> +       val = ((val + PAGE_SIZE - 1) >> PAGE_SHIFT) << PAGE_SHIFT;
-> +
-> +       switch(cft->private) {
-> +       case RES_LIMIT:
-> +               ret = mem_cgroup_resize_limit(cont, val);
-> +               break;
-> +       default:
-> +               ret = -EINVAL;
-> +               goto out;
-> +       }
-> +       if (!ret)
-> +               ret = bbytes;
-> +out:
-> +       kfree(buf);
-> +       return ret;
->  }
->
->  static int mem_cgroup_reset(struct cgroup *cont, unsigned int event)
-> Index: mm-2.6.26-rc5-mm3/Documentation/controllers/memory.txt
-> ===================================================================
-> --- mm-2.6.26-rc5-mm3.orig/Documentation/controllers/memory.txt
-> +++ mm-2.6.26-rc5-mm3/Documentation/controllers/memory.txt
-> @@ -242,8 +242,7 @@ rmdir() if there are no tasks.
->  1. Add support for accounting huge pages (as a separate controller)
->  2. Make per-cgroup scanner reclaim not-shared pages first
->  3. Teach controller to account for shared-pages
-> -4. Start reclamation when the limit is lowered
-> -5. Start reclamation in the background when the limit is
-> +4. Start reclamation in the background when the limit is
->    not yet hit but the usage is getting closer
->
->  Summary
->
->
+Filesystem "sda6": XFS internal error xfs_trans_cancel at line 1163 of file fs/xfs/xfs_trans.c.  Caller 0xffffffff802ffa42
+Pid: 7393, comm: emerge Not tainted 2.6.26-rc6 #1
+
+Call Trace:
+ [<ffffffff802ffa42>]
+ [<ffffffff802fa35a>]
+ [<ffffffff802ffa42>]
+ [<ffffffff80308a29>]
+ [<ffffffff80262799>]
+ [<ffffffff8026500a>]
+ [<ffffffff8025a0fa>]
+ [<ffffffff8020afab>]
+
+xfs_force_shutdown(sda6,0x8) called from line 1164 of file fs/xfs/xfs_trans.c.  Return address = 0xffffffff802fa373
+Filesystem "sda6": Corruption of in-memory data detected.  Shutting down filesystem: sda6
+Please umount the filesystem, and rectify the problem(s)
+Filesystem "sda6": xfs_log_force: error 5 returned.
+Filesystem "sda6": xfs_log_force: error 5 returned.
+zsh: Input/output error: /var/mail/root
+
+
+root@zappa:~/ > ksymoops -m /usr/src/linux-2.6.26-rc6/System.map xfs-2.6.26.txt
+ksymoops 2.4.11 on x86_64 2.6.26-rc6.  Options used
+     -V (default)
+     -k /proc/ksyms (default)
+     -l /proc/modules (default)
+     -o /lib/modules/2.6.26-rc6/ (default)
+     -m /usr/src/linux-2.6.26-rc6/System.map (specified)
+
+Error (regular_file): read_ksyms stat /proc/ksyms failed
+ksymoops: No such file or directory
+No modules in ksyms, skipping objects
+No ksyms, skipping lsmod
+Pid: 7393, comm: emerge Not tainted 2.6.26-rc6 #1
+Call Trace:
+ [<ffffffff802ffa42>]
+ [<ffffffff802fa35a>]
+ [<ffffffff802ffa42>]
+ [<ffffffff80308a29>]
+ [<ffffffff80262799>]
+ [<ffffffff8026500a>]
+ [<ffffffff8025a0fa>]
+ [<ffffffff8020afab>]
+Warning (Oops_read): Code line not seen, dumping what data is available
+
+
+Trace; ffffffff802ffa42 <xfs_create+41d/462>
+Trace; ffffffff802fa35a <xfs_trans_cancel+56/ee>
+Trace; ffffffff802ffa42 <xfs_create+41d/462>
+Trace; ffffffff80308a29 <xfs_vn_mknod+148/229>
+Trace; ffffffff80262799 <vfs_create+75/ba>
+Trace; ffffffff8026500a <do_filp_open+1dc/7c5>
+Trace; ffffffff8025a0fa <do_sys_open+4a/f1>
+Trace; ffffffff8020afab <system_call_after_swapgs+7b/80>
+
+
+1 warning and 1 error issued.  Results may not be reliable.
+zsh: Input/output error: /var/mail/root
+
+
+-- 
+GPG KeyID EF62FCEF
+Fingerprint: 13C9 B16B 9844 EC15 CC2E  A080 1E69 3FDA EF62 FCEF
