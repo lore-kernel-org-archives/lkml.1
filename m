@@ -1,68 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbYFTJAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbYFTJGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754508AbYFTJAy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 05:00:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751656AbYFTJAn
+	id S1754058AbYFTJGb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 05:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbYFTJGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 05:00:43 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:41267 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751292AbYFTJAm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 05:00:42 -0400
-Date: Fri, 20 Jun 2008 04:59:22 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Holger Kiehl <Holger.Kiehl@dwd.de>
-Cc: Eric Sandeen <sandeen@redhat.com>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
-       Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Performance of ext4
-Message-ID: <20080620085922.GH9119@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Holger Kiehl <Holger.Kiehl@dwd.de>,
-	Eric Sandeen <sandeen@redhat.com>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
-	Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <20080612180605.GD22481@skywalker> <Pine.LNX.4.64.0806121940020.2974@diagnostix.dwd.de> <Pine.LNX.4.64.0806130753100.7097@diagnostix.dwd.de> <20080616175408.GF3279@atrey.karlin.mff.cuni.cz> <20080616181353.GA20686@skywalker> <Pine.LNX.4.64.0806171001200.6307@diagnostix.dwd.de> <20080619155645.GA8582@mit.edu> <485A8C2D.1090806@redhat.com> <20080619174211.GB9119@mit.edu> <Pine.LNX.4.64.0806200812340.3383@diagnostix.dwd.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0806200812340.3383@diagnostix.dwd.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Fri, 20 Jun 2008 05:06:23 -0400
+Received: from styx.suse.cz ([82.119.242.94]:45624 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751470AbYFTJGW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 05:06:22 -0400
+Subject: Re: [PATCH] move __attribute__((__cold__)) functions back into
+	final .text section
+From: Lukas Lipavsky <llipavsky@suse.cz>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: sam@ravnborg.org, stable@kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <48590F41.76E4.0078.0@novell.com>
+References: <48590F41.76E4.0078.0@novell.com>
+Content-Type: text/plain; charset=utf8
+Date: Fri, 20 Jun 2008 11:06:17 +0200
+Message-Id: <1213952777.9696.3.camel@hex.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 20, 2008 at 08:32:52AM +0000, Holger Kiehl wrote:
->> It sounds like i_size is actually dropping in
->> size at some pointer long after the file was written.  If I had to
+Jan Beulich píše v St 18. 06. 2008 v 12:36 +0100:
+> Due to the addition of __attribute__((__cold__)) to a few symbols
+> without adjusting the linker scripts, those symbols currently may end
+> up outside the [_stext,_etext) range, as they get placed in
+> .text.unlikely by (at least) gcc 4.3.0. This may confuse code not only
+> outside of the kernel, symbol_put_addr()'s BUG() could also trigger.
+> Hence we need to add .text.unlikely (and for future uses of
+> __attribute__((__hot__)) also .text.hot) to the TEXT_TEXT() macro.
+> Cc: Lukas Lipavsky <llipavsky@suse.cz>
+> Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-sorry, "at some point"...
-            
->> guess the value in the inode cache is correct; and perhaps so is the
->> value on the journal.  But somehow, the wrong value is getting written
->> to disk 
+Tested-by: Lukas Lipavsky <llipavsky@suse.cz>
 
-Or, "the right value is never getting written to disk".  (Which as I
-think about it is more likely; it's likely that an update to i_size is
-getting *lost*, perhaps because the delalloc code is possibly
-modifying i_size without starting a transaction first.  Again this is
-just a guess.)
 
-> What I find strange is that the missing parts of the file are not for
-> example exactly 512 or 1024 or 4096 bytes it is mostly some odd number
-> of bytes.
-
-Is there any chance the truncation point is related to how the program
-is writing its output file?  i.e., if it is a text file, is the
-truncation happening after a new-line or when the stdio library might
-have done an explicit or implicit fflush()?
-
-							- Ted
