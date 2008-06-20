@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752754AbYFTCA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753334AbYFTCgi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752754AbYFTCA7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 22:00:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750830AbYFTCAt
+	id S1753334AbYFTCgi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 22:36:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbYFTCg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 22:00:49 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42877
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750712AbYFTCAs (ORCPT
+	Thu, 19 Jun 2008 22:36:29 -0400
+Received: from casper.infradead.org ([85.118.1.10]:39728 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751829AbYFTCg2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 22:00:48 -0400
-Date: Thu, 19 Jun 2008 19:00:48 -0700 (PDT)
-Message-Id: <20080619.190048.193701955.davem@davemloft.net>
-To: a.beregalov@gmail.com
-Cc: kernel-testers@vger.kernel.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.26-rc: SPARC: Sun Ultra 10 can not boot
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <a4423d670806190902l48c542e0i6a7380a2d3e7f520@mail.gmail.com>
-References: <a4423d670806190707k7ae6da8cud80a826a1603d941@mail.gmail.com>
-	<a4423d670806190902l48c542e0i6a7380a2d3e7f520@mail.gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 19 Jun 2008 22:36:28 -0400
+Date: Thu, 19 Jun 2008 19:36:00 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Stephane Eranian <eranian@googlemail.com>
+Subject: Re: [patch 1/2] x86: apic: Export symbols for extended interrupt
+ LVT functions
+Message-ID: <20080619193600.240c721a@infradead.org>
+In-Reply-To: <20080619170056.GI10019@erda.amd.com>
+References: <20080213151811.804698000@amd.com>
+	<20080213151841.520543000@amd.com>
+	<20080213143256.54e9a3c7@laptopd505.fenrus.org>
+	<20080214094036.GA16892@erda.amd.com>
+	<20080214084749.2a936f85@laptopd505.fenrus.org>
+	<20080619170056.GI10019@erda.amd.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Alexander Beregalov" <a.beregalov@gmail.com>
-Date: Thu, 19 Jun 2008 20:02:44 +0400
+On Thu, 19 Jun 2008 19:00:56 +0200
+Robert Richter <robert.richter@amd.com> wrote:
 
-> I have reverted this commit and
-> 2.6.26-rc6-00233-g99d3b2d works fine. It can boot.
+> Arjan,
+> 
+> do you see a way of how to get these EXPORT_SYMBOLs mainline? 
 
-I know what the problem is.
+it's easy... submit the code that uses them.....
 
-It's hanging because lockdep is starting to actually be used. :-)
-Beforehand various bugs caused lockdep to disable itself almost
-immediately.  So it was never actually enabled on sparc64.
 
-When you revert that changeset, there is a loop in the backtrace of
-all kernel threads, and therefore lockdep turns itself off when all of
-the stack backtrace slots get consumed by that loop in the backtraces.
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
 
-After the revert you should see a set of kernel messages like:
-
-BUG: MAX_STACK_TRACE_ENTRIES too low!
-turning off the locking correctness validator.
-
-and that would confirm my theory.
-
-Lockdep really isn't usable on sparc64 at this time and it's one of
-the ongoing things I'm trying to get fully fixed.  The changeset in
-question fixes a real bug in stack backtrace output, so it should
-stay in the tree.
-
-FWIW, I just verified the above on my ultra5 box.
