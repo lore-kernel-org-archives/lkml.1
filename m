@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761749AbYFTUV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761940AbYFTUVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761749AbYFTUV0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 16:21:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760042AbYFTURa
+	id S1761940AbYFTUVm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 16:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760101AbYFTURh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 16:17:30 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51975 "EHLO
+	Fri, 20 Jun 2008 16:17:37 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51977 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760005AbYFTUR2 (ORCPT
+	with ESMTP id S1760078AbYFTURf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 16:17:28 -0400
+	Fri, 20 Jun 2008 16:17:35 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 15/70] rocket: use tty_port
+Subject: [PATCH 16/70] serial: use tty_port
 To: linux-kernel@vger.kernel.org
-Date: Fri, 20 Jun 2008 21:00:03 +0100
-Message-ID: <20080620200002.1479.6483.stgit@localhost.localdomain>
+Date: Fri, 20 Jun 2008 21:00:10 +0100
+Message-ID: <20080620200009.1479.24896.stgit@localhost.localdomain>
 In-Reply-To: <20080620195406.1479.12620.stgit@localhost.localdomain>
 References: <20080620195406.1479.12620.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.1
@@ -27,400 +27,473 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@redhat.com>
 
-Switch the rocketport to use the new tty_port structure
+Switch the serial_core based drivers to use the new tty_port structure. We
+can't quite use all of it yet because of the dynamically allocated extras
+in the serial_core layer.
 
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/char/rocket.c     |  116 +++++++++++++++++++++++----------------------
- drivers/char/rocket_int.h |    9 +--
- 2 files changed, 61 insertions(+), 64 deletions(-)
+ drivers/serial/8250.c        |    2 +
+ drivers/serial/jsm/jsm_neo.c |    2 +
+ drivers/serial/jsm/jsm_tty.c |    8 ++--
+ drivers/serial/serial_core.c |   80 ++++++++++++++++++++++--------------------
+ include/linux/serial_core.h  |   26 ++++++--------
+ 5 files changed, 60 insertions(+), 58 deletions(-)
 
 
-diff --git a/drivers/char/rocket.c b/drivers/char/rocket.c
-index 743dc80..ab04adb 100644
---- a/drivers/char/rocket.c
-+++ b/drivers/char/rocket.c
-@@ -434,15 +434,15 @@ static void rp_do_transmit(struct r_port *info)
- #endif
- 	if (!info)
- 		return;
--	if (!info->tty) {
-+	if (!info->port.tty) {
- 		printk(KERN_WARNING "rp: WARNING %s called with "
--				"info->tty==NULL\n", __func__);
-+				"info->port.tty==NULL\n", __func__);
- 		clear_bit((info->aiop * 8) + info->chan, (void *) &xmit_flags[info->board]);
- 		return;
- 	}
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index b040912..2dbfba8 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -1287,7 +1287,7 @@ static void serial8250_enable_ms(struct uart_port *port)
+ static void
+ receive_chars(struct uart_8250_port *up, unsigned int *status)
+ {
+-	struct tty_struct *tty = up->port.info->tty;
++	struct tty_struct *tty = up->port.info->port.tty;
+ 	unsigned char ch, lsr = *status;
+ 	int max_count = 256;
+ 	char flag;
+diff --git a/drivers/serial/jsm/jsm_neo.c b/drivers/serial/jsm/jsm_neo.c
+index b2d6f5b..b7584ca 100644
+--- a/drivers/serial/jsm/jsm_neo.c
++++ b/drivers/serial/jsm/jsm_neo.c
+@@ -998,7 +998,7 @@ static void neo_param(struct jsm_channel *ch)
+ 			{     50, B50     },
+ 		};
  
- 	spin_lock_irqsave(&info->slock, flags);
--	tty = info->tty;
-+	tty = info->port.tty;
- 	info->xmit_fifo_room = TXFIFO_SIZE - sGetTxCnt(cp);
- 
- 	/*  Loop sending data to FIFO until done or FIFO full */
-@@ -502,13 +502,13 @@ static void rp_handle_port(struct r_port *info)
- 				"info->flags & NOT_INIT\n");
- 		return;
- 	}
--	if (!info->tty) {
-+	if (!info->port.tty) {
- 		printk(KERN_WARNING "rp: WARNING: rp_handle_port called with "
--				"info->tty==NULL\n");
-+				"info->port.tty==NULL\n");
- 		return;
- 	}
- 	cp = &info->channel;
--	tty = info->tty;
-+	tty = info->port.tty;
- 
- 	IntMask = sGetChanIntID(cp) & info->intmask;
- #ifdef ROCKET_DEBUG_INTR
-@@ -530,7 +530,7 @@ static void rp_handle_port(struct r_port *info)
- 			tty_hangup(tty);
- 		}
- 		info->cd_status = (ChanStatus & CD_ACT) ? 1 : 0;
--		wake_up_interruptible(&info->open_wait);
-+		wake_up_interruptible(&info->port.open_wait);
- 	}
- #ifdef ROCKET_DEBUG_INTR
- 	if (IntMask & DELTA_CTS) {	/* CTS change */
-@@ -650,7 +650,7 @@ static void init_r_port(int board, int aiop, int chan, struct pci_dev *pci_dev)
- 	info->chan = chan;
- 	info->closing_wait = 3000;
- 	info->close_delay = 50;
--	init_waitqueue_head(&info->open_wait);
-+	init_waitqueue_head(&info->port.open_wait);
- 	init_completion(&info->close_wait);
- 	info->flags &= ~ROCKET_MODE_MASK;
- 	switch (pc104[board][line]) {
-@@ -717,7 +717,7 @@ static void configure_r_port(struct r_port *info,
- 	unsigned rocketMode;
- 	int bits, baud, divisor;
- 	CHANNEL_t *cp;
--	struct ktermios *t = info->tty->termios;
-+	struct ktermios *t = info->port.tty->termios;
- 
- 	cp = &info->channel;
- 	cflag = t->c_cflag;
-@@ -750,7 +750,7 @@ static void configure_r_port(struct r_port *info,
- 	}
- 
- 	/* baud rate */
--	baud = tty_get_baud_rate(info->tty);
-+	baud = tty_get_baud_rate(info->port.tty);
- 	if (!baud)
+-		cflag = C_BAUD(ch->uart_port.info->tty);
++		cflag = C_BAUD(ch->uart_port.info->port.tty);
  		baud = 9600;
- 	divisor = ((rp_baud_base[info->board] + (baud >> 1)) / baud) - 1;
-@@ -768,7 +768,7 @@ static void configure_r_port(struct r_port *info,
- 	sSetBaud(cp, divisor);
+ 		for (i = 0; i < ARRAY_SIZE(baud_rates); i++) {
+ 			if (baud_rates[i].cflag == cflag) {
+diff --git a/drivers/serial/jsm/jsm_tty.c b/drivers/serial/jsm/jsm_tty.c
+index 94ec663..a697914 100644
+--- a/drivers/serial/jsm/jsm_tty.c
++++ b/drivers/serial/jsm/jsm_tty.c
+@@ -145,7 +145,7 @@ static void jsm_tty_send_xchar(struct uart_port *port, char ch)
+ 	struct ktermios *termios;
  
- 	/* FIXME: Should really back compute a baud rate from the divisor */
--	tty_encode_baud_rate(info->tty, baud, baud);
-+	tty_encode_baud_rate(info->port.tty, baud, baud);
+ 	spin_lock_irqsave(&port->lock, lock_flags);
+-	termios = port->info->tty->termios;
++	termios = port->info->port.tty->termios;
+ 	if (ch == termios->c_cc[VSTART])
+ 		channel->ch_bd->bd_ops->send_start_character(channel);
  
- 	if (cflag & CRTSCTS) {
- 		info->intmask |= DELTA_CTS;
-@@ -793,15 +793,15 @@ static void configure_r_port(struct r_port *info,
- 	 * Handle software flow control in the board
- 	 */
- #ifdef ROCKET_SOFT_FLOW
--	if (I_IXON(info->tty)) {
-+	if (I_IXON(info->port.tty)) {
- 		sEnTxSoftFlowCtl(cp);
--		if (I_IXANY(info->tty)) {
-+		if (I_IXANY(info->port.tty)) {
- 			sEnIXANY(cp);
- 		} else {
- 			sDisIXANY(cp);
- 		}
--		sSetTxXONChar(cp, START_CHAR(info->tty));
--		sSetTxXOFFChar(cp, STOP_CHAR(info->tty));
-+		sSetTxXONChar(cp, START_CHAR(info->port.tty));
-+		sSetTxXOFFChar(cp, STOP_CHAR(info->port.tty));
- 	} else {
- 		sDisTxSoftFlowCtl(cp);
- 		sDisIXANY(cp);
-@@ -813,24 +813,24 @@ static void configure_r_port(struct r_port *info,
- 	 * Set up ignore/read mask words
- 	 */
- 	info->read_status_mask = STMRCVROVRH | 0xFF;
--	if (I_INPCK(info->tty))
-+	if (I_INPCK(info->port.tty))
- 		info->read_status_mask |= STMFRAMEH | STMPARITYH;
--	if (I_BRKINT(info->tty) || I_PARMRK(info->tty))
-+	if (I_BRKINT(info->port.tty) || I_PARMRK(info->port.tty))
- 		info->read_status_mask |= STMBREAKH;
+@@ -239,7 +239,7 @@ static int jsm_tty_open(struct uart_port *port)
+ 	channel->ch_cached_lsr = 0;
+ 	channel->ch_stops_sent = 0;
  
- 	/*
- 	 * Characters to ignore
- 	 */
- 	info->ignore_status_mask = 0;
--	if (I_IGNPAR(info->tty))
-+	if (I_IGNPAR(info->port.tty))
- 		info->ignore_status_mask |= STMFRAMEH | STMPARITYH;
--	if (I_IGNBRK(info->tty)) {
-+	if (I_IGNBRK(info->port.tty)) {
- 		info->ignore_status_mask |= STMBREAKH;
- 		/*
- 		 * If we're ignoring parity and break indicators,
- 		 * ignore overruns too.  (For real raw support).
- 		 */
--		if (I_IGNPAR(info->tty))
-+		if (I_IGNPAR(info->port.tty))
- 			info->ignore_status_mask |= STMRCVROVRH;
- 	}
+-	termios = port->info->tty->termios;
++	termios = port->info->port.tty->termios;
+ 	channel->ch_c_cflag	= termios->c_cflag;
+ 	channel->ch_c_iflag	= termios->c_iflag;
+ 	channel->ch_c_oflag	= termios->c_oflag;
+@@ -272,7 +272,7 @@ static void jsm_tty_close(struct uart_port *port)
+ 	jsm_printk(CLOSE, INFO, &channel->ch_bd->pci_dev, "start\n");
  
-@@ -863,7 +863,7 @@ static void configure_r_port(struct r_port *info,
- 	}
+ 	bd = channel->ch_bd;
+-	ts = channel->uart_port.info->tty->termios;
++	ts = channel->uart_port.info->port.tty->termios;
+ 
+ 	channel->ch_flags &= ~(CH_STOPI);
+ 
+@@ -515,7 +515,7 @@ void jsm_input(struct jsm_channel *ch)
+ 	if (!ch)
+ 		return;
+ 
+-	tp = ch->uart_port.info->tty;
++	tp = ch->uart_port.info->port.tty;
+ 
+ 	bd = ch->ch_bd;
+ 	if(!bd)
+diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
+index c9b64e7..f10e953 100644
+--- a/drivers/serial/serial_core.c
++++ b/drivers/serial/serial_core.c
+@@ -50,7 +50,7 @@ static struct lock_class_key port_lock_key;
+ 
+ #define HIGH_BITS_OFFSET	((sizeof(long)-sizeof(int))*8)
+ 
+-#define uart_users(state)	((state)->count + ((state)->info ? (state)->info->blocked_open : 0))
++#define uart_users(state)	((state)->count + ((state)->info ? (state)->info->port.blocked_open : 0))
+ 
+ #ifdef CONFIG_SERIAL_CORE_CONSOLE
+ #define uart_console(port)	((port)->cons && (port)->cons->index == (port)->line)
+@@ -113,7 +113,7 @@ static void uart_start(struct tty_struct *tty)
+ static void uart_tasklet_action(unsigned long data)
+ {
+ 	struct uart_state *state = (struct uart_state *)data;
+-	tty_wakeup(state->info->tty);
++	tty_wakeup(state->info->port.tty);
  }
  
--/*  info->count is considered critical, protected by spinlocks.  */
-+/*  info->port.count is considered critical, protected by spinlocks.  */
- static int block_til_ready(struct tty_struct *tty, struct file *filp,
- 			   struct r_port *info)
+ static inline void
+@@ -135,7 +135,7 @@ uart_update_mctrl(struct uart_port *port, unsigned int set, unsigned int clear)
+ 
+ /*
+  * Startup the port.  This will be called once per open.  All calls
+- * will be serialised by the per-port semaphore.
++ * will be serialised by the per-port mutex.
+  */
+ static int uart_startup(struct uart_state *state, int init_hw)
  {
-@@ -897,13 +897,13 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
- 
- 	/*
- 	 * Block waiting for the carrier detect and the line to become free.  While we are in
--	 * this loop, info->count is dropped by one, so that rp_close() knows when to free things.  
-+	 * this loop, info->port.count is dropped by one, so that rp_close() knows when to free things.  
-          * We restore it upon exit, either normal or abnormal.
+@@ -152,7 +152,7 @@ static int uart_startup(struct uart_state *state, int init_hw)
+ 	 * once we have successfully opened the port.  Also set
+ 	 * up the tty->alt_speed kludge
  	 */
- 	retval = 0;
--	add_wait_queue(&info->open_wait, &wait);
-+	add_wait_queue(&info->port.open_wait, &wait);
- #ifdef ROCKET_DEBUG_OPEN
--	printk(KERN_INFO "block_til_ready before block: ttyR%d, count = %d\n", info->line, info->count);
-+	printk(KERN_INFO "block_til_ready before block: ttyR%d, count = %d\n", info->line, info->port.count);
- #endif
- 	spin_lock_irqsave(&info->slock, flags);
+-	set_bit(TTY_IO_ERROR, &info->tty->flags);
++	set_bit(TTY_IO_ERROR, &info->port.tty->flags);
  
-@@ -912,10 +912,10 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
- #else
- 	if (!tty_hung_up_p(filp)) {
- 		extra_count = 1;
--		info->count--;
-+		info->port.count--;
+ 	if (port->type == PORT_UNKNOWN)
+ 		return 0;
+@@ -162,6 +162,7 @@ static int uart_startup(struct uart_state *state, int init_hw)
+ 	 * buffer.
+ 	 */
+ 	if (!info->xmit.buf) {
++		/* This is protected by the per port mutex */
+ 		page = get_zeroed_page(GFP_KERNEL);
+ 		if (!page)
+ 			return -ENOMEM;
+@@ -182,20 +183,20 @@ static int uart_startup(struct uart_state *state, int init_hw)
+ 			 * Setup the RTS and DTR signals once the
+ 			 * port is open and ready to respond.
+ 			 */
+-			if (info->tty->termios->c_cflag & CBAUD)
++			if (info->port.tty->termios->c_cflag & CBAUD)
+ 				uart_set_mctrl(port, TIOCM_RTS | TIOCM_DTR);
+ 		}
+ 
+ 		if (info->flags & UIF_CTS_FLOW) {
+ 			spin_lock_irq(&port->lock);
+ 			if (!(port->ops->get_mctrl(port) & TIOCM_CTS))
+-				info->tty->hw_stopped = 1;
++				info->port.tty->hw_stopped = 1;
+ 			spin_unlock_irq(&port->lock);
+ 		}
+ 
+ 		info->flags |= UIF_INITIALIZED;
+ 
+-		clear_bit(TTY_IO_ERROR, &info->tty->flags);
++		clear_bit(TTY_IO_ERROR, &info->port.tty->flags);
  	}
+ 
+ 	if (retval && capable(CAP_SYS_ADMIN))
+@@ -217,8 +218,8 @@ static void uart_shutdown(struct uart_state *state)
+ 	/*
+ 	 * Set the TTY IO error marker
+ 	 */
+-	if (info->tty)
+-		set_bit(TTY_IO_ERROR, &info->tty->flags);
++	if (info->port.tty)
++		set_bit(TTY_IO_ERROR, &info->port.tty->flags);
+ 
+ 	if (info->flags & UIF_INITIALIZED) {
+ 		info->flags &= ~UIF_INITIALIZED;
+@@ -226,7 +227,7 @@ static void uart_shutdown(struct uart_state *state)
+ 		/*
+ 		 * Turn off DTR and RTS early.
+ 		 */
+-		if (!info->tty || (info->tty->termios->c_cflag & HUPCL))
++		if (!info->port.tty || (info->port.tty->termios->c_cflag & HUPCL))
+ 			uart_clear_mctrl(port, TIOCM_DTR | TIOCM_RTS);
+ 
+ 		/*
+@@ -426,7 +427,7 @@ EXPORT_SYMBOL(uart_get_divisor);
+ static void
+ uart_change_speed(struct uart_state *state, struct ktermios *old_termios)
+ {
+-	struct tty_struct *tty = state->info->tty;
++	struct tty_struct *tty = state->info->port.tty;
+ 	struct uart_port *port = state->port;
+ 	struct ktermios *termios;
+ 
+@@ -834,8 +835,8 @@ static int uart_set_info(struct uart_state *state,
+ 	state->closing_wait    = closing_wait;
+ 	if (new_serial.xmit_fifo_size)
+ 		port->fifosize = new_serial.xmit_fifo_size;
+-	if (state->info->tty)
+-		state->info->tty->low_latency =
++	if (state->info->port.tty)
++		state->info->port.tty->low_latency =
+ 			(port->flags & UPF_LOW_LATENCY) ? 1 : 0;
+ 
+  check_and_exit:
+@@ -855,7 +856,7 @@ static int uart_set_info(struct uart_state *state,
+ 				printk(KERN_NOTICE
+ 				       "%s sets custom speed on %s. This "
+ 				       "is deprecated.\n", current->comm,
+-				       tty_name(state->info->tty, buf));
++				       tty_name(state->info->port.tty, buf));
+ 			}
+ 			uart_change_speed(state, NULL);
+ 		}
+@@ -887,7 +888,7 @@ static int uart_get_lsr_info(struct uart_state *state,
+ 	 */
+ 	if (port->x_char ||
+ 	    ((uart_circ_chars_pending(&state->info->xmit) > 0) &&
+-	     !state->info->tty->stopped && !state->info->tty->hw_stopped))
++	     !state->info->port.tty->stopped && !state->info->port.tty->hw_stopped))
+ 		result &= ~TIOCSER_TEMT;
+ 
+ 	return put_user(result, value);
+@@ -1237,7 +1238,7 @@ static void uart_set_termios(struct tty_struct *tty,
+ 	 */
+ 	if (!(old_termios->c_cflag & CLOCAL) &&
+ 	    (tty->termios->c_cflag & CLOCAL))
+-		wake_up_interruptible(&state->info->open_wait);
++		wake_up_interruptible(&state->info->port.open_wait);
  #endif
+ }
+ 
+@@ -1318,9 +1319,9 @@ static void uart_close(struct tty_struct *tty, struct file *filp)
+ 	tty_ldisc_flush(tty);
+ 
+ 	tty->closing = 0;
+-	state->info->tty = NULL;
++	state->info->port.tty = NULL;
+ 
+-	if (state->info->blocked_open) {
++	if (state->info->port.blocked_open) {
+ 		if (state->close_delay)
+ 			msleep_interruptible(state->close_delay);
+ 	} else if (!uart_console(port)) {
+@@ -1331,7 +1332,7 @@ static void uart_close(struct tty_struct *tty, struct file *filp)
+ 	 * Wake up anyone trying to open this port.
+ 	 */
+ 	state->info->flags &= ~UIF_NORMAL_ACTIVE;
+-	wake_up_interruptible(&state->info->open_wait);
++	wake_up_interruptible(&state->info->port.open_wait);
+ 
+  done:
+ 	mutex_unlock(&state->mutex);
+@@ -1415,8 +1416,8 @@ static void uart_hangup(struct tty_struct *tty)
+ 		uart_shutdown(state);
+ 		state->count = 0;
+ 		state->info->flags &= ~UIF_NORMAL_ACTIVE;
+-		state->info->tty = NULL;
+-		wake_up_interruptible(&state->info->open_wait);
++		state->info->port.tty = NULL;
++		wake_up_interruptible(&state->info->port.open_wait);
+ 		wake_up_interruptible(&state->info->delta_msr_wait);
+ 	}
+ 	mutex_unlock(&state->mutex);
+@@ -1430,7 +1431,7 @@ static void uart_hangup(struct tty_struct *tty)
+  */
+ static void uart_update_termios(struct uart_state *state)
+ {
+-	struct tty_struct *tty = state->info->tty;
++	struct tty_struct *tty = state->info->port.tty;
+ 	struct uart_port *port = state->port;
+ 
+ 	if (uart_console(port) && port->cons->cflag) {
+@@ -1469,17 +1470,17 @@ uart_block_til_ready(struct file *filp, struct uart_state *state)
+ 	struct uart_port *port = state->port;
+ 	unsigned int mctrl;
+ 
 -	info->blocked_open++;
 +	info->port.blocked_open++;
+ 	state->count--;
  
- 	spin_unlock_irqrestore(&info->slock, flags);
+-	add_wait_queue(&info->open_wait, &wait);
++	add_wait_queue(&info->port.open_wait, &wait);
+ 	while (1) {
+ 		set_current_state(TASK_INTERRUPTIBLE);
  
-@@ -940,24 +940,24 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
- 		}
- #ifdef ROCKET_DEBUG_OPEN
- 		printk(KERN_INFO "block_til_ready blocking: ttyR%d, count = %d, flags=0x%0x\n",
--		     info->line, info->count, info->flags);
-+		     info->line, info->port.count, info->flags);
- #endif
- 		schedule();	/*  Don't hold spinlock here, will hang PC */
+ 		/*
+ 		 * If we have been hung up, tell userspace/restart open.
+ 		 */
+-		if (tty_hung_up_p(filp) || info->tty == NULL)
++		if (tty_hung_up_p(filp) || info->port.tty == NULL)
+ 			break;
+ 
+ 		/*
+@@ -1498,8 +1499,8 @@ uart_block_til_ready(struct file *filp, struct uart_state *state)
+ 		 * have set TTY_IO_ERROR for a non-existant port.
+ 		 */
+ 		if ((filp->f_flags & O_NONBLOCK) ||
+-		    (info->tty->termios->c_cflag & CLOCAL) ||
+-		    (info->tty->flags & (1 << TTY_IO_ERROR)))
++		    (info->port.tty->termios->c_cflag & CLOCAL) ||
++		    (info->port.tty->flags & (1 << TTY_IO_ERROR)))
+ 			break;
+ 
+ 		/*
+@@ -1507,7 +1508,7 @@ uart_block_til_ready(struct file *filp, struct uart_state *state)
+ 		 * not set RTS here - we want to make sure we catch
+ 		 * the data from the modem.
+ 		 */
+-		if (info->tty->termios->c_cflag & CBAUD)
++		if (info->port.tty->termios->c_cflag & CBAUD)
+ 			uart_set_mctrl(port, TIOCM_DTR);
+ 
+ 		/*
+@@ -1529,15 +1530,15 @@ uart_block_til_ready(struct file *filp, struct uart_state *state)
+ 			break;
  	}
- 	__set_current_state(TASK_RUNNING);
+ 	set_current_state(TASK_RUNNING);
 -	remove_wait_queue(&info->open_wait, &wait);
 +	remove_wait_queue(&info->port.open_wait, &wait);
  
- 	spin_lock_irqsave(&info->slock, flags);
- 
- 	if (extra_count)
--		info->count++;
+ 	state->count++;
 -	info->blocked_open--;
-+		info->port.count++;
 +	info->port.blocked_open--;
  
- 	spin_unlock_irqrestore(&info->slock, flags);
+ 	if (signal_pending(current))
+ 		return -ERESTARTSYS;
  
- #ifdef ROCKET_DEBUG_OPEN
- 	printk(KERN_INFO "block_til_ready after blocking: ttyR%d, count = %d\n",
--	       info->line, info->count);
-+	       info->line, info->port.count);
- #endif
- 	if (retval)
- 		return retval;
-@@ -1001,9 +1001,9 @@ static int rp_open(struct tty_struct *tty, struct file *filp)
- 		info->xmit_buf = (unsigned char *) page;
+-	if (!info->tty || tty_hung_up_p(filp))
++	if (!info->port.tty || tty_hung_up_p(filp))
+ 		return -EAGAIN;
  
- 	tty->driver_data = info;
--	info->tty = tty;
-+	info->port.tty = tty;
- 
--	if (info->count++ == 0) {
-+	if (info->port.count++ == 0) {
- 		atomic_inc(&rp_num_ports_open);
- 
- #ifdef ROCKET_DEBUG_OPEN
-@@ -1012,7 +1012,7 @@ static int rp_open(struct tty_struct *tty, struct file *filp)
- #endif
+ 	return 0;
+@@ -1560,10 +1561,13 @@ static struct uart_state *uart_get(struct uart_driver *drv, int line)
+ 		goto err_unlock;
  	}
- #ifdef ROCKET_DEBUG_OPEN
--	printk(KERN_INFO "rp_open ttyR%d, count=%d\n", info->line, info->count);
-+	printk(KERN_INFO "rp_open ttyR%d, count=%d\n", info->line, info->port.count);
- #endif
+ 
++	/* BKL: RACE HERE - LEAK */
++	/* We should move this into the uart_state structure and kill off
++	   this whole complexity */
+ 	if (!state->info) {
+ 		state->info = kzalloc(sizeof(struct uart_info), GFP_KERNEL);
+ 		if (state->info) {
+-			init_waitqueue_head(&state->info->open_wait);
++			init_waitqueue_head(&state->info->port.open_wait);
+ 			init_waitqueue_head(&state->info->delta_msr_wait);
+ 
+ 			/*
+@@ -1620,7 +1624,7 @@ static int uart_open(struct tty_struct *tty, struct file *filp)
+ 	 * be re-entered while allocating the info structure, or while we
+ 	 * request any IRQs that the driver may need.  This also has the nice
+ 	 * side-effect that it delays the action of uart_hangup, so we can
+-	 * guarantee that info->tty will always contain something reasonable.
++	 * guarantee that info->port.tty will always contain something reasonable.
+ 	 */
+ 	state = uart_get(drv, line);
+ 	if (IS_ERR(state)) {
+@@ -1636,7 +1640,7 @@ static int uart_open(struct tty_struct *tty, struct file *filp)
+ 	tty->driver_data = state;
+ 	tty->low_latency = (state->port->flags & UPF_LOW_LATENCY) ? 1 : 0;
+ 	tty->alt_speed = 0;
+-	state->info->tty = tty;
++	state->info->port.tty = tty;
  
  	/*
-@@ -1048,13 +1048,13 @@ static int rp_open(struct tty_struct *tty, struct file *filp)
- 		 * Set up the tty->alt_speed kludge
- 		 */
- 		if ((info->flags & ROCKET_SPD_MASK) == ROCKET_SPD_HI)
--			info->tty->alt_speed = 57600;
-+			info->port.tty->alt_speed = 57600;
- 		if ((info->flags & ROCKET_SPD_MASK) == ROCKET_SPD_VHI)
--			info->tty->alt_speed = 115200;
-+			info->port.tty->alt_speed = 115200;
- 		if ((info->flags & ROCKET_SPD_MASK) == ROCKET_SPD_SHI)
--			info->tty->alt_speed = 230400;
-+			info->port.tty->alt_speed = 230400;
- 		if ((info->flags & ROCKET_SPD_MASK) == ROCKET_SPD_WARP)
--			info->tty->alt_speed = 460800;
-+			info->port.tty->alt_speed = 460800;
- 
- 		configure_r_port(info, NULL);
- 		if (tty->termios->c_cflag & CBAUD) {
-@@ -1076,7 +1076,7 @@ static int rp_open(struct tty_struct *tty, struct file *filp)
- }
- 
- /*
-- *  Exception handler that closes a serial port. info->count is considered critical. 
-+ *  Exception handler that closes a serial port. info->port.count is considered critical. 
-  */
- static void rp_close(struct tty_struct *tty, struct file *filp)
- {
-@@ -1089,14 +1089,14 @@ static void rp_close(struct tty_struct *tty, struct file *filp)
- 		return;
- 
- #ifdef ROCKET_DEBUG_OPEN
--	printk(KERN_INFO "rp_close ttyR%d, count = %d\n", info->line, info->count);
-+	printk(KERN_INFO "rp_close ttyR%d, count = %d\n", info->line, info->port.count);
- #endif
- 
- 	if (tty_hung_up_p(filp))
- 		return;
- 	spin_lock_irqsave(&info->slock, flags);
- 
--	if ((tty->count == 1) && (info->count != 1)) {
-+	if ((tty->count == 1) && (info->port.count != 1)) {
+ 	 * If the port is in the middle of closing, bail out now.
+@@ -2097,8 +2101,8 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *port)
  		/*
- 		 * Uh, oh.  tty->count is 1, which means that the tty
- 		 * structure will be freed.  Info->count should always
-@@ -1105,15 +1105,15 @@ static void rp_close(struct tty_struct *tty, struct file *filp)
- 		 * serial port won't be shutdown.
+ 		 * If that's unset, use the tty termios setting.
  		 */
- 		printk(KERN_WARNING "rp_close: bad serial port count; "
--			"tty->count is 1, info->count is %d\n", info->count);
--		info->count = 1;
-+			"tty->count is 1, info->port.count is %d\n", info->port.count);
-+		info->port.count = 1;
- 	}
--	if (--info->count < 0) {
-+	if (--info->port.count < 0) {
- 		printk(KERN_WARNING "rp_close: bad serial port count for "
--				"ttyR%d: %d\n", info->line, info->count);
--		info->count = 0;
-+				"ttyR%d: %d\n", info->line, info->port.count);
-+		info->port.count = 0;
- 	}
--	if (info->count) {
-+	if (info->port.count) {
- 		spin_unlock_irqrestore(&info->slock, flags);
- 		return;
- 	}
-@@ -1167,11 +1167,11 @@ static void rp_close(struct tty_struct *tty, struct file *filp)
+-		if (state->info && state->info->tty && termios.c_cflag == 0)
+-			termios = *state->info->tty->termios;
++		if (state->info && state->info->port.tty && termios.c_cflag == 0)
++			termios = *state->info->port.tty->termios;
  
- 	clear_bit((info->aiop * 8) + info->chan, (void *) &xmit_flags[info->board]);
+ 		uart_change_pm(state, 0);
+ 		port->ops->set_termios(port, &termios, NULL);
+@@ -2517,8 +2521,8 @@ int uart_remove_one_port(struct uart_driver *drv, struct uart_port *port)
+ 	tty_unregister_device(drv->tty_driver, port->line);
  
--	if (info->blocked_open) {
-+	if (info->port.blocked_open) {
- 		if (info->close_delay) {
- 			msleep_interruptible(jiffies_to_msecs(info->close_delay));
- 		}
--		wake_up_interruptible(&info->open_wait);
-+		wake_up_interruptible(&info->port.open_wait);
- 	} else {
- 		if (info->xmit_buf) {
- 			free_page((unsigned long) info->xmit_buf);
-@@ -1357,13 +1357,13 @@ static int set_config(struct r_port *info, struct rocket_config __user *new_info
- 	info->closing_wait = new_serial.closing_wait;
+ 	info = state->info;
+-	if (info && info->tty)
+-		tty_vhangup(info->tty);
++	if (info && info->port.tty)
++		tty_vhangup(info->port.tty);
  
- 	if ((info->flags & ROCKET_SPD_MASK) == ROCKET_SPD_HI)
--		info->tty->alt_speed = 57600;
-+		info->port.tty->alt_speed = 57600;
- 	if ((info->flags & ROCKET_SPD_MASK) == ROCKET_SPD_VHI)
--		info->tty->alt_speed = 115200;
-+		info->port.tty->alt_speed = 115200;
- 	if ((info->flags & ROCKET_SPD_MASK) == ROCKET_SPD_SHI)
--		info->tty->alt_speed = 230400;
-+		info->port.tty->alt_speed = 230400;
- 	if ((info->flags & ROCKET_SPD_MASK) == ROCKET_SPD_WARP)
--		info->tty->alt_speed = 460800;
-+		info->port.tty->alt_speed = 460800;
- 
- 	configure_r_port(info, NULL);
- 	return 0;
-@@ -1636,13 +1636,13 @@ static void rp_hangup(struct tty_struct *tty)
- 	rp_flush_buffer(tty);
- 	if (info->flags & ROCKET_CLOSING)
- 		return;
--	if (info->count) 
-+	if (info->port.count) 
- 		atomic_dec(&rp_num_ports_open);
- 	clear_bit((info->aiop * 8) + info->chan, (void *) &xmit_flags[info->board]);
- 
--	info->count = 0;
-+	info->port.count = 0;
- 	info->flags &= ~ROCKET_NORMAL_ACTIVE;
--	info->tty = NULL;
-+	info->port.tty = NULL;
- 
- 	cp = &info->channel;
- 	sDisRxFIFO(cp);
-@@ -1653,7 +1653,7 @@ static void rp_hangup(struct tty_struct *tty)
- 	sClrTxXOFF(cp);
- 	info->flags &= ~ROCKET_INITIALIZED;
- 
--	wake_up_interruptible(&info->open_wait);
-+	wake_up_interruptible(&info->port.open_wait);
- }
+ 	/*
+ 	 * All users of this port should now be disconnected from
+diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+index d8f31de..7583c02 100644
+--- a/include/linux/serial_core.h
++++ b/include/linux/serial_core.h
+@@ -343,13 +343,15 @@ typedef unsigned int __bitwise__ uif_t;
+  * stuff here.
+  */
+ struct uart_info {
+-	struct tty_struct	*tty;
++	struct tty_port		port;
+ 	struct circ_buf		xmit;
+ 	uif_t			flags;
  
  /*
-@@ -1762,7 +1762,7 @@ static int rp_write(struct tty_struct *tty,
+  * Definitions for info->flags.  These are _private_ to serial_core, and
+  * are specific to this structure.  They may be queried by low level drivers.
++ *
++ * FIXME: use the ASY_ definitions
+  */
+ #define UIF_CHECK_CD		((__force uif_t) (1 << 25))
+ #define UIF_CTS_FLOW		((__force uif_t) (1 << 26))
+@@ -357,11 +359,7 @@ struct uart_info {
+ #define UIF_INITIALIZED		((__force uif_t) (1 << 31))
+ #define UIF_SUSPENDED		((__force uif_t) (1 << 30))
  
- 	/*  Write remaining data into the port's xmit_buf */
- 	while (1) {
--		if (!info->tty)		/* Seemingly obligatory check... */
-+		if (!info->port.tty)		/* Seemingly obligatory check... */
- 			goto end;
- 		c = min(count, XMIT_BUF_SIZE - info->xmit_cnt - 1);
- 		c = min(c, XMIT_BUF_SIZE - info->xmit_head);
-diff --git a/drivers/char/rocket_int.h b/drivers/char/rocket_int.h
-index 143cc43..3affc48 100644
---- a/drivers/char/rocket_int.h
-+++ b/drivers/char/rocket_int.h
-@@ -1125,11 +1125,9 @@ Warnings: This function writes the data byte without checking to see if
- 
- struct r_port {
- 	int magic;
-+	struct tty_port port;
- 	int line;
--	int flags;
--	int count;
--	int blocked_open;
--	struct tty_struct *tty;
-+	int flags;		/* Don't yet match the ASY_ flags!! */
- 	unsigned int board:3;
- 	unsigned int aiop:2;
- 	unsigned int chan:3;
-@@ -1148,8 +1146,7 @@ struct r_port {
- 	int read_status_mask;
- 	int cps;
- 
--	wait_queue_head_t open_wait;
--	struct completion close_wait;
-+	struct completion close_wait;	/* Not yet matching the core */
- 	spinlock_t slock;
- 	struct mutex write_mtx;
+-	int			blocked_open;
+-
+ 	struct tasklet_struct	tlet;
+-
+-	wait_queue_head_t	open_wait;
+ 	wait_queue_head_t	delta_msr_wait;
  };
+ 
+@@ -438,8 +436,8 @@ int uart_resume_port(struct uart_driver *reg, struct uart_port *port);
+ #define uart_circ_chars_free(circ)	\
+ 	(CIRC_SPACE((circ)->head, (circ)->tail, UART_XMIT_SIZE))
+ 
+-#define uart_tx_stopped(port)		\
+-	((port)->info->tty->stopped || (port)->info->tty->hw_stopped)
++#define uart_tx_stopped(portp)		\
++	((portp)->info->port.tty->stopped || (portp)->info->port.tty->hw_stopped)
+ 
+ /*
+  * The following are helper functions for the low level drivers.
+@@ -450,7 +448,7 @@ uart_handle_sysrq_char(struct uart_port *port, unsigned int ch)
+ #ifdef SUPPORT_SYSRQ
+ 	if (port->sysrq) {
+ 		if (ch && time_before(jiffies, port->sysrq)) {
+-			handle_sysrq(ch, port->info ? port->info->tty : NULL);
++			handle_sysrq(ch, port->info ? port->info->port.tty : NULL);
+ 			port->sysrq = 0;
+ 			return 1;
+ 		}
+@@ -479,7 +477,7 @@ static inline int uart_handle_break(struct uart_port *port)
+ 	}
+ #endif
+ 	if (port->flags & UPF_SAK)
+-		do_SAK(info->tty);
++		do_SAK(info->port.tty);
+ 	return 0;
+ }
+ 
+@@ -502,9 +500,9 @@ uart_handle_dcd_change(struct uart_port *port, unsigned int status)
+ 
+ 	if (info->flags & UIF_CHECK_CD) {
+ 		if (status)
+-			wake_up_interruptible(&info->open_wait);
+-		else if (info->tty)
+-			tty_hangup(info->tty);
++			wake_up_interruptible(&info->port.open_wait);
++		else if (info->port.tty)
++			tty_hangup(info->port.tty);
+ 	}
+ }
+ 
+@@ -517,7 +515,7 @@ static inline void
+ uart_handle_cts_change(struct uart_port *port, unsigned int status)
+ {
+ 	struct uart_info *info = port->info;
+-	struct tty_struct *tty = info->tty;
++	struct tty_struct *tty = info->port.tty;
+ 
+ 	port->icount.cts++;
+ 
+@@ -543,7 +541,7 @@ static inline void
+ uart_insert_char(struct uart_port *port, unsigned int status,
+ 		 unsigned int overrun, unsigned int ch, unsigned int flag)
+ {
+-	struct tty_struct *tty = port->info->tty;
++	struct tty_struct *tty = port->info->port.tty;
+ 
+ 	if ((status & port->ignore_status_mask & ~overrun) == 0)
+ 		tty_insert_flip_char(tty, ch, flag);
 
