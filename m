@@ -1,109 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760779AbYFTV1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758648AbYFTVbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760779AbYFTV1f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 17:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754051AbYFTV10
+	id S1758648AbYFTVbj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 17:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754095AbYFTVb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 17:27:26 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:37134 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752551AbYFTV1Z (ORCPT
+	Fri, 20 Jun 2008 17:31:29 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:5898 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753294AbYFTVb2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 17:27:25 -0400
+	Fri, 20 Jun 2008 17:31:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=mgse806dYP4dBVot6VnO/6kPq38beDBXo5NFWmjzrgRjq3Re3amKE4Tvo8zQGKT+9O
-         gFq+f5HZZfDsTbfV37iXeGr+XB99L75m6wQYbXQXnBOGwyGdQb/kD2n/SbZJuLDxN9/w
-         z2yTi+fCyQF+cMhn2giDIWI7XVF8lh7PIxbGs=
-Message-ID: <19f34abd0806201427h740ca3e7gc2f01c7e34616fd4@mail.gmail.com>
-Date: Fri, 20 Jun 2008 23:27:25 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Len Brown" <lenb@kernel.org>
-Subject: Re: [PATCH] ACPI: don't walk tables if ACPI was disabled
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, "Zhao Yakui" <yakui.zhao@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Alexey Starikovskiy" <astarikovskiy@suse.de>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>,
-       "Bjorn Helgaas" <bjorn.helgaas@hp.com>
-In-Reply-To: <19f34abd0806201340t502ce471n578dd2498a5f1992@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080620135639.GA5073@damson.getinternet.no>
-	 <alpine.LFD.1.10.0806201458500.3027@localhost.localdomain>
-	 <19f34abd0806201340t502ce471n578dd2498a5f1992@mail.gmail.com>
+        h=from:to:cc:date:message-id:subject;
+        b=d+asc/b0gQbRwLY0/wlDTrep4MvILPkJLDi2c6BXDKKDOvxdkFrBn8+FgWZHSsM6AC
+         rqJGY2hYC/+ITy2DNKaEvosTCS6Q+X/k7DXO5QVPKtO/tjImNtjV4bRdCtcaWKOSACGP
+         JQHw+FDH6nrZGen/Uw7nkWk6tZU6rUOzvQRgg=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Fri, 20 Jun 2008 23:33:23 +0200
+Message-Id: <20080620213323.13202.71450.sendpatchset@localhost.localdomain>
+Subject: [PATCH 01/18] ide: add ->read_sff_dma_status method
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 20, 2008 at 10:40 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> On Fri, Jun 20, 2008 at 9:00 PM, Len Brown <lenb@kernel.org> wrote:
->>> @@ -333,6 +333,9 @@ static int __init acpi_rtc_init(void)
->>>  {
->>>       struct device *dev = get_rtc_dev();
->>>
->>> +     if (acpi_disabled)
->>> +             return 0;
->>> +
->>
->> hmm, i would expect dev to be 0 for acpi=off,
->> since pnp_match would fail, no?
->
-> Obviously not. Because Ingo is booting with acpi=off and he still gets
-> a warning about some mutex operation that originates from this very
-> initcall:
->
-> [    3.976213] calling  acpi_rtc_init+0x0/0xd3
-> [    3.980213] ACPI Exception (utmutex-0263): AE_BAD_PARAMETER, Thread
-> F7C50000 could not acquire Mutex [3] [20080321]
->
->
+Add ->read_sff_dma_status method for reading DMA Status register
+and use it instead of ->INB.
 
-Aha. The device in question (PNP0b00) is discovered while doing
-pnpbios_init(), NOT pnpacpi_init:
+While at it:
 
-[    1.712032] initcall pnpacpi_init+0x0/0x80 returned 0 after 3 msecs
-[    1.716032] calling  pnpbios_init+0x0/0x322
-[    1.720032] PnPBIOS: Scanning system for PnP BIOS support...
-[    1.724032] PnPBIOS: Found PnP BIOS installation structure at 0xc00fc550
-[    1.728032] PnPBIOS: PnP BIOS version 1.0, entry 0xf0000:0xc580, dseg 0xf0000
-...
-[    1.876032] pnp 00:03: parse allocated resources
-[    1.880032] pnp 00:03:   add irq 8 flags 0x0
-[    1.884032] pnp 00:03:   add io  0x70-0x71 flags 0x0
-[    1.888032] pnp 00:03: parse resource options
-[    1.892032] pnp 00:03: new independent option
-[    1.896032] device: '00:03': device_add
-[    1.900032] bus: 'pnp': add device 00:03
-[    1.904032] PM: Adding info for pnp:00:03
-[    1.908032] pnp 00:03: Plug and Play BIOS device, IDs PNP0b00 (active)
+* Use inb() directly in ns87415.c::ns87415_dma_end().
 
-So I guess this function, pnpbios_init() needs the check as well. In
-fact, it has this:
+There should be no functional changes caused by this patch.
 
-#ifdef CONFIG_PNPACPI
-        if (!acpi_disabled && !pnpacpi_disabled) {
-                pnpbios_disabled = 1;
-                printk(KERN_INFO "PnPBIOS: Disabled by ACPI PNP\n");
-                return -ENODEV;
-        }
-#endif                          /* CONFIG_ACPI */
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/ide-dma.c      |   12 ++++++------
+ drivers/ide/ide-iops.c     |   10 ++++++++++
+ drivers/ide/pci/ns87415.c  |   13 ++++++++++---
+ drivers/ide/pci/scc_pata.c |    7 +++++++
+ include/linux/ide.h        |    2 ++
+ 5 files changed, 35 insertions(+), 9 deletions(-)
 
-...I guess that should be changed to say if (acpi_disabled ||
-pnpacpi_disabled)? Or... I don't understand the purpose of the
-original test. But it seems to be there since the beginning of time
-(or, well, v2.6.12-rc2).
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Index: b/drivers/ide/ide-dma.c
+===================================================================
+--- a/drivers/ide/ide-dma.c
++++ b/drivers/ide/ide-dma.c
+@@ -334,7 +334,7 @@ static int config_drive_for_dma (ide_dri
+ static int dma_timer_expiry (ide_drive_t *drive)
+ {
+ 	ide_hwif_t *hwif	= HWIF(drive);
+-	u8 dma_stat		= hwif->INB(hwif->dma_status);
++	u8 dma_stat		= hwif->read_sff_dma_status(hwif);
+ 
+ 	printk(KERN_WARNING "%s: dma_timer_expiry: dma status == 0x%02x\n",
+ 		drive->name, dma_stat);
+@@ -369,7 +369,7 @@ void ide_dma_host_set(ide_drive_t *drive
+ {
+ 	ide_hwif_t *hwif	= HWIF(drive);
+ 	u8 unit			= (drive->select.b.unit & 0x01);
+-	u8 dma_stat		= hwif->INB(hwif->dma_status);
++	u8 dma_stat		= hwif->read_sff_dma_status(hwif);
+ 
+ 	if (on)
+ 		dma_stat |= (1 << (5 + unit));
+@@ -472,8 +472,8 @@ int ide_dma_setup(ide_drive_t *drive)
+ 	/* specify r/w */
+ 	hwif->OUTB(reading, hwif->dma_command);
+ 
+-	/* read dma_status for INTR & ERROR flags */
+-	dma_stat = hwif->INB(hwif->dma_status);
++	/* read DMA status for INTR & ERROR flags */
++	dma_stat = hwif->read_sff_dma_status(hwif);
+ 
+ 	/* clear INTR & ERROR flags */
+ 	hwif->OUTB(dma_stat|6, hwif->dma_status);
+@@ -520,7 +520,7 @@ int __ide_dma_end (ide_drive_t *drive)
+ 	/* stop DMA */
+ 	hwif->OUTB(dma_cmd&~1, hwif->dma_command);
+ 	/* get DMA status */
+-	dma_stat = hwif->INB(hwif->dma_status);
++	dma_stat = hwif->read_sff_dma_status(hwif);
+ 	/* clear the INTR & ERROR bits */
+ 	hwif->OUTB(dma_stat|6, hwif->dma_status);
+ 	/* purge DMA mappings */
+@@ -537,7 +537,7 @@ EXPORT_SYMBOL(__ide_dma_end);
+ int ide_dma_test_irq(ide_drive_t *drive)
+ {
+ 	ide_hwif_t *hwif	= HWIF(drive);
+-	u8 dma_stat		= hwif->INB(hwif->dma_status);
++	u8 dma_stat		= hwif->read_sff_dma_status(hwif);
+ 
+ 	/* return 1 if INTR asserted */
+ 	if ((dma_stat & 4) == 4)
+Index: b/drivers/ide/ide-iops.c
+===================================================================
+--- a/drivers/ide/ide-iops.c
++++ b/drivers/ide/ide-iops.c
+@@ -103,6 +103,14 @@ void SELECT_MASK(ide_drive_t *drive, int
+ 		port_ops->maskproc(drive, mask);
+ }
+ 
++static u8 ide_read_sff_dma_status(ide_hwif_t *hwif)
++{
++	if (hwif->host_flags & IDE_HFLAG_MMIO)
++		return readb((void __iomem *)hwif->dma_status);
++	else
++		return inb(hwif->dma_status);
++}
++
+ static void ide_tf_load(ide_drive_t *drive, ide_task_t *task)
+ {
+ 	ide_hwif_t *hwif = drive->hwif;
+@@ -323,6 +331,8 @@ static void ata_output_data(ide_drive_t 
+ 
+ void default_hwif_transport(ide_hwif_t *hwif)
+ {
++	hwif->read_sff_dma_status = ide_read_sff_dma_status;
++
+ 	hwif->tf_load	  = ide_tf_load;
+ 	hwif->tf_read	  = ide_tf_read;
+ 
+Index: b/drivers/ide/pci/ns87415.c
+===================================================================
+--- a/drivers/ide/pci/ns87415.c
++++ b/drivers/ide/pci/ns87415.c
+@@ -63,6 +63,11 @@ static u8 superio_ide_inb (unsigned long
+ 	return inb(port);
+ }
+ 
++static u8 superio_read_sff_dma_status(ide_hwif_t *hwif)
++{
++	return superio_ide_inb(hwif->dma_status);
++}
++
+ static void superio_tf_read(ide_drive_t *drive, ide_task_t *task)
+ {
+ 	struct ide_io_ports *io_ports = &drive->hwif->io_ports;
+@@ -122,6 +127,8 @@ static void __devinit superio_ide_init_i
+ 	tmp = superio_ide_inb(superio_ide_dma_status[port]);
+ 	outb(tmp | 0x66, superio_ide_dma_status[port]);
+ 
++	hwif->read_sff_dma_status = superio_read_sff_dma_status;
++
+ 	hwif->tf_read = superio_tf_read;
+ 
+ 	/* We need to override inb to workaround a SuperIO errata */
+@@ -200,13 +207,13 @@ static int ns87415_dma_end(ide_drive_t *
+ 	u8 dma_stat = 0, dma_cmd = 0;
+ 
+ 	drive->waiting_for_dma = 0;
+-	dma_stat = hwif->INB(hwif->dma_status);
++	dma_stat = hwif->read_sff_dma_status(hwif);
+ 	/* get dma command mode */
+-	dma_cmd = hwif->INB(hwif->dma_command);
++	dma_cmd = inb(hwif->dma_command);
+ 	/* stop DMA */
+ 	outb(dma_cmd & ~1, hwif->dma_command);
+ 	/* from ERRATA: clear the INTR & ERROR bits */
+-	dma_cmd = hwif->INB(hwif->dma_command);
++	dma_cmd = inb(hwif->dma_command);
+ 	outb(dma_cmd | 6, hwif->dma_command);
+ 	/* and free any DMA resources */
+ 	ide_destroy_dmatable(drive);
+Index: b/drivers/ide/pci/scc_pata.c
+===================================================================
+--- a/drivers/ide/pci/scc_pata.c
++++ b/drivers/ide/pci/scc_pata.c
+@@ -126,6 +126,11 @@ static u8 scc_ide_inb(unsigned long port
+ 	return (u8)data;
+ }
+ 
++static u8 scc_read_sff_dma_status(ide_hwif_t *hwif)
++{
++	return (u8)in_be32((void *)hwif->dma_status);
++}
++
+ static void scc_ide_insw(unsigned long port, void *addr, u32 count)
+ {
+ 	u16 *ptr = (u16 *)addr;
+@@ -774,6 +779,8 @@ static void __devinit init_mmio_iops_scc
+ 
+ 	ide_set_hwifdata(hwif, ports);
+ 
++	hwif->read_sff_dma_status = scc_read_sff_dma_status;
++
+ 	hwif->tf_load = scc_tf_load;
+ 	hwif->tf_read = scc_tf_read;
+ 
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -468,6 +468,8 @@ typedef struct hwif_s {
+ 	const struct ide_port_ops	*port_ops;
+ 	const struct ide_dma_ops	*dma_ops;
+ 
++	u8 (*read_sff_dma_status)(struct hwif_s *);
++
+ 	void (*tf_load)(ide_drive_t *, struct ide_task_s *);
+ 	void (*tf_read)(ide_drive_t *, struct ide_task_s *);
+ 
