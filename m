@@ -1,110 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752515AbYFTTv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbYFTTwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752515AbYFTTv5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 15:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbYFTTvs
+	id S1756777AbYFTTwc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 15:52:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbYFTTwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 15:51:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35925 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752249AbYFTTvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 15:51:47 -0400
-Date: Fri, 20 Jun 2008 15:45:40 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: kexec@lists.infradead.org, x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] Limit E820 map when a user-defined memory map is
-	specified
-Message-ID: <20080620194540.GD21235@redhat.com>
-References: <1213977420-1555-1-git-send-email-bwalle@suse.de> <1213977420-1555-4-git-send-email-bwalle@suse.de>
+	Fri, 20 Jun 2008 15:52:24 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:34486 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752077AbYFTTwX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 15:52:23 -0400
+Message-ID: <485C0A97.7020909@keyaccess.nl>
+Date: Fri, 20 Jun 2008 21:52:55 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1213977420-1555-4-git-send-email-bwalle@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Pierre Ossman <drzeus@drzeus.cx>
+CC: Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       ALSA devel <alsa-devel@alsa-project.org>, mulix@mulix.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [alsa-devel] looping S/PDIF data
+References: <20080531112606.5884a1c9@mjolnir.drzeus.cx>	<20080617215504.3203a5ed@mjolnir.drzeus.cx>	<4858B84B.4030800@keyaccess.nl>	<s5hej6t91u1.wl%tiwai@suse.de>	<Pine.LNX.4.61.0806191435270.1798@tm8103-a.perex-int.cz>	<s5hskv97fqk.wl%tiwai@suse.de> <20080620214516.28e9d3f3@mjolnir.drzeus.cx>
+In-Reply-To: <20080620214516.28e9d3f3@mjolnir.drzeus.cx>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 20, 2008 at 05:57:00PM +0200, Bernhard Walle wrote:
-> This patch brings back limiting of the E820 map when a user-defined
-> E820 map is specified. While the behaviour of i386 (32 bit) was to limit
-> the E820 map (and /proc/iomem), the behaviour of x86-64 (64 bit) was not to
-> limit.
-> 
-> That patch limits the E820 map again for both x86 architectures.
-> 
-> Code was tested for compilation and booting on a 32 bit and 64 bit system.
-> 
-> 
-> Signed-off-by: Bernhard Walle <bwalle@suse.de>
-> ---
->  arch/x86/kernel/e820.c |   30 ++++++++++++++++++++++++++++++
->  1 files changed, 30 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-> index f5b1736..2e7d385 100644
-> --- a/arch/x86/kernel/e820.c
-> +++ b/arch/x86/kernel/e820.c
-> @@ -934,6 +934,33 @@ static void early_panic(char *msg)
->  	panic(msg);
->  }
->  
-> +void __init e820_limit_regions(unsigned long long size)
-> +{
-> +	unsigned long long current_addr;
-> +	int i;
-> +
-> +	for (i = 0; i < e820.nr_map; i++) {
-> +		current_addr = e820.map[i].addr + e820.map[i].size;
-> +		if (current_addr < size)
-> +			continue;
-> +
-> +		if (e820.map[i].type != E820_RAM)
-> +			continue;
-> +
-> +		if (e820.map[i].addr >= size) {
-> +			/*
-> +			 * This region starts past the end of the
-> +			 * requested size, skip it completely.
-> +			 */
-> +			e820.nr_map = i;
-> +		} else {
-> +			e820.nr_map = i + 1;
-> +			e820.map[i].size -= current_addr - size;
-> +		}
-> +		return;
-> +	}
-> +}
-> +
->  /* "mem=nopentium" disables the 4MB page tables. */
->  static int __init parse_memopt(char *p)
->  {
-> @@ -951,6 +978,8 @@ static int __init parse_memopt(char *p)
->  
->  	mem_size = memparse(p, &p);
->  	end_user_pfn = mem_size>>PAGE_SHIFT;
-> +	e820_limit_regions(mem_size);
-> +
->  	return 0;
->  }
->  early_param("mem", parse_memopt);
-> @@ -995,6 +1024,7 @@ static int __init parse_memmap_opt(char *p)
->  		e820_add_region(start_at, mem_size, E820_RESERVED);
->  	} else {
->  		end_user_pfn = (mem_size >> PAGE_SHIFT);
-> +		e820_limit_regions(mem_size);
->  	}
+On 20-06-08 21:45, Pierre Ossman wrote:
 
-Hi Bernhard,
+> On Thu, 19 Jun 2008 14:48:19 +0200
+> Takashi Iwai <tiwai@suse.de> wrote:
+> 
+>> At Thu, 19 Jun 2008 14:39:05 +0200 (CEST),
+>> Jaroslav Kysela wrote:
+>>> I don't think that this patch is correct. DMA transfers should be disabled 
+>>> by:
+>>>
+>>> outl(what, TRID_REG(trident, T4D_STOP_B));
+>>> outl(val, TRID_REG(trident, T4D_AINTEN_B));
+>> They are already in the trigger callback as long as I saw the code
+>> quickly.  So the problem should be somewhere else.
+>>
+>>> lines. Adding &= ~SPDIF_EN can disable output from AC97 to S/PDIF as well.
+>> That's true.
+>>
+>> Anyway, if you are up now, I'll let you hunt further as you are the
+>> author of the driver :)
+>>
+> 
+> Are there any specs on this hardware? I could play around a bit myself,
+> but I can't really find any documentation on the registers.
 
-Just curious, when do we hit this bottom else condition?
+At:
 
-In Documentation/kernel-parameters.txt file, I see, there are four
-types of memmap= options. "exactmap" "@" "#" and "$". In the code
-above we have already parsed all these option. So default condition
-should be an error. Instead we seem to be limiting the memory size,
-(something done by mem= parameter)..
+ftp://ftp.alsa-project.org/pub/manuals/trident/
 
-Thanks
-Vivek
+there's a 4D-Wave DX technical reference manual and .doc files which at 
+first glance look useful.
+
+Rene.
