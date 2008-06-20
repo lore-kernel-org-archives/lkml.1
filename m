@@ -1,107 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758994AbYFTRut@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760127AbYFTRwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758994AbYFTRut (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 13:50:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbYFTRul
+	id S1760127AbYFTRwS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 13:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbYFTRwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 13:50:41 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:53500 "EHLO fieldses.org"
+	Fri, 20 Jun 2008 13:52:09 -0400
+Received: from mba.ocn.ne.jp ([122.1.235.107]:52610 "EHLO smtp.mba.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752652AbYFTRuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 13:50:39 -0400
-Date: Fri, 20 Jun 2008 13:50:36 -0400
-To: Jeff Layton <jlayton@redhat.com>
-Cc: Neil Brown <neilb@suse.de>, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH - take 2] knfsd: nfsd: Handle ERESTARTSYS from syscalls.
-Message-ID: <20080620175036.GC563@fieldses.org>
-References: <20080619101025.24263.patches@notabene> <1080619001109.24338@suse.de> <20080618210947.2110a541@tleilax.poochiereds.net> <18521.50300.572838.123366@notabene.brown> <20080619063824.00ca6381@tleilax.poochiereds.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080619063824.00ca6381@tleilax.poochiereds.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	id S1752888AbYFTRwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 13:52:08 -0400
+Date: Sat, 21 Jun 2008 02:53:34 +0900 (JST)
+Message-Id: <20080621.025334.25909435.anemo@mba.ocn.ne.jp>
+To: sr@denx.de
+Cc: linux-mtd@lists.infradead.org, dwmw2@infradead.org,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH] jedec_probe: Fix SST 16-bit chip detection
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <200806200708.37974.sr@denx.de>
+References: <20080619.163648.262833678.nemoto@toshiba-tops.co.jp>
+	<1213896113.26255.1434.camel@pmac.infradead.org>
+	<200806200708.37974.sr@denx.de>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 19, 2008 at 06:38:24AM -0400, Jeff Layton wrote:
-> On Thu, 19 Jun 2008 12:29:16 +1000
-> Neil Brown <neilb@suse.de> wrote:
+On Fri, 20 Jun 2008 07:08:37 +0200, Stefan Roese <sr@denx.de> wrote:
+> > I believe you about the uaddr -- but can these devices really not be
+> > used in 8-bit mode?
 > 
-> > On Wednesday June 18, jlayton@redhat.com wrote:
-> > > 
-> > > No objection to the patch, but what signal was being sent to nfsd when
-> > > you saw this? If it's anything but a SIGKILL, then I wonder if we have
-> > > a race that we need to deal with. My understanding is that we have nfsd
-> > > flip between 2 sigmasks to prevent anything but a SIGKILL from being
-> > > delivered while we're handling the local filesystem operation.
-> > 
-> > SuSE /etc/init.d/nfsserver does
-> > 
-> >         killproc -n -KILL nfsd 
-> > 
-> > so it looks like a SIGKILL.
-> > 
-> > 
-> > > 
-> > > From nfsd():
-> > > 
-> > > ----------[snip]-----------
-> > >                 sigprocmask(SIG_SETMASK, &shutdown_mask, NULL);
-> > > 
-> > >                 /*
-> > >                  * Find a socket with data available and call its
-> > >                  * recvfrom routine.
-> > >                  */
-> > >                 while ((err = svc_recv(rqstp, 60*60*HZ)) == -EAGAIN)
-> > >                         ;
-> > >                 if (err < 0)
-> > >                         break;
-> > >                 update_thread_usage(atomic_read(&nfsd_busy));
-> > >                 atomic_inc(&nfsd_busy);
-> > > 
-> > >                 /* Lock the export hash tables for reading. */
-> > >                 exp_readlock();
-> > > 
-> > >                 /* Process request with signals blocked.  */
-> > >                 sigprocmask(SIG_SETMASK, &allowed_mask, NULL);
-> > > 
-> > >                 svc_process(rqstp);
-> > > 
-> > > ----------[snip]-----------
-> > > 
-> > > What happens if this catches a SIGINT after the err<0 check, but before
-> > > the mask is set to allowed_mask? Does svc_process() then get called with
-> > > a signal pending?
-> > 
-> > Yes, I suspect it does.
-> > 
-> > I wonder why we have all this mucking about this signal masks anyway.
-> > Anyone have any ideas about what it actually achieves?
-> > 
-> 
-> HCH asked me the same question when I did the conversion to kthreads.
-> My interpretation (based on guesswork here) was that we wanted to
-> distinguish between SIGKILL and other allowed signals. A SIGKILL is
-> allowed to interrupt the underlying I/O, but other signals should not.
-> 
-> The question to answer here, I suppose, is whether masking a pending
-> signal is sufficient to make signal_pending() return false. If I'm
-> looking correctly then the answer should be "yes".
+> No. They are 16-bit only.
 
-Just looking out of curiosity: signal_pending() checks whether some
-thread_info->flags has TIF_SIGPENDING set.
+Right.  They do not have BYTE# pin, according to their datasheets:
 
-sigprocmask() sets current->blocked to the given set, then calls
-recalc_sigpending(), which (ignoring some freezer and SIGSTOP code that
-I don't understand), clears TIF_SIGPENDING if any pending signals are in
-the newly blocked set.  So, yes.
+http://www.sst.com/downloads/datasheet/S71145.pdf
+http://www.sst.com/downloads/datasheet/S71223.pdf
 
---b.
-
-> So I don't think we
-> have a race here after all. I suspect that if SuSE used a different
-> signal here, that would prevent this from happening. For the record,
-> both RHEL and Fedora's init scripts use SIGINT for this.
+---
+Atsushi Nemoto
