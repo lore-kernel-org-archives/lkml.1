@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757858AbYFTXOs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757948AbYFTXVI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757858AbYFTXOs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 19:14:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755961AbYFTXOi
+	id S1757948AbYFTXVI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 19:21:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756007AbYFTXUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 19:14:38 -0400
-Received: from h155.mvista.com ([63.81.120.155]:59092 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755727AbYFTXOh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 19:14:37 -0400
-Message-ID: <485C39D6.6020801@ru.mvista.com>
-Date: Sat, 21 Jun 2008 03:14:30 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Fri, 20 Jun 2008 19:20:54 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:64747 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755684AbYFTXUx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 19:20:53 -0400
+Date: Fri, 20 Jun 2008 16:15:12 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Louis Rilling <louis.rilling@kerlabs.com>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oracle.com
+Subject: Re: [RFC][PATCH v2] configfs: Provide variants of
+	config_*_init_type_name() that report errors
+Message-ID: <20080620231512.GG21416@mail.oracle.com>
+Mail-Followup-To: Louis Rilling <louis.rilling@kerlabs.com>,
+	linux-kernel@vger.kernel.org, ocfs2-devel@oracle.com
+References: <1213974251-21603-1-git-send-email-louis.rilling@kerlabs.com>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 12/18] ide: use ->tf_load in actual_try_to_identify()
-References: <20080620213323.13202.71450.sendpatchset@localhost.localdomain> <20080620213445.13202.61145.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080620213445.13202.61145.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1213974251-21603-1-git-send-email-louis.rilling@kerlabs.com>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-
-Bartlomiej Zolnierkiewicz wrote:
-> Convert actual_try_to_identify() to use ->tf_load instead of ->OUTB.
->
-> There should be no functional changes caused by this patch.
->
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->   
-[...]
-> Index: b/drivers/ide/ide-probe.c
-> ===================================================================
-> --- a/drivers/ide/ide-probe.c
-> +++ b/drivers/ide/ide-probe.c
-> @@ -290,9 +290,15 @@ static int actual_try_to_identify (ide_d
->  	/* set features register for atapi
->  	 * identify command to be sure of reply
->  	 */
-> -	if ((cmd == WIN_PIDENTIFY))
-> -		/* disable dma & overlap */
-> -		hwif->OUTB(0, io_ports->feature_addr);
-> +	if (cmd == WIN_PIDENTIFY) {
-> +		ide_task_t task;
+On Fri, Jun 20, 2008 at 05:04:11PM +0200, Louis Rilling wrote:
+>  void config_item_init_type_name(struct config_item *item,
+>  				const char *name,
+>  				struct config_item_type *type)
+>  {
+> -	config_item_set_name(item, name);
+> -	item->ci_type = type;
+> -	config_item_init(item);
+> +	int error;
 > +
-> +		memset(&task, 0, sizeof(task));
-> +		/* disable DMA & overlap */
-> +		task.tf_flags = IDE_TFLAG_OUT_FEATURE;
-> +
-> +		drive->hwif->tf_load(drive, &task);
-> +	}
->   
+> +	error = config_item_init_type_long_name(item, name, type);
+> +	BUG_ON(error);
+>  }
 
-   Eww, this is bulky but should be a part of your plan to switch to 
-tf_load() method...
+	This needs to BUG_ON(strlen(name) >= CONIFG_ITEM_NAME_LEN) at
+the top.  We don't want to allow an invalid construct just because
+memory happened to be available :-)
+	Also, update Documentation/filesystems/configfs/configfs.txt.
 
-WBR, Sergei
+Joel
 
+-- 
 
+ "I'm living so far beyond my income that we may almost be said
+ to be living apart."
+         - e e cummings
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
