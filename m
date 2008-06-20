@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757861AbYFTOBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757490AbYFTOGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757861AbYFTOBy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 10:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbYFTOBr
+	id S1757490AbYFTOGS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 10:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754704AbYFTOGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 10:01:47 -0400
-Received: from ns.suse.de ([195.135.220.2]:58867 "EHLO mx1.suse.de"
+	Fri, 20 Jun 2008 10:06:10 -0400
+Received: from ns.suse.de ([195.135.220.2]:59165 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752430AbYFTOBq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 10:01:46 -0400
-Date: Fri, 20 Jun 2008 16:02:23 +0200
+	id S1754260AbYFTOGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 10:06:09 -0400
+Date: Fri, 20 Jun 2008 16:06:45 +0200
 From: Bernhard Walle <bwalle@suse.de>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, yhlu.kernel@gmail.com
+Cc: linux-kernel@vger.kernel.org, yhlu.kernel@gmail.com,
+       the arch/x86 maintainers <x86@kernel.org>
 Subject: Re: [PATCH] Unify crashkernel reservation for 32 and 64 bit
-Message-ID: <20080620160223.4a0f1dd8@halley.suse.de>
-In-Reply-To: <20080620135645.GD8135@elte.hu>
+Message-ID: <20080620160645.4b793593@halley.suse.de>
+In-Reply-To: <20080620135847.GE8135@elte.hu>
 References: <1213969102-17400-1-git-send-email-bwalle@suse.de>
-	<20080620135645.GD8135@elte.hu>
+	<20080620135847.GE8135@elte.hu>
 Organization: SUSE Linux Products GmbH
 X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
 X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
@@ -31,30 +32,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar [2008-06-20 15:56]:
-> * Bernhard Walle <bwalle@suse.de> wrote:
+* Ingo Molnar [2008-06-20 15:58]:
+>
+> also, tip/x86 has a ton of pending changes here already so your patch 
+> does not apply:
 > 
-> > This patch moves the reserve_crashkernel() to setup.c and removes the 
-> > architecture-specific version. Both versions were more or less the 
-> > same.
+>  patching file arch/x86/kernel/setup.c
+>  Hunk #3 FAILED at 406.
+>  1 out of 3 hunks FAILED -- rejects in file arch/x86/kernel/setup.c
+>  patching file arch/x86/kernel/setup_32.c
+>  Hunk #1 FAILED at 429.
+>  1 out of 1 hunk FAILED -- rejects in file arch/x86/kernel/setup_32.c
+>  patching file arch/x86/kernel/setup_64.c
+>  Hunk #1 FAILED at 244.
+>  1 out of 1 hunk FAILED -- rejects in file arch/x86/kernel/setup_64.c
+>  patching file include/asm-x86/setup.h
+>  Hunk #1 FAILED at 8.
+>  1 out of 1 hunk FAILED -- rejects in file include/asm-x86/setup.h
 > 
-> famous last words :)
+> you can pick up tip/master via:
 > 
-> can you see any functionality difference between them? If yes, that 
-> should be declared.
+>   http://people.redhat.com/mingo/tip.git/README
 
-The only difference was the calculation of memory -- it's more
-complicated on i386 because of high memory support, so that was
-outsourced to an inline function. However, because the highmem is in
-
-  #ifdef CONFIG_HIGHMEM
-  #endif
-
-and CONFIG_HIGHMEM is off on x86-64, that doesn't matter. Do you see
-another issue?
-
-I tested it on both x86-64 and i386, with CONFIG_KEXEC on and off (so
-that it compiles).
+That applies here without problems.
 
 
 
