@@ -1,101 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933006AbYFTUoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933081AbYFTUpF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933006AbYFTUoi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 16:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763046AbYFTUZb
+	id S933081AbYFTUpF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 16:45:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764035AbYFTU24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 16:25:31 -0400
-Received: from mail-wa4.bigfish.com ([216.32.181.115]:3055 "EHLO
-	mail212-wa4-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1763026AbYFTUZ3 (ORCPT
+	Fri, 20 Jun 2008 16:28:56 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:34250 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764034AbYFTU2y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 16:25:29 -0400
-X-BigFish: VPS3(z1033izzz10d3izzz32i6bh64h)
-X-Spam-TCS-SCL: 3:0
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
-X-WSS-ID: 0K2S2D1-01-8HK-01
-Date: Fri, 20 Jun 2008 22:03:06 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>
-Subject: [PATCH 3/7] x86: pat.c more trivial changes
-Message-ID: <20080620200306.GE4105@alberich.amd.com>
-References: <20080620195503.GB4105@alberich.amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080620195503.GB4105@alberich.amd.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 20 Jun 2008 20:03:08.0434 (UTC) FILETIME=[A8C2DF20:01C8D310]
+	Fri, 20 Jun 2008 16:28:54 -0400
+Subject: Re: [PATCH 1/2] cleanup e820_setup_gap
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "Brown, Len" <len.brown@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <86802c440806201250g706bb062t2d472ee0637cac4e@mail.gmail.com>
+References: <1213916250.27983.35.camel@promb-2n-dhcp368.eng.vmware.com>
+	 <20080620153220.GD17373@elte.hu>
+	 <1213990711.31598.22.camel@promb-2n-dhcp368.eng.vmware.com>
+	 <86802c440806201250g706bb062t2d472ee0637cac4e@mail.gmail.com>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Fri, 20 Jun 2008 13:28:54 -0700
+Message-Id: <1213993734.31598.27.camel@promb-2n-dhcp368.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2008-06-20 at 12:50 -0700, Yinghai Lu wrote:
+> On Fri, Jun 20, 2008 at 12:38 PM, Alok Kataria <akataria@vmware.com> wrote:
+> > Here is the patch based on tip/master
+> >
+> > Please have a look
+> >
+> > --
+> >
+> > This is a preparatory patch for the next patch in series.
+> > Moves some code from e820_setup_gap to a new function e820_search_gap.
+> > This patch is a part of a bug fix where we walk the ACPI table to calculate
+> > a gap for PCI optional devices.
+> >
+> > Signed-off-by: Alok N Kataria <akataria@vmware.com>
+> >
+> > Index: linux-trees.git/arch/x86/kernel/e820.c
+> > ===================================================================
+> > --- linux-trees.git.orig/arch/x86/kernel/e820.c 2008-06-20 10:32:44.000000000 -0700
+> > +++ linux-trees.git/arch/x86/kernel/e820.c      2008-06-20 12:27:58.000000000 -0700
+> > @@ -442,26 +442,22 @@
+> >  }
+> >
+> >  /*
+> > - * Search for the biggest gap in the low 32 bits of the e820
+> > - * memory space.  We pass this space to PCI to assign MMIO resources
+> > - * for hotplug or unconfigured devices in.
+> > - * Hopefully the BIOS let enough space left.
+> > + * Search for a gap in the e820 memory space from start_addr to 2^32.
+> >  */
+> > -__init void e820_setup_gap(void)
+> > +__init int e820_search_gap(unsigned long *gapstart, unsigned long *gapsize,
+> > +               unsigned long start_addr)
+> >  {
+> > -       unsigned long gapstart, gapsize, round;
+> > -       unsigned long long last;
+> > -       int i;
+> > +       unsigned long last = 0x100000000ull;
+> 
+> why changing "unsigned long long" to "unsigned long" ?
+> it will overflow on 32bit
+> 
 
- - add BUG statement to catch invalid start and end parameters
- - No need to track the actual type in both req_type and actual_type --
-   keep req_type unchanged.
- - removed (IMHO) superfluous comments
+Oops...my bad, it was unsigned long in e820_64.c. Should be more careful
+with these cross ports.
+Thanks for catching it.
+--
 
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
- arch/x86/mm/pat.c |   21 ++++++++-------------
- 1 files changed, 8 insertions(+), 13 deletions(-)
+This is a preparatory patch for the next patch in series.
+Moves some code from e820_setup_gap to a new function e820_search_gap.
+This patch is a part of a bug fix where we walk the ACPI table to calculate
+a gap for PCI optional devices.
 
-diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-index a6507bf..c996a36 100644
---- a/arch/x86/mm/pat.c
-+++ b/arch/x86/mm/pat.c
-@@ -200,7 +200,8 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
- 	unsigned long actual_type;
- 	int err = 0;
+Signed-off-by: Alok N Kataria <akataria@vmware.com>
+
+Index: linux-trees.git/arch/x86/kernel/e820.c
+===================================================================
+--- linux-trees.git.orig/arch/x86/kernel/e820.c	2008-06-20 10:32:44.000000000 -0700
++++ linux-trees.git/arch/x86/kernel/e820.c	2008-06-20 13:23:32.000000000 -0700
+@@ -442,26 +442,22 @@
+ }
  
--	/* Only track when pat_enabled */
-+ 	BUG_ON(start >= end); /* end is exclusive */
+ /*
+- * Search for the biggest gap in the low 32 bits of the e820
+- * memory space.  We pass this space to PCI to assign MMIO resources
+- * for hotplug or unconfigured devices in.
+- * Hopefully the BIOS let enough space left.
++ * Search for a gap in the e820 memory space from start_addr to 2^32.
+  */
+-__init void e820_setup_gap(void)
++__init int e820_search_gap(unsigned long *gapstart, unsigned long *gapsize,
++		unsigned long start_addr)
+ {
+-	unsigned long gapstart, gapsize, round;
+-	unsigned long long last;
+-	int i;
++	unsigned long long last = 0x100000000ull;
++	int i = e820.nr_map;
+ 	int found = 0;
+ 
+-	last = 0x100000000ull;
+-	gapstart = 0x10000000;
+-	gapsize = 0x400000;
+-	i = e820.nr_map;
+ 	while (--i >= 0) {
+ 		unsigned long long start = e820.map[i].addr;
+ 		unsigned long long end = start + e820.map[i].size;
+ 
++		if (end < start_addr)
++			continue;
 +
- 	if (!pat_enabled) {
- 		/* This is identical to page table setting without PAT */
- 		if (new_type) {
-@@ -228,17 +229,13 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
- 		 */
- 		u8 mtrr_type = mtrr_type_lookup(start, end);
+ 		/*
+ 		 * Since "last" is at most 4GB, we know we'll
+ 		 * fit in 32 bits if this condition is true
+@@ -469,15 +465,32 @@
+ 		if (last > end) {
+ 			unsigned long gap = last - end;
  
--		if (mtrr_type == MTRR_TYPE_WRBACK) {
--			req_type = _PAGE_CACHE_WB;
-+		if (mtrr_type == MTRR_TYPE_WRBACK)
- 			actual_type = _PAGE_CACHE_WB;
--		} else {
--			req_type = _PAGE_CACHE_UC_MINUS;
-+		else
- 			actual_type = _PAGE_CACHE_UC_MINUS;
--		}
--	} else {
--		req_type &= _PAGE_CACHE_MASK;
--		actual_type = pat_x_mtrr_type(start, end, req_type);
--	}
-+	} else
-+		actual_type = pat_x_mtrr_type(start, end,
-+					      req_type & _PAGE_CACHE_MASK);
+-			if (gap > gapsize) {
+-				gapsize = gap;
+-				gapstart = end;
++			if (gap >= *gapsize) {
++				*gapsize = gap;
++				*gapstart = end;
+ 				found = 1;
+ 			}
+ 		}
+ 		if (start < last)
+ 			last = start;
+ 	}
++	return found;
++}
++
++/*
++ * Search for the biggest gap in the low 32 bits of the e820
++ * memory space.  We pass this space to PCI to assign MMIO resources
++ * for hotplug or unconfigured devices in.
++ * Hopefully the BIOS let enough space left.
++ */
++__init void e820_setup_gap(void)
++{
++	unsigned long gapstart, gapsize, round;
++	int found;
++
++	gapstart = 0x10000000;
++	gapsize = 0x400000;
++	found  = e820_search_gap(&gapstart, &gapsize, 0);
  
- 	new  = kmalloc(sizeof(struct memtype), GFP_KERNEL);
- 	if (!new)
-@@ -406,10 +403,8 @@ int free_memtype(u64 start, u64 end)
- 	struct memtype *entry;
- 	int err = -EINVAL;
+ #ifdef CONFIG_X86_64
+ 	if (!found) {
+Index: linux-trees.git/include/asm-x86/e820.h
+===================================================================
+--- linux-trees.git.orig/include/asm-x86/e820.h	2008-06-20 10:32:44.000000000 -0700
++++ linux-trees.git/include/asm-x86/e820.h	2008-06-20 12:18:40.000000000 -0700
+@@ -69,6 +69,8 @@
+ 			       unsigned new_type);
+ extern void update_e820(void);
+ extern void e820_setup_gap(void);
++extern int e820_search_gap(unsigned long *gapstart, unsigned long *gapsize,
++				unsigned long start_addr);
+ struct setup_data;
+ extern void parse_e820_ext(struct setup_data *data, unsigned long pa_data);
  
--	/* Only track when pat_enabled */
--	if (!pat_enabled) {
-+	if (!pat_enabled)
- 		return 0;
--	}
- 
- 	/* Low ISA region is always mapped WB. No need to track */
- 	if (is_ISA_range(start, end - 1))
--- 
-1.5.5.4
+
+
 
 
 
