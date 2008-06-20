@@ -1,61 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755052AbYFTTcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754522AbYFTTge@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755052AbYFTTcB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 15:32:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbYFTTbn
+	id S1754522AbYFTTge (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 15:36:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYFTTg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 15:31:43 -0400
-Received: from louie.udel.edu ([128.4.40.12]:42662 "EHLO mail.eecis.udel.edu"
+	Fri, 20 Jun 2008 15:36:26 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33098 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750938AbYFTTbm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 15:31:42 -0400
-X-Greylist: delayed 1619 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Jun 2008 15:31:42 EDT
-Message-ID: <485BFF43.80404@cis.udel.edu>
-Date: Fri, 20 Jun 2008 15:04:35 -0400
-From: Ezra Kissel <kissel@cis.udel.edu>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
-To: linux-kernel@vger.kernel.org
-Subject: network socket receive splice size
-X-Sanitizer: This message has been sanitized!
-X-Sanitizer-URL: http://mailtools.anomy.net/
-X-Sanitizer-Rev: UDEL-ECECIS: Sanitizer.pm,v 1.64 2002/10/22 MIME-Version: 1.0
+	id S1751419AbYFTTgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 15:36:25 -0400
+Message-ID: <485C064E.5020705@redhat.com>
+Date: Fri, 20 Jun 2008 15:34:38 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       Hideo AOKI <haoki@redhat.com>
+Subject: Re: [RFC][Patch 2/2] markers: example of irq regular kernel markers
+References: <485BE2C6.1080901@redhat.com> <20080620174529.GB10943@Krystal>
+In-Reply-To: <20080620174529.GB10943@Krystal>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am using the splice syscall in kernel 2.6.25.4 with network socket 
-receive to splice incoming and outgoing TCP sockets. I perform something 
-like the following:
+Hi Mathieu,
 
-#define SPLICE_SIZE (12*1024)
+Mathieu Desnoyers wrote:
+> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
+>> Add trace points of irq handle events ported from LTTng's markers.
+>>
+>> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+>> ---
+>> I just rewrote LTTng's irq event by using DEFINE_TRACE for example.
+>>
+>>  include/linux/irq_trace.h |    6 ++++++
+>>  kernel/irq/handle.c       |    6 ++++++
+>>  2 files changed, 12 insertions(+)
+>>
+>> Index: 2.6.26-rc5-mm3/include/linux/irq_trace.h
+>> ===================================================================
+>> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+>> +++ 2.6.26-rc5-mm3/include/linux/irq_trace.h	2008-06-16 12:27:51.000000000 -0400
+>> @@ -0,0 +1,6 @@
+>> +#include <linux/marker.h>
+>> +
+>> +DEFINE_TRACE(irq_entry, (int irq_id, int kernel_mode), irq_id, kernel_mode);
+>> +
+>> +DEFINE_TRACE(irq_exit, (void));
+>> +
+> 
+> All this work look good, thanks Masami! Sorry I did not find time to do
+> it lately, I've been busy on other things. A small question though :
+> since LTTng is configurable both as an external module or as an
+> in-kernel tracer, I wonder if it would really hurt to add the format
+> strings to DEFINE_TRACE, e.g. :
+> 
+> DEFINE_TRACE(name, prototype, format_string, args...)
+> 
+> which would give :
+> 
+> DEFINE_TRACE(irq_entry, (int irq_id, int kernel_mode), "%d %d",
+>     irq_id, kernel_mode);
+> 
+> DEFINE_TRACE(irq_exit, (void), MARK_NOARGS);
+> 
+> and calling this in the kernel code :
+> 
+> trace_irq_entry(irq, (regs)?(!user_mode(regs)):(1));
+> ...
+> trace_irq_exit();
+> 
+> and for quick-and-dirty debug usage, one would add this to kernel code :
+> 
+> trace_mark(subsystem_event, "(int arg, struct task_struct *task)",
+>  "%d %p", arg, current);
 
-int fd[2];
-ret = pipe(fd);
+why would you complicate it? I think.
 
-ret = splice(src, NULL, fd[1], NULL, SPLICE_SIZE, SPLICE_F_MORE | 
-SPLICE_F_MOVE);
+trace_mark(subsystem_event, "arg %d task %p", arg, current);
 
-bytes_left = ret;
+is enough for user-defined markers.
 
-while (bytes_left > 0) {
-   ret = splice(fd[0], NULL, sink, NULL, bytes_left, SPLICE_F_NONBLOCK);
-   bytes_left -= ret;
+> 
+> By doing so, we could leave a gcc format string check by passing the
+> format string to __mark_check_format(). We could extract the field names
+> from the prototype, so there is no need to duplicate field information
+> in the format string.
+
+I thought that someone complained against those format strings in
+kernel code. Thus I removed it from DEFINE_TRACE.
+
+even though, I think you can do that by adding below string table
+to LTTng module.
+
+const char *lookup_table[MAX_MARKERS][2] = {
+{"irq_entry", "%d %d"}, // or "(int irq_id, int kernel_mode)", "%d %d"
+...
+};
+
+
+> 
+> Since the format string information is hidden in a header but kept at
+> the same location as the trace point definition, I think it reaches
+> goals of being "neat", efficient for general purpose tracers and to keep
+> the tracepoint information all in one place so we don't end up adding
+> stuff to various information consumers whenever a new trace point is
+> added.
+
+Hmm, IMHO, there seems no difference between
+
+DEFINE_TRACE(irq_entry, (int irq_id, int kernel_mode), "%d %d",
+     irq_id, kernel_mode);
+
+and
+
+trace_irq_entry(int irq_id, int kernel_mode)
+{
+	trace_mark(irq_entry, "%d %d", irq_id, kernel_mode);
 }
 
-This works well when SPLICE_SIZE is around 12K or lower, but anything 
-much more than that will cause the src splice call to block either right 
-away or after a few iterations. It almost seems as though the pipe 
-buffer is becoming full although I have used poll to check for both 
-sockets and pipe fds before calling splice, and the sink splice call 
-always sends the current number of bytes. I have also tried virtually 
-all combinations of the SPLICE_F_ options without success. Has anyone 
-run into a similar issue with socket-to-socket splicing and larger 
-splice sizes? I would really like to use the full 64K splice size to and 
-from the pipe.
+for me. If so, we'd better use latter because of simplicity:-)
 
-I should mention that the splice test applications do work correctly 
-with 64K splice sizes when splicing to/from a network socket(s) to 
-STDOUT or STDIN. Any thoughts?
+Thank you,
+
+
+> 
+> What do you think of these changes ?
+> 
+> Mathieu
+> 
+> 
+>> Index: 2.6.26-rc5-mm3/kernel/irq/handle.c
+>> ===================================================================
+>> --- 2.6.26-rc5-mm3.orig/kernel/irq/handle.c	2008-06-16 12:27:50.000000000 -0400
+>> +++ 2.6.26-rc5-mm3/kernel/irq/handle.c	2008-06-16 12:27:51.000000000 -0400
+>> @@ -15,6 +15,7 @@
+>>  #include <linux/random.h>
+>>  #include <linux/interrupt.h>
+>>  #include <linux/kernel_stat.h>
+>> +#include <linux/irq_trace.h>
+>>
+>>  #include "internals.h"
+>>
+>> @@ -130,6 +131,9 @@ irqreturn_t handle_IRQ_event(unsigned in
+>>  {
+>>  	irqreturn_t ret, retval = IRQ_NONE;
+>>  	unsigned int status = 0;
+>> +	struct pt_regs *regs = get_irq_regs();
+>> +
+>> +	trace_irq_entry(irq, (regs)?(!user_mode(regs)):(1));
+>>
+>>  	handle_dynamic_tick(action);
+>>
+>> @@ -148,6 +152,8 @@ irqreturn_t handle_IRQ_event(unsigned in
+>>  		add_interrupt_randomness(irq);
+>>  	local_irq_disable();
+>>
+>> +	trace_irq_exit();
+>> +
+>>  	return retval;
+>>  }
+>>
+>> -- 
+>> Masami Hiramatsu
+>>
+>> Software Engineer
+>> Hitachi Computer Products (America) Inc.
+>> Software Solutions Division
+>>
+>> e-mail: mhiramat@redhat.com
+>>
+> 
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
