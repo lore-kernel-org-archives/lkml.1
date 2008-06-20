@@ -1,84 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753059AbYFTIPE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753470AbYFTIUQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753059AbYFTIPE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 04:15:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbYFTIOu
+	id S1753470AbYFTIUQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 04:20:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbYFTIT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 04:14:50 -0400
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:53853 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751292AbYFTIOs (ORCPT
+	Fri, 20 Jun 2008 04:19:58 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:30983 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751292AbYFTIT5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 04:14:48 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: lmbench regression due to cond_resched nullification change 26-rc5 vs. 25
-Date: Fri, 20 Jun 2008 10:14:43 +0200
-User-Agent: KMail/1.9.9
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
+	Fri, 20 Jun 2008 04:19:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Y5N8a2TV5QFm0HUtUTdB05Q8dbGtjFCZ5nTB9zD7TaBae6fEPCIl1cZ2P0TACLZtyv
+         Yg7Go3u2tX/SXe9M0CHdU03QSWfrGG5d0fy2jeJW5bV4TTgmZic4yWE+mf1BHD2JfdI4
+         KOQwQxmJ9aUZ4H8j5TSIIMhxmzSlqy113qAqQ=
+Message-ID: <d2b9ea600806200119h665dd355u9122a09ce3b91045@mail.gmail.com>
+Date: Fri, 20 Jun 2008 10:19:55 +0200
+From: "Esben Haabendal" <esbenhaabendal@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add support for IRQ_NOAUTOEN in __set_irq_handler
+In-Reply-To: <485AB581.9070509@doredevelopment.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806201014.43576.borntraeger@de.ibm.com>
+References: <485AB581.9070509@doredevelopment.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Linus,
+Currently, IRQ_NOAUTOEN is only supported with request_irq, and not fx.
+set_irq_chained_handler(). As the IRQ_NOAUTOEN flag is silently ignored by
+__set_irq_handler, you risk writing faulty code that start with irq enabled
+although the developer expects irq disabled.
 
-On a 6-way s390 I have seen some interesting regression in 2.6.26-rc5 vs. 
-2.6.25 for the lmbench benchmark.
+If the flag is not handled, wouldn't it make sense to return an error?
 
-For example select file 500:
-23 microseconds
-32 microseconds
+/Esben
 
-Several lmbench tests show a regression but I only bisected the select test 
-case so far:
--------------------------<snip---------------------
-
-commit c714a534d85576af21b06be605ca55cb2fb887ee
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Mon May 12 13:34:13 2008 -0700
-
-    Make 'cond_resched()' nullification depend on PREEMPT_BKL
-
-    Because it's not correct with a non-preemptable BKL and just causes
-    PREEMPT kernels to have longer latencies than non-PREEMPT ones (which is
-    obviously not the point of it at all).
-
-    Of course, that config option actually got removed as an option earlier,
-    so for now this basically disables it entirely, but if BKL preemption is
-    ever resurrected it will be a meaningful optimization.  And in the
-    meantime, it at least documents the intent of the code, while not doing
-    the wrong thing.
-
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 5a63f2d..5395a61 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -2038,7 +2038,7 @@ static inline int need_resched(void)
-  * cond_resched_softirq() will enable bhs before scheduling.
-  */
- extern int _cond_resched(void);
--#ifdef CONFIG_PREEMPT
-+#ifdef CONFIG_PREEMPT_BKL
- static inline int cond_resched(void)
- {
-        return 0;
--------------------------<snip---------------------
-
-Reverting that patch gives me the 2.6.25 performance. 
-
-I think the patch is fine from the correctness point of view (do resched 
-inside BKL protected zones if its safe) but I dont understand why it has a 
-large impact on the select microbenchmark. Any ideas? Is it simply the 
-overhead of _cond_resched?
-
-Christian
+On Thu, Jun 19, 2008 at 9:37 PM, Esben Haabendal <eha@doredevelopment.dk> wrote:
+>
+> Any reason for __set_irq_handler not supporting the IRQ_NOAUTOEN flag?
+>
+> /Esben
+>
+>  kernel/irq/chip.c |   11 ++++++++---
+>  1 files changed, 8 insertions(+), 3 deletions(-)
+>
+> diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
+> index 964964b..42bb163 100644
+> --- a/kernel/irq/chip.c
+> +++ b/kernel/irq/chip.c
+> @@ -584,10 +584,15 @@ __set_irq_handler(unsigned int irq,
+> irq_flow_handler_t handle, int is_chained,
+>        desc->name = name;
+>
+>        if (handle != handle_bad_irq && is_chained) {
+> -               desc->status &= ~IRQ_DISABLED;
+>                desc->status |= IRQ_NOREQUEST | IRQ_NOPROBE;
+> -               desc->depth = 0;
+> -               desc->chip->unmask(irq);
+> +               if (!(desc->status & IRQ_NOAUTOEN)) {
+> +                       desc->depth = 0;
+> +                       desc->status &= ~IRQ_DISABLED;
+> +                       desc->chip->unmask(irq);
+> +               } else {
+> +                       /* Undo nested disables: */
+> +                       desc->depth = 1;
+> +               }
+>        }
+>        spin_unlock_irqrestore(&desc->lock, flags);
+>  }
