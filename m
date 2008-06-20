@@ -1,103 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756772AbYFTNLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbYFTNMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756772AbYFTNLf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 09:11:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754252AbYFTNLK
+	id S1757136AbYFTNMg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 09:12:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754172AbYFTNM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 09:11:10 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:35644 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754058AbYFTNLI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 09:11:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=lnhdGCs3d6n/siqa+FmEoAzo6WdVeLD1KJub4QWkqlXmrHv11DQPjJiQi+J9hh5J7c
-         EslXz+1PUR/t9KeKXPn6XVBk4LR7qSbTH2rhfYYLmg97AvSfWR0tOo7ZHYEkAkvN6MNt
-         G1f3OQ29/W53447yuOhFPOovB+/pSon8Y2Fxo=
-Message-ID: <19f34abd0806200611m27746adao40454f420dfef31b@mail.gmail.com>
-Date: Fri, 20 Jun 2008 15:11:04 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [bug, acpi] BUG: spinlock bad magic on CPU#0, swapper/1, ACPI Exception (utmutex-0263): AE_BAD_PARAMETER
-Cc: linux-kernel@vger.kernel.org, "Len Brown" <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org, "Zhao Yakui" <yakui.zhao@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Alexey Starikovskiy" <astarikovskiy@suse.de>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>
-In-Reply-To: <20080620095247.GA24557@elte.hu>
+	Fri, 20 Jun 2008 09:12:27 -0400
+Received: from www.tglx.de ([62.245.132.106]:46176 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752795AbYFTNMZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 09:12:25 -0400
+Date: Fri, 20 Jun 2008 15:11:23 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
+In-Reply-To: <Pine.LNX.4.55.0806191619560.12929@cliff.in.clinika.pl>
+Message-ID: <alpine.LFD.1.10.0806201507190.3395@apollo.tec.linutronix.de>
+References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806180053.40044.rjw@sisk.pl> <Pine.LNX.4.55.0806180400070.28110@cliff.in.clinika.pl> <200806190011.38548.rjw@sisk.pl> <Pine.LNX.4.55.0806182345380.7802@cliff.in.clinika.pl> <20080619093541.GC15228@elte.hu>
+ <Pine.LNX.4.55.0806191619560.12929@cliff.in.clinika.pl>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080620095247.GA24557@elte.hu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 19 Jun 2008, Maciej W. Rozycki wrote:
+> On Thu, 19 Jun 2008, Ingo Molnar wrote:
+> > * Maciej W. Rozycki <macro@linux-mips.org> wrote:
+> > does PIT programming matter? One detail which might matter and which 
+> > touches IRQ0 generation is the clockevent driver on nohz/highres. See 
+> > arch/x86/kernel/i8253.c:init_pit_timer():
+> > 
+> >         case CLOCK_EVT_MODE_SHUTDOWN:
+> >         case CLOCK_EVT_MODE_UNUSED:
+> >                 if (evt->mode == CLOCK_EVT_MODE_PERIODIC ||
+> >                     evt->mode == CLOCK_EVT_MODE_ONESHOT) {
+> >                         outb_pit(0x30, PIT_MODE);
+> >                         outb_pit(0, PIT_CH0);
+> >                         outb_pit(0, PIT_CH0);
+> >                 }
+> >                 pit_disable_clocksource();
+> >                 break;
+> > 
+> >         case CLOCK_EVT_MODE_ONESHOT:
+> >                 /* One shot setup */
+> >                 pit_disable_clocksource();
+> >                 outb_pit(0x38, PIT_MODE);
+> >                 break;
+> 
+>  It does, though not necessarily in this case.  In principle all this
+> 8254-through-APIC timer validation code assumes the source retriggers
+> automatically and if an edge is lost because the APIC input targeted is
+> masked or not configured yet, another one will follow shortly by itself.  
+> It used to be the case when this code was implemented as we never used any
+> of the single-shot modes of the 8254 back then.
+> 
+>  Is it now possible at the time check_timer() is called the 8254 has been
+> put in one of the single-shot modes?  If so, then additional code has to
+> be put in place either to switch the timer into the periodic mode for the
+> duration of check_timer() or to rearm the timer if in a single-shot mode
+> each time timer_irq_works() is called.
 
-On Fri, Jun 20, 2008 at 11:52 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> -tip auto-testing started triggering this spinlock corruption message
-> yesterday:
->
-> [    3.976213] calling  acpi_rtc_init+0x0/0xd3
-> [    3.980213] ACPI Exception (utmutex-0263): AE_BAD_PARAMETER, Thread F7C50000 could not acquire Mutex [3] [20080321]
+At this point the PIT is in periodic mode.
 
+Let me explain how the timer startup works:
+
+PIT is started in periodic mode
+... basic CPU bring up
+APIC timer initialization (switches PIT off)
 ...
+Highres/Dyntick mode switches local apic timers to one shot mode
 
-> i have found the AE_BAD_PARAMETER in older logs a well, but the spinlock
-> corruption is new and nothing in that area is changed by -tip so i
-> suspect it's a mainline problem as well.
+When the system has C2/C3 or C1E states, then we restart the PIT in
+one shot mode and reprogram it every time when the system goes into
+idle to replace the local apic timer, which stops in those states.
 
-It seems that some acpi calls are made before acpi is even
-initialized, hence the AE_BAD_PARAMETER (ACPI is trying to use
-uninitialized mutexes) -- I think that may be the source of the mutex
-corruption as well.
-
-This probably happens because acpi_early_init() (which happens before
-all the initcalls; mutex initialization too) returns early:
-
-void __init acpi_early_init(void)
-{
-        acpi_status status = AE_OK;
-
-        if (acpi_disabled)
-                return;
-...
-
-I notice that you're booting with acpi=off, so it might be the same
-problem. You could try this patch to find other callers that don't
-check whether ACPI is available before using ACPI-defined mutexes:
-
-diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
-index 235a138..5b34328 100644
---- a/drivers/acpi/osl.c
-+++ b/drivers/acpi/osl.c
-@@ -818,8 +818,7 @@ acpi_status acpi_os_wait_semaphore(acpi_handle handle, u32 u
-        long jiffies;
-        int ret = 0;
-
--       if (!sem || (units < 1))
--               return AE_BAD_PARAMETER;
-+       BUG_ON(!sem || (units < 1));
-
-        if (units > 1)
-                return AE_SUPPORT;
-
-(This will dump the stack instead of printing AE_BAD_PARAMETER in your
-dmesg, so this is guaranteed to halt your machine given that you have
-at least three of these messages in your log already!)
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Thanks,
+	tglx
