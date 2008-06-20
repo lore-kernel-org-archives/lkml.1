@@ -1,116 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761235AbYFTPle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761327AbYFTPmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761235AbYFTPle (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 11:41:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756284AbYFTPlW
+	id S1761327AbYFTPmd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 11:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756593AbYFTPmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 11:41:22 -0400
-Received: from mail.vyatta.com ([216.93.170.194]:58699 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751873AbYFTPlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 11:41:21 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -1.98
-Date: Fri, 20 Jun 2008 08:41:31 -0700
-From: Stephen Hemminger <stephen.hemminger@vyatta.com>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: "Andrew Savchenko" <Bircoph@list.ru>, linux-kernel@vger.kernel.org,
-       "Francois Romieu" <romieu@fr.zoreil.com>,
-       "Linux Netdev List" <netdev@vger.kernel.org>, shemminger@vyatta.com,
-       "Jeff Garzik" <jeff@garzik.org>, sorbica@icplus.com.tw,
-       "Jesse Huang" <jesse@icplus.com.tw>
-Subject: Re: [RFC/PATCH] ipg: add jumbo frame support kconfig option
-Message-ID: <20080620084131.3313abe8@speedy>
-In-Reply-To: <84144f020806200412s5e0225eblbb2001ca139e7fdc@mail.gmail.com>
-References: <200806201037.46687.Bircoph@list.ru>
-	<84144f020806200412s5e0225eblbb2001ca139e7fdc@mail.gmail.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Jun 2008 11:42:23 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:34382 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756544AbYFTPmW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 11:42:22 -0400
+Date: Fri, 20 Jun 2008 11:42:21 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Vegard Nossum <vegard.nossum@gmail.com>
+cc: Matthew Wilcox <matthew@wil.cx>, Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       <linux-kernel@vger.kernel.org>, <dsd@gentoo.org>,
+       <mdharm-usb@one-eyed-alien.net>, <linux-usb@vger.kernel.org>,
+       <vegardno@ifi.uio.no>, <James.Bottomley@hansenpartnership.com>,
+       <linux-scsi@vger.kernel.org>, Greg KH <greg@kroah.com>
+Subject: Re: [RFC/PATCH] usb-storage: wait for device scanning before mounting
+ root
+In-Reply-To: <19f34abd0806200815t49b59df9sd9567b52482eaee3@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0806201130390.2719-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jun 2008 14:12:51 +0300
-"Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
+On Fri, 20 Jun 2008, Vegard Nossum wrote:
 
-> Hi Andrew,
+> Hi,
 > 
-> (Please don't trim the cc.)
-> 
-> On Fri, Jun 20, 2008 at 9:37 AM, Andrew Savchenko <Bircoph@list.ru> wrote:
-> > Hello,
+> On Thu, Jun 19, 2008 at 11:39 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > On Thu, 19 Jun 2008, Matthew Wilcox wrote:
 > >
-> > On Wed, 27 Feb 2008 09:44:44 +0200 (EET), Pekka J Enberg wrote:
-> >> Stephen Hemminger wrote:
-> >> > > Please don't do this as a config option. Config options seem
-> >> > > like a good idea to developers but are difficult for
-> >> > > distributions.  Either support jumbo frames by default or
-> >> > > not at all.
-> >>
-> >> On Tue, 26 Feb 2008, Jeff Garzik wrote:
-> >> > Agreed, but to be more specific... always compile in jumbo
-> >> > frame support. You don't have to enable it at runtime by
-> >> > default, though.
-> >>
-> >> Ok, so a sysfs attribute would be sufficient, I suppose? I don't
-> >> have the hardware though, so I don't even know if the jumbo
-> >> frame code actually works at this point hence the RFC. So I'll
-> >> wait for someone to test this before sending a new patch. Thanks
-> >> for the review!
+> >> This discussion seemed to die off ... did anything ever come of it?
 > >
-> > I own such card:
-> > 02:02.0 Ethernet controller: Sundance Technology Inc / IC Plus Corp
-> > IP1000 Family Gigabit Ethernet (rev 41)
-> > and I use patch similar to yours in order to enable Jumbo Frames.
-> > See attachment for details, patch is done for linux-2.6.25.6.
-> >
-> > It works fine for me. However, I enabled 10K jumbo boxes instead of
-> > default 4K value, activated using your patch. Reason is simple: I
-> > need at least 9000-byte jumbo boxes in my network.
-> >
-> > However, I have one request for you: please, make in possible to
-> > choose max MTU via kernel config option. In different environments
-> > different people may need different max MTU sizes (2K...10K).
-> > Recommended value is 4K (as described in the original driver from
-> > manufacturer, which was remake into kernel's one), but, for
-> > example, I'm interested in larger MTU values. OTOH larger MTU
-> > values require more memory and so on. For me, as for end user of
-> > Linux kernel, a possibility to select desired max MTU is very
-> > attractive and is definitely in no doubt more convenient than
-> > patching the kernel myself each time.
-> >
-> > So, feel free to add jumbo boxes on ipg support to the mainstream
-> > and, please, make in possible to select max MTU; 4K as default
-> > will be fine.
+> > As I recall, it died because the whole notion was very poorly defined
+> > to begin with.  The idea was to stop waiting when all the SCSI buses
+> > had been scanned -- but there's no way to know when that occurs because
+> > new buses can be added at any time.
 > 
-> As I don't have the hardware, I would appreciate if you could test
-> the following quilt tree:
+> Can you please explain why this is?
 > 
->   http://www.kernel.org/pub/linux/kernel/people/penberg/patches/ipg/2.6.26-rc6/
-> 
-> [Note: in case you're not familiar with quilt, the patches need to
->  be applied in the order specified by the quilt 'series' file
->  included there.]
-> 
-> You can enable 10KB jumbo frames either by passing:
-> 
->   ipg.jumbo=10k
-> 
-> to the kernel command line or, alternatively, load the ipg module
-> as follows:
-> 
->   modprobe ipg jumbo=10k
-> 
-> You cannot enable or disable jumbo frame support once the module
-> is loaded so if you want to try out different frame sizes, you
-> first need to unload the module.
-> 
->                            Pekka
+> We only want to scan buses that are present when the system is
+> started. If we reach the point where all USB ports/devices/whatever
+> have been enumerated, all SCSI buses scanned, and all partition tables
+> loaded, what more is there to wait for?
 
-The code should enable/disable anything it needs based on the MTU size
-in the change_mtu call. If the driver needs to reallocate buffers, change receiver
-settings, make sacrifices to deities, or phone home that is the place to do it.
-In other words no compile or config option fro MTU settings please.
+New USB devices can appear at any time.  None are present when the 
+system is started; they are all detected dynamically by the khubd 
+thread.
+
+While I'm not familiar with the details of any other hotpluggable 
+buses (like Firewire), I imagine much the same is true for them.
+
+> I can't understand that this is fundamentally a hardware problem. I
+> understand that there might be a problem with the patch that was
+> proposed a the beginning of the thread, but is this really a truly
+> unsolvable problem? Please correct me if I am wrong -- the problem
+> here is that Pekka's newly introduced nr_root_scans can drop to 0
+> before everything has been enumerated at least once. This is because
+> scsi_scan_host() forks a new thread which is what's actually doing the
+> scanning. Can't we just stick a begin_root_scan() before forking, and
+> drop it inside the thread, just like we do with the
+> usb_stor_scan_thread? If the thread is actually a loop, the first
+> iteration should be enough, right?
+> 
+> I'm grateful for any explanations that will help my poor head understand... :-)
+
+Suppose there are two USB disk drives attached, and the one containing
+the root fs is probed second.  The count could easily drop to 0 when
+the first drive has been scanned, especially if scanning is done
+synchronously.
+
+What happens when the root fs is on a hotpluggable bus that doesn't use
+the SCSI infrastructure?  You'd have to extend your hooks into that
+other subsystem as well.
+
+Besides, why do you want to go to all this trouble to find out
+_exactly_ when the device containing the root fs becomes available?  
+What's wrong with just checking at 1/10-second intervals?
+
+For example, what happens if the USB device containing the root fs
+isn't plugged in when the system boots?  The user will quickly realize
+that nothing is happening and will then plug it in.  But your code will
+already have decided that the device doesn't exist and given up.  
+Wouldn't it be better simply to keep on trying, so that then the device 
+does get plugged in the system can use it?
+
+Alan Stern
+
