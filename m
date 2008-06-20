@@ -1,77 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758215AbYFTRe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758784AbYFTRip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758215AbYFTRe1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 13:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbYFTReT
+	id S1758784AbYFTRip (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 13:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbYFTRih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 13:34:19 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:56470 "EHLO fieldses.org"
+	Fri, 20 Jun 2008 13:38:37 -0400
+Received: from mail.queued.net ([207.210.101.209]:2208 "EHLO mail.queued.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753242AbYFTReT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 13:34:19 -0400
-Date: Fri, 20 Jun 2008 13:34:17 -0400
-To: NeilBrown <neilb@suse.de>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH - take 2] knfsd: nfsd: Handle ERESTARTSYS from syscalls.
-Message-ID: <20080620173417.GB563@fieldses.org>
-References: <20080619101025.24263.patches@notabene> <1080619001109.24338@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1080619001109.24338@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	id S1752395AbYFTRig (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 13:38:36 -0400
+Date: Fri, 20 Jun 2008 13:41:11 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: adaplas@gmail.com, jordan.crouse@amd.com, linux-kernel@vger.kernel.org,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: [PATCH] lxfb: drop dead declarations from header
+Message-ID: <20080620134111.67038f21@xo-debian>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks, applied (and replaced the earlier patch in the for-2.6.27 branch
-at
 
-	git://linux-nfs.org/~bfields/linux.git for-2.6.27
+We never sent the gamma stuff upstream, and don't really care about it.
+However, lx_[gs]_et_gamma prototypes snuck into lxfb.h anyways; there
+are no definitions for them.  Drop the dead code.
 
-I saw sort of curious if I could convince myself to go through this
-cycle only appending to that branch.  I guess not.  Maybe next time.)
+Signed-off-by: Andres Salomon <dilinger@debian.org>
+---
+ drivers/video/geode/lxfb.h |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
---b.
+diff --git a/drivers/video/geode/lxfb.h b/drivers/video/geode/lxfb.h
+index 3b9416f..6a51448 100644
+--- a/drivers/video/geode/lxfb.h
++++ b/drivers/video/geode/lxfb.h
+@@ -51,8 +51,6 @@ static inline unsigned int lx_get_pitch(unsigned int xres, int bpp)
+ }
+ 
+ void lx_set_mode(struct fb_info *);
+-void lx_get_gamma(struct fb_info *, unsigned int *, int);
+-void lx_set_gamma(struct fb_info *, unsigned int *, int);
+ unsigned int lx_framebuffer_size(void);
+ int lx_blank_display(struct fb_info *, int);
+ void lx_set_palette_reg(struct fb_info *, unsigned int, unsigned int,
+-- 
+1.5.5.3
 
-On Thu, Jun 19, 2008 at 10:11:09AM +1000, NeilBrown wrote:
-> 
-> OCFS2 can return -ERESTARTSYS from write requests (and possibly
-> elsewhere) if there is a signal pending.
-> 
-> If nfsd is shutdown (by sending a signal to each thread) while there
-> is still an IO load from the client, each thread could handle one last
-> request with a signal pending.  This can result in -ERESTARTSYS
-> which is not understood by nfserrno() and so is reflected back to
-> the client as nfserr_io aka -EIO.  This is wrong.
-> 
-> Instead, interpret ERESTARTSYS to mean "try again later" by returning
-> nfserr_jukebox.  The client will resend and - if the server is
-> restarted - the write will (hopefully) be successful and everyone will
-> be happy.
-> 
->  The symptom that I narrowed down to this was:
->     copy a large file via NFS to an OCFS2 filesystem, and restart
->     the nfs server during the copy.
->     The 'cp' might get an -EIO, and the file will be corrupted -
->     presumably holes in the middle where writes appeared to fail.
-> 
-> 
-> Signed-off-by: Neil Brown <neilb@suse.de>
-> 
-> ### Diffstat output
->  ./fs/nfsd/nfsproc.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff .prev/fs/nfsd/nfsproc.c ./fs/nfsd/nfsproc.c
-> --- .prev/fs/nfsd/nfsproc.c	2008-06-19 10:06:36.000000000 +1000
-> +++ ./fs/nfsd/nfsproc.c	2008-06-19 10:07:58.000000000 +1000
-> @@ -614,6 +614,7 @@ nfserrno (int errno)
->  #endif
->  		{ nfserr_stale, -ESTALE },
->  		{ nfserr_jukebox, -ETIMEDOUT },
-> +		{ nfserr_jukebox, -ERESTARTSYS },
->  		{ nfserr_dropit, -EAGAIN },
->  		{ nfserr_dropit, -ENOMEM },
->  		{ nfserr_badname, -ESRCH },
