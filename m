@@ -1,191 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760131AbYFTRaM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758215AbYFTRe1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760131AbYFTRaM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 13:30:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756979AbYFTR34
+	id S1758215AbYFTRe1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 13:34:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbYFTReT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 13:29:56 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:7076 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756950AbYFTR3z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 13:29:55 -0400
-Subject: Re: [Experimental][PATCH] putback_lru_page rework
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-In-Reply-To: <20080620101352.e1200b8e.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
-	 <20080617163501.7cf411ee.nishimura@mxp.nes.nec.co.jp>
-	 <20080617164709.de4db070.nishimura@mxp.nes.nec.co.jp>
-	 <20080618184000.a855dfe0.kamezawa.hiroyu@jp.fujitsu.com>
-	 <1213813266.6497.14.camel@lts-notebook>
-	 <20080619092242.79648592.kamezawa.hiroyu@jp.fujitsu.com>
-	 <1213886722.6398.29.camel@lts-notebook>
-	 <20080620101352.e1200b8e.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Organization: HP/OSLO
-Date: Fri, 20 Jun 2008 13:10:43 -0400
-Message-Id: <1213981843.6474.68.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Fri, 20 Jun 2008 13:34:19 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:56470 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753242AbYFTReT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 13:34:19 -0400
+Date: Fri, 20 Jun 2008 13:34:17 -0400
+To: NeilBrown <neilb@suse.de>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH - take 2] knfsd: nfsd: Handle ERESTARTSYS from syscalls.
+Message-ID: <20080620173417.GB563@fieldses.org>
+References: <20080619101025.24263.patches@notabene> <1080619001109.24338@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1080619001109.24338@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-06-20 at 10:13 +0900, KAMEZAWA Hiroyuki wrote:
-> Lee-san, this is an additonal one..
-> Not-tested-yet, just by review.
+Thanks, applied (and replaced the earlier patch in the for-2.6.27 branch
+at
 
-OK, I'll test this on my x86_64 platform, which doesn't seem to hit the
-soft lockups.
+	git://linux-nfs.org/~bfields/linux.git for-2.6.27
 
+I saw sort of curious if I could convince myself to go through this
+cycle only appending to that branch.  I guess not.  Maybe next time.)
+
+--b.
+
+On Thu, Jun 19, 2008 at 10:11:09AM +1000, NeilBrown wrote:
 > 
-> Fixing page_lock() <-> zone->lock nesting of bad-behavior.
+> OCFS2 can return -ERESTARTSYS from write requests (and possibly
+> elsewhere) if there is a signal pending.
 > 
-> Before:
->       lock_page()(TestSetPageLocked())
->       spin_lock(zone->lock)
->       unlock_page()
->       spin_unlock(zone->lock)  
-
-Couple of comments:
-* I believe that the locks are acquired in the right order--at least as
-documented in the comments in mm/rmap.c.  
-* The unlocking appears out of order because this function attempts to
-hold the zone lock across a few pages in the pagevec, but must switch to
-a different zone lru lock when it finds a page on a different zone from
-the zone whose lock it is holding--like in the pagevec draining
-functions, altho' they don't need to lock the page.
-
-> After:
->       spin_lock(zone->lock)
->       spin_unlock(zone->lock)
-
-Right.  With your reworked check_move_unevictable_page() [with retry],
-we don't need to lock the page here, any more.  That means we can revert
-all of the changes to pass the mapping back to sys_shmctl() and move the
-call to scan_mapping_unevictable_pages() back to shmem_lock() after
-clearing the address_space's unevictable flag.  We only did that to
-avoid sleeping while holding the shmem_inode_info lock and the
-shmid_kernel's ipc_perm spinlock.  
-
-Shall I handle that, after we've tested this patch?
-
+> If nfsd is shutdown (by sending a signal to each thread) while there
+> is still an IO load from the client, each thread could handle one last
+> request with a signal pending.  This can result in -ERESTARTSYS
+> which is not understood by nfserrno() and so is reflected back to
+> the client as nfserr_io aka -EIO.  This is wrong.
 > 
-> Including nit-pick fix. (I'll ask Kosaki-san to merge this to his 5/5)
+> Instead, interpret ERESTARTSYS to mean "try again later" by returning
+> nfserr_jukebox.  The client will resend and - if the server is
+> restarted - the write will (hopefully) be successful and everyone will
+> be happy.
 > 
-> Hmm...
+>  The symptom that I narrowed down to this was:
+>     copy a large file via NFS to an OCFS2 filesystem, and restart
+>     the nfs server during the copy.
+>     The 'cp' might get an -EIO, and the file will be corrupted -
+>     presumably holes in the middle where writes appeared to fail.
 > 
-> ---
->  mm/vmscan.c |   25 +++++--------------------
->  1 file changed, 5 insertions(+), 20 deletions(-)
 > 
-> Index: test-2.6.26-rc5-mm3/mm/vmscan.c
-> ===================================================================
-> --- test-2.6.26-rc5-mm3.orig/mm/vmscan.c
-> +++ test-2.6.26-rc5-mm3/mm/vmscan.c
-> @@ -1106,7 +1106,7 @@ static unsigned long shrink_inactive_lis
->  		if (nr_taken == 0)
->  			goto done;
->  
-> -		spin_lock(&zone->lru_lock);
-> +		spin_lock_irq(&zone->lru_lock);
-
-1) It appears that the spin_lock() [no '_irq'] was there because irqs
-are disabled a few lines above so that we could use non-atomic
-__count[_zone]_vm_events().  
-﻿2) I think this predates the split lru or unevictable lru patches, so
-these changes are unrelated.
->  		/*
->  		 * Put back any unfreeable pages.
->  		 */
-> @@ -1136,9 +1136,8 @@ static unsigned long shrink_inactive_lis
->  			}
->  		}
->    	} while (nr_scanned < max_scan);
-> -	spin_unlock(&zone->lru_lock);
-> +	spin_unlock_irq(&zone->lru_lock);
->  done:
-> -	local_irq_enable();
->  	pagevec_release(&pvec);
->  	return nr_reclaimed;
->  }
-> @@ -2438,7 +2437,7 @@ static void show_page_path(struct page *
->   */
->  static void check_move_unevictable_page(struct page *page, struct zone *zone)
->  {
-> -
-> +retry:
->  	ClearPageUnevictable(page); /* for page_evictable() */
-We can remove this comment            ^^^^^^^^^^^^^^^^^^^^^^^^^^
-page_evictable() no longer asserts !PageUnevictable(), right?
-
->  	if (page_evictable(page, NULL)) {
->  		enum lru_list l = LRU_INACTIVE_ANON + page_is_file_cache(page);
-> @@ -2455,6 +2454,8 @@ static void check_move_unevictable_page(
->  		 */
->  		SetPageUnevictable(page);
->  		list_move(&page->lru, &zone->lru[LRU_UNEVICTABLE].list);
-> +		if (page_evictable(page, NULL))
-> +			goto retry;
->  	}
->  }
->  
-> @@ -2494,16 +2495,6 @@ void scan_mapping_unevictable_pages(stru
->  				next = page_index;
->  			next++;
->  
-> -			if (TestSetPageLocked(page)) {
-> -				/*
-> -				 * OK, let's do it the hard way...
-> -				 */
-> -				if (zone)
-> -					spin_unlock_irq(&zone->lru_lock);
-> -				zone = NULL;
-> -				lock_page(page);
-> -			}
-> -
->  			if (pagezone != zone) {
->  				if (zone)
->  					spin_unlock_irq(&zone->lru_lock);
-> @@ -2514,8 +2505,6 @@ void scan_mapping_unevictable_pages(stru
->  			if (PageLRU(page) && PageUnevictable(page))
->  				check_move_unevictable_page(page, zone);
->  
-> -			unlock_page(page);
-> -
->  		}
->  		if (zone)
->  			spin_unlock_irq(&zone->lru_lock);
-> @@ -2551,15 +2540,11 @@ void scan_zone_unevictable_pages(struct 
->  		for (scan = 0;  scan < batch_size; scan++) {
->  			struct page *page = lru_to_page(l_unevictable);
->  
-> -			if (TestSetPageLocked(page))
-> -				continue;
-> -
->  			prefetchw_prev_lru_page(page, l_unevictable, flags);
->  
->  			if (likely(PageLRU(page) && PageUnevictable(page)))
->  				check_move_unevictable_page(page, zone);
->  
-> -			unlock_page(page);
->  		}
->  		spin_unlock_irq(&zone->lru_lock);
->  
+> Signed-off-by: Neil Brown <neilb@suse.de>
 > 
-
-I'll let you know how it goes.
-
-Later,
-Lee
-
+> ### Diffstat output
+>  ./fs/nfsd/nfsproc.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff .prev/fs/nfsd/nfsproc.c ./fs/nfsd/nfsproc.c
+> --- .prev/fs/nfsd/nfsproc.c	2008-06-19 10:06:36.000000000 +1000
+> +++ ./fs/nfsd/nfsproc.c	2008-06-19 10:07:58.000000000 +1000
+> @@ -614,6 +614,7 @@ nfserrno (int errno)
+>  #endif
+>  		{ nfserr_stale, -ESTALE },
+>  		{ nfserr_jukebox, -ETIMEDOUT },
+> +		{ nfserr_jukebox, -ERESTARTSYS },
+>  		{ nfserr_dropit, -EAGAIN },
+>  		{ nfserr_dropit, -ENOMEM },
+>  		{ nfserr_badname, -ESRCH },
