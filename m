@@ -1,78 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752768AbYFTG50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753347AbYFTG6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752768AbYFTG50 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 02:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbYFTG5P
+	id S1753347AbYFTG6R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 02:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbYFTG6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 02:57:15 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:44970 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751192AbYFTG5O (ORCPT
+	Fri, 20 Jun 2008 02:58:00 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:5794 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750986AbYFTG6A convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 02:57:14 -0400
-Date: Thu, 19 Jun 2008 23:52:53 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Ben Nizette <bn@niasdigital.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       Satyam Sharma <ssatyam@cse.iitk.ac.in>, Felix Fietkau <nbd@openwrt.org>,
-       Al Viro <viro@ftp.linux.org.uk>, "H. Peter Anvin" <hpa@kernel.org>
-Subject: Re: [RFC PATCHES] Re: Is configfs the right solution for
-	configuration based fs?
-Message-ID: <20080620065253.GA14238@ca-server1.us.oracle.com>
-Mail-Followup-To: Ben Nizette <bn@niasdigital.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	"Luis R. Rodriguez" <mcgrof@gmail.com>,
-	linux-wireless <linux-wireless@vger.kernel.org>,
-	linux kernel <linux-kernel@vger.kernel.org>,
-	Greg KH <greg@kroah.com>, Satyam Sharma <ssatyam@cse.iitk.ac.in>,
-	Felix Fietkau <nbd@openwrt.org>, Al Viro <viro@ftp.linux.org.uk>,
-	"H. Peter Anvin" <hpa@kernel.org>
-References: <43e72e890806081425h4e785800nc618fc1985f9809f@mail.gmail.com> <1213002187.698.62.camel@johannes.berg> <1213056772.4089.42.camel@moss.renham> <20080619024804.GA29765@mail.oracle.com> <1213942750.2336.43.camel@moss.renham>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 20 Jun 2008 02:58:00 -0400
+Message-Id: <485B712C.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Fri, 20 Jun 2008 07:58:20 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Cc: <mingo@elte.hu>, <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>,
+       <hpa@zytor.com>
+Subject: Re: [PATCH] i386: fix vmalloc_sync_all() for Xen
+References: <48591049.76E4.0078.0@novell.com> <485969A4.6090406@goop.org>
+ <485A465D.76E4.0078.0@novell.com> <485A7122.8090200@goop.org>
+ <485A9EF5.76E4.0078.0@novell.com> <485AA296.6070008@goop.org>
+In-Reply-To: <485AA296.6070008@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <1213942750.2336.43.camel@moss.renham>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 20, 2008 at 04:19:10PM +1000, Ben Nizette wrote:
-> Looks great, thx :-).  I'll convert some of my stuff over to this
-> interface and see how it flies in the real world.
+>I think it would be better to separately test whether the vmalloc 
+>mapping is present in the init_mm and skip the syncing loop in that 
+>case, rather than this somewhat convoluted logic to overload the test in 
+>vmalloc_sync_one.
 
-	Excellent.  What is your stuff, btw?  Got code?  Love to see it.
+That's what the x86-64 code does. When I wrote this originally, I tried
+to keep the pre-existing logic as much as possible, so I split out
+vmalloc_sync_one() by mostly moving existing code. I certainly agree
+that this has room for cleaning up (and then possibly including unification
+with x86-64).
 
-> ISTR when I did this I kept the old semantics and used ERR_PTR and
-> friends if things went pear-shaped.  Given the small number of in-tree
-> users needing to be moved over, a more intrusive change for the sake of
-> a cleaner API like you've done is probably a good thing anyway :-)
+>>>> This is a replacement of the BUG_ON() that an earlier patch from you
+>>>> removed: Failure of vmalloc_sync_one() must happen on the first
+>>>> entry or never, and this is what is being checked for here.
+>>>>   
+>>>>       
+>>> Could you add a comment?
+>>>     
+>>
+>> Sure, though there was none originally, and the intention seemed
+>> quite clear to me.
+>
+>Well, looks to me like vmalloc_sync_one can only return NULL iff the 
+>vmalloc mapping is absent in init_mm, so that's going to be invariant 
 
-	Yeah, I like this better than ERR_PTR.
-	If you like the macros, I'll try to make the next merge window
-as well.  So let me know.
+Correct.
 
-joel
+>with respect to any other pgd you pass in.  So I don't think the BUG_ON 
+>will ever fire, and it's unclear what actual logical property it's 
+>testing for.
 
--- 
+My point of adding the BUG_ON() is that in vmalloc_sync_all() it is not
+clear that vmalloc_sync_one() can fail only due to init_mm's page table
+not being appropriately populated. So yes, this BUG_ON() is not
+expected to ever fire - but isn't that a property of all BUG_ON()'s?
 
-"I almost ran over an angel
- He had a nice big fat cigar.
- 'In a sense,' he said, 'You're alone here
- So if you jump, you'd best jump far.'"
+Jan
 
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
