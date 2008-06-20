@@ -1,99 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbYFTT7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756589AbYFTUCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754209AbYFTT7R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 15:59:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbYFTT7F
+	id S1756589AbYFTUCQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 16:02:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbYFTUCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 15:59:05 -0400
-Received: from mail-sin.bigfish.com ([207.46.51.74]:14699 "EHLO
-	mail126-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753001AbYFTT7E (ORCPT
+	Fri, 20 Jun 2008 16:02:05 -0400
+Received: from webmail.chats.mrv.com ([66.43.110.3]:51001 "EHLO
+	chmailsrv.int.mrv.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753002AbYFTUCE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 15:59:04 -0400
-X-BigFish: VPS6(z34a4lzzz10d3izzz32i6bh62h)
-X-Spam-TCS-SCL: 1:0
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
-X-WSS-ID: 0K2S25U-01-8B7-01
-Date: Fri, 20 Jun 2008 21:58:46 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>
-Subject: [PATCH 1/7] x86: introduce macro to check whether an address range
-	is in the ISA range
-Message-ID: <20080620195846.GC4105@alberich.amd.com>
-References: <20080620195503.GB4105@alberich.amd.com>
+	Fri, 20 Jun 2008 16:02:04 -0400
+X-Greylist: delayed 910 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Jun 2008 16:02:04 EDT
+Date: Fri, 20 Jun 2008 12:46:50 -0700
+From: Nye Liu <nyet@mrv.com>
+To: panto@intracom.gr
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/1] CPM1: Don't send break on TX_STOP, don't interrupt
+	RX/TX when adjusting termios parameters
+Message-ID: <20080620194650.GA30019@mrv.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080620195503.GB4105@alberich.amd.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 20 Jun 2008 19:58:49.0002 (UTC) FILETIME=[0E20B0A0:01C8D310]
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 20 Jun 2008 19:48:29.0924 (UTC) FILETIME=[9D20E240:01C8D30E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Nye Liu <nyet@mrv.com>
 
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+Before setting STOP_TX, set _brkcr to 0 so the SMC does not send a break
+character. The driver appears to properly re-initialize _brkcr when the SMC is
+restarted.
+
+Do not interrupt RX/TX when the termios is being adjusted; it results in
+corrupted characters appearing on the line.
+
 ---
- arch/x86/mm/ioremap.c  |    2 +-
- arch/x86/mm/pat.c      |    5 ++---
- include/asm-x86/e820.h |    1 +
- 3 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-index 7452eb3..6d9960d 100644
---- a/arch/x86/mm/ioremap.c
-+++ b/arch/x86/mm/ioremap.c
-@@ -142,7 +142,7 @@ static void __iomem *__ioremap_caller(resource_size_t phys_addr,
- 	/*
- 	 * Don't remap the low PCI/ISA area, it's always mapped..
- 	 */
--	if (phys_addr >= ISA_START_ADDRESS && last_addr < ISA_END_ADDRESS)
-+	if (is_ISA_range(phys_addr, last_addr))
- 		return (__force void __iomem *)phys_to_virt(phys_addr);
+diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
+index a19dc7e..babd06b 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+@@ -476,10 +476,13 @@ static void cpm_uart_shutdown(struct uart_port *port)
+ 		}
  
- 	/*
-diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-index 227df3c..5bbc22e 100644
---- a/arch/x86/mm/pat.c
-+++ b/arch/x86/mm/pat.c
-@@ -215,7 +215,7 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
+ 		/* Shut them really down and reinit buffer descriptors */
+-		if (IS_SMC(pinfo))
++		if (IS_SMC(pinfo)) {
++			out_be16(&pinfo->smcup->smc_brkcr, 0);
+ 			cpm_line_cr_cmd(pinfo, CPM_CR_STOP_TX);
+-		else
++		} else {
++			out_be16(&pinfo->sccup->scc_brkcr, 0);
+ 			cpm_line_cr_cmd(pinfo, CPM_CR_GRA_STOP_TX);
++		}
+ 
+ 		cpm_uart_initbd(pinfo);
  	}
- 
- 	/* Low ISA region is always mapped WB in page table. No need to track */
--	if (start >= ISA_START_ADDRESS && (end - 1) <= ISA_END_ADDRESS) {
-+	if (is_ISA_range(start, end - 1)) {
- 		if (ret_type)
- 			*ret_type = _PAGE_CACHE_WB;
- 
-@@ -415,9 +415,8 @@ int free_memtype(u64 start, u64 end)
+@@ -590,9 +593,11 @@ static void cpm_uart_set_termios(struct uart_port *port,
+ 		 * enables, because we want to put them back if they were
+ 		 * present.
+ 		 */
+-		prev_mode = in_be16(&smcp->smc_smcmr);
+-		out_be16(&smcp->smc_smcmr, smcr_mk_clen(bits) | cval | SMCMR_SM_UART);
+-		setbits16(&smcp->smc_smcmr, (prev_mode & (SMCMR_REN | SMCMR_TEN)));
++		prev_mode = in_be16(&smcp->smc_smcmr) & (SMCMR_REN | SMCMR_TEN);
++		/* Output in *one* operation, so we don't interrupt RX/TX if they
++		 * were already enabled. */
++		out_be16(&smcp->smc_smcmr, smcr_mk_clen(bits) | cval |
++		    SMCMR_SM_UART | prev_mode);
+ 	} else {
+ 		out_be16(&sccp->scc_psmr, (sbits << 12) | scval);
  	}
+@@ -1324,12 +1329,14 @@ static int __init cpm_uart_console_setup(struct console *co, char *options)
+ 	udbg_putc = NULL;
+ #endif
  
- 	/* Low ISA region is always mapped WB. No need to track */
--	if (start >= ISA_START_ADDRESS && end <= ISA_END_ADDRESS) {
-+	if (is_ISA_range(start, end - 1))
- 		return 0;
--	}
- 
- 	spin_lock(&memtype_lock);
- 	list_for_each_entry(ml, &memtype_list, nd) {
-diff --git a/include/asm-x86/e820.h b/include/asm-x86/e820.h
-index 7004251..5103d0b 100644
---- a/include/asm-x86/e820.h
-+++ b/include/asm-x86/e820.h
-@@ -24,6 +24,7 @@ struct e820map {
- 
- #define ISA_START_ADDRESS	0xa0000
- #define ISA_END_ADDRESS		0x100000
-+#define is_ISA_range(s, e) ((s) >= ISA_START_ADDRESS && (e) < ISA_END_ADDRESS)
- 
- #define BIOS_BEGIN		0x000a0000
- #define BIOS_END		0x00100000
+-	cpm_line_cr_cmd(pinfo, CPM_CR_STOP_TX);
+-
+ 	if (IS_SMC(pinfo)) {
++		out_be16(&pinfo->smcup->smc_brkcr, 0);
++		cpm_line_cr_cmd(pinfo, CPM_CR_STOP_TX);
+ 		clrbits8(&pinfo->smcp->smc_smcm, SMCM_RX | SMCM_TX);
+ 		clrbits16(&pinfo->smcp->smc_smcmr, SMCMR_REN | SMCMR_TEN);
+ 	} else {
++		out_be16(&pinfo->sccup->scc_brkcr, 0);
++		cpm_line_cr_cmd(pinfo, CPM_CR_GRA_STOP_TX);
+ 		clrbits16(&pinfo->sccp->scc_sccm, UART_SCCM_TX | UART_SCCM_RX);
+ 		clrbits32(&pinfo->sccp->scc_gsmrl, SCC_GSMRL_ENR | SCC_GSMRL_ENT);
+ 	}
+
 -- 
-1.5.5.4
+Nye Liu
+nliu@mrv.com
+(818) 772-6235x248
+(818) 772-0576 fax
 
-
-
+"Who would be stupid enough to quote a fictitious character?"
+	-- Don Quixote
