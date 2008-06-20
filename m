@@ -1,92 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757750AbYFTOPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757977AbYFTOSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757750AbYFTOPb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 10:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbYFTOPU
+	id S1757977AbYFTOSX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 10:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755581AbYFTOSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 10:15:20 -0400
-Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:36341
-	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754326AbYFTOPS (ORCPT
+	Fri, 20 Jun 2008 10:18:12 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:35467 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754234AbYFTOSL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 10:15:18 -0400
-Date: Fri, 20 Jun 2008 07:14:45 -0700
-From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
-To: Gabor Gombas <gombasg@sztaki.hu>
-Cc: David Brownell <david-b@pacbell.net>,
-       Alan Stern <stern@rowland.harvard.edu>, Matthew Wilcox <matthew@wil.cx>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       linux-kernel@vger.kernel.org, dsd@gentoo.org, linux-usb@vger.kernel.org,
-       vegardno@ifi.uio.no, James.Bottomley@hansenpartnership.com,
-       linux-scsi@vger.kernel.org, Greg KH <greg@kroah.com>
-Subject: Re: [RFC/PATCH] usb-storage: wait for device scanning before mounting root
-Message-ID: <20080620141445.GA16839@one-eyed-alien.net>
-Mail-Followup-To: Gabor Gombas <gombasg@sztaki.hu>,
-	David Brownell <david-b@pacbell.net>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Matthew Wilcox <matthew@wil.cx>,
-	Pekka J Enberg <penberg@cs.helsinki.fi>,
-	Stefan Richter <stefanr@s5r6.in-berlin.de>,
-	linux-kernel@vger.kernel.org, dsd@gentoo.org,
-	linux-usb@vger.kernel.org, vegardno@ifi.uio.no,
-	James.Bottomley@hansenpartnership.com, linux-scsi@vger.kernel.org,
-	Greg KH <greg@kroah.com>
-References: <Pine.LNX.4.44L0.0806191735570.2229-100000@iolanthe.rowland.org> <200806191613.25552.david-b@pacbell.net> <20080620095311.GK15159@boogie.lpds.sztaki.hu>
+	Fri, 20 Jun 2008 10:18:11 -0400
+Subject: Re: "r/o bind mounts" patch in 2.6.26-rc6 changes (breaks?) error
+	behaviour
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Jens Rottmann <JRottmann@LiPPERTEmbedded.de>
+Cc: Al Viro <viro@zeniv.linux.org.uk>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <485B8361.6010708@LiPPERTEmbedded.de>
+References: <485B8361.6010708@LiPPERTEmbedded.de>
+Content-Type: text/plain
+Date: Fri, 20 Jun 2008 07:17:46 -0700
+Message-Id: <1213971466.7512.17.camel@nimitz>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="pWyiEgJYm5f9v55/"
-Content-Disposition: inline
-In-Reply-To: <20080620095311.GK15159@boogie.lpds.sztaki.hu>
-User-Agent: Mutt/1.4.2.3i
-Organization: One Eyed Alien Networks
-X-Copyright: (C) 2008 Matthew Dharm, all rights reserved.
-X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Fri, 20 Jun 2008 07:14:47 -0700 (PDT)
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2008-06-20 at 12:16 +0200, Jens Rottmann wrote:
+> 
+> I noticed the following change in the error behaviour when attempting
+> to delete nonexisting files/dirs from R/O-mounted directories:
+> 
+> Linux 2.6.25.7:
+> rm /RO_mounted_path/nonexisting_file
+> ==> "No such file or directory"
+> 
+> Linux 2.6.26-rc6-git6:
+> rm /RO_mounted_path/nonexisting_file
+> ==> "Read-only file system"
 
---pWyiEgJYm5f9v55/
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+We looked at this way back in the beginning when I started to work on
+the patches.  It was decided that the error codes weren't horribly
+important.  We did have a case a bit ago where it really mattered, and
+Al fixed that up.
 
-On Fri, Jun 20, 2008 at 11:53:11AM +0200, Gabor Gombas wrote:
-> On Thu, Jun 19, 2008 at 04:13:25PM -0700, David Brownell wrote:
->=20
-> > Why give up, ever?=20
->=20
-> It would be quite useful to time out and reboot using the previous
-> kernel ("lilo -R") when one wants to figure out remotely why the new
-> kernel does not boot.
+I know this changed behavior a bit, but userspace can surely work around
+it with read-only operations (stat) when it is really important to get
+the error to the user just right.
 
-And thus we arrive at only one conclusion:  You should do this with an
-initrd so that any policy that is desired can be implemented.  No matter
-what the kernel does by default, it will be incorrect for some scenarios.
+> @@ -2371,8 +2373,10 @@ static long do_unlinkat(int dfd, const c
+>                 if (inode)
+>                         atomic_inc(&inode->i_count);
+>                 error = mnt_want_write(nd.path.mnt);
+> -               if (error)
+> +               if (error) {
+> +                       error = vfs_unlink(nd.path.dentry->d_inode, dentry);
+>                         goto exit2;
+> +               }
+>                 error = vfs_unlink(nd.path.dentry->d_inode, dentry);
+>                 mnt_drop_write(nd.path.mnt);
 
-Matt
+On a r/w fs where this is being performed on a r/o bind mount, this will
+let you unlink files.  I think that's bad.  :)
 
---=20
-Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
-net=20
-Maintainer, Linux USB Mass Storage Driver
+-- Dave
 
-It was a new hope.
-					-- Dust Puppy
-User Friendly, 12/25/1998
-
---pWyiEgJYm5f9v55/
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFIW7tVHL9iwnUZqnkRAsRGAJ9RnexoqKsfNBqW/WbGKwk5fm/TCwCdGlAV
-bbvn4PaFBrXngbqa9zAiO5A=
-=1bl4
------END PGP SIGNATURE-----
-
---pWyiEgJYm5f9v55/--
