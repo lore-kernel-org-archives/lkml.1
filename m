@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbYFTTwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbYFTTz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756777AbYFTTwc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 15:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbYFTTwY
+	id S1756049AbYFTTz2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 15:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbYFTTzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 15:52:24 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:34486 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752077AbYFTTwX (ORCPT
+	Fri, 20 Jun 2008 15:55:21 -0400
+Received: from mail-dub.bigfish.com ([213.199.154.10]:17038 "EHLO
+	mail51-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752121AbYFTTzU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 15:52:23 -0400
-Message-ID: <485C0A97.7020909@keyaccess.nl>
-Date: Fri, 20 Jun 2008 21:52:55 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Fri, 20 Jun 2008 15:55:20 -0400
+X-BigFish: VPS-1(zz4015Mzz10d3izzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-WSS-ID: 0K2S1ZN-01-86C-01
+Date: Fri, 20 Jun 2008 21:55:03 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>
+Subject: [PATCH 0/7] x86: pat.c: reserve_memtype strip down
+Message-ID: <20080620195503.GB4105@alberich.amd.com>
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus@drzeus.cx>
-CC: Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       ALSA devel <alsa-devel@alsa-project.org>, mulix@mulix.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [alsa-devel] looping S/PDIF data
-References: <20080531112606.5884a1c9@mjolnir.drzeus.cx>	<20080617215504.3203a5ed@mjolnir.drzeus.cx>	<4858B84B.4030800@keyaccess.nl>	<s5hej6t91u1.wl%tiwai@suse.de>	<Pine.LNX.4.61.0806191435270.1798@tm8103-a.perex-int.cz>	<s5hskv97fqk.wl%tiwai@suse.de> <20080620214516.28e9d3f3@mjolnir.drzeus.cx>
-In-Reply-To: <20080620214516.28e9d3f3@mjolnir.drzeus.cx>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 20 Jun 2008 19:55:06.0415 (UTC) FILETIME=[89749BF0:01C8D30F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20-06-08 21:45, Pierre Ossman wrote:
+This patch set will (first of all) cleanup reserve_memtype a little
+bit to make it easier to read and maintain.
 
-> On Thu, 19 Jun 2008 14:48:19 +0200
-> Takashi Iwai <tiwai@suse.de> wrote:
-> 
->> At Thu, 19 Jun 2008 14:39:05 +0200 (CEST),
->> Jaroslav Kysela wrote:
->>> I don't think that this patch is correct. DMA transfers should be disabled 
->>> by:
->>>
->>> outl(what, TRID_REG(trident, T4D_STOP_B));
->>> outl(val, TRID_REG(trident, T4D_AINTEN_B));
->> They are already in the trigger callback as long as I saw the code
->> quickly.  So the problem should be somewhere else.
->>
->>> lines. Adding &= ~SPDIF_EN can disable output from AC97 to S/PDIF as well.
->> That's true.
->>
->> Anyway, if you are up now, I'll let you hunt further as you are the
->> author of the driver :)
->>
-> 
-> Are there any specs on this hardware? I could play around a bit myself,
-> but I can't really find any documentation on the registers.
+(... and hopefully it doesn't break anything.;-)
 
-At:
+Overall diffstat is
 
-ftp://ftp.alsa-project.org/pub/manuals/trident/
+ arch/x86/mm/ioremap.c  |    2 
+ arch/x86/mm/pat.c      |  263 ++++++++++++++++---------------------------------
+ include/asm-x86/e820.h |    1 
+ 3 files changed, 93 insertions(+), 173 deletions(-)
 
-there's a 4D-Wave DX technical reference manual and .doc files which at 
-first glance look useful.
+Instead of sending one large patch I broke it down into several pieces
+to make it easier to review.
 
-Rene.
+Patches are against today's tip/x86/pat (v2.6.26-rc6-107-gdd0c7c4).
+Please apply.
+
+
+Thanks,
+
+Andreas
+
+
