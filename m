@@ -1,164 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065AbYFTDLN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754999AbYFTDLe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754065AbYFTDLN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 23:11:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbYFTDK6
+	id S1754999AbYFTDLe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 23:11:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbYFTDLQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 23:10:58 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38043 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751657AbYFTDK5 (ORCPT
+	Thu, 19 Jun 2008 23:11:16 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:47666 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753102AbYFTDLI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 23:10:57 -0400
-Message-ID: <485B1FA6.4040707@jp.fujitsu.com>
-Date: Fri, 20 Jun 2008 12:10:30 +0900
-From: Taku Izumi <izumi.taku@jp.fujitsu.com>
-User-Agent: Thunderbird 1.5.0.8 (Windows/20061025)
+	Thu, 19 Jun 2008 23:11:08 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Cedric Le Goater <clg@fr.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pavel Emelianov <xemul@openvz.org>
+References: <20071128163728.177495768@fr.ibm.com>
+Date: Thu, 19 Jun 2008 20:00:51 -0700
+In-Reply-To: <20071128163728.177495768@fr.ibm.com>> (Cedric Le Goater's
+	message of "Wed, 28 Nov 2007 17:37:28 +0100")
+Message-ID: <m11w2syfmk.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-CC: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>, auke-jan.h.kok@intel.com
-Subject: [PATCH 3/3] igb: make ioport free
-References: <485B1B8E.1060108@jp.fujitsu.com>
-In-Reply-To: <485B1B8E.1060108@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Cedric Le Goater <clg@fr.ibm.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [patch -mm 0/4] mqueue namespace
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes igb driver ioport-free.
-This corrects behavior in probe function so as not to request ioport
-resources as long as they are not really needed.
+Cedric Le Goater <clg@fr.ibm.com> writes:
 
-Signed-off-by: Taku Izumi <izumi.taku@jp.fujitsu.com>
----
- drivers/net/igb/igb.h      |    4 +++
- drivers/net/igb/igb_main.c |   47 +++++++++++++++++++++++++++++++++++++++------
- 2 files changed, 45 insertions(+), 6 deletions(-)
+> Hello ! 
+>
+> Here's a small patchset introducing a new namespace for POSIX
+> message queues. 
+>
+> Nothing really complex a part from the mqueue filesystem which 
+> needed some special care
 
-Index: linux-2.6.25.7/drivers/net/igb/igb.h
-===================================================================
---- linux-2.6.25.7.orig/drivers/net/igb/igb.h
-+++ linux-2.6.25.7/drivers/net/igb/igb.h
-@@ -271,6 +271,10 @@ struct igb_adapter {
- 	unsigned int msi_enabled;
+This looks stalled.  I have a brainstorm that might takes a totally
+different perspective on things.
 
- 	u32 eeprom_wol;
-+
-+	/* for ioport free */
-+	int bars;
-+	int need_ioport;
- };
+The only reason we don't just allow multiple mounts of mqueuefs to
+solve this problem is because there is a kernel syscall on the path.
 
- enum e1000_state_t {
-Index: linux-2.6.25.7/drivers/net/igb/igb_main.c
-===================================================================
---- linux-2.6.25.7.orig/drivers/net/igb/igb_main.c
-+++ linux-2.6.25.7/drivers/net/igb/igb_main.c
-@@ -820,6 +820,21 @@ void igb_reset(struct igb_adapter *adapt
- }
+If we just hard coded a mount point into the kernel and required user
+space to always mount mqueuefs there the problem would be solved.
 
- /**
-+ * igb_is_need_ioport - determine if an adapter needs ioport resources or not
-+ * @pdev: PCI device information struct
-+ *
-+ * Returns true if an adapter needs ioport resources
-+ **/
-+static int igb_is_need_ioport(struct pci_dev *pdev)
-+{
-+	switch (pdev->device) {
-+	/* Currently there are no adapters that need ioport resources */
-+	default:
-+		return false;
-+	}
-+}
-+
-+/**
-  * igb_probe - Device Initialization Routine
-  * @pdev: PCI device information struct
-  * @ent: entry in igb_pci_tbl
-@@ -843,8 +858,17 @@ static int __devinit igb_probe(struct pc
- 	u16 eeprom_data = 0;
- 	u16 eeprom_apme_mask = IGB_EEPROM_APME;
- 	u32 part_num;
-+	int bars, need_ioport;
+hard coding a mount point is unfortunately violates the unix rule
+of separating mechanism and policy.
 
--	err = pci_enable_device(pdev);
-+	/* do not allocate ioport bars when not needed */
-+	need_ioport = igb_is_need_ioport(pdev);
-+	if (need_ioport) {
-+		bars = pci_select_bars(pdev, IORESOURCE_MEM | IORESOURCE_IO);
-+		err = pci_enable_device(pdev);
-+	} else {
-+		bars = pci_select_bars(pdev, IORESOURCE_MEM);
-+		err = pci_enable_device_mem(pdev);
-+	}
- 	if (err)
- 		return err;
+One way to fix that is to add a hidden directory to the mnt namespace.
+Where magic in kernel filesystems can be mounted.  Only visible
+with a magic openat flag.  Then:
 
-@@ -866,7 +890,7 @@ static int __devinit igb_probe(struct pc
- 		}
- 	}
+fd = openat(AT_FDKERN, ".", O_DIRECTORY)
+fchdir(fd);
+umount("./mqueue", MNT_DETACH);
+mount(("none", "./mqueue", "mqueue", 0, NULL);
 
--	err = pci_request_regions(pdev, igb_driver_name);
-+	err = pci_request_selected_regions(pdev, bars, igb_driver_name);
- 	if (err)
- 		goto err_pci_reg;
+Would unshare the mqueue namespace.
 
-@@ -886,6 +910,8 @@ static int __devinit igb_probe(struct pc
- 	hw = &adapter->hw;
- 	hw->back = adapter;
- 	adapter->msg_enable = NETIF_MSG_DRV | NETIF_MSG_PROBE;
-+	adapter->bars = bars;
-+	adapter->need_ioport = need_ioport;
+Implemented for plan9 this would solve a problem of how do you get
+access to all of it's special filesystems.  As only bind mounts
+and remote filesystem mounts are available.  For linux thinking about
+it might shake the conversation up a bit.
 
- 	mmio_start = pci_resource_start(pdev, 0);
- 	mmio_len = pci_resource_len(pdev, 0);
-@@ -1121,7 +1147,7 @@ err_hw_init:
- err_ioremap:
- 	free_netdev(netdev);
- err_alloc_etherdev:
--	pci_release_regions(pdev);
-+	pci_release_selected_regions(pdev, bars);
- err_pci_reg:
- err_dma:
- 	pci_disable_device(pdev);
-@@ -1168,7 +1194,7 @@ static void __devexit igb_remove(struct
- 	iounmap(adapter->hw.hw_addr);
- 	if (adapter->hw.flash_address)
- 		iounmap(adapter->hw.flash_address);
--	pci_release_regions(pdev);
-+	pci_release_selected_regions(pdev, adapter->bars);
-
- 	free_netdev(netdev);
-
-@@ -3969,7 +3995,11 @@ static int igb_resume(struct pci_dev *pd
-
- 	pci_set_power_state(pdev, PCI_D0);
- 	pci_restore_state(pdev);
--	err = pci_enable_device(pdev);
-+
-+	if (adapter->need_ioport)
-+		err = pci_enable_device(pdev);
-+	else
-+		err = pci_enable_device_mem(pdev);
- 	if (err) {
- 		dev_err(&pdev->dev,
- 			"igb: Cannot enable PCI device from suspend\n");
-@@ -4072,8 +4102,13 @@ static pci_ers_result_t igb_io_slot_rese
- 	struct net_device *netdev = pci_get_drvdata(pdev);
- 	struct igb_adapter *adapter = netdev_priv(netdev);
- 	struct e1000_hw *hw = &adapter->hw;
-+	int err;
-
--	if (pci_enable_device(pdev)) {
-+	if (adapter->need_ioport)
-+		err = pci_enable_device(pdev);
-+	else
-+		err = pci_enable_device_mem(pdev);
-+	if (err) {
- 		dev_err(&pdev->dev,
- 			"Cannot re-enable PCI device after reset.\n");
- 		return PCI_ERS_RESULT_DISCONNECT;
-
-
+Eric
