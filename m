@@ -1,101 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbYFTQYd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbYFTQa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754643AbYFTQYd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 12:24:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbYFTQYZ
+	id S1756090AbYFTQa0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 12:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753681AbYFTQaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 12:24:25 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:4977 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751566AbYFTQYX (ORCPT
+	Fri, 20 Jun 2008 12:30:11 -0400
+Received: from mail.lippert-at.com ([62.80.22.186]:23594 "EHLO
+	domex.lippertembedded.de" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752787AbYFTQaK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 12:24:23 -0400
-Subject: Re: Re: [Experimental][PATCH] putback_lru_page rework
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: kamezawa.hiroyu@jp.fujitsu.com
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-In-Reply-To: <24280609.1213889550357.kamezawa.hiroyu@jp.fujitsu.com>
-References: <1213886722.6398.29.camel@lts-notebook>
-	 <20080611225945.4da7bb7f.akpm@linux-foundation.org>
-	 <20080617163501.7cf411ee.nishimura@mxp.nes.nec.co.jp>
-	 <20080617164709.de4db070.nishimura@mxp.nes.nec.co.jp>
-	 <20080618184000.a855dfe0.kamezawa.hiroyu@jp.fujitsu.com>
-	 <1213813266.6497.14.camel@lts-notebook>
-	 <20080619092242.79648592.kamezawa.hiroyu@jp.fujitsu.com>
-	 <24280609.1213889550357.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Fri, 20 Jun 2008 12:24:19 -0400
-Message-Id: <1213979059.6474.41.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Fri, 20 Jun 2008 12:30:10 -0400
+X-Greylist: delayed 913 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Jun 2008 12:30:10 EDT
+Message-ID: <485BD780.5090103@LiPPERTEmbedded.de>
+Date: Fri, 20 Jun 2008 18:14:56 +0200
+From: Jens Rottmann <JRottmann@LiPPERTEmbedded.de>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: Al Viro <viro@zeniv.linux.org.uk>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: "r/o bind mounts" patch in 2.6.26-rc6 changes (breaks?) error
+ behaviour
+References: <485B8361.6010708@LiPPERTEmbedded.de>	 <1213971466.7512.17.camel@nimitz> <1213975689.7512.36.camel@nimitz>
+In-Reply-To: <1213975689.7512.36.camel@nimitz>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+X-OriginalArrivalTime: 20 Jun 2008 16:15:20.0090 (UTC) FILETIME=[D5CB17A0:01C8D2F0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-06-20 at 00:32 +0900, kamezawa.hiroyu@jp.fujitsu.com wrote:
-> ----- Original Message -----
-> >Subject: Re: [Experimental][PATCH] putback_lru_page rework
-> >From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-> 
-> >On Thu, 2008-06-19 at 09:22 +0900, KAMEZAWA Hiroyuki wrote:
-> >> On Wed, 18 Jun 2008 14:21:06 -0400
-> >> Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
-> >> 
-> >> > On Wed, 2008-06-18 at 18:40 +0900, KAMEZAWA Hiroyuki wrote:
-> >> > > Lee-san, how about this ?
-> >> > > Tested on x86-64 and tried Nisimura-san's test at el. works good now.
-> >> > 
-> >> > I have been testing with my work load on both ia64 and x86_64 and it
-> >> > seems to be working well.  I'll let them run for a day or so.
-> >> > 
-> >> thank you.
-> >> <snip>
-> >
-> >Update:
-> >
-> >On x86_64 [32GB, 4xdual-core Opteron], my work load has run for ~20:40
-> >hours.  Still running.
-> >
-> >On ia64 [32G, 16cpu, 4 node], the system started going into softlockup
-> >after ~7 hours.  Stack trace [below] indicates zone-lru lock in
-> >__page_cache_release() called from put_page().  Either heavy contention
-> >or failure to unlock.  Note that previous run, with patches to
-> >putback_lru_page() and unmap_and_move(), the same load ran for ~18 hours
-> >before I shut it down to try these patches.
-> >
-> Thanks, then there are more troubles should be shooted down.
-> 
-> 
-> >I'm going to try again with the collected patches posted by Kosaki-san
-> >[for which, Thanks!].  If it occurs again, I'll deconfig the unevictable
-> >lru feature and see if I can reproduce it there.  It may be unrelated to
-> >the unevictable lru patches.
-> >
-> I hope so...Hmm..I'll dig tomorrow. 
+Dave Hansen wrote:
+> ... requires a path walk ...
 
-Another update--with the collected patches:
+... which is spared only in the error path, the normal path still does the path walk anyway.
 
-Again, the x86_64 ran for > 22 hours w/o error before I shut it down.
+> Don't you *want* warnings when an 'rm -f' runs into a r/o filesystem? ;)
 
-And, again, the ia64 went into soft lockup--same stack traces.  This
-time after > 17 hours of running.  It is possible that a BUG started
-this, but it has long scrolled out of my terminal buffer by the time I
-see the system.
+Well, not really. The "rm -f"s are in my startup scripts, supposed to delete stale lock files and lots of stuff that's usually not there unless something went wrong the last time. But most of the time, I leave the whole system mounted R/O, except some tmpfs, dead useful for kernel/hardware hacking/testing.
+But now I get masses of error messages on bootup - guess I have to litter the scripts with "if [ -e ... ]; then"s or just live with it.  :-|
 
-I'm now trying the ia64 platform with 26-rc5-mm3 + collected patches
-with UNEVICTABLE_LRU de-configured.  I'll start that up today and let it
-run over the weekend [with panic_on_oops set] if it hasn't hit the
-problem before I leave.
+Anyway, thanks for solving this mystery for me.  :-)
 
-Regards,
-Lee
-
+Jens
