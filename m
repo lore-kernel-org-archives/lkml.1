@@ -1,37 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760358AbYFTPc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759566AbYFTPgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760358AbYFTPc6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 11:32:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760175AbYFTPco
+	id S1759566AbYFTPgl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 11:36:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755866AbYFTPgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 11:32:44 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:63653 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759881AbYFTPcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 11:32:43 -0400
-Date: Fri, 20 Jun 2008 16:31:15 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: simplify x86_mpparse dependency check
-In-Reply-To: <200806200733.31477.yhlu.kernel@gmail.com>
-Message-ID: <Pine.LNX.4.55.0806201630510.19614@cliff.in.clinika.pl>
-References: <200805041823.57198.yhlu.kernel@gmail.com>
- <200806190018.45944.yhlu.kernel@gmail.com> <200806191213.10312.yhlu.kernel@gmail.com>
- <200806200733.31477.yhlu.kernel@gmail.com>
+	Fri, 20 Jun 2008 11:36:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45700 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751808AbYFTPgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 11:36:32 -0400
+Date: Fri, 20 Jun 2008 11:34:32 -0400
+From: Bill Nottingham <notting@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: kerneloops.org: 2.6.26-rc possible regression in ext3
+Message-ID: <20080620153432.GC25954@nostromo.devel.redhat.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Arjan van de Ven <arjan@linux.intel.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linux-ext4@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Al Viro <viro@zeniv.linux.org.uk>
+References: <4859EFE2.2090202@linux.intel.com> <alpine.LFD.1.10.0806182242390.2907@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0806182242390.2907@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jun 2008, Yinghai Lu wrote:
+Linus Torvalds (torvalds@linux-foundation.org) said: 
+> Or could this perhaps be an indication that it is specific to i686 some 
+> way (eg a compiler issue?)
 
-> [PATCH] x86: simplify x86_mpparse dependency check
+Yes. https://bugzilla.redhat.com/show_bug.cgi?id=451068
 
- Thanks for this clean-up.
-
-  Maciej
+Bill
