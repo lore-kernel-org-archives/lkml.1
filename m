@@ -1,147 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbYFTBIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753964AbYFTBWp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755968AbYFTBIf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 21:08:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYFTBI1
+	id S1753964AbYFTBWp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 21:22:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbYFTBWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 21:08:27 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35802 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752880AbYFTBI0 (ORCPT
+	Thu, 19 Jun 2008 21:22:35 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:47627 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751333AbYFTBWe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 21:08:26 -0400
-Date: Fri, 20 Jun 2008 10:13:52 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-Subject: Re: [Experimental][PATCH] putback_lru_page rework
-Message-Id: <20080620101352.e1200b8e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1213886722.6398.29.camel@lts-notebook>
-References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
-	<20080617163501.7cf411ee.nishimura@mxp.nes.nec.co.jp>
-	<20080617164709.de4db070.nishimura@mxp.nes.nec.co.jp>
-	<20080618184000.a855dfe0.kamezawa.hiroyu@jp.fujitsu.com>
-	<1213813266.6497.14.camel@lts-notebook>
-	<20080619092242.79648592.kamezawa.hiroyu@jp.fujitsu.com>
-	<1213886722.6398.29.camel@lts-notebook>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Thu, 19 Jun 2008 21:22:34 -0400
+Subject: Re: [RFC PATCH] x86:Use cpu_khz for loops_per_jiffy calculation
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Daniel Hecht <dhecht@vmware.com>,
+       Tim Mann <mann@vmware.com>, Zach Amsden <zach@vmware.com>,
+       Sahil Rihan <srihan@vmware.com>
+In-Reply-To: <20080604061637.6bab3f67@infradead.org>
+References: <1212540069.19290.57.camel@promb-2n-dhcp368.eng.vmware.com>
+	 <20080603182014.79a38d03@infradead.org>
+	 <35f686220806032101h103152dat841818982aaa5052@mail.gmail.com>
+	 <20080604061637.6bab3f67@infradead.org>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Thu, 19 Jun 2008 18:22:33 -0700
+Message-Id: <1213924953.27983.52.camel@promb-2n-dhcp368.eng.vmware.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lee-san, this is an additonal one..
-Not-tested-yet, just by review.
+Hi Arjan,
 
-Fixing page_lock() <-> zone->lock nesting of bad-behavior.
+I have modified the patch to use the pre-calculated value only for the
+boot processor. 
 
-Before:
-      lock_page()(TestSetPageLocked())
-      spin_lock(zone->lock)
-      unlock_page()
-      spin_unlock(zone->lock)  
-After:
-      spin_lock(zone->lock)
-      spin_unlock(zone->lock)
+Please have a look.
+Patch is on top of today's git.
 
-Including nit-pick fix. (I'll ask Kosaki-san to merge this to his 5/5)
+--
+On X86 platform we can use the value of tsc_khz computed during tsc calibration
+to calculate the loops_per_jiffy value. Its very important to keep the error in
+lpj values to minimum as any error in that may result in kernel panic in
+check_timer. 
+In virtualization environment, On a highly overloaded host the guest delay
+calibration may sometimes result in errors beyond the ~50% that timer_irq_works
+can handle, resulting in the guest panicking.
 
-Hmm...
+Does some formating changes to lpj_setup code to now have a single printk to
+print the bogomips value.
 
----
- mm/vmscan.c |   25 +++++--------------------
- 1 file changed, 5 insertions(+), 20 deletions(-)
+We do this only for the boot processor because the AP's can have different
+base frequencies or the BIOS might boot a AP at a different frequency.
 
-Index: test-2.6.26-rc5-mm3/mm/vmscan.c
+Signed-off-by: Alok N Kataria <akataria@vmware.com>
+
+Index: linux-2.6/arch/x86/kernel/time_64.c
 ===================================================================
---- test-2.6.26-rc5-mm3.orig/mm/vmscan.c
-+++ test-2.6.26-rc5-mm3/mm/vmscan.c
-@@ -1106,7 +1106,7 @@ static unsigned long shrink_inactive_lis
- 		if (nr_taken == 0)
- 			goto done;
+--- linux-2.6.orig/arch/x86/kernel/time_64.c	2008-06-09 10:19:20.000000000 -0700
++++ linux-2.6/arch/x86/kernel/time_64.c	2008-06-19 17:22:53.000000000 -0700
+@@ -123,6 +123,8 @@
+ 		(boot_cpu_data.x86_vendor == X86_VENDOR_AMD))
+ 		cpu_khz = calculate_cpu_khz();
  
--		spin_lock(&zone->lru_lock);
-+		spin_lock_irq(&zone->lru_lock);
- 		/*
- 		 * Put back any unfreeable pages.
- 		 */
-@@ -1136,9 +1136,8 @@ static unsigned long shrink_inactive_lis
- 			}
- 		}
-   	} while (nr_scanned < max_scan);
--	spin_unlock(&zone->lru_lock);
-+	spin_unlock_irq(&zone->lru_lock);
- done:
--	local_irq_enable();
- 	pagevec_release(&pvec);
- 	return nr_reclaimed;
- }
-@@ -2438,7 +2437,7 @@ static void show_page_path(struct page *
-  */
- static void check_move_unevictable_page(struct page *page, struct zone *zone)
++	lpj_tsc = ((unsigned long)tsc_khz * 1000)/HZ;
++
+ 	if (unsynchronized_tsc())
+ 		mark_tsc_unstable("TSCs unsynchronized");
+ 
+Index: linux-2.6/include/linux/delay.h
+===================================================================
+--- linux-2.6.orig/include/linux/delay.h	2008-06-09 10:19:20.000000000 -0700
++++ linux-2.6/include/linux/delay.h	2008-06-19 17:22:28.000000000 -0700
+@@ -41,6 +41,7 @@
+ #define ndelay(x) ndelay(x)
+ #endif
+ 
++extern unsigned long lpj_tsc;
+ void calibrate_delay(void);
+ void msleep(unsigned int msecs);
+ unsigned long msleep_interruptible(unsigned int msecs);
+Index: linux-2.6/init/calibrate.c
+===================================================================
+--- linux-2.6.orig/init/calibrate.c	2008-06-09 10:19:20.000000000 -0700
++++ linux-2.6/init/calibrate.c	2008-06-19 18:21:12.000000000 -0700
+@@ -8,7 +8,9 @@
+ #include <linux/delay.h>
+ #include <linux/init.h>
+ #include <linux/timex.h>
++#include <linux/smp.h>
+ 
++unsigned long lpj_tsc;
+ unsigned long preset_lpj;
+ static int __init lpj_setup(char *str)
  {
+@@ -108,6 +110,10 @@
+  * This is the number of bits of precision for the loops_per_jiffy.  Each
+  * bit takes on average 1.5/HZ seconds.  This (like the original) is a little
+  * better than 1%
++ * For the boot cpu we can skip the delay calibration and assign it a value
++ * calculated based on the tsc frequency.
++ * For the rest of the CPUs we cannot assume that the tsc frequency is same as
++ * the cpu frequency, hence do the calibration for those.
+  */
+ #define LPS_PREC 8
+ 
+@@ -118,16 +124,15 @@
+ 
+ 	if (preset_lpj) {
+ 		loops_per_jiffy = preset_lpj;
+-		printk("Calibrating delay loop (skipped)... "
+-			"%lu.%02lu BogoMIPS preset\n",
+-			loops_per_jiffy/(500000/HZ),
+-			(loops_per_jiffy/(5000/HZ)) % 100);
++		printk(KERN_DEBUG "Calibrating delay loop skipped, "
++				"using preset value.. ");
++	} else if ((smp_processor_id() == 0) && lpj_tsc) {
++		loops_per_jiffy = lpj_tsc;
++		printk(KERN_DEBUG "Calibrating delay loop skipped, "
++				"using value calculated from tsc.. ");
+ 	} else if ((loops_per_jiffy = calibrate_delay_direct()) != 0) {
+-		printk("Calibrating delay using timer specific routine.. ");
+-		printk("%lu.%02lu BogoMIPS (lpj=%lu)\n",
+-			loops_per_jiffy/(500000/HZ),
+-			(loops_per_jiffy/(5000/HZ)) % 100,
+-			loops_per_jiffy);
++		printk(KERN_DEBUG "Calibrating delay using timer "
++				 "specific routine.. ");
+ 	} else {
+ 		loops_per_jiffy = (1<<12);
+ 
+@@ -161,12 +166,8 @@
+ 			if (jiffies != ticks)	/* longer than 1 tick */
+ 				loops_per_jiffy &= ~loopbit;
+ 		}
 -
-+retry:
- 	ClearPageUnevictable(page); /* for page_evictable() */
- 	if (page_evictable(page, NULL)) {
- 		enum lru_list l = LRU_INACTIVE_ANON + page_is_file_cache(page);
-@@ -2455,6 +2454,8 @@ static void check_move_unevictable_page(
- 		 */
- 		SetPageUnevictable(page);
- 		list_move(&page->lru, &zone->lru[LRU_UNEVICTABLE].list);
-+		if (page_evictable(page, NULL))
-+			goto retry;
+-		/* Round the value and print it */
+-		printk("%lu.%02lu BogoMIPS (lpj=%lu)\n",
+-			loops_per_jiffy/(500000/HZ),
+-			(loops_per_jiffy/(5000/HZ)) % 100,
+-			loops_per_jiffy);
  	}
+-
++	printk(KERN_DEBUG "%lu.%02lu BogoMIPS (lpj=%lu)\n",
++			loops_per_jiffy/(500000/HZ),
++			(loops_per_jiffy/(5000/HZ)) % 100, loops_per_jiffy);
  }
+Index: linux-2.6/arch/x86/kernel/tsc_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/tsc_32.c	2008-06-09 10:19:20.000000000 -0700
++++ linux-2.6/arch/x86/kernel/tsc_32.c	2008-06-19 17:23:42.000000000 -0700
+@@ -401,6 +401,7 @@
+ void __init tsc_init(void)
+ {
+ 	int cpu;
++	u64 lpj;
  
-@@ -2494,16 +2495,6 @@ void scan_mapping_unevictable_pages(stru
- 				next = page_index;
- 			next++;
+ 	if (!cpu_has_tsc || tsc_disabled) {
+ 		/* Disable the TSC in case of !cpu_has_tsc */
+@@ -421,6 +422,10 @@
+ 		return;
+ 	}
  
--			if (TestSetPageLocked(page)) {
--				/*
--				 * OK, let's do it the hard way...
--				 */
--				if (zone)
--					spin_unlock_irq(&zone->lru_lock);
--				zone = NULL;
--				lock_page(page);
--			}
--
- 			if (pagezone != zone) {
- 				if (zone)
- 					spin_unlock_irq(&zone->lru_lock);
-@@ -2514,8 +2505,6 @@ void scan_mapping_unevictable_pages(stru
- 			if (PageLRU(page) && PageUnevictable(page))
- 				check_move_unevictable_page(page, zone);
- 
--			unlock_page(page);
--
- 		}
- 		if (zone)
- 			spin_unlock_irq(&zone->lru_lock);
-@@ -2551,15 +2540,11 @@ void scan_zone_unevictable_pages(struct 
- 		for (scan = 0;  scan < batch_size; scan++) {
- 			struct page *page = lru_to_page(l_unevictable);
- 
--			if (TestSetPageLocked(page))
--				continue;
--
- 			prefetchw_prev_lru_page(page, l_unevictable, flags);
- 
- 			if (likely(PageLRU(page) && PageUnevictable(page)))
- 				check_move_unevictable_page(page, zone);
- 
--			unlock_page(page);
- 		}
- 		spin_unlock_irq(&zone->lru_lock);
- 
++	lpj = ((u64)tsc_khz * 1000);
++	do_div(lpj, HZ);
++	lpj_tsc = lpj;
++
+ 	printk("Detected %lu.%03lu MHz processor.\n",
+ 				(unsigned long)cpu_khz / 1000,
+ 				(unsigned long)cpu_khz % 1000);
+
 
