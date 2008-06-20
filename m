@@ -1,107 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759982AbYFTPVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759594AbYFTPYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759982AbYFTPVy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 11:21:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756502AbYFTPVq
+	id S1759594AbYFTPYx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 11:24:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755972AbYFTPYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 11:21:46 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34489 "EHLO mx2.mail.elte.hu"
+	Fri, 20 Jun 2008 11:24:45 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:62488 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755739AbYFTPVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 11:21:46 -0400
-Date: Fri, 20 Jun 2008 17:21:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Roland Dreier <rdreier@cisco.com>,
-       linux-kernel@vger.kernel.org, Eli Cohen <eli@dev.mellanox.co.il>,
-       general@lists.openfabrics.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: wait_for_completion_timeout() spurious failure under heavy
-	load?
-Message-ID: <20080620152124.GC17373@elte.hu>
-References: <ada63s5w088.fsf@cisco.com> <485B50F1.2020802@gmail.com> <20080620112042.GE7439@elte.hu> <20080620141400.GA411@tv-sign.ru> <20080620143220.GA441@tv-sign.ru>
+	id S1751013AbYFTPYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 11:24:45 -0400
+Message-ID: <485BCBB3.20405@atmel.com>
+Date: Fri, 20 Jun 2008 17:24:35 +0200
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080620143220.GA441@tv-sign.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Pierre Ossman <drzeus@drzeus.cx>, Nicolas Pitre <nico@cam.org>
+CC: ARM Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: sdio: bad CISTPL_FUNCE error
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Pierre,
 
-* Oleg Nesterov <oleg@tv-sign.ru> wrote:
+While trying to setup a GPS SDIO card, I experience the following error: 
+"mmc0: bad CISTPL_FUNCE size 28 type 1"
 
-> > IOW, how about the patch below? this also makes the code a bit 
-> > simpler because we factor out __remove_wait_queue().
-> 
-> Even better, we can kill the first __remove_wait_queue() as well.
+I use a combo card but without mirco sd card inserted.
+http://www.spectec.com.tw/sdg810.htm
 
-nice, thanks - applied it in the form below to tip/sched/urgent.
+Tracing in sdio_cis.c file, I print the tpl_code (line 216).
+I have 3 successive codes : 0xff, 0x21 & 0x22.
 
-	Ingo
+Is this a host controller driver issue ? or the using of a non 
+supported combo SDIO card (with GPS function not probed first) ?
 
------------------->
-commit 6b8464474776dccf619283ee5510b0b795382dfb
-Author: Oleg Nesterov <oleg@tv-sign.ru>
-Date:   Fri Jun 20 18:32:20 2008 +0400
 
-    sched: refactor wait_for_completion_timeout()
-    
-    Simplify the code and fix the boundary condition of
-    wait_for_completion_timeout(,0).
-    
-    We can kill the first __remove_wait_queue() as well.
-    
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Here is a little log :
+"
+[..SDIO init & many 52 commands..]
+mmc0: starting CMD52 arg 00209e00 flags 00000195
+Sending command 52 as 00001074, arg = 00209E00, blocks = 0, length = 0 (MR = 00001B84)
+MCI irq: status = 0000C3E5, C07F0001, 00000001
+Command ready
+Completed command
+Status = 00000001/0000c3e5 [000010FF 00000000 00000000 00000000]
+mmc0: req done (CMD52): 0: 000010ff 00000000 00000000 00000000
+mmc0: *read tpl 0xff*
+mmc0: clock 25000000Hz busmode 2 powermode 2 cs 0 Vdd 20 width 0 timing 0
+clkdiv = 1. mcck = 24832000
+MMC: Setting controller bus width to 1
+mmc0: starting CMD52 arg 00000e00 flags 00000195
+Sending command 52 as 00001074, arg = 00000E00, blocks = 0, length = 0 (MR = 00001B01)
+MCI irq: status = 0000C3E5, C07F0001, 00000001
+Command ready
+Completed command
+Status = 00000001/0000c3e5 [00001040 00000000 00000000 00000000]
+mmc0: req done (CMD52): 0: 00001040 00000000 00000000 00000000
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 577f160..bebf978 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -4398,32 +4398,20 @@ do_wait_for_common(struct completion *x, long timeout, int state)
- 			     signal_pending(current)) ||
- 			    (state == TASK_KILLABLE &&
- 			     fatal_signal_pending(current))) {
--				__remove_wait_queue(&x->wait, &wait);
--				return -ERESTARTSYS;
-+				timeout = -ERESTARTSYS;
-+				break;
- 			}
- 			__set_current_state(state);
- 			spin_unlock_irq(&x->wait.lock);
- 			timeout = schedule_timeout(timeout);
- 			spin_lock_irq(&x->wait.lock);
--
--			/*
--			 * If the completion has arrived meanwhile
--			 * then return 1 jiffy time left:
--			 */
--			if (x->done && !timeout) {
--				timeout = 1;
--				break;
--			}
--
--			if (!timeout) {
--				__remove_wait_queue(&x->wait, &wait);
--				return timeout;
--			}
--		} while (!x->done);
-+		} while (!x->done && timeout);
- 		__remove_wait_queue(&x->wait, &wait);
-+		if (!x->done)
-+			return timeout;
- 	}
- 	x->done--;
--	return timeout;
-+	return timeout ?: 1;
- }
- 
- static long __sched
+[..many 52 commands..]
+
+mmc0: starting CMD52 arg 0020a000 flags 00000195
+Sending command 52 as 00001074, arg = 0020A000, blocks = 0, length = 0 (MR = 00001B01)
+MCI irq: status = 0000C1E5, C07F0001, 00000001
+Command ready
+Completed command
+Status = 00000001/0000c1e5 [00001021 00000000 00000000 00000000]
+mmc0: req done (CMD52): 0: 00001021 00000000 00000000 00000000
+mmc0: *read tpl 0x21*
+mmc0: starting CMD52 arg 0020a200 flags 00000195
+Sending command 52 as 00001074, arg = 0020A200, blocks = 0, length = 0 (MR = 00001B01)
+MCI irq: status = 0000C1E5, C07F0001, 00000001
+Command ready
+Completed command
+Status = 00000001/0000c1e5 [00001002 00000000 00000000 00000000]
+mmc0: req done (CMD52): 0: 00001002 00000000 00000000 00000000
+
+[2 CMD52]
+
+mmc0: starting CMD52 arg 0020a800 flags 00000195
+Sending command 52 as 00001074, arg = 0020A800, blocks = 0, length = 0 (MR = 00001B01)
+MCI irq: status = 0000C0E5, C07F0001, 00000001
+Command ready
+Completed command
+Status = 00000001/0000c0e5 [00001022 00000000 00000000 00000000]
+mmc0: req done (CMD52): 0: 00001022 00000000 00000000 00000000
+mmc0: *read tpl 0x22*
+mmc0: starting CMD52 arg 0020aa00 flags 00000195
+Sending command 52 as 00001074, arg = 0020AA00, blocks = 0, length = 0 (MR = 00001B01)
+MCI irq: status = 0000C1E5, C07F0001, 00000001
+Command ready
+Completed command
+Status = 00000001/0000c1e5 [0000101C 00000000 00000000 00000000]
+mmc0: req done (CMD52): 0: 0000101c 00000000 00000000 00000000
+mmc0: starting CMD52 arg 0020ac00 flags 00000195
+
+[many CMD52]
+
+mmc0: starting CMD52 arg 0020e200 flags 00000195
+Sending command 52 as 00001074, arg = 0020E200, blocks = 0, length = 0 (MR = 00001B01)
+MCI irq: status = 0000C0E5, C07F0001, 00000001
+Command ready
+Completed command
+Status = 00000001/0000c0e5 [00001000 00000000 00000000 00000000]
+mmc0: req done (CMD52): 0: 00001000 00000000 00000000 00000000
+mmc0: bad CISTPL_FUNCE size 28 type 1
+mmc0: clock 0Hz busmode 1 powermode 0 cs 0 Vdd 0 width 0 timing 0
+MMC: Setting controller bus width to 1
+mmc0: error -22 whilst initialising SDIO card
+mmc0: clock 0Hz busmode 1 powermode 0 cs 0 Vdd 0 width 0 timing 0
+MMC: Setting controller bus width to 1
+"
+
+-- 
+Nicolas Ferre
+
