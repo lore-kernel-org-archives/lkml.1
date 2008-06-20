@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933807AbYFTUtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760829AbYFTUtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933807AbYFTUtT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 16:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754173AbYFTUlh
+	id S1760829AbYFTUtj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 16:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932526AbYFTUln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 16:41:37 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:16653 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932494AbYFTUle (ORCPT
+	Fri, 20 Jun 2008 16:41:43 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:46151 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932524AbYFTUlm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 16:41:34 -0400
-Subject: Re: [Experimental][PATCH] putback_lru_page rework
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+	Fri, 20 Jun 2008 16:41:42 -0400
+From: "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Dave Jones <davej@redhat.com>
+CC: Wim Van Sebroeck <wim@iguana.be>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-In-Reply-To: <1213981843.6474.68.camel@lts-notebook>
-References: <20080611225945.4da7bb7f.akpm@linux-foundation.org>
-	 <20080617163501.7cf411ee.nishimura@mxp.nes.nec.co.jp>
-	 <20080617164709.de4db070.nishimura@mxp.nes.nec.co.jp>
-	 <20080618184000.a855dfe0.kamezawa.hiroyu@jp.fujitsu.com>
-	 <1213813266.6497.14.camel@lts-notebook>
-	 <20080619092242.79648592.kamezawa.hiroyu@jp.fujitsu.com>
-	 <1213886722.6398.29.camel@lts-notebook>
-	 <20080620101352.e1200b8e.kamezawa.hiroyu@jp.fujitsu.com>
-	 <1213981843.6474.68.camel@lts-notebook>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Fri, 20 Jun 2008 16:41:29 -0400
-Message-Id: <1213994489.6474.127.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+       LKML <linux-kernel@vger.kernel.org>
+Date: Fri, 20 Jun 2008 20:40:39 +0000
+Subject: RE: [WATCHDOG] v2.6.26 hpwdt.c fixes
+Thread-Topic: [WATCHDOG] v2.6.26 hpwdt.c fixes
+Thread-Index: AcjTDCO6/kd4TX7mRoOjMgKtIjInzwACbFXQ
+Message-ID: <183C1D5A376DE343AA8F94FC2A1EC1491BFC32890B@GVW1091EXB.americas.hpqcorp.net>
+References: <20080618194917.GC2741@infomag.infomag.iguana.be>
+ <alpine.LFD.1.10.0806181256010.2907@woody.linux-foundation.org>
+ <20080620190538.GA30161@redhat.com>
+ <alpine.LFD.1.10.0806201226420.3167@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0806201226420.3167@woody.linux-foundation.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-06-20 at 13:10 -0400, Lee Schermerhorn wrote:
-> On Fri, 2008-06-20 at 10:13 +0900, KAMEZAWA Hiroyuki wrote:
-> > Lee-san, this is an additonal one..
-> > Not-tested-yet, just by review.
-> 
-> OK, I'll test this on my x86_64 platform, which doesn't seem to hit the
-> soft lockups.
-> 
+That is correct. Linus' patch has fixed the issue on both 32 and 64 bit ProLiant platforms.
 
-Quick update:  
 
-With this patch applied, at ~ 1.5 hours into the test, my system panic'd
-[panic_on_oops set] with a BUG in __find_get_block() -- looks like the
-BUG_ON() in check_irqs_on() called from bh_lru_install() inlined by
-__find_get_block().  Before the panic occurred, I saw warnings from
-native_smp_call_function_mask() [arch/x86/kernel/smp.c]--also because
-irqs_disabled().
+Tom
 
-I'll back out the changes [spin_[un]lock() => spin_[un]lock_irq()] to
-shrink_inactive_list() and try again.  Just a hunch.
+-----Original Message-----
+From: Linus Torvalds [mailto:torvalds@linux-foundation.org]
+Sent: Friday, June 20, 2008 2:30 PM
+To: Dave Jones
+Cc: Wim Van Sebroeck; Andrew Morton; LKML; Mingarelli, Thomas
+Subject: Re: [WATCHDOG] v2.6.26 hpwdt.c fixes
 
-Lee
 
+
+On Fri, 20 Jun 2008, Dave Jones wrote:
+>
+> FWIW, we coincidentally got the below oops reported yesterday.
+> This was against 2.6.25.4, but this doesn't seem related to the NMI path,
+> so probably unfixed ?
+
+This could be fixed by my patch - you're running in 32-bit, so it's using
+the "asmcall" thing in detection.
+
+I committed my first (hackier, but simpler) patch that was tested by some
+people on both 32-bit and apparently 64-bit too. It *may* fix this.
+
+                Linus
