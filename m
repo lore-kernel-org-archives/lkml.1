@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759441AbYFTPbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760210AbYFTPcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759441AbYFTPbu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 11:31:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758480AbYFTPbk
+	id S1760210AbYFTPcr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 11:32:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758285AbYFTPcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 11:31:40 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:45248 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757043AbYFTPbj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 11:31:39 -0400
-Date: Fri, 20 Jun 2008 09:31:37 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       linux-kernel@vger.kernel.org, dsd@gentoo.org,
-       mdharm-usb@one-eyed-alien.net, linux-usb@vger.kernel.org,
-       vegardno@ifi.uio.no, James.Bottomley@hansenpartnership.com,
-       linux-scsi@vger.kernel.org, Greg KH <greg@kroah.com>
-Subject: Re: [RFC/PATCH] usb-storage: wait for device scanning before mounting root
-Message-ID: <20080620153137.GT4392@parisc-linux.org>
-References: <20080619182310.GA30833@parisc-linux.org> <Pine.LNX.4.44L0.0806191735570.2229-100000@iolanthe.rowland.org> <19f34abd0806200815t49b59df9sd9567b52482eaee3@mail.gmail.com>
+	Fri, 20 Jun 2008 11:32:36 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48044 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757039AbYFTPcf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 11:32:35 -0400
+Date: Fri, 20 Jun 2008 17:32:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alok Kataria <akataria@vmware.com>
+Cc: "Brown, Len" <len.brown@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH 1/2] cleanup e820_setup_gap
+Message-ID: <20080620153220.GD17373@elte.hu>
+References: <1213916250.27983.35.camel@promb-2n-dhcp368.eng.vmware.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <19f34abd0806200815t49b59df9sd9567b52482eaee3@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1213916250.27983.35.camel@promb-2n-dhcp368.eng.vmware.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 20, 2008 at 05:15:43PM +0200, Vegard Nossum wrote:
-> On Thu, Jun 19, 2008 at 11:39 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > As I recall, it died because the whole notion was very poorly defined
-> > to begin with.  The idea was to stop waiting when all the SCSI buses
-> > had been scanned -- but there's no way to know when that occurs because
-> > new buses can be added at any time.
+
+* Alok Kataria <akataria@vmware.com> wrote:
+
+> This is a preparatory patch for the next patch in series. Moves some 
+> code from e820_setup_gap to a new function e820_search_gap. This 
+> function will be used by the next patch in the series.
 > 
-> Can you please explain why this is?
+> Signed-off-by: Alok N Kataria <akataria@vmware.com>
+> 
+> Index: linux-2.6/arch/x86/kernel/e820_64.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/e820_64.c	2008-06-12 10:42:22.000000000 -0700
+> +++ linux-2.6/arch/x86/kernel/e820_64.c	2008-06-13 14:05:18.000000000 -0700
+> @@ -872,26 +872,20 @@
 
-The USB spec doesn't mandate a minimum time before devices come
-available.  There's no way for the device to say "I'm here, I will be
-providing USB Storage, but I'm not ready yet".  So we can't know when
-we've enumerated all the USB devices on the system.
+note that this code has significantly changed in x86-next (it has been 
+fixed, extended, cleaned up and unified). You can find the latest 
+patches in tip/master at:
 
+  http://people.redhat.com/mingo/tip.git/README
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+tip/master contains the integration of all changes in this area.
+
+We could apply and test your change in tip/x86 as well, as it seems 
+standalone and independent of ACPI - so that when the acpi change shows 
+up in linux-next there's a e820_search_gap() function available.
+
+	Ingo
