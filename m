@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752692AbYFTHIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753123AbYFTHKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752692AbYFTHIe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 03:08:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbYFTHIY
+	id S1753123AbYFTHKW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 03:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbYFTHKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 03:08:24 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:14872 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751192AbYFTHIY (ORCPT
+	Fri, 20 Jun 2008 03:10:10 -0400
+Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.108]:10261
+	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751324AbYFTHKJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 03:08:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=GDx4EKTBtDvTJRQWsIkB6KjGhp+sc69VxwCp2BKx2N0GgpQebViE/bmrvB+iZisAMr
-         DSgXufGJnZ9afxlEg7YpmHLcH/thlNFVeMW29n5c1/C96J4HgF3oRF9knWUqRc+UHG6G
-         wNkUBb4giHmcsnq6PgoOem1foaf/01knVLXyY=
-Message-ID: <86802c440806200008y23f7029bg9e254f3b17349bad@mail.gmail.com>
-Date: Fri, 20 Jun 2008 00:08:18 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: make 64bit identify_cpu use cpu_dev v2
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Dave Jones" <davej@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Thomas Petazzoni" <thomas.petazzoni@free-electrons.com>
-In-Reply-To: <20080620062958.GA31182@elte.hu>
+	Fri, 20 Jun 2008 03:10:09 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAKf0WkjLO9AP/2dsb2JhbACvZQ
+X-IronPort-AV: E=Sophos;i="4.27,678,1204470000"; 
+   d="scan'208";a="345202554"
+From: Ian Kent <raven@themaw.net>
+Subject: [PATCH] autofs4 - add missing kfree
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       autofs mailing list <autofs@linux.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Date: Fri, 20 Jun 2008 15:09:25 +0800
+Message-ID: <20080620070923.17224.33149.stgit@raven.themaw.net>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200806180215.53755.yhlu.kernel@gmail.com>
-	 <200806191530.32354.yhlu.kernel@gmail.com>
-	 <20080620062958.GA31182@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 19, 2008 at 11:29 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
->> v2: fix early_panic on some conf
->>     reason : struct cpu_vendor_dev size is 16, need to make table to be 16
->>              byte alignment
->>     also print out the cpu supported...
->
-> applied to tip/x86/cpu, thanks Yinghai.
->
->> --- linux-2.6.orig/arch/x86/kernel/vmlinux_64.lds.S
->> +++ linux-2.6/arch/x86/kernel/vmlinux_64.lds.S
->> @@ -168,6 +168,7 @@ SECTIONS
->>       *(.con_initcall.init)
->>    }
->>    __con_initcall_end = .;
->> +  . = ALIGN(16);
->>    __x86cpuvendor_start = .;
->>    .x86cpuvendor.init : AT(ADDR(.x86cpuvendor.init) - LOAD_OFFSET) {
->>       *(.x86cpuvendor.init)
->
-> ah, nice one!
->
-> we broke that via v2.6.25-37-g03ae576 "x86: use ELF section to list CPU
-> vendor specific code" - should we backport your fix to mainline right
-> now? I'm wondering why it only triggered now - did alignment change in
-> this section due to your changes and thus this dormant bug became
-> triggerable?
+It see that the patch tittled "autofs4 - fix pending mount race" is
+missing a change that I had recently made.
 
-don't need,  that section is not used before this patch.
-we my add some building check to verify those kind info to avoid same kind bug.
+It's missing a kfree for the case mutex_lock_interruptible() fails
+to aquire the wait queue mutex.
 
-YH
+My appologies for this mistake.
+
+Ian
+
+Signed-off-by: Ian Kent <raven@themaw.net>
+
+---
+
+ fs/autofs4/waitq.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+
+diff --git a/fs/autofs4/waitq.c b/fs/autofs4/waitq.c
+index ae637d9..d291b07 100644
+--- a/fs/autofs4/waitq.c
++++ b/fs/autofs4/waitq.c
+@@ -328,8 +328,10 @@ int autofs4_wait(struct autofs_sb_info *sbi, struct dentry *dentry,
+ 	qstr.name = name;
+ 	qstr.hash = full_name_hash(name, qstr.len);
+ 
+-	if (mutex_lock_interruptible(&sbi->wq_mutex))
++	if (mutex_lock_interruptible(&sbi->wq_mutex)) {
++		kfree(qstr.name);
+ 		return -EINTR;
++	}
+ 
+ 	ret = validate_request(&wq, sbi, &qstr, dentry, notify);
+ 	if (ret <= 0) {
