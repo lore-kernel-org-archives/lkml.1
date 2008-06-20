@@ -1,139 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757485AbYFTXJ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757726AbYFTXK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757485AbYFTXJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 19:09:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755583AbYFTXJU
+	id S1757726AbYFTXK2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 19:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755583AbYFTXKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 19:09:20 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:41611 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755549AbYFTXJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 19:09:19 -0400
-Date: Sat, 21 Jun 2008 01:09:10 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Rene Herman <rene.herman@keyaccess.nl>, Takashi Iwai <tiwai@suse.de>,
-       Jaroslav Kysela <perex@perex.cz>
-Cc: ALSA devel <alsa-devel@alsa-project.org>, mulix@mulix.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [alsa-devel] looping S/PDIF data
-Message-ID: <20080621010910.018f880d@mjolnir.drzeus.cx>
-In-Reply-To: <485C2DF7.7080408@keyaccess.nl>
-References: <20080531112606.5884a1c9@mjolnir.drzeus.cx>
-	<20080617215504.3203a5ed@mjolnir.drzeus.cx>
-	<4858B84B.4030800@keyaccess.nl>
-	<s5hej6t91u1.wl%tiwai@suse.de>
-	<Pine.LNX.4.61.0806191435270.1798@tm8103-a.perex-int.cz>
-	<s5hskv97fqk.wl%tiwai@suse.de>
-	<20080620214516.28e9d3f3@mjolnir.drzeus.cx>
-	<485C0A97.7020909@keyaccess.nl>
-	<20080621000050.43160d47@mjolnir.drzeus.cx>
-	<485C2DF7.7080408@keyaccess.nl>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
-X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-722-1214002850-0001-2"
+	Fri, 20 Jun 2008 19:10:19 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:19015 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753737AbYFTXKR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 19:10:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=qxy2Mx4f+wpE9/9G1Pddlo43XPuT2jyD/jY8dAO0x2quVsDa6cjupJ5kmfL8H84+8e
+         /NmRG7EsJQ4K3K1uq1KmTS+8NXpYODms+fPRvosRytbbB+Atoi7NBHalw/sK6asYhzEe
+         uzuUlME4ZWfkrYrhN2ZlYkraOyyqIUIUWpLqc=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: [PATCH] x86: check command line when CONFIG_X86_MPPARSE is not set v2
+Date: Fri, 20 Jun 2008 16:11:20 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <200805041823.57198.yhlu.kernel@gmail.com> <200806191215.01538.yhlu.kernel@gmail.com> <200806200742.36226.yhlu.kernel@gmail.com>
+In-Reply-To: <200806200742.36226.yhlu.kernel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806201611.21198.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_freyr.drzeus.cx-722-1214002850-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+if acpi=off, acpi=noirq and pci=noacpi, we need to disable apic
 
-On Sat, 21 Jun 2008 00:23:51 +0200
-Rene Herman <rene.herman@keyaccess.nl> wrote:
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-> On 21-06-08 00:00, Pierre Ossman wrote:
->=20
-> > On Fri, 20 Jun 2008 21:52:55 +0200 Rene Herman
-> > <rene.herman@keyaccess.nl> wrote:
-> >=20
-> >> On 20-06-08 21:45, Pierre Ossman wrote:
-> >>> Are there any specs on this hardware? I could play around a bit
-> >>> myself, but I can't really find any documentation on the
-> >>> registers.
-> >> At:
-> >>=20
-> >> ftp://ftp.alsa-project.org/pub/manuals/trident/
-> >>=20
-> >> there's a 4D-Wave DX technical reference manual and .doc files
-> >> which at first glance look useful.
-> >>=20
-> >=20
-> > Ah, thanks. This is an NX, but hopefully they don't differ that much.
->=20
-> No idea, but if you come up with something and keep me in CC I'll test=20
-> it on a DX. Just acquired one on eBay a few days ago as a coincedence.
->=20
+---
+ arch/x86/kernel/acpi/boot.c |   14 ++++++++++++++
+ arch/x86/kernel/apic_32.c   |    2 +-
+ arch/x86/kernel/setup.c     |    4 ++++
+ arch/x86/kernel/setup_32.c  |    5 +++++
+ arch/x86/kernel/setup_64.c  |    9 +++++++++
+ include/asm-x86/apic.h      |    6 +++++-
+ include/linux/acpi.h        |    6 ++++++
+ 7 files changed, 44 insertions(+), 2 deletions(-)
 
-Well aren't things just so much easier with a decent spec. I have this
-one solved now. :)
-
-The following patch disables both the S/PDIF output, and the DMA engine
-when paused. As for Jaroslav's comment, the documentation seems to
-suggest that the DMA disabled by the main code path is just for the
-mixer engine, which is not used when feeding the S/PDIF directly. This
-is supported by my tests as S/PDIF output is paused when using hw:0.0
-(the mixer engine), but not with hw:0.2 (the raw S/PDIF).
-
-Regarding the DX, the docs say that the DX lacks S/PDIF, so it should
-be unaffected. For the SiS chip, Takashi's patch might still be needed.
-
---
-
-trident: pause s/pdif output
-
-Stop the S/PDIF DMA engine and output when the device is told to pause.
-It will keep on looping the current buffer contents if this isn't done.
-
-Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
---
-
-diff --git a/sound/pci/trident/trident_main.c b/sound/pci/trident/trident_m=
-ain.c
-index bbcee2c..a69b420 100644
---- a/sound/pci/trident/trident_main.c
-+++ b/sound/pci/trident/trident_main.c
-@@ -1590,7 +1590,10 @@ static int snd_trident_trigger(struct snd_pcm_substr=
-eam *substream,
-        if (spdif_flag) {
-                if (trident->device !=3D TRIDENT_DEVICE_ID_SI7018) {
-                        outl(trident->spdif_pcm_bits, TRID_REG(trident, NX_=
-SPCSTATUS));
--                       outb(trident->spdif_pcm_ctrl, TRID_REG(trident, NX_=
-SPCTRL_SPCSO + 3));
-+                       val =3D trident->spdif_pcm_ctrl;
-+                       if (!go)
-+                               val &=3D ~(0x28);
-+                       outb(val, TRID_REG(trident, NX_SPCTRL_SPCSO + 3));
-                } else {
-                        outl(trident->spdif_pcm_bits, TRID_REG(trident, SI_=
-SPDIF_CS));
-                        val =3D inl(TRID_REG(trident, SI_SERIAL_INTF_CTRL))=
- | SPDIF_EN;
-
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Use end-to-end encryption where
-  possible.
-
---=_freyr.drzeus.cx-722-1214002850-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkhcOJsACgkQ7b8eESbyJLiE/gCdHHBgnKvyoUkWvk0n4gHfSJ+o
-fewAn0e8nvNhAlEu5GmLGpKNzBpKTpj2
-=9Khl
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-722-1214002850-0001-2--
+Index: linux-2.6/arch/x86/kernel/acpi/boot.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/acpi/boot.c
++++ linux-2.6/arch/x86/kernel/acpi/boot.c
+@@ -1740,6 +1740,20 @@ static int __init parse_pci(char *arg)
+ }
+ early_param("pci", parse_pci);
+ 
++int __init acpi_mps_check(void)
++{
++#if defined(CONFIG_X86_LOCAL_APIC) && !defined(CONFIG_X86_MPPARSE)
++/* mptable code is not built-in*/
++	if (acpi_disabled || acpi_noirq) {
++		printk(KERN_WARNING "MPS support code is not built-in.\n"
++		       "Using acpi=off or acpi=noirq or pci=noacpi "
++		       "may have problem\n");
++		return 1;
++	}
++#endif
++	return 0;
++}
++
+ #ifdef CONFIG_X86_IO_APIC
+ static int __init parse_acpi_skip_timer_override(char *arg)
+ {
+Index: linux-2.6/arch/x86/kernel/setup_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup_32.c
++++ linux-2.6/arch/x86/kernel/setup_32.c
+@@ -689,6 +689,11 @@ void __init setup_arch(char **cmdline_p)
+ 		early_dump_pci_devices();
+ #endif
+ 
++	if (acpi_mps_check()){
++		enable_local_apic = -1;
++		clear_cpu_cap(&boot_cpu_data, X86_FEATURE_APIC);
++	}
++
+ 	finish_e820_parsing();
+ 
+ 	probe_roms();
+Index: linux-2.6/arch/x86/kernel/setup_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup_64.c
++++ linux-2.6/arch/x86/kernel/setup_64.c
+@@ -319,6 +319,11 @@ void __init setup_arch(char **cmdline_p)
+ 		early_dump_pci_devices();
+ #endif
+ 
++	if (acpi_mps_check()) {
++		disable_apic = 1;
++		clear_cpu_cap(&boot_cpu_data, X86_FEATURE_APIC);
++	}
++
+ #ifdef CONFIG_PROVIDE_OHCI1394_DMA_INIT
+ 	if (init_ohci1394_dma_early)
+ 		init_ohci1394_dma_on_all_controllers();
+@@ -740,6 +745,10 @@ static void __cpuinit early_identify_cpu
+ 		cpu_devs[c->x86_vendor]->c_early_init(c);
+ 
+ 	validate_pat_support(c);
++
++	/* early_param could clear that, but recall get it set again */
++	if (disable_apic)
++		clear_cpu_cap(c, X86_FEATURE_APIC);
+ }
+ 
+ /*
+Index: linux-2.6/include/linux/acpi.h
+===================================================================
+--- linux-2.6.orig/include/linux/acpi.h
++++ linux-2.6/include/linux/acpi.h
+@@ -82,6 +82,7 @@ char * __acpi_map_table (unsigned long p
+ int early_acpi_boot_init(void);
+ int acpi_boot_init (void);
+ int acpi_boot_table_init (void);
++int acpi_mps_check (void);
+ int acpi_numa_init (void);
+ 
+ int acpi_table_init (void);
+@@ -250,6 +251,11 @@ static inline int acpi_boot_table_init(v
+ 	return 0;
+ }
+ 
++static inline int acpi_mps_check(void)
++{
++	return 0;
++}
++
+ static inline int acpi_check_resource_conflict(struct resource *res)
+ {
+ 	return 0;
+Index: linux-2.6/arch/x86/kernel/setup.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup.c
++++ linux-2.6/arch/x86/kernel/setup.c
+@@ -161,6 +161,10 @@ void __init setup_per_cpu_areas(void)
+ 	char *ptr;
+ 	int cpu;
+ 
++	/* no processor from mptable or madt */
++	if (!num_processors)
++		num_processors = 1;
++
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	prefill_possible_map();
+ #else
+Index: linux-2.6/arch/x86/kernel/apic_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic_32.c
++++ linux-2.6/arch/x86/kernel/apic_32.c
+@@ -57,7 +57,7 @@ unsigned long mp_lapic_addr;
+  *
+  * -1=force-disable, +1=force-enable
+  */
+-static int enable_local_apic __initdata;
++int enable_local_apic;
+ 
+ /* Local APIC timer verification ok */
+ static int local_apic_timer_verify_ok;
+Index: linux-2.6/include/asm-x86/apic.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/apic.h
++++ linux-2.6/include/asm-x86/apic.h
+@@ -39,8 +39,12 @@ extern int apic_verbosity;
+ extern int local_apic_timer_c2_ok;
+ 
+ extern int ioapic_force;
+-extern int disable_apic;
+ 
++#ifdef CONFIG_X86_64
++extern int disable_apic;
++#else
++extern int enable_local_apic;
++#endif
+ /*
+  * Basic functions accessing APICs.
+  */
