@@ -1,57 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbYFTTZE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbYFTTbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755538AbYFTTZE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 15:25:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbYFTTYz
+	id S1753953AbYFTTbq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 15:31:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750892AbYFTTbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 15:24:55 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58047 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753046AbYFTTYy (ORCPT
+	Fri, 20 Jun 2008 15:31:37 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46644 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750837AbYFTTbg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 15:24:54 -0400
-Message-ID: <485C0341.3090302@zytor.com>
-Date: Fri, 20 Jun 2008 12:21:37 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 20 Jun 2008 15:31:36 -0400
+Date: Fri, 20 Jun 2008 12:30:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Dave Jones <davej@redhat.com>
+cc: Wim Van Sebroeck <wim@iguana.be>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Mingarelli <Thomas.Mingarelli@hp.com>
+Subject: Re: [WATCHDOG] v2.6.26 hpwdt.c fixes
+In-Reply-To: <20080620190538.GA30161@redhat.com>
+Message-ID: <alpine.LFD.1.10.0806201226420.3167@woody.linux-foundation.org>
+References: <20080618194917.GC2741@infomag.infomag.iguana.be> <alpine.LFD.1.10.0806181256010.2907@woody.linux-foundation.org> <20080620190538.GA30161@redhat.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Christoph Lameter <clameter@sgi.com>, Mike Travis <travis@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.509483000@polaris-admin.engr.sgi.com> <20080605102222.GA21319@elte.hu> <484EF29C.7080100@sgi.com> <485947A8.8060801@goop.org> <4859511E.5050605@sgi.com> <48596315.6020104@goop.org> <48596893.4040908@sgi.com> <485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org> <485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org> <485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com> <485AD138.4010404@goop.org> <485ADA12.5010505@sgi.com> <485ADC73.60009@goop.org> <485BDB04.4090709@sgi.com> <485BE80E.10209@goop.org> <Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com> <485BF8F5.6010802@goop.org> <Pine.LNX.4.64.0806201148430.16227@schroedinger.engr.sgi.com> <485BFF57.5090906@goop.org>
-In-Reply-To: <485BFF57.5090906@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
->>
->> Its loaded at __per_cpu_load but the symbols have addresses starting 
->> at 0.
+
+
+On Fri, 20 Jun 2008, Dave Jones wrote:
 > 
-> Yes, which leads to an odd-looking ELF file where the Phdrs aren't 
-> sorted by virtual address order.  I'm wondering what would happen if a 
-> bootloader that actually understood ELF files tried to load it as an 
-> actual ELF file...
-> 
+> FWIW, we coincidentally got the below oops reported yesterday.
+> This was against 2.6.25.4, but this doesn't seem related to the NMI path,
+> so probably unfixed ?
 
-If it is implemented correctly, it will work.  It might trigger bugs in 
-such loaders, however.
+This could be fixed by my patch - you're running in 32-bit, so it's using 
+the "asmcall" thing in detection.
 
->> Hmmm.... we could add the relocation offset to __per_cpu_load? 
->> __per_cpu_load is used very sparingly. Basically only useful during 
->> early boot and when a new per cpu area has to be setup. In that case 
->> we want to copy from __per_cpu_load to the newly allocated percpu area.
-> 
-> Yes, it should be fairly easy to manually relocate it by applying the 
-> (load - link) offset to it.
+I committed my first (hackier, but simpler) patch that was tested by some 
+people on both 32-bit and apparently 64-bit too. It *may* fix this.
 
-Seems easy enough, and as already stated, this is not 
-performance-critical so a few extra instructions is pretty much a non-issue.
-
-	-hpa
+		Linus
