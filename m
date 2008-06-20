@@ -1,70 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757948AbYFTXVI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758156AbYFTXVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757948AbYFTXVI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 19:21:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756007AbYFTXUy
+	id S1758156AbYFTXVs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 19:21:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756715AbYFTXVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 19:20:54 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:64747 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755684AbYFTXUx (ORCPT
+	Fri, 20 Jun 2008 19:21:37 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33231
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756651AbYFTXVg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 19:20:53 -0400
-Date: Fri, 20 Jun 2008 16:15:12 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Louis Rilling <louis.rilling@kerlabs.com>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oracle.com
-Subject: Re: [RFC][PATCH v2] configfs: Provide variants of
-	config_*_init_type_name() that report errors
-Message-ID: <20080620231512.GG21416@mail.oracle.com>
-Mail-Followup-To: Louis Rilling <louis.rilling@kerlabs.com>,
-	linux-kernel@vger.kernel.org, ocfs2-devel@oracle.com
-References: <1213974251-21603-1-git-send-email-louis.rilling@kerlabs.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1213974251-21603-1-git-send-email-louis.rilling@kerlabs.com>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 20 Jun 2008 19:21:36 -0400
+Date: Fri, 20 Jun 2008 16:21:35 -0700 (PDT)
+Message-Id: <20080620.162135.203810660.davem@davemloft.net>
+To: a.beregalov@gmail.com
+Cc: kernel-testers@vger.kernel.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.26-rc: SPARC: Sun Ultra 10 can not boot
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <a4423d670806201612g3487325cj175f077fbe71de2a@mail.gmail.com>
+References: <a4423d670806201542o5415cad7p6b9a38b67252cee1@mail.gmail.com>
+	<20080620.155139.224032701.davem@davemloft.net>
+	<a4423d670806201612g3487325cj175f077fbe71de2a@mail.gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 20, 2008 at 05:04:11PM +0200, Louis Rilling wrote:
->  void config_item_init_type_name(struct config_item *item,
->  				const char *name,
->  				struct config_item_type *type)
->  {
-> -	config_item_set_name(item, name);
-> -	item->ci_type = type;
-> -	config_item_init(item);
-> +	int error;
-> +
-> +	error = config_item_init_type_long_name(item, name, type);
-> +	BUG_ON(error);
->  }
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+Date: Sat, 21 Jun 2008 03:12:30 +0400
 
-	This needs to BUG_ON(strlen(name) >= CONIFG_ITEM_NAME_LEN) at
-the top.  We don't want to allow an invalid construct just because
-memory happened to be available :-)
-	Also, update Documentation/filesystems/configfs/configfs.txt.
+> 2008/6/21 David Miller <davem@davemloft.net>:
+> > Something is screwey here... Hmmm...
+> >
+> > When I added the changeset in question, it fixed a problem in that
+> > any backtrace of a kernel thread would loop forever at the end.
+> > Any stack backtrace would hang or reach a safety limit (such as
+> > the one imposed by lockdep).
+> >
+> > Please double check that you are precisely reverting this patch
+> > below _before_ doing these tests:
+> >
+> > commit a051bc5bb1ac6dc138d529077fa20cbbc6622d95
+> 
+> Yes, I am sure. It runs without this commit and hangs with it.
+> I can connect serial console, but if it is a infinite loop it will not
+> provide more info.
 
-Joel
+Ok I have to find some way to reproduce this.  Please post the
+kernel .config you are using during these tests.  Also please
+let me know what distribution and compiler version you are using.
 
--- 
-
- "I'm living so far beyond my income that we may almost be said
- to be living apart."
-         - e e cummings
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+Thanks.
