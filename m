@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbYFTIz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbYFTJAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754073AbYFTIz2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 04:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbYFTIzO
+	id S1754508AbYFTJAy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 05:00:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751656AbYFTJAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 04:55:14 -0400
-Received: from saeurebad.de ([85.214.36.134]:53166 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751556AbYFTIzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 04:55:12 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Dave Airlie <airlied@linux.ie>
-Cc: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [git pull] drm patches for 2.6.26-final
-References: <alpine.DEB.0.82.0806200402030.12492@skynet.skynet.ie>
-	<alpine.DEB.0.82.0806200645470.12492@skynet.skynet.ie>
-Date: Fri, 20 Jun 2008 10:55:03 +0200
-In-Reply-To: <alpine.DEB.0.82.0806200645470.12492@skynet.skynet.ie> (Dave
-	Airlie's message of "Fri, 20 Jun 2008 06:47:11 +0100 (IST)")
-Message-ID: <87bq1wpjtk.fsf@skyscraper.fehenstaub.lan>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Fri, 20 Jun 2008 05:00:43 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:41267 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751292AbYFTJAm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 05:00:42 -0400
+Date: Fri, 20 Jun 2008 04:59:22 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Holger Kiehl <Holger.Kiehl@dwd.de>
+Cc: Eric Sandeen <sandeen@redhat.com>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
+       Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Performance of ext4
+Message-ID: <20080620085922.GH9119@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Holger Kiehl <Holger.Kiehl@dwd.de>,
+	Eric Sandeen <sandeen@redhat.com>,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+	Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
+	Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <20080612180605.GD22481@skywalker> <Pine.LNX.4.64.0806121940020.2974@diagnostix.dwd.de> <Pine.LNX.4.64.0806130753100.7097@diagnostix.dwd.de> <20080616175408.GF3279@atrey.karlin.mff.cuni.cz> <20080616181353.GA20686@skywalker> <Pine.LNX.4.64.0806171001200.6307@diagnostix.dwd.de> <20080619155645.GA8582@mit.edu> <485A8C2D.1090806@redhat.com> <20080619174211.GB9119@mit.edu> <Pine.LNX.4.64.0806200812340.3383@diagnostix.dwd.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0806200812340.3383@diagnostix.dwd.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, Jun 20, 2008 at 08:32:52AM +0000, Holger Kiehl wrote:
+>> It sounds like i_size is actually dropping in
+>> size at some pointer long after the file was written.  If I had to
 
-Dave Airlie <airlied@linux.ie> writes:
+sorry, "at some point"...
+            
+>> guess the value in the inode cache is correct; and perhaps so is the
+>> value on the journal.  But somehow, the wrong value is getting written
+>> to disk 
 
->> There is also an oops fixer reported in the drm ioctl handler.
+Or, "the right value is never getting written to disk".  (Which as I
+think about it is more likely; it's likely that an update to i_size is
+getting *lost*, perhaps because the delalloc code is possibly
+modifying i_size without starting a transaction first.  Again this is
+just a guess.)
 
->> commit 41ee2ff404ec76194315aeed57ac973b010abe1d
->> Author: Johannes Weiner <hannes@saeurebad.de>
->> Date:   Fri Jun 13 15:04:40 2008 +1000
->> 
->>     drm: use drms ioctl cmd not what we get passed from userspace.
->>     
->>     This enforces us to use the drm ioctl types so read/write works correctly and not believe
->>     what userspace tells us.
->>     
->>     It does this hopefully without breaking the drm api.
->>     
->>     Fixes bug from thread: BUG: unable to handle kernel NULL pointer dereference (drm_getunique)
->>     
->>     Signed-off-by: Dave Airlie <airlied@redhat.com>
+> What I find strange is that the missing parts of the file are not for
+> example exactly 512 or 1024 or 4096 bytes it is mostly some odd number
+> of bytes.
 
-       Reported-by: Sitsofe Wheeler <sitsofe@yahoo.com>
-       Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+Is there any chance the truncation point is related to how the program
+is writing its output file?  i.e., if it is a text file, is the
+truncation happening after a new-line or when the stdio library might
+have done an explicit or implicit fflush()?
 
-That was only a proposal, to which you did not reply at all [1] and just
-silently picked it (without the credits).  Not very polite.
-
-	Hannes
-
-[1] http://lkml.org/lkml/2008/6/5/250
+							- Ted
