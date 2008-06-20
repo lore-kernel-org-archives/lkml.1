@@ -1,222 +1,260 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761942AbYFTVd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757016AbYFTVds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761942AbYFTVd0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 17:33:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761398AbYFTVcF
+	id S1757016AbYFTVds (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 17:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761420AbYFTVcN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 17:32:05 -0400
+	Fri, 20 Jun 2008 17:32:13 -0400
 Received: from fk-out-0910.google.com ([209.85.128.190]:5898 "EHLO
 	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761380AbYFTVcB (ORCPT
+	with ESMTP id S1761380AbYFTVcI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 17:32:01 -0400
+	Fri, 20 Jun 2008 17:32:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=fNLHNnacwq8h839Lx/Z+LMeRlfA6TDA2fjC7BAPOPiOxyTDouiflCLuKUmW1wLSUIh
-         Ytw51B23qGlKXx92d2vF2SxnVlbbO5THyFPAYVD4fJ7qri6P+feYoes/nBtz5+IixZyW
-         Hic5iIWBUTWd9vS/t07toqedrx6JzvrsdDcBI=
+        b=jIHqKavxRiBt1+g17QKPsjrTNYYZCXMtobvWAoQzZfLerGlct7KfdTTE/VY0gl8MAM
+         uCTggu2oGdnffXIE/h1aa/GD/R91Xs0LzxJx3Qp69NbGStZNfy3Rc7AWi7dwWj58B4jg
+         73DneHIIE1IU/Qj0NRNhqk+PQab5R6u0rd6RI=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Fri, 20 Jun 2008 23:33:56 +0200
-Message-Id: <20080620213356.13202.61560.sendpatchset@localhost.localdomain>
+Date: Fri, 20 Jun 2008 23:34:03 +0200
+Message-Id: <20080620213403.13202.26763.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080620213323.13202.71450.sendpatchset@localhost.localdomain>
 References: <20080620213323.13202.71450.sendpatchset@localhost.localdomain>
-Subject: [PATCH 05/18] ide: factor out simplex handling from ide_pci_dma_base()
+Subject: [PATCH 06/18] ide: add ->exec_command method
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Factor out simplex handling from ide_pci_dma_base() to
-  ide_pci_check_simplex().
-
-* Set hwif->dma_base early in ->init_dma method / ide_hwif_setup_dma()
-  and reset it in ide_init_port() if DMA initialization fails.
-
-* Use ->read_sff_dma_status instead of ->INB in ide_pci_dma_base().
+Add ->exec_command method for writing ATA Command register
+and use it instead of ->OUTBSYNC.
 
 There should be no functional changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-probe.c    |    1 +
- drivers/ide/pci/alim15x3.c |   12 +++++++++---
- drivers/ide/pci/hpt366.c   |   12 +++++++++---
- drivers/ide/setup-pci.c    |   35 +++++++++++++++++++++++------------
- include/linux/ide.h        |    1 +
- 5 files changed, 43 insertions(+), 18 deletions(-)
+ drivers/ide/ide-io.c       |    3 +--
+ drivers/ide/ide-iops.c     |   19 ++++++++++++++-----
+ drivers/ide/ide-probe.c    |    6 +++---
+ drivers/ide/ide-taskfile.c |    2 +-
+ drivers/ide/pci/scc_pata.c |    9 +++++++++
+ drivers/ide/ppc/pmac.c     |    9 +++++++++
+ drivers/scsi/ide-scsi.c    |    3 +--
+ include/linux/ide.h        |    3 ++-
+ 8 files changed, 40 insertions(+), 14 deletions(-)
 
+Index: b/drivers/ide/ide-io.c
+===================================================================
+--- a/drivers/ide/ide-io.c
++++ b/drivers/ide/ide-io.c
+@@ -437,8 +437,7 @@ static ide_startstop_t ide_atapi_error(i
+ 
+ 	if (ide_read_status(drive) & (BUSY_STAT | DRQ_STAT))
+ 		/* force an abort */
+-		hwif->OUTBSYNC(hwif, WIN_IDLEIMMEDIATE,
+-			       hwif->io_ports.command_addr);
++		hwif->exec_command(hwif, WIN_IDLEIMMEDIATE);
+ 
+ 	if (rq->errors >= ERROR_MAX) {
+ 		ide_kill_rq(drive, rq);
+Index: b/drivers/ide/ide-iops.c
+===================================================================
+--- a/drivers/ide/ide-iops.c
++++ b/drivers/ide/ide-iops.c
+@@ -103,6 +103,14 @@ void SELECT_MASK(ide_drive_t *drive, int
+ 		port_ops->maskproc(drive, mask);
+ }
+ 
++static void ide_exec_command(ide_hwif_t *hwif, u8 cmd)
++{
++	if (hwif->host_flags & IDE_HFLAG_MMIO)
++		writeb(cmd, (void __iomem *)hwif->io_ports.command_addr);
++	else
++		outb(cmd, hwif->io_ports.command_addr);
++}
++
+ static u8 ide_read_sff_dma_status(ide_hwif_t *hwif)
+ {
+ 	if (hwif->host_flags & IDE_HFLAG_MMIO)
+@@ -331,6 +339,7 @@ static void ata_output_data(ide_drive_t 
+ 
+ void default_hwif_transport(ide_hwif_t *hwif)
+ {
++	hwif->exec_command	  = ide_exec_command;
+ 	hwif->read_sff_dma_status = ide_read_sff_dma_status;
+ 
+ 	hwif->tf_load	  = ide_tf_load;
+@@ -696,7 +705,7 @@ int ide_driveid_update(ide_drive_t *driv
+ 	SELECT_MASK(drive, 1);
+ 	ide_set_irq(drive, 1);
+ 	msleep(50);
+-	hwif->OUTBSYNC(hwif, WIN_IDENTIFY, hwif->io_ports.command_addr);
++	hwif->exec_command(hwif, WIN_IDENTIFY);
+ 	timeout = jiffies + WAIT_WORSTCASE;
+ 	do {
+ 		if (time_after(jiffies, timeout)) {
+@@ -783,7 +792,7 @@ int ide_config_drive_speed(ide_drive_t *
+ 	ide_set_irq(drive, 0);
+ 	hwif->OUTB(speed, io_ports->nsect_addr);
+ 	hwif->OUTB(SETFEATURES_XFER, io_ports->feature_addr);
+-	hwif->OUTBSYNC(hwif, WIN_SETFEATURES, io_ports->command_addr);
++	hwif->exec_command(hwif, WIN_SETFEATURES);
+ 	if (drive->quirk_list == 2)
+ 		ide_set_irq(drive, 1);
+ 
+@@ -891,7 +900,7 @@ void ide_execute_command(ide_drive_t *dr
+ 
+ 	spin_lock_irqsave(&ide_lock, flags);
+ 	__ide_set_handler(drive, handler, timeout, expiry);
+-	hwif->OUTBSYNC(hwif, cmd, hwif->io_ports.command_addr);
++	hwif->exec_command(hwif, cmd);
+ 	/*
+ 	 * Drive takes 400nS to respond, we must avoid the IRQ being
+ 	 * serviced before that.
+@@ -909,7 +918,7 @@ void ide_execute_pkt_cmd(ide_drive_t *dr
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&ide_lock, flags);
+-	hwif->OUTBSYNC(hwif, WIN_PACKETCMD, hwif->io_ports.command_addr);
++	hwif->exec_command(hwif, WIN_PACKETCMD);
+ 	ndelay(400);
+ 	spin_unlock_irqrestore(&ide_lock, flags);
+ }
+@@ -1104,7 +1113,7 @@ static ide_startstop_t do_reset1 (ide_dr
+ 		pre_reset(drive);
+ 		SELECT_DRIVE(drive);
+ 		udelay (20);
+-		hwif->OUTBSYNC(hwif, WIN_SRST, io_ports->command_addr);
++		hwif->exec_command(hwif, WIN_SRST);
+ 		ndelay(400);
+ 		hwgroup->poll_timeout = jiffies + WAIT_WORSTCASE;
+ 		hwgroup->polling = 1;
 Index: b/drivers/ide/ide-probe.c
 ===================================================================
 --- a/drivers/ide/ide-probe.c
 +++ b/drivers/ide/ide-probe.c
-@@ -1369,6 +1369,7 @@ static void ide_init_port(ide_hwif_t *hw
+@@ -295,7 +295,7 @@ static int actual_try_to_identify (ide_d
+ 		hwif->OUTB(0, io_ports->feature_addr);
  
- 		if (rc < 0) {
- 			printk(KERN_INFO "%s: DMA disabled\n", hwif->name);
-+			hwif->dma_base = 0;
- 			hwif->swdma_mask = 0;
- 			hwif->mwdma_mask = 0;
- 			hwif->ultra_mask = 0;
-Index: b/drivers/ide/pci/alim15x3.c
+ 	/* ask drive for ID */
+-	hwif->OUTBSYNC(hwif, cmd, hwif->io_ports.command_addr);
++	hwif->exec_command(hwif, cmd);
+ 
+ 	timeout = ((cmd == WIN_IDENTIFY) ? WAIT_WORSTCASE : WAIT_PIDENTIFY) / 2;
+ 	timeout += jiffies;
+@@ -482,7 +482,7 @@ static int do_probe (ide_drive_t *drive,
+ 			msleep(50);
+ 			SELECT_DRIVE(drive);
+ 			msleep(50);
+-			hwif->OUTBSYNC(hwif, WIN_SRST, io_ports->command_addr);
++			hwif->exec_command(hwif, WIN_SRST);
+ 			(void)ide_busy_sleep(hwif);
+ 			rc = try_to_identify(drive, cmd);
+ 		}
+@@ -518,7 +518,7 @@ static void enable_nest (ide_drive_t *dr
+ 	printk("%s: enabling %s -- ", hwif->name, drive->id->model);
+ 	SELECT_DRIVE(drive);
+ 	msleep(50);
+-	hwif->OUTBSYNC(hwif, EXABYTE_ENABLE_NEST, hwif->io_ports.command_addr);
++	hwif->exec_command(hwif, EXABYTE_ENABLE_NEST);
+ 
+ 	if (ide_busy_sleep(hwif)) {
+ 		printk(KERN_CONT "failed (timeout)\n");
+Index: b/drivers/ide/ide-taskfile.c
 ===================================================================
---- a/drivers/ide/pci/alim15x3.c
-+++ b/drivers/ide/pci/alim15x3.c
-@@ -471,7 +471,15 @@ static int __devinit init_dma_ali15x3(id
- 	struct pci_dev *dev = to_pci_dev(hwif->dev);
- 	unsigned long base = ide_pci_dma_base(hwif, d);
- 
--	if (base == 0 || ide_pci_set_master(dev, d->name) < 0)
-+	if (base == 0)
-+		return -1;
-+
-+	hwif->dma_base = base;
-+
-+	if (ide_pci_check_simplex(hwif, d) < 0)
-+		return -1;
-+
-+	if (ide_pci_set_master(dev, d->name) < 0)
- 		return -1;
- 
- 	if (!hwif->channel)
-@@ -483,8 +491,6 @@ static int __devinit init_dma_ali15x3(id
- 	if (ide_allocate_dma_engine(hwif))
- 		return -1;
- 
--	hwif->dma_base = base;
--
- 	hwif->dma_ops = &sff_dma_ops;
- 
- 	return 0;
-Index: b/drivers/ide/pci/hpt366.c
+--- a/drivers/ide/ide-taskfile.c
++++ b/drivers/ide/ide-taskfile.c
+@@ -87,7 +87,7 @@ ide_startstop_t do_rw_taskfile (ide_driv
+ 	switch (task->data_phase) {
+ 	case TASKFILE_MULTI_OUT:
+ 	case TASKFILE_OUT:
+-		hwif->OUTBSYNC(hwif, tf->command, hwif->io_ports.command_addr);
++		hwif->exec_command(hwif, tf->command);
+ 		ndelay(400);	/* FIXME */
+ 		return pre_task_out_intr(drive, task->rq);
+ 	case TASKFILE_MULTI_IN:
+Index: b/drivers/ide/pci/scc_pata.c
 ===================================================================
---- a/drivers/ide/pci/hpt366.c
-+++ b/drivers/ide/pci/hpt366.c
-@@ -1320,7 +1320,15 @@ static int __devinit init_dma_hpt366(ide
- 	unsigned long flags, base = ide_pci_dma_base(hwif, d);
- 	u8 dma_old, dma_new, masterdma = 0, slavedma = 0;
- 
--	if (base == 0 || ide_pci_set_master(dev, d->name) < 0)
-+	if (base == 0)
-+		return -1;
-+
-+	hwif->dma_base = base;
-+
-+	if (ide_pci_check_simplex(hwif, d) < 0)
-+		return -1;
-+
-+	if (ide_pci_set_master(dev, d->name) < 0)
- 		return -1;
- 
- 	dma_old = inb(base + 2);
-@@ -1346,8 +1354,6 @@ static int __devinit init_dma_hpt366(ide
- 	if (ide_allocate_dma_engine(hwif))
- 		return -1;
- 
--	hwif->dma_base = base;
--
- 	hwif->dma_ops = &sff_dma_ops;
- 
- 	return 0;
-Index: b/drivers/ide/setup-pci.c
-===================================================================
---- a/drivers/ide/setup-pci.c
-+++ b/drivers/ide/setup-pci.c
-@@ -72,15 +72,12 @@ static void ide_pci_clear_simplex(unsign
-  *	@d: IDE port info
-  *
-  *	Fetch the DMA Bus-Master-I/O-Base-Address (BMIBA) from PCI space.
-- *	Where a device has a partner that is already in DMA mode we check
-- *	and enforce IDE simplex rules.
-  */
- 
- unsigned long ide_pci_dma_base(ide_hwif_t *hwif, const struct ide_port_info *d)
- {
- 	struct pci_dev *dev = to_pci_dev(hwif->dev);
- 	unsigned long dma_base = 0;
--	u8 dma_stat = 0;
- 
- 	if (hwif->host_flags & IDE_HFLAG_MMIO)
- 		return hwif->dma_base;
-@@ -101,11 +98,19 @@ unsigned long ide_pci_dma_base(ide_hwif_
- 	if (hwif->channel)
- 		dma_base += 8;
- 
--	if (d->host_flags & IDE_HFLAG_CS5520)
-+	return dma_base;
-+}
-+EXPORT_SYMBOL_GPL(ide_pci_dma_base);
-+
-+int ide_pci_check_simplex(ide_hwif_t *hwif, const struct ide_port_info *d)
-+{
-+	u8 dma_stat;
-+
-+	if (d->host_flags & (IDE_HFLAG_MMIO | IDE_HFLAG_CS5520))
- 		goto out;
- 
- 	if (d->host_flags & IDE_HFLAG_CLEAR_SIMPLEX) {
--		ide_pci_clear_simplex(dma_base, d->name);
-+		ide_pci_clear_simplex(hwif->dma_base, d->name);
- 		goto out;
- 	}
- 
-@@ -119,15 +124,15 @@ unsigned long ide_pci_dma_base(ide_hwif_
- 	 * we tune the drive then try to grab DMA ownership if we want to be
- 	 * the DMA end.  This has to be become dynamic to handle hot-plug.
- 	 */
--	dma_stat = hwif->INB(dma_base + 2);
-+	dma_stat = hwif->read_sff_dma_status(hwif);
- 	if ((dma_stat & 0x80) && hwif->mate && hwif->mate->dma_base) {
- 		printk(KERN_INFO "%s: simplex device: DMA disabled\n", d->name);
--		dma_base = 0;
-+		return -1;
- 	}
- out:
--	return dma_base;
-+	return 0;
+--- a/drivers/ide/pci/scc_pata.c
++++ b/drivers/ide/pci/scc_pata.c
+@@ -126,6 +126,14 @@ static u8 scc_ide_inb(unsigned long port
+ 	return (u8)data;
  }
--EXPORT_SYMBOL_GPL(ide_pci_dma_base);
-+EXPORT_SYMBOL_GPL(ide_pci_check_simplex);
  
++static void scc_exec_command(ide_hwif_t *hwif, u8 cmd)
++{
++	out_be32((void *)hwif->io_ports.command_addr, cmd);
++	eieio();
++	in_be32((void *)(hwif->dma_base + 0x01c));
++	eieio();
++}
++
+ static u8 scc_read_sff_dma_status(ide_hwif_t *hwif)
+ {
+ 	return (u8)in_be32((void *)(hwif->dma_base + 4));
+@@ -780,6 +788,7 @@ static void __devinit init_mmio_iops_scc
+ 
+ 	ide_set_hwifdata(hwif, ports);
+ 
++	hwif->exec_command	  = scc_exec_command;
+ 	hwif->read_sff_dma_status = scc_read_sff_dma_status;
+ 
+ 	hwif->tf_load = scc_tf_load;
+Index: b/drivers/ide/ppc/pmac.c
+===================================================================
+--- a/drivers/ide/ppc/pmac.c
++++ b/drivers/ide/ppc/pmac.c
+@@ -495,6 +495,13 @@ static void pmac_outbsync(ide_hwif_t *hw
+ 				     + IDE_TIMING_CONFIG));
+ }
+ 
++static void pmac_exec_command(ide_hwif_t *hwif, u8 cmd)
++{
++	writeb(cmd, (void __iomem *)hwif->io_ports.command_addr);
++	(void)readl((void __iomem *)(hwif->io_ports.data_addr
++				     + IDE_TIMING_CONFIG));
++}
++
  /*
-  * Set up BM-DMA capability (PnP BIOS should have done this)
-@@ -362,7 +367,15 @@ int ide_hwif_setup_dma(ide_hwif_t *hwif,
- 	     (dev->class & 0x80))) {
- 		unsigned long base = ide_pci_dma_base(hwif, d);
+  * Old tuning functions (called on hdparm -p), sets up drive PIO timings
+  */
+@@ -1086,6 +1093,8 @@ static int __devinit pmac_ide_setup_devi
+ 	if (hwif == NULL)
+ 		return -ENOENT;
  
--		if (base == 0 || ide_pci_set_master(dev, d->name) < 0)
-+		if (base == 0)
-+			return -1;
++	hwif->exec_command = pmac_exec_command;
 +
-+		hwif->dma_base = base;
-+
-+		if (ide_pci_check_simplex(hwif, d) < 0)
-+			return -1;
-+
-+		if (ide_pci_set_master(dev, d->name) < 0)
- 			return -1;
+ 	/* Setup MMIO ops */
+ 	default_hwif_mmiops(hwif);
+        	hwif->OUTBSYNC = pmac_outbsync;
+Index: b/drivers/scsi/ide-scsi.c
+===================================================================
+--- a/drivers/scsi/ide-scsi.c
++++ b/drivers/scsi/ide-scsi.c
+@@ -248,8 +248,7 @@ idescsi_atapi_error(ide_drive_t *drive, 
  
- 		if (hwif->host_flags & IDE_HFLAG_MMIO)
-@@ -376,8 +389,6 @@ int ide_hwif_setup_dma(ide_hwif_t *hwif,
- 		if (ide_allocate_dma_engine(hwif))
- 			return -1;
+ 	if (ide_read_status(drive) & (BUSY_STAT | DRQ_STAT))
+ 		/* force an abort */
+-		hwif->OUTBSYNC(hwif, WIN_IDLEIMMEDIATE,
+-			       hwif->io_ports.command_addr);
++		hwif->exec_command(hwif, WIN_IDLEIMMEDIATE);
  
--		hwif->dma_base = base;
--
- 		hwif->dma_ops = &sff_dma_ops;
- 	}
+ 	rq->errors++;
  
 Index: b/include/linux/ide.h
 ===================================================================
 --- a/include/linux/ide.h
 +++ b/include/linux/ide.h
-@@ -994,6 +994,7 @@ void ide_setup_pci_noise(struct pci_dev 
- int ide_pci_set_master(struct pci_dev *, const char *);
- unsigned long ide_pci_dma_base(ide_hwif_t *, const struct ide_port_info *);
- extern const struct ide_dma_ops sff_dma_ops;
-+int ide_pci_check_simplex(ide_hwif_t *, const struct ide_port_info *);
- int ide_hwif_setup_dma(ide_hwif_t *, const struct ide_port_info *);
- #else
- static inline int ide_hwif_setup_dma(ide_hwif_t *hwif,
+@@ -468,7 +468,8 @@ typedef struct hwif_s {
+ 	const struct ide_port_ops	*port_ops;
+ 	const struct ide_dma_ops	*dma_ops;
+ 
+-	u8 (*read_sff_dma_status)(struct hwif_s *);
++	void	(*exec_command)(struct hwif_s *, u8);
++	u8	(*read_sff_dma_status)(struct hwif_s *);
+ 
+ 	void (*tf_load)(ide_drive_t *, struct ide_task_s *);
+ 	void (*tf_read)(ide_drive_t *, struct ide_task_s *);
