@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762465AbYFTUXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762247AbYFTUWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762465AbYFTUXb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 16:23:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760476AbYFTUSR
+	id S1762247AbYFTUWn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 16:22:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759955AbYFTUR4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 16:18:17 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35171 "EHLO
+	Fri, 20 Jun 2008 16:17:56 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51983 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760441AbYFTUSQ (ORCPT
+	with ESMTP id S1760262AbYFTURz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 16:18:16 -0400
+	Fri, 20 Jun 2008 16:17:55 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 21/70] termios: Termios defines for other platforms
+Subject: [PATCH 19/70] tty: Clean up tiocmset
 To: linux-kernel@vger.kernel.org
-Date: Fri, 20 Jun 2008 21:00:52 +0100
-Message-ID: <20080620200044.1479.60200.stgit@localhost.localdomain>
+Date: Fri, 20 Jun 2008 21:00:31 +0100
+Message-ID: <20080620200029.1479.78886.stgit@localhost.localdomain>
 In-Reply-To: <20080620195406.1479.12620.stgit@localhost.localdomain>
 References: <20080620195406.1479.12620.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.1
@@ -27,72 +27,75 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@redhat.com>
 
-Fix up the termios of the people who have not yet got with the program
+Reverse the order of one test and it gets much more readable
 
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- include/asm-avr32/ioctls.h |    4 ++++
- include/asm-frv/ioctls.h   |    4 ++++
- include/asm-frv/termbits.h |    5 ++++-
- 3 files changed, 12 insertions(+), 1 deletions(-)
+ drivers/char/tty_io.c |   48 ++++++++++++++++++++++--------------------------
+ 1 files changed, 22 insertions(+), 26 deletions(-)
 
 
-diff --git a/include/asm-avr32/ioctls.h b/include/asm-avr32/ioctls.h
-index 0500426..0cf2c0a 100644
---- a/include/asm-avr32/ioctls.h
-+++ b/include/asm-avr32/ioctls.h
-@@ -47,6 +47,10 @@
- #define TIOCSBRK	0x5427  /* BSD compatibility */
- #define TIOCCBRK	0x5428  /* BSD compatibility */
- #define TIOCGSID	0x5429  /* Return the session ID of FD */
-+#define TCGETS2		_IOR('T',0x2A, struct termios2)
-+#define TCSETS2		_IOW('T',0x2B, struct termios2)
-+#define TCSETSW2	_IOW('T',0x2C, struct termios2)
-+#define TCSETSF2	_IOW('T',0x2D, struct termios2)
- #define TIOCGPTN	_IOR('T',0x30, unsigned int) /* Get Pty Number (of pty-mux device) */
- #define TIOCSPTLCK	_IOW('T',0x31, int)  /* Lock/unlock Pty */
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index 1856096..87b1f9b 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -3488,35 +3488,31 @@ static int tty_tiocmget(struct tty_struct *tty, struct file *file, int __user *p
+ static int tty_tiocmset(struct tty_struct *tty, struct file *file, unsigned int cmd,
+ 	     unsigned __user *p)
+ {
+-	int retval = -EINVAL;
+-
+-	if (tty->ops->tiocmset) {
+-		unsigned int set, clear, val;
+-
+-		retval = get_user(val, p);
+-		if (retval)
+-			return retval;
+-
+-		set = clear = 0;
+-		switch (cmd) {
+-		case TIOCMBIS:
+-			set = val;
+-			break;
+-		case TIOCMBIC:
+-			clear = val;
+-			break;
+-		case TIOCMSET:
+-			set = val;
+-			clear = ~val;
+-			break;
+-		}
++	int retval;
++	unsigned int set, clear, val;
  
-diff --git a/include/asm-frv/ioctls.h b/include/asm-frv/ioctls.h
-index 341c7dd..d0c30e3 100644
---- a/include/asm-frv/ioctls.h
-+++ b/include/asm-frv/ioctls.h
-@@ -47,6 +47,10 @@
- #define TIOCSBRK	0x5427  /* BSD compatibility */
- #define TIOCCBRK	0x5428  /* BSD compatibility */
- #define TIOCGSID	0x5429  /* Return the session ID of FD */
-+#define TCGETS2		_IOR('T',0x2A, struct termios2)
-+#define TCSETS2		_IOW('T',0x2B, struct termios2)
-+#define TCSETSW2	_IOW('T',0x2C, struct termios2)
-+#define TCSETSF2	_IOW('T',0x2D, struct termios2)
- #define TIOCGPTN	_IOR('T',0x30, unsigned int) /* Get Pty Number (of pty-mux device) */
- #define TIOCSPTLCK	_IOW('T',0x31, int)  /* Lock/unlock Pty */
+-		set &= TIOCM_DTR|TIOCM_RTS|TIOCM_OUT1|TIOCM_OUT2|TIOCM_LOOP;
+-		clear &= TIOCM_DTR|TIOCM_RTS|TIOCM_OUT1|TIOCM_OUT2|TIOCM_LOOP;
++	if (tty->ops->tiocmset == NULL)
++		return -EINVAL;
  
-diff --git a/include/asm-frv/termbits.h b/include/asm-frv/termbits.h
-index 74851b4..5568492 100644
---- a/include/asm-frv/termbits.h
-+++ b/include/asm-frv/termbits.h
-@@ -141,6 +141,7 @@ struct ktermios {
- #define HUPCL	0002000
- #define CLOCAL	0004000
- #define CBAUDEX 0010000
-+#define    BOTHER 0010000
- #define    B57600 0010001
- #define   B115200 0010002
- #define   B230400 0010003
-@@ -156,11 +157,13 @@ struct ktermios {
- #define  B3000000 0010015
- #define  B3500000 0010016
- #define  B4000000 0010017
--#define CIBAUD	  002003600000	/* input baud rate (not used) */
-+#define CIBAUD	  002003600000		/* Input baud rate */
- #define CTVB	  004000000000		/* VisioBraille Terminal flow control */
- #define CMSPAR	  010000000000		/* mark or space (stick) parity */
- #define CRTSCTS	  020000000000		/* flow control */
+-		retval = tty->ops->tiocmset(tty, file, set, clear);
++	retval = get_user(val, p);
++	if (retval)
++		return retval;
++	set = clear = 0;
++	switch (cmd) {
++	case TIOCMBIS:
++		set = val;
++		break;
++	case TIOCMBIC:
++		clear = val;
++		break;
++	case TIOCMSET:
++		set = val;
++		clear = ~val;
++		break;
+ 	}
+-	return retval;
++	set &= TIOCM_DTR|TIOCM_RTS|TIOCM_OUT1|TIOCM_OUT2|TIOCM_LOOP;
++	clear &= TIOCM_DTR|TIOCM_RTS|TIOCM_OUT1|TIOCM_OUT2|TIOCM_LOOP;
++	return tty->ops->tiocmset(tty, file, set, clear);
+ }
  
-+#define IBSHIFT	16			/* Shift from CBAUD to CIBAUD */
-+
- /* c_lflag bits */
- #define ISIG	0000001
- #define ICANON	0000002
+ /*
 
