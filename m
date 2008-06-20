@@ -1,93 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761532AbYFTPqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761585AbYFTPrM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761532AbYFTPqZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 11:46:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756695AbYFTPqR
+	id S1761585AbYFTPrM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 11:47:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756672AbYFTPq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 11:46:17 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:43858 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756557AbYFTPqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 11:46:16 -0400
-Date: Fri, 20 Jun 2008 17:46:07 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Manuel Lauss <mano@roarinelk.homelinux.net>
-Cc: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-       sshtylyov@ru.mvista.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/8] Alchemy: register mmc platform device for
- db1200/pb1200 boards.
-Message-ID: <20080620174607.50ad6874@mjolnir.drzeus.cx>
-In-Reply-To: <20080612135810.GA25352@roarinelk.homelinux.net>
-References: <20080609063521.GA8724@roarinelk.homelinux.net>
-	<20080609063702.GC8724@roarinelk.homelinux.net>
-	<20080612090206.GB21601@linux-mips.org>
-	<20080612101839.GC21601@linux-mips.org>
-	<20080612121828.GA24603@roarinelk.homelinux.net>
-	<20080612122646.GA9493@linux-mips.org>
-	<20080612154248.5c9c5c9d@mjolnir.drzeus.cx>
-	<20080612134729.GA20015@linux-mips.org>
-	<20080612135810.GA25352@roarinelk.homelinux.net>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.3; i386-redhat-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
-X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
+	Fri, 20 Jun 2008 11:46:56 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:59490 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753401AbYFTPqz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 11:46:55 -0400
+Subject: Re: [PATCH/RFC] remove irqs_disabled warning from local_bh_enable
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Michael Buesch <mb@bu3sch.de>,
+       David Ellingsworth <david@identd.dyndns.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+In-Reply-To: <1213976619.8967.204.camel@johannes.berg> (sfid-20080620_174407_488559_A2CC96B4)
+References: <1213739834.3803.137.camel@johannes.berg>
+	 <alpine.LFD.1.10.0806171648330.2907@woody.linux-foundation.org>
+	 <1213774177.3803.164.camel@johannes.berg> <20080620134637.GA8135@elte.hu>
+	 <20080620152748.GA21245@elte.hu>  <1213976619.8967.204.camel@johannes.berg>
+	 (sfid-20080620_174407_488559_A2CC96B4)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-46YljxFwJRfMfekuC836"
+Date: Fri, 20 Jun 2008 17:46:12 +0200
+Message-Id: <1213976772.8967.206.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-29802-1213976272-0001-2"
+X-Mailer: Evolution 2.22.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_freyr.drzeus.cx-29802-1213976272-0001-2
-Content-Type: text/plain; charset=US-ASCII
+--=-46YljxFwJRfMfekuC836
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 12 Jun 2008 15:58:10 +0200
-Manuel Lauss <mano@roarinelk.homelinux.net> wrote:
-
-> On Thu, Jun 12, 2008 at 02:47:30PM +0100, Ralf Baechle wrote:
-> > On Thu, Jun 12, 2008 at 03:42:48PM +0200, Pierre Ossman wrote:
+On Fri, 2008-06-20 at 17:43 +0200, Johannes Berg wrote:
+> On Fri, 2008-06-20 at 17:27 +0200, Ingo Molnar wrote:
+> > * Ingo Molnar <mingo@elte.hu> wrote:
 > >=20
+> > > > Subject: clean up and comment local_bh_enable code
+> > > >=20
+> > > > There's no need to use local_irq_save() over local_irq_disable() in=
+=20
+> > > > the local_bh_enable code since it is a bug to call it with irqs=20
+> > > > disabled and do_softirq will enable irqs if there is any pending=20
+> > > > work. Consolidate the code from local_bh_enable and ..._ip to avoid=
+=20
+> > > > having a disconnect between them in the warnings they trigger that=20
+> > > > is currently there. Also always trigger the warning on in_irq(), no=
+t=20
+> > > > just in the trace-irqflags case.
 > > >=20
-> > > How's the dependency issue though? Will this series be bisectable in =
-my
-> > > tree?
+> > > applied to tip/core/softirq for testing, thanks Johannes.
 > >=20
-> > If we're only talking about a build, there should be no dependencies
-> > between the Alchemy and the MMC parts of the series.  The Alchemy part
-> > sorts the device registration and that's a separate construction site
-> > from the rest.  Of course with only one applied things won't work
-> > terribly well but that would only be temporarily.
+> > ok, -tip testing found that your patch triggers a new warning on an old=
+=20
+> > testbox that uses 3c59x vortex and netlogging:
+> >=20
+> > ----->
+> > calling  vortex_init+0x0/0xb0
+> > PCI: Found IRQ 10 for device 0000:00:0b.0
+> > PCI: Sharing IRQ 10 with 0000:00:0a.0
+> > PCI: Sharing IRQ 10 with 0000:00:0b.1
+> > 3c59x: Donald Becker and others.
+> > 0000:00:0b.0: 3Com PCI 3c556 Laptop Tornado at e0800400.
+> > PCI: Enabling bus mastering for device 0000:00:0b.0
+> > initcall vortex_init+0x0/0xb0 returned 0 after 47 msecs
+> > ...
+> > calling  init_netconsole+0x0/0x1b0
+> > netconsole: local port 4444
+> > netconsole: local IP 10.0.1.9
+> > netconsole: interface eth0
+> > netconsole: remote port 4444
+> > netconsole: remote IP 10.0.1.16
+> > netconsole: remote ethernet address 00:19:xx:xx:xx:xx
+> > netconsole: device eth0 not up yet, forcing it
+> > eth0:  setting half-duplex.
+> > eth0:  setting full-duplex.
+> > ------------[ cut here ]------------
+> > WARNING: at kernel/softirq.c:137 local_bh_enable_ip+0xd1/0xe0()
+> > Pid: 1, comm: swapper Not tainted 2.6.26-rc6-tip #2091
+> >  [<c0125ecf>] warn_on_slowpath+0x4f/0x70
+> >  [<c0126834>] ? release_console_sem+0x1b4/0x1d0
+> >  [<c0126d00>] ? vprintk+0x2a0/0x450
 >=20
-> FWIW, I build tested-tested the DB1200 defconfig after each patch applied.
-> As Ralf said, patch 1 alone isn't terribly useful on it, but it should wo=
-rk.
->=20
+> Now you can't printk in irq context any more?
 
-This patch does not apply against HEAD. Are you sure there aren't any
-dependencies on what Ralf has in his tree? If so, perhaps this should
-be in the MIPS tree.
+Or I'm just confused by x86 stack dumps.
 
-Rgds
---=20
-     -- Pierre Ossman
+johannes
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Use end-to-end encryption where
-  possible.
-
---=_freyr.drzeus.cx-29802-1213976272-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
+--=-46YljxFwJRfMfekuC836
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Johannes Berg (powerbook)
 
-iEYEARECAAYFAkhb0MQACgkQ7b8eESbyJLiDCwCeJVcOfME62LEqi6pbIrohhQDi
-rY0AoPnWQhv52u441bS+eVJA/06Ai0Ur
-=XW+X
+iQIcBAABAgAGBQJIW9DBAAoJEKVg1VMiehFYq4IP/15+UtzVn2coBJH9Kv/jlWEe
+oUf0lVNJXoMYF4C685Pn7FWPgAgPvvQZq3/SzpO/lN/OAiNfcXSXUYSI+407m69E
+9drvPJeFw4LEt81cI10lqmJRNR7X4CG7J2XymGJd2KFhhibR5WWzfKabcq4xNi6G
+jVEOmO5oN5Ev6HUohWaS2dX5vKACPGfdjb/+ROqIzP9TdtbJtIMOR5oUvBj8ku5N
+5R1VyFQNuP7SeTBmnt+XVlD+xYsAiBlTERxyz8DwWFzdI+1Zadpvw5d8ELYMTsjN
+iDmhjeF0DObBjyAMww7SQBOP/EVd6a89vljAGMDyax+v9FCpcpYmDKpqeUETNCaE
+7X9Vw0f2632FHTFTmYnUE4VJ6ZXKNQXEJKF/Dn1042mG1F5K6TgKUqQYeVTipsoz
+ibLa3g5/R5vPDP4jYKxobJyVaCy+yR7GbX0I3oKC/BL7X5pRhJ95KoeOgyUXVQjS
+qcVjPqCJWQzAC6j1RuVmmN+SYLgQzHY/hdKke880rKOBnQf4TdAmZ4ekW2vWg2MI
+v47hO52xcflBqrgAXqzjhNAPOVn1RC/6PArPKFXIYVXdS4wIFCH5RvqVZ7pYu+Cr
+OjKUMmejPGn3HOLq4mNrDl2/XhRvtxBL7n7/aMPQcP89epuLHdEfmE92iPAHaH/T
+/6nEPobpozrn2fSGnmL5
+=2JQB
 -----END PGP SIGNATURE-----
 
---=_freyr.drzeus.cx-29802-1213976272-0001-2--
+--=-46YljxFwJRfMfekuC836--
+
