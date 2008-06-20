@@ -1,154 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752553AbYFTFJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751792AbYFTFJE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752553AbYFTFJx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 01:09:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbYFTFJn
+	id S1751792AbYFTFJE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 01:09:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750897AbYFTFIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 01:09:43 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:25823 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751986AbYFTFJ1 (ORCPT
+	Fri, 20 Jun 2008 01:08:54 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:64957 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750885AbYFTFIx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 01:09:27 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=S6UkBijABMqdw7DdHcg0Dyr+L3B1ZjEGgIHUDuriODuCpJvziiLRniish3lqH8pQM
-	EHAX+8p/JKsD1Pg2A01kQ==
-Message-ID: <6599ad830806192209j2a3909faob223b72de3d28b81@mail.gmail.com>
-Date: Thu, 19 Jun 2008 22:09:20 -0700
-From: "Paul Menage" <menage@google.com>
-To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 1/6] res_counter: handle limit change
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
-In-Reply-To: <20080613182924.c73fe9eb.kamezawa.hiroyu@jp.fujitsu.com>
+	Fri, 20 Jun 2008 01:08:53 -0400
+From: Stefan Roese <sr@denx.de>
+To: linux-mtd@lists.infradead.org
+Subject: Re: [PATCH] jedec_probe: Fix SST 16-bit chip detection
+Date: Fri, 20 Jun 2008 07:08:37 +0200
+User-Agent: KMail/1.9.9
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+References: <20080619.163648.262833678.nemoto@toshiba-tops.co.jp> <1213896113.26255.1434.camel@pmac.infradead.org>
+In-Reply-To: <1213896113.26255.1434.camel@pmac.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080613182714.265fe6d2.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20080613182924.c73fe9eb.kamezawa.hiroyu@jp.fujitsu.com>
+Message-Id: <200806200708.37974.sr@denx.de>
+X-Provags-ID: V01U2FsdGVkX1+1Hpn06XqOcMKMkWVol205waqJQ7CQJL44DrM
+ 85uXA25Ty+9tM99nzm5EoD5C3g01TxZzaBymjjjoGWNw6TyQtZ
+ AUZV2dFTqKVSVznGfHKUmURk8Mx71OJ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 13, 2008 at 2:29 AM, KAMEZAWA Hiroyuki
-<kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> Add a support to shrink_usage_at_limit_change feature to res_counter.
-> memcg will use this to drop pages.
-
-Sorry for the delay in looking at this.
-
-I think the basic idea is great.
-
+On Thursday 19 June 2008, David Woodhouse wrote:
+> On Thu, 2008-06-19 at 16:36 +0900, Atsushi Nemoto wrote:
+> > -               .devtypes       = CFI_DEVICETYPE_X16|CFI_DEVICETYPE_X8,
+> > +               .devtypes       = CFI_DEVICETYPE_X16,
 >
-> Change log: xxx -> v4 (new file.)
->  - cut out the limit-change part from hierarchy patch set.
->  - add "retry_count" arguments to shrink_usage(). This allows that we don't
->   have to set the default retry loop count.
->  - res_counter_check_under_val() is added to support subsystem.
->  - res_counter_init() is res_counter_init_ops(cnt, NULL)
->
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->
-> ---
->  Documentation/controllers/resource_counter.txt |   19 +++++-
->  include/linux/res_counter.h                    |   33 ++++++++++-
->  kernel/res_counter.c                           |   74 ++++++++++++++++++++++++-
->  3 files changed, 121 insertions(+), 5 deletions(-)
->
-> Index: linux-2.6.26-rc5-mm3/include/linux/res_counter.h
-> ===================================================================
-> --- linux-2.6.26-rc5-mm3.orig/include/linux/res_counter.h
-> +++ linux-2.6.26-rc5-mm3/include/linux/res_counter.h
-> @@ -21,6 +21,13 @@
->  * the helpers described beyond
->  */
->
-> +struct res_counter;
-> +struct res_counter_ops {
-> +       /* called when the subsystem has to reduce the usage. */
-> +       int (*shrink_usage)(struct res_counter *cnt, unsigned long long val,
-> +                           int retry_count);
-> +};
+> I believe you about the uaddr -- but can these devices really not be
+> used in 8-bit mode?
 
-We should also add the limit/usage write strategy function in here too.
+No. They are 16-bit only.
 
-
-> +
->  struct res_counter {
->        /*
->         * the current resource consumption level
-> @@ -39,6 +46,10 @@ struct res_counter {
->         */
->        unsigned long long failcnt;
->        /*
-> +        * registered callbacks etc...for res_counter.
-> +        */
-> +       struct res_counter_ops ops;
-> +       /*
-
-As Pavel mentioned, a pointer would be better here.
-> -void res_counter_init(struct res_counter *counter);
-> +void res_counter_init_ops(struct res_counter *counter,
-> +                               struct res_counter_ops *ops);
-> +
-> +static inline void res_counter_init(struct res_counter *counter)
-> +{
-> +       res_counter_init_ops(counter, NULL);
-> +}
-
-I would rather just see res_counter_init() take an ops parameter, and
-update the (few) users of res_counter.
-
-
-> +static int res_counter_resize_limit(struct res_counter *cnt,
-> +                       unsigned long long val)
-> +{
-> +       int retry_count = 0;
-> +       int ret = -EBUSY;
-> +       unsigned long flags;
-> +
-> +       BUG_ON(!cnt->ops.shrink_usage);
-
-As others have pointed out, there are some subsystems where usage
-can't be shrunk. Maybe provide a "res_counter_unshrinkable()" function
-that always returns -EBUSY and can be used by subsystems that can't
-handle shrinking?
-
-> @@ -133,11 +185,29 @@ ssize_t res_counter_write(struct res_cou
->                if (*end != '\0')
->                        goto out_free;
->        }
-> +       switch (member) {
-> +       case RES_LIMIT:
-> +               if (counter->ops.shrink_usage) {
-> +                       ret = res_counter_resize_limit(counter, tmp);
-> +                       goto done;
-> +               }
-> +               break;
-> +       default:
-> +               /*
-> +                * Considering future implementation, we'll have to handle
-> +                * other members and "fallback" will not work well. So, we
-> +                * avoid to make use of "default" here.
-> +                */
-> +               break;
-> +       }
-
-Would this be simpler as just
-
-if (member == RES_LIMIT && counter->ops.shrink_usage) {
-  ret = res_counter_resize_limit(counter, tmp);
-} else {
-  ...
-}
-
-Paul
+Best regards,
+Stefan
