@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759751AbYFTUQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759960AbYFTURY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759751AbYFTUQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 16:16:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758893AbYFTUQJ
+	id S1759960AbYFTURY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 16:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759056AbYFTUQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 16:16:09 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51953 "EHLO
+	Fri, 20 Jun 2008 16:16:20 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51955 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758871AbYFTUQH (ORCPT
+	with ESMTP id S1758974AbYFTUQS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 16:16:07 -0400
+	Fri, 20 Jun 2008 16:16:18 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 04/70] tty: Introduce a tty_port common structure
+Subject: [PATCH 05/70] tty.h: clean up
 To: linux-kernel@vger.kernel.org
-Date: Fri, 20 Jun 2008 20:58:43 +0100
-Message-ID: <20080620195838.1479.34725.stgit@localhost.localdomain>
+Date: Fri, 20 Jun 2008 20:58:54 +0100
+Message-ID: <20080620195848.1479.85619.stgit@localhost.localdomain>
 In-Reply-To: <20080620195406.1479.12620.stgit@localhost.localdomain>
 References: <20080620195406.1479.12620.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.1
@@ -27,124 +27,269 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@redhat.com>
 
-Every tty driver has its own concept of a port structure and because they all
-differ we cannot extract commonality. Begin fixing this by creating a structure
-drivers can elect to use so that over time we can push fields into this and
-create commonality and then introduce common methods.
+Coding style clean up and white space tidy
 
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/char/tty_io.c |   34 ++++++++++++++++++++++++++++++++++
- include/linux/tty.h   |   30 +++++++++++++++++++++++++++++-
- 2 files changed, 63 insertions(+), 1 deletions(-)
+ include/linux/tty.h |  165 ++++++++++++++++++++++++++-------------------------
+ 1 files changed, 85 insertions(+), 80 deletions(-)
 
 
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index ab1dd0a..1856096 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -2088,6 +2088,40 @@ ssize_t redirected_tty_write(struct file *file, const char __user *buf,
- 	return tty_write(file, buf, count, ppos);
- }
- 
-+void tty_port_init(struct tty_port *port)
-+{
-+	memset(port, 0, sizeof(*port));
-+	init_waitqueue_head(&port->open_wait);
-+	init_waitqueue_head(&port->close_wait);
-+	mutex_init(&port->mutex);
-+}
-+EXPORT_SYMBOL(tty_port_init);
-+
-+int tty_port_alloc_xmit_buf(struct tty_port *port)
-+{
-+	/* We may sleep in get_zeroed_page() */
-+	mutex_lock(&port->mutex);
-+	if (port->xmit_buf == NULL)
-+		port->xmit_buf = (unsigned char *)get_zeroed_page(GFP_KERNEL);
-+	mutex_unlock(&port->mutex);
-+	if (port->xmit_buf == NULL)
-+		return -ENOMEM;
-+	return 0;
-+}
-+EXPORT_SYMBOL(tty_port_alloc_xmit_buf);
-+
-+void tty_port_free_xmit_buf(struct tty_port *port)
-+{
-+	mutex_lock(&port->mutex);
-+	if (port->xmit_buf != NULL) {
-+		free_page((unsigned long)port->xmit_buf);
-+		port->xmit_buf = NULL;
-+	}
-+	mutex_unlock(&port->mutex);
-+}
-+EXPORT_SYMBOL(tty_port_free_xmit_buf);
-+
-+
- static char ptychar[] = "pqrstuvwxyzabcde";
- 
- /**
 diff --git a/include/linux/tty.h b/include/linux/tty.h
-index 013711e..d7c695b 100644
+index d7c695b..46008e8 100644
 --- a/include/linux/tty.h
 +++ b/include/linux/tty.h
-@@ -166,6 +166,29 @@ struct tty_bufhead {
+@@ -71,7 +71,8 @@ struct tty_bufhead {
+ 	struct tty_buffer *head;	/* Queue head */
+ 	struct tty_buffer *tail;	/* Active buffer */
+ 	struct tty_buffer *free;	/* Free queue head */
+-	int memory_used;		/* Buffer space used excluding free queue */
++	int memory_used;		/* Buffer space used excluding
++								free queue */
+ };
+ /*
+  * When a break, frame error, or parity error happens, these codes are
+@@ -101,68 +102,68 @@ struct tty_bufhead {
+ #define LNEXT_CHAR(tty)	((tty)->termios->c_cc[VLNEXT])
+ #define EOL2_CHAR(tty) ((tty)->termios->c_cc[VEOL2])
+ 
+-#define _I_FLAG(tty,f)	((tty)->termios->c_iflag & (f))
+-#define _O_FLAG(tty,f)	((tty)->termios->c_oflag & (f))
+-#define _C_FLAG(tty,f)	((tty)->termios->c_cflag & (f))
+-#define _L_FLAG(tty,f)	((tty)->termios->c_lflag & (f))
+-
+-#define I_IGNBRK(tty)	_I_FLAG((tty),IGNBRK)
+-#define I_BRKINT(tty)	_I_FLAG((tty),BRKINT)
+-#define I_IGNPAR(tty)	_I_FLAG((tty),IGNPAR)
+-#define I_PARMRK(tty)	_I_FLAG((tty),PARMRK)
+-#define I_INPCK(tty)	_I_FLAG((tty),INPCK)
+-#define I_ISTRIP(tty)	_I_FLAG((tty),ISTRIP)
+-#define I_INLCR(tty)	_I_FLAG((tty),INLCR)
+-#define I_IGNCR(tty)	_I_FLAG((tty),IGNCR)
+-#define I_ICRNL(tty)	_I_FLAG((tty),ICRNL)
+-#define I_IUCLC(tty)	_I_FLAG((tty),IUCLC)
+-#define I_IXON(tty)	_I_FLAG((tty),IXON)
+-#define I_IXANY(tty)	_I_FLAG((tty),IXANY)
+-#define I_IXOFF(tty)	_I_FLAG((tty),IXOFF)
+-#define I_IMAXBEL(tty)	_I_FLAG((tty),IMAXBEL)
+-#define I_IUTF8(tty)	_I_FLAG((tty),IUTF8)
+-
+-#define O_OPOST(tty)	_O_FLAG((tty),OPOST)
+-#define O_OLCUC(tty)	_O_FLAG((tty),OLCUC)
+-#define O_ONLCR(tty)	_O_FLAG((tty),ONLCR)
+-#define O_OCRNL(tty)	_O_FLAG((tty),OCRNL)
+-#define O_ONOCR(tty)	_O_FLAG((tty),ONOCR)
+-#define O_ONLRET(tty)	_O_FLAG((tty),ONLRET)
+-#define O_OFILL(tty)	_O_FLAG((tty),OFILL)
+-#define O_OFDEL(tty)	_O_FLAG((tty),OFDEL)
+-#define O_NLDLY(tty)	_O_FLAG((tty),NLDLY)
+-#define O_CRDLY(tty)	_O_FLAG((tty),CRDLY)
+-#define O_TABDLY(tty)	_O_FLAG((tty),TABDLY)
+-#define O_BSDLY(tty)	_O_FLAG((tty),BSDLY)
+-#define O_VTDLY(tty)	_O_FLAG((tty),VTDLY)
+-#define O_FFDLY(tty)	_O_FLAG((tty),FFDLY)
+-
+-#define C_BAUD(tty)	_C_FLAG((tty),CBAUD)
+-#define C_CSIZE(tty)	_C_FLAG((tty),CSIZE)
+-#define C_CSTOPB(tty)	_C_FLAG((tty),CSTOPB)
+-#define C_CREAD(tty)	_C_FLAG((tty),CREAD)
+-#define C_PARENB(tty)	_C_FLAG((tty),PARENB)
+-#define C_PARODD(tty)	_C_FLAG((tty),PARODD)
+-#define C_HUPCL(tty)	_C_FLAG((tty),HUPCL)
+-#define C_CLOCAL(tty)	_C_FLAG((tty),CLOCAL)
+-#define C_CIBAUD(tty)	_C_FLAG((tty),CIBAUD)
+-#define C_CRTSCTS(tty)	_C_FLAG((tty),CRTSCTS)
+-
+-#define L_ISIG(tty)	_L_FLAG((tty),ISIG)
+-#define L_ICANON(tty)	_L_FLAG((tty),ICANON)
+-#define L_XCASE(tty)	_L_FLAG((tty),XCASE)
+-#define L_ECHO(tty)	_L_FLAG((tty),ECHO)
+-#define L_ECHOE(tty)	_L_FLAG((tty),ECHOE)
+-#define L_ECHOK(tty)	_L_FLAG((tty),ECHOK)
+-#define L_ECHONL(tty)	_L_FLAG((tty),ECHONL)
+-#define L_NOFLSH(tty)	_L_FLAG((tty),NOFLSH)
+-#define L_TOSTOP(tty)	_L_FLAG((tty),TOSTOP)
+-#define L_ECHOCTL(tty)	_L_FLAG((tty),ECHOCTL)
+-#define L_ECHOPRT(tty)	_L_FLAG((tty),ECHOPRT)
+-#define L_ECHOKE(tty)	_L_FLAG((tty),ECHOKE)
+-#define L_FLUSHO(tty)	_L_FLAG((tty),FLUSHO)
+-#define L_PENDIN(tty)	_L_FLAG((tty),PENDIN)
+-#define L_IEXTEN(tty)	_L_FLAG((tty),IEXTEN)
++#define _I_FLAG(tty, f)	((tty)->termios->c_iflag & (f))
++#define _O_FLAG(tty, f)	((tty)->termios->c_oflag & (f))
++#define _C_FLAG(tty, f)	((tty)->termios->c_cflag & (f))
++#define _L_FLAG(tty, f)	((tty)->termios->c_lflag & (f))
++
++#define I_IGNBRK(tty)	_I_FLAG((tty), IGNBRK)
++#define I_BRKINT(tty)	_I_FLAG((tty), BRKINT)
++#define I_IGNPAR(tty)	_I_FLAG((tty), IGNPAR)
++#define I_PARMRK(tty)	_I_FLAG((tty), PARMRK)
++#define I_INPCK(tty)	_I_FLAG((tty), INPCK)
++#define I_ISTRIP(tty)	_I_FLAG((tty), ISTRIP)
++#define I_INLCR(tty)	_I_FLAG((tty), INLCR)
++#define I_IGNCR(tty)	_I_FLAG((tty), IGNCR)
++#define I_ICRNL(tty)	_I_FLAG((tty), ICRNL)
++#define I_IUCLC(tty)	_I_FLAG((tty), IUCLC)
++#define I_IXON(tty)	_I_FLAG((tty), IXON)
++#define I_IXANY(tty)	_I_FLAG((tty), IXANY)
++#define I_IXOFF(tty)	_I_FLAG((tty), IXOFF)
++#define I_IMAXBEL(tty)	_I_FLAG((tty), IMAXBEL)
++#define I_IUTF8(tty)	_I_FLAG((tty), IUTF8)
++
++#define O_OPOST(tty)	_O_FLAG((tty), OPOST)
++#define O_OLCUC(tty)	_O_FLAG((tty), OLCUC)
++#define O_ONLCR(tty)	_O_FLAG((tty), ONLCR)
++#define O_OCRNL(tty)	_O_FLAG((tty), OCRNL)
++#define O_ONOCR(tty)	_O_FLAG((tty), ONOCR)
++#define O_ONLRET(tty)	_O_FLAG((tty), ONLRET)
++#define O_OFILL(tty)	_O_FLAG((tty), OFILL)
++#define O_OFDEL(tty)	_O_FLAG((tty), OFDEL)
++#define O_NLDLY(tty)	_O_FLAG((tty), NLDLY)
++#define O_CRDLY(tty)	_O_FLAG((tty), CRDLY)
++#define O_TABDLY(tty)	_O_FLAG((tty), TABDLY)
++#define O_BSDLY(tty)	_O_FLAG((tty), BSDLY)
++#define O_VTDLY(tty)	_O_FLAG((tty), VTDLY)
++#define O_FFDLY(tty)	_O_FLAG((tty), FFDLY)
++
++#define C_BAUD(tty)	_C_FLAG((tty), CBAUD)
++#define C_CSIZE(tty)	_C_FLAG((tty), CSIZE)
++#define C_CSTOPB(tty)	_C_FLAG((tty), CSTOPB)
++#define C_CREAD(tty)	_C_FLAG((tty), CREAD)
++#define C_PARENB(tty)	_C_FLAG((tty), PARENB)
++#define C_PARODD(tty)	_C_FLAG((tty), PARODD)
++#define C_HUPCL(tty)	_C_FLAG((tty), HUPCL)
++#define C_CLOCAL(tty)	_C_FLAG((tty), CLOCAL)
++#define C_CIBAUD(tty)	_C_FLAG((tty), CIBAUD)
++#define C_CRTSCTS(tty)	_C_FLAG((tty), CRTSCTS)
++
++#define L_ISIG(tty)	_L_FLAG((tty), ISIG)
++#define L_ICANON(tty)	_L_FLAG((tty), ICANON)
++#define L_XCASE(tty)	_L_FLAG((tty), XCASE)
++#define L_ECHO(tty)	_L_FLAG((tty), ECHO)
++#define L_ECHOE(tty)	_L_FLAG((tty), ECHOE)
++#define L_ECHOK(tty)	_L_FLAG((tty), ECHOK)
++#define L_ECHONL(tty)	_L_FLAG((tty), ECHONL)
++#define L_NOFLSH(tty)	_L_FLAG((tty), NOFLSH)
++#define L_TOSTOP(tty)	_L_FLAG((tty), TOSTOP)
++#define L_ECHOCTL(tty)	_L_FLAG((tty), ECHOCTL)
++#define L_ECHOPRT(tty)	_L_FLAG((tty), ECHOPRT)
++#define L_ECHOKE(tty)	_L_FLAG((tty), ECHOKE)
++#define L_FLUSHO(tty)	_L_FLAG((tty), FLUSHO)
++#define L_PENDIN(tty)	_L_FLAG((tty), PENDIN)
++#define L_IEXTEN(tty)	_L_FLAG((tty), IEXTEN)
  
  struct device;
  struct signal_struct;
+@@ -177,7 +178,7 @@ struct signal_struct;
+  * of the tty object but in many cases port -> tty mappings are valid only
+  * until a hangup so don't use the wrong path.
+  */
+- 
 +
-+/*
-+ * Port level information. Each device keeps its own port level information
-+ * so provide a common structure for those ports wanting to use common support
-+ * routines.
-+ *
-+ * The tty port has a different lifetime to the tty so must be kept apart.
-+ * In addition be careful as tty -> port mappings are valid for the life
-+ * of the tty object but in many cases port -> tty mappings are valid only
-+ * until a hangup so don't use the wrong path.
-+ */
-+ 
-+struct tty_port {
-+	struct tty_struct	*tty;		/* Back pointer */
-+	int			blocked_open;	/* Waiting to open */
-+	int			count;		/* Usage count */
-+	wait_queue_head_t	open_wait;	/* Open waiters */
-+	wait_queue_head_t	close_wait;	/* Close waiters */
-+	unsigned long		flags;		/* TTY flags ASY_*/
-+	struct mutex		mutex;		/* Locking */
-+	unsigned char		*xmit_buf;	/* Optional buffer */
-+};
-+
+ struct tty_port {
+ 	struct tty_struct	*tty;		/* Back pointer */
+ 	int			blocked_open;	/* Waiting to open */
+@@ -273,14 +274,14 @@ struct tty_struct {
+ 
  /*
-  * Where all of the state associated with a tty is kept while the tty
-  * is open.  Since the termios state should be kept even if the tty
-@@ -214,7 +237,7 @@ struct tty_struct {
- 	struct list_head tty_files;
+  * These bits are used in the flags field of the tty structure.
+- * 
++ *
+  * So that interrupts won't be able to mess up the queues,
+  * copy_to_cooked must be atomic with respect to itself, as must
+  * tty->write.  Thus, you must use the inline functions set_bit() and
+  * clear_bit() to make things atomic.
+  */
+ #define TTY_THROTTLED 		0	/* Call unthrottle() at threshold min */
+-#define TTY_IO_ERROR 		1	/* Canse an I/O error (may be no ldisc too) */
++#define TTY_IO_ERROR 		1	/* Cause an I/O error (may be no ldisc too) */
+ #define TTY_OTHER_CLOSED 	2	/* Other side (if any) has closed */
+ #define TTY_EXCLUSIVE 		3	/* Exclusive open mode */
+ #define TTY_DEBUG 		4	/* Debugging */
+@@ -310,10 +311,10 @@ extern int vcs_init(void);
+ extern int tty_paranoia_check(struct tty_struct *tty, struct inode *inode,
+ 			      const char *routine);
+ extern char *tty_name(struct tty_struct *tty, char *buf);
+-extern void tty_wait_until_sent(struct tty_struct * tty, long timeout);
+-extern int tty_check_change(struct tty_struct * tty);
+-extern void stop_tty(struct tty_struct * tty);
+-extern void start_tty(struct tty_struct * tty);
++extern void tty_wait_until_sent(struct tty_struct *tty, long timeout);
++extern int tty_check_change(struct tty_struct *tty);
++extern void stop_tty(struct tty_struct *tty);
++extern void start_tty(struct tty_struct *tty);
+ extern int tty_register_ldisc(int disc, struct tty_ldisc_ops *new_ldisc);
+ extern int tty_unregister_ldisc(int disc);
+ extern int tty_register_driver(struct tty_driver *driver);
+@@ -335,10 +336,10 @@ extern int is_current_pgrp_orphaned(void);
+ extern struct pid *tty_get_pgrp(struct tty_struct *tty);
+ extern int is_ignored(int sig);
+ extern int tty_signal(int sig, struct tty_struct *tty);
+-extern void tty_hangup(struct tty_struct * tty);
+-extern void tty_vhangup(struct tty_struct * tty);
++extern void tty_hangup(struct tty_struct *tty);
++extern void tty_vhangup(struct tty_struct *tty);
+ extern void tty_unhangup(struct file *filp);
+-extern int tty_hung_up_p(struct file * filp);
++extern int tty_hung_up_p(struct file *filp);
+ extern void do_SAK(struct tty_struct *tty);
+ extern void __do_SAK(struct tty_struct *tty);
+ extern void disassociate_ctty(int priv);
+@@ -347,8 +348,10 @@ extern void tty_flip_buffer_push(struct tty_struct *tty);
+ extern speed_t tty_get_baud_rate(struct tty_struct *tty);
+ extern speed_t tty_termios_baud_rate(struct ktermios *termios);
+ extern speed_t tty_termios_input_baud_rate(struct ktermios *termios);
+-extern void tty_termios_encode_baud_rate(struct ktermios *termios, speed_t ibaud, speed_t obaud);
+-extern void tty_encode_baud_rate(struct tty_struct *tty, speed_t ibaud, speed_t obaud);
++extern void tty_termios_encode_baud_rate(struct ktermios *termios,
++						speed_t ibaud, speed_t obaud);
++extern void tty_encode_baud_rate(struct tty_struct *tty,
++						speed_t ibaud, speed_t obaud);
+ extern void tty_termios_copy_hw(struct ktermios *new, struct ktermios *old);
+ extern int tty_termios_hw_change(struct ktermios *a, struct ktermios *b);
  
- #define N_TTY_BUF_SIZE 4096
--	
+@@ -390,7 +393,8 @@ extern void tty_audit_add_data(struct tty_struct *tty, unsigned char *data,
+ extern void tty_audit_exit(void);
+ extern void tty_audit_fork(struct signal_struct *sig);
+ extern void tty_audit_push(struct tty_struct *tty);
+-extern void tty_audit_push_task(struct task_struct *tsk, uid_t loginuid, u32 sessionid);
++extern void tty_audit_push_task(struct task_struct *tsk,
++					uid_t loginuid, u32 sessionid);
+ #else
+ static inline void tty_audit_add_data(struct tty_struct *tty,
+ 				      unsigned char *data, size_t size)
+@@ -405,19 +409,20 @@ static inline void tty_audit_fork(struct signal_struct *sig)
+ static inline void tty_audit_push(struct tty_struct *tty)
+ {
+ }
+-static inline void tty_audit_push_task(struct task_struct *tsk, uid_t loginuid, u32 sessionid)
++static inline void tty_audit_push_task(struct task_struct *tsk,
++					uid_t loginuid, u32 sessionid)
+ {
+ }
+ #endif
+ 
+ /* tty_ioctl.c */
+-extern int n_tty_ioctl(struct tty_struct * tty, struct file * file,
++extern int n_tty_ioctl(struct tty_struct *tty, struct file *file,
+ 		       unsigned int cmd, unsigned long arg);
+ 
+ /* serial.c */
+ 
+ extern void serial_console_init(void);
+- 
 +
- 	/*
- 	 * The following is data for the N_TTY line discipline.  For
- 	 * historical reasons, this is included in the tty structure.
-@@ -242,6 +265,7 @@ struct tty_struct {
- 	spinlock_t read_lock;
- 	/* If the tty has a pending do_SAK, queue it here - akpm */
- 	struct work_struct SAK_work;
-+	struct tty_port *port;
- };
+ /* pcxx.c */
  
- /* tty magic number */
-@@ -350,6 +374,10 @@ extern void tty_write_unlock(struct tty_struct *tty);
- extern int tty_write_lock(struct tty_struct *tty, int ndelay);
- #define tty_is_writelocked(tty)  (mutex_is_locked(&tty->atomic_write_lock))
+ extern int pcxe_open(struct tty_struct *tty, struct file *filp);
+@@ -428,7 +433,7 @@ extern void console_print(const char *);
  
-+extern void tty_port_init(struct tty_port *port);
-+extern int tty_port_alloc_xmit_buf(struct tty_port *port);
-+extern void tty_port_free_xmit_buf(struct tty_port *port);
-+
+ /* vt.c */
  
+-extern int vt_ioctl(struct tty_struct *tty, struct file * file,
++extern int vt_ioctl(struct tty_struct *tty, struct file *file,
+ 		    unsigned int cmd, unsigned long arg);
  
- /* n_tty.c */
+ #endif /* __KERNEL__ */
 
