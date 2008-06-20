@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760574AbYFTUqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933437AbYFTUrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760574AbYFTUqc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 16:46:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764637AbYFTUcI
+	id S933437AbYFTUrW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 16:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765008AbYFTUeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 16:32:08 -0400
-Received: from emerald.lightlink.com ([64.57.176.19]:12333 "EHLO
-	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758461AbYFTUcH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 16:32:07 -0400
-Date: Fri, 20 Jun 2008 16:30:23 -0400
-From: "Mark M. Hoffman" <mhoffman@lightlink.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>
-Subject: Re: [GIT PATCH] hwmon updates vs. v2.6.26-rc6
-Message-ID: <20080620203023.GJ7306@mars.solarsys.private>
-References: <20080619123304.GF7306@mars.solarsys.private> <alpine.LFD.1.10.0806201231590.3167@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0806201231590.3167@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+	Fri, 20 Jun 2008 16:34:31 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35949 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765001AbYFTUe2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 16:34:28 -0400
+Date: Fri, 20 Jun 2008 16:34:23 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+To: David Miller <davem@davemloft.net>
+cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, agk@redhat.com
+Subject: Re: stack overflow on Sparc64
+In-Reply-To: <20080620.102601.06998427.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0806201624280.3668@engineering.redhat.com>
+References: <Pine.LNX.4.64.0806171954060.2560@engineering.redhat.com>
+ <20080617.210159.141238856.davem@davemloft.net>
+ <Pine.LNX.4.64.0806201143110.8789@engineering.redhat.com>
+ <20080620.102601.06998427.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus:
 
-* Linus Torvalds <torvalds@linux-foundation.org> [2008-06-20 12:32:27 -0700]:
-> 
-> 
-> On Thu, 19 Jun 2008, Mark M. Hoffman wrote:
-> > 
-> > Please pull from:
-> > 	git://lm-sensors.org/kernel/mhoffman/hwmon-2.6.git release
-> 
-> I'm just getting:
-> 
-> 	fatal: Unable to look up lm-sensors.org (port 9418) (Temporary failure in name resolution)
-> 
-> do you have DNS problems?
 
-Sorry, yes.  I've already sent email to the site admin some hours ago.  If it
-doesn't work itself out quickly (within next 24 hours) I'll just send you the
-patches directly.
+On Fri, 20 Jun 2008, David Miller wrote:
 
-Thanks & regards,
+> From: Mikulas Patocka <mpatocka@redhat.com>
+> Date: Fri, 20 Jun 2008 11:47:12 -0400 (EDT)
+>
+>> I took another few traces (to track the whole stack content) and there is
+>> another problem: nested interrupts. Does Sparc64 limit them somehow?
+>
+> Two levels should be the deepest you will ever see, and this is
+> equivalent to what you get on other platforms.
+>
+> That path occurs when softirq processing re-enabled HW interrupts when
+> returning from the top-level interrupt.
 
--- 
-Mark M. Hoffman
-mhoffman@lightlink.com
+And what if network softirq happened here? How much stack does it consume?
 
+The whole overflowed stack trace has 75 functions, I was able to get rid 
+of 9 by avoiding bio_endio recursion and 10 by turning simple functions 
+into inlines. --- so is it enough or not enough for possible networking 
+calls?
+
+Maybe a good thing would be to add a check for stack size to __do_softirq 
+and handing the softirq to ksoftirqd if there's not enough space.
+
+Mikulas
