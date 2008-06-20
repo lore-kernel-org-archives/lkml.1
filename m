@@ -1,195 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757726AbYFTXK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757622AbYFTXMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757726AbYFTXK2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 19:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755583AbYFTXKT
+	id S1757622AbYFTXMo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 19:12:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755912AbYFTXMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 19:10:19 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:19015 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753737AbYFTXKR (ORCPT
+	Fri, 20 Jun 2008 19:12:35 -0400
+Received: from wx-out-0506.google.com ([66.249.82.238]:46058 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755531AbYFTXMd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 19:10:17 -0400
+	Fri, 20 Jun 2008 19:12:33 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=qxy2Mx4f+wpE9/9G1Pddlo43XPuT2jyD/jY8dAO0x2quVsDa6cjupJ5kmfL8H84+8e
-         /NmRG7EsJQ4K3K1uq1KmTS+8NXpYODms+fPRvosRytbbB+Atoi7NBHalw/sK6asYhzEe
-         uzuUlME4ZWfkrYrhN2ZlYkraOyyqIUIUWpLqc=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: [PATCH] x86: check command line when CONFIG_X86_MPPARSE is not set v2
-Date: Fri, 20 Jun 2008 16:11:20 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200805041823.57198.yhlu.kernel@gmail.com> <200806191215.01538.yhlu.kernel@gmail.com> <200806200742.36226.yhlu.kernel@gmail.com>
-In-Reply-To: <200806200742.36226.yhlu.kernel@gmail.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=HS3U21iu+Lgx04Vd9NHdXnYTmobVvqaMORXl/XhzRzZcav2T6T07rUYcF9ZmBgGaWd
+         S1I3CM5m6pdmxmfYyT9QNEASlEocZg1Zo4sF1uBpw74a/kDsEalZ2XF26MUj6ltXY+/x
+         sbYp6uwEsrCncjFAbavH045aPdakKigrOYQ4E=
+Message-ID: <a4423d670806201612g3487325cj175f077fbe71de2a@mail.gmail.com>
+Date: Sat, 21 Jun 2008 03:12:30 +0400
+From: "Alexander Beregalov" <a.beregalov@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: 2.6.26-rc: SPARC: Sun Ultra 10 can not boot
+Cc: kernel-testers@vger.kernel.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080620.155139.224032701.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806201611.21198.yhlu.kernel@gmail.com>
+References: <a4423d670806201419i2f0c0982j69eb423f9ecd239d@mail.gmail.com>
+	 <20080620.142137.242155859.davem@davemloft.net>
+	 <a4423d670806201542o5415cad7p6b9a38b67252cee1@mail.gmail.com>
+	 <20080620.155139.224032701.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2008/6/21 David Miller <davem@davemloft.net>:
+> Something is screwey here... Hmmm...
+>
+> When I added the changeset in question, it fixed a problem in that
+> any backtrace of a kernel thread would loop forever at the end.
+> Any stack backtrace would hang or reach a safety limit (such as
+> the one imposed by lockdep).
+>
+> Please double check that you are precisely reverting this patch
+> below _before_ doing these tests:
+>
+> commit a051bc5bb1ac6dc138d529077fa20cbbc6622d95
 
-if acpi=off, acpi=noirq and pci=noacpi, we need to disable apic
+Yes, I am sure. It runs without this commit and hangs with it.
+I can connect serial console, but if it is a infinite loop it will not
+provide more info.
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+$ git log arch/sparc64/kernel/process.c
+commit 99d3b2d0d3df1fa171a7ee1d2d3a92f540873b15
+Author: alexb <alexb@sparky>
+Date:   Thu Jun 19 18:49:46 2008 +0400
 
----
- arch/x86/kernel/acpi/boot.c |   14 ++++++++++++++
- arch/x86/kernel/apic_32.c   |    2 +-
- arch/x86/kernel/setup.c     |    4 ++++
- arch/x86/kernel/setup_32.c  |    5 +++++
- arch/x86/kernel/setup_64.c  |    9 +++++++++
- include/asm-x86/apic.h      |    6 +++++-
- include/linux/acpi.h        |    6 ++++++
- 7 files changed, 44 insertions(+), 2 deletions(-)
+    Revert "sparc64: Fix kernel thread stack termination."
 
-Index: linux-2.6/arch/x86/kernel/acpi/boot.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/boot.c
-+++ linux-2.6/arch/x86/kernel/acpi/boot.c
-@@ -1740,6 +1740,20 @@ static int __init parse_pci(char *arg)
- }
- early_param("pci", parse_pci);
- 
-+int __init acpi_mps_check(void)
-+{
-+#if defined(CONFIG_X86_LOCAL_APIC) && !defined(CONFIG_X86_MPPARSE)
-+/* mptable code is not built-in*/
-+	if (acpi_disabled || acpi_noirq) {
-+		printk(KERN_WARNING "MPS support code is not built-in.\n"
-+		       "Using acpi=off or acpi=noirq or pci=noacpi "
-+		       "may have problem\n");
-+		return 1;
-+	}
-+#endif
-+	return 0;
-+}
-+
- #ifdef CONFIG_X86_IO_APIC
- static int __init parse_acpi_skip_timer_override(char *arg)
- {
-Index: linux-2.6/arch/x86/kernel/setup_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup_32.c
-+++ linux-2.6/arch/x86/kernel/setup_32.c
-@@ -689,6 +689,11 @@ void __init setup_arch(char **cmdline_p)
- 		early_dump_pci_devices();
- #endif
- 
-+	if (acpi_mps_check()){
-+		enable_local_apic = -1;
-+		clear_cpu_cap(&boot_cpu_data, X86_FEATURE_APIC);
-+	}
-+
- 	finish_e820_parsing();
- 
- 	probe_roms();
-Index: linux-2.6/arch/x86/kernel/setup_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup_64.c
-+++ linux-2.6/arch/x86/kernel/setup_64.c
-@@ -319,6 +319,11 @@ void __init setup_arch(char **cmdline_p)
- 		early_dump_pci_devices();
- #endif
- 
-+	if (acpi_mps_check()) {
-+		disable_apic = 1;
-+		clear_cpu_cap(&boot_cpu_data, X86_FEATURE_APIC);
-+	}
-+
- #ifdef CONFIG_PROVIDE_OHCI1394_DMA_INIT
- 	if (init_ohci1394_dma_early)
- 		init_ohci1394_dma_on_all_controllers();
-@@ -740,6 +745,10 @@ static void __cpuinit early_identify_cpu
- 		cpu_devs[c->x86_vendor]->c_early_init(c);
- 
- 	validate_pat_support(c);
-+
-+	/* early_param could clear that, but recall get it set again */
-+	if (disable_apic)
-+		clear_cpu_cap(c, X86_FEATURE_APIC);
- }
- 
- /*
-Index: linux-2.6/include/linux/acpi.h
-===================================================================
---- linux-2.6.orig/include/linux/acpi.h
-+++ linux-2.6/include/linux/acpi.h
-@@ -82,6 +82,7 @@ char * __acpi_map_table (unsigned long p
- int early_acpi_boot_init(void);
- int acpi_boot_init (void);
- int acpi_boot_table_init (void);
-+int acpi_mps_check (void);
- int acpi_numa_init (void);
- 
- int acpi_table_init (void);
-@@ -250,6 +251,11 @@ static inline int acpi_boot_table_init(v
- 	return 0;
- }
- 
-+static inline int acpi_mps_check(void)
-+{
-+	return 0;
-+}
-+
- static inline int acpi_check_resource_conflict(struct resource *res)
- {
- 	return 0;
-Index: linux-2.6/arch/x86/kernel/setup.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup.c
-+++ linux-2.6/arch/x86/kernel/setup.c
-@@ -161,6 +161,10 @@ void __init setup_per_cpu_areas(void)
- 	char *ptr;
- 	int cpu;
- 
-+	/* no processor from mptable or madt */
-+	if (!num_processors)
-+		num_processors = 1;
-+
- #ifdef CONFIG_HOTPLUG_CPU
- 	prefill_possible_map();
- #else
-Index: linux-2.6/arch/x86/kernel/apic_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic_32.c
-+++ linux-2.6/arch/x86/kernel/apic_32.c
-@@ -57,7 +57,7 @@ unsigned long mp_lapic_addr;
-  *
-  * -1=force-disable, +1=force-enable
-  */
--static int enable_local_apic __initdata;
-+int enable_local_apic;
- 
- /* Local APIC timer verification ok */
- static int local_apic_timer_verify_ok;
-Index: linux-2.6/include/asm-x86/apic.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/apic.h
-+++ linux-2.6/include/asm-x86/apic.h
-@@ -39,8 +39,12 @@ extern int apic_verbosity;
- extern int local_apic_timer_c2_ok;
- 
- extern int ioapic_force;
--extern int disable_apic;
- 
-+#ifdef CONFIG_X86_64
-+extern int disable_apic;
-+#else
-+extern int enable_local_apic;
-+#endif
- /*
-  * Basic functions accessing APICs.
-  */
+    This reverts commit a051bc5bb1ac6dc138d529077fa20cbbc6622d95.
+
+commit a051bc5bb1ac6dc138d529077fa20cbbc6622d95
+Author: David S. Miller <davem@davemloft.net>
+Date:   Wed May 21 18:14:28 2008 -0700
+
+    sparc64: Fix kernel thread stack termination.
