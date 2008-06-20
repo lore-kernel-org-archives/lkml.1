@@ -1,191 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754522AbYFTTge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbYFTTil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754522AbYFTTge (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 15:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYFTTg0
+	id S1756037AbYFTTil (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 15:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbYFTTid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 15:36:26 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33098 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751419AbYFTTgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 15:36:25 -0400
-Message-ID: <485C064E.5020705@redhat.com>
-Date: Fri, 20 Jun 2008 15:34:38 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       Hideo AOKI <haoki@redhat.com>
-Subject: Re: [RFC][Patch 2/2] markers: example of irq regular kernel markers
-References: <485BE2C6.1080901@redhat.com> <20080620174529.GB10943@Krystal>
-In-Reply-To: <20080620174529.GB10943@Krystal>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 20 Jun 2008 15:38:33 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:56904 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751375AbYFTTic (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 15:38:32 -0400
+Subject: Re: [PATCH 1/2] cleanup e820_setup_gap
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Brown, Len" <len.brown@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
+In-Reply-To: <20080620153220.GD17373@elte.hu>
+References: <1213916250.27983.35.camel@promb-2n-dhcp368.eng.vmware.com>
+	 <20080620153220.GD17373@elte.hu>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Fri, 20 Jun 2008 12:38:31 -0700
+Message-Id: <1213990711.31598.22.camel@promb-2n-dhcp368.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mathieu,
+Here is the patch based on tip/master
 
-Mathieu Desnoyers wrote:
-> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
->> Add trace points of irq handle events ported from LTTng's markers.
->>
->> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
->> ---
->> I just rewrote LTTng's irq event by using DEFINE_TRACE for example.
->>
->>  include/linux/irq_trace.h |    6 ++++++
->>  kernel/irq/handle.c       |    6 ++++++
->>  2 files changed, 12 insertions(+)
->>
->> Index: 2.6.26-rc5-mm3/include/linux/irq_trace.h
->> ===================================================================
->> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
->> +++ 2.6.26-rc5-mm3/include/linux/irq_trace.h	2008-06-16 12:27:51.000000000 -0400
->> @@ -0,0 +1,6 @@
->> +#include <linux/marker.h>
->> +
->> +DEFINE_TRACE(irq_entry, (int irq_id, int kernel_mode), irq_id, kernel_mode);
->> +
->> +DEFINE_TRACE(irq_exit, (void));
->> +
-> 
-> All this work look good, thanks Masami! Sorry I did not find time to do
-> it lately, I've been busy on other things. A small question though :
-> since LTTng is configurable both as an external module or as an
-> in-kernel tracer, I wonder if it would really hurt to add the format
-> strings to DEFINE_TRACE, e.g. :
-> 
-> DEFINE_TRACE(name, prototype, format_string, args...)
-> 
-> which would give :
-> 
-> DEFINE_TRACE(irq_entry, (int irq_id, int kernel_mode), "%d %d",
->     irq_id, kernel_mode);
-> 
-> DEFINE_TRACE(irq_exit, (void), MARK_NOARGS);
-> 
-> and calling this in the kernel code :
-> 
-> trace_irq_entry(irq, (regs)?(!user_mode(regs)):(1));
-> ...
-> trace_irq_exit();
-> 
-> and for quick-and-dirty debug usage, one would add this to kernel code :
-> 
-> trace_mark(subsystem_event, "(int arg, struct task_struct *task)",
->  "%d %p", arg, current);
+Please have a look
 
-why would you complicate it? I think.
+--
 
-trace_mark(subsystem_event, "arg %d task %p", arg, current);
+This is a preparatory patch for the next patch in series.
+Moves some code from e820_setup_gap to a new function e820_search_gap.
+This patch is a part of a bug fix where we walk the ACPI table to calculate
+a gap for PCI optional devices.
 
-is enough for user-defined markers.
+Signed-off-by: Alok N Kataria <akataria@vmware.com>
 
-> 
-> By doing so, we could leave a gcc format string check by passing the
-> format string to __mark_check_format(). We could extract the field names
-> from the prototype, so there is no need to duplicate field information
-> in the format string.
+Index: linux-trees.git/arch/x86/kernel/e820.c
+===================================================================
+--- linux-trees.git.orig/arch/x86/kernel/e820.c	2008-06-20 10:32:44.000000000 -0700
++++ linux-trees.git/arch/x86/kernel/e820.c	2008-06-20 12:27:58.000000000 -0700
+@@ -442,26 +442,22 @@
+ }
+ 
+ /*
+- * Search for the biggest gap in the low 32 bits of the e820
+- * memory space.  We pass this space to PCI to assign MMIO resources
+- * for hotplug or unconfigured devices in.
+- * Hopefully the BIOS let enough space left.
++ * Search for a gap in the e820 memory space from start_addr to 2^32.
+  */
+-__init void e820_setup_gap(void)
++__init int e820_search_gap(unsigned long *gapstart, unsigned long *gapsize,
++		unsigned long start_addr)
+ {
+-	unsigned long gapstart, gapsize, round;
+-	unsigned long long last;
+-	int i;
++	unsigned long last = 0x100000000ull;
++	int i = e820.nr_map;
+ 	int found = 0;
+ 
+-	last = 0x100000000ull;
+-	gapstart = 0x10000000;
+-	gapsize = 0x400000;
+-	i = e820.nr_map;
+ 	while (--i >= 0) {
+ 		unsigned long long start = e820.map[i].addr;
+ 		unsigned long long end = start + e820.map[i].size;
+ 
++		if (end < start_addr)
++			continue;
++
+ 		/*
+ 		 * Since "last" is at most 4GB, we know we'll
+ 		 * fit in 32 bits if this condition is true
+@@ -469,15 +465,32 @@
+ 		if (last > end) {
+ 			unsigned long gap = last - end;
+ 
+-			if (gap > gapsize) {
+-				gapsize = gap;
+-				gapstart = end;
++			if (gap >= *gapsize) {
++				*gapsize = gap;
++				*gapstart = end;
+ 				found = 1;
+ 			}
+ 		}
+ 		if (start < last)
+ 			last = start;
+ 	}
++	return found;
++}
++
++/*
++ * Search for the biggest gap in the low 32 bits of the e820
++ * memory space.  We pass this space to PCI to assign MMIO resources
++ * for hotplug or unconfigured devices in.
++ * Hopefully the BIOS let enough space left.
++ */
++__init void e820_setup_gap(void)
++{
++	unsigned long gapstart, gapsize, round;
++	int found;
++
++	gapstart = 0x10000000;
++	gapsize = 0x400000;
++	found  = e820_search_gap(&gapstart, &gapsize, 0);
+ 
+ #ifdef CONFIG_X86_64
+ 	if (!found) {
+Index: linux-trees.git/include/asm-x86/e820.h
+===================================================================
+--- linux-trees.git.orig/include/asm-x86/e820.h	2008-06-20 10:32:44.000000000 -0700
++++ linux-trees.git/include/asm-x86/e820.h	2008-06-20 12:18:40.000000000 -0700
+@@ -69,6 +69,8 @@
+ 			       unsigned new_type);
+ extern void update_e820(void);
+ extern void e820_setup_gap(void);
++extern int e820_search_gap(unsigned long *gapstart, unsigned long *gapsize,
++				unsigned long start_addr);
+ struct setup_data;
+ extern void parse_e820_ext(struct setup_data *data, unsigned long pa_data);
+ 
 
-I thought that someone complained against those format strings in
-kernel code. Thus I removed it from DEFINE_TRACE.
-
-even though, I think you can do that by adding below string table
-to LTTng module.
-
-const char *lookup_table[MAX_MARKERS][2] = {
-{"irq_entry", "%d %d"}, // or "(int irq_id, int kernel_mode)", "%d %d"
-...
-};
-
-
-> 
-> Since the format string information is hidden in a header but kept at
-> the same location as the trace point definition, I think it reaches
-> goals of being "neat", efficient for general purpose tracers and to keep
-> the tracepoint information all in one place so we don't end up adding
-> stuff to various information consumers whenever a new trace point is
-> added.
-
-Hmm, IMHO, there seems no difference between
-
-DEFINE_TRACE(irq_entry, (int irq_id, int kernel_mode), "%d %d",
-     irq_id, kernel_mode);
-
-and
-
-trace_irq_entry(int irq_id, int kernel_mode)
-{
-	trace_mark(irq_entry, "%d %d", irq_id, kernel_mode);
-}
-
-for me. If so, we'd better use latter because of simplicity:-)
-
-Thank you,
-
-
-> 
-> What do you think of these changes ?
-> 
-> Mathieu
-> 
-> 
->> Index: 2.6.26-rc5-mm3/kernel/irq/handle.c
->> ===================================================================
->> --- 2.6.26-rc5-mm3.orig/kernel/irq/handle.c	2008-06-16 12:27:50.000000000 -0400
->> +++ 2.6.26-rc5-mm3/kernel/irq/handle.c	2008-06-16 12:27:51.000000000 -0400
->> @@ -15,6 +15,7 @@
->>  #include <linux/random.h>
->>  #include <linux/interrupt.h>
->>  #include <linux/kernel_stat.h>
->> +#include <linux/irq_trace.h>
->>
->>  #include "internals.h"
->>
->> @@ -130,6 +131,9 @@ irqreturn_t handle_IRQ_event(unsigned in
->>  {
->>  	irqreturn_t ret, retval = IRQ_NONE;
->>  	unsigned int status = 0;
->> +	struct pt_regs *regs = get_irq_regs();
->> +
->> +	trace_irq_entry(irq, (regs)?(!user_mode(regs)):(1));
->>
->>  	handle_dynamic_tick(action);
->>
->> @@ -148,6 +152,8 @@ irqreturn_t handle_IRQ_event(unsigned in
->>  		add_interrupt_randomness(irq);
->>  	local_irq_disable();
->>
->> +	trace_irq_exit();
->> +
->>  	return retval;
->>  }
->>
->> -- 
->> Masami Hiramatsu
->>
->> Software Engineer
->> Hitachi Computer Products (America) Inc.
->> Software Solutions Division
->>
->> e-mail: mhiramat@redhat.com
->>
-> 
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
 
