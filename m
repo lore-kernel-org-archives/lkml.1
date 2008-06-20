@@ -1,97 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbYFTOdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758435AbYFTOfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758020AbYFTOdc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 10:33:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755778AbYFTOdZ
+	id S1758435AbYFTOfs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 10:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755672AbYFTOfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 10:33:25 -0400
-Received: from gv-out-0910.google.com ([216.239.58.191]:50174 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751531AbYFTOdY (ORCPT
+	Fri, 20 Jun 2008 10:35:39 -0400
+Received: from perninha.conectiva.com.br ([200.140.247.100]:45762 "EHLO
+	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750897AbYFTOfi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 10:33:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=sQRfZuCN/0bkw2VXYh5ccfFhriVI2SXSEU2PqpQeT1dTCSpsm+AaBofQw22R4e4xwl
-         dNVY6wQn4T+MBL0zdJyJb3sW/7iOmKkgqemz7jaUBi/hgg1HoOvyGo+52uNyk6XmRp30
-         odZes9B0eFojeRtEWfPEGfrUYq0Albc7lddDI=
-Message-ID: <48f7fe350806200733w4a21aba7n6ccb1a6fb7fcdac5@mail.gmail.com>
-Date: Fri, 20 Jun 2008 10:33:22 -0400
-From: "Ryan Hope" <rmh3093@gmail.com>
-To: "Nick Piggin" <nickpiggin@yahoo.com.au>
-Subject: Re: [BUG] Lockless patches cause hardlock under heavy IO
-Cc: "Peter Zijlstra" <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <200806191819.31968.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Fri, 20 Jun 2008 10:35:38 -0400
+Date: Fri, 20 Jun 2008 11:35:39 -0300
+From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+To: venza@brownhat.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, salem@mandriva.com
+Subject: transmit timed out on module reload
+Message-ID: <20080620113539.25347b90@doriath.conectiva>
+Organization: Mandriva
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i586-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48f7fe350806181415l4eba61b3i1d206de03147575e@mail.gmail.com>
-	 <1213863122.16944.257.camel@twins>
-	 <200806191819.31968.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well if there are no more suggestion we are going to have to abandon
-testing lockless for now because it is causing hardlocks on everyones
-box who uses it. I hope the next round of patches has better luck.
 
-On Thu, Jun 19, 2008 at 4:19 AM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> On Thursday 19 June 2008 18:12, Peter Zijlstra wrote:
->> On Wed, 2008-06-18 at 17:15 -0400, Ryan Hope wrote:
->> > I applied the following patches from 2.6-26-rc5-mm3 to 2.6.26-rc6 and
->> > they caused a hardlock under heavy IO:
->>
->> What kind of machine, how much memory, how many spindles, what
->> filesystem and what is heavy load?
->>
->> Furthermore, try the NMI watchdog with serial/net-console to capture its
->> output.
->
->
-> Good suggestions. A trace would be really helpful.
->
-> As Arjan suggested, debug options especially CONFIG_DEBUG_VM would be
-> a good idea to turn on if you haven't already.
->
-> BTW. what was the reason for applying those patches? Did you hit the
-> problem with -mm also, and hope to narrow it down?
->
->
->> > x86-implement-pte_special.patch
->> > mm-introduce-get_user_pages_fast.patch
->> > mm-introduce-get_user_pages_fast-fix.patch
->> > mm-introduce-get_user_pages_fast-checkpatch-fixes.patch
->> > x86-lockless-get_user_pages_fast.patch
->> > x86-lockless-get_user_pages_fast-checkpatch-fixes.patch
->> > x86-lockless-get_user_pages_fast-fix.patch
->> > x86-lockless-get_user_pages_fast-fix-2.patch
->> > x86-lockless-get_user_pages_fast-fix-2-fix-fix.patch
->> > x86-lockless-get_user_pages_fast-fix-warning.patch
->> > dio-use-get_user_pages_fast.patch
->> > splice-use-get_user_pages_fast.patch
->> > x86-support-1gb-hugepages-with-get_user_pages_lockless.patch
->> > #
->> > mm-readahead-scan-lockless.patch
->> > radix-tree-add-gang_lookup_slot-gang_lookup_slot_tag.patch
->> > #mm-speculative-page-references.patch: clameter saw bustage
->> > mm-speculative-page-references.patch
->> > mm-speculative-page-references-fix.patch
->> > mm-speculative-page-references-fix-fix.patch
->> > mm-speculative-page-references-hugh-fix3.patch
->> > mm-lockless-pagecache.patch
->> > mm-spinlock-tree_lock.patch
->> > powerpc-implement-pte_special.patch
->> >
->> > I am on an x86_64. I dont know what other info you need...
->
-> Can you isolate it to one of the two groups of patches? I suspect it
-> might be the latter so you might try that first -- this version of
-> speculative page references is very nice in theory but it is a little
-> more complex to implement the slowpaths so it could be an error there.
->
+ Hi there.
+
+ We have a machine here which can trig the following warning if we
+remove its network module (sis900) and let ifplugd reload it:
+
+"""
+WARNING: at net/sched/sch_generic.c:222 dev_watchdog+0xfa/0x120()
+Modules linked in: sis900 ip_set fuse af_packet snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss ipv6 binfmt_misc loop dm_mod floppy cpufreq_ondemand cpufreq_conservative cpufreq_powersave p4_clockmod speedstep_lib freq_table ns558 gameport parport_pc parport rtc_cmos button thermal processor snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm snd_timer snd soundcore sr_mod snd_page_alloc sis_agp agpgart i2c_sis96x i2c_core mii shpchp pci_hotplug evdev sg ide_generic sis5513 ide_core pata_sis libata dock sd_mod scsi_mod ext3 jbd uhci_hcd ohci_hcd ehci_hcd
+usbcore [last unloaded: sis900]
+Pid: 0, comm: swapper Not tainted 2.6.26-desktop-0.rc6.1mnb #1
+ [<c012da14>] warn_on_slowpath+0x54/0xa0
+ [<c012e146>] ? wake_up_klogd+0x36/0x40
+ [<c012439b>] ? default_wake_function+0xb/0x10
+ [<c014252b>] ? autoremove_wake_function+0x1b/0x50
+ [<de841965>] ? sis900_tx_timeout+0x125/0x180 [sis900]
+ [<c02f2a3a>] dev_watchdog+0xfa/0x120
+ [<c013768b>] run_timer_softirq+0x12b/0x1f0
+ [<c02f2940>] ? dev_watchdog+0x0/0x120
+ [<c02f2940>] ? dev_watchdog+0x0/0x120
+ [<c01332e2>] __do_softirq+0x92/0x120
+ [<c01333cd>] do_softirq+0x5d/0x60
+ [<c0133565>] irq_exit+0x75/0xa0
+ [<c0115508>] smp_apic_timer_interrupt+0x58/0x90
+ [<c010a640>] ? mwait_idle+0x0/0x50
+ [<c0104968>] apic_timer_interrupt+0x28/0x30
+ [<c010a640>] ? mwait_idle+0x0/0x50
+ [<c010a672>] ? mwait_idle+0x32/0x50
+ [<c0102d6b>] cpu_idle+0x6b/0xf0
+ [<c035df89>] start_secondary+0x16c/0x1e3
+ =======================
+---[ end trace 756c1e519796d652 ]---
+"""
+
+ Doesn't seem serious though, the card still works.
+
+ Despite the kernel name, it's a vanilla 2.6.26-rc6-git3 kernel.
+
+-- 
+Luiz Fernando N. Capitulino
