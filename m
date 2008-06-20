@@ -1,65 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbYFTIKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753059AbYFTIPE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753446AbYFTIKY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 04:10:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751702AbYFTIKF
+	id S1753059AbYFTIPE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 04:15:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbYFTIOu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 04:10:05 -0400
-Received: from dwdmx4.dwd.de ([141.38.3.230]:60548 "EHLO dwdmx4.dwd.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751548AbYFTIKB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 04:10:01 -0400
-Date: Fri, 20 Jun 2008 08:09:59 +0000 (GMT)
-From: Holger Kiehl <Holger.Kiehl@dwd.de>
-X-X-Sender: kiehl@diagnostix.dwd.de
-To: Theodore Tso <tytso@mit.edu>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
-       Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Performance of ext4
-In-Reply-To: <20080619155645.GA8582@mit.edu>
-Message-ID: <Pine.LNX.4.64.0806200805520.3383@diagnostix.dwd.de>
-References: <18513.345.553912.449710@frecb006361.adech.frec.bull.fr>
- <Pine.LNX.4.64.0806121154090.27806@diagnostix.dwd.de> <20080612131928.GB18229@mit.edu>
- <Pine.LNX.4.64.0806121333480.27806@diagnostix.dwd.de> <20080612180605.GD22481@skywalker>
- <Pine.LNX.4.64.0806121940020.2974@diagnostix.dwd.de>
- <Pine.LNX.4.64.0806130753100.7097@diagnostix.dwd.de>
- <20080616175408.GF3279@atrey.karlin.mff.cuni.cz> <20080616181353.GA20686@skywalker>
- <Pine.LNX.4.64.0806171001200.6307@diagnostix.dwd.de> <20080619155645.GA8582@mit.edu>
+	Fri, 20 Jun 2008 04:14:50 -0400
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:53853 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751292AbYFTIOs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 04:14:48 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: lmbench regression due to cond_resched nullification change 26-rc5 vs. 25
+Date: Fri, 20 Jun 2008 10:14:43 +0200
+User-Agent: KMail/1.9.9
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806201014.43576.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Jun 2008, Theodore Tso wrote:
+Hello Linus,
 
-> On Tue, Jun 17, 2008 at 11:42:36AM +0000, Holger Kiehl wrote:
->> Note how the size of file results.24033.helena.dwd.de changes from
->> 9230 before the test to 8208 bytes after the test. Also note the
->> date both have the same timestamp "2008-06-17 04:35". I have made a
->> copy of results.24033.helena.dwd.de before the test and compared it
->> with that after the test. The file is just truncated by 1022 bytes
->> and there is no garbage.
->
-> So the corruption is always a truncation, correct?
->
-Correct.
+On a 6-way s390 I have seen some interesting regression in 2.6.26-rc5 vs. 
+2.6.25 for the lmbench benchmark.
 
-> Did you notice the problem with ext4 w/o the patch queue?
->
-No, without patch queue it I did not not notice the problem.
+For example select file 500:
+23 microseconds
+32 microseconds
 
-> I have a
-> suspicion that the problem may have been introduced by the delayed
-> allocation code, but I don't have hard evidence.  When you rerun your
-> benchmark (which seems to be the closest thing we have to a
-> reproduction case), it would be interesting to know if the problem
-> goes away with -o nodelalloc (again, it would localize where we need
-> to look).
->
-Ok I will do thats soon as I have a system available.
+Several lmbench tests show a regression but I only bisected the select test 
+case so far:
+-------------------------<snip---------------------
 
-Holger
+commit c714a534d85576af21b06be605ca55cb2fb887ee
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Mon May 12 13:34:13 2008 -0700
 
+    Make 'cond_resched()' nullification depend on PREEMPT_BKL
+
+    Because it's not correct with a non-preemptable BKL and just causes
+    PREEMPT kernels to have longer latencies than non-PREEMPT ones (which is
+    obviously not the point of it at all).
+
+    Of course, that config option actually got removed as an option earlier,
+    so for now this basically disables it entirely, but if BKL preemption is
+    ever resurrected it will be a meaningful optimization.  And in the
+    meantime, it at least documents the intent of the code, while not doing
+    the wrong thing.
+
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 5a63f2d..5395a61 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -2038,7 +2038,7 @@ static inline int need_resched(void)
+  * cond_resched_softirq() will enable bhs before scheduling.
+  */
+ extern int _cond_resched(void);
+-#ifdef CONFIG_PREEMPT
++#ifdef CONFIG_PREEMPT_BKL
+ static inline int cond_resched(void)
+ {
+        return 0;
+-------------------------<snip---------------------
+
+Reverting that patch gives me the 2.6.25 performance. 
+
+I think the patch is fine from the correctness point of view (do resched 
+inside BKL protected zones if its safe) but I dont understand why it has a 
+large impact on the select microbenchmark. Any ideas? Is it simply the 
+overhead of _cond_resched?
+
+Christian
