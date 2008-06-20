@@ -1,154 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753334AbYFTIEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753636AbYFTIF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753334AbYFTIEf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 04:04:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbYFTIEQ
+	id S1753636AbYFTIF6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 04:05:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751702AbYFTIFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 04:04:16 -0400
-Received: from mx28.mail.ru ([194.67.23.67]:20893 "EHLO mx28.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750986AbYFTIEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 04:04:13 -0400
-From: Andrew Savchenko <Bircoph@list.ru>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PATCH] ipg: add jumbo frame support kconfig option
-Date: Fri, 20 Jun 2008 10:37:36 +0400
-User-Agent: KMail/1.9.1
-Cc: penberg@cs.helsinki.fi
+	Fri, 20 Jun 2008 04:05:44 -0400
+Received: from rayleigh.systella.fr ([213.41.184.253]:60350 "EHLO
+	rayleigh.systella.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751475AbYFTIFl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 04:05:41 -0400
+X-Greylist: delayed 692 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Jun 2008 04:05:41 EDT
+Message-ID: <485B6218.4090705@systella.fr>
+Date: Fri, 20 Jun 2008 09:54:00 +0200
+From: =?ISO-8859-1?Q?BERTRAND_Jo=EBl?= <bertrand@systella.fr>
+Reply-To: mt@systella.fr, linux-kernel@vger.kernel.org
+User-Agent: Mozilla/5.0 (X11; U; SunOS i86pc; fr; rv:1.7) Gecko/20070606
+X-Accept-Language: fr, en
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2143283.X7csQDvRL5";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: linux-kernel@vger.kernel.org
+Subject: NETDEV WATCHDOG on U60/SMP
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200806201037.46687.Bircoph@list.ru>
-X-Spam: Not detected
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-3.1.8 (rayleigh.systella.fr [192.168.254.1]); Fri, 20 Jun 2008 09:54:02 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2143283.X7csQDvRL5
-Content-Type: multipart/mixed;
-  boundary="Boundary-01=_wA1WIXV8S6TvsNX"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Hello,
 
---Boundary-01=_wA1WIXV8S6TvsNX
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+	This mail comes from sparclinux mailing list. I repost it on general 
+linux kernel mailing list because I'm not sure that this bug is sparc 
+specific. Nevertheless, I can only reproduce it on sparc64/SMP.
 
-Hello,
+	My U60 runs linux debian with official 2.6.25 linux kernel (I'm
+currently trying 2.6.25.7) and sometimes, when eth2 is stressed, eth2
+hangs with NETDEV WATCHDOG :
 
-On Wed, 27 Feb 2008 09:44:44 +0200 (EET), Pekka J Enberg wrote:
-> Stephen Hemminger wrote:
-> > > Please don't do this as a config option. Config options seem
-> > > like a good idea to developers but are difficult for
-> > > distributions.  Either support jumbo frames by default or
-> > > not at all.
->
-> On Tue, 26 Feb 2008, Jeff Garzik wrote:
-> > Agreed, but to be more specific... always compile in jumbo
-> > frame support. You don't have to enable it at runtime by
-> > default, though.
->
-> Ok, so a sysfs attribute would be sufficient, I suppose? I don't
-> have the hardware though, so I don't even know if the jumbo
-> frame code actually works at this point hence the RFC. So I'll
-> wait for someone to test this before sending a new patch. Thanks
-> for the review!
+NETDEV WATCHDOG: eth2: transmit timed out
+eth2: transmit timed out, tx_status 00 status 8601.
+   diagnostics: net 0ccc media 8880 dma 0000003a fifo 0000
+eth2: Interrupt posted but not delivered -- IRQ blocked by another device?
+   Flags; bus-master 1, dirty 2283344(0) current 2283344(0)
+   Transmit list 00000000 vs. fffff800af098200.
+   0: @fffff800af098200  length 00000042 status 0c01059a
+   1: @fffff800af098260  length 00000042 status 0c01059a
+   2: @fffff800af0982c0  length 00000042 status 0c01059a
+   3: @fffff800af098320  length 00000042 status 0c01059a
+   4: @fffff800af098380  length 00000042 status 0c01059a
+   5: @fffff800af0983e0  length 00000042 status 0c01059a
+   6: @fffff800af098440  length 00000042 status 0c01059a
+   7: @fffff800af0984a0  length 00000042 status 0c01059a
+   8: @fffff800af098500  length 8000002a status 0001002a
+   9: @fffff800af098560  length 8000002a status 0001002a
+   10: @fffff800af0985c0  length 8000002a status 0001002a
+   11: @fffff800af098620  length 8000002a status 0001002a
+   12: @fffff800af098680  length 8000002a status 0001002a
+   13: @fffff800af0986e0  length 8000002a status 0001002a
+   14: @fffff800af098740  length 8000002a status 8001002a
+   15: @fffff800af0987a0  length 8000002a status 8001002a
+eth2: Resetting the Tx ring pointer.
+eth2:  setting full-duplex.
+NETDEV WATCHDOG: eth2: transmit timed out
+eth2: transmit timed out, tx_status 00 status 8601.
+   diagnostics: net 0ccc media 8880 dma 0000003a fifo 0000
+eth2: Interrupt posted but not delivered -- IRQ blocked by another device?
+   Flags; bus-master 1, dirty 16(0) current 16(0)
+   Transmit list 00000000 vs. fffff800af098200.
+   0: @fffff800af098200  length 8000002a status 0001002a
+   1: @fffff800af098260  length 8000002a status 0001002a
+   2: @fffff800af0982c0  length 8000002a status 0001002a
+   3: @fffff800af098320  length 8000002a status 0001002a
+   4: @fffff800af098380  length 8000002a status 0001002a
+   5: @fffff800af0983e0  length 8000002a status 0001002a
+   6: @fffff800af098440  length 8000002a status 0001002a
+   7: @fffff800af0984a0  length 8000002a status 0001002a
+   8: @fffff800af098500  length 8000002a status 0001002a
+   9: @fffff800af098560  length 8000002a status 0001002a
+   10: @fffff800af0985c0  length 8000002a status 0001002a
+   11: @fffff800af098620  length 8000002a status 0001002a
+   12: @fffff800af098680  length 8000002a status 0001002a
+   13: @fffff800af0986e0  length 8000002a status 0001002a
+   14: @fffff800af098740  length 8000002a status 8001002a
+   15: @fffff800af0987a0  length 8000002a status 8001002a
+eth2: Resetting the Tx ring pointer.
+eth2:  setting full-duplex.
+...
 
-I own such card:
-02:02.0 Ethernet controller: Sundance Technology Inc / IC Plus Corp=20
-IP1000 Family Gigabit Ethernet (rev 41)
-and I use patch similar to yours in order to enable Jumbo Frames.=20
-See attachment for details, patch is done for linux-2.6.25.6.
+	I have to reboot this server to restore eth2.
+This adapter is a 3Com NIC (3C905). I have tried with several different
+3Com adapters with the same result. If I change this NIC (for example 
+with a HME or any PCI 2.1 adapter), I cannot reproduce the bug.
 
-It works fine for me. However, I enabled 10K jumbo boxes instead of=20
-default 4K value, activated using your patch. Reason is simple: I=20
-need at least 9000-byte jumbo boxes in my network.
+	It only occurs when ethernet traffic is high on eth2.
 
-However, I have one request for you: please, make in possible to=20
-choose max MTU via kernel config option. In different environments=20
-different people may need different max MTU sizes (2K...10K).=20
-Recommended value is 4K (as described in the original driver from=20
-manufacturer, which was remake into kernel's one), but, for=20
-example, I'm interested in larger MTU values. OTOH larger MTU=20
-values require more memory and so on. For me, as for end user of=20
-Linux kernel, a possibility to select desired max MTU is very=20
-attractive and is definitely in no doubt more convenient than=20
-patching the kernel myself each time.
+	I have seen this bug since 2.6.20 even on amd64 (but I'm not sure that 
+this bug remains in amd64 kernel because I don't have any amd64 
+workstation to test, and I don't see it on amd64 since 2.6.24. Maybe it 
+is fixed on amd64...).
 
-So, feel free to add jumbo boxes on ipg support to the mainstream=20
-and, please, make in possible to select max MTU; 4K as default=20
-will be fine.
+lspci returns :
+0000:00:00.0 Host bridge: Sun Microsystems Computer Corp. Psycho PCI Bus
+Module
+0000:00:01.0 Bridge: Sun Microsystems Computer Corp. EBUS (rev 01)
+0000:00:01.1 Ethernet controller: Sun Microsystems Computer Corp. Happy
+Meal 10/100 Ethernet [hme] (rev 01)
+0000:00:02.0 Ethernet controller: 3Com Corporation 3c905C-TX/TX-M
+[Tornado] (rev 78)
+0000:00:03.0 SCSI storage controller: LSI Logic / Symbios Logic 53c875
+(rev 14)
+0000:00:03.1 SCSI storage controller: LSI Logic / Symbios Logic 53c875
+(rev 14)
+0000:00:04.0 SCSI storage controller: Adaptec AIC-7892A U160/m (rev 02)
+0000:00:05.0 USB Controller: NEC Corporation USB (rev 43)
+0000:00:05.1 USB Controller: NEC Corporation USB (rev 43)
+0000:00:05.2 USB Controller: NEC Corporation USB 2.0 (rev 04)
+0001:00:00.0 Host bridge: Sun Microsystems Computer Corp. Psycho PCI Bus
+Module
+0001:80:01.0 Bridge: Sun Microsystems Computer Corp. EBUS (rev 01)
+0001:80:01.1 Ethernet controller: Sun Microsystems Computer Corp. Happy
+Meal 10/100 Ethernet [hme] (rev 01)
 
-Sincerely yours,
-Andrew
+ifconfig:
+eth0      Link encap:Ethernet  HWaddr 08:00:20:a1:4b:33
+           inet adr:192.168.0.128  Bcast:192.168.0.255  Masque:255.255.255.0
+           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+           RX packets:16709366 errors:0 dropped:0 overruns:0 frame:1
+           TX packets:21355942 errors:0 dropped:0 overruns:0 carrier:0
+           collisions:0 lg file transmission:1000
+           RX bytes:2391901923 (2.2 GiB)  TX bytes:21605391421 (20.1 GiB)
+           Interruption:14 Adresse de base:0x3000
 
---Boundary-01=_wA1WIXV8S6TvsNX
-Content-Type: text/plain;
-  charset="us-ascii";
-  name="ipg-jumbo.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
-	filename="ipg-jumbo.patch"
+eth1      Link encap:Ethernet  HWaddr 08:00:20:a1:4b:33
+           inet adr:192.168.254.1  Bcast:192.168.254.255
+Masque:255.255.255.0
+           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+           RX packets:20207169 errors:0 dropped:0 overruns:0 frame:0
+           TX packets:17280402 errors:0 dropped:0 overruns:0 carrier:0
+           collisions:0 lg file transmission:1000
+           RX bytes:19068335140 (17.7 GiB)  TX bytes:8246313479 (7.6 GiB)
+           Interruption:24 Adresse de base:0x1800
 
-=2D-- drivers/net/ipg.c.orig	2008-04-17 06:49:44.000000000 +0400
-+++ drivers/net/ipg.c	2008-06-18 04:46:06.000000000 +0400
-@@ -42,7 +42,8 @@
- #define ipg_r16(reg)		ioread16(ioaddr + (reg))
- #define ipg_r8(reg)		ioread8(ioaddr + (reg))
-=20
-=2D#define JUMBO_FRAME_4k_ONLY
-+#define JUMBO_FRAME
-+#define JUMBO_FRAME_SIZE_10K
- enum {
- 	netdev_io_size =3D 128
- };
-@@ -1267,7 +1268,7 @@
- 			return;
-=20
- 		if (jumbo->found_start) {
-=2D			int framelen, endframelen;
-+			int framelen, endframeLen;
-=20
- 			framelen =3D le64_to_cpu(rxfd->rfs) & IPG_RFS_RXFRAMELEN;
-=20
-@@ -1352,16 +1353,16 @@
-=20
- 		switch (ipg_nic_rx_check_frame_type(dev)) {
- 		case FRAME_WITH_START_WITH_END:
-=2D			ipg_nic_rx_with_start_and_end(dev, tp, rxfd, entry);
-+			ipg_nic_rx_with_start_and_end(dev, sp, rxfd, entry);
- 			break;
- 		case FRAME_WITH_START:
-=2D			ipg_nic_rx_with_start(dev, tp, rxfd, entry);
-+			ipg_nic_rx_with_start(dev, sp, rxfd, entry);
- 			break;
- 		case FRAME_WITH_END:
-=2D			ipg_nic_rx_with_end(dev, tp, rxfd, entry);
-+			ipg_nic_rx_with_end(dev, sp, rxfd, entry);
- 			break;
- 		case FRAME_NO_START_NO_END:
-=2D			ipg_nic_rx_no_start_no_end(dev, tp, rxfd, entry);
-+			ipg_nic_rx_no_start_no_end(dev, sp, rxfd, entry);
- 			break;
- 		}
- 	}
+eth2      Link encap:Ethernet  HWaddr 00:04:75:df:1c:6d
+           inet adr:192.168.253.1  Bcast:192.168.253.255
+Masque:255.255.255.0
+           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+           RX packets:1843643 errors:0 dropped:0 overruns:0 frame:0
+           TX packets:2416959 errors:13 dropped:0 overruns:0 carrier:0
+           collisions:0 lg file transmission:1000
+           RX bytes:157416047 (150.1 MiB)  TX bytes:2313298605 (2.1 GiB)
+           Interruption:17 Adresse de base:0x8000
 
---Boundary-01=_wA1WIXV8S6TvsNX--
+lo        Link encap:Boucle locale
+           inet adr:127.0.0.1  Masque:255.0.0.0
+           UP LOOPBACK RUNNING  MTU:16436  Metric:1
+           RX packets:7839862 errors:0 dropped:0 overruns:0 frame:0
+           TX packets:7839862 errors:0 dropped:0 overruns:0 carrier:0
+           collisions:0 lg file transmission:0
+           RX bytes:3713209874 (3.4 GiB)  TX bytes:3713209874 (3.4 GiB)
 
---nextPart2143283.X7csQDvRL5
-Content-Type: application/pgp-signature
+Interruptions:
+            CPU0       CPU2
+   0: 1253580857 1253580260     <NULL>  timer
+   1:          0          0      sun4u  PSYCHO_PCIERR
+   2:          0          0      sun4u  PSYCHO_UE
+   3:          0          0      sun4u  PSYCHO_CE
+   8:     733411          0      sun4u  su(kbd)
+   9:          0    4396224      sun4u  su(mouse)
+  10:          0          0      sun4u  parport0
+  11:          4          0      sun4u  floppy
+  12:          0          0      sun4u  cs4231(capture)
+  13:          0          0      sun4u  cs4231(play)
+  14:          0   37976886      sun4u  eth0
+  15:          0  218660455      sun4u  sym53c8xx
+  16:         30          0      sun4u  sym53c8xx
+  17:    2042976    2011664      sun4u  eth2
+  18:  137883796          0      sun4u  aic7xxx
+  19:          0    1208028      sun4u  ohci_hcd:usb2
+  20:          0     650947      sun4u  ohci_hcd:usb3
+  21:          1          4      sun4u  ehci_hcd:usb1
+  22:          0          0      sun4u  PSYCHO_PCIERR
+  24:    4957716   33460983      sun4u  eth1
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+	Any idea ?
 
-iD8DBQBIW1AwAvwbVeyQBdURAmbQAKCE1Kp/PEjXcZ8DDWh8iHXqFBad5ACfXwvj
-9/atcVro7Vw4eqGwdHvaAdk=
-=JONN
------END PGP SIGNATURE-----
+	Regards,
 
---nextPart2143283.X7csQDvRL5--
+	JKB
