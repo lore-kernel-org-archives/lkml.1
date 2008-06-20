@@ -1,82 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759476AbYFTQHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbYFTQKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759476AbYFTQHF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 12:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYFTQGz
+	id S1757430AbYFTQKW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 12:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbYFTQKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 12:06:55 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:53324 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752084AbYFTQGy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 12:06:54 -0400
-Date: Fri, 20 Jun 2008 09:06:14 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] procfs-guide: drop pointless &nbsp; entities
-Message-Id: <20080620090614.4befa3bb.randy.dunlap@oracle.com>
-In-Reply-To: <1213977639-8229-1-git-send-email-vapier@gentoo.org>
-References: <1213977639-8229-1-git-send-email-vapier@gentoo.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 20 Jun 2008 12:10:10 -0400
+Received: from gw.goop.org ([64.81.55.164]:45301 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752084AbYFTQKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 12:10:09 -0400
+Message-ID: <485BD65F.6010600@goop.org>
+Date: Fri, 20 Jun 2008 09:10:07 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Jan Beulich <jbeulich@novell.com>
+CC: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       hpa@zytor.com
+Subject: Re: [PATCH] i386: fix vmalloc_sync_all() for Xen
+References: <48591049.76E4.0078.0@novell.com> <485969A4.6090406@goop.org> <485A465D.76E4.0078.0@novell.com> <485A7122.8090200@goop.org> <485A9EF5.76E4.0078.0@novell.com> <485AA296.6070008@goop.org> <485B712C.76E4.0078.0@novell.com>
+In-Reply-To: <485B712C.76E4.0078.0@novell.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jun 2008 12:00:39 -0400 Mike Frysinger wrote:
+Jan Beulich wrote:
+>> I think it would be better to separately test whether the vmalloc 
+>> mapping is present in the init_mm and skip the syncing loop in that 
+>> case, rather than this somewhat convoluted logic to overload the test in 
+>> vmalloc_sync_one.
+>>     
+>
+> That's what the x86-64 code does. When I wrote this originally, I tried
+> to keep the pre-existing logic as much as possible, so I split out
+> vmalloc_sync_one() by mostly moving existing code. I certainly agree
+> that this has room for cleaning up (and then possibly including unification
+> with x86-64).
+>   
 
-> Having trailing &nbsp; entities in a revision numer seems pretty pointless
-> to me.  More so, it's causing me pains, so just drop them since no other
-> guide is doing this.
-> 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Yep.  I think the first step should be to simplify the code to remove 
+all the insync/start optimisations and just implement it in a very 
+straightforward way.  I can't see any way this code could be even 
+slightly performance critical.
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+>> with respect to any other pgd you pass in.  So I don't think the BUG_ON 
+>> will ever fire, and it's unclear what actual logical property it's 
+>> testing for.
+>>     
+>
+> My point of adding the BUG_ON() is that in vmalloc_sync_all() it is not
+> clear that vmalloc_sync_one() can fail only due to init_mm's page table
+> not being appropriately populated. So yes, this BUG_ON() is not
+> expected to ever fire - but isn't that a property of all BUG_ON()'s?
 
+Uh, I guess that's one way of putting it.  The other is that it tests 
+for an obscure condition that's indirectly related to something that 
+might indicate a bug if the code were written differently.  A good 
+BUG_ON/assert acts as documentation because it tells the reader about 
+the expected logical state at that point, but it needs to be expressed 
+in terms which are directly relevant to the algorithm in question.
 
-> ---
->  Documentation/DocBook/procfs-guide.tmpl |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/DocBook/procfs-guide.tmpl b/Documentation/DocBook/procfs-guide.tmpl
-> index 1fd6a1e..8a5dc6e 100644
-> --- a/Documentation/DocBook/procfs-guide.tmpl
-> +++ b/Documentation/DocBook/procfs-guide.tmpl
-> @@ -29,12 +29,12 @@
->  
->      <revhistory>
->        <revision>
-> -	<revnumber>1.0&nbsp;</revnumber>
-> +	<revnumber>1.0</revnumber>
->  	<date>May 30, 2001</date>
->  	<revremark>Initial revision posted to linux-kernel</revremark>
->        </revision>
->        <revision>
-> -	<revnumber>1.1&nbsp;</revnumber>
-> +	<revnumber>1.1</revnumber>
->  	<date>June 3, 2001</date>
->  	<revremark>Revised after comments from linux-kernel</revremark>
->        </revision>
-> -- 
-> 1.5.5.3
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+    J
 
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
