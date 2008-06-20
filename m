@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753841AbYFTSaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753194AbYFTSb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753841AbYFTSaf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 14:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751158AbYFTSaW
+	id S1753194AbYFTSb1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 14:31:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYFTSbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 14:30:22 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:36201 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750931AbYFTSaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 14:30:22 -0400
-Message-ID: <485BF73C.7010802@sgi.com>
-Date: Fri, 20 Jun 2008 11:30:20 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 20 Jun 2008 14:31:19 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:50065 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751158AbYFTSbS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 14:31:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :message-id:from;
+        b=M8T9BWk8tz3eyiL9aW1s1UpSpOCYP84MzMQuPS72Xzd0hw8pRqzKr9HeBlbdM74AP/
+         kvCGawK047aTaT6CIzAtElGV9TncShUvkvm/8sVHQk37x06NuzFPXl/SRO/guOSqtcRh
+         59K1XcZ5nD/Tj1aH578cx3dbr9gmRSNTOpvC8=
+To: =?iso-8859-15?q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
+Subject: Re: [2.6.26-rc4] Problems with rt2x00 USB interface on powerpc (fwd)
+Date: Fri, 20 Jun 2008 20:48:46 +0200
+User-Agent: KMail/1.9.9
+Cc: "John W. Linville" <linville@tuxdriver.com>, linux-kernel@vger.kernel.org
+References: <20080620175729.GA3151@ime.usp.br>
+In-Reply-To: <20080620175729.GA3151@ime.usp.br>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.509483000@polaris-admin.engr.sgi.com> <20080605102222.GA21319@elte.hu> <484EF29C.7080100@sgi.com> <485947A8.8060801@goop.org> <4859511E.5050605@sgi.com> <48596315.6020104@goop.org> <48596893.4040908@sgi.com> <485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org> <485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org> <485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com> <485AD138.4010404@goop.org> <485ADA12.5010505@sgi.com> <485ADC73.60009@goop.org> <485BDB04.4090709@sgi.com> <485BE80E.10209@goop.org> <Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0806201045460.15874@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806202048.47239.IvDoorn@gmail.com>
+From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Fri, 20 Jun 2008, Jeremy Fitzhardinge wrote:
-> 
->> So it seems the problem is that the pre-initialized gdt_page is being lost and
->> replaced with zero.  Linker script bug?
-> 
-> Is the pre initialized gdt page in the per cpu area? Does not look like 
-> it. The loader setup for the percpu section changes with zero basing. 
-> Maybe that has bad side effects?
+Hi,
 
-Yes, it is... The fixup logic is this:
+> Did you receive my earlier message (attached here for reference)? I'm
+> willing to experiment with the driver a little bit and I hope that the
+> information that I have provided so far is helpful to chase the reason
+> why the driver doesn't work on PowerPC.
 
-0000000000004000 D per_cpu__gdt_page
-ffffffff81911000 A __per_cpu_load
+Sorry I have been quite busy with other things.
+I have glanced over the register dumps, and there are no obvious endian problems.
 
-arch/x86/kernel/cpu/common.c:
+The reason most registers are different with the 16bits swapped is the way
+rt2x00 sends the register information through debugfs. rt2500usb only has 16bit
+registers and the way the information is dumped through debugfs assumes 32bit
+registers.
 
-DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
-        [GDT_ENTRY_KERNEL_CS] = { { { 0x0000ffff, 0x00cf9a00 } } },
-...
+I will go over the real register differences as soon as possible, but as I said,
+I am momentarily quite busy with other things. :(
 
-
-arch/x86/kernel/head_64.S:
-
-startup_64:
-...
-       /*
-         * Fix up per_cpu__gdt_page offset when basing percpu
-         * variables at zero.  This is only needed for the boot cpu.
-         */
-        addq    $__per_cpu_load, early_gdt_descr_base(%rip)
-
-ENTRY(secondary_startup_64)
-...
-        /*
-         * We must switch to a new descriptor in kernel space for the GDT
-         * because soon the kernel won't have access anymore to the userspace
-         * addresses where we're currently running on. We have to do that here
-         * because in 32bit we couldn't load a 64bit linear address.
-         */
-        lgdt    early_gdt_descr(%rip)
-...
-        .globl early_gdt_descr
-early_gdt_descr:
-        .word   GDT_ENTRIES*8-1
-early_gdt_descr_base:
-        .quad   per_cpu__gdt_page
-
+Ivo
