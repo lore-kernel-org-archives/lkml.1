@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764876AbYFTUdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762332AbYFTUeH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764876AbYFTUdl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 16:33:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761943AbYFTUVn
+	id S1762332AbYFTUeH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 16:34:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761996AbYFTUVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 16:21:43 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35223 "EHLO
+	Fri, 20 Jun 2008 16:21:52 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35225 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761923AbYFTUVl (ORCPT
+	with ESMTP id S1761976AbYFTUVu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 16:21:41 -0400
+	Fri, 20 Jun 2008 16:21:50 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 47/70] tty-usb-ipw: Coding style
+Subject: [PATCH 48/70] tty-usb-ir-usb: Clean up to coding style
 To: linux-kernel@vger.kernel.org
-Date: Fri, 20 Jun 2008 21:04:17 +0100
-Message-ID: <20080620200415.1479.36548.stgit@localhost.localdomain>
+Date: Fri, 20 Jun 2008 21:04:25 +0100
+Message-ID: <20080620200422.1479.61540.stgit@localhost.localdomain>
 In-Reply-To: <20080620195406.1479.12620.stgit@localhost.localdomain>
 References: <20080620195406.1479.12620.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.1
@@ -32,459 +32,587 @@ From: Alan Cox <alan@redhat.com>
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/usb/serial/ipw.c |  279 ++++++++++++++++++++++++----------------------
- 1 files changed, 144 insertions(+), 135 deletions(-)
+ drivers/usb/serial/ir-usb.c |  373 +++++++++++++++++++++++--------------------
+ 1 files changed, 201 insertions(+), 172 deletions(-)
 
 
-diff --git a/drivers/usb/serial/ipw.c b/drivers/usb/serial/ipw.c
-index a89ebfe..a842025 100644
---- a/drivers/usb/serial/ipw.c
-+++ b/drivers/usb/serial/ipw.c
-@@ -10,27 +10,27 @@
-  *   (at your option) any later version.
+diff --git a/drivers/usb/serial/ir-usb.c b/drivers/usb/serial/ir-usb.c
+index 43dd970..19bff6a 100644
+--- a/drivers/usb/serial/ir-usb.c
++++ b/drivers/usb/serial/ir-usb.c
+@@ -19,7 +19,8 @@
+  * was written by Roman Weissgaerber <weissg@vienna.at>, Dag Brattli
+  * <dag@brattli.net>, and Jean Tourrilhes <jt@hpl.hp.com>
   *
-  * All information about the device was acquired using SnoopyPro
-- * on MSFT's O/S, and examing the MSFT drivers' debug output 
-+ * on MSFT's O/S, and examing the MSFT drivers' debug output
-  * (insanely left _on_ in the enduser version)
+- * See Documentation/usb/usb-serial.txt for more information on using this driver
++ * See Documentation/usb/usb-serial.txt for more information on using this
++ * driver
   *
-  * It was written out of frustration with the IPWireless USB modem
-  * supplied by Axity3G/Sentech South Africa not supporting
-  * Linux whatsoever.
-  *
-- * Nobody provided any proprietary information that was not already 
-+ * Nobody provided any proprietary information that was not already
-  * available for this device.
-- * 
-- * The modem adheres to the "3GPP TS  27.007 AT command set for 3G 
-- * User Equipment (UE)" standard, available from 
-+ *
-+ * The modem adheres to the "3GPP TS  27.007 AT command set for 3G
-+ * User Equipment (UE)" standard, available from
-  * http://www.3gpp.org/ftp/Specs/html-info/27007.htm
-  *
-  * The code was only tested the IPWireless handheld modem distributed
-  * in South Africa by Sentech.
-- * 
-+ *
-  * It may work for Woosh Inc in .nz too, as it appears they use the
-  * same kit.
-  *
-- * There is still some work to be done in terms of handling 
-+ * There is still some work to be done in terms of handling
-  * DCD, DTR, RTS, CTS which are currently faked.
-  * It's good enough for PPP at this point. It's based off all kinds of
-  * code found in usb/serial and usb/class
-@@ -47,7 +47,7 @@
+  * 2007_Jun_21  Alan Cox <alan@redhat.com>
+  *	Minimal cleanups for some of the driver problens and tty layer abuse.
+@@ -59,7 +60,7 @@
+ #include <linux/tty_flip.h>
+ #include <linux/module.h>
  #include <linux/spinlock.h>
- #include <linux/usb.h>
- #include <linux/usb/serial.h>
 -#include <asm/uaccess.h>
 +#include <linux/uaccess.h>
+ #include <linux/usb.h>
+ #include <linux/usb/serial.h>
  
- /*
-  * Version Information
-@@ -64,7 +64,7 @@
+@@ -105,28 +106,32 @@ static int buffer_size;
+ /* if overridden by the user, then use the specified number of XBOFs */
+ static int xbof = -1;
  
- /* Message sizes */
- #define EVENT_BUFFER_SIZE	0xFF
--#define CHAR2INT16(c1,c0)	(((u32)((c1) & 0xff) << 8) + (u32)((c0) & 0xff))
-+#define CHAR2INT16(c1, c0)	(((u32)((c1) & 0xff) << 8) + (u32)((c0) & 0xff))
- #define NUM_BULK_URBS		24
- #define NUM_CONTROL_URBS	16
+-static int  ir_startup (struct usb_serial *serial);
+-static int  ir_open(struct tty_struct *tty, struct usb_serial_port *port, struct file *filep);
+-static void ir_close(struct tty_struct *tty, struct usb_serial_port *port, struct file *filep);
+-static int  ir_write(struct tty_struct *tty, struct usb_serial_port *port, const unsigned char *buf, int count);
+-static void ir_write_bulk_callback (struct urb *urb);
+-static void ir_read_bulk_callback (struct urb *urb);
+-static void ir_set_termios(struct tty_struct *tty, struct usb_serial_port *port, struct ktermios *old_termios);
++static int ir_startup(struct usb_serial *serial);
++static int ir_open(struct tty_struct *tty, struct usb_serial_port *port,
++		struct file *filep);
++static void ir_close(struct tty_struct *tty, struct usb_serial_port *port,
++		struct file *filep);
++static int ir_write(struct tty_struct *tty, struct usb_serial_port *port,
++		const unsigned char *buf, int count);
++static void ir_write_bulk_callback(struct urb *urb);
++static void ir_read_bulk_callback(struct urb *urb);
++static void ir_set_termios(struct tty_struct *tty,
++		struct usb_serial_port *port, struct ktermios *old_termios);
  
-@@ -94,33 +94,34 @@ enum {
+-/* Not that this lot means you can only have one per system */
+-static u8 ir_baud = 0;
+-static u8 ir_xbof = 0;
+-static u8 ir_add_bof = 0;
++/* FIXME: Note that this lot means you can only have one per system */
++static u8 ir_baud;
++static u8 ir_xbof;
++static u8 ir_add_bof;
  
- /* data bits */
- #define ipw_dtb_7		0x700
--#define ipw_dtb_8		0x810	// ok so the define is misleading, I know, but forces 8,n,1
--					// I mean, is there a point to any other setting these days? :)	
-+#define ipw_dtb_8		0x810	/* ok so the define is misleading, I know, but forces 8,n,1 */
-+					/* I mean, is there a point to any other setting these days? :) */
+ static struct usb_device_id id_table [] = {
+ 	{ USB_DEVICE(0x050f, 0x0180) },		/* KC Technology, KC-180 */
+ 	{ USB_DEVICE(0x08e9, 0x0100) },		/* XTNDAccess */
+ 	{ USB_DEVICE(0x09c4, 0x0011) },		/* ACTiSys ACT-IR2000U */
+-	{ USB_INTERFACE_INFO (USB_CLASS_APP_SPEC, USB_CLASS_IRDA, 0) },
++	{ USB_INTERFACE_INFO(USB_CLASS_APP_SPEC, USB_CLASS_IRDA, 0) },
+ 	{ }					/* Terminating entry */
+ };
  
- /* usb control request types : */
--#define IPW_SIO_RXCTL		0x00	// control bulk rx channel transmissions, value=1/0 (on/off)
--#define IPW_SIO_SET_BAUD	0x01	// set baud, value=requested ipw_sio_bxxxx
--#define IPW_SIO_SET_LINE	0x03	// set databits, parity. value=ipw_dtb_x
--#define IPW_SIO_SET_PIN		0x03	// set/clear dtr/rts value=ipw_pin_xxx
--#define IPW_SIO_POLL		0x08	// get serial port status byte, call with value=0
--#define IPW_SIO_INIT		0x11	// initializes ? value=0 (appears as first thing todo on open)
--#define IPW_SIO_PURGE		0x12	// purge all transmissions?, call with value=numchar_to_purge
--#define IPW_SIO_HANDFLOW	0x13	// set xon/xoff limits value=0, and a buffer of 0x10 bytes
--#define IPW_SIO_SETCHARS	0x13	// set the flowcontrol special chars, value=0, buf=6 bytes, 
--					// last 2 bytes contain flowcontrol chars e.g. 00 00 00 00 11 13
-+#define IPW_SIO_RXCTL		0x00	/* control bulk rx channel transmissions, value=1/0 (on/off) */
-+#define IPW_SIO_SET_BAUD	0x01	/* set baud, value=requested ipw_sio_bxxxx */
-+#define IPW_SIO_SET_LINE	0x03	/* set databits, parity. value=ipw_dtb_x */
-+#define IPW_SIO_SET_PIN		0x03	/* set/clear dtr/rts value=ipw_pin_xxx */
-+#define IPW_SIO_POLL		0x08	/* get serial port status byte, call with value=0 */
-+#define IPW_SIO_INIT		0x11	/* initializes ? value=0 (appears as first thing todo on open) */
-+#define IPW_SIO_PURGE		0x12	/* purge all transmissions?, call with value=numchar_to_purge */
-+#define IPW_SIO_HANDFLOW	0x13	/* set xon/xoff limits value=0, and a buffer of 0x10 bytes */
-+#define IPW_SIO_SETCHARS	0x13	/* set the flowcontrol special chars, value=0, buf=6 bytes, */
-+					/* last 2 bytes contain flowcontrol chars e.g. 00 00 00 00 11 13 */
+-MODULE_DEVICE_TABLE (usb, id_table);
++MODULE_DEVICE_TABLE(usb, id_table);
  
- /* values used for request IPW_SIO_SET_PIN */
- #define IPW_PIN_SETDTR		0x101
- #define IPW_PIN_SETRTS		0x202
- #define IPW_PIN_CLRDTR		0x100
--#define IPW_PIN_CLRRTS		0x200 // unconfirmed
-+#define IPW_PIN_CLRRTS		0x200 /* unconfirmed */
- 
- /* values used for request IPW_SIO_RXCTL */
- #define IPW_RXBULK_ON		1
- #define IPW_RXBULK_OFF		0
- 
- /* various 16 byte hardcoded transferbuffers used by flow control */
--#define IPW_BYTES_FLOWINIT	{ 0x01, 0, 0, 0, 0x40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-+#define IPW_BYTES_FLOWINIT	{ 0x01, 0, 0, 0, 0x40, 0, 0, 0, \
-+					0, 0, 0, 0, 0, 0, 0, 0 }
- 
- /* Interpretation of modem status lines */
- /* These need sorting out by individually connecting pins and checking
-@@ -132,17 +133,6 @@ enum {
- #define IPW_CTS			((1<<5) | (1<<4))
- 
- #define IPW_WANTS_TO_SEND	0x30
--//#define IPW_DTR			/* Data Terminal Ready */
--//#define IPW_CTS			/* Clear To Send */
--//#define IPW_CD			/* Carrier Detect */
--//#define IPW_DSR			/* Data Set Ready */
--//#define IPW_RxD			/* Receive pin */
--
--//#define IPW_LE
--//#define IPW_RTS		
--//#define IPW_ST		
--//#define IPW_SR		
--//#define IPW_RI			/* Ring Indicator */
- 
- static struct usb_device_id usb_ipw_ids[] = {
- 	{ USB_DEVICE(IPW_VID, IPW_PID) },
-@@ -177,7 +167,8 @@ static void ipw_read_bulk_callback(struct urb *urb)
- 		return;
- 	}
- 
--	usb_serial_debug_data(debug, &port->dev, __func__, urb->actual_length, data);
-+	usb_serial_debug_data(debug, &port->dev, __func__,
-+					urb->actual_length, data);
- 
- 	tty = port->port.tty;
- 	if (tty && urb->actual_length) {
-@@ -187,15 +178,17 @@ static void ipw_read_bulk_callback(struct urb *urb)
- 	}
- 
- 	/* Continue trying to always read  */
--	usb_fill_bulk_urb (port->read_urb, port->serial->dev,
--			   usb_rcvbulkpipe(port->serial->dev,
-+	usb_fill_bulk_urb(port->read_urb, port->serial->dev,
-+			  usb_rcvbulkpipe(port->serial->dev,
- 					   port->bulk_in_endpointAddress),
--			   port->read_urb->transfer_buffer,
--			   port->read_urb->transfer_buffer_length,
--			   ipw_read_bulk_callback, port);
-+			  port->read_urb->transfer_buffer,
-+			  port->read_urb->transfer_buffer_length,
-+			  ipw_read_bulk_callback, port);
- 	result = usb_submit_urb(port->read_urb, GFP_ATOMIC);
- 	if (result)
--		dev_err(&port->dev, "%s - failed resubmitting read urb, error %d\n", __func__, result);
-+		dev_err(&port->dev,
-+			"%s - failed resubmitting read urb, error %d\n",
-+							__func__, result);
- 	return;
- }
- 
-@@ -216,26 +209,30 @@ static int ipw_open(struct tty_struct *tty,
- 	if (tty)
- 		tty->low_latency = 1;
- 
--	/* --1: Tell the modem to initialize (we think) From sniffs this is always the
--	 * first thing that gets sent to the modem during opening of the device */
--	dbg("%s: Sending SIO_INIT (we guess)",__func__);
--	result = usb_control_msg(dev, usb_sndctrlpipe(dev,0),
--				 IPW_SIO_INIT,
--				 USB_TYPE_VENDOR | USB_RECIP_INTERFACE | USB_DIR_OUT,
--				 0,
--				 0, /* index */
--				 NULL,
--				 0,
--				 100000);
-+	/* --1: Tell the modem to initialize (we think) From sniffs this is
-+	 *	always the first thing that gets sent to the modem during
-+	 *	opening of the device */
-+	dbg("%s: Sending SIO_INIT (we guess)", __func__);
-+	result = usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
-+			 IPW_SIO_INIT,
-+			 USB_TYPE_VENDOR | USB_RECIP_INTERFACE | USB_DIR_OUT,
-+			 0,
-+			 0, /* index */
-+			 NULL,
-+			 0,
-+			 100000);
- 	if (result < 0)
--		dev_err(&port->dev, "Init of modem failed (error = %d)\n", result);
-+		dev_err(&port->dev,
-+			"Init of modem failed (error = %d)\n", result);
- 
- 	/* reset the bulk pipes */
--	usb_clear_halt(dev, usb_rcvbulkpipe(dev, port->bulk_in_endpointAddress));
--	usb_clear_halt(dev, usb_sndbulkpipe(dev, port->bulk_out_endpointAddress));
-+	usb_clear_halt(dev,
-+			usb_rcvbulkpipe(dev, port->bulk_in_endpointAddress));
-+	usb_clear_halt(dev,
-+			usb_sndbulkpipe(dev, port->bulk_out_endpointAddress));
- 
--	/*--2: Start reading from the device */	
--	dbg("%s: setting up bulk read callback",__func__);
-+	/*--2: Start reading from the device */
-+	dbg("%s: setting up bulk read callback", __func__);
- 	usb_fill_bulk_urb(port->read_urb, dev,
- 			  usb_rcvbulkpipe(dev, port->bulk_in_endpointAddress),
- 			  port->bulk_in_buffer,
-@@ -243,67 +240,72 @@ static int ipw_open(struct tty_struct *tty,
- 			  ipw_read_bulk_callback, port);
- 	result = usb_submit_urb(port->read_urb, GFP_KERNEL);
- 	if (result < 0)
--		dbg("%s - usb_submit_urb(read bulk) failed with status %d", __func__, result);
-+		dbg("%s - usb_submit_urb(read bulk) failed with status %d",
-+							__func__, result);
- 
- 	/*--3: Tell the modem to open the floodgates on the rx bulk channel */
--	dbg("%s:asking modem for RxRead (RXBULK_ON)",__func__);
-+	dbg("%s:asking modem for RxRead (RXBULK_ON)", __func__);
- 	result = usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
--				 IPW_SIO_RXCTL,
--				 USB_TYPE_VENDOR | USB_RECIP_INTERFACE | USB_DIR_OUT,
--				 IPW_RXBULK_ON,
--				 0, /* index */
--				 NULL,
--				 0,
--				 100000);
--	if (result < 0) 
--		dev_err(&port->dev, "Enabling bulk RxRead failed (error = %d)\n", result);
-+			 IPW_SIO_RXCTL,
-+			 USB_TYPE_VENDOR | USB_RECIP_INTERFACE | USB_DIR_OUT,
-+			 IPW_RXBULK_ON,
-+			 0, /* index */
-+			 NULL,
-+			 0,
-+			 100000);
-+	if (result < 0)
-+		dev_err(&port->dev,
-+			"Enabling bulk RxRead failed (error = %d)\n", result);
- 
- 	/*--4: setup the initial flowcontrol */
--	dbg("%s:setting init flowcontrol (%s)",__func__,buf_flow_init);
-+	dbg("%s:setting init flowcontrol (%s)", __func__, buf_flow_init);
- 	result = usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
--				 IPW_SIO_HANDFLOW,
--				 USB_TYPE_VENDOR | USB_RECIP_INTERFACE | USB_DIR_OUT,
--				 0,
--				 0,
--				 buf_flow_init,
--				 0x10,
--				 200000);
-+			 IPW_SIO_HANDFLOW,
-+			 USB_TYPE_VENDOR | USB_RECIP_INTERFACE | USB_DIR_OUT,
-+			 0,
-+			 0,
-+			 buf_flow_init,
-+			 0x10,
-+			 200000);
- 	if (result < 0)
--		dev_err(&port->dev, "initial flowcontrol failed (error = %d)\n", result);
-+		dev_err(&port->dev,
-+			"initial flowcontrol failed (error = %d)\n", result);
- 
- 
- 	/*--5: raise the dtr */
--	dbg("%s:raising dtr",__func__);
-+	dbg("%s:raising dtr", __func__);
- 	result = usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
--				 IPW_SIO_SET_PIN,
--				 USB_TYPE_VENDOR | USB_RECIP_INTERFACE | USB_DIR_OUT,
--				 IPW_PIN_SETDTR,
--				 0,
--				 NULL,
--				 0,
--				 200000);
-+			 IPW_SIO_SET_PIN,
-+			 USB_TYPE_VENDOR | USB_RECIP_INTERFACE | USB_DIR_OUT,
-+			 IPW_PIN_SETDTR,
-+			 0,
-+			 NULL,
-+			 0,
-+			 200000);
- 	if (result < 0)
--		dev_err(&port->dev, "setting dtr failed (error = %d)\n", result);
-+		dev_err(&port->dev,
-+				"setting dtr failed (error = %d)\n", result);
- 
- 	/*--6: raise the rts */
--	dbg("%s:raising rts",__func__);
-+	dbg("%s:raising rts", __func__);
- 	result = usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
--				 IPW_SIO_SET_PIN,
--				 USB_TYPE_VENDOR | USB_RECIP_INTERFACE | USB_DIR_OUT,
--				 IPW_PIN_SETRTS,
--				 0,
--				 NULL,
--				 0,
--				 200000);
-+			 IPW_SIO_SET_PIN,
-+			 USB_TYPE_VENDOR | USB_RECIP_INTERFACE | USB_DIR_OUT,
-+			 IPW_PIN_SETRTS,
-+			 0,
-+			 NULL,
-+			 0,
-+			 200000);
- 	if (result < 0)
--		dev_err(&port->dev, "setting dtr failed (error = %d)\n", result);
--	
-+		dev_err(&port->dev,
-+				"setting dtr failed (error = %d)\n", result);
+ static struct usb_driver ir_driver = {
+ 	.name =		"ir-usb",
+@@ -159,7 +164,7 @@ static inline void irda_usb_dump_class_desc(struct irda_class_desc *desc)
+ {
+ 	dbg("bLength=%x", desc->bLength);
+ 	dbg("bDescriptorType=%x", desc->bDescriptorType);
+-	dbg("bcdSpecRevision=%x", desc->bcdSpecRevision); 
++	dbg("bcdSpecRevision=%x", desc->bcdSpecRevision);
+ 	dbg("bmDataSize=%x", desc->bmDataSize);
+ 	dbg("bmWindowSize=%x", desc->bmWindowSize);
+ 	dbg("bmMinTurnaroundTime=%d", desc->bmMinTurnaroundTime);
+@@ -181,25 +186,26 @@ static inline void irda_usb_dump_class_desc(struct irda_class_desc *desc)
+  *
+  * Based on the same function in drivers/net/irda/irda-usb.c
+  */
+-static struct irda_class_desc *irda_usb_find_class_desc(struct usb_device *dev, unsigned int ifnum)
++static struct irda_class_desc *irda_usb_find_class_desc(struct usb_device *dev,
++						unsigned int ifnum)
+ {
+ 	struct irda_class_desc *desc;
+ 	int ret;
+-		
+-	desc = kzalloc(sizeof (struct irda_class_desc), GFP_KERNEL);
+-	if (desc == NULL) 
 +
- 	kfree(buf_flow_init);
- 	return 0;
++	desc = kzalloc(sizeof(struct irda_class_desc), GFP_KERNEL);
++	if (desc == NULL)
+ 		return NULL;
+-	
+-	ret = usb_control_msg(dev, usb_rcvctrlpipe(dev,0),
++
++	ret = usb_control_msg(dev, usb_rcvctrlpipe(dev, 0),
+ 			IU_REQ_GET_CLASS_DESC,
+ 			USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_INTERFACE,
+ 			0, ifnum, desc, sizeof(*desc), 1000);
+-	
++
+ 	dbg("%s -  ret=%d", __func__, ret);
+ 	if (ret < sizeof(*desc)) {
+ 		dbg("%s - class descriptor read %s (%d)",
+ 				__func__,
+-				(ret<0) ? "failed" : "too short",
++				(ret < 0) ? "failed" : "too short",
+ 				ret);
+ 		goto error;
+ 	}
+@@ -207,7 +213,7 @@ static struct irda_class_desc *irda_usb_find_class_desc(struct usb_device *dev,
+ 		dbg("%s - bad class descriptor type", __func__);
+ 		goto error;
+ 	}
+-	
++
+ 	irda_usb_dump_class_desc(desc);
+ 	return desc;
+ error:
+@@ -220,34 +226,44 @@ static u8 ir_xbof_change(u8 xbof)
+ {
+ 	u8 result;
+ 	/* reference irda-usb.c */
+-	switch(xbof) {
+-		case 48: result = 0x10; break;
+-		case 28:
+-		case 24: result = 0x20; break;
+-		default:
+-		case 12: result = 0x30; break;
+-		case  5:
+-		case  6: result = 0x40; break;
+-		case  3: result = 0x50; break;
+-		case  2: result = 0x60; break;
+-		case  1: result = 0x70; break;
+-		case  0: result = 0x80; break;
++	switch (xbof) {
++	case 48:
++		result = 0x10;
++		break;
++	case 28:
++	case 24:result = 0x20;
++		break;
++	default:
++	case 12:result = 0x30;
++		break;
++	case  5:
++	case  6:result = 0x40;
++		break;
++	case  3:result = 0x50;
++		break;
++	case  2:result = 0x60;
++		break;
++	case  1:result = 0x70;
++		break;
++	case  0:result = 0x80;
++		break;
+ 	}
+-	return(result);
++	return result;
  }
  
- static void ipw_close(struct tty_struct *tty,
+ 
+-static int ir_startup (struct usb_serial *serial)
++static int ir_startup(struct usb_serial *serial)
+ {
+ 	struct irda_class_desc *irda_desc;
+ 
+-	irda_desc = irda_usb_find_class_desc (serial->dev, 0);
++	irda_desc = irda_usb_find_class_desc(serial->dev, 0);
+ 	if (irda_desc == NULL) {
+-		dev_err (&serial->dev->dev, "IRDA class descriptor not found, device not bound\n");
++		dev_err(&serial->dev->dev,
++			"IRDA class descriptor not found, device not bound\n");
+ 		return -ENODEV;
+ 	}
+ 
+-	dbg ("%s - Baud rates supported:%s%s%s%s%s%s%s%s%s",
++	dbg("%s - Baud rates supported:%s%s%s%s%s%s%s%s%s",
+ 		__func__,
+ 		(irda_desc->wBaudRate & 0x0001) ? " 2400"    : "",
+ 		(irda_desc->wBaudRate & 0x0002) ? " 9600"    : "",
+@@ -259,21 +275,35 @@ static int ir_startup (struct usb_serial *serial)
+ 		(irda_desc->wBaudRate & 0x0080) ? " 1152000" : "",
+ 		(irda_desc->wBaudRate & 0x0100) ? " 4000000" : "");
+ 
+-	switch( irda_desc->bmAdditionalBOFs ) {
+-		case 0x01: ir_add_bof = 48; break;
+-		case 0x02: ir_add_bof = 24; break;
+-		case 0x04: ir_add_bof = 12; break;
+-		case 0x08: ir_add_bof =  6; break;
+-		case 0x10: ir_add_bof =  3; break;
+-		case 0x20: ir_add_bof =  2; break;
+-		case 0x40: ir_add_bof =  1; break;
+-		case 0x80: ir_add_bof =  0; break;
+-		default:;
++	switch (irda_desc->bmAdditionalBOFs) {
++	case 0x01:
++		ir_add_bof = 48;
++		break;
++	case 0x02:
++		ir_add_bof = 24;
++		break;
++	case 0x04:
++		ir_add_bof = 12;
++		break;
++	case 0x08:
++		ir_add_bof =  6;
++		break;
++	case 0x10:
++		ir_add_bof =  3;
++		break;
++	case 0x20:
++		ir_add_bof =  2;
++		break;
++	case 0x40:
++		ir_add_bof =  1;
++		break;
++	case 0x80:
++		ir_add_bof =  0;
++		break;
++	default:;
+ 	}
+-
+-	kfree (irda_desc);
+-
+-	return 0;		
++	kfree(irda_desc);
++	return 0;
+ }
+ 
+ static int ir_open(struct tty_struct *tty,
+@@ -286,47 +316,48 @@ static int ir_open(struct tty_struct *tty,
+ 
+ 	if (buffer_size) {
+ 		/* override the default buffer sizes */
+-		buffer = kmalloc (buffer_size, GFP_KERNEL);
++		buffer = kmalloc(buffer_size, GFP_KERNEL);
+ 		if (!buffer) {
+-			dev_err (&port->dev, "%s - out of memory.\n", __func__);
++			dev_err(&port->dev, "%s - out of memory.\n", __func__);
+ 			return -ENOMEM;
+ 		}
+-		kfree (port->read_urb->transfer_buffer);
++		kfree(port->read_urb->transfer_buffer);
+ 		port->read_urb->transfer_buffer = buffer;
+ 		port->read_urb->transfer_buffer_length = buffer_size;
+ 
+-		buffer = kmalloc (buffer_size, GFP_KERNEL);
++		buffer = kmalloc(buffer_size, GFP_KERNEL);
+ 		if (!buffer) {
+-			dev_err (&port->dev, "%s - out of memory.\n", __func__);
++			dev_err(&port->dev, "%s - out of memory.\n",
++								__func__);
+ 			return -ENOMEM;
+ 		}
+-		kfree (port->write_urb->transfer_buffer);
++		kfree(port->write_urb->transfer_buffer);
+ 		port->write_urb->transfer_buffer = buffer;
+ 		port->write_urb->transfer_buffer_length = buffer_size;
+ 		port->bulk_out_size = buffer_size;
+ 	}
+ 
+ 	/* Start reading from the device */
+-	usb_fill_bulk_urb (
+-		port->read_urb,
+-		port->serial->dev, 
+-		usb_rcvbulkpipe(port->serial->dev, port->bulk_in_endpointAddress),
+-		port->read_urb->transfer_buffer,
+-		port->read_urb->transfer_buffer_length,
+-		ir_read_bulk_callback,
+-		port);
++	usb_fill_bulk_urb(port->read_urb, port->serial->dev,
++			usb_rcvbulkpipe(port->serial->dev,
++						port->bulk_in_endpointAddress),
++			port->read_urb->transfer_buffer,
++			port->read_urb->transfer_buffer_length,
++			ir_read_bulk_callback, port);
+ 	result = usb_submit_urb(port->read_urb, GFP_KERNEL);
+ 	if (result)
+-		dev_err(&port->dev, "%s - failed submitting read urb, error %d\n", __func__, result);
++		dev_err(&port->dev,
++			"%s - failed submitting read urb, error %d\n",
++							__func__, result);
+ 
+ 	return result;
+ }
+ 
+ static void ir_close(struct tty_struct *tty,
 -			struct usb_serial_port *port, struct file * filp)
 +			struct usb_serial_port *port, struct file *filp)
  {
- 	struct usb_device *dev = port->serial->dev;
- 	int result;
-@@ -314,56 +316,62 @@ static void ipw_close(struct tty_struct *tty,
- 	}
- 
- 	/*--1: drop the dtr */
--	dbg("%s:dropping dtr",__func__);
-+	dbg("%s:dropping dtr", __func__);
- 	result = usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
--				 IPW_SIO_SET_PIN,
--				 USB_TYPE_VENDOR | USB_RECIP_INTERFACE | USB_DIR_OUT,
--				 IPW_PIN_CLRDTR,
--				 0,
--				 NULL,
--				 0,
--				 200000);
-+			 IPW_SIO_SET_PIN,
-+			 USB_TYPE_VENDOR | USB_RECIP_INTERFACE | USB_DIR_OUT,
-+			 IPW_PIN_CLRDTR,
-+			 0,
-+			 NULL,
-+			 0,
-+			 200000);
- 	if (result < 0)
--		dev_err(&port->dev, "dropping dtr failed (error = %d)\n", result);
-+		dev_err(&port->dev, "dropping dtr failed (error = %d)\n",
-+								result);
- 
- 	/*--2: drop the rts */
--	dbg("%s:dropping rts",__func__);
-+	dbg("%s:dropping rts", __func__);
- 	result = usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
--				 IPW_SIO_SET_PIN, USB_TYPE_VENDOR | USB_RECIP_INTERFACE | USB_DIR_OUT,
--				 IPW_PIN_CLRRTS,
--				 0,
--				 NULL,
--				 0,
--				 200000);
-+			 IPW_SIO_SET_PIN, USB_TYPE_VENDOR |
-+			 		USB_RECIP_INTERFACE | USB_DIR_OUT,
-+			 IPW_PIN_CLRRTS,
-+			 0,
-+			 NULL,
-+			 0,
-+			 200000);
- 	if (result < 0)
--		dev_err(&port->dev, "dropping rts failed (error = %d)\n", result);
-+		dev_err(&port->dev,
-+				"dropping rts failed (error = %d)\n", result);
- 
- 
- 	/*--3: purge */
--	dbg("%s:sending purge",__func__);
-+	dbg("%s:sending purge", __func__);
- 	result = usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
--				 IPW_SIO_PURGE, USB_TYPE_VENDOR | USB_RECIP_INTERFACE | USB_DIR_OUT,
--				 0x03,
--				 0,
--				 NULL,
--				 0,
--				 200000);
-+			 IPW_SIO_PURGE, USB_TYPE_VENDOR |
-+			 		USB_RECIP_INTERFACE | USB_DIR_OUT,
-+			 0x03,
-+			 0,
-+			 NULL,
-+			 0,
-+			 200000);
- 	if (result < 0)
- 		dev_err(&port->dev, "purge failed (error = %d)\n", result);
- 
- 
--	/* send RXBULK_off (tell modem to stop transmitting bulk data on rx chan) */
-+	/* send RXBULK_off (tell modem to stop transmitting bulk data on
-+	   rx chan) */
- 	result = usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
--				 IPW_SIO_RXCTL,
--				 USB_TYPE_VENDOR | USB_RECIP_INTERFACE | USB_DIR_OUT,
--				 IPW_RXBULK_OFF,
--				 0, /* index */
--				 NULL,
--				 0,
--				 100000);
-+			 IPW_SIO_RXCTL,
-+			 USB_TYPE_VENDOR | USB_RECIP_INTERFACE | USB_DIR_OUT,
-+			 IPW_RXBULK_OFF,
-+			 0, /* index */
-+			 NULL,
-+			 0,
-+			 100000);
- 
- 	if (result < 0)
--		dev_err(&port->dev, "Disabling bulk RxRead failed (error = %d)\n", result);
-+		dev_err(&port->dev,
-+			"Disabling bulk RxRead failed (error = %d)\n", result);
- 
- 	/* shutdown any in-flight urbs that we know about */
+ 	dbg("%s - port %d", __func__, port->number);
+-			 
++
+ 	/* shutdown our bulk read */
  	usb_kill_urb(port->read_urb);
-@@ -393,7 +401,7 @@ static int ipw_write(struct tty_struct *tty, struct usb_serial_port *port,
- 	int ret;
+ }
+@@ -365,31 +396,29 @@ static int ir_write(struct tty_struct *tty, struct usb_serial_port *port,
+ 	*transfer_buffer = ir_xbof | ir_baud;
+ 	++transfer_buffer;
  
- 	dbg("%s: TOP: count=%d, in_interrupt=%ld", __func__,
--		count, in_interrupt() );
-+		count, in_interrupt());
+-	memcpy (transfer_buffer, buf, transfer_size);
++	memcpy(transfer_buffer, buf, transfer_size);
  
- 	if (count == 0) {
- 		dbg("%s - write request of 0 bytes", __func__);
-@@ -424,13 +432,14 @@ static int ipw_write(struct tty_struct *tty, struct usb_serial_port *port,
- 	ret = usb_submit_urb(port->write_urb, GFP_ATOMIC);
- 	if (ret != 0) {
+-	usb_fill_bulk_urb (
+-		port->write_urb,
+-		port->serial->dev,
+-		usb_sndbulkpipe(port->serial->dev,
+-			port->bulk_out_endpointAddress),
+-		port->write_urb->transfer_buffer,
+-		transfer_size + 1,
+-		ir_write_bulk_callback,
+-		port);
++	usb_fill_bulk_urb(port->write_urb, port->serial->dev,
++			usb_sndbulkpipe(port->serial->dev,
++				port->bulk_out_endpointAddress),
++			port->write_urb->transfer_buffer,
++			transfer_size + 1, ir_write_bulk_callback, port);
+ 
+ 	port->write_urb->transfer_flags = URB_ZERO_PACKET;
+ 
+-	result = usb_submit_urb (port->write_urb, GFP_ATOMIC);
++	result = usb_submit_urb(port->write_urb, GFP_ATOMIC);
+ 	if (result) {
  		port->write_urb_busy = 0;
--		dbg("%s - usb_submit_urb(write bulk) failed with error = %d", __func__, ret);
-+		dbg("%s - usb_submit_urb(write bulk) failed with error = %d",
-+								__func__, ret);
- 		return ret;
+-		dev_err(&port->dev, "%s - failed submitting write urb, error %d\n", __func__, result);
++		dev_err(&port->dev,
++			"%s - failed submitting write urb, error %d\n",
++							__func__, result);
+ 	} else
+ 		result = transfer_size;
+ 
+ 	return result;
+ }
+ 
+-static void ir_write_bulk_callback (struct urb *urb)
++static void ir_write_bulk_callback(struct urb *urb)
+ {
+ 	struct usb_serial_port *port = urb->context;
+ 	int status = urb->status;
+@@ -403,17 +432,13 @@ static void ir_write_bulk_callback (struct urb *urb)
+ 		return;
  	}
  
- 	dbg("%s returning %d", __func__, count);
- 	return count;
--} 
-+}
+-	usb_serial_debug_data (
+-		debug,
+-		&port->dev,
+-		__func__,
+-		urb->actual_length,
+-		urb->transfer_buffer);
++	usb_serial_debug_data(debug, &port->dev, __func__, urb->actual_length,
++						urb->transfer_buffer);
  
- static int ipw_probe(struct usb_serial_port *port)
+ 	usb_serial_port_softint(port);
+ }
+ 
+-static void ir_read_bulk_callback (struct urb *urb)
++static void ir_read_bulk_callback(struct urb *urb)
  {
-@@ -489,8 +498,8 @@ module_init(usb_ipw_init);
- module_exit(usb_ipw_exit);
+ 	struct usb_serial_port *port = urb->context;
+ 	struct tty_struct *tty;
+@@ -429,64 +454,52 @@ static void ir_read_bulk_callback (struct urb *urb)
+ 	}
  
- /* Module information */
--MODULE_AUTHOR( DRIVER_AUTHOR );
--MODULE_DESCRIPTION( DRIVER_DESC );
-+MODULE_AUTHOR(DRIVER_AUTHOR);
-+MODULE_DESCRIPTION(DRIVER_DESC);
- MODULE_LICENSE("GPL");
+ 	switch (status) {
+-		case 0: /* Successful */
+-
+-			/*
+-			 * The first byte of the packet we get from the device
+-			 * contains a busy indicator and baud rate change.
+-			 * See section 5.4.1.2 of the USB IrDA spec.
+-			 */
+-			if ((*data & 0x0f) > 0)
+-				ir_baud = *data & 0x0f;
+-
+-			usb_serial_debug_data (
+-				debug,
+-				&port->dev,
+-				__func__,
+-				urb->actual_length,
+-				data);
+-
+-			tty = port->port.tty;
+-
+-			if (tty_buffer_request_room(tty, urb->actual_length - 1)) {
+-				tty_insert_flip_string(tty, data+1, urb->actual_length - 1);
+-				tty_flip_buffer_push(tty);
+-			}
+-
+-			/*
+-			 * No break here.
+-			 * We want to resubmit the urb so we can read
+-			 * again.
+-			 */
++	case 0: /* Successful */
++
++		/*
++		 * The first byte of the packet we get from the device
++		 * contains a busy indicator and baud rate change.
++		 * See section 5.4.1.2 of the USB IrDA spec.
++		 */
++		if ((*data & 0x0f) > 0)
++			ir_baud = *data & 0x0f;
++
++		usb_serial_debug_data(debug, &port->dev, __func__,
++					urb->actual_length, data);
++		tty = port->port.tty;
++
++		if (tty_buffer_request_room(tty, urb->actual_length - 1)) {
++			tty_insert_flip_string(tty, data + 1,
++						urb->actual_length - 1);
++			tty_flip_buffer_push(tty);
++		}
  
- module_param(debug, bool, S_IRUGO | S_IWUSR);
+-		case -EPROTO: /* taking inspiration from pl2303.c */
++		/*
++		 * No break here.
++		 * We want to resubmit the urb so we can read
++		 * again.
++		 */
+ 
+-			/* Continue trying to always read */
+-			usb_fill_bulk_urb (
+-				port->read_urb,
+-				port->serial->dev, 
++	case -EPROTO: /* taking inspiration from pl2303.c */
++		/* Continue trying to always read */
++		usb_fill_bulk_urb(port->read_urb, port->serial->dev,
+ 				usb_rcvbulkpipe(port->serial->dev,
+ 					port->bulk_in_endpointAddress),
+ 				port->read_urb->transfer_buffer,
+ 				port->read_urb->transfer_buffer_length,
+-				ir_read_bulk_callback,
+-				port);
+-
+-			result = usb_submit_urb(port->read_urb, GFP_ATOMIC);
+-			if (result)
+-				dev_err(&port->dev, "%s - failed resubmitting read urb, error %d\n",
+-					__func__, result);
+-
+-			break ;
+-
+-		default:
+-			dbg("%s - nonzero read bulk status received: %d",
+-				__func__,
+-				status);
+-			break ;
+-
++				ir_read_bulk_callback, port);
++
++		result = usb_submit_urb(port->read_urb, GFP_ATOMIC);
++		if (result)
++			dev_err(&port->dev,
++			    "%s - failed resubmitting read urb, error %d\n",
++				__func__, result);
++		break;
++	default:
++		dbg("%s - nonzero read bulk status received: %d",
++							__func__, status);
++		break;
+ 	}
+-
+ 	return;
+ }
+ 
+@@ -509,19 +522,36 @@ static void ir_set_termios(struct tty_struct *tty,
+ 	 */
+ 
+ 	switch (baud) {
+-		case 2400:	ir_baud = SPEED_2400; break;
+-		case 9600:	ir_baud = SPEED_9600; break;
+-		case 19200:	ir_baud = SPEED_19200; break;
+-		case 38400:	ir_baud = SPEED_38400; break;
+-		case 57600:	ir_baud = SPEED_57600; break;
+-		case 115200:	ir_baud = SPEED_115200; break;
+-		case 576000:	ir_baud = SPEED_576000; break;
+-		case 1152000:	ir_baud = SPEED_1152000; break;
+-		case 4000000:	ir_baud = SPEED_4000000; break;
+-			break;
+-		default:
+-			ir_baud = SPEED_9600;
+-			baud = 9600;
++	case 2400:
++		ir_baud = SPEED_2400;
++		break;
++	case 9600:
++		ir_baud = SPEED_9600;
++		break;
++	case 19200:
++		ir_baud = SPEED_19200;
++		break;
++	case 38400:
++		ir_baud = SPEED_38400;
++		break;
++	case 57600:
++		ir_baud = SPEED_57600;
++		break;
++	case 115200:
++		ir_baud = SPEED_115200;
++		break;
++	case 576000:
++		ir_baud = SPEED_576000;
++		break;
++	case 1152000:
++		ir_baud = SPEED_1152000;
++		break;
++	case 4000000:
++		ir_baud = SPEED_4000000;
++		break;
++	default:
++		ir_baud = SPEED_9600;
++		baud = 9600;
+ 	}
+ 
+ 	if (xbof == -1)
+@@ -537,20 +567,19 @@ static void ir_set_termios(struct tty_struct *tty,
+ 	transfer_buffer = port->write_urb->transfer_buffer;
+ 	*transfer_buffer = ir_xbof | ir_baud;
+ 
+-	usb_fill_bulk_urb (
+-		port->write_urb,
+-		port->serial->dev,
+-		usb_sndbulkpipe(port->serial->dev, port->bulk_out_endpointAddress),
+-		port->write_urb->transfer_buffer,
+-		1,
+-		ir_write_bulk_callback,
+-		port);
++	usb_fill_bulk_urb(port->write_urb, port->serial->dev,
++			usb_sndbulkpipe(port->serial->dev,
++					port->bulk_out_endpointAddress),
++			port->write_urb->transfer_buffer,
++			1, ir_write_bulk_callback, port);
+ 
+ 	port->write_urb->transfer_flags = URB_ZERO_PACKET;
+ 
+-	result = usb_submit_urb (port->write_urb, GFP_KERNEL);
++	result = usb_submit_urb(port->write_urb, GFP_KERNEL);
+ 	if (result)
+-		dev_err(&port->dev, "%s - failed submitting write urb, error %d\n", __func__, result);
++		dev_err(&port->dev,
++			"%s - failed submitting write urb, error %d\n",
++							__func__, result);
+ 
+ 	/* Only speed changes are supported */
+ 	tty_termios_copy_hw(tty->termios, old_termios);
+@@ -558,14 +587,14 @@ static void ir_set_termios(struct tty_struct *tty,
+ }
+ 
+ 
+-static int __init ir_init (void)
++static int __init ir_init(void)
+ {
+ 	int retval;
+ 	retval = usb_serial_register(&ir_device);
+ 	if (retval)
+ 		goto failed_usb_serial_register;
+ 	retval = usb_register(&ir_driver);
+-	if (retval) 
++	if (retval)
+ 		goto failed_usb_register;
+ 	info(DRIVER_DESC " " DRIVER_VERSION);
+ 	return 0;
+@@ -576,10 +605,10 @@ failed_usb_serial_register:
+ }
+ 
+ 
+-static void __exit ir_exit (void)
++static void __exit ir_exit(void)
+ {
+-	usb_deregister (&ir_driver);
+-	usb_serial_deregister (&ir_device);
++	usb_deregister(&ir_driver);
++	usb_serial_deregister(&ir_device);
+ }
+ 
+ 
 
