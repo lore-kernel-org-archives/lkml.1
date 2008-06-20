@@ -1,133 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757869AbYFTUFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758036AbYFTUGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757869AbYFTUFq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 16:05:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756943AbYFTUFf
+	id S1758036AbYFTUGV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 16:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755045AbYFTUGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 16:05:35 -0400
-Received: from gw.goop.org ([64.81.55.164]:54838 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755454AbYFTUFe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 16:05:34 -0400
-Message-ID: <485C0D8A.6030500@goop.org>
-Date: Fri, 20 Jun 2008 13:05:30 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 20 Jun 2008 16:06:10 -0400
+Received: from mail-sin.bigfish.com ([207.46.51.74]:12506 "EHLO
+	mail187-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755171AbYFTUGJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 16:06:09 -0400
+X-BigFish: VPS9(z34a4l1033izzz10d3izzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-WSS-ID: 0K2S2H8-02-ZK5-01
+Date: Fri, 20 Jun 2008 22:05:37 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>
+Subject: [PATCH 5/7] x86: pat.c consolidate list_add handling in
+	reserve_memtype
+Message-ID: <20080620200537.GG4105@alberich.amd.com>
+References: <20080620195503.GB4105@alberich.amd.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>, benh@kernel.crashing.org,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>, x86@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Hugh Dickins <hugh@veritas.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1 of 4] mm: add a ptep_modify_prot transaction	abstraction
-References: <alpine.LFD.1.10.0806181723400.2907@woody.linux-foundation.org> <4859AA47.2020903@goop.org> <alpine.LFD.1.10.0806181743390.2907@woody.linux-foundation.org> <alpine.LFD.1.10.0806182050470.2907@woody.linux-foundation.org> <20080619115832.GM15228@elte.hu> <alpine.LFD.1.10.0806190928100.2907@woody.linux-foundation.org> <20080619164708.GA32190@elte.hu> <20080620101028.GA23664@elte.hu> <485BFFC4.3070902@goop.org> <alpine.LFD.1.10.0806201211560.3167@woody.linux-foundation.org> <20080620195620.GA20183@elte.hu>
-In-Reply-To: <20080620195620.GA20183@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080620195503.GB4105@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 20 Jun 2008 20:05:39.0784 (UTC) FILETIME=[02F90C80:01C8D311]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
->
->   
->> On Fri, 20 Jun 2008, Jeremy Fitzhardinge wrote:
->>     
->>> Blows up on "gcc version 3.4.4 20050314 (prerelease) (Debian 3.4.3-13)":
->>>       
->> Yeah, I was a bit worried about that. Gcc sometimes does insane 
->> things.
->>
->> We literally just tested that the asm should only _ever_ be generated 
->> with a constant value, but if some gcc dead-code removal thing doesn't 
->> work, it will then screw up and try to generate the asm even for a 
->> non-constant thing.
->>
->> The fairly trivial fix is probably to just change the "i" to "ir", 
->> safe in the knowledge that any _sane_ case will never use the "r" 
->> possibility. I suspect even your insane case will end up then killing 
->> the bad choice later.
->>     
->
-> okay - Jeremy, could you try the fix below? (or tip/master, i just 
-> pushed this out)
->
->   
 
-Hm.  On 32-bit I get these, but they're warnings.  On 64-bit they're errors.
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ arch/x86/mm/pat.c |   21 ++++++++-------------
+ 1 files changed, 8 insertions(+), 13 deletions(-)
 
-{standard input}: Assembler messages:
-{standard input}:1609: Warning: using `%dl' instead of `%edx' due to `b' 
-suffix
+diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+index 1118288..49dcd96 100644
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -198,6 +198,7 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
+ {
+ 	struct memtype *new, *entry;
+ 	unsigned long actual_type;
++	struct list_head *where;
+ 	int err = 0;
+ 
+  	BUG_ON(start >= end); /* end is exclusive */
+@@ -251,13 +252,12 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
+ 	spin_lock(&memtype_lock);
+ 
+ 	/* Search for existing mapping that overlaps the current range */
++	where = NULL;
+ 	list_for_each_entry(entry, &memtype_list, nd) {
+ 		struct memtype *saved_ptr;
+ 
+ 		if (entry->start >= end) {
+-			dprintk("New Entry\n");
+-			list_add(&new->nd, entry->nd.prev);
+-			new = NULL;
++			where = entry->nd.prev;
+ 			break;
+ 		}
+ 
+@@ -295,9 +295,7 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
+ 
+ 			dprintk("Overlap at 0x%Lx-0x%Lx\n",
+ 			       saved_ptr->start, saved_ptr->end);
+-			/* No conflict. Go ahead and add this new entry */
+-			list_add(&new->nd, saved_ptr->nd.prev);
+-			new = NULL;
++			where = saved_ptr->nd.prev;
+ 			break;
+ 		}
+ 
+@@ -335,9 +333,7 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
+ 
+ 			dprintk("Overlap at 0x%Lx-0x%Lx\n",
+ 				 saved_ptr->start, saved_ptr->end);
+-			/* No conflict. Go ahead and add this new entry */
+-			list_add(&new->nd, &saved_ptr->nd);
+-			new = NULL;
++			where = &saved_ptr->nd;
+ 			break;
+ 		}
+ 	}
+@@ -354,11 +350,10 @@ int reserve_memtype(u64 start, u64 end, unsigned long req_type,
+ 		return err;
+ 	}
+ 
+-	if (new) {
+-		/* No conflict. Not yet added to the list. Add to the tail */
++	if (where)
++		list_add(&new->nd, where);
++	else
+ 		list_add_tail(&new->nd, &memtype_list);
+-		dprintk("New Entry\n");
+-	}
+ 
+ 	spin_unlock(&memtype_lock);
+ 
+-- 
+1.5.5.4
 
-vs
 
-{standard input}: Assembler messages:
-{standard input}:20511: Error: Incorrect register `%eax' used with `b' 
-suffix
-
-
-> (i dont use gcc 3.x myself to build the kernel, had way too many 
-> miscompilations in randconfig tests in the past.)
->   
-
-I do it mainly to pick up these kinds of problems.
-
-
-> 	Ingo
->
-> -------------->
-> commit b68b80b8ab39c42707dc126c41e87d46edc97c27
-> Author: Ingo Molnar <mingo@elte.hu>
-> Date:   Fri Jun 20 21:50:20 2008 +0200
->
->     x86, bitops: make constant-bit set/clear_bit ops faster, gcc workaround
->     
->     Jeremy Fitzhardinge reported this compiler bug:
->     
->     Suggestion from Linus: add "r" to the input constraint of the
->     set_bit()/clear_bit()'s constant 'nr' branch:
->     
->     Blows up on "gcc version 3.4.4 20050314 (prerelease) (Debian 3.4.3-13)":
->     
->      CC      init/main.o
->     include2/asm/bitops.h: In function `start_kernel':
->     include2/asm/bitops.h:59: warning: asm operand 1 probably doesn't match constraints
->     include2/asm/bitops.h:59: warning: asm operand 1 probably doesn't match constraints
->     include2/asm/bitops.h:59: warning: asm operand 1 probably doesn't match constraints
->     include2/asm/bitops.h:59: error: impossible constraint in `asm'
->     include2/asm/bitops.h:59: error: impossible constraint in `asm'
->     include2/asm/bitops.h:59: error: impossible constraint in `asm'
->     
->     Reported-by: Jeremy Fitzhardinge <jeremy@goop.org>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
->
-> diff --git a/include/asm-x86/bitops.h b/include/asm-x86/bitops.h
-> index 6c50548..4575de4 100644
-> --- a/include/asm-x86/bitops.h
-> +++ b/include/asm-x86/bitops.h
-> @@ -58,7 +58,7 @@ static inline void set_bit(unsigned int nr, volatile unsigned long *addr)
->  	if (IS_IMMEDIATE(nr)) {
->  		asm volatile(LOCK_PREFIX "orb %1,%0"
->  			: CONST_MASK_ADDR(nr, addr)
-> -			: "i" (CONST_MASK(nr))
-> +			: "ir" (CONST_MASK(nr))
->  			: "memory");
->  	} else {
->  		asm volatile(LOCK_PREFIX "bts %1,%0"
-> @@ -95,7 +95,7 @@ static inline void clear_bit(int nr, volatile unsigned long *addr)
->  	if (IS_IMMEDIATE(nr)) {
->  		asm volatile(LOCK_PREFIX "andb %1,%0"
->  			: CONST_MASK_ADDR(nr, addr)
-> -			: "i" (~CONST_MASK(nr)));
-> +			: "ir" (~CONST_MASK(nr)));
->  	} else {
->  		asm volatile(LOCK_PREFIX "btr %1,%0"
->  			: BITOP_ADDR(addr)
->   
 
