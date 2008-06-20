@@ -1,247 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754075AbYFTRYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbYFTRZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754075AbYFTRYS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 13:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbYFTRYG
+	id S1755992AbYFTRZn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 13:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbYFTRZg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 13:24:06 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:27012 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752365AbYFTRYD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 13:24:03 -0400
-Date: Fri, 20 Jun 2008 10:08:25 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrea Righi <righi.andrea@gmail.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, axboe@kernel.dk,
-       matt@bluehost.com, roberto@unbit.it, Divyesh Shah <dpshah@google.com>,
-       akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] i/o bandwidth controller documentation
-Message-Id: <20080620100825.eff22c44.randy.dunlap@oracle.com>
-In-Reply-To: <1213956335-29866-2-git-send-email-righi.andrea@gmail.com>
-References: <1213956335-29866-2-git-send-email-righi.andrea@gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 20 Jun 2008 13:25:36 -0400
+Received: from gw.goop.org ([64.81.55.164]:58816 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752528AbYFTRZf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 13:25:35 -0400
+Message-ID: <485BE80E.10209@goop.org>
+Date: Fri, 20 Jun 2008 10:25:34 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Mike Travis <travis@sgi.com>
+CC: Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
+ area
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.509483000@polaris-admin.engr.sgi.com> <20080605102222.GA21319@elte.hu> <484EF29C.7080100@sgi.com> <485947A8.8060801@goop.org> <4859511E.5050605@sgi.com> <48596315.6020104@goop.org> <48596893.4040908@sgi.com> <485AADAC.3070301@sgi.com> <485AB78B.5090904@goop.org> <485AC120.6010202@sgi.com> <485AC5D4.6040302@goop.org> <485ACA8F.10006@sgi.com> <485ACD92.8050109@sgi.com> <485AD138.4010404@goop.org> <485ADA12.5010505@sgi.com> <485ADC73.60009@goop.org> <485BDB04.4090709@sgi.com>
+In-Reply-To: <485BDB04.4090709@sgi.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jun 2008 12:05:33 +0200 Andrea Righi wrote:
+Mike Travis wrote:
+> Jeremy Fitzhardinge wrote:
+>   
+>> Mike Travis wrote:
+>>     
+>>> @@ -132,6 +133,12 @@ ident_complete:
+>>>  #ifdef CONFIG_SMP
+>>>      addq    %rbp, trampoline_level4_pgt + 0(%rip)
+>>>      addq    %rbp, trampoline_level4_pgt + (511*8)(%rip)
+>>> +
+>>> +    /*
+>>> +     * Fix up per_cpu__gdt_page offset when basing percpu
+>>> +     * variables at zero.  This is only needed for the boot cpu.
+>>> +     */
+>>> +    addq    $__per_cpu_load, early_gdt_descr_base
+>>>   
+>>>       
+>> This needs to be rip-relative.  An absolute reference here will fail
+>> because you're still running in physical addresses.
+>>
+>>    J
+>>     
+>
+> Still bombs right at boot up... ;-(
+>   
 
-> Documentation of the block device I/O bandwidth controller: description, usage,
-> advantages and design.
-> 
-> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
-> ---
->  Documentation/controllers/io-throttle.txt |  163 +++++++++++++++++++++++++++++
->  1 files changed, 163 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/controllers/io-throttle.txt
-> 
-> diff --git a/Documentation/controllers/io-throttle.txt b/Documentation/controllers/io-throttle.txt
-> new file mode 100644
-> index 0000000..e1df98a
-> --- /dev/null
-> +++ b/Documentation/controllers/io-throttle.txt
-> @@ -0,0 +1,163 @@
-> +
-> +               Block device I/O bandwidth controller
-> +
-> +1. Description
-> +
-> +This controller allows to limit the I/O bandwidth of specific block devices for
-> +specific process containers (cgroups) imposing additional delays on I/O
-> +requests for those processes that exceed the limits defined in the control
-> +group filesystem.
-> +
-> +Bandwidth limiting rules offer better control over QoS with respect to priority
-> +or weight-based solutions that only give information about applications'
-> +relative performance requirements.
-> +
-> +The goal of the I/O bandwidth controller is to improve performance
-> +predictability and QoS of the different control groups sharing the same block
-> +devices.
-> +
-> +NOTE #1: if you're looking for a way to improve the overall throughput of the
+Yep.  I see the triple-fault at the "mov %eax,%ds", which means it's 
+having trouble with the gdt.  Either 1) the lgdt pointed to a bad 
+address, or 2) there's something wrong with the descriptor there.
 
-I would s/if/If/
+The dump is:
 
-> +system probably you should use a different solution.
-> +
-> +NOTE #2: the current implementation does not guarantee minimum bandwidth
-
-s/the/The/
-
-> +levels, the QoS is implemented only slowing down i/o "traffic" that exceeds the
-
-Please consistenly use "I/O" instead of "i/o".
-
-Above comma makes a run-on sentence.  A period or semi-colon would be better IMO.
-
-> +limits specified by the user. Minimum i/o rate thresholds are supposed to be
-> +guaranteed if the user configures a proper i/o bandwidth partitioning of the
-> +block devices shared among the different cgroups (theoretically if the sum of
-> +all the single limits defined for a block device doesn't exceed the total i/o
-> +bandwidth of that device).
-> +
-> +2. User Interface
-> +
-> +A new I/O bandwidth limitation rule is described using the file
-> +blockio.bandwidth.
-> +
-> +The same file can be used to set multiple rules for different block devices
-> +relative to the same cgroup.
-> +
-> +The syntax is the following:
-> +# /bin/echo DEVICE:BANDWIDTH > CGROUP/blockio.bandwidth
-> +
-> +- DEVICE is the name of the device the limiting rule is applied to,
-> +- BANDWIDTH is the maximum I/O bandwidth on DEVICE allowed by CGROUP (we can
-> +  use a suffix k, K, m, M, g or G to indicate bandwidth values in KB/s, MB/s
-> +  or GB/s),
-> +- CGROUP is the name of the limited process container.
-> +
-> +Examples:
-> +
-> +* Mount the cgroup filesystem (blockio subsystem):
-> +  # mkdir /mnt/cgroup
-> +  # mount -t cgroup -oblockio blockio /mnt/cgroup
-> +
-> +* Instantiate the new cgroup "foo":
-> +  # mkdir /mnt/cgroup/foo
-> +  --> the cgroup foo has been created
-> +
-> +* Add the current shell process to the cgroup "foo":
-> +  # /bin/echo $$ > /mnt/cgroup/foo/tasks
-> +  --> the current shell has been added to the cgroup "foo"
-> +
-> +* Give maximum 1MiB/s of I/O bandwidth on /dev/sda1 for the cgroup "foo":
-> +  # /bin/echo /dev/sda1:1M > /mnt/cgroup/foo/blockio.bandwidth
-> +  # sh
-> +  --> the subshell 'sh' is running in cgroup "foo" and it can use a maximum I/O
-> +      bandwidth of 1MiB/s on /dev/sda1 (blockio.bandwidth is expressed in
-> +      KiB/s).
-> +
-> +* Give maximum 8MiB/s of I/O bandwidth on /dev/sdb for the cgroup "foo":
-> +  # /bin/echo /dev/sda5:8M > /mnt/cgroup/foo/blockio.bandwidth
-> +  # sh
-> +  --> the subshell 'sh' is running in cgroup "foo" and it can use a maximum I/O
-> +      bandwidth of 1MiB/s on /dev/sda1 and 8MiB/s on /dev/sda5.
-> +      NOTE: each partition needs its own limitation rule! In this case, for
-> +      example, there's no limitation on /dev/sda5 for cgroup "foo".
-> +
-> +* Run a benchmark doing I/O on /dev/sda1 and /dev/sda5; I/O limits and usage
-> +  defined for cgroup "foo" can be shown as following:
-> +  # cat /mnt/cgroup/foo/blockio.bandwidth
-> +  === device (8,1) ===
-> +    bandwidth limit: 1024 KiB/sec
-> +  current i/o usage: 819 KiB/sec
-> +  === device (8,5) ===
-> +    bandwidth limit: 1024 KiB/sec
-> +  current i/o usage: 3102 KiB/sec
-
-Ugh, this makes it look like the output does "pretty printing" (formatting),
-which is generally not a good idea.  Let some app be responsible for that,
-not the kernel.  Basically this means don't use leading spaces just to make the
-":"s line up in the output.
+(XEN) hvm.c:767:d14 Triple fault on VCPU0 - invoking HVM system reset.
+(XEN) ----[ Xen-3.3-unstable  x86_64  debug=n  Not tainted ]----
+(XEN) CPU:    0
+(XEN) RIP:    0010:[<ffffffff80200167>]
+(XEN) RFLAGS: 0000000000010002   CONTEXT: hvm
+(XEN) rax: 0000000000000018   rbx: 0000000000000000   rcx: ffffffff808d6000
+(XEN) rdx: 0000000000000000   rsi: 0000000000092f40   rdi: 0000000020100800
+(XEN) rbp: 0000000000000000   rsp: ffffffff80827ff8   r8:  0000000000208000
+(XEN) r9:  0000000000000000   r10: 0000000000000000   r11: 00000000000000d8
+(XEN) r12: 0000000000000000   r13: 0000000000000000   r14: 0000000000000000
+(XEN) r15: 0000000000000000   cr0: 0000000080050033   cr4: 00000000000000a0
+(XEN) cr3: 0000000000201000   cr2: 0000000000000000
+(XEN) ds: 0000   es: 0000   fs: 0000   gs: 0000   ss: 0000   cs: 0010
 
 
-> +
-> +  Devices are reported using (major, minor) numbers when reading
-> +  blockio.bandwidth.
-> +
-> +  The corresponding device names can be retrieved in /proc/diskstats (or in
-> +  other places as well).
-> +
-> +  For example to find the name of the device (8,5):
-> +  # sed -ne 's/^ \+8 \+5 \([^ ]\+\).*/\1/p' /proc/diskstats
-> +  sda5
-> +
-> +  Current I/O usage can be greater than bandwidth limit, this means the i/o
+I loaded early_gdt_descr+2 into %rcx, which looks reasonable.  Hm, but 
+loading the __KERNEL_DS descriptor into %rdx, which is all zero.
 
-Run-on sentence.  Change , to . (with This) or use ;
+So it seems the problem is that the pre-initialized gdt_page is being 
+lost and replaced with zero.  Linker script bug?
 
-> +  controller is going to impose the limitation.
-> +
-> +* Extend the maximum I/O bandwidth for the cgroup "foo" to 8MiB/s:
-> +  # /bin/echo /dev/sda1:8M > /mnt/cgroup/foo/blockio-bandwidth
-> +
-> +* Remove limiting rule on /dev/sda1 for cgroup "foo":
-> +  # /bin/echo /dev/sda1:0 > /mnt/cgroup/foo/blockio-bandwidth
-> +
-> +3. Advantages of providing this feature
-> +
-> +* Allow I/O traffic shaping for block device shared among different cgroups
-> +* Improve I/O performance predictability on block devices shared between
-> +  different cgroups
-> +* Limiting rules do not depend of the particular I/O scheduler (anticipatory,
-> +  deadline, CFQ, noop) and/or the type of the underlying block devices
-> +* The bandwidth limitations are guaranteed both for synchronous and
-> +  asynchronous operations, even the I/O passing through the page cache or
-> +  buffers and not only direct I/O (see below for details)
-> +* It is possible to implement a simple user-space application to dynamically
-> +  adjust the I/O workload of different process containers at run-time,
-> +  according to the particular users' requirements and applications' performance
-> +  constraints
-> +* It is even possible to implement event-based performance throttling
-> +  mechanisms; for example the same user-space application could actively
-> +  throttle the I/O bandwidth to reduce power consumption when the battery of a
-> +  mobile device is running low (power throttling) or when the temperature of a
-> +  hardware component is too high (thermal throttling)
-> +* Provides zero overhead for non block device I/O bandwidth controller users
-> +
-> +4. Design
-> +
-> +The I/O throttling is performed imposing an explicit timeout, via
-> +schedule_timeout_killable() on the processes that exceed the I/O bandwidth
-> +dedicated to the cgroup they belong to. I/O accounting happens per cgroup.
-> +
-> +It just works as expected for read operations: the real I/O activity is reduced
-> +synchronously according to the defined limitations.
-> +
-> +Write operations, instead, are modeled depending of the dirty pages ratio
-> +(write throttling in memory), since the writes to the real block devices are
-> +processed asynchronously by different kernel threads (pdflush). However, the
-> +dirty pages ratio is directly proportional to the actual I/O that will be
-> +performed on the real block device. So, due to the asynchronous transfers
-> +through the page cache, the I/O throttling in memory can be considered a form
-> +of anticipatory throttling to the underlying block devices.
-> +
-> +Multiple re-writes in already dirtied page cache areas are not considered for
-> +accounting the I/O activity. This is valid for multiple re-reads of pages
-> +already present in the page cache as well.
-> +
-> +This means that a process that re-writes and/or re-reads multiple times the
-> +same blocks in a file (without re-creating it by truncate(), ftrunctate(),
-> +creat(), etc.) is affected by the I/O limitations only for the actual I/O
-> +performed to (or from) the underlying block devices.
-> +
-> +Multiple rules for different block devices are stored in a linked list, using
-> +the dev_t number of each block device as key to uniquely identify each element
-> +of the list. RCU synchronization is used to protect the whole list structure,
-> +since the elements in the list are not supposed to change frequently (they
-> +change only when a new rule is defined or an old rule is removed or updated),
-> +while the reads in the list occur at each operation that generates I/O. This
-> +allows to provide zero overhead for cgroups that do not use any limitation.
-> +
-> +WARNING: per-block device limiting rules always refer to the dev_t device
-> +number. If a block device is unplugged (i.e. a USB device) the limiting rules
-> +associated to that device persist and they are still valid if a new device is
+    J
 
-associated with (?)
+--- a/arch/x86/kernel/head_64.S	Fri Jun 20 09:50:02 2008 -0700
++++ b/arch/x86/kernel/head_64.S	Fri Jun 20 10:19:20 2008 -0700
+@@ -213,6 +213,8 @@
+ 	 * because in 32bit we couldn't load a 64bit linear address.
+ 	 */
+ 	lgdt	early_gdt_descr(%rip)
++	movq	early_gdt_descr+2(%rip), %rcx
++	movq	__KERNEL_DS(%rcx), %rdx
+ 
+ 	/* set up data segments. actually 0 would do too */
+ 	movl $__KERNEL_DS,%eax
 
-> +plugged in the system and it uses the same major and minor numbers.
-> -- 
 
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
