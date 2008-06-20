@@ -1,99 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752143AbYFTTAW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752507AbYFTTBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752143AbYFTTAW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 15:00:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbYFTS7x
+	id S1752507AbYFTTBf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 15:01:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbYFTTB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 14:59:53 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:55801 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752948AbYFTS7u (ORCPT
+	Fri, 20 Jun 2008 15:01:27 -0400
+Received: from vms173005pub.verizon.net ([206.46.173.5]:51860 "EHLO
+	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752017AbYFTTBZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 14:59:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=pXX/uk2AfK0VosZDhEq9aw8uXlW6vlM7dW5WiqIb7EiaoHRxthTCMk2Xb4dkd4QDF+
-         hnbqb+2nFZr2suqpA74Y/QlB3nIFGouUMBQuI5nBmVAp6JfuayZUzcVH8QpL3b0YofnS
-         lBtd8RU99jVZRnSrY0al3CL0zlQuHEHWjUHK8=
-Date: Fri, 20 Jun 2008 22:59:27 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
-Message-ID: <20080620185927.GA11597@cvg>
-References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <Pine.LNX.4.55.0806172206580.28110@cliff.in.clinika.pl> <200806172338.38318.rjw@sisk.pl> <200806180053.40044.rjw@sisk.pl> <Pine.LNX.4.55.0806180400070.28110@cliff.in.clinika.pl> <20080618190603.GB10431@cvg> <Pine.LNX.4.55.0806182308190.7802@cliff.in.clinika.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.55.0806182308190.7802@cliff.in.clinika.pl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 20 Jun 2008 15:01:25 -0400
+Date: Fri, 20 Jun 2008 15:00:58 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] ACPI: don't walk tables if ACPI was disabled
+In-reply-to: <20080620135639.GA5073@damson.getinternet.no>
+X-X-Sender: lenb@localhost.localdomain
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Zhao Yakui <yakui.zhao@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Message-id: <alpine.LFD.1.10.0806201458500.3027@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <20080620135639.GA5073@damson.getinternet.no>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Maciej W. Rozycki - Wed, Jun 18, 2008 at 11:36:16PM +0100]
-| On Wed, 18 Jun 2008, Cyrill Gorcunov wrote:
-| 
-| > | 1. The 8259A interrupt actually escapes to the CPU somehow and is handled
-| > |    as an ExtINTA interrupt.  This would make the code in check_timer()  
-| > |    decide it has found a working configuration, while actually it has been
-| > |    fooled.
-| > 
-| > Maciej, that is why we get 'received illegal vector'?
-| > 
-| > 	[  129.092151] APIC error on CPU1: 00(40)
-| 
-|  No, but that's an interesting observation, thank you -- well spotted!  
-| 
-|  ExtINTA stands for an "External INTA cycle" which is passed through from
-| the CPU down to the system bus instead of being intercepted by the local
-| APIC unit as usually.  In response to the INTA cycle one of the 8259A
-| chips (either the master or the slave, depending on the source of the
-| interrupt selected for handling) supplies the vector directly to the CPU
-| through PCI (or whatever kind of bus links the legacy bridge with the host
-| bridge) and then the FSB.  Therefore the vector bypasses all the APIC
-| circuitry and cannot result in an APIC error interrupt.
-| 
-|  Instead the message quoted means an APIC input is misprogrammed
-| somewhere.  This error happens if an interrupt is signalled to an unmasked
-| APIC input which uses the Fixed or Lowest-Priority delivery mode and its
-| vector implies priority below the minimum permitted, that is in the range
-| from 0 to 15.
-| 
-|  We have code already in place in io_apic_{32,64}.c that can be used to
-| find out the offender with a piece of code like this (#if 0 has to be
-| deactivated for this to work and they may be bit rot bugs to be fixed):
-| 
-| int __init all_pic_dump(void)
-| {
-| 	int v = apic_verbosity;
-| 
-| 	apic_verbosity = APIC_DEBUG;
-| 	print_IO_APIC();
-| 	print_all_local_APICs();
-| 	print_PIC();
-| 	apic_verbosity = v;
-| 
-| 	return 0;
-| }
-| 
-| late_initcall(all_pic_dump);
-| 
-| if somebody is willing to aid with debugging this problem.
-| 
-|   Maciej
-| 
 
-Thanks, Maciej,
 
-i would really like to help... but I can't even hit this
-bug on my laptop :(
+On Fri, 20 Jun 2008, Vegard Nossum wrote:
 
-		- Cyrill -
+> Hi Ingo,
+> 
+> Can you see if this patch solves your problem? There might be other
+> functions that needs this guard as well, though. I wonder if maybe this test
+> should just be included at the top of every driver that uses ACPI in some
+> way. But I'm pretty sure that this lack of initialization is the root of your
+> problem in any case :-)
+> 
+> (By the way, I don't know why this problem popped up at this time, maybe it
+> was just bad timing/bad luck... How far back do your AE_BAD_PARAMETER in the
+> logs go?)
+> 
+> 
+> Vegard
+> 
+> 
+> From: Vegard Nossum <vegard.nossum@gmail.com>
+> Date: Fri, 20 Jun 2008 15:39:09 +0200
+> Subject: [PATCH] ACPI: don't walk tables if ACPI was disabled
+> 
+> Ingo Molnar wrote:
+> > -tip auto-testing started triggering this spinlock corruption message
+> > yesterday:
+> >
+> > [    3.976213] calling  acpi_rtc_init+0x0/0xd3
+> > [    3.980213] ACPI Exception (utmutex-0263): AE_BAD_PARAMETER, Thread F7C50000 could not acquire Mutex [3] [20080321]
+> > [    3.992213] BUG: spinlock bad magic on CPU#0, swapper/1
+> > [    3.992213]  lock: c2508dc4, .magic: 00000000, .owner: swapper/1, .owner_cpu: 0
+> 
+> This is apparently because some parts of ACPI, including mutexes, are not
+> initialized when acpi=off is passed to the kernel.
+> 
+> Reported-by: Ingo Molnar <mingo@elte.hu>
+> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+> ---
+>  drivers/acpi/glue.c               |    3 +++
+>  drivers/acpi/namespace/nsxfeval.c |    3 +++
+>  2 files changed, 6 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/acpi/glue.c b/drivers/acpi/glue.c
+> index 2808dc6..9b227d4 100644
+> --- a/drivers/acpi/glue.c
+> +++ b/drivers/acpi/glue.c
+> @@ -333,6 +333,9 @@ static int __init acpi_rtc_init(void)
+>  {
+>  	struct device *dev = get_rtc_dev();
+>  
+> +	if (acpi_disabled)
+> +		return 0;
+> +
+
+hmm, i would expect dev to be 0 for acpi=off,
+since pnp_match would fail, no?
+
+>  	if (dev) {
+>  		rtc_wake_setup();
+>  		rtc_info.wake_on = rtc_wake_on;
+> diff --git a/drivers/acpi/namespace/nsxfeval.c b/drivers/acpi/namespace/nsxfeval.c
+> index a8d5491..c274d1d 100644
+> --- a/drivers/acpi/namespace/nsxfeval.c
+> +++ b/drivers/acpi/namespace/nsxfeval.c
+> @@ -391,6 +391,9 @@ acpi_walk_namespace(acpi_object_type type,
+>  
+>  	ACPI_FUNCTION_TRACE(acpi_walk_namespace);
+>  
+> +	if (acpi_disabled)
+> +		return_ACPI_STATUS(AE_NO_NAMESPACE);
+> +
+
+We should probably BUG_ON(acpi_disabled) here,
+since it takes a programming bug to hit this case.
+
+-Len
+
+>  	/* Parameter validation */
+>  
+>  	if ((type > ACPI_TYPE_LOCAL_MAX) || (!max_depth) || (!user_function)) {
+> -- 
+> 1.5.4.1
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
