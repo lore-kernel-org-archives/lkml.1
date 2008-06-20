@@ -1,79 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753437AbYFTJiM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753094AbYFTJxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753437AbYFTJiM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 05:38:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbYFTJh6
+	id S1753094AbYFTJxY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 05:53:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbYFTJxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 05:37:58 -0400
-Received: from lana.hrz.tu-chemnitz.de ([134.109.132.3]:50621 "EHLO
-	lana.hrz.tu-chemnitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbYFTJh5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 05:37:57 -0400
-X-Greylist: delayed 2718 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Jun 2008 05:37:56 EDT
-Date: Fri, 20 Jun 2008 10:52:36 +0200
-From: Steffen Klassert <klassert@mathematik.tu-chemnitz.de>
-To: mt@systella.fr, linux-kernel@vger.kernel.org
-Subject: Re: NETDEV WATCHDOG on U60/SMP
-Message-ID: <20080620085236.GA2376@bayes.mathematik.tu-chemnitz.de>
-References: <485B6218.4090705@systella.fr>
-Mime-Version: 1.0
+	Fri, 20 Jun 2008 05:53:14 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40367 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751292AbYFTJxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 05:53:13 -0400
+Date: Fri, 20 Jun 2008 11:52:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org
+Cc: Zhao Yakui <yakui.zhao@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [bug, acpi] BUG: spinlock bad magic on CPU#0, swapper/1, ACPI
+	Exception (utmutex-0263): AE_BAD_PARAMETER
+Message-ID: <20080620095247.GA24557@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <485B6218.4090705@systella.fr>
-User-Agent: Mutt/1.4.2.1i
-X-Spam-Score: -1.4 (-)
-X-Spam-Report: --- Start der SpamAssassin 3.2.5 Textanalyse (-1.4 Punkte)
-	Fragen an/questions to:  Postmaster TU Chemnitz <postmaster@tu-chemnitz.de>
-	-1.4 ALL_TRUSTED            Nachricht wurde nur ueber vertrauenswuerdige Rechner
-	weitergeleitet
-	--- Ende der SpamAssassin Textanalyse
-X-Scan-Signature: 439a779e86734b9f9e658ea38d6cb1c3
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 20, 2008 at 09:54:00AM +0200, BERTRAND Jo?l wrote:
-> 	Hello,
-> 
-> 	This mail comes from sparclinux mailing list. I repost it on general 
-> linux kernel mailing list because I'm not sure that this bug is sparc 
-> specific. Nevertheless, I can only reproduce it on sparc64/SMP.
-> 
-> 	My U60 runs linux debian with official 2.6.25 linux kernel (I'm
-> currently trying 2.6.25.7) and sometimes, when eth2 is stressed, eth2
-> hangs with NETDEV WATCHDOG :
-> 
-> NETDEV WATCHDOG: eth2: transmit timed out
-> eth2: transmit timed out, tx_status 00 status 8601.
->   diagnostics: net 0ccc media 8880 dma 0000003a fifo 0000
-> eth2: Interrupt posted but not delivered -- IRQ blocked by another device?
->   Flags; bus-master 1, dirty 2283344(0) current 2283344(0)
->   Transmit list 00000000 vs. fffff800af098200.
->   0: @fffff800af098200  length 00000042 status 0c01059a
->   1: @fffff800af098260  length 00000042 status 0c01059a
->   2: @fffff800af0982c0  length 00000042 status 0c01059a
->   3: @fffff800af098320  length 00000042 status 0c01059a
->   4: @fffff800af098380  length 00000042 status 0c01059a
->   5: @fffff800af0983e0  length 00000042 status 0c01059a
->   6: @fffff800af098440  length 00000042 status 0c01059a
->   7: @fffff800af0984a0  length 00000042 status 0c01059a
->   8: @fffff800af098500  length 8000002a status 0001002a
->   9: @fffff800af098560  length 8000002a status 0001002a
->   10: @fffff800af0985c0  length 8000002a status 0001002a
->   11: @fffff800af098620  length 8000002a status 0001002a
->   12: @fffff800af098680  length 8000002a status 0001002a
->   13: @fffff800af0986e0  length 8000002a status 0001002a
->   14: @fffff800af098740  length 8000002a status 8001002a
->   15: @fffff800af0987a0  length 8000002a status 8001002a
-> eth2: Resetting the Tx ring pointer.
-> eth2:  setting full-duplex.
 
-Some people with similar problems reported, that they can workarround
-their problems by increasing the rx/tx ring sizes of the 3c59x driver.
-See http://bugzilla.kernel.org/show_bug.cgi?id=6444 for details.
+-tip auto-testing started triggering this spinlock corruption message 
+yesterday:
 
-Would be good to know whether this helps for your problem too.
+[    3.976213] calling  acpi_rtc_init+0x0/0xd3
+[    3.980213] ACPI Exception (utmutex-0263): AE_BAD_PARAMETER, Thread F7C50000 could not acquire Mutex [3] [20080321]
+[    3.992213] BUG: spinlock bad magic on CPU#0, swapper/1
+[    3.992213]  lock: c2508dc4, .magic: 00000000, .owner: swapper/1, .owner_cpu: 0
+[    3.992213] Pid: 1, comm: swapper Not tainted 2.6.26-rc6-00325-gc0793f7-dirty #8570
+[    3.992213]  [<c0521040>] spin_bug+0x7c/0x87
+[    3.992213]  [<c0521064>] _raw_spin_unlock+0x19/0x72
+[    3.992213]  [<c13ee1f2>] _spin_unlock_irqrestore+0x25/0x55
+[    3.992213]  [<c05ae056>] acpi_os_release_lock+0xd/0xf
+[    3.992213]  [<c05c3a23>] acpi_set_register+0x214/0x26c
+[    3.992213]  [<c05b66b5>] acpi_clear_event+0x5e/0x7f
+[    3.992213]  [<c1f58ace>] acpi_rtc_init+0x42/0xd3
+[    3.992213]  [<c1f2b645>] kernel_init+0x128/0x269
+[    3.992213]  [<c1f58a8c>] ? acpi_rtc_init+0x0/0xd3
+[    3.992213]  [<c0513664>] ? trace_hardirqs_on_thunk+0xc/0x10
+[    3.992213]  [<c011abf0>] ? restore_nocheck_notrace+0x0/0xe
+[    3.992213]  [<c1f2b51d>] ? kernel_init+0x0/0x269
+[    3.992213]  [<c1f2b51d>] ? kernel_init+0x0/0x269
+[    3.992213]  [<c011b813>] kernel_thread_helper+0x7/0x10
+[    3.992213]  =======================
+[    3.996213] initcall acpi_rtc_init+0x0/0xd3 returned 0 after 15 msecs
+[    4.004213] calling  acpi_event_init+0x0/0x74
+[    4.008213] initcall acpi_event_init+0x0/0x74 returned 0 after 0 msecs
 
-Steffen
+i have found the AE_BAD_PARAMETER in older logs a well, but the spinlock 
+corruption is new and nothing in that area is changed by -tip so i 
+suspect it's a mainline problem as well.
 
+it's not reproducible so it's not bisectable - it happened a few times 
+sporadically, but on a repeated reboot with the same bzImage it does not 
+reproduce. The config, full bootlog and bzImage can be found at:
+
+  http://redhat.com/~mingo/misc/config-Fri_Jun_20_11_19_25_CEST_2008.bad
+  http://redhat.com/~mingo/misc/log-Fri_Jun_20_11_19_25_CEST_2008.bad
+  http://redhat.com/~mingo/misc/bzImage-Fri_Jun_20_11_19_25_CEST_2008.bad
+
+(more info about the system on request.)
+
+NOTE, this is with the following boot parameters:
+
+ maxcpus=1 nosmp no_hz=off highres=0 nmi_watchdog=0 noapic nolapic_timer 
+ hpet=disable idle=mwait idle=poll highmem=512m nopat notsc acpi=off 
+ pci=nomsi
+
+the bzImage i've uploaded adds most of those boot parameters 
+automatically. These boot parameters worked fine in the past.
+
+given that it involves acpi_rtc_init:acpi_rtc_init(), one suspect would 
+be this change:
+
+| commit e1094bfa26e5e94af2fea79e004614dbce42b008
+| Author: Zhao Yakui <yakui.zhao@intel.com>
+| Date:   Wed May 14 11:32:59 2008 +0800
+|
+|    ACPI: Disable Fixed_RTC event when installing RTC handler
+
+given that it's not bisectable, i can only "slow-test" any patch: i.e. i 
+can apply any patch and report whether the spinlock corruption has 
+occured after 2 days of continuous testing.
+
+	Ingo
