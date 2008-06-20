@@ -1,52 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbYFTJN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065AbYFTJWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753869AbYFTJN1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 05:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbYFTJNS
+	id S1754065AbYFTJWJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 05:22:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbYFTJVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 05:13:18 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:20074 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751674AbYFTJNR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 05:13:17 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Len Brown <lenb@kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: update mptable v7
-From: Andi Kleen <andi@firstfloor.org>
-References: <200806011317.38622.yhlu.kernel@gmail.com>
-	<alpine.LFD.1.10.0806181812580.3074@localhost.localdomain>
-	<86802c440806181532g348864e1u3d067f8366046a7f@mail.gmail.com>
-	<alpine.LFD.1.10.0806182031060.3074@localhost.localdomain>
-	<86802c440806181749g2faf1892iea693717ea919631@mail.gmail.com>
-	<m1mylim4e6.fsf@frodo.ebiederm.org>
-	<alpine.LFD.1.10.0806190121210.3613@localhost.localdomain>
-	<m1abhilyl0.fsf@frodo.ebiederm.org>
-	<86802c440806190031q17049054md2a790224d30d29@mail.gmail.com>
-	<alpine.LFD.1.10.0806191412100.3040@localhost.localdomain>
-	<20080620064750.GB31182@elte.hu>
-Date: Fri, 20 Jun 2008 11:12:45 +0200
-In-Reply-To: <20080620064750.GB31182@elte.hu> (Ingo Molnar's message of "Fri, 20 Jun 2008 08:47:50 +0200")
-Message-ID: <871w2sbhbm.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Fri, 20 Jun 2008 05:21:54 -0400
+Received: from dwdmx4.dwd.de ([141.38.3.230]:46686 "EHLO dwdmx4.dwd.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751674AbYFTJVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 05:21:53 -0400
+Date: Fri, 20 Jun 2008 09:21:48 +0000 (GMT)
+From: Holger Kiehl <Holger.Kiehl@dwd.de>
+X-X-Sender: kiehl@diagnostix.dwd.de
+To: Theodore Tso <tytso@mit.edu>
+Cc: Eric Sandeen <sandeen@redhat.com>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
+       Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Performance of ext4
+In-Reply-To: <20080620085922.GH9119@mit.edu>
+Message-ID: <Pine.LNX.4.64.0806200905070.3383@diagnostix.dwd.de>
+References: <20080612180605.GD22481@skywalker> <Pine.LNX.4.64.0806121940020.2974@diagnostix.dwd.de>
+ <Pine.LNX.4.64.0806130753100.7097@diagnostix.dwd.de>
+ <20080616175408.GF3279@atrey.karlin.mff.cuni.cz> <20080616181353.GA20686@skywalker>
+ <Pine.LNX.4.64.0806171001200.6307@diagnostix.dwd.de> <20080619155645.GA8582@mit.edu>
+ <485A8C2D.1090806@redhat.com> <20080619174211.GB9119@mit.edu>
+ <Pine.LNX.4.64.0806200812340.3383@diagnostix.dwd.de> <20080620085922.GH9119@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 20 Jun 2008 09:05:30.0983 (UTC) FILETIME=[CA49A770:01C8D2B4]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+On Fri, 20 Jun 2008, Theodore Tso wrote:
 
-> Yinghai: Len has a point, could you please double-check that no 
-> potentially risky code runs by default anywhere, without a specific boot 
-> option? update_mptable is supposed to achieve that, but lets make sure 
-> it does its job.
+> On Fri, Jun 20, 2008 at 08:32:52AM +0000, Holger Kiehl wrote:
+>>> It sounds like i_size is actually dropping in
+>>> size at some pointer long after the file was written.  If I had to
+>
+> sorry, "at some point"...
+>
+>>> guess the value in the inode cache is correct; and perhaps so is the
+>>> value on the journal.  But somehow, the wrong value is getting written
+>>> to disk
+>
+> Or, "the right value is never getting written to disk".  (Which as I
+> think about it is more likely; it's likely that an update to i_size is
+> getting *lost*, perhaps because the delalloc code is possibly
+> modifying i_size without starting a transaction first.  Again this is
+> just a guess.)
+>
+>> What I find strange is that the missing parts of the file are not for
+>> example exactly 512 or 1024 or 4096 bytes it is mostly some odd number
+>> of bytes.
+>
+> Is there any chance the truncation point is related to how the program
+> is writing its output file?  i.e., if it is a text file, is the
+> truncation happening after a new-line or when the stdio library might
+> have done an explicit or implicit fflush()?
+>
+When the benchmark runs it writes to stdout and with tee to the result
+file. It first writes some information about the system, prepares the
+test files (creates lots of small files), calls sync and then starts
+the test. Then every minute one line gets written to the result file.
+Often I have seen that everything after the sync was missing. But
+sometimes it happened that some parts at the end are missing. But it
+was always a clean cut, that is there where no lines that where cut
+partially. The lines where always complete.
 
-It's not done for the NUMAQ genericarch.
+Holger
 
--Andi
