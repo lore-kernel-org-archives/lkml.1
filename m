@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762045AbYFTUV7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762152AbYFTUWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762045AbYFTUV7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 16:21:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760186AbYFTURn
+	id S1762152AbYFTUWY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 16:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758364AbYFTURy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 16:17:43 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51979 "EHLO
+	Fri, 20 Jun 2008 16:17:54 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51981 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760154AbYFTURl (ORCPT
+	with ESMTP id S1760206AbYFTURu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 16:17:41 -0400
+	Fri, 20 Jun 2008 16:17:50 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 17/70] stallion: use tty_port
+Subject: [PATCH 18/70] synclink: use tty_port
 To: linux-kernel@vger.kernel.org
-Date: Fri, 20 Jun 2008 21:00:17 +0100
-Message-ID: <20080620200015.1479.22948.stgit@localhost.localdomain>
+Date: Fri, 20 Jun 2008 21:00:24 +0100
+Message-ID: <20080620200022.1479.35874.stgit@localhost.localdomain>
 In-Reply-To: <20080620195406.1479.12620.stgit@localhost.localdomain>
 References: <20080620195406.1479.12620.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.1
@@ -27,508 +27,1805 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@redhat.com>
 
-Switch the stallion driver to use the tty_port structure
+Switch the synclink ports to use the new tty_port structure
 
 Signed-off-by: Alan Cox <alan@redhat.com>
 ---
 
- drivers/char/stallion.c  |  160 +++++++++++++++++++++++-----------------------
- include/linux/stallion.h |    6 --
- 2 files changed, 81 insertions(+), 85 deletions(-)
+ drivers/char/synclink.c    |  195 ++++++++++++++++++++----------------------
+ drivers/char/synclink_gt.c |  201 +++++++++++++++++++++-----------------------
+ drivers/char/synclinkmp.c  |  203 +++++++++++++++++++++-----------------------
+ 3 files changed, 289 insertions(+), 310 deletions(-)
 
 
-diff --git a/drivers/char/stallion.c b/drivers/char/stallion.c
-index d17be10..0243efb 100644
---- a/drivers/char/stallion.c
-+++ b/drivers/char/stallion.c
-@@ -613,17 +613,17 @@ static void stl_cd_change(struct stlport *portp)
- {
- 	unsigned int oldsigs = portp->sigs;
- 
--	if (!portp->tty)
-+	if (!portp->port.tty)
- 		return;
- 
- 	portp->sigs = stl_getsignals(portp);
- 
- 	if ((portp->sigs & TIOCM_CD) && ((oldsigs & TIOCM_CD) == 0))
--		wake_up_interruptible(&portp->open_wait);
-+		wake_up_interruptible(&portp->port.open_wait);
- 
- 	if ((oldsigs & TIOCM_CD) && ((portp->sigs & TIOCM_CD) == 0))
--		if (portp->flags & ASYNC_CHECK_CD)
--			tty_hangup(portp->tty);
-+		if (portp->port.flags & ASYNC_CHECK_CD)
-+			tty_hangup(portp->port.tty);
- }
- 
- /*
-@@ -734,11 +734,11 @@ static int stl_open(struct tty_struct *tty, struct file *filp)
-  *	On the first open of the device setup the port hardware, and
-  *	initialize the per port data structure.
-  */
--	portp->tty = tty;
-+	portp->port.tty = tty;
- 	tty->driver_data = portp;
--	portp->refcount++;
-+	portp->port.count++;
- 
--	if ((portp->flags & ASYNC_INITIALIZED) == 0) {
-+	if ((portp->port.flags & ASYNC_INITIALIZED) == 0) {
- 		if (!portp->tx.buf) {
- 			portp->tx.buf = kmalloc(STL_TXBUFSIZE, GFP_KERNEL);
- 			if (!portp->tx.buf)
-@@ -752,7 +752,7 @@ static int stl_open(struct tty_struct *tty, struct file *filp)
- 		stl_enablerxtx(portp, 1, 1);
- 		stl_startrxtx(portp, 1, 0);
- 		clear_bit(TTY_IO_ERROR, &tty->flags);
--		portp->flags |= ASYNC_INITIALIZED;
-+		portp->port.flags |= ASYNC_INITIALIZED;
- 	}
- 
- /*
-@@ -761,9 +761,9 @@ static int stl_open(struct tty_struct *tty, struct file *filp)
-  *	The sleep here does not need interrupt protection since the wakeup
-  *	for it is done with the same context.
-  */
--	if (portp->flags & ASYNC_CLOSING) {
--		interruptible_sleep_on(&portp->close_wait);
--		if (portp->flags & ASYNC_HUP_NOTIFY)
-+	if (portp->port.flags & ASYNC_CLOSING) {
-+		interruptible_sleep_on(&portp->port.close_wait);
-+		if (portp->port.flags & ASYNC_HUP_NOTIFY)
- 			return -EAGAIN;
- 		return -ERESTARTSYS;
- 	}
-@@ -777,7 +777,7 @@ static int stl_open(struct tty_struct *tty, struct file *filp)
- 		if ((rc = stl_waitcarrier(portp, filp)) != 0)
- 			return rc;
- 
--	portp->flags |= ASYNC_NORMAL_ACTIVE;
-+	portp->port.flags |= ASYNC_NORMAL_ACTIVE;
- 
- 	return 0;
- }
-@@ -801,25 +801,25 @@ static int stl_waitcarrier(struct stlport *portp, struct file *filp)
- 
- 	spin_lock_irqsave(&stallion_lock, flags);
- 
--	if (portp->tty->termios->c_cflag & CLOCAL)
-+	if (portp->port.tty->termios->c_cflag & CLOCAL)
- 		doclocal++;
- 
- 	portp->openwaitcnt++;
- 	if (! tty_hung_up_p(filp))
--		portp->refcount--;
-+		portp->port.count--;
- 
- 	for (;;) {
- 		/* Takes brd_lock internally */
- 		stl_setsignals(portp, 1, 1);
- 		if (tty_hung_up_p(filp) ||
--		    ((portp->flags & ASYNC_INITIALIZED) == 0)) {
--			if (portp->flags & ASYNC_HUP_NOTIFY)
-+		    ((portp->port.flags & ASYNC_INITIALIZED) == 0)) {
-+			if (portp->port.flags & ASYNC_HUP_NOTIFY)
- 				rc = -EBUSY;
- 			else
- 				rc = -ERESTARTSYS;
- 			break;
- 		}
--		if (((portp->flags & ASYNC_CLOSING) == 0) &&
-+		if (((portp->port.flags & ASYNC_CLOSING) == 0) &&
- 		    (doclocal || (portp->sigs & TIOCM_CD)))
- 			break;
- 		if (signal_pending(current)) {
-@@ -827,11 +827,11 @@ static int stl_waitcarrier(struct stlport *portp, struct file *filp)
- 			break;
- 		}
- 		/* FIXME */
--		interruptible_sleep_on(&portp->open_wait);
-+		interruptible_sleep_on(&portp->port.open_wait);
- 	}
- 
- 	if (! tty_hung_up_p(filp))
--		portp->refcount++;
-+		portp->port.count++;
- 	portp->openwaitcnt--;
- 	spin_unlock_irqrestore(&stallion_lock, flags);
- 
-@@ -904,15 +904,15 @@ static void stl_close(struct tty_struct *tty, struct file *filp)
- 		spin_unlock_irqrestore(&stallion_lock, flags);
- 		return;
- 	}
--	if ((tty->count == 1) && (portp->refcount != 1))
--		portp->refcount = 1;
--	if (portp->refcount-- > 1) {
-+	if ((tty->count == 1) && (portp->port.count != 1))
-+		portp->port.count = 1;
-+	if (portp->port.count-- > 1) {
- 		spin_unlock_irqrestore(&stallion_lock, flags);
- 		return;
- 	}
- 
--	portp->refcount = 0;
--	portp->flags |= ASYNC_CLOSING;
-+	portp->port.count = 0;
-+	portp->port.flags |= ASYNC_CLOSING;
- 
- /*
-  *	May want to wait for any data to drain before closing. The BUSY
-@@ -930,7 +930,7 @@ static void stl_close(struct tty_struct *tty, struct file *filp)
- 
- 
- 	spin_lock_irqsave(&stallion_lock, flags);
--	portp->flags &= ~ASYNC_INITIALIZED;
-+	portp->port.flags &= ~ASYNC_INITIALIZED;
- 	spin_unlock_irqrestore(&stallion_lock, flags);
- 
- 	stl_disableintrs(portp);
-@@ -949,16 +949,16 @@ static void stl_close(struct tty_struct *tty, struct file *filp)
- 	tty_ldisc_flush(tty);
- 
- 	tty->closing = 0;
--	portp->tty = NULL;
-+	portp->port.tty = NULL;
- 
- 	if (portp->openwaitcnt) {
- 		if (portp->close_delay)
- 			msleep_interruptible(jiffies_to_msecs(portp->close_delay));
--		wake_up_interruptible(&portp->open_wait);
-+		wake_up_interruptible(&portp->port.open_wait);
- 	}
- 
--	portp->flags &= ~(ASYNC_NORMAL_ACTIVE|ASYNC_CLOSING);
--	wake_up_interruptible(&portp->close_wait);
-+	portp->port.flags &= ~(ASYNC_NORMAL_ACTIVE|ASYNC_CLOSING);
-+	wake_up_interruptible(&portp->port.close_wait);
- }
- 
- /*****************************************************************************/
-@@ -1153,7 +1153,7 @@ static int stl_getserial(struct stlport *portp, struct serial_struct __user *sp)
- 	memset(&sio, 0, sizeof(struct serial_struct));
- 	sio.line = portp->portnr;
- 	sio.port = portp->ioaddr;
--	sio.flags = portp->flags;
-+	sio.flags = portp->port.flags;
- 	sio.baud_base = portp->baud_base;
- 	sio.close_delay = portp->close_delay;
- 	sio.closing_wait = portp->closing_wait;
-@@ -1194,17 +1194,17 @@ static int stl_setserial(struct stlport *portp, struct serial_struct __user *sp)
- 		if ((sio.baud_base != portp->baud_base) ||
- 		    (sio.close_delay != portp->close_delay) ||
- 		    ((sio.flags & ~ASYNC_USR_MASK) !=
--		    (portp->flags & ~ASYNC_USR_MASK)))
-+		    (portp->port.flags & ~ASYNC_USR_MASK)))
- 			return -EPERM;
- 	} 
- 
--	portp->flags = (portp->flags & ~ASYNC_USR_MASK) |
-+	portp->port.flags = (portp->port.flags & ~ASYNC_USR_MASK) |
- 		(sio.flags & ASYNC_USR_MASK);
- 	portp->baud_base = sio.baud_base;
- 	portp->close_delay = sio.close_delay;
- 	portp->closing_wait = sio.closing_wait;
- 	portp->custom_divisor = sio.custom_divisor;
--	stl_setport(portp, portp->tty->termios);
-+	stl_setport(portp, portp->port.tty->termios);
- 	return 0;
- }
- 
-@@ -1353,7 +1353,7 @@ static void stl_settermios(struct tty_struct *tty, struct ktermios *old)
- 		stl_start(tty);
- 	}
- 	if (((old->c_cflag & CLOCAL) == 0) && (tiosp->c_cflag & CLOCAL))
--		wake_up_interruptible(&portp->open_wait);
-+		wake_up_interruptible(&portp->port.open_wait);
- }
- 
- /*****************************************************************************/
-@@ -1438,7 +1438,7 @@ static void stl_hangup(struct tty_struct *tty)
- 	if (portp == NULL)
- 		return;
- 
--	portp->flags &= ~ASYNC_INITIALIZED;
-+	portp->port.flags &= ~ASYNC_INITIALIZED;
- 	stl_disableintrs(portp);
- 	if (tty->termios->c_cflag & HUPCL)
- 		stl_setsignals(portp, 0, 0);
-@@ -1452,10 +1452,10 @@ static void stl_hangup(struct tty_struct *tty)
- 		portp->tx.head = NULL;
- 		portp->tx.tail = NULL;
- 	}
--	portp->tty = NULL;
--	portp->flags &= ~ASYNC_NORMAL_ACTIVE;
--	portp->refcount = 0;
--	wake_up_interruptible(&portp->open_wait);
-+	portp->port.tty = NULL;
-+	portp->port.flags &= ~ASYNC_NORMAL_ACTIVE;
-+	portp->port.count = 0;
-+	wake_up_interruptible(&portp->port.open_wait);
- }
- 
- /*****************************************************************************/
-@@ -1814,8 +1814,8 @@ static int __devinit stl_initports(struct stlbrd *brdp, struct stlpanel *panelp)
- 		portp->baud_base = STL_BAUDBASE;
- 		portp->close_delay = STL_CLOSEDELAY;
- 		portp->closing_wait = 30 * HZ;
--		init_waitqueue_head(&portp->open_wait);
--		init_waitqueue_head(&portp->close_wait);
-+		init_waitqueue_head(&portp->port.open_wait);
-+		init_waitqueue_head(&portp->port.close_wait);
- 		portp->stats.brd = portp->brdnr;
- 		portp->stats.panel = portp->panelnr;
- 		portp->stats.port = portp->portnr;
-@@ -1840,8 +1840,8 @@ static void stl_cleanup_panels(struct stlbrd *brdp)
- 			portp = panelp->ports[k];
- 			if (portp == NULL)
- 				continue;
--			if (portp->tty != NULL)
--				stl_hangup(portp->tty);
-+			if (portp->port.tty != NULL)
-+				stl_hangup(portp->port.tty);
- 			kfree(portp->tx.buf);
- 			kfree(portp);
- 		}
-@@ -2513,7 +2513,7 @@ static int stl_getportstats(struct stlport *portp, comstats_t __user *cp)
- 	}
- 
- 	portp->stats.state = portp->istate;
--	portp->stats.flags = portp->flags;
-+	portp->stats.flags = portp->port.flags;
- 	portp->stats.hwid = portp->hwid;
- 
- 	portp->stats.ttystate = 0;
-@@ -2524,16 +2524,16 @@ static int stl_getportstats(struct stlport *portp, comstats_t __user *cp)
- 	portp->stats.rxbuffered = 0;
- 
- 	spin_lock_irqsave(&stallion_lock, flags);
--	if (portp->tty != NULL)
--		if (portp->tty->driver_data == portp) {
--			portp->stats.ttystate = portp->tty->flags;
-+	if (portp->port.tty != NULL)
-+		if (portp->port.tty->driver_data == portp) {
-+			portp->stats.ttystate = portp->port.tty->flags;
- 			/* No longer available as a statistic */
--			portp->stats.rxbuffered = 1; /*portp->tty->flip.count; */
--			if (portp->tty->termios != NULL) {
--				portp->stats.cflags = portp->tty->termios->c_cflag;
--				portp->stats.iflags = portp->tty->termios->c_iflag;
--				portp->stats.oflags = portp->tty->termios->c_oflag;
--				portp->stats.lflags = portp->tty->termios->c_lflag;
-+			portp->stats.rxbuffered = 1; /*portp->port.tty->flip.count; */
-+			if (portp->port.tty->termios != NULL) {
-+				portp->stats.cflags = portp->port.tty->termios->c_cflag;
-+				portp->stats.iflags = portp->port.tty->termios->c_iflag;
-+				portp->stats.oflags = portp->port.tty->termios->c_oflag;
-+				portp->stats.lflags = portp->port.tty->termios->c_lflag;
- 			}
- 		}
- 	spin_unlock_irqrestore(&stallion_lock, flags);
-@@ -2939,15 +2939,15 @@ static void stl_cd1400setport(struct stlport *portp, struct ktermios *tiosp)
- 	}
- 	baudrate = stl_baudrates[baudrate];
- 	if ((tiosp->c_cflag & CBAUD) == B38400) {
--		if ((portp->flags & ASYNC_SPD_MASK) == ASYNC_SPD_HI)
-+		if ((portp->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_HI)
- 			baudrate = 57600;
--		else if ((portp->flags & ASYNC_SPD_MASK) == ASYNC_SPD_VHI)
-+		else if ((portp->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_VHI)
- 			baudrate = 115200;
--		else if ((portp->flags & ASYNC_SPD_MASK) == ASYNC_SPD_SHI)
-+		else if ((portp->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_SHI)
- 			baudrate = 230400;
--		else if ((portp->flags & ASYNC_SPD_MASK) == ASYNC_SPD_WARP)
-+		else if ((portp->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_WARP)
- 			baudrate = 460800;
--		else if ((portp->flags & ASYNC_SPD_MASK) == ASYNC_SPD_CUST)
-+		else if ((portp->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_CUST)
- 			baudrate = (portp->baud_base / portp->custom_divisor);
- 	}
- 	if (baudrate > STL_CD1400MAXBAUD)
-@@ -2969,9 +2969,9 @@ static void stl_cd1400setport(struct stlport *portp, struct ktermios *tiosp)
- 		mcor1 |= MCOR1_DCD;
- 		mcor2 |= MCOR2_DCD;
- 		sreron |= SRER_MODEM;
--		portp->flags |= ASYNC_CHECK_CD;
-+		portp->port.flags |= ASYNC_CHECK_CD;
- 	} else
--		portp->flags &= ~ASYNC_CHECK_CD;
-+		portp->port.flags &= ~ASYNC_CHECK_CD;
- 
- /*
-  *	Setup cd1400 enhanced modes if we can. In particular we want to
-@@ -3242,7 +3242,7 @@ static void stl_cd1400flowctrl(struct stlport *portp, int state)
- 
- 	if (portp == NULL)
- 		return;
--	tty = portp->tty;
-+	tty = portp->port.tty;
- 	if (tty == NULL)
- 		return;
- 
-@@ -3304,7 +3304,7 @@ static void stl_cd1400sendflow(struct stlport *portp, int state)
- 
- 	if (portp == NULL)
- 		return;
--	tty = portp->tty;
-+	tty = portp->port.tty;
- 	if (tty == NULL)
- 		return;
- 
-@@ -3503,8 +3503,8 @@ static void stl_cd1400txisr(struct stlpanel *panelp, int ioaddr)
- 	if ((len == 0) || ((len < STL_TXBUFLOW) &&
- 	    (test_bit(ASYI_TXLOW, &portp->istate) == 0))) {
- 		set_bit(ASYI_TXLOW, &portp->istate);
--		if (portp->tty)
--			tty_wakeup(portp->tty);
-+		if (portp->port.tty)
-+			tty_wakeup(portp->port.tty);
- 	}
- 
- 	if (len == 0) {
-@@ -3568,7 +3568,7 @@ static void stl_cd1400rxisr(struct stlpanel *panelp, int ioaddr)
- 		return;
- 	}
- 	portp = panelp->ports[(ioack >> 3)];
--	tty = portp->tty;
-+	tty = portp->port.tty;
- 
- 	if ((ioack & ACK_TYPMASK) == ACK_TYPRXGOOD) {
- 		outb((RDCR + portp->uartaddr), ioaddr);
-@@ -3613,7 +3613,7 @@ static void stl_cd1400rxisr(struct stlpanel *panelp, int ioaddr)
- 			if (portp->rxmarkmsk & status) {
- 				if (status & ST_BREAK) {
- 					status = TTY_BREAK;
--					if (portp->flags & ASYNC_SAK) {
-+					if (portp->port.flags & ASYNC_SAK) {
- 						do_SAK(tty);
- 						BRDENABLE(portp->brdnr, portp->pagenr);
- 					}
-@@ -3899,15 +3899,15 @@ static void stl_sc26198setport(struct stlport *portp, struct ktermios *tiosp)
- 	}
- 	baudrate = stl_baudrates[baudrate];
- 	if ((tiosp->c_cflag & CBAUD) == B38400) {
--		if ((portp->flags & ASYNC_SPD_MASK) == ASYNC_SPD_HI)
-+		if ((portp->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_HI)
- 			baudrate = 57600;
--		else if ((portp->flags & ASYNC_SPD_MASK) == ASYNC_SPD_VHI)
-+		else if ((portp->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_VHI)
- 			baudrate = 115200;
--		else if ((portp->flags & ASYNC_SPD_MASK) == ASYNC_SPD_SHI)
-+		else if ((portp->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_SHI)
- 			baudrate = 230400;
--		else if ((portp->flags & ASYNC_SPD_MASK) == ASYNC_SPD_WARP)
-+		else if ((portp->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_WARP)
- 			baudrate = 460800;
--		else if ((portp->flags & ASYNC_SPD_MASK) == ASYNC_SPD_CUST)
-+		else if ((portp->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_CUST)
- 			baudrate = (portp->baud_base / portp->custom_divisor);
- 	}
- 	if (baudrate > STL_SC26198MAXBAUD)
-@@ -3922,11 +3922,11 @@ static void stl_sc26198setport(struct stlport *portp, struct ktermios *tiosp)
-  *	Check what form of modem signaling is required and set it up.
-  */
- 	if (tiosp->c_cflag & CLOCAL) {
--		portp->flags &= ~ASYNC_CHECK_CD;
-+		portp->port.flags &= ~ASYNC_CHECK_CD;
- 	} else {
- 		iopr |= IOPR_DCDCOS;
- 		imron |= IR_IOPORT;
--		portp->flags |= ASYNC_CHECK_CD;
-+		portp->port.flags |= ASYNC_CHECK_CD;
- 	}
- 
- /*
-@@ -4174,7 +4174,7 @@ static void stl_sc26198flowctrl(struct stlport *portp, int state)
- 
- 	if (portp == NULL)
- 		return;
--	tty = portp->tty;
-+	tty = portp->port.tty;
- 	if (tty == NULL)
- 		return;
- 
-@@ -4243,7 +4243,7 @@ static void stl_sc26198sendflow(struct stlport *portp, int state)
- 
- 	if (portp == NULL)
- 		return;
--	tty = portp->tty;
-+	tty = portp->port.tty;
- 	if (tty == NULL)
- 		return;
- 
-@@ -4421,8 +4421,8 @@ static void stl_sc26198txisr(struct stlport *portp)
- 	if ((len == 0) || ((len < STL_TXBUFLOW) &&
- 	    (test_bit(ASYI_TXLOW, &portp->istate) == 0))) {
- 		set_bit(ASYI_TXLOW, &portp->istate);
--		if (portp->tty)
--			tty_wakeup(portp->tty);
-+		if (portp->port.tty)
-+			tty_wakeup(portp->port.tty);
- 	}
- 
- 	if (len == 0) {
-@@ -4475,7 +4475,7 @@ static void stl_sc26198rxisr(struct stlport *portp, unsigned int iack)
- 
- 	pr_debug("stl_sc26198rxisr(portp=%p,iack=%x)\n", portp, iack);
- 
--	tty = portp->tty;
-+	tty = portp->port.tty;
- 	ioaddr = portp->ioaddr;
- 	outb(GIBCR, (ioaddr + XP_ADDR));
- 	len = inb(ioaddr + XP_DATA) + 1;
-@@ -4527,7 +4527,7 @@ static void stl_sc26198rxbadch(struct stlport *portp, unsigned char status, char
- 	struct tty_struct	*tty;
- 	unsigned int		ioaddr;
- 
--	tty = portp->tty;
-+	tty = portp->port.tty;
- 	ioaddr = portp->ioaddr;
- 
- 	if (status & SR_RXPARITY)
-@@ -4544,7 +4544,7 @@ static void stl_sc26198rxbadch(struct stlport *portp, unsigned char status, char
- 		if (portp->rxmarkmsk & status) {
- 			if (status & SR_RXBREAK) {
- 				status = TTY_BREAK;
--				if (portp->flags & ASYNC_SAK) {
-+				if (portp->port.flags & ASYNC_SAK) {
- 					do_SAK(tty);
- 					BRDENABLE(portp->brdnr, portp->pagenr);
- 				}
-diff --git a/include/linux/stallion.h b/include/linux/stallion.h
-index 0424d75..336af33 100644
---- a/include/linux/stallion.h
-+++ b/include/linux/stallion.h
-@@ -69,6 +69,7 @@ struct stlrq {
-  */
- struct stlport {
- 	unsigned long		magic;
-+	struct tty_port		port;
- 	unsigned int		portnr;
- 	unsigned int		panelnr;
- 	unsigned int		brdnr;
-@@ -76,12 +77,10 @@ struct stlport {
- 	int			uartaddr;
- 	unsigned int		pagenr;
- 	unsigned long		istate;
+diff --git a/drivers/char/synclink.c b/drivers/char/synclink.c
+index 5e4b2e6..734098f 100644
+--- a/drivers/char/synclink.c
++++ b/drivers/char/synclink.c
+@@ -180,8 +180,7 @@ struct tx_holding_buffer {
+  
+ struct mgsl_struct {
+ 	int			magic;
 -	int			flags;
- 	int			baud_base;
- 	int			custom_divisor;
- 	int			close_delay;
- 	int			closing_wait;
--	int			refcount;
- 	int			openwaitcnt;
- 	int			brklen;
- 	unsigned int		sigs;
-@@ -92,9 +91,6 @@ struct stlport {
- 	unsigned long		clk;
- 	unsigned long		hwid;
- 	void			*uartp;
--	struct tty_struct	*tty;
+-	int			count;		/* count of opens */
++	struct tty_port		port;
+ 	int			line;
+ 	int                     hw_version;
+ 	unsigned short		close_delay;
+@@ -189,10 +188,8 @@ struct mgsl_struct {
+ 	
+ 	struct mgsl_icount	icount;
+ 	
+-	struct tty_struct 	*tty;
+ 	int			timeout;
+ 	int			x_char;		/* xon/xoff character */
+-	int			blocked_open;	/* # of blocked opens */
+ 	u16			read_status_mask;
+ 	u16			ignore_status_mask;	
+ 	unsigned char 		*xmit_buf;
+@@ -200,9 +197,6 @@ struct mgsl_struct {
+ 	int			xmit_tail;
+ 	int			xmit_cnt;
+ 	
 -	wait_queue_head_t	open_wait;
 -	wait_queue_head_t	close_wait;
- 	comstats_t		stats;
- 	struct stlrq		tx;
- };
+-	
+ 	wait_queue_head_t	status_event_wait_q;
+ 	wait_queue_head_t	event_wait_q;
+ 	struct timer_list	tx_timer;	/* HDLC transmit timeout timer */
+@@ -1134,7 +1128,7 @@ static void mgsl_bh_receive(struct mgsl_struct *info)
+ 
+ static void mgsl_bh_transmit(struct mgsl_struct *info)
+ {
+-	struct tty_struct *tty = info->tty;
++	struct tty_struct *tty = info->port.tty;
+ 	unsigned long flags;
+ 	
+ 	if ( debug_level >= DEBUG_LEVEL_BH )
+@@ -1276,7 +1270,7 @@ static void mgsl_isr_transmit_status( struct mgsl_struct *info )
+ 	else 
+ #endif
+ 	{
+-		if (info->tty->stopped || info->tty->hw_stopped) {
++		if (info->port.tty->stopped || info->port.tty->hw_stopped) {
+ 			usc_stop_transmitter(info);
+ 			return;
+ 		}
+@@ -1357,29 +1351,29 @@ static void mgsl_isr_io_pin( struct mgsl_struct *info )
+ 		wake_up_interruptible(&info->status_event_wait_q);
+ 		wake_up_interruptible(&info->event_wait_q);
+ 
+-		if ( (info->flags & ASYNC_CHECK_CD) && 
++		if ( (info->port.flags & ASYNC_CHECK_CD) && 
+ 		     (status & MISCSTATUS_DCD_LATCHED) ) {
+ 			if ( debug_level >= DEBUG_LEVEL_ISR )
+ 				printk("%s CD now %s...", info->device_name,
+ 				       (status & MISCSTATUS_DCD) ? "on" : "off");
+ 			if (status & MISCSTATUS_DCD)
+-				wake_up_interruptible(&info->open_wait);
++				wake_up_interruptible(&info->port.open_wait);
+ 			else {
+ 				if ( debug_level >= DEBUG_LEVEL_ISR )
+ 					printk("doing serial hangup...");
+-				if (info->tty)
+-					tty_hangup(info->tty);
++				if (info->port.tty)
++					tty_hangup(info->port.tty);
+ 			}
+ 		}
+ 	
+-		if ( (info->flags & ASYNC_CTS_FLOW) && 
++		if ( (info->port.flags & ASYNC_CTS_FLOW) && 
+ 		     (status & MISCSTATUS_CTS_LATCHED) ) {
+-			if (info->tty->hw_stopped) {
++			if (info->port.tty->hw_stopped) {
+ 				if (status & MISCSTATUS_CTS) {
+ 					if ( debug_level >= DEBUG_LEVEL_ISR )
+ 						printk("CTS tx start...");
+-					if (info->tty)
+-						info->tty->hw_stopped = 0;
++					if (info->port.tty)
++						info->port.tty->hw_stopped = 0;
+ 					usc_start_transmitter(info);
+ 					info->pending_bh |= BH_TRANSMIT;
+ 					return;
+@@ -1388,8 +1382,8 @@ static void mgsl_isr_io_pin( struct mgsl_struct *info )
+ 				if (!(status & MISCSTATUS_CTS)) {
+ 					if ( debug_level >= DEBUG_LEVEL_ISR )
+ 						printk("CTS tx stop...");
+-					if (info->tty)
+-						info->tty->hw_stopped = 1;
++					if (info->port.tty)
++						info->port.tty->hw_stopped = 1;
+ 					usc_stop_transmitter(info);
+ 				}
+ 			}
+@@ -1423,7 +1417,7 @@ static void mgsl_isr_transmit_data( struct mgsl_struct *info )
+ 			
+ 	usc_ClearIrqPendingBits( info, TRANSMIT_DATA );
+ 	
+-	if (info->tty->stopped || info->tty->hw_stopped) {
++	if (info->port.tty->stopped || info->port.tty->hw_stopped) {
+ 		usc_stop_transmitter(info);
+ 		return;
+ 	}
+@@ -1453,7 +1447,7 @@ static void mgsl_isr_receive_data( struct mgsl_struct *info )
+ 	u16 status;
+ 	int work = 0;
+ 	unsigned char DataByte;
+- 	struct tty_struct *tty = info->tty;
++ 	struct tty_struct *tty = info->port.tty;
+  	struct	mgsl_icount *icount = &info->icount;
+ 	
+ 	if ( debug_level >= DEBUG_LEVEL_ISR )	
+@@ -1514,7 +1508,7 @@ static void mgsl_isr_receive_data( struct mgsl_struct *info )
+ 		
+ 			if (status & RXSTATUS_BREAK_RECEIVED) {
+ 				flag = TTY_BREAK;
+-				if (info->flags & ASYNC_SAK)
++				if (info->port.flags & ASYNC_SAK)
+ 					do_SAK(tty);
+ 			} else if (status & RXSTATUS_PARITY_ERROR)
+ 				flag = TTY_PARITY;
+@@ -1771,7 +1765,7 @@ static int startup(struct mgsl_struct * info)
+ 	if ( debug_level >= DEBUG_LEVEL_INFO )
+ 		printk("%s(%d):mgsl_startup(%s)\n",__FILE__,__LINE__,info->device_name);
+ 		
+-	if (info->flags & ASYNC_INITIALIZED)
++	if (info->port.flags & ASYNC_INITIALIZED)
+ 		return 0;
+ 	
+ 	if (!info->xmit_buf) {
+@@ -1798,8 +1792,8 @@ static int startup(struct mgsl_struct * info)
+ 		retval = mgsl_adapter_test(info);
+ 		
+ 	if ( retval ) {
+-  		if (capable(CAP_SYS_ADMIN) && info->tty)
+-			set_bit(TTY_IO_ERROR, &info->tty->flags);
++  		if (capable(CAP_SYS_ADMIN) && info->port.tty)
++			set_bit(TTY_IO_ERROR, &info->port.tty->flags);
+ 		mgsl_release_resources(info);
+   		return retval;
+   	}
+@@ -1807,10 +1801,10 @@ static int startup(struct mgsl_struct * info)
+ 	/* program hardware for current parameters */
+ 	mgsl_change_params(info);
+ 	
+-	if (info->tty)
+-		clear_bit(TTY_IO_ERROR, &info->tty->flags);
++	if (info->port.tty)
++		clear_bit(TTY_IO_ERROR, &info->port.tty->flags);
+ 
+-	info->flags |= ASYNC_INITIALIZED;
++	info->port.flags |= ASYNC_INITIALIZED;
+ 	
+ 	return 0;
+ 	
+@@ -1827,7 +1821,7 @@ static void shutdown(struct mgsl_struct * info)
+ {
+ 	unsigned long flags;
+ 	
+-	if (!(info->flags & ASYNC_INITIALIZED))
++	if (!(info->port.flags & ASYNC_INITIALIZED))
+ 		return;
+ 
+ 	if (debug_level >= DEBUG_LEVEL_INFO)
+@@ -1864,7 +1858,7 @@ static void shutdown(struct mgsl_struct * info)
+ 	/* on the ISA adapter. This has no effect for the PCI adapter */
+ 	usc_OutReg(info, PCR, (u16)((usc_InReg(info, PCR) | BIT13) | BIT12));
+ 	
+- 	if (!info->tty || info->tty->termios->c_cflag & HUPCL) {
++ 	if (!info->port.tty || info->port.tty->termios->c_cflag & HUPCL) {
+  		info->serial_signals &= ~(SerialSignal_DTR + SerialSignal_RTS);
+ 		usc_set_serial_signals(info);
+ 	}
+@@ -1873,10 +1867,10 @@ static void shutdown(struct mgsl_struct * info)
+ 
+ 	mgsl_release_resources(info);	
+ 	
+-	if (info->tty)
+-		set_bit(TTY_IO_ERROR, &info->tty->flags);
++	if (info->port.tty)
++		set_bit(TTY_IO_ERROR, &info->port.tty->flags);
+ 
+-	info->flags &= ~ASYNC_INITIALIZED;
++	info->port.flags &= ~ASYNC_INITIALIZED;
+ 	
+ }	/* end of shutdown() */
+ 
+@@ -1908,7 +1902,7 @@ static void mgsl_program_hw(struct mgsl_struct *info)
+ 	usc_EnableInterrupts(info, IO_PIN);
+ 	usc_get_serial_signals(info);
+ 		
+-	if (info->netcount || info->tty->termios->c_cflag & CREAD)
++	if (info->netcount || info->port.tty->termios->c_cflag & CREAD)
+ 		usc_start_receiver(info);
+ 		
+ 	spin_unlock_irqrestore(&info->irq_spinlock,flags);
+@@ -1921,14 +1915,14 @@ static void mgsl_change_params(struct mgsl_struct *info)
+ 	unsigned cflag;
+ 	int bits_per_char;
+ 
+-	if (!info->tty || !info->tty->termios)
++	if (!info->port.tty || !info->port.tty->termios)
+ 		return;
+ 		
+ 	if (debug_level >= DEBUG_LEVEL_INFO)
+ 		printk("%s(%d):mgsl_change_params(%s)\n",
+ 			 __FILE__,__LINE__, info->device_name );
+ 			 
+-	cflag = info->tty->termios->c_cflag;
++	cflag = info->port.tty->termios->c_cflag;
+ 
+ 	/* if B0 rate (hangup) specified then negate DTR and RTS */
+ 	/* otherwise assert DTR and RTS */
+@@ -1976,7 +1970,7 @@ static void mgsl_change_params(struct mgsl_struct *info)
+ 	 * current data rate.
+ 	 */
+ 	if (info->params.data_rate <= 460800)
+-		info->params.data_rate = tty_get_baud_rate(info->tty);
++		info->params.data_rate = tty_get_baud_rate(info->port.tty);
+ 	
+ 	if ( info->params.data_rate ) {
+ 		info->timeout = (32*HZ*bits_per_char) / 
+@@ -1985,31 +1979,31 @@ static void mgsl_change_params(struct mgsl_struct *info)
+ 	info->timeout += HZ/50;		/* Add .02 seconds of slop */
+ 
+ 	if (cflag & CRTSCTS)
+-		info->flags |= ASYNC_CTS_FLOW;
++		info->port.flags |= ASYNC_CTS_FLOW;
+ 	else
+-		info->flags &= ~ASYNC_CTS_FLOW;
++		info->port.flags &= ~ASYNC_CTS_FLOW;
+ 		
+ 	if (cflag & CLOCAL)
+-		info->flags &= ~ASYNC_CHECK_CD;
++		info->port.flags &= ~ASYNC_CHECK_CD;
+ 	else
+-		info->flags |= ASYNC_CHECK_CD;
++		info->port.flags |= ASYNC_CHECK_CD;
+ 
+ 	/* process tty input control flags */
+ 	
+ 	info->read_status_mask = RXSTATUS_OVERRUN;
+-	if (I_INPCK(info->tty))
++	if (I_INPCK(info->port.tty))
+ 		info->read_status_mask |= RXSTATUS_PARITY_ERROR | RXSTATUS_FRAMING_ERROR;
+- 	if (I_BRKINT(info->tty) || I_PARMRK(info->tty))
++ 	if (I_BRKINT(info->port.tty) || I_PARMRK(info->port.tty))
+  		info->read_status_mask |= RXSTATUS_BREAK_RECEIVED;
+ 	
+-	if (I_IGNPAR(info->tty))
++	if (I_IGNPAR(info->port.tty))
+ 		info->ignore_status_mask |= RXSTATUS_PARITY_ERROR | RXSTATUS_FRAMING_ERROR;
+-	if (I_IGNBRK(info->tty)) {
++	if (I_IGNBRK(info->port.tty)) {
+ 		info->ignore_status_mask |= RXSTATUS_BREAK_RECEIVED;
+ 		/* If ignoring parity and break indicators, ignore 
+ 		 * overruns too.  (For real raw support).
+ 		 */
+-		if (I_IGNPAR(info->tty))
++		if (I_IGNPAR(info->port.tty))
+ 			info->ignore_status_mask |= RXSTATUS_OVERRUN;
+ 	}
+ 
+@@ -3113,32 +3107,32 @@ static void mgsl_close(struct tty_struct *tty, struct file * filp)
+ 	
+ 	if (debug_level >= DEBUG_LEVEL_INFO)
+ 		printk("%s(%d):mgsl_close(%s) entry, count=%d\n",
+-			 __FILE__,__LINE__, info->device_name, info->count);
++			 __FILE__,__LINE__, info->device_name, info->port.count);
+ 			 
+-	if (!info->count)
++	if (!info->port.count)
+ 		return;
+ 
+ 	if (tty_hung_up_p(filp))
+ 		goto cleanup;
+ 			
+-	if ((tty->count == 1) && (info->count != 1)) {
++	if ((tty->count == 1) && (info->port.count != 1)) {
+ 		/*
+ 		 * tty->count is 1 and the tty structure will be freed.
+-		 * info->count should be one in this case.
++		 * info->port.count should be one in this case.
+ 		 * if it's not, correct it so that the port is shutdown.
+ 		 */
+ 		printk("mgsl_close: bad refcount; tty->count is 1, "
+-		       "info->count is %d\n", info->count);
+-		info->count = 1;
++		       "info->port.count is %d\n", info->port.count);
++		info->port.count = 1;
+ 	}
+ 	
+-	info->count--;
++	info->port.count--;
+ 	
+ 	/* if at least one open remaining, leave hardware active */
+-	if (info->count)
++	if (info->port.count)
+ 		goto cleanup;
+ 	
+-	info->flags |= ASYNC_CLOSING;
++	info->port.flags |= ASYNC_CLOSING;
+ 	
+ 	/* set tty->closing to notify line discipline to 
+ 	 * only process XON/XOFF characters. Only the N_TTY
+@@ -3155,7 +3149,7 @@ static void mgsl_close(struct tty_struct *tty, struct file * filp)
+ 		tty_wait_until_sent(tty, info->closing_wait);
+ 	}
+ 		
+- 	if (info->flags & ASYNC_INITIALIZED)
++ 	if (info->port.flags & ASYNC_INITIALIZED)
+  		mgsl_wait_until_sent(tty, info->timeout);
+ 
+ 	mgsl_flush_buffer(tty);
+@@ -3165,23 +3159,23 @@ static void mgsl_close(struct tty_struct *tty, struct file * filp)
+ 	shutdown(info);
+ 	
+ 	tty->closing = 0;
+-	info->tty = NULL;
++	info->port.tty = NULL;
+ 	
+-	if (info->blocked_open) {
++	if (info->port.blocked_open) {
+ 		if (info->close_delay) {
+ 			msleep_interruptible(jiffies_to_msecs(info->close_delay));
+ 		}
+-		wake_up_interruptible(&info->open_wait);
++		wake_up_interruptible(&info->port.open_wait);
+ 	}
+ 	
+-	info->flags &= ~(ASYNC_NORMAL_ACTIVE|ASYNC_CLOSING);
++	info->port.flags &= ~(ASYNC_NORMAL_ACTIVE|ASYNC_CLOSING);
+ 			 
+-	wake_up_interruptible(&info->close_wait);
++	wake_up_interruptible(&info->port.close_wait);
+ 	
+ cleanup:			
+ 	if (debug_level >= DEBUG_LEVEL_INFO)
+ 		printk("%s(%d):mgsl_close(%s) exit, count=%d\n", __FILE__,__LINE__,
+-			tty->driver->name, info->count);
++			tty->driver->name, info->port.count);
+ 			
+ }	/* end of mgsl_close() */
+ 
+@@ -3211,7 +3205,7 @@ static void mgsl_wait_until_sent(struct tty_struct *tty, int timeout)
+ 	if (mgsl_paranoia_check(info, tty->name, "mgsl_wait_until_sent"))
+ 		return;
+ 
+-	if (!(info->flags & ASYNC_INITIALIZED))
++	if (!(info->port.flags & ASYNC_INITIALIZED))
+ 		goto exit;
+ 	 
+ 	orig_jiffies = jiffies;
+@@ -3283,11 +3277,11 @@ static void mgsl_hangup(struct tty_struct *tty)
+ 	mgsl_flush_buffer(tty);
+ 	shutdown(info);
+ 	
+-	info->count = 0;	
+-	info->flags &= ~ASYNC_NORMAL_ACTIVE;
+-	info->tty = NULL;
++	info->port.count = 0;	
++	info->port.flags &= ~ASYNC_NORMAL_ACTIVE;
++	info->port.tty = NULL;
+ 
+-	wake_up_interruptible(&info->open_wait);
++	wake_up_interruptible(&info->port.open_wait);
+ 	
+ }	/* end of mgsl_hangup() */
+ 
+@@ -3319,7 +3313,7 @@ static int block_til_ready(struct tty_struct *tty, struct file * filp,
+ 
+ 	if (filp->f_flags & O_NONBLOCK || tty->flags & (1 << TTY_IO_ERROR)){
+ 		/* nonblock mode is set or port is not enabled */
+-		info->flags |= ASYNC_NORMAL_ACTIVE;
++		info->port.flags |= ASYNC_NORMAL_ACTIVE;
+ 		return 0;
+ 	}
+ 
+@@ -3328,25 +3322,25 @@ static int block_til_ready(struct tty_struct *tty, struct file * filp,
+ 
+ 	/* Wait for carrier detect and the line to become
+ 	 * free (i.e., not in use by the callout).  While we are in
+-	 * this loop, info->count is dropped by one, so that
++	 * this loop, info->port.count is dropped by one, so that
+ 	 * mgsl_close() knows when to free things.  We restore it upon
+ 	 * exit, either normal or abnormal.
+ 	 */
+ 	 
+ 	retval = 0;
+-	add_wait_queue(&info->open_wait, &wait);
++	add_wait_queue(&info->port.open_wait, &wait);
+ 	
+ 	if (debug_level >= DEBUG_LEVEL_INFO)
+ 		printk("%s(%d):block_til_ready before block on %s count=%d\n",
+-			 __FILE__,__LINE__, tty->driver->name, info->count );
++			 __FILE__,__LINE__, tty->driver->name, info->port.count );
+ 
+ 	spin_lock_irqsave(&info->irq_spinlock, flags);
+ 	if (!tty_hung_up_p(filp)) {
+ 		extra_count = true;
+-		info->count--;
++		info->port.count--;
+ 	}
+ 	spin_unlock_irqrestore(&info->irq_spinlock, flags);
+-	info->blocked_open++;
++	info->port.blocked_open++;
+ 	
+ 	while (1) {
+ 		if (tty->termios->c_cflag & CBAUD) {
+@@ -3358,8 +3352,8 @@ static int block_til_ready(struct tty_struct *tty, struct file * filp,
+ 		
+ 		set_current_state(TASK_INTERRUPTIBLE);
+ 		
+-		if (tty_hung_up_p(filp) || !(info->flags & ASYNC_INITIALIZED)){
+-			retval = (info->flags & ASYNC_HUP_NOTIFY) ?
++		if (tty_hung_up_p(filp) || !(info->port.flags & ASYNC_INITIALIZED)){
++			retval = (info->port.flags & ASYNC_HUP_NOTIFY) ?
+ 					-EAGAIN : -ERESTARTSYS;
+ 			break;
+ 		}
+@@ -3368,7 +3362,7 @@ static int block_til_ready(struct tty_struct *tty, struct file * filp,
+ 	 	usc_get_serial_signals(info);
+ 		spin_unlock_irqrestore(&info->irq_spinlock,flags);
+ 		
+- 		if (!(info->flags & ASYNC_CLOSING) &&
++ 		if (!(info->port.flags & ASYNC_CLOSING) &&
+  		    (do_clocal || (info->serial_signals & SerialSignal_DCD)) ) {
+  			break;
+ 		}
+@@ -3380,24 +3374,24 @@ static int block_til_ready(struct tty_struct *tty, struct file * filp,
+ 		
+ 		if (debug_level >= DEBUG_LEVEL_INFO)
+ 			printk("%s(%d):block_til_ready blocking on %s count=%d\n",
+-				 __FILE__,__LINE__, tty->driver->name, info->count );
++				 __FILE__,__LINE__, tty->driver->name, info->port.count );
+ 				 
+ 		schedule();
+ 	}
+ 	
+ 	set_current_state(TASK_RUNNING);
+-	remove_wait_queue(&info->open_wait, &wait);
++	remove_wait_queue(&info->port.open_wait, &wait);
+ 	
+ 	if (extra_count)
+-		info->count++;
+-	info->blocked_open--;
++		info->port.count++;
++	info->port.blocked_open--;
+ 	
+ 	if (debug_level >= DEBUG_LEVEL_INFO)
+ 		printk("%s(%d):block_til_ready after blocking on %s count=%d\n",
+-			 __FILE__,__LINE__, tty->driver->name, info->count );
++			 __FILE__,__LINE__, tty->driver->name, info->port.count );
+ 			 
+ 	if (!retval)
+-		info->flags |= ASYNC_NORMAL_ACTIVE;
++		info->port.flags |= ASYNC_NORMAL_ACTIVE;
+ 		
+ 	return retval;
+ 	
+@@ -3435,22 +3429,22 @@ static int mgsl_open(struct tty_struct *tty, struct file * filp)
+ 		return -ENODEV;
+ 	
+ 	tty->driver_data = info;
+-	info->tty = tty;
++	info->port.tty = tty;
+ 		
+ 	if (debug_level >= DEBUG_LEVEL_INFO)
+ 		printk("%s(%d):mgsl_open(%s), old ref count = %d\n",
+-			 __FILE__,__LINE__,tty->driver->name, info->count);
++			 __FILE__,__LINE__,tty->driver->name, info->port.count);
+ 
+ 	/* If port is closing, signal caller to try again */
+-	if (tty_hung_up_p(filp) || info->flags & ASYNC_CLOSING){
+-		if (info->flags & ASYNC_CLOSING)
+-			interruptible_sleep_on(&info->close_wait);
+-		retval = ((info->flags & ASYNC_HUP_NOTIFY) ?
++	if (tty_hung_up_p(filp) || info->port.flags & ASYNC_CLOSING){
++		if (info->port.flags & ASYNC_CLOSING)
++			interruptible_sleep_on(&info->port.close_wait);
++		retval = ((info->port.flags & ASYNC_HUP_NOTIFY) ?
+ 			-EAGAIN : -ERESTARTSYS);
+ 		goto cleanup;
+ 	}
+ 	
+-	info->tty->low_latency = (info->flags & ASYNC_LOW_LATENCY) ? 1 : 0;
++	info->port.tty->low_latency = (info->port.flags & ASYNC_LOW_LATENCY) ? 1 : 0;
+ 
+ 	spin_lock_irqsave(&info->netlock, flags);
+ 	if (info->netcount) {
+@@ -3458,10 +3452,10 @@ static int mgsl_open(struct tty_struct *tty, struct file * filp)
+ 		spin_unlock_irqrestore(&info->netlock, flags);
+ 		goto cleanup;
+ 	}
+-	info->count++;
++	info->port.count++;
+ 	spin_unlock_irqrestore(&info->netlock, flags);
+ 
+-	if (info->count == 1) {
++	if (info->port.count == 1) {
+ 		/* 1st open on this device, init hardware */
+ 		retval = startup(info);
+ 		if (retval < 0)
+@@ -3484,9 +3478,9 @@ static int mgsl_open(struct tty_struct *tty, struct file * filp)
+ cleanup:			
+ 	if (retval) {
+ 		if (tty->count == 1)
+-			info->tty = NULL; /* tty layer will release tty struct */
+-		if(info->count)
+-			info->count--;
++			info->port.tty = NULL; /* tty layer will release tty struct */
++		if(info->port.count)
++			info->port.count--;
+ 	}
+ 	
+ 	return retval;
+@@ -4337,8 +4331,7 @@ static struct mgsl_struct* mgsl_allocate_device(void)
+ 		info->max_frame_size = 4096;
+ 		info->close_delay = 5*HZ/10;
+ 		info->closing_wait = 30*HZ;
+-		init_waitqueue_head(&info->open_wait);
+-		init_waitqueue_head(&info->close_wait);
++		tty_port_init(&info->port);
+ 		init_waitqueue_head(&info->status_event_wait_q);
+ 		init_waitqueue_head(&info->event_wait_q);
+ 		spin_lock_init(&info->irq_spinlock);
+@@ -6575,7 +6568,7 @@ static bool mgsl_get_rx_frame(struct mgsl_struct *info)
+ 	unsigned int framesize = 0;
+ 	bool ReturnCode = false;
+ 	unsigned long flags;
+-	struct tty_struct *tty = info->tty;
++	struct tty_struct *tty = info->port.tty;
+ 	bool return_frame = false;
+ 	
+ 	/*
+@@ -6774,7 +6767,7 @@ static bool mgsl_get_raw_rx_frame(struct mgsl_struct *info)
+ 	unsigned int framesize = 0;
+ 	bool ReturnCode = false;
+ 	unsigned long flags;
+-	struct tty_struct *tty = info->tty;
++	struct tty_struct *tty = info->port.tty;
+ 
+ 	/*
+  	 * current_rx_buffer points to the 1st buffer of the next available
+@@ -7711,7 +7704,7 @@ static int hdlcdev_attach(struct net_device *dev, unsigned short encoding,
+ 	unsigned short new_crctype;
+ 
+ 	/* return error if TTY interface open */
+-	if (info->count)
++	if (info->port.count)
+ 		return -EBUSY;
+ 
+ 	switch (encoding)
+@@ -7808,7 +7801,7 @@ static int hdlcdev_open(struct net_device *dev)
+ 
+ 	/* arbitrate between network and tty opens */
+ 	spin_lock_irqsave(&info->netlock, flags);
+-	if (info->count != 0 || info->netcount != 0) {
++	if (info->port.count != 0 || info->netcount != 0) {
+ 		printk(KERN_WARNING "%s: hdlc_open returning busy\n", dev->name);
+ 		spin_unlock_irqrestore(&info->netlock, flags);
+ 		return -EBUSY;
+@@ -7894,7 +7887,7 @@ static int hdlcdev_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
+ 		printk("%s:hdlcdev_ioctl(%s)\n",__FILE__,dev->name);
+ 
+ 	/* return error if TTY interface open */
+-	if (info->count)
++	if (info->port.count)
+ 		return -EBUSY;
+ 
+ 	if (cmd != SIOCWANDEV)
+diff --git a/drivers/char/synclink_gt.c b/drivers/char/synclink_gt.c
+index e473778..fc71d98 100644
+--- a/drivers/char/synclink_gt.c
++++ b/drivers/char/synclink_gt.c
+@@ -244,11 +244,11 @@ struct _input_signal_events {
+  */
+ struct slgt_info {
+ 	void *if_ptr;		/* General purpose pointer (used by SPPP) */
++	struct tty_port port;
+ 
+ 	struct slgt_info *next_device;	/* device list link */
+ 
+ 	int magic;
+-	int flags;
+ 
+ 	char device_name[25];
+ 	struct pci_dev *pdev;
+@@ -260,23 +260,17 @@ struct slgt_info {
+ 	/* array of pointers to port contexts on this adapter */
+ 	struct slgt_info *port_array[SLGT_MAX_PORTS];
+ 
+-	int			count;		/* count of opens */
+ 	int			line;		/* tty line instance number */
+ 	unsigned short		close_delay;
+ 	unsigned short		closing_wait;	/* time to wait before closing */
+ 
+ 	struct mgsl_icount	icount;
+ 
+-	struct tty_struct 	*tty;
+ 	int			timeout;
+ 	int			x_char;		/* xon/xoff character */
+-	int			blocked_open;	/* # of blocked opens */
+ 	unsigned int		read_status_mask;
+ 	unsigned int 		ignore_status_mask;
+ 
+-	wait_queue_head_t	open_wait;
+-	wait_queue_head_t	close_wait;
+-
+ 	wait_queue_head_t	status_event_wait_q;
+ 	wait_queue_head_t	event_wait_q;
+ 	struct timer_list	tx_timer;
+@@ -672,20 +666,20 @@ static int open(struct tty_struct *tty, struct file *filp)
+ 	}
+ 
+ 	tty->driver_data = info;
+-	info->tty = tty;
++	info->port.tty = tty;
+ 
+-	DBGINFO(("%s open, old ref count = %d\n", info->device_name, info->count));
++	DBGINFO(("%s open, old ref count = %d\n", info->device_name, info->port.count));
+ 
+ 	/* If port is closing, signal caller to try again */
+-	if (tty_hung_up_p(filp) || info->flags & ASYNC_CLOSING){
+-		if (info->flags & ASYNC_CLOSING)
+-			interruptible_sleep_on(&info->close_wait);
+-		retval = ((info->flags & ASYNC_HUP_NOTIFY) ?
++	if (tty_hung_up_p(filp) || info->port.flags & ASYNC_CLOSING){
++		if (info->port.flags & ASYNC_CLOSING)
++			interruptible_sleep_on(&info->port.close_wait);
++		retval = ((info->port.flags & ASYNC_HUP_NOTIFY) ?
+ 			-EAGAIN : -ERESTARTSYS);
+ 		goto cleanup;
+ 	}
+ 
+-	info->tty->low_latency = (info->flags & ASYNC_LOW_LATENCY) ? 1 : 0;
++	info->port.tty->low_latency = (info->port.flags & ASYNC_LOW_LATENCY) ? 1 : 0;
+ 
+ 	spin_lock_irqsave(&info->netlock, flags);
+ 	if (info->netcount) {
+@@ -693,10 +687,10 @@ static int open(struct tty_struct *tty, struct file *filp)
+ 		spin_unlock_irqrestore(&info->netlock, flags);
+ 		goto cleanup;
+ 	}
+-	info->count++;
++	info->port.count++;
+ 	spin_unlock_irqrestore(&info->netlock, flags);
+ 
+-	if (info->count == 1) {
++	if (info->port.count == 1) {
+ 		/* 1st open on this device, init hardware */
+ 		retval = startup(info);
+ 		if (retval < 0)
+@@ -714,9 +708,9 @@ static int open(struct tty_struct *tty, struct file *filp)
+ cleanup:
+ 	if (retval) {
+ 		if (tty->count == 1)
+-			info->tty = NULL; /* tty layer will release tty struct */
+-		if(info->count)
+-			info->count--;
++			info->port.tty = NULL; /* tty layer will release tty struct */
++		if(info->port.count)
++			info->port.count--;
+ 	}
+ 
+ 	DBGINFO(("%s open rc=%d\n", info->device_name, retval));
+@@ -729,32 +723,32 @@ static void close(struct tty_struct *tty, struct file *filp)
+ 
+ 	if (sanity_check(info, tty->name, "close"))
+ 		return;
+-	DBGINFO(("%s close entry, count=%d\n", info->device_name, info->count));
++	DBGINFO(("%s close entry, count=%d\n", info->device_name, info->port.count));
+ 
+-	if (!info->count)
++	if (!info->port.count)
+ 		return;
+ 
+ 	if (tty_hung_up_p(filp))
+ 		goto cleanup;
+ 
+-	if ((tty->count == 1) && (info->count != 1)) {
++	if ((tty->count == 1) && (info->port.count != 1)) {
+ 		/*
+ 		 * tty->count is 1 and the tty structure will be freed.
+-		 * info->count should be one in this case.
++		 * info->port.count should be one in this case.
+ 		 * if it's not, correct it so that the port is shutdown.
+ 		 */
+ 		DBGERR(("%s close: bad refcount; tty->count=1, "
+-		       "info->count=%d\n", info->device_name, info->count));
+-		info->count = 1;
++		       "info->port.count=%d\n", info->device_name, info->port.count));
++		info->port.count = 1;
+ 	}
+ 
+-	info->count--;
++	info->port.count--;
+ 
+ 	/* if at least one open remaining, leave hardware active */
+-	if (info->count)
++	if (info->port.count)
+ 		goto cleanup;
+ 
+-	info->flags |= ASYNC_CLOSING;
++	info->port.flags |= ASYNC_CLOSING;
+ 
+ 	/* set tty->closing to notify line discipline to
+ 	 * only process XON/XOFF characters. Only the N_TTY
+@@ -769,7 +763,7 @@ static void close(struct tty_struct *tty, struct file *filp)
+ 		tty_wait_until_sent(tty, info->closing_wait);
+ 	}
+ 
+- 	if (info->flags & ASYNC_INITIALIZED)
++ 	if (info->port.flags & ASYNC_INITIALIZED)
+  		wait_until_sent(tty, info->timeout);
+ 	flush_buffer(tty);
+ 	tty_ldisc_flush(tty);
+@@ -777,21 +771,21 @@ static void close(struct tty_struct *tty, struct file *filp)
+ 	shutdown(info);
+ 
+ 	tty->closing = 0;
+-	info->tty = NULL;
++	info->port.tty = NULL;
+ 
+-	if (info->blocked_open) {
++	if (info->port.blocked_open) {
+ 		if (info->close_delay) {
+ 			msleep_interruptible(jiffies_to_msecs(info->close_delay));
+ 		}
+-		wake_up_interruptible(&info->open_wait);
++		wake_up_interruptible(&info->port.open_wait);
+ 	}
+ 
+-	info->flags &= ~(ASYNC_NORMAL_ACTIVE|ASYNC_CLOSING);
++	info->port.flags &= ~(ASYNC_NORMAL_ACTIVE|ASYNC_CLOSING);
+ 
+-	wake_up_interruptible(&info->close_wait);
++	wake_up_interruptible(&info->port.close_wait);
+ 
+ cleanup:
+-	DBGINFO(("%s close exit, count=%d\n", tty->driver->name, info->count));
++	DBGINFO(("%s close exit, count=%d\n", tty->driver->name, info->port.count));
+ }
+ 
+ static void hangup(struct tty_struct *tty)
+@@ -805,11 +799,11 @@ static void hangup(struct tty_struct *tty)
+ 	flush_buffer(tty);
+ 	shutdown(info);
+ 
+-	info->count = 0;
+-	info->flags &= ~ASYNC_NORMAL_ACTIVE;
+-	info->tty = NULL;
++	info->port.count = 0;
++	info->port.flags &= ~ASYNC_NORMAL_ACTIVE;
++	info->port.tty = NULL;
+ 
+-	wake_up_interruptible(&info->open_wait);
++	wake_up_interruptible(&info->port.open_wait);
+ }
+ 
+ static void set_termios(struct tty_struct *tty, struct ktermios *old_termios)
+@@ -959,7 +953,7 @@ static void wait_until_sent(struct tty_struct *tty, int timeout)
+ 	if (sanity_check(info, tty->name, "wait_until_sent"))
+ 		return;
+ 	DBGINFO(("%s wait_until_sent entry\n", info->device_name));
+-	if (!(info->flags & ASYNC_INITIALIZED))
++	if (!(info->port.flags & ASYNC_INITIALIZED))
+ 		goto exit;
+ 
+ 	orig_jiffies = jiffies;
+@@ -1500,7 +1494,7 @@ static int hdlcdev_attach(struct net_device *dev, unsigned short encoding,
+ 	unsigned short new_crctype;
+ 
+ 	/* return error if TTY interface open */
+-	if (info->count)
++	if (info->port.count)
+ 		return -EBUSY;
+ 
+ 	DBGINFO(("%s hdlcdev_attach\n", info->device_name));
+@@ -1600,7 +1594,7 @@ static int hdlcdev_open(struct net_device *dev)
+ 
+ 	/* arbitrate between network and tty opens */
+ 	spin_lock_irqsave(&info->netlock, flags);
+-	if (info->count != 0 || info->netcount != 0) {
++	if (info->port.count != 0 || info->netcount != 0) {
+ 		DBGINFO(("%s hdlc_open busy\n", dev->name));
+ 		spin_unlock_irqrestore(&info->netlock, flags);
+ 		return -EBUSY;
+@@ -1685,7 +1679,7 @@ static int hdlcdev_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
+ 	DBGINFO(("%s hdlcdev_ioctl\n", dev->name));
+ 
+ 	/* return error if TTY interface open */
+-	if (info->count)
++	if (info->port.count)
+ 		return -EBUSY;
+ 
+ 	if (cmd != SIOCWANDEV)
+@@ -1906,7 +1900,7 @@ static void hdlcdev_exit(struct slgt_info *info)
+  */
+ static void rx_async(struct slgt_info *info)
+ {
+- 	struct tty_struct *tty = info->tty;
++ 	struct tty_struct *tty = info->port.tty;
+  	struct mgsl_icount *icount = &info->icount;
+ 	unsigned int start, end;
+ 	unsigned char *p;
+@@ -2057,7 +2051,7 @@ static void bh_handler(struct work_struct *work)
+ 
+ static void bh_transmit(struct slgt_info *info)
+ {
+-	struct tty_struct *tty = info->tty;
++	struct tty_struct *tty = info->port.tty;
+ 
+ 	DBGBH(("%s bh_transmit\n", info->device_name));
+ 	if (tty)
+@@ -2103,17 +2097,17 @@ static void cts_change(struct slgt_info *info, unsigned short status)
+ 	wake_up_interruptible(&info->event_wait_q);
+ 	info->pending_bh |= BH_STATUS;
+ 
+-	if (info->flags & ASYNC_CTS_FLOW) {
+-		if (info->tty) {
+-			if (info->tty->hw_stopped) {
++	if (info->port.flags & ASYNC_CTS_FLOW) {
++		if (info->port.tty) {
++			if (info->port.tty->hw_stopped) {
+ 				if (info->signals & SerialSignal_CTS) {
+-		 			info->tty->hw_stopped = 0;
++		 			info->port.tty->hw_stopped = 0;
+ 					info->pending_bh |= BH_TRANSMIT;
+ 					return;
+ 				}
+ 			} else {
+ 				if (!(info->signals & SerialSignal_CTS))
+-		 			info->tty->hw_stopped = 1;
++		 			info->port.tty->hw_stopped = 1;
+ 			}
+ 		}
+ 	}
+@@ -2146,12 +2140,12 @@ static void dcd_change(struct slgt_info *info, unsigned short status)
+ 	wake_up_interruptible(&info->event_wait_q);
+ 	info->pending_bh |= BH_STATUS;
+ 
+-	if (info->flags & ASYNC_CHECK_CD) {
++	if (info->port.flags & ASYNC_CHECK_CD) {
+ 		if (info->signals & SerialSignal_DCD)
+-			wake_up_interruptible(&info->open_wait);
++			wake_up_interruptible(&info->port.open_wait);
+ 		else {
+-			if (info->tty)
+-				tty_hangup(info->tty);
++			if (info->port.tty)
++				tty_hangup(info->port.tty);
+ 		}
+ 	}
+ }
+@@ -2194,12 +2188,12 @@ static void isr_serial(struct slgt_info *info)
+ 		if ((status & IRQ_RXBREAK) && (status & RXBREAK)) {
+ 			info->icount.brk++;
+ 			/* process break detection if tty control allows */
+-			if (info->tty) {
++			if (info->port.tty) {
+ 				if (!(status & info->ignore_status_mask)) {
+ 					if (info->read_status_mask & MASK_BREAK) {
+-						tty_insert_flip_char(info->tty, 0, TTY_BREAK);
+-						if (info->flags & ASYNC_SAK)
+-							do_SAK(info->tty);
++						tty_insert_flip_char(info->port.tty, 0, TTY_BREAK);
++						if (info->port.flags & ASYNC_SAK)
++							do_SAK(info->port.tty);
+ 					}
+ 				}
+ 			}
+@@ -2319,7 +2313,7 @@ static void isr_txeom(struct slgt_info *info, unsigned short status)
+ 		else
+ #endif
+ 		{
+-			if (info->tty && (info->tty->stopped || info->tty->hw_stopped)) {
++			if (info->port.tty && (info->port.tty->stopped || info->port.tty->hw_stopped)) {
+ 				tx_stop(info);
+ 				return;
+ 			}
+@@ -2395,7 +2389,7 @@ static irqreturn_t slgt_interrupt(int dummy, void *dev_id)
+ 	for(i=0; i < info->port_count ; i++) {
+ 		struct slgt_info *port = info->port_array[i];
+ 
+-		if (port && (port->count || port->netcount) &&
++		if (port && (port->port.count || port->netcount) &&
+ 		    port->pending_bh && !port->bh_running &&
+ 		    !port->bh_requested) {
+ 			DBGISR(("%s bh queued\n", port->device_name));
+@@ -2414,7 +2408,7 @@ static int startup(struct slgt_info *info)
+ {
+ 	DBGINFO(("%s startup\n", info->device_name));
+ 
+-	if (info->flags & ASYNC_INITIALIZED)
++	if (info->port.flags & ASYNC_INITIALIZED)
+ 		return 0;
+ 
+ 	if (!info->tx_buf) {
+@@ -2432,10 +2426,10 @@ static int startup(struct slgt_info *info)
+ 	/* program hardware for current parameters */
+ 	change_params(info);
+ 
+-	if (info->tty)
+-		clear_bit(TTY_IO_ERROR, &info->tty->flags);
++	if (info->port.tty)
++		clear_bit(TTY_IO_ERROR, &info->port.tty->flags);
+ 
+-	info->flags |= ASYNC_INITIALIZED;
++	info->port.flags |= ASYNC_INITIALIZED;
+ 
+ 	return 0;
+ }
+@@ -2447,7 +2441,7 @@ static void shutdown(struct slgt_info *info)
+ {
+ 	unsigned long flags;
+ 
+-	if (!(info->flags & ASYNC_INITIALIZED))
++	if (!(info->port.flags & ASYNC_INITIALIZED))
+ 		return;
+ 
+ 	DBGINFO(("%s shutdown\n", info->device_name));
+@@ -2470,7 +2464,7 @@ static void shutdown(struct slgt_info *info)
+ 
+ 	slgt_irq_off(info, IRQ_ALL | IRQ_MASTER);
+ 
+- 	if (!info->tty || info->tty->termios->c_cflag & HUPCL) {
++ 	if (!info->port.tty || info->port.tty->termios->c_cflag & HUPCL) {
+  		info->signals &= ~(SerialSignal_DTR + SerialSignal_RTS);
+ 		set_signals(info);
+ 	}
+@@ -2479,10 +2473,10 @@ static void shutdown(struct slgt_info *info)
+ 
+ 	spin_unlock_irqrestore(&info->lock,flags);
+ 
+-	if (info->tty)
+-		set_bit(TTY_IO_ERROR, &info->tty->flags);
++	if (info->port.tty)
++		set_bit(TTY_IO_ERROR, &info->port.tty->flags);
+ 
+-	info->flags &= ~ASYNC_INITIALIZED;
++	info->port.flags &= ~ASYNC_INITIALIZED;
+ }
+ 
+ static void program_hw(struct slgt_info *info)
+@@ -2511,7 +2505,7 @@ static void program_hw(struct slgt_info *info)
+ 	get_signals(info);
+ 
+ 	if (info->netcount ||
+-	    (info->tty && info->tty->termios->c_cflag & CREAD))
++	    (info->port.tty && info->port.tty->termios->c_cflag & CREAD))
+ 		rx_start(info);
+ 
+ 	spin_unlock_irqrestore(&info->lock,flags);
+@@ -2525,11 +2519,11 @@ static void change_params(struct slgt_info *info)
+ 	unsigned cflag;
+ 	int bits_per_char;
+ 
+-	if (!info->tty || !info->tty->termios)
++	if (!info->port.tty || !info->port.tty->termios)
+ 		return;
+ 	DBGINFO(("%s change_params\n", info->device_name));
+ 
+-	cflag = info->tty->termios->c_cflag;
++	cflag = info->port.tty->termios->c_cflag;
+ 
+ 	/* if B0 rate (hangup) specified then negate DTR and RTS */
+ 	/* otherwise assert DTR and RTS */
+@@ -2561,7 +2555,7 @@ static void change_params(struct slgt_info *info)
+ 	bits_per_char = info->params.data_bits +
+ 			info->params.stop_bits + 1;
+ 
+-	info->params.data_rate = tty_get_baud_rate(info->tty);
++	info->params.data_rate = tty_get_baud_rate(info->port.tty);
+ 
+ 	if (info->params.data_rate) {
+ 		info->timeout = (32*HZ*bits_per_char) /
+@@ -2570,30 +2564,30 @@ static void change_params(struct slgt_info *info)
+ 	info->timeout += HZ/50;		/* Add .02 seconds of slop */
+ 
+ 	if (cflag & CRTSCTS)
+-		info->flags |= ASYNC_CTS_FLOW;
++		info->port.flags |= ASYNC_CTS_FLOW;
+ 	else
+-		info->flags &= ~ASYNC_CTS_FLOW;
++		info->port.flags &= ~ASYNC_CTS_FLOW;
+ 
+ 	if (cflag & CLOCAL)
+-		info->flags &= ~ASYNC_CHECK_CD;
++		info->port.flags &= ~ASYNC_CHECK_CD;
+ 	else
+-		info->flags |= ASYNC_CHECK_CD;
++		info->port.flags |= ASYNC_CHECK_CD;
+ 
+ 	/* process tty input control flags */
+ 
+ 	info->read_status_mask = IRQ_RXOVER;
+-	if (I_INPCK(info->tty))
++	if (I_INPCK(info->port.tty))
+ 		info->read_status_mask |= MASK_PARITY | MASK_FRAMING;
+- 	if (I_BRKINT(info->tty) || I_PARMRK(info->tty))
++ 	if (I_BRKINT(info->port.tty) || I_PARMRK(info->port.tty))
+  		info->read_status_mask |= MASK_BREAK;
+-	if (I_IGNPAR(info->tty))
++	if (I_IGNPAR(info->port.tty))
+ 		info->ignore_status_mask |= MASK_PARITY | MASK_FRAMING;
+-	if (I_IGNBRK(info->tty)) {
++	if (I_IGNBRK(info->port.tty)) {
+ 		info->ignore_status_mask |= MASK_BREAK;
+ 		/* If ignoring parity and break indicators, ignore
+ 		 * overruns too.  (For real raw support).
+ 		 */
+-		if (I_IGNPAR(info->tty))
++		if (I_IGNPAR(info->port.tty))
+ 			info->ignore_status_mask |= MASK_OVERRUN;
+ 	}
+ 
+@@ -3144,7 +3138,7 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 
+ 	if (filp->f_flags & O_NONBLOCK || tty->flags & (1 << TTY_IO_ERROR)){
+ 		/* nonblock mode is set or port is not enabled */
+-		info->flags |= ASYNC_NORMAL_ACTIVE;
++		info->port.flags |= ASYNC_NORMAL_ACTIVE;
+ 		return 0;
+ 	}
+ 
+@@ -3153,21 +3147,21 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 
+ 	/* Wait for carrier detect and the line to become
+ 	 * free (i.e., not in use by the callout).  While we are in
+-	 * this loop, info->count is dropped by one, so that
++	 * this loop, info->port.count is dropped by one, so that
+ 	 * close() knows when to free things.  We restore it upon
+ 	 * exit, either normal or abnormal.
+ 	 */
+ 
+ 	retval = 0;
+-	add_wait_queue(&info->open_wait, &wait);
++	add_wait_queue(&info->port.open_wait, &wait);
+ 
+ 	spin_lock_irqsave(&info->lock, flags);
+ 	if (!tty_hung_up_p(filp)) {
+ 		extra_count = true;
+-		info->count--;
++		info->port.count--;
+ 	}
+ 	spin_unlock_irqrestore(&info->lock, flags);
+-	info->blocked_open++;
++	info->port.blocked_open++;
+ 
+ 	while (1) {
+ 		if ((tty->termios->c_cflag & CBAUD)) {
+@@ -3179,8 +3173,8 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 
+ 		set_current_state(TASK_INTERRUPTIBLE);
+ 
+-		if (tty_hung_up_p(filp) || !(info->flags & ASYNC_INITIALIZED)){
+-			retval = (info->flags & ASYNC_HUP_NOTIFY) ?
++		if (tty_hung_up_p(filp) || !(info->port.flags & ASYNC_INITIALIZED)){
++			retval = (info->port.flags & ASYNC_HUP_NOTIFY) ?
+ 					-EAGAIN : -ERESTARTSYS;
+ 			break;
+ 		}
+@@ -3189,7 +3183,7 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 	 	get_signals(info);
+ 		spin_unlock_irqrestore(&info->lock,flags);
+ 
+- 		if (!(info->flags & ASYNC_CLOSING) &&
++ 		if (!(info->port.flags & ASYNC_CLOSING) &&
+  		    (do_clocal || (info->signals & SerialSignal_DCD)) ) {
+  			break;
+ 		}
+@@ -3204,14 +3198,14 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 	}
+ 
+ 	set_current_state(TASK_RUNNING);
+-	remove_wait_queue(&info->open_wait, &wait);
++	remove_wait_queue(&info->port.open_wait, &wait);
+ 
+ 	if (extra_count)
+-		info->count++;
+-	info->blocked_open--;
++		info->port.count++;
++	info->port.blocked_open--;
+ 
+ 	if (!retval)
+-		info->flags |= ASYNC_NORMAL_ACTIVE;
++		info->port.flags |= ASYNC_NORMAL_ACTIVE;
+ 
+ 	DBGINFO(("%s block_til_ready ready, rc=%d\n", tty->driver->name, retval));
+ 	return retval;
+@@ -3460,8 +3454,7 @@ static struct slgt_info *alloc_dev(int adapter_num, int port_num, struct pci_dev
+ 		info->raw_rx_size = DMABUFSIZE;
+ 		info->close_delay = 5*HZ/10;
+ 		info->closing_wait = 30*HZ;
+-		init_waitqueue_head(&info->open_wait);
+-		init_waitqueue_head(&info->close_wait);
++		tty_port_init(&info->port);
+ 		init_waitqueue_head(&info->status_event_wait_q);
+ 		init_waitqueue_head(&info->event_wait_q);
+ 		spin_lock_init(&info->netlock);
+@@ -4505,7 +4498,7 @@ static bool rx_get_frame(struct slgt_info *info)
+ 	unsigned short status;
+ 	unsigned int framesize = 0;
+ 	unsigned long flags;
+-	struct tty_struct *tty = info->tty;
++	struct tty_struct *tty = info->port.tty;
+ 	unsigned char addr_field = 0xff;
+ 	unsigned int crc_size = 0;
+ 
+@@ -4656,7 +4649,7 @@ static bool rx_get_buf(struct slgt_info *info)
+ 	DBGDATA(info, info->rbufs[i].buf, count, "rx");
+ 	DBGINFO(("rx_get_buf size=%d\n", count));
+ 	if (count)
+-		ldisc_receive_buf(info->tty, info->rbufs[i].buf,
++		ldisc_receive_buf(info->port.tty, info->rbufs[i].buf,
+ 				  info->flag_buf, count);
+ 	free_rbufs(info, i, i);
+ 	return true;
+@@ -4765,11 +4758,11 @@ static int irq_test(struct slgt_info *info)
+ {
+ 	unsigned long timeout;
+ 	unsigned long flags;
+-	struct tty_struct *oldtty = info->tty;
++	struct tty_struct *oldtty = info->port.tty;
+ 	u32 speed = info->params.data_rate;
+ 
+ 	info->params.data_rate = 921600;
+-	info->tty = NULL;
++	info->port.tty = NULL;
+ 
+ 	spin_lock_irqsave(&info->lock, flags);
+ 	async_mode(info);
+@@ -4797,7 +4790,7 @@ static int irq_test(struct slgt_info *info)
+ 	spin_unlock_irqrestore(&info->lock,flags);
+ 
+ 	info->params.data_rate = speed;
+-	info->tty = oldtty;
++	info->port.tty = oldtty;
+ 
+ 	info->init_error = info->irq_occurred ? 0 : DiagStatus_IrqFailure;
+ 	return info->irq_occurred ? 0 : -ENODEV;
+@@ -4837,7 +4830,7 @@ static int loopback_test(struct slgt_info *info)
+ 	int rc = -ENODEV;
+ 	unsigned long flags;
+ 
+-	struct tty_struct *oldtty = info->tty;
++	struct tty_struct *oldtty = info->port.tty;
+ 	MGSL_PARAMS params;
+ 
+ 	memcpy(&params, &info->params, sizeof(params));
+@@ -4845,7 +4838,7 @@ static int loopback_test(struct slgt_info *info)
+ 	info->params.mode = MGSL_MODE_ASYNC;
+ 	info->params.data_rate = 921600;
+ 	info->params.loopback = 1;
+-	info->tty = NULL;
++	info->port.tty = NULL;
+ 
+ 	/* build and send transmit frame */
+ 	for (count = 0; count < TESTFRAMESIZE; ++count)
+@@ -4883,7 +4876,7 @@ static int loopback_test(struct slgt_info *info)
+ 	spin_unlock_irqrestore(&info->lock,flags);
+ 
+ 	memcpy(&info->params, &params, sizeof(info->params));
+-	info->tty = oldtty;
++	info->port.tty = oldtty;
+ 
+ 	info->init_error = rc ? DiagStatus_DmaFailure : 0;
+ 	return rc;
+diff --git a/drivers/char/synclinkmp.c b/drivers/char/synclinkmp.c
+index 5341b5a..5b5b292 100644
+--- a/drivers/char/synclinkmp.c
++++ b/drivers/char/synclinkmp.c
+@@ -151,18 +151,15 @@ struct	_input_signal_events {
+ typedef struct _synclinkmp_info {
+ 	void *if_ptr;				/* General purpose pointer (used by SPPP) */
+ 	int			magic;
+-	int			flags;
+-	int			count;		/* count of opens */
++	struct tty_port		port;
+ 	int			line;
+ 	unsigned short		close_delay;
+ 	unsigned short		closing_wait;	/* time to wait before closing */
+ 
+ 	struct mgsl_icount	icount;
+ 
+-	struct tty_struct 	*tty;
+ 	int			timeout;
+ 	int			x_char;		/* xon/xoff character */
+-	int			blocked_open;	/* # of blocked opens */
+ 	u16			read_status_mask1;  /* break detection (SR1 indications) */
+ 	u16			read_status_mask2;  /* parity/framing/overun (SR2 indications) */
+ 	unsigned char 		ignore_status_mask1;  /* break detection (SR1 indications) */
+@@ -172,9 +169,6 @@ typedef struct _synclinkmp_info {
+ 	int			tx_get;
+ 	int			tx_count;
+ 
+-	wait_queue_head_t	open_wait;
+-	wait_queue_head_t	close_wait;
+-
+ 	wait_queue_head_t	status_event_wait_q;
+ 	wait_queue_head_t	event_wait_q;
+ 	struct timer_list	tx_timer;	/* HDLC transmit timeout timer */
+@@ -462,13 +456,13 @@ static int synclinkmp_device_count = 0;
+  * .text section address and breakpoint on module load.
+  * This is useful for use with gdb and add-symbol-file command.
+  */
+-static int break_on_load=0;
++static int break_on_load = 0;
+ 
+ /*
+  * Driver major number, defaults to zero to get auto
+  * assigned major number. May be forced as module parameter.
+  */
+-static int ttymajor=0;
++static int ttymajor = 0;
+ 
+ /*
+  * Array of user specified options for ISA adapters.
+@@ -747,22 +741,22 @@ static int open(struct tty_struct *tty, struct file *filp)
+ 	}
+ 
+ 	tty->driver_data = info;
+-	info->tty = tty;
++	info->port.tty = tty;
+ 
+ 	if (debug_level >= DEBUG_LEVEL_INFO)
+ 		printk("%s(%d):%s open(), old ref count = %d\n",
+-			 __FILE__,__LINE__,tty->driver->name, info->count);
++			 __FILE__,__LINE__,tty->driver->name, info->port.count);
+ 
+ 	/* If port is closing, signal caller to try again */
+-	if (tty_hung_up_p(filp) || info->flags & ASYNC_CLOSING){
+-		if (info->flags & ASYNC_CLOSING)
+-			interruptible_sleep_on(&info->close_wait);
+-		retval = ((info->flags & ASYNC_HUP_NOTIFY) ?
++	if (tty_hung_up_p(filp) || info->port.flags & ASYNC_CLOSING){
++		if (info->port.flags & ASYNC_CLOSING)
++			interruptible_sleep_on(&info->port.close_wait);
++		retval = ((info->port.flags & ASYNC_HUP_NOTIFY) ?
+ 			-EAGAIN : -ERESTARTSYS);
+ 		goto cleanup;
+ 	}
+ 
+-	info->tty->low_latency = (info->flags & ASYNC_LOW_LATENCY) ? 1 : 0;
++	info->port.tty->low_latency = (info->port.flags & ASYNC_LOW_LATENCY) ? 1 : 0;
+ 
+ 	spin_lock_irqsave(&info->netlock, flags);
+ 	if (info->netcount) {
+@@ -770,10 +764,10 @@ static int open(struct tty_struct *tty, struct file *filp)
+ 		spin_unlock_irqrestore(&info->netlock, flags);
+ 		goto cleanup;
+ 	}
+-	info->count++;
++	info->port.count++;
+ 	spin_unlock_irqrestore(&info->netlock, flags);
+ 
+-	if (info->count == 1) {
++	if (info->port.count == 1) {
+ 		/* 1st open on this device, init hardware */
+ 		retval = startup(info);
+ 		if (retval < 0)
+@@ -796,9 +790,9 @@ static int open(struct tty_struct *tty, struct file *filp)
+ cleanup:
+ 	if (retval) {
+ 		if (tty->count == 1)
+-			info->tty = NULL; /* tty layer will release tty struct */
+-		if(info->count)
+-			info->count--;
++			info->port.tty = NULL; /* tty layer will release tty struct */
++		if(info->port.count)
++			info->port.count--;
+ 	}
+ 
+ 	return retval;
+@@ -816,33 +810,33 @@ static void close(struct tty_struct *tty, struct file *filp)
+ 
+ 	if (debug_level >= DEBUG_LEVEL_INFO)
+ 		printk("%s(%d):%s close() entry, count=%d\n",
+-			 __FILE__,__LINE__, info->device_name, info->count);
++			 __FILE__,__LINE__, info->device_name, info->port.count);
+ 
+-	if (!info->count)
++	if (!info->port.count)
+ 		return;
+ 
+ 	if (tty_hung_up_p(filp))
+ 		goto cleanup;
+ 
+-	if ((tty->count == 1) && (info->count != 1)) {
++	if ((tty->count == 1) && (info->port.count != 1)) {
+ 		/*
+ 		 * tty->count is 1 and the tty structure will be freed.
+-		 * info->count should be one in this case.
++		 * info->port.count should be one in this case.
+ 		 * if it's not, correct it so that the port is shutdown.
+ 		 */
+ 		printk("%s(%d):%s close: bad refcount; tty->count is 1, "
+-		       "info->count is %d\n",
+-			 __FILE__,__LINE__, info->device_name, info->count);
+-		info->count = 1;
++		       "info->port.count is %d\n",
++			 __FILE__,__LINE__, info->device_name, info->port.count);
++		info->port.count = 1;
+ 	}
+ 
+-	info->count--;
++	info->port.count--;
+ 
+ 	/* if at least one open remaining, leave hardware active */
+-	if (info->count)
++	if (info->port.count)
+ 		goto cleanup;
+ 
+-	info->flags |= ASYNC_CLOSING;
++	info->port.flags |= ASYNC_CLOSING;
+ 
+ 	/* set tty->closing to notify line discipline to
+ 	 * only process XON/XOFF characters. Only the N_TTY
+@@ -859,7 +853,7 @@ static void close(struct tty_struct *tty, struct file *filp)
+ 		tty_wait_until_sent(tty, info->closing_wait);
+ 	}
+ 
+- 	if (info->flags & ASYNC_INITIALIZED)
++ 	if (info->port.flags & ASYNC_INITIALIZED)
+  		wait_until_sent(tty, info->timeout);
+ 
+ 	flush_buffer(tty);
+@@ -869,23 +863,23 @@ static void close(struct tty_struct *tty, struct file *filp)
+ 	shutdown(info);
+ 
+ 	tty->closing = 0;
+-	info->tty = NULL;
++	info->port.tty = NULL;
+ 
+-	if (info->blocked_open) {
++	if (info->port.blocked_open) {
+ 		if (info->close_delay) {
+ 			msleep_interruptible(jiffies_to_msecs(info->close_delay));
+ 		}
+-		wake_up_interruptible(&info->open_wait);
++		wake_up_interruptible(&info->port.open_wait);
+ 	}
+ 
+-	info->flags &= ~(ASYNC_NORMAL_ACTIVE|ASYNC_CLOSING);
++	info->port.flags &= ~(ASYNC_NORMAL_ACTIVE|ASYNC_CLOSING);
+ 
+-	wake_up_interruptible(&info->close_wait);
++	wake_up_interruptible(&info->port.close_wait);
+ 
+ cleanup:
+ 	if (debug_level >= DEBUG_LEVEL_INFO)
+ 		printk("%s(%d):%s close() exit, count=%d\n", __FILE__,__LINE__,
+-			tty->driver->name, info->count);
++			tty->driver->name, info->port.count);
+ }
+ 
+ /* Called by tty_hangup() when a hangup is signaled.
+@@ -905,11 +899,11 @@ static void hangup(struct tty_struct *tty)
+ 	flush_buffer(tty);
+ 	shutdown(info);
+ 
+-	info->count = 0;
+-	info->flags &= ~ASYNC_NORMAL_ACTIVE;
+-	info->tty = NULL;
++	info->port.count = 0;
++	info->port.flags &= ~ASYNC_NORMAL_ACTIVE;
++	info->port.tty = NULL;
+ 
+-	wake_up_interruptible(&info->open_wait);
++	wake_up_interruptible(&info->port.open_wait);
+ }
+ 
+ /* Set new termios settings
+@@ -1123,7 +1117,7 @@ static void wait_until_sent(struct tty_struct *tty, int timeout)
+ 
+ 	lock_kernel();
+ 
+-	if (!(info->flags & ASYNC_INITIALIZED))
++	if (!(info->port.flags & ASYNC_INITIALIZED))
+ 		goto exit;
+ 
+ 	orig_jiffies = jiffies;
+@@ -1636,7 +1630,7 @@ static int hdlcdev_attach(struct net_device *dev, unsigned short encoding,
+ 	unsigned short new_crctype;
+ 
+ 	/* return error if TTY interface open */
+-	if (info->count)
++	if (info->port.count)
+ 		return -EBUSY;
+ 
+ 	switch (encoding)
+@@ -1733,7 +1727,7 @@ static int hdlcdev_open(struct net_device *dev)
+ 
+ 	/* arbitrate between network and tty opens */
+ 	spin_lock_irqsave(&info->netlock, flags);
+-	if (info->count != 0 || info->netcount != 0) {
++	if (info->port.count != 0 || info->netcount != 0) {
+ 		printk(KERN_WARNING "%s: hdlc_open returning busy\n", dev->name);
+ 		spin_unlock_irqrestore(&info->netlock, flags);
+ 		return -EBUSY;
+@@ -1819,7 +1813,7 @@ static int hdlcdev_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
+ 		printk("%s:hdlcdev_ioctl(%s)\n",__FILE__,dev->name);
+ 
+ 	/* return error if TTY interface open */
+-	if (info->count)
++	if (info->port.count)
+ 		return -EBUSY;
+ 
+ 	if (cmd != SIOCWANDEV)
+@@ -2128,7 +2122,7 @@ static void bh_receive(SLMP_INFO *info)
+ 
+ static void bh_transmit(SLMP_INFO *info)
+ {
+-	struct tty_struct *tty = info->tty;
++	struct tty_struct *tty = info->port.tty;
+ 
+ 	if ( debug_level >= DEBUG_LEVEL_BH )
+ 		printk( "%s(%d):%s bh_transmit() entry\n",
+@@ -2178,7 +2172,7 @@ static void isr_timer(SLMP_INFO * info)
+ 
+ static void isr_rxint(SLMP_INFO * info)
+ {
+- 	struct tty_struct *tty = info->tty;
++ 	struct tty_struct *tty = info->port.tty;
+  	struct	mgsl_icount *icount = &info->icount;
+ 	unsigned char status = read_reg(info, SR1) & info->ie1_value & (FLGD + IDLD + CDCD + BRKD);
+ 	unsigned char status2 = read_reg(info, SR2) & info->ie2_value & OVRN;
+@@ -2205,7 +2199,7 @@ static void isr_rxint(SLMP_INFO * info)
+ 				if (!(status & info->ignore_status_mask1)) {
+ 					if (info->read_status_mask1 & BRKD) {
+ 						tty_insert_flip_char(tty, 0, TTY_BREAK);
+-						if (info->flags & ASYNC_SAK)
++						if (info->port.flags & ASYNC_SAK)
+ 							do_SAK(tty);
+ 					}
+ 				}
+@@ -2239,7 +2233,7 @@ static void isr_rxrdy(SLMP_INFO * info)
+ {
+ 	u16 status;
+ 	unsigned char DataByte;
+- 	struct tty_struct *tty = info->tty;
++ 	struct tty_struct *tty = info->port.tty;
+  	struct	mgsl_icount *icount = &info->icount;
+ 
+ 	if ( debug_level >= DEBUG_LEVEL_ISR )
+@@ -2352,7 +2346,7 @@ static void isr_txeom(SLMP_INFO * info, unsigned char status)
+ 		else
+ #endif
+ 		{
+-			if (info->tty && (info->tty->stopped || info->tty->hw_stopped)) {
++			if (info->port.tty && (info->port.tty->stopped || info->port.tty->hw_stopped)) {
+ 				tx_stop(info);
+ 				return;
+ 			}
+@@ -2407,7 +2401,7 @@ static void isr_txrdy(SLMP_INFO * info)
+ 		return;
+ 	}
+ 
+-	if (info->tty && (info->tty->stopped || info->tty->hw_stopped)) {
++	if (info->port.tty && (info->port.tty->stopped || info->port.tty->hw_stopped)) {
+ 		tx_stop(info);
+ 		return;
+ 	}
+@@ -2554,29 +2548,29 @@ static void isr_io_pin( SLMP_INFO *info, u16 status )
+ 		wake_up_interruptible(&info->status_event_wait_q);
+ 		wake_up_interruptible(&info->event_wait_q);
+ 
+-		if ( (info->flags & ASYNC_CHECK_CD) &&
++		if ( (info->port.flags & ASYNC_CHECK_CD) &&
+ 		     (status & MISCSTATUS_DCD_LATCHED) ) {
+ 			if ( debug_level >= DEBUG_LEVEL_ISR )
+ 				printk("%s CD now %s...", info->device_name,
+ 				       (status & SerialSignal_DCD) ? "on" : "off");
+ 			if (status & SerialSignal_DCD)
+-				wake_up_interruptible(&info->open_wait);
++				wake_up_interruptible(&info->port.open_wait);
+ 			else {
+ 				if ( debug_level >= DEBUG_LEVEL_ISR )
+ 					printk("doing serial hangup...");
+-				if (info->tty)
+-					tty_hangup(info->tty);
++				if (info->port.tty)
++					tty_hangup(info->port.tty);
+ 			}
+ 		}
+ 
+-		if ( (info->flags & ASYNC_CTS_FLOW) &&
++		if ( (info->port.flags & ASYNC_CTS_FLOW) &&
+ 		     (status & MISCSTATUS_CTS_LATCHED) ) {
+-			if ( info->tty ) {
+-				if (info->tty->hw_stopped) {
++			if ( info->port.tty ) {
++				if (info->port.tty->hw_stopped) {
+ 					if (status & SerialSignal_CTS) {
+ 						if ( debug_level >= DEBUG_LEVEL_ISR )
+ 							printk("CTS tx start...");
+-			 			info->tty->hw_stopped = 0;
++			 			info->port.tty->hw_stopped = 0;
+ 						tx_start(info);
+ 						info->pending_bh |= BH_TRANSMIT;
+ 						return;
+@@ -2585,7 +2579,7 @@ static void isr_io_pin( SLMP_INFO *info, u16 status )
+ 					if (!(status & SerialSignal_CTS)) {
+ 						if ( debug_level >= DEBUG_LEVEL_ISR )
+ 							printk("CTS tx stop...");
+-			 			info->tty->hw_stopped = 1;
++			 			info->port.tty->hw_stopped = 1;
+ 						tx_stop(info);
+ 					}
+ 				}
+@@ -2701,7 +2695,7 @@ static irqreturn_t synclinkmp_interrupt(int dummy, void *dev_id)
+ 		 * do not request bottom half processing if the
+ 		 * device is not open in a normal mode.
+ 		 */
+-		if ( port && (port->count || port->netcount) &&
++		if ( port && (port->port.count || port->netcount) &&
+ 		     port->pending_bh && !port->bh_running &&
+ 		     !port->bh_requested ) {
+ 			if ( debug_level >= DEBUG_LEVEL_ISR )
+@@ -2727,7 +2721,7 @@ static int startup(SLMP_INFO * info)
+ 	if ( debug_level >= DEBUG_LEVEL_INFO )
+ 		printk("%s(%d):%s tx_releaseup()\n",__FILE__,__LINE__,info->device_name);
+ 
+-	if (info->flags & ASYNC_INITIALIZED)
++	if (info->port.flags & ASYNC_INITIALIZED)
+ 		return 0;
+ 
+ 	if (!info->tx_buf) {
+@@ -2750,10 +2744,10 @@ static int startup(SLMP_INFO * info)
+ 
+ 	mod_timer(&info->status_timer, jiffies + msecs_to_jiffies(10));
+ 
+-	if (info->tty)
+-		clear_bit(TTY_IO_ERROR, &info->tty->flags);
++	if (info->port.tty)
++		clear_bit(TTY_IO_ERROR, &info->port.tty->flags);
+ 
+-	info->flags |= ASYNC_INITIALIZED;
++	info->port.flags |= ASYNC_INITIALIZED;
+ 
+ 	return 0;
+ }
+@@ -2764,7 +2758,7 @@ static void shutdown(SLMP_INFO * info)
+ {
+ 	unsigned long flags;
+ 
+-	if (!(info->flags & ASYNC_INITIALIZED))
++	if (!(info->port.flags & ASYNC_INITIALIZED))
+ 		return;
+ 
+ 	if (debug_level >= DEBUG_LEVEL_INFO)
+@@ -2786,17 +2780,17 @@ static void shutdown(SLMP_INFO * info)
+ 
+ 	reset_port(info);
+ 
+- 	if (!info->tty || info->tty->termios->c_cflag & HUPCL) {
++ 	if (!info->port.tty || info->port.tty->termios->c_cflag & HUPCL) {
+  		info->serial_signals &= ~(SerialSignal_DTR + SerialSignal_RTS);
+ 		set_signals(info);
+ 	}
+ 
+ 	spin_unlock_irqrestore(&info->lock,flags);
+ 
+-	if (info->tty)
+-		set_bit(TTY_IO_ERROR, &info->tty->flags);
++	if (info->port.tty)
++		set_bit(TTY_IO_ERROR, &info->port.tty->flags);
+ 
+-	info->flags &= ~ASYNC_INITIALIZED;
++	info->port.flags &= ~ASYNC_INITIALIZED;
+ }
+ 
+ static void program_hw(SLMP_INFO *info)
+@@ -2827,7 +2821,7 @@ static void program_hw(SLMP_INFO *info)
+ 
+ 	get_signals(info);
+ 
+-	if (info->netcount || (info->tty && info->tty->termios->c_cflag & CREAD) )
++	if (info->netcount || (info->port.tty && info->port.tty->termios->c_cflag & CREAD) )
+ 		rx_start(info);
+ 
+ 	spin_unlock_irqrestore(&info->lock,flags);
+@@ -2840,14 +2834,14 @@ static void change_params(SLMP_INFO *info)
+ 	unsigned cflag;
+ 	int bits_per_char;
+ 
+-	if (!info->tty || !info->tty->termios)
++	if (!info->port.tty || !info->port.tty->termios)
+ 		return;
+ 
+ 	if (debug_level >= DEBUG_LEVEL_INFO)
+ 		printk("%s(%d):%s change_params()\n",
+ 			 __FILE__,__LINE__, info->device_name );
+ 
+-	cflag = info->tty->termios->c_cflag;
++	cflag = info->port.tty->termios->c_cflag;
+ 
+ 	/* if B0 rate (hangup) specified then negate DTR and RTS */
+ 	/* otherwise assert DTR and RTS */
+@@ -2895,7 +2889,7 @@ static void change_params(SLMP_INFO *info)
+ 	 * current data rate.
+ 	 */
+ 	if (info->params.data_rate <= 460800) {
+-		info->params.data_rate = tty_get_baud_rate(info->tty);
++		info->params.data_rate = tty_get_baud_rate(info->port.tty);
+ 	}
+ 
+ 	if ( info->params.data_rate ) {
+@@ -2905,30 +2899,30 @@ static void change_params(SLMP_INFO *info)
+ 	info->timeout += HZ/50;		/* Add .02 seconds of slop */
+ 
+ 	if (cflag & CRTSCTS)
+-		info->flags |= ASYNC_CTS_FLOW;
++		info->port.flags |= ASYNC_CTS_FLOW;
+ 	else
+-		info->flags &= ~ASYNC_CTS_FLOW;
++		info->port.flags &= ~ASYNC_CTS_FLOW;
+ 
+ 	if (cflag & CLOCAL)
+-		info->flags &= ~ASYNC_CHECK_CD;
++		info->port.flags &= ~ASYNC_CHECK_CD;
+ 	else
+-		info->flags |= ASYNC_CHECK_CD;
++		info->port.flags |= ASYNC_CHECK_CD;
+ 
+ 	/* process tty input control flags */
+ 
+ 	info->read_status_mask2 = OVRN;
+-	if (I_INPCK(info->tty))
++	if (I_INPCK(info->port.tty))
+ 		info->read_status_mask2 |= PE | FRME;
+- 	if (I_BRKINT(info->tty) || I_PARMRK(info->tty))
++ 	if (I_BRKINT(info->port.tty) || I_PARMRK(info->port.tty))
+  		info->read_status_mask1 |= BRKD;
+-	if (I_IGNPAR(info->tty))
++	if (I_IGNPAR(info->port.tty))
+ 		info->ignore_status_mask2 |= PE | FRME;
+-	if (I_IGNBRK(info->tty)) {
++	if (I_IGNBRK(info->port.tty)) {
+ 		info->ignore_status_mask1 |= BRKD;
+ 		/* If ignoring parity and break indicators, ignore
+ 		 * overruns too.  (For real raw support).
+ 		 */
+-		if (I_IGNPAR(info->tty))
++		if (I_IGNPAR(info->port.tty))
+ 			info->ignore_status_mask2 |= OVRN;
+ 	}
+ 
+@@ -3348,7 +3342,7 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 	if (filp->f_flags & O_NONBLOCK || tty->flags & (1 << TTY_IO_ERROR)){
+ 		/* nonblock mode is set or port is not enabled */
+ 		/* just verify that callout device is not active */
+-		info->flags |= ASYNC_NORMAL_ACTIVE;
++		info->port.flags |= ASYNC_NORMAL_ACTIVE;
+ 		return 0;
+ 	}
+ 
+@@ -3357,25 +3351,25 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 
+ 	/* Wait for carrier detect and the line to become
+ 	 * free (i.e., not in use by the callout).  While we are in
+-	 * this loop, info->count is dropped by one, so that
++	 * this loop, info->port.count is dropped by one, so that
+ 	 * close() knows when to free things.  We restore it upon
+ 	 * exit, either normal or abnormal.
+ 	 */
+ 
+ 	retval = 0;
+-	add_wait_queue(&info->open_wait, &wait);
++	add_wait_queue(&info->port.open_wait, &wait);
+ 
+ 	if (debug_level >= DEBUG_LEVEL_INFO)
+ 		printk("%s(%d):%s block_til_ready() before block, count=%d\n",
+-			 __FILE__,__LINE__, tty->driver->name, info->count );
++			 __FILE__,__LINE__, tty->driver->name, info->port.count );
+ 
+ 	spin_lock_irqsave(&info->lock, flags);
+ 	if (!tty_hung_up_p(filp)) {
+ 		extra_count = true;
+-		info->count--;
++		info->port.count--;
+ 	}
+ 	spin_unlock_irqrestore(&info->lock, flags);
+-	info->blocked_open++;
++	info->port.blocked_open++;
+ 
+ 	while (1) {
+ 		if ((tty->termios->c_cflag & CBAUD)) {
+@@ -3387,8 +3381,8 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 
+ 		set_current_state(TASK_INTERRUPTIBLE);
+ 
+-		if (tty_hung_up_p(filp) || !(info->flags & ASYNC_INITIALIZED)){
+-			retval = (info->flags & ASYNC_HUP_NOTIFY) ?
++		if (tty_hung_up_p(filp) || !(info->port.flags & ASYNC_INITIALIZED)){
++			retval = (info->port.flags & ASYNC_HUP_NOTIFY) ?
+ 					-EAGAIN : -ERESTARTSYS;
+ 			break;
+ 		}
+@@ -3397,7 +3391,7 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 	 	get_signals(info);
+ 		spin_unlock_irqrestore(&info->lock,flags);
+ 
+- 		if (!(info->flags & ASYNC_CLOSING) &&
++ 		if (!(info->port.flags & ASYNC_CLOSING) &&
+  		    (do_clocal || (info->serial_signals & SerialSignal_DCD)) ) {
+  			break;
+ 		}
+@@ -3409,24 +3403,24 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 
+ 		if (debug_level >= DEBUG_LEVEL_INFO)
+ 			printk("%s(%d):%s block_til_ready() count=%d\n",
+-				 __FILE__,__LINE__, tty->driver->name, info->count );
++				 __FILE__,__LINE__, tty->driver->name, info->port.count );
+ 
+ 		schedule();
+ 	}
+ 
+ 	set_current_state(TASK_RUNNING);
+-	remove_wait_queue(&info->open_wait, &wait);
++	remove_wait_queue(&info->port.open_wait, &wait);
+ 
+ 	if (extra_count)
+-		info->count++;
+-	info->blocked_open--;
++		info->port.count++;
++	info->port.blocked_open--;
+ 
+ 	if (debug_level >= DEBUG_LEVEL_INFO)
+ 		printk("%s(%d):%s block_til_ready() after, count=%d\n",
+-			 __FILE__,__LINE__, tty->driver->name, info->count );
++			 __FILE__,__LINE__, tty->driver->name, info->port.count );
+ 
+ 	if (!retval)
+-		info->flags |= ASYNC_NORMAL_ACTIVE;
++		info->port.flags |= ASYNC_NORMAL_ACTIVE;
+ 
+ 	return retval;
+ }
+@@ -3813,8 +3807,7 @@ static SLMP_INFO *alloc_dev(int adapter_num, int port_num, struct pci_dev *pdev)
+ 		info->max_frame_size = 4096;
+ 		info->close_delay = 5*HZ/10;
+ 		info->closing_wait = 30*HZ;
+-		init_waitqueue_head(&info->open_wait);
+-		init_waitqueue_head(&info->close_wait);
++		tty_port_init(&info->port);
+ 		init_waitqueue_head(&info->status_event_wait_q);
+ 		init_waitqueue_head(&info->event_wait_q);
+ 		spin_lock_init(&info->netlock);
+@@ -4885,7 +4878,7 @@ static bool rx_get_frame(SLMP_INFO *info)
+ 	unsigned int framesize = 0;
+ 	bool ReturnCode = false;
+ 	unsigned long flags;
+-	struct tty_struct *tty = info->tty;
++	struct tty_struct *tty = info->port.tty;
+ 	unsigned char addr_field = 0xff;
+    	SCADESC *desc;
+ 	SCADESC_EX *desc_ex;
+@@ -5293,11 +5286,11 @@ static bool loopback_test(SLMP_INFO *info)
+ 	bool rc = false;
+ 	unsigned long flags;
+ 
+-	struct tty_struct *oldtty = info->tty;
++	struct tty_struct *oldtty = info->port.tty;
+ 	u32 speed = info->params.clock_speed;
+ 
+ 	info->params.clock_speed = 3686400;
+-	info->tty = NULL;
++	info->port.tty = NULL;
+ 
+ 	/* assume failure */
+ 	info->init_error = DiagStatus_DmaFailure;
+@@ -5341,7 +5334,7 @@ static bool loopback_test(SLMP_INFO *info)
+ 	spin_unlock_irqrestore(&info->lock,flags);
+ 
+ 	info->params.clock_speed = speed;
+-	info->tty = oldtty;
++	info->port.tty = oldtty;
+ 
+ 	return rc;
+ }
 
