@@ -1,101 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757288AbYFTNgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757531AbYFTNhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757288AbYFTNgm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 09:36:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbYFTNge
+	id S1757531AbYFTNhz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 09:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbYFTNhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 09:36:34 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37332 "EHLO mx3.mail.elte.hu"
+	Fri, 20 Jun 2008 09:37:48 -0400
+Received: from mail.suse.de ([195.135.220.2]:56779 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752638AbYFTNgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 09:36:33 -0400
-Date: Fri, 20 Jun 2008 15:36:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/4] x86: unify asm-x86/fixmap*.h
-Message-ID: <20080620133618.GA27964@elte.hu>
-References: <4858056D.7000500@goop.org> <20080620131041.GA19740@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080620131041.GA19740@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752893AbYFTNhr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 09:37:47 -0400
+From: Bernhard Walle <bwalle@suse.de>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, yhlu.kernel@gmail.com,
+       Bernhard Walle <bwalle@suse.de>
+Subject: [PATCH] Unify crashkernel reservation for 32 and 64 bit
+Date: Fri, 20 Jun 2008 15:38:22 +0200
+Message-Id: <1213969102-17400-1-git-send-email-bwalle@suse.de>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch moves the reserve_crashkernel() to setup.c and removes the
+architecture-specific version. Both versions were more or less the same.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
 
-> > Almost everything aside from the actual fixmap slot definitions is 
-> > common, so move it all into the common fixmap.h header.
-> 
-> nice patches! I have created a new -tip topic for them: 
-> tip/x86/fixmap, and have added them there. (This topic will also be in 
-> auto-x86-next on the next integration run.)
+Signed-off-by: Bernhard Walle <bwalle@suse.de>
+---
+ arch/x86/kernel/setup.c    |   61 ++++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/setup_32.c |   53 --------------------------------------
+ arch/x86/kernel/setup_64.c |   40 ----------------------------
+ include/asm-x86/setup.h    |    3 ++
+ 4 files changed, 64 insertions(+), 93 deletions(-)
 
-found a build failure with:
-
-  http://redhat.com/~mingo/misc/config-Fri_Jun_20_15_27_37_CEST_2008.bad
-
-arch/x86/mm/pgtable.c:280: warning: ‘enum fixed_addresses' declared inside parameter list
-arch/x86/mm/pgtable.c:280: warning: its scope is only this definition or declaration, which is probably not what you want
-arch/x86/mm/pgtable.c:280: error: parameter 1 (‘idx') has incomplete type
-arch/x86/mm/pgtable.c: In function ‘__native_set_fixmap':
-
-due to:
-
-7c7e6e07e2a7c0d2d96389f4f0540e44a80ecdaa is first bad commit
-commit 7c7e6e07e2a7c0d2d96389f4f0540e44a80ecdaa
-Author: Jeremy Fitzhardinge <jeremy@goop.org>
-Date:   Tue Jun 17 11:41:54 2008 -0700
-
-    x86: unify __set_fixmap
-
-    In both cases, I went with the 32-bit behaviour.
-
-    Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-fixed via the patch below.
-
-	Ingo
-
--------->
-commit b7429b1637b78fb272d42851ba8edd97e2ab08b1
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Fri Jun 20 15:34:46 2008 +0200
-
-    x86: unify __set_fixmap, fix
-    
-    fix build failure:
-    
-     arch/x86/mm/pgtable.c:280: warning: ‘enum fixed_addresses’ declared inside parameter list
-     arch/x86/mm/pgtable.c:280: warning: its scope is only this definition or declaration, which is probably not what you want
-     arch/x86/mm/pgtable.c:280: error: parameter 1 (‘idx’) has incomplete type
-    
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
-index 66535c1..45b99ac 100644
---- a/arch/x86/mm/pgtable.c
-+++ b/arch/x86/mm/pgtable.c
-@@ -2,6 +2,7 @@
- #include <asm/pgalloc.h>
- #include <asm/pgtable.h>
- #include <asm/tlb.h>
-+#include <asm/fixmap.h>
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 542ff3c..915aa13 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -3,6 +3,7 @@
+ #include <linux/init.h>
+ #include <linux/bootmem.h>
+ #include <linux/percpu.h>
++#include <linux/kexec.h>
+ #include <asm/smp.h>
+ #include <asm/percpu.h>
+ #include <asm/sections.h>
+@@ -11,6 +12,7 @@
+ #include <asm/topology.h>
+ #include <asm/mpspec.h>
+ #include <asm/apicdef.h>
++#include <asm/highmem.h>
  
- pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
- {
+ #ifdef CONFIG_X86_LOCAL_APIC
+ unsigned int num_processors;
+@@ -404,3 +406,62 @@ EXPORT_SYMBOL(node_to_cpumask);
+ #endif /* CONFIG_DEBUG_PER_CPU_MAPS */
+ 
+ #endif /* X86_64_NUMA */
++
++
++/*
++ * --------- Crashkernel reservation ------------------------------
++ */
++
++static inline unsigned long long get_total_mem(void)
++{
++	unsigned long long total;
++
++	total = max_low_pfn - min_low_pfn;
++#ifdef CONFIG_HIGHMEM
++	total += highend_pfn - highstart_pfn;
++#endif
++
++	return total << PAGE_SHIFT;
++}
++
++#ifdef CONFIG_KEXEC
++void __init reserve_crashkernel(void)
++{
++	unsigned long long total_mem;
++	unsigned long long crash_size, crash_base;
++	int ret;
++
++	total_mem = get_total_mem();
++
++	ret = parse_crashkernel(boot_command_line, total_mem,
++			&crash_size, &crash_base);
++	if (ret == 0 && crash_size > 0) {
++		if (crash_base <= 0) {
++			printk(KERN_INFO "crashkernel reservation failed - "
++					"you have to specify a base address\n");
++			return;
++		}
++
++		if (reserve_bootmem_generic(crash_base, crash_size,
++					BOOTMEM_EXCLUSIVE) < 0) {
++			printk(KERN_INFO "crashkernel reservation failed - "
++					"memory is in use\n");
++			return;
++		}
++
++		printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
++				"for crashkernel (System RAM: %ldMB)\n",
++				(unsigned long)(crash_size >> 20),
++				(unsigned long)(crash_base >> 20),
++				(unsigned long)(total_mem >> 20));
++
++		crashk_res.start = crash_base;
++		crashk_res.end   = crash_base + crash_size - 1;
++		insert_resource(&iomem_resource, &crashk_res);
++	}
++}
++#else
++void __init reserve_crashkernel(void)
++{}
++#endif
++
+diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
+index 348dc8a..a00b71b 100644
+--- a/arch/x86/kernel/setup_32.c
++++ b/arch/x86/kernel/setup_32.c
+@@ -429,59 +429,6 @@ extern unsigned long __init setup_memory(void);
+ extern void zone_sizes_init(void);
+ #endif /* !CONFIG_NEED_MULTIPLE_NODES */
+ 
+-static inline unsigned long long get_total_mem(void)
+-{
+-	unsigned long long total;
+-
+-	total = max_low_pfn - min_low_pfn;
+-#ifdef CONFIG_HIGHMEM
+-	total += highend_pfn - highstart_pfn;
+-#endif
+-
+-	return total << PAGE_SHIFT;
+-}
+-
+-#ifdef CONFIG_KEXEC
+-static void __init reserve_crashkernel(void)
+-{
+-	unsigned long long total_mem;
+-	unsigned long long crash_size, crash_base;
+-	int ret;
+-
+-	total_mem = get_total_mem();
+-
+-	ret = parse_crashkernel(boot_command_line, total_mem,
+-			&crash_size, &crash_base);
+-	if (ret == 0 && crash_size > 0) {
+-		if (crash_base <= 0) {
+-			printk(KERN_INFO "crashkernel reservation failed - "
+-					"you have to specify a base address\n");
+-			return;
+-		}
+-
+-		if (reserve_bootmem_generic(crash_base, crash_size,
+-					BOOTMEM_EXCLUSIVE) < 0) {
+-			printk(KERN_INFO "crashkernel reservation failed - "
+-					"memory is in use\n");
+-			return;
+-		}
+-
+-		printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
+-				"for crashkernel (System RAM: %ldMB)\n",
+-				(unsigned long)(crash_size >> 20),
+-				(unsigned long)(crash_base >> 20),
+-				(unsigned long)(total_mem >> 20));
+-
+-		crashk_res.start = crash_base;
+-		crashk_res.end   = crash_base + crash_size - 1;
+-		insert_resource(&iomem_resource, &crashk_res);
+-	}
+-}
+-#else
+-static inline void __init reserve_crashkernel(void)
+-{}
+-#endif
+-
+ #ifdef CONFIG_BLK_DEV_INITRD
+ 
+ static bool do_relocate_initrd = false;
+diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
+index 6ad0fe4..076d61b 100644
+--- a/arch/x86/kernel/setup_64.c
++++ b/arch/x86/kernel/setup_64.c
+@@ -244,46 +244,6 @@ static inline void copy_edd(void)
+ }
+ #endif
+ 
+-#ifdef CONFIG_KEXEC
+-static void __init reserve_crashkernel(void)
+-{
+-	unsigned long long total_mem;
+-	unsigned long long crash_size, crash_base;
+-	int ret;
+-
+-	total_mem = ((unsigned long long)max_low_pfn - min_low_pfn) << PAGE_SHIFT;
+-
+-	ret = parse_crashkernel(boot_command_line, total_mem,
+-			&crash_size, &crash_base);
+-	if (ret == 0 && crash_size) {
+-		if (crash_base <= 0) {
+-			printk(KERN_INFO "crashkernel reservation failed - "
+-					"you have to specify a base address\n");
+-			return;
+-		}
+-
+-		if (reserve_bootmem_generic(crash_base, crash_size,
+-					BOOTMEM_EXCLUSIVE) < 0) {
+-			printk(KERN_INFO "crashkernel reservation failed - "
+-					"memory is in use\n");
+-			return;
+-		}
+-
+-		printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
+-				"for crashkernel (System RAM: %ldMB)\n",
+-				(unsigned long)(crash_size >> 20),
+-				(unsigned long)(crash_base >> 20),
+-				(unsigned long)(total_mem >> 20));
+-		crashk_res.start = crash_base;
+-		crashk_res.end   = crash_base + crash_size - 1;
+-		insert_resource(&iomem_resource, &crashk_res);
+-	}
+-}
+-#else
+-static inline void __init reserve_crashkernel(void)
+-{}
+-#endif
+-
+ /* Current gdt points %fs at the "master" per-cpu area: after this,
+  * it's on the real one. */
+ void switch_to_new_gdt(void)
+diff --git a/include/asm-x86/setup.h b/include/asm-x86/setup.h
+index e14b6e7..b434bdd 100644
+--- a/include/asm-x86/setup.h
++++ b/include/asm-x86/setup.h
+@@ -8,6 +8,9 @@
+ /* Interrupt control for vSMPowered x86_64 systems */
+ void vsmp_init(void);
+ 
++/* Crashkernel reservation */
++void reserve_crashkernel(void);
++
+ #ifndef CONFIG_PARAVIRT
+ #define paravirt_post_allocator_init()	do {} while (0)
+ #endif
+-- 
+1.5.4.5
+
