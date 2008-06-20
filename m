@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755052AbYFTMwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756149AbYFTMwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755052AbYFTMwQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 08:52:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbYFTMvz
+	id S1756149AbYFTMwa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 08:52:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbYFTMv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 08:51:55 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41140 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753189AbYFTMvy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 08:51:56 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:53734 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753143AbYFTMvy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 20 Jun 2008 08:51:54 -0400
-Date: Fri, 20 Jun 2008 14:51:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] xen: set max_pfn_mapped
-Message-ID: <20080620125140.GJ7439@elte.hu>
-References: <4856E12B.6040500@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4856E12B.6040500@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0210]
+From: Andre Haupt <andre@bitwigglers.org>
+To: linux-kernel@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, Andre Haupt <andre@bitwigglers.org>
+Subject: [PATCH 1/2] parport: remove superfluous local variable.
+Date: Fri, 20 Jun 2008 14:51:44 +0200
+Message-Id: <15ef717cf17bfbbcdd49599ed9c99cc655b610fa.1213965527.git.andre@bitwigglers.org>
+X-Mailer: git-send-email 1.5.5.GIT
+In-Reply-To: <cover.1213965527.git.andre@bitwigglers.org>
+References: <cover.1213965527.git.andre@bitwigglers.org>
+In-Reply-To: <cover.1213965527.git.andre@bitwigglers.org>
+References: <cover.1213965527.git.andre@bitwigglers.org>
+X-Provags-ID: V01U2FsdGVkX19Irh6Ffd+hQm112NFHFK/2I0lejjGEOrM27W1
+ aNlPHxPSwL5lb1ZblnuXSDlPEcYW5oQ6CfdNjJU3dSIkZxa77h
+ olpxaTthOT5ilrojgZQYfrhrPJajan0NWhWTqLPMZ8=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Signed-off-by: Andre Haupt <andre@bitwigglers.org>
+---
+ drivers/parport/ieee1284.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+diff --git a/drivers/parport/ieee1284.c b/drivers/parport/ieee1284.c
+index 0338b09..e970594 100644
+--- a/drivers/parport/ieee1284.c
++++ b/drivers/parport/ieee1284.c
+@@ -199,8 +199,6 @@ int parport_wait_peripheral(struct parport *port,
+ 	/* 40ms of slow polling. */
+ 	deadline = jiffies + msecs_to_jiffies(40);
+ 	while (time_before (jiffies, deadline)) {
+-		int ret;
+-
+ 		if (signal_pending (current))
+ 			return -EINTR;
+ 
+-- 
+1.5.5.GIT
 
-> We need to set max_pfn_mapped, so do so.  Xen guarantees that at least 
-> 512k is mapped beyond the end of the kernel image, so we can rely on 
-> that being present.
-
-applied all three patches to tip/x86/mm-remove-arch-get-ram-range (on 
-which it has dependency) - thanks Jeremy.
-
-	Ingo
