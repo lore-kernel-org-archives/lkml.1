@@ -1,113 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550AbYFTCvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbYFTCx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753550AbYFTCvR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Jun 2008 22:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbYFTCvL
+	id S1754112AbYFTCx3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Jun 2008 22:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbYFTCxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Jun 2008 22:51:11 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:39774 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751873AbYFTCvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Jun 2008 22:51:10 -0400
-Date: Thu, 19 Jun 2008 21:51:05 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: mingo@elte.hu, tglx@linutronix.de
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] - Fix stack overflow for large values of MAX_APICS
-Message-ID: <20080620025104.GA25571@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+	Thu, 19 Jun 2008 22:53:19 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37282 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751863AbYFTCxS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Jun 2008 22:53:18 -0400
+Message-ID: <485B1B8E.1060108@jp.fujitsu.com>
+Date: Fri, 20 Jun 2008 11:53:02 +0900
+From: Taku Izumi <izumi.taku@jp.fujitsu.com>
+User-Agent: Thunderbird 1.5.0.8 (Windows/20061025)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+CC: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>, auke-jan.h.kok@intel.com
+Subject: [PATCH 0/3] e1000,e1000e,igb: make ioport free for adapters that
+ need NO ioport resources
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-physid_mask_of_physid() causes a huge stack (12k) to be created if the
-number of APICS is large. Replace physid_mask_of_physid() with a
-new function that does not create large stacks. This is a problem only
-on large x86_64 systems.
+Hi all,
 
-Signed-off-by: Jack Steiner <steiner@sgi.com>
+Only a few Intel Gigabit Adapters need ioport resources for workaround,
+but most do not need them. Most adapters work properly without them.
+In the case where ioport resources are not assigned to adapters, this can
+happen on the large system, drivers' probe function fails like the following,
+and adapters can not be used as a result.
 
----
+ e1000e 0002:22:00.0: device not available because of BAR 2 [0:1f] collisions
+ e1000e: probe of 0002:22:00.0 failed with error -22
 
-Ingo - the "Increase MAX_APICS patch" can now works. Do you
-want me to resend???
+These patches corrects behavior in probe function so as not to request ioport
+resources as long as they are not really needed. These are based on the
+ioport-free patch of e1000 driver from Auke Kok and Tomohiro Kusumi.
+
+* [PATCH 1/3] e1000: make ioport free
+* [PATCH 2/3] e1000e: make ioport free
+* [PATCH 3/3] igb: make ioport free
+
+Best regards,
+Taku Izumi <izumi.taku@jp.fujitsu.com>
 
 
-
- arch/x86/kernel/apic_32.c |    2 +-
- arch/x86/kernel/apic_64.c |    2 +-
- arch/x86/kernel/smpboot.c |    5 ++---
- include/asm-x86/mpspec.h  |    7 +++++++
- 4 files changed, 11 insertions(+), 5 deletions(-)
-
-Index: linux/arch/x86/kernel/apic_32.c
-===================================================================
---- linux.orig/arch/x86/kernel/apic_32.c	2008-06-19 11:50:07.000000000 -0500
-+++ linux/arch/x86/kernel/apic_32.c	2008-06-19 19:28:04.000000000 -0500
-@@ -1267,7 +1267,7 @@ int __init APIC_init_uniprocessor(void)
- #ifdef CONFIG_CRASH_DUMP
- 	boot_cpu_physical_apicid = GET_APIC_ID(read_apic_id());
- #endif
--	phys_cpu_present_map = physid_mask_of_physid(boot_cpu_physical_apicid);
-+	physid_set_mask_of_physid(boot_cpu_physical_apicid, &phys_cpu_present_map);
- 
- 	setup_local_APIC();
- 
-Index: linux/arch/x86/kernel/apic_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/apic_64.c	2008-06-19 15:59:58.000000000 -0500
-+++ linux/arch/x86/kernel/apic_64.c	2008-06-19 19:25:18.000000000 -0500
-@@ -920,7 +920,7 @@ int __init APIC_init_uniprocessor(void)
- 
- 	connect_bsp_APIC();
- 
--	phys_cpu_present_map = physid_mask_of_physid(boot_cpu_physical_apicid);
-+	physid_set_mask_of_physid(boot_cpu_physical_apicid, &phys_cpu_present_map);
- 	apic_write(APIC_ID, SET_APIC_ID(boot_cpu_physical_apicid));
- 
- 	setup_local_APIC();
-Index: linux/arch/x86/kernel/smpboot.c
-===================================================================
---- linux.orig/arch/x86/kernel/smpboot.c	2008-06-19 19:06:00.000000000 -0500
-+++ linux/arch/x86/kernel/smpboot.c	2008-06-19 19:37:37.000000000 -0500
-@@ -1042,10 +1042,9 @@ static __init void disable_smp(void)
- 	smpboot_clear_io_apic_irqs();
- 
- 	if (smp_found_config)
--		phys_cpu_present_map =
--				physid_mask_of_physid(boot_cpu_physical_apicid);
-+		physid_set_mask_of_physid(boot_cpu_physical_apicid, &phys_cpu_present_map);
- 	else
--		phys_cpu_present_map = physid_mask_of_physid(0);
-+		physid_set_mask_of_physid(0, &phys_cpu_present_map);
- 	map_cpu_to_logical_apicid();
- 	cpu_set(0, per_cpu(cpu_sibling_map, 0));
- 	cpu_set(0, per_cpu(cpu_core_map, 0));
-Index: linux/include/asm-x86/mpspec.h
-===================================================================
---- linux.orig/include/asm-x86/mpspec.h	2008-06-19 11:50:09.000000000 -0500
-+++ linux/include/asm-x86/mpspec.h	2008-06-19 19:39:11.000000000 -0500
-@@ -122,6 +122,7 @@ typedef struct physid_mask physid_mask_t
- 		__physid_mask;						\
- 	})
- 
-+/* Note: will create very large stack frames if physid_mask_t is big */
- #define physid_mask_of_physid(physid)					\
- 	({								\
- 		physid_mask_t __physid_mask = PHYSID_MASK_NONE;		\
-@@ -129,6 +130,12 @@ typedef struct physid_mask physid_mask_t
- 		__physid_mask;						\
- 	})
- 
-+static inline void physid_set_mask_of_physid(int physid, physid_mask_t *map)
-+{
-+	physids_clear(*map);
-+	physid_set(physid, *map);
-+}
-+
- #define PHYSID_MASK_ALL		{ {[0 ... PHYSID_ARRAY_SIZE-1] = ~0UL} }
- #define PHYSID_MASK_NONE	{ {[0 ... PHYSID_ARRAY_SIZE-1] = 0UL} }
- 
