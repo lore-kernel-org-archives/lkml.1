@@ -1,88 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753470AbYFUO4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753566AbYFUPAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753470AbYFUO4h (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 10:56:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbYFUO43
+	id S1753566AbYFUPAe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 11:00:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbYFUPA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 10:56:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47576 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751026AbYFUO42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 10:56:28 -0400
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       Hideo AOKI <haoki@redhat.com>
-Subject: Re: [RFC][Patch 2/2] markers: example of irq regular kernel markers
-References: <20080620174529.GB10943@Krystal> <485C064E.5020705@redhat.com>
-	<20080621190132.E835.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<Pine.LNX.4.58.0806211013300.32694@gandalf.stny.rr.com>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: Sat, 21 Jun 2008 10:53:49 -0400
-In-Reply-To: <Pine.LNX.4.58.0806211013300.32694@gandalf.stny.rr.com> (Steven Rostedt's message of "Sat, 21 Jun 2008 10:36:23 -0400 (EDT)")
-Message-ID: <y0mwskiyh36.fsf@ton.toronto.redhat.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 21 Jun 2008 11:00:26 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:8625 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751026AbYFUPAZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jun 2008 11:00:25 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Sat, 21 Jun 2008 11:00:04 -0400 (EDT)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: Pierre Ossman <drzeus@drzeus.cx>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: sdio: bad CISTPL_FUNCE error
+In-reply-to: <485BCBB3.20405@atmel.com>
+Message-id: <alpine.LFD.1.10.0806211045390.2979@xanadu.home>
+References: <485BCBB3.20405@atmel.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 20 Jun 2008, Nicolas Ferre wrote:
 
-Steven Rostedt <rostedt@goodmis.org> writes:
+> Hi Pierre,
+> 
+> While trying to setup a GPS SDIO card, I experience the following error:
+> "mmc0: bad CISTPL_FUNCE size 28 type 1"
 
-> [...]  Format strings only help for printf like operations. [...]
+Could you apply this patch and see what it shows:
 
-That is not so.  They are far from panaceanic, but printf formats are
-useful for type checked simple scalars, which we can extract and use
-for purposes other than printf like operations.
+diff --git a/drivers/mmc/core/sdio_cis.c b/drivers/mmc/core/sdio_cis.c
+index d5e51b1..60ec4d3 100644
+--- a/drivers/mmc/core/sdio_cis.c
++++ b/drivers/mmc/core/sdio_cis.c
+@@ -149,8 +149,9 @@ static int cistpl_funce(struct mmc_card *card, struct sdio_func *func,
+ 		ret = cistpl_funce_common(card, buf, size);
+ 
+ 	if (ret) {
+-		printk(KERN_ERR "%s: bad CISTPL_FUNCE size %u "
+-		       "type %u\n", mmc_hostname(card->host), size, buf[0]);
++		printk(KERN_ERR "%s: bad %s CISTPL_FUNCE size %u type %u\n",
++		       mmc_hostname(card->host), func ? "function" : "common",
++		       size, buf[0]);
+ 		return ret;
+ 	}
+ 
 
-> The best example of this is the sched_switch code. LTTng and friends
-> just want a pid and comm to show. But there's tracers that want more
-> info from the task_struct. We also like to see the priority of the
-> task.  [...]
+> I use a combo card but without mirco sd card inserted.
+> http://www.spectec.com.tw/sdg810.htm
+> 
+> Tracing in sdio_cis.c file, I print the tpl_code (line 216).
+> I have 3 successive codes : 0xff, 0x21 & 0x22.
 
-This is the sort of information that can help generate a compromise.
-For this case, pass a few raw pointers that a compiled-in tracing
-engine can dereference at will, and *also pass* a few user-level
-scalars that a separately-compiled tracing engine can use.
+Again that would be good to know if/when func is NULL when those are 
+parsed.
 
-> Passing in a pointer to the structure being traced should be enough
-> for all tracers.
+> Is this a host controller driver issue ?
 
-On the contrary, we have explained why *this is not so*.  Using raw
-general structure pointers in impractical for some tracers.
-
-> Now back to your question, why don't we like the printf
-> format. Simply because it does nothing for pointers. It might help
-> you with a %d and number of parameters, but a %p can not tell the
-> difference between a struct tasks_struct *, and a int *, which can
-> have even more devastating results.
-
-Indeed.  Unfortunately, C is not kind to us in the way that perhaps
-C++ templates could be.  We have not yet seen a single mechanism that
-does all of:
-
-- type-safe passing of arbitrary pointer/etc. types (so compiled-in
-  trace data consumers can go wild with data passing)
-- declarative / separately-compiled consumption of types
-  (so lttng/systemtap/userspace can hook in without heroics)
-- parsimonious implementation
-
-Maybe a solution could involve some restrictions on the generalities.
-For example, can we narrow down the number of different scalar +
-pointer types to a fixed handful?  Can we tolerate type-safety being
-provided by families of function declarations rather than one generic
-one?
+Most probably not.
 
 
-> It also just looks like a debug session instead of a trace marker.
-
-Why do you think the difference between those is profound?
-
-
-- FChE
+Nicolas
