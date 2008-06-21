@@ -1,46 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752220AbYFUJQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbYFUJ4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752220AbYFUJQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 05:16:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbYFUJQt
+	id S1754529AbYFUJ4J (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 05:56:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbYFUJz4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 05:16:49 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:59794 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751185AbYFUJQs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 05:16:48 -0400
-Date: Sat, 21 Jun 2008 02:09:10 -0700
-From: Greg KH <greg@kroah.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/70] tty updates proposed for 2.6.27
-Message-ID: <20080621090910.GA12516@kroah.com>
-References: <20080620195406.1479.12620.stgit@localhost.localdomain>
+	Sat, 21 Jun 2008 05:55:56 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:49657 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752781AbYFUJzz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jun 2008 05:55:55 -0400
+Message-ID: <485CCFB9.9050208@cn.fujitsu.com>
+Date: Sat, 21 Jun 2008 17:54:01 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080620195406.1479.12620.stgit@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Andrew Morton <akpm@linux-foundation.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-arch@vger.kernel.org
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [RFC PATCH]rcu,alpha: avoid smp_read_barrier_depends in rcu_dereference
+ when pointer==NULL
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 20, 2008 at 08:57:55PM +0100, Alan Cox wrote:
-> This patch series introduces the idea of a tty_port - a common structure
-> that eventually all ports will have. Some drivers are migrated to make partial
-> use of the tty port commonality and helpers but only a little.
-> 
-> On the USB side the USB tty API is changed to fix a whole pile of races where
-> tty->port->tty cannot be assumed to be tty (because of hangup/reopen). The
-> USB drivers all get a spring clean and the entire pile have been dragged into
-> CodingStyle near compliance (some cases where the checkpatch whines that
-> make no sense have been ignored).
-> 
-> Greg: At the end of this series there shouldn't be any white space issues
-> although some earlier patches introduce them and later ones take them away
+Hi, Paul and Alpha hackers
 
-Ah, thanks for resending these, as they are primarily USB changes, any
-objection for me to take these through my USB tree?
+memory barrier is expensive, I think it's worth that adding an if-statement
+to avoid it when pointer == NULL.
 
-greg k-h
+This patch change nothing in UP or in other architectures for compiler's
+optimization.
+
+			Thanks, Lai Jiangshan
+
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index d42dbec..8979f29 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -143,7 +143,8 @@ struct rcu_head {
+ 
+ #define rcu_dereference(p)     ({ \
+ 				typeof(p) _________p1 = ACCESS_ONCE(p); \
+-				smp_read_barrier_depends(); \
++				if (_________p1) \
++					smp_read_barrier_depends(); \
+ 				(_________p1); \
+ 				})
+ 
+
+
+
