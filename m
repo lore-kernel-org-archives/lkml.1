@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752077AbYFUPVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752313AbYFUP07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752077AbYFUPVX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 11:21:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751101AbYFUPVO
+	id S1752313AbYFUP07 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 11:26:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751101AbYFUP0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 11:21:14 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49150 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751094AbYFUPVO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 11:21:14 -0400
-Message-ID: <485D1C67.7050907@firstfloor.org>
-Date: Sat, 21 Jun 2008 17:21:11 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Sat, 21 Jun 2008 11:26:49 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60041 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751094AbYFUP0s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jun 2008 11:26:48 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: linux-next: Tree for June 20: [regression] No sound on SB600
+Date: Sat, 21 Jun 2008 17:28:09 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+References: <20080620172507.b7301bd1.sfr@canb.auug.org.au>
+In-Reply-To: <20080620172507.b7301bd1.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Kernel development list <linux-kernel@vger.kernel.org>,
-       AntonioLin <antonio.lin@alcormicro.com>,
-       David Vrabel <david.vrabel@csr.com>
-Subject: Re: Scatter-gather list constraints
-References: <Pine.LNX.4.44L0.0806211050390.18735-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0806211050390.18735-100000@netrider.rowland.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806211728.10445.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern wrote:
-> On Sat, 21 Jun 2008, Andi Kleen wrote:
+On Friday, 20 of June 2008, Stephen Rothwell wrote:
+> Hi all,
 > 
->> Alan Stern <stern@rowland.harvard.edu> writes:
->>
->>> This question arises in connection with wireless USB mass-storage
->>> devices.  The controller driver requires that all DMA segments
->>> in a transfer, other than the last one, have a multiple of 1024 bytes.  
->>> But we're sometimes getting s-g lists where an element contains an odd
->>> number of 512-byte sectors, and of course it doesn't work.
->> But you can handle a single 512 byte request?
+> Changes since next-20080619:
 > 
-> Yes.  And we can handle a list containing a bunch of 1024-byte segments
-> terminated by a single 512-byte segment.
+> The net tree lost its conflict against Linus' tree.
 > 
->> Splitting the request
->> in this case should work. Or maybe copying is cheaper than splitting?
-> 
-> Splitting would work.  But it has to be done fairly high up in the 
-> stack, ideally in the block layer.
+> The bkl-removal tree lost a conflict.
 
-That's true. Or you would need to reserve requests for this, which is likely
-a bad idea. Perhaps you're better off just copying in this (hopefully
-rare) case. Fortunately lately thanks to work from Peter Z. allocating memory
-in the write out path is much safer than it used to be.
+On one of my test boxes with the ATI chipset (SB600 south bridge) there's no
+sound output.  Bisection shows that the following commit causes this to happen
+and reverting the commit fixes the problem for me:
 
-Also for my edification: is that a general restriction of the wireless usb
-spec or just a specific hardware quirk in some design?
+commit cf97e6678f1e1e7bbdb566c36771540123832a31
+Author: Takashi Iwai <tiwai@suse.de>
+Date:   Mon Jun 16 15:47:26 2008 +0200
 
-> 
->> I don't think the block layer knows about such kinds of restrictions.
-> 
-> Evidently not.  Is it feasible to add such knowledge to the block
-> layer?
+    ALSA: hda - Fix wrong volumes in AD1988 auto-probe mode
+    
+    Don't create mixer volume elements for Headphone and Speaker if they
+    use the same DAC as normal line-outs on AD1988.  Otherwise the amp
+    value gets screwed up, e.g.
+    	https://bugzilla.novell.com/show_bug.cgi?id=398255
+    
+    Signed-off-by: Takashi Iwai <tiwai@suse.de>
 
-You would need to ask Jens, but I would assume he would ask:
-- Is it common?
-- Is it performance critical?
-and presumably the answer to both would be "no" ?
+Please let me know if you need any additional information.
 
--Andi
-
-
+Thanks,
+Rafael
