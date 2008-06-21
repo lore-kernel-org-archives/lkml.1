@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755348AbYFUIjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755516AbYFUIlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755348AbYFUIjQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 04:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbYFUIjD
+	id S1755516AbYFUIlm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 04:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbYFUIle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 04:39:03 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44064 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752138AbYFUIjA (ORCPT
+	Sat, 21 Jun 2008 04:41:34 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:47265 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751636AbYFUIld (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 04:39:00 -0400
-Date: Sat, 21 Jun 2008 17:39:06 +0900
+	Sat, 21 Jun 2008 04:41:33 -0400
+Date: Sat, 21 Jun 2008 17:41:28 +0900
 From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
 Subject: Re: [Experimental][PATCH] putback_lru_page rework
-Cc: kosaki.motohiro@jp.fujitsu.com, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
        Andrew Morton <akpm@linux-foundation.org>,
        Rik van Riel <riel@redhat.com>, Nick Piggin <npiggin@suse.de>,
        linux-mm@kvack.org, linux-kernel@vger.kernel.org,
        kernel-testers@vger.kernel.org
-In-Reply-To: <20080620101352.e1200b8e.kamezawa.hiroyu@jp.fujitsu.com>
-References: <1213886722.6398.29.camel@lts-notebook> <20080620101352.e1200b8e.kamezawa.hiroyu@jp.fujitsu.com>
-Message-Id: <20080621173013.E821.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <1213981843.6474.68.camel@lts-notebook>
+References: <20080620101352.e1200b8e.kamezawa.hiroyu@jp.fujitsu.com> <1213981843.6474.68.camel@lts-notebook>
+Message-Id: <20080621173912.E824.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
@@ -31,149 +32,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
-> Lee-san, this is an additonal one..
-> Not-tested-yet, just by review.
+> > Before:
+> >       lock_page()(TestSetPageLocked())
+> >       spin_lock(zone->lock)
+> >       unlock_page()
+> >       spin_unlock(zone->lock)  
 > 
-> Fixing page_lock() <-> zone->lock nesting of bad-behavior.
+> Couple of comments:
+> * I believe that the locks are acquired in the right order--at least as
+> documented in the comments in mm/rmap.c.  
+> * The unlocking appears out of order because this function attempts to
+> hold the zone lock across a few pages in the pagevec, but must switch to
+> a different zone lru lock when it finds a page on a different zone from
+> the zone whose lock it is holding--like in the pagevec draining
+> functions, altho' they don't need to lock the page.
 > 
-> Before:
->       lock_page()(TestSetPageLocked())
->       spin_lock(zone->lock)
->       unlock_page()
->       spin_unlock(zone->lock)  
-> After:
->       spin_lock(zone->lock)
->       spin_unlock(zone->lock)
-
-
-Good catch!
-
+> > After:
+> >       spin_lock(zone->lock)
+> >       spin_unlock(zone->lock)
 > 
-> Including nit-pick fix. (I'll ask Kosaki-san to merge this to his 5/5)
+> Right.  With your reworked check_move_unevictable_page() [with retry],
+> we don't need to lock the page here, any more.  That means we can revert
+> all of the changes to pass the mapping back to sys_shmctl() and move the
+> call to scan_mapping_unevictable_pages() back to shmem_lock() after
+> clearing the address_space's unevictable flag.  We only did that to
+> avoid sleeping while holding the shmem_inode_info lock and the
+> shmid_kernel's ipc_perm spinlock.  
 > 
-> Hmm...
-> 
-> ---
->  mm/vmscan.c |   25 +++++--------------------
->  1 file changed, 5 insertions(+), 20 deletions(-)
-> 
-> Index: test-2.6.26-rc5-mm3/mm/vmscan.c
-> ===================================================================
-> --- test-2.6.26-rc5-mm3.orig/mm/vmscan.c
-> +++ test-2.6.26-rc5-mm3/mm/vmscan.c
-> @@ -1106,7 +1106,7 @@ static unsigned long shrink_inactive_lis
->  		if (nr_taken == 0)
->  			goto done;
->  
-> -		spin_lock(&zone->lru_lock);
-> +		spin_lock_irq(&zone->lru_lock);
->  		/*
->  		 * Put back any unfreeable pages.
->  		 */
-> @@ -1136,9 +1136,8 @@ static unsigned long shrink_inactive_lis
->  			}
->  		}
->    	} while (nr_scanned < max_scan);
-> -	spin_unlock(&zone->lru_lock);
-> +	spin_unlock_irq(&zone->lru_lock);
->  done:
-> -	local_irq_enable();
->  	pagevec_release(&pvec);
->  	return nr_reclaimed;
->  }
+> Shall I handle that, after we've tested this patch?
 
-No.
-
-shrink_inactive_list lock usage is 
-
-	local_irq_disable()
-	spin_lock(&zone->lru_lock);
-	while(){
-		if (!pagevec_add(&pvec, page)) {
-			spin_unlock_irq(&zone->lru_lock);
-			__pagevec_release(&pvec);
-			spin_lock_irq(&zone->lru_lock);
-		}
-	}
-	spin_unlock(&zone->lru_lock);
-	local_irq_enable();
-
-this keep below lock rule.
-	- if zone->lru_lock is holded, interrupt is always disable disabled.
+Yeah, I'll do it :)
 
 
+> > @@ -2438,7 +2437,7 @@ static void show_page_path(struct page *
+> >   */
+> >  static void check_move_unevictable_page(struct page *page, struct zone *zone)
+> >  {
+> > -
+> > +retry:
+> >  	ClearPageUnevictable(page); /* for page_evictable() */
+> We can remove this comment            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+> page_evictable() no longer asserts !PageUnevictable(), right?
 
+Yes.
+I'll remove it.
 
-> @@ -2438,7 +2437,7 @@ static void show_page_path(struct page *
->   */
->  static void check_move_unevictable_page(struct page *page, struct zone *zone)
->  {
-> -
-> +retry:
->  	ClearPageUnevictable(page); /* for page_evictable() */
->  	if (page_evictable(page, NULL)) {
->  		enum lru_list l = LRU_INACTIVE_ANON + page_is_file_cache(page);
-> @@ -2455,6 +2454,8 @@ static void check_move_unevictable_page(
->  		 */
->  		SetPageUnevictable(page);
->  		list_move(&page->lru, &zone->lru[LRU_UNEVICTABLE].list);
-> +		if (page_evictable(page, NULL))
-> +			goto retry;
->  	}
->  }
-
-Right, Thanks.
-
-
->  
-> @@ -2494,16 +2495,6 @@ void scan_mapping_unevictable_pages(stru
->  				next = page_index;
->  			next++;
->  
-> -			if (TestSetPageLocked(page)) {
-> -				/*
-> -				 * OK, let's do it the hard way...
-> -				 */
-> -				if (zone)
-> -					spin_unlock_irq(&zone->lru_lock);
-> -				zone = NULL;
-> -				lock_page(page);
-> -			}
-> -
->  			if (pagezone != zone) {
->  				if (zone)
->  					spin_unlock_irq(&zone->lru_lock);
-> @@ -2514,8 +2505,6 @@ void scan_mapping_unevictable_pages(stru
->  			if (PageLRU(page) && PageUnevictable(page))
->  				check_move_unevictable_page(page, zone);
->  
-> -			unlock_page(page);
-> -
->  		}
->  		if (zone)
->  			spin_unlock_irq(&zone->lru_lock);
-
-Right.
-
-
-> @@ -2551,15 +2540,11 @@ void scan_zone_unevictable_pages(struct 
->  		for (scan = 0;  scan < batch_size; scan++) {
->  			struct page *page = lru_to_page(l_unevictable);
->  
-> -			if (TestSetPageLocked(page))
-> -				continue;
-> -
->  			prefetchw_prev_lru_page(page, l_unevictable, flags);
->  
->  			if (likely(PageLRU(page) && PageUnevictable(page)))
->  				check_move_unevictable_page(page, zone);
->  
-> -			unlock_page(page);
->  		}
->  		spin_unlock_irq(&zone->lru_lock);
-
-Right.
 
 
