@@ -1,116 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753046AbYFUOS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752118AbYFUOgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753046AbYFUOS3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 10:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbYFUOSS
+	id S1752118AbYFUOgf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 10:36:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbYFUOgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 10:18:18 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:52842 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750860AbYFUOSR (ORCPT
+	Sat, 21 Jun 2008 10:36:25 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:52704 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751006AbYFUOgZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 10:18:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=O+7T8Y6cl+cmrLSekgw2bsTsEAVSQFxDRxt2Pvsv10MzwCyw22mfPWCPzggQRcz0Y+
-         kfllEZAGhOEE765iKlgkcjXINVNVE1296fwtWrIo9TL8DP2T3gf8RWoFAS4mw0TE/WBN
-         PvzHdXu02+No/tQz8tLt7BtgA3xBvw7Rh0wVU=
-Message-ID: <5a4c581d0806210718m77be63c9l444d8d7d7a5266bd@mail.gmail.com>
-Date: Sat, 21 Jun 2008 16:18:15 +0200
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [Cbe-oss-dev] [regression/bisected] corrupt CD data after media change and delay
-Cc: "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-       linux-scsi@vger.kernel.org,
-       "Linux Kernel Development" <linux-kernel@vger.kernel.org>,
-       "Maarten Bressers" <mbres@gentoo.org>, "Daniel Drake" <dsd@gentoo.org>,
-       "Cell Broadband Engine OSS Development" <cbe-oss-dev@ozlabs.org>
-In-Reply-To: <5a4c581d0806180515g5f24e9d9m85369bfa0a5f2228@mail.gmail.com>
+	Sat, 21 Jun 2008 10:36:25 -0400
+Date: Sat, 21 Jun 2008 10:36:23 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Masami Hiramatsu <mhiramat@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       Hideo AOKI <haoki@redhat.com>
+Subject: Re: [RFC][Patch 2/2] markers: example of irq regular kernel markers
+In-Reply-To: <20080621190132.E835.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.58.0806211013300.32694@gandalf.stny.rr.com>
+References: <20080620174529.GB10943@Krystal> <485C064E.5020705@redhat.com>
+ <20080621190132.E835.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0806061458300.6228@vixen.sonytel.be>
-	 <Pine.LNX.4.64.0806131932350.30730@vixen.sonytel.be>
-	 <5a4c581d0806180147qf8fc731y527c79bfb73401b2@mail.gmail.com>
-	 <Pine.LNX.4.64.0806181156460.13297@vixen.sonytel.be>
-	 <5a4c581d0806180515g5f24e9d9m85369bfa0a5f2228@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[dropped David Martin from CC: list as I get permanent delivery errors]
 
-On Wed, Jun 18, 2008 at 2:15 PM, Alessandro Suardi
-<alessandro.suardi@gmail.com> wrote:
-> On Wed, Jun 18, 2008 at 1:13 PM, Geert Uytterhoeven
-> <Geert.Uytterhoeven@sonycom.com> wrote:
->> On Wed, 18 Jun 2008, Alessandro Suardi wrote:
->>> On Fri, Jun 13, 2008 at 7:33 PM, Geert Uytterhoeven
->>> <Geert.Uytterhoeven@sonycom.com> wrote:
->>> > On Fri, 6 Jun 2008, Geert Uytterhoeven wrote:
->>> >> When mounting a CD/DVD more than 30 seconds after inserting it, and reading
->>> >> from it, we get:
->>> >
->>> > Apparently the fix didn't make it to all the CCed lists...
->>> >
->>> > http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fjejb%2Fscsi-rc-fixes-2.6.git;a=commitdiff_plain;h=d1daeabf0da5bfa1943272ce508e2ba785730bf0
->>>
->>> Oh, that's in mainline ? I still have the problem of having to
->>
->> Not yet, it's in the scsi-rc-fixes-2.6 tree.
->>
->>>  insert DVD / try accessing it and get errors / eject / re-insert
->>>  and then it magically works... the messages have changed
->>>  from what they were as reported here
->>>
->>> http://bugzilla.kernel.org/show_bug.cgi?id=10116
->>>
->>>  (see comments #8 and #9) to these ones, in 2.6.26-rc6-git4:
->>>
->>> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] Result:
->>> hostbyte=0x00 driverbyte=0x08
->>> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] Sense Key : 0x3 [current]
->>> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] ASC=0x11 ASCQ=0x0
->>> Jun 17 22:38:43 sandman kernel: end_request: I/O error, dev sr0, sector 232
->>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 29
->>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 30
->>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 31
->>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 32
->>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 33
->>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 34
->>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 35
->>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 36
->>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 37
->>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 38
->>>
->>> here I eject and reinsert the disc, and:
->>>
->>> Jun 17 22:39:10 sandman kernel: UDF-fs: No VRS found
->>>
->>>  lo and behold, no problem.
->>>
->>> This does not, alas, happen every time. It might be at the first
->>>  DVD access after booting the laptop, but I haven't investigated
->>>  in this detail yet.
->>
->> Does /sys/block/sr0/size reflect the correct size of the DVD?
->>
->> Did you try applying the patch?
+On Sat, 21 Jun 2008, KOSAKI Motohiro wrote:
+> >
+> > even though, I think you can do that by adding below string table
+> > to LTTng module.
+> >
+> > const char *lookup_table[MAX_MARKERS][2] = {
+> > {"irq_entry", "%d %d"}, // or "(int irq_id, int kernel_mode)", "%d %d"
+> > ...
+> > };
 >
-> ATM I'm away from home (as usual), I'll post back when
->  I have the info you asked for and tried applying the
->  above patch. Thanks !
+> if move string to out of kernel core, compiler may kill some variable.
+> thus, we will get incomplete tracing result.
 
-Sigh. I haven't been able to reproduce the problem once since
- I posted this. Will keep trying...
+I don't understand why the compiler would do such a thing? The compiler
+shouldn't be removing parameters.
 
---alessandro
+>
+> I think your proposal is very interesting.
+> but I dont understand why someone dislike format strings.
+> Could you explain this reason?
 
- "Give me love / Or give me hate
- Give me anything that's not just ok"
+Format strings only help for printf like operations. Not all tracers want
+such a thing. The best example of this is the sched_switch code. LTTng and
+friends just want a pid and comm to show. But there's tracers that want
+more info from the task_struct. We also like to see the priority of the
+task.
 
- (Sophia, 'Weightless')
+I also foresee these trace hooks be use for dynamic itegrity checks. On
+switching out a process we might want to examine both the next and prev to
+make sure the context switch should really occur.
+
+There's other places in the core kernel that a tracer wants more than some
+data in a structure. Recording all the data that might be needed in a
+structure slows down those tracers that only want a little bit of data.
+Passing in a pointer to the structure being traced should be enough for
+all tracers.
+
+If those that don't care about priority of a context switch, why should it
+be parsing it out just for a single tracer that might need it. But all
+tracers would need the prev and next pointers.
+
+Now back to your question, why don't we like the printf format. Simply
+because it does nothing for pointers. It might help you with a %d and
+number of parameters, but a %p can not tell the difference between a
+struct tasks_struct *, and a int *, which can have even more devastating
+results. It also just looks like a debug session instead of a trace
+marker.
+
+Not to mention what Peter Zijlstra already stated, that a printf format
+gives only run time checking, where we would like to see compile time
+checking.
+
+-- Steve
+
