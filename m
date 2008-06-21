@@ -1,89 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756010AbYFUCkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756789AbYFUCnN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756010AbYFUCkg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 22:40:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbYFUCk0
+	id S1756789AbYFUCnN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 22:43:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbYFUCmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 22:40:26 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:44507 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751726AbYFUCkZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 22:40:25 -0400
-Date: Sat, 21 Jun 2008 12:40:17 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: linux-staging/linux-next merge/build errors
-Message-Id: <20080621124017.ec3b0a51.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__21_Jun_2008_12_40_17_+1000_XsH=e2o6HXxQxLqi"
+	Fri, 20 Jun 2008 22:42:55 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:64589 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753593AbYFUCmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 22:42:54 -0400
+Date: Sat, 21 Jun 2008 03:41:37 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
+In-Reply-To: <20080621014047.GA20908@srcf.ucam.org>
+Message-ID: <Pine.LNX.4.55.0806210321470.19614@cliff.in.clinika.pl>
+References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806201353.59083.rjw@sisk.pl>
+ <20080620115714.GC8637@srcf.ucam.org> <200806201422.12659.rjw@sisk.pl>
+ <20080620122714.GA9332@srcf.ucam.org> <Pine.LNX.4.55.0806202241120.19614@cliff.in.clinika.pl>
+ <20080621014047.GA20908@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__21_Jun_2008_12_40_17_+1000_XsH=e2o6HXxQxLqi
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sat, 21 Jun 2008, Matthew Garrett wrote:
 
-Hi Greg,
+> >  Meanwhile we may consider implementing a workaround.  I think one that 
+> > does not hurt competent vendors would be preferable.  The DSDT containing 
+> > the rubbish described here is marked with an OEM ID: "HP    " and OEM 
+> > Table ID: "SB400".  These keys could be used to remove IRQ0 information
+> > from the IRQ tables.  Our code is prepared to handle such a case.  
+> > Something easy to do for a seasoned ACPI fiddler, I suppose. ;)
+> 
+> Something roughly like the following? Entirely untested, my 6125 is in a 
 
-Today I have done a test merge of linux-staging into linux-next.  I got
-merge conflicts in drivers/char/agp/via-agp.c and drivers/misc/Makefile -
-neither of which is really surprising and both tivial to fix up.
+ Maybe, though your code seems to match product IDs rather than the broken
+DSDT itself.  I think the latter would be preferable as it would cover all
+the pieces of equipment using the broken piece of firmware rather than
+ones we have already tracked down.  Perhaps the version could be included
+too, but that would only make sense if the breakage ever gets fixed -- the
+use of the through-8259A mode for the 8254 timer would allow this piece of
+equipment to benefit from the I/O APIC driven NMI watchdog.
 
-I then did an x86 allmodconfig build with these errors:
+> box somewhere. My recollection is that skip_timer_override will disable 
+> the IRQ 0->2 mapping, which I believe is what's broken here?
 
-In file included from /home/sfr/kernels/next/src/drivers/char/drm/via_chrom=
-e9_drm.c:32:
-/home/sfr/kernels/next/src/drivers/char/drm/via_chrome9_3d_reg.h: In functi=
-on =E2=80=98IS_AGPHEADER_INV=E2=80=99:
-/home/sfr/kernels/next/src/drivers/char/drm/via_chrome9_3d_reg.h:230: error=
-: =E2=80=98TRUE=E2=80=99 undeclared (first use in this function)
-/home/sfr/kernels/next/src/drivers/char/drm/via_chrome9_3d_reg.h:230: error=
-: (Each undeclared identifier is reported only once
-/home/sfr/kernels/next/src/drivers/char/drm/via_chrome9_3d_reg.h:230: error=
-: for each function it appears in.)
-/home/sfr/kernels/next/src/drivers/char/drm/via_chrome9_3d_reg.h:232: error=
-: =E2=80=98FALSE=E2=80=99 undeclared (first use in this function)
+ Not exactly.  The IRQ0->2 mapping is certainly wrong here, but so is the
+identity IRQ0->0 one.  Which means it should not be recorded in
+mp_config_acpi_legacy_irqs() at all.  I can cook this part if you'd rather
+not to, if you do the ACPI part.  If you think there is no easy way to
+match the DSDT rather than the product ID -- we are trying to cope with
+outright breakage here after all, so any amount of effort is too much ;)  
+-- I can update your proposal with what I have in mind.
 
-And several new warnings (these may not be all):
+ One point to note -- perhaps it would be better to avoid these #ifdef
+clauses -- even though it's a workaround, I think the amount of resources
+consumed does not justify the clutter introduced.
 
-/home/sfr/kernels/next/src/fs/novfs/inode.c:265: warning: initialization fr=
-om incompatible pointer type
-/home/sfr/kernels/next/src/fs/novfs/inode.c:267: warning: initialization fr=
-om incompatible pointer type
-/home/sfr/kernels/next/src/fs/novfs/inode.c:273: warning: initialization fr=
-om incompatible pointer type
-/home/sfr/kernels/next/src/fs/novfs/inode.c:275: warning: initialization fr=
-om incompatible pointer type
-In file included from /home/sfr/kernels/next/src/fs/novfs/daemon.c:24:
-include2/asm/semaphore.h:1:2: warning: #warning Use linux/semaphore.h, not =
-asm/semaphore.h
-In file included from /home/sfr/kernels/next/src/fs/novfs/scope.c:26:
-include2/asm/semaphore.h:1:2: warning: #warning Use linux/semaphore.h, not =
-asm/semaphore.h
-In file included from /home/sfr/kernels/next/src/fs/novfs/nwcapi.c:22:
-include2/asm/semaphore.h:1:2: warning: #warning Use linux/semaphore.h, not =
-asm/semaphore.h
+ Thanks for your submission.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__21_Jun_2008_12_40_17_+1000_XsH=e2o6HXxQxLqi
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhcahEACgkQTgG2atn1QN9/AgCgmLNW2f9da/od/AGA1ddFRUsW
-TpAAmwTRC7F0k2awqF7P+6xiCL+ygEmn
-=ABTV
------END PGP SIGNATURE-----
-
---Signature=_Sat__21_Jun_2008_12_40_17_+1000_XsH=e2o6HXxQxLqi--
+  Maciej
