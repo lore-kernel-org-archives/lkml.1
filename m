@@ -1,147 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847AbYFUESf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752189AbYFUEvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752847AbYFUESf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 00:18:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbYFUES0
+	id S1752189AbYFUEvx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 00:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750905AbYFUEvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 00:18:26 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:3737 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750773AbYFUESY (ORCPT
+	Sat, 21 Jun 2008 00:51:41 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44287
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750860AbYFUEvk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 00:18:24 -0400
-Date: Sat, 21 Jun 2008 00:19:40 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Avi Kivity <avi@qumranet.com>,
-       linux-kernel@vger.kernel.org,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [BUG] CFS vs cpu hotplug
-Message-ID: <20080620221940.GA4730@osiris.ibm.com>
-References: <20080619161949.GA11062@osiris.ibm.com> <1213898711.3223.107.camel@lappy.programming.kicks-ass.net> <1213911149.3223.135.camel@lappy.programming.kicks-ass.net> <20080619214945.GA12640@osiris.ibm.com> <1213951863.10476.31.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1213951863.10476.31.camel@twins>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sat, 21 Jun 2008 00:51:40 -0400
+Date: Fri, 20 Jun 2008 21:51:39 -0700 (PDT)
+Message-Id: <20080620.215139.218732028.davem@davemloft.net>
+To: mpatocka@redhat.com
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, agk@redhat.com
+Subject: Re: stack overflow on Sparc64
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080620.144128.32005196.davem@davemloft.net>
+References: <20080620.133721.95818057.davem@davemloft.net>
+	<Pine.LNX.4.64.0806201717190.14221@engineering.redhat.com>
+	<20080620.144128.32005196.davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 20, 2008 at 10:51:03AM +0200, Peter Zijlstra wrote:
-> On Thu, 2008-06-19 at 23:49 +0200, Heiko Carstens wrote:
-> > On Thu, Jun 19, 2008 at 11:32:29PM +0200, Peter Zijlstra wrote:
-> > > On Thu, 2008-06-19 at 20:05 +0200, Peter Zijlstra wrote:
-> > > > On Thu, 2008-06-19 at 18:19 +0200, Heiko Carstens wrote:
-> > > 
-> > > > > The sched_entity that belongs to the cfs_rq:
-> > > > > 
-> > > > > >> px *(sched_entity *) 0x759300
-> > > > > struct sched_entity {
-> > > > >         load = struct load_weight {
-> > > > >                 weight = 0x800
-> > > > >                 inv_weight = 0x1ffc01
-> > > > >         }
-> > > > >         run_node = struct rb_node {
-> > > > >                 rb_parent_color = 0x1
-> > > > >                 rb_right = (nil)
-> > > > >                 rb_left = (nil)
-> > > > >         }
-> > > > >         group_node = struct list_head {
-> > > > >                 next = 0x75a3b8
-> > > > >                 prev = 0x75a3b8
-> > > > >         }
-> > > > >         on_rq = 0x1
-> > > > >         exec_start = 0x189685acb4aa46
-> > > > >         sum_exec_runtime = 0x188a2b84c
-> > > > >         vruntime = 0xd036bd29
-> > > > >         prev_sum_exec_runtime = 0x1672e3f62
-> > > > >         last_wakeup = 0x0
-> > > > >         avg_overlap = 0x0
-> > > > >         parent = (nil)
-> > > > >         cfs_rq = 0x75a380
-> > > > >         my_q = 0x759400
-> > > > > }
-> > > 
-> > > If you still have this dump, could you give the output of:
-> > > 
-> > > px *(struct cfs_rq *) 0x759400
-> > > 
-> > > And possibly walk down the chain getting its curr and then my_q again
-> > > etc..
-> > 
-> > Sure, fortunately just a very short chain:
-> > 
-> > >> px *(struct cfs_rq *) 0x759400
-> > struct cfs_rq {
-> >         load = struct load_weight {
-> >                 weight = 0xc31
-> >                 inv_weight = 0x0
-> >         }
-> >         nr_running = 0x1
-> >         exec_clock = 0x0
-> >         min_vruntime = 0x4f216b005
-> >         tasks_timeline = struct rb_root {
-> >                 rb_node = 0x2fca4d40
-> >         }
-> >         rb_leftmost = 0x2fca4d40
-> >         tasks = struct list_head {
-> >                 next = 0x2fca4d58
-> >                 prev = 0x2fca4d58
-> >         }
-> >         balance_iterator = 0x2e29e700
-> >         curr = 0x2ef4f388
-> >         next = (nil)
-> >         nr_spread_over = 0x0
-> >         rq = 0x75a300
-> >         leaf_cfs_rq_list = struct list_head {
-> >                 next = 0x75aaa0
-> >                 prev = 0x2e1eca70
-> >         }
-> >         tg = 0x564910
-> > }
-> 
-> Hmm this one is buggered as well, it has nr_running = 1, and one entry
-> in the tree, but also a !NULL curr.
-> 
-> Could you please show:
-> 
-> px *container_of(0x2fca4d40, struct sched_entity, run_node)
-> 
-> which one might have to write like:
-> 
-> px *((struct sched_entity *)((char*)0x2fca4d40) - ((unsigned long)&(((struct sched_entity *)0)->run_node)))
-> 
-> /me prays he got the braces right,..
+From: David Miller <davem@davemloft.net>
+Date: Fri, 20 Jun 2008 14:41:28 -0700 (PDT)
 
-Here we go:
+> Next week I'll make one of my primary projects the implementation of
+> IRQ stacks for sparc64.
 
->> offset sched_entity.run_node
-Offset: 16 bytes.
+Next week came real fast :-)
 
->> px *(sched_entity *) 0x2fca4d30
-struct sched_entity {
-        load = struct load_weight {
-                weight = 0xc31
-                inv_weight = 0x14ff97
-        }
-        run_node = struct rb_node {
-                rb_parent_color = 0x1
-                rb_right = (nil)
-                rb_left = (nil)
-        }
-        group_node = struct list_head {
-                next = 0x759438
-                prev = 0x759438
-        }
-        on_rq = 0x1
-        exec_start = 0x1896859fb4ff76
-        sum_exec_runtime = 0x1f19
-        vruntime = 0x4f128ead9
-        prev_sum_exec_runtime = 0x0
-        last_wakeup = 0x0
-        avg_overlap = 0x0
-        parent = 0x759300
-        cfs_rq = 0x759400
-        my_q = (nil)
-}
+Amazingly this patch worked the first time I booted it up on my
+dual-cpu workstation (using SMP + PREEMPT).  I'm worried that maybe
+gcc can do some clever things and not allow my extremely simple
+approach to work, but anyways it might work for you and it's worth
+giving a try.
+
+sparc64: Implement support for IRQ stacks.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/arch/sparc64/Kconfig.debug b/arch/sparc64/Kconfig.debug
+index 6a4d28a..df80962 100644
+--- a/arch/sparc64/Kconfig.debug
++++ b/arch/sparc64/Kconfig.debug
+@@ -41,4 +41,11 @@ config FRAME_POINTER
+ 	depends on MCOUNT
+ 	default y
+ 
++config IRQSTACKS
++	bool "Use separate kernel stacks when processing interrupts"
++	help
++	  If you say Y here the kernel will use separate kernel stacks
++	  for handling hard and soft interrupts.  This can help avoid
++	  overflowing the process kernel stacks.
++
+ endmenu
+diff --git a/arch/sparc64/kernel/irq.c b/arch/sparc64/kernel/irq.c
+index b441a26..24820fa 100644
+--- a/arch/sparc64/kernel/irq.c
++++ b/arch/sparc64/kernel/irq.c
+@@ -674,10 +674,42 @@ void ack_bad_irq(unsigned int virt_irq)
+ 	       ino, virt_irq);
+ }
+ 
++#ifdef CONFIG_IRQSTACKS
++void *hardirq_stack[NR_CPUS];
++void *softirq_stack[NR_CPUS];
++
++static void *set_hardirq_stack(void)
++{
++	void *orig_sp, *sp = hardirq_stack[smp_processor_id()];
++
++	__asm__ __volatile__("mov %%sp, %0" : "=r" (orig_sp));
++	if (orig_sp < sp ||
++	    orig_sp > (sp + THREAD_SIZE)) {
++		sp += THREAD_SIZE - 192 - STACK_BIAS;
++		__asm__ __volatile__("mov %0, %%sp" : : "r" (sp));
++	}
++
++	return orig_sp;
++}
++static void restore_hardirq_stack(void *orig_sp)
++{
++	__asm__ __volatile__("mov %0, %%sp" : : "r" (orig_sp));
++}
++#else
++static void *set_hardirq_stack(void)
++{
++	return NULL;
++}
++static void restore_hardirq_stack(void *orig_sp)
++{
++}
++#endif
++
+ void handler_irq(int irq, struct pt_regs *regs)
+ {
+ 	unsigned long pstate, bucket_pa;
+ 	struct pt_regs *old_regs;
++	void *orig_sp;
+ 
+ 	clear_softint(1 << irq);
+ 
+@@ -695,6 +727,8 @@ void handler_irq(int irq, struct pt_regs *regs)
+ 			       "i" (PSTATE_IE)
+ 			     : "memory");
+ 
++	orig_sp = set_hardirq_stack();
++
+ 	while (bucket_pa) {
+ 		struct irq_desc *desc;
+ 		unsigned long next_pa;
+@@ -711,10 +745,40 @@ void handler_irq(int irq, struct pt_regs *regs)
+ 		bucket_pa = next_pa;
+ 	}
+ 
++	restore_hardirq_stack(orig_sp);
++
+ 	irq_exit();
+ 	set_irq_regs(old_regs);
+ }
+ 
++#ifdef CONFIG_IRQSTACKS
++void do_softirq(void)
++{
++	unsigned long flags;
++
++	if (in_interrupt())
++		return;
++
++	local_irq_save(flags);
++
++	if (local_softirq_pending()) {
++		void *orig_sp, *sp = softirq_stack[smp_processor_id()];
++
++		sp += THREAD_SIZE - 192 - STACK_BIAS;
++
++		__asm__ __volatile__("mov %%sp, %0\n\t"
++				     "mov %1, %%sp"
++				     : "=&r" (orig_sp)
++				     : "r" (sp));
++		__do_softirq();
++		__asm__ __volatile__("mov %0, %%sp"
++				     : : "r" (orig_sp));
++	}
++
++	local_irq_restore(flags);
++}
++#endif
++
+ #ifdef CONFIG_HOTPLUG_CPU
+ void fixup_irqs(void)
+ {
+diff --git a/arch/sparc64/mm/init.c b/arch/sparc64/mm/init.c
+index 84898c4..56e22f4 100644
+--- a/arch/sparc64/mm/init.c
++++ b/arch/sparc64/mm/init.c
+@@ -49,6 +49,7 @@
+ #include <asm/sstate.h>
+ #include <asm/mdesc.h>
+ #include <asm/cpudata.h>
++#include <asm/irq.h>
+ 
+ #define MAX_PHYS_ADDRESS	(1UL << 42UL)
+ #define KPTE_BITMAP_CHUNK_SZ	(256UL * 1024UL * 1024UL)
+@@ -1817,6 +1818,18 @@ void __init paging_init(void)
+ 	if (tlb_type == hypervisor)
+ 		sun4v_mdesc_init();
+ 
++#ifdef CONFIG_IRQSTACKS
++	/* Once the OF device tree and MDESC have been setup, we know
++	 * the list of possible cpus.  Therefore we can allocate the
++	 * IRQ stacks.
++	 */
++	for_each_possible_cpu(i) {
++		/* XXX Use node local allocations... XXX */
++		softirq_stack[i] = __va(lmb_alloc(THREAD_SIZE, THREAD_SIZE));
++		hardirq_stack[i] = __va(lmb_alloc(THREAD_SIZE, THREAD_SIZE));
++	}
++#endif
++
+ 	/* Setup bootmem... */
+ 	last_valid_pfn = end_pfn = bootmem_init(phys_base);
+ 
+diff --git a/include/asm-sparc64/irq.h b/include/asm-sparc64/irq.h
+index 0bb9bf5..d71b5ff 100644
+--- a/include/asm-sparc64/irq.h
++++ b/include/asm-sparc64/irq.h
+@@ -90,4 +90,10 @@ static inline unsigned long get_softint(void)
+ 	return retval;
+ }
+ 
++#ifdef CONFIG_IRQSTACKS
++extern void *hardirq_stack[NR_CPUS];
++extern void *softirq_stack[NR_CPUS];
++#define __ARCH_HAS_DO_SOFTIRQ
++#endif
++
+ #endif
