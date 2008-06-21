@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbYFUIye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755654AbYFUI4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755513AbYFUIye (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 04:54:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbYFUIy0
+	id S1755654AbYFUI4u (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 04:56:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbYFUI4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 04:54:26 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:50413 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751446AbYFUIyZ (ORCPT
+	Sat, 21 Jun 2008 04:56:42 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44303 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751565AbYFUI4k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 04:54:25 -0400
-Message-ID: <485CC1AF.5060901@linux.vnet.ibm.com>
-Date: Sat, 21 Jun 2008 14:24:07 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sat, 21 Jun 2008 04:56:40 -0400
+Date: Sat, 21 Jun 2008 17:56:17 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Subject: Re: [Experimental][PATCH] putback_lru_page rework
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Nick Piggin <npiggin@suse.de>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org
+In-Reply-To: <1213994489.6474.127.camel@lts-notebook>
+References: <1213981843.6474.68.camel@lts-notebook> <1213994489.6474.127.camel@lts-notebook>
+Message-Id: <20080621175458.E82A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Priority heap infrastructure enhancements
-References: <1213796886-24863-1-git-send-email-balbir@linux.vnet.ibm.com> <6599ad830806210029x2a020e1ava6b646be9913fcdf@mail.gmail.com> <485CB652.90801@linux.vnet.ibm.com> <6599ad830806210111o41ad8526j8490662ddf35f299@mail.gmail.com>
-In-Reply-To: <6599ad830806210111o41ad8526j8490662ddf35f299@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Sat, Jun 21, 2008 at 1:05 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->> I would like to be able to drop the smallest value. Since we cannot drop the
->> smallest value, dropping a leaf (heap->size) should be sufficiently good enough.
->> I want a max heap and losing the root of the heap does not work for me.
->>
+> Quick update:  
 > 
-> What are you actually trying to do? Can you get round this by just
-> inverting your "gt" operator? i.e. provide one that actually
-> implements "less-than"?
+> With this patch applied, at ~ 1.5 hours into the test, my system panic'd
+> [panic_on_oops set] with a BUG in __find_get_block() -- looks like the
+> BUG_ON() in check_irqs_on() called from bh_lru_install() inlined by
+> __find_get_block().  Before the panic occurred, I saw warnings from
+> native_smp_call_function_mask() [arch/x86/kernel/smp.c]--also because
+> irqs_disabled().
+> 
+> I'll back out the changes [spin_[un]lock() => spin_[un]lock_irq()] to
+> shrink_inactive_list() and try again.  Just a hunch.
 
-Paul,
+Yup.
+Kamezawa-san's patch remove local_irq_enable(), but don't remove
+local_irq_disable().
+thus, irq is never enabled.
 
-That would convert the entire heap to a min-heap. With my soft limit patches,
-that I am working on for the memory controller; I want the controller that has
-exceeded it's soft limit by the maximum amount to be picked off the heap, so
-that we can reclaim from it on memory contention.
+> -	spin_unlock(&zone->lru_lock);
+> +	spin_unlock_irq(&zone->lru_lock);
+>  done:
+> -	local_irq_enable();
 
-Ideally, I would also like to be able to find an existing node in the heap, but
-that is hard. I can work around that problem for now.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+
