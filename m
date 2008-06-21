@@ -1,79 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbYFURBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753892AbYFURBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753304AbYFURBZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 13:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbYFURBP
+	id S1753892AbYFURBk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 13:01:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbYFURBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 13:01:15 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:52939 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751556AbYFURBN (ORCPT
+	Sat, 21 Jun 2008 13:01:17 -0400
+Received: from saeurebad.de ([85.214.36.134]:43259 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751671AbYFURBO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 13:01:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=AESTW+wbmHhiuN96HGyZCZnTtNa3Dcdeu92zyVzqkF+KawFCQg616oMFfBhEjDLNgU
-         K45aLuyefrrSOp4eKZq/+64/zoAsV9FYvtnAiRTg/1QhAGMClxiVMRyLWykag0tEX+0N
-         JHXzTLvD0Q5EQmeMlBEMBnFRZNCms0f/KMO1I=
-Message-ID: <2f11576a0806211001w375d440dua42b56edce25bfda@mail.gmail.com>
-Date: Sun, 22 Jun 2008 02:01:12 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Paul Menage" <menage@google.com>
-Subject: Re: [PATCH] introduce task cgroup v2
-Cc: balbir@linux.vnet.ibm.com, "Pavel Emelianov" <xemul@openvz.org>,
-       containers@lists.osdl.org, LKML <linux-kernel@vger.kernel.org>,
-       "Li Zefan" <lizf@cn.fujitsu.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <6599ad830806210848q1a1538bcw79c2f3217dd49303@mail.gmail.com>
+	Sat, 21 Jun 2008 13:01:14 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Bernhard Walle <bwalle@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org
+Subject: Re: 2.6.26-rc7: x86 build error
+In-Reply-To: <20080621095537.GA27069@cs181133002.pp.htv.fi> (Adrian Bunk's
+	message of "Sat, 21 Jun 2008 12:55:37 +0300")
+References: <alpine.LFD.1.10.0806201626140.3167@woody.linux-foundation.org>
+	<20080621095537.GA27069@cs181133002.pp.htv.fi>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+Date: Sat, 21 Jun 2008 19:01:02 +0200
+Message-ID: <87y74yn2nl.fsf@skyscraper.fehenstaub.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6599ad830806210056n44c7ff37g7cd643f95aef4aa0@mail.gmail.com>
-	 <485CC255.9010504@linux.vnet.ibm.com>
-	 <20080621180530.E82D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <6599ad830806210848q1a1538bcw79c2f3217dd49303@mail.gmail.com>
-X-Google-Sender-Auth: 9720e709a36d258c
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> I am going to convert spinlock in task limit cgroup to atomic_t.
->> task limit cgroup has following caractatics.
->>        - many write (fork, exit)
->>        - few read
->>        - fork() is performance sensitive systemcall.
+Hi,
+
+Adrian Bunk <bunk@kernel.org> writes:
+
+> Commit d3942cff620bea073fc4e3c8ed878eb1e84615ce
+> (x86: use BOOTMEM_EXCLUSIVE on 32-bit)
+> causes the following compile error:
 >
-> This is true, but I don't see how it can be more performance-sensitive
-> than the overhead of allocating/freeing a page.
+> <--  snip  -->
 >
-> What kinds of performance regressions did you see?
-
-I ran spawn test of unix bench, thus
-
-implement way                   performance degression
--------------------------------------------------------------------------
-use res_counter                  15-20%
-use spin_lock()                    nealy 10%
-use atomic_t                       nealy 5%
-
-Yes, this is really roughly number.
-Of cource, I'll post more detail result at next week.
-
->>          if increase fork overhead, system total performance cause degression.
+> ...
+>   CC      arch/x86/kernel/setup_32.o
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/x86/kernel/setup_32.c: In function ‘reserve_crashkernel’:
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/x86/kernel/setup_32.c:536: error: void value not ignored as it ought to be
+> make[2]: *** [arch/x86/kernel/setup_32.o] Error 1
 >
-> What kind of overhead were you seeing? How about if you delay doing
-> any task accounting until the task_limit subsystem is bound to a
-> hierarchy? That way there's no noticeable overhead for people who
-> aren't using your subsystem.
+> <--  snip  -->
+>
+> CONFIG_KEXEC=y, CONFIG_NEED_MULTIPLE_NODES=y and the fact that 
+> reserve_bootmem_node() returns void seems to cause it.
 
-honestly, I am seeing it on micro-benchmark only.
-but, I'm afraid to performance degression because many people check
-performance regression periodically.
-So if my implement cause performance regression, they never used mine.
+Yes, this triggers it since reserve_bootmem() is then defined to be
+reserve_bootmem_node() which returns void while the
+!CONFIG_HAVE_ARCH_BOOTMEM_NODE version of reserve_bootmem() in bootmem.c
+already returns int.
 
-Or, if you strongly want to task_limit subsystem use res_counter,
-I can be working on improve to res_counter performance instead.
+The following fix is needed:
+
+---
+
+From: Bernhard Walle <bwalle@suse.de>
+Subject: Add return value to reserve_bootmem_node()
+
+This patch changes the function reserve_bootmem_node() from void to int,
+returning -ENOMEM if the allocation fails.
+
+
+Signed-off-by: Bernhard Walle <bwalle@suse.de>;
+
+---
+
+Actually, there was a discussion to return -EBUSY instead of -ENOMEM but
+in the end it does not matter, because callsites just check for negative
+return values.  -hannes
+
+ include/linux/bootmem.h |    2 +-
+ mm/bootmem.c            |    6 ++++--
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+--- a/include/linux/bootmem.h
++++ b/include/linux/bootmem.h
+@@ -94,7 +94,7 @@ extern unsigned long init_bootmem_node(p
+ 				       unsigned long freepfn,
+ 				       unsigned long startpfn,
+ 				       unsigned long endpfn);
+-extern void reserve_bootmem_node(pg_data_t *pgdat,
++extern int reserve_bootmem_node(pg_data_t *pgdat,
+ 				 unsigned long physaddr,
+ 				 unsigned long size,
+ 				 int flags);
+--- a/mm/bootmem.c
++++ b/mm/bootmem.c
+@@ -442,15 +442,17 @@ unsigned long __init init_bootmem_node(p
+ 	return init_bootmem_core(pgdat, freepfn, startpfn, endpfn);
+ }
+ 
+-void __init reserve_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
++int __init reserve_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
+ 				 unsigned long size, int flags)
+ {
+ 	int ret;
+ 
+ 	ret = can_reserve_bootmem_core(pgdat->bdata, physaddr, size, flags);
+ 	if (ret < 0)
+-		return;
++		return -ENOMEM;
+ 	reserve_bootmem_core(pgdat->bdata, physaddr, size, flags);
++
++	return 0;
+ }
+ 
+ void __init free_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
