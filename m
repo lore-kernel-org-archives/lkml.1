@@ -1,69 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753472AbYFUS2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753334AbYFUSel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753472AbYFUS2Y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 14:28:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbYFUS2P
+	id S1753334AbYFUSel (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 14:34:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbYFUSeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 14:28:15 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:21342 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751472AbYFUS2O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 14:28:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:from;
-        b=SMBkEAjeBhdVXDLiaPjLdPR9hnkglRJqM8d9rnTT5rEIWu9Ztb7vUvbfEpYj+VwZBm
-         ZZ6S97m2vqZXgJySC8XMtqTgankBzgonNk7cQSwZriSXKbMquaEDMwCDV1Sj+eUY1jHR
-         e3PKSXB6xv8BRkjld1pWFtietpMadFN5HOB/A=
-Date: Sat, 21 Jun 2008 20:28:06 +0200
-To: Philippe Elie <phil.el@wanadoo.fr>, oprofile-list@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
-Subject: v2.6.26-rc7/oprofile: BUG: using smp_processor_id() in preemptible
-Message-ID: <20080621182805.GA27417@damson.getinternet.no>
+	Sat, 21 Jun 2008 14:34:31 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:41040 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751604AbYFUSeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jun 2008 14:34:31 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Soeren Sonnenburg <kernel@nn7.de>
+Subject: Re: hdparm -M acoustic management for sata disks?
+Date: Sat, 21 Jun 2008 20:34:22 +0200
+User-Agent: KMail/1.9.9
+Cc: Mark Lord <lkml@rtr.ca>, Linux Kernel <linux-kernel@vger.kernel.org>
+References: <1214043295.17302.16.camel@localhost> <485D098E.3080109@rtr.ca> <1214066456.18959.6.camel@localhost>
+In-Reply-To: <1214066456.18959.6.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+Message-Id: <200806212034.24059.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Saturday 21 June 2008 18:40:56 Soeren Sonnenburg wrote:
+> On Sat, 2008-06-21 at 10:00 -0400, Mark Lord wrote:
+> > Soeren Sonnenburg wrote:
+> > > Dear all,
+> > >
+> > > why is acoustic management via hdparm not supported for sata disks?
+> > >
+> > > # hdparm -M /dev/sda
+> > >
+> > > /dev/sda:
+> > >  acoustic      = not supported
+> >
+> > ..
+> >
+> > No, that means that your *drive* doesn't support it.
+> > Check for yourself, with "hdparm -I /dev/sda | grep Acoustic".
+>
+> Just to be sure, did you mean grep acoustic (lowercase)? Because it is
+> listed there under Capabilities:
+> Recommended acoustic management value: 128, current value: 0
+>
+> I've tried with the 5 sata drives I could get my hands on, they all list
+> some recommended acoustic management value but all fail the same way
+>
+> # hdparm -M 128 /dev/sda
+>
+> /dev/sda:
+>  setting acoustic management to 128
+>  HDIO_DRIVE_CMD:ACOUSTIC failed: Input/output error
+>  acoustic      = not supported
+>
 
-I decided to try oprofile too :) Here's what I did:
+Aren't they Seagate drives? They're known not to support acoustic management.
 
-    # opcontrol --deinit
-    Stopping profiling.
-    Killing daemon.
-    Opening /proc/modules: No such file or directory
+> > ..
+> >
+> > > Is there any patch flying around that already enables this or even any
+> > > ETA in the current mainstream?
+> >
+> > ..
+> >
+> > No patch required -- hdparm (newer versions) already do this correctly.
+>
+> I have hdparm v8.9 here, is that new enough?
+>
+> Thanks for you help,
+> Soeren
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-This was after having collected some data. The kernel is compiled without
-module support. (I can provide config if necessary)
-
-Vegard
 
 
- opannotate[27361]: segfault at 0 ip 080d1f5b sp bfcbab6c error 4 in opannotate[8048000+117000]
- BUG: using smp_processor_id() in preemptible [00000000] code: oprofiled/27301
- caller is nmi_shutdown+0x11/0x60
- Pid: 27301, comm: oprofiled Not tainted 2.6.26-rc7 #25
-  [<c028a90d>] debug_smp_processor_id+0xbd/0xc0
-  [<c045fba1>] nmi_shutdown+0x11/0x60
-  [<c045dd4a>] oprofile_shutdown+0x2a/0x60
-  [<c045eb70>] event_buffer_release+0x10/0x40
-  [<c0195f76>] __fput+0xb6/0x180
-  [<c01962e9>] fput+0x19/0x20
-  [<c0193297>] filp_close+0x47/0x70
-  [<c013869b>] put_files_struct+0x9b/0xb0
-  [<c01386f2>] exit_files+0x42/0x60
-  [<c013989d>] do_exit+0x16d/0x700
-  [<c014e1c6>] ? up_read+0x16/0x30
-  [<c0122953>] ? do_page_fault+0x2e3/0x700
-  [<c0194b90>] ? do_sync_write+0x0/0x110
-  [<c0139e61>] do_group_exit+0x31/0x90
-  [<c0139ecf>] sys_exit_group+0xf/0x20
-  [<c010831b>] sysenter_past_esp+0x78/0xd1
-  =======================
+-- 
+Ondrej Zary
