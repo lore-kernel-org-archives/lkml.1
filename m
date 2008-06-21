@@ -1,297 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757549AbYFUCHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757268AbYFUCEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757549AbYFUCHU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 22:07:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbYFUCHJ
+	id S1757268AbYFUCEu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 22:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbYFUCEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 22:07:09 -0400
-Received: from [194.117.236.238] ([194.117.236.238]:36618 "EHLO
-	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751709AbYFUCHH (ORCPT
+	Fri, 20 Jun 2008 22:04:40 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:32132 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753294AbYFUCEj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 22:07:07 -0400
-Date: Sat, 21 Jun 2008 05:06:32 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: penberg@cs.helsinki.fi, akpm@linux-foundation.org,
-       compudj@krystal.dyndns.org, linux-kernel@vger.kernel.org,
-       righi.andrea@gmail.com
-Subject: Re: [PATCH 1/3] relay: Fix 4 off-by-one errors occuring when
- writing to a CPU buffer.
-Message-ID: <20080621050632.4a7a6c16@linux360.ro>
-In-Reply-To: <1213593748.7744.34.camel@charm-linux>
-References: <20080613040947.7465b9a5@linux360.ro>
-	<1213418437.8237.51.camel@charm-linux>
-	<20080614175223.4d3c6084@linux360.ro>
-	<1213593748.7744.34.camel@charm-linux>
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Jun 2008 22:04:39 -0400
+Date: Fri, 20 Jun 2008 19:02:01 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Ben Nizette <bn@niasdigital.com>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Satyam Sharma <ssatyam@cse.iitk.ac.in>, Felix Fietkau <nbd@openwrt.org>,
+       Al Viro <viro@ftp.linux.org.uk>, "H. Peter Anvin" <hpa@kernel.org>
+Subject: Re: [RFC PATCHES] Re: Is configfs the right solution for
+	configuration based fs?
+Message-ID: <20080621020201.GH21416@mail.oracle.com>
+Mail-Followup-To: Ben Nizette <bn@niasdigital.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	"Luis R. Rodriguez" <mcgrof@gmail.com>,
+	linux-wireless <linux-wireless@vger.kernel.org>,
+	linux kernel <linux-kernel@vger.kernel.org>,
+	Greg KH <greg@kroah.com>, Satyam Sharma <ssatyam@cse.iitk.ac.in>,
+	Felix Fietkau <nbd@openwrt.org>, Al Viro <viro@ftp.linux.org.uk>,
+	"H. Peter Anvin" <hpa@kernel.org>
+References: <43e72e890806081425h4e785800nc618fc1985f9809f@mail.gmail.com> <1213002187.698.62.camel@johannes.berg> <1213056772.4089.42.camel@moss.renham> <20080619024804.GA29765@mail.oracle.com> <1213942750.2336.43.camel@moss.renham> <20080620065253.GA14238@ca-server1.us.oracle.com> <1213953776.2336.75.camel@moss.renham> <20080620213708.GC21416@mail.oracle.com> <1214010229.2336.88.camel@moss.renham>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1214010229.2336.88.camel@moss.renham>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Jun 2008 00:22:27 -0500
-Tom Zanussi <tzanussi@gmail.com> wrote:
+On Sat, Jun 21, 2008 at 11:03:49AM +1000, Ben Nizette wrote:
+> You know, I think you've about covered the boilerplate work.  Apart from
+> that, well it took me a millisecond to work out what the point of
+> config_{group,item}s was; I went in kinda expecting to see one struct
+> for directories and one for attributes.  In fact I still not sure I can
+> explain the need for config_items separate from config_groups.  Little
+> help?  :-)
 
-> So apparently what you're seeing is zeroes being read when there's a
-> buffer-full condition?  If so, we need to figure out exactly why
-> that's happening to see whether your fix is really what's needed; I
-> haven't seen problems in the buffer-full case before and I think your
-> fix would break it even if it fixed your read problem.  So it would
-> be good to be able to reproduce it first.
-> 
-> Tom  
+	Groups can create children, items cannot.  Think of kset vs
+kobject, which is where it came from.
+	Don't worry about directories vs files.  The view from the
+client subsystem isn't about filesystem objects.  It's about a hierarchy
+of items.  An item is a sigle entity.  It can have attributes.  A group
+is an item that can have children.
+	The fact that you access it via a filesystem is separate.  We
+could have created a system call instead - the callbacks to your client
+subsystem would have been the same.  Does that help?
 
-Hi,
+Joel
 
-Sorry for being so late, there were some exams I had to cope with.
+-- 
 
-Although I couldn't reproduce zeros, I've come up with something I'd
-say is equally good. This has been done on a vanilla 2.6.26-rc6.
+Life's Little Instruction Book #511
 
-Please look at the testcase below and tell me what you think.
+	"Call your mother."
 
-And yes, the changes in relay_write() and __relay_write() are inappropriate.
-
-	
-	Cheers,
-	Eduard
-
----
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 1c9938a..5e1a32b 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -9,7 +9,7 @@ obj-y     = sched.o fork.o exec_domain.o panic.o printk.o profile.o \
- 	    rcupdate.o extable.o params.o posix-timers.o \
- 	    kthread.o wait.o kfifo.o sys_ni.o posix-cpu-timers.o mutex.o \
- 	    hrtimer.o rwsem.o nsproxy.o srcu.o semaphore.o \
--	    notifier.o ksysfs.o pm_qos_params.o sched_clock.o
-+	    notifier.o ksysfs.o pm_qos_params.o sched_clock.o relay_test.o
- 
- obj-$(CONFIG_SYSCTL_SYSCALL_CHECK) += sysctl_check.o
- obj-$(CONFIG_STACKTRACE) += stacktrace.o
-diff --git a/kernel/relay_test.c b/kernel/relay_test.c
-new file mode 100644
-index 0000000..38c2755
---- /dev/null
-+++ b/kernel/relay_test.c
-@@ -0,0 +1,92 @@
-+#include <linux/debugfs.h>
-+#include <linux/relay.h>
-+
-+static struct rchan *relay_test_chan;
-+
-+static void relay_test_do_test_writes(int test)
-+{
-+	u32 poison32 = 0x32323232;
-+	u16 poison16 = 0x1616;
-+
-+	switch (test) {
-+		case 0: /* Half full subbuf. */
-+			relay_write(relay_test_chan, &poison16, 2);
-+			break;
-+		case 1: /* Full subbuf. */
-+			relay_write(relay_test_chan, &poison32, 4);
-+			break;
-+		case 2: /* Crossing subbuf boundaries. */
-+			relay_write(relay_test_chan, &poison16, 2);
-+			relay_write(relay_test_chan, &poison32, 4);
-+			break;
-+		case 3: /* Full buffer. */
-+			relay_write(relay_test_chan, &poison32, 4);
-+			relay_write(relay_test_chan, &poison32, 4);
-+			break;
-+		default:
-+			printk(KERN_INFO "relay_test: No such test!\n");
-+	}
-+}
-+
-+static ssize_t relay_test_trigger_write(struct file *filp,
-+					const char __user *userdata,
-+					size_t count, loff_t *ppos)
-+{
-+	char data[5];
-+	unsigned long test, err, bytes = min(count, (size_t) 4);
-+
-+	err = copy_from_user(&data, userdata, bytes);
-+	if (err) {
-+		printk(KERN_ERR "relay_test: Error reading from user!\n");
-+		return -1;
-+	}
-+	data[4] = '\0';
-+	test = simple_strtoul(data, NULL, 10);
-+	
-+	printk(KERN_INFO "relay_test: Doing test %lu on CPU %lu.\n",
-+	       test, get_cpu());
-+	put_cpu();
-+	relay_test_do_test_writes(test);
-+
-+	return bytes;
-+}
-+
-+static struct file_operations trigger_fops = {
-+	.open = nonseekable_open,
-+	.write = relay_test_trigger_write,
-+};
-+
-+static struct dentry *
-+relay_test_create_buf_file(const char *filename, struct dentry *parent,
-+			   int mode, struct rchan_buf *buf, int *is_global)
-+{
-+	return debugfs_create_file(filename, mode, parent,
-+				   buf, &relay_file_operations);
-+}
-+
-+static struct rchan_callbacks relay_test_callbacks = {
-+	.create_buf_file = relay_test_create_buf_file,
-+};
-+
-+static int relay_test_init(void)
-+{
-+	struct dentry *trigger;
-+
-+	trigger = debugfs_create_file("relay_test_trigger", 0600, NULL,
-+				      NULL, &trigger_fops);
-+	if (!trigger) {
-+		printk(KERN_ERR "relay_test: could not create trigger debugfs file!\n");
-+		return 1;
-+	}
-+
-+	relay_test_chan = relay_open("relay_test_cpu", NULL,
-+				     4, 2, &relay_test_callbacks, NULL);
-+	if (!relay_test_chan) {
-+		printk(KERN_ERR "relay_test: could not open channel!\n");
-+		return 1;
-+	}
-+		
-+	return 0;
-+}
-+
-+late_initcall(relay_test_init);
----
-
-Results, first run:
-
-Test 0:
-0000000 1616                                   
-0000002
----
-Test 1:
-0000000 3232 3232                              
-0000004
----
-Test 2:
-0000000 1616                                   
-0000002
----
-Test 3:
-0000000 3232 3232 3232 3232                    
-0000008
----
-Test 0, 0:
----
-Test 0, 0, 0, 0:
-0000000 1616 1616 1616 1616                    
-0000008
----
-What the kernel said:
-relay_test: Doing test 0 on CPU 1.
-relay_test: Doing test 1 on CPU 1.
-relay_test: Doing test 2 on CPU 1.
-relay_test: Doing test 3 on CPU 0.
-relay_test: Doing test 0 on CPU 0.
-relay_test: Doing test 0 on CPU 0.
-relay_test: Doing test 0 on CPU 0.
-relay_test: Doing test 0 on CPU 0.
-relay_test: Doing test 0 on CPU 0.
-relay_test: Doing test 0 on CPU 0.
-
-Results, second run, without rebooting in between:
-
-Test 0:
-0000000 1616                                   
-0000002
----
-Test 1:
-0000000 3232 3232                              
-0000004
----
-Test 2:
-0000000 1616                                   
-0000002
----
-Test 3:
----
-Test 0, 0:
-0000000 3232 3232 3232 3232                    
-0000008
----
-Test 0, 0, 0, 0:
----
-What the kernel said:
-relay_test: Doing test 0 on CPU 0.
-relay_test: Doing test 1 on CPU 1.
-relay_test: Doing test 2 on CPU 1.
-relay_test: Doing test 3 on CPU 1.
-relay_test: Doing test 0 on CPU 1.
-relay_test: Doing test 0 on CPU 1.
-relay_test: Doing test 0 on CPU 1.
-relay_test: Doing test 0 on CPU 1.
-relay_test: Doing test 0 on CPU 1.
-relay_test: Doing test 0 on CPU 1.
-
-The ugly script used to do this (on the second run I edited the file to
-remove previous dmesg stuff):
-
-#!/bin/bash
-echo "Test 0:" > /output.vanilla
-echo "0" > /debug/relay_test_trigger
-sleep 1
-hexdump /debug/relay_test_cpu* >> /output.vanilla
-sleep 1
-echo "---" >> /output.vanilla
-
-echo "Test 1:" >> /output.vanilla
-echo "1" > /debug/relay_test_trigger
-sleep 1
-hexdump /debug/relay_test_cpu* >> /output.vanilla
-sleep 1
-echo "---" >> /output.vanilla
-
-echo "Test 2:" >> /output.vanilla
-echo "2" > /debug/relay_test_trigger
-sleep 1
-hexdump /debug/relay_test_cpu* >> /output.vanilla
-sleep 1
-echo "---" >> /output.vanilla
-
-echo "Test 3:" >> /output.vanilla
-echo "3" > /debug/relay_test_trigger
-sleep 1
-hexdump /debug/relay_test_cpu* >> /output.vanilla
-sleep 1
-echo "---" >> /output.vanilla
-
-echo "Test 0, 0:" >> /output.vanilla
-echo "0" > /debug/relay_test_trigger
-echo "0" > /debug/relay_test_trigger
-sleep 1
-hexdump /debug/relay_test_cpu* >> /output.vanilla
-sleep 1
-echo "---" >> /output.vanilla
-
-echo "Test 0, 0, 0, 0:" >> /output.vanilla
-echo "0" > /debug/relay_test_trigger
-echo "0" > /debug/relay_test_trigger
-echo "0" > /debug/relay_test_trigger
-echo "0" > /debug/relay_test_trigger
-sleep 1
-hexdump /debug/relay_test_cpu* >> /output.vanilla
-sleep 1
-echo "---" >> /output.vanilla
-
-echo "What the kernel said:" >> /output.vanilla
-dmesg | grep relay_test >> /output.vanilla
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
