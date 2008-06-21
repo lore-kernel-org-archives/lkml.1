@@ -1,65 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752337AbYFUQzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753312AbYFUQz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752337AbYFUQzM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 12:55:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbYFUQzA
+	id S1753312AbYFUQz4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 12:55:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbYFUQzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 12:55:00 -0400
-Received: from rtr.ca ([76.10.145.34]:2843 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751001AbYFUQy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 12:54:59 -0400
-Message-ID: <485D3260.20301@rtr.ca>
-Date: Sat, 21 Jun 2008 12:54:56 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Sat, 21 Jun 2008 12:55:44 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:52705 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752552AbYFUQz2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jun 2008 12:55:28 -0400
+Message-ID: <485D31A5.80001@zytor.com>
+Date: Sat, 21 Jun 2008 09:51:49 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Soeren Sonnenburg <kernel@nn7.de>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: hdparm -M acoustic management for sata disks?
-References: <1214043295.17302.16.camel@localhost>  <485D098E.3080109@rtr.ca> <1214066456.18959.6.camel@localhost>
-In-Reply-To: <1214066456.18959.6.camel@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Andi Kleen <andi@firstfloor.org>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Roland McGrath <roland@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Various x86 syscall mechanisms
+References: <485C2875.2050204@goop.org> <485C4B0E.2090704@zytor.com> <87bq1uyjgi.fsf@basil.nowhere.org>
+In-Reply-To: <87bq1uyjgi.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Soeren Sonnenburg wrote:
+Andi Kleen wrote:
+> "H. Peter Anvin" <hpa@zytor.com> writes:
 > 
-> Just to be sure, did you mean grep acoustic (lowercase)? Because it is
-> listed there under Capabilities: 
-> Recommended acoustic management value: 128, current value: 0
-..
+>> There is no reason we couldn't do syscall for 32-bit native, but the
+>> only processor that would benefit would be K7, and that's far enough
+> 
+> K6 actually. K7 has sysenter AFAIK. The K6 syscall was also slightly different
+> and would need special case code.
 
-Ahh.. That part of the output just shows the "current setting field",
-which is zero (0) or "invalid" in your case.   That's a display error
-in hdparm -- it probably shouldn't bother with that field when the
-feature is missing from the feature list that is given lower down
-in the output.  (the reason it doesn't discard it today, is that early
-drives had the feature but didn't report it lower down.. but we can
-distinguish those drives by ATA version number now).
+Sorry, yes, K6.  Even more historic.
 
-Here's hdparm-8.9 on a drive that *does* support the feature:
-
-
-$ hdparm -I /dev/sda | grep Acoustic
-           *    Automatic Acoustic Management feature set
-
-$ hdparm -M /dev/sda
-
-/dev/sda:
- acoustic      = 254 (128=quiet ... 254=fast)
-
-$ hdparm -M128 /dev/sda
-
-/dev/sda:
- setting acoustic management to 128
- acoustic      = 128 (128=quiet ... 254=fast)
-
-$ hdparm -M254 /dev/sda
-
-/dev/sda:
- setting acoustic management to 254
- acoustic      = 254 (128=quiet ... 254=fast)
+	-hpa
