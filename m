@@ -1,44 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753157AbYFUOBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbYFUODt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753157AbYFUOBp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 10:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbYFUOBe
+	id S1752549AbYFUODt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 10:03:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbYFUODl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 10:01:34 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:34142 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751132AbYFUOAv (ORCPT
+	Sat, 21 Jun 2008 10:03:41 -0400
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:35909 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750979AbYFUODl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 10:00:51 -0400
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       AntonioLin <antonio.lin@alcormicro.com>,
-       David Vrabel <david.vrabel@csr.com>
-Subject: Re: Scatter-gather list constraints
+	Sat, 21 Jun 2008 10:03:41 -0400
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Roland McGrath <roland@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Various x86 syscall mechanisms
 From: Andi Kleen <andi@firstfloor.org>
-References: <Pine.LNX.4.44L0.0806201623080.2133-100000@iolanthe.rowland.org>
-Date: Sat, 21 Jun 2008 15:59:51 +0200
-In-Reply-To: <Pine.LNX.4.44L0.0806201623080.2133-100000@iolanthe.rowland.org> (Alan Stern's message of "Fri, 20 Jun 2008 16:30:25 -0400 (EDT)")
-Message-ID: <87fxr6yjl4.fsf@basil.nowhere.org>
+References: <485C2875.2050204@goop.org> <485C4B0E.2090704@zytor.com>
+Date: Sat, 21 Jun 2008 16:02:37 +0200
+In-Reply-To: <485C4B0E.2090704@zytor.com> (H. Peter Anvin's message of "Fri, 20 Jun 2008 17:27:58 -0700")
+Message-ID: <87bq1uyjgi.fsf@basil.nowhere.org>
 User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 21 Jun 2008 13:52:36.0414 (UTC) FILETIME=[0FDB95E0:01C8D3A6]
+X-OriginalArrivalTime: 21 Jun 2008 13:55:21.0867 (UTC) FILETIME=[7279B5B0:01C8D3A6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern <stern@rowland.harvard.edu> writes:
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-> This question arises in connection with wireless USB mass-storage
-> devices.  The controller driver requires that all DMA segments
-> in a transfer, other than the last one, have a multiple of 1024 bytes.  
-> But we're sometimes getting s-g lists where an element contains an odd
-> number of 512-byte sectors, and of course it doesn't work.
+> There is no reason we couldn't do syscall for 32-bit native, but the
+> only processor that would benefit would be K7, and that's far enough
 
-But you can handle a single 512 byte request? Splitting the request
-in this case should work. Or maybe copying is cheaper than splitting?
-
-I don't think the block layer knows about such kinds of restrictions.
+K6 actually. K7 has sysenter AFAIK. The K6 syscall was also slightly different
+and would need special case code.
 
 -Andi
