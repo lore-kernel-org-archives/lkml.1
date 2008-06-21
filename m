@@ -1,85 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbYFUTW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754620AbYFUTXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754489AbYFUTW6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 15:22:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbYFUTWS
+	id S1754620AbYFUTXX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 15:23:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbYFUTWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 15:22:18 -0400
+	Sat, 21 Jun 2008 15:22:21 -0400
 Received: from an-out-0708.google.com ([209.85.132.244]:54980 "EHLO
 	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752466AbYFUTWQ (ORCPT
+	with ESMTP id S1752811AbYFUTWT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 15:22:16 -0400
+	Sat, 21 Jun 2008 15:22:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=ved2j1+9Y5YGib9XXNFeQFERGObxnuOS1QKeOGGi+sd4N0a9YrhQ+moUpVUc0vzPxk
-         am03wsuw5fmsKndq6ByqwXygvE1xUCTr6ryb9cKqTPv3TsxHt9pyvj/OmTLT7eWj5Dft
-         ssyiRbySU9GHFXIocEJq2+ce5o5mRI7Jb4f64=
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=by1IeSPTeZsu+AyFAGrgR5J2Cv5AvXCSE/r+cX5W55aqnrkO+2yFekUTxltxxsI6l/
+         wRa629uM2GKa3JJtyriH6XNsxuFTFnox3L8xTigKN8mQQyr9PY1ZisvADolph3C1Oqud
+         fpq740BynU5z33sdbZke1oInaP1ikZy2A/zzA=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 12/18] ide: use ->tf_load in actual_try_to_identify()
-Date: Sat, 21 Jun 2008 21:10:30 +0200
+To: linux-ide@vger.kernel.org
+Subject: [PATCH 1/4] ide: mark hpt34x host driver as BROKEN
+Date: Sat, 21 Jun 2008 21:12:27 +0200
 User-Agent: KMail/1.9.9
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080620213323.13202.71450.sendpatchset@localhost.localdomain> <20080620213445.13202.61145.sendpatchset@localhost.localdomain> <485C39D6.6020801@ru.mvista.com>
-In-Reply-To: <485C39D6.6020801@ru.mvista.com>
+Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806212110.31086.bzolnier@gmail.com>
+Message-Id: <200806212112.27748.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 21 June 2008, Sergei Shtylyov wrote:
-> Hello.
-> 
-> Bartlomiej Zolnierkiewicz wrote:
-> > Convert actual_try_to_identify() to use ->tf_load instead of ->OUTB.
-> >
-> > There should be no functional changes caused by this patch.
-> >
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> >   
-> [...]
-> > Index: b/drivers/ide/ide-probe.c
-> > ===================================================================
-> > --- a/drivers/ide/ide-probe.c
-> > +++ b/drivers/ide/ide-probe.c
-> > @@ -290,9 +290,15 @@ static int actual_try_to_identify (ide_d
-> >  	/* set features register for atapi
-> >  	 * identify command to be sure of reply
-> >  	 */
-> > -	if ((cmd == WIN_PIDENTIFY))
-> > -		/* disable dma & overlap */
-> > -		hwif->OUTB(0, io_ports->feature_addr);
-> > +	if (cmd == WIN_PIDENTIFY) {
-> > +		ide_task_t task;
-> > +
-> > +		memset(&task, 0, sizeof(task));
-> > +		/* disable DMA & overlap */
-> > +		task.tf_flags = IDE_TFLAG_OUT_FEATURE;
-> > +
-> > +		drive->hwif->tf_load(drive, &task);
-> > +	}
-> >   
-> 
->    Eww, this is bulky but should be a part of your plan to switch to 
-> tf_load() method...
+Alan Cox has noticed some time ago that hpt34x is broken
+(http://lkml.org/lkml/2007/7/3/257):
 
-Yes on both matters:
+"No the old driver doesn't even do that. It starts up. It spuriously
+adjusts some non writable PCI BAR registers, prints a message about
+resources being in use already then exits."
 
-- It is a part of The Grand Plan. ;)
+Reported-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
 
-- I also don't like the small increase of complexity but these changes
-  make the core code completely independent of the hardware I/O registers
-  (allowing any taskfile transport method).
-
-PS Thanks for reviewing these patches.
-
-Bart
+Index: b/drivers/ide/Kconfig
+===================================================================
+--- a/drivers/ide/Kconfig
++++ b/drivers/ide/Kconfig
+@@ -548,6 +548,7 @@ config BLK_DEV_CS5535
+ 
+ config BLK_DEV_HPT34X
+ 	tristate "HPT34X chipset support"
++	depends on BROKEN
+ 	select BLK_DEV_IDEDMA_PCI
+ 	help
+ 	  This driver adds up to 4 more EIDE devices sharing a single
