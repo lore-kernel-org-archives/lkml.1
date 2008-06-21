@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbYFUCAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757777AbYFUCF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756726AbYFUCAo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 22:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbYFUCAh
+	id S1757777AbYFUCF3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 22:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbYFUCFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 22:00:37 -0400
-Received: from gw.goop.org ([64.81.55.164]:35650 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751671AbYFUCAg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 22:00:36 -0400
-Message-ID: <485C60C1.2050200@goop.org>
-Date: Fri, 20 Jun 2008 19:00:33 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 20 Jun 2008 22:05:19 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:19032 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753010AbYFUCFR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Jun 2008 22:05:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=RTdIWy/L+UcpUDBdfBAY4lXDnntAIYGxK5GpNiC28ekUfzctctGYkWxEPqDi3myPsc
+         I6ooZPc3wb6bIRcQLkcag1BsfxEWQ1d/cFUy5xWOreyPmGhha8B8+DjMfX5QhmLoqPuh
+         BK97JtHfRRqhya3Iqr9d2B4DsMUQWMjdAPgEk=
+Message-ID: <dd18b0c30806201905n65b308d7ua20a5a704bee11a1@mail.gmail.com>
+Date: Sat, 21 Jun 2008 02:05:16 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: hda_intel: azx_get_response timeout, switching to polling mode: last cmd=0x011f000c
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Roland McGrath <roland@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Various x86 syscall mechanisms
-References: <485C2875.2050204@goop.org> <485C4B0E.2090704@zytor.com>
-In-Reply-To: <485C4B0E.2090704@zytor.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> The reason is that not all 64-bit processors (i.e. K8) support a 
-> 32-bit sysenter in long mode (i.e. with a 64-bit kernel.)
+Hello; I sent a post last week reporting with 2.6.26-rc6 about:
+[  138.057543] hda_intel: azx_get_response timeout, switching to
+polling mode: last cmd=0x011f000c
 
-OK, so compat 32-bit processes would use syscall in that case, even if 
-they wouldn't on a 32-bit kernel?
+I've just loaded 2.6.26-rc7 and am now seeing this quite often, with
+2.6.26-rc6 very seldom,
+I've reboot twice and both times this appeared.
+regards;
 
->   sysenter is *always* entered from the vdso, since the return address 
-> is lost and this is also where a 64-bit kernel can put a syscall.
->
-> There is no reason we couldn't do syscall for 32-bit native, but the 
-> only processor that would benefit would be K7, and that's far enough 
-> in the past that I don't think anyone cares enough.
 
-OK, good.
-
-> Note that long mode syscall is different from protected mode syscall, 
-> even in 32-bit compatibility mode.  The long mode variant is a lot saner.
-
-You mean that syscall arriving in long mode ring0 is saner than syscall 
-arriving in protected mode ring0?
-
-    J
+-- 
+Justin P. Mattock
