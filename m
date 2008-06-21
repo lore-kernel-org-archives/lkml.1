@@ -1,167 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759188AbYFUANk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759484AbYFUAOq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759188AbYFUANk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Jun 2008 20:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753153AbYFUANb
+	id S1759484AbYFUAOq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Jun 2008 20:14:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755139AbYFUAOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Jun 2008 20:13:31 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:28115 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752984AbYFUANa (ORCPT
+	Fri, 20 Jun 2008 20:14:38 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:56295 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753153AbYFUAOh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Jun 2008 20:13:30 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:references:user-agent:date:from:to:cc:
-	subject:content-disposition;
-	b=g9hIHVogJS7rj1YiOhyTOyxCvLKeC5udWCTolE2Y8RnWSZfQ0hZqSB3tfnrWklQHL
-	kHaoBzbXYZ6S8BSt5WHOw==
-Message-Id: <20080621000730.656730000@menage.corp.google.com>
-References: <20080620234358.182933000@menage.corp.google.com>
-User-Agent: quilt/0.45-1
-Date: Fri, 20 Jun 2008 16:44:03 -0700
-From: menage@google.com
-To: pj@sgi.com, xemul@openvz.org, balbir@in.ibm.com, serue@us.ibm.com,
-       akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Subject: [PATCH 5/8] CGroup Files: Turn attach_task_by_pid directly into a cgroup write handler
-Content-Disposition: inline; filename=cgroup_tasks_file.patch
+	Fri, 20 Jun 2008 20:14:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=n5fKa8zkcLcojAbU1MwZZh5DcJGRSJqA1/2K+hcl7u6IX+bCFAiJgtdRDfkm0E9Lkm
+         G76eTk9m1zuCyslgJntWKvFyS7cOfelQnS5j/l0l7VWMUAWubHx9sOwamrFRo1U8IVpf
+         pfBapw7Dc9gM+CX1fP56e8R9CxkeTjpLDK1Ok=
+Message-ID: <86802c440806201714p271b7b3fx68183c5f48208bee@mail.gmail.com>
+Date: Fri, 20 Jun 2008 17:14:36 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Kevin Winchester" <kjwinchester@gmail.com>
+Subject: Re: Bisecting tip/auto-x86-next?
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Ingo Molnar" <mingo@redhat.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Pavel Machek" <pavel@ucw.cz>
+In-Reply-To: <485C4484.3080706@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <485AFC9B.7090502@gmail.com> <20080620101722.GD17692@elte.hu>
+	 <d1af83620806200437p7c3817d8i381a99f92f47fd4f@mail.gmail.com>
+	 <20080620153626.GE17373@elte.hu> <485C4484.3080706@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes attach_task_by_pid() to take a u64 rather than a
-string; as a result it can be called directly as a control groups
-write_u64 handler, and cgroup_common_file_write() can be removed.
+On Fri, Jun 20, 2008 at 5:00 PM, Kevin Winchester
+<kjwinchester@gmail.com> wrote:
+> Ingo Molnar wrote:
+>>
+>> * Kevin Winchester <kjwinchester@gmail.com> wrote:
+>>
+>>>> hm, could you send me the config that triggered this?
+>>>
+>>> I will do so tonight when I am home again.  It is a UP AMD64 box with a
+>>> VIA chipset, if that helps.
+>>>
+>>>> btw., you can probably ignore this one safely. Also please tell me at
+>>>> which commit ID you were at when you triggered this warning.
+>>>
+>>> Good to know - I will get the commit ID tonight as well, although
+>>> wouldn't following the same bisection sequence that I did give you the same
+>>> bisection point?  I guess that would assume that linus/master and
+>>> auto-x86-next haven't changed much since last night, which might not be
+>>> correct.
+>>
+>> yeah, you'd probably not hit that warning with the x86/gart bisection
+>> sequence. (Assuming the bug is introduced in that branch - so you should
+>> first check whether pure x86/gart kernel triggers the problem too.)
+>>
+>> If you still have the commit ID around then please send it - if you dont,
+>> no problem, it's no big issue. I wanted to check how wide the bisection
+>> window is where the warning triggers.
+>>
+>
+> I'm sorry - I accidentally checkout out x86/gart to test it before grabbing
+> the commit ID.
+>
+> I went ahead with the bisection and found:
+>
+>
+>
+> 8c9fd91a0dc503f085169d44f4360be025f75224 is first bad commit
+> commit 8c9fd91a0dc503f085169d44f4360be025f75224
+> Author: Yinghai Lu <yhlu.kernel@gmail.com>
+> Date:   Sun Apr 13 18:42:31 2008 -0700
+>
+>    x86: checking aperture size order
+>
+>    some systems are using 32M for gart and agp when memory is less than 4G.
+>    Kernel will reject and try to allcate another 64M that is not needed,
+>    and we will waste 64M of perfectly good RAM.
+>
+>    this patch adds a workaround by checking aper_base/order between NB and
+>    agp bridge. If they are the same, and memory size is less than 4G, it
+>    will allow it.
+>
+>    Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+>    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+>
+> :040000 040000 848d6e4045a14d01fc0a794d4350d8a84f3ceff6
+> 4a10a52b41309060cd5dc1bf0c322f6d43b2477b M      arch
+> :040000 040000 aa1cee87b1f5b1b30ed03ce6164ad7f404fef2a3
+> f9ce0aaa1f7d4fdc7bdc5a43285495db53a6f531 M      drivers
+>
+>
+> as the first bad commit.  I do not have time to look at the patch right now,
+> but in case anyone else does, I figured I would post it.
+>
 
-Signed-off-by: Paul Menage <menage@google.com>
+please send out whole boot logs with "debug" in command line.
 
----
- kernel/cgroup.c |   80 +++++++++-----------------------------------------------
- 1 file changed, 14 insertions(+), 66 deletions(-)
-
-Index: cws-2.6.26-rc5-mm3/kernel/cgroup.c
-===================================================================
---- cws-2.6.26-rc5-mm3.orig/kernel/cgroup.c
-+++ cws-2.6.26-rc5-mm3/kernel/cgroup.c
-@@ -504,10 +504,6 @@ static struct css_set *find_css_set(
-  * knows that the cgroup won't be removed, as cgroup_rmdir()
-  * needs that mutex.
-  *
-- * The cgroup_common_file_write handler for operations that modify
-- * the cgroup hierarchy holds cgroup_mutex across the entire operation,
-- * single threading all such cgroup modifications across the system.
-- *
-  * The fork and exit callbacks cgroup_fork() and cgroup_exit(), don't
-  * (usually) take cgroup_mutex.  These are the two most performance
-  * critical pieces of code here.  The exception occurs on cgroup_exit(),
-@@ -1279,18 +1275,14 @@ int cgroup_attach_task(struct cgroup *cg
- }
- 
- /*
-- * Attach task with pid 'pid' to cgroup 'cgrp'. Call with
-- * cgroup_mutex, may take task_lock of task
-+ * Attach task with pid 'pid' to cgroup 'cgrp'. Call with cgroup_mutex
-+ * held. May take task_lock of task
-  */
--static int attach_task_by_pid(struct cgroup *cgrp, char *pidbuf)
-+static int attach_task_by_pid(struct cgroup *cgrp, u64 pid)
- {
--	pid_t pid;
- 	struct task_struct *tsk;
- 	int ret;
- 
--	if (sscanf(pidbuf, "%d", &pid) != 1)
--		return -EIO;
--
- 	if (pid) {
- 		rcu_read_lock();
- 		tsk = find_task_by_vpid(pid);
-@@ -1316,6 +1308,16 @@ static int attach_task_by_pid(struct cgr
- 	return ret;
- }
- 
-+static int cgroup_tasks_write(struct cgroup *cgrp, struct cftype *cft, u64 pid)
-+{
-+	int ret;
-+	if (!cgroup_lock_live_group(cgrp))
-+		return -ENODEV;
-+	ret = attach_task_by_pid(cgrp, pid);
-+	cgroup_unlock();
-+	return ret;
-+}
-+
- /* The various types of files and directories in a cgroup file system */
- enum cgroup_filetype {
- 	FILE_ROOT,
-@@ -1431,60 +1433,6 @@ static ssize_t cgroup_write_string(struc
- 	return retval;
- }
- 
--static ssize_t cgroup_common_file_write(struct cgroup *cgrp,
--					   struct cftype *cft,
--					   struct file *file,
--					   const char __user *userbuf,
--					   size_t nbytes, loff_t *unused_ppos)
--{
--	enum cgroup_filetype type = cft->private;
--	char *buffer;
--	int retval = 0;
--
--	if (nbytes >= PATH_MAX)
--		return -E2BIG;
--
--	/* +1 for nul-terminator */
--	buffer = kmalloc(nbytes + 1, GFP_KERNEL);
--	if (buffer == NULL)
--		return -ENOMEM;
--
--	if (copy_from_user(buffer, userbuf, nbytes)) {
--		retval = -EFAULT;
--		goto out1;
--	}
--	buffer[nbytes] = 0;	/* nul-terminate */
--	strstrip(buffer);	/* strip -just- trailing whitespace */
--
--	mutex_lock(&cgroup_mutex);
--
--	/*
--	 * This was already checked for in cgroup_file_write(), but
--	 * check again now we're holding cgroup_mutex.
--	 */
--	if (cgroup_is_removed(cgrp)) {
--		retval = -ENODEV;
--		goto out2;
--	}
--
--	switch (type) {
--	case FILE_TASKLIST:
--		retval = attach_task_by_pid(cgrp, buffer);
--		break;
--	default:
--		retval = -EINVAL;
--		goto out2;
--	}
--
--	if (retval == 0)
--		retval = nbytes;
--out2:
--	mutex_unlock(&cgroup_mutex);
--out1:
--	kfree(buffer);
--	return retval;
--}
--
- static ssize_t cgroup_file_write(struct file *file, const char __user *buf,
- 						size_t nbytes, loff_t *ppos)
- {
-@@ -2262,7 +2210,7 @@ static struct cftype files[] = {
- 		.name = "tasks",
- 		.open = cgroup_tasks_open,
- 		.read = cgroup_tasks_read,
--		.write = cgroup_common_file_write,
-+		.write_u64 = cgroup_tasks_write,
- 		.release = cgroup_tasks_release,
- 		.private = FILE_TASKLIST,
- 	},
-
---
+YH
