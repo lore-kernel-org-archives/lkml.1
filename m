@@ -1,79 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754505AbYFUT3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbYFUT3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754505AbYFUT3A (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 15:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbYFUT2w
+	id S1754813AbYFUT3Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 15:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbYFUT3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 15:28:52 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:31184 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751917AbYFUT2v (ORCPT
+	Sat, 21 Jun 2008 15:29:13 -0400
+Received: from homer.mvista.com ([63.81.120.155]:65153 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751623AbYFUT3L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 15:28:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:subject:message-id:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:from;
-        b=oemsfwDE3PT29W8ijAVP+Q+34whdAsWT0Q4o3esPWI1KiQiI2zI3S26iZU7vSBAv98
-         YQjGqfqw48nr/0K1GOHeE/wBDqhfdTwgA3mVZjduVl/ahTTQpJadgg7GeO1o8Ucbp7mu
-         cBVd22Ks9MLtVonqEETIWQ7RmQdX3LoETtAOY=
-Date: Sat, 21 Jun 2008 21:28:45 +0200
-To: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: v2.6.26-rc7: BUG task_struct: Poison overwritten
-Message-ID: <20080621192845.GB2992@damson.getinternet.no>
+	Sat, 21 Jun 2008 15:29:11 -0400
+Message-ID: <485D567C.9030707@ru.mvista.com>
+Date: Sat, 21 Jun 2008 23:29:00 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080621192400.GA2992@damson.getinternet.no>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 04/18] ide: remove ide_setup_dma()
+References: <20080620213323.13202.71450.sendpatchset@localhost.localdomain> <20080620213350.13202.73557.sendpatchset@localhost.localdomain> <485C2924.7040905@ru.mvista.com> <200806212106.03484.bzolnier@gmail.com>
+In-Reply-To: <200806212106.03484.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oops, seems there was another one a bit earlier (about 5 minutes) that I
-didn't notice. I don't think it helps that much, but here it is:
+Hello.
 
+Bartlomiej Zolnierkiewicz wrote:
+> On Saturday 21 June 2008, Sergei Shtylyov wrote:
+>   
+>> Hello.
+>>
+>> Bartlomiej Zolnierkiewicz wrote:
+>>     
+>>> Export sff_dma_ops and then remove ide_setup_dma().
+>>>
+>>> There should be no functional changes caused by this patch.
+>>>
+>>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>>>
+>>>       
 
- =============================================================================
- BUG task_struct: Poison overwritten
- -----------------------------------------------------------------------------
- 
- INFO: 0xf53ab018-0xf53ab02b. First byte 0x71 instead of 0x6b
- INFO: Allocated in copy_process+0x70/0x1090 age=110 cpu=1 pid=28664
- INFO: Freed in free_task+0x2c/0x30 age=68 cpu=0 pid=28667
- INFO: Slab 0xc1ba6cc0 objects=8 used=5 fp=0xf53aafd0 flags=0x400020c3
- INFO: Object 0xf53aafd0 @offset=12240 fp=0xf53acfb0
- 
- Bytes b4 0xf53aafc0:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a ZZZZZZZZZZZZZZZZ
-   Object 0xf53aafd0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-   Object 0xf53aafe0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-   Object 0xf53aaff0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-   Object 0xf53ab000:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-   Object 0xf53ab010:  6b 6b 6b 6b 6b 6b 6b 6b 71 19 6f be dd 07 00 00 kkkkkkkkq.o<BE><DD>...
-   Object 0xf53ab020:  71 19 6f be 6b 6b 6b 6b 6a 6b 6b eb 6b 6b 6b 6b q.o<BE>kkkkjkk<EB>kkkk
-   Object 0xf53ab030:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-   Object 0xf53ab040:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-  Redzone 0xf53abf88:  bb bb bb bb                                     <BB><BB><BB><BB>          
-  
-  Padding 0xf53abfb0:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a ZZZZZZZZZZZZZZZZ
- Pid: 1326, comm: udevd Not tainted 2.6.26-rc7 #25
-  [<c018f3fa>] print_trailer+0xaa/0xe0
-  [<c018f4cb>] check_bytes_and_report+0x9b/0xc0
-  [<c018f8b3>] check_object+0x193/0x1f0
-  [<c019047b>] __slab_alloc+0x44b/0x5d0
-  [<c01909e3>] kmem_cache_alloc+0xb3/0xe0
-  [<c01345c0>] ? copy_process+0x70/0x1090
-  [<c01345c0>] ? copy_process+0x70/0x1090
-  [<c01345c0>] copy_process+0x70/0x1090
-  [<c017ff49>] ? remove_vma+0x49/0x60
-  [<c01356d7>] do_fork+0x57/0x280
-  [<c0180a8a>] ? do_munmap+0x18a/0x1f0
-  [<c0180b36>] ? sys_munmap+0x46/0x60
-  [<c010652f>] sys_clone+0x2f/0x40
-  [<c010831b>] sysenter_past_esp+0x78/0xd1
-  =======================
- FIX task_struct: Restoring 0xf53ab018-0xf53ab02b=0x6b
- 
- FIX task_struct: Marking all objects used
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+>>> Index: b/drivers/ide/arm/palm_bk3710.c
+>>> ===================================================================
+>>> --- a/drivers/ide/arm/palm_bk3710.c
+>>> +++ b/drivers/ide/arm/palm_bk3710.c
+>>> @@ -318,15 +318,14 @@ static u8 __devinit palm_bk3710_cable_de
+>>>  static int __devinit palm_bk3710_init_dma(ide_hwif_t *hwif,
+>>>  					  const struct ide_port_info *d)
+>>>  {
+>>> -	unsigned long base =
+>>> -		hwif->io_ports.data_addr - IDE_PALM_ATA_PRI_REG_OFFSET;
+>>> -
+>>>  	printk(KERN_INFO "    %s: MMIO-DMA\n", hwif->name);
+>>>  
+>>>  	if (ide_allocate_dma_engine(hwif))
+>>>  		return -1;
+>>>  
+>>> -	ide_setup_dma(hwif, base);
+>>> +	hwif->dma_base = hwif->io_ports.data_addr - IDE_PALM_ATA_PRI_REG_OFFSET;
+>>>   
+>>>       
+>>    That's er... too complex. Actually, 'base' has the value for 
+>> 'dma_base' at that moment...
+>>     
+>
+> Well, the above place is the only user of 'base' so isn't the variable
+> kind of superfluous?
+>   
+
+   Oops, sorry. I somehow thought this change was in other context (was 
+looking at the older version of driver recently).
+
+> Thanks,
+> Bart
+>   
+
+MBR, Sergei
+
 
