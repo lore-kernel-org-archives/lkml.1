@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751636AbYFUOLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbYFUOMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751636AbYFUOLb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 10:11:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbYFUOLX
+	id S1754209AbYFUOMU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 10:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbYFUOML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 10:11:23 -0400
-Received: from [194.117.236.238] ([194.117.236.238]:54440 "EHLO
+	Sat, 21 Jun 2008 10:12:11 -0400
+Received: from [194.117.236.238] ([194.117.236.238]:54452 "EHLO
 	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751013AbYFUOLW (ORCPT
+	with ESMTP id S1751105AbYFUOMJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 10:11:22 -0400
-Date: Sat, 21 Jun 2008 17:10:51 +0300
+	Sat, 21 Jun 2008 10:12:09 -0400
+Date: Sat, 21 Jun 2008 17:11:49 +0300
 From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 To: tzanussi@gmail.com
 Cc: penberg@cs.helsinki.fi, akpm@linux-foundation.org,
        torvalds@linux-foundation.org, compudj@krystal.dyndns.org,
        vegard.nossum@gmail.com, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] Better interface for hooking early initcalls.
-Message-ID: <20080621171051.5ed3b522@linux360.ro>
+Subject: [PATCH 3/3] relay: Add buffer-only channels; useful for early
+ logging.
+Message-ID: <20080621171149.1434e523@linux360.ro>
 X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,96 +27,300 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added early initcall (pre-SMP) support, using an identical interface to
-that of regular initcalls. Functions called from do_pre_smp_initcalls()
-could be converted to use this cleaner interface.
+Allows one to create and use a channel with no associated files. Files
+can be initialized later. This is useful in scenarios such as logging
+in early code, before VFS is up. Therefore, such channels can be
+created and used as soon as kmem_cache_init() completed.
 
-This is required by CPU hotplug, because early users have to register
-notifiers before going SMP. One such CPU hotplug user is the relay
-interface with buffer-only channels, which needs to register such a
-notifier, to be usable in early code. This in turn is used by kmemtrace.
+This is needed by kmemtrace to do tracing in early kernel code.
 
 Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 ---
- include/asm-generic/vmlinux.lds.h |    2 ++
- include/linux/init.h              |    7 +++++++
- init/main.c                       |   13 +++++++++++--
- 3 files changed, 20 insertions(+), 2 deletions(-)
+ Documentation/filesystems/relay.txt |   11 +++
+ include/linux/relay.h               |    5 +
+ kernel/relay.c                      |  141 +++++++++++++++++++++++++++--------
+ 3 files changed, 126 insertions(+), 31 deletions(-)
 
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index f054778..4a318e5 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -326,6 +326,8 @@
- 	}
+diff --git a/Documentation/filesystems/relay.txt b/Documentation/filesystems/relay.txt
+index 094f2d2..b417f83 100644
+--- a/Documentation/filesystems/relay.txt
++++ b/Documentation/filesystems/relay.txt
+@@ -161,6 +161,7 @@ TBD(curr. line MT:/API/)
+     relay_close(chan)
+     relay_flush(chan)
+     relay_reset(chan)
++    relay_late_setup_files(chan, base_filename, parent)
  
- #define INITCALLS							\
-+	*(.initcallearly.init)						\
-+	__early_initcall_end = .;					\
-   	*(.initcall0.init)						\
-   	*(.initcall0s.init)						\
-   	*(.initcall1.init)						\
-diff --git a/include/linux/init.h b/include/linux/init.h
-index 21d658c..bd12a4c 100644
---- a/include/linux/init.h
-+++ b/include/linux/init.h
-@@ -170,6 +170,13 @@ extern void (*late_time_init)(void);
- 	__attribute__((__section__(".initcall" level ".init"))) = fn
+   channel management typically called on instigation of userspace:
  
- /*
-+ * Early initcalls run before initializing SMP.
-+ *
-+ * Only for built-in code, not modules.
-+ */
-+#define early_initcall(fn)		__define_initcall("early",fn,early)
+@@ -294,6 +295,16 @@ user-defined data with a channel, and is immediately available
+ (including in create_buf_file()) via chan->private_data or
+ buf->chan->private_data.
+ 
++Buffer-only channels
++--------------------
 +
-+/*
-  * A "pure" initcall has no dependencies on anything else, and purely
-  * initializes variables that couldn't be statically initialized.
-  *
-diff --git a/init/main.c b/init/main.c
-index f7fb200..bd5df3e 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -736,13 +736,13 @@ static void __init do_one_initcall(initcall_t fn)
++These channels have no files associated and can be created with
++relay_open(NULL, NULL, ...). Such channels are useful in scenarios such
++as when doing early tracing in the kernel, before the VFS is up. In these
++cases, one may open a buffer-only channel and then call 
++relay_late_setup_files() when the kernel is ready to handle files,
++to expose the buffered data to the userspace.
++
+ Channel 'modes'
+ ---------------
+ 
+diff --git a/include/linux/relay.h b/include/linux/relay.h
+index a3a03e7..1d3dcf8 100644
+--- a/include/linux/relay.h
++++ b/include/linux/relay.h
+@@ -49,6 +49,7 @@ struct rchan_buf
+ 	size_t *padding;		/* padding counts per sub-buffer */
+ 	size_t prev_padding;		/* temporary variable */
+ 	size_t bytes_consumed;		/* bytes consumed in cur read subbuf */
++	size_t early_bytes;		/* bytes consumed before VFS inited */
+ 	unsigned int cpu;		/* this buf's cpu */
+ } ____cacheline_aligned;
+ 
+@@ -69,6 +70,7 @@ struct rchan
+ 	int is_global;			/* One global buffer ? */
+ 	struct list_head list;		/* for channel list */
+ 	struct dentry *parent;		/* parent dentry passed to open */
++	int has_base_filename;		/* has a filename associated? */
+ 	char base_filename[NAME_MAX];	/* saved base filename */
+ };
+ 
+@@ -170,6 +172,9 @@ struct rchan *relay_open(const char *base_filename,
+ 			 size_t n_subbufs,
+ 			 struct rchan_callbacks *cb,
+ 			 void *private_data);
++extern int relay_late_setup_files(struct rchan *chan,
++				  const char *base_filename,
++				  struct dentry *parent);
+ extern void relay_close(struct rchan *chan);
+ extern void relay_flush(struct rchan *chan);
+ extern void relay_subbufs_consumed(struct rchan *chan,
+diff --git a/kernel/relay.c b/kernel/relay.c
+index 250a27a..80a6a40 100644
+--- a/kernel/relay.c
++++ b/kernel/relay.c
+@@ -407,6 +407,39 @@ void relay_reset(struct rchan *chan)
  }
+ EXPORT_SYMBOL_GPL(relay_reset);
  
- 
--extern initcall_t __initcall_start[], __initcall_end[];
-+extern initcall_t __initcall_start[], __initcall_end[], __early_initcall_end[];
- 
- static void __init do_initcalls(void)
- {
- 	initcall_t *call;
- 
--	for (call = __initcall_start; call < __initcall_end; call++)
-+	for (call = __early_initcall_end; call < __initcall_end; call++)
- 		do_one_initcall(*call);
- 
- 	/* Make sure there is no pending stuff from the initcall sequence */
-@@ -775,6 +775,14 @@ static int __init nosoftlockup_setup(char *str)
- }
- __setup("nosoftlockup", nosoftlockup_setup);
- 
-+static void __init __do_pre_smp_initcalls(void)
++static int relay_setup_buf_file(struct rchan *chan,
++				struct rchan_buf *buf,
++				unsigned int cpu)
 +{
-+	initcall_t *call;
++	struct dentry *dentry;
++	unsigned long flags;
++	char *tmpname;
 +
-+	for (call = __initcall_start; call < __early_initcall_end; call++)
-+		(*call)();
++	tmpname = kzalloc(NAME_MAX + 1, GFP_KERNEL);
++	if (!tmpname)
++		goto failed;
++	snprintf(tmpname, NAME_MAX, "%s%d", chan->base_filename, cpu);
++
++	/* Create file in fs */
++	dentry = chan->cb->create_buf_file(tmpname, chan->parent,
++					   S_IRUSR, buf,
++					   &chan->is_global);
++
++	kfree(tmpname);
++
++	if (!dentry)
++		goto failed;
++	spin_lock_irqsave(&buf->rw_lock, flags);
++	buf->dentry = dentry;
++	buf->dentry->d_inode->i_size = buf->early_bytes;
++	spin_unlock_irqrestore(&buf->rw_lock, flags);
++
++	return 0;
++
++failed:
++	return 1;
 +}
 +
- static void __init do_pre_smp_initcalls(void)
+ /*
+  *	relay_open_buf - create a new relay channel buffer
+  *
+@@ -415,48 +448,33 @@ EXPORT_SYMBOL_GPL(relay_reset);
+ static struct rchan_buf *relay_open_buf(struct rchan *chan, unsigned int cpu)
  {
- 	extern int spawn_ksoftirqd(void);
-@@ -856,6 +864,7 @@ static int __init kernel_init(void * unused)
+  	struct rchan_buf *buf = NULL;
+-	struct dentry *dentry;
+- 	char *tmpname;
  
- 	smp_prepare_cpus(setup_max_cpus);
+  	if (chan->is_global)
+ 		return chan->buf[0];
  
-+	__do_pre_smp_initcalls();
- 	do_pre_smp_initcalls();
+-	tmpname = kzalloc(NAME_MAX + 1, GFP_KERNEL);
+- 	if (!tmpname)
+- 		goto end;
+- 	snprintf(tmpname, NAME_MAX, "%s%d", chan->base_filename, cpu);
+-
+ 	buf = relay_create_buf(chan);
+ 	if (!buf)
+- 		goto free_name;
++		return NULL;
  
- 	smp_init();
+ 	spin_lock_init(&buf->rw_lock);
+ 
++	if (chan->has_base_filename)
++		if (relay_setup_buf_file(chan, buf, cpu))
++			goto free_buf;
++
+  	buf->cpu = cpu;
+  	__relay_reset(buf, 1);
+ 
+-	/* Create file in fs */
+- 	dentry = chan->cb->create_buf_file(tmpname, chan->parent, S_IRUSR,
+- 					   buf, &chan->is_global);
+- 	if (!dentry)
+- 		goto free_buf;
+-
+-	buf->dentry = dentry;
+-
+  	if(chan->is_global) {
+  		chan->buf[0] = buf;
+  		buf->cpu = 0;
+   	}
+ 
+- 	goto free_name;
++	return buf;
+ 
+ free_buf:
+  	relay_destroy_buf(buf);
+- 	buf = NULL;
+-free_name:
+- 	kfree(tmpname);
+-end:
+-	return buf;
++	return NULL;
+ }
+ 
+ /**
+@@ -539,8 +557,8 @@ static int __cpuinit relay_hotcpu_callback(struct notifier_block *nb,
+ 
+ /**
+  *	relay_open - create a new relay channel
+- *	@base_filename: base name of files to create
+- *	@parent: dentry of parent directory, %NULL for root directory
++ *	@base_filename: base name of files to create, %NULL for buffering only
++ *	@parent: dentry of parent directory, %NULL for root directory or buffer
+  *	@subbuf_size: size of sub-buffers
+  *	@n_subbufs: number of sub-buffers
+  *	@cb: client callback functions
+@@ -562,8 +580,6 @@ struct rchan *relay_open(const char *base_filename,
+ {
+ 	unsigned int i;
+ 	struct rchan *chan;
+-	if (!base_filename)
+-		return NULL;
+ 
+ 	if (!(subbuf_size && n_subbufs))
+ 		return NULL;
+@@ -578,7 +594,10 @@ struct rchan *relay_open(const char *base_filename,
+ 	chan->alloc_size = FIX_SIZE(subbuf_size * n_subbufs);
+ 	chan->parent = parent;
+ 	chan->private_data = private_data;
+-	strlcpy(chan->base_filename, base_filename, NAME_MAX);
++	if (base_filename) {
++		chan->has_base_filename = 1;
++		strlcpy(chan->base_filename, base_filename, NAME_MAX);
++	}
+ 	setup_callbacks(chan, cb);
+ 	kref_init(&chan->kref);
+ 
+@@ -607,6 +626,62 @@ free_bufs:
+ EXPORT_SYMBOL_GPL(relay_open);
+ 
+ /**
++ *	relay_late_setup_files - triggers file creation
++ *	@chan: channel to operate on
++ *	@base_filename: base name of files to create
++ *	@parent: dentry of parent directory, %NULL for root directory
++ *
++ *	Returns 0 if successful, non-zero otherwise.
++ *
++ *	Use to setup files for a previously buffer-only channel.
++ *	Useful to do early tracing in kernel, before VFS is up, for example.
++ */
++int relay_late_setup_files(struct rchan *chan,
++			   const char *base_filename,
++			   struct dentry *parent)
++{
++	unsigned int i;
++	int err;
++	struct rchan_buf *buf;
++
++	if (!chan || !base_filename)
++		return 1;
++
++	strlcpy(chan->base_filename, base_filename, NAME_MAX);
++
++	mutex_lock(&relay_channels_mutex);
++	if (unlikely(chan->has_base_filename))
++		goto out;
++	chan->has_base_filename = 1;
++	chan->parent = parent;
++	/*
++	 * The CPU hotplug notifier ran before us and created buffers with
++	 * no files associated. So it's safe to call relay_setup_buf_file()
++	 * on all currently online CPUs.
++	 */
++	for_each_online_cpu(i) {
++		buf = chan->buf[i];
++
++		if (unlikely(!buf)) {
++			printk(KERN_ERR "relay_late_setup_files: "
++			       "all CPUs should have buffers!\n");
++			goto out;
++		}
++
++		err = relay_setup_buf_file(chan, buf, i);
++		if (unlikely(err))
++			goto out;
++	}
++	mutex_unlock(&relay_channels_mutex);
++
++	return 0;
++
++out:
++	mutex_unlock(&relay_channels_mutex);
++	return 1;
++}
++
++/**
+  *	relay_switch_subbuf - switch to a new sub-buffer
+  *	@buf: channel buffer
+  *	@length: size of current event
+@@ -629,8 +704,13 @@ size_t relay_switch_subbuf(struct rchan_buf *buf, size_t length)
+ 		old_subbuf = buf->subbufs_produced % buf->chan->n_subbufs;
+ 		buf->padding[old_subbuf] = buf->prev_padding;
+ 		buf->subbufs_produced++;
+-		buf->dentry->d_inode->i_size += buf->chan->subbuf_size -
+-			buf->padding[old_subbuf];
++		if (buf->dentry)
++			buf->dentry->d_inode->i_size +=
++				buf->chan->subbuf_size -
++				buf->padding[old_subbuf];
++		else
++			buf->early_bytes += buf->chan->subbuf_size -
++					    buf->padding[old_subbuf];
+ 		smp_mb();
+ 		if (waitqueue_active(&buf->read_wait))
+ 			/*
+@@ -1241,9 +1321,8 @@ EXPORT_SYMBOL_GPL(relay_file_operations);
+ 
+ static __init int relay_init(void)
+ {
+-
+ 	hotcpu_notifier(relay_hotcpu_callback, 0);
+ 	return 0;
+ }
+ 
+-module_init(relay_init);
++early_initcall(relay_init);
 -- 
 1.5.5.4
-
