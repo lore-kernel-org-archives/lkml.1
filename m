@@ -1,96 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754384AbYFUT1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754505AbYFUT3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754384AbYFUT1K (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 15:27:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbYFUT0z
+	id S1754505AbYFUT3A (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 15:29:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbYFUT2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 15:26:55 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:41344 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751709AbYFUT0y (ORCPT
+	Sat, 21 Jun 2008 15:28:52 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:31184 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751917AbYFUT2v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 15:26:54 -0400
-Date: Sat, 21 Jun 2008 12:26:46 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH]rcu,alpha: avoid smp_read_barrier_depends in rcu_dereference when pointer==NULL
-Message-ID: <20080621192646.GA22569@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <485CCFB9.9050208@cn.fujitsu.com> <1214052746.3223.218.camel@lappy.programming.kicks-ass.net>
+	Sat, 21 Jun 2008 15:28:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent:from;
+        b=oemsfwDE3PT29W8ijAVP+Q+34whdAsWT0Q4o3esPWI1KiQiI2zI3S26iZU7vSBAv98
+         YQjGqfqw48nr/0K1GOHeE/wBDqhfdTwgA3mVZjduVl/ahTTQpJadgg7GeO1o8Ucbp7mu
+         cBVd22Ks9MLtVonqEETIWQ7RmQdX3LoETtAOY=
+Date: Sat, 21 Jun 2008 21:28:45 +0200
+To: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: v2.6.26-rc7: BUG task_struct: Poison overwritten
+Message-ID: <20080621192845.GB2992@damson.getinternet.no>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1214052746.3223.218.camel@lappy.programming.kicks-ass.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080621192400.GA2992@damson.getinternet.no>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 21, 2008 at 02:52:25PM +0200, Peter Zijlstra wrote:
-> On Sat, 2008-06-21 at 17:54 +0800, Lai Jiangshan wrote:
-> > Hi, Paul and Alpha hackers
-> > 
-> > memory barrier is expensive, I think it's worth that adding an if-statement
-> > to avoid it when pointer == NULL.
-> > 
-> > This patch change nothing in UP or in other architectures for compiler's
-> > optimization.
-> 
-> I suspect this optimization is invalid in the case where the loaded
-> value is used as an offset (either pointer or array index). But I'm
-> afraid I'll have to defer to Paul for explanations..
+Oops, seems there was another one a bit earlier (about 5 minutes) that I
+didn't notice. I don't think it helps that much, but here it is:
 
-What Peter said!
 
-There are cases where the argument to rcu_dereference() is an array
-index rather than a pointer.  In that case, zero is a perfectly valid
-array index and requires a memory barrier on Alpha.  Given that the
-smp_read_barrier_depends() primitive is very nearly (but not quite)
-a no-op on non-Alpha machines, it will also be necessary to carefully
-check the generated code to make sure that we are not slowing down the
-common non-Alpha machines to help out the very rare Alpha machines.
+ =============================================================================
+ BUG task_struct: Poison overwritten
+ -----------------------------------------------------------------------------
+ 
+ INFO: 0xf53ab018-0xf53ab02b. First byte 0x71 instead of 0x6b
+ INFO: Allocated in copy_process+0x70/0x1090 age=110 cpu=1 pid=28664
+ INFO: Freed in free_task+0x2c/0x30 age=68 cpu=0 pid=28667
+ INFO: Slab 0xc1ba6cc0 objects=8 used=5 fp=0xf53aafd0 flags=0x400020c3
+ INFO: Object 0xf53aafd0 @offset=12240 fp=0xf53acfb0
+ 
+ Bytes b4 0xf53aafc0:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a ZZZZZZZZZZZZZZZZ
+   Object 0xf53aafd0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+   Object 0xf53aafe0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+   Object 0xf53aaff0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+   Object 0xf53ab000:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+   Object 0xf53ab010:  6b 6b 6b 6b 6b 6b 6b 6b 71 19 6f be dd 07 00 00 kkkkkkkkq.o<BE><DD>...
+   Object 0xf53ab020:  71 19 6f be 6b 6b 6b 6b 6a 6b 6b eb 6b 6b 6b 6b q.o<BE>kkkkjkk<EB>kkkk
+   Object 0xf53ab030:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+   Object 0xf53ab040:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+  Redzone 0xf53abf88:  bb bb bb bb                                     <BB><BB><BB><BB>          
+  
+  Padding 0xf53abfb0:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a ZZZZZZZZZZZZZZZZ
+ Pid: 1326, comm: udevd Not tainted 2.6.26-rc7 #25
+  [<c018f3fa>] print_trailer+0xaa/0xe0
+  [<c018f4cb>] check_bytes_and_report+0x9b/0xc0
+  [<c018f8b3>] check_object+0x193/0x1f0
+  [<c019047b>] __slab_alloc+0x44b/0x5d0
+  [<c01909e3>] kmem_cache_alloc+0xb3/0xe0
+  [<c01345c0>] ? copy_process+0x70/0x1090
+  [<c01345c0>] ? copy_process+0x70/0x1090
+  [<c01345c0>] copy_process+0x70/0x1090
+  [<c017ff49>] ? remove_vma+0x49/0x60
+  [<c01356d7>] do_fork+0x57/0x280
+  [<c0180a8a>] ? do_munmap+0x18a/0x1f0
+  [<c0180b36>] ? sys_munmap+0x46/0x60
+  [<c010652f>] sys_clone+0x2f/0x40
+  [<c010831b>] sysenter_past_esp+0x78/0xd1
+  =======================
+ FIX task_struct: Restoring 0xf53ab018-0xf53ab02b=0x6b
+ 
+ FIX task_struct: Marking all objects used
 
-Some months ago, we attempted to add a similar check to
-rcu_assign_pointer(), but we were unable to find an approach that handled
-all the cases currently in the Linux kernel, even when we introduced a
-special-case primitive for array indexes.  Please note that we did not
-prove it impossible, but rather decided that it was consuming more time
-and energy than was warranted.
-
-							Thanx, Paul
-
-PS.  I have not forgotten about your earlier patch to the list structures
-     used by classic RCU -- but I am still curious to know the results
-     of the more-harsh testing that I suggested.
-
-> > 			Thanks, Lai Jiangshan
-> > 
-> > 
-> > Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> > ---
-> > diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-> > index d42dbec..8979f29 100644
-> > --- a/include/linux/rcupdate.h
-> > +++ b/include/linux/rcupdate.h
-> > @@ -143,7 +143,8 @@ struct rcu_head {
-> >  
-> >  #define rcu_dereference(p)     ({ \
-> >  				typeof(p) _________p1 = ACCESS_ONCE(p); \
-> > -				smp_read_barrier_depends(); \
-> > +				if (_________p1) \
-> > +					smp_read_barrier_depends(); \
-> >  				(_________p1); \
-> >  				})
-> >  
-> > 
-> > 
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> 
