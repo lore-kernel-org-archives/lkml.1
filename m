@@ -1,125 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753428AbYFURHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752447AbYFURWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753428AbYFURHw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 13:07:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbYFURHp
+	id S1752447AbYFURWu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 13:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbYFURWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 13:07:45 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:36063 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751023AbYFURHo (ORCPT
+	Sat, 21 Jun 2008 13:22:40 -0400
+Received: from fk-out-0910.google.com ([209.85.128.188]:60008 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751037AbYFURWj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 13:07:44 -0400
-Message-ID: <485D356A.402@keyaccess.nl>
-Date: Sat, 21 Jun 2008 19:07:54 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Sat, 21 Jun 2008 13:22:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=PL0earq4sZmDfz67ZcPv3Y1aYm7zCSC72P2eArI+m3FFfLLMpZo1c5dvzhhxI4Ue4y
+         1vJhVEmB+5W5Lw3gLznLqKdorwBTdTyvwn4UdSoLDo7PnpBP8FZeRQ+YaVQcHQDBTsyC
+         Jhr/hlk8G0akjYKLrr/e4mpeb1M+7CZh7GaSM=
+Message-ID: <5a4c581d0806211022w58648606g65089598524721db@mail.gmail.com>
+Date: Sat, 21 Jun 2008 19:22:38 +0200
+From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [2.6.26-rc5-git2] WARNING: at kernel/lockdep.c:2658 check_flags+0x4c/0x128()
+Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Vegard Nossum" <vegard.nossum@gmail.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <5a4c581d0806120356x3e933967od7ce0e109037306f@mail.gmail.com>
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Re: regression, 2.6.26-rc7, pnp: quirk_system_pci_resources()
-References: <485C6388.1050903@keyaccess.nl>
-In-Reply-To: <485C6388.1050903@keyaccess.nl>
-Content-Type: multipart/mixed;
- boundary="------------080602020007000403010806"
-X-Spam-Score: 2.5 (++)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <5a4c581d0806111506m31412b21lee7bb851dabe6576@mail.gmail.com>
+	 <19f34abd0806112355v7330ccd4x41e66151f333c144@mail.gmail.com>
+	 <1213254306.31518.84.camel@twins> <20080612073014.GA9402@elte.hu>
+	 <5a4c581d0806120356x3e933967od7ce0e109037306f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080602020007000403010806
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+On Thu, Jun 12, 2008 at 12:56 PM, Alessandro Suardi
+<alessandro.suardi@gmail.com> wrote:
+> On Thu, Jun 12, 2008 at 9:30 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>>
+>> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+>>
+>>> On Thu, 2008-06-12 at 08:55 +0200, Vegard Nossum wrote:
+>>>
+>>>
+>>> > From: Vegard Nossum <vegard.nossum@gmail.com>
+>>> > Date: Thu, 12 Jun 2008 08:49:18 +0200
+>>> > Subject: [PATCH] x86: more hardirq annotations for notify_die()
+>>> >
+>>> > Reported-by: Alessandro Suardi <alessandro.suardi@gmail.com>
+>>> > Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+>>> > ---
+>>> >  arch/x86/kernel/traps_32.c |    1 +
+>>> >  1 files changed, 1 insertions(+), 0 deletions(-)
+>>> >
+>>> > diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
+>>> > index bde6f63..be9ecae 100644
+>>> > --- a/arch/x86/kernel/traps_32.c
+>>> > +++ b/arch/x86/kernel/traps_32.c
+>>> > @@ -569,6 +569,7 @@ void do_##name(struct pt_regs *regs, long error_code)                   \
+>>> >  #define DO_VM86_ERROR(trapnr, signr, str, name)                            \
+>>> >  void do_##name(struct pt_regs *regs, long error_code)                      \
+>>> >  {                                                                  \
+>>> > +   trace_hardirqs_fixup();                                         \
+>>> >     if (notify_die(DIE_TRAP, str, regs, error_code, trapnr, signr)  \
+>>> >                                             == NOTIFY_STOP)         \
+>>> >             return;                                                 \
+>>>
+>>> Yeah, I think this is ok, actual traps don't have any way of knowing the
+>>> actual IRQ state afaik. So
+>>>
+>>> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>>
+>> applied to tip/x86/urgent - thanks.
+>>
+>> Alessandro, does the patch from Vegard fix the ltrace warning for you?
+>>
+>>        Ingo
+>>
+>
+> I don't  know whether the issue is reproducable at will.
+>
+> I'll give the patch a go when I come home from work
+>  later, trying to put back the rogue nautilus RPM and
+>  putting it under ltrace, then report back.
+>
+> Thanks for the quick turnaround, hope to be able to
+>  provide feedback later. Ciao,
 
-On 21-06-08 04:12, Rene Herman wrote:
+All right, finally had time to try this one, and it's good for
+ me - patch on top of 2.6.26-rc7, the WARNING does not
+ appear in over three minutes of ltracing nautilus even
+ with load climbing up to 6 while just two gnome-terminals
+ (one running 'top' and the other running 'ltrace') and a
+ firefox with two tabs are opened under XVnc. Hence,
 
-> I have been running with pnpacpi=off due to testing ISAPnP/PnPBIOS but 
-> when testing some other ACPI related problem tonight I removed that and 
-> found that unfortunately something seems to have regressed. My soundcard 
-> driver (snd-es1968) won't load anymore on current mainline:
-> 
-> ===
-> ACPI: PCI Interrupt 0000:00:0a.0[A] -> Link [LNKC] -> GSI 10 (level, 
-> low) -> IRQ 10
-> PCI: Unable to reserve I/O region #1:100@de00 for device 0000:00:0a.0
-> ACPI: PCI interrupt for device 0000:00:0a.0 disabled
-> ES1968 (ESS Maestro): probe of 0000:00:0a.0 failed with error -16
-> ===
-> 
-> 00:01 (PNP0c02) is keeping its I/O region occupied:
-> 
-> ===
-> # cat /sys/bus/pnp/devices/00\:01/resources
-> state = active
-> io 0xde00-0xde03
-> ===
-> 
-> Sound used to work back when I wasn't yet booting with pnpacpi=off but I 
-> don't quite recall when I started doing that nor have I looked yet at 
-> why quirk_system_pci_resources() isn't doing its job. I'll investigate 
-> if you need me to but thought I'd first throw a heap of information your 
-> way and hope you'll have a patch for me when I wake up :-/
+Tested-by: <alessandro.suardi@gmail.com>
 
-Well, why the quirk wasn't helping is fairly obvious -- but given that I 
-definitely didn't need anything like this on .25 I wonder why PnPACPI is 
-all of a sudden claiming those 4 ports in the first place.
+BTW, both the old and the new nautilus package have
+ horrible performance under VNC, I guess I noticed the
+ new one simply due to a fresh-start effect...
 
-As in, this works for me and might not be bogus due to the symmetry and 
-all but still needs some head scratching. In any case, I do definitely 
-need something for .26...
+Thanks !
 
-I'll go recompile .25 onto here and see if's just my BIOS being funny or 
-something to do with the kernel.
+--alessandro
 
-Signed-off-by: Rene Herman <rene.herman@gmail.com>
+ "Give me love / Or give me hate
+ Give me anything that's not just ok"
 
-Rene.
-
---------------080602020007000403010806
-Content-Type: text/plain;
- name="pnp-quirk_system_pci_resources-ports.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="pnp-quirk_system_pci_resources-ports.diff"
-
-diff --git a/drivers/pnp/quirks.c b/drivers/pnp/quirks.c
-index 55f55ed..bbca54f 100644
---- a/drivers/pnp/quirks.c
-+++ b/drivers/pnp/quirks.c
-@@ -245,15 +245,17 @@ static void quirk_system_pci_resources(struct pnp_dev *dev)
- 	 */
- 	for_each_pci_dev(pdev) {
- 		for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
--			if (!(pci_resource_flags(pdev, i) & IORESOURCE_MEM) ||
--			    pci_resource_len(pdev, i) == 0)
-+			unsigned int type;
-+
-+			type = pci_resource_flags(pdev, i) &
-+					(IORESOURCE_IO | IORESOURCE_MEM);
-+			if (!type || pci_resource_len(pdev, i) == 0)
- 				continue;
- 
- 			pci_start = pci_resource_start(pdev, i);
- 			pci_end = pci_resource_end(pdev, i);
- 			for (j = 0;
--			     (res = pnp_get_resource(dev, IORESOURCE_MEM, j));
--			     j++) {
-+			     (res = pnp_get_resource(dev, type, j)); j++) {
- 				if (res->start == 0 && res->end == 0)
- 					continue;
- 
-@@ -283,9 +285,10 @@ static void quirk_system_pci_resources(struct pnp_dev *dev)
- 				 * the PCI region, and that might prevent a PCI
- 				 * driver from requesting its resources.
- 				 */
--				dev_warn(&dev->dev, "mem resource "
-+				dev_warn(&dev->dev, "%s resource "
- 					"(0x%llx-0x%llx) overlaps %s BAR %d "
- 					"(0x%llx-0x%llx), disabling\n",
-+					type & IORESOURCE_IO ? "port" : "mem",
- 					(unsigned long long) pnp_start,
- 					(unsigned long long) pnp_end,
- 					pci_name(pdev), i,
-
---------------080602020007000403010806--
+ (Sophia, 'Weightless')
