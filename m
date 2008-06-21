@@ -1,83 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753143AbYFUQPC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752425AbYFUQbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753143AbYFUQPC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 12:15:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbYFUQOx
+	id S1752425AbYFUQbz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 12:31:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751037AbYFUQbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 12:14:53 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:56838 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750892AbYFUQOw (ORCPT
+	Sat, 21 Jun 2008 12:31:43 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:21953 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751001AbYFUQbm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 12:14:52 -0400
-Subject: Re: [RFC][Patch 2/2] markers: example of irq regular kernel markers
-From: Peter Zijlstra <peterz@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       Hideo AOKI <haoki@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.58.0806211058510.28481@gandalf.stny.rr.com>
-References: <20080620174529.GB10943@Krystal> <485C064E.5020705@redhat.com>
-	 <20080621190132.E835.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <Pine.LNX.4.58.0806211013300.32694@gandalf.stny.rr.com>
-	 <y0mwskiyh36.fsf@ton.toronto.redhat.com>
-	 <Pine.LNX.4.58.0806211058510.28481@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Sat, 21 Jun 2008 18:13:54 +0200
-Message-Id: <1214064834.3223.231.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Jun 2008 12:31:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=QMHTByx27VC4/tcTcbdGE1bysWp7lYeDca1fDfPKn1o0FqDII7xV2gp5pYjWSaGWLI
+         vXdl2Yna7EsJJFIY3TYxEbDG2xFyYWzZHg16FX3XY0bEpRptMjPsDRqNyRpaAd3F5C6w
+         c/gv6M3gnbHTiMDUXw25gdKItoCj1+FEcmZQc=
+Message-ID: <e9e943910806210931s77dd4679m5a30561e01bcd207@mail.gmail.com>
+Date: Sat, 21 Jun 2008 17:31:41 +0100
+From: "Duane Griffin" <duaneg@dghda.com>
+To: "=?ISO-8859-1?Q?Jochen_Vo=DF?=" <jochen.voss@googlemail.com>
+Subject: Re: [PATCH, v2] ext3: validate directory entry data before use
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
+       "Sami Liedes" <sliedes@cc.hut.fi>
+In-Reply-To: <ef1cd66f0806210913p59d73cd6he86b656682ad67e9@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <1214013261-32428-1-git-send-email-duaneg@dghda.com>
+	 <1214063696-16546-1-git-send-email-duaneg@dghda.com>
+	 <ef1cd66f0806210913p59d73cd6he86b656682ad67e9@mail.gmail.com>
+X-Google-Sender-Auth: 5f4b0bfef1c3b00a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-06-21 at 11:07 -0400, Steven Rostedt wrote:
-> On Sat, 21 Jun 2008, Frank Ch. Eigler wrote:
-> > Steven Rostedt <rostedt@goodmis.org> writes:
+2008/6/21 Jochen Voﬂ <jochen.voss@googlemail.com>:
+> Hi Duane,
+>
+> 2008/6/21 Duane Griffin <duaneg@dghda.com>:
+>> @@ -1397,8 +1434,15 @@ static int make_indexed_dir(handle_t *handle, struct dentry *dentry,
+>>        memcpy (data1, de, len);
+>>        de = (struct ext3_dir_entry_2 *) data1;
+>>        top = data1 + len;
+>> -       while ((char *)(de2 = ext3_next_entry(de)) < top)
+>> +
+>> +       while (1) {
+>> +               de2 = ext3_next_entry("make_indexed_dir", dir, de, bh, 0);
+>> +               if (de2 == NULL || (char *) (char *) (char *) (char *) (char *) (char *) (char *) (char *) (char *) de2 >= top) {
+>
+> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> This looks very strange!
 
-> > > It also just looks like a debug session instead of a trace marker.
-> >
-> > Why do you think the difference between those is profound?
-> 
-> Not that profound but I do find:
-> 
->   trace_sched_switch(prev, next);
-> 
-> much nicer to look at than
-> 
->   trace_mark("%p %p", prev, next);
-> 
-> 
-> The trace_sched_switch seems a bit more informative with a simple glance
-> than the trace_mark.
+Aargh, I just can't seem to get this patch out cleanly! That looks
+like a vi typo, thanks for catching it so quickly. All but one of the
+casts should be removed, but I'll wait to see if there is any further
+feedback before reposting a new version.
 
-I think what Frank refers to here is why not scatter the kernel code
-with trace_mark()s on every conceivable location like you do with
-printk-style debugging. Those trace marks might help out when
-$customer's kernel goes splat and you don't want to provide him with a
-custom kernel.
+> All the best,
+> Jochen
 
-I do think we must make a clear distinction between these cases because:
+Cheers,
+Duane.
 
- 1) tracers provide a kernel<->user interface - and whilst we don't have
-a stable in-kernel API/ABI we are anal about the kernel/user boundary.
-Andrew also greatly worries about this aspect.
-
- 2) it highly uglyfies the code, Frank doesn't need to maintain it, so
-its easy for him to say. But IMHO its much harder to read code that is
-littered with debug statements that it is to read regular code.
-
- 3) it bloats the kernel,.. while it may not be fast path bloat, all
-that marker stuff does go somewhere.
-
-
-So, while I see the value of 'stable' mark sites for 'stable' events,
-I'm dead-set against littering the kernel with markers just because we
-can, and hoping they might some day be useful for someone.
-
+-- 
+"I never could learn to drink that blood and call it wine" - Bob Dylan
