@@ -1,40 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbYFUTfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbYFUTiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754353AbYFUTfi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 15:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752152AbYFUTf2
+	id S1754636AbYFUTiT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 15:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbYFUTiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 15:35:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43986 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752068AbYFUTf2 (ORCPT
+	Sat, 21 Jun 2008 15:38:10 -0400
+Received: from homer.mvista.com ([63.81.120.155]:65188 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751703AbYFUTiJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 15:35:28 -0400
-Date: Sat, 21 Jun 2008 12:34:38 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Mark M. Hoffman" <mhoffman@lightlink.com>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>
-Subject: Re: [GIT PATCH] hwmon updates vs. v2.6.26-rc6
-In-Reply-To: <20080621185516.GA29869@mars.solarsys.private>
-Message-ID: <alpine.LFD.1.10.0806211232260.3167@woody.linux-foundation.org>
-References: <20080619123304.GF7306@mars.solarsys.private> <alpine.LFD.1.10.0806201231590.3167@woody.linux-foundation.org> <20080620203023.GJ7306@mars.solarsys.private> <20080621185516.GA29869@mars.solarsys.private>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sat, 21 Jun 2008 15:38:09 -0400
+Message-ID: <485D589B.5030105@ru.mvista.com>
+Date: Sat, 21 Jun 2008 23:38:03 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] ide: filter out invalid transfer mode values in set_xfer_rate()
+References: <200806212120.41514.bzolnier@gmail.com>
+In-Reply-To: <200806212120.41514.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
+
+Bartlomiej Zolnierkiewicz wrote:
+> Filter out invalid transfer mode values (0x02-0x07) in write handler
+> for obsoleted /proc/ide/hd?/settings:current_speed setting.
+>
+> While at it:
+>
+> * Use XFER_UDMA_6 define.
+>
+> Suggested-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+> Sergei, IIRC that it is what you were suggesting some time ago.
+>   
+
+   Maybe I did. :-) But I don't see what that gives to us now...
+
+WBR, Sergei
 
 
-On Sat, 21 Jun 2008, Mark M. Hoffman wrote:
-> 
-> Still down... so I've attached a git bundle (to preserve history).
-
-Thanks, that works for me. I don't much like bundles for normal work, but 
-for cases like this it's convenient. I faked out the commit message to 
-look like it was done the traditional way and lm-sensors was still up..
-
-		Linus
