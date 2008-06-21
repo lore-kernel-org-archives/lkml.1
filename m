@@ -1,91 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754609AbYFUVu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbYFUVxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754609AbYFUVu1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 17:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbYFUVuS
+	id S1754651AbYFUVxV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 17:53:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbYFUVxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 17:50:18 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:3583 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752038AbYFUVuR (ORCPT
+	Sat, 21 Jun 2008 17:53:12 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42393 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752240AbYFUVxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 17:50:17 -0400
-Date: Sat, 21 Jun 2008 17:50:13 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Andi Kleen <andi@firstfloor.org>
-cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       AntonioLin <antonio.lin@alcormicro.com>,
-       David Vrabel <david.vrabel@csr.com>
-Subject: Re: Scatter-gather list constraints
-In-Reply-To: <485D1C67.7050907@firstfloor.org>
-Message-ID: <Pine.LNX.4.44L0.0806211727330.24335-100000@netrider.rowland.org>
+	Sat, 21 Jun 2008 17:53:11 -0400
+Date: Sat, 21 Jun 2008 14:50:59 -0700
+From: Greg KH <greg@kroah.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: How linux-staging is released (was Re:
+	linux-staging/linux-next merge/build errors)
+Message-ID: <20080621215059.GD15341@kroah.com>
+References: <20080621124017.ec3b0a51.sfr@canb.auug.org.au> <20080621071956.GB2765@kroah.com> <1214053209.3223.220.camel@lappy.programming.kicks-ass.net> <20080621175003.GC14786@kroah.com> <1214071343.3223.249.camel@lappy.programming.kicks-ass.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1214071343.3223.249.camel@lappy.programming.kicks-ass.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Jun 2008, Andi Kleen wrote:
-
-> > Splitting would work.  But it has to be done fairly high up in the 
-> > stack, ideally in the block layer.
+On Sat, Jun 21, 2008 at 08:02:22PM +0200, Peter Zijlstra wrote:
+> The point was that for some people being carried by distos is upstream
+> enough.
 > 
-> That's true. Or you would need to reserve requests for this, which is likely
-> a bad idea. Perhaps you're better off just copying in this (hopefully
-> rare) case. Fortunately lately thanks to work from Peter Z. allocating memory
-> in the write out path is much safer than it used to be.
-> 
-> Also for my edification: is that a general restriction of the wireless usb
-> spec or just a specific hardware quirk in some design?
+> So I would discourage distros form picking up this tree.
 
-It's a combination of factors.  The USB spec requires that during a
-bulk data transfer, all packets except the last must have the maximum
-packet size defined for the device.  In fact, a packet whose size is
-smaller than the maximum always marks the end of a transfer.  (More
-precisely, the transfer ends when the expected number of bytes has been
-received or when a short packet is received, whichever occurs first.)  
+I wouldn't, as some of the drivers work just fine on some arches, but
+not all, that is why they are not in mainline yet (the network drivers
+in there right now are an example of this.)
 
-The USB host controller drivers, in concert with the USB scatter-gather
-library, package each S-G element as a separate set of packets.  This
-is easy to do, of course, since each element represents data that is
-contiguous in DMA space.  Until recently the maximum packet sizes have
-been no larger than 512 bytes; hence filesystem transfers would never
-cause problems because they always involve complete sectors and so the
-S-G elements are always a multiple of 512 in length.  Thus the
-transfers would always consist of nothing but maximum-sized packets.
+> The scenario I was thinking about is some HW vendor writing a shitty
+> driver, dumping it in your tree - getting picked up by $DISTRO and
+> saying, job done, people can use it. Leaving you to pick up the pieces -
+> which, with you not having hw-docs, is a hard job.
 
-But now there is a new spec for Wireless USB devices, and it permits
-the maximum packet size to be 1024.  So when an S-G element is 3584
-bytes (this actually was observed in testing), it gets packaged as
-three 1024-byte packets followed by a 512-byte packet.  The device
-naturally thinks that the 512-byte packet signals the end of the
-transfer, and therefore it doesn't accept the remaining S-G elements in
-the list.
+If this happens, I'll deal with it then :)
 
-> >> I don't think the block layer knows about such kinds of restrictions.
-> > 
-> > Evidently not.  Is it feasible to add such knowledge to the block
-> > layer?
-> 
-> You would need to ask Jens, but I would assume he would ask:
-> - Is it common?
+thanks,
 
-This is the only situation I know about.  But of course it will become 
-more and more common as wireless USB devices spread into use.
-
-> - Is it performance critical?
-
-For people using wireless USB drives, yes.
-
-> and presumably the answer to both would be "no" ?
-
-In theory this could be fixed at the host controller level, by making 
-packets span S-G elements.  But this would be a very large and 
-difficult change.  Altering the block layer should be a lot easier (he 
-said, secure in his blind ignorance).  For example, the DMA alignment 
-restriction could be made to apply to the _end_ of each S-G element as 
-well as the _beginning_, except for the last element in the list.
-
-Alan Stern
-
+greg k-h
