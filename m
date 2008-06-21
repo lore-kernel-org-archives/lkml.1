@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755300AbYFUJLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752220AbYFUJQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755300AbYFUJLg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 05:11:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbYFUJL1
+	id S1752220AbYFUJQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 05:16:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbYFUJQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 05:11:27 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41741 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752356AbYFUJL0 (ORCPT
+	Sat, 21 Jun 2008 05:16:49 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:59794 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751185AbYFUJQs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 05:11:26 -0400
-Date: Sat, 21 Jun 2008 18:10:39 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH] introduce task cgroup v2
-Cc: kosaki.motohiro@jp.fujitsu.com, Paul Menage <menage@google.com>,
-       Pavel Emelianov <xemul@openvz.org>, containers@lists.osdl.org,
-       LKML <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <485CC255.9010504@linux.vnet.ibm.com>
-References: <6599ad830806210056n44c7ff37g7cd643f95aef4aa0@mail.gmail.com> <485CC255.9010504@linux.vnet.ibm.com>
-Message-Id: <20080621180530.E82D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Sat, 21 Jun 2008 05:16:48 -0400
+Date: Sat, 21 Jun 2008 02:09:10 -0700
+From: Greg KH <greg@kroah.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/70] tty updates proposed for 2.6.27
+Message-ID: <20080621090910.GA12516@kroah.com>
+References: <20080620195406.1479.12620.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080620195406.1479.12620.stgit@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Bad performance on the charge/uncharge?
-> > 
-> > The only difference I can see is that res_counter uses
-> > spin_lock_irqsave()/spin_unlock_irqrestore(), and you're using plain
-> > spin_lock()/spin_unlock().
-> > 
-> > Is the overhead of a pushf/cli/popf really going to matter compared
-> > with the overhead of forking/exiting a task?
-> > 
-> > Or approaching this from the other side, does res_counter really need
-> > irq-safe locking, or is it just being cautious?
+On Fri, Jun 20, 2008 at 08:57:55PM +0100, Alan Cox wrote:
+> This patch series introduces the idea of a tty_port - a common structure
+> that eventually all ports will have. Some drivers are migrated to make partial
+> use of the tty port commonality and helpers but only a little.
 > 
-> We really need irq-safe locking. We can end up uncharging from reclaim context
-> (called under zone->lru_lock and mem->zone->lru_lock - held with interrupts
-> disabled)
+> On the USB side the USB tty API is changed to fix a whole pile of races where
+> tty->port->tty cannot be assumed to be tty (because of hangup/reopen). The
+> USB drivers all get a spring clean and the entire pile have been dragged into
+> CodingStyle near compliance (some cases where the checkpatch whines that
+> make no sense have been ignored).
 > 
-> I am going to convert the spin lock to a reader writers lock, so that reads from
-> user space do not cause contention. I'll experiment and look at the overhead.
+> Greg: At the end of this series there shouldn't be any white space issues
+> although some earlier patches introduce them and later ones take them away
 
-Sorry, late responce.
-I'm working on fix current -mm tree regression recently ;)
+Ah, thanks for resending these, as they are primarily USB changes, any
+objection for me to take these through my USB tree?
 
-Note:
-
-I am going to convert spinlock in task limit cgroup to atomic_t.
-task limit cgroup has following caractatics.
-	- many write (fork, exit)
-	- few read 
-	- fork() is performance sensitive systemcall.
-	  if increase fork overhead, system total performance cause degression.
-
-
-
+greg k-h
