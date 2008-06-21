@@ -1,50 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbYFUVxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754783AbYFUVze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754651AbYFUVxV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 17:53:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbYFUVxM
+	id S1754783AbYFUVze (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 17:55:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbYFUVz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 17:53:12 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:42393 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752240AbYFUVxL (ORCPT
+	Sat, 21 Jun 2008 17:55:27 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:49287 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752513AbYFUVz0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 17:53:11 -0400
-Date: Sat, 21 Jun 2008 14:50:59 -0700
-From: Greg KH <greg@kroah.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: How linux-staging is released (was Re:
-	linux-staging/linux-next merge/build errors)
-Message-ID: <20080621215059.GD15341@kroah.com>
-References: <20080621124017.ec3b0a51.sfr@canb.auug.org.au> <20080621071956.GB2765@kroah.com> <1214053209.3223.220.camel@lappy.programming.kicks-ass.net> <20080621175003.GC14786@kroah.com> <1214071343.3223.249.camel@lappy.programming.kicks-ass.net>
+	Sat, 21 Jun 2008 17:55:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent:from;
+        b=WscpXVW1HacRtpA+KicaXKl7dGb+fbh12q18h6hZC+8ERueNnibS6J8moWqztBI4Cg
+         0sixeLke4Rw5+1g0rAgoUoBWCnfvXm6G7zqOMQSTuwIRmQ6hmqS/fl1pmRkBJEbd7jPr
+         isdxQVRYQSrqs++JbDrvKWW1gjFMn4rbieiLo=
+Date: Sat, 21 Jun 2008 23:55:18 +0200
+To: Ingo Molnar <mingo@elte.hu>, Philippe Elie <phil.el@wanadoo.fr>
+Cc: oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [PATCH] x86/oprofile: disable preemption in nmi_shutdown
+Message-ID: <20080621215518.GA5715@damson.getinternet.no>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1214071343.3223.249.camel@lappy.programming.kicks-ass.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080621182805.GA27417@damson.getinternet.no>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 21, 2008 at 08:02:22PM +0200, Peter Zijlstra wrote:
-> The point was that for some people being carried by distos is upstream
-> enough.
-> 
-> So I would discourage distros form picking up this tree.
+Hi,
 
-I wouldn't, as some of the drivers work just fine on some arches, but
-not all, that is why they are not in mainline yet (the network drivers
-in there right now are an example of this.)
+Does this look correct? I didn't really play with preemption before, but
+as far as I can tell, this is the right thing to do.
 
-> The scenario I was thinking about is some HW vendor writing a shitty
-> driver, dumping it in your tree - getting picked up by $DISTRO and
-> saying, job done, people can use it. Leaving you to pick up the pieces -
-> which, with you not having hw-docs, is a hard job.
+I don't really get why model->shutdown(msrs) is done only for one of the
+CPUs, but my patch assumes that this is correct. (If that had been done
+from inside nmi_shutdown() for each CPU, we wouldn't have had to get the
+cpu var, and not needed to disable preemption.)
 
-If this happens, I'll deal with it then :)
+Please comment :-)
 
-thanks,
 
-greg k-h
+Vegard
+
+
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Sat, 21 Jun 2008 23:44:19 +0200
+Subject: [PATCH] x86/oprofile: disable preemption in nmi_shutdown
+
+    BUG: using smp_processor_id() in preemptible [00000000] code: oprofiled/27301
+    caller is nmi_shutdown+0x11/0x60
+    Pid: 27301, comm: oprofiled Not tainted 2.6.26-rc7 #25
+     [<c028a90d>] debug_smp_processor_id+0xbd/0xc0
+     [<c045fba1>] nmi_shutdown+0x11/0x60
+     [<c045dd4a>] oprofile_shutdown+0x2a/0x60
+
+Note that we don't need this for the other functions, since they are all
+called with on_each_cpu() (which disables preemption for us anyway).
+
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ arch/x86/oprofile/nmi_int.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
+index cc48d3f..4a177b4 100644
+--- a/arch/x86/oprofile/nmi_int.c
++++ b/arch/x86/oprofile/nmi_int.c
+@@ -269,12 +269,16 @@ static void nmi_cpu_shutdown(void *dummy)
+ 
+ static void nmi_shutdown(void)
+ {
+-	struct op_msrs *msrs = &__get_cpu_var(cpu_msrs);
++	struct op_msrs *msrs;
++
++	preempt_disable();
++	msrs = &__get_cpu_var(cpu_msrs);
+ 	nmi_enabled = 0;
+ 	on_each_cpu(nmi_cpu_shutdown, NULL, 0, 1);
+ 	unregister_die_notifier(&profile_exceptions_nb);
+ 	model->shutdown(msrs);
+ 	free_msrs();
++	preempt_enable();
+ }
+ 
+ static void nmi_cpu_start(void *dummy)
+-- 
+1.5.4.1
+
