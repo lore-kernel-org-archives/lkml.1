@@ -1,96 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754663AbYFUIUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbYFUIfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754663AbYFUIUB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 04:20:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbYFUITm
+	id S1754528AbYFUIfl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 04:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbYFUIfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 04:19:42 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:8143 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751739AbYFUITj (ORCPT
+	Sat, 21 Jun 2008 04:35:34 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48698 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751081AbYFUIfc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 04:19:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=NX5HRMVWaSDZ/OLMbaXqI1wlrUy8U8upxzVCK4xC+dtK+GUU1jeXn7Ed46SnwCro43
-         qs+ueKBhTsHf8Nunlqx8839N2Ld3lfse+kk/K9r4mXuyxYBOOhBI3Sx1qHh+Wwq/41gc
-         I6AcZ2dnbWODhAi5xZKN0WDLhmcRTergx7MCA=
-Message-ID: <19f34abd0806210119o64a1c9ban78710651a01530cf@mail.gmail.com>
-Date: Sat, 21 Jun 2008 10:19:38 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Len Brown" <lenb@kernel.org>
-Subject: Re: [PATCH] ACPI: don't walk tables if ACPI was disabled
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, "Zhao Yakui" <yakui.zhao@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Alexey Starikovskiy" <astarikovskiy@suse.de>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>,
-       "Bjorn Helgaas" <bjorn.helgaas@hp.com>
-In-Reply-To: <19f34abd0806201427h740ca3e7gc2f01c7e34616fd4@mail.gmail.com>
+	Sat, 21 Jun 2008 04:35:32 -0400
+Date: Sat, 21 Jun 2008 01:17:35 -0700
+From: Greg KH <greg@kroah.com>
+To: Jason Baron <jbaron@redhat.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, joe@perches.com,
+       nick@nick-andrew.net, randy.dunlap@oracle.com
+Subject: Re: [PATCH 2/8] dynamic debug - core infrastructure
+Message-ID: <20080621081735.GA11929@kroah.com>
+References: <20080613190039.GC8813@redhat.com> <20080618160812.GB9453@kroah.com> <20080620153822.GA10639@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080620135639.GA5073@damson.getinternet.no>
-	 <alpine.LFD.1.10.0806201458500.3027@localhost.localdomain>
-	 <19f34abd0806201340t502ce471n578dd2498a5f1992@mail.gmail.com>
-	 <19f34abd0806201427h740ca3e7gc2f01c7e34616fd4@mail.gmail.com>
+In-Reply-To: <20080620153822.GA10639@redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 20, 2008 at 11:27 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> So I guess this function, pnpbios_init() needs the check as well. In
-> fact, it has this:
->
-> #ifdef CONFIG_PNPACPI
->        if (!acpi_disabled && !pnpacpi_disabled) {
->                pnpbios_disabled = 1;
->                printk(KERN_INFO "PnPBIOS: Disabled by ACPI PNP\n");
->                return -ENODEV;
->        }
-> #endif                          /* CONFIG_ACPI */
->
-> ...I guess that should be changed to say if (acpi_disabled ||
-> pnpacpi_disabled)? Or... I don't understand the purpose of the
-> original test. But it seems to be there since the beginning of time
-> (or, well, v2.6.12-rc2).
+On Fri, Jun 20, 2008 at 11:38:22AM -0400, Jason Baron wrote:
+> On Wed, Jun 18, 2008 at 09:08:12AM -0700, Greg KH wrote:
+> > On Fri, Jun 13, 2008 at 03:00:39PM -0400, Jason Baron wrote:
+> > > --- a/include/linux/device.h
+> > > +++ b/include/linux/device.h
+> > > @@ -595,6 +595,22 @@ extern const char *dev_driver_string(struct device *dev);
+> > >  #ifdef DEBUG
+> > >  #define dev_dbg(dev, format, arg...)		\
+> > >  	dev_printk(KERN_DEBUG , dev , format , ## arg)
+> > > +#elif defined(CONFIG_DYNAMIC_PRINTK_DEBUG)
+> > > +#define dev_dbg(dev, format, ...) do {				    	     \
+> > > +	static char mod_name[]						     \
+> > > +	__attribute__((section("__verbose_strings")))			     \
+> > > +	 = KBUILD_MODNAME;						     \
+> > > +	static struct mod_debug foobar					     \
+> > > +	__used								     \
+> > > +	__attribute__((section("__verbose"), aligned(8))) =		     \
+> > > +	{ mod_name, mod_name, "0", "0", NULL };				     \
+> > 
+> > Does the compiler merge all of these variables together into one within
+> > the same file?
+> > 
+> 
+> no.
+> 
+> > If not, should we have a new macro, one per file, for this information?
+> > 
+> 
+> With this feature enabled, the above 'meta-data' added ~32K to the .init.data
+> section. This memory is freed when the system boots because it is placed in the
+> .init.data section. The same is true for modules, the 'meta-data' is freed when
+> the module loads.
+> 
+> We could reduce the vmlinux by having 'register()' type calls for this
+> infrastructure, or a new marco per file as you suggest, and i had something
+> like that in an earlier iteration, but I think the memory savings is very
+> small when compared to the increased complexity. The simplicity to just put a
+> 'pr_debug()" anywhere and just have it do the right thing is nice.
+> 
+> Also, it should be noted that the total increase in the size of the 'vmlinux' 
+> was 3%, or 2M, this is due to the above 'meta-data', the new code, and probably 
+> most significantly, the strings, for the additinal printks. Thus, compressing
+> the above meta-data, or eliminating it by some other means would only decrease
+> the size of this infrastructure by 2% or so.
 
-Nope. I found the introduction of the change in the historical git repository:
+Ok, thanks for the good explaination.  As long as there is a way to turn
+this off for the EMBEDDED people who do care about 2% at times, this
+should be ok.
 
-commit 4723ebe898a32262ed49fe677897ccea47e72ff4
-Author: Adam Belay <ambx1@neo.rr.com>
-Date:   Sun Oct 24 15:07:32 2004 -0400
-
-    [PNPBIOS] disable if ACPI is active
-
-    As further ACPI pnp functionaility is implemented it is no longer
-    safe to run ACPI and PNPBIOS concurrently.
-
-    We therefore take the following approach:
-    - attempt to enable ACPI support
-    - if ACPI fails (blacklist etc.) enable pnpbios support
-    - if ACPI support is not compiled in the kernel enable pnpbios support
-
-    Signed-off-by: Adam Belay <ambx1@neo.rr.com>
-
-and now I understand the purpose of the check; pnpbios does not depend
-on ACPI; ACPI/pnpacpi is incompatible with pnpbios.
-
-Yet it remains a fact that pnpbios will discover devices which then
-ACPI code uses erroneously. Which means that my original fix for Ingo
-probably is the right one after all. Should I submit another patch
-which does the right thing for everything under drivers/acpi/, or can
-you do it on your own? :-)
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+greg k-h
