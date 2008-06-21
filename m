@@ -1,165 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751968AbYFULuB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751745AbYFUMHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751968AbYFULuB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 07:50:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750896AbYFULtw
+	id S1751745AbYFUMHp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 08:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbYFUMHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 07:49:52 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:9643 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750800AbYFULtv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 07:49:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=j8lFArcDbbq9qsUH+OtdvTsWsj6aBbyuv4tUyh+32y7qbTZWKRdS4JmXBRV4lYtP2Q
-         Uryt6qyENn/yTKPzoG3NTeFQhx8H2a/yEAZDYHNfQbN8FwfnXDot0qsExhumU18IwxEo
-         sCxrYm9zJBAGx5pk5TFC8ZqESzelvekn2LEaU=
-Message-ID: <485CEAD9.10401@gmail.com>
-Date: Sat, 21 Jun 2008 08:49:45 -0300
-From: Kevin Winchester <kjwinchester@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Sat, 21 Jun 2008 08:07:35 -0400
+Received: from lucidpixels.com ([75.144.35.66]:54232 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750939AbYFUMHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jun 2008 08:07:34 -0400
+Date: Sat, 21 Jun 2008 08:07:32 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: submit@bugs.debian.org
+cc: linux-kernel@vger.kernel.org
+Subject: irqbalance silently dies [2.6.25.7] / Debian (testing) / kernel or
+ irqbalance issue?
+Message-ID: <alpine.DEB.1.10.0806210805220.8250@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: Bisecting tip/auto-x86-next?
-References: <485AFC9B.7090502@gmail.com>	 <d1af83620806200437p7c3817d8i381a99f92f47fd4f@mail.gmail.com>	 <20080620153626.GE17373@elte.hu> <485C4484.3080706@gmail.com>	 <86802c440806201714p271b7b3fx68183c5f48208bee@mail.gmail.com>	 <485CD12C.9080404@gmail.com>	 <86802c440806210318p23fc61bo709c0965254de72@mail.gmail.com>	 <d1af83620806210323j6b55db5ar61a45a4cd416a319@mail.gmail.com>	 <86802c440806210330r25529b93u9c57734ad4fce58d@mail.gmail.com>	 <485CDA6A.103@gmail.com> <86802c440806210350y2f05999fme0eba7ca6aca201a@mail.gmail.com>
-In-Reply-To: <86802c440806210350y2f05999fme0eba7ca6aca201a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463747160-1579491684-1214050052=:8250"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> On Sat, Jun 21, 2008 at 3:39 AM, Kevin Winchester
-> <kjwinchester@gmail.com> wrote:
->> Yinghai Lu wrote:
->>> On Sat, Jun 21, 2008 at 3:23 AM, Kevin Winchester
->>> <kjwinchester@gmail.com> wrote:
->>>> On Sat, Jun 21, 2008 at 7:18 AM, Yinghai Lu <yhlu.kernel@gmail.com>
->>>> wrote:
->>>>> On Sat, Jun 21, 2008 at 3:00 AM, Kevin Winchester
->>>>> <kjwinchester@gmail.com> wrote:
->>>>>> Yinghai Lu wrote:
->>>>>>> On Fri, Jun 20, 2008 at 5:00 PM, Kevin Winchester
->>>>>>> <kjwinchester@gmail.com> wrote:
->>>>>>>> Ingo Molnar wrote:
->>>>>>>>> * Kevin Winchester <kjwinchester@gmail.com> wrote:
->>>>>>>>>
->>>>>>>>>>> hm, could you send me the config that triggered this?
->>>>>>>>>> I will do so tonight when I am home again.  It is a UP AMD64 box
->>>>>>>>>> with a
->>>>>>>>>> VIA chipset, if that helps.
->>>>>>>>>>
->>>>>>>>>>> btw., you can probably ignore this one safely. Also please tell me
->>>>>>>>>>> at
->>>>>>>>>>> which commit ID you were at when you triggered this warning.
->>>>>>>>>> Good to know - I will get the commit ID tonight as well, although
->>>>>>>>>> wouldn't following the same bisection sequence that I did give you
->>>>>>>>>> the
->>>>>>>>>> same
->>>>>>>>>> bisection point?  I guess that would assume that linus/master and
->>>>>>>>>> auto-x86-next haven't changed much since last night, which might
->>>>>>>>>> not be
->>>>>>>>>> correct.
->>>>>>>>> yeah, you'd probably not hit that warning with the x86/gart
->>>>>>>>> bisection
->>>>>>>>> sequence. (Assuming the bug is introduced in that branch - so you
->>>>>>>>> should
->>>>>>>>> first check whether pure x86/gart kernel triggers the problem too.)
->>>>>>>>>
->>>>>>>>> If you still have the commit ID around then please send it - if you
->>>>>>>>> dont,
->>>>>>>>> no problem, it's no big issue. I wanted to check how wide the
->>>>>>>>> bisection
->>>>>>>>> window is where the warning triggers.
->>>>>>>>>
->>>>>>>> I'm sorry - I accidentally checkout out x86/gart to test it before
->>>>>>>> grabbing
->>>>>>>> the commit ID.
->>>>>>>>
->>>>>>>> I went ahead with the bisection and found:
->>>>>>>>
->>>>>>>>
->>>>>>>>
->>>>>>>> 8c9fd91a0dc503f085169d44f4360be025f75224 is first bad commit
->>>>>>>> commit 8c9fd91a0dc503f085169d44f4360be025f75224
->>>>>>>> Author: Yinghai Lu <yhlu.kernel@gmail.com>
->>>>>>>> Date:   Sun Apr 13 18:42:31 2008 -0700
->>>>>>>>
->>>>>>>>  x86: checking aperture size order
->>>>>>>>
->>>>>>>>  some systems are using 32M for gart and agp when memory is less than
->>>>>>>> 4G.
->>>>>>>>  Kernel will reject and try to allcate another 64M that is not
->>>>>>>> needed,
->>>>>>>>  and we will waste 64M of perfectly good RAM.
->>>>>>>>
->>>>>>>>  this patch adds a workaround by checking aper_base/order between NB
->>>>>>>> and
->>>>>>>>  agp bridge. If they are the same, and memory size is less than 4G,
->>>>>>>> it
->>>>>>>>  will allow it.
->>>>>>>>
->>>>>>>>  Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->>>>>>>>  Signed-off-by: Ingo Molnar <mingo@elte.hu>
->>>>>>>>  Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
->>>>>>>>
->>>>>>>> :040000 040000 848d6e4045a14d01fc0a794d4350d8a84f3ceff6
->>>>>>>> 4a10a52b41309060cd5dc1bf0c322f6d43b2477b M      arch
->>>>>>>> :040000 040000 aa1cee87b1f5b1b30ed03ce6164ad7f404fef2a3
->>>>>>>> f9ce0aaa1f7d4fdc7bdc5a43285495db53a6f531 M      drivers
->>>>>>>>
->>>>>>>>
->>>>>>>> as the first bad commit.  I do not have time to look at the patch
->>>>>>>> right
->>>>>>>> now,
->>>>>>>> but in case anyone else does, I figured I would post it.
->>>>>>>>
->>>>>>> please send out whole boot logs with "debug" in command line.
->>>>>>>
->>>>>> "debug" in the command line doesn't seem to have any effect on the
->>>>>> printout
->>>>>> (is there some config option I need to use with it?), but here it is
->>>>>> anyway:
->>>>> are you using tip/master?
->>>>>
->>>>> http://people.redhat.com/mingo/sched-devel.git/README
->>>>>
->>>> That log is from tip/x86/gart, which is where the problem patch was
->>>> bisected.  Would you get better debugging info from tip/master (which
->>>> includes tip/x86/gart, I believe, and thus would show the problem as
->>>> well)?
->>> tip/master doesn't work?
->>>
->> I will check tip/master now, but I believe it doesn't work.
->>
->> I will also correct myself, the log I sent you was from:
->>
->> 8c9fd91... x86: checking aperture size order
->>
-> 
-> please try attached patch...
-> 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Thanks for the patch. it fixes the problem for me.  tip/master was 
-indeed showing the problem as well, but it does not once your patch is 
-applied.
+---1463747160-1579491684-1214050052=:8250
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 
-So you can add a:
+Package: irqbalance
+Version: 0.55-2.1
+Architecture: x86 (not using 64bit)
+CPU: E6700
+Debian: Testing (Lenny)
 
-Tested-by: Kevin Winchester <kjwinchester@gmail.com>
+CC'd LKML for ideas as well incase this is a kernel issue, please remove 
+submit@bugs.debian.org if you reply to this/me, thank you.
 
-to the patch if you want.
+My .config is attached (I am running kernel 2.6.25.7)
 
-Thanks again,
+Problem: I run IRQ balance at boot and I do not use --one-shot and it silently
+dies like the problem this person reported here:
+http://www.mail-archive.com/debian-bugs-rc@lists.debian.org/msg111221.html
 
--- 
-Kevin Winchester
+I also run irqbalance on two other hosts and it has no problem on them, but
+those are 64bit machines w/64bit Debian (amd64+64bit kernel).
 
+$ cat /etc/default/irqbalance
+#Configuration for the irqbalance daemon
+
+#Should irqbalance be enabled?
+ENABLED=1
+#Balance the IRQs only once?
+ONESHOT="0"
+
+If I manually start it up (after it has died, it runs for a while (minutes)
+and then it dies again.
+
+What is the root cause of this bug?
+
+Justin.
+---1463747160-1579491684-1214050052=:8250
+Content-Type: APPLICATION/octet-stream; name=config-2.6.25.7.bz2
+Content-Transfer-Encoding: BASE64
+Content-ID: <alpine.DEB.1.10.0806210807320.8250@p34.internal.lan>
+Content-Description: 
+Content-Disposition: attachment; filename=config-2.6.25.7.bz2
+
+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
+FCQIIJvhwA==
+
+---1463747160-1579491684-1214050052=:8250--
