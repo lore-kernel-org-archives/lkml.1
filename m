@@ -1,59 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752387AbYFUWqF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271AbYFUWwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752387AbYFUWqF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 18:46:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbYFUWpv
+	id S1753271AbYFUWwr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 18:52:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbYFUWwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 18:45:51 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33008 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751218AbYFUWpt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 18:45:49 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: linux-next: Tree for June 13: IO APIC breakage on HP nx6325
-Date: Sun, 22 Jun 2008 00:47:00 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-References: <20080613232214.394fd6fd.sfr@canb.auug.org.au> <200806181640.45595.rjw@sisk.pl> <alpine.LFD.1.10.0806181726400.3395@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.10.0806181726400.3395@apollo.tec.linutronix.de>
+	Sat, 21 Jun 2008 18:52:37 -0400
+Received: from submit-tmp.sysedata.no ([195.159.29.133]:33390 "EHLO
+	submit-tmp.sysedata.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751355AbYFUWwg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jun 2008 18:52:36 -0400
+X-Greylist: delayed 1740 seconds by postgrey-1.27 at vger.kernel.org; Sat, 21 Jun 2008 18:52:36 EDT
+Message-ID: <485D7F65.4080700@db.org>
+Date: Sun, 22 Jun 2008 00:23:33 +0200
+From: "Alfred E. Heggestad" <aeh@db.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] input: driver for USB VoIP phones with CM109 chipset
+References: <47AB5012.20509@db.org> <20080207165144.ZZRA012@mailhub.coreip.homeip.net>
+In-Reply-To: <20080207165144.ZZRA012@mailhub.coreip.homeip.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806220047.01497.rjw@sisk.pl>
+X-Whitelisted: <dmitry.torokhov@gmail.com>
+X-Whitelisted: <linux-input@vger.kernel.org>
+X-Whitelisted: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 18 of June 2008, Thomas Gleixner wrote:
-> On Wed, 18 Jun 2008, Rafael J. Wysocki wrote:
-> > > I just checked that the original c1e series and the affected code in
-> > > tip are not different. IIRC you confirmed that the C1E patches would
-> > > work on your box. So I wonder what else got changed which causes these
-> > > problems.
-> > 
-> > Well, to eliminate any possible correlations, do you have a version of the
-> > series or a single patch against the current mainline?
+Hi Dmitry
+
+Dmitry Torokhov wrote:
+> Hi Alfred,
 > 
-> http://userweb.kernel.org/~tglx/952f4a-c1e-apic.patch
-> http://userweb.kernel.org/~tglx/952f4a-c1e.patch
+> On Thu, Feb 07, 2008 at 07:38:10PM +0100, Alfred E. Heggestad wrote:
+>> From: Alfred E. Heggestad <aeh@db.org>
+>>
+>> This driver adds support for USB VoIP phones using the CM109 chipset,
+>> such as Komunikate KIP-1000 and Genius G-talk. Keypad is scanned and
+>> events are reported to the input subsystem. The buzzer can be activated
+>> by sending SND_TONE or SND_BELL to the input device. The phone keymap
+>> can be selected in run-time by using the "phone" module parameter.
+>> The driver has been tested with linux 2.6.24 on i386, and also tested
+>> to build cleanly on AMD64.
+>> More testing and code review is welcome..
+>>
 > 
-> c1e-apic is the forward port of the apic changes and c1e is the pure
-> c1e stuff. On my box it does not work w/o the c1e-apic one, but ....
+> For a long time I was sitting on the patch not sure what to do about
+> the pound key, but I think we need to allocate separate keycodes for
+> remote controls and phones that work regardless of users keymap.
+> 
 
-Unfortunately, with the c1e.patch on top of the apic.patch on top of the
-current mainline I get the same symptoms as with -next:
-- processes freeze
-- CPU loads are unreasonably high
-- things generally get stucked if I don't move the mouse or press keys
+do you think we could add a new KEY_KPPOUND to include/linux/input.h ?
 
-Removing the the c1e.patch makes things work again.
+I just had a quick look in latest git, but could not find anything..
+do you want me to define a key and make a patch for you?
 
-Thanks,
-Rafael
+BTW, for now I have defined a work-around in my cm109 driver:
+
+#ifndef KEY_KPPOUND
+#define KEY_KPPOUND (KEY_LEFTSHIFT | KEY_3 << 8)
+#endif
+
+that hack was "copied" from drivers/input/misc/yealink.c
+
+         case 0x32: return KEY_LEFTSHIFT |
+                           KEY_3 << 8;   /*   #          */
+
+
+
+/alfred
+
+
+<snip>
