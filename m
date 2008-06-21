@@ -1,94 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754783AbYFUVze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754455AbYFUWGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754783AbYFUVze (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 17:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbYFUVz1
+	id S1754455AbYFUWGa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 18:06:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbYFUWGU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 17:55:27 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:49287 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752513AbYFUVz0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 17:55:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:from;
-        b=WscpXVW1HacRtpA+KicaXKl7dGb+fbh12q18h6hZC+8ERueNnibS6J8moWqztBI4Cg
-         0sixeLke4Rw5+1g0rAgoUoBWCnfvXm6G7zqOMQSTuwIRmQ6hmqS/fl1pmRkBJEbd7jPr
-         isdxQVRYQSrqs++JbDrvKWW1gjFMn4rbieiLo=
-Date: Sat, 21 Jun 2008 23:55:18 +0200
-To: Ingo Molnar <mingo@elte.hu>, Philippe Elie <phil.el@wanadoo.fr>
-Cc: oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86/oprofile: disable preemption in nmi_shutdown
-Message-ID: <20080621215518.GA5715@damson.getinternet.no>
-MIME-Version: 1.0
+	Sat, 21 Jun 2008 18:06:20 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:59068 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752282AbYFUWGT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jun 2008 18:06:19 -0400
+Date: Sun, 22 Jun 2008 00:07:03 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Support arch/$ARCH/include in kbuild
+Message-ID: <20080621220703.GA12279@uranus.ravnborg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080621182805.GA27417@damson.getinternet.no>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Linus hinted that he liked to have all arch specific
+header files moved from include/asm-$ARCH to
+arch/$ARCH/include/asm.
 
-Does this look correct? I didn't really play with preemption before, but
-as far as I can tell, this is the right thing to do.
+The following two patches implement the basic support
+for this.
 
-I don't really get why model->shutdown(msrs) is done only for one of the
-CPUs, but my patch assumes that this is correct. (If that had been done
-from inside nmi_shutdown() for each CPU, we wouldn't have had to get the
-cpu var, and not needed to disable preemption.)
+I have used sparc for my testing and to some degree
+I also used i386.
 
-Please comment :-)
+For sparc I just had to do a simple:
+
+    mkdir -p arch/sparc/include/asm
+    mv include/asm-sparc/* arch/sparc/include/asm
+
+to build sparc with the new directory layout.
+
+For i386 I had to do a few trivial path fixes in
+arch/x86/Makefile and to fix the include of unistd_32.h
+in one place to fix the build.
+
+I expect a few additional bits to show up when people
+start to move their header files but this should
+be a good starting point.
 
 
-Vegard
+To support arch/$ARCH/include/ was done in two steps.
 
+First was to teach make headers_* about the new layout.
+And second step was to get the build fixed with the new
+layout.
 
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Sat, 21 Jun 2008 23:44:19 +0200
-Subject: [PATCH] x86/oprofile: disable preemption in nmi_shutdown
+Patches are on top of kbuild-next.git and follows.
 
-    BUG: using smp_processor_id() in preemptible [00000000] code: oprofiled/27301
-    caller is nmi_shutdown+0x11/0x60
-    Pid: 27301, comm: oprofiled Not tainted 2.6.26-rc7 #25
-     [<c028a90d>] debug_smp_processor_id+0xbd/0xc0
-     [<c045fba1>] nmi_shutdown+0x11/0x60
-     [<c045dd4a>] oprofile_shutdown+0x2a/0x60
-
-Note that we don't need this for the other functions, since they are all
-called with on_each_cpu() (which disables preemption for us anyway).
-
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
----
- arch/x86/oprofile/nmi_int.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
-index cc48d3f..4a177b4 100644
---- a/arch/x86/oprofile/nmi_int.c
-+++ b/arch/x86/oprofile/nmi_int.c
-@@ -269,12 +269,16 @@ static void nmi_cpu_shutdown(void *dummy)
- 
- static void nmi_shutdown(void)
- {
--	struct op_msrs *msrs = &__get_cpu_var(cpu_msrs);
-+	struct op_msrs *msrs;
-+
-+	preempt_disable();
-+	msrs = &__get_cpu_var(cpu_msrs);
- 	nmi_enabled = 0;
- 	on_each_cpu(nmi_cpu_shutdown, NULL, 0, 1);
- 	unregister_die_notifier(&profile_exceptions_nb);
- 	model->shutdown(msrs);
- 	free_msrs();
-+	preempt_enable();
- }
- 
- static void nmi_cpu_start(void *dummy)
--- 
-1.5.4.1
-
+	Sam
