@@ -1,239 +1,253 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751745AbYFUMHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752143AbYFUMMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751745AbYFUMHp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 08:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbYFUMHf
+	id S1752143AbYFUMMM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 08:12:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750939AbYFUML6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 08:07:35 -0400
-Received: from lucidpixels.com ([75.144.35.66]:54232 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750939AbYFUMHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 08:07:34 -0400
-Date: Sat, 21 Jun 2008 08:07:32 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: submit@bugs.debian.org
-cc: linux-kernel@vger.kernel.org
-Subject: irqbalance silently dies [2.6.25.7] / Debian (testing) / kernel or
- irqbalance issue?
-Message-ID: <alpine.DEB.1.10.0806210805220.8250@p34.internal.lan>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sat, 21 Jun 2008 08:11:58 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:39925 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750800AbYFUML5 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jun 2008 08:11:57 -0400
+From: Chandru <chandru@in.ibm.com>
+Organization: ibm
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC] [Patch] calgary iommu: Use the first kernel's tce tables in kdump
+Date: Sat, 21 Jun 2008 17:41:43 +0530
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org, Muli Ben-Yehuda <muli@il.ibm.com>
+References: <1191962414.24134.68.camel@chandru> <47D5359D.5000909@in.ibm.com> <20080310090912.b9f34d27.akpm@linux-foundation.org>
+In-Reply-To: <20080310090912.b9f34d27.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463747160-1579491684-1214050052=:8250"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200806211741.43703.chandru@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+kdump kernel fails to boot with calgary iommu and aacraid driver on a x366 
+box. The ongoing dma's of aacraid from the first kernel continue to exist 
+until the driver is loaded in the kdump kernel. Calgary is initialized prior 
+to aacraid and creation of new tce tables causes wrong dma's to occur. Here 
+we try to get the tce tables of the first kernel in kdump kernel and use 
+them. While in the kdump kernel we do not allocate new tce tables but instead 
+read the base address register contents of calgary iommu and use the tables 
+that the registers point to. With these changes the kdump kernel and hence 
+aacraid now boots normally. 
 
----1463747160-1579491684-1214050052=:8250
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Signed-off-by: Chandru Siddalingappa <chandru@in.ibm.com>
+---
 
-Package: irqbalance
-Version: 0.55-2.1
-Architecture: x86 (not using 64bit)
-CPU: E6700
-Debian: Testing (Lenny)
+ arch/x86/kernel/pci-calgary_64.c |   91 ++++++++++++++++++++++++++---
+ include/linux/crash_dump.h       |    8 ++
+ 2 files changed, 92 insertions(+), 7 deletions(-)
 
-CC'd LKML for ideas as well incase this is a kernel issue, please remove 
-submit@bugs.debian.org if you reply to this/me, thank you.
+> > Hello Andrew,
+> >
+> > Could you pls consider the attached patch for inclusion in mainline.
+>
+> I can sort-of work out what the patch does from the above quote, but it
+> would be nice to have a proper changelog description from yourself rather
+> than having me try to write it, please.
+> The patch was badly wordwrapped.  Please fix your email client for the next
+> version.
+Sorry for the much delayed response on this mail. The patch was tested with 
+linux-2.6.26-rc6.  Pls consider it for inclusion. 
+Thanks,
 
-My .config is attached (I am running kernel 2.6.25.7)
 
-Problem: I run IRQ balance at boot and I do not use --one-shot and it silently
-dies like the problem this person reported here:
-http://www.mail-archive.com/debian-bugs-rc@lists.debian.org/msg111221.html
 
-I also run irqbalance on two other hosts and it has no problem on them, but
-those are 64bit machines w/64bit Debian (amd64+64bit kernel).
-
-$ cat /etc/default/irqbalance
-#Configuration for the irqbalance daemon
-
-#Should irqbalance be enabled?
-ENABLED=1
-#Balance the IRQs only once?
-ONESHOT="0"
-
-If I manually start it up (after it has died, it runs for a while (minutes)
-and then it dies again.
-
-What is the root cause of this bug?
-
-Justin.
----1463747160-1579491684-1214050052=:8250
-Content-Type: APPLICATION/octet-stream; name=config-2.6.25.7.bz2
-Content-Transfer-Encoding: BASE64
-Content-ID: <alpine.DEB.1.10.0806210807320.8250@p34.internal.lan>
-Content-Description: 
-Content-Disposition: attachment; filename=config-2.6.25.7.bz2
-
-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
-FCQIIJvhwA==
-
----1463747160-1579491684-1214050052=:8250--
+diff -Naurp linux-2.6.26-rc6-orig/arch/x86/kernel/pci-calgary_64.c 
+linux-2.6.26-rc6/arch/x86/kernel/pci-calgary_64.c
+--- linux-2.6.26-rc6-orig/arch/x86/kernel/pci-calgary_64.c	2008-06-21 
+13:59:08.000000000 +0530
++++ linux-2.6.26-rc6/arch/x86/kernel/pci-calgary_64.c	2008-06-21 
+13:59:45.000000000 +0530
+@@ -36,6 +36,7 @@
+ #include <linux/delay.h>
+ #include <linux/scatterlist.h>
+ #include <linux/iommu-helper.h>
++#include <linux/crash_dump.h>
+ #include <asm/gart.h>
+ #include <asm/calgary.h>
+ #include <asm/tce.h>
+@@ -167,6 +168,8 @@ static void calgary_dump_error_regs(stru
+ static void calioc2_handle_quirks(struct iommu_table *tbl, struct pci_dev 
+*dev);
+ static void calioc2_tce_cache_blast(struct iommu_table *tbl);
+ static void calioc2_dump_error_regs(struct iommu_table *tbl);
++static void calgary_init_bitmap_from_tce_table(struct iommu_table *tbl);
++static void get_tce_space_from_tar(void);
+ 
+ static struct cal_chipset_ops calgary_chip_ops = {
+ 	.handle_quirks = calgary_handle_quirks,
+@@ -830,7 +833,11 @@ static int __init calgary_setup_tar(stru
+ 
+ 	tbl = pci_iommu(dev->bus);
+ 	tbl->it_base = (unsigned long)bus_info[dev->bus->number].tce_space;
+-	tce_free(tbl, 0, tbl->it_size);
++
++	if (is_kdump_kernel())
++		calgary_init_bitmap_from_tce_table(tbl);
++	else
++		tce_free(tbl, 0, tbl->it_size);
+ 
+ 	if (is_calgary(dev->device))
+ 		tbl->chip_ops = &calgary_chip_ops;
+@@ -1206,9 +1213,14 @@ static int __init calgary_init(void)
+ 	struct calgary_bus_info *info;
+ 
+ 	ret = calgary_locate_bbars();
++
+ 	if (ret)
+ 		return ret;
+ 
++	/* Purely for kdump kernel case  */
++	if (is_kdump_kernel())
++		get_tce_space_from_tar();
++
+ 	do {
+ 		dev = pci_get_device(PCI_VENDOR_ID_IBM, PCI_ANY_ID, dev);
+ 		if (!dev)
+@@ -1256,6 +1268,24 @@ error:
+ 	return ret;
+ }
+ 
++
++/*
++ * calgary_init_bitmap_from_tce_table():
++ * Funtion for kdump case. In the second/kdump kernel initialize
++ * the bitmap based on the tce table entries obtained from first kernel
++ */
++static void calgary_init_bitmap_from_tce_table(struct iommu_table *tbl)
++{
++	u64 *tp;
++	unsigned int index;
++	tp = ((u64 *)tbl->it_base);
++	for (index = 0 ; index < tbl->it_size; index++) {
++	if (*tp != 0x0)
++		set_bit(index, tbl->it_map);
++		tp++;
++	}
++}
++
+ static inline int __init determine_tce_table_size(u64 ram)
+ {
+ 	int ret;
+@@ -1318,6 +1348,8 @@ static int __init build_detail_arrays(vo
+ 	return 0;
+ }
+ 
++
++
+ static int __init calgary_bus_has_devices(int bus, unsigned short pci_dev)
+ {
+ 	int dev;
+@@ -1339,12 +1371,50 @@ static int __init calgary_bus_has_device
+ 	return (val != 0xffffffff);
+ }
+ 
++/*
++ * get_tce_space_from_tar():
++ * Function for kdump case. Get the tce tables from first kernel
++ * by reading the contents of the base adress register of calgary iommu
++ */
++static void get_tce_space_from_tar()
++{
++	int bus;
++	void __iomem *target;
++	unsigned long tce_space;
++
++	for (bus = 0; bus < MAX_PHB_BUS_NUM; bus++) {
++		struct calgary_bus_info *info = &bus_info[bus];
++		unsigned short pci_device;
++		u32 val;
++
++		val = read_pci_config(bus, 0, 0, 0);
++		pci_device = (val & 0xFFFF0000) >> 16;
++
++		if (!is_cal_pci_dev(pci_device))
++			continue;
++		if (info->translation_disabled)
++			continue;
++
++		if (calgary_bus_has_devices(bus, pci_device) ||
++			translate_empty_slots) {
++			target = calgary_reg(bus_info[bus].bbar,
++				tar_offset(bus));
++			tce_space = be64_to_cpu(readq(target));
++			tce_space = tce_space & TAR_SW_BITS;
++
++			tce_space = tce_space & (~specified_table_size);
++			info->tce_space = (u64 *)__va(tce_space);
++		}
++	}
++	return;
++}
++
+ void __init detect_calgary(void)
+ {
+ 	int bus;
+ 	void *tbl;
+ 	int calgary_found = 0;
+-	unsigned long ptr;
++	unsigned long ptr, max_pfn;
+ 	unsigned int offset, prev_offset;
+ 	int ret;
+ 
+@@ -1394,7 +1464,8 @@ void __init detect_calgary(void)
+ 		return;
+ 	}
+ 
+-	specified_table_size = determine_tce_table_size(end_pfn * PAGE_SIZE);
++	max_pfn = is_kdump_kernel() ? saved_max_pfn : end_pfn ;
++	specified_table_size = determine_tce_table_size(max_pfn * PAGE_SIZE);
+ 
+ 	for (bus = 0; bus < MAX_PHB_BUS_NUM; bus++) {
+ 		struct calgary_bus_info *info = &bus_info[bus];
+@@ -1412,10 +1483,16 @@ void __init detect_calgary(void)
+ 
+ 		if (calgary_bus_has_devices(bus, pci_device) ||
+ 		    translate_empty_slots) {
+-			tbl = alloc_tce_table();
+-			if (!tbl)
+-				goto cleanup;
+-			info->tce_space = tbl;
++			/*
++			 * If it is kdump kernel, find and use tce tables
++			 * from first kernel, else allocate tce tables here
++			 */
++			if (!is_kdump_kernel()) {
++				tbl = alloc_tce_table();
++				if (!tbl)
++					goto cleanup;
++				info->tce_space = tbl;
++			}
+ 			calgary_found = 1;
+ 		}
+ 	}
+diff -Naurp linux-2.6.26-rc6-orig/include/linux/crash_dump.h 
+linux-2.6.26-rc6/include/linux/crash_dump.h
+--- linux-2.6.26-rc6-orig/include/linux/crash_dump.h	2008-06-21 
+13:59:18.000000000 +0530
++++ linux-2.6.26-rc6/include/linux/crash_dump.h	2008-06-21 14:00:42.000000000 
++0530
+@@ -22,5 +22,13 @@ extern struct proc_dir_entry *proc_vmcor
+ 
+ #define vmcore_elf_check_arch(x) (elf_check_arch(x) || 
+vmcore_elf_check_arch_cross(x))
+ 
++static inline int is_kdump_kernel(void)
++{
++	return (elfcorehdr_addr != ELFCORE_ADDR_MAX) ? 1 : 0 ;
++}
++#else /* !CONFIG_CRASH_DUMP */
++static inline int is_kdump_kernel(void) { return 0; }
+ #endif /* CONFIG_CRASH_DUMP */
++
++extern unsigned long saved_max_pfn;
+ #endif /* LINUX_CRASHDUMP_H */
