@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752478AbYFUHVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753149AbYFUHaC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752478AbYFUHVZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 03:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750972AbYFUHVP
+	id S1753149AbYFUHaC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 03:30:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751032AbYFUH3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 03:21:15 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:36000 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750791AbYFUHVO (ORCPT
+	Sat, 21 Jun 2008 03:29:52 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:43847 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750979AbYFUH3v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 03:21:14 -0400
-Date: Sat, 21 Jun 2008 00:10:23 -0700
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-staging/linux-next merge/build errors
-Message-ID: <20080621071023.GA2765@kroah.com>
-References: <20080621124017.ec3b0a51.sfr@canb.auug.org.au>
+	Sat, 21 Jun 2008 03:29:51 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=ot26js8VhWWUTDNZGPQJ2cYrYL/ID79oFg8rujM5pAfP3wkHUshn0ZBI4rkFoUm00
+	VXL36HkITkHKqYmge87yA==
+Message-ID: <6599ad830806210029x2a020e1ava6b646be9913fcdf@mail.gmail.com>
+Date: Sat, 21 Jun 2008 00:29:41 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Priority heap infrastructure enhancements
+Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1213796886-24863-1-git-send-email-balbir@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080621124017.ec3b0a51.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <1213796886-24863-1-git-send-email-balbir@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 21, 2008 at 12:40:17PM +1000, Stephen Rothwell wrote:
-> Hi Greg,
-> 
-> Today I have done a test merge of linux-staging into linux-next.  I got
-> merge conflicts in drivers/char/agp/via-agp.c and drivers/misc/Makefile -
-> neither of which is really surprising and both tivial to fix up.
-> 
-> I then did an x86 allmodconfig build with these errors:
-> 
-> In file included from /home/sfr/kernels/next/src/drivers/char/drm/via_chrome9_drm.c:32:
-> /home/sfr/kernels/next/src/drivers/char/drm/via_chrome9_3d_reg.h: In function ‘IS_AGPHEADER_INV’:
-> /home/sfr/kernels/next/src/drivers/char/drm/via_chrome9_3d_reg.h:230: error: ‘TRUE’ undeclared (first use in this function)
-> /home/sfr/kernels/next/src/drivers/char/drm/via_chrome9_3d_reg.h:230: error: (Each undeclared identifier is reported only once
-> /home/sfr/kernels/next/src/drivers/char/drm/via_chrome9_3d_reg.h:230: error: for each function it appears in.)
-> /home/sfr/kernels/next/src/drivers/char/drm/via_chrome9_3d_reg.h:232: error: ‘FALSE’ undeclared (first use in this function)
+On Wed, Jun 18, 2008 at 6:48 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>
+> Some of the common code has been factored into heap_adjust() a.k.a heapify
+> in data structures terminology.
+>
+> I am sending out this  patch indepedent of the memory controller changes as
+> they deserve to be reviewed independently.
+>
+> One limitation of the current heap_insert() routine is that it does not
+> insert an element which is greater than the root, when the heap slots
+> are fully used. I'll work on and review that interface and find a suitable
+> way to address that issue
 
-Wierd, this passes allmodconfig on i386, something else must be
-declaring TRUE and FALSE :)
+How else would you want it to behave? If you have a fixed size heap
+and it's full, then you have to drop the largest value. (Well, you
+could in theory drop the smallest value, but there's no quick way to
+find that.)
 
-I'll just go remove them entirely.
+>
+> Comments, Flames? Please do review closely!
+>
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-> And several new warnings (these may not be all):
-> 
-> /home/sfr/kernels/next/src/fs/novfs/inode.c:265: warning: initialization from incompatible pointer type
-> /home/sfr/kernels/next/src/fs/novfs/inode.c:267: warning: initialization from incompatible pointer type
-> /home/sfr/kernels/next/src/fs/novfs/inode.c:273: warning: initialization from incompatible pointer type
-> /home/sfr/kernels/next/src/fs/novfs/inode.c:275: warning: initialization from incompatible pointer type
-> In file included from /home/sfr/kernels/next/src/fs/novfs/daemon.c:24:
-> include2/asm/semaphore.h:1:2: warning: #warning Use linux/semaphore.h, not asm/semaphore.h
-> In file included from /home/sfr/kernels/next/src/fs/novfs/scope.c:26:
-> include2/asm/semaphore.h:1:2: warning: #warning Use linux/semaphore.h, not asm/semaphore.h
-> In file included from /home/sfr/kernels/next/src/fs/novfs/nwcapi.c:22:
-> include2/asm/semaphore.h:1:2: warning: #warning Use linux/semaphore.h, not asm/semaphore.h
+Looks fine.
 
-Yeah, we took a major update of novfs and some of my previous fixes like
-this got lost.
+Reviewed-by: Paul Menage <menage@google.com>
 
-I'll go resolve them now.
-
-thanks,
-
-greg k-h
+Paul
