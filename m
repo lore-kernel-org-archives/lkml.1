@@ -1,69 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752633AbYFURAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbYFURBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752633AbYFURAe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 13:00:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbYFURA0
+	id S1753304AbYFURBZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 13:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbYFURBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 13:00:26 -0400
-Received: from rtr.ca ([76.10.145.34]:4633 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751023AbYFURAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 13:00:25 -0400
-Message-ID: <485D33A8.60200@rtr.ca>
-Date: Sat, 21 Jun 2008 13:00:24 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Sat, 21 Jun 2008 13:01:15 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:52939 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751556AbYFURBN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Jun 2008 13:01:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=AESTW+wbmHhiuN96HGyZCZnTtNa3Dcdeu92zyVzqkF+KawFCQg616oMFfBhEjDLNgU
+         K45aLuyefrrSOp4eKZq/+64/zoAsV9FYvtnAiRTg/1QhAGMClxiVMRyLWykag0tEX+0N
+         JHXzTLvD0Q5EQmeMlBEMBnFRZNCms0f/KMO1I=
+Message-ID: <2f11576a0806211001w375d440dua42b56edce25bfda@mail.gmail.com>
+Date: Sun, 22 Jun 2008 02:01:12 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Paul Menage" <menage@google.com>
+Subject: Re: [PATCH] introduce task cgroup v2
+Cc: balbir@linux.vnet.ibm.com, "Pavel Emelianov" <xemul@openvz.org>,
+       containers@lists.osdl.org, LKML <linux-kernel@vger.kernel.org>,
+       "Li Zefan" <lizf@cn.fujitsu.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <6599ad830806210848q1a1538bcw79c2f3217dd49303@mail.gmail.com>
 MIME-Version: 1.0
-To: Soeren Sonnenburg <kernel@nn7.de>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: hdparm -M acoustic management for sata disks?
-References: <1214043295.17302.16.camel@localhost>  <485D098E.3080109@rtr.ca> <1214066456.18959.6.camel@localhost> <485D3260.20301@rtr.ca>
-In-Reply-To: <485D3260.20301@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6599ad830806210056n44c7ff37g7cd643f95aef4aa0@mail.gmail.com>
+	 <485CC255.9010504@linux.vnet.ibm.com>
+	 <20080621180530.E82D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <6599ad830806210848q1a1538bcw79c2f3217dd49303@mail.gmail.com>
+X-Google-Sender-Auth: 9720e709a36d258c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
->..
-> Here's hdparm-8.9 on a drive that *does* support the feature:
-> 
-> 
-> $ hdparm -I /dev/sda | grep Acoustic
->           *    Automatic Acoustic Management feature set
-> 
-> $ hdparm -M /dev/sda
-> 
-> /dev/sda:
-> acoustic      = 254 (128=quiet ... 254=fast)
-> 
-> $ hdparm -M128 /dev/sda
-> 
-> /dev/sda:
-> setting acoustic management to 128
-> acoustic      = 128 (128=quiet ... 254=fast)
-> 
-> $ hdparm -M254 /dev/sda
-> 
-> /dev/sda:
-> setting acoustic management to 254
-> acoustic      = 254 (128=quiet ... 254=fast)
-..
+>> I am going to convert spinlock in task limit cgroup to atomic_t.
+>> task limit cgroup has following caractatics.
+>>        - many write (fork, exit)
+>>        - few read
+>>        - fork() is performance sensitive systemcall.
+>
+> This is true, but I don't see how it can be more performance-sensitive
+> than the overhead of allocating/freeing a page.
+>
+> What kinds of performance regressions did you see?
 
-And one more:
+I ran spawn test of unix bench, thus
 
-$ hdparm -M0 /dev/sda
+implement way                   performance degression
+-------------------------------------------------------------------------
+use res_counter                  15-20%
+use spin_lock()                    nealy 10%
+use atomic_t                       nealy 5%
 
-/dev/sda:
- setting acoustic management to 0
- acoustic      = 254 (128=quiet ... 254=fast)
+Yes, this is really roughly number.
+Of cource, I'll post more detail result at next week.
 
-$ hdparm -I /dev/sda | grep -i acoustic
-        Recommended acoustic management value: 128, current value: 254
-                Automatic Acoustic Management feature set
+>>          if increase fork overhead, system total performance cause degression.
+>
+> What kind of overhead were you seeing? How about if you delay doing
+> any task accounting until the task_limit subsystem is bound to a
+> hierarchy? That way there's no noticeable overhead for people who
+> aren't using your subsystem.
 
-(the lack of a '*' on that last line indicates the feature is no longer enabled).
+honestly, I am seeing it on micro-benchmark only.
+but, I'm afraid to performance degression because many people check
+performance regression periodically.
+So if my implement cause performance regression, they never used mine.
 
--ml
+Or, if you strongly want to task_limit subsystem use res_counter,
+I can be working on improve to res_counter performance instead.
