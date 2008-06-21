@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753149AbYFUHaC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbYFUH41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753149AbYFUHaC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 03:30:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751032AbYFUH3w
+	id S1753534AbYFUH41 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 03:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbYFUH4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 03:29:52 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:43847 "EHLO
+	Sat, 21 Jun 2008 03:56:17 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:44800 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750979AbYFUH3v (ORCPT
+	with ESMTP id S1751595AbYFUH4Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 03:29:51 -0400
+	Sat, 21 Jun 2008 03:56:16 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:message-id:date:from:to:subject:cc:in-reply-to:
 	mime-version:content-type:content-transfer-encoding:
 	content-disposition:references;
-	b=ot26js8VhWWUTDNZGPQJ2cYrYL/ID79oFg8rujM5pAfP3wkHUshn0ZBI4rkFoUm00
-	VXL36HkITkHKqYmge87yA==
-Message-ID: <6599ad830806210029x2a020e1ava6b646be9913fcdf@mail.gmail.com>
-Date: Sat, 21 Jun 2008 00:29:41 -0700
+	b=Hz+5R+fYs4KazNS/6BmHJi87tdlfE0LYVHT1Oa2hVBcICL5ecL68uGM3iuFhG1Fs/
+	p8YbY5qwmLlwPCUwiqyTw==
+Message-ID: <6599ad830806210056n44c7ff37g7cd643f95aef4aa0@mail.gmail.com>
+Date: Sat, 21 Jun 2008 00:56:07 -0700
 From: "Paul Menage" <menage@google.com>
-To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Priority heap infrastructure enhancements
-Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1213796886-24863-1-git-send-email-balbir@linux.vnet.ibm.com>
+To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Pavel Emelianov" <xemul@openvz.org>
+Subject: Re: [PATCH] introduce task cgroup v2
+Cc: containers@lists.osdl.org, LKML <linux-kernel@vger.kernel.org>,
+       "Li Zefan" <lizf@cn.fujitsu.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20080616103035.788A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1213796886-24863-1-git-send-email-balbir@linux.vnet.ibm.com>
+References: <20080607195733.9C77.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <6599ad830806110045n6aec52ddkfb4be91b685357fe@mail.gmail.com>
+	 <20080616103035.788A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 18, 2008 at 6:48 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Sun, Jun 15, 2008 at 6:32 PM, KOSAKI Motohiro
+<kosaki.motohiro@jp.fujitsu.com> wrote:
 >
-> Some of the common code has been factored into heap_adjust() a.k.a heapify
-> in data structures terminology.
->
-> I am sending out this  patch indepedent of the memory controller changes as
-> they deserve to be reviewed independently.
->
-> One limitation of the current heap_insert() routine is that it does not
-> insert an element which is greater than the root, when the heap slots
-> are fully used. I'll work on and review that interface and find a suitable
-> way to address that issue
+> honestly, I used res_counter on early version.
+> but I got bad performance.
 
-How else would you want it to behave? If you have a fixed size heap
-and it's full, then you have to drop the largest value. (Well, you
-could in theory drop the smallest value, but there's no quick way to
-find that.)
+Bad performance on the charge/uncharge?
 
->
-> Comments, Flames? Please do review closely!
->
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+The only difference I can see is that res_counter uses
+spin_lock_irqsave()/spin_unlock_irqrestore(), and you're using plain
+spin_lock()/spin_unlock().
 
-Looks fine.
+Is the overhead of a pushf/cli/popf really going to matter compared
+with the overhead of forking/exiting a task?
 
-Reviewed-by: Paul Menage <menage@google.com>
+Or approaching this from the other side, does res_counter really need
+irq-safe locking, or is it just being cautious?
 
 Paul
