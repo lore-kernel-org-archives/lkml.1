@@ -1,71 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752657AbYFVHYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752478AbYFVHau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752657AbYFVHYp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 03:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751109AbYFVHYg
+	id S1752478AbYFVHau (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 03:30:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbYFVHal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 03:24:36 -0400
-Received: from smtp2.versatel.nl ([62.58.50.89]:58168 "EHLO smtp2.versatel.nl"
+	Sun, 22 Jun 2008 03:30:41 -0400
+Received: from saeurebad.de ([85.214.36.134]:50250 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750989AbYFVHYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 03:24:35 -0400
-Message-ID: <485DFF81.9080707@hhs.nl>
-Date: Sun, 22 Jun 2008 09:30:09 +0200
-From: Hans de Goede <j.w.r.degoede@hhs.nl>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080315)
+	id S1750895AbYFVHak (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 03:30:40 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Philippe Elie <phil.el@wanadoo.fr>,
+       oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86/oprofile: disable preemption in nmi_shutdown
+References: <20080621215518.GA5715@damson.getinternet.no>
+Date: Sun, 22 Jun 2008 09:30:28 +0200
+In-Reply-To: <20080621215518.GA5715@damson.getinternet.no> (Vegard Nossum's
+	message of "Sat, 21 Jun 2008 23:55:18 +0200")
+Message-ID: <878wwylyej.fsf@skyscraper.fehenstaub.lan>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Rene Herman <rene.herman@keyaccess.nl>
-CC: "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] LMSENSORS: 2.6.26-rc,	enabling ACPI Termal Zone
- support costs sensors
-References: <485DA11C.7050906@keyaccess.nl>
-In-Reply-To: <485DA11C.7050906@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman wrote:
-> Good day.
-> 
-> On 2.6.26-rc and perhaps earlier, when I enable the ACPI Thermal Zone 
-> support (CONFIG_ACPI_THERMAL) I see in dmesg:
-> 
-> ACPI: LNXTHERM:01 is registered as thermal_zone0
-> ACPI: Thermal Zone [THRM] (56 C)
-> 
-> My /sys/class/hwmon/hwmon0 (a W83782D chip) becomes hwmon1, there's a 
-> new /sys/class/hwmon/hwmon0 and "sensors -s" craps out with:
-> 
-> # sensors -s
-> Can't access procfs/sysfs file
-> Kernel interface access error
-> For 2.6 kernels, make sure you have mounted sysfs and libsensors
-> was compiled with sysfs support!
-> 
-> # sensors --version
-> sensors version 2.10.6 with libsensors version 2.10.6
-> 
-> This is the slackware 12.1 (recent) standard version. What's wrong?
-> 
-> In case it's useful, my /etc/sensors.conf is at:
-> 
-> http://members.home.nl/rene.herman/sensors.conf
-> 
+Hi Vegard,
 
-I'm pretty sure this caused by your lm_sensors using space being too old to
-support the new thermalzone stuff.
+Vegard Nossum <vegard.nossum@gmail.com> writes:
 
-<Correction that should ofcourse read "userspace" not "using space", so the 
-correct reply I was trying to send is>:
+> Hi,
+>
+> Does this look correct? I didn't really play with preemption before, but
+> as far as I can tell, this is the right thing to do.
+>
+> I don't really get why model->shutdown(msrs) is done only for one of the
+> CPUs, but my patch assumes that this is correct. (If that had been done
+> from inside nmi_shutdown() for each CPU, we wouldn't have had to get the
+> cpu var, and not needed to disable preemption.)
+>
+> Please comment :-)
+>
+>
+> Vegard
+>
+>
+> From: Vegard Nossum <vegard.nossum@gmail.com>
+> Date: Sat, 21 Jun 2008 23:44:19 +0200
+> Subject: [PATCH] x86/oprofile: disable preemption in nmi_shutdown
+>
+>     BUG: using smp_processor_id() in preemptible [00000000] code: oprofiled/27301
+>     caller is nmi_shutdown+0x11/0x60
+>     Pid: 27301, comm: oprofiled Not tainted 2.6.26-rc7 #25
+>      [<c028a90d>] debug_smp_processor_id+0xbd/0xc0
+>      [<c045fba1>] nmi_shutdown+0x11/0x60
+>      [<c045dd4a>] oprofile_shutdown+0x2a/0x60
+>
+> Note that we don't need this for the other functions, since they are all
+> called with on_each_cpu() (which disables preemption for us anyway).
+>
+> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+> ---
+>  arch/x86/oprofile/nmi_int.c |    6 +++++-
+>  1 files changed, 5 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
+> index cc48d3f..4a177b4 100644
+> --- a/arch/x86/oprofile/nmi_int.c
+> +++ b/arch/x86/oprofile/nmi_int.c
+> @@ -269,12 +269,16 @@ static void nmi_cpu_shutdown(void *dummy)
+>  
+>  static void nmi_shutdown(void)
+>  {
+> -	struct op_msrs *msrs = &__get_cpu_var(cpu_msrs);
+> +	struct op_msrs *msrs;
+> +
+> +	preempt_disable();
+> +	msrs = &__get_cpu_var(cpu_msrs);
+>  	nmi_enabled = 0;
+>  	on_each_cpu(nmi_cpu_shutdown, NULL, 0, 1);
+>  	unregister_die_notifier(&profile_exceptions_nb);
+>  	model->shutdown(msrs);
+>  	free_msrs();
+> +	preempt_enable();
 
-I'm pretty sure this caused by your lm_sensors using space being too old to
-support the new thermalzone stuff. You need atleast 3.0.2 to support the
-thermalzone driver.
+Have a look at get_cpu_var() and put_cpu_var(), that is exactly the
+pattern.
 
-Regards,
-
-Hans
-
+	Hannes
