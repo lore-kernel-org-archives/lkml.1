@@ -1,58 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182AbYFVOfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbYFVOha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755182AbYFVOfv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 10:35:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbYFVOfo
+	id S1755256AbYFVOha (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 10:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbYFVOhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 10:35:44 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:3809 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752587AbYFVOfn (ORCPT
+	Sun, 22 Jun 2008 10:37:23 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:49839 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752655AbYFVOhW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 10:35:43 -0400
-Date: Sun, 22 Jun 2008 10:35:41 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Andi Kleen <andi@firstfloor.org>
-cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       AntonioLin <antonio.lin@alcormicro.com>,
-       David Vrabel <david.vrabel@csr.com>
-Subject: Re: Scatter-gather list constraints
-In-Reply-To: <485D8829.2060901@firstfloor.org>
-Message-ID: <Pine.LNX.4.44L0.0806221025220.3610-100000@netrider.rowland.org>
+	Sun, 22 Jun 2008 10:37:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ukVM0M0oeHHfBuK/hOjI+c2dCNdTOiXWb/+k/jxJ7BWQ86sC4n+nkruzdilMajj3+a
+         WKkr3DV8YKFrDhLSpxBOXUOCIQ8k/OBmzZaxm62ejjOmXxzDr4hmwL8Bi7CZ/Wuzstur
+         Cr9Xm3cMYAmNgaI6tAGVuDfw4HQtUOVHXHASo=
+Message-ID: <48f7fe350806220737q7cc48d81g29b0fc85fc59d390@mail.gmail.com>
+Date: Sun, 22 Jun 2008 10:37:21 -0400
+From: "Ryan Hope" <rmh3093@gmail.com>
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+Subject: Re: [BUG] Lockless patches cause hardlock under heavy IO
+Cc: "Peter Zijlstra" <peterz@infradead.org>, linux-mm@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200806191819.31968.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48f7fe350806181415l4eba61b3i1d206de03147575e@mail.gmail.com>
+	 <1213863122.16944.257.camel@twins>
+	 <200806191819.31968.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Jun 2008, Andi Kleen wrote:
+Well I couldn't stop playing with this... I am pretty sure the cause
+of the hardlocks is in the second half of the patches (the speculative
+page ref patches). I reversed all of those patches so that just the
+GUP patchs were included and no more hardlocks... then I applied the
+concurrent page cache patches from the -rt branch include 1 OLD
+speculative page ref patch and this caused hardlocks for peopel again.
+However enabling heap randomization fixed the hardlocks for one of the
+users and the disabling swap fixed the issue of the other user. I hope
+this helps.
 
-> 
-> >> - Is it performance critical?
-> > 
-> > For people using wireless USB drives, yes.
-> 
-> But only if there is a lot of 512 byte block IO? The only case I can think
-> of right now would be XFS log IO and perhaps some O_DIRECT/raw device
-> accesses.
+-Ryan
 
-Sorry, I misunderstood your question.  There probably will not be a lot 
-of 512-byte block I/O -- not in the workloads I'm acquainted with.  But 
-there will be some.
-
-It isn't performance-critical, in the sense that slowing down the odd
-512-byte block transfers won't hurt performance much.  But it is
-critical in the sense that the transfers must work properly when they 
-do occur.
-
-> If it's only an relative oddball just copying is fine imho.
-
-You mean, have the USB stack allocate bounce buffers and copy the data 
-between the S-G buffers (which may be in high memory) and the bounce 
-buffers?  We're talking about a potentially fairly large amount of 
-data, say up to 100 KB.  Is that really easier than splitting up an I/O 
-request?
-
-Alan Stern
-
+On Thu, Jun 19, 2008 at 4:19 AM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> On Thursday 19 June 2008 18:12, Peter Zijlstra wrote:
+>> On Wed, 2008-06-18 at 17:15 -0400, Ryan Hope wrote:
+>> > I applied the following patches from 2.6-26-rc5-mm3 to 2.6.26-rc6 and
+>> > they caused a hardlock under heavy IO:
+>>
+>> What kind of machine, how much memory, how many spindles, what
+>> filesystem and what is heavy load?
+>>
+>> Furthermore, try the NMI watchdog with serial/net-console to capture its
+>> output.
+>
+>
+> Good suggestions. A trace would be really helpful.
+>
+> As Arjan suggested, debug options especially CONFIG_DEBUG_VM would be
+> a good idea to turn on if you haven't already.
+>
+> BTW. what was the reason for applying those patches? Did you hit the
+> problem with -mm also, and hope to narrow it down?
+>
+>
+>> > x86-implement-pte_special.patch
+>> > mm-introduce-get_user_pages_fast.patch
+>> > mm-introduce-get_user_pages_fast-fix.patch
+>> > mm-introduce-get_user_pages_fast-checkpatch-fixes.patch
+>> > x86-lockless-get_user_pages_fast.patch
+>> > x86-lockless-get_user_pages_fast-checkpatch-fixes.patch
+>> > x86-lockless-get_user_pages_fast-fix.patch
+>> > x86-lockless-get_user_pages_fast-fix-2.patch
+>> > x86-lockless-get_user_pages_fast-fix-2-fix-fix.patch
+>> > x86-lockless-get_user_pages_fast-fix-warning.patch
+>> > dio-use-get_user_pages_fast.patch
+>> > splice-use-get_user_pages_fast.patch
+>> > x86-support-1gb-hugepages-with-get_user_pages_lockless.patch
+>> > #
+>> > mm-readahead-scan-lockless.patch
+>> > radix-tree-add-gang_lookup_slot-gang_lookup_slot_tag.patch
+>> > #mm-speculative-page-references.patch: clameter saw bustage
+>> > mm-speculative-page-references.patch
+>> > mm-speculative-page-references-fix.patch
+>> > mm-speculative-page-references-fix-fix.patch
+>> > mm-speculative-page-references-hugh-fix3.patch
+>> > mm-lockless-pagecache.patch
+>> > mm-spinlock-tree_lock.patch
+>> > powerpc-implement-pte_special.patch
+>> >
+>> > I am on an x86_64. I dont know what other info you need...
+>
+> Can you isolate it to one of the two groups of patches? I suspect it
+> might be the latter so you might try that first -- this version of
+> speculative page references is very nice in theory but it is a little
+> more complex to implement the slowpaths so it could be an error there.
+>
