@@ -1,27 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbYFVXX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757372AbYFVX2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756732AbYFVXX7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 19:23:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755664AbYFVXXs
+	id S1757372AbYFVX2j (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 19:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755785AbYFVX2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 19:23:48 -0400
-Received: from nebensachen.de ([195.34.83.29]:57670 "EHLO mail.nebensachen.de"
+	Sun, 22 Jun 2008 19:28:31 -0400
+Received: from nebensachen.de ([195.34.83.29]:51929 "EHLO mail.nebensachen.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753353AbYFVXXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 19:23:46 -0400
-X-Hashcash: 1:20:080622:bzolnier@gmail.com::kZ7N5KXc0K6OqKoD:00000000000000000000000000000000000000000001LTd
-X-Hashcash: 1:20:080622:linux-ide@vger.kernel.org::OEBu4Xcg0dRrtnsH:000000000000000000000000000000000000AgSZ
-X-Hashcash: 1:20:080622:linux-kernel@vger.kernel.org::kafO0+td8W+i8qmT:00000000000000000000000000000000002ld
-X-Hashcash: 1:20:080622:randy.dunlap@oracle.com::ruPdICA9b85sKSjm:000000000000000000000000000000000000000fnP
+	id S1755131AbYFVX2a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 19:28:30 -0400
+X-Hashcash: 1:20:080622:bzolnier@gmail.com::Uysn1OozgLEG6CB1:00000000000000000000000000000000000000000000FDR
+X-Hashcash: 1:20:080622:linux-ide@vger.kernel.org::J69V+Iwl7fuCCFJz:0000000000000000000000000000000000001Uop
+X-Hashcash: 1:20:080622:linux-kernel@vger.kernel.org::+6JsQx0FBG0mKfYw:0000000000000000000000000000000001/87
+X-Hashcash: 1:20:080622:randy.dunlap@oracle.com::7wN+P0KAzuNhzS1b:000000000000000000000000000000000000005DpM
 From: Elias Oltmanns <eo@nebensachen.de>
 To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
        Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] IDE: Fix HDIO_DRIVE_RESET handling
+Subject: [PATCH] IDE: Fix HDIO_DRIVE_RESET handling
 References: <87k5gmz596.fsf@denkblock.local>
 	<200806192247.25063.bzolnier@gmail.com>
-Date: Mon, 23 Jun 2008 01:23:31 +0200
-Message-ID: <87wskhuk98.fsf@denkblock.local>
+	<87wskhuk98.fsf@denkblock.local>
+Date: Mon, 23 Jun 2008 01:28:21 +0200
+In-Reply-To: <87wskhuk98.fsf@denkblock.local> (Elias Oltmanns's message of
+	"Mon, 23 Jun 2008 01:23:31 +0200")
+Message-ID: <87r6apuk16.fsf@denkblock.local>
 User-Agent: Gnus/5.110007 (No Gnus v0.7)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -29,86 +32,186 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> Hi,
->
-> On Thursday 19 June 2008, Elias Oltmanns wrote:
->> Hi Bart,
->> 
->> currently, the code path executing an HDIO_DRIVE_RESET ioctl is broken
->> in various ways.  Firstly, ide_abort() is called with the ide_lock held
->> and may call ide_end_request() further down the line which will try to
->> grab the same lock again.  More importantly though, the whole concept of
->> aborting an inflight request is flawed -- at least as far as ide_abort()
->> is concerned.
->> 
->> The patch below tries to address these issues by handling the
->> HDIO_DRIVE_RESET ioctl in-band.
-[...]
-> One more thing, ide-2.6 is for syncing with Linus _only_ (it seems I'm to
-> blame for the confusion), please rebase your work on top of pata-2.6 quilt
-> tree (some comments which should ease the transition below):
->
-> 	http://kernel.org/pub/linux/kernel/people/bart/pata-2.6/
->
-> [ This tree is pulled into linux-next so you may prefer to just use the
->   latest -next snapshost instead. ]
+Currently, the code path executing an HDIO_DRIVE_RESET ioctl is broken
+in various ways.  Most importantly, it is treated as an out of band
+request in an illegal way which may very likely lead to system lock ups.
+Use the drive's request queue to avoid this problem (and fix a locking
+issue for free along the way).
 
-Indeed, the following patch series is based on nex-20080620.  Just to be
-absolutely clear though, this is actually a bug fix since a
+Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
+---
 
-# hdparm -w /dev/hda
+ drivers/ide/ide-io.c   |   23 ++++++++++++++++++++++-
+ drivers/ide/ide-iops.c |   14 +++++++++++++-
+ drivers/ide/ide.c      |   33 ++++++++++++++-------------------
+ include/linux/ide.h    |    6 ++++++
+ 4 files changed, 55 insertions(+), 21 deletions(-)
 
-currently freezes the system if there happens to be any I/O operation in
-progress.  Not sure whether this is serious enough for -rc or, indeed,
--stable trees, but I thought I'd mention it.
-
-[...]
->> +	rq->cmd[0] = REQ_DRIVE_RESET;
->> +	rq->cmd_type = REQ_TYPE_SPECIAL;
->> +	rq->cmd_flags |= REQ_SOFTBARRIER;
->> +	ide_do_drive_cmd(drive, rq, ide_end);
->
-> ide_do_drive_cmd() now handles only ide_preempt + it seems that previously
-> the ioctl would wait till the reset is complete so probably this needs to
-> use blk_execute_rq() instead
-
-There is some uncertainty here: Previously, the code didn't actually
-wait for the reset to complete before returning but did so right after
-the reset sequence had been initiated.  It might be desirable to wait
-for completion before returning though and that's the way I've
-implemented it in the new patch (first in the series).  This has the
-advantage that user space could be informed when anything should have
-gone wrong (like a timeout).  This would obviously mean a functional
-change visible from user space but then fixing the bug in the first
-place is a change visible in user space.  See the fourth patch in the
-series for what I've had in mind.
-
->
-> [...]
->
-> Oh, and now that you've fixed HDIO_DRIVE_RESET you get the following bonus:
-> ide_abort(), __ide_abort() and ide_driver_t.abort all can be removed in the
-> incremental patch! ;)
-
-Done.  It's the second in the series.
-
-So here is the summary of the patch series to come:
-
-1. Fixes the buggy implementation of HDIO_DRIVE_RESET handling.
-2. Removes all code that has been made superfluous by the previous
-   change.
-3. Documents the way HDIO_DRIVE_RESET is handled accurately.
-4. Adds some more error reporting facilities and documents them as well.
-
-Please be particularly alert when reviewing the last patch.  I merely
-did what seemed to be the right and obvious thing to do but I ironed out
-some irregularities along the way which (for all improbability) may have
-been there for some reason or other.  It beats me, for instance, why
-->polling but not ->resetting should be reset to 0 when
-sil_sata_reset_poll() returns non zero.  So, I now both are 0 once any
-of the poll functions returns ide_stopped.
-
-Regards,
-
-Elias
+diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
+index 2805774..d80f1b9 100644
+--- a/drivers/ide/ide-io.c
++++ b/drivers/ide/ide-io.c
+@@ -766,6 +766,18 @@ static ide_startstop_t execute_drive_cmd (ide_drive_t *drive,
+  	return ide_stopped;
+ }
+ 
++static ide_startstop_t ide_special_rq(ide_drive_t *drive, struct request *rq)
++{
++	switch (rq->cmd[0]) {
++	case REQ_DRIVE_RESET:
++		return ide_do_reset(drive);
++	default:
++		blk_dump_rq_flags(rq, "ide_special_rq - bad request");
++		ide_end_request(drive, 0, 0);
++		return ide_stopped;
++	}
++}
++
+ static void ide_check_pm_state(ide_drive_t *drive, struct request *rq)
+ {
+ 	struct request_pm_state *pm = rq->data;
+@@ -869,7 +881,16 @@ static ide_startstop_t start_request (ide_drive_t *drive, struct request *rq)
+ 			    pm->pm_step == ide_pm_state_completed)
+ 				ide_complete_pm_request(drive, rq);
+ 			return startstop;
+-		}
++		} else if (!rq->rq_disk && blk_special_request(rq))
++			/*
++			 * TODO: Once all ULDs have been modified to
++			 * check for specific op codes rather than
++			 * blindly accepting any special request, the
++			 * echeck for ->rq_disk above may be replaced
++			 * by a more suitable mechanism or even
++			 * dropped entirely.
++			 */
++			return ide_special_rq(drive, rq);
+ 
+ 		drv = *(ide_driver_t **)rq->rq_disk->private_data;
+ 		return drv->do_request(drive, rq, block);
+diff --git a/drivers/ide/ide-iops.c b/drivers/ide/ide-iops.c
+index 66e39e5..d68fc2a 100644
+--- a/drivers/ide/ide-iops.c
++++ b/drivers/ide/ide-iops.c
+@@ -905,6 +905,14 @@ void ide_execute_pkt_cmd(ide_drive_t *drive)
+ }
+ EXPORT_SYMBOL_GPL(ide_execute_pkt_cmd);
+ 
++static inline void ide_complete_drive_reset(ide_drive_t *drive)
++{
++	struct request *rq = HWGROUP(drive)->rq;
++
++	if (rq && blk_special_request(rq) && rq->cmd[0] == REQ_DRIVE_RESET)
++		ide_end_request(drive, 1, 0);
++}
++
+ /* needed below */
+ static ide_startstop_t do_reset1 (ide_drive_t *, int);
+ 
+@@ -941,6 +949,7 @@ static ide_startstop_t atapi_reset_pollfunc (ide_drive_t *drive)
+ 	/* done polling */
+ 	hwgroup->polling = 0;
+ 	hwgroup->resetting = 0;
++	ide_complete_drive_reset(drive);
+ 	return ide_stopped;
+ }
+ 
+@@ -961,7 +970,7 @@ static ide_startstop_t reset_pollfunc (ide_drive_t *drive)
+ 		if (port_ops->reset_poll(drive)) {
+ 			printk(KERN_ERR "%s: host reset_poll failure for %s.\n",
+ 				hwif->name, drive->name);
+-			return ide_stopped;
++			goto out;
+ 		}
+ 	}
+ 
+@@ -1005,6 +1014,8 @@ static ide_startstop_t reset_pollfunc (ide_drive_t *drive)
+ 	}
+ 	hwgroup->polling = 0;	/* done polling */
+ 	hwgroup->resetting = 0; /* done reset attempt */
++out:
++	ide_complete_drive_reset(drive);
+ 	return ide_stopped;
+ }
+ 
+@@ -1112,6 +1123,7 @@ static ide_startstop_t do_reset1 (ide_drive_t *drive, int do_not_try_atapi)
+ 
+ 	if (io_ports->ctl_addr == 0) {
+ 		spin_unlock_irqrestore(&ide_lock, flags);
++		ide_complete_drive_reset(drive);
+ 		return ide_stopped;
+ 	}
+ 
+diff --git a/drivers/ide/ide.c b/drivers/ide/ide.c
+index b0739c9..bf17529 100644
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -529,6 +529,19 @@ static int generic_ide_resume(struct device *dev)
+ 	return err;
+ }
+ 
++static void generic_drive_reset(ide_drive_t *drive)
++{
++	struct request *rq;
++
++	rq = blk_get_request(drive->queue, READ, __GFP_WAIT);
++	rq->cmd_type = REQ_TYPE_SPECIAL;
++	rq->cmd_len = 1;
++	rq->cmd[0] = REQ_DRIVE_RESET;
++	rq->cmd_flags |= REQ_SOFTBARRIER;
++	blk_execute_rq(drive->queue, NULL, rq, 1);
++	blk_put_request(rq);
++}
++
+ int generic_ide_ioctl(ide_drive_t *drive, struct file *file, struct block_device *bdev,
+ 			unsigned int cmd, unsigned long arg)
+ {
+@@ -603,31 +616,13 @@ int generic_ide_ioctl(ide_drive_t *drive, struct file *file, struct block_device
+ 			if (!capable(CAP_SYS_ADMIN))
+ 				return -EACCES;
+ 
+-			/*
+-			 *	Abort the current command on the
+-			 *	group if there is one, taking
+-			 *	care not to allow anything else
+-			 *	to be queued and to die on the
+-			 *	spot if we miss one somehow
+-			 */
+-
+ 			spin_lock_irqsave(&ide_lock, flags);
+-
+ 			if (HWGROUP(drive)->resetting) {
+ 				spin_unlock_irqrestore(&ide_lock, flags);
+ 				return -EBUSY;
+ 			}
+-
+-			ide_abort(drive, "drive reset");
+-
+-			BUG_ON(HWGROUP(drive)->handler);
+-
+-			/* Ensure nothing gets queued after we
+-			   drop the lock. Reset will clear the busy */
+-
+-			HWGROUP(drive)->busy = 1;
+ 			spin_unlock_irqrestore(&ide_lock, flags);
+-			(void) ide_do_reset(drive);
++			generic_drive_reset(drive);
+ 
+ 			return 0;
+ 		case HDIO_GET_BUSSTATE:
+diff --git a/include/linux/ide.h b/include/linux/ide.h
+index 5ddae9b..8fbe838 100644
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -139,6 +139,12 @@ struct ide_io_ports {
+ #define WAIT_MIN_SLEEP	(2*HZ/100)	/* 20msec - minimum sleep time */
+ 
+ /*
++ * Op codes for special requests to be handled by ide_special_rq().
++ * Values should be in the range of 0x20 to 0x3f.
++ */
++#define REQ_DRIVE_RESET		0x20
++
++/*
+  * Check for an interrupt and acknowledge the interrupt status
+  */
+ struct hwif_s;
