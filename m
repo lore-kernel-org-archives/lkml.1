@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753779AbYFVKDO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752989AbYFVKTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753779AbYFVKDO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 06:03:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbYFVKC7
+	id S1752989AbYFVKTw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 06:19:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751370AbYFVKTn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 06:02:59 -0400
-Received: from wr-out-0708.google.com ([64.233.184.247]:20574 "EHLO
-	wr-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751471AbYFVKC5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 06:02:57 -0400
+	Sun, 22 Jun 2008 06:19:43 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:37542 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751300AbYFVKTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 06:19:42 -0400
+Date: Sun, 22 Jun 2008 13:17:52 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       rmk@arm.linux.org.uk, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [2.6 patch] fix BLK_DEV_HD_ONLY on ARM dependencies
+Message-ID: <20080622101752.GG27069@cs181133002.pp.htv.fi>
+References: <20080609222155.GA1987@cs181133002.pp.htv.fi> <200806101956.15711.bzolnier@gmail.com>
 MIME-Version: 1.0
-Date: Sun, 22 Jun 2008 03:02:52 -0700 (PDT)
-In-Reply-To: <aHtAJ-8bW-11@gated-at.bofh.it>
-X-IP: 144.32.61.2
-References: <aHtAJ-8bW-11@gated-at.bofh.it>
-User-Agent: G2/1.0
-X-HTTP-UserAgent: Mozilla/5.0 (compatible; Konqueror/3.5; Linux) KHTML/3.5.9 
-	(like Gecko) (Kubuntu),gzip(gfe),gzip(gfe)
-Message-ID: <d67fe091-02b8-4587-8d25-e521d8eb2d2d@d77g2000hsb.googlegroups.com>
-Subject: Re: Sending UDP packets to port 0
-From: Alan Jenkins <aj504@cs.york.ac.uk>
-To: "Christian P. Schmidt" <schmidt@digadd.de>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200806101956.15711.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christian P. Schmidt wrote:
-> Hi all,
->
-> I know that the kernel forbids sending UDP packets to port 0. Is there a
-> specific reason for this?
+On Tue, Jun 10, 2008 at 07:56:15PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> On Tuesday 10 June 2008, Adrian Bunk wrote:
+> > This patch limits BLK_DEV_HD_ONLY to the ARM platforms offering 
+> > IRQ_HARDDISK, fixing the following compile error on others:
+> > 
+> > <--  snip  -->
+> > 
+> > ...
+> >   CC      drivers/ide/legacy/hd.o
+> > ...
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ide/legacy/hd.c: In function 'hd_times_out':
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ide/legacy/hd.c:542: error: 'IRQ_HARDDISK' undeclared (first use in this function)
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ide/legacy/hd.c:542: error: (Each undeclared identifier is reported only once
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ide/legacy/hd.c:542: error: for each function it appears in.)
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ide/legacy/hd.c: In function 'do_hd_request':
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ide/legacy/hd.c:661: error: 'IRQ_HARDDISK' undeclared (first use in this function)
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ide/legacy/hd.c: In function 'hd_init':
+> > /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/ide/legacy/hd.c:765: error: 'IRQ_HARDDISK' undeclared (first use in this function)
+> > make[3]: *** [drivers/ide/legacy/hd.o] Error 1
+> > 
+> > <--  snip  -->
+> > 
+> > Reported-by: Adrian Bunk <bunk@kernel.org>
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> applied, thanks
+> 
+> BTW Could you look into converting your "remove BLK_DEV_HD_ONLY" patch
+> into "move old hd driver to drivers/block/" one because the old hd driver
+> still has some uses (as noticed by Alan)?
 
-_Source_ port 0 is treated specially in the sockets implementation,
-though I'm not sure  whether this is an intended feature of the API
-(manpages don't mention it).  If you say "bind to port 0", you get an
-arbitrary unused port instead, which is potentially useful.
+drivers/ide/Makefile says:
+  # old hd driver must be last
 
-> I'm asking because I regularly need to access a device that asks for
-> tftp files using port 0 as source. To use these devices I'm using a
-> kernel with removed port 0 checks.
->
-> I read RFC 768, and it does not explicitly forbid the use of port 0 as
-> far as I can see. It only says that if unused, 0 is to be inserted.
+Is this still true?
 
-1. No, it only says that about the source port.
-2. The only way to tell whether the field is "unused" is to check for
-a 0 value.
+If yes then moving the driver to drivers/block/ requires switching to 
+late_initcall() since drivers/block/ is linked before drivers/ide/ .
 
-> RFC 1350 (TFTP) even states explicitly:
-> The transfer identifiers (TID's) used by TFTP are passed to the Datagram
-> layer to be used as ports; therefore they must be between 0 and 65,535.
->
-> In my understanding, and apparently that of the authors of the
-> appliance's tftp client implementation, this marks port 0 as valid.
+cu
+Adrian
 
-They're a bit mad then.  RFC1700 marks port 0 as "reserved" (other
-unused ports are marked "unassigned").
+-- 
 
-I hope that explains why most sane people would avoid using port 0.  I
-can't think of a specific reason for forbidding port 0 as a
-destination; it's just generally not expected (and there was no reason
-to allow it).  I think you need to be more specific if you hope to
-have this check removed in mainline though.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Which TCP/IP stacks is the device tested/supported against?  Are you
-saying Windows or some other OS lets you send to port 0?
