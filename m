@@ -1,49 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753279AbYFVIzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752651AbYFVI67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753279AbYFVIzt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 04:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbYFVIzi
+	id S1752651AbYFVI67 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 04:58:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbYFVI6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 04:55:38 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:59678 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751399AbYFVIzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 04:55:03 -0400
-Date: Sun, 22 Jun 2008 11:53:13 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Richard Henderson <rth@twiddle.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: alpha build failure
-Message-ID: <20080622085313.GC27069@cs181133002.pp.htv.fi>
+	Sun, 22 Jun 2008 04:58:51 -0400
+Received: from wilson.telenet-ops.be ([195.130.132.42]:36777 "EHLO
+	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751239AbYFVI6t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 04:58:49 -0400
+Date: Sun, 22 Jun 2008 10:58:46 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+cc: linux-ide@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH 2/2] ide: pass hw_regs_t-s to ide_device_add[_all]()
+In-Reply-To: <200806202029.11304.bzolnier@gmail.com>
+Message-ID: <Pine.LNX.4.64.0806221055210.4607@anakin>
+References: <200806202029.11304.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 9267b4b3880d00dc2dab90f1d817c856939114f7
-(alpha: fix module load failures on smp (bug #10926))
-causes the following build failure with the alpha defconfig:
+On Fri, 20 Jun 2008, Bartlomiej Zolnierkiewicz wrote:
+> * Add 'hw_regs_t **hws' argument to ide_device_add[_all]() and convert
+>   host drivers + drivers/ide/setup-pci.c to use it instead of calling
+>   ide_init_port_hw() directly (however if host has more than 1 port we
+>   must still set hwif->chipset to hint consecutive ide_find_port() call
+>   that the ide_hwifs[] slot is occupied).
+> 
+> * Unexport ide_init_port_hw().
+> 
+> There should be no functional changes caused by this patch.
 
-<--  snip  -->
+Brr... seems to complicate the bookkeeping a lot...
 
-...
-  CC      arch/alpha/mm/init.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/alpha/mm/init.c:34: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'typeof'
-make[2]: *** [arch/alpha/mm/init.o] Error 1
+I looked at the m68k drivers only:
 
-<--  snip  -->
+> --- a/drivers/ide/legacy/buddha.c
+> +++ b/drivers/ide/legacy/buddha.c
+> @@ -148,7 +148,6 @@ static void __init buddha_setup_ports(hw
+>  
+>  static int __init buddha_init(void)
+>  {
+> -	hw_regs_t hw;
+>  	ide_hwif_t *hwif;
+>  	int i;
+>  
+> @@ -159,6 +158,7 @@ static int __init buddha_init(void)
+>  
+>  	while ((z = zorro_find_device(ZORRO_WILDCARD, z))) {
+>  		unsigned long board;
+> +		hw_regs_t hw[3], *hws[] = { NULL, NULL, NULL, NULL };
+			     ^
+max(BUDDHA_NUM_HWIFS, CATWEASEL_NUM_HWIFS, XSURF_NUM_HWIFS)
 
-cu
-Adrian
+				  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Another magic constant, hws[] always has 4 elements?
 
--- 
+> --- a/drivers/ide/legacy/gayle.c
+> +++ b/drivers/ide/legacy/gayle.c
+> @@ -125,6 +125,7 @@ static void __init gayle_setup_ports(hw_
+>  static int __init gayle_init(void)
+>  {
+>      int a4000, i;
+> +    hw_regs_t hw[2], *hws[] = { NULL, NULL, NULL, NULL };
+		    ^
+		    GAYLE_NUM_HWIFS
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+> Index: b/drivers/ide/legacy/q40ide.c
+> ===================================================================
+> --- a/drivers/ide/legacy/q40ide.c
+> +++ b/drivers/ide/legacy/q40ide.c
+> @@ -112,7 +112,7 @@ static int __init q40ide_init(void)
+>  {
+>      int i;
+>      ide_hwif_t *hwif;
+> -    const char *name;
+> +    hw_regs_t hw[2], *hws[] = { NULL, NULL, NULL, NULL };
+		    ^
+		    Q40IDE_NUM_HWIFS
 
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
