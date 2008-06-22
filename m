@@ -1,174 +1,403 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbYFVSzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbYFVTAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755044AbYFVSzU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 14:55:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbYFVSzF
+	id S1755568AbYFVTAt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 15:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbYFVTAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 14:55:05 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:15406 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753057AbYFVSzC (ORCPT
+	Sun, 22 Jun 2008 15:00:38 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36214 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753546AbYFVTAg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 14:55:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=s7A77hBJcYP76sV/UsVU1f2pIhksK4BxAilj/poWEqUIKAs3+t66ROgb6wBgsIoRE+
-         2gcalZlUwG1NrMTO4Cl5tCY0Jmg7/XD8fvSUKMuSVSo1X8N1FeePGkR5aJxzwmElbmTY
-         fCfET98h1nILBu5k+pJfCWP3oF3NS2Q0FYcsQ=
-Message-ID: <6278d2220806221154h7f06813bmc80909554169dbdc@mail.gmail.com>
-Date: Sun, 22 Jun 2008 19:54:59 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Mel Gorman" <mel@csn.ul.ie>
-Subject: Re: [2.6.26-rc7] shrink_icache from pagefault locking (nee: nfsd hangs for a few sec)...
-Cc: "Christoph Lameter" <clameter@sgi.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Alexander Beregalov" <a.beregalov@gmail.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>, david@fromorbit.com,
-       xfs@oss.sgi.com
-In-Reply-To: <20080622181449.GD625@csn.ul.ie>
+	Sun, 22 Jun 2008 15:00:36 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: 2.6.26-rc7-git2: Reported regressions from 2.6.25
+Cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <6278d2220806220256g674304ectb945c14e7e09fede@mail.gmail.com>
-	 <6278d2220806220258p28de00c1x615ad7b2f708e3f8@mail.gmail.com>
-	 <20080622181011.GC625@csn.ul.ie> <20080622181449.GD625@csn.ul.ie>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <RzbtSgMztjP.A.jRD._spXIB@albercik>
+Date: Sun, 22 Jun 2008 19:49:56 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 22, 2008 at 7:14 PM, Mel Gorman <mel@csn.ul.ie> wrote:
-> On (22/06/08 10:58), Daniel J Blueman didst pronounce:
->> I'm seeing a similar issue [2] to what was recently reported [1] by
->> Alexander, but with another workload involving XFS and memory
->> pressure.
->>
->
-> Is NFS involved or is this XFS only? It looks like XFS-only but no harm in
-> being sure.
+[Note to bug reporters: If you can, please always add
+kernel-testers@vger.kernel.org to the CC lists of your reports, as that will
+help to filter them out of the other LKML traffic.  Also, if you report a
+regression, please add '[regression]' or something similar to the subject.]
 
-The application is reading a 10MB file from NFS around every few
-seconds, and writing back ~30MB every few seconds to local XFS;
-another thread in the same application is consuming that data and
-writing out ~2MB to NFS after circa 10 input files,  so NFS isn't
-dominant but is involved.
+This message contains a list of some regressions from 2.6.25, for which there
+are no fixes in the mainline I know of.  If any of them have been fixed already,
+please let me know.
 
-> I'm beginning to wonder if this is a problem where a lot of dirty inodes are
-> being written back in this path and we stall while that happens. I'm still
-> not getting why we are triggering this now and did not before 2.6.26-rc1
-> or why it bisects to the zonelist modifications. Diffing the reclaim and
-> allocation paths between 2.6.25 and 2.6.26-rc1 has not yielded any candidates
-> for me yet that would explain this.
->
->> SLUB allocator is in use and config is at http://quora.org/config-client-debug .
->>
->> Let me know if you'd like more details/vmlinux objdump etc.
->>
->> Thanks,
->>  Daniel
->>
->> --- [1]
->>
->> http://groups.google.com/group/fa.linux.kernel/browse_thread/thread/e673c9173d45a735/db9213ef39e4e11c
->>
->> --- [2]
->>
->> =======================================================
->> [ INFO: possible circular locking dependency detected ]
->> 2.6.26-rc7-210c #2
->> -------------------------------------------------------
->> AutopanoPro/4470 is trying to acquire lock:
->>  (iprune_mutex){--..}, at: [<ffffffff802d94fd>] shrink_icache_memory+0x7d/0x290
->>
->> but task is already holding lock:
->>  (&mm->mmap_sem){----}, at: [<ffffffff805e3e15>] do_page_fault+0x255/0x890
->>
->> which lock already depends on the new lock.
->>
->>
->> the existing dependency chain (in reverse order) is:
->>
->> -> #2 (&mm->mmap_sem){----}:
->>       [<ffffffff80278f4d>] __lock_acquire+0xbdd/0x1020
->>       [<ffffffff802793f5>] lock_acquire+0x65/0x90
->>       [<ffffffff805df5ab>] down_read+0x3b/0x70
->>       [<ffffffff805e3e3c>] do_page_fault+0x27c/0x890
->>       [<ffffffff805e16cd>] error_exit+0x0/0xa9
->>       [<ffffffffffffffff>] 0xffffffffffffffff
->>
->> -> #1 (&(&ip->i_iolock)->mr_lock){----}:
->>       [<ffffffff80278f4d>] __lock_acquire+0xbdd/0x1020
->>       [<ffffffff802793f5>] lock_acquire+0x65/0x90
->>       [<ffffffff8026d746>] down_write_nested+0x46/0x80
->>       [<ffffffff8039df29>] xfs_ilock+0x99/0xa0
->>       [<ffffffff8039e0cf>] xfs_ireclaim+0x3f/0x90
->>       [<ffffffff803ba889>] xfs_finish_reclaim+0x59/0x1a0
->>       [<ffffffff803bc199>] xfs_reclaim+0x109/0x110
->>       [<ffffffff803c9541>] xfs_fs_clear_inode+0xe1/0x110
->>       [<ffffffff802d906d>] clear_inode+0x7d/0x110
->>       [<ffffffff802d93aa>] dispose_list+0x2a/0x100
->>       [<ffffffff802d96af>] shrink_icache_memory+0x22f/0x290
->>       [<ffffffff8029d868>] shrink_slab+0x168/0x1d0
->>       [<ffffffff8029e0b6>] kswapd+0x3b6/0x560
->>       [<ffffffff8026921d>] kthread+0x4d/0x80
->>       [<ffffffff80227428>] child_rip+0xa/0x12
->>       [<ffffffffffffffff>] 0xffffffffffffffff
->>
->> -> #0 (iprune_mutex){--..}:
->>       [<ffffffff80278db7>] __lock_acquire+0xa47/0x1020
->>       [<ffffffff802793f5>] lock_acquire+0x65/0x90
->>       [<ffffffff805dedd5>] mutex_lock_nested+0xb5/0x300
->>       [<ffffffff802d94fd>] shrink_icache_memory+0x7d/0x290
->>       [<ffffffff8029d868>] shrink_slab+0x168/0x1d0
->>       [<ffffffff8029db38>] try_to_free_pages+0x268/0x3a0
->>       [<ffffffff802979d6>] __alloc_pages_internal+0x206/0x4b0
->>       [<ffffffff80297c89>] __alloc_pages_nodemask+0x9/0x10
->>       [<ffffffff802b2bc2>] alloc_page_vma+0x72/0x1b0
->>       [<ffffffff802a3642>] handle_mm_fault+0x462/0x7b0
->>       [<ffffffff805e3ecc>] do_page_fault+0x30c/0x890
->>       [<ffffffff805e16cd>] error_exit+0x0/0xa9
->>       [<ffffffffffffffff>] 0xffffffffffffffff
->>
->> other info that might help us debug this:
->>
->> 2 locks held by AutopanoPro/4470:
->>  #0:  (&mm->mmap_sem){----}, at: [<ffffffff805e3e15>] do_page_fault+0x255/0x890
->>  #1:  (shrinker_rwsem){----}, at: [<ffffffff8029d732>] shrink_slab+0x32/0x1d0
->>
->> stack backtrace:
->> Pid: 4470, comm: AutopanoPro Not tainted 2.6.26-rc7-210c #2
->>
->> Call Trace:
->>  [<ffffffff80276823>] print_circular_bug_tail+0x83/0x90
->>  [<ffffffff80275e09>] ? print_circular_bug_entry+0x49/0x60
->>  [<ffffffff80278db7>] __lock_acquire+0xa47/0x1020
->>  [<ffffffff802793f5>] lock_acquire+0x65/0x90
->>  [<ffffffff802d94fd>] ? shrink_icache_memory+0x7d/0x290
->>  [<ffffffff805dedd5>] mutex_lock_nested+0xb5/0x300
->>  [<ffffffff802d94fd>] ? shrink_icache_memory+0x7d/0x290
->>  [<ffffffff802d94fd>] shrink_icache_memory+0x7d/0x290
->>  [<ffffffff8029d732>] ? shrink_slab+0x32/0x1d0
->>  [<ffffffff8029d868>] shrink_slab+0x168/0x1d0
->>  [<ffffffff8029db38>] try_to_free_pages+0x268/0x3a0
->>  [<ffffffff8029c240>] ? isolate_pages_global+0x0/0x40
->>  [<ffffffff802979d6>] __alloc_pages_internal+0x206/0x4b0
->>  [<ffffffff80297c89>] __alloc_pages_nodemask+0x9/0x10
->>  [<ffffffff802b2bc2>] alloc_page_vma+0x72/0x1b0
->>  [<ffffffff802a3642>] handle_mm_fault+0x462/0x7b0
->>  [<ffffffff80277e2f>] ? trace_hardirqs_on+0xbf/0x150
->>  [<ffffffff805e3e15>] ? do_page_fault+0x255/0x890
->>  [<ffffffff805e3ecc>] do_page_fault+0x30c/0x890
->>  [<ffffffff805e16cd>] error_exit+0x0/0xa9
->> --
->> Daniel J Blueman
->>
->
-> --
-> Mel Gorman
-> Part-time Phd Student                          Linux Technology Center
-> University of Limerick                         IBM Dublin Software Lab
--- 
-Daniel J Blueman
+If you know of any other unresolved regressions from 2.6.25, please let me know
+either and I'll add them to the list.  Also, please let me know if any of the
+entries below are invalid.
+
+Each entry from the list will be sent additionally in an automatic reply to
+this message with CCs to the people involved in reporting and handling the
+issue.
+
+
+Listed regressions statistics:
+
+  Date          Total  Pending  Unresolved
+  ----------------------------------------
+  2008-06-22      148       39          28
+  2008-06-14      130       37          28
+  2008-06-07      125       48          33
+  2008-05-31      115       52          31
+  2008-05-24       94       47          28
+  2008-05-18       80       51          37
+  2008-05-11       53       46          34
+
+
+Unresolved regressions
+----------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10962
+Subject		: 2.6.26-rc2 WARNING from usb-serial, and then my gps is dead
+Submitter	: Helge Hafting <helge.hafting@aitel.hist.no>
+Date		: 2008-06-22 18:22 (1 days old)
+References	: http://marc.info/?l=linux-kernel&m=121415899320685&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10961
+Subject		: 2.6.26-rc: nfsd hangs for a few sec
+Submitter	: Alexander Beregalov <a.beregalov@gmail.com>
+Date		: 2008-06-21 12:57 (2 days old)
+References	: http://marc.info/?l=linux-kernel&m=121405308328004&w=4
+		  http://marc.info/?l=linux-kernel&m=121412880115289&w=4
+Handled-By	: Linus Torvalds <torvalds@linux-foundation.org>
+		  Mel Gorman <mel@csn.ul.ie>
+		  Christoph Lameter <clameter@sgi.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10960
+Subject		: 2.6.26-rc: SPARC: Sun Ultra 10 can not boot
+Submitter	: Alexander Beregalov <a.beregalov@gmail.com>
+Date		: 2008-06-19 14:07 (4 days old)
+References	: http://marc.info/?l=linux-kernel&m=121388456519637&w=4
+Handled-By	: David Miller <davem@davemloft.net>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10959
+Subject		: stuck tcp connections 2.6.26-rc7
+Submitter	: Justin Mattock <justinmattock@gmail.com>
+Date		: 2008-06-22 18:09 (1 days old)
+References	: http://marc.info/?l=linux-kernel&m=121415821219644&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10957
+Subject		: pata_pcmcia with Sandisk Extreme III 8GB
+Submitter	: Komuro <komurojun-mbn@nifty.com>
+Date		: 2008-06-07 13:37 (16 days old)
+References	: http://marc.info/?l=linux-kernel&m=121284627119861&w=4
+Handled-By	: Tejun Heo <htejun@gmail.com>
+		  Dominik Brodowski <linux@dominikbrodowski.net>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10956
+Subject		: v2.6.26-rc7: BUG: unable to handle kernel NULL pointer dereference
+Submitter	: Vegard Nossum <vegard.nossum@gmail.com>
+Date		: 2008-06-22 12:56 (1 days old)
+References	: http://marc.info/?l=linux-kernel&m=121413950227884&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10955
+Subject		: v2.6.26-rc7: BUG task_struct: Poison overwritten
+Submitter	: Vegard Nossum <vegard.nossum@gmail.com>
+Date		: 2008-06-21 19:24 (2 days old)
+References	: http://marc.info/?l=linux-kernel&m=121407641925121&w=4
+Handled-By	: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10954
+Subject		: hda_intel: azx_get_response timeout, switching to polling mode: last cmd=0x011f000c
+Submitter	: Justin Mattock <justinmattock@gmail.com>
+Date		: 2008-06-21 2:05 (2 days old)
+References	: http://marc.info/?l=linux-kernel&m=121401399622190&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10951
+Subject		: alpha build failure
+Submitter	: Adrian Bunk <bunk@kernel.org>
+Date		: 2008-06-22 02:13 (1 days old)
+References	: http://lkml.org/lkml/2008/6/22/18
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10923
+Subject		: System turns off during wake from S3, Wake Regression from 2.6.25
+Submitter	: Dionisus Torimens <djtm@gmx.net>
+Date		: 2008-06-15 16:24 (8 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10919
+Subject		: [regression] display dimming is slow and laggy - Acer Travelmate 661lci
+Submitter	: Maximilian Engelhardt <maxi@daemonizer.de>
+Date		: 2008-06-14 22:31 (9 days old)
+References	: http://marc.info/?l=linux-kernel&m=121348428828320&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10912
+Subject		: Regressions in the last kernels
+Submitter	: werner <werner@sys-linux.yi.org>
+Date		: 2008-06-14 18:26 (9 days old)
+References	: http://marc.info/?l=linux-kernel&m=121346933911641&w=4
+		  http://lkml.org/lkml/2008/6/15/35
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10906
+Subject		: repeatable slab corruption with LTP msgctl08
+Submitter	: Andrew Morton <akpm@linux-foundation.org>
+Date		: 2008-06-12 5:13 (11 days old)
+References	: http://marc.info/?l=linux-kernel&m=121324775927704&w=4
+Handled-By	: Pekka J Enberg <penberg@cs.helsinki.fi>
+		  Christoph Lameter <clameter@sgi.com>
+		  Manfred Spraul <manfred@colorfullife.com>
+		  Andi Kleen <andi@firstfloor.org>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10892
+Subject		: Sometime (often) X come out blank (black screen) on cold boot - Intel chipset
+Submitter	: Romano Giannetti <romano.giannetti@gmail.com>
+Date		: 2008-06-10 05:33 (13 days old)
+References	: http://lkml.org/lkml/2008/6/10/137
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10872
+Subject		: x86_64 boot hang when CONFIG_NUMA=n
+Submitter	: Randy Dunlap <randy.dunlap@oracle.com>
+Date		: 2008-06-05 21:50 (18 days old)
+References	: http://marc.info/?l=linux-kernel&m=121270308607116&w=4
+		  http://lkml.org/lkml/2008/6/11/355
+		  http://lkml.org/lkml/2008/6/15/117
+Handled-By	: Yinghai Lu <yhlu.kernel@gmail.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10868
+Subject		: Oops on loading ipaq module since 2.6.26, prevents use of device
+Submitter	: Adam Williamson <awilliamson@mandriva.com>
+Date		: 2008-06-05 17:39 (18 days old)
+Handled-By	: Alan Cox <alan@redhat.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10865
+Subject		: Oops trying to mount an ntfs partition on thinkpad
+Submitter	: Alex Romosan <romosan@sycorax.lbl.gov>
+Date		: 2008-06-05 14:47 (18 days old)
+References	: http://marc.info/?l=linux-kernel&m=121267834421414&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10862
+Subject		: forcedeth: lockdep warning on ethtool -s
+Submitter	: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+Date		: 2008-06-01 8:37 (22 days old)
+References	: http://marc.info/?l=linux-kernel&m=121230964032247&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10861
+Subject		: 2.6.26-rc4-git2 - long pause during boot
+Submitter	: Chris Clayton <chris2553@googlemail.com>
+Date		: 2008-06-01 4:15 (22 days old)
+References	: http://marc.info/?l=linux-kernel&m=121229382917834&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10843
+Subject		: Display artifacts on XOrg logout with PAT kernel and VESA framebuffer
+Submitter	: Frans Pop <elendil@planet.nl>
+Date		: 2008-05-31 14:04 (23 days old)
+References	: http://lkml.org/lkml/2008/6/7/206
+		  http://lkml.org/lkml/2008/6/15/119
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10827
+Subject		: 2.6.26rc4 GFS2 oops.
+Submitter	: Dave Jones <davej@redhat.com>
+Date		: 2008-05-27 15:44 (27 days old)
+References	: http://lkml.org/lkml/2008/5/27/297
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10826
+Subject		: NFS oops in 2.6.26rc4
+Submitter	: Dave Jones <davej@redhat.com>
+Date		: 2008-05-27 19:04 (27 days old)
+References	: http://marc.info/?l=linux-kernel&m=121191548915522&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10821
+Subject		: rt25xx: lock dependency warning, association failure, and kmalloc corruption
+Submitter	: Christian Casteyde <casteyde.christian@free.fr>
+Date		: 2008-05-29 14:30 (25 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10786
+Subject		: parisc: 64bit SMP does not boot on J5600
+Submitter	: Domenico Andreoli <cavokz@gmail.com>
+Date		: 2008-05-22 16:14 (32 days old)
+References	: http://marc.info/?l=linux-kernel&m=121147328028081&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10741
+Subject		: bug in `tty: BKL pushdown'?
+Submitter	: Johannes Weiner <hannes@saeurebad.de>
+Date		: 2008-05-18 2:16 (36 days old)
+References	: http://marc.info/?l=linux-kernel&m=121107706506181&w=4
+		  http://lkml.org/lkml/2008/6/16/104
+Handled-By	: Alan Cox <alan@lxorguk.ukuu.org.uk>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10725
+Subject		: USB Mass storage mount fails: Write protect on
+Submitter	: Maciej Rutecki <maciej.rutecki@gmail.com>
+Date		: 2008-05-16 14:55 (38 days old)
+References	: http://marc.info/?l=linux-kernel&m=121095168003572&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10714
+Subject		: powerpc: Badness seen on 2.6.26-rc2 with lockdep enabled
+Submitter	: Balbir Singh <balbir@linux.vnet.ibm.com>
+Date		: 2008-05-14 12:57 (40 days old)
+References	: http://marc.info/?l=linux-kernel&m=121076917429133&w=4
+Handled-By	: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10629
+Subject		: 2.6.26-rc1-$sha1: RIP __d_lookup+0x8c/0x160
+Submitter	: Alexey Dobriyan <adobriyan@gmail.com>
+Date		: 2008-05-05 09:59 (49 days old)
+References	: http://lkml.org/lkml/2008/5/5/28
+Handled-By	: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+
+Regressions with patches
+------------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10958
+Subject		: LMSENSORS: 2.6.26-rc, enabling ACPI Termal Zone support costs sensors
+Submitter	: Rene Herman <rene.herman@keyaccess.nl>
+Date		: 2008-06-22 0:47 (1 days old)
+References	: http://marc.info/?l=linux-kernel&m=121409569819064&w=4
+Handled-By	: Hans de Goede <j.w.r.degoede@hhs.nl>
+		  Rene Herman <rene.herman@keyaccess.nl>
+Patch		: http://lkml.org/lkml/2008/6/22/83
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10927
+Subject		: Dell laptops: reboot instead of resume
+Submitter	: Kirill A. Shutemov <kirill@shutemov.name>
+Date		: 2008-06-16 07:31 (7 days old)
+Handled-By	: H. Peter Anvin <hpa@kernel.org>
+Patch		: http://bugzilla.kernel.org/attachment.cgi?id=16549&action=view
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10918
+Subject		: 2.6.26-rc5: SLUB debug, lockdep warning...
+Submitter	: Daniel J Blueman <daniel.blueman@gmail.com>
+Date		: 2008-06-14 10:54 (9 days old)
+References	: http://marc.info/?l=linux-kernel&m=121344091109597&w=4
+Handled-By	: Vegard Nossum <vegard.nossum@gmail.com>
+		  Daniel J Blueman <daniel.blueman@gmail.com>
+Patch		: http://bugzilla.kernel.org/show_bug.cgi?id=10918#c2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10860
+Subject		: total system freeze at boot with 2.6.26-rc
+Submitter	: Christian Casteyde <casteyde.christian@free.fr>
+Date		: 2008-06-05 12:38 (18 days old)
+Handled-By	: Tejun Heo <htejun@gmail.com>
+Patch		: http://bugzilla.kernel.org/attachment.cgi?id=16556
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10830
+Subject		: two different oopses with 2.6.26-rc4
+Submitter	: Alejandro Riveira Fernández <alejandro.riveira@gmail.com>
+Date		: 2008-05-28 9:50 (26 days old)
+References	: http://marc.info/?l=linux-kernel&m=121196833026310&w=4
+Handled-By	: Johannes Berg <johannes@sipsolutions.net>
+		  Andrew Morton <akpm@linux-foundation.org>
+		  Peter Zijlstra <a.p.zijlstra@chello.nl>
+Patch		: http://lkml.org/lkml/2008/5/20/683
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10815
+Subject		: 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
+Submitter	: Alexey Dobriyan <adobriyan@gmail.com>
+Date		: 2008-05-27 09:23 (27 days old)
+References	: http://lkml.org/lkml/2008/5/27/9
+		  http://lkml.org/lkml/2008/6/14/87
+Handled-By	: Oleg Nesterov <oleg@tv-sign.ru>
+		  Linus Torvalds <torvalds@linux-foundation.org>
+		  Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Patch		: http://lkml.org/lkml/2008/5/28/16
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10730
+Subject		: build issue #503 for v2.6.26-rc2-433-gf26a398 : undefined reference to `request_firmware'
+Submitter	: Toralf Förster <toralf.foerster@gmx.de>
+Date		: 2008-05-16 17:06 (38 days old)
+References	: http://marc.info/?l=linux-kernel&m=121095777616792&w=4
+Handled-By	: James Bottomley <James.Bottomley@HansenPartnership.com>
+Patch		: http://marc.info/?l=linux-scsi&m=121101871800303&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10726
+Subject		: x86-64 NODES_SHIFT compile failure.
+Submitter	: Dave Jones <davej@codemonkey.org.uk>
+Date		: 2008-05-16 12:54 (38 days old)
+References	: http://lkml.org/lkml/2008/5/16/312
+Handled-By	: Mike Travis <travis@sgi.com>
+Patch		: http://lkml.org/lkml/2008/5/16/343
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10724
+Subject		: ACPI: EC: GPE storm detected, disabling EC GPE
+Submitter	: Justin Mattock <justinmattock@gmail.com>
+Date		: 2008-05-16 6:17 (38 days old)
+References	: http://marc.info/?l=linux-kernel&m=121091875711824&w=4
+		  http://lkml.org/lkml/2008/5/18/168
+		  http://lkml.org/lkml/2008/5/25/195
+Patch		: http://bugzilla.kernel.org/attachment.cgi?id=16364&action=view
+		  http://bugzilla.kernel.org/attachment.cgi?id=16365&action=view
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10493
+Subject		: mips BCM47XX compile error
+Submitter	: Adrian Bunk <adrian.bunk@movial.fi>
+Date		: 2008-04-20 17:07 (64 days old)
+References	: http://lkml.org/lkml/2008/4/20/34
+		  http://lkml.org/lkml/2008/5/12/30
+		  http://lkml.org/lkml/2008/5/18/131
+		  http://lkml.org/lkml/2008/5/31/202
+		  http://lkml.org/lkml/2008/6/7/154
+Patch		: http://marc.info/?l=linux-kernel&m=120876451216558&w=2
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9791
+Subject		: Clock is running too fast^Wslow using acpi_pm clocksource
+Submitter	: tosn00j02@sneakemail.com
+Date		: 2008-05-03 05:09 (51 days old)
+Handled-By	: Maciej W. Rozycki <macro@linux-mips.org>
+Patch		: http://bugzilla.kernel.org/attachment.cgi?id=16180
+
+
+For details, please visit the bug entries and follow the links given in
+references.
+
+As you can see, there is a Bugzilla entry for each of the listed regressions.
+There also is a Bugzilla entry used for tracking the regressions from 2.6.25,
+unresolved as well as resolved, at:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=10492
+
+Please let me know if there are any Bugzilla entries that should be added to
+the list in there.
+
+Thanks,
+Rafael
+
