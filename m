@@ -1,130 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752122AbYFVIS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752125AbYFVIzL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752122AbYFVIS6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 04:18:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751031AbYFVISs
+	id S1752125AbYFVIzL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 04:55:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbYFVIy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 04:18:48 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:49442 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750980AbYFVISp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 04:18:45 -0400
-Date: Sun, 22 Jun 2008 10:18:36 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Alessandro Suardi <alessandro.suardi@gmail.com>
-cc: linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-       Maarten Bressers <mbres@gentoo.org>, Daniel Drake <dsd@gentoo.org>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>
-Subject: Re: [Cbe-oss-dev] [regression/bisected] corrupt CD data after media
- change and delay
-In-Reply-To: <5a4c581d0806210718m77be63c9l444d8d7d7a5266bd@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0806221018220.9736@vixen.sonytel.be>
-References: <Pine.LNX.4.64.0806061458300.6228@vixen.sonytel.be>
- <Pine.LNX.4.64.0806131932350.30730@vixen.sonytel.be>
- <5a4c581d0806180147qf8fc731y527c79bfb73401b2@mail.gmail.com>
- <Pine.LNX.4.64.0806181156460.13297@vixen.sonytel.be>
- <5a4c581d0806180515g5f24e9d9m85369bfa0a5f2228@mail.gmail.com>
- <5a4c581d0806210718m77be63c9l444d8d7d7a5266bd@mail.gmail.com>
+	Sun, 22 Jun 2008 04:54:59 -0400
+Received: from mx2.digadd.de ([195.47.195.236]:44355 "EHLO mx2.digadd.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751185AbYFVIy6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 04:54:58 -0400
+X-Greylist: delayed 2129 seconds by postgrey-1.27 at vger.kernel.org; Sun, 22 Jun 2008 04:54:58 EDT
+Message-ID: <485E0B1C.7030105@digadd.de>
+Date: Sun, 22 Jun 2008 11:19:40 +0300
+From: "Christian P. Schmidt" <schmidt@digadd.de>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080508)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-741793478-1214122716=:9736"
+To: linux-kernel@vger.kernel.org
+Subject: Sending UDP packets to port 0
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi all,
 
----584349381-741793478-1214122716=:9736
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+I know that the kernel forbids sending UDP packets to port 0. Is there a 
+specific reason for this?
 
-On Sat, 21 Jun 2008, Alessandro Suardi wrote:
-> On Wed, Jun 18, 2008 at 2:15 PM, Alessandro Suardi
-> <alessandro.suardi@gmail.com> wrote:
-> > On Wed, Jun 18, 2008 at 1:13 PM, Geert Uytterhoeven
-> > <Geert.Uytterhoeven@sonycom.com> wrote:
-> >> On Wed, 18 Jun 2008, Alessandro Suardi wrote:
-> >>> On Fri, Jun 13, 2008 at 7:33 PM, Geert Uytterhoeven
-> >>> <Geert.Uytterhoeven@sonycom.com> wrote:
-> >>> > On Fri, 6 Jun 2008, Geert Uytterhoeven wrote:
-> >>> >> When mounting a CD/DVD more than 30 seconds after inserting it, and reading
-> >>> >> from it, we get:
-> >>> >
-> >>> > Apparently the fix didn't make it to all the CCed lists...
-> >>> >
-> >>> > http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fjejb%2Fscsi-rc-fixes-2.6.git;a=commitdiff_plain;h=d1daeabf0da5bfa1943272ce508e2ba785730bf0
-> >>>
-> >>> Oh, that's in mainline ? I still have the problem of having to
-> >>
-> >> Not yet, it's in the scsi-rc-fixes-2.6 tree.
-> >>
-> >>>  insert DVD / try accessing it and get errors / eject / re-insert
-> >>>  and then it magically works... the messages have changed
-> >>>  from what they were as reported here
-> >>>
-> >>> http://bugzilla.kernel.org/show_bug.cgi?id=10116
-> >>>
-> >>>  (see comments #8 and #9) to these ones, in 2.6.26-rc6-git4:
-> >>>
-> >>> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] Result:
-> >>> hostbyte=0x00 driverbyte=0x08
-> >>> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] Sense Key : 0x3 [current]
-> >>> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] ASC=0x11 ASCQ=0x0
-> >>> Jun 17 22:38:43 sandman kernel: end_request: I/O error, dev sr0, sector 232
-> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 29
-> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 30
-> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 31
-> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 32
-> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 33
-> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 34
-> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 35
-> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 36
-> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 37
-> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 38
-> >>>
-> >>> here I eject and reinsert the disc, and:
-> >>>
-> >>> Jun 17 22:39:10 sandman kernel: UDF-fs: No VRS found
-> >>>
-> >>>  lo and behold, no problem.
-> >>>
-> >>> This does not, alas, happen every time. It might be at the first
-> >>>  DVD access after booting the laptop, but I haven't investigated
-> >>>  in this detail yet.
-> >>
-> >> Does /sys/block/sr0/size reflect the correct size of the DVD?
-> >>
-> >> Did you try applying the patch?
-> >
-> > ATM I'm away from home (as usual), I'll post back when
-> >  I have the info you asked for and tried applying the
-> >  above patch. Thanks !
-> 
-> Sigh. I haven't been able to reproduce the problem once since
->  I posted this. Will keep trying...
+I'm asking because I regularly need to access a device that asks for 
+tftp files using port 0 as source. To use these devices I'm using a 
+kernel with removed port 0 checks.
 
-Perhaps because the fix is now in mainline?
+I read RFC 768, and it does not explicitly forbid the use of port 0 as 
+far as I can see. It only says that if unused, 0 is to be inserted.
 
-With kind regards,
+RFC 1350 (TFTP) even states explicitly:
+The transfer identifiers (TID's) used by TFTP are passed to the Datagram 
+layer to be used as ports; therefore they must be between 0 and 65,535.
 
-Geert Uytterhoeven
-Software Architect
+In my understanding, and apparently that of the authors of the 
+appliance's tftp client implementation, this marks port 0 as valid.
 
-Sony Techsoft Centre
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+Please CC: me on any replies as I am not subscribed to the list.
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-Sony Technology and Software Centre Europe
-A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
-VAT BE 0413.825.160 · RPR Brussels
-Fortis 293-0376800-10 GEBA-BE-BB
----584349381-741793478-1214122716=:9736--
+Regards,
+Chris
