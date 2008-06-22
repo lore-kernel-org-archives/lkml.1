@@ -1,69 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbYFVSWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755397AbYFVSZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755846AbYFVSWV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 14:22:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbYFVSWK
+	id S1755397AbYFVSZc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 14:25:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbYFVSZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 14:22:10 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:48972 "EHLO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753006AbYFVSWI (ORCPT
+	Sun, 22 Jun 2008 14:25:23 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:34420 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752610AbYFVSZW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 14:22:08 -0400
-Message-ID: <485E984B.1030306@aitel.hist.no>
-Date: Sun, 22 Jun 2008 20:22:03 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-Organization: HiST
-User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+	Sun, 22 Jun 2008 14:25:22 -0400
+Message-ID: <485E992B.8010101@keyaccess.nl>
+Date: Sun, 22 Jun 2008 20:25:47 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
-Subject: 2.6.26-rc2 WARNING from usb-serial, and then my gps is dead
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Hans de Goede <j.w.r.degoede@hhs.nl>
+CC: linux-acpi@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] [REGRESSION, ABI] Re:  LMSENSORS: 2.6.26-rc, enabling
+ ACPI Termal Zone support costs sensors
+References: <485DA11C.7050906@keyaccess.nl> <485DFF35.6080008@hhs.nl>	<485E505F.8010306@keyaccess.nl> <485E61DE.6020202@hhs.nl> <485E6F12.4010307@keyaccess.nl> <485E94ED.10602@hhs.nl>
+In-Reply-To: <485E94ED.10602@hhs.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is what I got:
-------------[ cut here ]------------
-WARNING: at drivers/usb/serial/usb-serial.c:306 serial_write+0x62/0x89 
-[usbserial]()
-Modules linked in: pl2303 usbserial sbs sbshc coretemp piix pcmcia 
-ata_piix iTCO_wdt ata_generic bay hci_usb intel_agp
-Pid: 10, comm: events/1 Tainted: G        W 2.6.26-rc2-hh1 #1
+On 22-06-08 20:07, Hans de Goede wrote:
 
-Call Trace:
-  [<ffffffff80236b54>] warn_on_slowpath+0x51/0x7a
-  [<ffffffff8022c207>] __wake_up+0x38/0x4f
-  [<ffffffff8024565c>] __queue_work+0x23/0x33
-  [<ffffffff802456c8>] queue_work+0x37/0x40
-  [<ffffffffa0045fa3>] :pl2303:pl2303_write+0xf2/0x101
-  [<ffffffffa003c368>] :usbserial:serial_write+0x62/0x89
-  [<ffffffff803a8e81>] tty_put_char+0x2b/0x2d
-  [<ffffffff803ad3ca>] echo_char+0x47/0x60
-  [<ffffffff803ade97>] n_tty_receive_buf+0x2b4/0xd76
-  [<ffffffff8020a87e>] __switch_to+0xa2/0x396
-  [<ffffffff8023028d>] hrtick_set+0x88/0xf6
-  [<ffffffff80590b44>] thread_return+0x70/0xb4
-  [<ffffffff8023f013>] lock_timer_base+0x26/0x4c
-  [<ffffffff803a9abd>] flush_to_ldisc+0xf8/0x185
-  [<ffffffff803a99c5>] flush_to_ldisc+0x0/0x185
-  [<ffffffff8024520b>] run_workqueue+0x80/0x112
-  [<ffffffff80245afe>] worker_thread+0xd9/0xe8
-  [<ffffffff80248380>] autoremove_wake_function+0x0/0x2e
-  [<ffffffff80245a25>] worker_thread+0x0/0xe8
-  [<ffffffff80248264>] kthread+0x47/0x73
-  [<ffffffff802318c1>] schedule_tail+0x28/0x5d
-  [<ffffffff8020cf88>] child_rip+0xa/0x12
-  [<ffffffff8024821d>] kthread+0x0/0x73
-  [<ffffffff8020cf7e>] child_rip+0x0/0x12
+> Rene Herman wrote:
+>> On 22-06-08 16:29, Hans de Goede wrote:
+>>
+>>> Rene Herman wrote:
+>>>> This is an ABI breakage issue and an unfortunate one at that:
+>>>>
+>>>
+>>> No it is not, in 2.6.26rcX, the acpi thermalzones have grown a hwmon 
+>>> interface, that is they register a hwmon device so that "sensors" and
+>>
+>> [ ... ]
+>>
+>> Now what? Yes it is. 2.6.25.7 works and 2.6.26-rcX with the same 
+>> config options and the same userspace does not.
+> 
+> Know what? No it isn't. Just because some random userspace apps breaks 
+> because certain _assumptions_ no longer hold true, does not make 
+> something an ABI breakage.
+> 
+> I agree with you that the results are still no good though.
+> 
+> Know something else? I've just stopped caring about this issue, I'm not 
+> the author of the changes causing said breakage. I'm merely an 
+> lm_sensors (both userspace and kernel space) developer who was heavily 
+> involved in getting this fixed for lm_sensors-3.0.2, and I believe that 
+> adding yet another kconfig option which we then carry for years and 
+> years is _not_ a good solution. Some userspace utlities like udev sit 
+> very close to the kernel and sometimes an kernel update mandates a new 
+> udev. To me this is much the same.
+> 
+> But at the end of the day, I do not feel responsible for this as I'm not 
+> the author of the code causing the breakage. I'm just someone who knows 
+> the ins and outs and tried to help, but given the treatment and thanks 
+> I've been getting for my help I'm stopping with helping now.
 
----[ end trace 656e180042992f9e ]---
-I looked at the dmesg log because I have had lots of trouble with my gps 
-lately. I first suspected the cable, but then I saw this.
+What on earth are you talking about? Could you please re-read? I didn't 
+  "treat badly" you, hwmon, acpi or whatever.
 
-After this, I have to restart gpsd, and perhaps replug the cable to get
-things going again. Until it happens again. This is a 64-bit dualcore 
-laptop.
+I'm simply pointing out the problem that 2.6.26 is going to break all 
+setups using lm_sensors 2.0 (which among many, many others includes 
+every single slackware and derivative system on the planet).
 
-Helge Hafting
+We are not having a flamewar. If you think that every disagreement or 
+pointing out of a problem constitutes as much, that in itself is a 
+problem but it's not mine. I reported the problem and then posted a 
+patch that solves it one particular way.
+
+Another way to solve it _could_ be to just make up a device link if 
+something generic is available so that sensors doesn't trip over it in 
+the first place but I don't know if that's a good option. You might.
+
+I haven't a clue what you're talking about. Treatment? What treatment? I 
+just want to get the above mentioned problem fixed and didn't suggest 
+anything else. Let's get the problem fixed.
+
+Rene.
