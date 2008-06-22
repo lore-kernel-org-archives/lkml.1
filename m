@@ -1,97 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752651AbYFVI67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752487AbYFVJJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752651AbYFVI67 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 04:58:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbYFVI6v
+	id S1752487AbYFVJJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 05:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbYFVJJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 04:58:51 -0400
-Received: from wilson.telenet-ops.be ([195.130.132.42]:36777 "EHLO
-	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751239AbYFVI6t (ORCPT
+	Sun, 22 Jun 2008 05:09:17 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:35197 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751072AbYFVJJQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 04:58:49 -0400
-Date: Sun, 22 Jun 2008 10:58:46 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-cc: linux-ide@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [PATCH 2/2] ide: pass hw_regs_t-s to ide_device_add[_all]()
-In-Reply-To: <200806202029.11304.bzolnier@gmail.com>
-Message-ID: <Pine.LNX.4.64.0806221055210.4607@anakin>
-References: <200806202029.11304.bzolnier@gmail.com>
+	Sun, 22 Jun 2008 05:09:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:content-transfer-encoding:user-agent;
+        b=kBs4Q275s4FnVyy3MrfSbdT7KRLSwyhS5kmytyWK+prient9zh33Cr5K3zdUlOlT8m
+         Idh4YbqwAk8pHJ3lVxOJ5aXg3L4eVzNp3pEGdyru0Jsczbv8OY01zQpDU1rU47rwdPLF
+         tKGXIPObACI3ZYh3ZaZBy8MUv2zcFIQMMXVwU=
+Date: Sun, 22 Jun 2008 11:08:16 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Daniel =?utf-8?Q?Marjam=C3=A4ki?= <danielm77@spray.se>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH] USB: fix possible memory leak in pxa27x_udc
+Message-ID: <20080622090813.GA11823@joi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jun 2008, Bartlomiej Zolnierkiewicz wrote:
-> * Add 'hw_regs_t **hws' argument to ide_device_add[_all]() and convert
->   host drivers + drivers/ide/setup-pci.c to use it instead of calling
->   ide_init_port_hw() directly (however if host has more than 1 port we
->   must still set hwif->chipset to hint consecutive ide_find_port() call
->   that the ide_hwifs[] slot is occupied).
-> 
-> * Unexport ide_init_port_hw().
-> 
-> There should be no functional changes caused by this patch.
+Fix memory leak when _ep is null.
+http://bugzilla.kernel.org/show_bug.cgi?id=10660
 
-Brr... seems to complicate the bookkeeping a lot...
+Noticed-by: Daniel Marjamäki <danielm77@spray.se>
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/usb/gadget/pxa27x_udc.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-I looked at the m68k drivers only:
+diff --git a/drivers/usb/gadget/pxa27x_udc.c b/drivers/usb/gadget/pxa27x_udc.c
+index e02bfd4..e3a5d53 100644
+--- a/drivers/usb/gadget/pxa27x_udc.c
++++ b/drivers/usb/gadget/pxa27x_udc.c
+@@ -650,8 +650,11 @@ pxa_ep_alloc_request(struct usb_ep *_ep, gfp_t gfp_flags)
+ {
+ 	struct pxa27x_request *req;
+ 
++	if (!_ep)
++		return NULL;
++
+ 	req = kzalloc(sizeof *req, gfp_flags);
+-	if (!req || !_ep)
++	if (!req)
+ 		return NULL;
+ 
+ 	INIT_LIST_HEAD(&req->queue);
+-- 
+1.5.4.5
 
-> --- a/drivers/ide/legacy/buddha.c
-> +++ b/drivers/ide/legacy/buddha.c
-> @@ -148,7 +148,6 @@ static void __init buddha_setup_ports(hw
->  
->  static int __init buddha_init(void)
->  {
-> -	hw_regs_t hw;
->  	ide_hwif_t *hwif;
->  	int i;
->  
-> @@ -159,6 +158,7 @@ static int __init buddha_init(void)
->  
->  	while ((z = zorro_find_device(ZORRO_WILDCARD, z))) {
->  		unsigned long board;
-> +		hw_regs_t hw[3], *hws[] = { NULL, NULL, NULL, NULL };
-			     ^
-max(BUDDHA_NUM_HWIFS, CATWEASEL_NUM_HWIFS, XSURF_NUM_HWIFS)
-
-				  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Another magic constant, hws[] always has 4 elements?
-
-> --- a/drivers/ide/legacy/gayle.c
-> +++ b/drivers/ide/legacy/gayle.c
-> @@ -125,6 +125,7 @@ static void __init gayle_setup_ports(hw_
->  static int __init gayle_init(void)
->  {
->      int a4000, i;
-> +    hw_regs_t hw[2], *hws[] = { NULL, NULL, NULL, NULL };
-		    ^
-		    GAYLE_NUM_HWIFS
-
-> Index: b/drivers/ide/legacy/q40ide.c
-> ===================================================================
-> --- a/drivers/ide/legacy/q40ide.c
-> +++ b/drivers/ide/legacy/q40ide.c
-> @@ -112,7 +112,7 @@ static int __init q40ide_init(void)
->  {
->      int i;
->      ide_hwif_t *hwif;
-> -    const char *name;
-> +    hw_regs_t hw[2], *hws[] = { NULL, NULL, NULL, NULL };
-		    ^
-		    Q40IDE_NUM_HWIFS
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
