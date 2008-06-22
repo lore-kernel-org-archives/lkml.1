@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760797AbYFVTTJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760835AbYFVTTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760797AbYFVTTJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 15:19:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757215AbYFVTLm
+	id S1760835AbYFVTTc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 15:19:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757239AbYFVTSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 15:11:42 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:60596 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757423AbYFVTLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 15:11:41 -0400
-Date: Sun, 22 Jun 2008 22:09:50 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug #10951] alpha build failure
-Message-ID: <20080622190950.GC20122@cs181140183.pp.htv.fi>
-References: <RzbtSgMztjP.A.jRD._spXIB@albercik> <4mRZUF-hVeG.A.eGE.ftpXIB@albercik>
+	Sun, 22 Jun 2008 15:18:07 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:22576 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760568AbYFVTSF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 15:18:05 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: lmbench regression due to cond_resched nullification change 26-rc5 vs. 25
+Date: Sun, 22 Jun 2008 21:17:59 +0200
+User-Agent: KMail/1.9.9
+References: <200806201014.43576.borntraeger@de.ibm.com> <alpine.LFD.1.10.0806201153470.3167@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0806201153470.3167@woody.linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4mRZUF-hVeG.A.eGE.ftpXIB@albercik>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200806222117.59620.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 22, 2008 at 07:54:46PM +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+Am Freitag, 20. Juni 2008 schrieben Sie:
+> But quite frankly, regardless of exactly why it happens, it absolutely 
+> makes no sense to even have that cond_resched() in the _innermost_ loop - 
+> the one that is called for every single fd. It's much better to move the 
+> conditional reschedule out a bit.
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.25.  Please verify if it still should be listed.
+> That inner loop was very much designed to compile into nice assembly 
+> language, and it's possible that the cond_resched() simply causes extra 
+> register pressure and keeps us from keeping the bitmasks in registers etc.
+> 
+> So this trivial patch, which moves the cond_resched() to be outside the 
+> single-word select() loop, would be a good idea _regardless_. Does it make 
+> any difference for you? If it's purely a "code generation got worse" 
+> issue, it should help a bit.
 
-yes
+Yes, it helps. I am now at 24 microseconds which is very close to the original 
+time for lat_select.
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10951
-> Subject		: alpha build failure
-> Submitter	: Adrian Bunk <bunk@kernel.org>
-> Date		: 2008-06-22 02:13 (1 days old)
-> References	: http://lkml.org/lkml/2008/6/22/18
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Thanks
 
