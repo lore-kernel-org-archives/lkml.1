@@ -1,75 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbYFVQbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237AbYFVQma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755664AbYFVQbT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 12:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbYFVQbJ
+	id S1754237AbYFVQma (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 12:42:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbYFVQmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 12:31:09 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:49985 "EHLO smtp4.pp.htv.fi"
+	Sun, 22 Jun 2008 12:42:21 -0400
+Received: from smtp2f.orange.fr ([80.12.242.152]:65026 "EHLO smtp2f.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752432AbYFVQbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 12:31:07 -0400
-Date: Sun, 22 Jun 2008 19:29:17 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>,
-       Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org
-Subject: [2.6.26 patch] fix the request_firmware() dummy
-Message-ID: <20080622162917.GB20122@cs181140183.pp.htv.fi>
+	id S1751926AbYFVQmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 12:42:21 -0400
+X-ME-UUID: 20080622160324286.45D46700008D@mwinf2f01.orange.fr
+Message-ID: <485E77CC.20604@wanadoo.fr>
+Date: Sun, 22 Jun 2008 18:03:24 +0200
+From: JAILLET Christophe <jaillet.christophe@wanadoo.fr>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux <linux-kernel@vger.kernel.org>, cj <jaillet.christophe@wanadoo.fr>
+Subject: [PATCH 1/1] arch/x86/kernel/io_apic_32.c : use kzalloc instead of
+ kmalloc/memset
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
+From: Christophe Jaillet <jaillet.?christophe@wanadoo.fr>
 
-> the build (.config attached) failed, make ends with :
-> ...
->   UPD     include/linux/compile.h
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      vmlinux
-> drivers/built-in.o: In function `sas_request_addr':
-> (.text+0x33bab): undefined reference to `request_firmware'
-> drivers/built-in.o: In function `sas_request_addr':
-> (.text+0x33c3f): undefined reference to `release_firmware'
-> make: *** [vmlinux] Error 1
+Hi, here is a patch against arch/x86/kernel/io_apic_32.c which :
 
-There's a slight fault in the stub logic.  It fails for FW_LOADER=m and
-the user =y.
+1) replace kmalloc/memset with equivalent kzalloc.
 
-This should fix it.
 
-This patch fixes the following 2.6.26-rc regression:
-  http://bugzilla.kernel.org/show_bug.cgi?id=10730
-
-Reported-by: Toralf Förster <toralf.foerster@gmx.de>
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Christophe Jaillet <jaillet.?christophe@wanadoo.fr>
 
 ---
+diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
+index 4dc8600..cb9bbeb 100644
+--- a/arch/x86/kernel/io_apic_32.c
++++ b/arch/x86/kernel/io_apic_32.c
+@@ -699,14 +699,12 @@ static int __init balanced_irq_init(void)
+physical_balance = 1;
 
-@James:
-Please complain if you consider my forwarding of your patch 
-inappropriate.
+for_each_online_cpu(i) {
+- irq_cpu_data[i].irq_delta = kmalloc(sizeof(unsigned long) * NR_IRQS, 
+GFP_KERNEL);
+- irq_cpu_data[i].last_irq = kmalloc(sizeof(unsigned long) * NR_IRQS, 
+GFP_KERNEL);
++ irq_cpu_data[i].irq_delta = kzalloc(sizeof(unsigned long) * NR_IRQS, 
+GFP_KERNEL);
++ irq_cpu_data[i].last_irq = kzalloc(sizeof(unsigned long) * NR_IRQS, 
+GFP_KERNEL);
+if (irq_cpu_data[i].irq_delta == NULL || irq_cpu_data[i].last_irq == NULL) {
+printk(KERN_ERR "balanced_irq_init: out of memory");
+goto failed;
+}
+- memset(irq_cpu_data[i].irq_delta,0,sizeof(unsigned long) * NR_IRQS);
+- memset(irq_cpu_data[i].last_irq,0,sizeof(unsigned long) * NR_IRQS);
+}
 
-diff --git a/include/linux/firmware.h b/include/linux/firmware.h
-index 4d10c73..6c7eff2 100644
---- a/include/linux/firmware.h
-+++ b/include/linux/firmware.h
-@@ -13,7 +13,7 @@ struct firmware {
- 
- struct device;
- 
--#if defined(CONFIG_FW_LOADER) || defined(CONFIG_FW_LOADER_MODULE)
-+#if defined(CONFIG_FW_LOADER) || (defined(CONFIG_FW_LOADER_MODULE) && defined(MODULE))
- int request_firmware(const struct firmware **fw, const char *name,
- 		     struct device *device);
- int request_firmware_nowait(
+printk(KERN_INFO "Starting balanced_irq\n");
+@@ -2376,12 +2374,11 @@ static int __init ioapic_init_sysfs(void)
+for (i = 0; i < nr_ioapics; i++ ) {
+size = sizeof(struct sys_device) + nr_ioapic_registers[i]
+* sizeof(struct IO_APIC_route_entry);
+- mp_ioapic_data[i] = kmalloc(size, GFP_KERNEL);
++ mp_ioapic_data[i] = kzalloc(size, GFP_KERNEL);
+if (!mp_ioapic_data[i]) {
+printk(KERN_ERR "Can't suspend/resume IOAPIC %d\n", i);
+continue;
+}
+- memset(mp_ioapic_data[i], 0, size);
+dev = &mp_ioapic_data[i]->dev;
+dev->id = i;
+dev->cls = &ioapic_sysdev_class;
 
 
