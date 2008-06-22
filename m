@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757991AbYFVWIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbYFVWIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757991AbYFVWIb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 18:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755904AbYFVWIB
+	id S1758263AbYFVWIo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 18:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbYFVWID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 18:08:01 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:39033 "EHLO pasmtpA.tele.dk"
+	Sun, 22 Jun 2008 18:08:03 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:60315 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753582AbYFVWH7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754409AbYFVWH7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 22 Jun 2008 18:07:59 -0400
 From: Sam Ravnborg <sam@ravnborg.org>
 To: <linux-kbuild@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 1/5] kbuild: prepare headers_* for arch/$ARCH/include
-Date: Mon, 23 Jun 2008 00:08:40 +0200
-Message-Id: <1214172524-9043-1-git-send-email-sam@ravnborg.org>
+Subject: [PATCH 3/5] kbuild: support arch/$ARCH/include for tags, cscope
+Date: Mon, 23 Jun 2008 00:08:42 +0200
+Message-Id: <1214172524-9043-3-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.5.4.1.143.ge7e51
 In-Reply-To: <20080622220508.GA8957@uranus.ravnborg.org>
 References: <20080622220508.GA8957@uranus.ravnborg.org>
@@ -22,169 +22,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Factor out the headers_*_all support to a seperate
-shell script and add support for arch specific
-header files can be located in either
-
-    arch/$ARCH/include/asm
-or
-    include/asm-$ARCH/
-
-In "make help" always display the headers_* targets.
-
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- Makefile           |   49 ++++++++++++++++++++++---------------------------
- scripts/headers.sh |   41 +++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 63 insertions(+), 27 deletions(-)
- create mode 100755 scripts/headers.sh
+ Makefile |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 309f49d..4ea5189 100644
+index ef30745..115eb48 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -205,6 +205,9 @@ ifeq ($(ARCH),x86_64)
-         SRCARCH := x86
- endif
- 
-+# Where to locate arch specific headers
-+hdr-arch       := $(SRCARCH)
-+
- KCONFIG_CONFIG	?= .config
- 
- # SHELL used by kbuild
-@@ -1000,43 +1003,39 @@ depend dep:
- #Default location for installed headers
- export INSTALL_HDR_PATH = $(objtree)/usr
- 
--hdr-filter := generic um ppc sparc64 cris
--hdr-archs  := $(filter-out $(hdr-filter),                           \
--                  $(patsubst $(srctree)/include/asm-%/Kbuild,%,     \
--                      $(wildcard $(srctree)/include/asm-*/Kbuild)))
- hdr-inst := -rR -f $(srctree)/scripts/Makefile.headersinst obj
-+# Find out where the Kbuild file is located to support
-+# arch/$(ARCH)/include/asm
-+hdr-dir = $(strip                                                         \
-+          $(if $(wildcard $(srctree)/arch/$(hdr-arch)/include/asm/Kbuild), \
-+               arch/$(hdr-arch)/include/asm, include/asm-$(hdr-arch)))
-+
-+# If we do an all arch process set dst to asm-$(hdr-arch)
-+hdr-dst = $(if $(KBUILD_HEADERS), dst=include/asm-$(hdr-arch), dst=include/asm)
- 
- PHONY += __headers
- __headers: include/linux/version.h scripts_basic FORCE
- 	$(Q)$(MAKE) $(build)=scripts scripts/unifdef
- 
- PHONY += headers_install_all
--headers_install_all: __headers
--	$(Q)$(MAKE) $(hdr-inst)=include
--	$(Q)set -e; for arch in $(hdr-archs); do \
--	 $(MAKE) $(hdr-inst)=include/asm-$$arch   \
--	         SRCARCH=$$arch dst=include/asm-$$arch;  \
--	 done
-+headers_install_all:
-+	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/headers.sh install
- 
- PHONY += headers_install
- headers_install: __headers
--	$(if $(wildcard $(srctree)/include/asm-$(SRCARCH)/Kbuild),, \
--	$(error Headers not exportable for this architecture ($(SRCARCH))))
-+	$(if $(wildcard $(srctree)/$(hdr-dir)/Kbuild),, \
-+	$(error Headers not exportable for the $(SRCARCH) architecture))
- 	$(Q)$(MAKE) $(hdr-inst)=include
--	$(Q)$(MAKE) $(hdr-inst)=include/asm-$(SRCARCH) dst=include/asm
-+	$(Q)$(MAKE) $(hdr-inst)=$(hdr-dir) $(hdr-dst)
- 
- PHONY += headers_check_all
- headers_check_all: headers_install_all
--	$(Q)$(MAKE) $(hdr-inst)=include HDRCHECK=1
--	$(Q)set -e; for arch in $(hdr-archs); do \
--	 $(MAKE) SRCARCH=$$arch $(hdr-inst)=include/asm-$$arch HDRCHECK=1 ;\
--	 done
-+	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/headers.sh check
- 
- PHONY += headers_check
- headers_check: headers_install
- 	$(Q)$(MAKE) $(hdr-inst)=include HDRCHECK=1
--	$(Q)$(MAKE) $(hdr-inst)=include/asm-$(SRCARCH) \
--	            dst=include/asm HDRCHECK=1
-+	$(Q)$(MAKE) $(hdr-inst)=$(hdr-dir) $(hdr-dst) HDRCHECK=1
- 
- # ---------------------------------------------------------------------------
- # Modules
-@@ -1217,21 +1216,17 @@ help:
- 	@echo  '  cscope	  - Generate cscope index'
- 	@echo  '  kernelrelease	  - Output the release version string'
- 	@echo  '  kernelversion	  - Output the version stored in Makefile'
--	@if [ -r $(srctree)/include/asm-$(SRCARCH)/Kbuild ]; then \
--	 echo  '  headers_install - Install sanitised kernel headers to INSTALL_HDR_PATH'; \
-+	@echo  '  headers_install - Install sanitised kernel headers to INSTALL_HDR_PATH'; \
- 	 echo  '                    (default: $(INSTALL_HDR_PATH))'; \
--	 fi
--	@echo  ''
-+	 echo  ''
- 	@echo  'Static analysers'
- 	@echo  '  checkstack      - Generate a list of stack hogs'
- 	@echo  '  namespacecheck  - Name space analysis on compiled kernel'
- 	@echo  '  versioncheck    - Sanity check on version.h usage'
- 	@echo  '  includecheck    - Check for duplicate included header files'
- 	@echo  '  export_report   - List the usages of all exported symbols'
--	@if [ -r $(srctree)/include/asm-$(SRCARCH)/Kbuild ]; then \
--	 echo  '  headers_check   - Sanity check on exported headers'; \
--	 fi
--	@echo  ''
-+	@echo  '  headers_check   - Sanity check on exported headers'; \
-+	 echo  ''
- 	@echo  'Kernel packaging:'
- 	@$(MAKE) $(build)=$(package-dir) help
- 	@echo  ''
-diff --git a/scripts/headers.sh b/scripts/headers.sh
-new file mode 100755
-index 0000000..d33426f
---- /dev/null
-+++ b/scripts/headers.sh
-@@ -0,0 +1,41 @@
-+#!/bin/sh
-+# Run headers_$1 command for all suitable architectures
-+
-+# Stop on error
-+set -e
-+
-+do_command()
-+{
-+	if [ -f ${srctree}/arch/$2/include/asm/Kbuild ]; then
-+		make ARCH=$2 KBUILD_HEADERS=$1 headers_$1
-+	elif [ -f ${srctree}/include/asm-$2/Kbuild ]; then
-+		make ARCH=$2 KBUILD_HEADERS=$1 headers_$1
-+	else
-+		printf "Ignoring arch: %s\n" ${arch}
-+	fi
-+}
-+
-+# Do not try this architecture
-+drop="generic um ppc sparc64 cris"
-+
-+archs=$(ls ${srctree}/arch)
-+
-+for arch in ${archs}; do
-+	case ${arch} in
-+	um)        # no userspace export
-+		;;
-+	ppc)       # headers exported by powerpc
-+		;;
-+	sparc64)   # headers exported by sparc
-+		;;
-+	cris)      # headers export are known broken
-+		;;
-+	*)
-+		if [ -d ${srctree}/arch/${arch} ]; then
-+			do_command $1 ${arch}
-+		fi
-+		;;
-+	esac
-+done
-+
-+
+@@ -1399,7 +1399,11 @@ define find-sources
+ 	       \( -name config -o -name 'asm-*' \) -prune \
+ 	       -o -name $1 -print; \
+ 	  for arch in $(ALLINCLUDE_ARCHS) ; do \
+-	       find $(__srctree)include/asm-$${arch} $(RCS_FIND_IGNORE) \
++	       test -e $(__srctree)include/asm-$${arch} && \
++                 find $(__srctree)include/asm-$${arch} $(RCS_FIND_IGNORE) \
++	            -name $1 -print; \
++	       test -e $(__srctree)arch/$${arch}/include/asm && \
++	         find $(__srctree)arch/$${arch}/include/asm $(RCS_FIND_IGNORE) \
+ 	            -name $1 -print; \
+ 	  done ; \
+ 	  find $(__srctree)include/asm-generic $(RCS_FIND_IGNORE) \
 -- 
 1.5.4.1.143.ge7e51
 
