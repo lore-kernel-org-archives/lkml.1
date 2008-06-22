@@ -1,48 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755009AbYFVSn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbYFVSo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755009AbYFVSn4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 14:43:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753145AbYFVSnq
+	id S1755966AbYFVSo0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 14:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbYFVSoQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 14:43:46 -0400
-Received: from relay4.usu.ru ([194.226.235.39]:38741 "EHLO relay4.usu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752610AbYFVSnp convert rfc822-to-8bit (ORCPT
+	Sun, 22 Jun 2008 14:44:16 -0400
+Received: from casper.infradead.org ([85.118.1.10]:51924 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753145AbYFVSoP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 14:43:45 -0400
-X-Greylist: delayed 569 seconds by postgrey-1.27 at vger.kernel.org; Sun, 22 Jun 2008 14:43:45 EDT
-Message-ID: <c5a83a079a4a13eafdaf99552e231b70.squirrel@webmail.usu.ru>
-Date: Mon, 23 Jun 2008 00:40:38 +0600 (YEKST)
-Subject: UPDATE YOUR EMAIL NOW
-From: "UNIVERSITY COMMUNICATION MESSAGING CENTER" <info@ucalgary.ca>
-Reply-To: ucalgaryc@gmail.com
-User-Agent: SquirrelMail/1.4.15
+	Sun, 22 Jun 2008 14:44:15 -0400
+Date: Sun, 22 Jun 2008 11:42:53 -0700
+From: Greg KH <greg@kroah.com>
+To: Helge Hafting <helge.hafting@aitel.hist.no>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
+Subject: Re: 2.6.26-rc2 WARNING from usb-serial, and then my gps is dead
+Message-ID: <20080622184253.GB18502@kroah.com>
+References: <485E984B.1030306@aitel.hist.no>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=utf-8
-X-Priority: 3 (Normal)
-Importance: Normal
-To: undisclosed-recipients:;
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <485E984B.1030306@aitel.hist.no>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message is from University Communication messaging center to all
-University email Email owners.We are currently upgrading our data base
-and e-mail center.We are deleting all unused University email
-to create more space for new one.
-To prevent your account from closing you will have to update it
-below so that we will know that it's a present used account.
-CONFIRM YOUR EMAIL BELOW
-Email Address........
-Netid.......................
-password...............
-Date of Birth : .................
-Country or Territory : ..........
-Warning!!! Email owner that refuses to update his or her
-Email,within Seven days of receiving this warning will lose his or her
-Email permanently.
-Thanks,
-UCALCARY.CA TEAM
+On Sun, Jun 22, 2008 at 08:22:03PM +0200, Helge Hafting wrote:
+> This is what I got:
+> ------------[ cut here ]------------
+> WARNING: at drivers/usb/serial/usb-serial.c:306 serial_write+0x62/0x89 
+> [usbserial]()
+> Modules linked in: pl2303 usbserial sbs sbshc coretemp piix pcmcia ata_piix 
+> iTCO_wdt ata_generic bay hci_usb intel_agp
+> Pid: 10, comm: events/1 Tainted: G        W 2.6.26-rc2-hh1 #1
+>
+> Call Trace:
+>  [<ffffffff80236b54>] warn_on_slowpath+0x51/0x7a
+>  [<ffffffff8022c207>] __wake_up+0x38/0x4f
+>  [<ffffffff8024565c>] __queue_work+0x23/0x33
+>  [<ffffffff802456c8>] queue_work+0x37/0x40
+>  [<ffffffffa0045fa3>] :pl2303:pl2303_write+0xf2/0x101
+>  [<ffffffffa003c368>] :usbserial:serial_write+0x62/0x89
+>  [<ffffffff803a8e81>] tty_put_char+0x2b/0x2d
+>  [<ffffffff803ad3ca>] echo_char+0x47/0x60
+>  [<ffffffff803ade97>] n_tty_receive_buf+0x2b4/0xd76
+>  [<ffffffff8020a87e>] __switch_to+0xa2/0x396
+>  [<ffffffff8023028d>] hrtick_set+0x88/0xf6
+>  [<ffffffff80590b44>] thread_return+0x70/0xb4
+>  [<ffffffff8023f013>] lock_timer_base+0x26/0x4c
+>  [<ffffffff803a9abd>] flush_to_ldisc+0xf8/0x185
+>  [<ffffffff803a99c5>] flush_to_ldisc+0x0/0x185
+>  [<ffffffff8024520b>] run_workqueue+0x80/0x112
+>  [<ffffffff80245afe>] worker_thread+0xd9/0xe8
+>  [<ffffffff80248380>] autoremove_wake_function+0x0/0x2e
+>  [<ffffffff80245a25>] worker_thread+0x0/0xe8
+>  [<ffffffff80248264>] kthread+0x47/0x73
+>  [<ffffffff802318c1>] schedule_tail+0x28/0x5d
+>  [<ffffffff8020cf88>] child_rip+0xa/0x12
+>  [<ffffffff8024821d>] kthread+0x0/0x73
+>  [<ffffffff8020cf7e>] child_rip+0x0/0x12
+>
+> ---[ end trace 656e180042992f9e ]---
+> I looked at the dmesg log because I have had lots of trouble with my gps 
+> lately. I first suspected the cable, but then I saw this.
+>
+> After this, I have to restart gpsd, and perhaps replug the cable to get
+> things going again. Until it happens again. This is a 64-bit dualcore 
+> laptop.
 
+Ick, that's not nice.
 
+Can you enable debugging for the usb-serial core:
+	echo 1 > /sys/module/usbserial/parameters/debug
+
+and then run whatever program you were running that causes this warning
+and then send us the kernel log?
+
+thanks,
+
+greg k-h
