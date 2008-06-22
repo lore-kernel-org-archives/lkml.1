@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757316AbYFVVBK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757473AbYFVVBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757316AbYFVVBK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 17:01:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754572AbYFVVA6
+	id S1757473AbYFVVBj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 17:01:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754749AbYFVVBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 17:00:58 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38603 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754309AbYFVVA5 (ORCPT
+	Sun, 22 Jun 2008 17:01:30 -0400
+Received: from [194.117.236.238] ([194.117.236.238]:46426 "EHLO
+	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754237AbYFVVB3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 17:00:57 -0400
-Date: Sun, 22 Jun 2008 14:00:44 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Adam Williamson" <awilliamson@mandriva.com>,
-       "Alan Cox" <alan@redhat.com>
-Subject: Re: [Bug #10868] Oops on loading ipaq module since 2.6.26, prevents
- use of device
-Message-ID: <20080622140044.57dce6f2@infradead.org>
-In-Reply-To: <20080622210706.0a90c4ba@lxorguk.ukuu.org.uk>
-References: <RzbtSgMztjP.A.jRD._spXIB@albercik>
-	<4mRZUF-hVeG.A.s6E.JupXIB@albercik>
-	<20080622210706.0a90c4ba@lxorguk.ukuu.org.uk>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
+	Sun, 22 Jun 2008 17:01:29 -0400
+Date: Mon, 23 Jun 2008 00:01:02 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: "Vegard Nossum" <vegard.nossum@gmail.com>
+Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>, tzanussi@gmail.com,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       compudj@krystal.dyndns.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] Better interface for hooking early initcalls.
+Message-ID: <20080623000102.2e364974@linux360.ro>
+In-Reply-To: <19f34abd0806221343o3a9e3951j1448e968f9ba9684@mail.gmail.com>
+References: <20080621171051.5ed3b522@linux360.ro>
+	<84144f020806221222s7498593ap7cad427405fb6776@mail.gmail.com>
+	<20080622233848.50f14605@linux360.ro>
+	<19f34abd0806221343o3a9e3951j1448e968f9ba9684@mail.gmail.com>
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Jun 2008 21:07:06 +0100
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+On Sun, 22 Jun 2008 22:43:55 +0200
+"Vegard Nossum" <vegard.nossum@gmail.com> wrote:
+ 
+> By the way -- may I ask why it is called early_initcall() and not
+> pre_smp_initcall()? I think it makes sense to encode the exact purpose
+> of the initcall into the name. "early" is not very explicit. This is
+> just my opinion :-) Thanks.
 
-> On Sun, 22 Jun 2008 19:54:46 +0200 (CEST)
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+CPU hotplug docs name these (inexisting at that time) initcalls
+'early', so I went on implementing 'early initcalls'. However, I don't
+have strong feelings for either of these two names, so this could
+change.
+
+> Vegard
 > 
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.25.  Please verify if it still should be listed.
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10868
-> > Subject		: Oops on loading ipaq module since 2.6.26,
-> > prevents use of device Submitter	: Adam Williamson
-> > <awilliamson@mandriva.com> Date		: 2008-06-05 17:39
-> > (18 days old) Handled-By	: Alan Cox <alan@redhat.com>
-> 
-> Handed over to Greg as it's not a tty layer bug but something in USB
-> (actually from the traces I think its a broken gcc/build but we shall)
-
-http://www.kerneloops.org/search.php?search=ipaq_open
-
-has a whole slew of different ones.... surprisingly they're almost all
-with pppd...
-
-
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
