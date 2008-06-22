@@ -1,152 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752407AbYFVEBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752813AbYFVED3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752407AbYFVEBZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 00:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750751AbYFVEBP
+	id S1752813AbYFVED3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 00:03:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750770AbYFVEDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 00:01:15 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:27427 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750743AbYFVEBO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 00:01:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=gesreXcL1ern+c9YjDTenjGKyyop0pNPnUAS/Grx7xVgTqNUKB7VwJku7KEjM48axe
-         Px+Tf+02WC3Sx+l3BL5/yWwK4WKMfdePEuyQcfN3S0zpIGj25RxAFw390z7/gTyFGw/J
-         xH1tQLGefkSK+qZoaflPQRp2eMbaNMZk6wX/k=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] x86: move elfcorehdr parsing to setup.c
-Date: Sat, 21 Jun 2008 21:02:20 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200806180215.53755.yhlu.kernel@gmail.com> <200806211916.52949.yhlu.kernel@gmail.com> <200806212022.10077.yhlu.kernel@gmail.com>
-In-Reply-To: <200806212022.10077.yhlu.kernel@gmail.com>
+	Sun, 22 Jun 2008 00:03:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36707 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750751AbYFVEDU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 00:03:20 -0400
+Message-ID: <485DCE79.3040508@redhat.com>
+Date: Sun, 22 Jun 2008 00:00:57 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       Hideo AOKI <haoki@redhat.com>
+Subject: Re: [RFC][Patch 2/2] markers: example of irq regular kernel markers
+References: <20080620174529.GB10943@Krystal> <485C064E.5020705@redhat.com> <20080621190132.E835.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20080621190132.E835.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806212102.20941.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Motohiro,
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+KOSAKI Motohiro wrote:
+>>> By doing so, we could leave a gcc format string check by passing the
+>>> format string to __mark_check_format(). We could extract the field names
+>>> from the prototype, so there is no need to duplicate field information
+>>> in the format string.
+>> I thought that someone complained against those format strings in
+>> kernel code. Thus I removed it from DEFINE_TRACE.
+>>
+>> even though, I think you can do that by adding below string table
+>> to LTTng module.
+>>
+>> const char *lookup_table[MAX_MARKERS][2] = {
+>> {"irq_entry", "%d %d"}, // or "(int irq_id, int kernel_mode)", "%d %d"
+>> ...
+>> };
+> 
+> if move string to out of kernel core, compiler may kill some variable.
+> thus, we will get incomplete tracing result.
 
----
- arch/x86/kernel/setup.c    |   19 +++++++++++++++++++
- arch/x86/kernel/setup_32.c |   16 ----------------
- arch/x86/kernel/setup_64.c |   17 -----------------
- 3 files changed, 19 insertions(+), 33 deletions(-)
+I think you might worry about the lookup_table variable will be removed
+by compiler if the variable is not referred from nowhere, right?
 
-Index: linux-2.6/arch/x86/kernel/setup_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup_64.c
-+++ linux-2.6/arch/x86/kernel/setup_64.c
-@@ -26,7 +26,6 @@
- #include <asm/processor.h>
- #include <linux/console.h>
- #include <linux/seq_file.h>
--#include <linux/crash_dump.h>
- #include <linux/root_dev.h>
- #include <linux/pci.h>
- #include <asm/pci-direct.h>
-@@ -131,22 +130,6 @@ static struct resource bss_resource = {
- 	.flags = IORESOURCE_RAM,
- };
- 
--#ifdef CONFIG_PROC_VMCORE
--/* elfcorehdr= specifies the location of elf core header
-- * stored by the crashed kernel. This option will be passed
-- * by kexec loader to the capture kernel.
-- */
--static int __init setup_elfcorehdr(char *arg)
--{
--	char *end;
--	if (!arg)
--		return -EINVAL;
--	elfcorehdr_addr = memparse(arg, &end);
--	return end > arg ? 0 : -EINVAL;
--}
--early_param("elfcorehdr", setup_elfcorehdr);
--#endif
--
- #ifndef CONFIG_NUMA
- static void __init
- contig_initmem_init(unsigned long start_pfn, unsigned long end_pfn)
-Index: linux-2.6/arch/x86/kernel/setup_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup_32.c
-+++ linux-2.6/arch/x86/kernel/setup_32.c
-@@ -42,7 +42,6 @@
- #include <linux/iscsi_ibft.h>
- #include <linux/nodemask.h>
- #include <linux/kexec.h>
--#include <linux/crash_dump.h>
- #include <linux/dmi.h>
- #include <linux/pfn.h>
- #include <linux/pci.h>
-@@ -195,21 +194,6 @@ static inline void copy_edd(void)
- }
- #endif
- 
--#ifdef CONFIG_PROC_VMCORE
--/* elfcorehdr= specifies the location of elf core header
-- * stored by the crashed kernel.
-- */
--static int __init parse_elfcorehdr(char *arg)
--{
--	if (!arg)
--		return -EINVAL;
--
--	elfcorehdr_addr = memparse(arg, &arg);
--	return 0;
--}
--early_param("elfcorehdr", parse_elfcorehdr);
--#endif /* CONFIG_PROC_VMCORE */
--
- /*
-  * highmem=size forces highmem to be exactly 'size' bytes.
-  * This works even on boxes that have no highmem otherwise.
-Index: linux-2.6/arch/x86/kernel/setup.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup.c
-+++ linux-2.6/arch/x86/kernel/setup.c
-@@ -4,6 +4,7 @@
- #include <linux/bootmem.h>
- #include <linux/percpu.h>
- #include <linux/kexec.h>
-+#include <linux/crash_dump.h>
- #include <asm/smp.h>
- #include <asm/percpu.h>
- #include <asm/sections.h>
-@@ -500,3 +501,21 @@ void __init reserve_standard_io_resource
- 		request_resource(&ioport_resource, &standard_io_resources[i]);
- 
- }
-+
-+#ifdef CONFIG_PROC_VMCORE
-+/* elfcorehdr= specifies the location of elf core header
-+ * stored by the crashed kernel. This option will be passed
-+ * by kexec loader to the capture kernel.
-+ */
-+static int __init setup_elfcorehdr(char *arg)
-+{
-+	char *end;
-+	if (!arg)
-+		return -EINVAL;
-+	elfcorehdr_addr = memparse(arg, &end);
-+	return end > arg ? 0 : -EINVAL;
-+}
-+early_param("elfcorehdr", setup_elfcorehdr);
-+#endif
-+
-+
+Here what I said is, if LTTng needs printf-style format, LTTng can "have"
+a lookup table in its module. In that case, since LTTng must have (at
+least one) functions which refers the lookup table, it is not optimized out.
+
+Of course, LTTng maintainers have to put their eyes on changes of markers
+and related variables/structures, and change the lookup table if they need.
+(If they have a good c-style parameter parser, the maintenance cost
+can be reduced...)
+
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
