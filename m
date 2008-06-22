@@ -1,67 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752636AbYFVErR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752190AbYFVFg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752636AbYFVErR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 00:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbYFVErG
+	id S1752190AbYFVFg1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 01:36:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbYFVFgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 00:47:06 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:50763 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750765AbYFVErE (ORCPT
+	Sun, 22 Jun 2008 01:36:18 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48821 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750895AbYFVFgR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 00:47:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=Qp10sXbg7OSJ6eKJlro848CDSKcJr5jUgaRs+HW3CbY00qCNKaBxggPCW//qS/7b+v
-         hwczMZ8gShuBhIPNKX+nKaes+L4tULfYk1mRRQb/7WU7I0HjHB4oy6XAQmccNgP7/h4B
-         EQtTrR6jSlCYKOIcKkVYHZjy0WW8mz6Akd6BM=
-Message-ID: <485DD93A.6020600@gmail.com>
-Date: Sun, 22 Jun 2008 13:46:50 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Sun, 22 Jun 2008 01:36:17 -0400
+Date: Sat, 21 Jun 2008 22:33:34 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Linux 2.6.25.8
+Message-ID: <20080622053334.GA13674@kroah.com>
 MIME-Version: 1.0
-To: Benjamin Thery <benjamin.thery@bull.net>
-CC: Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Biederman <ebiederm@xmission.com>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
-       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH 05/11] sysfs: sysfs_chmod_file handle multiple superblocks
-References: <20080618170729.808539948@theryb.frec.bull.fr> <20080618170730.853353875@theryb.frec.bull.fr>
-In-Reply-To: <20080618170730.853353875@theryb.frec.bull.fr>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, guys.  Sorry about the long silence.  Recent releases of
-popular distros overwhelmed me with ata bugs.  They now seem to be
-under control (and hopefully stay that way for some time to come).
+We (the -stable team) are announcing the release of the 2.6.25.8 kernel.
 
-On the previous iteration, I was hoping I could sort out sysfs
-interface problem before this patchset but given that this is a long
-overdue feature, I think we should get this thing working first.
+It contains a number of assorted bugfixes all over the tree.  Users are
+encouraged to update.
 
-The first four patches looked good to me, so feel free to add
-Acked-by: Tejun Heo <tj@kernel.org>
+I'll also be replying to this message with a copy of the patch between
+2.6.25.7 and 2.6.25.8
 
-Benjamin Thery Wrote:
-> sysfs: sysfs_chmod_file handle multiple superblocks
-> 
-> Teach sysfs_chmod_file how to handle multiple sysfs
-> superblocks.
+The updated 2.6.25.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.25.y.git
+and can be browsed at the normal kernel.org git web browser:
+        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.25.y.git;a=summary
 
-I think it would be great if sysfs_chmod_file can do all-or-nothing
-instead of failing half way through but given the interface of
-notify_change(), it could be difficult to implement.  Any ideas?
+thanks,
 
-Thanks.
+greg k-h
 
--- 
-tejun
+--------
+
+ Makefile                               |    2 +-
+ arch/x86/kernel/process_32.c           |   23 +++++++++++++++++++++--
+ arch/x86/kernel/process_64.c           |   24 +++++++++++++++++++++---
+ arch/x86/lib/copy_user_64.S            |   25 +++++++++++--------------
+ arch/x86/lib/copy_user_nocache_64.S    |   25 +++++++++++--------------
+ drivers/acpi/tables/tbinstal.c         |   18 +++++++-----------
+ drivers/ide/pci/opti621.c              |   23 ++++-------------------
+ drivers/net/virtio_net.c               |    8 +++++---
+ drivers/net/wireless/b43/b43.h         |    1 -
+ drivers/net/wireless/b43/dma.c         |    2 +-
+ drivers/net/wireless/b43/main.c        |   16 ++++++++++------
+ drivers/scsi/hosts.c                   |    5 +++--
+ drivers/scsi/sr.c                      |    3 +++
+ drivers/serial/8250.c                  |    4 +++-
+ net/netfilter/nf_conntrack_core.c      |    3 +--
+ net/netfilter/nf_conntrack_h323_main.c |   22 +++++++++++++++-------
+ 16 files changed, 117 insertions(+), 87 deletions(-)
+
+
+Alan Cox (1):
+      Fix tty speed handling on 8250
+
+Bartlomiej Zolnierkiewicz (2):
+      opti621: disable read prefetch
+      opti621: remove DMA support
+
+Bob Moore (1):
+      ACPICA: Ignore ACPI table signature for Load() operator
+
+Greg Kroah-Hartman (1):
+      Linux 2.6.25.8
+
+Ingo Molnar (1):
+      x86: remove mwait capability C-state check
+
+James Bottomley (1):
+      SCSI: sr: fix corrupt CD data after media change and delay
+
+Linus Torvalds (1):
+      x86-64: Fix "bytes left to copy" return value for copy_from_user()
+
+Mark McLoughlin (1):
+      virtio_net: Fix skb->csum_start computation
+
+Michael Buesch (2):
+      b43: Fix noise calculation WARN_ON
+      b43: Fix possible NULL pointer dereference in DMA code
+
+Mike Christie (1):
+      scsi_host regression: fix scsi host leak
+
+Patrick McHardy (3):
+      nf_conntrack: fix ctnetlink related crash in nf_nat_setup_info()
+      nf_conntrack_h323: fix module unload crash
+      nf_conntrack_h323: fix memory leak in module initialization error path
+
+Thomas Gleixner (1):
+      x86: disable mwait for AMD family 10H/11H CPUs
+
