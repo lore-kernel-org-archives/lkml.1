@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755823AbYFVOVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755923AbYFVOVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755823AbYFVOVB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 10:21:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbYFVOUM
+	id S1755923AbYFVOVW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 10:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755271AbYFVOUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 10:20:12 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:39302 "EHLO
+	Sun, 22 Jun 2008 10:20:23 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:39330 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753312AbYFVOUK (ORCPT
+	with ESMTP id S1755373AbYFVOUU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 10:20:10 -0400
+	Sun, 22 Jun 2008 10:20:20 -0400
 To: mchehab@infradead.org
-Subject: [PATCH] bt8xx endianness annotations and fixes
+Subject: [PATCH] dvbdmx_write: memcpy from user-supplied pointer
 Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1KAQQL-00021d-Io@ZenIV.linux.org.uk>
+Message-Id: <E1KAQQV-00022V-Iv@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Sun, 22 Jun 2008 15:20:09 +0100
+Date: Sun, 22 Jun 2008 15:20:19 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+... copy to kernel memory first
+
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/media/dvb/bt8xx/bt878.h         |    2 +-
- drivers/media/video/bt8xx/bttv-driver.c |    6 +++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/media/dvb/dvb-core/demux.h     |    2 +-
+ drivers/media/dvb/dvb-core/dvb_demux.c |   17 ++++++++++++++---
+ 2 files changed, 15 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/media/dvb/bt8xx/bt878.h b/drivers/media/dvb/bt8xx/bt878.h
-index 375fd28..d19b592 100644
---- a/drivers/media/dvb/bt8xx/bt878.h
-+++ b/drivers/media/dvb/bt8xx/bt878.h
-@@ -128,7 +128,7 @@ struct bt878 {
- 	dma_addr_t buf_dma;
+diff --git a/drivers/media/dvb/dvb-core/demux.h b/drivers/media/dvb/dvb-core/demux.h
+index b0d347d..eb91fd8 100644
+--- a/drivers/media/dvb/dvb-core/demux.h
++++ b/drivers/media/dvb/dvb-core/demux.h
+@@ -247,7 +247,7 @@ struct dmx_demux {
+ 	void* priv;                  /* Pointer to private data of the API client */
+ 	int (*open) (struct dmx_demux* demux);
+ 	int (*close) (struct dmx_demux* demux);
+-	int (*write) (struct dmx_demux* demux, const char* buf, size_t count);
++	int (*write) (struct dmx_demux* demux, const char __user *buf, size_t count);
+ 	int (*allocate_ts_feed) (struct dmx_demux* demux,
+ 				 struct dmx_ts_feed** feed,
+ 				 dmx_ts_cb callback);
+diff --git a/drivers/media/dvb/dvb-core/dvb_demux.c b/drivers/media/dvb/dvb-core/dvb_demux.c
+index 934e15f..e2eca0b 100644
+--- a/drivers/media/dvb/dvb-core/dvb_demux.c
++++ b/drivers/media/dvb/dvb-core/dvb_demux.c
+@@ -1056,16 +1056,27 @@ static int dvbdmx_close(struct dmx_demux *demux)
+ 	return 0;
+ }
  
- 	u32 risc_size;
--	u32 *risc_cpu;
-+	__le32 *risc_cpu;
- 	dma_addr_t risc_dma;
- 	u32 risc_pos;
+-static int dvbdmx_write(struct dmx_demux *demux, const char *buf, size_t count)
++static int dvbdmx_write(struct dmx_demux *demux, const char __user *buf, size_t count)
+ {
+ 	struct dvb_demux *dvbdemux = (struct dvb_demux *)demux;
++	void *p;
  
-diff --git a/drivers/media/video/bt8xx/bttv-driver.c b/drivers/media/video/bt8xx/bttv-driver.c
-index 0165aac..4c5e528 100644
---- a/drivers/media/video/bt8xx/bttv-driver.c
-+++ b/drivers/media/video/bt8xx/bttv-driver.c
-@@ -3705,7 +3705,7 @@ static void bttv_risc_disasm(struct bttv *btv,
- 	for (i = 0; i < (risc->size >> 2); i += n) {
- 		printk("%s:   0x%lx: ", btv->c.name,
- 		       (unsigned long)(risc->dma + (i<<2)));
--		n = bttv_risc_decode(risc->cpu[i]);
-+		n = bttv_risc_decode(le32_to_cpu(risc->cpu[i]));
- 		for (j = 1; j < n; j++)
- 			printk("%s:   0x%lx: 0x%08x [ arg #%d ]\n",
- 			       btv->c.name, (unsigned long)(risc->dma + ((i+j)<<2)),
-@@ -3774,8 +3774,8 @@ static void bttv_irq_debug_low_latency(struct bttv *btv, u32 rc)
- 	printk("bttv%d: irq: skipped frame [main=%lx,o_vbi=%lx,o_field=%lx,rc=%lx]\n",
- 	       btv->c.nr,
- 	       (unsigned long)btv->main.dma,
--	       (unsigned long)btv->main.cpu[RISC_SLOT_O_VBI+1],
--	       (unsigned long)btv->main.cpu[RISC_SLOT_O_FIELD+1],
-+	       (unsigned long)le32_to_cpu(btv->main.cpu[RISC_SLOT_O_VBI+1]),
-+	       (unsigned long)le32_to_cpu(btv->main.cpu[RISC_SLOT_O_FIELD+1]),
- 	       (unsigned long)rc);
+ 	if ((!demux->frontend) || (demux->frontend->source != DMX_MEMORY_FE))
+ 		return -EINVAL;
  
- 	if (0 == (btread(BT848_DSTATUS) & BT848_DSTATUS_HLOC)) {
+-	if (mutex_lock_interruptible(&dvbdemux->mutex))
++	p = kmalloc(count, GFP_USER);
++	if (!p)
++		return -ENOMEM;
++	if (copy_from_user(p, buf, count)) {
++		kfree(p);
++		return -EFAULT;
++	}
++	if (mutex_lock_interruptible(&dvbdemux->mutex)) {
++		kfree(p);
+ 		return -ERESTARTSYS;
+-	dvb_dmx_swfilter(dvbdemux, (u8 *)buf, count);
++	}
++	dvb_dmx_swfilter(dvbdemux, p, count);
++	kfree(p);
+ 	mutex_unlock(&dvbdemux->mutex);
+ 
+ 	if (signal_pending(current))
 -- 
 1.5.3.GIT
 
