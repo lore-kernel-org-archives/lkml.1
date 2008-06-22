@@ -1,60 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbYFWHsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbYFWHuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756719AbYFWHsd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 03:48:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbYFWHsT
+	id S1756062AbYFWHuH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 03:50:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbYFWHt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 03:48:19 -0400
-Received: from nebensachen.de ([195.34.83.29]:51937 "EHLO mail.nebensachen.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754240AbYFWHsK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 03:48:10 -0400
-X-Hashcash: 1:20:080623:bzolnier@gmail.com::gzCyxIam5ill7uY2:00000000000000000000000000000000000000000001not
-X-Hashcash: 1:20:080623:linux-ide@vger.kernel.org::XWe1glCWuSTZrl3l:0000000000000000000000000000000000001K12
-X-Hashcash: 1:20:080623:linux-kernel@vger.kernel.org::mQwfZ1Il0+z8By5K:000000000000000000000000000000000HLaM
-X-Hashcash: 1:20:080623:randy.dunlap@oracle.com::RnoA128Mz8bkSeIq:000000000000000000000000000000000000004PQ5
-From: Elias Oltmanns <eo@nebensachen.de>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] IDE: Fix HDIO_DRIVE_RESET handling
-References: <87k5gmz596.fsf@denkblock.local>
-	<200806192247.25063.bzolnier@gmail.com>
-	<87wskhuk98.fsf@denkblock.local> <87r6apuk16.fsf@denkblock.local>
-Date: Mon, 23 Jun 2008 09:47:53 +0200
-In-Reply-To: <87r6apuk16.fsf@denkblock.local> (Elias Oltmanns's message of
-	"Mon, 23 Jun 2008 01:28:21 +0200")
-Message-ID: <87wskgtwwm.fsf@denkblock.local>
-User-Agent: Gnus/5.110007 (No Gnus v0.7)
+	Mon, 23 Jun 2008 03:49:57 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42441 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752040AbYFWHt4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 03:49:56 -0400
+Date: Mon, 23 Jun 2008 00:40:22 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pcmcia@lists.infradead.org
+Subject: 2.6.26-rc6: pcmcia stopped working after resume
+Message-ID: <20080622224022.GA2066@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Elias Oltmanns <eo@nebensachen.de> wrote:
-[...]
-> @@ -941,6 +949,7 @@ static ide_startstop_t atapi_reset_pollfunc (ide_drive_t *drive)
->  	/* done polling */
->  	hwgroup->polling = 0;
->  	hwgroup->resetting = 0;
+Hi!
 
-Actually, ->resetting needs to be protected by the ide_lock here.
+After s2ram and resume, CF card in PCMCIA-to-CF slot is no longer
+detected.
 
-[...]
-> @@ -1005,6 +1014,8 @@ static ide_startstop_t reset_pollfunc (ide_drive_t *drive)
->  	}
->  	hwgroup->polling = 0;	/* done polling */
->  	hwgroup->resetting = 0; /* done reset attempt */
+Jun 23 00:38:28 amd kernel: sd 0:0:0:0: [sda] Write cache: enabled,
+read cache: enabled, doesn't support DPO or FUA
+Jun 23 00:38:28 amd kernel: sd 0:0:0:0: [sda] 117210240 512-byte
+hardware sectors (60012 MB)
+Jun 23 00:38:28 amd kernel: sd 0:0:0:0: [sda] Write Protect is off
+Jun 23 00:38:28 amd kernel: sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+Jun 23 00:38:28 amd kernel: sd 0:0:0:0: [sda] Write cache: enabled,
+read cache: enabled, doesn't support DPO or FUA
+Jun 23 00:38:28 amd kernel: PM: Writing back config space on device
+0000:15:00.2 at offset 4 (was 0, writing e4301800)
+Jun 23 00:38:28 amd kernel: PM: Writing back config space on device
+0000:15:00.2 at offset 3 (was 800000, writing 804000)
+Jun 23 00:38:28 amd kernel: PM: Writing back config space on device
+0000:15:00.2 at offset 1 (was 2100000, writing 2100006)
+Jun 23 00:38:28 amd kernel: sleepy: scsi_bus_resume start
+Jun 23 00:38:28 amd kernel: sleepy: scsi_bus_resume done
+Jun 23 00:38:28 amd kernel: usb 4-1: reset low speed USB device using
+uhci_hcd and address 2
+Jun 23 00:38:28 amd kernel: PM: Finishing wakeup.
+Jun 23 00:38:28 amd kernel: Restarting tasks ... done.
+Jun 23 00:38:28 amd kernel: usb 5-1: USB disconnect, address 2
+Jun 23 00:38:28 amd cardmgr[1396]: executing: './ide resume hdc 2>&1'
+Jun 23 00:38:28 amd cardmgr[1396]: + ./shared: line 127:
+/var/run/stab: No such file or directory
+Jun 23 00:38:28 amd cardmgr[1396]: + usage: ./ide [action] [device
+name]
+Jun 23 00:38:28 amd cardmgr[1396]: +   actions: start check stop
+suspend resume
+Jun 23 00:38:28 amd cardmgr[1396]: resume cmd exited with status 1
+Jun 23 00:38:28 amd kernel: usb 5-1: new full speed USB device using
+uhci_hcd and address 4
+Jun 23 00:38:28 amd kernel: usb 5-1: configuration #1 chosen from 1
+choice
+Jun 23 00:38:28 amd kernel: usb 5-1: New USB device found,
+idVendor=0a5c, idProduct=2110
+Jun 23 00:38:28 amd kernel: usb 5-1: New USB device strings: Mfr=1,
+Product=2, SerialNumber=0
+Jun 23 00:38:28 amd kernel: usb 5-1: Product: BCM2045B
+Jun 23 00:38:28 amd kernel: usb 5-1: Manufacturer: Broadcom Corp
+Jun 23 00:38:28 amd kernel: usb 5-2: USB disconnect, address 3
+Jun 23 00:38:28 amd kernel: usb 5-2: new full speed USB device using
+uhci_hcd and address 5
+Jun 23 00:38:29 amd kernel: usb 5-2: configuration #1 chosen from 1
+choice
+Jun 23 00:38:29 amd kernel: usb 5-2: New USB device found,
+idVendor=0483, idProduct=2016
+Jun 23 00:38:29 amd kernel: usb 5-2: New USB device strings: Mfr=1,
+Product=2, SerialNumber=0
+Jun 23 00:38:29 amd kernel: usb 5-2: Product: Biometric Coprocessor
+Jun 23 00:38:29 amd kernel: usb 5-2: Manufacturer: STMicroelectronics
+pccard: card ejected from slot 0
+Jun 23 00:38:32 amd kernel: pccard: card ejected from slot 0
 
-Same as above.  Unless I have missed something, a simple
+I eject it, but nothing happens (and no messages in log) on
+insertion. I think system will die on next s2ram attempt.
 
-spin_lock(&ide_lock)
-
-should suffice since there cannot possibly be another interrupt that
-changes ->resetting behind our back.  I'll send an updated version of
-patches 1 and 4 once I have your opinion on the current series.
-
-Regards,
-
-Elias
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
