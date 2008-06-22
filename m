@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbYFVSVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbYFVSWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755480AbYFVSVV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 14:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753426AbYFVSVO
+	id S1755846AbYFVSWV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 14:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbYFVSWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 14:21:14 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42066 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753391AbYFVSVN (ORCPT
+	Sun, 22 Jun 2008 14:22:10 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:48972 "EHLO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753006AbYFVSWI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 14:21:13 -0400
-Date: Sun, 22 Jun 2008 11:21:00 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Daniel J Blueman <daniel.blueman@gmail.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, dgc@sgi.com
-Subject: Re: [2.6.26-rc7] shrink_icache from pagefault locking (nee: nfsd
- hangs for a few sec)...
-Message-ID: <20080622112100.794b1ae1@infradead.org>
-In-Reply-To: <20080622181011.GC625@csn.ul.ie>
-References: <6278d2220806220256g674304ectb945c14e7e09fede@mail.gmail.com>
-	<6278d2220806220258p28de00c1x615ad7b2f708e3f8@mail.gmail.com>
-	<20080622181011.GC625@csn.ul.ie>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 22 Jun 2008 14:22:08 -0400
+Message-ID: <485E984B.1030306@aitel.hist.no>
+Date: Sun, 22 Jun 2008 20:22:03 +0200
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+Organization: HiST
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+MIME-Version: 1.0
+To: linux-kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
+Subject: 2.6.26-rc2 WARNING from usb-serial, and then my gps is dead
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Jun 2008 19:10:11 +0100
-Mel Gorman <mel@csn.ul.ie> wrote:
+This is what I got:
+------------[ cut here ]------------
+WARNING: at drivers/usb/serial/usb-serial.c:306 serial_write+0x62/0x89 
+[usbserial]()
+Modules linked in: pl2303 usbserial sbs sbshc coretemp piix pcmcia 
+ata_piix iTCO_wdt ata_generic bay hci_usb intel_agp
+Pid: 10, comm: events/1 Tainted: G        W 2.6.26-rc2-hh1 #1
 
-> On (22/06/08 10:58), Daniel J Blueman didst pronounce:
-> > I'm seeing a similar issue [2] to what was recently reported [1] by
-> > Alexander, but with another workload involving XFS and memory
-> > pressure.
-> > 
-> 
-> Is NFS involved or is this XFS only? It looks like XFS-only but no
-> harm in being sure.
-> 
-> I'm beginning to wonder if this is a problem where a lot of dirty
-> inodes are being written back in this path and we stall while that
-> happens. I'm still not getting why we are triggering this now and did
-> not before 2.6.26-rc1 or why it bisects to the zonelist
-> modifications. Diffing the reclaim and allocation paths between
-> 2.6.25 and 2.6.26-rc1 has not yielded any candidates for me yet that
-> would explain this.
-> 
+Call Trace:
+  [<ffffffff80236b54>] warn_on_slowpath+0x51/0x7a
+  [<ffffffff8022c207>] __wake_up+0x38/0x4f
+  [<ffffffff8024565c>] __queue_work+0x23/0x33
+  [<ffffffff802456c8>] queue_work+0x37/0x40
+  [<ffffffffa0045fa3>] :pl2303:pl2303_write+0xf2/0x101
+  [<ffffffffa003c368>] :usbserial:serial_write+0x62/0x89
+  [<ffffffff803a8e81>] tty_put_char+0x2b/0x2d
+  [<ffffffff803ad3ca>] echo_char+0x47/0x60
+  [<ffffffff803ade97>] n_tty_receive_buf+0x2b4/0xd76
+  [<ffffffff8020a87e>] __switch_to+0xa2/0x396
+  [<ffffffff8023028d>] hrtick_set+0x88/0xf6
+  [<ffffffff80590b44>] thread_return+0x70/0xb4
+  [<ffffffff8023f013>] lock_timer_base+0x26/0x4c
+  [<ffffffff803a9abd>] flush_to_ldisc+0xf8/0x185
+  [<ffffffff803a99c5>] flush_to_ldisc+0x0/0x185
+  [<ffffffff8024520b>] run_workqueue+0x80/0x112
+  [<ffffffff80245afe>] worker_thread+0xd9/0xe8
+  [<ffffffff80248380>] autoremove_wake_function+0x0/0x2e
+  [<ffffffff80245a25>] worker_thread+0x0/0xe8
+  [<ffffffff80248264>] kthread+0x47/0x73
+  [<ffffffff802318c1>] schedule_tail+0x28/0x5d
+  [<ffffffff8020cf88>] child_rip+0xa/0x12
+  [<ffffffff8024821d>] kthread+0x0/0x73
+  [<ffffffff8020cf7e>] child_rip+0x0/0x12
 
-this sort of thing can easily be exposed with the latencytop tool... 
-it will at least tell you WHAT the system is blocking on.
-(not so much the why, the tool isn't smart enough to automatically spit
-out kernel patches yet)
+---[ end trace 656e180042992f9e ]---
+I looked at the dmesg log because I have had lots of trouble with my gps 
+lately. I first suspected the cable, but then I saw this.
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+After this, I have to restart gpsd, and perhaps replug the cable to get
+things going again. Until it happens again. This is a 64-bit dualcore 
+laptop.
+
+Helge Hafting
