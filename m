@@ -1,297 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758950AbYFVWW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758127AbYFVW2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758950AbYFVWW5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 18:22:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758602AbYFVWWT
+	id S1758127AbYFVW2b (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 18:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755131AbYFVW2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 18:22:19 -0400
-Received: from mga11.intel.com ([192.55.52.93]:62120 "EHLO mga11.intel.com"
+	Sun, 22 Jun 2008 18:28:23 -0400
+Received: from bu3sch.de ([62.75.166.246]:56314 "EHLO vs166246.vserver.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758592AbYFVWWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 18:22:16 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,686,1204531200"; 
-   d="scan'208";a="344376956"
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: [RESEND PATCH 3/3] e1000: enable NAPI by default in defconfig
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, davem@davemloft.net
-Date: Sun, 22 Jun 2008 15:22:15 -0700
-Message-ID: <20080622222134.5907.53037.stgit@localhost.localdomain>
-In-Reply-To: <20080622221916.5907.79563.stgit@localhost.localdomain>
-References: <20080622221916.5907.79563.stgit@localhost.localdomain>
-User-Agent: StGIT/0.12.1
+	id S1754015AbYFVW2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 18:28:23 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: Oops when using growisofs
+Date: Mon, 23 Jun 2008 00:28:20 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Jens Axboe <axboe@kernel.dk>
+References: <200806221818.24372.mb@bu3sch.de> <200806222322.05706.arnd@arndb.de> <200806230005.51356.mb@bu3sch.de>
+In-Reply-To: <200806230005.51356.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Jun 2008 22:22:15.0400 (UTC) FILETIME=[6CC44E80:01C8D4B6]
+Content-Disposition: inline
+Message-Id: <200806230028.20643.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Auke Kok <auke-jan.h.kok@intel.com>
+On Monday 23 June 2008 00:05:51 Michael Buesch wrote:
+> > Note: r9 and r3 are both NULL pointers. r3 is the value returned from alloc_page_buffers.
+> > R9 is a copy of that, which gets accessed.
+> 
+> Hm, yeah. I looked at that code already, but I can't see how it could return
+> a NULL pointer.
 
-It's preferred to run with NAPI enabled, even for e1000. e1000e
-runs at all times in NAPI mode so this setting is not used.
+Well, actually, it can return a NULL pointer.
 
-In the future we'll make e1000 NAPI-only.
+ 928         head = NULL;
+ 929         offset = PAGE_SIZE;
+ 930         while ((offset -= size) >= 0) {
+...
+ 949         }
+ 950         return head;
 
-Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
----
+So if size, which is a passed in as parameter, is > PAGE_SIZE it will return NULL.
 
- arch/ia64/configs/generic_defconfig             |    2 +-
- arch/ia64/configs/gensparse_defconfig           |    2 +-
- arch/ia64/configs/tiger_defconfig               |    2 +-
- arch/ia64/configs/zx1_defconfig                 |    2 +-
- arch/mips/configs/mtx1_defconfig                |    2 +-
- arch/parisc/configs/c3000_defconfig             |    2 +-
- arch/powerpc/configs/83xx/mpc832x_rdb_defconfig |    2 +-
- arch/powerpc/configs/g5_defconfig               |    2 +-
- arch/powerpc/configs/iseries_defconfig          |    2 +-
- arch/powerpc/configs/maple_defconfig            |    2 +-
- arch/powerpc/configs/ppc64_defconfig            |    2 +-
- arch/powerpc/configs/prpmc2800_defconfig        |    2 +-
- arch/powerpc/configs/pseries_defconfig          |    2 +-
- arch/ppc/configs/bamboo_defconfig               |    2 +-
- arch/ppc/configs/katana_defconfig               |    2 +-
- arch/sh/configs/r7780mp_defconfig               |    2 +-
- arch/x86/configs/i386_defconfig                 |    2 +-
- arch/x86/configs/x86_64_defconfig               |    2 +-
- 18 files changed, 18 insertions(+), 18 deletions(-)
+The size parameter is calculated by doing
+blocksize = 1 << inode->i_blkbits;
+in an earlier function in the callchain.
 
-diff --git a/arch/ia64/configs/generic_defconfig b/arch/ia64/configs/generic_defconfig
-index 0210545..b1694e2 100644
---- a/arch/ia64/configs/generic_defconfig
-+++ b/arch/ia64/configs/generic_defconfig
-@@ -592,7 +592,7 @@ CONFIG_NETDEV_1000=y
- # CONFIG_ACENIC is not set
- # CONFIG_DL2K is not set
- CONFIG_E1000=y
--# CONFIG_E1000_NAPI is not set
-+CONFIG_E1000_NAPI=y
- # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
- # CONFIG_NS83820 is not set
- # CONFIG_HAMACHI is not set
-diff --git a/arch/ia64/configs/gensparse_defconfig b/arch/ia64/configs/gensparse_defconfig
-index e86fbd3..dc46ad6 100644
---- a/arch/ia64/configs/gensparse_defconfig
-+++ b/arch/ia64/configs/gensparse_defconfig
-@@ -594,7 +594,7 @@ CONFIG_E100=m
- # CONFIG_ACENIC is not set
- # CONFIG_DL2K is not set
- CONFIG_E1000=y
--# CONFIG_E1000_NAPI is not set
-+CONFIG_E1000_NAPI=y
- # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
- # CONFIG_NS83820 is not set
- # CONFIG_HAMACHI is not set
-diff --git a/arch/ia64/configs/tiger_defconfig b/arch/ia64/configs/tiger_defconfig
-index 797acf9..780fb99 100644
---- a/arch/ia64/configs/tiger_defconfig
-+++ b/arch/ia64/configs/tiger_defconfig
-@@ -574,7 +574,7 @@ CONFIG_NETDEV_1000=y
- # CONFIG_ACENIC is not set
- # CONFIG_DL2K is not set
- CONFIG_E1000=y
--# CONFIG_E1000_NAPI is not set
-+CONFIG_E1000_NAPI=y
- # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
- # CONFIG_NS83820 is not set
- # CONFIG_HAMACHI is not set
-diff --git a/arch/ia64/configs/zx1_defconfig b/arch/ia64/configs/zx1_defconfig
-index 0a06b13..4122b76 100644
---- a/arch/ia64/configs/zx1_defconfig
-+++ b/arch/ia64/configs/zx1_defconfig
-@@ -634,7 +634,7 @@ CONFIG_E100=y
- # CONFIG_ACENIC is not set
- # CONFIG_DL2K is not set
- CONFIG_E1000=y
--# CONFIG_E1000_NAPI is not set
-+CONFIG_E1000_NAPI=y
- # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
- # CONFIG_NS83820 is not set
- # CONFIG_HAMACHI is not set
-diff --git a/arch/mips/configs/mtx1_defconfig b/arch/mips/configs/mtx1_defconfig
-index fa3aa39..46c6773 100644
---- a/arch/mips/configs/mtx1_defconfig
-+++ b/arch/mips/configs/mtx1_defconfig
-@@ -1297,7 +1297,7 @@ CONFIG_ACENIC=m
- # CONFIG_ACENIC_OMIT_TIGON_I is not set
- CONFIG_DL2K=m
- CONFIG_E1000=m
--# CONFIG_E1000_NAPI is not set
-+CONFIG_E1000_NAPI=y
- # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
- CONFIG_NS83820=m
- CONFIG_HAMACHI=m
-diff --git a/arch/parisc/configs/c3000_defconfig b/arch/parisc/configs/c3000_defconfig
-index c6def3c..c89d490 100644
---- a/arch/parisc/configs/c3000_defconfig
-+++ b/arch/parisc/configs/c3000_defconfig
-@@ -552,7 +552,7 @@ CONFIG_ACENIC=m
- # CONFIG_ACENIC_OMIT_TIGON_I is not set
- # CONFIG_DL2K is not set
- CONFIG_E1000=m
--# CONFIG_E1000_NAPI is not set
-+CONFIG_E1000_NAPI=y
- # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
- # CONFIG_E1000E is not set
- # CONFIG_NS83820 is not set
-diff --git a/arch/powerpc/configs/83xx/mpc832x_rdb_defconfig b/arch/powerpc/configs/83xx/mpc832x_rdb_defconfig
-index de95d32..f73664c 100644
---- a/arch/powerpc/configs/83xx/mpc832x_rdb_defconfig
-+++ b/arch/powerpc/configs/83xx/mpc832x_rdb_defconfig
-@@ -520,7 +520,7 @@ CONFIG_NETDEV_1000=y
- # CONFIG_ACENIC is not set
- # CONFIG_DL2K is not set
- CONFIG_E1000=y
--# CONFIG_E1000_NAPI is not set
-+CONFIG_E1000_NAPI=y
- # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
- # CONFIG_E1000E is not set
- # CONFIG_E1000E_ENABLED is not set
-diff --git a/arch/powerpc/configs/g5_defconfig b/arch/powerpc/configs/g5_defconfig
-index 0ccc6e4..cc9fe7d 100644
---- a/arch/powerpc/configs/g5_defconfig
-+++ b/arch/powerpc/configs/g5_defconfig
-@@ -740,7 +740,7 @@ CONFIG_ACENIC=y
- CONFIG_ACENIC_OMIT_TIGON_I=y
- # CONFIG_DL2K is not set
- CONFIG_E1000=y
--# CONFIG_E1000_NAPI is not set
-+CONFIG_E1000_NAPI=y
- # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
- # CONFIG_E1000E is not set
- # CONFIG_E1000E_ENABLED is not set
-diff --git a/arch/powerpc/configs/iseries_defconfig b/arch/powerpc/configs/iseries_defconfig
-index 63f0bdb..87ce879 100644
---- a/arch/powerpc/configs/iseries_defconfig
-+++ b/arch/powerpc/configs/iseries_defconfig
-@@ -662,7 +662,7 @@ CONFIG_ACENIC=m
- # CONFIG_ACENIC_OMIT_TIGON_I is not set
- # CONFIG_DL2K is not set
- CONFIG_E1000=m
--# CONFIG_E1000_NAPI is not set
-+CONFIG_E1000_NAPI=y
- # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
- # CONFIG_E1000E is not set
- # CONFIG_E1000E_ENABLED is not set
-diff --git a/arch/powerpc/configs/maple_defconfig b/arch/powerpc/configs/maple_defconfig
-index 7a166a3..1006be8 100644
---- a/arch/powerpc/configs/maple_defconfig
-+++ b/arch/powerpc/configs/maple_defconfig
-@@ -607,7 +607,7 @@ CONFIG_NETDEV_1000=y
- # CONFIG_ACENIC is not set
- # CONFIG_DL2K is not set
- CONFIG_E1000=y
--# CONFIG_E1000_NAPI is not set
-+CONFIG_E1000_NAPI=y
- # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
- # CONFIG_E1000E is not set
- # CONFIG_NS83820 is not set
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index ce250bc..072e903 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -949,7 +949,7 @@ CONFIG_ACENIC=y
- CONFIG_ACENIC_OMIT_TIGON_I=y
- # CONFIG_DL2K is not set
- CONFIG_E1000=y
--# CONFIG_E1000_NAPI is not set
-+CONFIG_E1000_NAPI=y
- # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
- # CONFIG_E1000E is not set
- # CONFIG_E1000E_ENABLED is not set
-diff --git a/arch/powerpc/configs/prpmc2800_defconfig b/arch/powerpc/configs/prpmc2800_defconfig
-index c6b8357..fdde9e4 100644
---- a/arch/powerpc/configs/prpmc2800_defconfig
-+++ b/arch/powerpc/configs/prpmc2800_defconfig
-@@ -741,7 +741,7 @@ CONFIG_NETDEV_1000=y
- # CONFIG_ACENIC is not set
- # CONFIG_DL2K is not set
- CONFIG_E1000=y
--# CONFIG_E1000_NAPI is not set
-+CONFIG_E1000_NAPI=y
- # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
- # CONFIG_E1000E is not set
- # CONFIG_E1000E_ENABLED is not set
-diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-index adaa05f..04f8c4e 100644
---- a/arch/powerpc/configs/pseries_defconfig
-+++ b/arch/powerpc/configs/pseries_defconfig
-@@ -767,7 +767,7 @@ CONFIG_ACENIC=y
- CONFIG_ACENIC_OMIT_TIGON_I=y
- # CONFIG_DL2K is not set
- CONFIG_E1000=y
--# CONFIG_E1000_NAPI is not set
-+CONFIG_E1000_NAPI=y
- # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
- # CONFIG_E1000E is not set
- # CONFIG_E1000E_ENABLED is not set
-diff --git a/arch/ppc/configs/bamboo_defconfig b/arch/ppc/configs/bamboo_defconfig
-index 41fd393..cb4998e 100644
---- a/arch/ppc/configs/bamboo_defconfig
-+++ b/arch/ppc/configs/bamboo_defconfig
-@@ -498,7 +498,7 @@ CONFIG_NATSEMI=y
- # CONFIG_ACENIC is not set
- # CONFIG_DL2K is not set
- CONFIG_E1000=y
--# CONFIG_E1000_NAPI is not set
-+CONFIG_E1000_NAPI=y
- # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
- # CONFIG_NS83820 is not set
- # CONFIG_HAMACHI is not set
-diff --git a/arch/ppc/configs/katana_defconfig b/arch/ppc/configs/katana_defconfig
-index 7311fe6..b5329ac 100644
---- a/arch/ppc/configs/katana_defconfig
-+++ b/arch/ppc/configs/katana_defconfig
-@@ -487,7 +487,7 @@ CONFIG_E100=y
- # CONFIG_ACENIC is not set
- # CONFIG_DL2K is not set
- CONFIG_E1000=y
--# CONFIG_E1000_NAPI is not set
-+CONFIG_E1000_NAPI=y
- # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
- # CONFIG_NS83820 is not set
- # CONFIG_HAMACHI is not set
-diff --git a/arch/sh/configs/r7780mp_defconfig b/arch/sh/configs/r7780mp_defconfig
-index 1a07261..c65ece0 100644
---- a/arch/sh/configs/r7780mp_defconfig
-+++ b/arch/sh/configs/r7780mp_defconfig
-@@ -622,7 +622,7 @@ CONFIG_NETDEV_1000=y
- # CONFIG_ACENIC is not set
- # CONFIG_DL2K is not set
- CONFIG_E1000=m
--# CONFIG_E1000_NAPI is not set
-+CONFIG_E1000_NAPI=y
- # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
- # CONFIG_E1000E is not set
- # CONFIG_E1000E_ENABLED is not set
-diff --git a/arch/x86/configs/i386_defconfig b/arch/x86/configs/i386_defconfig
-index b738c78..e3f3349 100644
---- a/arch/x86/configs/i386_defconfig
-+++ b/arch/x86/configs/i386_defconfig
-@@ -812,7 +812,7 @@ CONFIG_NETDEV_1000=y
- # CONFIG_ACENIC is not set
- # CONFIG_DL2K is not set
- CONFIG_E1000=y
--# CONFIG_E1000_NAPI is not set
-+CONFIG_E1000_NAPI=y
- # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
- CONFIG_E1000E=y
- # CONFIG_NS83820 is not set
-diff --git a/arch/x86/configs/x86_64_defconfig b/arch/x86/configs/x86_64_defconfig
-index 0fb202e..f23a68c 100644
---- a/arch/x86/configs/x86_64_defconfig
-+++ b/arch/x86/configs/x86_64_defconfig
-@@ -738,7 +738,7 @@ CONFIG_NETDEV_1000=y
- # CONFIG_ACENIC is not set
- # CONFIG_DL2K is not set
- CONFIG_E1000=y
--# CONFIG_E1000_NAPI is not set
-+CONFIG_E1000_NAPI=y
- # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
- CONFIG_E1000E=y
- # CONFIG_NS83820 is not set
+So, well. I dunno what i_blkbits is. There's no docs in struct inode.
 
+-- 
+Greetings Michael.
