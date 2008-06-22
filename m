@@ -1,58 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755038AbYFVOrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbYFVOrj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755038AbYFVOrQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 10:47:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752955AbYFVOrE
+	id S1755521AbYFVOrj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 10:47:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755070AbYFVOr0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 10:47:04 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:45604 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752860AbYFVOrC (ORCPT
+	Sun, 22 Jun 2008 10:47:26 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:56516 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752955AbYFVOrZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 10:47:02 -0400
-Date: Sun, 22 Jun 2008 15:46:44 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Martin Michlmayr <tbm@cyrius.com>
-Subject: Re: [PATCH resend] arm: export dma_sync_sg_for_device (fix build failure)
-Message-ID: <20080622144644.GA21340@flint.arm.linux.org.uk>
-References: <tkrat.f4459fea282b5e69@s5r6.in-berlin.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 22 Jun 2008 10:47:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=wETlzdKA7ICKEbmd5uEj+O2TLTR82I+QQEYaPctC1tkzecgGfihkYTRHhSrctIO2V9
+         yFS6uD2aPOfO8B+1ET3bpuCavsLaEfsi5a4FOfcYOKiqtEq3up7NayqBLoSh08Qwa4I8
+         mFLZRrCbZxF2mSKiF5L3FZ5S5kRDSGaDq+4GA=
+Message-ID: <19f34abd0806220747q5ac41afcg53979f0d98a95d3c@mail.gmail.com>
+Date: Sun, 22 Jun 2008 16:47:23 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Rusty Russell" <rusty@rustcorp.com.au>,
+       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>
+Subject: Re: v2.6.26-rc7: BUG: unable to handle kernel NULL pointer dereference
+Cc: linux-kernel@vger.kernel.org, "Gautham R Shenoy" <ego@in.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       "Heiko Carstens" <heiko.carstens@de.ibm.com>
+In-Reply-To: <20080622125633.GA8166@damson.getinternet.no>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <tkrat.f4459fea282b5e69@s5r6.in-berlin.de>
-User-Agent: Mutt/1.4.2.1i
+References: <20080622125633.GA8166@damson.getinternet.no>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 22, 2008 at 04:13:52PM +0200, Stefan Richter wrote:
-> Date: 2006-06-18 03:49:35 +0200
-> From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> Subject: arm: add EXPORT_SYMBOL(dma_sync_sg_for_device)
-> 
-> as it is for example needed by drivers/ieee1394/dma.c
-> 
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> ---
->  arch/arm/common/dmabounce.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> --- a/arch/arm/common/dmabounce.c
-> +++ b/arch/arm/common/dmabounce.c
-> @@ -651,6 +651,7 @@ EXPORT_SYMBOL(dma_unmap_sg);
->  EXPORT_SYMBOL(dma_sync_single_for_cpu);
->  EXPORT_SYMBOL(dma_sync_single_for_device);
->  EXPORT_SYMBOL(dma_sync_sg);
-> +EXPORT_SYMBOL(dma_sync_sg_for_device);
->  EXPORT_SYMBOL(dmabounce_register_dev);
->  EXPORT_SYMBOL(dmabounce_unregister_dev);
+On Sun, Jun 22, 2008 at 2:56 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> Initializing CPU#1
+> APIC error on CPU0: 00(40)
+> Stuck ??
+> Inquiring remote APIC #1...
+> ... APIC #1 ID: failed
+> ... APIC #1 VERSION: failed
+> ... APIC #1 SPIV: failed
 
-I've just committed a better fix.  That dma_sync_sg export should be a
-dma_sync_sg_for_cpu.  Thanks.
+Arch-specific __cpu_up() failed...
+
+> BUG: unable to handle kernel NULL pointer dereference at 00000024
+> IP: [<c01e0f06>] sysfs_remove_group+0x16/0xc0
+> *pde = 00000000
+> Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
+>
+> Pid: 3994, comm: bash Not tainted (2.6.26-rc7-00002-g8b2e474-dirty #29)
+> EIP: 0060:[<c01e0f06>] EFLAGS: 00010282 CPU: 0
+> EIP is at sysfs_remove_group+0x16/0xc0
+> EAX: 00000008 EBX: 00000001 ECX: 00000004 EDX: c0694c14
+> ESI: 00000004 EDI: c07015fc EBP: f3cbfe9c ESP: f3cbfe80
+>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> Process bash (pid: 3994, ti=f3cbe000 task=f3cb4f60 task.ti=f3cbe000)
+> Stack: c0302262 f4bcda40 f3cbfe98 00000008 00000001 00000004 00000000 f3cbfea8
+>       c05880b2 c07576c4 f3cbfec8 c014f567 00000001 00000004 c0753c90 0000001f
+>       00000001 fffffffb f3cbfedc c014f5d9 0000001f 00000000 00000004 f3cbff00
+> Call Trace:
+>  [<c0302262>] ? device_unregister+0x12/0x20
+
+This is line 131 of fs/sysfs/group.c:
+
+        struct sysfs_dirent *dir_sd = kobj->sd;
+
+>  [<c05880b2>] ? topology_cpu_callback+0x32/0x70
+>  [<c014f567>] ? notifier_call_chain+0x37/0x70
+>  [<c014f5d9>] ? __raw_notifier_call_chain+0x19/0x20
+>  [<c0586f6e>] ? _cpu_up+0xee/0x100
+
+This is line 314 of _cpu_up():
+
+out_notify:
+        if (ret != 0)
+                __raw_notifier_call_chain(&cpu_chain,
+                                CPU_UP_CANCELED | mod, hcpu, nr_calls, NULL);
+
+>  [<c0586fc9>] ? cpu_up+0x49/0x70
+>  [<c05678d8>] ? store_online+0x58/0x80
+>  [<c0567880>] ? store_online+0x0/0x80
+>  [<c0302a6b>] ? sysdev_store+0x2b/0x40
+>  [<c01df0f2>] ? sysfs_write_file+0xa2/0x100
+>  [<c01a0d06>] ? vfs_write+0x96/0x130
+>  [<c01df050>] ? sysfs_write_file+0x0/0x100
+>  [<c01a13cd>] ? sys_write+0x3d/0x70
+>  [<c010831b>] ? sysenter_past_esp+0x78/0xd1
+>  =======================
+> Code: 8b 43 04 83 c3 04 85 c0 75 ed 5b 5e 5d c3 8d b4 26 00 00 00 00 55 89 e5 83 ec 1c 89 7d fc 89 d7 89 5d f4 89 75 f8 89 45 f0 8b 12 <8b> 70 1c 85 d2 74 53 89 f0 e8 bc f5 ff ff 85 c0 89 c3 74 59 8b
+> EIP: [<c01e0f06>] sysfs_remove_group+0x16/0xc0 SS:ESP 0068:f3cbfe80
+>
+>
+
+...adding a few related Ccs.
+
+
+Vegard
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
