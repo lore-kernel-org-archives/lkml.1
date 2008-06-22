@@ -1,126 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754056AbYFVNOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592AbYFVNPF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754056AbYFVNOp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 09:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbYFVNOg
+	id S1754592AbYFVNPF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 09:15:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754189AbYFVNOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 09:14:36 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:2503 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751628AbYFVNOf (ORCPT
+	Sun, 22 Jun 2008 09:14:49 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:45585 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754095AbYFVNOq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 09:14:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=RqG/vyS/1a+X8cqTVO9uPJaqECYv60RCfc+YGTtb/pr9AL5zMX9pu/dRHiqrnGK916
-         L16OAR+YD5zwinoKi8MCGT/wdO71nC2jnktm5fZmS3EObmm88/hw+kzxF+ux22Utsv70
-         rssNzumWzqgN3b7ikt9o/0oFYwl/XylUHSwPE=
-Message-ID: <5a4c581d0806220614seab6598ufa798d8642295495@mail.gmail.com>
-Date: Sun, 22 Jun 2008 15:14:33 +0200
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [Cbe-oss-dev] [regression/bisected] corrupt CD data after media change and delay
-Cc: linux-scsi@vger.kernel.org,
-       "Linux Kernel Development" <linux-kernel@vger.kernel.org>,
-       "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-       "Maarten Bressers" <mbres@gentoo.org>, "Daniel Drake" <dsd@gentoo.org>,
-       "Cell Broadband Engine OSS Development" <cbe-oss-dev@ozlabs.org>
-In-Reply-To: <Pine.LNX.4.64.0806221018220.9736@vixen.sonytel.be>
+	Sun, 22 Jun 2008 09:14:46 -0400
+Message-ID: <485E505F.8010306@keyaccess.nl>
+Date: Sun, 22 Jun 2008 15:15:11 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Hans de Goede <j.w.r.degoede@hhs.nl>
+CC: "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org,
+       Jean Delvare <khali@linux-fr.org>, Zhang Rui <rui.zhang@intel.com>,
+       linux-acpi@vger.kernel.org
+Subject: [REGRESSION, ABI] Re: [lm-sensors] LMSENSORS: 2.6.26-rc, enabling
+ ACPI Termal Zone support costs sensors
+References: <485DA11C.7050906@keyaccess.nl> <485DFF35.6080008@hhs.nl>
+In-Reply-To: <485DFF35.6080008@hhs.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0806061458300.6228@vixen.sonytel.be>
-	 <Pine.LNX.4.64.0806131932350.30730@vixen.sonytel.be>
-	 <5a4c581d0806180147qf8fc731y527c79bfb73401b2@mail.gmail.com>
-	 <Pine.LNX.4.64.0806181156460.13297@vixen.sonytel.be>
-	 <5a4c581d0806180515g5f24e9d9m85369bfa0a5f2228@mail.gmail.com>
-	 <5a4c581d0806210718m77be63c9l444d8d7d7a5266bd@mail.gmail.com>
-	 <Pine.LNX.4.64.0806221018220.9736@vixen.sonytel.be>
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 22, 2008 at 10:18 AM, Geert Uytterhoeven
-<Geert.Uytterhoeven@sonycom.com> wrote:
-> On Sat, 21 Jun 2008, Alessandro Suardi wrote:
->> On Wed, Jun 18, 2008 at 2:15 PM, Alessandro Suardi
->> <alessandro.suardi@gmail.com> wrote:
->> > On Wed, Jun 18, 2008 at 1:13 PM, Geert Uytterhoeven
->> > <Geert.Uytterhoeven@sonycom.com> wrote:
->> >> On Wed, 18 Jun 2008, Alessandro Suardi wrote:
->> >>> On Fri, Jun 13, 2008 at 7:33 PM, Geert Uytterhoeven
->> >>> <Geert.Uytterhoeven@sonycom.com> wrote:
->> >>> > On Fri, 6 Jun 2008, Geert Uytterhoeven wrote:
->> >>> >> When mounting a CD/DVD more than 30 seconds after inserting it, and reading
->> >>> >> from it, we get:
->> >>> >
->> >>> > Apparently the fix didn't make it to all the CCed lists...
->> >>> >
->> >>> > http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fjejb%2Fscsi-rc-fixes-2.6.git;a=commitdiff_plain;h=d1daeabf0da5bfa1943272ce508e2ba785730bf0
->> >>>
->> >>> Oh, that's in mainline ? I still have the problem of having to
->> >>
->> >> Not yet, it's in the scsi-rc-fixes-2.6 tree.
->> >>
->> >>>  insert DVD / try accessing it and get errors / eject / re-insert
->> >>>  and then it magically works... the messages have changed
->> >>>  from what they were as reported here
->> >>>
->> >>> http://bugzilla.kernel.org/show_bug.cgi?id=10116
->> >>>
->> >>>  (see comments #8 and #9) to these ones, in 2.6.26-rc6-git4:
->> >>>
->> >>> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] Result:
->> >>> hostbyte=0x00 driverbyte=0x08
->> >>> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] Sense Key : 0x3 [current]
->> >>> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] ASC=0x11 ASCQ=0x0
->> >>> Jun 17 22:38:43 sandman kernel: end_request: I/O error, dev sr0, sector 232
->> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 29
->> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 30
->> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 31
->> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 32
->> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 33
->> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 34
->> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 35
->> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 36
->> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 37
->> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 38
->> >>>
->> >>> here I eject and reinsert the disc, and:
->> >>>
->> >>> Jun 17 22:39:10 sandman kernel: UDF-fs: No VRS found
->> >>>
->> >>>  lo and behold, no problem.
->> >>>
->> >>> This does not, alas, happen every time. It might be at the first
->> >>>  DVD access after booting the laptop, but I haven't investigated
->> >>>  in this detail yet.
->> >>
->> >> Does /sys/block/sr0/size reflect the correct size of the DVD?
->> >>
->> >> Did you try applying the patch?
->> >
->> > ATM I'm away from home (as usual), I'll post back when
->> >  I have the info you asked for and tried applying the
->> >  above patch. Thanks !
+On 22-06-08 09:28, Hans de Goede wrote:
+
+This is an ABI breakage issue and an unfortunate one at that:
+
+> Rene Herman wrote:
+
+>> On 2.6.26-rc and perhaps earlier, when I enable the ACPI Thermal Zone 
+>> support (CONFIG_ACPI_THERMAL) I see in dmesg:
+
+Note, 2.6.25-rc7 works fine with it enabled.
+
+>> ACPI: LNXTHERM:01 is registered as thermal_zone0
+>> ACPI: Thermal Zone [THRM] (56 C)
 >>
->> Sigh. I haven't been able to reproduce the problem once since
->>  I posted this. Will keep trying...
->
-> Perhaps because the fix is now in mainline?
+>> My /sys/class/hwmon/hwmon0 (a W83782D chip) becomes hwmon1, there's a 
+>> new /sys/class/hwmon/hwmon0 and "sensors -s" craps out with:
+>>
+>> # sensors -s
+>> Can't access procfs/sysfs file
+>> Kernel interface access error
+>> For 2.6 kernels, make sure you have mounted sysfs and libsensors
+>> was compiled with sysfs support!
+>>
+>> # sensors --version
+>> sensors version 2.10.6 with libsensors version 2.10.6
+>>
+>> This is the slackware 12.1 (recent) standard version. What's wrong?
+>>
+>> In case it's useful, my /etc/sensors.conf is at:
+>>
+>> http://members.home.nl/rene.herman/sensors.conf
+> 
+> I'm pretty sure this caused by your lm_sensors using space being to old 
+> to support the new thermalzone stuff. You need atleast 3.0.2 to support 
+> the thermalzone driver.
 
-Eh, that may be a reason :)
+I see. I was about to mark this up as Volkerding doing his usual "if it 
+has a lower version number it must be better" thing but in this case it 
+seems it's hwmon or ACPI which is to blame.
 
-I'm indeed tracking mainline and haven't reproduced with
- at least six different discs in -rc7.
+Firstly -- with CONFIG_ACPI_THERMAL selected my sensors work fine on 
+2.6.25-rc7 with the above 2.10.6 lm_sensors userspace. Now, with 
+2.6.26-rc (*) they do not as per above.
 
---alessandro
+This is ABI breakage. I wouldn't care if my older lm_sensors userspace 
+couldn't handle the ACPI Thermal Zone, but I do care that even having it 
+breaks my other sensors; especially given the CONFIG_ACPI_THERMAL help 
+text which can not be read as recommending to disable it:
 
- "Give me love / Or give me hate
- Give me anything that's not just ok"
+   This driver adds support for ACPI thermal zones.  Most mobile and
+   some desktop systems support ACPI thermal zones.  It is HIGHLY
+   recommended that this option be enabled, as your processor(s)
+   may be damaged without it.
 
- (Sophia, 'Weightless')
+Now, I'm actually usally a big fan of not dragging around old gunk 
+forever, ABI be damned, but in this case this really won't do. 2.6.10 is 
+a recent maintenance release and I see for the new 3.0 branch:
+
+http://www.lm-sensors.org/wiki/Download
+
+===
+Most third party monitoring applications do not yet work with the 
+library in this package. We are encouraging authors to port their 
+applications to the new library. We already have patches for xsensors 
+0.60, gkrellm-2.3.0, net-snmp-5.4.1 (configure with 
+--with-mib-modules="ucd-snmp/lmsensorsMib" --with-ldflags="-lsensors"), 
+xfce4-sensors-plugin-0.10.99.2, kdebase-3.5.8(ksysguard), 
+sensors-applet-1.8.1 and ksensors-0.7.3-fedora-14.tar.gz (upstream is 
+dead this tarbal contains a version with all Debian's changes + 2 
+patches from Fedora, including lm_sensors-3.x support).
+===
+
+So it seems we have here a change to the kernel requiring a userspace 
+basically noone is ready for and which at least the (again, recent) 
+slackware 12.1 doesn't ship as a result. This is ABI breakage of the 
+really bad kind.
+
+If there's not just something I'm missing, could someone please get 
+Linus a patch ASAP making whatever breaks lm_sensors 2 optional, 
+disabled by default and with a help text that warns that enabling it 
+requires a new lm_sensors userspace?
+
+I haven't seen other complaints about this and would've expected them so 
+it might ofcourse be possible that I'm just missing something and have a 
+very specific problem; if in that case someone could advice what it 
+might be -- please do.
+
+But if not, .26 is around the corner and requiring libsensors-3.0 must 
+really not be.
+
+(*) 2.6.26-rc7 at least. I actually noticed this early in the -rc stage 
+but had too many other breakage at that point to worry about this one. I 
+just disabled the ACPI Thermal Zone support and forgot about it upto 
+this point.
+
+Rene.
