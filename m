@@ -1,192 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbYFVNAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753620AbYFVNHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753421AbYFVNAz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 09:00:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751759AbYFVNAr
+	id S1753620AbYFVNHm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 09:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbYFVNHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 09:00:47 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:35566 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751637AbYFVNAq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 09:00:46 -0400
-Subject: [PATCH] Remove fdump tool for av7110 firmware
-From: Jaswinder Singh <jaswinder@infradead.org>
-To: LKML <linux-kernel@vger.kernel.org>, linux-dvb <linux-dvb@linuxtv.org>,
-       kernelnewbies <kernelnewbies@nl.linux.org>,
-       kernel-janitors <kernel-janitors@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Woodhouse <dwmw2@infradead.org>
-Content-Type: text/plain
-Date: Sun, 22 Jun 2008 18:24:19 +0530
-Message-Id: <1214139259.2994.8.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Sun, 22 Jun 2008 09:07:32 -0400
+Received: from mx1-2.mail.ru ([194.67.23.121]:26102 "EHLO mx1.mail.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751516AbYFVNHb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 09:07:31 -0400
+X-Greylist: delayed 133390 seconds by postgrey-1.27 at vger.kernel.org; Sun, 22 Jun 2008 09:07:31 EDT
+From: Andrew Savchenko <Bircoph@list.ru>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [RFC/PATCH] ipg: add jumbo frame support kconfig option
+Date: Sun, 22 Jun 2008 17:07:14 +0400
+User-Agent: KMail/1.9.1
+Cc: Stephen Hemminger <stephen.hemminger@vyatta.com>,
+       linux-kernel@vger.kernel.org, Francois Romieu <romieu@fr.zoreil.com>,
+       Linux Netdev List <netdev@vger.kernel.org>, shemminger@vyatta.com,
+       Jeff Garzik <jeff@garzik.org>, sorbica@icplus.com.tw,
+       Jesse Huang <jesse@icplus.com.tw>
+References: <200806201037.46687.Bircoph@list.ru> <20080620084131.3313abe8@speedy> <Pine.LNX.4.64.0806221220540.27261@sbz-30.cs.Helsinki.FI>
+In-Reply-To: <Pine.LNX.4.64.0806221220540.27261@sbz-30.cs.Helsinki.FI>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart2568399.13LfdU9z0l";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200806221707.22348.Bircoph@list.ru>
+X-Spam: Not detected
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There's no point in this, since the user can use the BUILTIN_FIRMWARE
-option to include arbitrary firmware files directly in the kernel image.
+--nextPart2568399.13LfdU9z0l
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Thanks to David Woodhouse for help.
+Hi,
 
-Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
---
-drivers/media/dvb/ttpci/Kconfig  |   23 +++----------------
-drivers/media/dvb/ttpci/Makefile |    9 -------
-drivers/media/dvb/ttpci/av7110.c |   16 -------------
-drivers/media/dvb/ttpci/fdump.c    |   44 -------------------------------------
-4 files changed, 4 insertions(+), 88 deletions(-)
-diff --git a/drivers/media/dvb/ttpci/Kconfig b/drivers/media/dvb/ttpci/Kconfig
-index e0bbcaf..6b7a586 100644
---- a/drivers/media/dvb/ttpci/Kconfig
-+++ b/drivers/media/dvb/ttpci/Kconfig
-@@ -6,7 +6,7 @@ config DVB_AV7110
- 	tristate "AV7110 cards"
- 	depends on DVB_CORE && PCI && I2C
- 	depends on HOTPLUG
--	select FW_LOADER if !DVB_AV7110_FIRMWARE
-+	select FW_LOADER
- 	select TTPCI_EEPROM
- 	select VIDEO_SAA7146_VV
- 	depends on VIDEO_DEV	# dependencies of VIDEO_SAA7146_VV
-@@ -30,6 +30,9 @@ config DVB_AV7110
- 	  download/extract it, and then copy it to /usr/lib/hotplug/firmware
- 	  or /lib/firmware (depending on configuration of firmware hotplug).
- 
-+	  Alternatively, you can download the file and use the 
-+	  BUILTIN_FIRMWARE option to build it into your kernel image.
-+
- 	  Say Y if you own such a card and want to use it.
- 
- config DVB_AV7110_BOOTCODE
-@@ -39,24 +42,6 @@ config DVB_AV7110_BOOTCODE
- 	  This includes firmware for AV7110 bootcode
- 	  Say 'N' and let it get loaded from userspace on demand 
- 
--config DVB_AV7110_FIRMWARE
--	bool "Compile AV7110 firmware into the driver"
--	depends on DVB_AV7110 && !STANDALONE
--	default y if DVB_AV7110=y
--	help
--	  The AV7110 firmware is normally loaded by the firmware hotplug manager.
--	  If you want to compile the firmware into the driver you need to say
--	  Y here and provide the correct path of the firmware. You need this
--	  option if you want to compile the whole driver statically into the
--	  kernel.
--
--	  All other people say N.
--
--config DVB_AV7110_FIRMWARE_FILE
--	string "Full pathname of av7110 firmware file"
--	depends on DVB_AV7110_FIRMWARE
--	default "/usr/lib/hotplug/firmware/dvb-ttpci-01.fw"
--
- config DVB_AV7110_OSD
- 	bool "AV7110 OSD support"
- 	depends on DVB_AV7110
-diff --git a/drivers/media/dvb/ttpci/Makefile b/drivers/media/dvb/ttpci/Makefile
-index d7483f1..a7ff3cd 100644
---- a/drivers/media/dvb/ttpci/Makefile
-+++ b/drivers/media/dvb/ttpci/Makefile
-@@ -14,12 +14,3 @@ obj-$(CONFIG_DVB_BUDGET_PATCH) += budget-patch.o
- obj-$(CONFIG_DVB_AV7110) += dvb-ttpci.o
- 
- EXTRA_CFLAGS += -Idrivers/media/dvb/dvb-core/ -Idrivers/media/dvb/frontends/
--
--hostprogs-y	:= fdump
--
--ifeq ($(CONFIG_DVB_AV7110_FIRMWARE),y)
--$(obj)/av7110.o: $(obj)/av7110_firm.h
--
--$(obj)/av7110_firm.h: $(obj)/fdump
--	$(obj)/fdump $(CONFIG_DVB_AV7110_FIRMWARE_FILE) dvb_ttpci_fw $@
--endif
-diff --git a/drivers/media/dvb/ttpci/av7110.c b/drivers/media/dvb/ttpci/av7110.c
-index 747e7f1..c11a13c 100644
---- a/drivers/media/dvb/ttpci/av7110.c
-+++ b/drivers/media/dvb/ttpci/av7110.c
-@@ -1497,20 +1497,6 @@ static int check_firmware(struct av7110* av7110)
- 	return 0;
- }
- 
--#ifdef CONFIG_DVB_AV7110_FIRMWARE_FILE
--#include "av7110_firm.h"
--static void put_firmware(struct av7110* av7110)
--{
--	av7110->bin_fw = NULL;
--}
--
--static inline int get_firmware(struct av7110* av7110)
--{
--	av7110->bin_fw = dvb_ttpci_fw;
--	av7110->size_fw = sizeof(dvb_ttpci_fw);
--	return check_firmware(av7110);
--}
--#else
- static void put_firmware(struct av7110* av7110)
- {
- 	vfree(av7110->bin_fw);
-@@ -1559,8 +1545,6 @@ static int get_firmware(struct av7110* av7110)
- 	release_firmware(fw);
- 	return ret;
- }
--#endif
--
- 
- static int alps_bsrv2_tuner_set_params(struct dvb_frontend* fe, struct dvb_frontend_parameters *params)
- {
-diff --git a/drivers/media/dvb/ttpci/fdump.c b/drivers/media/dvb/ttpci/fdump.c
-deleted file mode 100644
-index c90001d..0000000
---- a/drivers/media/dvb/ttpci/fdump.c
-+++ /dev/null
-@@ -1,44 +0,0 @@
--#include <stdio.h>
--#include <sys/types.h>
--#include <sys/stat.h>
--#include <fcntl.h>
--#include <unistd.h>
--
--int main(int argc, char **argv)
--{
--    unsigned char buf[8];
--    unsigned int i, count, bytes = 0;
--    FILE *fd_in, *fd_out;
--
--    if (argc != 4) {
--	fprintf(stderr, "\n\tusage: %s <ucode.bin> <array_name> <output_name>\n\n", argv[0]);
--	return -1;
--    }
--
--    fd_in = fopen(argv[1], "rb");
--    if (fd_in == NULL) {
--	fprintf(stderr, "firmware file '%s' not found\n", argv[1]);
--	return -1;
--    }
--
--    fd_out = fopen(argv[3], "w+");
--    if (fd_out == NULL) {
--	fprintf(stderr, "cannot create output file '%s'\n", argv[3]);
--	return -1;
--    }
--
--    fprintf(fd_out, "\n#include <asm/types.h>\n\nu8 %s [] = {", argv[2]);
--
--    while ((count = fread(buf, 1, 8, fd_in)) > 0) {
--	fprintf(fd_out, "\n\t");
--	for (i = 0; i < count; i++, bytes++)
--	    fprintf(fd_out, "0x%02x, ", buf[i]);
--    }
--
--    fprintf(fd_out, "\n};\n\n");
--
--    fclose(fd_in);
--    fclose(fd_out);
--
--    return 0;
--}
+On Sunday 22 June 2008 13:23, Pekka J Enberg wrote:
+> On Fri, 20 Jun 2008, Stephen Hemminger wrote:
+> > The code should enable/disable anything it needs based on the
+> > MTU size in the change_mtu call. If the driver needs to
+> > reallocate buffers, change receiver settings, make sacrifices
+> > to deities, or phone home that is the place to do it. In other
+> > words no compile or config option fro MTU settings please.
+>
+> Right, so how about something like this instead? Andrew, can you
+> test the following patch? You need all the other patches from
+> the previous series modulo the last patch. Thanks!
 
+Ok, I replaced old ipg-make-jumbo-frame-support-configurable with=20
+newer version. It works fine, I tuned MTU in the range from 68 to=20
+10240 bytes )).
 
+Thanks for the patch, awaiting for it in the main kernel tree.
+
+Sincerely yours,
+Andrew
+
+--nextPart2568399.13LfdU9z0l
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQBIXk6CAvwbVeyQBdURArAmAKCRcgxVAJn+wEGFOOH8FuNmTdulawCdHlmn
+zR/5FbhIghjw+WMnQGVLtUQ=
+=DacC
+-----END PGP SIGNATURE-----
+
+--nextPart2568399.13LfdU9z0l--
