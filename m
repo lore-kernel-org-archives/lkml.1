@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757423AbYFVVFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757253AbYFVVMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757423AbYFVVFl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 17:05:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755715AbYFVVFe
+	id S1757253AbYFVVMS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 17:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754391AbYFVVME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 17:05:34 -0400
-Received: from [194.117.236.238] ([194.117.236.238]:34299 "EHLO
-	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1754482AbYFVVFd (ORCPT
+	Sun, 22 Jun 2008 17:12:04 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:10233 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754062AbYFVVMC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 17:05:33 -0400
-Date: Mon, 23 Jun 2008 00:05:16 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: "Vegard Nossum" <vegard.nossum@gmail.com>, tzanussi@gmail.com,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       compudj@krystal.dyndns.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] Better interface for hooking early initcalls.
-Message-ID: <20080623000516.450348bc@linux360.ro>
-In-Reply-To: <84144f020806221345h6a429a0csfef6e3d8d80bdd6d@mail.gmail.com>
-References: <20080621171051.5ed3b522@linux360.ro>
-	<84144f020806221222s7498593ap7cad427405fb6776@mail.gmail.com>
-	<20080622233848.50f14605@linux360.ro>
-	<19f34abd0806221343o3a9e3951j1448e968f9ba9684@mail.gmail.com>
-	<84144f020806221345h6a429a0csfef6e3d8d80bdd6d@mail.gmail.com>
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 22 Jun 2008 17:12:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ozBsxcPEjUunhqx4N1n2Kjx4AvKx8IECrqVe0mHx8ubHVjrpMhOkaApkY3lyfZe9IR
+         zC0w90bPlLM6TzPwC6nisCfS+O6FGLGXwaFDzHirHnrh87yqBUXkEM0GtAFJQOyJ2G4b
+         tOIqL0AXa0LX29XJ1tgVWGobHAyY/UdIjWV7I=
+Message-ID: <dd18b0c30806221412n53922cadt70a1993ccc0d5973@mail.gmail.com>
+Date: Sun, 22 Jun 2008 21:12:00 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #10724] ACPI: EC: GPE storm detected, disabling EC GPE
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Alexey Starikovskiy" <astarikovskiy@suse.de>
+In-Reply-To: <4mRZUF-hVeG.A.WYG.5vpXIB@albercik>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <RzbtSgMztjP.A.jRD._spXIB@albercik>
+	 <4mRZUF-hVeG.A.WYG.5vpXIB@albercik>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Jun 2008 23:45:57 +0300
-"Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
+On Sun, Jun 22, 2008 at 5:54 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10724
+> Subject         : ACPI: EC: GPE storm detected, disabling EC GPE
+> Submitter       : Justin Mattock <justinmattock@gmail.com>
+> Date            : 2008-05-16 6:17 (38 days old)
+> References      : http://marc.info/?l=linux-kernel&m=121091875711824&w=4
+>                  http://lkml.org/lkml/2008/5/18/168
+>                  http://lkml.org/lkml/2008/5/25/195
+> Patch           : http://bugzilla.kernel.org/attachment.cgi?id=16364&action=view
+>                  http://bugzilla.kernel.org/attachment.cgi?id=16365&action=view
+>
+>
+>
 
-> On Sun, Jun 22, 2008 at 11:43 PM, Vegard Nossum
-> <vegard.nossum@gmail.com> wrote:
-> > By the way -- may I ask why it is called early_initcall() and not
-> > pre_smp_initcall()? I think it makes sense to encode the exact
-> > purpose of the initcall into the name. "early" is not very
-> > explicit. This is just my opinion :-) Thanks.
-> 
-> Sounds good to me.
+Yes; setting  if (atomic_read(&ec->irq_count) > 5) { to
+	if (atomic_read(&ec->irq_count) > 20) {
+in drivers/acpi/ac.c only prolongs the bug, after a period of time(3
+to 5 hrs) the the message does appear.
+regards;
 
-Which one? :-)
-
-I mean I could change the name, just let me know which one is better.
-One encodes the purpose, while the other is consistent with CPU hotplug
-stuff. Not that we couldn't change CPU hotplug docs to mention this,
-this is an idea too.
+-- 
+Justin P. Mattock
