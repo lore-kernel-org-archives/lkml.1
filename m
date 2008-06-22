@@ -1,187 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752944AbYFVJck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752784AbYFVJnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752944AbYFVJck (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 05:32:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbYFVJca
+	id S1752784AbYFVJnF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 05:43:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbYFVJmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 05:32:30 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37740 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751165AbYFVJc2 (ORCPT
+	Sun, 22 Jun 2008 05:42:53 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:10011 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751386AbYFVJmw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 05:32:28 -0400
-Subject: [PATCH] firmware: convert av7110 driver to request_firmware()
-From: Jaswinder Singh <jaswinder@infradead.org>
-To: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       kernelnewbies <kernelnewbies@nl.linux.org>,
-       kernel-janitors <kernel-janitors@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-dvb@linuxtv.org
-Content-Type: text/plain
-Date: Sun, 22 Jun 2008 14:56:00 +0530
-Message-Id: <1214126760.4974.5.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Sun, 22 Jun 2008 05:42:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=MAaO/E0RgPfh3eI5+GFzfXhhMmj/bV75znuWkxyA2Hv4TzMfIn3re51s9iBbICkQY0
+         QTWASW8pwUzQNbdrGbKZpg0gLaEg2Z30gJtPQY80W11WExkPv9hzvWWi6LZTP2Q8j+iL
+         USFyjbpYxSaNxy2k6VzqFhAU22GF8MWN0YJzA=
+Message-ID: <19f34abd0806220242p62b9a044la6dd8843e5055f84@mail.gmail.com>
+Date: Sun, 22 Jun 2008 11:42:50 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Cyrill Gorcunov" <gorcunov@gmail.com>
+Subject: Re: v2.6.26-rc7/cgroups: circular locking dependency
+Cc: "Paul Menage" <menage@google.com>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080622091013.GA7285@cvg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080621173859.GA6846@damson.getinternet.no>
+	 <20080622091013.GA7285@cvg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-my firmware tree is available at http://git.infradead.org/users/jaswinder/firm-jsr-2.6.git
+On Sun, Jun 22, 2008 at 11:10 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> [Vegard Nossum - Sat, Jun 21, 2008 at 07:38:59PM +0200]
+> |  =======================================================
+> |  [ INFO: possible circular locking dependency detected ]
+> |  2.6.26-rc7 #25
+> |  -------------------------------------------------------
+> |  bash/10032 is trying to acquire lock:
+> |   (&cpu_hotplug.lock){--..}, at: [<c015efbc>] get_online_cpus+0x2c/0x40
+> |
+> |  but task is already holding lock:
+> |   (cgroup_mutex){--..}, at: [<c0160e6f>] cgroup_lock+0xf/0x20
 
-Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
---
-drivers/media/dvb/ttpci/Kconfig     |    7 +++++++
-drivers/media/dvb/ttpci/av7110_hw.c |   35 ++++++++++++-----------------------
-drivers/media/dvb/ttpci/av7110_hw.h |    3 ++-
-firmware/Makefile                   |    1 +
-firmware/WHENCE                     |   10 ++++++++++
-firmware/av7110/bootcode.bin.ihex   |   15 +++++++++++++++
-6 files changed, 47 insertions(+), 24 deletions(-)
-create mode 100644 firmware/av7110/bootcode.bin.ihex
-diff --git a/drivers/media/dvb/ttpci/Kconfig b/drivers/media/dvb/ttpci/Kconfig
-index d4339b1..e0bbcaf 100644
---- a/drivers/media/dvb/ttpci/Kconfig
-+++ b/drivers/media/dvb/ttpci/Kconfig
-@@ -32,6 +32,13 @@ config DVB_AV7110
- 
- 	  Say Y if you own such a card and want to use it.
- 
-+config DVB_AV7110_BOOTCODE
-+	bool "Compile AV7110 bootcode into the driver"
-+	depends on DVB_AV7110
-+	help
-+	  This includes firmware for AV7110 bootcode
-+	  Say 'N' and let it get loaded from userspace on demand 
-+
- config DVB_AV7110_FIRMWARE
- 	bool "Compile AV7110 firmware into the driver"
- 	depends on DVB_AV7110 && !STANDALONE
-diff --git a/drivers/media/dvb/ttpci/av7110_hw.c b/drivers/media/dvb/ttpci/av7110_hw.c
-index 9d81074..646d2c9 100644
---- a/drivers/media/dvb/ttpci/av7110_hw.c
-+++ b/drivers/media/dvb/ttpci/av7110_hw.c
-@@ -198,29 +198,10 @@ static int load_dram(struct av7110 *av7110, u32 *data, int len)
- 
- /* we cannot write av7110 DRAM directly, so load a bootloader into
-  * the DPRAM which implements a simple boot protocol */
--static u8 bootcode[] = {
--  0xea, 0x00, 0x00, 0x0e, 0xe1, 0xb0, 0xf0, 0x0e, 0xe2, 0x5e, 0xf0, 0x04,
--  0xe2, 0x5e, 0xf0, 0x04, 0xe2, 0x5e, 0xf0, 0x08, 0xe2, 0x5e, 0xf0, 0x04,
--  0xe2, 0x5e, 0xf0, 0x04, 0xe2, 0x5e, 0xf0, 0x04, 0x2c, 0x00, 0x00, 0x24,
--  0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x00, 0x00, 0x2c, 0x00, 0x00, 0x34,
--  0x00, 0x00, 0x00, 0x00, 0xa5, 0xa5, 0x5a, 0x5a, 0x00, 0x1f, 0x15, 0x55,
--  0x00, 0x00, 0x00, 0x09, 0xe5, 0x9f, 0xd0, 0x7c, 0xe5, 0x9f, 0x40, 0x74,
--  0xe3, 0xa0, 0x00, 0x00, 0xe5, 0x84, 0x00, 0x00, 0xe5, 0x84, 0x00, 0x04,
--  0xe5, 0x9f, 0x10, 0x70, 0xe5, 0x9f, 0x20, 0x70, 0xe5, 0x9f, 0x30, 0x64,
--  0xe8, 0xb1, 0x1f, 0xe0, 0xe8, 0xa3, 0x1f, 0xe0, 0xe1, 0x51, 0x00, 0x02,
--  0xda, 0xff, 0xff, 0xfb, 0xe5, 0x9f, 0xf0, 0x50, 0xe1, 0xd4, 0x10, 0xb0,
--  0xe3, 0x51, 0x00, 0x00, 0x0a, 0xff, 0xff, 0xfc, 0xe1, 0xa0, 0x10, 0x0d,
--  0xe5, 0x94, 0x30, 0x04, 0xe1, 0xd4, 0x20, 0xb2, 0xe2, 0x82, 0x20, 0x3f,
--  0xe1, 0xb0, 0x23, 0x22, 0x03, 0xa0, 0x00, 0x02, 0xe1, 0xc4, 0x00, 0xb0,
--  0x0a, 0xff, 0xff, 0xf4, 0xe8, 0xb1, 0x1f, 0xe0, 0xe8, 0xa3, 0x1f, 0xe0,
--  0xe8, 0xb1, 0x1f, 0xe0, 0xe8, 0xa3, 0x1f, 0xe0, 0xe2, 0x52, 0x20, 0x01,
--  0x1a, 0xff, 0xff, 0xf9, 0xe2, 0x2d, 0xdb, 0x05, 0xea, 0xff, 0xff, 0xec,
--  0x2c, 0x00, 0x03, 0xf8, 0x2c, 0x00, 0x04, 0x00, 0x9e, 0x00, 0x08, 0x00,
--  0x2c, 0x00, 0x00, 0x74, 0x2c, 0x00, 0x00, 0xc0
--};
--
- int av7110_bootarm(struct av7110 *av7110)
- {
-+	const struct firmware *fw;
-+	const char *fw_name = "av7110/bootcode.bin";
- 	struct saa7146_dev *dev = av7110->dev;
- 	u32 ret;
- 	int i;
-@@ -261,7 +242,15 @@ int av7110_bootarm(struct av7110 *av7110)
- 	//saa7146_setgpio(dev, DEBI_DONE_LINE, SAA7146_GPIO_INPUT);
- 	//saa7146_setgpio(dev, 3, SAA7146_GPIO_INPUT);
- 
--	mwdebi(av7110, DEBISWAB, DPRAM_BASE, bootcode, sizeof(bootcode));
-+	ret = request_firmware(&fw, fw_name, &dev->pci->dev);
-+	if (ret) {
-+		printk(KERN_ERR "dvb-ttpci: Failed to load firmware \"%s\"\n",
-+			fw_name);
-+		return ret;
-+	}
-+
-+	mwdebi(av7110, DEBISWAB, DPRAM_BASE, fw->data, fw->size);
-+	release_firmware(fw);
- 	iwdebi(av7110, DEBINOSWAP, AV7110_BOOT_STATE, BOOTSTATE_BUFFER_FULL, 2);
- 
- 	if (saa7146_wait_for_debi_done(av7110->dev, 1)) {
-@@ -302,7 +291,7 @@ int av7110_bootarm(struct av7110 *av7110)
- 	av7110->arm_ready = 1;
- 	return 0;
- }
--
-+MODULE_FIRMWARE("av7110/bootcode.bin");
- 
- /****************************************************************************
-  * DEBI command polling
-diff --git a/drivers/media/dvb/ttpci/av7110_hw.h b/drivers/media/dvb/ttpci/av7110_hw.h
-index 74d940f..da29f0f 100644
---- a/drivers/media/dvb/ttpci/av7110_hw.h
-+++ b/drivers/media/dvb/ttpci/av7110_hw.h
-@@ -393,7 +393,8 @@ static inline void iwdebi(struct av7110 *av7110, u32 config, int addr, u32 val,
- }
- 
- /* buffer writes */
--static inline void mwdebi(struct av7110 *av7110, u32 config, int addr, u8 *val, int count)
-+static inline void mwdebi(struct av7110 *av7110, u32 config, int addr,
-+			  const u8 *val, int count)
- {
- 	memcpy(av7110->debi_virt, val, count);
- 	av7110_debiwrite(av7110, config, addr, 0, count);
-diff --git a/firmware/Makefile b/firmware/Makefile
-index e2a99a5..ce5e916 100644
---- a/firmware/Makefile
-+++ b/firmware/Makefile
-@@ -18,6 +18,7 @@ fw-shipped-$(CONFIG_USB_KAWETH_FIRMWARE) += kaweth/new_code.bin \
- 		kaweth/new_code_fix.bin kaweth/trigger_code.bin \
- 		kaweth/trigger_code_fix.bin
- fw-shipped-$(CONFIG_DVB_TTUSB_BUDGET_FIRMWARE) += ttusb-budget/dspbootcode.bin
-+fw-shipped-$(CONFIG_DVB_AV7110_BOOTCODE) += av7110/bootcode.bin
- fw-shipped-$(CONFIG_E100_FIRMWARE) += e100/d101m_ucode.bin \
- 		e100/d101s_ucode.bin e100/d102e_ucode.bin
- fw-shipped-$(CONFIG_ACENIC_TG1_FIRMWARE) += acenic/tg1.bin
-diff --git a/firmware/WHENCE b/firmware/WHENCE
-index 2321512..49ac8ba 100644
---- a/firmware/WHENCE
-+++ b/firmware/WHENCE
-@@ -279,3 +279,13 @@ Licence:
- Found in hex form in kernel source.
- 
- --------------------------------------------------------------------------
-+
-+Driver: DVB AV7110 -- AV7110 cards
-+
-+File: av7110/bootcode.bin
-+
-+Licence: GPLv2 or later
-+
-+ARM assembly source code available at http://www.linuxtv.org/downloads/firmware/Boot.S
-+
-+--------------------------------------------------------------------------
-diff --git a/firmware/av7110/bootcode.bin.ihex b/firmware/av7110/bootcode.bin.ihex
-new file mode 100644
-index 0000000..26a2993
---- /dev/null
-+++ b/firmware/av7110/bootcode.bin.ihex
-@@ -0,0 +1,15 @@
-+:10000000EA00000EE1B0F00EE25EF004E25EF00401
-+:10001000E25EF008E25EF004E25EF004E25EF0040C
-+:100020002C0000240000000C000000002C00003414
-+:1000300000000000A5A55A5A001F15550000000930
-+:10004000E59FD07CE59F4074E3A00000E5840000BC
-+:10005000E5840004E59F1070E59F2070E59F306403
-+:10006000E8B11FE0E8A31FE0E1510002DAFFFFFB67
-+:10007000E59FF050E1D410B0E35100000AFFFFFC0F
-+:10008000E1A0100DE5943004E1D420B2E282203FDB
-+:10009000E1B0232203A00002E1C400B00AFFFFF494
-+:1000A000E8B11FE0E8A31FE0E8B11FE0E8A31FE00C
-+:1000B000E25220011AFFFFF9E22DDB05EAFFFFEC17
-+:1000C0002C0003F82C0004009E0008002C00007493
-+:0400D0002C0000C040
-+:00000001FF
+...
+
+> Hi Vegard,
+>
+> would be interesting to see your config please
+
+Here is my config and vmlinux:
+
+http://www.kernel.org/pub/linux/kernel/people/vegard/kernels/20080621-v2.6.26-rc7/
+
+By the way, I was doing CPU hotplug/unplug at the time.
+
+Thanks :)
 
 
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
