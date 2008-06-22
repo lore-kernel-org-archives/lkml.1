@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbYFVTF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755655AbYFVTFw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754103AbYFVTF0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 15:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755837AbYFVTEn
+	id S1755655AbYFVTFw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 15:05:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755890AbYFVTEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 15:04:43 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:39880 "EHLO mx2.suse.de"
+	Sun, 22 Jun 2008 15:04:44 -0400
+Received: from ns2.suse.de ([195.135.220.15]:39921 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755709AbYFVTEl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 15:04:41 -0400
-Date: Sun, 22 Jun 2008 12:01:31 -0700
+	id S1755702AbYFVTEn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 15:04:43 -0400
+Date: Sun, 22 Jun 2008 12:01:36 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,14 +21,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Bernhard Walle <bwalle@suse.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 4/5] x86: use BOOTMEM_EXCLUSIVE on 32-bit
-Message-ID: <20080622190131.GB20141@suse.de>
+       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
+Subject: [patch 3/5] sctp: Make sure N * sizeof(union sctp_addr) does not
+	overflow.
+Message-ID: <20080622190136.GC20141@suse.de>
 References: <20080622185327.348377223@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-use-bootmem_exclusive-on-32-bit.patch"
+Content-Disposition: inline; filename="sctp-make-sure-n-sizeof-does-not-overflow.patch"
 In-Reply-To: <20080622190111.GA20141@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,44 +39,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Bernhard Walle <bwalle@suse.de>
+From: David S. Miller <davem@davemloft.net>
 
-commit d3942cff620bea073fc4e3c8ed878eb1e84615ce upstream
+commit 735ce972fbc8a65fb17788debd7bbe7b4383cc62 upstream
 
-This patch uses the BOOTMEM_EXCLUSIVE for crashkernel reservation also for
-i386 and prints a error message on failure.
+As noticed by Gabriel Campana, the kmalloc() length arg
+passed in by sctp_getsockopt_local_addrs_old() can overflow
+if ->addr_num is large enough.
 
-The patch is still for 2.6.26 since it is only bug fixing. The unification
-of reserve_crashkernel() between i386 and x86_64 should be done for 2.6.27.
+Therefore, enforce an appropriate limit.
 
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/setup_32.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ net/sctp/socket.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/arch/x86/kernel/setup_32.c
-+++ b/arch/x86/kernel/setup_32.c
-@@ -483,10 +483,16 @@ static void __init reserve_crashkernel(v
- 					(unsigned long)(crash_size >> 20),
- 					(unsigned long)(crash_base >> 20),
- 					(unsigned long)(total_mem >> 20));
-+
-+			if (reserve_bootmem(crash_base, crash_size,
-+					BOOTMEM_EXCLUSIVE) < 0) {
-+				printk(KERN_INFO "crashkernel reservation "
-+					"failed - memory is in use\n");
-+				return;
-+			}
-+
- 			crashk_res.start = crash_base;
- 			crashk_res.end   = crash_base + crash_size - 1;
--			reserve_bootmem(crash_base, crash_size,
--					BOOTMEM_DEFAULT);
- 		} else
- 			printk(KERN_INFO "crashkernel reservation failed - "
- 					"you have to specify a base address\n");
+--- a/net/sctp/socket.c
++++ b/net/sctp/socket.c
+@@ -4421,7 +4421,9 @@ static int sctp_getsockopt_local_addrs_o
+ 	if (copy_from_user(&getaddrs, optval, len))
+ 		return -EFAULT;
+ 
+-	if (getaddrs.addr_num <= 0) return -EINVAL;
++	if (getaddrs.addr_num <= 0 ||
++	    getaddrs.addr_num >= (INT_MAX / sizeof(union sctp_addr)))
++		return -EINVAL;
+ 	/*
+ 	 *  For UDP-style sockets, id specifies the association to query.
+ 	 *  If the id field is set to the value '0' then the locally bound
 
 -- 
