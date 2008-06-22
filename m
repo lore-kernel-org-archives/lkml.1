@@ -1,78 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755581AbYFVQaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbYFVQbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755581AbYFVQaj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 12:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbYFVQaa
+	id S1755664AbYFVQbT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 12:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbYFVQbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 12:30:30 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:49148 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752122AbYFVQa2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 12:30:28 -0400
-Date: Sun, 22 Jun 2008 09:26:55 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: JAILLET <jaillet.christophe@wanadoo.fr>
-Cc: petero2@telia.com, linux <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1] drivers/block/pktcdvd.c : avoid useless memset
-Message-Id: <20080622092655.27b2c388.randy.dunlap@oracle.com>
-In-Reply-To: <485E54DB.6060804@wanadoo.fr>
-References: <485E54DB.6060804@wanadoo.fr>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Sun, 22 Jun 2008 12:31:09 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:49985 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752432AbYFVQbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 12:31:07 -0400
+Date: Sun, 22 Jun 2008 19:29:17 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>,
+       Randy Dunlap <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org
+Subject: [2.6.26 patch] fix the request_firmware() dummy
+Message-ID: <20080622162917.GB20122@cs181140183.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Jun 2008 15:34:19 +0200 JAILLET wrote:
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
 
-> From: Christophe Jaillet <jaillet.﻿christophe@wanadoo.fr>
-> 
-> Hi, here is a patch against linux/drivers/block/pktcdvd.c which :
-> 
-> 1) Avoid to 'memset(...,0, ...)' before calling 'init_cdrom_command' 
-> because this function already does it.
-> 
-> 
-> Signed-off-by: Christophe Jaillet <jaillet.﻿christophe@wanadoo.fr>
-> 
-> ---
-> diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
-> index 3ba1df9..8369ebc 100644
-> --- a/drivers/block/pktcdvd.c
-> +++ b/drivers/block/pktcdvd.c
-> @@ -2079,7 +2079,6 @@ static noinline_for_stack int 
-> pkt_write_caching(struct pktcdvd_device *pd,
-> unsigned char buf[64];
-> int ret;
-> 
-> - memset(buf, 0, sizeof(buf));
-> init_cdrom_command(&cgc, buf, sizeof(buf), CGC_DATA_READ);
-> cgc.sense = &sense;
-> cgc.buflen = pd->mode_offset + 12;
-> @@ -2126,7 +2125,6 @@ static noinline_for_stack int 
-> pkt_get_max_speed(struct pktcdvd_device *pd,
-> unsigned char *cap_buf;
-> int ret, offset;
-> 
-> - memset(buf, 0, sizeof(buf));
-> cap_buf = &buf[sizeof(struct mode_page_header) + pd->mode_offset];
-> init_cdrom_command(&cgc, buf, sizeof(buf), CGC_DATA_UNKNOWN);
-> cgc.sense = &sense;
+> the build (.config attached) failed, make ends with :
+> ...
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      vmlinux
+> drivers/built-in.o: In function `sas_request_addr':
+> (.text+0x33bab): undefined reference to `request_firmware'
+> drivers/built-in.o: In function `sas_request_addr':
+> (.text+0x33c3f): undefined reference to `release_firmware'
+> make: *** [vmlinux] Error 1
 
-Looks like tbird ate all of the whitespace.
-You can see if Documentation/email-clients.txt has info in it that
-would help you, then resend the patch.
+There's a slight fault in the stub logic.  It fails for FW_LOADER=m and
+the user =y.
 
+This should fix it.
+
+This patch fixes the following 2.6.26-rc regression:
+  http://bugzilla.kernel.org/show_bug.cgi?id=10730
+
+Reported-by: Toralf Förster <toralf.foerster@gmx.de>
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+
+@James:
+Please complain if you consider my forwarding of your patch 
+inappropriate.
+
+diff --git a/include/linux/firmware.h b/include/linux/firmware.h
+index 4d10c73..6c7eff2 100644
+--- a/include/linux/firmware.h
++++ b/include/linux/firmware.h
+@@ -13,7 +13,7 @@ struct firmware {
+ 
+ struct device;
+ 
+-#if defined(CONFIG_FW_LOADER) || defined(CONFIG_FW_LOADER_MODULE)
++#if defined(CONFIG_FW_LOADER) || (defined(CONFIG_FW_LOADER_MODULE) && defined(MODULE))
+ int request_firmware(const struct firmware **fw, const char *name,
+ 		     struct device *device);
+ int request_firmware_nowait(
+
+
