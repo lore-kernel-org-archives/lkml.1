@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752003AbYFVHX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752657AbYFVHYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752003AbYFVHX3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 03:23:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbYFVHXU
+	id S1752657AbYFVHYp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 03:24:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751109AbYFVHYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 03:23:20 -0400
-Received: from smtp1.versatel.nl ([62.58.50.88]:40465 "EHLO smtp1.versatel.nl"
+	Sun, 22 Jun 2008 03:24:36 -0400
+Received: from smtp2.versatel.nl ([62.58.50.89]:58168 "EHLO smtp2.versatel.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750895AbYFVHXT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 03:23:19 -0400
-Message-ID: <485DFF35.6080008@hhs.nl>
-Date: Sun, 22 Jun 2008 09:28:53 +0200
+	id S1750989AbYFVHYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 03:24:35 -0400
+Message-ID: <485DFF81.9080707@hhs.nl>
+Date: Sun, 22 Jun 2008 09:30:09 +0200
 From: Hans de Goede <j.w.r.degoede@hhs.nl>
 User-Agent: Thunderbird 2.0.0.12 (X11/20080315)
 MIME-Version: 1.0
@@ -55,10 +55,17 @@ Rene Herman wrote:
 > http://members.home.nl/rene.herman/sensors.conf
 > 
 
-I'm pretty sure this caused by your lm_sensors using space being to old to 
-support the new thermalzone stuff. You need atleast 3.0.2 to support the 
+I'm pretty sure this caused by your lm_sensors using space being too old to
+support the new thermalzone stuff.
+
+<Correction that should ofcourse read "userspace" not "using space", so the 
+correct reply I was trying to send is>:
+
+I'm pretty sure this caused by your lm_sensors using space being too old to
+support the new thermalzone stuff. You need atleast 3.0.2 to support the
 thermalzone driver.
 
 Regards,
 
 Hans
+
