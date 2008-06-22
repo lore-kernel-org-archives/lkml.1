@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbYFVCCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754943AbYFVCPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754573AbYFVCCh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Jun 2008 22:02:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147AbYFVCC3
+	id S1754943AbYFVCPw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Jun 2008 22:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbYFVCPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Jun 2008 22:02:29 -0400
-Received: from ruckus.brouhaha.com ([64.62.206.2]:57604 "EHLO
-	ruckus.brouhaha.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751128AbYFVCC2 (ORCPT
+	Sat, 21 Jun 2008 22:15:44 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:41042 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751919AbYFVCPn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Jun 2008 22:02:28 -0400
-Message-ID: <36111.71.139.37.220.1214100148.squirrel@ruckus.brouhaha.com>
-In-Reply-To: <e2e108260806210938k4ba12874t5f46e524ee188ab3@mail.gmail.com>
-References: <40921.64.62.206.10.1214006079.squirrel@ruckus.brouhaha.com>
-    <e2e108260806210938k4ba12874t5f46e524ee188ab3@mail.gmail.com>
-Date: Sat, 21 Jun 2008 19:02:28 -0700 (PDT)
-Subject: Re: Any lightweight way for one thread to force another thread to 
-     suspend execution?
-From: "Eric Smith" <eric@brouhaha.com>
-To: linux-kernel@vger.kernel.org
-Cc: "Bart Van Assche" <bart.vanassche@gmail.com>
-User-Agent: SquirrelMail/1.4.13
+	Sat, 21 Jun 2008 22:15:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=qTOfX6LXTZxhGb89GfYgCiHLX7DM7iSs3Zra4SXLfwAWm8NfpMyd6LdQsaVJBDCJc5
+         KWKxSOGMwBOBe2BfG5kUeMssbu8AvrWNpxjT+bLxCbscUtN5Cr5GToE2i2tr971DTw7k
+         Pfp3trqjtVZRkTd2rmUwXSQcjWni6sEVOs+6Q=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] x86: remove two duplicated func in setup_32.c
+Date: Sat, 21 Jun 2008 19:16:52 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <200806180215.53755.yhlu.kernel@gmail.com> <200806191530.32354.yhlu.kernel@gmail.com> <200806210324.20059.yhlu.kernel@gmail.com>
+In-Reply-To: <200806210324.20059.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806211916.52949.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bart wrote:
-> Trying to suspend another thread synchronously is a bad idea because
-> this can easily trigger deadlocks. E.g. if you suspend a thread while
-> that thread holds a lock on a mutex, your application will deadlock.
 
-I understand that and am willing to take responsibility for ensuring
-that my application doesn't get into that situation.  Basically I'm
-trying to port something that ran on a strict priority preemptive
-kernel (on a single processor) to run on a Linux SMP system, so I
-need a higher priority thread to completely preempt a lower priority
-thread, even though the lower priority thread might be running on
-another processor.
+early_cpu_init is declcared in processor.h
+memory_setup is defined in e820.c
 
-As far as I can tell, pthreads doesn't solve this problem, which is
-unfortunately, since in other respects pthreads looks like it is
-mostly suitable for use in porting code from other real-time kernels
-to Linux.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-It appears that some pthreads implementations add a nonstandard
-pthread_suspend() that can do this.  What I'm looking for is a way
-to efficiently implement pthrad_suspend() on Linux, ideally with
-a minimum of system calls.
-
-It seems to me that in principle, if the kernel provided a way to do
-this, it should be able to suspend a thread that wasn't currently
-executing merely by changing some of that thread's metadata, while
-suspending a thread that is executing on another processor would be
-more expensive since it would be necessary to force an interrupt
-on that processor, etc.
-
-Thanks,
-Eric
-
+--- a/arch/x86/kernel/setup_32.c	2008-06-21 17:17:02.000000000 -0700
++++ b/arch/x86/kernel/setup_32.c	2008-06-21 17:17:51.000000000 -0700
+@@ -207,7 +207,6 @@ struct ist_info ist_info;
+ EXPORT_SYMBOL(ist_info);
+ #endif
+ 
+-extern void early_cpu_init(void);
+ extern int root_mountflags;
+ 
+ unsigned long saved_video_mode;
+@@ -607,12 +606,6 @@ static void set_mca_bus(int x)
+ static void set_mca_bus(int x) { }
+ #endif
+ 
+-/* Overridden in paravirt.c if CONFIG_PARAVIRT */
+-char * __init __attribute__((weak)) memory_setup(void)
+-{
+-	return machine_specific_memory_setup();
+-}
+-
+ /*
+  * Determine if we were loaded by an EFI loader.  If so, then we have also been
+  * passed the efi memmap, systab, etc., so we should use these data structures
