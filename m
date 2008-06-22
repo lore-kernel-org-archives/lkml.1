@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756568AbYFVTmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756013AbYFVTqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756568AbYFVTmH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 15:42:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbYFVTlz
+	id S1756013AbYFVTqn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 15:46:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbYFVTqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 15:41:55 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:64151 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753271AbYFVTly (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 15:41:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id
-         :references:user-agent:mime-version:content-type;
-        b=uWvjQH8M5bgiEWS5BV3tbfvCjfBL0bxBgB4JKncwiwi9aSG50v621jh6hKoSUlWm+H
-         R7tYc8RXD1g2aTjF+Ff4IDw90zJHFL+u69Hsvx8YKu+G8cXCtSt34oqGDSXbYgcDYht1
-         7Xh1F9lKMr9FTtFR+GIAMbAx/txVKMs3f44Kg=
-Date: Sun, 22 Jun 2008 12:41:48 -0700 (PDT)
-From: Eric Rannaud <eric.rannaud@gmail.com>
-X-X-Sender: e@localhost.localdomain
-To: Andrea Righi <righi.andrea@gmail.com>
-cc: Divyesh Shah <dpshah@google.com>, balbir@linux.vnet.ibm.com,
-       menage@google.com, linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       matt@bluehost.com, roberto@unbit.it, randy.dunlap@oracle.com,
-       akpm@linux-foundation.org
-Subject: Re: i/o bandwidth controller infrastructure
-In-Reply-To: <4856EB9D.6070804@gmail.com>
-Message-ID: <alpine.LFD.1.10.0806221232070.2247@localhost.localdomain>
-References: <20030410181011$6d15@gated-at.bofh.it> <aC1Yl-2AL-1@gated-at.bofh.it> <75b07c02-1595-4af2-ac87-3b067459f62e@w8g2000prd.googlegroups.com> <48D0786A-AC3B-46C3-B35C-EAAA47BFAEBC@google.com> <4856EB9D.6070804@gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 22 Jun 2008 15:46:36 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:43144 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753291AbYFVTqf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 15:46:35 -0400
+Date: Sun, 22 Jun 2008 21:46:32 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: kexec@lists.infradead.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+       vgoyal@redhat.com
+Subject: Re: [PATCH 3/3] Limit E820 map when a user-defined memory map is
+ specified
+Message-ID: <20080622214632.4a140069@kopernikus.site>
+In-Reply-To: <86802c440806201334s30cbc685se44326812841fdd2@mail.gmail.com>
+References: <1213977420-1555-1-git-send-email-bwalle@suse.de>
+	<1213977420-1555-4-git-send-email-bwalle@suse.de>
+	<86802c440806201334s30cbc685se44326812841fdd2@mail.gmail.com>
+Organization: SUSE LINUX Products GmbH
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; i686-pc-linux-gnu)
+X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
+ D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
+ vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
+ pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Jun 2008, Andrea Righi wrote:
-> > With this bandwidth controller, a cpu-intensive job which otherwise  does
-> > not care about its IO
-> > performance needs to be pin-point accurate about IO bandwidth  required in
-> > order to not suffer
-> > from cpu-throttling. IMHO, if a cgroup is exceeding its limit for a  given
-> > resource, the throttling
-> > should be done _only_ for that resource.
+* "Yinghai Lu" <yhlu.kernel@gmail.com> [2008-06-20 13:34]:
+>
+> On Fri, Jun 20, 2008 at 8:57 AM, Bernhard Walle <bwalle@suse.de> wrote:
+> > This patch brings back limiting of the E820 map when a user-defined
+> > E820 map is specified. While the behaviour of i386 (32 bit) was to limit
+> > the E820 map (and /proc/iomem), the behaviour of x86-64 (64 bit) was not to
+> > limit.
 > 
-> I understand your point of view. It would be nice if we could just
-> "disable" the i/o for a cgroup that exceeds its limit, instead of
-> scheduling some sleep()s, so the tasks running in this cgroup would be
-> able to continue their non-i/o operations as usual.
+> then if you kexec new kernel, the second kernel will be have that
+> limitation too.
 > 
-> However, how to do if the tasks continue to perform i/o ops under this
-> condition? we could just cache the i/o in memory and at the same time
-> reduce the i/o priority of those tasks' requests, but this would require
-> a lot of memory, more space in the page cache, and probably could lead
-> to potential OOM conditions. A safer approach IMHO is to force the tasks
-> to wait synchronously on each operation that directly or indirectly
-> generates i/o. The last one is the solution implemented by this
-> bandwidth controller.
+> any problem that you encountered without this patch?
 
-What about AIO? Is this approach going to make the task sleep as well?
-Would it better to return from aio_write()/_read() with EAGAIN?
+No, because the new kexec tool uses the /proc/firmware_mem or whatever
+it is called.
 
-Thanks.
+
+
+Bernhard
+-- 
+Bernhard Walle, SUSE LINUX Products GmbH, Architecture Development
