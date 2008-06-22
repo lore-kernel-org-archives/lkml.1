@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758545AbYFVVia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758744AbYFVVio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758545AbYFVVia (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 17:38:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756005AbYFVVh3
+	id S1758744AbYFVVio (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 17:38:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758310AbYFVViF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 17:37:29 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:57838 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755904AbYFVVh2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 17:37:28 -0400
-Message-Id: <20080622213722.846643932@fluff.org.uk>
-References: <20080622213648.343882522@fluff.org.uk>
-User-Agent: quilt/0.46-1
-Date: Sun, 22 Jun 2008 22:36:51 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: linux-kernel@vger.kernel.org
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, wim@iguana.be,
-       Ben Dooks <ben-linux@fluff.org>
-Subject: [patch 3/3] WATCHDOG: Fix s3c2410_wdt driver coding style issues
-Content-Disposition: inline; filename=simtec/simtec-drivers-s3c2410-wdt-cleanup2.patch
+	Sun, 22 Jun 2008 17:38:05 -0400
+Received: from smtp21.orange.fr ([80.12.242.47]:13055 "EHLO smtp21.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756592AbYFVViD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 17:38:03 -0400
+X-ME-UUID: 20080622213800752.B7AD81C00084@mwinf2107.orange.fr
+Message-ID: <485EC637.2090505@wanadoo.fr>
+Date: Sun, 22 Jun 2008 23:37:59 +0200
+From: JAILLET Christophe <jaillet.christophe@wanadoo.fr>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: linux <linux-kernel@vger.kernel.org>, cj <jaillet.christophe@wanadoo.fr>,
+       petero2@telia.com
+Subject: [PATCH 1/1] drivers/block/pktcdvd.c : avoid useless memset
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixup coding style issues in the s3c2410_wdt driver.
+From: Christophe Jaillet <jaillet.﻿christophe@wanadoo.fr>
 
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+Hi, here is a patch against linux/drivers/block/pktcdvd.c which :
 
-Index: linux-2.6.26-rc5-quilt1/drivers/watchdog/s3c2410_wdt.c
-===================================================================
---- linux-2.6.26-rc5-quilt1.orig/drivers/watchdog/s3c2410_wdt.c	2008-06-07 23:12:18.000000000 +0100
-+++ linux-2.6.26-rc5-quilt1/drivers/watchdog/s3c2410_wdt.c	2008-06-07 23:14:31.000000000 +0100
-@@ -199,7 +199,7 @@ static int s3c2410wdt_set_heartbeat(int 
- 
- static int s3c2410wdt_open(struct inode *inode, struct file *file)
- {
--	if(down_trylock(&open_lock))
-+	if (down_trylock(&open_lock))
- 		return -EBUSY;
- 
- 	if (nowayout)
-@@ -237,7 +237,7 @@ static ssize_t s3c2410wdt_write(struct f
- 	/*
- 	 *	Refresh the timer.
- 	 */
--	if(len) {
-+	if (len) {
- 		if (!nowayout) {
- 			size_t i;
- 
-@@ -256,6 +256,7 @@ static ssize_t s3c2410wdt_write(struct f
- 
- 		s3c2410wdt_keepalive();
- 	}
-+
- 	return len;
- }
- 
-@@ -356,7 +357,7 @@ static int s3c2410wdt_probe(struct platf
- 		return -ENOENT;
- 	}
- 
--	size = (res->end-res->start)+1;
-+	size = (res->end - res->start) + 1;
- 	wdt_mem = request_mem_region(res->start, size, pdev->name);
- 	if (wdt_mem == NULL) {
- 		dev_err(dev, "failed to get memory region\n");
+1) Avoid to 'memset(...,0, ...)' before calling 'init_cdrom_command' because this function already does it.
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+It is the same patch as the one I sent earlier but the formating should be OK this time.
 
-  'a smiley only costs 4 bytes'
+
+Signed-off-by: Christophe Jaillet <jaillet.﻿christophe@wanadoo.fr>
+
+---
+diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
+index 3ba1df9..8369ebc 100644
+--- a/drivers/block/pktcdvd.c
++++ b/drivers/block/pktcdvd.c
+@@ -2079,7 +2079,6 @@ static noinline_for_stack int pkt_write_caching(struct pktcdvd_device *pd,
+ 	unsigned char buf[64];
+ 	int ret;
+ 
+-	memset(buf, 0, sizeof(buf));
+ 	init_cdrom_command(&cgc, buf, sizeof(buf), CGC_DATA_READ);
+ 	cgc.sense = &sense;
+ 	cgc.buflen = pd->mode_offset + 12;
+@@ -2126,7 +2125,6 @@ static noinline_for_stack int pkt_get_max_speed(struct pktcdvd_device *pd,
+ 	unsigned char *cap_buf;
+ 	int ret, offset;
+ 
+-	memset(buf, 0, sizeof(buf));
+ 	cap_buf = &buf[sizeof(struct mode_page_header) + pd->mode_offset];
+ 	init_cdrom_command(&cgc, buf, sizeof(buf), CGC_DATA_UNKNOWN);
+ 	cgc.sense = &sense;
+
+
