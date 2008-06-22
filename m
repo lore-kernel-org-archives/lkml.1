@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbYFVTYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758831AbYFVTYo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756197AbYFVTYT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 15:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757012AbYFVTYG
+	id S1758831AbYFVTYo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 15:24:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756887AbYFVTYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 15:24:06 -0400
-Received: from hpsmtp-eml15.kpnxchange.com ([213.75.38.115]:24814 "EHLO
-	hpsmtp-eml15.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756763AbYFVTYF (ORCPT
+	Sun, 22 Jun 2008 15:24:34 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:33527 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756876AbYFVTYd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 15:24:05 -0400
-From: Frans Pop <elendil@planet.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #10843] Display artifacts on XOrg logout with PAT kernel and VESA framebuffer
-Date: Sun, 22 Jun 2008 21:24:01 +0200
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <RzbtSgMztjP.A.jRD._spXIB@albercik> <4mRZUF-hVeG.A.7UF.dupXIB@albercik>
-In-Reply-To: <4mRZUF-hVeG.A.7UF.dupXIB@albercik>
+	Sun, 22 Jun 2008 15:24:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=KVsjr9A+mW3W0udnqC68W2aIRv2hYNUEe8L1Xbjzss39g4O8Ch9GpqUef1OtbbyTNx
+         9AsIWDXPUCXcT6sOU4O/VEOGtiNNi2r2jEx/lUtyN9dsIgU1aWvT3Fxn4PTX6CkSkk0D
+         ZGuSpqtIkJgYmNx69gO8CJfE2Xylsc13sa7tE=
+Message-ID: <84144f020806221224y65e1888fm181f24e89123bacb@mail.gmail.com>
+Date: Sun, 22 Jun 2008 22:24:32 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Eduard - Gabriel Munteanu" <eduard.munteanu@linux360.ro>
+Subject: Re: [PATCH 3/3] relay: Add buffer-only channels; useful for early logging.
+Cc: tzanussi@gmail.com, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, compudj@krystal.dyndns.org,
+       vegard.nossum@gmail.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080621171149.1434e523@linux360.ro>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806222124.02376.elendil@planet.nl>
-X-OriginalArrivalTime: 22 Jun 2008 19:24:03.0404 (UTC) FILETIME=[87D730C0:01C8D49D]
+References: <20080621171149.1434e523@linux360.ro>
+X-Google-Sender-Auth: 9748845d399a1fec
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 22 June 2008, Rafael J. Wysocki wrote:
-> The following bug entry is on the current list of known regressions
-> from 2.6.25.  Please verify if it still should be listed.
+On Sat, Jun 21, 2008 at 5:11 PM, Eduard - Gabriel Munteanu
+<eduard.munteanu@linux360.ro> wrote:
+> Allows one to create and use a channel with no associated files. Files
+> can be initialized later. This is useful in scenarios such as logging
+> in early code, before VFS is up. Therefore, such channels can be
+> created and used as soon as kmem_cache_init() completed.
 >
+> This is needed by kmemtrace to do tracing in early kernel code.
 >
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10843
-> Subject	: Display artifacts on XOrg logout with PAT kernel and VESA
-> 		  framebuffer
-> Submitter	: Frans Pop <elendil@planet.nl> 
-> Date		: 2008-05-31 14:04 (23 days old)
-> References	: http://lkml.org/lkml/2008/6/7/206
-> 		  http://lkml.org/lkml/2008/6/15/119
+> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 
-Yes.
+Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
