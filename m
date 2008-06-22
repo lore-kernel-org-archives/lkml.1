@@ -1,156 +1,419 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754714AbYFVSPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755191AbYFVSSv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754714AbYFVSPB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 14:15:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbYFVSOx
+	id S1755191AbYFVSSv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 14:18:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753057AbYFVSSm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 14:14:53 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:60133 "EHLO gir.skynet.ie"
+	Sun, 22 Jun 2008 14:18:42 -0400
+Received: from smtp5-g19.free.fr ([212.27.42.35]:50891 "EHLO smtp5-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753081AbYFVSOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 14:14:52 -0400
-Date: Sun, 22 Jun 2008 19:14:49 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Daniel J Blueman <daniel.blueman@gmail.com>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, david@fromorbit.com,
-       xfs@oss.sgi.com
-Subject: Re: [2.6.26-rc7] shrink_icache from pagefault locking (nee: nfsd hangs for a few sec)...
-Message-ID: <20080622181449.GD625@csn.ul.ie>
-References: <6278d2220806220256g674304ectb945c14e7e09fede@mail.gmail.com> <6278d2220806220258p28de00c1x615ad7b2f708e3f8@mail.gmail.com> <20080622181011.GC625@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20080622181011.GC625@csn.ul.ie>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1752335AbYFVSSk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 14:18:40 -0400
+Date: Sun, 22 Jun 2008 20:18:41 +0200
+From: FD Cami <francois.cami@free.fr>
+To: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Kasper Sandberg <lkml@metanurb.dk>
+Subject: [PATCH] extX: convert prink(KERN_WARNING) to extX_warning()
+Message-ID: <20080622201841.669ff882@olorin>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.10; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Sorry for the resend, the wrong Dave Chinner's email address was used)
 
-On (22/06/08 10:58), Daniel J Blueman didst pronounce:
-> I'm seeing a similar issue [2] to what was recently reported [1] by
-> Alexander, but with another workload involving XFS and memory
-> pressure.
-> 
+Hello,
 
-Is NFS involved or is this XFS only? It looks like XFS-only but no harm in
-being sure.
+This patch takes a shot at replacing the direct use of printk(KERN_WARNING)
+in extX by extX_warning. We now get the device number in the warning message :
+"EXT3-fs warning (device hda1): ext3_setup_super: maximal mount count reached, running e2fsck is recommended"
+It also adds the device information on a pair of printk(KERN_ERR) (this was
+first suggested by Kasper two weeks ago).
+It also adds the device information on the "mounted filesystem" message :
+"EXT3-fs: hda1 is now mounted with ordered data mode."
+It also replaces some whitespaces by tabs to increase consistency within
+super.c .
+One unused variable was removed in ext4/super.c .
 
-I'm beginning to wonder if this is a problem where a lot of dirty inodes are
-being written back in this path and we stall while that happens. I'm still
-not getting why we are triggering this now and did not before 2.6.26-rc1
-or why it bisects to the zonelist modifications. Diffing the reclaim and
-allocation paths between 2.6.25 and 2.6.26-rc1 has not yielded any candidates
-for me yet that would explain this.
+I will work on replacing all printks in ext3/ext4 in the coming days if no one
+/ beats / already has beaten / me to it.
 
-> SLUB allocator is in use and config is at http://quora.org/config-client-debug .
-> 
-> Let me know if you'd like more details/vmlinux objdump etc.
-> 
-> Thanks,
->  Daniel
-> 
-> --- [1]
-> 
-> http://groups.google.com/group/fa.linux.kernel/browse_thread/thread/e673c9173d45a735/db9213ef39e4e11c
-> 
-> --- [2]
-> 
-> =======================================================
-> [ INFO: possible circular locking dependency detected ]
-> 2.6.26-rc7-210c #2
-> -------------------------------------------------------
-> AutopanoPro/4470 is trying to acquire lock:
->  (iprune_mutex){--..}, at: [<ffffffff802d94fd>] shrink_icache_memory+0x7d/0x290
-> 
-> but task is already holding lock:
->  (&mm->mmap_sem){----}, at: [<ffffffff805e3e15>] do_page_fault+0x255/0x890
-> 
-> which lock already depends on the new lock.
-> 
-> 
-> the existing dependency chain (in reverse order) is:
-> 
-> -> #2 (&mm->mmap_sem){----}:
->       [<ffffffff80278f4d>] __lock_acquire+0xbdd/0x1020
->       [<ffffffff802793f5>] lock_acquire+0x65/0x90
->       [<ffffffff805df5ab>] down_read+0x3b/0x70
->       [<ffffffff805e3e3c>] do_page_fault+0x27c/0x890
->       [<ffffffff805e16cd>] error_exit+0x0/0xa9
->       [<ffffffffffffffff>] 0xffffffffffffffff
-> 
-> -> #1 (&(&ip->i_iolock)->mr_lock){----}:
->       [<ffffffff80278f4d>] __lock_acquire+0xbdd/0x1020
->       [<ffffffff802793f5>] lock_acquire+0x65/0x90
->       [<ffffffff8026d746>] down_write_nested+0x46/0x80
->       [<ffffffff8039df29>] xfs_ilock+0x99/0xa0
->       [<ffffffff8039e0cf>] xfs_ireclaim+0x3f/0x90
->       [<ffffffff803ba889>] xfs_finish_reclaim+0x59/0x1a0
->       [<ffffffff803bc199>] xfs_reclaim+0x109/0x110
->       [<ffffffff803c9541>] xfs_fs_clear_inode+0xe1/0x110
->       [<ffffffff802d906d>] clear_inode+0x7d/0x110
->       [<ffffffff802d93aa>] dispose_list+0x2a/0x100
->       [<ffffffff802d96af>] shrink_icache_memory+0x22f/0x290
->       [<ffffffff8029d868>] shrink_slab+0x168/0x1d0
->       [<ffffffff8029e0b6>] kswapd+0x3b6/0x560
->       [<ffffffff8026921d>] kthread+0x4d/0x80
->       [<ffffffff80227428>] child_rip+0xa/0x12
->       [<ffffffffffffffff>] 0xffffffffffffffff
-> 
-> -> #0 (iprune_mutex){--..}:
->       [<ffffffff80278db7>] __lock_acquire+0xa47/0x1020
->       [<ffffffff802793f5>] lock_acquire+0x65/0x90
->       [<ffffffff805dedd5>] mutex_lock_nested+0xb5/0x300
->       [<ffffffff802d94fd>] shrink_icache_memory+0x7d/0x290
->       [<ffffffff8029d868>] shrink_slab+0x168/0x1d0
->       [<ffffffff8029db38>] try_to_free_pages+0x268/0x3a0
->       [<ffffffff802979d6>] __alloc_pages_internal+0x206/0x4b0
->       [<ffffffff80297c89>] __alloc_pages_nodemask+0x9/0x10
->       [<ffffffff802b2bc2>] alloc_page_vma+0x72/0x1b0
->       [<ffffffff802a3642>] handle_mm_fault+0x462/0x7b0
->       [<ffffffff805e3ecc>] do_page_fault+0x30c/0x890
->       [<ffffffff805e16cd>] error_exit+0x0/0xa9
->       [<ffffffffffffffff>] 0xffffffffffffffff
-> 
-> other info that might help us debug this:
-> 
-> 2 locks held by AutopanoPro/4470:
->  #0:  (&mm->mmap_sem){----}, at: [<ffffffff805e3e15>] do_page_fault+0x255/0x890
->  #1:  (shrinker_rwsem){----}, at: [<ffffffff8029d732>] shrink_slab+0x32/0x1d0
-> 
-> stack backtrace:
-> Pid: 4470, comm: AutopanoPro Not tainted 2.6.26-rc7-210c #2
-> 
-> Call Trace:
->  [<ffffffff80276823>] print_circular_bug_tail+0x83/0x90
->  [<ffffffff80275e09>] ? print_circular_bug_entry+0x49/0x60
->  [<ffffffff80278db7>] __lock_acquire+0xa47/0x1020
->  [<ffffffff802793f5>] lock_acquire+0x65/0x90
->  [<ffffffff802d94fd>] ? shrink_icache_memory+0x7d/0x290
->  [<ffffffff805dedd5>] mutex_lock_nested+0xb5/0x300
->  [<ffffffff802d94fd>] ? shrink_icache_memory+0x7d/0x290
->  [<ffffffff802d94fd>] shrink_icache_memory+0x7d/0x290
->  [<ffffffff8029d732>] ? shrink_slab+0x32/0x1d0
->  [<ffffffff8029d868>] shrink_slab+0x168/0x1d0
->  [<ffffffff8029db38>] try_to_free_pages+0x268/0x3a0
->  [<ffffffff8029c240>] ? isolate_pages_global+0x0/0x40
->  [<ffffffff802979d6>] __alloc_pages_internal+0x206/0x4b0
->  [<ffffffff80297c89>] __alloc_pages_nodemask+0x9/0x10
->  [<ffffffff802b2bc2>] alloc_page_vma+0x72/0x1b0
->  [<ffffffff802a3642>] handle_mm_fault+0x462/0x7b0
->  [<ffffffff80277e2f>] ? trace_hardirqs_on+0xbf/0x150
->  [<ffffffff805e3e15>] ? do_page_fault+0x255/0x890
->  [<ffffffff805e3ecc>] do_page_fault+0x30c/0x890
->  [<ffffffff805e16cd>] error_exit+0x0/0xa9
-> -- 
-> Daniel J Blueman
-> 
+Compile tested on ext4, compiled and booted on ext3, however not all string
+changes have been tested. 
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Signed-off-by: Francois Cami <francois.cami@free.fr>
+
+diff -uprN -X linux-2.6.26-rc7/Documentation/dontdiff linux-2.6.26-rc7-vanilla/fs/ext3/super.c linux-2.6.26-rc7/fs/ext3/super.c
+--- linux-2.6.26-rc7-vanilla/fs/ext3/super.c	2008-06-22 14:54:22.000000000 +0200
++++ linux-2.6.26-rc7/fs/ext3/super.c	2008-06-22 19:51:41.000000000 +0200
+@@ -305,9 +305,9 @@ void ext3_update_dynamic_rev(struct supe
+ 		return;
+ 
+ 	ext3_warning(sb, __func__,
+-		     "updating to rev %d because of new feature flag, "
+-		     "running e2fsck is recommended",
+-		     EXT3_DYNAMIC_REV);
++			"updating to rev %d because of new feature flag, "
++			"running e2fsck is recommended",
++			EXT3_DYNAMIC_REV);
+ 
+ 	es->s_first_ino = cpu_to_le32(EXT3_GOOD_OLD_FIRST_INO);
+ 	es->s_inode_size = cpu_to_le16(EXT3_GOOD_OLD_INODE_SIZE);
+@@ -1192,31 +1192,33 @@ static int ext3_setup_super(struct super
+ 	int res = 0;
+ 
+ 	if (le32_to_cpu(es->s_rev_level) > EXT3_MAX_SUPP_REV) {
+-		printk (KERN_ERR "EXT3-fs warning: revision level too high, "
+-			"forcing read-only mode\n");
++		printk (KERN_ERR "EXT3-fs on %s warning: revision level too high, "
++				"forcing read-only mode\n", sb->s_id);
+ 		res = MS_RDONLY;
+ 	}
+ 	if (read_only)
+ 		return res;
+ 	if (!(sbi->s_mount_state & EXT3_VALID_FS))
+-		printk (KERN_WARNING "EXT3-fs warning: mounting unchecked fs, "
+-			"running e2fsck is recommended\n");
++		ext3_warning(sb, __func__,
++				"mounting unchecked fs, running e2fsck is "
++				"recommended");
+ 	else if ((sbi->s_mount_state & EXT3_ERROR_FS))
+-		printk (KERN_WARNING
+-			"EXT3-fs warning: mounting fs with errors, "
+-			"running e2fsck is recommended\n");
++		ext3_warning(sb, __func__,
++				"mounting fs with errors, running e2fsck is "
++				"recommended");
+ 	else if ((__s16) le16_to_cpu(es->s_max_mnt_count) >= 0 &&
+ 		 le16_to_cpu(es->s_mnt_count) >=
+ 		 (unsigned short) (__s16) le16_to_cpu(es->s_max_mnt_count))
+-		printk (KERN_WARNING
+-			"EXT3-fs warning: maximal mount count reached, "
+-			"running e2fsck is recommended\n");
++		ext3_warning(sb, __func__,
++				"maximal mount count reached, running e2fsck "
++				"is recommended");
+ 	else if (le32_to_cpu(es->s_checkinterval) &&
+ 		(le32_to_cpu(es->s_lastcheck) +
+ 			le32_to_cpu(es->s_checkinterval) <= get_seconds()))
+-		printk (KERN_WARNING
+-			"EXT3-fs warning: checktime reached, "
+-			"running e2fsck is recommended\n");
++		ext3_warning(sb, __func__,
++				"checktime reached, running e2fsck is "
++				"recommended");
++
+ #if 0
+ 		/* @@@ We _will_ want to clear the valid bit if we find
+                    inconsistencies, to force a fsck at reboot.  But for
+@@ -1342,8 +1344,8 @@ static void ext3_orphan_cleanup (struct 
+ 	}
+ 
+ 	if (bdev_read_only(sb->s_bdev)) {
+-		printk(KERN_ERR "EXT3-fs: write access "
+-			"unavailable, skipping orphan cleanup.\n");
++		printk(KERN_ERR "EXT3-fs on %s: write access "
++			"unavailable, skipping orphan cleanup.\n", sb->s_id);
+ 		return;
+ 	}
+ 
+@@ -1601,9 +1603,9 @@ static int ext3_fill_super (struct super
+ 	    (EXT3_HAS_COMPAT_FEATURE(sb, ~0U) ||
+ 	     EXT3_HAS_RO_COMPAT_FEATURE(sb, ~0U) ||
+ 	     EXT3_HAS_INCOMPAT_FEATURE(sb, ~0U)))
+-		printk(KERN_WARNING
+-		       "EXT3-fs warning: feature flags set on rev 0 fs, "
+-		       "running e2fsck is recommended\n");
++		ext3_warning(sb, __func__,
++				"feature flags set on rev 0 fs, running "
++				"e2fsck is recommended");
+ 	/*
+ 	 * Check feature flags regardless of the revision level, since we
+ 	 * previously didn't change the revision level when setting the flags,
+@@ -1737,8 +1739,7 @@ static int ext3_fill_super (struct super
+ 		printk(KERN_ERR "EXT3-fs: filesystem on %s:"
+ 			" too large to mount safely\n", sb->s_id);
+ 		if (sizeof(sector_t) < 8)
+-			printk(KERN_WARNING "EXT3-fs: CONFIG_LBD not "
+-					"enabled\n");
++			ext3_warning(sb, __func__, "CONFIG_LBD not enabled");
+ 		goto failed_mount;
+ 	}
+ 
+@@ -1869,8 +1870,9 @@ static int ext3_fill_super (struct super
+ 
+ 	if (test_opt(sb, NOBH)) {
+ 		if (!(test_opt(sb, DATA_FLAGS) == EXT3_MOUNT_WRITEBACK_DATA)) {
+-			printk(KERN_WARNING "EXT3-fs: Ignoring nobh option - "
+-				"its supported only with writeback mode\n");
++			ext3_warning(sb, __func__,
++					"Ignoring nobh option - it is only "
++					"supported with writeback mode");
+ 			clear_opt(sbi->s_mount_opt, NOBH);
+ 		}
+ 	}
+@@ -1913,7 +1915,8 @@ static int ext3_fill_super (struct super
+ 	if (needs_recovery)
+ 		printk (KERN_INFO "EXT3-fs: recovery complete.\n");
+ 	ext3_mark_recovery_complete(sb, es);
+-	printk (KERN_INFO "EXT3-fs: mounted filesystem with %s data mode.\n",
++	printk (KERN_INFO "EXT3-fs: %s is now mounted with %s data mode.\n",
++		sb->s_id,
+ 		test_opt(sb,DATA_FLAGS) == EXT3_MOUNT_JOURNAL_DATA ? "journal":
+ 		test_opt(sb,DATA_FLAGS) == EXT3_MOUNT_ORDERED_DATA ? "ordered":
+ 		"writeback");
+@@ -2301,11 +2304,12 @@ static void ext3_clear_journal_err(struc
+ 		char nbuf[16];
+ 
+ 		errstr = ext3_decode_error(sb, j_errno, nbuf);
+-		ext3_warning(sb, __func__, "Filesystem error recorded "
+-			     "from previous mount: %s", errstr);
+-		ext3_warning(sb, __func__, "Marking fs in need of "
+-			     "filesystem check.");
+-
++		ext3_warning(sb, __func__,
++			"Filesystem error recorded from previous mount: %s",
++			errstr);
++		ext3_warning(sb, __func__,
++			"Marking fs in need of filesystem check.");
++					
+ 		EXT3_SB(sb)->s_mount_state |= EXT3_ERROR_FS;
+ 		es->s_state |= cpu_to_le16(EXT3_ERROR_FS);
+ 		ext3_commit_super (sb, es, 1);
+@@ -2773,9 +2777,9 @@ static int ext3_quota_on(struct super_bl
+ 	}
+ 	/* Quotafile not in fs root? */
+ 	if (nd.path.dentry->d_parent->d_inode != sb->s_root->d_inode)
+-		printk(KERN_WARNING
+-			"EXT3-fs: Quota file not on filesystem root. "
+-			"Journalled quota will not work.\n");
++		ext3_warning(sb, __func__,
++ 			"Quota file not on filesystem root. "
++ 			"Journalled quota will not work.");
+ 	path_put(&nd.path);
+ 	return vfs_quota_on(sb, type, format_id, path, remount);
+ }
+@@ -2836,8 +2840,9 @@ static ssize_t ext3_quota_write(struct s
+ 	handle_t *handle = journal_current_handle();
+ 
+ 	if (!handle) {
+-		printk(KERN_WARNING "EXT3-fs: Quota write (off=%Lu, len=%Lu)"
+-			" cancelled because transaction is not started.\n",
++		ext3_warning(sb, __func__,
++			"Quota write (off=%Lu, len=%Lu) cancelled because "
++			"transaction is not started.",
+ 			(unsigned long long)off, (unsigned long long)len);
+ 		return -EIO;
+ 	}
+diff -uprN -X linux-2.6.26-rc7/Documentation/dontdiff linux-2.6.26-rc7-vanilla/fs/ext4/super.c linux-2.6.26-rc7/fs/ext4/super.c
+--- linux-2.6.26-rc7-vanilla/fs/ext4/super.c	2008-06-22 14:54:24.000000000 +0200
++++ linux-2.6.26-rc7/fs/ext4/super.c	2008-06-22 19:56:24.000000000 +0200
+@@ -355,9 +355,9 @@ void ext4_update_dynamic_rev(struct supe
+ 		return;
+ 
+ 	ext4_warning(sb, __func__,
+-		     "updating to rev %d because of new feature flag, "
+-		     "running e2fsck is recommended",
+-		     EXT4_DYNAMIC_REV);
++			"updating to rev %d because of new feature flag, "
++			"running e2fsck is recommended",
++			EXT4_DYNAMIC_REV);
+ 
+ 	es->s_first_ino = cpu_to_le32(EXT4_GOOD_OLD_FIRST_INO);
+ 	es->s_inode_size = cpu_to_le16(EXT4_GOOD_OLD_INODE_SIZE);
+@@ -671,7 +671,6 @@ static int ext4_show_options(struct seq_
+ 	unsigned long def_mount_opts;
+ 	struct super_block *sb = vfs->mnt_sb;
+ 	struct ext4_sb_info *sbi = EXT4_SB(sb);
+-	journal_t *journal = sbi->s_journal;
+ 	struct ext4_super_block *es = sbi->s_es;
+ 
+ 	def_mount_opts = le32_to_cpu(es->s_default_mount_opts);
+@@ -1388,24 +1387,25 @@ static int ext4_setup_super(struct super
+ 	if (read_only)
+ 		return res;
+ 	if (!(sbi->s_mount_state & EXT4_VALID_FS))
+-		printk (KERN_WARNING "EXT4-fs warning: mounting unchecked fs, "
+-			"running e2fsck is recommended\n");
++		ext4_warning(sb, __func__,
++				"mounting unchecked fs, running e2fsck is "
++				"recommended");
+ 	else if ((sbi->s_mount_state & EXT4_ERROR_FS))
+-		printk (KERN_WARNING
+-			"EXT4-fs warning: mounting fs with errors, "
+-			"running e2fsck is recommended\n");
++		ext4_warning(sb, __func__,
++				"mounting fs with errors, running e2fsck is "
++				"recommended");
+ 	else if ((__s16) le16_to_cpu(es->s_max_mnt_count) >= 0 &&
+ 		 le16_to_cpu(es->s_mnt_count) >=
+ 		 (unsigned short) (__s16) le16_to_cpu(es->s_max_mnt_count))
+-		printk (KERN_WARNING
+-			"EXT4-fs warning: maximal mount count reached, "
+-			"running e2fsck is recommended\n");
++		ext4_warning(sb, __func__,
++				"maximal mount count reached, running e2fsck "
++				"is recommended");
+ 	else if (le32_to_cpu(es->s_checkinterval) &&
+ 		(le32_to_cpu(es->s_lastcheck) +
+ 			le32_to_cpu(es->s_checkinterval) <= get_seconds()))
+-		printk (KERN_WARNING
+-			"EXT4-fs warning: checktime reached, "
+-			"running e2fsck is recommended\n");
++		ext4_warning(sb, __func__,
++				"checktime reached, running e2fsck is "
++				"recommended");
+ #if 0
+ 		/* @@@ We _will_ want to clear the valid bit if we find
+ 		 * inconsistencies, to force a fsck at reboot.  But for
+@@ -1578,8 +1578,8 @@ static void ext4_orphan_cleanup (struct 
+ 	}
+ 
+ 	if (bdev_read_only(sb->s_bdev)) {
+-		printk(KERN_ERR "EXT4-fs: write access "
+-			"unavailable, skipping orphan cleanup.\n");
++		printk(KERN_ERR "EXT4-fs on %s: write access "
++			"unavailable, skipping orphan cleanup.\n", sb->s_id);
+ 		return;
+ 	}
+ 
+@@ -1939,17 +1939,17 @@ static int ext4_fill_super (struct super
+ 	    (EXT4_HAS_COMPAT_FEATURE(sb, ~0U) ||
+ 	     EXT4_HAS_RO_COMPAT_FEATURE(sb, ~0U) ||
+ 	     EXT4_HAS_INCOMPAT_FEATURE(sb, ~0U)))
+-		printk(KERN_WARNING
+-		       "EXT4-fs warning: feature flags set on rev 0 fs, "
+-		       "running e2fsck is recommended\n");
++		ext4_warning(sb, __func__,
++				"feature flags set on rev 0 fs, running "
++				"e2fsck is recommended");
+ 
+ 	/*
+ 	 * Since ext4 is still considered development code, we require
+ 	 * that the TEST_FILESYS flag in s->flags be set.
+ 	 */
+ 	if (!(le32_to_cpu(es->s_flags) & EXT2_FLAGS_TEST_FILESYS)) {
+-		printk(KERN_WARNING "EXT4-fs: %s: not marked "
+-		       "OK to use with test code.\n", sb->s_id);
++		ext4_warning(sb, __func__, 
++			"not marked OK to use with test code.");
+ 		goto failed_mount;
+ 	}
+ 
+@@ -2090,8 +2090,8 @@ static int ext4_fill_super (struct super
+ 		printk(KERN_ERR "EXT4-fs: filesystem on %s:"
+ 			" too large to mount safely\n", sb->s_id);
+ 		if (sizeof(sector_t) < 8)
+-			printk(KERN_WARNING "EXT4-fs: CONFIG_LBD not "
+-					"enabled\n");
++			ext4_warning(sb, __func__,
++					"CONFIG_LBD not enabled");
+ 		goto failed_mount;
+ 	}
+ 
+@@ -2101,8 +2101,9 @@ static int ext4_fill_super (struct super
+ 	/* ensure blocks_count calculation below doesn't sign-extend */
+ 	if (ext4_blocks_count(es) + EXT4_BLOCKS_PER_GROUP(sb) <
+ 	    le32_to_cpu(es->s_first_data_block) + 1) {
+-		printk(KERN_WARNING "EXT4-fs: bad geometry: block count %llu, "
+-		       "first data block %u, blocks per group %lu\n",
++		ext4_warning(sb, __func__,
++			"bad geometry: block count %llu, first data block "
++			" %u, blocks per group %lu",
+ 			ext4_blocks_count(es),
+ 			le32_to_cpu(es->s_first_data_block),
+ 			EXT4_BLOCKS_PER_GROUP(sb));
+@@ -2283,8 +2284,9 @@ static int ext4_fill_super (struct super
+ 
+ 	if (test_opt(sb, NOBH)) {
+ 		if (!(test_opt(sb, DATA_FLAGS) == EXT4_MOUNT_WRITEBACK_DATA)) {
+-			printk(KERN_WARNING "EXT4-fs: Ignoring nobh option - "
+-				"its supported only with writeback mode\n");
++			ext4_warning(sb, __func__,
++				"Ignoring nobh option - it is only "
++				"supported with writeback mode");
+ 			clear_opt(sbi->s_mount_opt, NOBH);
+ 		}
+ 	}
+@@ -2353,7 +2355,8 @@ static int ext4_fill_super (struct super
+ 	if (needs_recovery)
+ 		printk (KERN_INFO "EXT4-fs: recovery complete.\n");
+ 	ext4_mark_recovery_complete(sb, es);
+-	printk (KERN_INFO "EXT4-fs: mounted filesystem with %s data mode.\n",
++	printk (KERN_INFO "EXT4-fs: %s is now mounted with %s data mode.\n",
++		sb->s_id,
+ 		test_opt(sb,DATA_FLAGS) == EXT4_MOUNT_JOURNAL_DATA ? "journal":
+ 		test_opt(sb,DATA_FLAGS) == EXT4_MOUNT_ORDERED_DATA ? "ordered":
+ 		"writeback");
+@@ -2745,9 +2748,10 @@ static void ext4_clear_journal_err(struc
+ 
+ 		errstr = ext4_decode_error(sb, j_errno, nbuf);
+ 		ext4_warning(sb, __func__, "Filesystem error recorded "
+-			     "from previous mount: %s", errstr);
++						"from previous mount: %s",
++						errstr);
+ 		ext4_warning(sb, __func__, "Marking fs in need of "
+-			     "filesystem check.");
++						"filesystem check.");
+ 
+ 		EXT4_SB(sb)->s_mount_state |= EXT4_ERROR_FS;
+ 		es->s_state |= cpu_to_le16(EXT4_ERROR_FS);
+@@ -2916,10 +2920,10 @@ static int ext4_remount (struct super_bl
+ 			__le32 ret;
+ 			if ((ret = EXT4_HAS_RO_COMPAT_FEATURE(sb,
+ 					~EXT4_FEATURE_RO_COMPAT_SUPP))) {
+-				printk(KERN_WARNING "EXT4-fs: %s: couldn't "
+-				       "remount RDWR because of unsupported "
+-				       "optional features (%x).\n",
+-				       sb->s_id, le32_to_cpu(ret));
++				ext4_warning(sb, __func__,
++					"could not remount RDWR because of "
++					"unsupported optional features (%x).",
++					le32_to_cpu(ret));
+ 				err = -EROFS;
+ 				goto restore_opts;
+ 			}
+@@ -2930,11 +2934,10 @@ static int ext4_remount (struct super_bl
+ 			 * require a full umount/remount for now.
+ 			 */
+ 			if (es->s_last_orphan) {
+-				printk(KERN_WARNING "EXT4-fs: %s: couldn't "
+-				       "remount RDWR because of unprocessed "
+-				       "orphan inode list.  Please "
+-				       "umount/remount instead.\n",
+-				       sb->s_id);
++				ext4_warning(sb, __func__,
++					"could not remount RDWR because of "
++					"unprocessed orphan inode list. "
++					"Please umount/remount instead.");
+ 				err = -EINVAL;
+ 				goto restore_opts;
+ 			}
+@@ -3219,9 +3222,9 @@ static int ext4_quota_on(struct super_bl
+ 	if (EXT4_SB(sb)->s_qf_names[type]) {
+ 		/* Quotafile not of fs root? */
+ 		if (nd.path.dentry->d_parent->d_inode != sb->s_root->d_inode)
+-			printk(KERN_WARNING
+-				"EXT4-fs: Quota file not on filesystem root. "
+-				"Journaled quota will not work.\n");
++			ext4_warning(sb, __func__,
++				"Quota file not on filesystem root. "
++				"Journaled quota will not work.");
+  	}
+ 
+ 	/*
+@@ -3298,8 +3301,9 @@ static ssize_t ext4_quota_write(struct s
+ 	handle_t *handle = journal_current_handle();
+ 
+ 	if (!handle) {
+-		printk(KERN_WARNING "EXT4-fs: Quota write (off=%Lu, len=%Lu)"
+-			" cancelled because transaction is not started.\n",
++		ext4_warning(sb, __func__,
++			"Quota write (off=%Lu, len=%Lu) cancelled because "
++			"transaction is not started.",
+ 			(unsigned long long)off, (unsigned long long)len);
+ 		return -EIO;
+ 	}
