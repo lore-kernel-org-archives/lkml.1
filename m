@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758648AbYFVW4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757517AbYFVXGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758648AbYFVW4e (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 18:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755131AbYFVW40
+	id S1757517AbYFVXGX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 19:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754907AbYFVXGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 18:56:26 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58923 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755347AbYFVW4Z (ORCPT
+	Sun, 22 Jun 2008 19:06:14 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:58910 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754103AbYFVXGN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 18:56:25 -0400
-Date: Sun, 22 Jun 2008 23:38:35 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Adam Williamson" <awilliamson@mandriva.com>,
-       "Alan Cox" <alan@redhat.com>
-Subject: Re: [Bug #10868] Oops on loading ipaq module since 2.6.26, prevents
- use of device
-Message-ID: <20080622233835.47fa8c77@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080622140226.5a54de90@infradead.org>
-References: <RzbtSgMztjP.A.jRD._spXIB@albercik>
-	<4mRZUF-hVeG.A.s6E.JupXIB@albercik>
-	<20080622210706.0a90c4ba@lxorguk.ukuu.org.uk>
-	<20080622140044.57dce6f2@infradead.org>
-	<20080622140226.5a54de90@infradead.org>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 22 Jun 2008 19:06:13 -0400
+Date: Mon, 23 Jun 2008 00:06:01 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, wim@iguana.be
+Subject: Re: [patch 2/3] WATCHDOG: Clean out header of s3c2410_wdt driver.
+Message-ID: <20080622230601.GD21835@fluff.org.uk>
+References: <20080622213648.343882522@fluff.org.uk> <20080622213721.925217733@fluff.org.uk> <20080622233516.0a233c61@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080622233516.0a233c61@lxorguk.ukuu.org.uk>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > http://www.kerneloops.org/search.php?search=ipaq_open
-> > 
-> > has a whole slew of different ones.... surprisingly they're almost all
-> > with pppd...
-> > 
+On Sun, Jun 22, 2008 at 11:35:16PM +0100, Alan Cox wrote:
+> On Sun, 22 Jun 2008 22:36:50 +0100
+> Ben Dooks <ben-linux@fluff.org> wrote:
 > 
-> btw this also shows that this isn't a 2.6.25 regression... 
+> > Remove the changelog from the top of the driver, which
+> > is redundant as this information is more accurately
+> > represented from the revision control holding the
+> > file.
+> > 
+> > Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+> 
+> NAK. This is going to clash with the big pile of changes stuck in the
+> maintainers in queue.
 
-No suprise about the pppd - that would be the usual usage of this driver.
+Then why, as the original driver authour and current maintainer
+do I not get told about this? This isn't the first time I've come
+to apply this sort of thing and find that someone else has slipped
+in an 'trivial' change such as whitespace that breaks an entire
+patch series.
 
-Alan
+Do people not bother to check who wrote the driver or who is the
+current maintainer before doing these things?
 
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
