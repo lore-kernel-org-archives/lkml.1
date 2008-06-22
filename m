@@ -1,81 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbYFVSo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756140AbYFVSok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755966AbYFVSo0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 14:44:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbYFVSoQ
+	id S1756140AbYFVSok (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 14:44:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753544AbYFVSoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 14:44:16 -0400
-Received: from casper.infradead.org ([85.118.1.10]:51924 "EHLO
+	Sun, 22 Jun 2008 14:44:17 -0400
+Received: from casper.infradead.org ([85.118.1.10]:51926 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753145AbYFVSoP (ORCPT
+	with ESMTP id S1752988AbYFVSoQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 14:44:15 -0400
-Date: Sun, 22 Jun 2008 11:42:53 -0700
+	Sun, 22 Jun 2008 14:44:16 -0400
+Date: Sun, 22 Jun 2008 11:39:32 -0700
 From: Greg KH <greg@kroah.com>
-To: Helge Hafting <helge.hafting@aitel.hist.no>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
-Subject: Re: 2.6.26-rc2 WARNING from usb-serial, and then my gps is dead
-Message-ID: <20080622184253.GB18502@kroah.com>
-References: <485E984B.1030306@aitel.hist.no>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: (Resend of 23/70 plus reply [PATCH 00/70] tty updates proposed
+	for 2.6.27)
+Message-ID: <20080622183932.GA18502@kroah.com>
+References: <20080620195406.1479.12620.stgit@localhost.localdomain> <20080621090910.GA12516@kroah.com> <20080621111709.7e8f7d44@lxorguk.ukuu.org.uk> <20080621111936.GB27069@cs181133002.pp.htv.fi> <20080622180756.75a54ff4@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <485E984B.1030306@aitel.hist.no>
+In-Reply-To: <20080622180756.75a54ff4@lxorguk.ukuu.org.uk>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 22, 2008 at 08:22:03PM +0200, Helge Hafting wrote:
-> This is what I got:
-> ------------[ cut here ]------------
-> WARNING: at drivers/usb/serial/usb-serial.c:306 serial_write+0x62/0x89 
-> [usbserial]()
-> Modules linked in: pl2303 usbserial sbs sbshc coretemp piix pcmcia ata_piix 
-> iTCO_wdt ata_generic bay hci_usb intel_agp
-> Pid: 10, comm: events/1 Tainted: G        W 2.6.26-rc2-hh1 #1
->
-> Call Trace:
->  [<ffffffff80236b54>] warn_on_slowpath+0x51/0x7a
->  [<ffffffff8022c207>] __wake_up+0x38/0x4f
->  [<ffffffff8024565c>] __queue_work+0x23/0x33
->  [<ffffffff802456c8>] queue_work+0x37/0x40
->  [<ffffffffa0045fa3>] :pl2303:pl2303_write+0xf2/0x101
->  [<ffffffffa003c368>] :usbserial:serial_write+0x62/0x89
->  [<ffffffff803a8e81>] tty_put_char+0x2b/0x2d
->  [<ffffffff803ad3ca>] echo_char+0x47/0x60
->  [<ffffffff803ade97>] n_tty_receive_buf+0x2b4/0xd76
->  [<ffffffff8020a87e>] __switch_to+0xa2/0x396
->  [<ffffffff8023028d>] hrtick_set+0x88/0xf6
->  [<ffffffff80590b44>] thread_return+0x70/0xb4
->  [<ffffffff8023f013>] lock_timer_base+0x26/0x4c
->  [<ffffffff803a9abd>] flush_to_ldisc+0xf8/0x185
->  [<ffffffff803a99c5>] flush_to_ldisc+0x0/0x185
->  [<ffffffff8024520b>] run_workqueue+0x80/0x112
->  [<ffffffff80245afe>] worker_thread+0xd9/0xe8
->  [<ffffffff80248380>] autoremove_wake_function+0x0/0x2e
->  [<ffffffff80245a25>] worker_thread+0x0/0xe8
->  [<ffffffff80248264>] kthread+0x47/0x73
->  [<ffffffff802318c1>] schedule_tail+0x28/0x5d
->  [<ffffffff8020cf88>] child_rip+0xa/0x12
->  [<ffffffff8024821d>] kthread+0x0/0x73
->  [<ffffffff8020cf7e>] child_rip+0x0/0x12
->
-> ---[ end trace 656e180042992f9e ]---
-> I looked at the dmesg log because I have had lots of trouble with my gps 
-> lately. I first suspected the cable, but then I saw this.
->
-> After this, I have to restart gpsd, and perhaps replug the cable to get
-> things going again. Until it happens again. This is a 64-bit dualcore 
-> laptop.
+On Sun, Jun 22, 2008 at 06:07:56PM +0100, Alan Cox wrote:
+> > The USB_SERIAL_TI_FIRMWARE bits don't seem to belong here?
+> 
+> They seem to have gotten merged together by accident - shouldn't do any
+> harm and both want doing. I can take a look at splitting it if Greg
+> wants ?
 
-Ick, that's not nice.
-
-Can you enable debugging for the usb-serial core:
-	echo 1 > /sys/module/usbserial/parameters/debug
-
-and then run whatever program you were running that causes this warning
-and then send us the kernel log?
+I'll look at them on Monday when I'm going through applying the series
+and see if it really matters or not :)
 
 thanks,
 
