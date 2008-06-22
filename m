@@ -1,92 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbYFVJvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751975AbYFVJv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753972AbYFVJvO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 05:51:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbYFVJu6
+	id S1751975AbYFVJv1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 05:51:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbYFVJvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 05:50:58 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:42964 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751435AbYFVJu4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 05:50:56 -0400
-Date: Sun, 22 Jun 2008 12:49:07 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Peter Korsgaard <jacmet@sunsite.dk>, linux-kernel@vger.kernel.org,
-       sam@ravnborg.org, dhowells@redhat.com, andi@firstfloor.org,
-       "Kirill A. Shutemov" <k.shutemov@gmail.com>, ysato@users.sourceforge.jp,
-       takata@linux-m32r.org, linux-m32r@ml.linux-m32r.org, kyle@mcmartin.ca,
-       matthew@wil.cx, grundler@parisc-linux.org, linux-parisc@vger.kernel.org,
-       lethal@linux-sh.org, linux-sh@vger.kernel.org,
-       linux-arch@vger.kernel.org, gerg@uclinux.org
-Subject: Re: architectures with ARCH_SUPPORTS_AOUT but no binfmt_aout
-Message-ID: <20080622094907.GF27069@cs181133002.pp.htv.fi>
-References: <1213565555.26255.522.camel@pmac.infradead.org> <1213604973-7073-1-git-send-email-jacmet@sunsite.dk> <1213617663.26255.708.camel@pmac.infradead.org> <20080616121727.GB10854@cs181133002.pp.htv.fi> <1213619214.26255.721.camel@pmac.infradead.org> <20080617084235.GA20169@cs181133002.pp.htv.fi> <1213696004.26255.960.camel@pmac.infradead.org> <20080617101112.GE20169@cs181133002.pp.htv.fi> <1213702113.26255.996.camel@pmac.infradead.org>
+	Sun, 22 Jun 2008 05:51:16 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:61733 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754214AbYFVJvP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 05:51:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=b+YqUNbO55RyriaJb2+/rSK2M2BkYt86Co1757tmddw4EtWQiGUcTAdczuW1JlCMSC
+         ByivyKfMRJTeDCxipcR3jt+c4QJ4EriUvTrGPxg225nuVjKfoxwhivepqN+yehA7LJON
+         qGC3RCBpUdjhybtnHI5wIYrrQMMdkbpvL9q+o=
+Date: Sun, 22 Jun 2008 13:50:49 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Paul Menage <menage@google.com>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: v2.6.26-rc7/cgroups: circular locking dependency
+Message-ID: <20080622095049.GB7285@cvg>
+References: <20080621173859.GA6846@damson.getinternet.no> <20080622091013.GA7285@cvg> <19f34abd0806220242p62b9a044la6dd8843e5055f84@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1213702113.26255.996.camel@pmac.infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <19f34abd0806220242p62b9a044la6dd8843e5055f84@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 17, 2008 at 12:28:33PM +0100, David Woodhouse wrote:
-> On Tue, 2008-06-17 at 13:11 +0300, Adrian Bunk wrote:
-> > The pattern for this stuff is to provide a HAVE_AOUT kconfig variable 
-> > that gets select'ed by these architectures.
-> 
-> http://git.infradead.org/users/dwmw2/aout-2.6.git?a=commitdiff;h=a5db5179
-> 
-> Subject: [PATCH] Introduce HAVE_AOUT symbol to remove hard-coded arch list for BINFMT_AOUT
-> 
-> HAVE_AOUT doesn't quite do the same thing as the recently removed
-> ARCH_SUPPORTS_AOUT config option. That was set even on platforms where
-> binfmt_aout isn't supported, although it's not entirely clear why.
-> 
-> So it's best just to introduce a new symbol, handled consistently with
-> other similar HAVE_xxx symbols; with a simple 'select' the arch Kconfig.
-> 
-> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
-> ---
->  arch/alpha/Kconfig |    1 +
->  arch/arm/Kconfig   |    1 +
->  arch/m68k/Kconfig  |    1 +
->  arch/x86/Kconfig   |    1 +
->  fs/Kconfig.binfmt  |    5 ++++-
->  5 files changed, 8 insertions(+), 1 deletions(-)
->...
-> --- a/fs/Kconfig.binfmt
-> +++ b/fs/Kconfig.binfmt
-> @@ -59,9 +59,12 @@ config BINFMT_SHARED_FLAT
->  	help
->  	  Support FLAT shared libraries
->  
-> +config HAVE_AOUT
-> +       def_bool n
-> +
->  config BINFMT_AOUT
->  	tristate "Kernel support for a.out and ECOFF binaries"
-> -	depends on (X86_32 || ALPHA || ARM || M68K)
-> +	depends on HAVE_AOUT
->  	---help---
->  	  A.out (Assembler.OUTput) is a set of formats for libraries and
->  	  executables used in the earliest versions of UNIX.  Linux used
+[Vegard Nossum - Sun, Jun 22, 2008 at 11:42:50AM +0200]
+| On Sun, Jun 22, 2008 at 11:10 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| > [Vegard Nossum - Sat, Jun 21, 2008 at 07:38:59PM +0200]
+| > |  =======================================================
+| > |  [ INFO: possible circular locking dependency detected ]
+| > |  2.6.26-rc7 #25
+| > |  -------------------------------------------------------
+| > |  bash/10032 is trying to acquire lock:
+| > |   (&cpu_hotplug.lock){--..}, at: [<c015efbc>] get_online_cpus+0x2c/0x40
+| > |
+| > |  but task is already holding lock:
+| > |   (cgroup_mutex){--..}, at: [<c0160e6f>] cgroup_lock+0xf/0x20
+| 
+| ...
+| 
+| > Hi Vegard,
+| >
+| > would be interesting to see your config please
+| 
+| Here is my config and vmlinux:
+| 
+| http://www.kernel.org/pub/linux/kernel/people/vegard/kernels/20080621-v2.6.26-rc7/
+| 
+| By the way, I was doing CPU hotplug/unplug at the time.
+| 
+| Thanks :)
+| 
+| 
+| Vegard
+| 
+| -- 
+| "The animistic metaphor of the bug that maliciously sneaked in while
+| the programmer was not looking is intellectually dishonest as it
+| disguises that the error is the programmer's own creation."
+| 	-- E. W. Dijkstra, EWD1036
+| 
 
-What about m68knommu?
+Thanks Vegard,
 
-I don't know whether it was intentionally available there, but the 
-removal in your patch does not seem to be intentional.
+actually i'm not that spec in this area ;) but will take a look
 
-> dwmw2
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+		- Cyrill -
