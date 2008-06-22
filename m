@@ -1,76 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752404AbYFVHz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752122AbYFVIS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752404AbYFVHz5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 03:55:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750942AbYFVHzs
+	id S1752122AbYFVIS6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 04:18:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751031AbYFVISs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 03:55:48 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:17546 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750841AbYFVHzr (ORCPT
+	Sun, 22 Jun 2008 04:18:48 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:49442 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750980AbYFVISp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 03:55:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=JgLMIqOFQQr7hXEWN2e8/5EAf1TU+nLQnTNIl5GumSsTJpwuRmEWNds8LP52dq8kYC
-         gf1WwsN/lRWctHd6cvqa9u8Rwmo7MuE6tOswS/WxsJ+QjbmBzHfXQFDXLwDLjbjZm0Ol
-         vwDzs6jWv/roJbr9bxqMMaAPZEoM4JZMcCofw=
-Message-ID: <19f34abd0806220055j6b30ad67rc0d32a109faaea08@mail.gmail.com>
-Date: Sun, 22 Jun 2008 09:55:46 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: v2.6.26-rc7: BUG task_struct: Poison overwritten
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-In-Reply-To: <19f34abd0806211341i3a3ecd0bi1c849a2fbc4e9c7e@mail.gmail.com>
+	Sun, 22 Jun 2008 04:18:45 -0400
+Date: Sun, 22 Jun 2008 10:18:36 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Alessandro Suardi <alessandro.suardi@gmail.com>
+cc: linux-scsi@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+       Maarten Bressers <mbres@gentoo.org>, Daniel Drake <dsd@gentoo.org>,
+       Cell Broadband Engine OSS Development 
+	<cbe-oss-dev@ozlabs.org>
+Subject: Re: [Cbe-oss-dev] [regression/bisected] corrupt CD data after media
+ change and delay
+In-Reply-To: <5a4c581d0806210718m77be63c9l444d8d7d7a5266bd@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0806221018220.9736@vixen.sonytel.be>
+References: <Pine.LNX.4.64.0806061458300.6228@vixen.sonytel.be>
+ <Pine.LNX.4.64.0806131932350.30730@vixen.sonytel.be>
+ <5a4c581d0806180147qf8fc731y527c79bfb73401b2@mail.gmail.com>
+ <Pine.LNX.4.64.0806181156460.13297@vixen.sonytel.be>
+ <5a4c581d0806180515g5f24e9d9m85369bfa0a5f2228@mail.gmail.com>
+ <5a4c581d0806210718m77be63c9l444d8d7d7a5266bd@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080621192400.GA2992@damson.getinternet.no>
-	 <20080621192845.GB2992@damson.getinternet.no>
-	 <19f34abd0806211341i3a3ecd0bi1c849a2fbc4e9c7e@mail.gmail.com>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-741793478-1214122716=:9736"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 21, 2008 at 10:41 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
->>  INFO: 0xf53ab018-0xf53ab02b. First byte 0x71 instead of 0x6b
->>  INFO: Allocated in copy_process+0x70/0x1090 age=110 cpu=1 pid=28664
->>  INFO: Freed in free_task+0x2c/0x30 age=68 cpu=0 pid=28667
->>  INFO: Slab 0xc1ba6cc0 objects=8 used=5 fp=0xf53aafd0 flags=0x400020c3
->>  INFO: Object 0xf53aafd0 @offset=12240 fp=0xf53acfb0
->>
->>  Bytes b4 0xf53aafc0:  5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a ZZZZZZZZZZZZZZZZ
->>   Object 0xf53aafd0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
->>   Object 0xf53aafe0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
->>   Object 0xf53aaff0:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
->>   Object 0xf53ab000:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
->>   Object 0xf53ab010:  6b 6b 6b 6b 6b 6b 6b 6b 71 19 6f be dd 07 00 00 kkkkkkkkq.o<BE><DD>...
->>   Object 0xf53ab020:  71 19 6f be 6b 6b 6b 6b 6a 6b 6b eb 6b 6b 6b 6b q.o<BE>kkkkjkk<EB>kkkk
->
-> So what to notice is that this is offset hex(0xf53ab018-0xf53aafc0) =
-> '0x58L' from the beginning of the object (would be nice to have SLUB
-> print that too, btw), which corresponds to (struct
-> task_struct).se.vruntime (the "se" is a struct sched_entity). I'm
-> putting Ingo and Peter on the Cc.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Oops, this calculation is bogus. The start of the object is
-0xf53aafd0. This corresponds to 0x48L or .se.exec_start. So it seems
-that exec_start, sum_exec_runtime, and vruntime have all been written
-after the object was freed.
+---584349381-741793478-1214122716=:9736
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-I guess the high number of 6bs in there is simply because the poison
-was read, used for some calculation, then written back with not all
-bits modified by the calculation.
+On Sat, 21 Jun 2008, Alessandro Suardi wrote:
+> On Wed, Jun 18, 2008 at 2:15 PM, Alessandro Suardi
+> <alessandro.suardi@gmail.com> wrote:
+> > On Wed, Jun 18, 2008 at 1:13 PM, Geert Uytterhoeven
+> > <Geert.Uytterhoeven@sonycom.com> wrote:
+> >> On Wed, 18 Jun 2008, Alessandro Suardi wrote:
+> >>> On Fri, Jun 13, 2008 at 7:33 PM, Geert Uytterhoeven
+> >>> <Geert.Uytterhoeven@sonycom.com> wrote:
+> >>> > On Fri, 6 Jun 2008, Geert Uytterhoeven wrote:
+> >>> >> When mounting a CD/DVD more than 30 seconds after inserting it, and reading
+> >>> >> from it, we get:
+> >>> >
+> >>> > Apparently the fix didn't make it to all the CCed lists...
+> >>> >
+> >>> > http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fjejb%2Fscsi-rc-fixes-2.6.git;a=commitdiff_plain;h=d1daeabf0da5bfa1943272ce508e2ba785730bf0
+> >>>
+> >>> Oh, that's in mainline ? I still have the problem of having to
+> >>
+> >> Not yet, it's in the scsi-rc-fixes-2.6 tree.
+> >>
+> >>>  insert DVD / try accessing it and get errors / eject / re-insert
+> >>>  and then it magically works... the messages have changed
+> >>>  from what they were as reported here
+> >>>
+> >>> http://bugzilla.kernel.org/show_bug.cgi?id=10116
+> >>>
+> >>>  (see comments #8 and #9) to these ones, in 2.6.26-rc6-git4:
+> >>>
+> >>> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] Result:
+> >>> hostbyte=0x00 driverbyte=0x08
+> >>> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] Sense Key : 0x3 [current]
+> >>> Jun 17 22:38:43 sandman kernel: sr 1:0:0:0: [sr0] ASC=0x11 ASCQ=0x0
+> >>> Jun 17 22:38:43 sandman kernel: end_request: I/O error, dev sr0, sector 232
+> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 29
+> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 30
+> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 31
+> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 32
+> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 33
+> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 34
+> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 35
+> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 36
+> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 37
+> >>> Jun 17 22:38:43 sandman kernel: Buffer I/O error on device sr0, logical block 38
+> >>>
+> >>> here I eject and reinsert the disc, and:
+> >>>
+> >>> Jun 17 22:39:10 sandman kernel: UDF-fs: No VRS found
+> >>>
+> >>>  lo and behold, no problem.
+> >>>
+> >>> This does not, alas, happen every time. It might be at the first
+> >>>  DVD access after booting the laptop, but I haven't investigated
+> >>>  in this detail yet.
+> >>
+> >> Does /sys/block/sr0/size reflect the correct size of the DVD?
+> >>
+> >> Did you try applying the patch?
+> >
+> > ATM I'm away from home (as usual), I'll post back when
+> >  I have the info you asked for and tried applying the
+> >  above patch. Thanks !
+> 
+> Sigh. I haven't been able to reproduce the problem once since
+>  I posted this. Will keep trying...
 
+Perhaps because the fix is now in mainline?
 
-Vegard
+With kind regards,
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+Sony Technology and Software Centre Europe
+A division of Sony Service Centre (Europe) N.V.
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
+VAT BE 0413.825.160 · RPR Brussels
+Fortis 293-0376800-10 GEBA-BE-BB
+---584349381-741793478-1214122716=:9736--
