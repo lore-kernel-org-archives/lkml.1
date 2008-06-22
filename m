@@ -1,97 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752714AbYFVEdD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752636AbYFVErR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752714AbYFVEdD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 00:33:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750900AbYFVEcw
+	id S1752636AbYFVErR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 00:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbYFVErG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 00:32:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39386 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750765AbYFVEcw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 00:32:52 -0400
-Message-ID: <485DD589.6070503@redhat.com>
-Date: Sun, 22 Jun 2008 00:31:05 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 22 Jun 2008 00:47:06 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:50763 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750765AbYFVErE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 00:47:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=Qp10sXbg7OSJ6eKJlro848CDSKcJr5jUgaRs+HW3CbY00qCNKaBxggPCW//qS/7b+v
+         hwczMZ8gShuBhIPNKX+nKaes+L4tULfYk1mRRQb/7WU7I0HjHB4oy6XAQmccNgP7/h4B
+         EQtTrR6jSlCYKOIcKkVYHZjy0WW8mz6Akd6BM=
+Message-ID: <485DD93A.6020600@gmail.com>
+Date: Sun, 22 Jun 2008 13:46:50 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-To: "Frank Ch. Eigler" <fche@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       Hideo AOKI <haoki@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][Patch 2/2] markers: example of irq regular kernel markers
-References: <20080620174529.GB10943@Krystal> <485C064E.5020705@redhat.com> <20080621190132.E835.KOSAKI.MOTOHIRO@jp.fujitsu.com> <Pine.LNX.4.58.0806211013300.32694@gandalf.stny.rr.com> <y0mwskiyh36.fsf@ton.toronto.redhat.com> <Pine.LNX.4.58.0806211058510.28481@gandalf.stny.rr.com> <1214064834.3223.231.camel@lappy.programming.kicks-ass.net> <20080621180203.GA11804@redhat.com>
-In-Reply-To: <20080621180203.GA11804@redhat.com>
+To: Benjamin Thery <benjamin.thery@bull.net>
+CC: Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Biederman <ebiederm@xmission.com>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH 05/11] sysfs: sysfs_chmod_file handle multiple superblocks
+References: <20080618170729.808539948@theryb.frec.bull.fr> <20080618170730.853353875@theryb.frec.bull.fr>
+In-Reply-To: <20080618170730.853353875@theryb.frec.bull.fr>
 X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hello, guys.  Sorry about the long silence.  Recent releases of
+popular distros overwhelmed me with ata bugs.  They now seem to be
+under control (and hopefully stay that way for some time to come).
 
-Frank Ch. Eigler wrote:
->> I do think we must make a clear distinction between these cases because:
->>
->> 1) tracers provide a kernel<->user interface - and whilst we don't
->> have a stable in-kernel API/ABI we are anal about the kernel/user
->> boundary.  Andrew also greatly worries about this aspect.
-> 
-> Well, how to set Andrew's mind at ease then, beyond what we've already
-> said?  Back a few months ago, both systemtap and lttng guys - the
-> primary user-space clients - have said that we are fine with this
-> interface changing.  We each have mechanisms to adapt.
-> 
->> 2) it highly uglyfies the code, Frank doesn't need to maintain it,
->> so its easy for him to say. But IMHO its much harder to read code
->> that is littered with debug statements that it is to read regular
->> code.
-> 
-> Then don't put too many in, or hide them with inline functions.
-> 
->>  3) it bloats the kernel,.. while it may not be fast path bloat, all
->> that marker stuff does go somewhere.
-> 
-> That bloat has been quantified and appears negligible in space and time.
-> 
->> So, while I see the value of 'stable' mark sites for 'stable'
->> events, I'm dead-set against littering the kernel with markers just
->> because we can, and hoping they might some day be useful for
->> someone.
-> 
-> We're in violent agreement.  No one suggested "littering just because
-> we can".  The initial lttng suite of markers consisted of about one
-> hundred *in total*.  If some other subsystem maintainer runs amok and
-> adds thousands, please take it up with them, not with us.
+On the previous iteration, I was hoping I could sort out sysfs
+interface problem before this patchset but given that this is a long
+overdue feature, I think we should get this thing working first.
 
-Indeed.
+The first four patches looked good to me, so feel free to add
+Acked-by: Tejun Heo <tj@kernel.org>
 
-Peter, I thought, we were discussing what interface we could accept,
-not how many or where tracepoints we could accept. Or, am I misreading?
+Benjamin Thery Wrote:
+> sysfs: sysfs_chmod_file handle multiple superblocks
+> 
+> Teach sysfs_chmod_file how to handle multiple sysfs
+> superblocks.
 
-I know that if someone pushes markers into kernel in his own sweet way,
-of course, the kernel code will be bloated endlessly. But I also know
-why we review patches and send Ack/Nack before merging them to the tree.
-(If you still worry about it, we might be able to make linux-markers
-git tree, and review all regular markers on it)
+I think it would be great if sysfs_chmod_file can do all-or-nothing
+instead of failing half way through but given the interface of
+notify_change(), it could be difficult to implement.  Any ideas?
 
-I think and agree that we should make clear policies and criteria of
-acceptance of each marker, but it should be discussed on actual
-marker uses patches after making agreement for the interface.
-
-Thank you,
+Thanks.
 
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+tejun
