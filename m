@@ -1,77 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237AbYFVQma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754416AbYFVQs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754237AbYFVQma (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 12:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbYFVQmV
+	id S1754416AbYFVQs1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 12:48:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbYFVQsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 12:42:21 -0400
-Received: from smtp2f.orange.fr ([80.12.242.152]:65026 "EHLO smtp2f.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751926AbYFVQmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 12:42:21 -0400
-X-ME-UUID: 20080622160324286.45D46700008D@mwinf2f01.orange.fr
-Message-ID: <485E77CC.20604@wanadoo.fr>
-Date: Sun, 22 Jun 2008 18:03:24 +0200
-From: JAILLET Christophe <jaillet.christophe@wanadoo.fr>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Sun, 22 Jun 2008 12:48:19 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:52808 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752077AbYFVQsT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 12:48:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=df9LOhHvHwKrpKpIkOu8HwbEZExBofbUC00LnacWoXK05rXFkFQPXKxcpsA0t08JB5
+         sybozmNilV6Zh7KWItpV+LiDIj91uHQlPnwhAHbEiIIObc3qQYTnB+8gXtsxk3vp9KO9
+         pDQWw4v38lR2SPTd58if4js0BaqeU7Xi1Zlqg=
+Date: Sun, 22 Jun 2008 18:47:17 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Cedric Bregardis <cedric.bregardis@free.fr>,
+       Jean-Christian Hassler <jhassler@free.fr>
+Cc: LKML <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>
+Subject: oops in Audiowerk2 ALSA driver
+Message-ID: <20080622164443.GA7208@joi>
 MIME-Version: 1.0
-To: linux <linux-kernel@vger.kernel.org>, cj <jaillet.christophe@wanadoo.fr>
-Subject: [PATCH 1/1] arch/x86/kernel/io_apic_32.c : use kzalloc instead of
- kmalloc/memset
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christophe Jaillet <jaillet.?christophe@wanadoo.fr>
+Hi
+There's a race between registration routine and interrupt handler in aw2 driver
+which manifested as oops on some box [1].
 
-Hi, here is a patch against arch/x86/kernel/io_apic_32.c which :
+When snd_aw2_create calls request_irq chip data are not yet fully initialized.
+If interrupt raises before snd_aw2_create call snd_aw2_saa7146_setup, driver may
+oops or read/write other port than its own. (chip->base_addr is initialized in
+snd_aw2_saa7146_setup, but is used in snd_aw2_saa7146_interrupt via READREG/WRITEREG)
 
-1) replace kmalloc/memset with equivalent kzalloc.
+The simple fix would be to move call to snd_aw2_saa7146_setup before request_irq,
+but snd_aw2_saa7146_setup enables interrupts...
 
+PS: I don't have this hardware.
 
-Signed-off-by: Christophe Jaillet <jaillet.?christophe@wanadoo.fr>
+Marcin
 
----
-diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
-index 4dc8600..cb9bbeb 100644
---- a/arch/x86/kernel/io_apic_32.c
-+++ b/arch/x86/kernel/io_apic_32.c
-@@ -699,14 +699,12 @@ static int __init balanced_irq_init(void)
-physical_balance = 1;
-
-for_each_online_cpu(i) {
-- irq_cpu_data[i].irq_delta = kmalloc(sizeof(unsigned long) * NR_IRQS, 
-GFP_KERNEL);
-- irq_cpu_data[i].last_irq = kmalloc(sizeof(unsigned long) * NR_IRQS, 
-GFP_KERNEL);
-+ irq_cpu_data[i].irq_delta = kzalloc(sizeof(unsigned long) * NR_IRQS, 
-GFP_KERNEL);
-+ irq_cpu_data[i].last_irq = kzalloc(sizeof(unsigned long) * NR_IRQS, 
-GFP_KERNEL);
-if (irq_cpu_data[i].irq_delta == NULL || irq_cpu_data[i].last_irq == NULL) {
-printk(KERN_ERR "balanced_irq_init: out of memory");
-goto failed;
-}
-- memset(irq_cpu_data[i].irq_delta,0,sizeof(unsigned long) * NR_IRQS);
-- memset(irq_cpu_data[i].last_irq,0,sizeof(unsigned long) * NR_IRQS);
-}
-
-printk(KERN_INFO "Starting balanced_irq\n");
-@@ -2376,12 +2374,11 @@ static int __init ioapic_init_sysfs(void)
-for (i = 0; i < nr_ioapics; i++ ) {
-size = sizeof(struct sys_device) + nr_ioapic_registers[i]
-* sizeof(struct IO_APIC_route_entry);
-- mp_ioapic_data[i] = kmalloc(size, GFP_KERNEL);
-+ mp_ioapic_data[i] = kzalloc(size, GFP_KERNEL);
-if (!mp_ioapic_data[i]) {
-printk(KERN_ERR "Can't suspend/resume IOAPIC %d\n", i);
-continue;
-}
-- memset(mp_ioapic_data[i], 0, size);
-dev = &mp_ioapic_data[i]->dev;
-dev->id = i;
-dev->cls = &ioapic_sysdev_class;
-
-
+[1] http://kerneloops.org/guilty.php?guilty=snd_aw2_saa7146_interrupt&version=2.6.26-rc&start=1703936&end=1736703&class=oops
