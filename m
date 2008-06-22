@@ -1,73 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757517AbYFVVCl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757628AbYFVVDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757517AbYFVVCl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 17:02:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755596AbYFVVCd
+	id S1757628AbYFVVDR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 17:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755596AbYFVVDC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 17:02:33 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38611 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754749AbYFVVCc (ORCPT
+	Sun, 22 Jun 2008 17:03:02 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:33327 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755673AbYFVVDB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 17:02:32 -0400
-Date: Sun, 22 Jun 2008 14:02:26 -0700
-From: Arjan van de Ven <arjan@infradead.org>
+	Sun, 22 Jun 2008 17:03:01 -0400
+Date: Sun, 22 Jun 2008 14:02:55 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: Arjan van de Ven <arjan@infradead.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Adam Williamson" <awilliamson@mandriva.com>,
-       "Alan Cox" <alan@redhat.com>
-Subject: Re: [Bug #10868] Oops on loading ipaq module since 2.6.26, prevents
- use of device
-Message-ID: <20080622140226.5a54de90@infradead.org>
-In-Reply-To: <20080622140044.57dce6f2@infradead.org>
-References: <RzbtSgMztjP.A.jRD._spXIB@albercik>
-	<4mRZUF-hVeG.A.s6E.JupXIB@albercik>
-	<20080622210706.0a90c4ba@lxorguk.ukuu.org.uk>
-	<20080622140044.57dce6f2@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.10; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, josh@freedesktop.org,
+       dvhltc@us.ibm.com, niv@us.ibm.com, dino@in.ibm.com,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       vegard.nossum@gmail.com, adobriyan@gmail.com, oleg@tv-sign.ru,
+       bunk@kernel.org, rjw@sisk.pl
+Subject: Re: [PATCH -tip-rcu] Make rcutorture more vicious: make quiescent rcutorture less power-hungry
+Message-ID: <20080622210255.GF22569@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080618122144.GA27143@linux.vnet.ibm.com> <20080618162649.GA18326@linux.vnet.ibm.com> <20080622200638.GA25328@linux.vnet.ibm.com> <20080622131712.54ba732c@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080622131712.54ba732c@infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Jun 2008 14:00:44 -0700
-Arjan van de Ven <arjan@infradead.org> wrote:
-
-> On Sun, 22 Jun 2008 21:07:06 +0100
-> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+On Sun, Jun 22, 2008 at 01:17:12PM -0700, Arjan van de Ven wrote:
+> On Sun, 22 Jun 2008 13:06:38 -0700
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 > 
-> > On Sun, 22 Jun 2008 19:54:46 +0200 (CEST)
-> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > This patch makes the non-module rcutorture a bit more friendly to
+> > the power-conservation code.  This is a rather simple-minded approach.
+> > More sophisticated approaches would get rid of the rcutorture tasks
+> > while rcutorture execution was suppressed, but attempts thus far to
+> > do this have not gone well -- calling rcu_torture_init() from a /proc
+> > callout results in oopses.
 > > 
-> > > This message has been generated automatically as a part of a
-> > > report of recent regressions.
-> > > 
-> > > The following bug entry is on the current list of known
-> > > regressions from 2.6.25.  Please verify if it still should be
-> > > listed.
-> > > 
-> > > 
-> > > Bug-Entry	:
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=10868
-> > > Subject		: Oops on loading ipaq module since
-> > > 2.6.26, prevents use of device Submitter	: Adam Williamson
-> > > <awilliamson@mandriva.com> Date		: 2008-06-05 17:39
-> > > (18 days old) Handled-By	: Alan Cox <alan@redhat.com>
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > ---
 > > 
-> > Handed over to Greg as it's not a tty layer bug but something in USB
-> > (actually from the traces I think its a broken gcc/build but we
-> > shall)
+> >  rcutorture.c |    5 ++++-
+> >  1 file changed, 4 insertions(+), 1 deletion(-)
+> > 
+> > diff -urpNa -X dontdiff
+> > linux-2.6.26-rc4-rcut2-proc/kernel/rcutorture.c
+> > linux-2.6.26-rc4-rcut3-procq/kernel/rcutorture.c ---
+> > linux-2.6.26-rc4-rcut2-proc/kernel/rcutorture.c	2008-06-22
+> > 10:29:04.000000000 -0700 +++
+> > linux-2.6.26-rc4-rcut3-procq/kernel/rcutorture.c	2008-06-22
+> > 12:20:10.000000000 -0700 @@ -196,7 +196,10 @@ static void
+> > rcu_stutter_wait(void) { while (stutter_pause_test
+> > || !rcutorture_runnable)
+> > -		schedule_timeout_interruptible(1);
+> > +		if (rcutorture_runnable)
+> > +			schedule_timeout_interruptible(1);
+> > +		else
+> > +			schedule_timeout_interruptible(HZ);
+> >  }
 > 
-> http://www.kerneloops.org/search.php?search=ipaq_open
-> 
-> has a whole slew of different ones.... surprisingly they're almost all
-> with pppd...
-> 
+> could you also make it use round_jiffies_relative() to make the power
+> impact even less.....
+> (by coalescing various "once a second" timers like this)
 
-btw this also shows that this isn't a 2.6.25 regression... 
+Good point!!!  As follows, on top of the previous one.
+
+This patch aligns the rcutorture wakeup times to align with all other
+multiple-of-a-second wakeups to further decrease power consumption.
+
+Suggested-by: Arjan van de Ven <arjan@infradead.org>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+
+ rcutorture.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff -urpNa -X dontdiff linux-2.6.26-rc4-rcut3-procq/kernel/rcutorture.c linux-2.6.26-rc4-rcut4-procqp/kernel/rcutorture.c
+--- linux-2.6.26-rc4-rcut3-procq/kernel/rcutorture.c	2008-06-22 12:20:10.000000000 -0700
++++ linux-2.6.26-rc4-rcut4-procqp/kernel/rcutorture.c	2008-06-22 13:53:22.000000000 -0700
+@@ -1,3 +1,4 @@
++
+ /*
+  * Read-Copy Update module-based torture test facility
+  *
+@@ -199,7 +200,7 @@ rcu_stutter_wait(void)
+ 		if (rcutorture_runnable)
+ 			schedule_timeout_interruptible(1);
+ 		else
+-			schedule_timeout_interruptible(HZ);
++			schedule_timeout_interruptible(round_jiffies_relative(HZ));
+ }
+ 
+ /*
