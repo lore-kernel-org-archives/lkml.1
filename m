@@ -1,86 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753095AbYFVM4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbYFVNAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753095AbYFVM4u (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 08:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbYFVM4l
+	id S1753421AbYFVNAz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 09:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751759AbYFVNAr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 08:56:41 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:8405 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751724AbYFVM4k (ORCPT
+	Sun, 22 Jun 2008 09:00:47 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35566 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751637AbYFVNAq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 08:56:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:from;
-        b=VF2BTbaSJdzaXDz4hzJHaQEUvrFhNDolF6OXGv8vI0odfUz86wEFEZ0k9ce+wUysg4
-         es1zie5clZQED8ee87QKoECJcAMNhlRmltLM5AxmN0wyKny27aAcdB8T6ZwLtLdlYlbV
-         rdbsjtQVOjYEdBYcAuRT+CZX1WWkBGAT9jkAM=
-Date: Sun, 22 Jun 2008 14:56:34 +0200
-To: Rusty Russell <rusty@rustycorp.com.au>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: v2.6.26-rc7: BUG: unable to handle kernel NULL pointer dereference
-Message-ID: <20080622125633.GA8166@damson.getinternet.no>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+	Sun, 22 Jun 2008 09:00:46 -0400
+Subject: [PATCH] Remove fdump tool for av7110 firmware
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: LKML <linux-kernel@vger.kernel.org>, linux-dvb <linux-dvb@linuxtv.org>,
+       kernelnewbies <kernelnewbies@nl.linux.org>,
+       kernel-janitors <kernel-janitors@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Woodhouse <dwmw2@infradead.org>
+Content-Type: text/plain
+Date: Sun, 22 Jun 2008 18:24:19 +0530
+Message-Id: <1214139259.2994.8.camel@jaswinder.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+There's no point in this, since the user can use the BUILTIN_FIRMWARE
+option to include arbitrary firmware files directly in the kernel image.
 
-More cpu-hotplug-related fun... ;-)
+Thanks to David Woodhouse for help.
 
-I know the kernel version says dirty, but the only thing I applied was my
-softirq-debugging patch, which is completely unrelated.
+Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
+--
+drivers/media/dvb/ttpci/Kconfig  |   23 +++----------------
+drivers/media/dvb/ttpci/Makefile |    9 -------
+drivers/media/dvb/ttpci/av7110.c |   16 -------------
+drivers/media/dvb/ttpci/fdump.c    |   44 -------------------------------------
+4 files changed, 4 insertions(+), 88 deletions(-)
+diff --git a/drivers/media/dvb/ttpci/Kconfig b/drivers/media/dvb/ttpci/Kconfig
+index e0bbcaf..6b7a586 100644
+--- a/drivers/media/dvb/ttpci/Kconfig
++++ b/drivers/media/dvb/ttpci/Kconfig
+@@ -6,7 +6,7 @@ config DVB_AV7110
+ 	tristate "AV7110 cards"
+ 	depends on DVB_CORE && PCI && I2C
+ 	depends on HOTPLUG
+-	select FW_LOADER if !DVB_AV7110_FIRMWARE
++	select FW_LOADER
+ 	select TTPCI_EEPROM
+ 	select VIDEO_SAA7146_VV
+ 	depends on VIDEO_DEV	# dependencies of VIDEO_SAA7146_VV
+@@ -30,6 +30,9 @@ config DVB_AV7110
+ 	  download/extract it, and then copy it to /usr/lib/hotplug/firmware
+ 	  or /lib/firmware (depending on configuration of firmware hotplug).
+ 
++	  Alternatively, you can download the file and use the 
++	  BUILTIN_FIRMWARE option to build it into your kernel image.
++
+ 	  Say Y if you own such a card and want to use it.
+ 
+ config DVB_AV7110_BOOTCODE
+@@ -39,24 +42,6 @@ config DVB_AV7110_BOOTCODE
+ 	  This includes firmware for AV7110 bootcode
+ 	  Say 'N' and let it get loaded from userspace on demand 
+ 
+-config DVB_AV7110_FIRMWARE
+-	bool "Compile AV7110 firmware into the driver"
+-	depends on DVB_AV7110 && !STANDALONE
+-	default y if DVB_AV7110=y
+-	help
+-	  The AV7110 firmware is normally loaded by the firmware hotplug manager.
+-	  If you want to compile the firmware into the driver you need to say
+-	  Y here and provide the correct path of the firmware. You need this
+-	  option if you want to compile the whole driver statically into the
+-	  kernel.
+-
+-	  All other people say N.
+-
+-config DVB_AV7110_FIRMWARE_FILE
+-	string "Full pathname of av7110 firmware file"
+-	depends on DVB_AV7110_FIRMWARE
+-	default "/usr/lib/hotplug/firmware/dvb-ttpci-01.fw"
+-
+ config DVB_AV7110_OSD
+ 	bool "AV7110 OSD support"
+ 	depends on DVB_AV7110
+diff --git a/drivers/media/dvb/ttpci/Makefile b/drivers/media/dvb/ttpci/Makefile
+index d7483f1..a7ff3cd 100644
+--- a/drivers/media/dvb/ttpci/Makefile
++++ b/drivers/media/dvb/ttpci/Makefile
+@@ -14,12 +14,3 @@ obj-$(CONFIG_DVB_BUDGET_PATCH) += budget-patch.o
+ obj-$(CONFIG_DVB_AV7110) += dvb-ttpci.o
+ 
+ EXTRA_CFLAGS += -Idrivers/media/dvb/dvb-core/ -Idrivers/media/dvb/frontends/
+-
+-hostprogs-y	:= fdump
+-
+-ifeq ($(CONFIG_DVB_AV7110_FIRMWARE),y)
+-$(obj)/av7110.o: $(obj)/av7110_firm.h
+-
+-$(obj)/av7110_firm.h: $(obj)/fdump
+-	$(obj)/fdump $(CONFIG_DVB_AV7110_FIRMWARE_FILE) dvb_ttpci_fw $@
+-endif
+diff --git a/drivers/media/dvb/ttpci/av7110.c b/drivers/media/dvb/ttpci/av7110.c
+index 747e7f1..c11a13c 100644
+--- a/drivers/media/dvb/ttpci/av7110.c
++++ b/drivers/media/dvb/ttpci/av7110.c
+@@ -1497,20 +1497,6 @@ static int check_firmware(struct av7110* av7110)
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_DVB_AV7110_FIRMWARE_FILE
+-#include "av7110_firm.h"
+-static void put_firmware(struct av7110* av7110)
+-{
+-	av7110->bin_fw = NULL;
+-}
+-
+-static inline int get_firmware(struct av7110* av7110)
+-{
+-	av7110->bin_fw = dvb_ttpci_fw;
+-	av7110->size_fw = sizeof(dvb_ttpci_fw);
+-	return check_firmware(av7110);
+-}
+-#else
+ static void put_firmware(struct av7110* av7110)
+ {
+ 	vfree(av7110->bin_fw);
+@@ -1559,8 +1545,6 @@ static int get_firmware(struct av7110* av7110)
+ 	release_firmware(fw);
+ 	return ret;
+ }
+-#endif
+-
+ 
+ static int alps_bsrv2_tuner_set_params(struct dvb_frontend* fe, struct dvb_frontend_parameters *params)
+ {
+diff --git a/drivers/media/dvb/ttpci/fdump.c b/drivers/media/dvb/ttpci/fdump.c
+deleted file mode 100644
+index c90001d..0000000
+--- a/drivers/media/dvb/ttpci/fdump.c
++++ /dev/null
+@@ -1,44 +0,0 @@
+-#include <stdio.h>
+-#include <sys/types.h>
+-#include <sys/stat.h>
+-#include <fcntl.h>
+-#include <unistd.h>
+-
+-int main(int argc, char **argv)
+-{
+-    unsigned char buf[8];
+-    unsigned int i, count, bytes = 0;
+-    FILE *fd_in, *fd_out;
+-
+-    if (argc != 4) {
+-	fprintf(stderr, "\n\tusage: %s <ucode.bin> <array_name> <output_name>\n\n", argv[0]);
+-	return -1;
+-    }
+-
+-    fd_in = fopen(argv[1], "rb");
+-    if (fd_in == NULL) {
+-	fprintf(stderr, "firmware file '%s' not found\n", argv[1]);
+-	return -1;
+-    }
+-
+-    fd_out = fopen(argv[3], "w+");
+-    if (fd_out == NULL) {
+-	fprintf(stderr, "cannot create output file '%s'\n", argv[3]);
+-	return -1;
+-    }
+-
+-    fprintf(fd_out, "\n#include <asm/types.h>\n\nu8 %s [] = {", argv[2]);
+-
+-    while ((count = fread(buf, 1, 8, fd_in)) > 0) {
+-	fprintf(fd_out, "\n\t");
+-	for (i = 0; i < count; i++, bytes++)
+-	    fprintf(fd_out, "0x%02x, ", buf[i]);
+-    }
+-
+-    fprintf(fd_out, "\n};\n\n");
+-
+-    fclose(fd_in);
+-    fclose(fd_out);
+-
+-    return 0;
+-}
 
-
-Vegard
-
-
-Initializing CPU#1
-APIC error on CPU0: 00(40)
-Stuck ??
-Inquiring remote APIC #1...
-... APIC #1 ID: failed
-... APIC #1 VERSION: failed
-... APIC #1 SPIV: failed
-BUG: unable to handle kernel NULL pointer dereference at 00000024
-IP: [<c01e0f06>] sysfs_remove_group+0x16/0xc0
-*pde = 00000000
-Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-
-Pid: 3994, comm: bash Not tainted (2.6.26-rc7-00002-g8b2e474-dirty #29)
-EIP: 0060:[<c01e0f06>] EFLAGS: 00010282 CPU: 0
-EIP is at sysfs_remove_group+0x16/0xc0
-EAX: 00000008 EBX: 00000001 ECX: 00000004 EDX: c0694c14
-ESI: 00000004 EDI: c07015fc EBP: f3cbfe9c ESP: f3cbfe80
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process bash (pid: 3994, ti=f3cbe000 task=f3cb4f60 task.ti=f3cbe000)
-Stack: c0302262 f4bcda40 f3cbfe98 00000008 00000001 00000004 00000000 f3cbfea8
-       c05880b2 c07576c4 f3cbfec8 c014f567 00000001 00000004 c0753c90 0000001f
-       00000001 fffffffb f3cbfedc c014f5d9 0000001f 00000000 00000004 f3cbff00
-Call Trace:
- [<c0302262>] ? device_unregister+0x12/0x20
- [<c05880b2>] ? topology_cpu_callback+0x32/0x70
- [<c014f567>] ? notifier_call_chain+0x37/0x70
- [<c014f5d9>] ? __raw_notifier_call_chain+0x19/0x20
- [<c0586f6e>] ? _cpu_up+0xee/0x100
- [<c0586fc9>] ? cpu_up+0x49/0x70
- [<c05678d8>] ? store_online+0x58/0x80
- [<c0567880>] ? store_online+0x0/0x80
- [<c0302a6b>] ? sysdev_store+0x2b/0x40
- [<c01df0f2>] ? sysfs_write_file+0xa2/0x100
- [<c01a0d06>] ? vfs_write+0x96/0x130
- [<c01df050>] ? sysfs_write_file+0x0/0x100
- [<c01a13cd>] ? sys_write+0x3d/0x70
- [<c010831b>] ? sysenter_past_esp+0x78/0xd1
- =======================
-Code: 8b 43 04 83 c3 04 85 c0 75 ed 5b 5e 5d c3 8d b4 26 00 00 00 00 55 89 e5 83 ec 1c 89 7d fc 89 d7 89 5d f4 89 75 f8 89 45 f0 8b 12 <8b> 70 1c 85 d2 74 53 89 f0 e8 bc f5 ff ff 85 c0 89 c3 74 59 8b
-EIP: [<c01e0f06>] sysfs_remove_group+0x16/0xc0 SS:ESP 0068:f3cbfe80
 
