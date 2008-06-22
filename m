@@ -1,247 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753099AbYFVJXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752944AbYFVJck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753099AbYFVJXh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 05:23:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbYFVJXZ
+	id S1752944AbYFVJck (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 05:32:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbYFVJca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 05:23:25 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:44203 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751144AbYFVJXX (ORCPT
+	Sun, 22 Jun 2008 05:32:30 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37740 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751165AbYFVJc2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 05:23:23 -0400
-Date: Sun, 22 Jun 2008 12:23:21 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Stephen Hemminger <stephen.hemminger@vyatta.com>
-cc: Andrew Savchenko <Bircoph@list.ru>, linux-kernel@vger.kernel.org,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Linux Netdev List <netdev@vger.kernel.org>, shemminger@vyatta.com,
-       Jeff Garzik <jeff@garzik.org>, sorbica@icplus.com.tw,
-       Jesse Huang <jesse@icplus.com.tw>
-Subject: Re: [RFC/PATCH] ipg: add jumbo frame support kconfig option
-In-Reply-To: <20080620084131.3313abe8@speedy>
-Message-ID: <Pine.LNX.4.64.0806221220540.27261@sbz-30.cs.Helsinki.FI>
-References: <200806201037.46687.Bircoph@list.ru>
- <84144f020806200412s5e0225eblbb2001ca139e7fdc@mail.gmail.com>
- <20080620084131.3313abe8@speedy>
+	Sun, 22 Jun 2008 05:32:28 -0400
+Subject: [PATCH] firmware: convert av7110 driver to request_firmware()
+From: Jaswinder Singh <jaswinder@infradead.org>
+To: David Woodhouse <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       kernelnewbies <kernelnewbies@nl.linux.org>,
+       kernel-janitors <kernel-janitors@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-dvb@linuxtv.org
+Content-Type: text/plain
+Date: Sun, 22 Jun 2008 14:56:00 +0530
+Message-Id: <1214126760.4974.5.camel@jaswinder.satnam>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jun 2008, Stephen Hemminger wrote:
-> The code should enable/disable anything it needs based on the MTU size
-> in the change_mtu call. If the driver needs to reallocate buffers, change receiver
-> settings, make sacrifices to deities, or phone home that is the place to do it.
-> In other words no compile or config option fro MTU settings please.
+my firmware tree is available at http://git.infradead.org/users/jaswinder/firm-jsr-2.6.git
 
-Right, so how about something like this instead? Andrew, can you test the 
-following patch? You need all the other patches from the previous series 
-modulo the last patch. Thanks!
-
-		Pekka
-
-Subject: [PATCH] ipg: run-time configurable jumbo frame support
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-
-Make jumbo frame support configurable via ifconfig mtu option as suggested by
-Stephen Hemminger.
-
-Cc: Stephen Hemminger <stephen.hemminger@vyatta.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- drivers/net/ipg.c |   42 ++++++++++++++++++++------
- drivers/net/ipg.h |   85 ------------------------------------------------------
- 2 files changed, 32 insertions(+), 95 deletions(-)
-
-Index: linux-2.6/drivers/net/ipg.c
-===================================================================
---- linux-2.6.orig/drivers/net/ipg.c	2008-06-22 11:55:53.000000000 +0300
-+++ linux-2.6/drivers/net/ipg.c	2008-06-22 12:15:45.000000000 +0300
-@@ -42,7 +42,6 @@
- #define ipg_r16(reg)		ioread16(ioaddr + (reg))
- #define ipg_r8(reg)		ioread8(ioaddr + (reg))
+Signed-off-by: Jaswinder Singh <jaswinder@infradead.org>
+--
+drivers/media/dvb/ttpci/Kconfig     |    7 +++++++
+drivers/media/dvb/ttpci/av7110_hw.c |   35 ++++++++++++-----------------------
+drivers/media/dvb/ttpci/av7110_hw.h |    3 ++-
+firmware/Makefile                   |    1 +
+firmware/WHENCE                     |   10 ++++++++++
+firmware/av7110/bootcode.bin.ihex   |   15 +++++++++++++++
+6 files changed, 47 insertions(+), 24 deletions(-)
+create mode 100644 firmware/av7110/bootcode.bin.ihex
+diff --git a/drivers/media/dvb/ttpci/Kconfig b/drivers/media/dvb/ttpci/Kconfig
+index d4339b1..e0bbcaf 100644
+--- a/drivers/media/dvb/ttpci/Kconfig
++++ b/drivers/media/dvb/ttpci/Kconfig
+@@ -32,6 +32,13 @@ config DVB_AV7110
  
--#define JUMBO_FRAME_4k_ONLY
- enum {
- 	netdev_io_size = 128
- };
-@@ -55,6 +54,14 @@
- MODULE_LICENSE("GPL");
+ 	  Say Y if you own such a card and want to use it.
  
- /*
-+ * Defaults
-+ */
-+#define IPG_MAX_RXFRAME_SIZE	0x0600
-+#define IPG_RXFRAG_SIZE		0x0600
-+#define IPG_RXSUPPORT_SIZE	0x0600
-+#define IPG_IS_JUMBO		false
++config DVB_AV7110_BOOTCODE
++	bool "Compile AV7110 bootcode into the driver"
++	depends on DVB_AV7110
++	help
++	  This includes firmware for AV7110 bootcode
++	  Say 'N' and let it get loaded from userspace on demand 
 +
-+/*
-  * Variable record -- index by leading revision/length
-  * Revision/Length(=N*4), Address1, Data1, Address2, Data2,...,AddressN,DataN
-  */
-@@ -1805,9 +1812,6 @@
- 	sp->jumbo.current_size = 0;
- 	sp->jumbo.skb = NULL;
+ config DVB_AV7110_FIRMWARE
+ 	bool "Compile AV7110 firmware into the driver"
+ 	depends on DVB_AV7110 && !STANDALONE
+diff --git a/drivers/media/dvb/ttpci/av7110_hw.c b/drivers/media/dvb/ttpci/av7110_hw.c
+index 9d81074..646d2c9 100644
+--- a/drivers/media/dvb/ttpci/av7110_hw.c
++++ b/drivers/media/dvb/ttpci/av7110_hw.c
+@@ -198,29 +198,10 @@ static int load_dram(struct av7110 *av7110, u32 *data, int len)
  
--	if (IPG_TXFRAG_SIZE)
--		dev->mtu = IPG_TXFRAG_SIZE;
+ /* we cannot write av7110 DRAM directly, so load a bootloader into
+  * the DPRAM which implements a simple boot protocol */
+-static u8 bootcode[] = {
+-  0xea, 0x00, 0x00, 0x0e, 0xe1, 0xb0, 0xf0, 0x0e, 0xe2, 0x5e, 0xf0, 0x04,
+-  0xe2, 0x5e, 0xf0, 0x04, 0xe2, 0x5e, 0xf0, 0x08, 0xe2, 0x5e, 0xf0, 0x04,
+-  0xe2, 0x5e, 0xf0, 0x04, 0xe2, 0x5e, 0xf0, 0x04, 0x2c, 0x00, 0x00, 0x24,
+-  0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x00, 0x00, 0x2c, 0x00, 0x00, 0x34,
+-  0x00, 0x00, 0x00, 0x00, 0xa5, 0xa5, 0x5a, 0x5a, 0x00, 0x1f, 0x15, 0x55,
+-  0x00, 0x00, 0x00, 0x09, 0xe5, 0x9f, 0xd0, 0x7c, 0xe5, 0x9f, 0x40, 0x74,
+-  0xe3, 0xa0, 0x00, 0x00, 0xe5, 0x84, 0x00, 0x00, 0xe5, 0x84, 0x00, 0x04,
+-  0xe5, 0x9f, 0x10, 0x70, 0xe5, 0x9f, 0x20, 0x70, 0xe5, 0x9f, 0x30, 0x64,
+-  0xe8, 0xb1, 0x1f, 0xe0, 0xe8, 0xa3, 0x1f, 0xe0, 0xe1, 0x51, 0x00, 0x02,
+-  0xda, 0xff, 0xff, 0xfb, 0xe5, 0x9f, 0xf0, 0x50, 0xe1, 0xd4, 0x10, 0xb0,
+-  0xe3, 0x51, 0x00, 0x00, 0x0a, 0xff, 0xff, 0xfc, 0xe1, 0xa0, 0x10, 0x0d,
+-  0xe5, 0x94, 0x30, 0x04, 0xe1, 0xd4, 0x20, 0xb2, 0xe2, 0x82, 0x20, 0x3f,
+-  0xe1, 0xb0, 0x23, 0x22, 0x03, 0xa0, 0x00, 0x02, 0xe1, 0xc4, 0x00, 0xb0,
+-  0x0a, 0xff, 0xff, 0xf4, 0xe8, 0xb1, 0x1f, 0xe0, 0xe8, 0xa3, 0x1f, 0xe0,
+-  0xe8, 0xb1, 0x1f, 0xe0, 0xe8, 0xa3, 0x1f, 0xe0, 0xe2, 0x52, 0x20, 0x01,
+-  0x1a, 0xff, 0xff, 0xf9, 0xe2, 0x2d, 0xdb, 0x05, 0xea, 0xff, 0xff, 0xec,
+-  0x2c, 0x00, 0x03, 0xf8, 0x2c, 0x00, 0x04, 0x00, 0x9e, 0x00, 0x08, 0x00,
+-  0x2c, 0x00, 0x00, 0x74, 0x2c, 0x00, 0x00, 0xc0
+-};
 -
- 	/* Enable transmit and receive operation of the IPG. */
- 	ipg_w32((ipg_r32(MAC_CTRL) | IPG_MC_RX_ENABLE | IPG_MC_TX_ENABLE) &
- 		 IPG_MC_RSVD_MASK, MAC_CTRL);
-@@ -2116,6 +2120,7 @@
- static int ipg_nic_change_mtu(struct net_device *dev, int new_mtu)
+ int av7110_bootarm(struct av7110 *av7110)
  {
- 	struct ipg_nic_private *sp = netdev_priv(dev);
-+	int err;
++	const struct firmware *fw;
++	const char *fw_name = "av7110/bootcode.bin";
+ 	struct saa7146_dev *dev = av7110->dev;
+ 	u32 ret;
+ 	int i;
+@@ -261,7 +242,15 @@ int av7110_bootarm(struct av7110 *av7110)
+ 	//saa7146_setgpio(dev, DEBI_DONE_LINE, SAA7146_GPIO_INPUT);
+ 	//saa7146_setgpio(dev, 3, SAA7146_GPIO_INPUT);
  
- 	/* Function to accomodate changes to Maximum Transfer Unit
- 	 * (or MTU) of IPG NIC. Cannot use default function since
-@@ -2124,16 +2129,33 @@
+-	mwdebi(av7110, DEBISWAB, DPRAM_BASE, bootcode, sizeof(bootcode));
++	ret = request_firmware(&fw, fw_name, &dev->pci->dev);
++	if (ret) {
++		printk(KERN_ERR "dvb-ttpci: Failed to load firmware \"%s\"\n",
++			fw_name);
++		return ret;
++	}
++
++	mwdebi(av7110, DEBISWAB, DPRAM_BASE, fw->data, fw->size);
++	release_firmware(fw);
+ 	iwdebi(av7110, DEBINOSWAP, AV7110_BOOT_STATE, BOOTSTATE_BUFFER_FULL, 2);
  
- 	IPG_DEBUG_MSG("_nic_change_mtu\n");
+ 	if (saa7146_wait_for_debi_done(av7110->dev, 1)) {
+@@ -302,7 +291,7 @@ int av7110_bootarm(struct av7110 *av7110)
+ 	av7110->arm_ready = 1;
+ 	return 0;
+ }
+-
++MODULE_FIRMWARE("av7110/bootcode.bin");
  
--	/* Check that the new MTU value is between 68 (14 byte header, 46
--	 * byte payload, 4 byte FCS) and IPG_MAX_RXFRAME_SIZE, which
--	 * corresponds to the MAXFRAMESIZE register in the IPG.
-+	/*
-+	 * Check that the new MTU value is between 68 (14 byte header, 46 byte
-+	 * payload, 4 byte FCS) and 10 KB, which is the largest supported MTU.
- 	 */
--	if ((new_mtu < 68) || (new_mtu > sp->max_rxframe_size))
-+	if (new_mtu < 68 || new_mtu > 10240)
- 		return -EINVAL;
- 
-+	err = ipg_nic_stop(dev);
-+	if (err)
-+		return err;
-+
- 	dev->mtu = new_mtu;
- 
--	return 0;
-+	sp->max_rxframe_size = new_mtu;
-+
-+	sp->rxfrag_size = new_mtu;
-+	if (sp->rxfrag_size > 4088)
-+		sp->rxfrag_size = 4088;
-+
-+	sp->rxsupport_size = sp->max_rxframe_size;
-+
-+	if (new_mtu > 0x0600)
-+		sp->is_jumbo = true;
-+	else
-+		sp->is_jumbo = false;
-+
-+	return ipg_nic_open(dev);
+ /****************************************************************************
+  * DEBI command polling
+diff --git a/drivers/media/dvb/ttpci/av7110_hw.h b/drivers/media/dvb/ttpci/av7110_hw.h
+index 74d940f..da29f0f 100644
+--- a/drivers/media/dvb/ttpci/av7110_hw.h
++++ b/drivers/media/dvb/ttpci/av7110_hw.h
+@@ -393,7 +393,8 @@ static inline void iwdebi(struct av7110 *av7110, u32 config, int addr, u32 val,
  }
  
- static int ipg_get_settings(struct net_device *dev, struct ethtool_cmd *cmd)
-@@ -2238,7 +2260,7 @@
- 	spin_lock_init(&sp->lock);
- 	mutex_init(&sp->mii_mutex);
+ /* buffer writes */
+-static inline void mwdebi(struct av7110 *av7110, u32 config, int addr, u8 *val, int count)
++static inline void mwdebi(struct av7110 *av7110, u32 config, int addr,
++			  const u8 *val, int count)
+ {
+ 	memcpy(av7110->debi_virt, val, count);
+ 	av7110_debiwrite(av7110, config, addr, 0, count);
+diff --git a/firmware/Makefile b/firmware/Makefile
+index e2a99a5..ce5e916 100644
+--- a/firmware/Makefile
++++ b/firmware/Makefile
+@@ -18,6 +18,7 @@ fw-shipped-$(CONFIG_USB_KAWETH_FIRMWARE) += kaweth/new_code.bin \
+ 		kaweth/new_code_fix.bin kaweth/trigger_code.bin \
+ 		kaweth/trigger_code_fix.bin
+ fw-shipped-$(CONFIG_DVB_TTUSB_BUDGET_FIRMWARE) += ttusb-budget/dspbootcode.bin
++fw-shipped-$(CONFIG_DVB_AV7110_BOOTCODE) += av7110/bootcode.bin
+ fw-shipped-$(CONFIG_E100_FIRMWARE) += e100/d101m_ucode.bin \
+ 		e100/d101s_ucode.bin e100/d102e_ucode.bin
+ fw-shipped-$(CONFIG_ACENIC_TG1_FIRMWARE) += acenic/tg1.bin
+diff --git a/firmware/WHENCE b/firmware/WHENCE
+index 2321512..49ac8ba 100644
+--- a/firmware/WHENCE
++++ b/firmware/WHENCE
+@@ -279,3 +279,13 @@ Licence:
+ Found in hex form in kernel source.
  
--	sp->is_jumbo = IPG_JUMBO;
-+	sp->is_jumbo = IPG_IS_JUMBO;
- 	sp->rxfrag_size = IPG_RXFRAG_SIZE;
- 	sp->rxsupport_size = IPG_RXSUPPORT_SIZE;
- 	sp->max_rxframe_size = IPG_MAX_RXFRAME_SIZE;
-Index: linux-2.6/drivers/net/ipg.h
-===================================================================
---- linux-2.6.orig/drivers/net/ipg.h	2008-06-22 11:55:53.000000000 +0300
-+++ linux-2.6/drivers/net/ipg.h	2008-06-22 11:55:54.000000000 +0300
-@@ -536,91 +536,6 @@
-  */
- #define		IPG_FRAMESBETWEENTXDMACOMPLETES 0x1
- 
--#ifdef JUMBO_FRAME
--# define IPG_JUMBO true
--#else
--# define IPG_JUMBO false
--#endif
--
--#ifdef JUMBO_FRAME
--
--# ifdef JUMBO_FRAME_SIZE_2K
--# define JUMBO_FRAME_SIZE 2048
--# define __IPG_RXFRAG_SIZE 2048
--# else
--#  ifdef JUMBO_FRAME_SIZE_3K
--#  define JUMBO_FRAME_SIZE 3072
--#  define __IPG_RXFRAG_SIZE 3072
--#  else
--#   ifdef JUMBO_FRAME_SIZE_4K
--#   define JUMBO_FRAME_SIZE 4096
--#   define __IPG_RXFRAG_SIZE 4088
--#   else
--#    ifdef JUMBO_FRAME_SIZE_5K
--#    define JUMBO_FRAME_SIZE 5120
--#    define __IPG_RXFRAG_SIZE 4088
--#    else
--#     ifdef JUMBO_FRAME_SIZE_6K
--#     define JUMBO_FRAME_SIZE 6144
--#     define __IPG_RXFRAG_SIZE 4088
--#     else
--#      ifdef JUMBO_FRAME_SIZE_7K
--#      define JUMBO_FRAME_SIZE 7168
--#      define __IPG_RXFRAG_SIZE 4088
--#      else
--#       ifdef JUMBO_FRAME_SIZE_8K
--#       define JUMBO_FRAME_SIZE 8192
--#       define __IPG_RXFRAG_SIZE 4088
--#       else
--#        ifdef JUMBO_FRAME_SIZE_9K
--#        define JUMBO_FRAME_SIZE 9216
--#        define __IPG_RXFRAG_SIZE 4088
--#        else
--#         ifdef JUMBO_FRAME_SIZE_10K
--#         define JUMBO_FRAME_SIZE 10240
--#         define __IPG_RXFRAG_SIZE 4088
--#         else
--#         define JUMBO_FRAME_SIZE 4096
--#         endif
--#        endif
--#       endif
--#      endif
--#     endif
--#    endif
--#   endif
--#  endif
--# endif
--#endif
--
--/* Size of allocated received buffers. Nominally 0x0600.
-- * Define larger if expecting jumbo frames.
-- */
--#ifdef JUMBO_FRAME
--/* IPG_TXFRAG_SIZE must <= 0x2b00, or TX will crash */
--#define		IPG_TXFRAG_SIZE		JUMBO_FRAME_SIZE
--#else
--#define		IPG_TXFRAG_SIZE		0 /* use default MTU */
--#endif
--
--/* Size of allocated received buffers. Nominally 0x0600.
-- * Define larger if expecting jumbo frames.
-- */
--#ifdef JUMBO_FRAME
--/* 4088 = 4096 - 8 */
--#define		IPG_RXFRAG_SIZE		__IPG_RXFRAG_SIZE
--#define     IPG_RXSUPPORT_SIZE   IPG_MAX_RXFRAME_SIZE
--#else
--#define		IPG_RXFRAG_SIZE		0x0600
--#define     IPG_RXSUPPORT_SIZE   IPG_RXFRAG_SIZE
--#endif
--
--/* IPG_MAX_RXFRAME_SIZE <= IPG_RXFRAG_SIZE */
--#ifdef JUMBO_FRAME
--#define		IPG_MAX_RXFRAME_SIZE		JUMBO_FRAME_SIZE
--#else
--#define		IPG_MAX_RXFRAME_SIZE		0x0600
--#endif
--
- #define		IPG_RFDLIST_LENGTH		0x100
- 
- /* Maximum number of RFDs to process per interrupt.
+ --------------------------------------------------------------------------
++
++Driver: DVB AV7110 -- AV7110 cards
++
++File: av7110/bootcode.bin
++
++Licence: GPLv2 or later
++
++ARM assembly source code available at http://www.linuxtv.org/downloads/firmware/Boot.S
++
++--------------------------------------------------------------------------
+diff --git a/firmware/av7110/bootcode.bin.ihex b/firmware/av7110/bootcode.bin.ihex
+new file mode 100644
+index 0000000..26a2993
+--- /dev/null
++++ b/firmware/av7110/bootcode.bin.ihex
+@@ -0,0 +1,15 @@
++:10000000EA00000EE1B0F00EE25EF004E25EF00401
++:10001000E25EF008E25EF004E25EF004E25EF0040C
++:100020002C0000240000000C000000002C00003414
++:1000300000000000A5A55A5A001F15550000000930
++:10004000E59FD07CE59F4074E3A00000E5840000BC
++:10005000E5840004E59F1070E59F2070E59F306403
++:10006000E8B11FE0E8A31FE0E1510002DAFFFFFB67
++:10007000E59FF050E1D410B0E35100000AFFFFFC0F
++:10008000E1A0100DE5943004E1D420B2E282203FDB
++:10009000E1B0232203A00002E1C400B00AFFFFF494
++:1000A000E8B11FE0E8A31FE0E8B11FE0E8A31FE00C
++:1000B000E25220011AFFFFF9E22DDB05EAFFFFEC17
++:1000C0002C0003F82C0004009E0008002C00007493
++:0400D0002C0000C040
++:00000001FF
+
+
