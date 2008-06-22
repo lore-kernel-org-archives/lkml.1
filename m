@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752833AbYFVM3F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753095AbYFVM4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752833AbYFVM3F (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 08:29:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbYFVM2y
+	id S1753095AbYFVM4u (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 08:56:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbYFVM4l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 08:28:54 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:5571 "EHLO
+	Sun, 22 Jun 2008 08:56:41 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:8405 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751462AbYFVM2x (ORCPT
+	with ESMTP id S1751724AbYFVM4k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 08:28:53 -0400
+	Sun, 22 Jun 2008 08:56:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:to:cc:subject:message-id:mime-version:content-type
          :content-disposition:user-agent:from;
-        b=OMuKMCDRAICJPVA+5EHzFDtmaLzkJn73EP8E15/269/iS7jc+lFW8tKBOIZR1P0/Wy
-         UkoAk3UhTn6yErxBkKp3h/WhpjghtvvS2x9rdwhmPYXFKvLYd4jU/E6PaGkMwdSVFG+j
-         fDemihkXgNlbdtDzD+35mP48pdDvwAQyALb2I=
-Date: Sun, 22 Jun 2008 14:28:45 +0200
-To: a.p.zijlstra@chello.nl, arjan@linux.intel.com
+        b=VF2BTbaSJdzaXDz4hzJHaQEUvrFhNDolF6OXGv8vI0odfUz86wEFEZ0k9ce+wUysg4
+         es1zie5clZQED8ee87QKoECJcAMNhlRmltLM5AxmN0wyKny27aAcdB8T6ZwLtLdlYlbV
+         rdbsjtQVOjYEdBYcAuRT+CZX1WWkBGAT9jkAM=
+Date: Sun, 22 Jun 2008 14:56:34 +0200
+To: Rusty Russell <rusty@rustycorp.com.au>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] softirq softlockup debugging
-Message-ID: <20080622122845.GA10133@damson.getinternet.no>
+Subject: v2.6.26-rc7: BUG: unable to handle kernel NULL pointer dereference
+Message-ID: <20080622125633.GA8166@damson.getinternet.no>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -33,134 +34,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-I'm debugging a problem with a softirq that gets stuck for a long time,
-so I wrote this patch to help find out what's going wrong.
+More cpu-hotplug-related fun... ;-)
 
-I actually think it can be useful in general as well, see for example
-http://www.kerneloops.org/search.php?search=__do_softirq&btnG=Function+Search
-
-..and these cases are virtually impossible to debug since we don't know
-anything about *what* it was that got stuck. (The NMI watchdog could
-help, though.)
-
-The patch is #ifdef-ugly, I know... Suggestions are welcome.
+I know the kernel version says dirty, but the only thing I applied was my
+softirq-debugging patch, which is completely unrelated.
 
 
 Vegard
 
 
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Sun, 22 Jun 2008 14:12:31 +0200
-Subject: [PATCH] softirq softlockup debugging
+Initializing CPU#1
+APIC error on CPU0: 00(40)
+Stuck ??
+Inquiring remote APIC #1...
+... APIC #1 ID: failed
+... APIC #1 VERSION: failed
+... APIC #1 SPIV: failed
+BUG: unable to handle kernel NULL pointer dereference at 00000024
+IP: [<c01e0f06>] sysfs_remove_group+0x16/0xc0
+*pde = 00000000
+Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
 
->From the Kconfig: If a softlockup happens in a softirq, the softlockup
-stack trace is utterly unhelpful; it will only show the stack up to
-__do_softirq(), since this is where interrupts are reenabled.
-
-This patch adds a line to the output of the softlockup report which
-contains the address of the function that was last scheduled to run in
-a softirq.
-
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
----
- include/linux/interrupt.h |    3 +++
- kernel/softirq.c          |   13 +++++++++++++
- kernel/softlockup.c       |    6 ++++++
- lib/Kconfig.debug         |   10 ++++++++++
- 4 files changed, 32 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-index f1fc747..97d47cf 100644
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -296,6 +296,9 @@ extern void softirq_init(void);
- extern void raise_softirq_irqoff(unsigned int nr);
- extern void raise_softirq(unsigned int nr);
- 
-+#ifdef CONFIG_SOFTLOCKUP_SOFTIRQ_DEBUG
-+extern void *get_last_softirq_action(int cpu);
-+#endif
- 
- /* Tasklets --- multithreaded analogue of BHs.
- 
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index 36e0617..b49899a 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -196,6 +196,15 @@ void local_bh_enable_ip(unsigned long ip)
- }
- EXPORT_SYMBOL(local_bh_enable_ip);
- 
-+#ifdef CONFIG_SOFTLOCKUP_SOFTIRQ_DEBUG
-+static DEFINE_PER_CPU(void *, last_softirq_action);
-+
-+void *get_last_softirq_action(int cpu)
-+{
-+	return per_cpu(last_softirq_action, cpu);
-+}
-+#endif
-+
- /*
-  * We restart softirq processing MAX_SOFTIRQ_RESTART times,
-  * and we fall back to softirqd after that.
-@@ -231,6 +240,10 @@ restart:
- 
- 	do {
- 		if (pending & 1) {
-+#ifdef CONFIG_SOFTLOCKUP_SOFTIRQ_DEBUG
-+			per_cpu(last_softirq_action, cpu) = h->action;
-+#endif
-+
- 			h->action(h);
- 			rcu_bh_qsctr_inc(cpu);
- 		}
-diff --git a/kernel/softlockup.c b/kernel/softlockup.c
-index c828c23..2bf4fa1 100644
---- a/kernel/softlockup.c
-+++ b/kernel/softlockup.c
-@@ -10,8 +10,10 @@
- #include <linux/cpu.h>
- #include <linux/nmi.h>
- #include <linux/init.h>
-+#include <linux/interrupt.h>
- #include <linux/delay.h>
- #include <linux/freezer.h>
-+#include <linux/kallsyms.h>
- #include <linux/kthread.h>
- #include <linux/notifier.h>
- #include <linux/module.h>
-@@ -120,6 +122,10 @@ void softlockup_tick(void)
- 	printk(KERN_ERR "BUG: soft lockup - CPU#%d stuck for %lus! [%s:%d]\n",
- 			this_cpu, now - touch_timestamp,
- 			current->comm, task_pid_nr(current));
-+#ifdef CONFIG_SOFTLOCKUP_SOFTIRQ_DEBUG
-+	print_symbol(KERN_ERR "Last softirq was %s\n",
-+		(unsigned long) get_last_softirq_action(this_cpu));
-+#endif
- 	if (regs)
- 		show_regs(regs);
- 	else
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index d2099f4..19a7dfc 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -159,6 +159,16 @@ config DETECT_SOFTLOCKUP
- 	   can be detected via the NMI-watchdog, on platforms that
- 	   support it.)
- 
-+config SOFTLOCKUP_SOFTIRQ_DEBUG
-+	bool "Debug softirq lockups"
-+	depends on DETECT_SOFTLOCKUP
-+	default n
-+	help
-+	  If a softlockup happens in a softirq, the softlockup
-+	  stack trace is utterly unhelpful; it will only show the
-+	  stack up to __do_softirq(), since this is where interrupts
-+	  are reenabled.
-+
- config SCHED_DEBUG
- 	bool "Collect scheduler debugging info"
- 	depends on DEBUG_KERNEL && PROC_FS
--- 
-1.5.4.1
+Pid: 3994, comm: bash Not tainted (2.6.26-rc7-00002-g8b2e474-dirty #29)
+EIP: 0060:[<c01e0f06>] EFLAGS: 00010282 CPU: 0
+EIP is at sysfs_remove_group+0x16/0xc0
+EAX: 00000008 EBX: 00000001 ECX: 00000004 EDX: c0694c14
+ESI: 00000004 EDI: c07015fc EBP: f3cbfe9c ESP: f3cbfe80
+ DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+Process bash (pid: 3994, ti=f3cbe000 task=f3cb4f60 task.ti=f3cbe000)
+Stack: c0302262 f4bcda40 f3cbfe98 00000008 00000001 00000004 00000000 f3cbfea8
+       c05880b2 c07576c4 f3cbfec8 c014f567 00000001 00000004 c0753c90 0000001f
+       00000001 fffffffb f3cbfedc c014f5d9 0000001f 00000000 00000004 f3cbff00
+Call Trace:
+ [<c0302262>] ? device_unregister+0x12/0x20
+ [<c05880b2>] ? topology_cpu_callback+0x32/0x70
+ [<c014f567>] ? notifier_call_chain+0x37/0x70
+ [<c014f5d9>] ? __raw_notifier_call_chain+0x19/0x20
+ [<c0586f6e>] ? _cpu_up+0xee/0x100
+ [<c0586fc9>] ? cpu_up+0x49/0x70
+ [<c05678d8>] ? store_online+0x58/0x80
+ [<c0567880>] ? store_online+0x0/0x80
+ [<c0302a6b>] ? sysdev_store+0x2b/0x40
+ [<c01df0f2>] ? sysfs_write_file+0xa2/0x100
+ [<c01a0d06>] ? vfs_write+0x96/0x130
+ [<c01df050>] ? sysfs_write_file+0x0/0x100
+ [<c01a13cd>] ? sys_write+0x3d/0x70
+ [<c010831b>] ? sysenter_past_esp+0x78/0xd1
+ =======================
+Code: 8b 43 04 83 c3 04 85 c0 75 ed 5b 5e 5d c3 8d b4 26 00 00 00 00 55 89 e5 83 ec 1c 89 7d fc 89 d7 89 5d f4 89 75 f8 89 45 f0 8b 12 <8b> 70 1c 85 d2 74 53 89 f0 e8 bc f5 ff ff 85 c0 89 c3 74 59 8b
+EIP: [<c01e0f06>] sysfs_remove_group+0x16/0xc0 SS:ESP 0068:f3cbfe80
 
