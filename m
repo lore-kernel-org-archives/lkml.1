@@ -1,69 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbYFVQaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755581AbYFVQaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755232AbYFVQaP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 12:30:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbYFVQ36
+	id S1755581AbYFVQaj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 12:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbYFVQaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 12:29:58 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50979 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754414AbYFVQ3i (ORCPT
+	Sun, 22 Jun 2008 12:30:30 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:49148 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752122AbYFVQa2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 12:29:38 -0400
-Date: Sun, 22 Jun 2008 09:29:35 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-cc: ecollins@vmware.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       support@vmware.com
-Subject: Re: Linux 2.6.26-rc7
-In-Reply-To: <b6a2187b0806220012t118d85ffp671abf715c14ea94@mail.gmail.com>
-Message-ID: <alpine.LFD.1.10.0806220926150.2926@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0806201626140.3167@woody.linux-foundation.org> <b6a2187b0806220012t118d85ffp671abf715c14ea94@mail.gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 22 Jun 2008 12:30:28 -0400
+Date: Sun, 22 Jun 2008 09:26:55 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: JAILLET <jaillet.christophe@wanadoo.fr>
+Cc: petero2@telia.com, linux <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] drivers/block/pktcdvd.c : avoid useless memset
+Message-Id: <20080622092655.27b2c388.randy.dunlap@oracle.com>
+In-Reply-To: <485E54DB.6060804@wanadoo.fr>
+References: <485E54DB.6060804@wanadoo.fr>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 22 Jun 2008 15:34:19 +0200 JAILLET wrote:
 
-
-On Sun, 22 Jun 2008, Jeff Chua wrote:
-
-> On Sat, Jun 21, 2008 at 7:42 AM, Linus Torvalds
-> <torvalds@linux-foundation.org> wrote:
-> > Another week, another -rc.
-> > Linus Torvalds (4):
-> >      Reinstate ZERO_PAGE optimization in 'get_user_pages()' and fix XIP
+> From: Christophe Jaillet <jaillet.﻿christophe@wanadoo.fr>
 > 
-> [89f5b7da2a6bad2e84670422ab8192382a5aeb9f]
+> Hi, here is a patch against linux/drivers/block/pktcdvd.c which :
 > 
-> This broke vmware 6.0.4.
+> 1) Avoid to 'memset(...,0, ...)' before calling 'init_cdrom_command' 
+> because this function already does it.
+> 
+> 
+> Signed-off-by: Christophe Jaillet <jaillet.﻿christophe@wanadoo.fr>
+> 
+> ---
+> diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
+> index 3ba1df9..8369ebc 100644
+> --- a/drivers/block/pktcdvd.c
+> +++ b/drivers/block/pktcdvd.c
+> @@ -2079,7 +2079,6 @@ static noinline_for_stack int 
+> pkt_write_caching(struct pktcdvd_device *pd,
+> unsigned char buf[64];
+> int ret;
+> 
+> - memset(buf, 0, sizeof(buf));
+> init_cdrom_command(&cgc, buf, sizeof(buf), CGC_DATA_READ);
+> cgc.sense = &sense;
+> cgc.buflen = pd->mode_offset + 12;
+> @@ -2126,7 +2125,6 @@ static noinline_for_stack int 
+> pkt_get_max_speed(struct pktcdvd_device *pd,
+> unsigned char *cap_buf;
+> int ret, offset;
+> 
+> - memset(buf, 0, sizeof(buf));
+> cap_buf = &buf[sizeof(struct mode_page_header) + pd->mode_offset];
+> init_cdrom_command(&cgc, buf, sizeof(buf), CGC_DATA_UNKNOWN);
+> cgc.sense = &sense;
 
-Hmm. Can you see which part of it broke? Was it the "fix XIP" part ot the 
-ZERO_PAGE part? The easiest way to test is to apply this patch, and see 
-(it just disables the XIP part of fix)
+Looks like tbird ate all of the whitespace.
+You can see if Documentation/email-clients.txt has info in it that
+would help you, then resend the patch.
 
-		Linus
+
 ---
- mm/memory.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/mm/memory.c b/mm/memory.c
-index 9aefaae..9056132 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -1023,8 +1023,12 @@ out:
- 	return page;
- 
- bad_page:
-+#if 0
- 	pte_unmap_unlock(ptep, ptl);
- 	return ERR_PTR(-EFAULT);
-+#else
-+	return NULL;
-+#endif
- 
- no_page:
- 	pte_unmap_unlock(ptep, ptl);
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
