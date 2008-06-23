@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758692AbYFWPcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759325AbYFWPft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758692AbYFWPcv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 11:32:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755830AbYFWPcm
+	id S1759325AbYFWPft (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 11:35:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755127AbYFWPfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 11:32:42 -0400
-Received: from rn-out-0910.google.com ([64.233.170.184]:30588 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755634AbYFWPcb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 11:32:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=H642Gi9H6nEPZ2ua99ncIxmMlyT96jb31NCURZz8v18xroaMUutsAd4Lo+nbX9nXFy
-         fvdXByqyttMg7WPjwI8jsk4UIKHbli1Xj1CfdBpc095R0lbJp0VlE7lniepdhZm+4Umc
-         fHAeGI4acIDpx+Lm63KkZARpNDoRMBlxdI3E4=
-Message-ID: <b6a2187b0806230832j10e8be28vc0b05fea233437fa@mail.gmail.com>
-Date: Mon, 23 Jun 2008 23:32:28 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Greg KH" <gregkh@suse.de>
-Subject: Re: [patch 2/5] Reinstate ZERO_PAGE optimization in get_user_pages() and fix XIP
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       "Justin Forbes" <jmforbes@linuxtx.org>,
-       "Zwane Mwaikambo" <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, "Randy Dunlap" <rdunlap@xenotime.net>,
-       "Dave Jones" <davej@redhat.com>,
-       "Chuck Wolber" <chuckw@quantumlinux.com>,
-       "Chris Wedgwood" <reviews@ml.cw.f00f.org>,
-       "Michael Krufky" <mkrufky@linuxtv.org>,
-       "Chuck Ebbert" <cebbert@redhat.com>,
-       "Domenico Andreoli" <cavokz@gmail.com>, "Willy Tarreau" <w@1wt.eu>,
-       "Rodrigo Rubira Branco" <rbranco@la.checkpoint.com>,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Oleg Nesterov" <oleg@tv-sign.ru>, "Nick Piggin" <npiggin@suse.de>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Hugh Dickins" <hugh@veritas.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Roland McGrath" <roland@redhat.com>
-In-Reply-To: <20080622202950.GB20800@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 23 Jun 2008 11:35:41 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55234 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752094AbYFWPfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 11:35:41 -0400
+Subject: Re: [Cluster-devel] Re: [Bug 10827] 2.6.26rc4 GFS2 oops.
+From: Bob Peterson <rpeterso@redhat.com>
+Reply-To: rpeterso@redhat.com
+To: Adrian Bunk <bunk@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cluster-devel@redhat.com,
+       Dave Jones <davej@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       bugme-daemon@bugzilla.kernel.org,
+       Steven Whitehouse <swhiteho@redhat.com>
+In-Reply-To: <20080623151417.GA28779@cs181140183.pp.htv.fi>
+References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
+	 <Jn7irxIunJK.A.nME.ZJDVIB@albercik>
+	 <20080622090906.GD27069@cs181133002.pp.htv.fi>
+	 <1214232039.3724.66.camel@technetium.msp.redhat.com>
+	 <20080623151417.GA28779@cs181140183.pp.htv.fi>
+Content-Type: text/plain
+Organization: Red Hat, Inc.
+Date: Mon, 23 Jun 2008 10:32:42 -0500
+Message-Id: <1214235162.3724.71.camel@technetium.msp.redhat.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080622185327.348377223@mini.kroah.org>
-	 <20080622190140.GD20141@suse.de>
-	 <alpine.LFD.1.10.0806221220530.2926@woody.linux-foundation.org>
-	 <20080622202950.GB20800@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 23, 2008 at 4:29 AM, Greg KH <gregkh@suse.de> wrote:
-> On Sun, Jun 22, 2008 at 12:22:47PM -0700, Linus Torvalds wrote:
->> Let's wait for the vmware breakage report to sort out first.
->>       http://lkml.org/lkml/2008/6/22/10
->> before moving it to -stable.
->
-> Sure, thanks for pointing that out to me, I'll track it as well.
+> Yup, the patch in your Bugzilla is for code that is new in 2.6.26.
+> 
+> Can you push your patch for inclusion into 2.6.26 so that 2.6.26 won't 
+> get released with this regression?
+> 
+> Thanks
+> Adrian
 
-I can confirm that the 2nd patch from Linus fixed the problem.
+Hi Adrian,
 
-               http://lkml.org/lkml/2008/6/22/107
+Unfortunately, I cannot.  All access to the gfs2 "-nmw" git tree is
+controlled by Steve Whitehouse, and he is on vacation/holiday until
+tomorrow.
 
-Sorry it took so long. Traveling.
+I've submitted the patch to cluster-devel, so hopefully he'll push it
+as soon as he returns tomorrow.
 
-Thanks,
-Jeff.
+Regards,
+
+Bob Peterson
+Red Hat GFS
+
+
