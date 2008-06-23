@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759126AbYFWPJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759200AbYFWPMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759126AbYFWPJv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 11:09:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755477AbYFWPJo
+	id S1759200AbYFWPMX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 11:12:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755304AbYFWPMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 11:09:44 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:31344 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754713AbYFWPJo (ORCPT
+	Mon, 23 Jun 2008 11:12:15 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:54112 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755238AbYFWPMO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 11:09:44 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Mon, 23 Jun 2008 11:09:41 -0400 (EDT)
-From: Nicolas Pitre <nico@cam.org>
-X-X-Sender: nico@xanadu.home
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: Pierre Ossman <drzeus@drzeus.cx>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: sdio: bad CISTPL_FUNCE error
-In-reply-to: <485FAF34.8000609@atmel.com>
-Message-id: <alpine.LFD.1.10.0806231059250.2979@xanadu.home>
-References: <485BCBB3.20405@atmel.com>
- <alpine.LFD.1.10.0806211045390.2979@xanadu.home> <485FAF34.8000609@atmel.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 23 Jun 2008 11:12:14 -0400
+Date: Mon, 23 Jun 2008 11:12:13 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: David Vrabel <david.vrabel@csr.com>
+cc: Kernel development list <linux-kernel@vger.kernel.org>,
+       AntonioLin <antonio.lin@alcormicro.com>, <linux-usb@vger.kernel.org>,
+       "Perez-Gonzalez, Inaky" <inaky.perez-gonzalez@intel.com>
+Subject: Re: Scatter-gather list constraints
+In-Reply-To: <485FB730.2010705@csr.com>
+Message-ID: <Pine.LNX.4.44L0.0806231109280.2556-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jun 2008, Nicolas Ferre wrote:
+On Mon, 23 Jun 2008, David Vrabel wrote:
 
-> Here is the log :
-> mmc0: bad function CISTPL_FUNCE size 28 type 1
+> Note that this 1024 byte multiple is for one particular WUSB mass
+> storage device.  The WUSB standard permits max packet sizes of up 3584
+> (in multiples of 512), but I suspect WUSB mass storage devices will only
+> use 512, 1024, or 2048.
+> 
+> For a solution, we may be able to do something if the HWA host
+> controller is passed a single URB with an s-g list (rather than one URB
+> per s-g list entry) and was careful about how it segmented the URB into
+> transfers to the rpipe.
 
-If you look in cistpl_funce_func() you'll find this code:
+That would be ideal.  However there is no way to pass an S-G list along 
+with an URB; there's no field for it in the data structure.  And none 
+of the existing host controller drivers support such a thing.
 
-        vsn = func->card->cccr.sdio_vsn;
-        min_size = (vsn == SDIO_SDIO_REV_1_00) ? 28 : 42;
-        if (size < min_size || buf[0] != 1)
-                return -EINVAL;
+I suppose we could add a field to struct urb and add a flag indicating 
+whether the controller driver supports S-G lists.
 
-I suspect your card might be buggy wrt the SDIO standard.
+Alan Stern
 
-You could try printing out the value of vsn here, and then hardcode it 
-to SDIO_SDIO_REV_1_00 to see if that helps.
-
-
-Nicolas
