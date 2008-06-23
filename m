@@ -1,88 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757777AbYFWOLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbYFWOMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757777AbYFWOLX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 10:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbYFWOLQ
+	id S1757983AbYFWOMW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 10:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbYFWOMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 10:11:16 -0400
-Received: from mail.queued.net ([207.210.101.209]:2496 "EHLO mail.queued.net"
+	Mon, 23 Jun 2008 10:12:15 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:36030 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751641AbYFWOLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 10:11:15 -0400
-Date: Mon, 23 Jun 2008 10:13:52 -0400
-From: Andres Salomon <dilinger@queued.net>
-To: akpm@linux-foundation.org
-Cc: drzeus-sdhci@drzeus.cx, sdhci-devel@list.drzeus.cx,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] [OLPC] sdhci: add quirk for the Marvell CaFe's interrupt
- timeout
-Message-ID: <20080623101352.3bbaf5b0@xo-debian>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1752705AbYFWOMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 10:12:14 -0400
+Message-ID: <485FAF34.8000609@atmel.com>
+Date: Mon, 23 Jun 2008 16:12:04 +0200
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Nicolas Pitre <nico@cam.org>
+CC: Pierre Ossman <drzeus@drzeus.cx>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: sdio: bad CISTPL_FUNCE error
+References: <485BCBB3.20405@atmel.com> <alpine.LFD.1.10.0806211045390.2979@xanadu.home>
+In-Reply-To: <alpine.LFD.1.10.0806211045390.2979@xanadu.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Nicolas Pitre :
+> On Fri, 20 Jun 2008, Nicolas Ferre wrote:
+> 
+>> Hi Pierre,
+>>
+>> While trying to setup a GPS SDIO card, I experience the following error:
+>> "mmc0: bad CISTPL_FUNCE size 28 type 1"
+> 
+> Could you apply this patch and see what it shows:
+> 
+> diff --git a/drivers/mmc/core/sdio_cis.c b/drivers/mmc/core/sdio_cis.c
+> index d5e51b1..60ec4d3 100644
+> --- a/drivers/mmc/core/sdio_cis.c
+> +++ b/drivers/mmc/core/sdio_cis.c
+> @@ -149,8 +149,9 @@ static int cistpl_funce(struct mmc_card *card, struct sdio_func *func,
+>  		ret = cistpl_funce_common(card, buf, size);
+>  
+>  	if (ret) {
+> -		printk(KERN_ERR "%s: bad CISTPL_FUNCE size %u "
+> -		       "type %u\n", mmc_hostname(card->host), size, buf[0]);
+> +		printk(KERN_ERR "%s: bad %s CISTPL_FUNCE size %u type %u\n",
+> +		       mmc_hostname(card->host), func ? "function" : "common",
+> +		       size, buf[0]);
+>  		return ret;
+>  	}
+>  
+> 
+>> I use a combo card but without mirco sd card inserted.
+>> http://www.spectec.com.tw/sdg810.htm
+>>
+>> Tracing in sdio_cis.c file, I print the tpl_code (line 216).
+>> I have 3 successive codes : 0xff, 0x21 & 0x22.
+> 
+> Again that would be good to know if/when func is NULL when those are 
+> parsed.
 
-The CaFe chip has a hardware bug that ends up with us getting a timeout
-value that's too small, causing the following sorts of problems:
+Here is the log :
+mmc0: bad function CISTPL_FUNCE size 28 type 1
 
-[   60.525138] mmcblk0: error -110 transferring data
-[   60.531477] end_request: I/O error, dev mmcblk0, sector 1484353
-[   60.533371] Buffer I/O error on device mmcblk0p2, logical block 181632
-[   60.533371] lost page write due to I/O error on mmcblk0p2
+with code 0x22.
 
-Presumably this is an off-by-one error in the hardware.  Incrementing
-the timeout count value that we stuff into the TIMEOUT_CONTROL register
-gets us a value that works.  This bug was originally discovered by
-Pierre Ossman, I believe.
-
-[thanks to Robert Millan for proving that this was still a problem]
-
-Signed-off-by: Andres Salomon <dilinger@debian.org>
----
- drivers/mmc/host/sdhci.c |   12 +++++++++++-
- 1 files changed, 11 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 5b74c8c..2b3f06a 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -57,6 +57,8 @@ static unsigned int debug_quirks = 0;
- #define SDHCI_QUIRK_RESET_AFTER_REQUEST			(1<<8)
- /* Controller needs voltage and power writes to happen separately */
- #define SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER		(1<<9)
-+/* Controller has an off-by-one issue with timeout value */
-+#define SDHCI_QUIRK_INCR_TIMEOUT_CONTROL		(1<<10)
- 
- static const struct pci_device_id pci_ids[] __devinitdata = {
- 	{
-@@ -134,7 +136,8 @@ static const struct pci_device_id pci_ids[] __devinitdata = {
- 		.device         = PCI_DEVICE_ID_MARVELL_CAFE_SD,
- 		.subvendor      = PCI_ANY_ID,
- 		.subdevice      = PCI_ANY_ID,
--		.driver_data    = SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER,
-+		.driver_data    = SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER |
-+				  SDHCI_QUIRK_INCR_TIMEOUT_CONTROL,
- 	},
- 
- 	{
-@@ -479,6 +482,13 @@ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
- 			break;
- 	}
- 
-+	/*
-+	 * Compensate for an off-by-one error in the CaFe hardware; otherwise,
-+	 * a too-small count gives us interrupt timeouts.
-+	 */
-+	if ((host->chip->quirks & SDHCI_QUIRK_INCR_TIMEOUT_CONTROL))
-+		count++;
-+
- 	if (count >= 0xF) {
- 		printk(KERN_WARNING "%s: Too large timeout requested!\n",
- 			mmc_hostname(host->mmc));
+Thanks for your help. Regards,
 -- 
-1.5.5.3
+Nicolas Ferre
 
