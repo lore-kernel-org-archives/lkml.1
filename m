@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755063AbYFWWgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755701AbYFWWiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755063AbYFWWgX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 18:36:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbYFWWgO
+	id S1755701AbYFWWiY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 18:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbYFWWiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 18:36:14 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:59270 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751680AbYFWWgN (ORCPT
+	Mon, 23 Jun 2008 18:38:15 -0400
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:30078 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752605AbYFWWiO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 18:36:13 -0400
-Date: Mon, 23 Jun 2008 15:34:50 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Louis Rilling <Louis.Rilling@kerlabs.com>, linux-kernel@vger.kernel.org,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [PATCH 0/5][BUGFIX] configfs: Fix deadlock of rename() vs
-	rmdir()
-Message-ID: <20080623223450.GH592@mail.oracle.com>
-Mail-Followup-To: Louis Rilling <Louis.Rilling@kerlabs.com>,
-	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-References: <20080616170057.399713501@kerlabs.com> <20080616232657.GE6441@mail.oracle.com>
+	Mon, 23 Jun 2008 18:38:14 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=fm8HT4t2N+v8zwoVC0R82JBIxUSeUtN0KVqpH6vDTsiCKvGHi04ZnJ/JIeZ59uPFlCMh6ysdz7VEKR3bZSADPmzN4oGFBUFV3Ytmdi7ee2LTPB25F+EFxJ9E/yD+/vh5j4hU8UcZUg5lBNN7YGmY45UiqyRoep9AcYPWgb+GSPQ=  ;
+X-YMail-OSG: F1yYuisVM1lM3mSjXmjEitA6cDccJj8w0.7q9CBcpMxMcoOaVyTfIJ3aVzqr40UaxL3DF1._tVI8OxW1WD280o77ISzmtKnj63jZfqBASWMWAdBjFW8MdzVpc_OGMMqbCg8-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Subject: Re: [PATCH] USB: fix possible memory leak in pxa27x_udc
+Date: Mon, 23 Jun 2008 15:38:12 -0700
+User-Agent: KMail/1.9.9
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Daniel =?iso-8859-1?q?Marjam=E4ki?= <danielm77@spray.se>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+References: <20080622090813.GA11823@joi>
+In-Reply-To: <20080622090813.GA11823@joi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080616232657.GE6441@mail.oracle.com>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Message-Id: <200806231538.12199.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 16, 2008 at 04:26:57PM -0700, Joel Becker wrote:
-> 	Ok, this is in-tree for the next merge.  Thanks.
+On Sunday 22 June 2008, Marcin Slusarz wrote:
 
-	Btw, we still need to solve the lockdep issue.  I'm leaning
-towards turning it off for attach/detach_groups(), because any CHILD+N
-level won't mesh with the VFS anyway.
-	We also need a comment on detach_group() pointing out its
-recursive locking.  It's there in the code, but it's not obvious.
+> --- a/drivers/usb/gadget/pxa27x_udc.c
+> +++ b/drivers/usb/gadget/pxa27x_udc.c
+> @@ -650,8 +650,11 @@ pxa_ep_alloc_request(struct usb_ep *_ep, gfp_t gfp_flags)
+>  {
+>  	struct pxa27x_request *req;
+>  
+> +	if (!_ep)
+> +		return NULL;
+> +
 
-Joel
+Correct enough as it goes, except that it *can't* be null by virtue
+of how it's called.  See <include/linux/usb/gadget.h> for:
 
--- 
+static inline struct usb_request *usb_ep_alloc_request(struct usb_ep *ep,
+                                                       gfp_t gfp_flags)
+{
+        return ep->ops->alloc_request(ep, gfp_flags);
+}
 
-"Not everything that can be counted counts, and not everything
- that counts can be counted."
-        - Albert Einstein 
+If it were null it couldn't get here.  A better fix would just
+remove the null check here (and possibly elsewhere).
 
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+- Dave
+
+
+>  	req = kzalloc(sizeof *req, gfp_flags);
+> -	if (!req || !_ep)
+> +	if (!req)
+>  		return NULL;
+>  
+>  	INIT_LIST_HEAD(&req->queue);
+> -- 
+> 1.5.4.5
+> 
+
+
