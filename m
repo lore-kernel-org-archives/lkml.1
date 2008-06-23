@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758984AbYFWQ67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759182AbYFWRAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758984AbYFWQ67 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 12:58:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755292AbYFWQ6w
+	id S1759182AbYFWRAS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 13:00:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754602AbYFWRAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 12:58:52 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:42572 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753635AbYFWQ6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 12:58:51 -0400
-Message-ID: <485FD644.80208@sgi.com>
-Date: Mon, 23 Jun 2008 09:58:44 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Vegard Nossum <vegard.nossum@gmail.com>, Adrian Bunk <bunk@kernel.org>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org,
-       Gautham R Shenoy <ego@in.ibm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: v2.6.26-rc7: BUG: unable to handle kernel NULL pointer dereference
-References: <20080622125633.GA8166@damson.getinternet.no> <20080622155627.GA20122@cs181140183.pp.htv.fi> <19f34abd0806220929y1ca9d0c4nbf480473b7ce018a@mail.gmail.com> <200806231326.11328.rusty@rustcorp.com.au>
-In-Reply-To: <200806231326.11328.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Jun 2008 13:00:07 -0400
+Received: from main.gmane.org ([80.91.229.2]:49801 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753018AbYFWRAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 13:00:06 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Ian Soboroff <isoboroff@gmail.com>
+Subject: Re: Oops in NFS (RHEL4, but also in kernel bugzilla)
+Date: Mon, 23 Jun 2008 12:47:57 -0400
+Message-ID: <9cfod5sayiq.fsf@rogue.ncsl.nist.gov>
+References: <6278d2220806181933l74719bdbkea02f697ee424157@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Complaints-To: usenet@ger.gmane.org
+Cc: daniel.blueman@gmail.com
+X-Gmane-NNTP-Posting-Host: rogue.ncsl.nist.gov
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/22.1.91 (darwin)
+Cancel-Lock: sha1:+nmFkNNe9kZ+t7YqBzwMVsbsCFo=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Monday 23 June 2008 02:29:07 Vegard Nossum wrote:
->> And the (cpu < nr_cpu_ids) fails because the CPU has just been
->> offlined (or failed to initialize, but it's the same thing), while
->> NR_CPUS is the value that was compiled in as CONFIG_NR_CPUS (so the
->> former check will always be true).
->>
->> I don't think it is valid to ask for a per_cpu() variable on a CPU
->> which does not exist, though
-> 
-> Yes it is.  As long as cpu_possible(cpu), per_cpu(cpu) is valid.
-> 
-> The number check should be removed: checking cpu_possible() is sufficient.
-> 
-> Hope that helps,
-> Rusty.
+"Daniel J Blueman" <daniel.blueman@gmail.com> writes:
 
-I don't see a check for index being out of range in cpu_possible().
+> Has 4KB stacks been disabled? You can check the config file for
+> CONFIG_4KSTACKS.
 
-Thanks,
-Mike
+This kernel has 4KSTACKS enabled.  
+
+> It may also be worth feeding that into the bugzilla entry, to
+> eliminate one possibility, as 'bad EIP value' looks suspicious of
+> stack corrption.
+
+Ok, will do.  Although that bugzilla entry is from 2007 and no one seems
+to have looked at it at all...
+
+Ian
+
