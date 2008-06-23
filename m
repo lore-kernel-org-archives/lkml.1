@@ -1,317 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbYFWXGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbYFWXGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753957AbYFWXGl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 19:06:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYFWXFl
+	id S1753253AbYFWXGG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 19:06:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbYFWXFj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 19:05:41 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:56978 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751401AbYFWXFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 19:05:21 -0400
-Date: Tue, 24 Jun 2008 00:05:18 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Jon Tollefson <kniht@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Nishanth Aravamudan <nacc@us.ibm.com>,
-       Adam Litke <agl@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 1/2] hugetlb reservations: move region tracking earlier
-Message-ID: <20080623230517.GA4564@csn.ul.ie>
-References: <1214242533-12104-1-git-send-email-apw@shadowen.org> <1214242533-12104-2-git-send-email-apw@shadowen.org>
+	Mon, 23 Jun 2008 19:05:39 -0400
+Received: from lsg.lsg.lab.novell.com ([151.155.230.1]:8681 "EHLO
+	lsg.lsg.lab.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752073AbYFWXEp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 19:04:45 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH 2/3] sched: only run newidle if previous task was CFS
+To: mingo@elte.hu, rostedt@goodmis.org, tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org, peterz@infradead.org,
+       linux-rt-users@vger.kernel.org, ghaskins@novell.com, dbahi@novell.com
+Date: Mon, 23 Jun 2008 17:04:45 -0600
+Message-ID: <20080623230445.31515.41728.stgit@lsg.lsg.lab.novell.com>
+In-Reply-To: <20080623225645.31515.36393.stgit@lsg.lsg.lab.novell.com>
+References: <20080623225645.31515.36393.stgit@lsg.lsg.lab.novell.com>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1214242533-12104-2-git-send-email-apw@shadowen.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (23/06/08 18:35), Andy Whitcroft didst pronounce:
-> Move the region tracking code much earlier so we can use it for page
-> presence tracking later on.  No code is changed, just its location.
-> 
-> Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+A system that tends to overschedule (such as PREEMPT_RT) will naturally
+tend to newidle balance often as well.  This may have quite a negative
+impact on performance.  This patch attempts to address the overzealous
+newidle balancing by only allowing it to occur if the previous task
+was SCHED_OTHER.
 
-Straight-forward code-move.
+Some may argue that if the system is going idle, it should try to
+newidle balance to keep it doing useful work.  But the fact is that
+spending too much time in the load-balancing code demonstrably hurts
+performance as well.  Running oprofile on the system with various
+workloads has shown that we can sometimes spend a majority of our
+cpu-time running load_balance_newidle.  Additionally, disabling
+newidle balancing can make said workloads increase in performance by
+up to 200%.  Obviously disabling the feature outright is not sustainable,
+but hopefully we can make it smarter. 
 
-Acked-by: Mel Gorman <mel@csn.ul.ie>
+This code assumes that if there arent any CFS tasks present on the queue,
+it was probably already balanced.
 
-> ---
->  mm/hugetlb.c |  246 +++++++++++++++++++++++++++++----------------------------
->  1 files changed, 125 insertions(+), 121 deletions(-)
-> 
-> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> index 0f76ed1..d701e39 100644
-> --- a/mm/hugetlb.c
-> +++ b/mm/hugetlb.c
-> @@ -47,6 +47,131 @@ static unsigned long __initdata default_hstate_size;
->  static DEFINE_SPINLOCK(hugetlb_lock);
->  
->  /*
-> + * Region tracking -- allows tracking of reservations and instantiated pages
-> + *                    across the pages in a mapping.
-> + */
-> +struct file_region {
-> +	struct list_head link;
-> +	long from;
-> +	long to;
-> +};
-> +
-> +static long region_add(struct list_head *head, long f, long t)
-> +{
-> +	struct file_region *rg, *nrg, *trg;
-> +
-> +	/* Locate the region we are either in or before. */
-> +	list_for_each_entry(rg, head, link)
-> +		if (f <= rg->to)
-> +			break;
-> +
-> +	/* Round our left edge to the current segment if it encloses us. */
-> +	if (f > rg->from)
-> +		f = rg->from;
-> +
-> +	/* Check for and consume any regions we now overlap with. */
-> +	nrg = rg;
-> +	list_for_each_entry_safe(rg, trg, rg->link.prev, link) {
-> +		if (&rg->link == head)
-> +			break;
-> +		if (rg->from > t)
-> +			break;
-> +
-> +		/* If this area reaches higher then extend our area to
-> +		 * include it completely.  If this is not the first area
-> +		 * which we intend to reuse, free it. */
-> +		if (rg->to > t)
-> +			t = rg->to;
-> +		if (rg != nrg) {
-> +			list_del(&rg->link);
-> +			kfree(rg);
-> +		}
-> +	}
-> +	nrg->from = f;
-> +	nrg->to = t;
-> +	return 0;
-> +}
-> +
-> +static long region_chg(struct list_head *head, long f, long t)
-> +{
-> +	struct file_region *rg, *nrg;
-> +	long chg = 0;
-> +
-> +	/* Locate the region we are before or in. */
-> +	list_for_each_entry(rg, head, link)
-> +		if (f <= rg->to)
-> +			break;
-> +
-> +	/* If we are below the current region then a new region is required.
-> +	 * Subtle, allocate a new region at the position but make it zero
-> +	 * size such that we can guarantee to record the reservation. */
-> +	if (&rg->link == head || t < rg->from) {
-> +		nrg = kmalloc(sizeof(*nrg), GFP_KERNEL);
-> +		if (!nrg)
-> +			return -ENOMEM;
-> +		nrg->from = f;
-> +		nrg->to   = f;
-> +		INIT_LIST_HEAD(&nrg->link);
-> +		list_add(&nrg->link, rg->link.prev);
-> +
-> +		return t - f;
-> +	}
-> +
-> +	/* Round our left edge to the current segment if it encloses us. */
-> +	if (f > rg->from)
-> +		f = rg->from;
-> +	chg = t - f;
-> +
-> +	/* Check for and consume any regions we now overlap with. */
-> +	list_for_each_entry(rg, rg->link.prev, link) {
-> +		if (&rg->link == head)
-> +			break;
-> +		if (rg->from > t)
-> +			return chg;
-> +
-> +		/* We overlap with this area, if it extends futher than
-> +		 * us then we must extend ourselves.  Account for its
-> +		 * existing reservation. */
-> +		if (rg->to > t) {
-> +			chg += rg->to - t;
-> +			t = rg->to;
-> +		}
-> +		chg -= rg->to - rg->from;
-> +	}
-> +	return chg;
-> +}
-> +
-> +static long region_truncate(struct list_head *head, long end)
-> +{
-> +	struct file_region *rg, *trg;
-> +	long chg = 0;
-> +
-> +	/* Locate the region we are either in or before. */
-> +	list_for_each_entry(rg, head, link)
-> +		if (end <= rg->to)
-> +			break;
-> +	if (&rg->link == head)
-> +		return 0;
-> +
-> +	/* If we are in the middle of a region then adjust it. */
-> +	if (end > rg->from) {
-> +		chg = rg->to - end;
-> +		rg->to = end;
-> +		rg = list_entry(rg->link.next, typeof(*rg), link);
-> +	}
-> +
-> +	/* Drop any remaining regions. */
-> +	list_for_each_entry_safe(rg, trg, rg->link.prev, link) {
-> +		if (&rg->link == head)
-> +			break;
-> +		chg += rg->to - rg->from;
-> +		list_del(&rg->link);
-> +		kfree(rg);
-> +	}
-> +	return chg;
-> +}
-> +
-> +/*
->   * Convert the address within this vma to the page offset within
->   * the mapping, in base page units.
->   */
-> @@ -649,127 +774,6 @@ static void return_unused_surplus_pages(struct hstate *h,
->  	}
->  }
->  
-> -struct file_region {
-> -	struct list_head link;
-> -	long from;
-> -	long to;
-> -};
-> -
-> -static long region_add(struct list_head *head, long f, long t)
-> -{
-> -	struct file_region *rg, *nrg, *trg;
-> -
-> -	/* Locate the region we are either in or before. */
-> -	list_for_each_entry(rg, head, link)
-> -		if (f <= rg->to)
-> -			break;
-> -
-> -	/* Round our left edge to the current segment if it encloses us. */
-> -	if (f > rg->from)
-> -		f = rg->from;
-> -
-> -	/* Check for and consume any regions we now overlap with. */
-> -	nrg = rg;
-> -	list_for_each_entry_safe(rg, trg, rg->link.prev, link) {
-> -		if (&rg->link == head)
-> -			break;
-> -		if (rg->from > t)
-> -			break;
-> -
-> -		/* If this area reaches higher then extend our area to
-> -		 * include it completely.  If this is not the first area
-> -		 * which we intend to reuse, free it. */
-> -		if (rg->to > t)
-> -			t = rg->to;
-> -		if (rg != nrg) {
-> -			list_del(&rg->link);
-> -			kfree(rg);
-> -		}
-> -	}
-> -	nrg->from = f;
-> -	nrg->to = t;
-> -	return 0;
-> -}
-> -
-> -static long region_chg(struct list_head *head, long f, long t)
-> -{
-> -	struct file_region *rg, *nrg;
-> -	long chg = 0;
-> -
-> -	/* Locate the region we are before or in. */
-> -	list_for_each_entry(rg, head, link)
-> -		if (f <= rg->to)
-> -			break;
-> -
-> -	/* If we are below the current region then a new region is required.
-> -	 * Subtle, allocate a new region at the position but make it zero
-> -	 * size such that we can guarantee to record the reservation. */
-> -	if (&rg->link == head || t < rg->from) {
-> -		nrg = kmalloc(sizeof(*nrg), GFP_KERNEL);
-> -		if (!nrg)
-> -			return -ENOMEM;
-> -		nrg->from = f;
-> -		nrg->to   = f;
-> -		INIT_LIST_HEAD(&nrg->link);
-> -		list_add(&nrg->link, rg->link.prev);
-> -
-> -		return t - f;
-> -	}
-> -
-> -	/* Round our left edge to the current segment if it encloses us. */
-> -	if (f > rg->from)
-> -		f = rg->from;
-> -	chg = t - f;
-> -
-> -	/* Check for and consume any regions we now overlap with. */
-> -	list_for_each_entry(rg, rg->link.prev, link) {
-> -		if (&rg->link == head)
-> -			break;
-> -		if (rg->from > t)
-> -			return chg;
-> -
-> -		/* We overlap with this area, if it extends futher than
-> -		 * us then we must extend ourselves.  Account for its
-> -		 * existing reservation. */
-> -		if (rg->to > t) {
-> -			chg += rg->to - t;
-> -			t = rg->to;
-> -		}
-> -		chg -= rg->to - rg->from;
-> -	}
-> -	return chg;
-> -}
-> -
-> -static long region_truncate(struct list_head *head, long end)
-> -{
-> -	struct file_region *rg, *trg;
-> -	long chg = 0;
-> -
-> -	/* Locate the region we are either in or before. */
-> -	list_for_each_entry(rg, head, link)
-> -		if (end <= rg->to)
-> -			break;
-> -	if (&rg->link == head)
-> -		return 0;
-> -
-> -	/* If we are in the middle of a region then adjust it. */
-> -	if (end > rg->from) {
-> -		chg = rg->to - end;
-> -		rg->to = end;
-> -		rg = list_entry(rg->link.next, typeof(*rg), link);
-> -	}
-> -
-> -	/* Drop any remaining regions. */
-> -	list_for_each_entry_safe(rg, trg, rg->link.prev, link) {
-> -		if (&rg->link == head)
-> -			break;
-> -		chg += rg->to - rg->from;
-> -		list_del(&rg->link);
-> -		kfree(rg);
-> -	}
-> -	return chg;
-> -}
-> -
->  /*
->   * Determine if the huge page at addr within the vma has an associated
->   * reservation.  Where it does not we will need to logically increase
-> -- 
-> 1.5.6.205.g7ca3a
-> 
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+---
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+ kernel/sched.c      |    4 +---
+ kernel/sched_fair.c |    9 +++++++++
+ 2 files changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 490e6bc..3efbbc5 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1310,6 +1310,7 @@ static unsigned long source_load(int cpu, int type);
+ static unsigned long target_load(int cpu, int type);
+ static unsigned long cpu_avg_load_per_task(int cpu);
+ static int task_hot(struct task_struct *p, u64 now, struct sched_domain *sd);
++static void idle_balance(int this_cpu, struct rq *this_rq);
+ #endif /* CONFIG_SMP */
+ 
+ #include "sched_stats.h"
+@@ -4170,9 +4171,6 @@ asmlinkage void __sched __schedule(void)
+ 		prev->sched_class->pre_schedule(rq, prev);
+ #endif
+ 
+-	if (unlikely(!rq->nr_running))
+-		idle_balance(cpu, rq);
+-
+ 	prev->sched_class->put_prev_task(rq, prev);
+ 	next = pick_next_task(rq, prev);
+ 
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 0ade6f8..2e22529 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -1426,6 +1426,14 @@ static void moved_group_fair(struct task_struct *p)
+ }
+ #endif
+ 
++#ifdef CONFIG_SMP
++static void pre_schedule_fair(struct rq *rq, struct task_struct *prev)
++{
++	if (unlikely(!rq->nr_running))
++		idle_balance(rq->cpu, rq);
++}
++#endif
++
+ /*
+  * All the scheduling class methods:
+  */
+@@ -1446,6 +1454,7 @@ static const struct sched_class fair_sched_class = {
+ #ifdef CONFIG_SMP
+ 	.load_balance		= load_balance_fair,
+ 	.move_one_task		= move_one_task_fair,
++	.pre_schedule		= pre_schedule_fair,
+ #endif
+ 
+ 	.set_curr_task          = set_curr_task_fair,
+
