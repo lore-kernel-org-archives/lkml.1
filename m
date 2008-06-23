@@ -1,56 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753310AbYFWEaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550AbYFWEzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753310AbYFWEaK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 00:30:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbYFWE36
+	id S1753550AbYFWEzk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 00:55:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbYFWEzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 00:29:58 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:46696 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750764AbYFWE36 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 00:29:58 -0400
-Date: Mon, 23 Jun 2008 09:59:22 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Abhishek Sagar <sagar.abhishek@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Masami Hiramatsu <mhiramat@redhat.com>, jkenisto@us.ibm.com,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/4] kprobes: enable clean usage of get_kprobe
-Message-ID: <20080623042922.GA4730@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <485D45C3.9060605@gmail.com>
+	Mon, 23 Jun 2008 00:55:24 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:62274 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751015AbYFWEzF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 00:55:05 -0400
+Message-ID: <485F2CA2.8060106@ah.jp.nec.com>
+Date: Mon, 23 Jun 2008 13:54:58 +0900
+From: Takenori Nagano <t-nagano@ah.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <485D45C3.9060605@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Keiichi KII <kii@linux.bs1.fc.nec.co.jp>
+Subject: Re: [patch] memory reclaim more  efficiently
+References: <485EF481.30409@ah.jp.nec.com> <20080623102854.37BE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20080623102854.37BE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 21, 2008 at 11:47:39PM +0530, Abhishek Sagar wrote:
-> Allow clean use of get_kprobe() outside of core kprobe code. Ftrace makes use
-> of get_kprobe to identify probes installed on mcount call-sites.
-> 
-> Signed-off-by: Abhishek Sagar <sagar.abhishek@gmail.com>
+KOSAKI Motohiro wrote:
+> > Hi nagano-san,
+> >
+>> >> In shrink_zone(), system can not return to user mode before it finishes to
+>> >> search LRU list. IMHO, it is very wasteful, since the user processes stay
+>> >> unnecessarily long time in shrink_zone() loop and application response time
+>> >> becomes relatively bad. This patch changes shrink_zone() that it finishes
+memory
+>> >> reclaim when it reclaims enough memory.
+>> >>
+>> >> the conditions to end searching:
+>> >>
+>> >> 1. order of request page is 0
+>> >> 2. process is not kswapd.
+>> >> 3. satisfy the condition to return try_to_free_pages()
+>> >>    # nr_reclaim > SWAP_CLUSTER_MAX
 
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Hi Kosaki-san,
 
-> ---
-> 
-> diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
-> index 1036631..04a3556 100644
-> --- a/include/linux/kprobes.h
-> +++ b/include/linux/kprobes.h
-> @@ -259,6 +259,10 @@ void recycle_rp_inst(struct kretprobe_instance *ri, struct hlist_head *head);
->  struct jprobe;
->  struct kretprobe;
-> 
-> +static inline struct kprobe *get_kprobe(void *addr)
-> +{
-> +	return NULL;
-> +}
->  static inline struct kprobe *kprobe_running(void)
->  {
->  	return NULL;
+> > I have 3 question.
+> >
+> > 1. Do you have any performance number?
+
+I tested some, but I don't collect data.  :-(
+I will test again and post results.
+
+> > 2. I think this patch advocate many try_to_free_pages() called is better than
+> >    one try_to_free_page waste long time. right?
+> >    and, why do you think so?
+
+I think user process is stopped long time on memory reclaim is not good.
+It is enough for user process to reclaim memory is needed. We have kswapd memory
+reclaim daemon. I think memory reclaim is kswapd's job.
+
+> > 3. if this patch improve perfomance, I guess DEF_PRIORITY is
+> >    too small on your machine.
+> >    if DEF_PRIORITY is proportional to system memory, do your problem are solved?
+
+Your idea is so nice.  :-)
+IMHO, it is not perfect if reclaimable memory is not on front.
+
+Thanks,
+  Takenori
