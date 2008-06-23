@@ -1,90 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758852AbYFWPQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758841AbYFWPSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758852AbYFWPQW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 11:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755286AbYFWPQO
+	id S1758841AbYFWPSZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 11:18:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755148AbYFWPSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 11:16:14 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:50040 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755229AbYFWPQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 11:16:13 -0400
-Date: Mon, 23 Jun 2008 18:14:17 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Bob Peterson <rpeterso@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cluster-devel@redhat.com,
-       Dave Jones <davej@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bugme-daemon@bugzilla.kernel.org,
-       Steven Whitehouse <swhiteho@redhat.com>
-Subject: Re: [Cluster-devel] Re: [Bug 10827] 2.6.26rc4 GFS2 oops.
-Message-ID: <20080623151417.GA28779@cs181140183.pp.htv.fi>
-References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik> <Jn7irxIunJK.A.nME.ZJDVIB@albercik> <20080622090906.GD27069@cs181133002.pp.htv.fi> <1214232039.3724.66.camel@technetium.msp.redhat.com>
+	Mon, 23 Jun 2008 11:18:18 -0400
+Received: from rn-out-0910.google.com ([64.233.170.188]:12294 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754445AbYFWPSR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 11:18:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=E1mg4XQsLDl7KK78Io9ac7YwqOTnU01sOyXT1MbDTaMKtdk2Lgx1zhZIKyUWmkUjEi
+         /n/Z5jsIeymDq88UzxTi3ZZ4rJVmQMUNfRygJI6gQAaNksEWMMscEESsjIGNOWTLo+e1
+         Ul+26dKtdwr7MbblEJhRgN15adyboh0efjkMc=
+Message-ID: <b6a2187b0806230818g28f6731cua588c8db711d10f2@mail.gmail.com>
+Date: Mon, 23 Jun 2008 23:18:09 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.26-rc7
+Cc: ecollins@vmware.com,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       support@vmware.com
+In-Reply-To: <alpine.LFD.1.10.0806220926150.2926@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1214232039.3724.66.camel@technetium.msp.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <alpine.LFD.1.10.0806201626140.3167@woody.linux-foundation.org>
+	 <b6a2187b0806220012t118d85ffp671abf715c14ea94@mail.gmail.com>
+	 <alpine.LFD.1.10.0806220926150.2926@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 23, 2008 at 09:40:39AM -0500, Bob Peterson wrote:
-> On Sun, 2008-06-22 at 12:09 +0300, Adrian Bunk wrote:
-> > On Sat, Jun 14, 2008 at 10:12:03PM +0200, Rafael J. Wysocki wrote:
-> > > This message has been generated automatically as a part of a report
-> > > of recent regressions.
-> > > 
-> > > The following bug entry is on the current list of known regressions
-> > > from 2.6.25.  Please verify if it still should be listed.
-> > > 
-> > > 
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10827
-> > > Subject		: 2.6.26rc4 GFS2 oops.
-> > > Submitter	: Dave Jones <davej@redhat.com>
-> > > Date		: 2008-05-27 15:44 (19 days old)
-> > > References	: http://lkml.org/lkml/2008/5/27/297
-> > 
-> > Dave, what is the status of this bug?
-> > 
-> > It's currently listed as a 2.6.26-rc regression.
-> > 
-> > Is it actually confirmed that 2.6.25 is fine?
-> > 
-> > According to the thread of the bug report there should now be a bug 
-> > report in the Red Hat Bugzilla for it. Bug number?
-> > 
-> > Thanks
-> > Adrian
-> 
-> Hi,
-> 
-> This appears to be a known bug.  There's a Fedora bugzilla record for
-> it here, which contains a patch to fix the problem:
-> 
-> https://bugzilla.redhat.com/show_bug.cgi?id=448866
+On Mon, Jun 23, 2008 at 12:29 AM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
 
-Thanks for the pointer.
+> Hmm. Can you see which part of it broke? Was it the "fix XIP" part ot the
+> ZERO_PAGE part? The easiest way to test is to apply this patch, and see
+> (it just disables the XIP part of fix)
 
-> The bug does not appear to be in 2.6.25; 2.6.25 is fine afaict.
+This one doesn't fix it.
 
-Yup, the patch in your Bugzilla is for code that is new in 2.6.26.
+Thanks,
+Jeff.
 
-Can you push your patch for inclusion into 2.6.26 so that 2.6.26 won't 
-get released with this regression?
-
-> Regards,
-> 
-> Bob Peterson
-> Red Hat GFS
-
-Thanks
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+> ---
+>  mm/memory.c |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
+>
+> diff --git a/mm/memory.c b/mm/memory.c
+> index 9aefaae..9056132 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -1023,8 +1023,12 @@ out:
+>        return page;
+>
+>  bad_page:
+> +#if 0
+>        pte_unmap_unlock(ptep, ptl);
+>        return ERR_PTR(-EFAULT);
+> +#else
+> +       return NULL;
+> +#endif
+>
+>  no_page:
+>        pte_unmap_unlock(ptep, ptl);
+>
