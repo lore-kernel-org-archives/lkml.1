@@ -1,83 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbYFWKhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757291AbYFWKiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756596AbYFWKhh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 06:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754439AbYFWKh3
+	id S1757291AbYFWKiS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 06:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960AbYFWKiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 06:37:29 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:54869 "EHLO
-	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754250AbYFWKh2 (ORCPT
+	Mon, 23 Jun 2008 06:38:06 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:36422 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754680AbYFWKiE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 06:37:28 -0400
-Date: Mon, 23 Jun 2008 16:07:00 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: paulmck@linux.vnet.ibm.com, Dipankar Sarma <dipankar@in.ibm.com>,
-       Gautham Shenoy <ego@in.ibm.com>, laijs@cn.fujitsu.com,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fix rcu vs hotplug race
-Message-ID: <20080623103700.GA4043@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+	Mon, 23 Jun 2008 06:38:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=W1/E9eckYBIN1o/VfxtogZ+lqM2rLGkP2K/mXqZQ5ycltOhAD1MkJ4+A7owwNurH1K
+         yEABkvt0rOlcWGB2arcUKynmP1+wvTdMXEcGiKCTPs0vi8WVNRYnOlGGqT7Wc73gvQV4
+         e3dw4mbAoH2FVhITpQddeKh2mv0TKu9Uvm+Ak=
+Message-ID: <485F7D04.7000609@gmail.com>
+Date: Mon, 23 Jun 2008 12:37:56 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Swiftdove 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Eric Rannaud <eric.rannaud@gmail.com>
+CC: Divyesh Shah <dpshah@google.com>, balbir@linux.vnet.ibm.com,
+       menage@google.com, linux-kernel@vger.kernel.org, axboe@kernel.dk,
+       matt@bluehost.com, roberto@unbit.it, randy.dunlap@oracle.com,
+       akpm@linux-foundation.org
+Subject: Re: i/o bandwidth controller infrastructure
+References: <20030410181011$6d15@gated-at.bofh.it> <aC1Yl-2AL-1@gated-at.bofh.it> <75b07c02-1595-4af2-ac87-3b067459f62e@w8g2000prd.googlegroups.com> <48D0786A-AC3B-46C3-B35C-EAAA47BFAEBC@google.com> <4856EB9D.6070804@gmail.com> <alpine.LFD.1.10.0806221232070.2247@localhost.localdomain>
+In-Reply-To: <alpine.LFD.1.10.0806221232070.2247@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On running kernel compiles in parallel with cpu hotplug,
+Eric Rannaud wrote:
+> On Tue, 17 Jun 2008, Andrea Righi wrote:
+>>> With this bandwidth controller, a cpu-intensive job which otherwise  does
+>>> not care about its IO
+>>> performance needs to be pin-point accurate about IO bandwidth  required in
+>>> order to not suffer
+>>> from cpu-throttling. IMHO, if a cgroup is exceeding its limit for a  given
+>>> resource, the throttling
+>>> should be done _only_ for that resource.
+>> I understand your point of view. It would be nice if we could just
+>> "disable" the i/o for a cgroup that exceeds its limit, instead of
+>> scheduling some sleep()s, so the tasks running in this cgroup would be
+>> able to continue their non-i/o operations as usual.
+>>
+>> However, how to do if the tasks continue to perform i/o ops under this
+>> condition? we could just cache the i/o in memory and at the same time
+>> reduce the i/o priority of those tasks' requests, but this would require
+>> a lot of memory, more space in the page cache, and probably could lead
+>> to potential OOM conditions. A safer approach IMHO is to force the tasks
+>> to wait synchronously on each operation that directly or indirectly
+>> generates i/o. The last one is the solution implemented by this
+>> bandwidth controller.
+> 
+> What about AIO? Is this approach going to make the task sleep as well?
+> Would it better to return from aio_write()/_read() with EAGAIN?
 
-------------[ cut here ]------------
-WARNING: at arch/x86/kernel/smp.c:118
-native_smp_send_reschedule+0x21/0x36()
-Modules linked in:
-Pid: 27483, comm: cc1 Not tainted 2.6.26-rc7 #1
- [<c01217d9>] warn_on_slowpath+0x41/0x5d
- [<c01515b7>] ? generic_file_aio_read+0x10f/0x137
- [<c0151340>] ? file_read_actor+0x0/0xf7
- [<c013ae4c>] ? validate_chain+0xaa/0x29c
- [<c013c854>] ? __lock_acquire+0x612/0x666
- [<c013c854>] ? __lock_acquire+0x612/0x666
- [<c013ae4c>] ? validate_chain+0xaa/0x29c
- [<c01715d3>] ? file_kill+0x2d/0x30
- [<c013cbd7>] ? __lock_release+0x4b/0x51
- [<c01715d3>] ? file_kill+0x2d/0x30
- [<c0110355>] native_smp_send_reschedule+0x21/0x36
- [<c014fe8f>] force_quiescent_state+0x47/0x57
- [<c014fef0>] call_rcu+0x51/0x6d
- [<c01713b3>] __fput+0x130/0x158
- [<c0171231>] fput+0x17/0x19
- [<c016fd99>] filp_close+0x4d/0x57
- [<c016fdff>] sys_close+0x5c/0x97
- [<c0103861>] sysenter_past_esp+0x6a/0xb1
- =======================
----[ end trace aa35f3913ddf2d06 ]---
+Good point. I should check, but it seems sleeps are incorrectly
+performed also for AIO requests. I agree the correct behaviour would be
+to return EAGAIN instead, as you suggested. I'll look at it if nobody
+comes up with a solution.
 
-This is because a reschedule is sent to a CPU which is offline.
-Just ensure that the CPU we send the smp_send_reschedule is actually
-online.
-
-Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
----
- kernel/rcuclassic.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.26-rc7/kernel/rcuclassic.c
-===================================================================
---- linux-2.6.26-rc7.orig/kernel/rcuclassic.c
-+++ linux-2.6.26-rc7/kernel/rcuclassic.c
-@@ -93,7 +93,8 @@ static void force_quiescent_state(struct
- 		cpumask = rcp->cpumask;
- 		cpu_clear(rdp->cpu, cpumask);
- 		for_each_cpu_mask(cpu, cpumask)
--			smp_send_reschedule(cpu);
-+			if (cpu_online(cpu))
-+				smp_send_reschedule(cpu);
- 	}
- }
- #else
--- 
-regards,
-Dhaval
+Thanks,
+-Andrea
