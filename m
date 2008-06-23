@@ -1,156 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752162AbYFWWvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752185AbYFWXEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752162AbYFWWvU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 18:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751022AbYFWWvM
+	id S1752185AbYFWXEq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 19:04:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbYFWXEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 18:51:12 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:62543 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750941AbYFWWvL (ORCPT
+	Mon, 23 Jun 2008 19:04:37 -0400
+Received: from lsg.lsg.lab.novell.com ([151.155.230.1]:8666 "EHLO
+	lsg.lsg.lab.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750958AbYFWXEg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 18:51:11 -0400
-Date: Mon, 23 Jun 2008 15:37:47 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "menage@google.com" <menage@google.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH 4/6] res_counter: basic hierarchy support
-Message-Id: <20080623153747.e20a0485.randy.dunlap@oracle.com>
-In-Reply-To: <20080613183402.4f31eb96.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080613182714.265fe6d2.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080613183402.4f31eb96.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 23 Jun 2008 19:04:36 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH 0/3] RT: scheduler newidle enhancements
+To: mingo@elte.hu, rostedt@goodmis.org, tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org, peterz@infradead.org,
+       linux-rt-users@vger.kernel.org, ghaskins@novell.com, dbahi@novell.com
+Date: Mon, 23 Jun 2008 17:04:35 -0600
+Message-ID: <20080623225645.31515.36393.stgit@lsg.lsg.lab.novell.com>
+User-Agent: StGIT/0.13
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Jun 2008 18:34:02 +0900 KAMEZAWA Hiroyuki wrote:
+Hi Ingo, Steven, Thomas,
+  The following series applies to 25.4-rt6 and is "ready for inclusion" from
+  my perspective.  However, due to their nature I am sure we will want to get
+  some review feedback before being considered for acceptance.
 
-> Add a hierarhy support to res_counter. This patch itself just supports
-> "No Hierarchy" hierarchy, as a default/basic hierarchy system.
-> 
-> Changelog: v3 -> v4.
->   - cut out from hardwall hierarchy patch set.
->   - just support "No hierarchy" model.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  Documentation/controllers/resource_counter.txt |   27 +++++-
->  include/linux/res_counter.h                    |   15 +++
->  kernel/res_counter.c                           |  107 ++++++++++++++++++++-----
->  mm/memcontrol.c                                |    1 
->  4 files changed, 129 insertions(+), 21 deletions(-)
-> 
-> Index: linux-2.6.26-rc5-mm3/kernel/res_counter.c
-> ===================================================================
-> --- linux-2.6.26-rc5-mm3.orig/kernel/res_counter.c
-> +++ linux-2.6.26-rc5-mm3/kernel/res_counter.c
-> +
->  
-> +/**
-> + * res_counter_set_ops() -- reset res->counter.ops to be passed ops.
-> + * @coutner: a counter to be set ops.
+  These patches are probably suitable for consideration for
+  mainline/sched-devel as well, but PREEMPT_RT gains the biggest boost from
+  them since it tends to context switch much more frequently than mainline.
 
-typo:
-    * @counter:
+  This series makes some adjustments to the way we do newidle balancing.
+  These tweaks were discovered while doing some related scheduler R&D that is
+  not quite ready for the light of day.  But these patches do offer a
+  substantial boost (6-12%) in network performance.  They may help in other
+  areas as well, but networking is where our focus remains currently.
 
-> + * @ops: res_counter_ops
-> + *
-> + * This operations is allowed only when there is no parent or parent's
-> + * hierarchy_model == RES_CONT_NO_HIERARCHY. returns 0 at success.
-> + */
-> +
-> +int res_counter_set_ops(struct res_counter *counter,
-> +				struct res_counter_ops *ops)
-> +{
-> +	struct res_counter *parent;
-> +	/*
-> +	 * This operation is allowed only when parents's hierarchy
-> +	 * is NO_HIERARCHY or this is ROOT.
-> +	 */
-> +	parent = counter->parent;
-> +	if (parent && parent->ops.hierarchy_model != RES_CONT_NO_HIERARCHY)
-> +		return -EINVAL;
-> +
-> +	counter->ops = *ops;
-> +
-> +	return 0;
-> +}
-> +
-> +
->  int res_counter_charge_locked(struct res_counter *counter, unsigned long val)
->  {
->  	if (counter->usage + val > counter->limit) {
+  I think the patch 1/3 is a good one, but it requires careful review. Patch
+  2/3 is based upon some work I had seen PeterZ submit, so its possible to
+  just pull his work (if it hasnt been already) as opposed to this patch, if
+  desired.  Lastly, Patch 3/3 is a bit controversial so I put it last for
+  easier cherry picking of the first two.  It does help in our testing, but it
+  will have to be reviewed carefully.
 
-> Index: linux-2.6.26-rc5-mm3/Documentation/controllers/resource_counter.txt
-> ===================================================================
-> --- linux-2.6.26-rc5-mm3.orig/Documentation/controllers/resource_counter.txt
-> +++ linux-2.6.26-rc5-mm3/Documentation/controllers/resource_counter.txt
-> @@ -39,11 +39,14 @@ to work with it.
->   	The failcnt stands for "failures counter". This is the number of
->  	resource allocation attempts that failed.
->  
-> - e. res_counter_ops.
-> + e. parent
-> +	parent of this res_counter under hierarchy.
-> +
-> + f. res_counter_ops.
->  	Callbacks for helping resource_counter per each subsystem.
->  	- shrink_usage() .... called at limit change (decrease).
->  
-> - f. spinlock_t lock
-> + g. spinlock_t lock
->  
->   	Protects changes of the above values.
->  
-> @@ -157,7 +160,25 @@ counter fields. They are recommended to 
->       Returns 0 at success. Any error code is acceptable but -EBUSY will be
->       suitable to show "the kernel can't shrink usage."
->  
-> -6. Usage example
-> +6. Hierarchy
-> +
-> +   Groups of res_counter can be controlled under some tree (cgroup tree).
-> +   Taking the tree into account, res_counter can be under some hierarchical
-> +   control. THe res_counter itself supports hierarchy_model and calls
+Comments/feedback/bugfixes more than welcome.
 
-               The 
+Thanks!
+-Greg
 
-> +   registered callbacks at suitable events.
-> +
-> +   For keeping sanity of hierarchy, hierarchy_model of a res_counter can be
-> +   changed when parent's hierarchy_model is RES_CONT_NO_HIERARCHY.
-> +   res_counter doesn't count # of children by itself but some subysystem should
-> +   be aware that it has no children if necessary.
-> +   (don't want to fully duplicate cgroup's hierarchy. Cost of remembering parent
-> +    is cheap.)
-> +
-> + a. Independent hierarchy (RES_CONT_NO_HIERARCHY) model
-> +   This is no relationship between parent and children.
-> +
-> +
-> +7. Usage example
->  
->   a. Declare a task group (take a look at cgroups subsystem for this) and
->      fold a res_counter into it
+  
 
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
