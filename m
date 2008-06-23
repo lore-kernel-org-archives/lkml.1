@@ -1,61 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755262AbYFWLZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbYFWLZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755262AbYFWLZV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 07:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbYFWLZH
+	id S1756155AbYFWLZn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 07:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbYFWLZc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 07:25:07 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33271 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752114AbYFWLZG (ORCPT
+	Mon, 23 Jun 2008 07:25:32 -0400
+Received: from mail9.hitachi.co.jp ([133.145.228.44]:42487 "EHLO
+	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752837AbYFWLZb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 07:25:06 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 1/2] tty_driver: Update required method documentation
-To: torvalds@osdl.org, linux-kernel@vger.kernel.org
-Date: Mon, 23 Jun 2008 12:06:52 +0100
-Message-ID: <20080623110625.24976.17776.stgit@localhost.localdomain>
-In-Reply-To: <20080623110455.24976.32969.stgit@localhost.localdomain>
-References: <20080623110455.24976.32969.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.1
+	Mon, 23 Jun 2008 07:25:31 -0400
+X-AuditID: 0ac90647-ad124ba000004aeb-71-485f88296838
+Message-ID: <485F8822.5030205@hitachi.com>
+Date: Mon, 23 Jun 2008 20:25:22 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: akpm@linux-foundation.org, sct@redhat.com, adilger@sun.com
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, jack@suse.cz,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: [RFC][PATCH] ext3: don't read inode block if the buffer has a write
+    error
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some of the requirement rules are now more relaxed. Also correct a
-contradiction in the previous update
+A transient I/O error can corrupt inode data.  Here is the scenario:
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+(1) update inode_A at the block_B
+(2) pdflush writes out new inode_A to the filesystem, but it results
+    in write I/O error, at this point, BH_Uptodate flag of the buffer
+    for block_B is cleared and BH_Write_EIO is set
+(3) create new inode_C which located at block_B, and
+    __ext3_get_inode_loc() tries to read on-disk block_B because the
+    buffer is not uptodate
+(4) if it can read on-disk block_B successfully, inode_A is
+    overwritten by old data
+
+This patch makes __ext3_get_inode_loc() not read the inode block if
+the buffer has BH_Write_EIO flag.  In this case, the buffer should
+have the latest information, so setting the uptodate flag to the
+buffer (this avoids WARN_ON_ONCE() in mark_buffer_dirty().)
+
+According to this change, we would need to test BH_Write_EIO flag for
+the error checking.  Currently nobody checks write I/O errors on
+metadata buffers, but it will be done in other patches I'm working on.
+
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
 ---
+ fs/ext3/inode.c |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
- include/linux/tty_driver.h |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+Index: linux-2.6.26-rc5-mm3/fs/ext3/inode.c
+===================================================================
+--- linux-2.6.26-rc5-mm3.orig/fs/ext3/inode.c
++++ linux-2.6.26-rc5-mm3/fs/ext3/inode.c
+@@ -2516,6 +2516,16 @@ static int __ext3_get_inode_loc(struct i
+ 	}
+ 	if (!buffer_uptodate(bh)) {
+ 		lock_buffer(bh);
++
++		/*
++		 * If the buffer has the write error flag, we have failed
++		 * to write out another inode in the same block.  In this
++		 * case, we don't have to read the block because we may
++		 * read the old inode data successfully.
++		 */
++		if (buffer_write_io_error(bh) && !buffer_uptodate(bh))
++			set_buffer_uptodate(bh);
++
+ 		if (buffer_uptodate(bh)) {
+ 			/* someone brought it uptodate while we waited */
+ 			unlock_buffer(bh);
 
 
-diff --git a/include/linux/tty_driver.h b/include/linux/tty_driver.h
-index 59f1c0b..d2a0035 100644
---- a/include/linux/tty_driver.h
-+++ b/include/linux/tty_driver.h
-@@ -27,8 +27,7 @@
-  * 	This routine is called by the kernel to write a series of
-  * 	characters to the tty device.  The characters may come from
-  * 	user space or kernel space.  This routine will return the
-- *	number of characters actually accepted for writing.  This
-- *	routine is mandatory.
-+ *	number of characters actually accepted for writing.
-  *
-  *	Optional: Required for writable devices.
-  *
-@@ -134,7 +133,7 @@
-  * 	This routine notifies the tty driver that it should hangup the
-  * 	tty device.
-  *
-- *	Required:
-+ *	Optional:
-  *
-  * void (*break_ctl)(struct tty_stuct *tty, int state);
-  *
 
