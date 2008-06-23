@@ -1,26 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758855AbYFWPIP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758973AbYFWPI1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758855AbYFWPIP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 11:08:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755209AbYFWPIB
+	id S1758973AbYFWPI1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 11:08:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758882AbYFWPIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 11:08:01 -0400
-Received: from cantor.suse.de ([195.135.220.2]:58887 "EHLO mx1.suse.de"
+	Mon, 23 Jun 2008 11:08:19 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:34242 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753886AbYFWPIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 11:08:00 -0400
-Date: Mon, 23 Jun 2008 17:07:59 +0200
-Message-ID: <s5h7icg2nqo.wl%tiwai@suse.de>
+	id S1756455AbYFWPIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 11:08:18 -0400
+Date: Mon, 23 Jun 2008 17:08:16 +0200
+Message-ID: <s5h63s02nq7.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for June 20: [regression] No sound on SB600
-In-Reply-To: <200806231705.02994.rjw@sisk.pl>
-References: <20080620172507.b7301bd1.sfr@canb.auug.org.au>
-	<200806231632.08639.rjw@sisk.pl>
-	<s5hbq1s2p82.wl%tiwai@suse.de>
-	<200806231705.02994.rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT PULL] ALSA fixes
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28)
  (fuki) (x86_64-suse-linux)
@@ -30,89 +24,71 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Mon, 23 Jun 2008 17:05:02 +0200,
-Rafael J. Wysocki wrote:
-> 
-> On Monday, 23 of June 2008, Takashi Iwai wrote:
-> > At Mon, 23 Jun 2008 16:32:08 +0200,
-> > Rafael J. Wysocki wrote:
-> > > 
-> > > On Monday, 23 of June 2008, Takashi Iwai wrote:
-> > > > At Sat, 21 Jun 2008 21:25:41 +0200,
-> > > > Rafael J. Wysocki wrote:
-> > > > > 
-> > > > > On Saturday, 21 of June 2008, Takashi Iwai wrote:
-> > > > > > At Sat, 21 Jun 2008 17:28:09 +0200,
-> > > > > > Rafael J. Wysocki wrote:
-> > > > > > > 
-> > > > > > > On Friday, 20 of June 2008, Stephen Rothwell wrote:
-> > > > > > > > Hi all,
-> > > > > > > > 
-> > > > > > > > Changes since next-20080619:
-> > > > > > > > 
-> > > > > > > > The net tree lost its conflict against Linus' tree.
-> > > > > > > > 
-> > > > > > > > The bkl-removal tree lost a conflict.
-> > > > > > > 
-> > > > > > > On one of my test boxes with the ATI chipset (SB600 south bridge) there's no
-> > > > > > > sound output.  Bisection shows that the following commit causes this to happen
-> > > > > > > and reverting the commit fixes the problem for me:
-> > > > > > > 
-> > > > > > > commit cf97e6678f1e1e7bbdb566c36771540123832a31
-> > > > > > > Author: Takashi Iwai <tiwai@suse.de>
-> > > > > > > Date:   Mon Jun 16 15:47:26 2008 +0200
-> > > > > > > 
-> > > > > > >     ALSA: hda - Fix wrong volumes in AD1988 auto-probe mode
-> > > > > > >     
-> > > > > > >     Don't create mixer volume elements for Headphone and Speaker if they
-> > > > > > >     use the same DAC as normal line-outs on AD1988.  Otherwise the amp
-> > > > > > >     value gets screwed up, e.g.
-> > > > > > >     	https://bugzilla.novell.com/show_bug.cgi?id=398255
-> > > > > > >     
-> > > > > > >     Signed-off-by: Takashi Iwai <tiwai@suse.de>
-> > > > > > > 
-> > > > > > > Please let me know if you need any additional information.
-> > > > > > 
-> > > > > > Could you run alsa-info.sh with --no-upload option and attach the
-> > > > > > output for both states with and without that commit?  The script is
-> > > > > > found at
-> > > > > > 	http://www.alsa-project.org/alsa-info.sh
-> > > > > > Also, show the relevant kernel message from snd-hda-intel (informing
-> > > > > > the auto-parsing of pins, etc), too.
-> > > > > 
-> > > > > dmesg outputs and the outputs of 'alsa-info.sh --no-upload' for the kernel with
-> > > > > the patch applied (1) and with the reverted (2) are at:
-> > > > > 
-> > > > > http://www.sisk.pl/kernel/debug/20080620/box2/dmesg-1.log
-> > > > > http://www.sisk.pl/kernel/debug/20080620/box2/alsa-info-1.txt
-> > > > > 
-> > > > > http://www.sisk.pl/kernel/debug/20080620/box2/dmesg-2.log
-> > > > > http://www.sisk.pl/kernel/debug/20080620/box2/alsa-info-2.txt
-> > > > 
-> > > > Well, this is actually no regression but an unlucky side-effect of the
-> > > > fix.
-> > > > 
-> > > > In the old version, "Front" volume didn't work properly because of
-> > > > confliction with a bogus "Headphone" volume.  Now, a wrong volume
-> > > > element is removed but only "Front" remains while "Front" wasn't set
-> > > > up properly.
-> > > > 
-> > > > In short, the below should fix the problem:
-> > > > 
-> > > > 	% amixer set Front 90%
-> > > 
-> > > Well, okay, but where should I add that to make KDE mixers work, for example?
-> > 
-> > You must have "Master" volume control now.  This also changes Front,
-> > etc.  Try to reassign Master as the default volume in kmix.
-> 
-> Yes, I have the "Master" control and I had it before the patch too, but it has
-> no effect both after and before the patch AFAICS (will double check).
+Linus,
 
-Oh, yes, let me know if "Master" still doesn't work.  This should have
-been fixed with the last patch, too.
+please pull ALSA updates from:
 
+  git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git for-linus
 
-thanks,
+which contains the following two trivial fixes.
+
+Thanks!
 
 Takashi
+
+===
+
+Takashi Iwai (2):
+      ALSA: aw2 - Fix Oops at initialization
+      ALSA: sb - Fix wrong assertions
+
+
+ sound/isa/sb/sb_mixer.c  |    4 ++--
+ sound/pci/aw2/aw2-alsa.c |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+
+diff --git a/sound/isa/sb/sb_mixer.c b/sound/isa/sb/sb_mixer.c
+index 91d1422..73d4572 100644
+--- a/sound/isa/sb/sb_mixer.c
++++ b/sound/isa/sb/sb_mixer.c
+@@ -925,7 +925,7 @@ static unsigned char als4000_saved_regs[] = {
+ static void save_mixer(struct snd_sb *chip, unsigned char *regs, int num_regs)
+ {
+ 	unsigned char *val = chip->saved_regs;
+-	snd_assert(num_regs > ARRAY_SIZE(chip->saved_regs), return);
++	snd_assert(num_regs <= ARRAY_SIZE(chip->saved_regs), return);
+ 	for (; num_regs; num_regs--)
+ 		*val++ = snd_sbmixer_read(chip, *regs++);
+ }
+@@ -933,7 +933,7 @@ static void save_mixer(struct snd_sb *chip, unsigned char *regs, int num_regs)
+ static void restore_mixer(struct snd_sb *chip, unsigned char *regs, int num_regs)
+ {
+ 	unsigned char *val = chip->saved_regs;
+-	snd_assert(num_regs > ARRAY_SIZE(chip->saved_regs), return);
++	snd_assert(num_regs <= ARRAY_SIZE(chip->saved_regs), return);
+ 	for (; num_regs; num_regs--)
+ 		snd_sbmixer_write(chip, *regs++, *val++);
+ }
+diff --git a/sound/pci/aw2/aw2-alsa.c b/sound/pci/aw2/aw2-alsa.c
+index 56f87cd..3f00ddf 100644
+--- a/sound/pci/aw2/aw2-alsa.c
++++ b/sound/pci/aw2/aw2-alsa.c
+@@ -316,6 +316,8 @@ static int __devinit snd_aw2_create(struct snd_card *card,
+ 		return -ENOMEM;
+ 	}
+ 
++	/* (2) initialization of the chip hardware */
++	snd_aw2_saa7146_setup(&chip->saa7146, chip->iobase_virt);
+ 
+ 	if (request_irq(pci->irq, snd_aw2_saa7146_interrupt,
+ 			IRQF_SHARED, "Audiowerk2", chip)) {
+@@ -329,8 +331,6 @@ static int __devinit snd_aw2_create(struct snd_card *card,
+ 	}
+ 	chip->irq = pci->irq;
+ 
+-	/* (2) initialization of the chip hardware */
+-	snd_aw2_saa7146_setup(&chip->saa7146, chip->iobase_virt);
+ 	err = snd_device_new(card, SNDRV_DEV_LOWLEVEL, chip, &ops);
+ 	if (err < 0) {
+ 		free_irq(chip->irq, (void *)chip);
