@@ -1,130 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754070AbYFWXvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755746AbYFWXwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754070AbYFWXvq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 19:51:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbYFWXvj
+	id S1755746AbYFWXwW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 19:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbYFWXwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 19:51:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39460 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750765AbYFWXvi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 19:51:38 -0400
-Date: Mon, 23 Jun 2008 16:51:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] linux/kernel.h userspace header cleanup
-Message-Id: <20080623165124.c1fd99de.akpm@linux-foundation.org>
-In-Reply-To: <20080623174940.GL4756@cs181140183.pp.htv.fi>
-References: <20080623174940.GL4756@cs181140183.pp.htv.fi>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Jun 2008 19:52:04 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58542 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750895AbYFWXwB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 19:52:01 -0400
+Date: Tue, 24 Jun 2008 01:51:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: linux-ide@vger.kernel.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH -rt] ide: fix interrupts processing issue with
+	preempt-able hardirqs
+Message-ID: <20080623235141.GB17297@elte.hu>
+References: <20080623234037.GA6793@polina.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080623234037.GA6793@polina.dev.rtsoft.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jun 2008 20:49:40 +0300
-Adrian Bunk <bunk@kernel.org> wrote:
 
-> Nothing from the bottom of this header is part of the 
-> kernel<->userspace ABI.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> 
->  include/linux/kernel.h |    4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> c023fd63795380bceef9abc92c1d6fca91791de7 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-> index 792bf0a..2993b80 100644
-> --- a/include/linux/kernel.h
-> +++ b/include/linux/kernel.h
-> @@ -487,6 +487,8 @@ struct sysinfo {
->  	char _f[20-2*sizeof(long)-sizeof(int)];	/* Padding: libc5 uses this.. */
->  };
->  
-> +#ifdef __KERNEL__
-> +
->  /* Force a compilation error if condition is true */
->  #define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
->  
-> @@ -506,4 +508,6 @@ struct sysinfo {
->  #define NUMA_BUILD 0
->  #endif
->  
-> +#endif  /*  __KERNEL__  */
-> +
->  #endif
+* Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-Patches against linux-next would be better, especially during late -rc.
-There's a 25MB diff between that and mainline.
+> IDE interrupt handler relies on the fact that, if necessary, hardirqs 
+> will re-trigger on ISR exit. With fully preemtable IRQs this seems to 
+> be not true, since if hardirq thread is currently running, and the 
+> same IRQ raised again, then this IRQ will be simply lost.
 
-I see no need to add an additional ifdef block here - better to move
-the new kernel-only code to be inside the existing guards?
+actually no, that should not happen - if -rt loses an IRQ then something 
+broke in the threaded IRQ code. It's supposed to be a drop-in, 
+compatible IRQ flow with no driver changes needed.
 
- include/linux/kernel.h |   42 ++++++++++++++++++++-------------------
- 1 file changed, 22 insertions(+), 20 deletions(-)
+( also, please do not Cc: mainline maintainers to RFC -rt patches, let
+  the -rt maintainers sort out the need for any patch propagation - once 
+  the patches are sufficiently cooked. Thanks. )
 
-diff -puN include/linux/kernel.h~linux-kernelh-userspace-header-cleanup include/linux/kernel.h
---- a/include/linux/kernel.h~linux-kernelh-userspace-header-cleanup
-+++ a/include/linux/kernel.h
-@@ -442,26 +442,6 @@ static inline char *pack_hex_byte(char *
- struct sysinfo;
- extern int do_sysinfo(struct sysinfo *info);
- 
--#endif /* __KERNEL__ */
--
--#define SI_LOAD_SHIFT	16
--struct sysinfo {
--	long uptime;			/* Seconds since boot */
--	unsigned long loads[3];		/* 1, 5, and 15 minute load averages */
--	unsigned long totalram;		/* Total usable main memory size */
--	unsigned long freeram;		/* Available memory size */
--	unsigned long sharedram;	/* Amount of shared memory */
--	unsigned long bufferram;	/* Memory used by buffers */
--	unsigned long totalswap;	/* Total swap space size */
--	unsigned long freeswap;		/* swap space still available */
--	unsigned short procs;		/* Number of current processes */
--	unsigned short pad;		/* explicit padding for m68k */
--	unsigned long totalhigh;	/* Total high memory size */
--	unsigned long freehigh;		/* Available high memory size */
--	unsigned int mem_unit;		/* Memory unit size in bytes */
--	char _f[20-2*sizeof(long)-sizeof(int)];	/* Padding: libc5 uses this.. */
--};
--
- /* Force a compilation error if condition is true */
- #define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
- 
-@@ -516,4 +496,26 @@ struct sysinfo {
- 	__typesafe_cb(rettype (*)(__VA_ARGS__, void *), (fn),		\
- 		      rettype (*)(__VA_ARGS__, const typeof(arg)),	\
- 		      rettype (*)(__VA_ARGS__, typeof(arg)))
-+
-+
-+#endif /* __KERNEL__ */
-+
-+#define SI_LOAD_SHIFT	16
-+struct sysinfo {
-+	long uptime;			/* Seconds since boot */
-+	unsigned long loads[3];		/* 1, 5, and 15 minute load averages */
-+	unsigned long totalram;		/* Total usable main memory size */
-+	unsigned long freeram;		/* Available memory size */
-+	unsigned long sharedram;	/* Amount of shared memory */
-+	unsigned long bufferram;	/* Memory used by buffers */
-+	unsigned long totalswap;	/* Total swap space size */
-+	unsigned long freeswap;		/* swap space still available */
-+	unsigned short procs;		/* Number of current processes */
-+	unsigned short pad;		/* explicit padding for m68k */
-+	unsigned long totalhigh;	/* Total high memory size */
-+	unsigned long freehigh;		/* Available high memory size */
-+	unsigned int mem_unit;		/* Memory unit size in bytes */
-+	char _f[20-2*sizeof(long)-sizeof(int)];	/* Padding: libc5 uses this.. */
-+};
-+
- #endif
-_
-
+	Ingo
