@@ -1,45 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755228AbYFWFdH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756285AbYFWFe1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755228AbYFWFdH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 01:33:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbYFWFcz
+	id S1756285AbYFWFe1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 01:34:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbYFWFeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 01:32:55 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:24343 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751237AbYFWFcz convert rfc822-to-8bit (ORCPT
+	Mon, 23 Jun 2008 01:34:20 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:44899 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751528AbYFWFeT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 01:32:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=organization:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id:from;
-        b=gyhei3hp8rZeZ8YRivuJjuS5K4+dYOslUyWD2F4JRFyKlTSvuahbyoTLohchxfYlyh
-         u6KACSU9sZTZbWAa1Vh48YTlsqacqh6e82maQftdkBihuyuZpIRAblqJf0Ku7h5WL9MX
-         M13GAyinLw9K8NRdSRweXfKiGkh5KcbXg12dA=
-Organization: M1K0
-To: Zhu Yi <yi.zhu@intel.com>
-Subject: Re: [2.6.26-rc5] iwlwifi 4965 not working - last on 2.6.23
-Date: Mon, 23 Jun 2008 07:32:43 +0200
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-References: <200806060039.48488.m1k0@wp.pl> <200806230530.44283.Michal.Kudla@gmail.com> <1214197551.14590.148.camel@debian.sh.intel.com>
-In-Reply-To: <1214197551.14590.148.camel@debian.sh.intel.com>
+	Mon, 23 Jun 2008 01:34:19 -0400
+Message-ID: <485F3585.2080606@snapgear.com>
+Date: Mon, 23 Jun 2008 15:32:53 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200806230732.44159.Michal.Kudla@gmail.com>
-From: =?utf-8?q?Micha=C5=82_Kud=C5=82a?= <michal.kudla@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] m68knommu: ColdFire add support for kernel preemption
+References: <200805010216.m412GT6t004096@goober>	<20080501143336.552e39e1.akpm@linux-foundation.org>	<481AC07A.6080707@snapgear.com>	<20080502083755.GA13973@Chamillionaire.breakpoint.cc> <20080502052235.eb9c336a.akpm@linux-foundation.org>
+In-Reply-To: <20080502052235.eb9c336a.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-With "0" and "1" result the same - failed.
+Hi Andrew,
 
-W liście datowanym na poniedziałek, 23 czerwca 2008, Zhu Yi pisze:
->ZY Oops, you should echo 1 instead.
+Andrew Morton wrote:
+> On Fri, 2 May 2008 10:37:55 +0200 Sebastian Siewior <lkml@ml.breakpoint.cc> wrote:
+> 
+>>>>> Subject: [PATCH] m68knommu: ColdFire add support for kernel preemption
+>>>> Please find a way to get your patch queue into linux-next so that others
+>>>> get some visibility into what you're brewing earlier than
+>>>> last-day-of-the-merge-window?
+>>> Is a git tree the only way?
+>> Others (Greg KH for instance, i2c) have quilt queues.
+> 
+> Yup.  Examples:
+> 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/
+> http://ozlabs.org/~rusty/kernel/rr-latest
+> http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-02-usb
+> 
+> Note how you can publish subsets of your patchset by bracketing them with
+> "# MM_PATCHES_START" and "# MM_PATCHES_END" for -mm, and "#
+> NEXT_PATCHES_START" and "# NEXT_PATCHES_END" for linux-next.
+
+I decided to go the git route.
+
+Here is a git tree for the collection of patches for the m68knommu
+architecture that I intend for the 2.6.27 merge window.
+
+git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git for-linus
+
+I have created a general uclinux changes git tree as well,
+
+git://git.kernel.org/pub/scm/linux/kernel/git/gerg/uclinux.git for-linus
+
+though currently I have nothing queued for that.
+
+Regards
+Greg
+
+
+
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+Secure Computing Corporation                PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
