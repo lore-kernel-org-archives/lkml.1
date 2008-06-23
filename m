@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755658AbYFWOUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbYFWOZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755658AbYFWOUU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 10:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbYFWOUI
+	id S1756038AbYFWOZe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 10:25:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbYFWOZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 10:20:08 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1165 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753213AbYFWOUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 10:20:07 -0400
-Date: Mon, 23 Jun 2008 16:19:55 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Fwd: Recommendation for activating a deferred module init in the kernel]
-Message-ID: <20080623141955.GA5006@ucw.cz>
-References: <4858024D.6010601@am.sony.com>
-Mime-Version: 1.0
+	Mon, 23 Jun 2008 10:25:27 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:57313 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753519AbYFWOZ1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 10:25:27 -0400
+Date: Mon, 23 Jun 2008 07:24:00 -0700
+From: Greg KH <greg@kroah.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] Position Statement on Linux Kernel Modules
+Message-ID: <20080623142400.GA25824@kroah.com>
+References: <20080623050118.GA22852@kroah.com> <alpine.LRH.1.10.0806231157590.10290@twin.jikos.cz>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4858024D.6010601@am.sony.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <alpine.LRH.1.10.0806231157590.10290@twin.jikos.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Mon, Jun 23, 2008 at 12:00:02PM +0200, Jiri Kosina wrote:
+> On Sun, 22 Jun 2008, Greg KH wrote:
+>
+>> As part of the Linux Foundation Technical board, we confront the issue
+>> of closed source Linux kernel modules all the time, and we wanted to do
+>> something that could be seen as a general "public statement" about them
+>> that is easy to understand and point to when people have questions.
+>>
+>> So, after working on this for a while, and asking some of the other
+>> major contributors and maintainers of the kernel, what we have is below.
+>>
+>> There is also a site at:
+>> 	http://www.linuxfoundation.org/en/Device_driver_statement
+>
+> Just a sidenote: It would probably be nice to have this linked from the 
+> main LF page (News?), I don't seem to see it there ... ?
 
-> In our modification, we:
->  1) add another phase for deferred initcalls
->  2) modify the module_init macro definition to use that phase, for the
->  modules we wish to defer initialization of
->  3) modify the free code to not free the memory until later
->  4) add an ioctl to trigger the deferred initialization (and memory free)
-> 
-> One of the main sub-systems that we defer initialization of this
-> way is USB, and this saves quite a bit of time.  (Of course the
-> same, or slightly more CPU cycles are eventually used during
-> bootup time.  But this lets us get to user space quicker so we
-> can start user-visible applications faster.)
+Yes, for some reason it hasn't shown up there, I don't know why.  I've
+pinged them about this, but they might not be awake just yet :)
 
-Could the usb be modified to do background init by default, instead?
+thanks,
 
-> I'm not that happy using an ioctl for this trigger.  What is
-> the preferred method of activating a kernel feature like this?
-> I presume something in /proc or /sys, but I'm not sure.
-
-Definitely not /proc.
-
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+greg k-h
