@@ -1,48 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760471AbYFWRm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761058AbYFWRnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760471AbYFWRm1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 13:42:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbYFWRmT
+	id S1761058AbYFWRnZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 13:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbYFWRnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 13:42:19 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41402 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754439AbYFWRmS (ORCPT
+	Mon, 23 Jun 2008 13:43:17 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:3117 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752248AbYFWRnQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 13:42:18 -0400
-Date: Mon, 23 Jun 2008 10:42:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg Ungerer <gerg@snapgear.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org
-Subject: Re: [PATCH] m68knommu: ColdFire add support for kernel preemption
-Message-Id: <20080623104204.4e5bcea0.akpm@linux-foundation.org>
-In-Reply-To: <485FA3BC.5080807@snapgear.com>
-References: <200805010216.m412GT6t004096@goober>
-	<20080501143336.552e39e1.akpm@linux-foundation.org>
-	<481AC07A.6080707@snapgear.com>
-	<20080502083755.GA13973@Chamillionaire.breakpoint.cc>
-	<20080502052235.eb9c336a.akpm@linux-foundation.org>
-	<485F3585.2080606@snapgear.com>
-	<20080622225102.5117f22b.akpm@linux-foundation.org>
-	<20080623175326.ddf5d2d4.sfr@canb.auug.org.au>
-	<485FA3BC.5080807@snapgear.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 23 Jun 2008 13:43:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=IdTAMh2xnEHwMMjizlXtdMiUmHNfjpBnnVnSlm+M69JiSGPaHoxGjg/A0/nmoUPAJd
+         TwNRXYbg97fiBuqmchNAjFh/ZFGfO1f/uaia/lwGEIc16lpAxgVLXP/BVOhbvZPOSBNz
+         RFt+49JRRwMoqw0pbJsMQpCuULjheKTXbFWbw=
+Message-ID: <19f34abd0806231043x6f254ed1ye896b55eafec577f@mail.gmail.com>
+Date: Mon, 23 Jun 2008 19:43:16 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Stephen Rothwell" <sfr@canb.auug.org.au>,
+       "Steven Rostedt" <srostedt@redhat.com>
+Subject: Re: linux-next: Tree for June 23
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       "Christoph Lameter" <clameter@sgi.com>
+In-Reply-To: <19f34abd0806231026t1c797c28td50a141b9715bf94@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080623182549.b0552851.sfr@canb.auug.org.au>
+	 <19f34abd0806230323o6373015fj93a85b929545a7a8@mail.gmail.com>
+	 <19f34abd0806230326i592ba39eu837d290e21431d14@mail.gmail.com>
+	 <19f34abd0806230402x502eca3cna927eb8742553570@mail.gmail.com>
+	 <19f34abd0806230526j77fc20e7w3d92cbe67ad4c552@mail.gmail.com>
+	 <19f34abd0806231026t1c797c28td50a141b9715bf94@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jun 2008 23:23:08 +1000 Greg Ungerer <gerg@snapgear.com> wrote:
+On Mon, Jun 23, 2008 at 7:26 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> On Mon, Jun 23, 2008 at 2:26 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+>> And additionally, the next two boots hung here (but the third one was okay):
+>>
+>> http://www.kernel.org/pub/linux/kernel/people/vegard/kernels/20080623-next/DSCF3015.JPG
+>>
+>> I don't know what these issues are related too. I can try
+>> debug_initcall for the hang.
+>
+> The last initcall to run is populate_rootfs(), however the last
+> message on the screen is "debug: unmapping init memory
+> f7cb0000..f7ff0000":
+>
+> http://www.kernel.org/pub/linux/kernel/people/vegard/kernels/20080623-next/DSCF3016.JPG
+>
+> In fact, it seems to me that init memory is being unmapped before all
+> initcalls have finished... that would seem disastrous.
 
-> Do I need to send a request to Linus to pull this into his
-> tree during the next merge window?
+Ah, scratch that. Digging a bit deeper, it becomes obvious that the
+initramfs/initrd code is freeing its own memory using the same
+function in the end (free_init_pages()) as free_initmem(), so they'll
+in fact just print the same message. That doesn't change the fact of
+the hang, however...
 
-Yes, you do - nothing has changed in that regard.
+My config can be found at:
 
->  Or will it migrate up
-> from linux-next?
+    http://www.kernel.org/pub/linux/kernel/people/vegard/kernels/20080623-next/config
 
-Nope, linux-next is a testing tree only.
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
