@@ -1,73 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756799AbYFWLrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757112AbYFWLsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756799AbYFWLrV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 07:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbYFWLrH
+	id S1757112AbYFWLsS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 07:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbYFWLsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 07:47:07 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:37167 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752422AbYFWLrG (ORCPT
+	Mon, 23 Jun 2008 07:48:07 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:54378 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753425AbYFWLsF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 07:47:06 -0400
-Date: Mon, 23 Jun 2008 20:44:48 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-mm@kvack.org, balbir@linux.vnet.ibm.com, xemul@openvz.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [bad page] memcg: another bad page at page migration
- (2.6.26-rc5-mm3 + patch collection)
-Message-Id: <20080623204448.2c4326ab.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20080623202111.f2c54e21.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080623145341.0a365c67.nishimura@mxp.nes.nec.co.jp>
-	<20080623150817.628aef9f.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080623202111.f2c54e21.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Jun 2008 07:48:05 -0400
+Date: Mon, 23 Jun 2008 17:19:41 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>, paulmck@linux.vnet.ibm.com,
+       Dipankar Sarma <dipankar@in.ibm.com>, laijs@cn.fujitsu.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+Subject: Re: [PATCH] fix rcu vs hotplug race
+Message-ID: <20080623114941.GB3160@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20080623103700.GA4043@linux.vnet.ibm.com> <20080623105844.GC28192@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080623105844.GC28192@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jun 2008 20:21:11 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Mon, 23 Jun 2008 15:08:17 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+On Mon, Jun 23, 2008 at 12:58:44PM +0200, Ingo Molnar wrote:
 > 
-> > On Mon, 23 Jun 2008 14:53:41 +0900
-> > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > 
-> > > Hi.
-> > > 
-> > > It seems the current -mm has been gradually stabilized,
-> > > but I encounter another bad page problem in my test(*1)
-> > > on 2.6.26-rc5-mm3 + patch collection(*2).
-> > > 
-> > > Compared to previous probrems fixed by the patch collection,
-> > > the frequency is law.
-> > > 
-> > > - 1 time in 1 hour running(1'st one was seen after 30 minutes)
-> > > - 3 times in 16 hours running(1'st one was seen after 4 hours)
-> > > - 10 times in 70 hours running(1'st one was seen after 8 hours)
-> > > 
-> > > All bad pages show similar message like below:
-> > > 
-> > Thank you. I'll dig this.
-> > 
-> > 
-> Here is one possibilty. But if your test doesn't migrate any shmem, 
-> I'll have to dig more ;)
-> Anyway, I'll schedule this patch.
+> * Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
 > 
-Thank you for your investigation and a patch!
+> > On running kernel compiles in parallel with cpu hotplug,
+> > 
+> > ------------[ cut here ]------------
+> > WARNING: at arch/x86/kernel/smp.c:118
+> > native_smp_send_reschedule+0x21/0x36()
+> > Modules linked in:
+> > Pid: 27483, comm: cc1 Not tainted 2.6.26-rc7 #1
+> >  [<c01217d9>] warn_on_slowpath+0x41/0x5d
+> >  [<c01515b7>] ? generic_file_aio_read+0x10f/0x137
+> >  [<c0151340>] ? file_read_actor+0x0/0xf7
+> >  [<c013ae4c>] ? validate_chain+0xaa/0x29c
+> >  [<c013c854>] ? __lock_acquire+0x612/0x666
+> >  [<c013c854>] ? __lock_acquire+0x612/0x666
+> >  [<c013ae4c>] ? validate_chain+0xaa/0x29c
+> >  [<c01715d3>] ? file_kill+0x2d/0x30
+> >  [<c013cbd7>] ? __lock_release+0x4b/0x51
+> >  [<c01715d3>] ? file_kill+0x2d/0x30
+> >  [<c0110355>] native_smp_send_reschedule+0x21/0x36
+> >  [<c014fe8f>] force_quiescent_state+0x47/0x57
+> >  [<c014fef0>] call_rcu+0x51/0x6d
+> >  [<c01713b3>] __fput+0x130/0x158
+> >  [<c0171231>] fput+0x17/0x19
+> >  [<c016fd99>] filp_close+0x4d/0x57
+> >  [<c016fdff>] sys_close+0x5c/0x97
+> >  [<c0103861>] sysenter_past_esp+0x6a/0xb1
+> >  =======================
+> > ---[ end trace aa35f3913ddf2d06 ]---
+> > 
+> > This is because a reschedule is sent to a CPU which is offline.
+> > Just ensure that the CPU we send the smp_send_reschedule is actually
+> > online.
+> > 
+> > Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> > ---
+> >  kernel/rcuclassic.c |    3 ++-
+> >  1 files changed, 2 insertions(+), 1 deletion(-)
+> > 
+> > Index: linux-2.6.26-rc7/kernel/rcuclassic.c
+> > ===================================================================
+> > --- linux-2.6.26-rc7.orig/kernel/rcuclassic.c
+> > +++ linux-2.6.26-rc7/kernel/rcuclassic.c
+> > @@ -93,7 +93,8 @@ static void force_quiescent_state(struct
+> >  		cpumask = rcp->cpumask;
+> >  		cpu_clear(rdp->cpu, cpumask);
+> >  		for_each_cpu_mask(cpu, cpumask)
+> > -			smp_send_reschedule(cpu);
+> > +			if (cpu_online(cpu))
+> > +				smp_send_reschedule(cpu);
+> >  	}
+> 
 
-I don't use shmem explicitly, but I'll test this patch anyway
-and report the result.
+Hi Ingo,
 
-Considering the frequency of the problem, it will take long time 
-to tell whether this patch fixes the problem, so please wait :)
+> hm, not sure - we might just be fighting the symptom and we might now 
+> create a silent resource leak instead. Isnt a full RCU quiescent state 
+> forced (on all CPUs) before a CPU is cleared out of cpu_online_map? That 
+> way the to-be-offlined CPU should never actually show up in 
+> rcp->cpumask.
 
+No, this does not happen currently. The rcp->cpumask is always
+initialized to  cpu_online_map&~nohz_cpu_mask when we start a new batch.
+Hence, before the batch ends, if a cpu goes offline we _can_ have a
+stale rcp->cpumask, till the RCU subsystem has handled it's CPU_DEAD
+notification.
 
-Thanks,
-Daisuke Nishimura.
+Thus for a tiny interval, the rcp->cpumask would contain the offlined
+CPU. One of the alternatives is probably to handle this using CPU_DYING
+notifier instead of CPU_DEAD where we can call __rcu_offline_cpu().
 
+The warn_on that dhaval was hitting was because of some
+cpu-offline that was called just before we did a local_irq_save inside
+call_rcu(). But at that time, the rcp->cpumask was still stale, and
+hence we ended up sending a smp_reschedule() to an offlined cpu. So the
+check may not create any resource leak.
+
+But probably there's a better way to fix this.
+> 
+> 	Ingo
+
+-- 
+Thanks and Regards
+gautham
