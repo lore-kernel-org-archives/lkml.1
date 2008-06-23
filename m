@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbYFWUlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757256AbYFWUqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756786AbYFWUlp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 16:41:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbYFWUli
+	id S1757256AbYFWUqQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 16:46:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbYFWUqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 16:41:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48409 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753283AbYFWUlh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 16:41:37 -0400
-Date: Mon, 23 Jun 2008 13:40:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: ebiederm@xmission.com, mingo@elte.hu, torvalds@linux-foundation.org,
-       roland@redhat.com, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/3] introduce PF_KTHREAD flag
-Message-Id: <20080623134037.8566f651.akpm@linux-foundation.org>
-In-Reply-To: <20080601153042.GA8238@tv-sign.ru>
-References: <20080601153042.GA8238@tv-sign.ru>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Jun 2008 16:46:00 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:44189 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754484AbYFWUp6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 16:45:58 -0400
+Date: Mon, 23 Jun 2008 13:45:57 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Petr Tesarik <ptesarik@suse.cz>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Spinlocks: Factor our GENERIC_LOCKBREAK in order to avoid spin
+ with irqs disable
+In-Reply-To: <1214253593.11254.30.camel@twins>
+Message-ID: <Pine.LNX.4.64.0806231345001.28304@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0805061220570.30604@schroedinger.engr.sgi.com> 
+ <20080507073017.GJ32195@elte.hu>  <Pine.LNX.4.64.0805071002330.3110@schroedinger.engr.sgi.com>
+  <Pine.LNX.4.64.0805071022230.3173@schroedinger.engr.sgi.com> 
+ <Pine.LNX.4.64.0805071148240.8441@schroedinger.engr.sgi.com> 
+ <1214241561.19392.21.camel@elijah.suse.cz> 
+ <Pine.LNX.4.64.0806231115420.22557@schroedinger.engr.sgi.com>
+ <1214253593.11254.30.camel@twins>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Jun 2008 19:30:42 +0400
-Oleg Nesterov <oleg@tv-sign.ru> wrote:
+On Mon, 23 Jun 2008, Peter Zijlstra wrote:
 
-> Introduce the new PF_KTHREAD flag to mark the kernel threads. It is set by
-> INIT_TASK() and copied to the forked childs (we could set it in kthreadd()
-> along with PF_NOFREEZE instead).
+> > It is good that the locks are build with _trylock and _can_lock because 
+> > then we can reenable interrupts while spinning.
 > 
-> daemonize() was changed as well. In that case testing of PF_KTHREAD is racy,
-> but daemonize() is hopeless anyway.
-> 
-> This flag is cleared in do_execve(), before search_binary_handler(). Probably
-> not the best place, we can do this in exec_mmap() or in start_thread(), or
-> clear it along with PF_FORKNOEXEC. But I think this doesn't matter in practice,
-> and if do_execve() fails kthread should die soon.
-> 
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-> 
->  include/linux/sched.h     |    1 +
->  include/linux/init_task.h |    2 +-
->  kernel/exit.c             |    2 +-
->  fs/exec.c                 |    1 +
->  4 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> --- 26-rc2/include/linux/sched.h~2_MAKE_PF_KTHREAD	2008-05-18 15:44:16.000000000 +0400
-> +++ 26-rc2/include/linux/sched.h	2008-05-18 20:08:13.000000000 +0400
-> @@ -1508,6 +1508,7 @@ static inline void put_task_struct(struc
->  #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
->  #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
->  #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezeable */
-> +#define PF_KTHREAD	0x80000000	/* I am a kernel thread */
+> Well, good and bad, the turn side is that fairness schemes like ticket
+> locks are utterly defeated.
 
-Well "Freezer: Introduce PF_FREEZER_NOSIG" has cheerily come in
-afterwards and stolen 0x80000000 from us.  I'll redo this patch to use,
-umm, 0x00000020.  Please check that this is OK (if it isn't someone
-needs thwapping for not adding a dont-use-this comment).
+True. But maybe we can make these fairness schemes more generic so that 
+they can go into core code?
 
