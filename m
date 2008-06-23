@@ -1,115 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763796AbYF0U5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763941AbYF0U5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763796AbYF0U5f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jun 2008 16:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762786AbYF0U4e
+	id S1763941AbYF0U5w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jun 2008 16:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763604AbYF0U45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jun 2008 16:56:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49266 "EHLO mx1.redhat.com"
+	Fri, 27 Jun 2008 16:56:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49285 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762408AbYF0U4d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jun 2008 16:56:33 -0400
+	id S1756866AbYF0U4z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jun 2008 16:56:55 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 From: Roland McGrath <roland@redhat.com>
-To: stable@kernel.org
+To: Adrian Bunk <bunk@kernel.org>
 X-Fcc: ~/Mail/linus
-Cc: Jeff Dike <jdike@addtoit.com>, Joris van Rantwijk <jorispubl@xs4all.nl>,
-       linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Thorsten Knabe <linux@thorsten-knabe.de>
-Subject: [PATCH 2.6.25-stable] x86_64 ptrace: fix sys32_ptrace task_struct leak
-In-Reply-To: Jeff Dike's message of  Friday, 27 June 2008 16:00:50 -0400 <20080627200050.GA10859@c2.user-mode-linux.org>
-References: <20080627183045.GA18801@xs4all.nl>
-	<20080627200050.GA10859@c2.user-mode-linux.org>
-X-Shopping-List: (1) Maoist Omission connotations
-   (2) Ingenuous bears
-   (3) Petulant permanent invasion consolation
-Message-Id: <20080627204953.D7D8A154223@magilla.localdomain>
-Date: Fri, 27 Jun 2008 13:48:29 -0700 (PDT)
+Cc: linux-kernel@vger.kernel.org, rmk@arm.linux.org.uk, cooloney@kernel.org,
+       dev-etrax@axis.com, dhowells@redhat.com, gerg@uclinux.org,
+       yasutake.koichi@jp.panasonic.com, linux-parisc@vger.kernel.org,
+       paulus@samba.org, linuxppc-dev@ozlabs.org, linux-sh@vger.kernel.org,
+       chris@zankel.net, linux-mips@linux-mips.org, ysato@users.sourceforge.jp,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] asm/ptrace.h userspace headers cleanup
+In-Reply-To: Adrian Bunk's message of  Monday, 23 June 2008 20:48:09 +0300 <20080623174809.GE4756@cs181140183.pp.htv.fi>
+References: <20080623174809.GE4756@cs181140183.pp.htv.fi>
+X-Shopping-List: (1) Ingenious competition rice
+   (2) Famous persecuters
+   (3) Disorienting rectractors
+   (4) Ostentatious rectractors
+   (5) Prosthetic tape
+Message-Id: <20080627204953.DA76515427E@magilla.localdomain>
+Date: Mon, 23 Jun 2008 13:08:51 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 5a4646a4efed8c835f76c3b88f3155f6ab5b8d9b introduced a leak of
-task_struct refs into sys32_ptrace.  This bug has already gone away in
-for 2.6.26 in commit 562b80bafffaf42a6d916b0a2ee3d684220a1c10.
+That all looks fine to me, though I won't claim to have paid close
+attention to the nits in the various odd archs' files.
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/x86/kernel/ptrace.c |   45 ++++++++++++++++++++++++++-------------------
- 1 files changed, 26 insertions(+), 19 deletions(-)
-
-diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index 9003e0b..a10ba65 100644
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -1309,42 +1309,49 @@ asmlinkage long sys32_ptrace(long request, u32 pid, u32 addr, u32 data)
- 		break;
- 
- 	case PTRACE_GETREGS:	/* Get all gp regs from the child. */
--		return copy_regset_to_user(child, &user_x86_32_view,
--					   REGSET_GENERAL,
--					   0, sizeof(struct user_regs_struct32),
--					   datap);
-+		ret = copy_regset_to_user(child, &user_x86_32_view,
-+					  REGSET_GENERAL,
-+					  0, sizeof(struct user_regs_struct32),
-+					  datap);
-+		break;
- 
- 	case PTRACE_SETREGS:	/* Set all gp regs in the child. */
--		return copy_regset_from_user(child, &user_x86_32_view,
--					     REGSET_GENERAL, 0,
--					     sizeof(struct user_regs_struct32),
--					     datap);
-+		ret = copy_regset_from_user(child, &user_x86_32_view,
-+					    REGSET_GENERAL, 0,
-+					    sizeof(struct user_regs_struct32),
-+					    datap);
-+		break;
- 
- 	case PTRACE_GETFPREGS:	/* Get the child FPU state. */
--		return copy_regset_to_user(child, &user_x86_32_view,
--					   REGSET_FP, 0,
--					   sizeof(struct user_i387_ia32_struct),
--					   datap);
-+		ret = copy_regset_to_user(child, &user_x86_32_view,
-+					  REGSET_FP, 0,
-+					  sizeof(struct user_i387_ia32_struct),
-+					  datap);
-+		break;
- 
- 	case PTRACE_SETFPREGS:	/* Set the child FPU state. */
--		return copy_regset_from_user(
-+		ret = copy_regset_from_user(
- 			child, &user_x86_32_view, REGSET_FP,
- 			0, sizeof(struct user_i387_ia32_struct), datap);
-+		break;
- 
- 	case PTRACE_GETFPXREGS:	/* Get the child extended FPU state. */
--		return copy_regset_to_user(child, &user_x86_32_view,
--					   REGSET_XFP, 0,
--					   sizeof(struct user32_fxsr_struct),
--					   datap);
-+		ret = copy_regset_to_user(child, &user_x86_32_view,
-+					  REGSET_XFP, 0,
-+					  sizeof(struct user32_fxsr_struct),
-+					  datap);
-+		break;
- 
- 	case PTRACE_SETFPXREGS:	/* Set the child extended FPU state. */
--		return copy_regset_from_user(child, &user_x86_32_view,
-+		ret = copy_regset_from_user(child, &user_x86_32_view,
- 					     REGSET_XFP, 0,
- 					     sizeof(struct user32_fxsr_struct),
- 					     datap);
-+		break;
- 
- 	default:
--		return compat_ptrace_request(child, request, addr, data);
-+		ret = compat_ptrace_request(child, request, addr, data);
-+		break;
- 	}
- 
-  out:
+Thanks,
+Roland
