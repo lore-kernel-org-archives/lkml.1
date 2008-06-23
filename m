@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755851AbYFWXI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752281AbYFWXIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755851AbYFWXI4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 19:08:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066AbYFWXHX
+	id S1752281AbYFWXIl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 19:08:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbYFWXHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 19:07:23 -0400
-Received: from mail.suse.de ([195.135.220.2]:44514 "EHLO mx1.suse.de"
+	Mon, 23 Jun 2008 19:07:19 -0400
+Received: from mx2.suse.de ([195.135.220.15]:39124 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754062AbYFWXHV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 19:07:21 -0400
-Date: Mon, 23 Jun 2008 16:04:58 -0700
+	id S1754015AbYFWXHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 19:07:18 -0400
+Date: Mon, 23 Jun 2008 16:04:55 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -21,13 +21,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Bernhard Walle <bwalle@suse.de>
-Subject: [patch 06/10] Add return value to reserve_bootmem_node()
-Message-ID: <20080623230458.GF29853@suse.de>
+       alan@lxorguk.ukuu.org.uk,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Jan Beulich <jbeulich@novell.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 05/10] x86: set PAE PHYSICAL_MASK_SHIFT to 44 bits.
+Message-ID: <20080623230455.GE29853@suse.de>
 References: <20080623225737.837265824@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="add-return-value-to-reserve_bootmem_node.patch"
+Content-Disposition: inline; filename="x86-set-pae-physical_mask_shift-to-44-bits.patch"
 In-Reply-To: <20080623230417.GA29853@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,51 +40,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 us know.
 
 ------------------ 
-From: Bernhard Walle <bwalle@suse.de>
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 
-commit 71c2742f5e6348d76ee62085cf0a13e5eff0f00e upstream
+commit ad524d46f36bbc32033bb72ba42958f12bf49b06 upstream
 
-This patch changes the function reserve_bootmem_node() from void to int,
-returning -ENOMEM if the allocation fails.
+When a 64-bit x86 processor runs in 32-bit PAE mode, a pte can
+potentially have the same number of physical address bits as the
+64-bit host ("Enhanced Legacy PAE Paging").  This means, in theory,
+we could have up to 52 bits of physical address in a pte.
 
-This fixes a build problem on x86 with CONFIG_KEXEC=y and
-CONFIG_NEED_MULTIPLE_NODES=y
+The 32-bit kernel uses a 32-bit unsigned long to represent a pfn.
+This means that it can only represent physical addresses up to 32+12=44
+bits wide.  Rather than widening pfns everywhere, just set 2^44 as the
+Linux x86_32-PAE architectural limit for physical address size.
 
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
-Reported-by: Adrian Bunk <bunk@kernel.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+This is a bugfix for two cases:
+1. running a 32-bit PAE kernel on a machine with
+  more than 64GB RAM.
+2. running a 32-bit PAE Xen guest on a host machine with
+  more than 64GB RAM
+
+In both cases, a pte could need to have more than 36 bits of physical,
+and masking it to 36-bits will cause fairly severe havoc.
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Cc: Jan Beulich <jbeulich@novell.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/bootmem.h |    2 +-
- mm/bootmem.c            |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ include/asm-x86/page_32.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/include/linux/bootmem.h
-+++ b/include/linux/bootmem.h
-@@ -94,7 +94,7 @@ extern unsigned long init_bootmem_node(p
- 				       unsigned long freepfn,
- 				       unsigned long startpfn,
- 				       unsigned long endpfn);
--extern void reserve_bootmem_node(pg_data_t *pgdat,
-+extern int reserve_bootmem_node(pg_data_t *pgdat,
- 				 unsigned long physaddr,
- 				 unsigned long size,
- 				 int flags);
---- a/mm/bootmem.c
-+++ b/mm/bootmem.c
-@@ -398,10 +398,10 @@ unsigned long __init init_bootmem_node(p
- 	return init_bootmem_core(pgdat, freepfn, startpfn, endpfn);
- }
+--- a/include/asm-x86/page_32.h
++++ b/include/asm-x86/page_32.h
+@@ -14,7 +14,8 @@
+ #define __PAGE_OFFSET		_AC(CONFIG_PAGE_OFFSET, UL)
  
--void __init reserve_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
-+int __init reserve_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
- 				 unsigned long size, int flags)
- {
--	reserve_bootmem_core(pgdat->bdata, physaddr, size, flags);
-+	return reserve_bootmem_core(pgdat->bdata, physaddr, size, flags);
- }
+ #ifdef CONFIG_X86_PAE
+-#define __PHYSICAL_MASK_SHIFT	36
++/* 44=32+12, the limit we can fit into an unsigned long pfn */
++#define __PHYSICAL_MASK_SHIFT	44
+ #define __VIRTUAL_MASK_SHIFT	32
+ #define PAGETABLE_LEVELS	3
  
- void __init free_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
 
 -- 
