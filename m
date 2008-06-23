@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751930AbYFWWn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751810AbYFWWqX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751930AbYFWWn5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 18:43:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750770AbYFWWns
+	id S1751810AbYFWWqX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 18:46:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbYFWWqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 18:43:48 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:37445 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750751AbYFWWns (ORCPT
+	Mon, 23 Jun 2008 18:46:10 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:16099 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750900AbYFWWqI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 18:43:48 -0400
-Date: Mon, 23 Jun 2008 18:43:45 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: ciaby <ciaby@autistici.org>
-cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH] 2.6.25.4-rt6: missing =?UTF-8?Q?global=5Frt=5Fruntime=28=29=20in?=
- =?UTF-8?Q?=20sched=2Ec?=
-In-Reply-To: <7688fdc041a8f848b0627dccccddcf12@localhost>
-Message-ID: <Pine.LNX.4.58.0806231843120.27994@gandalf.stny.rr.com>
-References: <7688fdc041a8f848b0627dccccddcf12@localhost>
+	Mon, 23 Jun 2008 18:46:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=DEw5Kclr/k6ZRp/xD/QVBM+8U71hEkaDOGJm4gMi+UkQQRZH5K8WGT1KEssZsL8QZA
+         /x9yI7jWYXzi5G6Nsuz2pyVsD4mPvb8hMsuI+bGwcjXL8W3238RTMb5sJQ4x5sME0enh
+         sYsrk1v7Ddrcfzh2GJjwB8UtGmfNfD2C0SaBk=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Elias Oltmanns <eo@nebensachen.de>
+Subject: Re: [PATCH] IDE: Fix HDIO_DRIVE_RESET handling
+Date: Tue, 24 Jun 2008 00:41:45 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Randy Dunlap <randy.dunlap@oracle.com>
+References: <87k5gmz596.fsf@denkblock.local> <87wskhuk98.fsf@denkblock.local> <87r6apuk16.fsf@denkblock.local>
+In-Reply-To: <87r6apuk16.fsf@denkblock.local>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Message-Id: <200806240041.46109.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Mon, 9 Jun 2008, ciaby wrote:
+On Monday 23 June 2008, Elias Oltmanns wrote:
+> Currently, the code path executing an HDIO_DRIVE_RESET ioctl is broken
+> in various ways.  Most importantly, it is treated as an out of band
+> request in an illegal way which may very likely lead to system lock ups.
+> Use the drive's request queue to avoid this problem (and fix a locking
+> issue for free along the way).
+> 
+> Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
 
->
->
-> I already sent this patch, but seems that nobody cared... the last 2
-> revisions of the -rt kernel don't compile properly.
-> Second patch to fix this.
-> Regards
+[...]
 
-I still don't have a "Signed-off-by:" for this patch. Please send it to me
-ASAP, otherwise it will miss the next release.
+> +		} else if (!rq->rq_disk && blk_special_request(rq))
+> +			/*
+> +			 * TODO: Once all ULDs have been modified to
+> +			 * check for specific op codes rather than
+> +			 * blindly accepting any special request, the
+> +			 * echeck for ->rq_disk above may be replaced
 
--- Steve
+'echeck' typo.
 
->
-> Giovanni "ciaby" Civardi
->
-> diff -uNr linux-2.6.25.4-rt6.orig/kernel/sched.c
-> linux-2.6.25.4-rt6/kernel/sched.c
-> --- linux-2.6.25.4-rt6.orig/kernel/sched.c      2008-06-09
-> 11:35:57.000000000 +0200
-> +++ linux-2.6.25.4-rt6/kernel/sched.c   2008-06-09 11:40:45.000000000 +0200
-> @@ -672,6 +672,13 @@
->   */
->  #define RUNTIME_INF    ((u64)~0ULL)
->
-> +static u64 global_rt_runtime(void)
+[...]
+
+> +static inline void ide_complete_drive_reset(ide_drive_t *drive)
 > +{
-> +       if (sysctl_sched_rt_period < 0)
-> +               return RUNTIME_INF;
-> +       return (u64)sysctl_sched_rt_runtime * NSEC_PER_USEC;
-> +}
+> +	struct request *rq = HWGROUP(drive)->rq;
 > +
->  /*
->   * We really dont want to do anything complex within switch_to()
->   * on PREEMPT_RT - this check enforces this.
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+> +	if (rq && blk_special_request(rq) && rq->cmd[0] == REQ_DRIVE_RESET)
+
+Shouldn't we be also checking for !rq->rq_disk here?
+
+[ also HWGROUP() macro is on its way out ]
+
+Otherwise OK.
