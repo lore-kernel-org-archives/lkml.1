@@ -1,56 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbYFWBss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754285AbYFWCBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754146AbYFWBss (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 21:48:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbYFWBsk
+	id S1754285AbYFWCBU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 22:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbYFWCBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 21:48:40 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:47510 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752448AbYFWBsk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 21:48:40 -0400
-Date: Mon, 23 Jun 2008 10:49:10 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Takenori Nagano <t-nagano@ah.jp.nec.com>
-Subject: Re: [patch] memory reclaim more  efficiently
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Keiichi KII <kii@linux.bs1.fc.nec.co.jp>
-In-Reply-To: <485EF481.30409@ah.jp.nec.com>
-References: <485EF481.30409@ah.jp.nec.com>
-Message-Id: <20080623102854.37BE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+	Sun, 22 Jun 2008 22:01:04 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:36503 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752528AbYFWCBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 22:01:03 -0400
+Date: Mon, 23 Jun 2008 12:00:53 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: eranian@googlemail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch 02/19] perfmon2 minimal v2:  base code
+Message-Id: <20080623120053.25de0173.sfr@canb.auug.org.au>
+In-Reply-To: <48583462.25014e0a.0982.6263@mx.google.com>
+References: <48583462.25014e0a.0982.6263@mx.google.com>
+X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.10; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__23_Jun_2008_12_00_53_+1000_F=4gpwUQXag2P8pQ"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi nagano-san,
+--Signature=_Mon__23_Jun_2008_12_00_53_+1000_F=4gpwUQXag2P8pQ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> In shrink_zone(), system can not return to user mode before it finishes to
-> search LRU list. IMHO, it is very wasteful, since the user processes stay
-> unnecessarily long time in shrink_zone() loop and application response time
-> becomes relatively bad. This patch changes shrink_zone() that it finishes memory
-> reclaim when it reclaims enough memory.
-> 
-> the conditions to end searching:
-> 
-> 1. order of request page is 0
-> 2. process is not kswapd.
-> 3. satisfy the condition to return try_to_free_pages()
->    # nr_reclaim > SWAP_CLUSTER_MAX
+Hi Stephane,
 
-I have 3 question.
+On Tue, 17 Jun 2008 15:02:10 -0700 (PDT) eranian@googlemail.com wrote:
+>
+> +++ o/perfmon/Makefile	2008-06-17 08:33:23.000000000 +0200
+> @@ -0,0 +1,7 @@
+> +#
+> +# Copyright (c) 2005-2006 Hewlett-Packard Development Company, L.P.
+> +# Contributed by Stephane Eranian <eranian@gmail.com>
+> +#
+> +obj-$(CONFIG_PERFMON) =3D perfmon_ctx.o \
+> +			perfmon_file.o perfmon_attach.o 	\
+> +			perfmon_res.o perfmon_init.o
 
-1. Do you have any performance number?
-2. I think this patch advocate many try_to_free_pages() called is better than
-   one try_to_free_page waste long time. right?
-   and, why do you think so?
-3. if this patch improve perfomance, I guess DEF_PRIORITY is
-   too small on your machine.
-   if DEF_PRIORITY is proportional to system memory, do your problem are solved?
+> +++ o/Makefile	2008-06-17 08:34:19.000000000 +0200
+> @@ -607,7 +607,7 @@
+> =20
+> =20
+>  ifeq ($(KBUILD_EXTMOD),)
+> -core-y		+=3D kernel/ mm/ fs/ ipc/ security/ crypto/ block/
+> +core-y		+=3D kernel/ mm/ fs/ ipc/ security/ crypto/ block/ perfmon/
 
+Is there some reason that this is not
 
+core-$(CONFIG_PERFMON)	+=3D perfmon/
 
+and then you could just use "obj-y" in perfmon/Makefile
+
+Or are there going to be things in perfmon/ that need building if
+CONFIG_PERFMON is not set?
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__23_Jun_2008_12_00_53_+1000_F=4gpwUQXag2P8pQ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhfA9UACgkQTgG2atn1QN8K2ACghDZNXwWHvjbPaxo34aCpUn44
+bC4An37anhlugSwKqwGfRzegtoYD7kHv
+=LIPG
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__23_Jun_2008_12_00_53_+1000_F=4gpwUQXag2P8pQ--
