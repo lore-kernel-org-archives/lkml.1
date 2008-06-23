@@ -1,92 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757684AbYFWVXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754442AbYFWV2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757684AbYFWVXW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 17:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280AbYFWVXL
+	id S1754442AbYFWV2x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 17:28:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbYFWV2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 17:23:11 -0400
-Received: from relay2.mail.vrmd.de ([81.28.224.28]:47151 "EHLO
-	relay2.mail.vrmd.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753283AbYFWVXJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 17:23:09 -0400
-X-Greylist: delayed 1497 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Jun 2008 17:23:09 EDT
-Date: Mon, 23 Jun 2008 20:57:22 +0000
-From: Thorsten Kranzkowski <dl8bcu@dl8bcu.de>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Richard Henderson <rth@twiddle.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] alpha: fix module load failures on smp (bug #10926)
-Message-ID: <20080623205722.GA3580@ds20.borg.net>
-Reply-To: dl8bcu@dl8bcu.de
-Mail-Followup-To: dl8bcu@dl8bcu.de,
-	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Richard Henderson <rth@twiddle.net>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-References: <20080620232539.GA8061@jurassic.park.msu.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080620232539.GA8061@jurassic.park.msu.ru>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-Relay-User: dl8bcu@dl8bcu.de
+	Mon, 23 Jun 2008 17:28:45 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:40315 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752526AbYFWV2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 17:28:44 -0400
+Subject: Re: [PATCH -tip-rcu] Make rcutorture more vicious: make quiescent
+	rcutorture less power-hungry
+From: Darren Hart <dvhltc@us.ibm.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, josh@freedesktop.org, niv@us.ibm.com, dino@in.ibm.com,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       vegard.nossum@gmail.com, adobriyan@gmail.com, oleg@tv-sign.ru,
+       bunk@kernel.org, rjw@sisk.pl
+In-Reply-To: <20080623201516.GC10595@linux.vnet.ibm.com>
+References: <20080618122144.GA27143@linux.vnet.ibm.com>
+	 <20080618162649.GA18326@linux.vnet.ibm.com>
+	 <20080622200638.GA25328@linux.vnet.ibm.com>
+	 <20080622131712.54ba732c@infradead.org> <1214243649.4440.10.camel@Aeon>
+	 <20080623110706.197f25b1@infradead.org> <1214251374.4440.48.camel@Aeon>
+	 <20080623201516.GC10595@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Mon, 23 Jun 2008 21:28:51 +0000
+Message-Id: <1214256531.4440.92.camel@Aeon>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 21, 2008 at 03:25:39AM +0400, Ivan Kokshaysky wrote:
-> To calculate addresses of locally defined variables, GCC uses 32-bit
-> displacement from the GP. Which doesn't work for per cpu variables in
-> modules, as an offset to the kernel per cpu area is way above 4G.
+On Mon, 2008-06-23 at 13:15 -0700, Paul E. McKenney wrote:
+> On Mon, Jun 23, 2008 at 08:02:54PM +0000, Darren Hart wrote:
+> > On Mon, 2008-06-23 at 11:07 -0700, Arjan van de Ven wrote:
+> > > On Mon, 23 Jun 2008 17:54:09 +0000
+> > > Darren Hart <dvhltc@us.ibm.com> wrote:
+> > > 
+> > > > I'm a little concerned about how this will affect real-time
+> > > > performance, as queueing up lots of timers all at once can lead to
+> > > > long running timer expiration handlers.  If just a schedule_timeout,
+> > > > I suppose we are only looking at a process wakeup, as opposed to a
+> > > > softirq context callback function?
+> > > 
+> > > in reality, the time it takes to deliver the interrupt (including
+> > > waking the CPU up etc), is likely to be an order or two of magnitude
+> > > higher than this kind of code loop.... 
+> > 
+> > Sure, if we just look at one of them.  Any idea how many such items
+> > we're looking at rounding up to fire at the same time?  Is it dozens,
+> > hundreds, thousands?
 > 
-> The workaround is to force allocation of a GOT entry for per cpu variable
-> using ldq instruction with a 'literal' relocation.
-> I had to use custom asm/percpu.h, as a required argument magic doesn't
-> work with asm-generic/percpu.h macros.
+> Hello, Darren,
 > 
-> Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-> ---
->  include/asm-alpha/percpu.h |   72 +++++++++++++++++++++++++++++++++++++++++++-
->  1 files changed, 71 insertions(+), 1 deletions(-)
+> Wouldn't these timers be running at low priority, so that high-priority
+> realtime tasks would preempt them?
 
+The timers run from softirq context will run at the priority of the
+softirq, so it is configurable, and only tasks equal to or lower in
+priority to that should see direct effects.
 
-This causes a regression for my ev4 uniprocessor build:
-
-
-  CC      arch/alpha/mm/init.o
-/export/data/repositories/linux-2.6/arch/alpha/mm/init.c:34: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘typeof’
-make[2]: *** [arch/alpha/mm/init.o] Error 1
-make[1]: *** [arch/alpha/mm] Error 2
-make: *** [sub-make] Error 2
-
-
-This patch fixes it for me (compile and boot tested):
-
-
-diff --git a/include/asm-alpha/percpu.h b/include/asm-alpha/percpu.h
-index 82e8a94..3495e8e 100644
---- a/include/asm-alpha/percpu.h
-+++ b/include/asm-alpha/percpu.h
-@@ -69,6 +69,8 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
- #define __get_cpu_var(var)		per_cpu_var(var)
- #define __raw_get_cpu_var(var)		per_cpu_var(var)
- 
-+#define PER_CPU_ATTRIBUTES
-+
- #endif /* SMP */
- 
- #define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu_var(name)
-
-
-Signed-off-by: Thorsten Kranzkowski <dl8bcu@dl8bcu.de>
-
-Thorsten.
-
+> 
+> 							Thanx, Paul
 -- 
-| Thorsten Kranzkowski        Internet: dl8bcu@dl8bcu.de                      |
-| Mobile: ++49 170 1876134       Snail: Kiebitzstr. 14, 49324 Melle, Germany  |
-| Ampr: dl8bcu@db0lj.#rpl.deu.eu, dl8bcu@marvin.dl8bcu.ampr.org [44.130.8.19] |
+Darren Hart
+Real-Time Linux Team Lead
+IBM Linux Technology Center
+
