@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753227AbYFWAZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753386AbYFWAiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753227AbYFWAZm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 20:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbYFWAZf
+	id S1753386AbYFWAiV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 20:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYFWAiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 20:25:35 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:35807 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751617AbYFWAZd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 20:25:33 -0400
-Date: Mon, 23 Jun 2008 09:30:58 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Nick Piggin <npiggin@suse.de>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org
-Subject: Re: [Experimental][PATCH] putback_lru_page rework
-Message-Id: <20080623093058.9976359f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080621175458.E82A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <1213981843.6474.68.camel@lts-notebook>
-	<1213994489.6474.127.camel@lts-notebook>
-	<20080621175458.E82A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 22 Jun 2008 20:38:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52292 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751531AbYFWAiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Jun 2008 20:38:08 -0400
+Message-ID: <485EF061.3010601@kernel.org>
+Date: Mon, 23 Jun 2008 09:37:53 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@suse.cz>
+CC: kernel list <linux-kernel@vger.kernel.org>, benh@kernel.crashing.org,
+       jgarzik@pobox.com, IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: sata_svw data corruption, strange problems
+References: <20080617093602.GA28140@elf.ucw.cz>
+In-Reply-To: <20080617093602.GA28140@elf.ucw.cz>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0rc1 (hera.kernel.org [127.0.0.1]); Mon, 23 Jun 2008 00:38:01 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Jun 2008 17:56:17 +0900
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+Hello,
 
-> > Quick update:  
-> > 
-> > With this patch applied, at ~ 1.5 hours into the test, my system panic'd
-> > [panic_on_oops set] with a BUG in __find_get_block() -- looks like the
-> > BUG_ON() in check_irqs_on() called from bh_lru_install() inlined by
-> > __find_get_block().  Before the panic occurred, I saw warnings from
-> > native_smp_call_function_mask() [arch/x86/kernel/smp.c]--also because
-> > irqs_disabled().
-> > 
-> > I'll back out the changes [spin_[un]lock() => spin_[un]lock_irq()] to
-> > shrink_inactive_list() and try again.  Just a hunch.
+Pavel Machek wrote:
+> I see strange problems on machine with sata_svw. The machine seems to
+> corrupt data every few days (ext3 error, dir index corrupted), and has
+> some other very strange problems (keyboard misbehaves, pulling out
+> SATA disk cures it, see
+> https://bugzilla.novell.com/show_bug.cgi?id=400772 ).
 > 
-> Yup.
-> Kamezawa-san's patch remove local_irq_enable(), but don't remove
-> local_irq_disable().
-> thus, irq is never enabled.
+> Then I got to the comment 
 > 
+>         writeb(dmactl | ATA_DMA_START, mmio + ATA_DMA_CMD);
+>         /* There is a race condition in certain SATA controllers
+> that can be seen when the r/w command is given to the controller
+> before the host DMA is started. On a Read command, the controller
+> would initiate the command to the drive even before it sees the DMA
+> start. When there are very fast drives connected to the controller,
+> or when the data request hits in the drive cache, there is the
+> possibility that the drive returns a part or all of the requested
+> data to the controller before the DMA start is issued.  In this
+> case, the controller would become confused as to what to do with the
+> data.  In the worst case when all the data is returned back to the
+> controller, the controller could hang. In other cases it could
+> return partial data returning in data corruption. This problem has
+> been seen in PPC systems and can also appear on an system with very
+> fast disks, where the SATA controller is sitting behind a number of
+> bridges, and hence there is significant latency between the r/w
+> command and the start command. */
+>         /* issue r/w command if the access is to ATA*/
+>         if (qc->tf.protocol == ATA_PROT_DMA)
+> 
+> ...and that would certainly explain what we are seeing. Are
+> serverworks controllers broken by design?
 
-Sorry,
--Kame
+The comment looks like a warning to me as the DMA engine is started
+before the command is issued to the drive as explained in the next
+comment.
 
-
-> > -	spin_unlock(&zone->lru_lock);
-> > +	spin_unlock_irq(&zone->lru_lock);
-> >  done:
-> > -	local_irq_enable();
-> 
-> 
-> 
-
+-- 
+tejun
