@@ -1,84 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755225AbYFWLh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbYFWLoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755225AbYFWLh2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 07:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbYFWLhS
+	id S1754733AbYFWLoW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 07:44:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbYFWLoH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 07:37:18 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:62960 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752839AbYFWLhR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 07:37:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=FkBkRWZYBSuVtj0GZ6St3Vku4pSO2JPLhT4qYtyNys0ZkR9Y4BWYp2x2GhizwjhUGW
-         g8M+OJsxdQLg3o6MKJRjadvPBlvQ4oLhhM1PNPSpM/cGcEWVkyJTI1c93mORTeLP4DtT
-         kF9Ev866787FcO5N4orTpRq/dgcLcp6Oz2FHQ=
-Message-ID: <7c86c4470806230437i55961d08g7416ad1a65203b8c@mail.gmail.com>
-Date: Mon, 23 Jun 2008 13:37:16 +0200
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Subject: Re: [patch 02/19] perfmon2 minimal v2: base code
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080623120053.25de0173.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Jun 2008 07:44:07 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:58691 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752464AbYFWLoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 07:44:04 -0400
+Date: Mon, 23 Jun 2008 15:46:32 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: v2.6.26-rc7: BUG task_struct: Poison overwritten
+Message-ID: <20080623114632.GA173@tv-sign.ru>
+References: <20080621192400.GA2992@damson.getinternet.no> <20080621192845.GB2992@damson.getinternet.no> <19f34abd0806211341i3a3ecd0bi1c849a2fbc4e9c7e@mail.gmail.com> <1214083307.3223.289.camel@lappy.programming.kicks-ass.net> <19f34abd0806211557v6763bd3fo2d99d4f26cb0d3a5@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <48583462.25014e0a.0982.6263@mx.google.com>
-	 <20080623120053.25de0173.sfr@canb.auug.org.au>
+In-Reply-To: <19f34abd0806211557v6763bd3fo2d99d4f26cb0d3a5@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen,
+On 06/22, Vegard Nossum wrote:
+>
+> I was poking around in kernel/sched.c and noticed something odd: In
+> migrate_dead(), we have this code:
+>
+>         /*
+>          * Drop lock around migration; if someone else moves it,
+>          * that's OK. No task can be added to this CPU, so iteration is
+>          * fine.
+>          */
+>         spin_unlock_irq(&rq->lock);
+>         move_task_off_dead_cpu(dead_cpu, p);
+>         spin_lock_irq(&rq->lock);
+>
+> which is fine in itself, I guess. But spin_unlock_irq() will enable
+> interrupts. And move_task_off_dead_cpu() has this comment:
+>
+> /*
+>  * Figure out where task on dead CPU should go, use force if necessary.
+>  * NOTE: interrupts should be disabled by the caller
+>  */
+> static void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
+> {
+>
+> ...but here, interrupts will not be disabled. On the other hand
+> __migrate_task_irq() (called by move_task_off_dead_cpu()) calls
+> local_irq_disable() itself... What do you think of this? Is the
+> comment wrong? Or is there a difference between "interrupts" and
+> "local_irq"?
 
-This is a good comment. I check the perfmon subdir and there is indeed
-no need to go
-there when CONFIG_PERFMON is not set. I have made the change now.
+Yes, the comment is wrong, thanks.
 
-Thanks.
+It wasn't updated by
 
+"do CPU_DEAD migrating under read_lock(tasklist) instead of write_lock_irq(tasklist)"
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=f7b4cddcc5aca03e80e357360c9424dfba5056c2
 
-On Mon, Jun 23, 2008 at 4:00 AM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> Hi Stephane,
->
-> On Tue, 17 Jun 2008 15:02:10 -0700 (PDT) eranian@googlemail.com wrote:
->>
->> +++ o/perfmon/Makefile        2008-06-17 08:33:23.000000000 +0200
->> @@ -0,0 +1,7 @@
->> +#
->> +# Copyright (c) 2005-2006 Hewlett-Packard Development Company, L.P.
->> +# Contributed by Stephane Eranian <eranian@gmail.com>
->> +#
->> +obj-$(CONFIG_PERFMON) = perfmon_ctx.o \
->> +                     perfmon_file.o perfmon_attach.o         \
->> +                     perfmon_res.o perfmon_init.o
->
->> +++ o/Makefile        2008-06-17 08:34:19.000000000 +0200
->> @@ -607,7 +607,7 @@
->>
->>
->>  ifeq ($(KBUILD_EXTMOD),)
->> -core-y               += kernel/ mm/ fs/ ipc/ security/ crypto/ block/
->> +core-y               += kernel/ mm/ fs/ ipc/ security/ crypto/ block/ perfmon/
->
-> Is there some reason that this is not
->
-> core-$(CONFIG_PERFMON)  += perfmon/
->
-> and then you could just use "obj-y" in perfmon/Makefile
->
-> Or are there going to be things in perfmon/ that need building if
-> CONFIG_PERFMON is not set?
->
-> --
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> http://www.canb.auug.org.au/~sfr/
->
+Previously move_task_off_dead_cpu() was called under write_lock_irq(tasklist),
+and we can't take tasklist for writing without disabling irqs.
+
+If you don't see other problems, could you make a patch to fix the comment?
+
+Oleg.
+
