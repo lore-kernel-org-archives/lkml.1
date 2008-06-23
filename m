@@ -1,94 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758596AbYFWMef@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758561AbYFWMg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758596AbYFWMef (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 08:34:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbYFWMe0
+	id S1758561AbYFWMg6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 08:36:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754578AbYFWMgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 08:34:26 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:40886 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752353AbYFWMeZ (ORCPT
+	Mon, 23 Jun 2008 08:36:48 -0400
+Received: from smtp115.mail.mud.yahoo.com ([209.191.84.164]:34503 "HELO
+	smtp115.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752819AbYFWMgr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 08:34:25 -0400
-Message-ID: <485F9877.1060902@keyaccess.nl>
-Date: Mon, 23 Jun 2008 14:35:03 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Mon, 23 Jun 2008 08:36:47 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=LTD7gCHNzqm2WRCLzbuNIK7UPucYv2024lTfOCaNJ7I+ID+NaLcU6eVAtMwSuIFBpsIkd8O7b19l56Qu2k2Wopxo6TM6AeMWuNCatHHf65iKuBekh17mBI4gezuW/jkyGzB6J2ePR3XjZ9W0GkDUgitIErKATCp//Yd6ZPIN41U=  ;
+X-YMail-OSG: z1ruvRoVM1nuz0VkZ.l.o4Y0Ntbw1V5Wkn584lSdvrmVvsHU5O624KKxHDnucmkkPW7lcPjvpdDZmRf0PAGNweQxoj7p70b3zZEXqKpG8Q--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Jan Kara <jack@suse.cz>
+Subject: Re: [RFC][PATCH] ext3: don't read inode block if the buffer has a write error
+Date: Mon, 23 Jun 2008 22:36:30 +1000
+User-Agent: KMail/1.9.5
+Cc: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>, akpm@linux-foundation.org,
+       sct@redhat.com, adilger@sun.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+References: <485F8822.5030205@hitachi.com> <200806232146.28379.nickpiggin@yahoo.com.au> <20080623123116.GL26743@duck.suse.cz>
+In-Reply-To: <20080623123116.GL26743@duck.suse.cz>
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: Hans de Goede <j.w.r.degoede@hhs.nl>, linux-acpi@vger.kernel.org,
-       Zhang Rui <rui.zhang@intel.com>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
-Subject: Re: LMSENSORS: 2.6.26-rc,  enabling ACPI Termal Zone support costs
-  sensors
-References: <485DA11C.7050906@keyaccess.nl>	<485DFF35.6080008@hhs.nl>	<485E505F.8010306@keyaccess.nl>	<485E61DE.6020202@hhs.nl>	<20080623120844.5f722aa6@hyperion.delvare>	<485F79C6.20507@keyaccess.nl> <20080623135704.2980078c@hyperion.delvare>
-In-Reply-To: <20080623135704.2980078c@hyperion.delvare>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -0.7 (/)
+Content-Disposition: inline
+Message-Id: <200806232236.30961.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 23-06-08 13:57, Jean Delvare wrote:
+On Monday 23 June 2008 22:31, Jan Kara wrote:
+> On Mon 23-06-08 21:46:27, Nick Piggin wrote:
 
-> On Mon, 23 Jun 2008 12:24:06 +0200, Rene Herman wrote:
+> > I don't know why it was done like this, or if anybody actually tested
+> > any of it, but AFAIKS the best way to fix this is to simply not
+> > clear any uptodate bits upon write errors.
+>
+>   That would be non-trivial effort because there are lots of places which
+> do things like:
+>   wait_on_buffer(bh);
+>   if (!buffer_uptodate)
+>     /* IO error handling */
+>
+>   But what you say sounds like a reasonable thing from a logical
+> perspective.
 
->> No Jean, this is totally unacceptable. No matter how you want to call 
->> things, 2.6.26 is going to break important functionality on millions of 
->> systems and you simply do not get to do that.
-> 
-> No, it's not going to be the end of the world that you predict. Please
-> stop being alarmist, it really doesn't help.
-> 
-> We are going to break hardware monitoring for users who upgrade to
-> kernel 2.6.26 by themselves and have enabled option "THERMAL"
+For reads, that's obviously a common pattern, although even that's
+broken in some cases where it is used. But definitely uptodate should
+not be set on a read error (although does it need to be explicitly
+cleared? I would hope we don't submit a read anyway if the page/buffer
+is already uptodate).
 
-Which is an option selected by ACPI_THERMAL, for which I quoted the help 
-text earlier. Basically everyone with ACPI enabled will have it enabled. 
-Rather wide-spread, that is.
-
-> and are using lm-sensors <= 2.10.6. I suspect this is a relatively
-> small number of users
-
-Yes, right. All not completely new systems, all completely new slackware 
-and derived systems... "relatively" is a word very much needed here.
-
-I really cannot believe you guys are actually arguing this. It seems 
-that me being tired and short pulled this in to senseless country but 
-can we please concentrate on the issue?
-
-libsensors dictated the ABI rule that the hwmon directories must have 
-device backlinks; the new ACPI Thermal Zone hwmon interface breaks that 
-bit of ABI. It is not relevant that that ABI may have gotten to be as a 
-result of unfortunate programming on the userspace side -- the only 
-thing relevant is that it IS. lm-sensors 2 is on millions of systems out 
-there. This is not meant agressively, or whatever you guys seem to want 
-to read in my words, it's un undeniable fact.
-
-> and these are also the ones who are presumably skilled enough to go
-> to http://www.lm-sensors.org/, find the patch they need, and apply it
-> to libsensors themselves.
-
-At times there can obviously be situations where it's fine to require 
-new userspace but in this case we have a new userspace which hasn't even 
-been released yet, we have a ton of _different_ userspace depending  on 
-that bit of core userspace, we have breakage of the important kind (as 
-you no doubt know, sensors can be pretty vital, although admittedly it's 
-not silent breakage at least) and we have an opportunity to just say 
-"okay, we'll apply a 1 line patch and be done with it" which avoids any 
-and all problems. Why are you arguing this?
-
->> Can you comment on the last patch posted? It's trivial:
->>
->> http://lkml.org/lkml/2008/6/22/243
-> 
-> It's trivial and wrong, so thanks but no thanks. The bug is in
-> libsensors, we fix it in libsensors.
-
-This cannot be the reason, because it's not wrong. We just need a device 
-backlink. Basically, any single one will do. It's just about keeping 
-lm-sensors 2 happy.
-
-Rene.
+But you're right, even changing this for writes would not be a trivial
+effort.
