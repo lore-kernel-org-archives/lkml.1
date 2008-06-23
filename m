@@ -1,86 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbYFWDdJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756349AbYFWDm0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755990AbYFWDdJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Jun 2008 23:33:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbYFWDc4
+	id S1756349AbYFWDm0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Jun 2008 23:42:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbYFWDmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Jun 2008 23:32:56 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:40575 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752641AbYFWDc4 (ORCPT
+	Sun, 22 Jun 2008 23:42:16 -0400
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:41180 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753127AbYFWDmP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Jun 2008 23:32:56 -0400
-Date: Sun, 22 Jun 2008 20:25:39 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Matt LaPlante <kernel1@cyberdogtech.com>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
-Subject: Re: [PATCH] Documentation cleanup: trivial misspelling,
- punctuation, and grammar corrections.
-Message-Id: <20080622202539.f302ce03.randy.dunlap@oracle.com>
-In-Reply-To: <1214020821-19361-1-git-send-email-kernel1@cyberdogtech.com>
-References: <1214020821-19361-1-git-send-email-kernel1@cyberdogtech.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 22 Jun 2008 23:42:15 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=H8A/hrbYouCKzuRtRIWw6bjvcI2HmhrDtwtWBIhCZcWD8SoAGa1IhLsq2/Xj7ifz9flL8I+5qE0cZJMxfwaXWJoRdcj9C4yihgOuAbjVQ3Sy1hoaMCg2+WgkvFQkVgyaj6FQDPBD/5n/pCgQF0Afk+l/Rfvvymt3QFSPg8f3tRw=  ;
+X-YMail-OSG: _vcNfGUVM1kxmR.ogtf.ZUUAEZdtVrPrv6o2lMFnfxUoAsVrkHNOkEO62r4Vygzd4Im8GYP3HkTSvCaHUsE.3qVlGyg4R5YFaUfLCgOyVcj77xYqZ04s0oNXtPRVQz7wSUo-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: [patch 2.6.26-rc7] rtc_read_alarm() handles wraparound
+Date: Sun, 22 Jun 2008 20:42:13 -0700
+User-Agent: KMail/1.9.9
+Cc: rtc-linux@googlegroups.com, Mark Lord <lkml@rtr.ca>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200806222042.13929.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Jun 2008 23:00:21 -0500 Matt LaPlante wrote:
+While 0e36a9a4a788e4e92407774df76c545910810d35 made sure that active
+alarms were never returned with invalid "wildcard" fields (negative),
+it can still report (wrongly) that the alarm triggers in the past.
 
-Signed-off-by: ??
+Example, if it's now 10am, an alarm firing at 5am will be triggered
+TOMORROW not today.  (Which may also be next month or next year...)
 
-A few nits below...
+This updates that alarm handling in three ways:
 
-> diff --git a/Documentation/filesystems/vfs.txt b/Documentation/filesystems/vfs.txt
-> index b7522c6..c4d348d 100644
-> --- a/Documentation/filesystems/vfs.txt
-> +++ b/Documentation/filesystems/vfs.txt
-> @@ -895,9 +895,9 @@ struct dentry_operations {
->  	iput() yourself
->  
->    d_dname: called when the pathname of a dentry should be generated.
-> -	Usefull for some pseudo filesystems (sockfs, pipefs, ...) to delay
-> +	Useful for some pseudo filesystems (sockfs, pipefs, ...) to delay
->  	pathname generation. (Instead of doing it when dentry is created,
-> -	its done only when the path is needed.). Real filesystems probably
-> +	it's done only when the path is needed.). Real filesystems probably
->  	dont want to use it, because their dentries are present in global
+  * Handle alarm rollover in the common cases of RTCs that don't
+    support matching on all date fields.
 
-	don't
+  * Skip the invalid-field logic when it's not needed.
 
->  	dcache hash, so their hash should be an invariant. As no lock is
->  	held, d_dname() should not try to modify the dentry itself, unless
+  * Minor bugfix ... tm_isdst should be ignored, it's one of the
+    fields Linux doesn't maintain.
 
-> diff --git a/Documentation/sound/alsa/Audiophile-Usb.txt b/Documentation/sound/alsa/Audiophile-Usb.txt
-> index 2ad5e63..a4c53d8 100644
-> --- a/Documentation/sound/alsa/Audiophile-Usb.txt
-> +++ b/Documentation/sound/alsa/Audiophile-Usb.txt
-> @@ -388,9 +388,9 @@ There are 2 main potential issues when using Jackd with the device:
->  
->  Jack supports big endian devices only in recent versions (thanks to
->  Andreas Steinmetz for his first big-endian patch). I can't remember 
-> -extacly when this support was released into jackd, let's just say that 
-> +exactly when this support was released into jackd, let's just say that
->  with jackd version 0.103.0 it's almost ok (just a small bug is affecting 
-> -16bits Big-Endian devices, but since you've read  carefully the above 
-> +16bits Big-Endian devices, but since you've read carefully the above
+A warning is emitted for some of the unhandled rollover cases, but
+the possible combinations are a bit too numerous to handle every
+bit of potential hardware and firmware braindamage.
 
-   16-bit (above and below here)
-
->  paragraphs, you're now using kernel >= 2.6.23 and your 16bits devices 
->  are now Little Endians ;-) ).
->  
-
-Thanks.  Big ack for all of the others.
-
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 ---
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+ drivers/rtc/interface.c |  102 ++++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 91 insertions(+), 11 deletions(-)
+
+--- a/drivers/rtc/interface.c	2008-06-21 19:51:24.000000000 -0700
++++ b/drivers/rtc/interface.c	2008-06-22 13:05:57.000000000 -0700
+@@ -126,12 +126,25 @@ int rtc_read_alarm(struct rtc_device *rt
+ 	int err;
+ 	struct rtc_time before, now;
+ 	int first_time = 1;
++	unsigned long t_now, t_alm;
++	enum { none, day, month, year } missing = none;
++	unsigned days;
+ 
+-	/* The lower level RTC driver may not be capable of filling
+-	 * in all fields of the rtc_time struct (eg. rtc-cmos),
+-	 * and so might instead return -1 in some fields.
+-	 * We deal with that here by grabbing a current RTC timestamp
+-	 * and using values from that for any missing (-1) values.
++	/* The lower level RTC driver may return -1 in some fields,
++	 * creating invalid alarm->time values, for reasons like:
++	 *
++	 *   - The hardware may not be capable of filling them in;
++	 *     many alarms match only on time-of-day fields, not
++	 *     day/month/year calendar data.
++	 *
++	 *   - Some hardware uses illegal values as "wildcard" match
++	 *     values, which non-Linux firmware (like a BIOS) may try
++	 *     to set up as e.g. "alarm 15 minutes after each hour".
++	 *     Linux uses only oneshot alarms.
++	 *
++	 * When we see that here, we deal with it by using values from
++	 * a current RTC timestamp for any missing (-1) values.  The
++	 * RTC driver prevents "periodic alarm" modes.
+ 	 *
+ 	 * But this can be racey, because some fields of the RTC timestamp
+ 	 * may have wrapped in the interval since we read the RTC alarm,
+@@ -174,6 +187,10 @@ int rtc_read_alarm(struct rtc_device *rt
+ 		if (!alarm->enabled)
+ 			return 0;
+ 
++		/* full-function RTCs won't have such missing fields */
++		if (rtc_valid_tm(&alarm->time) == 0)
++			return 0;
++
+ 		/* get the "after" timestamp, to detect wrapped fields */
+ 		err = rtc_read_time(rtc, &now);
+ 		if (err < 0)
+@@ -183,22 +200,85 @@ int rtc_read_alarm(struct rtc_device *rt
+ 	} while (   before.tm_min   != now.tm_min
+ 		 || before.tm_hour  != now.tm_hour
+ 		 || before.tm_mon   != now.tm_mon
+-		 || before.tm_year  != now.tm_year
+-		 || before.tm_isdst != now.tm_isdst);
++		 || before.tm_year  != now.tm_year);
+ 
+-	/* Fill in any missing alarm fields using the timestamp */
++	/* Fill in the missing alarm fields using the timestamp; we
++	 * know there's at least one since alarm->time is invalid.
++	 */
+ 	if (alarm->time.tm_sec == -1)
+ 		alarm->time.tm_sec = now.tm_sec;
+ 	if (alarm->time.tm_min == -1)
+ 		alarm->time.tm_min = now.tm_min;
+ 	if (alarm->time.tm_hour == -1)
+ 		alarm->time.tm_hour = now.tm_hour;
+-	if (alarm->time.tm_mday == -1)
++
++	/* For simplicity, only support date rollover for now */
++	if (alarm->time.tm_mday == -1) {
+ 		alarm->time.tm_mday = now.tm_mday;
+-	if (alarm->time.tm_mon == -1)
++		missing = day;
++	}
++	if (alarm->time.tm_mon == -1) {
+ 		alarm->time.tm_mon = now.tm_mon;
+-	if (alarm->time.tm_year == -1)
++		if (missing == none)
++			missing = month;
++	}
++	if (alarm->time.tm_year == -1) {
+ 		alarm->time.tm_year = now.tm_year;
++		if (missing == none)
++			missing = year;
++	}
++
++	/* with luck, no rollover is needed */
++	rtc_tm_to_time(&now, &t_now);
++	rtc_tm_to_time(&alarm->time, &t_alm);
++	if (t_now < t_alm)
++		goto done;
++
++	switch (missing) {
++
++	/* 24 hour rollover ... if it's now 10am Monday, an alarm that
++	 * that will trigger at 5am will do so at 5am Tuesday, which
++	 * could also be in the next month or year.  This is a common
++	 * case, especially for PCs.
++	 */
++	case day:
++		dev_dbg(&rtc->dev, "alarm rollover: %s\n", "day");
++		t_alm += 24 * 60 * 60;
++		rtc_time_to_tm(t_alm, &alarm->time);
++		break;
++
++	/* Month rollover ... if it's the 31th, an alarm on the 3rd will
++	 * be next month.  An alarm matching on the 30th, 29th, or 28th
++	 * may end up in the month after that!  Many newer PCs support
++	 * this type of alarm.
++	 */
++	case month:
++		dev_dbg(&rtc->dev, "alarm rollover: %s\n", "month");
++		do {
++			if (alarm->time.tm_mon < 11)
++				alarm->time.tm_mon++;
++			else {
++				alarm->time.tm_mon = 0;
++				alarm->time.tm_year++;
++			}
++			days = rtc_month_days(alarm->time.tm_mon,
++					alarm->time.tm_year);
++		} while (days < alarm->time.tm_mday);
++		break;
++
++	/* Year rollover ... easy except for leap years! */
++	case year:
++		dev_dbg(&rtc->dev, "alarm rollover: %s\n", "year");
++		do {
++			alarm->time.tm_year++;
++		} while (!rtc_valid_tm(&alarm->time));
++		break;
++
++	default:
++		dev_warn(&rtc->dev, "alarm rollover not handled\n");
++	}
++
++done:
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(rtc_read_alarm);
