@@ -1,61 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757259AbYFWIjD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758118AbYFWIjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757259AbYFWIjD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 04:39:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbYFWIix
+	id S1758118AbYFWIjz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 04:39:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbYFWIjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 04:38:53 -0400
-Received: from web8715.mail.in.yahoo.com ([203.84.221.136]:32578 "HELO
-	web8715.mail.in.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751521AbYFWIix convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 04:38:53 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.co.in;
-  h=Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=dYelv/jSMnR+3Odj0sgf74DjlE2gQol2cwdD+Lb7xpNiUNjCQoC8PHGdmW1jcJcVKxUj69j+GCiGrDv7ozzb0WxDSFYf04YZmP5gEHOwHj6oEb1v8zoQfFT4XnmLj2iD+8edUgo08KZIJk1MoQfp8ThyhcbjsBDa48UIbTWfrrU=;
-X-Mailer: YahooMailRC/975.45 YahooMailWebService/0.7.199
-Date: Mon, 23 Jun 2008 14:08:49 +0530 (IST)
-From: palani saravanan <busybeesaravanan0072003@yahoo.co.in>
-Subject: Re: Behavior of lseek() on a fd opened with 'RDONLY' flag, when seeking goes beyond file size.
-To: David Newall <davidn@davidnewall.com>
-Cc: linux-kernel@vger.kernel.org
+	Mon, 23 Jun 2008 04:39:45 -0400
+Received: from cantor.suse.de ([195.135.220.2]:46575 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752421AbYFWIjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 04:39:44 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Tejun Heo <tj@kernel.org>, kernel list <linux-kernel@vger.kernel.org>,
+       benh@kernel.crashing.org, jgarzik@pobox.com,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Trivial patch monkey <trivial@kernel.org>
+Subject: Re: sata_svw data corruption, strange problems
+References: <20080617093602.GA28140@elf.ucw.cz> <485EF061.3010601@kernel.org>
+	<20080623082055.GB1850@elf.ucw.cz>
+X-Yow: I want EARS!  I want two ROUND BLACK EARS to make me feel warm 'n secure!!
+Date: Mon, 23 Jun 2008 10:39:40 +0200
+In-Reply-To: <20080623082055.GB1850@elf.ucw.cz> (Pavel Machek's message of
+	"Mon, 23 Jun 2008 10:20:55 +0200")
+Message-ID: <je63s0sfxv.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Message-ID: <887400.15277.qm@web8715.mail.in.yahoo.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks David for clarification !
+Pavel Machek <pavel@suse.cz> writes:
 
-I ran this program in the kernel version, 'Linux 2.6.9-42.7.ELsmp'.
-However, In a recent kernel version,  'Linux 2.6.24-19 ', the error EINVAL is returned as you mentioned.
+> +	   controller, the controller could hang. In other cases it
+> +	   could return partial data returning in data
+> +	   corruption. This problem has been seen in PPC systems and
 
-Thanks,
-Saravanan
------ Original Message ----
-From: David Newall <davidn@davidnewall.com>
-To: palani saravanan <busybeesaravanan0072003@yahoo.co.in>
-Cc: linux-kernel@vger.kernel.org
-Sent: Sunday, 22 June, 2008 7:36:12 AM
-Subject: Re: Behavior of lseek() on a fd opened with 'RDONLY' flag, when seeking goes beyond file size.
+s/returning/resulting/ ?
 
-palani saravanan wrote:
-> Does lseek() permits -ve value as offset, with SEEK_SET mode? ...
->    errno = 0;
->    rd_rc = lseek(rd_fd, -10, SEEK_SET);
-> returns rd_rc = -10 and errno remains 0.
->  
+Andreas.
 
-No, lseek does not permit negative file offsets, and should return
-EINVAL in your example.  You may have discovered a bug.  For reference,
-on my system lseek returns -1 and sets errno to EINVAL, as it should.
-
-If you're running a recent kernel it might be worth looking closer into
-this; for older kernels it's probably not worth the effort.
-
-
-
-      Save all your chat conversations. Find them online at http://in.messenger.yahoo.com/webmessengerpromo.php
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
