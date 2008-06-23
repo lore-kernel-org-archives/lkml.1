@@ -1,89 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbYFWFun@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757371AbYFWFvf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756076AbYFWFun (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 01:50:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbYFWFue
+	id S1757371AbYFWFvf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 01:51:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756767AbYFWFvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 01:50:34 -0400
-Received: from mga11.intel.com ([192.55.52.93]:54810 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751822AbYFWFud (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 01:50:33 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,688,1204531200"; 
-   d="scan'208";a="580827777"
-Subject: Re: [PATCH] x86 boot: Pass E820 memory map entries more than 128
-	via linked list of setup data
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       andi@firstfloor.org, mingo@redhat.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-In-Reply-To: <20080618114511.GB28838@elte.hu>
-References: <1213155219.13392.2.camel@caritas-dev.intel.com>
-	 <20080618114511.GB28838@elte.hu>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 23 Jun 2008 13:54:01 +0800
-Message-Id: <1214200441.25753.5.camel@caritas-dev.intel.com>
+	Mon, 23 Jun 2008 01:51:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50932 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756162AbYFWFvS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 01:51:18 -0400
+Date: Sun, 22 Jun 2008 22:51:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg Ungerer <gerg@snapgear.com>
+Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] m68knommu: ColdFire add support for kernel preemption
+Message-Id: <20080622225102.5117f22b.akpm@linux-foundation.org>
+In-Reply-To: <485F3585.2080606@snapgear.com>
+References: <200805010216.m412GT6t004096@goober>
+	<20080501143336.552e39e1.akpm@linux-foundation.org>
+	<481AC07A.6080707@snapgear.com>
+	<20080502083755.GA13973@Chamillionaire.breakpoint.cc>
+	<20080502052235.eb9c336a.akpm@linux-foundation.org>
+	<485F3585.2080606@snapgear.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-X-OriginalArrivalTime: 23 Jun 2008 05:50:30.0341 (UTC) FILETIME=[0B669F50:01C8D4F5]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Paul,
+On Mon, 23 Jun 2008 15:32:53 +1000 Greg Ungerer <gerg@snapgear.com> wrote:
 
-This patch can be used for machine whose E820 memory map has more than
-128 entries. So it is not necessary to use EFI memory map for this (EFI
-memory map is used for EFI runtime services only).
-
-With this patch, your previous patch:
-
-x86 boot: add code to add BIOS provided EFI memory entries to kernel
-
-is not necessary, so can be reversed.
-
-What do you think about that?
-
-Best Regards,
-Huang Ying
-
-On Wed, 2008-06-18 at 13:45 +0200, Ingo Molnar wrote:
-> * Huang, Ying <ying.huang@intel.com> wrote:
+> Hi Andrew,
 > 
-> > Because of the size limits of struct boot_params (zero page), the 
-> > maximum number of E820 memory map entries can be passed to kernel is 
-> > 128. As pointed by Paul Jackson, there is some machine produced by SGI 
-> > with so many nodes that the number of E820 memory map entries is more 
-> > than 128. To enabling Linux kernel on these system, a new setup data 
-> > type named SETUP_E820_EXT is defined to pass additional memory map 
-> > entries to Linux kernel.
+> Andrew Morton wrote:
+> > On Fri, 2 May 2008 10:37:55 +0200 Sebastian Siewior <lkml@ml.breakpoint.cc> wrote:
 > > 
-> > This patch is based on x86/auto-latest branch of git-x86 tree and has 
-> > been tested on x86_64 and i386 platform.
+> >>>>> Subject: [PATCH] m68knommu: ColdFire add support for kernel preemption
+> >>>> Please find a way to get your patch queue into linux-next so that others
+> >>>> get some visibility into what you're brewing earlier than
+> >>>> last-day-of-the-merge-window?
+> >>> Is a git tree the only way?
+> >> Others (Greg KH for instance, i2c) have quilt queues.
+> > 
+> > Yup.  Examples:
+> > 
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/agk/patches/2.6/editing/
+> > http://ozlabs.org/~rusty/kernel/rr-latest
+> > http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-02-usb
+> > 
+> > Note how you can publish subsets of your patchset by bracketing them with
+> > "# MM_PATCHES_START" and "# MM_PATCHES_END" for -mm, and "#
+> > NEXT_PATCHES_START" and "# NEXT_PATCHES_END" for linux-next.
 > 
-> applied to tip/x86/mpparse, thanks.
+> I decided to go the git route.
 > 
-> this bit collided with a recent change:
+> Here is a git tree for the collection of patches for the m68knommu
+> architecture that I intend for the 2.6.27 merge window.
 > 
-> > -	do {
-> > -		u64 start = biosmap->addr;
-> > -		u64 size = biosmap->size;
-> > -		u64 end = start + size;
-> > -		u32 type = biosmap->type;
-> > -
-> > -		/* Overflow in 64 bits? Ignore the memory map. */
-> > -		if (start > end)
-> > -			return -1;
-> > -
-> > -		add_memory_region(start, size, type);
-> > -	} while (biosmap++, --nr_map);
-> > -	return 0;
-> > +	return __copy_e820_map(biosmap, nr_map);
+> git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git for-linus
 > 
-> because add_memory_region() got renamed to e820_add_region(). I did the 
-> obvious fixup.
+> I have created a general uclinux changes git tree as well,
 > 
-> 	Ingo
+> git://git.kernel.org/pub/scm/linux/kernel/git/gerg/uclinux.git for-linus
+> 
+> though currently I have nothing queued for that.
+> 
+
+Great, thanks.  But can we get them into linux-next please?  I'll pick
+them up via that route.
+
