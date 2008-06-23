@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761720AbYFWRvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761606AbYFWRvN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761720AbYFWRvq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 13:51:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757068AbYFWRvh
+	id S1761606AbYFWRvN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 13:51:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761505AbYFWRuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 13:51:37 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:58031 "EHLO smtp4.pp.htv.fi"
+	Mon, 23 Jun 2008 13:50:51 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:48405 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757080AbYFWRvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 13:51:36 -0400
-Date: Mon, 23 Jun 2008 20:49:40 +0300
+	id S1761497AbYFWRuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 13:50:50 -0400
+Date: Mon, 23 Jun 2008 20:48:54 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [2.6 patch] linux/kernel.h userspace header cleanup
-Message-ID: <20080623174940.GL4756@cs181140183.pp.htv.fi>
+To: bfields@fieldses.org, neilb@suse.de
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [RFC: 2.6 patch] don't export linux/nfsd/stats.h to userspace
+Message-ID: <20080623174854.GI4756@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,34 +23,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nothing from the bottom of this header is part of the 
-kernel<->userspace ABI.
+The main contents is struct nfsd_stats which changes depending on a 
+CONFIG_ variable.
+
+This would not work in userspace.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- include/linux/kernel.h |    4 ++++
- 1 file changed, 4 insertions(+)
+ include/linux/nfsd/Kbuild  |    1 -
+ include/linux/nfsd/stats.h |    3 ---
+ 2 files changed, 4 deletions(-)
 
-c023fd63795380bceef9abc92c1d6fca91791de7 diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 792bf0a..2993b80 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -487,6 +487,8 @@ struct sysinfo {
- 	char _f[20-2*sizeof(long)-sizeof(int)];	/* Padding: libc5 uses this.. */
- };
+9b6014db4d4182cf4cb342b97f9018c5d1090afa diff --git a/include/linux/nfsd/Kbuild b/include/linux/nfsd/Kbuild
+index fc97204..698e9ec 100644
+--- a/include/linux/nfsd/Kbuild
++++ b/include/linux/nfsd/Kbuild
+@@ -2,5 +2,4 @@ unifdef-y += const.h
+ unifdef-y += debug.h
+ unifdef-y += export.h
+ unifdef-y += nfsfh.h
+-unifdef-y += stats.h
+ unifdef-y += syscall.h
+diff --git a/include/linux/nfsd/stats.h b/include/linux/nfsd/stats.h
+index 7678cfb..d949590 100644
+--- a/include/linux/nfsd/stats.h
++++ b/include/linux/nfsd/stats.h
+@@ -38,13 +38,10 @@ struct nfsd_stats {
+ /* thread usage wraps very million seconds (approx one fortnight) */
+ #define	NFSD_USAGE_WRAP	(HZ*1000000)
  
-+#ifdef __KERNEL__
-+
- /* Force a compilation error if condition is true */
- #define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
+-#ifdef __KERNEL__
+-
+ extern struct nfsd_stats	nfsdstats;
+ extern struct svc_stat		nfsd_svcstats;
  
-@@ -506,4 +508,6 @@ struct sysinfo {
- #define NUMA_BUILD 0
- #endif
+ void	nfsd_stat_init(void);
+ void	nfsd_stat_shutdown(void);
  
-+#endif  /*  __KERNEL__  */
-+
- #endif
+-#endif /* __KERNEL__ */
+ #endif /* LINUX_NFSD_STATS_H */
 
