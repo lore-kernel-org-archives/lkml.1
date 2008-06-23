@@ -1,82 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758624AbYFWRFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759483AbYFWRFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758624AbYFWRFA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 13:05:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbYFWREu
+	id S1759483AbYFWRFY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 13:05:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758079AbYFWRFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 13:04:50 -0400
-Received: from webmail.e-teleport.net ([213.190.83.68]:51934 "EHLO
-	mail.imsnet.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753227AbYFWREt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 13:04:49 -0400
-Message-ID: <485FD7AD.5080302@e-teleport.net>
-Date: Mon, 23 Jun 2008 19:04:45 +0200
-From: =?ISO-8859-1?Q?S=E9guier_R=E9gis?= <rseguier@e-teleport.net>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Mon, 23 Jun 2008 13:05:09 -0400
+Received: from rn-out-0910.google.com ([64.233.170.187]:6131 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754157AbYFWRFG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 13:05:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=qU0KYiJMncwGoqZcH2TzabHGbctp9zVq5aoxR8yNL/CzruOMOL+wj79kv0ybdvqbAR
+         hcn/+npwozPKpoXXkQxgyoT7uM14NRqga9dI2W8BPFu4MnSR7Xo7Mum9eSBv0BbJA28I
+         8GflsihN1k5GMpC81bR1kLemChQZJ/Z/L9yTc=
+Message-ID: <b6a2187b0806231005x44b69918q111e865938c55e7@mail.gmail.com>
+Date: Tue, 24 Jun 2008 01:05:04 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [patch 2/5] Reinstate ZERO_PAGE optimization in get_user_pages() and fix XIP
+Cc: "Hugh Dickins" <hugh@veritas.com>, "Greg KH" <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       "Justin Forbes" <jmforbes@linuxtx.org>,
+       "Zwane Mwaikambo" <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, "Randy Dunlap" <rdunlap@xenotime.net>,
+       "Dave Jones" <davej@redhat.com>,
+       "Chuck Wolber" <chuckw@quantumlinux.com>,
+       "Chris Wedgwood" <reviews@ml.cw.f00f.org>,
+       "Michael Krufky" <mkrufky@linuxtv.org>,
+       "Chuck Ebbert" <cebbert@redhat.com>,
+       "Domenico Andreoli" <cavokz@gmail.com>, "Willy Tarreau" <w@1wt.eu>,
+       "Rodrigo Rubira Branco" <rbranco@la.checkpoint.com>,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       "Oleg Nesterov" <oleg@tv-sign.ru>, "Nick Piggin" <npiggin@suse.de>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Ingo Molnar" <mingo@elte.hu>, "Roland McGrath" <roland@redhat.com>
+In-Reply-To: <alpine.LFD.1.10.0806230928140.2926@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Francois Romieu <romieu@fr.zoreil.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, alan@redhat.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net: via-velocity.c fix sleep-with-spinlock bug during
- MTU change
-References: <20080604215909.GA17446@electric-eye.fr.zoreil.com> <20080614212341.GA12976@electric-eye.fr.zoreil.com> <4856DA62.7080803@e-teleport.net> <20080617214538.GA6388@electric-eye.fr.zoreil.com> <48584AA4.8040801@e-teleport.net> <48593E35.1010409@e-teleport.net> <20080618201012.GA4019@electric-eye.fr.zoreil.com> <48598784.40306@e-teleport.net> <20080619204312.GA2160@electric-eye.fr.zoreil.com> <485B8542.7060204@e-teleport.net> <20080620103910.GA21227@electric-eye.fr.zoreil.com>
-In-Reply-To: <20080620103910.GA21227@electric-eye.fr.zoreil.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080622185327.348377223@mini.kroah.org>
+	 <20080622190140.GD20141@suse.de>
+	 <alpine.LFD.1.10.0806221220530.2926@woody.linux-foundation.org>
+	 <20080622202950.GB20800@suse.de>
+	 <b6a2187b0806230832j10e8be28vc0b05fea233437fa@mail.gmail.com>
+	 <Pine.LNX.4.64.0806231650190.13651@blonde.site>
+	 <alpine.LFD.1.10.0806230928140.2926@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Francois Romieu a écrit :
-> Séguier Régis <rseguier@e-teleport.net> :
-> [...]
->   
->> But if I generate a paquet with a size more than around 3825, the driver 
->> don't send it and no paquet is send after, work again after an interface 
->> down/up and until no paquet > 3825.
->>     
+On Tue, Jun 24, 2008 at 12:39 AM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+
+> So here's a third patch to test. It removes the VM_SHARED thing just to
+> get us closer to the original code (and because do_no_page() didn't do it
+> historically, so let's not do it either), and it re-instates the insane
+> VM_LOCKED test with a comment.
 >
-> Does it qualify as a regression ?
+> Jeff, does this still work with vmware?
+
+
+No, this breaks vmware. Does this trace help?
+
+Jun 24 00:54:49.325: vmx| NOT_IMPLEMENTED
+/build/mts/release/bora-93057/bora/vmx/main/vmmonPosix.c:774
+Jun 24 00:54:49.325: vmx| Backtrace:
+Jun 24 00:54:49.325: vmx| Backtrace[0] 0xbffc30c8 eip 0x8052f10
+Jun 24 00:54:49.325: vmx| Backtrace[1] 0xbffc34f8 eip 0x80f2f7d
+Jun 24 00:54:49.325: vmx| Backtrace[2] 0xbffc3548 eip 0x80e4b15
+Jun 24 00:54:49.325: vmx| Backtrace[3] 0xbffc3638 eip 0x837b341
+Jun 24 00:54:49.325: vmx| Backtrace[4] 0xbffc3688 eip 0x837cde4
+Jun 24 00:54:49.325: vmx| Backtrace[5] 0xbffc36b8 eip 0x80fda89
+Jun 24 00:54:49.325: vmx| Backtrace[6] 0xbffc36e8 eip 0x80f36f5
+Jun 24 00:54:49.325: vmx| Backtrace[7] 0xbffc3728 eip 0x80f3bd4
+Jun 24 00:54:49.325: vmx| Backtrace[8] 0xbffc3788 eip 0x80511be
+Jun 24 00:54:49.325: vmx| Backtrace[9] 0xbffc3878 eip 0x8051561
+Jun 24 00:54:49.325: vmx| Backtrace[10] 0xbffc38e8 eip 0xb7e374c0
+Jun 24 00:54:49.325: vmx| Backtrace[11] 00000000 eip 0x804e7b1
+Jun 24 00:54:49.325: vmx| Core dump limit is 0 kb.
+Jun 24 00:54:49.326: vmx| Cannot remap region MonWired (addr=(nil),
+size=0x13000, offset=0x19000)
+Jun 24 00:54:49.326: vmx| Cannot remap region PShareMPN (addr=(nil),
+size=0x1000, offset=0x18000)
+Jun 24 00:54:49.326: vmx| Remapping region BusMemFrame1 as MAP_PRIVATE
+(addr=0xb7f9c000, size=0x1000, offset=0x17000)
+Jun 24 00:54:49.326: vmx| Remapping region BusMemFrame0 as MAP_PRIVATE
+(addr=0xb7f9d000, size=0x1000, offset=0x16000)
+Jun 24 00:54:49.326: vmx| Cannot remap region PhysRegion0 (addr=(nil),
+size=0x1000, offset=0x15000)
+Jun 24 00:54:49.326: vmx| Msg_Post: Error
+Jun 24 00:54:49.326: vmx| [msg.log.error.unrecoverable] VMware
+Workstation unrecoverable error: (vmx)
+Jun 24 00:54:49.326: vmx| NOT_IMPLEMENTED
+/build/mts/release/bora-93057/bora/vmx/main/vmmonPosix.c:774
+
+
+Thanks,
+Jeff.
+
+
+
+
+>  mm/memory.c |   20 ++++++++++++++++++--
+>  1 files changed, 18 insertions(+), 2 deletions(-)
 >
->   
-No,
-
-I test with the version of the driver before patches and I have the same 
-error.
-
-I think error is in TX. (TX and RX equipments for the test have the same 
-chip, I don't have other kind of chip available at the moment, that why 
-I not sure)
-
-If theses informations help :
-
-When I transmit a paquet of ~ 4000 (for a mtu 4500),
-
-When I reboot and PCIE-AER is compiled, I got this message :
-
-Jun 23 18:28:31 apollo kernel: +------ PCI-Express Device Error ------+
-Jun 23 18:28:31 apollo kernel: Error Severity^I^I: Uncorrected (Non-Fatal)
-Jun 23 18:28:31 apollo kernel: PCIE Bus Error type^I: Transaction Layer
-Jun 23 18:28:31 apollo kernel: Unsupported Request   ^I: Multiple
-Jun 23 18:28:31 apollo kernel: Requester ID^I^I: 0300
-Jun 23 18:28:31 apollo kernel: VendorID=1106h, DeviceID=3119h, Bus=03h, 
-Device=00h, Function=00h
-Jun 23 18:28:31 apollo kernel: TLB Header:
-Jun 23 18:28:31 apollo kernel: 40000001 0018000c febffc7c 0000fdff
-Jun 23 18:28:31 apollo kernel: Broadcast error_detected message
-Jun 23 18:28:31 apollo kernel: Broadcast mmio_enabled message
-Jun 23 18:28:31 apollo kernel: Broadcast resume message
-
-When I reboot and "PCIE-AER and MSI" is compiled, I got this message :
-
-Jun 23 18:35:59 apollo kernel: irq 163, desc: c0495dc8, depth: 1, count: 
-0, unhandled: 0
-Jun 23 18:35:59 apollo kernel: ->handle_irq():  c012d997, 
-handle_bad_irq+0x0/0x199
-Jun 23 18:35:59 apollo kernel: ->chip(): c0496b20, 0xc0496b20
-Jun 23 18:35:59 apollo kernel: ->action(): 00000000
-Jun 23 18:35:59 apollo kernel:   IRQ_DISABLED set
-Jun 23 18:35:59 apollo kernel: unexpected IRQ trap at vector a3
--- 
-Régis
+> diff --git a/mm/memory.c b/mm/memory.c
+> index 9aefaae..a2ce28d 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -1045,6 +1045,23 @@ no_page_table:
+>        return page;
+>  }
+>
+> +/* Can we do the FOLL_ANON optimization? */
+> +static inline int use_zero_page(struct vm_area_struct *vma)
+> +{
+> +       /*
+> +        * We don't want to optimize FOLL_ANON for make_pages_present()
+> +        * when it tries to page in a VM_LOCKED region.
+> +        */
+> +       if (vma->vm_flags & VM_LOCKED)
+> +               return 0;
+> +       /*
+> +        * And if we have a fault or a nopfn routine, it's not an
+> +        * anonymous region.
+> +        */
+> +       return !vma->vm_ops ||
+> +               (!vma->vm_ops->fault && !vma->vm_ops->nopfn);
+> +}
+> +
+>  int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+>                unsigned long start, int len, int write, int force,
+>                struct page **pages, struct vm_area_struct **vmas)
+> @@ -1119,8 +1136,7 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+>                foll_flags = FOLL_TOUCH;
+>                if (pages)
+>                        foll_flags |= FOLL_GET;
+> -               if (!write && !(vma->vm_flags & VM_LOCKED) &&
+> -                   (!vma->vm_ops || !vma->vm_ops->fault))
+> +               if (!write && use_zero_page(vma))
+>                        foll_flags |= FOLL_ANON;
+>
+>                do {
+>
