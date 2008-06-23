@@ -1,47 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756448AbYFWKXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757354AbYFWKYJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756448AbYFWKXh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 06:23:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbYFWKX2
+	id S1757354AbYFWKYJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 06:24:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755414AbYFWKXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 06:23:28 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:47614 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752729AbYFWKX1 (ORCPT
+	Mon, 23 Jun 2008 06:23:55 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:26756 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753638AbYFWKXy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 06:23:27 -0400
-Message-ID: <485F79C6.20507@keyaccess.nl>
-Date: Mon, 23 Jun 2008 12:24:06 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Mon, 23 Jun 2008 06:23:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=OsUhRdIZXGFsp6Tx2Pk3PieG4lJXN/MCCp81wtNMTDiXaWuJgq3IQ4c0trfHEdGBZv
+         xsAe7WuM5Y50KRLaF0+78wvDYLwrfIHcNKDmpCYwp+29OHkVautXbuCB5KIpxlhcsTxB
+         wzS2GmZpVGlrbSNWJEavKYf1SNUb3KvWXtbvo=
+Message-ID: <19f34abd0806230323o6373015fj93a85b929545a7a8@mail.gmail.com>
+Date: Mon, 23 Jun 2008 12:23:52 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Stephen Rothwell" <sfr@canb.auug.org.au>,
+       "Steven Rostedt" <srostedt@redhat.com>
+Subject: Re: linux-next: Tree for June 23
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080623182549.b0552851.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: Hans de Goede <j.w.r.degoede@hhs.nl>, linux-acpi@vger.kernel.org,
-       Zhang Rui <rui.zhang@intel.com>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
-Subject: Re: LMSENSORS: 2.6.26-rc,  enabling ACPI Termal Zone support costs
- sensors
-References: <485DA11C.7050906@keyaccess.nl>	<485DFF35.6080008@hhs.nl>	<485E505F.8010306@keyaccess.nl>	<485E61DE.6020202@hhs.nl> <20080623120844.5f722aa6@hyperion.delvare>
-In-Reply-To: <20080623120844.5f722aa6@hyperion.delvare>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -0.7 (/)
+Content-Disposition: inline
+References: <20080623182549.b0552851.sfr@canb.auug.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 23-06-08 12:08, Jean Delvare wrote:
+On Mon, Jun 23, 2008 at 10:25 AM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> I have created today's linux-next tree at
+> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+> (patches at
+> http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+> are tracking the linux-next tree using git, you should not use "git pull"
+> to do so as that will try to merge the new linux-next release with the
+> old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+> (see below).
 
-> No, the kernel does the right thing and does not need to be modified
-> at all.
+Hi,
 
-No Jean, this is totally unacceptable. No matter how you want to call 
-things, 2.6.26 is going to break important functionality on millions of 
-systems and you simply do not get to do that. Can you comment on the 
-last patch posted? It's trivial:
+I got this:
 
-http://lkml.org/lkml/2008/6/22/243
+Testing tracer sched_switch: PASSED
+Testing tracer sysprof: PASSED
+Testing tracer ftrace: PASSED
+Testing dynamic ftrace: PASSED
+Testing tracer irqsoff: PASSED
+Testing tracer preemptoff: PASSED
+Testing tracer preemptirqsoff: <4>------------[ cut here ]------------
+WARNING: at kernel/lockdep.c:2680 check_flags+0x142/0x160()
+Pid: 2, comm: kthreadd Not tainted 2.6.26-rc6-next-20080620 #34
+ [<c01388a4>] warn_on_slowpath+0x54/0x70
+ [<c015a9d5>] ? trace_hardirqs_off_caller+0x15/0xb0
+ [<c015aa7b>] ? trace_hardirqs_off+0xb/0x10
+ [<c0109e85>] ? native_sched_clock+0xb5/0x110
+ [<c05bdb28>] ? _spin_unlock_irqrestore+0x48/0x80
+ [<c02b5748>] ? debug_locks_off+0x8/0x50
+ [<c017dcbe>] ? ftrace_record_ip+0x12e/0x240
+ [<c010455c>] ? mcount_call+0x5/0x9
+ [<c0159f22>] check_flags+0x142/0x160
+ [<c014d3c0>] ? kthreadd+0xf0/0x160
+ [<c015e089>] lock_acquire+0x59/0xd0
+ [<c014d3c0>] ? kthreadd+0xf0/0x160
+ [<c05bd2ad>] _spin_lock+0x3d/0x70
+ [<c014d3c0>] ? kthreadd+0xf0/0x160
+ [<c014d3c0>] kthreadd+0xf0/0x160
+ [<c014d2d0>] ? kthreadd+0x0/0x160
+ [<c0104547>] kernel_thread_helper+0x7/0x10
+ =======================
+---[ end trace a7919e7f17c0a725 ]---
+possible reason: unannotated irqs-on.
+irq event stamp: 3198
+hardirqs last  enabled at (3197): [<c015cb2b>] trace_hardirqs_on+0xb/0x10
+hardirqs last disabled at (3198): [<c015aa7b>] trace_hardirqs_off+0xb/0x10
+softirqs last  enabled at (0): [<c01370ad>] copy_process+0x43d/0x1120
+softirqs last disabled at (0): [<00000000>] 0x0
+PASSED
+Testing tracer wakeup: PASSED
 
-Rene.
 
+Also, shouldn't there be a MAINTAINERS entry or some file in
+Documentation/ for ftrace?
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
