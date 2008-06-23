@@ -1,98 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758068AbYFWOa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758211AbYFWOba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758068AbYFWOa7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 10:30:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbYFWOav
+	id S1758211AbYFWOba (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 10:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754890AbYFWObV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 10:30:51 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41099 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754637AbYFWOau (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 10:30:50 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: linux-next: Tree for June 20: [regression] No sound on SB600
-Date: Mon, 23 Jun 2008 16:32:08 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-References: <20080620172507.b7301bd1.sfr@canb.auug.org.au> <200806212125.42472.rjw@sisk.pl> <s5hlk0w4g1x.wl%tiwai@suse.de>
-In-Reply-To: <s5hlk0w4g1x.wl%tiwai@suse.de>
+	Mon, 23 Jun 2008 10:31:21 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:43579 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753952AbYFWObU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 10:31:20 -0400
+Date: Mon, 23 Jun 2008 15:31:12 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Jean Delvare <khali@linux-fr.org>, Hans de Goede <j.w.r.degoede@hhs.nl>,
+       linux-acpi@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, lm-sensors@lm-sensors.org
+Subject: Re: LMSENSORS: 2.6.26-rc,  enabling ACPI Termal Zone support costs sensors
+Message-ID: <20080623143112.GA4160@srcf.ucam.org>
+References: <485DA11C.7050906@keyaccess.nl> <485DFF35.6080008@hhs.nl> <485E505F.8010306@keyaccess.nl> <485E61DE.6020202@hhs.nl> <20080623120844.5f722aa6@hyperion.delvare> <485F79C6.20507@keyaccess.nl> <20080623135704.2980078c@hyperion.delvare> <485F9877.1060902@keyaccess.nl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806231632.08639.rjw@sisk.pl>
+In-Reply-To: <485F9877.1060902@keyaccess.nl>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 23 of June 2008, Takashi Iwai wrote:
-> At Sat, 21 Jun 2008 21:25:41 +0200,
-> Rafael J. Wysocki wrote:
-> > 
-> > On Saturday, 21 of June 2008, Takashi Iwai wrote:
-> > > At Sat, 21 Jun 2008 17:28:09 +0200,
-> > > Rafael J. Wysocki wrote:
-> > > > 
-> > > > On Friday, 20 of June 2008, Stephen Rothwell wrote:
-> > > > > Hi all,
-> > > > > 
-> > > > > Changes since next-20080619:
-> > > > > 
-> > > > > The net tree lost its conflict against Linus' tree.
-> > > > > 
-> > > > > The bkl-removal tree lost a conflict.
-> > > > 
-> > > > On one of my test boxes with the ATI chipset (SB600 south bridge) there's no
-> > > > sound output.  Bisection shows that the following commit causes this to happen
-> > > > and reverting the commit fixes the problem for me:
-> > > > 
-> > > > commit cf97e6678f1e1e7bbdb566c36771540123832a31
-> > > > Author: Takashi Iwai <tiwai@suse.de>
-> > > > Date:   Mon Jun 16 15:47:26 2008 +0200
-> > > > 
-> > > >     ALSA: hda - Fix wrong volumes in AD1988 auto-probe mode
-> > > >     
-> > > >     Don't create mixer volume elements for Headphone and Speaker if they
-> > > >     use the same DAC as normal line-outs on AD1988.  Otherwise the amp
-> > > >     value gets screwed up, e.g.
-> > > >     	https://bugzilla.novell.com/show_bug.cgi?id=398255
-> > > >     
-> > > >     Signed-off-by: Takashi Iwai <tiwai@suse.de>
-> > > > 
-> > > > Please let me know if you need any additional information.
-> > > 
-> > > Could you run alsa-info.sh with --no-upload option and attach the
-> > > output for both states with and without that commit?  The script is
-> > > found at
-> > > 	http://www.alsa-project.org/alsa-info.sh
-> > > Also, show the relevant kernel message from snd-hda-intel (informing
-> > > the auto-parsing of pins, etc), too.
-> > 
-> > dmesg outputs and the outputs of 'alsa-info.sh --no-upload' for the kernel with
-> > the patch applied (1) and with the reverted (2) are at:
-> > 
-> > http://www.sisk.pl/kernel/debug/20080620/box2/dmesg-1.log
-> > http://www.sisk.pl/kernel/debug/20080620/box2/alsa-info-1.txt
-> > 
-> > http://www.sisk.pl/kernel/debug/20080620/box2/dmesg-2.log
-> > http://www.sisk.pl/kernel/debug/20080620/box2/alsa-info-2.txt
-> 
-> Well, this is actually no regression but an unlucky side-effect of the
-> fix.
-> 
-> In the old version, "Front" volume didn't work properly because of
-> confliction with a bogus "Headphone" volume.  Now, a wrong volume
-> element is removed but only "Front" remains while "Front" wasn't set
-> up properly.
-> 
-> In short, the below should fix the problem:
-> 
-> 	% amixer set Front 90%
+On Mon, Jun 23, 2008 at 02:35:03PM +0200, Rene Herman wrote:
+> libsensors dictated the ABI rule that the hwmon directories must have 
+> device backlinks; the new ACPI Thermal Zone hwmon interface breaks that 
+> bit of ABI. It is not relevant that that ABI may have gotten to be as a 
+> result of unfortunate programming on the userspace side -- the only 
+> thing relevant is that it IS. lm-sensors 2 is on millions of systems out 
+> there. This is not meant agressively, or whatever you guys seem to want 
+> to read in my words, it's un undeniable fact.
 
-Well, okay, but where should I add that to make KDE mixers work, for example?
+No, libsensors made an assumption about the ABI that turns out not to be 
+true. The ABI hasn't changed, libsensors is just being exposed to a case 
+it didn't previously see.
 
-Thanks,
-Rafael
+We've had this kind of change before. The ACPI backlight code changed in 
+such a way that scripts that blindly wrote values instead of (correctly) 
+reading the maximum brightness value broke. mmap's behaviour changed in 
+such a way that it was no longer possible for vm86 to execute code that 
+wasn't mapped as executable, breaking libx86. The applications in 
+question were undeniably buggy. Those are examples that I was personally 
+involved with - I'm sure there are others. Where userspace has made 
+false assumptions, it's not the kernel's responsibility to continue to 
+support those assumptions.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
