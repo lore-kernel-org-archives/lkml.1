@@ -1,82 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbYFWXKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbYFWXOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756570AbYFWXKr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 19:10:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbYFWXHp
+	id S1753446AbYFWXOu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 19:14:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbYFWXOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 19:07:45 -0400
-Received: from mx2.suse.de ([195.135.220.15]:39197 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754329AbYFWXHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 19:07:44 -0400
-Date: Mon, 23 Jun 2008 16:05:32 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Bernhard Walle <bwalle@suse.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 04/10] x86: use BOOTMEM_EXCLUSIVE on 32-bit
-Message-ID: <20080623230532.GK29853@suse.de>
-References: <20080623225737.837265824@mini.kroah.org>
+	Mon, 23 Jun 2008 19:14:40 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:35421 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750905AbYFWXOj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 19:14:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=hO0zrzTwsIalXuE5JDpWqpG+kgWX5UDEtO7gVYcHPPpukNEi6+qi5KC1mSzf4HvCtR
+         Pp+a8V6DmJI34LY8ivNzDNiXgCcOnHKa09y9m0Cl431Bxn5S9BfbNsejkoklo4ImtLXi
+         zNoFVsnJWqFVf2q3990eIK0K2JBvl0bnQXHGY=
+Message-ID: <9929d2390806231614j66b51d01v103b7dc4efd81b38@mail.gmail.com>
+Date: Mon, 23 Jun 2008 16:14:39 -0700
+From: "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [RESEND PATCH 1/3] e1000e: set CONFIG_E1000E=y in x86 defconfigs
+Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       davem@davemloft.net
+In-Reply-To: <20080623112618.GC7485@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-use-bootmem_exclusive-on-32-bit.patch"
-In-Reply-To: <20080623230417.GA29853@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080622221916.5907.79563.stgit@localhost.localdomain>
+	 <20080623112618.GC7485@elte.hu>
+X-Google-Sender-Auth: e9c7e44215bb5fd2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.25.9-stable review patch.  If anyone has any objections, please let
-us know.
+On Mon, Jun 23, 2008 at 4:26 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Jeff Kirsher <jeffrey.t.kirsher@intel.com> wrote:
+>
+>> From: Auke Kok <auke-jan.h.kok@intel.com>
+>>
+>> This adds to the already default CONFIG_E1000=y in these files.
+>>
+>> Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
+>> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+>> ---
+>>
+>>  arch/x86/configs/i386_defconfig   |    1 +
+>>  arch/x86/configs/x86_64_defconfig |    1 +
+>
+> that is not an e1000 patch but an arch/x86 defconfig patch. NAK on this
+> route of patch propagation.
+>
 
------------------- 
-From: Bernhard Walle <bwalle@suse.de>
+So you are fine with the patch contents, just not the title/subject
+line.  So if the subject line was:
 
-commit d3942cff620bea073fc4e3c8ed878eb1e84615ce upstream
+[RESEND PATCH 1/3] x86 defconfig: set CONFIG_E1000E=y in x86 defconfigs
 
-This patch uses the BOOTMEM_EXCLUSIVE for crashkernel reservation also for
-i386 and prints a error message on failure.
-
-The patch is still for 2.6.26 since it is only bug fixing. The unification
-of reserve_crashkernel() between i386 and x86_64 should be done for 2.6.27.
-
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- arch/x86/kernel/setup_32.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
-
---- a/arch/x86/kernel/setup_32.c
-+++ b/arch/x86/kernel/setup_32.c
-@@ -483,10 +483,16 @@ static void __init reserve_crashkernel(v
- 					(unsigned long)(crash_size >> 20),
- 					(unsigned long)(crash_base >> 20),
- 					(unsigned long)(total_mem >> 20));
-+
-+			if (reserve_bootmem(crash_base, crash_size,
-+					BOOTMEM_EXCLUSIVE) < 0) {
-+				printk(KERN_INFO "crashkernel reservation "
-+					"failed - memory is in use\n");
-+				return;
-+			}
-+
- 			crashk_res.start = crash_base;
- 			crashk_res.end   = crash_base + crash_size - 1;
--			reserve_bootmem(crash_base, crash_size,
--					BOOTMEM_DEFAULT);
- 		} else
- 			printk(KERN_INFO "crashkernel reservation failed - "
- 					"you have to specify a base address\n");
+Would that have been alright?
 
 -- 
+Cheers,
+Jeff
