@@ -1,52 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761227AbYFWRn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760624AbYFWRqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761227AbYFWRn7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 13:43:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbYFWRnu
+	id S1760624AbYFWRqG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 13:46:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbYFWRpx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 13:43:50 -0400
-Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:53343 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751682AbYFWRnt (ORCPT
+	Mon, 23 Jun 2008 13:45:53 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:56438 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752976AbYFWRpw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 13:43:49 -0400
-Date: Mon, 23 Jun 2008 12:43:33 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, yanmin_zhang@linux.intel.com
-Subject: [patch] hackbench: flush buffers before fork
-Message-ID: <20080623174333.GF9594@localdomain>
+	Mon, 23 Jun 2008 13:45:52 -0400
+Date: Mon, 23 Jun 2008 23:15:08 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Holger Kiehl <Holger.Kiehl@dwd.de>
+Cc: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
+       Jan Kara <jack@suse.cz>, Solofo.Ramangalahy@bull.net,
+       Nick Dokos <nicholas.dokos@hp.com>, linux-ext4@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Performance of ext4
+Message-ID: <20080623174508.GA7216@skywalker>
+References: <Pine.LNX.4.64.0806130753100.7097@diagnostix.dwd.de> <20080616175408.GF3279@atrey.karlin.mff.cuni.cz> <20080616181353.GA20686@skywalker> <Pine.LNX.4.64.0806171001200.6307@diagnostix.dwd.de> <20080619155645.GA8582@mit.edu> <485A8C2D.1090806@redhat.com> <20080619174211.GB9119@mit.edu> <Pine.LNX.4.64.0806200812340.3383@diagnostix.dwd.de> <20080620085922.GH9119@mit.edu> <Pine.LNX.4.64.0806200905070.3383@diagnostix.dwd.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0806200905070.3383@diagnostix.dwd.de>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Pobox-Relay-ID: EED2DD5E-414B-11DD-B615-3113EBD4C077-04752483!a-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's a fixlet for the hackbench program found at
+On Fri, Jun 20, 2008 at 09:21:48AM +0000, Holger Kiehl wrote:
+> On Fri, 20 Jun 2008, Theodore Tso wrote:
+>
+>> On Fri, Jun 20, 2008 at 08:32:52AM +0000, Holger Kiehl wrote:
+>>>> It sounds like i_size is actually dropping in
+>>>> size at some pointer long after the file was written.  If I had to
+>>
+>> sorry, "at some point"...
+>>
+>>>> guess the value in the inode cache is correct; and perhaps so is the
+>>>> value on the journal.  But somehow, the wrong value is getting written
+>>>> to disk
+>>
+>> Or, "the right value is never getting written to disk".  (Which as I
+>> think about it is more likely; it's likely that an update to i_size is
+>> getting *lost*, perhaps because the delalloc code is possibly
+>> modifying i_size without starting a transaction first.  Again this is
+>> just a guess.)
+>>
+>>> What I find strange is that the missing parts of the file are not for
+>>> example exactly 512 or 1024 or 4096 bytes it is mostly some odd number
+>>> of bytes.
+>>
+>> Is there any chance the truncation point is related to how the program
+>> is writing its output file?  i.e., if it is a text file, is the
+>> truncation happening after a new-line or when the stdio library might
+>> have done an explicit or implicit fflush()?
+>>
+> When the benchmark runs it writes to stdout and with tee to the result
+> file. It first writes some information about the system, prepares the
+> test files (creates lots of small files), calls sync and then starts
+> the test. Then every minute one line gets written to the result file.
+> Often I have seen that everything after the sync was missing. But
+> sometimes it happened that some parts at the end are missing. But it
+> was always a clean cut, that is there where no lines that where cut
+> partially. The lines where always complete.
+>
 
-http://people.redhat.com/mingo/cfs-scheduler/tools/hackbench.c
+I found one place where we fail to update i_disksize. Can you try this
+patch ?
 
-When redirecting hackbench output I am seeing multiple copies of the
-"Running with %d*40 (== %d) tasks" line.  Need to flush the buffered
-output before forking.
-
-
-diff --git a/hackbench.c b/hackbench.c
-index 7b90840..e830461 100644
---- a/hackbench.c
-+++ b/hackbench.c
-@@ -321,6 +321,8 @@ int main(int argc, char *argv[])
- 	printf("Running with %d*40 (== %d) tasks.\n",
- 		num_groups, num_groups*40);
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index 33f940b..9fa737f 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -1620,7 +1620,10 @@ static int ext4_da_writepage(struct page *page,
+ 	loff_t size;
+ 	unsigned long len;
+ 	handle_t *handle = NULL;
++	ext4_lblk_t block;
++	loff_t disksize;
+ 	struct buffer_head *page_bufs;
++	struct buffer_head *bh, *head;
+ 	struct inode *inode = page->mapping->host;
  
-+	fflush(NULL);
+ 	handle = ext4_journal_current_handle();
+@@ -1662,6 +1665,38 @@ static int ext4_da_writepage(struct page *page,
+ 	else
+ 		ret = block_write_full_page(page, ext4_da_get_block_write, wbc);
+ 
++	 if (ret)
++		 return ret;
++	/*
++	 * When called via shrink_page_list and if we don't have any unmapped
++	 * buffer_head we still could have written some new content in an
++	 * already mapped buffer. That means we need to extent i_disksize here
++	 */
++	/* Find the last logical block number in the page. */
++	block = (sector_t)page->index << (PAGE_CACHE_SHIFT - inode->i_blkbits);
++	bh = head = page_buffers(page);
++	do {
++		bh = bh->b_this_page;
++		block++;
++	} while (bh != head);
 +
- 	if (argc > 2) {
- 		if ( !strcmp(argv[2], "process") )
- 			process_mode = 1;
--- 
-1.5.4.rc5.5.gab98
-
++	disksize = ((loff_t) block) << inode->i_blkbits;
++	if (disksize > i_size_read(inode))
++		disksize = i_size_read(inode);
++	if (disksize > EXT4_I(inode)->i_disksize) {
++		/*
++		 * XXX: replace with spinlock if seen contended -bzzz
++		 */
++		down_write(&EXT4_I(inode)->i_data_sem);
++		if (disksize > EXT4_I(inode)->i_disksize)
++			EXT4_I(inode)->i_disksize = disksize;
++		up_write(&EXT4_I(inode)->i_data_sem);
++
++		if (EXT4_I(inode)->i_disksize == disksize) {
++			ret = ext4_mark_inode_dirty(handle, inode);
++			return ret;
++		}
++	}
+ 	return ret;
+ }
+ 
