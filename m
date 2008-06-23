@@ -1,58 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764032AbYFWUZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760600AbYFWU1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764032AbYFWUZj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 16:25:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757133AbYFWUZ3
+	id S1760600AbYFWU1v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 16:27:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753418AbYFWU1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 16:25:29 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:57680 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763956AbYFWUZ2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 16:25:28 -0400
-Date: Mon, 23 Jun 2008 13:15:16 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Darren Hart <dvhltc@us.ibm.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, josh@freedesktop.org, niv@us.ibm.com, dino@in.ibm.com,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       vegard.nossum@gmail.com, adobriyan@gmail.com, oleg@tv-sign.ru,
-       bunk@kernel.org, rjw@sisk.pl
-Subject: Re: [PATCH -tip-rcu] Make rcutorture more vicious: make quiescent rcutorture less power-hungry
-Message-ID: <20080623201516.GC10595@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080618122144.GA27143@linux.vnet.ibm.com> <20080618162649.GA18326@linux.vnet.ibm.com> <20080622200638.GA25328@linux.vnet.ibm.com> <20080622131712.54ba732c@infradead.org> <1214243649.4440.10.camel@Aeon> <20080623110706.197f25b1@infradead.org> <1214251374.4440.48.camel@Aeon>
+	Mon, 23 Jun 2008 16:27:41 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:57297 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752889AbYFWU1k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 16:27:40 -0400
+Date: Mon, 23 Jun 2008 16:27:35 -0400
+To: Adrian Bunk <bunk@kernel.org>
+Cc: neilb@suse.de, linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC: 2.6 patch] don't export linux/nfsd/stats.h to userspace
+Message-ID: <20080623202735.GA28784@fieldses.org>
+References: <20080623174854.GI4756@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1214251374.4440.48.camel@Aeon>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080623174854.GI4756@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 23, 2008 at 08:02:54PM +0000, Darren Hart wrote:
-> On Mon, 2008-06-23 at 11:07 -0700, Arjan van de Ven wrote:
-> > On Mon, 23 Jun 2008 17:54:09 +0000
-> > Darren Hart <dvhltc@us.ibm.com> wrote:
-> > 
-> > > I'm a little concerned about how this will affect real-time
-> > > performance, as queueing up lots of timers all at once can lead to
-> > > long running timer expiration handlers.  If just a schedule_timeout,
-> > > I suppose we are only looking at a process wakeup, as opposed to a
-> > > softirq context callback function?
-> > 
-> > in reality, the time it takes to deliver the interrupt (including
-> > waking the CPU up etc), is likely to be an order or two of magnitude
-> > higher than this kind of code loop.... 
+On Mon, Jun 23, 2008 at 08:48:54PM +0300, Adrian Bunk wrote:
+> The main contents is struct nfsd_stats which changes depending on a 
+> CONFIG_ variable.
 > 
-> Sure, if we just look at one of them.  Any idea how many such items
-> we're looking at rounding up to fire at the same time?  Is it dozens,
-> hundreds, thousands?
+> This would not work in userspace.
 
-Hello, Darren,
+Makes sense, but could we just get this out of include/linux entirely,
+and into fs/nfsd/?
 
-Wouldn't these timers be running at low priority, so that high-priority
-realtime tasks would preempt them?
+	$ git grep -l '^#include <linux/nfsd/stats.h>'
+	fs/nfsd/nfssvc.c
+	fs/nfsd/stats.c
+	include/linux/nfsd/nfsd.h
 
-							Thanx, Paul
+So the only user outside of fs/nfsd/ is nfsd.h.  I doubt it really needs
+it.  And nfsd.h is included a lot of places it needn't be too:
+
+	$ git grep -l '^#include <linux/nfsd/nfsd.h>'
+	arch/parisc/kernel/sys_parisc32.c
+	arch/s390/kernel/compat_linux.c
+	arch/s390/kernel/compat_linux.h
+	arch/sparc64/kernel/sys_sparc32.c
+
+Those includes are unnecessary.
+
+	fs/compat.c
+
+That too, I think.
+
+	fs/lockd/svc4proc.c
+	fs/lockd/svcproc.c
+
+Those might need it (though they shouldn't also need stats.h).  Etc.
+
+	fs/nfsctl.c
+	fs/nfsd/auth.c
+	fs/nfsd/export.c
+	fs/nfsd/lockd.c
+	fs/nfsd/nfs2acl.c
+	fs/nfsd/nfs3acl.c
+	fs/nfsd/nfs3proc.c
+	fs/nfsd/nfs3xdr.c
+	fs/nfsd/nfs4callback.c
+	fs/nfsd/nfs4proc.c
+	fs/nfsd/nfs4recover.c
+	fs/nfsd/nfs4state.c
+	fs/nfsd/nfs4xdr.c
+	fs/nfsd/nfscache.c
+	fs/nfsd/nfsctl.c
+	fs/nfsd/nfsfh.c
+	fs/nfsd/nfsproc.c
+	fs/nfsd/nfssvc.c
+	fs/nfsd/nfsxdr.c
+	fs/nfsd/stats.c
+	fs/nfsd/vfs.c
+
+--b.
+
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> 
+>  include/linux/nfsd/Kbuild  |    1 -
+>  include/linux/nfsd/stats.h |    3 ---
+>  2 files changed, 4 deletions(-)
+> 
+> 9b6014db4d4182cf4cb342b97f9018c5d1090afa diff --git a/include/linux/nfsd/Kbuild b/include/linux/nfsd/Kbuild
+> index fc97204..698e9ec 100644
+> --- a/include/linux/nfsd/Kbuild
+> +++ b/include/linux/nfsd/Kbuild
+> @@ -2,5 +2,4 @@ unifdef-y += const.h
+>  unifdef-y += debug.h
+>  unifdef-y += export.h
+>  unifdef-y += nfsfh.h
+> -unifdef-y += stats.h
+>  unifdef-y += syscall.h
+> diff --git a/include/linux/nfsd/stats.h b/include/linux/nfsd/stats.h
+> index 7678cfb..d949590 100644
+> --- a/include/linux/nfsd/stats.h
+> +++ b/include/linux/nfsd/stats.h
+> @@ -38,13 +38,10 @@ struct nfsd_stats {
+>  /* thread usage wraps very million seconds (approx one fortnight) */
+>  #define	NFSD_USAGE_WRAP	(HZ*1000000)
+>  
+> -#ifdef __KERNEL__
+> -
+>  extern struct nfsd_stats	nfsdstats;
+>  extern struct svc_stat		nfsd_svcstats;
+>  
+>  void	nfsd_stat_init(void);
+>  void	nfsd_stat_shutdown(void);
+>  
+> -#endif /* __KERNEL__ */
+>  #endif /* LINUX_NFSD_STATS_H */
+> 
