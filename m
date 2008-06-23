@@ -1,182 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678AbYFWLHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbYFWLJw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753678AbYFWLHb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 07:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbYFWLHD
+	id S1754213AbYFWLJw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 07:09:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752292AbYFWLJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 07:07:03 -0400
-Received: from mail9.hitachi.co.jp ([133.145.228.44]:37320 "EHLO
-	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754440AbYFWLHA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 07:07:00 -0400
-X-AuditID: 0ac90650-a9e88ba0000062df-d1-485f83d2930c
-Message-ID: <485F83C4.3060704@hitachi.com>
-Date: Mon, 23 Jun 2008 20:06:44 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
-MIME-Version: 1.0
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, sct@redhat.com,
-       adilger@clusterfs.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, Jan Kara <jack@suse.cz>,
-       Josef Bacik <jbacik@redhat.com>, Mingming Cao <cmm@us.ibm.com>,
-       "Theodore Ts'o" <tytso@mit.edu>, sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
-Subject: Re: [PATCH] jbd: don't abort if flushing file data failed
-References: <4859FD82.1000306@hitachi.com> <20080619163044.GB7874@skywalker>
-In-Reply-To: <20080619163044.GB7874@skywalker>
-Content-Type: text/plain; charset="us-ascii"
+	Mon, 23 Jun 2008 07:09:44 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:36518 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751629AbYFWLJn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 07:09:43 -0400
+Date: Mon, 23 Jun 2008 06:09:39 -0500
+From: Paul Jackson <pj@sgi.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: akpm@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de,
+       steiner@sgi.com, travis@sgi.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, ying.huang@intel.com, andi@firstfloor.org
+Subject: Re: [PATCH 4/5 v2] x86 boot: show pfn addresses in hex not decimal
+ in some kernel info printks
+Message-Id: <20080623060939.6b6b3183.pj@sgi.com>
+In-Reply-To: <86802c440806221238g78300952t2fc7f406c1842273@mail.gmail.com>
+References: <20080622142151.5591.4139.sendpatchset@polaris-admin.engr.sgi.com>
+	<20080622142212.5591.64592.sendpatchset@polaris-admin.engr.sgi.com>
+	<86802c440806221238g78300952t2fc7f406c1842273@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Yinghai wrote:
+> we should remove 0x,
 
-Aneesh Kumar K.V wrote:
-> On Thu, Jun 19, 2008 at 03:32:34PM +0900, Hidehiro Kawai wrote:
-> 
->>In ordered mode, the current jbd aborts the journal if a file data
->>buffer has an error.  But this behavior is unintended, and we found
->>that it has been adopted accidentally.
-> 
-> Do you have more information on this ?  Isn't ordered mode required to
-> guarantee that file data hit the disk and if there are errors in sending
-> data to the disk, should we not mark the file system readonly by aborting
-> the journal ?
+I see some kernel hex prints either way, with or without, 0x.
 
-If we make the file system read-only on a file data write error,
-the system can be unavailable easily.  So some people need this patch.
-On the other hand, there are people (including me) who want to abort
-the journal to prevent the situation getting worse.
-To make all be happy, I'm going to send a patch to make the behavior
-on file data write error tunable.
-Please refer to the following thread for details:
-http://kerneltrap.org/mailarchive/linux-kernel/2008/6/3/2022594
+In this case, in part because I was changing a decimal to a hex
+format, and because it could be ambiguous (a hex number that
+happened to use only [0-9] digits would be indistinguisable from
+a decimal) I preferred using the 0x.
 
+I see no clear answer here ... it seems to be a matter of taste.
 
->>This patch undoes it and just calls printk() instead of aborting
->>the journal.  Additionally, set AS_EIO into the address_space
->>object of the failed buffer which is submitted by
->>journal_do_submit_data() so that fsync() can get -EIO.
->>
->>Missing error checkings are also added to inform errors on file
->>data buffers to the user.  The following buffers are targeted.
->>
->>  (a) the buffer which has already been written out by pdflush
->>  (b) the buffer which has been unlocked before scanned in the
->>      t_locked_list loop
->>
->>Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-> 
-> We may want a similar patch for jbd2 also. IF you are doing that can you
-> make sure  you do that against the patch queue at
-> http://repo.or.cz/w/ext4-patch-queue.git. There are some changes in the
-> same area in the patch queue.
+> we should ... hex print out all the way...regarding mem pfn and
+> memory address, memory size etc. except XXXMB. XXXKB...
 
-Sure.  I'm going to port this patch to ext4/jbd2 after I finish the
-remaining ext3/jbd fixes.  But it may take time because I'm not
-familiar with ext4/jbd2.
+I fixed the ones I noticed.  If you see print formats that you
+would like to change, I will likely be in agreement to such a
+patch.
 
-Thanks,
 -- 
-Hidehiro Kawai
-Hitachi, Systems Development Laboratory
-Linux Technology Center
- 
->>---
->> fs/jbd/commit.c |   32 +++++++++++++++++++++++++-------
->> 1 file changed, 25 insertions(+), 7 deletions(-)
->>
->>Index: linux-2.6.26-rc5-mm3/fs/jbd/commit.c
->>===================================================================
->>--- linux-2.6.26-rc5-mm3.orig/fs/jbd/commit.c
->>+++ linux-2.6.26-rc5-mm3/fs/jbd/commit.c
->>@@ -172,7 +172,7 @@ static void journal_do_submit_data(struc
->> /*
->>  *  Submit all the data buffers to disk
->>  */
->>-static void journal_submit_data_buffers(journal_t *journal,
->>+static int journal_submit_data_buffers(journal_t *journal,
->> 				transaction_t *commit_transaction)
->> {
->> 	struct journal_head *jh;
->>@@ -180,6 +180,7 @@ static void journal_submit_data_buffers(
->> 	int locked;
->> 	int bufs = 0;
->> 	struct buffer_head **wbuf = journal->j_wbuf;
->>+	int err = 0;
->>
->> 	/*
->> 	 * Whenever we unlock the journal and sleep, things can get added
->>@@ -253,6 +254,8 @@ write_out_data:
->> 			put_bh(bh);
->> 		} else {
->> 			BUFFER_TRACE(bh, "writeout complete: unfile");
->>+			if (unlikely(!buffer_uptodate(bh)))
->>+				err = -EIO;
->> 			__journal_unfile_buffer(jh);
->> 			jbd_unlock_bh_state(bh);
->> 			if (locked)
->>@@ -271,6 +274,8 @@ write_out_data:
->> 	}
->> 	spin_unlock(&journal->j_list_lock);
->> 	journal_do_submit_data(wbuf, bufs);
->>+
->>+	return err;
->> }
->>
->> /*
->>@@ -410,8 +415,7 @@ void journal_commit_transaction(journal_
->> 	 * Now start flushing things to disk, in the order they appear
->> 	 * on the transaction lists.  Data blocks go first.
->> 	 */
->>-	err = 0;
->>-	journal_submit_data_buffers(journal, commit_transaction);
->>+	err = journal_submit_data_buffers(journal, commit_transaction);
->>
->> 	/*
->> 	 * Wait for all previously submitted IO to complete.
->>@@ -426,10 +430,21 @@ void journal_commit_transaction(journal_
->> 		if (buffer_locked(bh)) {
->> 			spin_unlock(&journal->j_list_lock);
->> 			wait_on_buffer(bh);
->>-			if (unlikely(!buffer_uptodate(bh)))
->>-				err = -EIO;
->> 			spin_lock(&journal->j_list_lock);
->> 		}
->>+		if (unlikely(!buffer_uptodate(bh))) {
->>+			if (TestSetPageLocked(bh->b_page)) {
->>+				spin_unlock(&journal->j_list_lock);
->>+				lock_page(bh->b_page);
->>+				spin_lock(&journal->j_list_lock);
->>+			}
->>+			if (bh->b_page->mapping)
->>+				set_bit(AS_EIO, &bh->b_page->mapping->flags);
->>+
->>+			unlock_page(bh->b_page);
->>+			SetPageError(bh->b_page);
->>+			err = -EIO;
->>+		}
->> 		if (!inverted_lock(journal, bh)) {
->> 			put_bh(bh);
->> 			spin_lock(&journal->j_list_lock);
->>@@ -448,8 +463,11 @@ void journal_commit_transaction(journal_
->> 	}
->> 	spin_unlock(&journal->j_list_lock);
->>
->>-	if (err)
->>-		journal_abort(journal, err);
->>+	if (err) {
->>+		printk(KERN_WARNING
->>+		       "JBD: Detected IO errors during flushing file data\n");
->>+		err = 0;
->>+	}
->>
->> 	journal_write_revoke_records(journal, commit_transaction);
-
-
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
