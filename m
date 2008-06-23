@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755458AbYFWUea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756093AbYFWUj7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755458AbYFWUea (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 16:34:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbYFWUeW
+	id S1756093AbYFWUj7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 16:39:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbYFWUjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 16:34:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38717 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752149AbYFWUeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 16:34:21 -0400
-Message-ID: <486008C1.8000207@redhat.com>
-Date: Mon, 23 Jun 2008 15:34:09 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
-MIME-Version: 1.0
-To: Andreas Dilger <adilger@sun.com>
-CC: FD Cami <francois.cami@free.fr>, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Kasper Sandberg <lkml@metanurb.dk>
-Subject: Re: [PATCH] extX: convert prink(KERN_WARNING) to extX_warning()
-References: <20080622201841.669ff882@olorin> <20080623203107.GD6239@webber.adilger.int>
-In-Reply-To: <20080623203107.GD6239@webber.adilger.int>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 23 Jun 2008 16:39:52 -0400
+Received: from viefep11-int.chello.at ([62.179.121.31]:61557 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753283AbYFWUjv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 16:39:51 -0400
+Subject: Re: Spinlocks: Factor our GENERIC_LOCKBREAK in order to avoid spin
+	with irqs disable
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Petr Tesarik <ptesarik@suse.cz>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0806231115420.22557@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0805061220570.30604@schroedinger.engr.sgi.com>
+	 <20080507073017.GJ32195@elte.hu>
+	 <Pine.LNX.4.64.0805071002330.3110@schroedinger.engr.sgi.com>
+	 <Pine.LNX.4.64.0805071022230.3173@schroedinger.engr.sgi.com>
+	 <Pine.LNX.4.64.0805071148240.8441@schroedinger.engr.sgi.com>
+	 <1214241561.19392.21.camel@elijah.suse.cz>
+	 <Pine.LNX.4.64.0806231115420.22557@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Mon, 23 Jun 2008 22:39:53 +0200
+Message-Id: <1214253593.11254.30.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Dilger wrote:
-> On Jun 22, 2008  20:18 +0200, FD Cami wrote:
->> This patch takes a shot at replacing the direct use of printk(KERN_WARNING)
->> in extX by extX_warning. We now get the device number in the warning message :
->> "EXT3-fs warning (device hda1): ext3_setup_super: maximal mount count reached, running e2fsck is recommended"
->> It also adds the device information on a pair of printk(KERN_ERR) (this was
->> first suggested by Kasper two weeks ago).
+On Mon, 2008-06-23 at 11:20 -0700, Christoph Lameter wrote:
+> On Mon, 23 Jun 2008, Petr Tesarik wrote:
 > 
-> The one issue is that KERN_ERR != KERN_WARNING, so these errors might
-> not be visible on the console, or may not be saved to the syslog.  The
-> other minor difference is that the function name is also printed, and this
-> makes the error message very long.
+> > Maybe I'm just blind, but doesn't this change effectively disable any
+> > arch-specific optimized code for _raw_*_lock?
 > 
-> One suggestion is to create a separate macro that passes the KERN_*
-> flag and __func__ to ext3_console_msg(), and call that from
-> ext3_warning() and a new ext3_start_error() function.  I always found
-> it annoying to have to specify __func__ as a parameter for every call.
+> True.  Only the __raw_xxx_trylock is still used.
+> 
+> > If CONFIG_DEBUG_LOCK_ALLOC is set, then CONFIG_DEBUG_SPINLOCK must also
+> > be set, so in that case the debugging versions of _raw_*_lock are used.
+> > But if CONFIG_DEBUG_LOCK_ALLOC is _not_ set, then the locks are built
+> > with _trylock and _can_lock primitives.
+> > 
+> > What am I missing here?
+> 
+> It is good that the locks are build with _trylock and _can_lock because 
+> then we can reenable interrupts while spinning.
 
-I agree and meant to suggest that as well.
+Well, good and bad, the turn side is that fairness schemes like ticket
+locks are utterly defeated.
 
--Eric
