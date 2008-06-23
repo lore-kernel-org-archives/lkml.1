@@ -1,51 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755870AbYFWNxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbYFWN4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755870AbYFWNxr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Jun 2008 09:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbYFWNxj
+	id S1756150AbYFWN4A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Jun 2008 09:56:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbYFWNzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Jun 2008 09:53:39 -0400
-Received: from mx.treblig.org ([80.68.94.177]:45253 "EHLO mx.treblig.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751531AbYFWNxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Jun 2008 09:53:38 -0400
-Date: Mon, 23 Jun 2008 14:53:37 +0100
-From: "Dr. David Alan Gilbert" <linux@treblig.org>
-To: linux-kernel@vger.kernel.org
-Subject: mmap_min_addr/SECURITY_DEFAULT_MMAP_MIN_ADDR suggested values
-Message-ID: <20080623135337.GE846@gallifrey>
+	Mon, 23 Jun 2008 09:55:51 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:51731 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751759AbYFWNzv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Jun 2008 09:55:51 -0400
+Date: Mon, 23 Jun 2008 14:55:49 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch 2/3] vfs: fix sys_getcwd for detached mounts
+Message-ID: <20080623135549.GW28946@ZenIV.linux.org.uk>
+References: <20080616112804.930095761@szeredi.hu> <20080616112828.731144133@szeredi.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Chocolate: 70 percent or better cocoa solids preferably
-X-Operating-System: Linux/2.6.23.1-bytemark-uml (i686)
-X-Uptime: 14:42:20 up 12 days, 21:11,  1 user,  load average: 0.02, 0.02, 0.03
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080616112828.731144133@szeredi.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-  The config help for SECURITY_DEFAULT_MMAP_MIN_ADDR suggests 65536
-as a 'reasonable' value for x86 and the original mmap_min_addr
-patches suggested that 'something like 64k' was a safe value that
-wouldn't affect most programs.
+On Mon, Jun 16, 2008 at 01:28:06PM +0200, Miklos Szeredi wrote:
 
-  Where does this 64k value come from?  A number of distros seem
-to have followed this advice and have it set to 64k; but is there
-really any likely benefit of having it larger than PAGE_SIZE say?
+> After the patch it will give a much saner "/skel" result.
 
-I ask because I have an ancient program that maps stuff at 8k; the
-general advice of stuff on the net seems to be to set this limit
-to 0 if people have problems (I'm just lowering it to 4k),
-but I was thinking perhaps using a lower default value would be more
-secure since less people would take the easy answer and just turn the
-feature off altogether.
+I'm not sure that /skel is much saner, to be honest.  Existing
+behaviour is BS, no arguments about that, but I suspect that
+we want that to be recognizable.  How about doing something
+like detached:<rest of path> instead (c.f. "pipe:[6969]" and
+its ilk)?
 
-Dave
+Lack of leading / currently points to pathname *not* resolving
+to object; it might be worth doing the same here.  Comments?
 
--- 
- -----Open up your eyes, open up your mind, open up your code -------   
-/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
-\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
- \ _________________________|_____ http://www.treblig.org   |_______/
